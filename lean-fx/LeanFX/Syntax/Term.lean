@@ -684,35 +684,36 @@ inductive Ctx : Mode → Nat → Type
            (bindingType : Ty scope) →
            Ctx mode (scope + 1)
 
-/-! ## Variable lookup
+/-! ## Variable resolution — v1.9 Fin-indexed.
 
-A `Lookup` derivation is the structural witness "context Γ contains a
-binding of type T at some de Bruijn position."  At every `there` the
-target type is weakened, threading the scope-extension through the
-indices automatically. -/
+The earlier `Lookup` family carried both the position and the looked-up
+type as inductive indices, which forced `Term.rename` to pattern-match
+on a `Lookup (Γ.cons newType) T` scrutinee — a cons-specialised Ctx
+index.  Lean 4's match compiler emits `Ctx.noConfusion` for that shape,
+which transitively pulls in `propext`.
 
-/-- Structural variable lookup.  `Lookup context target` proves the
-context contains a binding of type `target`.  Variables in `Term` are
-*derivations of this lookup judgment*, never raw integers. -/
-inductive Lookup : {mode : Mode} → {scope : Nat} →
-                   Ctx mode scope → Ty scope → Type
-  /-- The variable bound at the head of the context — its type is the
-  binding's type, weakened to live in the extended scope. -/
-  | here :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {bindingType : Ty scope} →
-      Lookup (Ctx.cons context bindingType) bindingType.weaken
-  /-- A variable bound deeper than the head; the predecessor lookup
-  gives a type at the prefix's scope, which we weaken to live in the
-  extended scope. -/
-  | there :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {targetType : Ty scope} →
-      {boundType : Ty scope} →
-      (predecessor : Lookup context targetType) →
-      Lookup (Ctx.cons context boundType) targetType.weaken
+The v1.9 design replaces `Lookup` with a `Fin scope` position plus a
+type-computing function `varType`.  Pattern matches on `Fin` use the
+direct `⟨0, _⟩` / `⟨k+1, h⟩` structural form (axiom-free per the project
+binder-form discipline), and `varType`'s definition is itself
+binder-form recursive over `Ctx` so it stays propext-free.  The type
+the `Term.var` constructor produces is `varType context i`, computed by
+the kernel definitionally rather than carried by an indexed inductive
+witness. -/
+
+/-- The type of variable `i` in context `Γ`.  Written as a binder-form
+recursive function: each cons of `Γ` weakens its bound type by one to
+live in the extended scope.  Variable `0` returns the head's weakened
+type; variable `k + 1` recurses into the prefix.  Marked
+`@[reducible]` so Lean's unifier unfolds it eagerly when checking
+`Term.var` constructions and pattern matches. -/
+@[reducible]
+def varType :
+    {mode : Mode} → {scope : Nat} →
+    (context : Ctx mode scope) → Fin scope → Ty scope
+  | _, _, .cons _ bindingType, ⟨0, _⟩      => bindingType.weaken
+  | _, _, .cons prefixCtx _,   ⟨k + 1, h⟩  =>
+      (varType prefixCtx ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken
 
 /-! ## Terms
 
@@ -725,14 +726,15 @@ rejected before any program is written using it. -/
 constructor signatures *are* the typing rules. -/
 inductive Term : {mode : Mode} → {scope : Nat} →
                  (context : Ctx mode scope) → Ty scope → Type
-  /-- Variable rule.  A term is a variable iff it derives a structural
-  lookup proving the named type sits in the context. -/
+  /-- Variable rule.  A term is a variable iff it carries a Fin-scoped
+  position; the type is computed by `varType` from the context.
+  Replaces the v1.0 `Lookup`-indexed form, which forced propext through
+  the match compiler at term-level renaming.  v1.9. -/
   | var :
       {mode : Mode} → {scope : Nat} →
       {context : Ctx mode scope} →
-      {currentType : Ty scope} →
-      (lookup : Lookup context currentType) →
-      Term context currentType
+      (position : Fin scope) →
+      Term context (varType context position)
   /-- Unit introduction at every scope. -/
   | unit :
       {mode : Mode} → {scope : Nat} →
@@ -860,19 +862,18 @@ def Term.lamCount
   | .fst pairTerm                   => pairTerm.lamCount
   | .snd pairTerm                   => pairTerm.lamCount
 
-/-- The empty context contains no bindings — confirms `nomatch` works on
-the new indexed `Lookup` family with `Nat` scope and mode parameters. -/
-theorem Lookup.notInEmpty
-    {mode : Mode} {targetType : Ty 0} :
-    Lookup (Ctx.nil mode) targetType → False :=
-  fun lookup => nomatch lookup
+/-- The empty context has no positions — `Fin 0` is uninhabited, so
+the kernel rejects any attempt to construct a variable in `Ctx.nil`.
+Replaces the v1.0 `Lookup.notInEmpty` smoke test with the Fin analog. -/
+theorem emptyContextHasNoPositions (i : Fin 0) : False :=
+  Fin.elim0 i
 
 /-- The polymorphic identity on `unit`, parameterised over the mode.
 Confirms the mode parameter of `Ctx` is a working index — the same
 syntactic construction type-checks at every FX mode. -/
 def identityOnUnit (mode : Mode) :
     Term (Ctx.nil mode) (Ty.arrow .unit .unit) :=
-  .lam (.var .here)
+  .lam (.var ⟨0, Nat.zero_lt_succ _⟩)
 
 /-- Identity applied to the unit value at any mode.  Composes the `app`
 and `lam` rules under the implicit-scope `unit` constructor. -/
@@ -880,21 +881,21 @@ def identityAppliedToUnit (mode : Mode) :
     Term (Ctx.nil mode) Ty.unit :=
   .app (identityOnUnit mode) .unit
 
-/-- Three-level nested lambda — exercises `Lookup.there` chaining and
-confirms deeply-nested binders type-check cleanly under the weakening
-discipline. -/
+/-- Three-level nested lambda — exercises position-0 lookup at deeper
+contexts and confirms deeply-nested binders type-check cleanly under
+the weakening discipline. -/
 def threeArgConstantUnit (mode : Mode) :
     Term (Ctx.nil mode)
          (Ty.arrow .unit (.arrow .unit (.arrow .unit .unit))) :=
-  .lam (.lam (.lam (.var .here)))
+  .lam (.lam (.lam (.var ⟨0, Nat.zero_lt_succ _⟩)))
 
-/-- A term using `Lookup.there` to reach an outer binder.  The body of
-the inner `lam` references the *outer* `unit` parameter via `there.here`,
-demonstrating de Bruijn skip works under the new encoding. -/
+/-- A term referencing the *outer* binder via Fin position 1 — the
+v1.9 analog of the v1.0 `Lookup.there .here` chain.  Demonstrates de
+Bruijn skip works under the Fin-indexed encoding. -/
 def shadowingThenOuter (mode : Mode) :
     Term (Ctx.cons (Ctx.nil mode) Ty.unit)
          (Ty.arrow .unit .unit) :=
-  .lam (.var (.there .here))
+  .lam (.var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ _)⟩)
 
 /-! ## Computational smoke tests
 
@@ -924,10 +925,126 @@ example (mode : Mode) : (threeArgConstantUnit mode).lamCount = 3 := rfl
 example (mode : Mode) : (shadowingThenOuter mode).depth = 1 := rfl
 example (mode : Mode) : (shadowingThenOuter mode).lamCount = 1 := rfl
 
-/-- Empty-context lookup is impossible. -/
-example {mode : Mode} {targetType : Ty 0}
-    (lookup : Lookup (Ctx.nil mode) targetType) : False :=
-  Lookup.notInEmpty lookup
+/-- Empty-context lookup is impossible: `Fin 0` is uninhabited. -/
+example (i : Fin 0) : False := emptyContextHasNoPositions i
+
+/-! ## v1.9 — term-level renaming, propext-eliminated.
+
+v1.8 carried `TermRenaming` as `∀ {T}, Lookup Γ T → Lookup Δ (T.rename ρ)`.
+That signature forced `TermRenaming.lift`'s match scrutinee to be a
+`Lookup (Γ.cons newType) T`, whose cons-specialised Ctx index made
+Lean 4's match compiler emit `Ctx.noConfusion` and pull in `propext`.
+
+v1.9 replaces the indexed-Lookup view with a *position-equality*
+property on the underlying type-level `Renaming ρ`:
+
+  ∀ i, varType Δ (ρ i) = (varType Γ i).rename ρ
+
+`TermRenaming` is now a `Prop`, not a `Type`.  `TermRenaming.lift`
+matches on `i : Fin (scope + 1)` via direct `⟨0, _⟩` / `⟨k+1, h⟩`
+structural patterns — propext-free per the Fin destructuring rule.
+`Term.rename` reduces variable cases via `Ty.subst`-style indexed
+rewriting on `varType (...) (ρ i) = (varType ... i).rename ρ`.
+
+The trust base of the kernel returns to **zero axioms**. -/
+
+/-- Property witnessing that the type-level renaming `ρ` is consistent
+with two contexts: at every position `i` of `Γ`, the looked-up type at
+`ρ i` in `Δ` equals the looked-up type at `i` in `Γ` after renaming.
+Replaces the v1.8 type-of-Lookups formulation. -/
+def TermRenaming {m : Mode} {scope scope' : Nat}
+    (Γ : Ctx m scope) (Δ : Ctx m scope')
+    (ρ : Renaming scope scope') : Prop :=
+  ∀ (i : Fin scope), varType Δ (ρ i) = (varType Γ i).rename ρ
+
+/-- Lift a term-level renaming under a binder.  Pattern-matches on
+`i : Fin (scope + 1)` directly via Fin's structure (`⟨0, _⟩` and
+`⟨k+1, h⟩`), so the match never sees a cons-specialised Ctx index.
+Both Fin cases reduce to `Ty.rename_weaken_commute` plus, in the
+successor case, the predecessor's `ρt` proof. -/
+theorem TermRenaming.lift {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {ρ : Renaming scope scope'}
+    (ρt : TermRenaming Γ Δ ρ) (newType : Ty scope) :
+    TermRenaming (Γ.cons newType) (Δ.cons (newType.rename ρ)) ρ.lift := by
+  intro i
+  match i with
+  | ⟨0, _⟩ =>
+      show (newType.rename ρ).weaken
+         = newType.weaken.rename ρ.lift
+      exact (Ty.rename_weaken_commute newType ρ).symm
+  | ⟨k + 1, h⟩ =>
+      show (varType Δ (ρ ⟨k, Nat.lt_of_succ_lt_succ h⟩)).weaken
+           = (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken.rename ρ.lift
+      have hρ := ρt ⟨k, Nat.lt_of_succ_lt_succ h⟩
+      have hcomm := Ty.rename_weaken_commute
+                      (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) ρ
+      exact (congrArg Ty.weaken hρ).trans hcomm.symm
+
+/-- Renaming by the identity is the identity on `Ty`.  Derived from
+the existing v1.7 substitution discipline: `Ty.rename` factors through
+`Ty.subst` via `Renaming.toSubst` (lemma `Ty.rename_eq_subst`); the
+identity renaming corresponds to the identity substitution pointwise
+(both map `i` to `Ty.tyVar i`); and the substitution discipline already
+provides `Ty.subst_id`.  No fresh structural induction needed. -/
+theorem Ty.rename_identity {scope : Nat} (T : Ty scope) :
+    T.rename Renaming.identity = T :=
+  let renamingIdEqSubstId :
+      Subst.equiv (Renaming.toSubst (@Renaming.identity scope))
+                  Subst.identity := fun _ => rfl
+  (Ty.rename_eq_subst T Renaming.identity).trans
+    ((Ty.subst_congr renamingIdEqSubstId T).trans (Ty.subst_id T))
+
+/-- The identity term-level renaming.  Witnesses `TermRenaming Γ Γ id`
+from `Ty.rename_identity`. -/
+theorem TermRenaming.identity {m : Mode} {scope : Nat} (Γ : Ctx m scope) :
+    TermRenaming Γ Γ Renaming.identity := fun i =>
+  (Ty.rename_identity (varType Γ i)).symm
+
+/-- **Term-level renaming** — apply a type-level renaming `ρ` (and the
+position-consistency proof `ρt`) to a `Term`, producing a `Term` in
+the target context with the renamed type.
+
+The variable case uses the position-equality witness `ρt i` to align
+the type after renaming.  The `lam` / `appPi` / `pair` / `snd` cases
+use the v1.7 substitution-rename commute lemmas.  Every cast is via
+`▸` on a `Type`-valued `Term` motive, going through `Eq.rec` — no
+match-compiler `noConfusion`, no propext. -/
+def Term.rename {m scope scope'}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {ρ : Renaming scope scope'}
+    (ρt : TermRenaming Γ Δ ρ) :
+    {T : Ty scope} → Term Γ T → Term Δ (T.rename ρ)
+  | _, .var i => (ρt i) ▸ Term.var (ρ i)
+  | _, .unit       => Term.unit
+  | _, .lam (codomainType := codomainType) body =>
+      Term.lam (codomainType := codomainType.rename ρ)
+        ((Ty.rename_weaken_commute codomainType ρ) ▸
+          (Term.rename (TermRenaming.lift ρt _) body))
+  | _, .app f a =>
+      Term.app (Term.rename ρt f) (Term.rename ρt a)
+  | _, .lamPi (domainType := domainType) body =>
+      Term.lamPi (Term.rename (TermRenaming.lift ρt domainType) body)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType) f a =>
+      (Ty.subst0_rename_commute codomainType domainType ρ).symm ▸
+        Term.appPi (Term.rename ρt f) (Term.rename ρt a)
+  | _, .pair (firstType := firstType) (secondType := secondType)
+             firstVal secondVal =>
+      Term.pair (Term.rename ρt firstVal)
+        ((Ty.subst0_rename_commute secondType firstType ρ) ▸
+          (Term.rename ρt secondVal))
+  | _, .fst p => Term.fst (Term.rename ρt p)
+  | _, .snd (firstType := firstType) (secondType := secondType) p =>
+      (Ty.subst0_rename_commute secondType firstType ρ).symm ▸
+        Term.snd (Term.rename ρt p)
+
+/-! `Term.weaken` is deferred until the latent `Ty.weaken` vs
+`Ty.rename Renaming.weaken` inequality is reconciled (the v1.5+ piTy
+case of `Ty.weaken` shifts the locally-bound variable while
+`Ty.rename Renaming.weaken` correctly preserves it via `lift`).  The
+fix is `Ty.weaken := T.rename Renaming.weaken` (a unification step
+deferred to v1.10+ alongside `Ty.rename_compose`).  In the meantime,
+`Term.rename` itself handles all the renaming use-cases. -/
 
 /-! ## v1.6 — typed reduction.
 
@@ -1092,16 +1209,12 @@ The definitions below add the first **theorem** (not just `example`) of
 the package, exercising structural induction over the indexed `Term`
 family.  Each must stay axiom-free per the binder-form rule. -/
 
-/-- Extract a de Bruijn index from a structural lookup proof.  The
-result is just a `Nat` (not `Fin scope`) — that bound is proved
-separately in `Lookup.toIndex_lt_scope`, so the type-bound version is
-derivable but doesn't enlarge the trust base. -/
-def Lookup.toIndex
-    {mode : Mode} {scope : Nat} {context : Ctx mode scope}
-    {targetType : Ty scope} :
-    Lookup context targetType → Nat
-  | .here              => 0
-  | .there predecessor => predecessor.toIndex + 1
+/-- Extract the underlying de Bruijn index from a Fin position.
+v1.9: with the variable now stored directly as `Fin scope`, this is
+simply `.val`.  The companion bound `predecessor.toIndex < scope` is
+already part of the Fin's `isLt` field, so no separate lemma is
+needed. -/
+def Fin.toIndex {scope : Nat} (i : Fin scope) : Nat := i.val
 
 /-- Total constructor count of a term — distinct from `depth` (height)
 and `lamCount` (only λ-nodes).  Useful as a strong termination measure
@@ -1215,9 +1328,8 @@ example (mode : Mode) : (identityAppliedToUnit mode).size = 4 := rfl
 top-level `unit` doesn't count, the `app` and `lam` don't count. -/
 example (mode : Mode) : (identityAppliedToUnit mode).varCount = 1 := rfl
 
-/-- The toIndex of `Lookup.here` is 0; of `there here` is 1. -/
-example {mode : Mode} {bindingType : Ty 0} :
-    (@Lookup.here mode 0 (Ctx.nil mode) bindingType).toIndex = 0 := rfl
+/-- The toIndex of position 0 is 0; of position 1 is 1. -/
+example : Fin.toIndex (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) = 0 := rfl
 
 /-! ## v1.3 — dependent `piTy` demonstrations.
 
@@ -1232,7 +1344,7 @@ than `arrow unit unit`.  Codomain at scope `+1` — Lean's elaborator
 infers it from the expected type. -/
 def piIdentityOnUnit (mode : Mode) :
     Term (Ctx.nil mode) (Ty.piTy Ty.unit Ty.unit) :=
-  .lamPi (.var .here)
+  .lamPi (.var ⟨0, Nat.zero_lt_succ _⟩)
 
 /-- Smoke test: depth of dependent identity = 1. -/
 example (mode : Mode) : (piIdentityOnUnit mode).depth = 1 := rfl
