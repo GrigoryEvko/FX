@@ -715,6 +715,67 @@ theorem Ty.subst_compose :
       exact hX ▸ hY ▸ hCong ▸ rfl
   | _, _, _, .bool, _, _ => rfl
 
+/-! ### v1.18 — Monoid laws for Renaming and Subst.
+
+`Subst.identity` and `Subst.compose` already give the data of the
+substitution category; the laws below complete the algebraic
+picture by witnessing that composition is associative and unital
+(both sides of identity).  Combined with `Ty.subst_id` and
+`Ty.subst_compose`, these make `(Ty, Subst, Ty.subst)` a proper
+category enriched over `Ty`.
+
+The laws are stated as pointwise equivalences (`Renaming.equiv`
+and `Subst.equiv`) rather than function-level equalities to stay
+axiom-free — Lean-level function equality would require funext,
+which transitively pulls `propext`. -/
+
+/-- Renaming composition is left-unital: composing the identity
+renaming on the left leaves a renaming pointwise unchanged.
+Renaming is just function composition, so this is `rfl` per
+position. -/
+theorem Renaming.compose_identity_left {s t : Nat} (ρ : Renaming s t) :
+    Renaming.equiv (Renaming.compose Renaming.identity ρ) ρ :=
+  fun _ => rfl
+
+/-- Renaming composition is right-unital: composing the identity
+renaming on the right leaves a renaming pointwise unchanged. -/
+theorem Renaming.compose_identity_right {s t : Nat} (ρ : Renaming s t) :
+    Renaming.equiv (Renaming.compose ρ Renaming.identity) ρ :=
+  fun _ => rfl
+
+/-- Renaming composition is associative.  Pointwise `rfl` because
+all three forms reduce to `ρ₃ (ρ₂ (ρ₁ i))` by definition. -/
+theorem Renaming.compose_assoc {s m₁ m₂ t : Nat}
+    (ρ₁ : Renaming s m₁) (ρ₂ : Renaming m₁ m₂) (ρ₃ : Renaming m₂ t) :
+    Renaming.equiv (Renaming.compose ρ₁ (Renaming.compose ρ₂ ρ₃))
+                   (Renaming.compose (Renaming.compose ρ₁ ρ₂) ρ₃) :=
+  fun _ => rfl
+
+/-- Substitution composition is left-unital: prepending the
+identity substitution leaves the substitution pointwise unchanged.
+Pointwise `rfl` because `Subst.identity i = Ty.tyVar i` and the
+`tyVar` arm of `Ty.subst` looks up the substituent directly. -/
+theorem Subst.compose_identity_left {s t : Nat} (σ : Subst s t) :
+    Subst.equiv (Subst.compose Subst.identity σ) σ :=
+  fun _ => rfl
+
+/-- Substitution composition is right-unital: appending the
+identity substitution leaves the substitution pointwise unchanged.
+Pointwise via `Ty.subst_id`: each substituent's identity-
+substitution equals itself. -/
+theorem Subst.compose_identity_right {s t : Nat} (σ : Subst s t) :
+    Subst.equiv (Subst.compose σ Subst.identity) σ :=
+  fun i => Ty.subst_id (σ i)
+
+/-- Substitution composition is associative.  Pointwise via
+`Ty.subst_compose`: at each position both sides reduce to
+`((σ₁ i).subst σ₂).subst σ₃`. -/
+theorem Subst.compose_assoc {s m₁ m₂ t : Nat}
+    (σ₁ : Subst s m₁) (σ₂ : Subst m₁ m₂) (σ₃ : Subst m₂ t) :
+    Subst.equiv (Subst.compose σ₁ (Subst.compose σ₂ σ₃))
+                (Subst.compose (Subst.compose σ₁ σ₂) σ₃) :=
+  fun i => (Ty.subst_compose (σ₁ i) σ₂ σ₃).symm
+
 /-- Pointwise equivalence linking the two singleton-substitution
 formulations: substitution-then-rename equals lifted-rename-then-
 substitution-with-renamed-substituent.  The auxiliary lemma needed for
