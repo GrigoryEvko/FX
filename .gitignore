@@ -1,0 +1,103 @@
+# Legacy F*/OCaml artifacts (pre-pivot to Lean 4) live in fstarx/.
+# Kept as reference only; no builds expected.  Ignore everything
+# generated inside that tree.
+fstarx/build/
+fstarx/out
+fstarx/_build/
+fstarx/_opam/
+fstarx/bin/fstarx.exe
+fstarx/bin/get_fstarx_z3.sh
+fstarx/lib
+fstarx/.*.touch
+fstarx/libs/**/build/
+fstarx/ocamlx/**/_build/
+fstarx/.devcontainer_build.log
+fstarx/leanx/.lake/
+fstarx/leanx/lake-manifest.json
+fstarx/leanx/lean-toolchain
+
+# leanx/ (Lean 4 reference interpreter for FX — current bootstrap).
+# Local leanx/.gitignore covers its own build artifacts; these lines
+# ensure the root view of the tree stays clean.
+leanx/.lake/
+leanx/build/
+leanx/lake-manifest.json
+leanx/*.olean
+leanx/*.ilean
+
+# Packages (tar/zip archives at root — legacy)
+/*.tar
+/*.tar.gz
+/*.zip
+/_pak*
+/_srcpak*
+/nightly
+
+# Editor files
+*~
+*.swp
+.#*
+\#*\#
+*.vspx
+*.psess
+*.suo
+
+# F* artifacts
+*.smt2
+queries*.smt2
+fstarx/queries/
+*.sav
+*.checked
+*.checked.lax
+*.hints
+*.dump
+*.runlim
+/dump*
+fstarx/dump*
+cache/
+.depend*
+
+# OCaml build artifacts
+*.cmi
+*.cmo
+*.cmx
+*.cma
+*.cmxs
+*.cmxa
+*.o
+*.byte
+tags
+/bin/fstar.exe
+/bin/fstarx.exe
+fstarx/bin/*.exe
+fstarx/build/**/*.exe
+fstarx/ocamlx/**/*.exe
+
+# Test output
+fstarx/tests/fstarx/incl/*.neg/error.log
+
+# Backup files
+*.bak
+*.old
+*.orig
+
+# Archives and binaries in repo root
+.old/
+*.zip
+*.tar.gz
+*.tar
+
+# NuGet
+NuGet.exe
+
+# Dune build output
+# (covered by /build/ above)
+
+# Menhir diagnostic output
+*.automaton
+*.conflicts
+
+# Claude Code
+.claude/
+*.pyc
+perf.data
