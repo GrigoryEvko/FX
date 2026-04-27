@@ -104,6 +104,12 @@ inductive Ty : Nat → Type
               (firstType : Ty scope) →
               (secondType : Ty (scope + 1)) →
               Ty scope
+  /-- Boolean type — the smallest non-trivial inductive.  Adding `bool`
+  exercises the "mechanical extension under a new Ty constructor"
+  property: every Ty-recursive function gains a single `.bool` arm
+  (returning `.bool` for renaming/substitution, `rfl` for the
+  congruence/composition/identity theorems).  v1.13+. -/
+  | bool : {scope : Nat} → Ty scope
 
 /-! ## v1.4 — renaming machinery (foundation for substitution).
 
@@ -156,6 +162,7 @@ def Ty.rename {source target : Nat} :
   | .piTy A B, ρ      => .piTy (A.rename ρ) (B.rename ρ.lift)
   | .tyVar i, ρ       => .tyVar (ρ i)
   | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
+  | .bool, _          => .bool
 
 /-! ## v1.10 — rename composition algebra.
 
@@ -204,6 +211,7 @@ theorem Ty.rename_congr {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
       have hA := Ty.rename_congr h A
       have hB := Ty.rename_congr (Renaming.lift_equiv h) B
       exact hA ▸ hB ▸ rfl
+  | .bool         => rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -256,6 +264,7 @@ theorem Ty.rename_compose {s m t : Nat} :
       have hLift :=
         Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
       exact hA ▸ (hB.trans hLift) ▸ rfl
+  | .bool, _, _ => rfl
 
 /-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
 Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
@@ -336,6 +345,7 @@ def Ty.subst {source target : Nat} :
   | .piTy A B, σ      => .piTy (Ty.subst A σ) (Ty.subst B σ.lift)
   | .tyVar i, σ       => σ i
   | .sigmaTy A B, σ   => .sigmaTy (Ty.subst A σ) (Ty.subst B σ.lift)
+  | .bool, _          => .bool
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -398,6 +408,7 @@ theorem Ty.subst_congr {s t : Nat} {σ₁ σ₂ : Subst s t}
       have hX := Ty.subst_congr h X
       have hY := Ty.subst_congr (Subst.lift_equiv h) Y
       exact hX ▸ hY ▸ rfl
+  | .bool         => rfl
 
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -455,6 +466,7 @@ theorem Ty.subst_rename_commute :
       have hY := Ty.subst_rename_commute Y σ.lift ρ.lift
       have hCong := Ty.subst_congr (Subst.lift_renameAfter_commute σ ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, _, .bool, _, _ => rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -506,6 +518,7 @@ theorem Ty.rename_subst_commute :
       have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
       have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, _, .bool, _, _ => rfl
 
 /-! ## v1.7 finale — renaming as a special case of substitution.
 
@@ -562,6 +575,7 @@ theorem Ty.rename_eq_subst :
       have hY := Ty.rename_eq_subst Y ρ.lift
       have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, .bool, _ => rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -614,6 +628,7 @@ theorem Ty.subst_id :
       show (X.subst Subst.identity).sigmaTy (Y.subst Subst.identity.lift)
          = X.sigmaTy Y
       exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
+  | _, .bool => rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -686,6 +701,7 @@ theorem Ty.subst_compose :
       have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
       have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, _, .bool, _, _ => rfl
 
 /-- Pointwise equivalence linking the two singleton-substitution
 formulations: substitution-then-rename equals lifted-rename-then-
@@ -869,6 +885,16 @@ inductive Term : {mode : Mode} → {scope : Nat} →
       {secondType : Ty (scope + 1)} →
       (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
       Term context (secondType.subst0 firstType)
+  /-- Boolean introduction — `true` literal at every context.  v1.13+. -/
+  | boolTrue :
+      {mode : Mode} → {scope : Nat} →
+      {context : Ctx mode scope} →
+      Term context Ty.bool
+  /-- Boolean introduction — `false` literal at every context.  v1.13+. -/
+  | boolFalse :
+      {mode : Mode} → {scope : Nat} →
+      {context : Ctx mode scope} →
+      Term context Ty.bool
 
 /-! ## Demonstrations of intrinsic-typing usability.
 
@@ -897,6 +923,8 @@ def Term.depth
       max firstVal.depth secondVal.depth + 1
   | .fst pairTerm                   => pairTerm.depth + 1
   | .snd pairTerm                   => pairTerm.depth + 1
+  | .boolTrue                       => 0
+  | .boolFalse                      => 0
 
 /-- Count of `lam` constructors in a term.  Second recursive function
 over the indexed family — confirms pattern matching generalises beyond
@@ -917,6 +945,8 @@ def Term.lamCount
       firstVal.lamCount + secondVal.lamCount
   | .fst pairTerm                   => pairTerm.lamCount
   | .snd pairTerm                   => pairTerm.lamCount
+  | .boolTrue                       => 0
+  | .boolFalse                      => 0
 
 /-- The empty context has no positions — `Fin 0` is uninhabited, so
 the kernel rejects any attempt to construct a variable in `Ctx.nil`.
@@ -1093,6 +1123,8 @@ def Term.rename {m scope scope'}
   | _, .snd (firstType := firstType) (secondType := secondType) p =>
       (Ty.subst0_rename_commute secondType firstType ρ).symm ▸
         Term.snd (Term.rename ρt p)
+  | _, .boolTrue  => Term.boolTrue
+  | _, .boolFalse => Term.boolFalse
 
 /-! ## v1.10 — term-level weakening.
 
@@ -1283,6 +1315,8 @@ def Term.subst {m scope scope'}
   | _, .snd (firstType := firstType) (secondType := secondType) p =>
       (Ty.subst0_subst_commute secondType firstType σ).symm ▸
         Term.snd (Term.subst σt p)
+  | _, .boolTrue   => Term.boolTrue
+  | _, .boolFalse  => Term.boolFalse
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -2107,6 +2141,8 @@ def Term.size
       firstVal.size + secondVal.size + 1
   | .fst pairTerm                   => pairTerm.size + 1
   | .snd pairTerm                   => pairTerm.size + 1
+  | .boolTrue                       => 1
+  | .boolFalse                      => 1
 
 /-- Count of variable occurrences in a term.  Independent measure to
 `size`, `depth`, and `lamCount` — confirms that pattern matching on
@@ -2128,6 +2164,8 @@ def Term.varCount
       firstVal.varCount + secondVal.varCount
   | .fst pairTerm                   => pairTerm.varCount
   | .snd pairTerm                   => pairTerm.varCount
+  | .boolTrue                       => 0
+  | .boolFalse                      => 0
 
 /-- The first **non-trivial theorem** of the package.  Every term has
 `lamCount` bounded by `size` — i.e. you can't have more λ-binders than
@@ -2160,6 +2198,8 @@ theorem Term.lamCount_le_size
           (Term.lamCount_le_size secondVal))
   | .fst pairTerm => Nat.le_succ_of_le (Term.lamCount_le_size pairTerm)
   | .snd pairTerm => Nat.le_succ_of_le (Term.lamCount_le_size pairTerm)
+  | .boolTrue  => Nat.zero_le _
+  | .boolFalse => Nat.zero_le _
 
 /-- Companion theorem: `varCount` is also bounded by `size`.  Same
 proof shape as `lamCount_le_size`; confirms the pattern generalises. -/
@@ -2188,6 +2228,8 @@ theorem Term.varCount_le_size
           (Term.varCount_le_size secondVal))
   | .fst pairTerm => Nat.le_succ_of_le (Term.varCount_le_size pairTerm)
   | .snd pairTerm => Nat.le_succ_of_le (Term.varCount_le_size pairTerm)
+  | .boolTrue  => Nat.zero_le _
+  | .boolFalse => Nat.zero_le _
 
 /-! ## v1.1 smoke tests -/
 
