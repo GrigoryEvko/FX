@@ -2326,6 +2326,17 @@ theorem Term.subst_id_HEq {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
     Term.subst_id_HEq_boolElim s t e
       (Term.subst_id_HEq s) (Term.subst_id_HEq t) (Term.subst_id_HEq e)
 
+/-! ### v1.25 — `Term.subst_id`: the explicit-▸ form of subst-by-identity = identity.
+
+Direct corollary of `Term.subst_id_HEq` plus `eqRec_heq` to
+strip the outer cast.  Both sides of the equation live at
+`Term Γ T` after the cast on the LHS, so `eq_of_heq` discharges
+the HEq → Eq conversion. -/
+theorem Term.subst_id {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {T : Ty scope} (t : Term Γ T) :
+    (Ty.subst_id T) ▸ Term.subst (TermSubst.identity Γ) t = t :=
+  eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.subst_id_HEq t))
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
