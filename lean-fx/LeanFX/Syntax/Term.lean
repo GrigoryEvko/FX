@@ -3001,6 +3001,68 @@ theorem Term.subst_weaken_commute_HEq
       exact eqRec_heq _ _)
     t
 
+/-! ## `TermSubst.lift_compose_pointwise` (full theorem).
+
+Lifting commutes with TermSubst composition pointwise (HEq).  Position 0
+delegates to the existing `lift_compose_pointwise_zero` fragment.
+Position `k + 1` is the substantive case:
+
+  * LHS at `k+1`: `outer_subst_weaken_commute.symm ▸ Term.weaken
+    (newType.subst (Subst.compose σ₁ σ₂)) (Ty.subst_compose ...
+    ▸ Term.subst σt₂ (σt₁ k'))`.
+
+  * RHS at `k+1`: `outer_subst_compose ▸ Term.subst (σt₂.lift
+    (newType.subst σ₁)) ((Ty.subst_weaken_commute ...).symm ▸
+    Term.weaken (newType.subst σ₁) (σt₁ k'))`.
+
+The RHS inner reduces, via `Term.subst_HEq_cast_input` + v1.43
+`Term.subst_weaken_commute_HEq`, to `Term.weaken ((newType.subst
+σ₁).subst σ₂) (Term.subst σt₂ (σt₁ k'))`.  The two `Term.weaken`
+forms differ only by `Ty.subst_compose newType σ₁ σ₂` on the
+`newType` and the per-position analogue on the inner type;
+`Term.weaken_HEq_congr` closes via `eqRec_heq`. -/
+theorem TermSubst.lift_compose_pointwise
+    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
+    (newType : Ty scope₁) :
+    ∀ (i : Fin (scope₁ + 1)),
+      HEq
+        (TermSubst.lift (TermSubst.compose σt₁ σt₂) newType i)
+        (TermSubst.compose (σt₁.lift newType)
+          (σt₂.lift (newType.subst σ₁)) i)
+  | ⟨0, _⟩ =>
+      TermSubst.lift_compose_pointwise_zero σt₁ σt₂ newType
+  | ⟨k + 1, hk⟩ => by
+    -- Strip outer cast on LHS.
+    apply HEq.trans (eqRec_heq _ _)
+    -- Flip and strip outer cast on RHS.
+    apply HEq.symm
+    apply HEq.trans (eqRec_heq _ _)
+    -- Push inner cast on RHS through Term.subst.
+    apply HEq.trans
+      (Term.subst_HEq_cast_input
+        (σt₂.lift (newType.subst σ₁))
+        (Ty.subst_weaken_commute
+          (varType Γ₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ₁).symm
+        (Term.weaken (newType.subst σ₁)
+          (σt₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)))
+    -- After helper: Term.subst (σt₂.lift X) (Term.weaken X (σt₁ k')).
+    -- Apply v1.43 to get Term.weaken (X.subst σ₂) (Term.subst σt₂ (σt₁ k')).
+    apply HEq.trans
+      (Term.subst_weaken_commute_HEq
+        σt₂ (newType.subst σ₁)
+        (σt₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
+    -- Flip back to LHS-orientation.
+    apply HEq.symm
+    -- Apply Term.weaken_HEq_congr.
+    exact Term.weaken_HEq_congr
+      (Ty.subst_compose newType σ₁ σ₂).symm
+      (Ty.subst_compose
+        (varType Γ₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ₁ σ₂).symm
+      _ _ (eqRec_heq _ _)
+
 /-! ## Typed reduction (`Step`, `StepStar`).
 
 `Step t₁ t₂` is `Prop`-valued and shares its `{ctx} {T}` indices
