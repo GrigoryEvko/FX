@@ -111,6 +111,18 @@ inductive Ty : Nat → Type
   congruence/composition/identity theorems).  v1.13+. -/
   | bool : {scope : Nat} → Ty scope
 
+/-! ### v1.16 — Decidable equality on `Ty`.
+
+Auto-derived axiom-free because `Ty`'s only index is a bare `Nat`
+(not a constructor-applied expression like `Γ.cons newType`), so
+the discrimination obligations Lean generates are all
+propext-free `Eq.rec` over a propositionally-irrelevant motive.
+
+Foundational for any future type-checking algorithm: deciding
+`T₁ = T₂` is the basic step in conversion checking on the
+surface of canonical forms. -/
+deriving instance DecidableEq for Ty
+
 /-! ## v1.4 — renaming machinery (foundation for substitution).
 
 `Renaming` and `Ty.rename` are defined *before* `Ty.weaken` because
@@ -2401,6 +2413,34 @@ example (T : Ty 0) :
 /-- Weakening a `tyVar` shifts its index up via `Fin.succ`. -/
 example : (Ty.tyVar (scope := 1) ⟨0, Nat.zero_lt_succ _⟩).weaken
     = Ty.tyVar ⟨1, by decide⟩ := rfl
+
+/-! ### v1.16 — DecidableEq smoke tests.
+
+Confirms the auto-derived `DecidableEq (Ty scope)` instance
+actually computes — `decide` reduces equality queries to `true`
+or `false` at compile time, with no opaque blockers from the
+indexed-inductive structure. -/
+
+/-- Distinct constructors decide to false. -/
+example : decide ((Ty.unit : Ty 0) = Ty.bool) = false := rfl
+
+/-- Same constructor with same children decides to true. -/
+example : decide ((Ty.unit : Ty 0) = Ty.unit) = true := rfl
+
+/-- `arrow unit unit = arrow unit unit` decides to true (recursive
+descent through both children). -/
+example : decide ((Ty.arrow Ty.unit Ty.unit : Ty 0)
+                = Ty.arrow Ty.unit Ty.unit) = true := rfl
+
+/-- `arrow unit bool ≠ arrow unit unit` decides to false (children
+differ in the codomain position). -/
+example : decide ((Ty.arrow Ty.unit Ty.bool : Ty 0)
+                = Ty.arrow Ty.unit Ty.unit) = false := rfl
+
+/-- `tyVar` discrimination uses the underlying `Fin` decidable
+equality. -/
+example : decide ((Ty.tyVar (scope := 2) ⟨0, by decide⟩ : Ty 2)
+                = Ty.tyVar ⟨1, by decide⟩) = false := rfl
 
 /-! ## v1.15 — boolean computation: StepStar/Conv congruences + smoke tests.
 
