@@ -93,6 +93,14 @@ inductive Ty : Nat → Nat → Type
   reductions land in the next slice.  No constraints on scope — this
   is a base type. -/
   | nat : {level scope : Nat} → Ty level scope
+  /-- Lists over an arbitrary element type.  The first *parametric*
+  type constructor in the kernel: the element type `elementType` lives
+  at the same level and scope as the resulting list type.  This
+  uniform-level discipline keeps substitution well-defined (no
+  cumulativity-mismatch issue from v1.29).  Comes with `Term.listNil`
+  / `Term.listCons` / `Term.listElim` (and ι rules) in successor
+  slices; this commit ships only the type. -/
+  | list : {level scope : Nat} → (elementType : Ty level scope) → Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
 `Ty`'s index is a bare `Nat`, so the discrimination obligations
@@ -150,6 +158,7 @@ def Ty.rename {level source target : Nat} :
   | .bool, _          => .bool
   | .universe u h, _  => .universe u h
   | .nat, _           => .nat
+  | .list elemType, ρ => .list (elemType.rename ρ)
 
 /-! ## Rename composition algebra.
 
@@ -200,6 +209,10 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
   | .bool         => rfl
   | .universe _ _ => rfl
   | .nat          => rfl
+  | .list elemType => by
+      show Ty.list (elemType.rename ρ₁) = Ty.list (elemType.rename ρ₂)
+      have hElem := Ty.rename_congr h elemType
+      exact hElem ▸ rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -265,6 +278,11 @@ theorem Ty.rename_compose {level s m t : Nat} :
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
   | .nat, _, _ => rfl
+  | .list elemType, ρ₁, ρ₂ => by
+      show Ty.list ((elemType.rename ρ₁).rename ρ₂)
+         = Ty.list (elemType.rename (Renaming.compose ρ₁ ρ₂))
+      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
+      exact hElem ▸ rfl
 
 /-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
 Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
@@ -348,6 +366,7 @@ def Ty.subst {level source target : Nat} :
   | .bool, _          => .bool
   | .universe u h, _  => .universe u h
   | .nat, _           => .nat
+  | .list elemType, σ => .list (Ty.subst elemType σ)
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -406,6 +425,10 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
   | .bool         => rfl
   | .universe _ _ => rfl
   | .nat          => rfl
+  | .list elemType => by
+      show Ty.list (elemType.subst σ₁) = Ty.list (elemType.subst σ₂)
+      have hElem := Ty.subst_congr h elemType
+      exact hElem ▸ rfl
 
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -466,6 +489,11 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
   | .nat, _, _ => rfl
+  | .list elemType, σ, ρ => by
+      show Ty.list ((elemType.subst σ).rename ρ)
+         = Ty.list (elemType.subst (Subst.renameAfter σ ρ))
+      have hElem := Ty.subst_rename_commute elemType σ ρ
+      exact hElem ▸ rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -520,6 +548,11 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
   | .nat, _, _ => rfl
+  | .list elemType, ρ, σ => by
+      show Ty.list ((elemType.rename ρ).subst σ)
+         = Ty.list (elemType.subst (Subst.precompose ρ σ))
+      have hElem := Ty.rename_subst_commute elemType ρ σ
+      exact hElem ▸ rfl
 
 /-! ## Renaming as a special case of substitution.
 
@@ -579,6 +612,10 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
   | .bool, _ => rfl
   | .universe _ _, _ => rfl
   | .nat, _ => rfl
+  | .list elemType, ρ => by
+      show Ty.list (elemType.rename ρ) = Ty.list (elemType.subst (Renaming.toSubst ρ))
+      have hElem := Ty.rename_eq_subst elemType ρ
+      exact hElem ▸ rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -635,6 +672,10 @@ theorem Ty.subst_id {level scope : Nat} :
   | .bool => rfl
   | .universe _ _ => rfl
   | .nat => rfl
+  | .list elemType => by
+      have hElem := Ty.subst_id elemType
+      show (elemType.subst Subst.identity).list = elemType.list
+      exact hElem.symm ▸ rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -710,6 +751,11 @@ theorem Ty.subst_compose {level s m t : Nat} :
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
   | .nat, _, _ => rfl
+  | .list elemType, σ₁, σ₂ => by
+      show Ty.list ((elemType.subst σ₁).subst σ₂)
+         = Ty.list (elemType.subst (Subst.compose σ₁ σ₂))
+      have hElem := Ty.subst_compose elemType σ₁ σ₂
+      exact hElem ▸ rfl
 
 /-! ## Monoid laws for Renaming and Subst.
 
@@ -5270,6 +5316,24 @@ example {level scope target : Nat}
       = Term.natElim (Term.rename ρt scrutinee)
                      (Term.rename ρt zeroBranch)
                      (Term.rename ρt succBranch) :=
+  rfl
+
+/-- `Ty.list` is parametric over its element type — works at any level. -/
+example : Ty 0 0 := Ty.list Ty.nat
+example : Ty 0 0 := Ty.list Ty.bool
+example : Ty 0 0 := Ty.list (Ty.list Ty.nat)  -- nested: list of lists of nat
+example : Ty 0 0 := Ty.list (Ty.arrow Ty.nat Ty.bool)  -- list of nat→bool
+
+/-- The list type commutes with renaming on its element type. -/
+example {level scope target : Nat}
+    (ρ : Renaming scope target) (elemType : Ty level scope) :
+    (Ty.list elemType).rename ρ = Ty.list (elemType.rename ρ) :=
+  rfl
+
+/-- The list type commutes with substitution on its element type. -/
+example {level scope target : Nat}
+    (σ : Subst level scope target) (elemType : Ty level scope) :
+    (Ty.list elemType).subst σ = Ty.list (elemType.subst σ) :=
   rfl
 
 /-- ι-reduction on zero: `natElim 0 z f ⟶ z`. -/
