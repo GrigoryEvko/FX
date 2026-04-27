@@ -129,12 +129,11 @@ This placement mirrors:
 FX follows this discipline.  Tasks E1–E4 slot into the Verify
 layer architecture without touching kernel soundness.
 
-## Under the theoretical reframe (forward-looking)
+## Under the theoretical reframe
 
-FX's in-progress theoretical direction (tracked in
-`docs/fx_reframing.md` once that artifact lands per Phase R0)
-commits to a slightly-heterogeneous unified algebra: one
-Multimodal Dependent Type Theory (MTT) spine plus a small,
+FX's theoretical direction (now folded into `fx_design.md` §6
+and §10.7) commits to a slightly-heterogeneous unified algebra:
+one Multimodal Dependent Type Theory (MTT) spine plus a small,
 enumerable set of peripheries.  Under that framing, SMT
 placement ceases to be a local architectural decision —
 it becomes the canonical first example of what counts as a
@@ -254,7 +253,7 @@ Load-bearing decisions, each with a cited rationale:
 | R007 / R008 / R009 reserved for SMT outcomes | Separate from structural R0xx codes | This doc §6 |
 | Oracle trust ≤ Verified without `--accept-smt` | Keep L1 kernel trust separate from L2 oracle trust | This doc §5 axiom-audit coupling |
 | Verify layer owns UNSAT-core reporting | Kernel has no concept of unsat cores | This doc §3, §6 |
-| SMT is the canonical periphery under the reframe | First concrete example of the §5 periphery discipline in `fx_reframing.md` | This doc §7, §8 |
+| SMT is the canonical periphery under the reframe | First concrete example of the periphery discipline (fx_design.md §6 / §10.7 / §10.16) | This doc §7, §8 |
 | Agents see Verify errors and kernel errors separately | Different remediation modes | This doc §9 |
 | `fxi --show-axioms` surfaces kernel + SMT layers separately | Enumerable trust per §1.2 | This doc §8 |
 

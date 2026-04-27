@@ -16,7 +16,7 @@ architecture-only skeleton).
   * `fx_design.md §10.16` — SMT solver configuration in the FX
     design.  Z3-default with CVC5 fallback on compatible
     targets.
-  * `fx_reframing.md §4.6` — SMT as an "enumerable periphery"
+  * `fx_design.md §6 / §10.7` — SMT as an "enumerable periphery"
     of the MTT spine.  This memo pins the concrete periphery.
 
 Design note evaluating whether to adopt an external Lean 4 SMT
@@ -81,8 +81,8 @@ dispatches to Z3, CVC5, E, vampire, and others.  More recent
 
 Three axes the architecture decision below turns on.  Assessed
 at Q49 closure on 2026-04-24; future reassessments append a
-new row rather than rewriting this table (same discipline as
-`fx_reframing.md §0.1`).
+new row rather than rewriting this table (same append-only
+discipline as the decision ledger in §12 below).
 
 ### License
 
@@ -267,7 +267,7 @@ keeps the Verify layer unchanged.
 ## Decision ledger
 
 Append-only.  Rows stay on record even when superseded (same
-discipline as `smt-placement.md §12` and `fx_reframing.md §0.1`).
+discipline as `smt-placement.md §12`).
 
 | Row | Date       | Decision                                                                                  | Rationale |
 | --- | ---------- | ----------------------------------------------------------------------------------------- | --------- |

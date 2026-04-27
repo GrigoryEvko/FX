@@ -1,9 +1,11 @@
 # FX.KernelMTT — module-local design notes
 
 Multimodal Dependent Type Theory spine under construction per
-`fx_reframing.md`.  **Scaffold status during Phase R0–R4**;
-graduates to TRUSTED at the Phase R5 migration
-(`fx_reframing.md` §8.7).
+the reframing content in `fx_design.md` §6 / §27 / §30 (formerly
+held in the standalone `fx_reframing.md`, deleted in commit
+4a5697ca after the merge into the design doc).  **Scaffold
+status during Phase R0–R4**; graduates to TRUSTED at the Phase
+R5 migration.
 
 ## Trust layer during scaffolding
 
@@ -15,14 +17,16 @@ During parallel operation:
   * **No new axioms.**  Any new primitive must be derivable
     from MTT canonicity (Gratzer LICS 2022) or from the mode
     theory's 2-category structure.  An axiom requires an RFC
-    per `fx_reframing.md` §9.1.
+    per the kernel discipline in `fx_design.md` §30 and
+    Appendix H.
   * **Zero `sorry`.**  Same discipline as `FX/Kernel/**`.
   * **Not wired into the default fxi dispatch.**  R5.2 flips
     the default; until then, MTT is opt-in via a flag (R1.8).
 
 After R5 migration: `FX/KernelMTT/**` graduates to TRUSTED and
-`FX/Kernel/**` deprecates per `fx_reframing.md` §8.7 (legacy
-kernel maintained for 12 months post-R5, then removed).
+`FX/Kernel/**` deprecates (legacy kernel maintained for 12
+months post-R5, then removed; see Phase R5 task ledger and
+`fx_design.md` §30 axiom-discipline commitments).
 
 ## File catalog
 
@@ -77,17 +81,19 @@ inspecting the scaffold's completion state.
 
 ## Fixed mode theory per reframe version
 
-Per `fx_reframing.md` §2.4: "The spine's mode theory is fixed
-per reframe version."  This means the 4-mode enum and the
-18+4+2+0 modality enumeration in `Mode.lean` are STRUCTURAL —
-they change only with an RFC and a reframe version bump.
-User-defined grade dimensions (§6.6 peripheral) add modality
-names at the user scope, OUTSIDE the spine.
+The spine's mode theory is fixed per reframe version (the
+formalisation lives in `fx_modecat.md`; see also `fx_design.md`
+§6.0 and Appendix H.7–H.7b).  This means the 4-mode enum and
+the 18+4+2+0 modality enumeration in `Mode.lean` are
+STRUCTURAL — they change only with an RFC and a reframe
+version bump.  User-defined grade dimensions (`fx_design.md`
+§6.6 peripheral) add modality names at the user scope, OUTSIDE
+the spine.
 
 The `Mode.*_modality_count` theorems in `Mode.lean` pin the
 exact counts so any accidental edit to the modality lists
 fails the build.  If you need to change a count, write an RFC
-first (per `fx_reframing.md` §9.2).
+first (kernel discipline per `fx_design.md` §30 / Appendix H).
 
 ## No wiring into FX/Core.lean yet
 
