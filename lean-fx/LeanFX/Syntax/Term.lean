@@ -3058,6 +3058,26 @@ def TermSubst.precompose
     Ty.rename_subst_commute (varType Γ i) ρ σ
   (h_witness.trans h_commute) ▸ σt (ρ i)
 
+/-! ### v1.35 — Cast-through-Term.rename helper.
+
+The third member of the cast-input triumvirate: alongside
+v1.26's Term.subst_HEq_cast_input and v1.31's Term.weaken_HEq_cast_input,
+we now add Term.rename_HEq_cast_input — pushing a propositional
+type-cast on the input out through Term.rename. -/
+
+/-- Push a propositional type-cast on the input of `Term.rename ρt`
+out to an HEq.  Third member of the cast-input helper triumvirate
+(alongside v1.26 Term.subst_HEq_cast_input and v1.31
+Term.weaken_HEq_cast_input).  `cases h; rfl`. -/
+theorem Term.rename_HEq_cast_input
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {ρ : Renaming scope scope'} (ρt : TermRenaming Γ Δ ρ)
+    {T₁ T₂ : Ty scope} (h : T₁ = T₂) (t : Term Γ T₁) :
+    HEq (Term.rename ρt (h ▸ t)) (Term.rename ρt t) := by
+  cases h
+  rfl
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
