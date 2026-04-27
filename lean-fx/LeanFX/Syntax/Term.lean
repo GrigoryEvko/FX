@@ -2256,6 +2256,76 @@ theorem Term.subst_HEq_pointwise
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise t)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise e)
 
+/-! ### v1.25 — `Term.subst_id_HEq`: full HEq form of subst-by-identity.
+
+The cap-stone theorem: substituting any term by `TermSubst.identity Γ`
+is HEq to the original term.  Proven by structural pattern-match on
+Term, invoking the v1.22 leaf cases / v1.23 closed-context cases
+directly, and using `Term.subst_HEq_pointwise` (v1.24.5) at the
+binder cases to bridge `TermSubst.lift (TermSubst.identity Γ)`
+to `TermSubst.identity (Γ.cons _)` — exactly the HEq witness
+`TermSubst.lift_identity_pointwise` (v1.20) supplies.
+
+This completes the HEq-form of Term's substitution-by-identity
+functoriality.  The explicit-`▸`-form (`Term.subst_id`) follows
+by `eq_of_heq` plus a final cast-cancellation. -/
+theorem Term.subst_id_HEq {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    {T : Ty scope} → (t : Term Γ T) →
+      HEq (Term.subst (TermSubst.identity Γ) t) t
+  | _, .var i => Term.subst_id_HEq_var i
+  | _, .unit => Term.subst_id_HEq_unit
+  | _, .app f a =>
+    Term.subst_id_HEq_app f a
+      (Term.subst_id_HEq f) (Term.subst_id_HEq a)
+  | _, .lam (domainType := dom) (codomainType := cod) body => by
+    show HEq
+      (Term.lam (codomainType := cod.subst Subst.identity)
+        ((Ty.subst_weaken_commute cod Subst.identity) ▸
+          (Term.subst (TermSubst.lift (TermSubst.identity Γ) dom) body)))
+      (Term.lam body)
+    apply Term.lam_HEq_congr (Ty.subst_id dom) (Ty.subst_id cod)
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans
+      (Term.subst_HEq_pointwise
+        (congrArg Γ.cons (Ty.subst_id dom))
+        (TermSubst.lift (TermSubst.identity Γ) dom)
+        (TermSubst.identity (Γ.cons dom))
+        Subst.lift_identity_equiv
+        (TermSubst.lift_identity_pointwise Γ dom)
+        body)
+    exact Term.subst_id_HEq body
+  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
+    show HEq
+      (Term.lamPi (Term.subst (TermSubst.lift (TermSubst.identity Γ) dom) body))
+      (Term.lamPi body)
+    apply Term.lamPi_HEq_congr (Ty.subst_id dom)
+      ((Ty.subst_congr Subst.lift_identity_equiv cod).trans
+       (Ty.subst_id cod))
+    apply HEq.trans
+      (Term.subst_HEq_pointwise
+        (congrArg Γ.cons (Ty.subst_id dom))
+        (TermSubst.lift (TermSubst.identity Γ) dom)
+        (TermSubst.identity (Γ.cons dom))
+        Subst.lift_identity_equiv
+        (TermSubst.lift_identity_pointwise Γ dom)
+        body)
+    exact Term.subst_id_HEq body
+  | _, .appPi f a =>
+    Term.subst_id_HEq_appPi f a
+      (Term.subst_id_HEq f) (Term.subst_id_HEq a)
+  | _, .pair v w =>
+    Term.subst_id_HEq_pair v w
+      (Term.subst_id_HEq v) (Term.subst_id_HEq w)
+  | _, .fst p =>
+    Term.subst_id_HEq_fst p (Term.subst_id_HEq p)
+  | _, .snd p =>
+    Term.subst_id_HEq_snd p (Term.subst_id_HEq p)
+  | _, .boolTrue => Term.subst_id_HEq_boolTrue
+  | _, .boolFalse => Term.subst_id_HEq_boolFalse
+  | _, .boolElim s t e =>
+    Term.subst_id_HEq_boolElim s t e
+      (Term.subst_id_HEq s) (Term.subst_id_HEq t) (Term.subst_id_HEq e)
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
