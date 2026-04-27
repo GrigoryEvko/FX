@@ -1677,6 +1677,141 @@ theorem TermSubst.lift_identity_succ_eq {m : Mode} {scope : Nat}
           Term.weaken (newType.subst Subst.identity)
             (TermSubst.identity Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) := rfl
 
+/-! ### v1.20 — `TermSubst.lift_identity_pointwise` (HEq-form).
+
+The full HEq theorem bridging `TermSubst.lift (TermSubst.identity Γ)
+newType` and `TermSubst.identity (Γ.cons newType)` at every Fin
+position.  The two TermSubsts have **different types** in three
+simultaneous dimensions:
+
+  1. **Context**: `Γ.cons (newType.subst Subst.identity)` vs
+     `Γ.cons newType`.  Bridged by `Ty.subst_id newType` lifted
+     through `Ctx.cons`.
+  2. **Term type**: `T.subst Subst.identity.lift` vs `T.subst
+     Subst.identity` (and ultimately `T`).  Bridged by
+     `Ty.subst_lift_identity_eq_subst_identity` and `Ty.subst_id`.
+  3. **Underlying substitution**: `Subst.identity.lift` vs
+     `Subst.identity`.  Pointwise equivalent via
+     `Subst.lift_identity_equiv`.
+
+The proof strategy uses helper lemmas that bridge context-shape
+differences via `cases` on a propositional context-equality.  Each
+helper isolates one cast direction so the main theorem can compose
+them via `HEq.trans`. -/
+
+/-- **HEq across context-shape change for `Term.var`**: if two
+contexts at the same scope are propositionally equal, then the
+`Term.var` constructor at the same Fin position produces HEq
+values across them.  Proven by `cases` on the context equality —
+both sides become identical, and HEq reduces to Eq.refl. -/
+theorem heq_var_across_ctx_eq {m : Mode} {scope : Nat}
+    {Γ Δ : Ctx m scope} (h_ctx : Γ = Δ) (i : Fin scope) :
+    HEq (Term.var (context := Γ) i) (Term.var (context := Δ) i) := by
+  cases h_ctx
+  rfl
+
+/-- **Strip an inner type-cast through `Term.weaken`.**  The
+generic helper: weakening a term commutes with a propositional
+type cast on the input.  Proven by `cases` on the equation —
+both T₁ and T₂ are local variables, so the substitution succeeds
+and the cast vanishes. -/
+theorem Term.heq_weaken_strip_cast
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    (newType : Ty scope) {T₁ T₂ : Ty scope} (h : T₁ = T₂)
+    (t : Term Γ T₁) :
+    HEq (Term.weaken newType (h ▸ t)) (Term.weaken newType t) := by
+  cases h
+  rfl
+
+/-- **HEq across context-shape change for `Term.weaken (... ▸
+Term.var)`**: at position k+1 of the lifted-identity, the LHS
+shape is `Term.weaken X ((Ty.subst_id _).symm ▸ Term.var ⟨k, _⟩)`,
+which equals `Term.var ⟨k+1, _⟩` in the extended context modulo
+context-shape and the inner cast.  Uses
+`Term.heq_weaken_strip_cast` to discharge the inner cast, then
+`Term.weaken X (Term.var ⟨k, _⟩) = Term.var ⟨k+1, _⟩` by `rfl`
+(through `Term.rename`'s var arm + `TermRenaming.weaken`'s
+rfl-pointwise + `Renaming.weaken = Fin.succ`). -/
+theorem heq_weaken_var_across_ctx_eq {m : Mode} {scope : Nat}
+    {Γ Δ : Ctx m scope} (h_ctx : Γ = Δ)
+    (newTypeΓ : Ty scope) (newTypeΔ : Ty scope)
+    (h_new : newTypeΓ = newTypeΔ)
+    (k : Nat) (hk : k + 1 < scope + 1) :
+    HEq
+      (Term.weaken newTypeΓ
+        ((Ty.subst_id (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)).symm ▸
+          Term.var (context := Γ) ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
+      (Term.var (context := Δ.cons newTypeΔ) ⟨k + 1, hk⟩) := by
+  -- Reduce both sides simultaneously by `cases`-ing the context
+  -- and newType equalities — this aligns Γ = Δ and newTypeΓ =
+  -- newTypeΔ pointwise.
+  cases h_ctx
+  cases h_new
+  -- Strip the inner cast via the helper.
+  apply HEq.trans (Term.heq_weaken_strip_cast newTypeΓ
+    (Ty.subst_id (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)).symm
+    (Term.var ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
+  -- Goal: HEq (Term.weaken newTypeΓ (Term.var ⟨k, _⟩))
+  --           (Term.var (context := Γ.cons newTypeΓ) ⟨k+1, hk⟩)
+  -- Term.weaken X (Term.var ⟨k, _⟩) reduces (rfl) to
+  --   Term.var (Renaming.weaken ⟨k, _⟩) = Term.var ⟨k+1, _⟩
+  rfl
+
+/-- **The HEq stepping stone for `Term.subst_id`'s recursive cases.**
+Lifting `TermSubst.identity Γ` under a binder produces a TermSubst
+that, pointwise, agrees with `TermSubst.identity (Γ.cons newType)`
+modulo HEq.  The contexts and underlying substitutions differ
+propositionally (via `Ty.subst_id newType` and
+`Subst.lift_identity_equiv`); HEq is the right notion of equality
+because both differences manifest at the type level of the
+substituent terms. -/
+theorem TermSubst.lift_identity_pointwise
+    {m : Mode} {scope : Nat}
+    (Γ : Ctx m scope) (newType : Ty scope) :
+    ∀ (i : Fin (scope + 1)),
+      HEq
+        (TermSubst.lift (TermSubst.identity Γ) newType i)
+        (TermSubst.identity (Γ.cons newType) i) := by
+  intro i
+  -- The bridging Ty-level fact, used in both Fin cases.
+  have h_subst_id : newType.subst Subst.identity = newType :=
+    Ty.subst_id newType
+  -- Lift to context-level equality.
+  have h_ctx :
+      Γ.cons (newType.subst Subst.identity) = Γ.cons newType := by
+    rw [h_subst_id]
+  match i with
+  | ⟨0, h0⟩ =>
+    -- LHS = (Ty.subst_weaken_commute newType Subst.identity).symm ▸
+    --        Term.var (context := Γ.cons (newType.subst Subst.identity)) ⟨0, h0⟩
+    -- RHS = (Ty.subst_id newType.weaken).symm ▸
+    --        Term.var (context := Γ.cons newType) ⟨0, h0⟩
+    --
+    -- Strip both outer casts via eqRec_heq, then bridge the two
+    -- naked Term.var values via heq_var_across_ctx_eq + h_ctx.
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans (heq_var_across_ctx_eq h_ctx ⟨0, h0⟩)
+    exact (eqRec_heq _ _).symm
+  | ⟨k + 1, hk⟩ =>
+    -- LHS = (Ty.subst_weaken_commute (varType Γ ⟨k,_⟩) Subst.identity).symm ▸
+    --        Term.weaken (newType.subst Subst.identity)
+    --          (TermSubst.identity Γ ⟨k, _⟩)
+    --      = ... ▸ Term.weaken (newType.subst Subst.identity)
+    --                ((Ty.subst_id (varType Γ ⟨k,_⟩)).symm ▸
+    --                  Term.var ⟨k, _⟩)
+    -- RHS = (Ty.subst_id (varType Γ ⟨k,_⟩).weaken).symm ▸
+    --        Term.var (context := Γ.cons newType) ⟨k + 1, hk⟩
+    --
+    -- Strip outer cast on each side, then bridge via
+    -- heq_weaken_var_across_ctx_eq applied at the identity ctx
+    -- equality (Γ = Γ) plus the newType equality.
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans
+      (heq_weaken_var_across_ctx_eq (rfl : Γ = Γ)
+        (newType.subst Subst.identity) newType
+        h_subst_id k hk)
+    exact (eqRec_heq _ _).symm
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
