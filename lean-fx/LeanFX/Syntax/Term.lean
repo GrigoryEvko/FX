@@ -1812,6 +1812,135 @@ theorem TermSubst.lift_identity_pointwise
         h_subst_id k hk)
     exact (eqRec_heq _ _).symm
 
+/-! ### v1.21 — HEq congruence helpers for `Term`'s thirteen
+constructors.
+
+For each `Term` constructor C, the helper `Term.C_HEq_congr` says:
+two `C`-applications are HEq when their type-level implicits are
+propositionally equal AND their value arguments are HEq.  Each
+helper proves via `cases` on the local-variable equalities,
+collapsing the goal to `rfl`.
+
+These helpers are the building blocks for inductive proofs that
+need to bridge `Term` values across different type indices —
+notably `Term.subst_id_HEq` (v1.21+), `Term.subst_compose` (v1.24),
+and any future theorem that descends through `Term.subst`'s
+constructor cases. -/
+
+/-- HEq congruence for `Term.app`. -/
+theorem Term.app_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {T₁_a T₁_b T₂_a T₂_b : Ty scope}
+    (h_T₁ : T₁_a = T₁_b) (h_T₂ : T₂_a = T₂_b)
+    (f₁ : Term Γ (T₁_a.arrow T₂_a)) (f₂ : Term Γ (T₁_b.arrow T₂_b))
+    (h_f : HEq f₁ f₂)
+    (a₁ : Term Γ T₁_a) (a₂ : Term Γ T₁_b) (h_a : HEq a₁ a₂) :
+    HEq (Term.app f₁ a₁) (Term.app f₂ a₂) := by
+  cases h_T₁
+  cases h_T₂
+  cases h_f
+  cases h_a
+  rfl
+
+/-- HEq congruence for `Term.lam`. -/
+theorem Term.lam_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {dom₁ dom₂ : Ty scope} (h_dom : dom₁ = dom₂)
+    {cod₁ cod₂ : Ty scope} (h_cod : cod₁ = cod₂)
+    (body₁ : Term (Γ.cons dom₁) cod₁.weaken)
+    (body₂ : Term (Γ.cons dom₂) cod₂.weaken)
+    (h_body : HEq body₁ body₂) :
+    HEq (Term.lam body₁) (Term.lam body₂) := by
+  cases h_dom
+  cases h_cod
+  cases h_body
+  rfl
+
+/-- HEq congruence for `Term.lamPi`. -/
+theorem Term.lamPi_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {dom₁ dom₂ : Ty scope} (h_dom : dom₁ = dom₂)
+    {cod₁ cod₂ : Ty (scope + 1)} (h_cod : cod₁ = cod₂)
+    (body₁ : Term (Γ.cons dom₁) cod₁)
+    (body₂ : Term (Γ.cons dom₂) cod₂)
+    (h_body : HEq body₁ body₂) :
+    HEq (Term.lamPi body₁) (Term.lamPi body₂) := by
+  cases h_dom
+  cases h_cod
+  cases h_body
+  rfl
+
+/-- HEq congruence for `Term.appPi`. -/
+theorem Term.appPi_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {dom₁ dom₂ : Ty scope} (h_dom : dom₁ = dom₂)
+    {cod₁ cod₂ : Ty (scope + 1)} (h_cod : cod₁ = cod₂)
+    (f₁ : Term Γ (Ty.piTy dom₁ cod₁))
+    (f₂ : Term Γ (Ty.piTy dom₂ cod₂))
+    (h_f : HEq f₁ f₂)
+    (a₁ : Term Γ dom₁) (a₂ : Term Γ dom₂) (h_a : HEq a₁ a₂) :
+    HEq (Term.appPi f₁ a₁) (Term.appPi f₂ a₂) := by
+  cases h_dom
+  cases h_cod
+  cases h_f
+  cases h_a
+  rfl
+
+/-- HEq congruence for `Term.pair`. -/
+theorem Term.pair_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {first₁ first₂ : Ty scope} (h_first : first₁ = first₂)
+    {second₁ second₂ : Ty (scope + 1)} (h_second : second₁ = second₂)
+    (v₁ : Term Γ first₁) (v₂ : Term Γ first₂) (h_v : HEq v₁ v₂)
+    (w₁ : Term Γ (second₁.subst0 first₁))
+    (w₂ : Term Γ (second₂.subst0 first₂)) (h_w : HEq w₁ w₂) :
+    HEq (Term.pair v₁ w₁) (Term.pair v₂ w₂) := by
+  cases h_first
+  cases h_second
+  cases h_v
+  cases h_w
+  rfl
+
+/-- HEq congruence for `Term.fst`. -/
+theorem Term.fst_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {first₁ first₂ : Ty scope} (h_first : first₁ = first₂)
+    {second₁ second₂ : Ty (scope + 1)} (h_second : second₁ = second₂)
+    (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
+    (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
+    HEq (Term.fst p₁) (Term.fst p₂) := by
+  cases h_first
+  cases h_second
+  cases h_p
+  rfl
+
+/-- HEq congruence for `Term.snd`. -/
+theorem Term.snd_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {first₁ first₂ : Ty scope} (h_first : first₁ = first₂)
+    {second₁ second₂ : Ty (scope + 1)} (h_second : second₁ = second₂)
+    (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
+    (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
+    HEq (Term.snd p₁) (Term.snd p₂) := by
+  cases h_first
+  cases h_second
+  cases h_p
+  rfl
+
+/-- HEq congruence for `Term.boolElim`. -/
+theorem Term.boolElim_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {result₁ result₂ : Ty scope} (h_result : result₁ = result₂)
+    (s₁ s₂ : Term Γ Ty.bool) (h_s : s₁ = s₂)
+    (t₁ : Term Γ result₁) (t₂ : Term Γ result₂) (h_t : HEq t₁ t₂)
+    (e₁ : Term Γ result₁) (e₂ : Term Γ result₂) (h_e : HEq e₁ e₂) :
+    HEq (Term.boolElim s₁ t₁ e₁) (Term.boolElim s₂ t₂ e₂) := by
+  cases h_result
+  cases h_s
+  cases h_t
+  cases h_e
+  rfl
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
