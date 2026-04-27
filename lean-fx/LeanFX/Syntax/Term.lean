@@ -1579,6 +1579,104 @@ theorem Term.subst_id_boolFalse {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
       Term.subst (TermSubst.identity Γ) (Term.boolFalse (context := Γ))
     = Term.boolFalse := rfl
 
+/-! ### v1.20 — Ty-level bridge lemmas for `TermSubst.lift (TermSubst.identity Γ)`.
+
+Proving `Term.subst_id` over the recursive cases (`lam`, `app`,
+`lamPi`, `appPi`, `pair`, `fst`, `snd`, `boolElim`) requires
+threading an inductive hypothesis through `TermSubst.lift`'s
+extension of the substitution under a binder.  The recursive call
+operates on `TermSubst.lift (TermSubst.identity Γ) newType`, but the
+IH is stated in terms of `TermSubst.identity (Γ.cons newType)`.
+These two TermSubsts have **different types**:
+
+  * Lift produces `TermSubst (Γ.cons newType) (Γ.cons (newType.subst
+    Subst.identity)) Subst.identity.lift`.
+  * Identity-cons produces `TermSubst (Γ.cons newType) (Γ.cons
+    newType) Subst.identity`.
+
+The contexts differ via `Ty.subst_id newType`; the underlying
+substitutions differ via `Subst.lift_identity_equiv`.  A full HEq-
+based equivalence between the two TermSubsts is a substantial
+proof that requires three-way dependent-cast bridging across
+context shape, term type, and substitution shape simultaneously.
+
+This v1.20 lays the **Ty-level groundwork** — three lemmas about
+how `Subst.identity.lift` interacts with weakening and substitution
+at the type level.  These lemmas are used directly in v1.21+ to
+align the type-level shape of subterms before Term-level
+manipulation.  The full HEq theorem `TermSubst.lift_identity_HEq`
+remains for v1.20.5 / v1.21 once the recursive cases of
+`Term.subst_id` reveal which exact form they need. -/
+
+/-- **Lifted-identity substitution behaves like identity on any
+type.**  For any `T : Ty (scope + 1)`, substituting via
+`Subst.identity.lift` is the same as substituting via plain
+`Subst.identity`.  Proven by chaining `Ty.subst_congr` over the
+pointwise equivalence `Subst.lift_identity_equiv`. -/
+theorem Ty.subst_lift_identity_eq_subst_identity
+    {scope : Nat} (T : Ty (scope + 1)) :
+    T.subst (@Subst.identity scope).lift = T.subst Subst.identity :=
+  Ty.subst_congr Subst.lift_identity_equiv T
+
+/-- **Lifted-identity substitution is the identity on weakened
+types.**  Combining `Ty.subst_lift_identity_eq_subst_identity`
+with `Ty.subst_id` shows that weakening a `Ty scope` to scope+1
+and then substituting by `Subst.identity.lift` returns the
+weakened type unchanged.  This is the exact bridging fact needed
+when `Term.subst_id`'s recursive cases handle a body's substituted
+type at the extended scope. -/
+theorem Ty.weaken_subst_lift_identity {scope : Nat} (T : Ty scope) :
+    T.weaken.subst (@Subst.identity scope).lift = T.weaken := by
+  have h₁ := Ty.subst_lift_identity_eq_subst_identity T.weaken
+  have h₂ := Ty.subst_id T.weaken
+  exact h₁.trans h₂
+
+/-- **`varType` at position 0 of an extended context substituted by
+lifted identity returns the freshly-bound type weakened.**  Specialises
+`Ty.weaken_subst_lift_identity` at `T = newType`, exposing the
+exact type signature `Term.subst (TermSubst.lift (TermSubst.identity Γ)
+newType)` carries at position 0 of the extended context. -/
+theorem Ty.varType_zero_subst_lift_identity {m : Mode} {scope : Nat}
+    {Γ : Ctx m scope} (newType : Ty scope) :
+    (varType (Γ.cons newType) ⟨0, Nat.zero_lt_succ _⟩).subst
+        (@Subst.identity scope).lift
+      = newType.weaken := by
+  -- varType (Γ.cons newType) ⟨0, _⟩ reduces to newType.weaken by definition.
+  show newType.weaken.subst (@Subst.identity scope).lift = newType.weaken
+  exact Ty.weaken_subst_lift_identity newType
+
+/-! ### v1.20 — Position-resolved unfoldings of `TermSubst.lift (identity)`.
+
+The two unfolding theorems below state explicitly what `TermSubst.lift
+(TermSubst.identity Γ) newType` returns at each Fin position.  Both
+hold by `rfl` (definitional unfolding of `TermSubst.lift`) but naming
+them lets v1.21+ rewrite at the position-resolved form rather than
+re-deriving from `TermSubst.lift`'s body each time. -/
+
+/-- Position-0 unfolding: `TermSubst.lift (identity Γ) newType ⟨0, _⟩`
+is definitionally the cast of `Term.var ⟨0, _⟩` through
+`Ty.subst_weaken_commute newType Subst.identity`. -/
+theorem TermSubst.lift_identity_zero_eq {m : Mode} {scope : Nat}
+    (Γ : Ctx m scope) (newType : Ty scope) :
+    TermSubst.lift (TermSubst.identity Γ) newType
+        ⟨0, Nat.zero_lt_succ _⟩
+      = (Ty.subst_weaken_commute newType Subst.identity).symm ▸
+          (Term.var (context := Γ.cons (newType.subst Subst.identity))
+            ⟨0, Nat.zero_lt_succ _⟩) := rfl
+
+/-- Position-(k+1) unfolding: `TermSubst.lift (identity Γ) newType
+⟨k + 1, h⟩` is the cast of the weakened `TermSubst.identity Γ`
+result. -/
+theorem TermSubst.lift_identity_succ_eq {m : Mode} {scope : Nat}
+    (Γ : Ctx m scope) (newType : Ty scope)
+    (k : Nat) (h : k + 1 < scope + 1) :
+    TermSubst.lift (TermSubst.identity Γ) newType ⟨k + 1, h⟩
+      = (Ty.subst_weaken_commute
+          (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+          Subst.identity).symm ▸
+          Term.weaken (newType.subst Subst.identity)
+            (TermSubst.identity Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) := rfl
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
