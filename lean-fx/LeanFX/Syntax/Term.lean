@@ -1523,6 +1523,160 @@ theorem StepStar.trans
   | .refl _, h         => h
   | .step s rest, h    => .step s (StepStar.trans rest h)
 
+/-! ## v1.12 — StepStar structural congruences.
+
+Directed analogs of the v1.11.1 `Conv` congruences.  Where `Conv`
+witnesses two-way equivalence, `StepStar` witnesses one-way reduction
+chains; both must thread through subterms for typical kernel
+arguments (normalisation, confluence, decision procedures).
+
+Each theorem is by induction on the underlying `StepStar`: the `refl`
+case is reflexivity at the supersterm; the `step` case prepends the
+matching `Step` congruence rule and recurses. -/
+
+/-- Multi-step reduction threads through the function position of `Term.app`. -/
+theorem StepStar.app_cong_left {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
+    (a : Term ctx domainType) :
+    StepStar f₁ f₂ → StepStar (Term.app f₁ a) (Term.app f₂ a)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.appLeft s) (StepStar.app_cong_left a rest)
+
+/-- Multi-step reduction threads through the argument position of `Term.app`. -/
+theorem StepStar.app_cong_right {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    (f : Term ctx (Ty.arrow domainType codomainType))
+    {a₁ a₂ : Term ctx domainType} :
+    StepStar a₁ a₂ → StepStar (Term.app f a₁) (Term.app f a₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.appRight s) (StepStar.app_cong_right f rest)
+
+/-- Multi-step reduction threads through both positions of `Term.app`. -/
+theorem StepStar.app_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
+    {a₁ a₂ : Term ctx domainType}
+    (h_f : StepStar f₁ f₂) (h_a : StepStar a₁ a₂) :
+    StepStar (Term.app f₁ a₁) (Term.app f₂ a₂) :=
+  StepStar.trans (StepStar.app_cong_left a₁ h_f)
+                 (StepStar.app_cong_right f₂ h_a)
+
+/-- Multi-step reduction threads through the body of `Term.lam`. -/
+theorem StepStar.lam_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {body₁ body₂ : Term (ctx.cons domainType) codomainType.weaken} :
+    StepStar body₁ body₂ →
+    StepStar (Term.lam (codomainType := codomainType) body₁)
+             (Term.lam (codomainType := codomainType) body₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.lamBody s) (StepStar.lam_cong rest)
+
+/-- Multi-step reduction threads through the body of `Term.lamPi`. -/
+theorem StepStar.lamPi_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    {body₁ body₂ : Term (ctx.cons domainType) codomainType} :
+    StepStar body₁ body₂ →
+    StepStar (Term.lamPi (domainType := domainType) body₁)
+             (Term.lamPi (domainType := domainType) body₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.lamPiBody s) (StepStar.lamPi_cong rest)
+
+/-- Multi-step reduction threads through the function position of `Term.appPi`. -/
+theorem StepStar.appPi_cong_left {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
+    (a : Term ctx domainType) :
+    StepStar f₁ f₂ → StepStar (Term.appPi f₁ a) (Term.appPi f₂ a)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.appPiLeft s)
+        (StepStar.appPi_cong_left a rest)
+
+/-- Multi-step reduction threads through the argument position of `Term.appPi`. -/
+theorem StepStar.appPi_cong_right {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    (f : Term ctx (Ty.piTy domainType codomainType))
+    {a₁ a₂ : Term ctx domainType} :
+    StepStar a₁ a₂ → StepStar (Term.appPi f a₁) (Term.appPi f a₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.appPiRight s)
+        (StepStar.appPi_cong_right f rest)
+
+/-- Multi-step reduction threads through both positions of `Term.appPi`. -/
+theorem StepStar.appPi_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
+    {a₁ a₂ : Term ctx domainType}
+    (h_f : StepStar f₁ f₂) (h_a : StepStar a₁ a₂) :
+    StepStar (Term.appPi f₁ a₁) (Term.appPi f₂ a₂) :=
+  StepStar.trans (StepStar.appPi_cong_left a₁ h_f)
+                 (StepStar.appPi_cong_right f₂ h_a)
+
+/-- Multi-step reduction threads through the first component of `Term.pair`. -/
+theorem StepStar.pair_cong_first {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {firstVal₁ firstVal₂ : Term ctx firstType}
+    (secondVal : Term ctx (secondType.subst0 firstType)) :
+    StepStar firstVal₁ firstVal₂ →
+    StepStar
+      (Term.pair (firstType := firstType) (secondType := secondType)
+                  firstVal₁ secondVal)
+      (Term.pair (firstType := firstType) (secondType := secondType)
+                  firstVal₂ secondVal)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.pairLeft s)
+        (StepStar.pair_cong_first secondVal rest)
+
+/-- Multi-step reduction threads through the second component of `Term.pair`. -/
+theorem StepStar.pair_cong_second {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    (firstVal : Term ctx firstType)
+    {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)} :
+    StepStar secondVal₁ secondVal₂ →
+    StepStar (Term.pair firstVal secondVal₁)
+             (Term.pair firstVal secondVal₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.pairRight s)
+        (StepStar.pair_cong_second firstVal rest)
+
+/-- Multi-step reduction threads through both components of `Term.pair`. -/
+theorem StepStar.pair_cong {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {firstVal₁ firstVal₂ : Term ctx firstType}
+    {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
+    (h_first : StepStar firstVal₁ firstVal₂)
+    (h_second : StepStar secondVal₁ secondVal₂) :
+    StepStar (Term.pair firstVal₁ secondVal₁)
+             (Term.pair firstVal₂ secondVal₂) :=
+  StepStar.trans (StepStar.pair_cong_first secondVal₁ h_first)
+                 (StepStar.pair_cong_second firstVal₂ h_second)
+
+/-- Multi-step reduction threads through `Term.fst`. -/
+theorem StepStar.fst_cong {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)} :
+    StepStar p₁ p₂ → StepStar (Term.fst p₁) (Term.fst p₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.fstCong s) (StepStar.fst_cong rest)
+
+/-- Multi-step reduction threads through `Term.snd`. -/
+theorem StepStar.snd_cong {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)} :
+    StepStar p₁ p₂ → StepStar (Term.snd p₁) (Term.snd p₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.sndCong s) (StepStar.snd_cong rest)
+
 /-! ## v1.11 — definitional conversion (`Conv`).
 
 `Conv t₁ t₂` is the symmetric, reflexive, transitive closure of
