@@ -1873,6 +1873,48 @@ theorem Term.boolElim_HEq_congr
   cases h_e
   rfl
 
+/-! ### v1.22 — `Term.subst_id_HEq` leaf cases.
+
+The HEq form of `Term.subst_id` for the four leaf constructors —
+each follows directly from the corresponding `▸`-form leaf
+theorem in v1.19, but stated in HEq form for use by inductive
+proofs that descend through `Term.subst`.
+
+The `var` case unfolds to `(Ty.subst_id _).symm ▸ Term.var i`
+(by `TermSubst.identity`'s definition), and `eqRec_heq`
+discharges the cast-vs-naked HEq.  The `unit`, `boolTrue`,
+`boolFalse` cases unfold to themselves because their types
+don't depend on the substitution. -/
+
+/-- Leaf HEq case of `Term.subst_id` for `var`. -/
+theorem Term.subst_id_HEq_var
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope} (i : Fin scope) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.var i))
+        (Term.var (context := Γ) i) := by
+  show HEq ((Ty.subst_id (varType Γ i)).symm ▸ Term.var i) (Term.var i)
+  exact eqRec_heq _ _
+
+/-- Leaf HEq case of `Term.subst_id` for `unit`. -/
+theorem Term.subst_id_HEq_unit
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.unit (context := Γ)))
+        (Term.unit (context := Γ)) :=
+  HEq.refl _
+
+/-- Leaf HEq case of `Term.subst_id` for `boolTrue`. -/
+theorem Term.subst_id_HEq_boolTrue
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.boolTrue (context := Γ)))
+        (Term.boolTrue (context := Γ)) :=
+  HEq.refl _
+
+/-- Leaf HEq case of `Term.subst_id` for `boolFalse`. -/
+theorem Term.subst_id_HEq_boolFalse
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.boolFalse (context := Γ)))
+        (Term.boolFalse (context := Γ)) :=
+  HEq.refl _
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
