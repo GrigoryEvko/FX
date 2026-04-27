@@ -3952,6 +3952,61 @@ inductive Step :
         {resultType : Ty level scope}
         (thenBr elseBr : Term ctx resultType),
       Step (Term.boolElim Term.boolFalse thenBr elseBr) elseBr
+  /-- Step inside the predecessor of a `Term.natSucc`. -/
+  | natSuccPred :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {pred pred' : Term ctx Ty.nat},
+      Step pred pred' →
+      Step (Term.natSucc pred) (Term.natSucc pred')
+  /-- Step inside `Term.natElim`'s scrutinee position. -/
+  | natElimScrutinee :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx Ty.nat}
+        {zeroBranch : Term ctx resultType}
+        {succBranch : Term ctx (Ty.arrow Ty.nat resultType)},
+      Step scrutinee scrutinee' →
+      Step (Term.natElim scrutinee zeroBranch succBranch)
+           (Term.natElim scrutinee' zeroBranch succBranch)
+  /-- Step inside `Term.natElim`'s zero-branch position. -/
+  | natElimZero :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.nat}
+        {zeroBranch zeroBranch' : Term ctx resultType}
+        {succBranch : Term ctx (Ty.arrow Ty.nat resultType)},
+      Step zeroBranch zeroBranch' →
+      Step (Term.natElim scrutinee zeroBranch succBranch)
+           (Term.natElim scrutinee zeroBranch' succBranch)
+  /-- Step inside `Term.natElim`'s succ-branch position. -/
+  | natElimSucc :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.nat}
+        {zeroBranch : Term ctx resultType}
+        {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)},
+      Step succBranch succBranch' →
+      Step (Term.natElim scrutinee zeroBranch succBranch)
+           (Term.natElim scrutinee zeroBranch succBranch')
+  /-- **ι-reduction for natElim on `0`**: `natElim 0 z f ⟶ z`.
+  No cast: both sides have the same `resultType`. -/
+  | iotaNatElimZero :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        (zeroBranch : Term ctx resultType)
+        (succBranch : Term ctx (Ty.arrow Ty.nat resultType)),
+      Step (Term.natElim Term.natZero zeroBranch succBranch) zeroBranch
+  /-- **ι-reduction for natElim on `succ n`**: `natElim (succ n) z f ⟶ f n`.
+  Result type matches because `f : Ty.nat → resultType` and we apply
+  it to the predecessor. -/
+  | iotaNatElimSucc :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        (predecessor : Term ctx Ty.nat)
+        (zeroBranch : Term ctx resultType)
+        (succBranch : Term ctx (Ty.arrow Ty.nat resultType)),
+      Step (Term.natElim (Term.natSucc predecessor) zeroBranch succBranch)
+           (Term.app succBranch predecessor)
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -4305,6 +4360,45 @@ inductive Step.par :
         {elseBr elseBr' : Term ctx resultType},
       Step.par elseBr elseBr' →
       Step.par (Term.boolElim Term.boolFalse thenBr elseBr) elseBr'
+  /-- Parallel reduction inside a `Term.natSucc`. -/
+  | natSucc :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {pred pred' : Term ctx Ty.nat},
+      Step.par pred pred' →
+      Step.par (Term.natSucc pred) (Term.natSucc pred')
+  /-- Parallel reduction inside all three positions of a `Term.natElim`. -/
+  | natElim :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx Ty.nat}
+        {zeroBranch zeroBranch' : Term ctx resultType}
+        {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)},
+      Step.par scrutinee scrutinee' →
+      Step.par zeroBranch zeroBranch' →
+      Step.par succBranch succBranch' →
+      Step.par (Term.natElim scrutinee zeroBranch succBranch)
+               (Term.natElim scrutinee' zeroBranch' succBranch')
+  /-- **Parallel ι-reduction on `0`**: `natElim 0 z f → z'` with
+  `Step.par z z'`. -/
+  | iotaNatElimZero :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {zeroBranch zeroBranch' : Term ctx resultType}
+        (succBranch : Term ctx (Ty.arrow Ty.nat resultType)),
+      Step.par zeroBranch zeroBranch' →
+      Step.par (Term.natElim Term.natZero zeroBranch succBranch) zeroBranch'
+  /-- **Parallel ι-reduction on `succ n`**: `natElim (succ n) z f → f' n'`
+  with `Step.par n n'` and `Step.par f f'`. -/
+  | iotaNatElimSucc :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {predecessor predecessor' : Term ctx Ty.nat}
+        (zeroBranch : Term ctx resultType)
+        {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)},
+      Step.par predecessor predecessor' →
+      Step.par succBranch succBranch' →
+      Step.par (Term.natElim (Term.natSucc predecessor) zeroBranch succBranch)
+               (Term.app succBranch' predecessor')
   /-- **η-contraction for non-dependent arrow** at the parallel level.
   Same shape as `Step.etaArrow`: the η-redex `λx. f.weaken x` contracts
   to `f`.  No subterm-parallel rule because the redex shape is rigid
@@ -4355,6 +4449,12 @@ theorem Step.toPar
   | .boolElimElse s       => .boolElim (.refl _) (.refl _) (Step.toPar s)
   | .iotaBoolElimTrue t e => .iotaBoolElimTrue e (.refl t)
   | .iotaBoolElimFalse t e => .iotaBoolElimFalse t (.refl e)
+  | .natSuccPred s        => .natSucc (Step.toPar s)
+  | .natElimScrutinee s   => .natElim (Step.toPar s) (.refl _) (.refl _)
+  | .natElimZero s        => .natElim (.refl _) (Step.toPar s) (.refl _)
+  | .natElimSucc s        => .natElim (.refl _) (.refl _) (Step.toPar s)
+  | .iotaNatElimZero z f  => .iotaNatElimZero f (.refl z)
+  | .iotaNatElimSucc n _ f => .iotaNatElimSucc _ (.refl n) (.refl f)
 
 /-! ## Definitional conversion (`Conv`).
 
@@ -4748,6 +4848,164 @@ theorem Conv.boolElim_cong
       (Conv.boolElim_cong_then scrutinee₂ elseBr₁ h_then)
       (Conv.boolElim_cong_else scrutinee₂ thenBr₂ h_else))
 
+/-! ## Natural-number reduction congruences.
+
+Multi-step and definitional-equivalence threading through `Term.natSucc`
+and `Term.natElim`'s three positions, mirroring the boolean section. -/
+
+/-- Definitional equivalence threads through `Term.natSucc`. -/
+theorem Conv.natSucc_cong {mode level scope} {ctx : Ctx mode level scope}
+    {pred₁ pred₂ : Term ctx Ty.nat}
+    (h : Conv pred₁ pred₂) :
+    Conv (Term.natSucc pred₁) (Term.natSucc pred₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.natSuccPred s)
+
+/-- Definitional equivalence threads through `natElim`'s scrutinee. -/
+theorem Conv.natElim_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx Ty.nat}
+    (zeroBranch : Term ctx resultType)
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
+    (h : Conv scrutinee₁ scrutinee₂) :
+    Conv (Term.natElim scrutinee₁ zeroBranch succBranch)
+         (Term.natElim scrutinee₂ zeroBranch succBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.natElimScrutinee s)
+
+/-- Definitional equivalence threads through `natElim`'s zero-branch. -/
+theorem Conv.natElim_cong_zero
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (scrutinee : Term ctx Ty.nat)
+    {zeroBranch₁ zeroBranch₂ : Term ctx resultType}
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
+    (h : Conv zeroBranch₁ zeroBranch₂) :
+    Conv (Term.natElim scrutinee zeroBranch₁ succBranch)
+         (Term.natElim scrutinee zeroBranch₂ succBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.natElimZero s)
+
+/-- Definitional equivalence threads through `natElim`'s succ-branch. -/
+theorem Conv.natElim_cong_succ
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (scrutinee : Term ctx Ty.nat)
+    (zeroBranch : Term ctx resultType)
+    {succBranch₁ succBranch₂ : Term ctx (Ty.arrow Ty.nat resultType)}
+    (h : Conv succBranch₁ succBranch₂) :
+    Conv (Term.natElim scrutinee zeroBranch succBranch₁)
+         (Term.natElim scrutinee zeroBranch succBranch₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.natElimSucc s)
+
+/-- Definitional equivalence threads through all three `natElim` positions. -/
+theorem Conv.natElim_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx Ty.nat}
+    {zeroBranch₁ zeroBranch₂ : Term ctx resultType}
+    {succBranch₁ succBranch₂ : Term ctx (Ty.arrow Ty.nat resultType)}
+    (h_scr : Conv scrutinee₁ scrutinee₂)
+    (h_zero : Conv zeroBranch₁ zeroBranch₂)
+    (h_succ : Conv succBranch₁ succBranch₂) :
+    Conv (Term.natElim scrutinee₁ zeroBranch₁ succBranch₁)
+         (Term.natElim scrutinee₂ zeroBranch₂ succBranch₂) :=
+  Conv.trans
+    (Conv.natElim_cong_scrutinee zeroBranch₁ succBranch₁ h_scr)
+    (Conv.trans
+      (Conv.natElim_cong_zero scrutinee₂ succBranch₁ h_zero)
+      (Conv.natElim_cong_succ scrutinee₂ zeroBranch₂ h_succ))
+
+/-! ## StepStar congruences for nat (defined above the Conv versions
+because Step.par.toStar consumes them). -/
+
+/-- Multi-step reduction threads through `Term.natSucc`. -/
+theorem StepStar.natSucc_cong {mode level scope} {ctx : Ctx mode level scope}
+    {pred₁ pred₂ : Term ctx Ty.nat} :
+    StepStar pred₁ pred₂ →
+    StepStar (Term.natSucc pred₁) (Term.natSucc pred₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.natSuccPred s)
+        (StepStar.natSucc_cong rest)
+
+/-- Multi-step reduction threads through `natElim`'s scrutinee. -/
+theorem StepStar.natElim_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx Ty.nat}
+    (zeroBranch : Term ctx resultType)
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType)) :
+    StepStar scrutinee₁ scrutinee₂ →
+    StepStar (Term.natElim scrutinee₁ zeroBranch succBranch)
+             (Term.natElim scrutinee₂ zeroBranch succBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.natElimScrutinee s)
+        (StepStar.natElim_cong_scrutinee zeroBranch succBranch rest)
+
+/-- Multi-step reduction threads through `natElim`'s zero-branch. -/
+theorem StepStar.natElim_cong_zero
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (scrutinee : Term ctx Ty.nat)
+    {zeroBranch₁ zeroBranch₂ : Term ctx resultType}
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType)) :
+    StepStar zeroBranch₁ zeroBranch₂ →
+    StepStar (Term.natElim scrutinee zeroBranch₁ succBranch)
+             (Term.natElim scrutinee zeroBranch₂ succBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.natElimZero s)
+        (StepStar.natElim_cong_zero scrutinee succBranch rest)
+
+/-- Multi-step reduction threads through `natElim`'s succ-branch. -/
+theorem StepStar.natElim_cong_succ
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (scrutinee : Term ctx Ty.nat)
+    (zeroBranch : Term ctx resultType)
+    {succBranch₁ succBranch₂ : Term ctx (Ty.arrow Ty.nat resultType)} :
+    StepStar succBranch₁ succBranch₂ →
+    StepStar (Term.natElim scrutinee zeroBranch succBranch₁)
+             (Term.natElim scrutinee zeroBranch succBranch₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.natElimSucc s)
+        (StepStar.natElim_cong_succ scrutinee zeroBranch rest)
+
+/-- Multi-step reduction threads through all three `natElim` positions. -/
+theorem StepStar.natElim_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx Ty.nat}
+    {zeroBranch₁ zeroBranch₂ : Term ctx resultType}
+    {succBranch₁ succBranch₂ : Term ctx (Ty.arrow Ty.nat resultType)}
+    (h_scr : StepStar scrutinee₁ scrutinee₂)
+    (h_zero : StepStar zeroBranch₁ zeroBranch₂)
+    (h_succ : StepStar succBranch₁ succBranch₂) :
+    StepStar (Term.natElim scrutinee₁ zeroBranch₁ succBranch₁)
+             (Term.natElim scrutinee₂ zeroBranch₂ succBranch₂) :=
+  StepStar.trans
+    (StepStar.natElim_cong_scrutinee zeroBranch₁ succBranch₁ h_scr)
+    (StepStar.trans
+      (StepStar.natElim_cong_zero scrutinee₂ succBranch₁ h_zero)
+      (StepStar.natElim_cong_succ scrutinee₂ zeroBranch₂ h_succ))
+
 /-! ## `Step.par.toStar` — parallel reduction lifts to multi-step.
 
 Each Step.par constructor decomposes into a sequence of single Step's
@@ -4825,6 +5083,29 @@ theorem Step.par.toStar
           (StepStar.refl thenBr)
           (Step.par.toStar par_e))
         (Step.iotaBoolElimFalse thenBr e')
+  | .natSucc par_pred        =>
+      StepStar.natSucc_cong (Step.par.toStar par_pred)
+  | .natElim par_s par_z par_f =>
+      StepStar.natElim_cong
+        (Step.par.toStar par_s)
+        (Step.par.toStar par_z)
+        (Step.par.toStar par_f)
+  | .iotaNatElimZero (zeroBranch' := z') succBranch par_z =>
+      StepStar.append
+        (StepStar.natElim_cong
+          (StepStar.refl Term.natZero)
+          (Step.par.toStar par_z)
+          (StepStar.refl succBranch))
+        (Step.iotaNatElimZero z' succBranch)
+  | .iotaNatElimSucc
+        (predecessor' := n') (succBranch' := f')
+        zeroBranch par_n par_f =>
+      StepStar.trans
+        (StepStar.natElim_cong
+          (StepStar.natSucc_cong (Step.par.toStar par_n))
+          (StepStar.refl zeroBranch)
+          (Step.par.toStar par_f))
+        (Step.toStar (Step.iotaNatElimSucc n' zeroBranch f'))
   | .etaArrow f              => Step.toStar (Step.etaArrow f)
   | .etaSigma p              => Step.toStar (Step.etaSigma p)
 
@@ -4990,6 +5271,36 @@ example {level scope target : Nat}
                      (Term.rename ρt zeroBranch)
                      (Term.rename ρt succBranch) :=
   rfl
+
+/-- ι-reduction on zero: `natElim 0 z f ⟶ z`. -/
+example {result : Ty 0 0}
+    (z : Term EmptyCtx result)
+    (f : Term EmptyCtx (Ty.arrow Ty.nat result)) :
+    Step (Term.natElim Term.natZero z f) z :=
+  Step.iotaNatElimZero z f
+
+/-- ι-reduction on succ: `natElim (succ n) z f ⟶ f n`. -/
+example {result : Ty 0 0}
+    (n : Term EmptyCtx Ty.nat)
+    (z : Term EmptyCtx result)
+    (f : Term EmptyCtx (Ty.arrow Ty.nat result)) :
+    Step (Term.natElim (Term.natSucc n) z f) (Term.app f n) :=
+  Step.iotaNatElimSucc n z f
+
+/-- A single Step lifts to multi-step: `natElim 0 z f ⟶* z`. -/
+example {result : Ty 0 0}
+    (z : Term EmptyCtx result)
+    (f : Term EmptyCtx (Ty.arrow Ty.nat result)) :
+    StepStar (Term.natElim Term.natZero z f) z :=
+  Step.toStar (Step.iotaNatElimZero z f)
+
+/-- Step.par lifts: `natElim 0 z f ⟶ z` reaches multi-step via the
+parallel-reduction bridge. -/
+example {result : Ty 0 0}
+    (z : Term EmptyCtx result)
+    (f : Term EmptyCtx (Ty.arrow Ty.nat result)) :
+    StepStar (Term.natElim Term.natZero z f) z :=
+  Step.par.toStar (Step.toPar (Step.iotaNatElimZero z f))
 
 /-- A single Step lifts to multi-step. -/
 example (t e : Term EmptyCtx Ty.bool) :
