@@ -2989,6 +2989,75 @@ theorem Term.subst_weaken_commute_HEq_appPi
     _ _ ih_f
     _ _ ih_a
 
+/-! ### v1.34 — Term-level precompose / renameAfter compositions.
+
+Term-level analogues of the Ty-level `Subst.precompose` (line
+485) and `Subst.renameAfter` (line 428).  These are the
+foundation for `Term.rename_subst_commute_HEq` and
+`Term.subst_rename_commute_HEq` — the term-level analogues of
+the Ty-level commute lemmas (`Ty.rename_subst_commute` line 505,
+`Ty.subst_rename_commute` line 453).
+
+The eventual payoff: `Term.subst_weaken_commute_HEq`'s binder
+cases (lam, lamPi) become derivable as specialisations of the
+general rename-subst commute, where the ad-hoc weakening
+becomes a particular `TermRenaming` insertion at any context
+position.  The current closed-context theorems (v1.28-v1.33)
+remain as direct corollaries.
+
+Each definition takes the position-equality witness through a
+`Ty.{rename_subst,subst_rename}_commute` cast, with the
+TermRenaming's per-position equality threaded via
+`congrArg (·.subst σ)` for the precompose case. -/
+
+/-- **Term-level `renameAfter`**: subst σt then rename ρt to a
+downstream context.  Given a TermSubst from Γ to Δ and a
+TermRenaming from Δ to Δ', produces a TermSubst from Γ to Δ'
+along the composed substitution `Subst.renameAfter σ ρ`.
+
+At each position i, applies σt then renames the resulting term
+via ρt; the result type is bridged via
+`Ty.subst_rename_commute (varType Γ i) σ ρ`. -/
+def TermSubst.renameAfter
+    {m : Mode} {scope scope_m scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope_m} {Δ' : Ctx m scope'}
+    {σ : Subst scope scope_m} {ρ : Renaming scope_m scope'}
+    (σt : TermSubst Γ Δ σ) (ρt : TermRenaming Δ Δ' ρ) :
+    TermSubst Γ Δ' (Subst.renameAfter σ ρ) := fun i =>
+  -- σt i : Term Δ ((varType Γ i).subst σ)
+  -- Term.rename ρt (σt i) : Term Δ' (((varType Γ i).subst σ).rename ρ)
+  -- Bridge to (varType Γ i).subst (Subst.renameAfter σ ρ) via
+  -- Ty.subst_rename_commute.
+  Ty.subst_rename_commute (varType Γ i) σ ρ ▸ Term.rename ρt (σt i)
+
+/-- **Term-level `precompose`**: rename ρt to a Γ' source first,
+then subst σt.  Given a TermRenaming from Γ to Γ' and a
+TermSubst from Γ' to Δ, produces a TermSubst from Γ to Δ along
+the composed substitution `Subst.precompose ρ σ`.
+
+At each position i, looks up σt at the renamed position ρ i;
+the result type is bridged via the TermRenaming's witness
+`ρt i : varType Γ' (ρ i) = (varType Γ i).rename ρ` lifted by
+`congrArg (·.subst σ)` and chained with
+`Ty.rename_subst_commute (varType Γ i) ρ σ`. -/
+def TermSubst.precompose
+    {m : Mode} {scope scope_m scope' : Nat}
+    {Γ : Ctx m scope} {Γ' : Ctx m scope_m} {Δ : Ctx m scope'}
+    {ρ : Renaming scope scope_m} {σ : Subst scope_m scope'}
+    (ρt : TermRenaming Γ Γ' ρ) (σt : TermSubst Γ' Δ σ) :
+    TermSubst Γ Δ (Subst.precompose ρ σ) := fun i =>
+  -- σt (ρ i) : Term Δ ((varType Γ' (ρ i)).subst σ)
+  -- ρt i : varType Γ' (ρ i) = (varType Γ i).rename ρ
+  -- Step 1: cast (varType Γ' (ρ i)).subst σ to ((varType Γ i).rename ρ).subst σ
+  -- Step 2: cast that to (varType Γ i).subst (Subst.precompose ρ σ)
+  let h_witness : (varType Γ' (ρ i)).subst σ
+                    = ((varType Γ i).rename ρ).subst σ :=
+    congrArg (·.subst σ) (ρt i)
+  let h_commute : ((varType Γ i).rename ρ).subst σ
+                    = (varType Γ i).subst (Subst.precompose ρ σ) :=
+    Ty.rename_subst_commute (varType Γ i) ρ σ
+  (h_witness.trans h_commute) ▸ σt (ρ i)
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
