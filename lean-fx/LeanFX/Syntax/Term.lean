@@ -895,6 +895,20 @@ inductive Term : {mode : Mode} → {scope : Nat} →
       {mode : Mode} → {scope : Nat} →
       {context : Ctx mode scope} →
       Term context Ty.bool
+  /-- Boolean elimination (non-dependent) — case-analysis on a boolean
+  scrutinee produces one of two same-typed branches.  Non-dependent
+  because the result type is a fixed `Ty scope`, not a function on
+  `bool`; dependent elim would require representing motives as
+  functions on `Term`-valued booleans, which doesn't fit the current
+  scope-only `Ty` indexing.  v1.14+. -/
+  | boolElim :
+      {mode : Mode} → {scope : Nat} →
+      {context : Ctx mode scope} →
+      {resultType : Ty scope} →
+      (scrutinee : Term context Ty.bool) →
+      (thenBranch : Term context resultType) →
+      (elseBranch : Term context resultType) →
+      Term context resultType
 
 /-! ## Demonstrations of intrinsic-typing usability.
 
@@ -925,6 +939,8 @@ def Term.depth
   | .snd pairTerm                   => pairTerm.depth + 1
   | .boolTrue                       => 0
   | .boolFalse                      => 0
+  | .boolElim scrutinee thenBr elseBr =>
+      max scrutinee.depth (max thenBr.depth elseBr.depth) + 1
 
 /-- Count of `lam` constructors in a term.  Second recursive function
 over the indexed family — confirms pattern matching generalises beyond
@@ -947,6 +963,8 @@ def Term.lamCount
   | .snd pairTerm                   => pairTerm.lamCount
   | .boolTrue                       => 0
   | .boolFalse                      => 0
+  | .boolElim scrutinee thenBr elseBr =>
+      scrutinee.lamCount + thenBr.lamCount + elseBr.lamCount
 
 /-- The empty context has no positions — `Fin 0` is uninhabited, so
 the kernel rejects any attempt to construct a variable in `Ctx.nil`.
@@ -1125,6 +1143,10 @@ def Term.rename {m scope scope'}
         Term.snd (Term.rename ρt p)
   | _, .boolTrue  => Term.boolTrue
   | _, .boolFalse => Term.boolFalse
+  | _, .boolElim scrutinee thenBr elseBr =>
+      Term.boolElim (Term.rename ρt scrutinee)
+                    (Term.rename ρt thenBr)
+                    (Term.rename ρt elseBr)
 
 /-! ## v1.10 — term-level weakening.
 
@@ -1317,6 +1339,10 @@ def Term.subst {m scope scope'}
         Term.snd (Term.subst σt p)
   | _, .boolTrue   => Term.boolTrue
   | _, .boolFalse  => Term.boolFalse
+  | _, .boolElim scrutinee thenBr elseBr =>
+      Term.boolElim (Term.subst σt scrutinee)
+                    (Term.subst σt thenBr)
+                    (Term.subst σt elseBr)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -1516,6 +1542,51 @@ inductive Step :
                        (secondType := secondType)
               (Term.fst p) (Term.snd p))
            p
+  /-- Step inside the scrutinee position of a `boolElim`.  Together
+  with the two ι-rules below, completes the boolean-evaluation
+  story.  v1.14+. -/
+  | boolElimScrutinee :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        {scrutinee scrutinee' : Term ctx Ty.bool}
+        {thenBr elseBr : Term ctx resultType},
+      Step scrutinee scrutinee' →
+      Step (Term.boolElim scrutinee thenBr elseBr)
+           (Term.boolElim scrutinee' thenBr elseBr)
+  /-- Step inside the then-branch position of a `boolElim`. -/
+  | boolElimThen :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        {scrutinee : Term ctx Ty.bool}
+        {thenBr thenBr' : Term ctx resultType}
+        {elseBr : Term ctx resultType},
+      Step thenBr thenBr' →
+      Step (Term.boolElim scrutinee thenBr elseBr)
+           (Term.boolElim scrutinee thenBr' elseBr)
+  /-- Step inside the else-branch position of a `boolElim`. -/
+  | boolElimElse :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        {scrutinee : Term ctx Ty.bool}
+        {thenBr : Term ctx resultType}
+        {elseBr elseBr' : Term ctx resultType},
+      Step elseBr elseBr' →
+      Step (Term.boolElim scrutinee thenBr elseBr)
+           (Term.boolElim scrutinee thenBr elseBr')
+  /-- **ι-reduction for boolElim on `true`**: `boolElim true t e ⟶ t`.
+  No cast: both sides have the same `resultType`.  v1.14+. -/
+  | iotaBoolElimTrue :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        (thenBr elseBr : Term ctx resultType),
+      Step (Term.boolElim Term.boolTrue thenBr elseBr) thenBr
+  /-- **ι-reduction for boolElim on `false`**: `boolElim false t e ⟶ e`.
+  No cast: both sides have the same `resultType`.  v1.14+. -/
+  | iotaBoolElimFalse :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        (thenBr elseBr : Term ctx resultType),
+      Step (Term.boolElim Term.boolFalse thenBr elseBr) elseBr
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -2143,6 +2214,8 @@ def Term.size
   | .snd pairTerm                   => pairTerm.size + 1
   | .boolTrue                       => 1
   | .boolFalse                      => 1
+  | .boolElim scrutinee thenBr elseBr =>
+      scrutinee.size + thenBr.size + elseBr.size + 1
 
 /-- Count of variable occurrences in a term.  Independent measure to
 `size`, `depth`, and `lamCount` — confirms that pattern matching on
@@ -2166,6 +2239,8 @@ def Term.varCount
   | .snd pairTerm                   => pairTerm.varCount
   | .boolTrue                       => 0
   | .boolFalse                      => 0
+  | .boolElim scrutinee thenBr elseBr =>
+      scrutinee.varCount + thenBr.varCount + elseBr.varCount
 
 /-- The first **non-trivial theorem** of the package.  Every term has
 `lamCount` bounded by `size` — i.e. you can't have more λ-binders than
@@ -2200,6 +2275,13 @@ theorem Term.lamCount_le_size
   | .snd pairTerm => Nat.le_succ_of_le (Term.lamCount_le_size pairTerm)
   | .boolTrue  => Nat.zero_le _
   | .boolFalse => Nat.zero_le _
+  | .boolElim scrutinee thenBr elseBr =>
+      Nat.le_succ_of_le
+        (Nat.add_le_add
+          (Nat.add_le_add
+            (Term.lamCount_le_size scrutinee)
+            (Term.lamCount_le_size thenBr))
+          (Term.lamCount_le_size elseBr))
 
 /-- Companion theorem: `varCount` is also bounded by `size`.  Same
 proof shape as `lamCount_le_size`; confirms the pattern generalises. -/
@@ -2230,6 +2312,13 @@ theorem Term.varCount_le_size
   | .snd pairTerm => Nat.le_succ_of_le (Term.varCount_le_size pairTerm)
   | .boolTrue  => Nat.zero_le _
   | .boolFalse => Nat.zero_le _
+  | .boolElim scrutinee thenBr elseBr =>
+      Nat.le_succ_of_le
+        (Nat.add_le_add
+          (Nat.add_le_add
+            (Term.varCount_le_size scrutinee)
+            (Term.varCount_le_size thenBr))
+          (Term.varCount_le_size elseBr))
 
 /-! ## v1.1 smoke tests -/
 
