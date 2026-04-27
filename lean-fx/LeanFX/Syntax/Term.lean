@@ -1503,6 +1503,82 @@ def TermSubst.compose {m : Mode} {scope₁ scope₂ scope₃ : Nat}
   -- Bridge            : Ty.subst_compose (varType Γ₁ i) σ₁ σ₂
   Ty.subst_compose (varType Γ₁ i) σ₁ σ₂ ▸ Term.subst σt₂ (σt₁ i)
 
+/-! ### v1.19 — Cast-cancellation toolkit + leaf-case Term.subst_id.
+
+The functoriality theorem `Term.subst_id` (substitution by
+identity is identity) requires dependent-cast manipulation
+because the substituted term lives at type `Term Γ (T.subst
+Subst.identity)`, propositionally but not definitionally equal
+to `Term Γ T`.  This section discharges:
+
+  1. The two cast-cancellation utility lemmas (`Eq.cast_symm_cast`
+     and `Eq.cast_cast_symm`).
+  2. The leaf cases of `Term.subst_id`, where the term has no
+     subterm recursion through `TermSubst.lift`: `unit`, `var`,
+     `boolTrue`, `boolFalse`.
+
+The recursive cases (`lam`, `app`, `lamPi`, `appPi`, `pair`,
+`fst`, `snd`, `boolElim`) require an additional pointwise
+equivalence between `TermSubst.lift (TermSubst.identity Γ)` and
+`TermSubst.identity (Γ.cons _)` to thread the inductive hypothesis
+through the binder cases.  That stepping stone is v1.20+. -/
+
+/-- Cast cancellation: applying `h ▸` after `h.symm ▸` returns
+the original.  Standard fact about `Eq.rec`, axiom-free via
+`cases h; rfl`.  Useful whenever a `TermSubst.identity` lookup
+puts an inverse cast on a term that we then transport back.
+
+Stated at `Type` (rather than `Sort u`) because `autoImplicit :=
+false` rejects free universe variables; both our concrete
+applications (`α := Ty scope`, `P := Term Γ`) live at `Type`
+anyway. -/
+theorem Eq.cast_symm_cast {α : Type} {a b : α} (h : a = b)
+    {P : α → Type} (y : P b) :
+    h ▸ (h.symm ▸ y) = y := by
+  cases h
+  rfl
+
+/-- Cast cancellation, dual direction: `h.symm ▸` after `h ▸`
+returns the original. -/
+theorem Eq.cast_cast_symm {α : Type} {a b : α} (h : a = b)
+    {P : α → Type} (x : P a) :
+    h.symm ▸ (h ▸ x) = x := by
+  cases h
+  rfl
+
+/-- **Leaf case: `Term.subst_id` for `unit`.**  Definitionally
+trivial because `Ty.subst_id Ty.unit` reduces to `rfl` (per the
+unit arm of `Ty.subst_id`'s definition), so the cast collapses. -/
+theorem Term.subst_id_unit {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    (Ty.subst_id (scope := scope) Ty.unit) ▸
+      Term.subst (TermSubst.identity Γ) (Term.unit (context := Γ))
+    = Term.unit := rfl
+
+/-- **Leaf case: `Term.subst_id` for `var`.**  The substitution
+unfolds to `TermSubst.identity Γ i = (Ty.subst_id _).symm ▸
+Term.var i`, then the outer cast cancels via
+`Eq.cast_symm_cast`. -/
+theorem Term.subst_id_var {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    (i : Fin scope) :
+    (Ty.subst_id (varType Γ i)) ▸
+      Term.subst (TermSubst.identity Γ) (Term.var i)
+    = Term.var i :=
+  Eq.cast_symm_cast (Ty.subst_id (varType Γ i)) (Term.var i)
+
+/-- **Leaf case: `Term.subst_id` for `boolTrue`.**  Trivial like
+`unit` because `Ty.subst_id Ty.bool` reduces to `rfl`. -/
+theorem Term.subst_id_boolTrue {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    (Ty.subst_id (scope := scope) Ty.bool) ▸
+      Term.subst (TermSubst.identity Γ) (Term.boolTrue (context := Γ))
+    = Term.boolTrue := rfl
+
+/-- **Leaf case: `Term.subst_id` for `boolFalse`.**  Trivial like
+`unit` because `Ty.subst_id Ty.bool` reduces to `rfl`. -/
+theorem Term.subst_id_boolFalse {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    (Ty.subst_id (scope := scope) Ty.bool) ▸
+      Term.subst (TermSubst.identity Γ) (Term.boolFalse (context := Γ))
+    = Term.boolFalse := rfl
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
