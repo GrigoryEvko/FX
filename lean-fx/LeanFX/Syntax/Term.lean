@@ -87,6 +87,12 @@ inductive Ty : Nat → Nat → Type
   over `Type<u>` lands in v1.29. -/
   | universe : {level scope : Nat} → (u : Nat) → (levelEq : level = u + 1) →
                Ty level scope
+  /-- The natural numbers — level-polymorphic since `Nat` makes sense
+  at any universe.  Comes with `Term.natZero` (`0`) and `Term.natSucc`
+  (`succ`); the case-analysis eliminator `Term.natElim` and ι
+  reductions land in the next slice.  No constraints on scope — this
+  is a base type. -/
+  | nat : {level scope : Nat} → Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
 `Ty`'s index is a bare `Nat`, so the discrimination obligations
@@ -143,6 +149,7 @@ def Ty.rename {level source target : Nat} :
   | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
   | .bool, _          => .bool
   | .universe u h, _  => .universe u h
+  | .nat, _           => .nat
 
 /-! ## Rename composition algebra.
 
@@ -192,6 +199,7 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
       exact hA ▸ hB ▸ rfl
   | .bool         => rfl
   | .universe _ _ => rfl
+  | .nat          => rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -256,6 +264,7 @@ theorem Ty.rename_compose {level s m t : Nat} :
       exact hA ▸ (hB.trans hLift) ▸ rfl
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
+  | .nat, _, _ => rfl
 
 /-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
 Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
@@ -338,6 +347,7 @@ def Ty.subst {level source target : Nat} :
   | .sigmaTy A B, σ   => .sigmaTy (Ty.subst A σ) (Ty.subst B σ.lift)
   | .bool, _          => .bool
   | .universe u h, _  => .universe u h
+  | .nat, _           => .nat
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -395,6 +405,7 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
       exact hX ▸ hY ▸ rfl
   | .bool         => rfl
   | .universe _ _ => rfl
+  | .nat          => rfl
 
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -454,6 +465,7 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
+  | .nat, _, _ => rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -507,6 +519,7 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
+  | .nat, _, _ => rfl
 
 /-! ## Renaming as a special case of substitution.
 
@@ -565,6 +578,7 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _ => rfl
   | .universe _ _, _ => rfl
+  | .nat, _ => rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -620,6 +634,7 @@ theorem Ty.subst_id {level scope : Nat} :
       exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
   | .bool => rfl
   | .universe _ _ => rfl
+  | .nat => rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -694,6 +709,7 @@ theorem Ty.subst_compose {level s m t : Nat} :
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
+  | .nat, _, _ => rfl
 
 /-! ## Monoid laws for Renaming and Subst.
 
@@ -4690,6 +4706,22 @@ example {scope target : Nat} (ρ : Renaming scope target) :
 example {scope target : Nat} (σ : Subst 1 scope target) :
     (Ty.universe (level := 1) (scope := scope) 0 rfl).subst σ
       = Ty.universe (level := 1) (scope := target) 0 rfl :=
+  rfl
+
+/-- `Ty.nat` is level-polymorphic — exists at any universe level. -/
+example : Ty 0 0 := Ty.nat
+example : Ty 5 7 := Ty.nat
+
+/-- The natural-number type is preserved by renaming. -/
+example {level scope target : Nat} (ρ : Renaming scope target) :
+    (Ty.nat (level := level) (scope := scope)).rename ρ
+      = Ty.nat (level := level) (scope := target) :=
+  rfl
+
+/-- The natural-number type is preserved by substitution. -/
+example {level scope target : Nat} (σ : Subst level scope target) :
+    (Ty.nat (level := level) (scope := scope)).subst σ
+      = Ty.nat (level := level) (scope := target) :=
   rfl
 
 /-- A single Step lifts to multi-step. -/
