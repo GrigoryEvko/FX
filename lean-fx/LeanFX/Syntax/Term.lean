@@ -4501,4 +4501,84 @@ theorem Conv.boolElim_cong
       (Conv.boolElim_cong_then scrutinee₂ elseBr₁ h_then)
       (Conv.boolElim_cong_else scrutinee₂ thenBr₂ h_else))
 
+/-! ## `Step.par.toStar` — parallel reduction lifts to multi-step.
+
+Each Step.par constructor decomposes into a sequence of single Step's
+chained via StepStar congruences.  Subterm-parallel cases use the
+corresponding StepStar congruence directly; β/Σ cases chain congruences
+first then append a final Step.beta_* via StepStar.append; ι cases
+similarly chain boolElim_cong with Step.iota_*; η cases lift directly
+via Step.toStar.
+
+Placed AFTER StepStar.append and the boolean StepStar congruences
+(which v1.49 needs but were originally defined later in the file).
+
+Together with Step.toPar (v1.48), this establishes the bridge between
+StepStar and the reflexive-transitive closure of Step.par — the
+Tait–Martin-Löf reformulation that makes confluence tractable. -/
+theorem Step.par.toStar
+    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {t₁ t₂ : Term ctx T} : Step.par t₁ t₂ → StepStar t₁ t₂
+  | .refl t                  => StepStar.refl t
+  | .app par_f par_a         =>
+      StepStar.app_cong (Step.par.toStar par_f) (Step.par.toStar par_a)
+  | .lam par_body            =>
+      StepStar.lam_cong (Step.par.toStar par_body)
+  | .lamPi par_body          =>
+      StepStar.lamPi_cong (Step.par.toStar par_body)
+  | .appPi par_f par_a       =>
+      StepStar.appPi_cong (Step.par.toStar par_f) (Step.par.toStar par_a)
+  | .pair par_v par_w        =>
+      StepStar.pair_cong (Step.par.toStar par_v) (Step.par.toStar par_w)
+  | .fst par_p               => StepStar.fst_cong (Step.par.toStar par_p)
+  | .snd par_p               => StepStar.snd_cong (Step.par.toStar par_p)
+  | .boolElim par_s par_t par_e =>
+      StepStar.boolElim_cong
+        (Step.par.toStar par_s)
+        (Step.par.toStar par_t)
+        (Step.par.toStar par_e)
+  | .betaApp (body' := body') (arg' := arg') par_body par_arg =>
+      -- StepStar (app (lam body) arg) (app (lam body') arg')
+      --   via app_cong of lam_cong (par_body.toStar) and par_arg.toStar
+      -- then Step.betaApp body' arg' completes the β-step.
+      StepStar.append
+        (StepStar.app_cong
+          (StepStar.lam_cong (Step.par.toStar par_body))
+          (Step.par.toStar par_arg))
+        (Step.betaApp body' arg')
+  | .betaAppPi (body' := body') (arg' := arg') par_body par_arg =>
+      StepStar.append
+        (StepStar.appPi_cong
+          (StepStar.lamPi_cong (Step.par.toStar par_body))
+          (Step.par.toStar par_arg))
+        (Step.betaAppPi body' arg')
+  | .betaFstPair (firstVal' := v') secondVal par_v =>
+      StepStar.append
+        (StepStar.fst_cong
+          (StepStar.pair_cong
+            (Step.par.toStar par_v) (StepStar.refl secondVal)))
+        (Step.betaFstPair v' secondVal)
+  | .betaSndPair (secondVal' := w') firstVal par_w =>
+      StepStar.append
+        (StepStar.snd_cong
+          (StepStar.pair_cong
+            (StepStar.refl firstVal) (Step.par.toStar par_w)))
+        (Step.betaSndPair firstVal w')
+  | .iotaBoolElimTrue (thenBr' := t') elseBr par_t =>
+      StepStar.append
+        (StepStar.boolElim_cong
+          (StepStar.refl Term.boolTrue)
+          (Step.par.toStar par_t)
+          (StepStar.refl elseBr))
+        (Step.iotaBoolElimTrue t' elseBr)
+  | .iotaBoolElimFalse (elseBr' := e') thenBr par_e =>
+      StepStar.append
+        (StepStar.boolElim_cong
+          (StepStar.refl Term.boolFalse)
+          (StepStar.refl thenBr)
+          (Step.par.toStar par_e))
+        (Step.iotaBoolElimFalse thenBr e')
+  | .etaArrow f              => Step.toStar (Step.etaArrow f)
+  | .etaSigma p              => Step.toStar (Step.etaSigma p)
+
 end LeanFX.Syntax
