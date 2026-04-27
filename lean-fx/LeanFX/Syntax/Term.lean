@@ -1986,462 +1986,6 @@ theorem TermSubst.lift_compose_pointwise_zero
     (congrArg Γ₃.cons (Ty.subst_compose newType σ₁ σ₂))
     ⟨0, Nat.zero_lt_succ _⟩
 
-/-! ## Term-level subst-weaken commute.
-
-Goal:
-
-  Term.subst (σt.lift X) (Term.weaken X t)
-    ≃HEq≃
-  Term.weaken (X.subst σ) (Term.subst σt t)
-
-Term-level analogue of `Ty.subst_weaken_commute`; the missing piece
-for full `Term.subst_compose`.  Closed-context cases follow; the
-binder cases (`lam`, `lamPi`) require a term-level rename-subst
-commute and are deferred. -/
-
-/-! ### Leaf cases. -/
-
-/-- Leaf case: `Term.subst (σt.lift X) (Term.weaken X (Term.var i))
-    ≃ Term.weaken (X.subst σ) (Term.subst σt (Term.var i))`.
-
-LHS reduces definitionally:
-
-  Term.weaken X (Term.var i)
-    = Term.var (Fin.succ i)               -- TermRenaming.weaken's
-                                          --   per-position witness is rfl
-  Term.subst (σt.lift X) (Term.var i.succ)
-    = (σt.lift X) (Fin.succ i)
-    = (Ty.subst_weaken_commute (varType Γ i) σ).symm ▸
-        Term.weaken (X.subst σ) (σt i)    -- TermSubst.lift's `k+1` arm
-
-RHS reduces:
-
-  Term.subst σt (Term.var i) = σt i
-  Term.weaken (X.subst σ) (σt i)
-
-LHS and RHS differ only by the outer cast on LHS; `eqRec_heq`
-strips it. -/
-theorem Term.subst_weaken_commute_HEq_var
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope) (i : Fin scope) :
-    HEq
-      (Term.subst (σt.lift X)
-        (Term.weaken X (Term.var (context := Γ) i)))
-      (Term.weaken (X.subst σ)
-        (Term.subst σt (Term.var (context := Γ) i))) := by
-  show HEq
-    ((Ty.subst_weaken_commute (varType Γ i) σ).symm ▸
-        Term.weaken (X.subst σ) (σt i))
-    (Term.weaken (X.subst σ) (σt i))
-  exact eqRec_heq _ _
-
-/-- Leaf case: `Term.subst (σt.lift X) (Term.weaken X Term.unit) ≃
-    Term.weaken (X.subst σ) (Term.subst σt Term.unit)`.
-
-Both sides reduce definitionally to `Term.unit` in the same
-context (`Δ.cons (X.subst σ)`).  HEq via `HEq.refl _`. -/
-theorem Term.subst_weaken_commute_HEq_unit
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope) :
-    HEq
-      (Term.subst (σt.lift X)
-        (Term.weaken X (Term.unit (context := Γ))))
-      (Term.weaken (X.subst σ)
-        (Term.subst σt (Term.unit (context := Γ)))) :=
-  HEq.refl _
-
-/-- Leaf case for `boolTrue` — same shape as `unit`, both sides
-reduce to `Term.boolTrue` in the same context. -/
-theorem Term.subst_weaken_commute_HEq_boolTrue
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope) :
-    HEq
-      (Term.subst (σt.lift X)
-        (Term.weaken X (Term.boolTrue (context := Γ))))
-      (Term.weaken (X.subst σ)
-        (Term.subst σt (Term.boolTrue (context := Γ)))) :=
-  HEq.refl _
-
-/-- Leaf case for `boolFalse` — same shape as `unit` and
-`boolTrue`. -/
-theorem Term.subst_weaken_commute_HEq_boolFalse
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope) :
-    HEq
-      (Term.subst (σt.lift X)
-        (Term.weaken X (Term.boolFalse (context := Γ))))
-      (Term.weaken (X.subst σ)
-        (Term.subst σt (Term.boolFalse (context := Γ)))) :=
-  HEq.refl _
-
-/-! ### Closed-context recursive cases — no-cast subset (`app`, `boolElim`). -/
-
-/-- Closed-context recursive case for `app`.  No casts on either
-side because `Term.weaken X` and `Term.subst σt` both push
-through `Term.app` definitionally.  Combine via
-`Term.app_HEq_congr` with type-equalities `Ty.subst_weaken_commute`
-on each of T₁, T₂. -/
-theorem Term.subst_weaken_commute_HEq_app
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope)
-    {T₁ T₂ : Ty scope}
-    (f : Term Γ (T₁.arrow T₂)) (a : Term Γ T₁)
-    (ih_f : HEq
-              (Term.subst (σt.lift X) (Term.weaken X f))
-              (Term.weaken (X.subst σ) (Term.subst σt f)))
-    (ih_a : HEq
-              (Term.subst (σt.lift X) (Term.weaken X a))
-              (Term.weaken (X.subst σ) (Term.subst σt a))) :
-    HEq
-      (Term.subst (σt.lift X) (Term.weaken X (Term.app f a)))
-      (Term.weaken (X.subst σ) (Term.subst σt (Term.app f a))) := by
-  show HEq
-    (Term.app
-      (Term.subst (σt.lift X) (Term.weaken X f))
-      (Term.subst (σt.lift X) (Term.weaken X a)))
-    (Term.app
-      (Term.weaken (X.subst σ) (Term.subst σt f))
-      (Term.weaken (X.subst σ) (Term.subst σt a)))
-  exact Term.app_HEq_congr
-    (Ty.subst_weaken_commute T₁ σ)
-    (Ty.subst_weaken_commute T₂ σ)
-    _ _ ih_f
-    _ _ ih_a
-
-/-- Closed-context recursive case for `boolElim`.  Analogous to
-`app`: no casts, push through both `Term.weaken X` and
-`Term.subst (σt.lift X)`, combine via `Term.boolElim_HEq_congr`.
-The scrutinee `s` lives at `Ty.bool` which has no variables, so
-its type is unchanged across substitution + weakening — HEq on
-the scrutinee collapses to Eq via `eq_of_heq`. -/
-theorem Term.subst_weaken_commute_HEq_boolElim
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope)
-    {result : Ty scope}
-    (s : Term Γ Ty.bool) (t : Term Γ result) (e : Term Γ result)
-    (ih_s : HEq
-              (Term.subst (σt.lift X) (Term.weaken X s))
-              (Term.weaken (X.subst σ) (Term.subst σt s)))
-    (ih_t : HEq
-              (Term.subst (σt.lift X) (Term.weaken X t))
-              (Term.weaken (X.subst σ) (Term.subst σt t)))
-    (ih_e : HEq
-              (Term.subst (σt.lift X) (Term.weaken X e))
-              (Term.weaken (X.subst σ) (Term.subst σt e))) :
-    HEq
-      (Term.subst (σt.lift X)
-        (Term.weaken X (Term.boolElim s t e)))
-      (Term.weaken (X.subst σ)
-        (Term.subst σt (Term.boolElim s t e))) := by
-  show HEq
-    (Term.boolElim
-      (Term.subst (σt.lift X) (Term.weaken X s))
-      (Term.subst (σt.lift X) (Term.weaken X t))
-      (Term.subst (σt.lift X) (Term.weaken X e)))
-    (Term.boolElim
-      (Term.weaken (X.subst σ) (Term.subst σt s))
-      (Term.weaken (X.subst σ) (Term.subst σt t))
-      (Term.weaken (X.subst σ) (Term.subst σt e)))
-  exact Term.boolElim_HEq_congr
-    (Ty.subst_weaken_commute result σ)
-    _ _ (eq_of_heq ih_s)
-    _ _ ih_t
-    _ _ ih_e
-
-/-! ### Closed-context cases bearing sigmaTy/piTy second-component lifts.
-
-The `fst`/`snd`/`pair`/`appPi` cases have second-component types at
-`Ty (scope + 1)` threading through a binder-lift on both Term.weaken
-and Term.subst sides.  The bridge equation
-
-  (second.rename Renaming.weaken.lift).subst σ.lift.lift
-    = (second.subst σ.lift).rename Renaming.weaken.lift
-
-follows from `Ty.rename_subst_commute` + a pointwise Subst
-equivalence + `Ty.subst_rename_commute.symm`. -/
-
-/-- Pointwise equivalence at the double-lift level used by all four
-sigmaTy/piTy second-component bridges.  Position 0 is `rfl`; position
-`k+1` is `Ty.rename_weaken_commute (σ ⟨k, _⟩) Renaming.weaken`.symm. -/
-theorem Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift
-    {s t : Nat} (σ : Subst s t) :
-    Subst.equiv
-      (Subst.precompose (@Renaming.weaken s).lift σ.lift.lift)
-      (Subst.renameAfter σ.lift (@Renaming.weaken t).lift) := fun i =>
-  match i with
-  | ⟨0, _⟩       => rfl
-  | ⟨k + 1, hk⟩  =>
-      (Ty.rename_weaken_commute
-        (σ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) Renaming.weaken).symm
-
-/-- Closed-context recursive case for `fst`.  No casts on
-either side (Term.weaken X and Term.subst σt both push through
-`Term.fst` definitionally), but the type-level h_second
-equation requires the rename-subst commute chain plus the
-pointwise equivalence above.  Combine via
-`Term.fst_HEq_congr` with h_first = `Ty.subst_weaken_commute
-first σ` and h_second from the chain. -/
-theorem Term.subst_weaken_commute_HEq_fst
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope)
-    {first : Ty scope} {second : Ty (scope + 1)}
-    (p : Term Γ (Ty.sigmaTy first second))
-    (ih_p : HEq
-              (Term.subst (σt.lift X) (Term.weaken X p))
-              (Term.weaken (X.subst σ) (Term.subst σt p))) :
-    HEq
-      (Term.subst (σt.lift X) (Term.weaken X (Term.fst p)))
-      (Term.weaken (X.subst σ) (Term.subst σt (Term.fst p))) := by
-  show HEq
-    (Term.fst (Term.subst (σt.lift X) (Term.weaken X p)))
-    (Term.fst (Term.weaken (X.subst σ) (Term.subst σt p)))
-  -- Bridge the second-component sigmaTy types via the
-  -- rename-subst commute chain.
-  have h_second :
-      (second.rename Renaming.weaken.lift).subst σ.lift.lift
-        = (second.subst σ.lift).rename Renaming.weaken.lift :=
-    (Ty.rename_subst_commute second Renaming.weaken.lift σ.lift.lift).trans
-      ((Ty.subst_congr
-          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
-          second).trans
-        (Ty.subst_rename_commute second σ.lift Renaming.weaken.lift).symm)
-  exact Term.fst_HEq_congr
-    (Ty.subst_weaken_commute first σ)
-    h_second
-    _ _ ih_p
-
-/-! ### Cast-through-Term.weaken HEq helper, and the `snd` case.
-
-`Term.weaken_HEq_cast_input` is the weaken-side counterpart of
-`Term.subst_HEq_cast_input`.  The `snd` case is `fst` plus the
-matching cast-strips on `Term.subst`'s and `Term.rename`'s
-`(Ty.subst0_*_commute).symm ▸` wrappers. -/
-
-/-- Push a propositional type-cast on the input of `Term.weaken X`
-out to an HEq.  `cases h; rfl` once the equation is trivialized. -/
-theorem Term.weaken_HEq_cast_input
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    (X : Ty scope) {T₁ T₂ : Ty scope} (h : T₁ = T₂) (t : Term Γ T₁) :
-    HEq (Term.weaken X (h ▸ t)) (Term.weaken X t) := by
-  cases h
-  rfl
-
-/-- Closed-context recursive case for `snd`.  Both `Term.weaken X`
-and `Term.subst σt` wrap the resulting `Term.snd` in
-`(Ty.subst0_*_commute).symm ▸` casts; the proof strips both via
-`eqRec_heq` and the cast-input helpers, then applies
-`Term.snd_HEq_congr` with the same h_first / h_second pair as
-`fst`. -/
-theorem Term.subst_weaken_commute_HEq_snd
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope)
-    {first : Ty scope} {second : Ty (scope + 1)}
-    (p : Term Γ (Ty.sigmaTy first second))
-    (ih_p : HEq
-              (Term.subst (σt.lift X) (Term.weaken X p))
-              (Term.weaken (X.subst σ) (Term.subst σt p))) :
-    HEq
-      (Term.subst (σt.lift X) (Term.weaken X (Term.snd p)))
-      (Term.weaken (X.subst σ) (Term.subst σt (Term.snd p))) := by
-  -- Same h_second equation as fst.
-  have h_second :
-      (second.rename Renaming.weaken.lift).subst σ.lift.lift
-        = (second.subst σ.lift).rename Renaming.weaken.lift :=
-    (Ty.rename_subst_commute second Renaming.weaken.lift σ.lift.lift).trans
-      ((Ty.subst_congr
-          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
-          second).trans
-        (Ty.subst_rename_commute second σ.lift Renaming.weaken.lift).symm)
-  -- LHS path:
-  --   Term.weaken X (Term.snd p)
-  --   = (Ty.subst0_rename_commute second first Renaming.weaken).symm ▸
-  --       Term.snd (Term.weaken X p)
-  --   Term.subst (σt.lift X) on this casted term — push cast
-  --   through via Term.subst_HEq_cast_input, then Term.subst's
-  --   snd clause emits a (Ty.subst0_subst_commute ...).symm ▸
-  --   wrapper.
-  apply HEq.trans
-    (Term.subst_HEq_cast_input
-      (σt.lift X)
-      (Ty.subst0_rename_commute second first Renaming.weaken).symm
-      (Term.snd (Term.weaken X p)))
-  -- After helper: HEq (Term.subst (σt.lift X) (Term.snd (Term.weaken X p))) RHS
-  -- Term.subst's snd clause:
-  show HEq
-    ((Ty.subst0_subst_commute (second.rename Renaming.weaken.lift)
-        (first.rename Renaming.weaken) σ.lift).symm ▸
-      Term.snd (Term.subst (σt.lift X) (Term.weaken X p)))
-    _
-  -- Strip outer cast on LHS via eqRec_heq.
-  apply HEq.trans (eqRec_heq _ _)
-  -- Now: HEq (Term.snd (Term.subst (σt.lift X) (Term.weaken X p)))
-  --          (Term.weaken (X.subst σ) (Term.subst σt (Term.snd p)))
-  --
-  -- RHS path: flip and process Term.weaken (X.subst σ) on a casted Term.snd.
-  apply HEq.symm
-  -- Term.subst σt (Term.snd p) =
-  --   (Ty.subst0_subst_commute second first σ).symm ▸ Term.snd (Term.subst σt p)
-  -- Term.weaken (X.subst σ) on casted — push through.
-  apply HEq.trans
-    (Term.weaken_HEq_cast_input
-      (X.subst σ)
-      (Ty.subst0_subst_commute second first σ).symm
-      (Term.snd (Term.subst σt p)))
-  -- After helper: HEq (Term.weaken (X.subst σ) (Term.snd (Term.subst σt p))) LHS
-  -- Term.weaken's snd clause:
-  show HEq
-    ((Ty.subst0_rename_commute (second.subst σ.lift) (first.subst σ)
-        Renaming.weaken).symm ▸
-      Term.snd (Term.weaken (X.subst σ) (Term.subst σt p)))
-    _
-  -- Strip outer cast.
-  apply HEq.trans (eqRec_heq _ _)
-  -- Flip back to LHS-orientation.
-  apply HEq.symm
-  -- Now: HEq (Term.snd (Term.subst (σt.lift X) (Term.weaken X p)))
-  --          (Term.snd (Term.weaken (X.subst σ) (Term.subst σt p)))
-  -- Apply Term.snd_HEq_congr.
-  exact Term.snd_HEq_congr
-    (Ty.subst_weaken_commute first σ)
-    h_second
-    _ _ ih_p
-
-/-! ### `pair` closed-context case.
-
-The outer `Term.pair` has no cast in either clause, but the
-secondVal argument carries a `Ty.subst0_*_commute` cast on both
-sides — four nested casts after the outer `Term.subst` / `Term.weaken`
-push through.  The `h_w` HEq peels these in onion-layer order. -/
-theorem Term.subst_weaken_commute_HEq_pair
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope)
-    {first : Ty scope} {second : Ty (scope + 1)}
-    (v : Term Γ first) (w : Term Γ (second.subst0 first))
-    (ih_v : HEq
-              (Term.subst (σt.lift X) (Term.weaken X v))
-              (Term.weaken (X.subst σ) (Term.subst σt v)))
-    (ih_w : HEq
-              (Term.subst (σt.lift X) (Term.weaken X w))
-              (Term.weaken (X.subst σ) (Term.subst σt w))) :
-    HEq
-      (Term.subst (σt.lift X) (Term.weaken X (Term.pair v w)))
-      (Term.weaken (X.subst σ) (Term.subst σt (Term.pair v w))) := by
-  -- Same h_second as fst/snd.
-  have h_second :
-      (second.rename Renaming.weaken.lift).subst σ.lift.lift
-        = (second.subst σ.lift).rename Renaming.weaken.lift :=
-    (Ty.rename_subst_commute second Renaming.weaken.lift σ.lift.lift).trans
-      ((Ty.subst_congr
-          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
-          second).trans
-        (Ty.subst_rename_commute second σ.lift Renaming.weaken.lift).symm)
-  -- Apply Term.pair_HEq_congr first; Lean computes the actual
-  -- goal-shape with whatever cast forms it produces internally.
-  -- The first three args (h_first, h_second, h_v) discharge
-  -- directly; the secondVal HEq goal is resolved by the
-  -- four-cast chain inline.
-  apply Term.pair_HEq_congr
-    (Ty.subst_weaken_commute first σ)
-    h_second
-    _ _ ih_v
-  -- Goal: HEq of secondVal arguments.  Strip outer cast on LHS.
-  apply HEq.trans (eqRec_heq _ _)
-  -- Push the inner cast on LHS through Term.subst via v1.26 helper.
-  apply HEq.trans
-    (Term.subst_HEq_cast_input
-      (σt.lift X)
-      (Ty.subst0_rename_commute second first Renaming.weaken)
-      (Term.weaken X w))
-  -- Bridge via IH on w.
-  apply HEq.trans ih_w
-  -- Flip and process RHS.
-  apply HEq.symm
-  -- Strip outer cast on RHS.
-  apply HEq.trans (eqRec_heq _ _)
-  -- Push the inner cast on RHS through Term.weaken via v1.31 helper.
-  exact Term.weaken_HEq_cast_input
-    (X.subst σ)
-    (Ty.subst0_subst_commute second first σ)
-    (Term.subst σt w)
-
-/-! ### `appPi` closed-context case.
-
-Final closed-context case.  `appPi` combines `snd`'s outer-cast
-pattern with `app`'s two-subterm shape; uses the same h_cod
-sigmaTy-second-component bridge as `fst`. -/
-theorem Term.subst_weaken_commute_HEq_appPi
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (X : Ty scope)
-    {dom : Ty scope} {cod : Ty (scope + 1)}
-    (f : Term Γ (Ty.piTy dom cod)) (a : Term Γ dom)
-    (ih_f : HEq
-              (Term.subst (σt.lift X) (Term.weaken X f))
-              (Term.weaken (X.subst σ) (Term.subst σt f)))
-    (ih_a : HEq
-              (Term.subst (σt.lift X) (Term.weaken X a))
-              (Term.weaken (X.subst σ) (Term.subst σt a))) :
-    HEq
-      (Term.subst (σt.lift X) (Term.weaken X (Term.appPi f a)))
-      (Term.weaken (X.subst σ) (Term.subst σt (Term.appPi f a))) := by
-  -- Same h_cod as fst/snd/pair (cod : Ty (scope+1) lift bridge).
-  have h_cod :
-      (cod.rename Renaming.weaken.lift).subst σ.lift.lift
-        = (cod.subst σ.lift).rename Renaming.weaken.lift :=
-    (Ty.rename_subst_commute cod Renaming.weaken.lift σ.lift.lift).trans
-      ((Ty.subst_congr
-          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
-          cod).trans
-        (Ty.subst_rename_commute cod σ.lift Renaming.weaken.lift).symm)
-  -- LHS: Term.weaken X (Term.appPi f a) emits a cast wrapping
-  -- Term.appPi.  Push cast through Term.subst via v1.26 helper.
-  apply HEq.trans
-    (Term.subst_HEq_cast_input
-      (σt.lift X)
-      (Ty.subst0_rename_commute cod dom Renaming.weaken).symm
-      (Term.appPi (Term.weaken X f) (Term.weaken X a)))
-  -- Now LHS = Term.subst (σt.lift X) (Term.appPi (...) (...))
-  -- Strip outer cast from Term.subst's appPi clause.
-  apply HEq.trans (eqRec_heq _ _)
-  -- Flip and process RHS.
-  apply HEq.symm
-  -- Term.subst σt (Term.appPi f a) emits a cast wrapping Term.appPi.
-  -- Push cast through Term.weaken via v1.31 helper.
-  apply HEq.trans
-    (Term.weaken_HEq_cast_input
-      (X.subst σ)
-      (Ty.subst0_subst_commute cod dom σ).symm
-      (Term.appPi (Term.subst σt f) (Term.subst σt a)))
-  -- Strip outer cast from Term.weaken's appPi clause.
-  apply HEq.trans (eqRec_heq _ _)
-  -- Flip back to LHS-orientation.
-  apply HEq.symm
-  -- Apply Term.appPi_HEq_congr.
-  exact Term.appPi_HEq_congr
-    (Ty.subst_weaken_commute dom σ)
-    h_cod
-    _ _ ih_f
-    _ _ ih_a
-
 /-! ## `Term.rename_HEq_pointwise`.
 
 Two TermRenamings whose underlying Renamings agree pointwise produce
@@ -3389,6 +2933,73 @@ theorem Term.rename_subst_commute_HEq
       (Subst.lift_precompose_commute ρ σ')
       (TermSubst.lift_precompose_pointwise ρt σt' dom)
       body
+
+/-! ## `Term.subst_weaken_commute_HEq`.
+
+Term-level analogue of `Ty.subst_weaken_commute`:
+
+  Term.subst (σt.lift X) (Term.weaken X t)
+    ≃HEq≃
+  Term.weaken (X.subst σ) (Term.subst σt t)
+
+Direct corollary of v1.40 + v1.42 — no fresh structural induction.
+Both sides factor into rename/subst forms (since `Term.weaken X t`
+is `Term.rename (TermRenaming.weaken Γ X) t`).  v1.42 collapses
+LHS to `Term.subst (precompose (weaken Γ X) (σt.lift X)) t`; v1.40
+collapses RHS to `Term.subst (renameAfter σt (weaken Δ (X.subst σ))) t`.
+The two underlying Substs (`precompose Renaming.weaken σ.lift` and
+`renameAfter σ Renaming.weaken`) are pointwise rfl-equal — both
+reduce to `(σ i).weaken`.  `Term.subst_HEq_pointwise` (v1.24)
+bridges them.
+
+This subsumes the v1.28–v1.33 standalone closed-context case
+lemmas (`Term.subst_weaken_commute_HEq_{var,unit,boolTrue,boolFalse,
+app,boolElim,fst,snd,pair,appPi}`); the binder cases (`lam`,
+`lamPi`) that were missing in those layered theorems are now
+covered by the same corollary.  Mirrors v1.38 exactly. -/
+theorem Term.subst_weaken_commute_HEq
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (newType : Ty scope) {T : Ty scope} (t : Term Γ T) :
+    HEq (Term.subst (σt.lift newType) (Term.weaken newType t))
+        (Term.weaken (newType.subst σ) (Term.subst σt t)) := by
+  -- Unfold both Term.weaken applications into Term.rename.
+  show HEq
+    (Term.subst (σt.lift newType)
+      (Term.rename (TermRenaming.weaken Γ newType) t))
+    (Term.rename (TermRenaming.weaken Δ (newType.subst σ))
+      (Term.subst σt t))
+  -- Collapse LHS via v1.42 to a single composed subst.
+  apply HEq.trans
+    (Term.rename_subst_commute_HEq
+      (TermRenaming.weaken Γ newType)
+      (σt.lift newType)
+      t)
+  -- Same for RHS via v1.40, in symm orientation.
+  apply HEq.symm
+  apply HEq.trans
+    (Term.subst_rename_commute_HEq
+      σt
+      (TermRenaming.weaken Δ (newType.subst σ))
+      t)
+  apply HEq.symm
+  -- The two composed underlying Substs agree pointwise — `fun _ => rfl`.
+  -- The pointwise HEq between the term-level composed TermSubsts
+  -- follows from the cast-strip identity: at each i both reduce
+  -- (modulo casts) to `Term.weaken (newType.subst σ) (σt i)`.
+  exact Term.subst_HEq_pointwise rfl
+    (TermSubst.precompose
+      (TermRenaming.weaken Γ newType) (σt.lift newType))
+    (TermSubst.renameAfter σt
+      (TermRenaming.weaken Δ (newType.subst σ)))
+    (fun _ => rfl)
+    (fun _ => by
+      apply HEq.trans (eqRec_heq _ _)
+      apply HEq.trans (eqRec_heq _ _)
+      apply HEq.symm
+      exact eqRec_heq _ _)
+    t
 
 /-! ## Typed reduction (`Step`, `StepStar`).
 
