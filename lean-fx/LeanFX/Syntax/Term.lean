@@ -631,6 +631,37 @@ theorem Ty.subst_compose :
       have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
 
+/-- Pointwise equivalence linking the two singleton-substitution
+formulations: substitution-then-rename equals lifted-rename-then-
+substitution-with-renamed-substituent.  The auxiliary lemma needed for
+the `Ty.subst0_rename_commute` derivation. -/
+theorem Subst.singleton_renameAfter_equiv_precompose {scope target : Nat}
+    (A : Ty scope) (ρ : Renaming scope target) :
+    Subst.equiv (Subst.renameAfter (Subst.singleton A) ρ)
+                (Subst.precompose ρ.lift (Subst.singleton (A.rename ρ))) :=
+  fun i => match i with
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
+/-- **Single-variable substitution-rename commute** — the practical
+specialisation that unblocks `Term.rename`'s `appPi`/`pair`/`snd`
+cases.  Substituting the outermost variable then renaming equals
+lifted-renaming the codomain then substituting with the renamed
+substituent.
+
+Proven by chaining the general lemmas (`subst_rename_commute`,
+`rename_subst_commute`) with the singleton-substitution pointwise
+equivalence — no fresh structural induction needed.  Showcases how
+the v1.7 algebraic structure subsumes ad-hoc lemmas. -/
+theorem Ty.subst0_rename_commute {scope target : Nat}
+    (T : Ty (scope + 1)) (A : Ty scope) (ρ : Renaming scope target) :
+    (T.subst0 A).rename ρ = (T.rename ρ.lift).subst0 (A.rename ρ) := by
+  have h1 := Ty.subst_rename_commute T (Subst.singleton A) ρ
+  have h2 := Ty.subst_congr
+    (Subst.singleton_renameAfter_equiv_precompose A ρ) T
+  have h3 := Ty.rename_subst_commute T ρ.lift (Subst.singleton (A.rename ρ))
+  exact h1.trans (h2.trans h3.symm)
+
 /-! ## Contexts
 
 `Ctx mode scope` is a typed context at the given mode containing
