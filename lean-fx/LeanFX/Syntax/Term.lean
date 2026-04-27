@@ -3063,6 +3063,197 @@ theorem TermSubst.lift_compose_pointwise
         (varType Γ₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ₁ σ₂).symm
       _ _ (eqRec_heq _ _)
 
+/-! ## `Term.subst_compose`.
+
+The cap-stone of substitution functoriality at the term level:
+
+  Term.subst σt₂ (Term.subst σt₁ t)
+    ≃HEq≃
+  Term.subst (TermSubst.compose σt₁ σt₂) t
+
+Both sides have type `Term Γ₃ T'` for propositionally-equal `T'`s
+(`((T.subst σ₁).subst σ₂)` vs `T.subst (Subst.compose σ₁ σ₂)`,
+bridged by `Ty.subst_compose`).  HEq carries the difference.
+
+12-case structural induction on the term.
+
+  * Closed-context cases (var, unit/boolTrue/boolFalse, app, fst,
+    boolElim) combine constructor HEq congruences with
+    `Ty.subst_compose` at each Ty index.
+  * Cast-bearing cases (appPi/pair/snd) peel outer casts via
+    `eqRec_heq` and push inner casts through
+    `Term.subst_HEq_cast_input`.  The sigmaTy/piTy second-component
+    bridge chains `Ty.subst_compose` at scope+1 with
+    `Subst.lift_compose_equiv`.
+  * Binder cases (lam, lamPi) recurse via the IH at lifted
+    TermSubsts (`lift σt₁ dom` and `lift σt₂ (dom.subst σ₁)`),
+    then bridge `compose (lift σt₁) (lift σt₂)` against
+    `lift (compose σt₁ σt₂)` via `Term.subst_HEq_pointwise` (v1.24)
+    over `TermSubst.lift_compose_pointwise` (v1.44).
+
+Mirrors v1.40 / v1.42 with subst on both sides instead of mixed
+subst+rename. -/
+theorem Term.subst_compose_HEq
+    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂) :
+    {T : Ty scope₁} → (t : Term Γ₁ T) →
+      HEq (Term.subst σt₂ (Term.subst σt₁ t))
+          (Term.subst (TermSubst.compose σt₁ σt₂) t)
+  | _, .var i => by
+    -- LHS: Term.subst σt₂ (σt₁ i).
+    -- RHS: (compose σt₁ σt₂) i = (Ty.subst_compose ...) ▸ Term.subst σt₂ (σt₁ i).
+    show HEq (Term.subst σt₂ (σt₁ i))
+      ((Ty.subst_compose (varType Γ₁ i) σ₁ σ₂)
+        ▸ Term.subst σt₂ (σt₁ i))
+    exact (eqRec_heq _ _).symm
+  | _, .unit => HEq.refl _
+  | _, .boolTrue => HEq.refl _
+  | _, .boolFalse => HEq.refl _
+  | _, .app (domainType := dom) (codomainType := cod) f a => by
+    show HEq
+      (Term.app (Term.subst σt₂ (Term.subst σt₁ f))
+                (Term.subst σt₂ (Term.subst σt₁ a)))
+      (Term.app (Term.subst (TermSubst.compose σt₁ σt₂) f)
+                (Term.subst (TermSubst.compose σt₁ σt₂) a))
+    exact Term.app_HEq_congr
+      (Ty.subst_compose dom σ₁ σ₂)
+      (Ty.subst_compose cod σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ f)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ a)
+  | _, .fst (firstType := first) (secondType := second) p => by
+    show HEq
+      (Term.fst (Term.subst σt₂ (Term.subst σt₁ p)))
+      (Term.fst (Term.subst (TermSubst.compose σt₁ σt₂) p))
+    apply Term.fst_HEq_congr
+      (Ty.subst_compose first σ₁ σ₂)
+      ((Ty.subst_compose second σ₁.lift σ₂.lift).trans
+        (Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) second))
+    exact Term.subst_compose_HEq σt₁ σt₂ p
+  | _, .boolElim (resultType := result) s t e => by
+    show HEq
+      (Term.boolElim (Term.subst σt₂ (Term.subst σt₁ s))
+                     (Term.subst σt₂ (Term.subst σt₁ t))
+                     (Term.subst σt₂ (Term.subst σt₁ e)))
+      (Term.boolElim (Term.subst (TermSubst.compose σt₁ σt₂) s)
+                     (Term.subst (TermSubst.compose σt₁ σt₂) t)
+                     (Term.subst (TermSubst.compose σt₁ σt₂) e))
+    exact Term.boolElim_HEq_congr
+      (Ty.subst_compose result σ₁ σ₂)
+      _ _ (eq_of_heq (Term.subst_compose_HEq σt₁ σt₂ s))
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ t)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ e)
+  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
+    apply HEq.trans
+      (Term.subst_HEq_cast_input σt₂
+        (Ty.subst0_subst_commute cod dom σ₁).symm
+        (Term.appPi (Term.subst σt₁ f) (Term.subst σt₁ a)))
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.symm
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.symm
+    exact Term.appPi_HEq_congr
+      (Ty.subst_compose dom σ₁ σ₂)
+      ((Ty.subst_compose cod σ₁.lift σ₂.lift).trans
+        (Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) cod))
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ f)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ a)
+  | _, .pair (firstType := first) (secondType := second) v w => by
+    apply Term.pair_HEq_congr
+      (Ty.subst_compose first σ₁ σ₂)
+      ((Ty.subst_compose second σ₁.lift σ₂.lift).trans
+        (Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) second))
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ v)
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans
+      (Term.subst_HEq_cast_input σt₂
+        (Ty.subst0_subst_commute second first σ₁)
+        (Term.subst σt₁ w))
+    apply HEq.trans (Term.subst_compose_HEq σt₁ σt₂ w)
+    exact (eqRec_heq _ _).symm
+  | _, .snd (firstType := first) (secondType := second) p => by
+    apply HEq.trans
+      (Term.subst_HEq_cast_input σt₂
+        (Ty.subst0_subst_commute second first σ₁).symm
+        (Term.snd (Term.subst σt₁ p)))
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.symm
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.symm
+    exact Term.snd_HEq_congr
+      (Ty.subst_compose first σ₁ σ₂)
+      ((Ty.subst_compose second σ₁.lift σ₂.lift).trans
+        (Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) second))
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ p)
+  | _, .lam (domainType := dom) (codomainType := cod) body => by
+    apply Term.lam_HEq_congr
+      (Ty.subst_compose dom σ₁ σ₂)
+      (Ty.subst_compose cod σ₁ σ₂)
+    -- Strip outer cast on LHS.
+    apply HEq.trans (eqRec_heq _ _)
+    -- Push inner cast through Term.subst.
+    apply HEq.trans
+      (Term.subst_HEq_cast_input
+        (TermSubst.lift σt₂ (dom.subst σ₁))
+        (Ty.subst_weaken_commute cod σ₁)
+        (Term.subst (TermSubst.lift σt₁ dom) body))
+    -- IH on body with the lifts.
+    apply HEq.trans
+      (Term.subst_compose_HEq
+        (TermSubst.lift σt₁ dom)
+        (TermSubst.lift σt₂ (dom.subst σ₁))
+        body)
+    -- Bridge compose-of-lifts to lift-of-compose.
+    apply HEq.symm
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.symm
+    exact Term.subst_HEq_pointwise
+      (congrArg Γ₃.cons (Ty.subst_compose dom σ₁ σ₂))
+      (TermSubst.compose
+        (TermSubst.lift σt₁ dom)
+        (TermSubst.lift σt₂ (dom.subst σ₁)))
+      (TermSubst.lift (TermSubst.compose σt₁ σt₂) dom)
+      (Subst.lift_compose_equiv σ₁ σ₂)
+      (fun i =>
+        (TermSubst.lift_compose_pointwise σt₁ σt₂ dom i).symm)
+      body
+  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
+    apply Term.lamPi_HEq_congr
+      (Ty.subst_compose dom σ₁ σ₂)
+      ((Ty.subst_compose cod σ₁.lift σ₂.lift).trans
+        (Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) cod))
+    apply HEq.trans
+      (Term.subst_compose_HEq
+        (TermSubst.lift σt₁ dom)
+        (TermSubst.lift σt₂ (dom.subst σ₁))
+        body)
+    exact Term.subst_HEq_pointwise
+      (congrArg Γ₃.cons (Ty.subst_compose dom σ₁ σ₂))
+      (TermSubst.compose
+        (TermSubst.lift σt₁ dom)
+        (TermSubst.lift σt₂ (dom.subst σ₁)))
+      (TermSubst.lift (TermSubst.compose σt₁ σt₂) dom)
+      (Subst.lift_compose_equiv σ₁ σ₂)
+      (fun i =>
+        (TermSubst.lift_compose_pointwise σt₁ σt₂ dom i).symm)
+      body
+
+/-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
+the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
+from `Term.subst_id_HEq`. -/
+theorem Term.subst_compose
+    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
+    {T : Ty scope₁} (t : Term Γ₁ T) :
+    Term.subst σt₂ (Term.subst σt₁ t)
+      = (Ty.subst_compose T σ₁ σ₂).symm
+          ▸ Term.subst (TermSubst.compose σt₁ σt₂) t :=
+  eq_of_heq
+    ((Term.subst_compose_HEq σt₁ σt₂ t).trans (eqRec_heq _ _).symm)
+
 /-! ## Typed reduction (`Step`, `StepStar`).
 
 `Step t₁ t₂` is `Prop`-valued and shares its `{ctx} {T}` indices
