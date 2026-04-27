@@ -2924,6 +2924,71 @@ theorem Term.subst_weaken_commute_HEq_pair
     (Ty.subst0_subst_commute second first σ)
     (Term.subst σt w)
 
+/-! ### v1.33 — Closed-context appPi case for subst-weaken commute.
+
+Final closed-context case: `appPi` carries casts on the OUTER
+Term.appPi in both Term.subst's and Term.rename's clauses
+(combining snd's outer-cast pattern with app's two-subterm
+shape).  The proof mirrors v1.31's snd peel pattern but
+combines via `Term.appPi_HEq_congr` with TWO subterm IHs
+(ih_f, ih_a), and the cod-component HEq uses the same v1.30
+sigmaTy-second-component bridge as fst (cod and "second" both
+live at Ty (scope+1) with identical lift structure). -/
+theorem Term.subst_weaken_commute_HEq_appPi
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope)
+    {dom : Ty scope} {cod : Ty (scope + 1)}
+    (f : Term Γ (Ty.piTy dom cod)) (a : Term Γ dom)
+    (ih_f : HEq
+              (Term.subst (σt.lift X) (Term.weaken X f))
+              (Term.weaken (X.subst σ) (Term.subst σt f)))
+    (ih_a : HEq
+              (Term.subst (σt.lift X) (Term.weaken X a))
+              (Term.weaken (X.subst σ) (Term.subst σt a))) :
+    HEq
+      (Term.subst (σt.lift X) (Term.weaken X (Term.appPi f a)))
+      (Term.weaken (X.subst σ) (Term.subst σt (Term.appPi f a))) := by
+  -- Same h_cod as fst/snd/pair (cod : Ty (scope+1) lift bridge).
+  have h_cod :
+      (cod.rename Renaming.weaken.lift).subst σ.lift.lift
+        = (cod.subst σ.lift).rename Renaming.weaken.lift :=
+    (Ty.rename_subst_commute cod Renaming.weaken.lift σ.lift.lift).trans
+      ((Ty.subst_congr
+          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
+          cod).trans
+        (Ty.subst_rename_commute cod σ.lift Renaming.weaken.lift).symm)
+  -- LHS: Term.weaken X (Term.appPi f a) emits a cast wrapping
+  -- Term.appPi.  Push cast through Term.subst via v1.26 helper.
+  apply HEq.trans
+    (Term.subst_HEq_cast_input
+      (σt.lift X)
+      (Ty.subst0_rename_commute cod dom Renaming.weaken).symm
+      (Term.appPi (Term.weaken X f) (Term.weaken X a)))
+  -- Now LHS = Term.subst (σt.lift X) (Term.appPi (...) (...))
+  -- Strip outer cast from Term.subst's appPi clause.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Flip and process RHS.
+  apply HEq.symm
+  -- Term.subst σt (Term.appPi f a) emits a cast wrapping Term.appPi.
+  -- Push cast through Term.weaken via v1.31 helper.
+  apply HEq.trans
+    (Term.weaken_HEq_cast_input
+      (X.subst σ)
+      (Ty.subst0_subst_commute cod dom σ).symm
+      (Term.appPi (Term.subst σt f) (Term.subst σt a)))
+  -- Strip outer cast from Term.weaken's appPi clause.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Flip back to LHS-orientation.
+  apply HEq.symm
+  -- Apply Term.appPi_HEq_congr.
+  exact Term.appPi_HEq_congr
+    (Ty.subst_weaken_commute dom σ)
+    h_cod
+    _ _ ih_f
+    _ _ ih_a
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
