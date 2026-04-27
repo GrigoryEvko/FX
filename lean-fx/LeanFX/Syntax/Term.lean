@@ -2361,6 +2361,92 @@ theorem Term.subst_HEq_cast_input
   cases h
   rfl
 
+/-! ### v1.27 — `TermSubst.lift_compose_pointwise` at position 0.
+
+The compose-side analogue of `TermSubst.lift_identity_pointwise`
+(v1.20) for the `⟨0, _⟩` Fin position only.  The `⟨k+1, _⟩`
+position requires a Term-level subst-weaken commute lemma
+(deferred to a later version) and is proved as a separate
+companion theorem.
+
+The position-0 case alone is independently useful: it witnesses
+that lifting a composed term-substitution under a binder agrees
+HEq with composing the two lifts, **on the freshly-bound
+variable**.  Since v1.20's `lift_identity_pointwise` had no
+position-0 vs position-`k+1` asymmetry (both reduce to a casted
+Term.var), the compose-side asymmetry comes from
+`TermSubst.compose`'s definition: at position 0 the inner
+subterm is a casted `Term.var`, which `Term.subst` reduces via
+its `var` arm; at position `k+1` the inner subterm is
+`Term.weaken`, which has no such direct reduction rule.
+
+The differences between LHS and RHS at position 0 are:
+
+  * **Target context**: `Γ₃.cons (newType.subst (Subst.compose σ₁ σ₂))`
+    (LHS) vs `Γ₃.cons ((newType.subst σ₁).subst σ₂)` (RHS).
+    Bridged by `Ty.subst_compose newType σ₁ σ₂`.
+  * **Underlying substitution**: `(Subst.compose σ₁ σ₂).lift`
+    (LHS) vs `Subst.compose σ₁.lift σ₂.lift` (RHS).
+    Bridged by `Subst.lift_compose_equiv`.
+
+The proof strips outer casts on both sides via `eqRec_heq`,
+pushes the inner cast through `Term.subst` via
+`Term.subst_HEq_cast_input` (v1.26), reduces `Term.subst σt
+(Term.var ⟨0, _⟩)` to `σt ⟨0, _⟩` definitionally, and bridges
+the resulting naked `Term.var` values via
+`heq_var_across_ctx_eq` over the context equality. -/
+theorem TermSubst.lift_compose_pointwise_zero
+    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
+    (newType : Ty scope₁) :
+    HEq
+      (TermSubst.lift (TermSubst.compose σt₁ σt₂) newType
+        ⟨0, Nat.zero_lt_succ _⟩)
+      (TermSubst.compose (σt₁.lift newType)
+                          (σt₂.lift (newType.subst σ₁))
+        ⟨0, Nat.zero_lt_succ _⟩) := by
+  -- LHS = (Ty.subst_weaken_commute newType (Subst.compose σ₁ σ₂)).symm ▸
+  --        Term.var (context := Γ₃.cons (newType.subst (Subst.compose σ₁ σ₂))) ⟨0, _⟩
+  --
+  -- RHS = Ty.subst_compose newType.weaken σ₁.lift σ₂.lift ▸
+  --        Term.subst (σt₂.lift (newType.subst σ₁))
+  --          ((Ty.subst_weaken_commute newType σ₁).symm ▸
+  --            Term.var (context := Γ₂.cons (newType.subst σ₁)) ⟨0, _⟩)
+  --
+  -- Strip outer cast on LHS via eqRec_heq.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Goal: HEq (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩) RHS
+  --
+  -- Flip and strip outer cast on RHS too.
+  apply HEq.symm
+  apply HEq.trans (eqRec_heq _ _)
+  -- Goal: HEq (Term.subst (σt₂.lift _) (cast ▸ Term.var ⟨0, _⟩))
+  --           (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩)
+  --
+  -- Push the inner cast out through Term.subst via v1.26 helper.
+  apply HEq.trans
+    (Term.subst_HEq_cast_input
+      (σt₂.lift (newType.subst σ₁))
+      (Ty.subst_weaken_commute newType σ₁).symm
+      (Term.var (context := Γ₂.cons (newType.subst σ₁))
+        ⟨0, Nat.zero_lt_succ _⟩))
+  -- Goal: HEq (Term.subst (σt₂.lift _) (Term.var ⟨0, _⟩))
+  --           (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩)
+  --
+  -- Term.subst σt (Term.var i) ≡ σt i (Term.subst's var arm).
+  show HEq ((σt₂.lift (newType.subst σ₁)) ⟨0, Nat.zero_lt_succ _⟩) _
+  -- (σt₂.lift X) ⟨0, _⟩ = (Ty.subst_weaken_commute X σ₂).symm ▸ Term.var ⟨0, _⟩
+  apply HEq.trans (eqRec_heq _ _)
+  -- Goal: HEq (Term.var (context := Γ₃.cons ((newType.subst σ₁).subst σ₂)) ⟨0, _⟩)
+  --           (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩)
+  --
+  -- Bridge via Ty.subst_compose newType σ₁ σ₂ at the context level.
+  exact heq_var_across_ctx_eq
+    (congrArg Γ₃.cons (Ty.subst_compose newType σ₁ σ₂))
+    ⟨0, Nat.zero_lt_succ _⟩
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
