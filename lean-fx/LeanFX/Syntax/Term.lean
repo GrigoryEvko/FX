@@ -2447,6 +2447,120 @@ theorem TermSubst.lift_compose_pointwise_zero
     (congrArg Γ₃.cons (Ty.subst_compose newType σ₁ σ₂))
     ⟨0, Nat.zero_lt_succ _⟩
 
+/-! ### v1.28 — Term-level subst-weaken commute, leaf cases.
+
+The theorem we ultimately want (general form):
+
+  Term.subst (σt.lift X) (Term.weaken X t) ≃HEq≃
+    Term.weaken (X.subst σ) (Term.subst σt t)
+
+This is the term-level analogue of `Ty.subst_weaken_commute`
+(line 655) — the central lemma for substitution functoriality
+at the Term level.  It is the missing piece for both
+`Term.subst_compose` (full functoriality) and
+`TermSubst.lift_compose_pointwise`'s `k+1` case (the position-0
+case landed at v1.27).
+
+The proof is a 12-case structural induction on `t`.  We ship it
+in three layers:
+
+  * v1.28 (this section) — the four leaf cases `var`, `unit`,
+    `boolTrue`, `boolFalse`.  Each is a cast-cancellation via
+    `eqRec_heq` on a definitionally-reducing left-hand side.
+  * v1.29 — the closed-context recursive cases (`app`, `fst`,
+    `boolElim`, plus the cast-bearing `appPi`, `pair`, `snd`).
+    Recurse on subterms; the binder-free cases combine via
+    constructor-HEq congruences.
+  * v1.30 — the binder cases (`lam`, `lamPi`).  Need a Term-level
+    rename-subst commute helper because the body lives under an
+    extra binder where `Term.weaken X` lifts to `TermRenaming.lift`
+    and `σt.lift X` further lifts to `TermSubst.lift`.
+
+Splitting this way matches the discipline of v1.22 → v1.23 →
+v1.24 (leaf → closed-context → binder) and lands axiom-free at
+each step. -/
+
+/-- Leaf case: `Term.subst (σt.lift X) (Term.weaken X (Term.var i))
+    ≃ Term.weaken (X.subst σ) (Term.subst σt (Term.var i))`.
+
+LHS reduces definitionally:
+
+  Term.weaken X (Term.var i)
+    = Term.var (Fin.succ i)               -- TermRenaming.weaken's
+                                          --   per-position witness is rfl
+  Term.subst (σt.lift X) (Term.var i.succ)
+    = (σt.lift X) (Fin.succ i)
+    = (Ty.subst_weaken_commute (varType Γ i) σ).symm ▸
+        Term.weaken (X.subst σ) (σt i)    -- TermSubst.lift's `k+1` arm
+
+RHS reduces:
+
+  Term.subst σt (Term.var i) = σt i
+  Term.weaken (X.subst σ) (σt i)
+
+LHS and RHS differ only by the outer cast on LHS; `eqRec_heq`
+strips it. -/
+theorem Term.subst_weaken_commute_HEq_var
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope) (i : Fin scope) :
+    HEq
+      (Term.subst (σt.lift X)
+        (Term.weaken X (Term.var (context := Γ) i)))
+      (Term.weaken (X.subst σ)
+        (Term.subst σt (Term.var (context := Γ) i))) := by
+  show HEq
+    ((Ty.subst_weaken_commute (varType Γ i) σ).symm ▸
+        Term.weaken (X.subst σ) (σt i))
+    (Term.weaken (X.subst σ) (σt i))
+  exact eqRec_heq _ _
+
+/-- Leaf case: `Term.subst (σt.lift X) (Term.weaken X Term.unit) ≃
+    Term.weaken (X.subst σ) (Term.subst σt Term.unit)`.
+
+Both sides reduce definitionally to `Term.unit` in the same
+context (`Δ.cons (X.subst σ)`).  HEq via `HEq.refl _`. -/
+theorem Term.subst_weaken_commute_HEq_unit
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope) :
+    HEq
+      (Term.subst (σt.lift X)
+        (Term.weaken X (Term.unit (context := Γ))))
+      (Term.weaken (X.subst σ)
+        (Term.subst σt (Term.unit (context := Γ)))) :=
+  HEq.refl _
+
+/-- Leaf case for `boolTrue` — same shape as `unit`, both sides
+reduce to `Term.boolTrue` in the same context. -/
+theorem Term.subst_weaken_commute_HEq_boolTrue
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope) :
+    HEq
+      (Term.subst (σt.lift X)
+        (Term.weaken X (Term.boolTrue (context := Γ))))
+      (Term.weaken (X.subst σ)
+        (Term.subst σt (Term.boolTrue (context := Γ)))) :=
+  HEq.refl _
+
+/-- Leaf case for `boolFalse` — same shape as `unit` and
+`boolTrue`. -/
+theorem Term.subst_weaken_commute_HEq_boolFalse
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope) :
+    HEq
+      (Term.subst (σt.lift X)
+        (Term.weaken X (Term.boolFalse (context := Γ))))
+      (Term.weaken (X.subst σ)
+        (Term.subst σt (Term.boolFalse (context := Γ)))) :=
+  HEq.refl _
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
