@@ -3894,6 +3894,221 @@ theorem StepStar.snd_cong {mode scope} {ctx : Ctx mode scope}
   | .step s rest =>
       StepStar.step (Step.sndCong s) (StepStar.snd_cong rest)
 
+/-! ## Parallel reduction (`Step.par`) — confluence groundwork.
+
+The parallel-reduction relation is the standard Tait–Martin-Löf vehicle
+for proving confluence of `Step`: rather than reduce one redex at a time,
+`Step.par` allows simultaneous reduction in *all* subterms in a single
+step.  Crucially it is reflexive, so any subterm may "reduce" by zero
+steps.
+
+Key properties (proved here / deferred):
+
+  * `Step.par` is reflexive — `Step.par.refl t : Step.par t t`.  Direct
+    constructor.
+  * `Step → Step.par` — each single Step lifts trivially (this layer).
+  * `Step.par → StepStar` — each parallel rule decomposes into a
+    sequence of single Step's.  Substantial; deferred.
+  * **Diamond property** for `Step.par`: if `Step.par t t₁` and
+    `Step.par t t₂`, there exists `t'` with `Step.par t₁ t'` and
+    `Step.par t₂ t'`.  This is the Tait–Martin-Löf "strip lemma"
+    + confluence chain.  Deferred to a follow-on task; once proved,
+    confluence of `StepStar` (and hence decidability of `Conv` over
+    canonical forms) follows.
+
+Subject preservation is structural: input and output share `{ctx} {T}`
+indices, so every `Step.par` proof witnesses same-typed reduction. -/
+inductive Step.par :
+    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
+    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+  /-- Reflexivity — any term parallel-reduces to itself in zero steps. -/
+  | refl :
+      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+        (t : Term ctx T),
+      Step.par t t
+  /-- Parallel reduction inside a non-dependent application. -/
+  | app :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        {f f' : Term ctx (.arrow domainType codomainType)}
+        {a a' : Term ctx domainType},
+      Step.par f f' → Step.par a a' →
+      Step.par (Term.app f a) (Term.app f' a')
+  /-- Parallel reduction inside a non-dependent λ-abstraction's body. -/
+  | lam :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        {body body' : Term (ctx.cons domainType) codomainType.weaken},
+      Step.par body body' →
+      Step.par (Term.lam (codomainType := codomainType) body)
+               (Term.lam (codomainType := codomainType) body')
+  /-- Parallel reduction inside a dependent λ-abstraction's body. -/
+  | lamPi :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        {body body' : Term (ctx.cons domainType) codomainType},
+      Step.par body body' →
+      Step.par (Term.lamPi (domainType := domainType) body)
+               (Term.lamPi (domainType := domainType) body')
+  /-- Parallel reduction inside a dependent application. -/
+  | appPi :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        {f f' : Term ctx (.piTy domainType codomainType)}
+        {a a' : Term ctx domainType},
+      Step.par f f' → Step.par a a' →
+      Step.par (Term.appPi f a) (Term.appPi f' a')
+  /-- Parallel reduction inside a Σ-pair's two components. -/
+  | pair :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {firstVal firstVal' : Term ctx firstType}
+        {secondVal secondVal' : Term ctx (secondType.subst0 firstType)},
+      Step.par firstVal firstVal' → Step.par secondVal secondVal' →
+      Step.par (Term.pair firstVal secondVal)
+               (Term.pair firstVal' secondVal')
+  /-- Parallel reduction inside a first projection. -/
+  | fst :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {p p' : Term ctx (.sigmaTy firstType secondType)},
+      Step.par p p' → Step.par (Term.fst p) (Term.fst p')
+  /-- Parallel reduction inside a second projection. -/
+  | snd :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {p p' : Term ctx (.sigmaTy firstType secondType)},
+      Step.par p p' → Step.par (Term.snd p) (Term.snd p')
+  /-- Parallel reduction inside all three positions of a `boolElim`. -/
+  | boolElim :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        {scrutinee scrutinee' : Term ctx Ty.bool}
+        {thenBr thenBr' : Term ctx resultType}
+        {elseBr elseBr' : Term ctx resultType},
+      Step.par scrutinee scrutinee' →
+      Step.par thenBr thenBr' →
+      Step.par elseBr elseBr' →
+      Step.par (Term.boolElim scrutinee thenBr elseBr)
+               (Term.boolElim scrutinee' thenBr' elseBr')
+  /-- **Parallel β-reduction (non-dependent)**: `(λ. body) arg →
+  body[arg/x]` with parallel reductions in body and arg before
+  substitution.  This is the rule that makes confluence work — both the
+  body and the argument may reduce in lockstep with the contraction. -/
+  | betaApp :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        {body body' : Term (ctx.cons domainType) codomainType.weaken}
+        {arg arg' : Term ctx domainType},
+      Step.par body body' → Step.par arg arg' →
+      Step.par (Term.app (Term.lam (codomainType := codomainType) body) arg)
+               ((Ty.weaken_subst_singleton codomainType domainType) ▸
+                  Term.subst0 body' arg')
+  /-- **Parallel β-reduction (dependent)**: `(λ. body) arg ⟶
+  body[arg/x]` with parallel reductions in body and arg.  No cast
+  needed because `body.subst0 arg : Term ctx (codomainType.subst0
+  domainType)` matches `Term.appPi`'s declared result type exactly. -/
+  | betaAppPi :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        {body body' : Term (ctx.cons domainType) codomainType}
+        {arg arg' : Term ctx domainType},
+      Step.par body body' → Step.par arg arg' →
+      Step.par (Term.appPi (Term.lamPi (domainType := domainType) body) arg)
+               (Term.subst0 body' arg')
+  /-- **Parallel Σ first projection**: `fst (pair a b) → a'` with
+  `Step.par a a'`. -/
+  | betaFstPair :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {firstVal firstVal' : Term ctx firstType}
+        (secondVal : Term ctx (secondType.subst0 firstType)),
+      Step.par firstVal firstVal' →
+      Step.par (Term.fst
+                 (Term.pair (firstType := firstType)
+                            (secondType := secondType) firstVal secondVal))
+               firstVal'
+  /-- **Parallel Σ second projection**: `snd (pair a b) → b'` with
+  `Step.par b b'`. -/
+  | betaSndPair :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        (firstVal : Term ctx firstType)
+        {secondVal secondVal' : Term ctx (secondType.subst0 firstType)},
+      Step.par secondVal secondVal' →
+      Step.par (Term.snd
+                 (Term.pair (firstType := firstType)
+                            (secondType := secondType) firstVal secondVal))
+               secondVal'
+  /-- **Parallel ι-reduction on `boolTrue`**: `boolElim true t e → t'`
+  with `Step.par t t'`. -/
+  | iotaBoolElimTrue :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        {thenBr thenBr' : Term ctx resultType}
+        (elseBr : Term ctx resultType),
+      Step.par thenBr thenBr' →
+      Step.par (Term.boolElim Term.boolTrue thenBr elseBr) thenBr'
+  /-- **Parallel ι-reduction on `boolFalse`**: `boolElim false t e →
+  e'` with `Step.par e e'`. -/
+  | iotaBoolElimFalse :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {resultType : Ty scope}
+        (thenBr : Term ctx resultType)
+        {elseBr elseBr' : Term ctx resultType},
+      Step.par elseBr elseBr' →
+      Step.par (Term.boolElim Term.boolFalse thenBr elseBr) elseBr'
+  /-- **η-contraction for non-dependent arrow** at the parallel level.
+  Same shape as `Step.etaArrow`: the η-redex `λx. f.weaken x` contracts
+  to `f`.  No subterm-parallel rule because the redex shape is rigid
+  (the body must be specifically `f.weaken x`); confluence with βι
+  composes through this rule by post-applying the η-contraction. -/
+  | etaArrow :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        (f : Term ctx (Ty.arrow domainType codomainType)),
+      Step.par (Term.lam (codomainType := codomainType)
+                  (Term.app (Term.weaken domainType f)
+                            (Term.var ⟨0, Nat.zero_lt_succ _⟩)))
+               f
+  /-- **η-contraction for Σ-pair** at the parallel level. -/
+  | etaSigma :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        (p : Term ctx (Ty.sigmaTy firstType secondType)),
+      Step.par (Term.pair (firstType := firstType)
+                           (secondType := secondType)
+                  (Term.fst p) (Term.snd p))
+               p
+
+/-- Single-step reduction lifts to parallel reduction.  Each `Step`
+constructor has a corresponding `Step.par` form where the non-changing
+subterm reduces by reflexivity. -/
+theorem Step.toPar
+    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {t₁ t₂ : Term ctx T} : Step t₁ t₂ → Step.par t₁ t₂
+  | .appLeft s            => .app (Step.toPar s) (.refl _)
+  | .appRight s           => .app (.refl _) (Step.toPar s)
+  | .lamBody s            => .lam (Step.toPar s)
+  | .appPiLeft s          => .appPi (Step.toPar s) (.refl _)
+  | .appPiRight s         => .appPi (.refl _) (Step.toPar s)
+  | .lamPiBody s          => .lamPi (Step.toPar s)
+  | .pairLeft s           => .pair (Step.toPar s) (.refl _)
+  | .pairRight s          => .pair (.refl _) (Step.toPar s)
+  | .fstCong s            => .fst (Step.toPar s)
+  | .sndCong s            => .snd (Step.toPar s)
+  | .betaApp body arg     => .betaApp (.refl body) (.refl arg)
+  | .betaAppPi body arg   => .betaAppPi (.refl body) (.refl arg)
+  | .betaFstPair v w      => .betaFstPair w (.refl v)
+  | .betaSndPair v w      => .betaSndPair v (.refl w)
+  | .etaArrow f           => .etaArrow f
+  | .etaSigma p           => .etaSigma p
+  | .boolElimScrutinee s  => .boolElim (Step.toPar s) (.refl _) (.refl _)
+  | .boolElimThen s       => .boolElim (.refl _) (Step.toPar s) (.refl _)
+  | .boolElimElse s       => .boolElim (.refl _) (.refl _) (Step.toPar s)
+  | .iotaBoolElimTrue t e => .iotaBoolElimTrue e (.refl t)
+  | .iotaBoolElimFalse t e => .iotaBoolElimFalse t (.refl e)
+
 /-! ## Definitional conversion (`Conv`).
 
 Symmetric / reflexive / transitive closure of `Step`.  Minimal
