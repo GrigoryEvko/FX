@@ -2561,6 +2561,102 @@ theorem Term.subst_weaken_commute_HEq_boolFalse
         (Term.subst σt (Term.boolFalse (context := Γ)))) :=
   HEq.refl _
 
+/-! ### v1.29 — Term-level subst-weaken commute, closed-context
+recursive cases (no-cast subset).
+
+The next layer above v1.28's leaves: closed-context constructors
+`app` and `boolElim`.  Each takes IH hypotheses for its
+subterms (since they aren't yet packaged inside the eventual
+full structural induction).  Both reduce cleanly: `Term.weaken X`
+on the constructor pushes through, `Term.subst (σt.lift X)` on
+the constructor pushes through, and the resulting two sides are
+combined via the constructor-specific HEq congruence.
+
+The remaining four closed-context cases (`fst`, `snd`, `pair`,
+`appPi`) involve sigmaTy/piTy second-component lifts whose
+type-level equation requires the full rename-subst commute
+chain.  Those land in v1.30.
+
+The two binder cases (`lam`, `lamPi`) need Term-level lift-of-lift
+mechanics and land in v1.31.  The full structural-induction
+theorem combining all 12 cases is v1.32. -/
+
+/-- Closed-context recursive case for `app`.  No casts on either
+side because `Term.weaken X` and `Term.subst σt` both push
+through `Term.app` definitionally.  Combine via
+`Term.app_HEq_congr` with type-equalities `Ty.subst_weaken_commute`
+on each of T₁, T₂. -/
+theorem Term.subst_weaken_commute_HEq_app
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope)
+    {T₁ T₂ : Ty scope}
+    (f : Term Γ (T₁.arrow T₂)) (a : Term Γ T₁)
+    (ih_f : HEq
+              (Term.subst (σt.lift X) (Term.weaken X f))
+              (Term.weaken (X.subst σ) (Term.subst σt f)))
+    (ih_a : HEq
+              (Term.subst (σt.lift X) (Term.weaken X a))
+              (Term.weaken (X.subst σ) (Term.subst σt a))) :
+    HEq
+      (Term.subst (σt.lift X) (Term.weaken X (Term.app f a)))
+      (Term.weaken (X.subst σ) (Term.subst σt (Term.app f a))) := by
+  show HEq
+    (Term.app
+      (Term.subst (σt.lift X) (Term.weaken X f))
+      (Term.subst (σt.lift X) (Term.weaken X a)))
+    (Term.app
+      (Term.weaken (X.subst σ) (Term.subst σt f))
+      (Term.weaken (X.subst σ) (Term.subst σt a)))
+  exact Term.app_HEq_congr
+    (Ty.subst_weaken_commute T₁ σ)
+    (Ty.subst_weaken_commute T₂ σ)
+    _ _ ih_f
+    _ _ ih_a
+
+/-- Closed-context recursive case for `boolElim`.  Analogous to
+`app`: no casts, push through both `Term.weaken X` and
+`Term.subst (σt.lift X)`, combine via `Term.boolElim_HEq_congr`.
+The scrutinee `s` lives at `Ty.bool` which has no variables, so
+its type is unchanged across substitution + weakening — HEq on
+the scrutinee collapses to Eq via `eq_of_heq`. -/
+theorem Term.subst_weaken_commute_HEq_boolElim
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope)
+    {result : Ty scope}
+    (s : Term Γ Ty.bool) (t : Term Γ result) (e : Term Γ result)
+    (ih_s : HEq
+              (Term.subst (σt.lift X) (Term.weaken X s))
+              (Term.weaken (X.subst σ) (Term.subst σt s)))
+    (ih_t : HEq
+              (Term.subst (σt.lift X) (Term.weaken X t))
+              (Term.weaken (X.subst σ) (Term.subst σt t)))
+    (ih_e : HEq
+              (Term.subst (σt.lift X) (Term.weaken X e))
+              (Term.weaken (X.subst σ) (Term.subst σt e))) :
+    HEq
+      (Term.subst (σt.lift X)
+        (Term.weaken X (Term.boolElim s t e)))
+      (Term.weaken (X.subst σ)
+        (Term.subst σt (Term.boolElim s t e))) := by
+  show HEq
+    (Term.boolElim
+      (Term.subst (σt.lift X) (Term.weaken X s))
+      (Term.subst (σt.lift X) (Term.weaken X t))
+      (Term.subst (σt.lift X) (Term.weaken X e)))
+    (Term.boolElim
+      (Term.weaken (X.subst σ) (Term.subst σt s))
+      (Term.weaken (X.subst σ) (Term.subst σt t))
+      (Term.weaken (X.subst σ) (Term.subst σt e)))
+  exact Term.boolElim_HEq_congr
+    (Ty.subst_weaken_commute result σ)
+    _ _ (eq_of_heq ih_s)
+    _ _ ih_t
+    _ _ ih_e
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
