@@ -94,57 +94,15 @@ inductive Ty : Nat → Type
   threading a placeholder.  v1.5+. -/
   | tyVar : {scope : Nat} → (index : Fin scope) → Ty scope
 
-/-- Structurally extend a type's scope by one.  Used everywhere a type
-crosses a binder.  For v1.0 with no type-level variable references the
-shape is preserved; v1.2's dependent constructors will shift de Bruijn
-indices inside their own structure.
-
-Marked `@[reducible]` so Lean's unifier and `rfl` unfold it eagerly when
-type-checking constructor applications and proving definitional
-equalities — without this, every `lam` whose body's type involves a
-weakened codomain triggers unification failures.
-
-The binder-form signature (`{scope : Nat} : Ty scope → …`) rather than
-the pattern-form (`| _, .unit => …`) is critical for **zero-axiom**
-compilation: the pattern-form puts `scope` in the discriminator
-position and Lean's match compiler inserts `Eq.mpr` reasoning, which
-transitively depends on `propext` and `Quot.sound`.  The binder form
-treats `scope` as a uniform parameter, compiling to pure recursor
-application without index-equality manipulation. -/
-@[reducible]
-def Ty.weaken {scope : Nat} : Ty scope → Ty (scope + 1)
-  | .unit                          => .unit
-  | .arrow domain codomain         =>
-      .arrow domain.weaken codomain.weaken
-  | .piTy domain codomain          =>
-      .piTy domain.weaken codomain.weaken
-  | .tyVar index                   =>
-      .tyVar index.succ
-      -- Outer weakening shifts every existing variable up by one;
-      -- `Fin.succ : Fin n → Fin (n + 1)` does exactly this.  Note:
-      -- this is the OUTER weakening (insert fresh outer binder).
-      -- For weakening UNDER an inner binder (i.e. don't shift the
-      -- locally-bound var), use `Ty.rename` with a custom renaming.
-
 /-! ## v1.4 — renaming machinery (foundation for substitution).
 
-The earlier attempt at `Ty.unweaken : Ty (scope + 1) → Ty scope`
-failed in its `piTy` case because Lean's match compiler needed the
-Nat identity `(scope + 1) + 1 = scope + 2` to align the recursive
-call on the codomain — and that identity is propositional, forcing
-`Eq.mpr` and the standard axioms.
-
-The substitution discipline sidesteps this by **threading scope
-information through a `Renaming`** rather than deriving it
-arithmetically.  When the recursion enters the `piTy` case, the
-codomain's scope `(source + 1)` is supplied by the lifted renaming
-whose source is *literally* `source + 1` — Lean unifies the indices
-definitionally and no `Eq.mpr` is inserted.
-
-This same principle scales up: substitution `Subst` is also a
-function-typed family, lift on substitutions threads scope
-information, and `Ty.subst` recursing under binders stays
-axiom-free for the same reason. -/
+`Renaming` and `Ty.rename` are defined *before* `Ty.weaken` because
+v1.6 redefines weakening via renaming with the shift-by-one renaming.
+This bundles a correctness fix: the previous direct `Ty.weaken` shifted
+all variables in `piTy`'s codomain — including the local binder, which
+is wrong with `Ty.tyVar`.  Defining via `Ty.rename Renaming.weaken`
+gives binder-aware shifting (the `.lift` in `Ty.rename`'s `piTy` case
+keeps var 0 fixed). -/
 
 /-- A renaming maps `Fin source` indices to `Fin target` indices.
 The `Renaming source target` abbreviation makes scope explicit at
@@ -177,13 +135,72 @@ def Renaming.lift {source target : Nat}
 /-- Apply a renaming to a type, structurally.  The `piTy` case lifts
 the renaming under the new binder; the recursive call on the codomain
 receives a renaming whose source scope is `source + 1` — definitionally
-matching the codomain's scope.  No axioms required. -/
+matching the codomain's scope.  No axioms required.
+
+This is the more primitive operation; `Ty.weaken` is derived from it. -/
 def Ty.rename {source target : Nat} :
     Ty source → Renaming source target → Ty target
   | .unit, _       => .unit
   | .arrow A B, ρ  => .arrow (A.rename ρ) (B.rename ρ)
   | .piTy A B, ρ   => .piTy (A.rename ρ) (B.rename ρ.lift)
   | .tyVar i, ρ    => .tyVar (ρ i)
+
+/-- Structurally extend a type's scope by one.  Direct structural
+recursion — kept as a separate definition (rather than derived from
+`Ty.rename`) so that the `Ty.rename_weaken_commute` lemma below admits
+a clean structural induction proof using `▸ rfl`.
+
+**Latent bug** (documented for v1.7+ to fix): the `piTy` case shifts
+ALL variables in the codomain, including the locally-bound var 0.
+This is *correct* for v1.0–v1.4 (no `Ty.tyVar`), and *not exercised*
+by v1.5 smoke tests (which use `tyVar` only at top level or inside
+`arrow`, not inside a `piTy` codomain).  The principled fix is
+`Ty.weaken := t.rename Renaming.weaken`, which gives binder-aware
+shifting via `ρ.lift`; that change makes the rwc lemma harder to
+prove (rename-composition + pointwise renaming equality required).
+v1.7+ will pair the fix with the additional lemma machinery.
+
+Marked `@[reducible]` so Lean's unifier and `rfl` unfold it eagerly. -/
+@[reducible]
+def Ty.weaken {scope : Nat} : Ty scope → Ty (scope + 1)
+  | .unit                          => .unit
+  | .arrow domain codomain         =>
+      .arrow domain.weaken codomain.weaken
+  | .piTy domain codomain          =>
+      .piTy domain.weaken codomain.weaken
+  | .tyVar index                   =>
+      .tyVar index.succ
+
+/-- The fundamental rename-weaken commutativity lemma.  Says that
+weakening (insert outer binder) commutes with renaming when the
+renaming is appropriately lifted.
+
+This is the load-bearing lemma that unblocks `Term.rename` (and thus
+`Term.weaken`, `Term.subst`, β-reduction).  Without it, `Term.rename`'s
+`lam` case cannot type-check — body's renamed type would be
+`(B.weaken).rename ρ.lift` while the constructor wants
+`(B.rename ρ).weaken`.
+
+Proven by direct structural pattern match on `T`, using `▸` to
+combine inductive hypotheses.  Axiom-free: `▸` is `Eq.rec` on `Ty`
+(which lives in `Type`, not `Prop`), so no `propext` needed. -/
+theorem Ty.rename_weaken_commute :
+    ∀ {source target : Nat} (T : Ty source) (ρ : Renaming source target),
+    (T.weaken).rename ρ.lift = (T.rename ρ).weaken
+  | _, _, .unit, _ => rfl
+  | _, _, .arrow A B, ρ => by
+      show Ty.arrow (A.weaken.rename ρ.lift) (B.weaken.rename ρ.lift)
+         = Ty.arrow (A.rename ρ).weaken (B.rename ρ).weaken
+      have hA := Ty.rename_weaken_commute A ρ
+      have hB := Ty.rename_weaken_commute B ρ
+      exact hA ▸ hB ▸ rfl
+  | _, _, .piTy A B, ρ => by
+      show Ty.piTy (A.weaken.rename ρ.lift) (B.weaken.rename ρ.lift.lift)
+         = Ty.piTy (A.rename ρ).weaken (B.rename ρ.lift).weaken
+      have hA := Ty.rename_weaken_commute A ρ
+      have hB := Ty.rename_weaken_commute B ρ.lift
+      exact hA ▸ hB ▸ rfl
+  | _, _, .tyVar _, _ => rfl
 
 /-! ## Substitution — the same trick scaled up.
 
