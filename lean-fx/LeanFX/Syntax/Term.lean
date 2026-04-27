@@ -1915,6 +1915,138 @@ theorem Term.subst_id_HEq_boolFalse
         (Term.boolFalse (context := Γ)) :=
   HEq.refl _
 
+/-! ### v1.23 — `Term.subst_id_HEq` recursive cases — closed (non-binder).
+
+The constructor cases of `Term.subst_id_HEq` whose subterms live
+in the same context as the parent (no `TermSubst.lift` needed).
+Each takes the IH on each subterm as an HEq hypothesis and combines
+them via the v1.21 HEq-congruence helpers + `Ty.subst_id` for the
+type bridges.
+
+These case lemmas do **not** depend on the (still-pending)
+`Term.subst_HEq_pointwise` theorem.  They exist as standalone
+modules so that an eventual full induction over `Term` can simply
+invoke them — and so that downstream code that needs the closed
+cases can use them now.
+
+Three "simple" cases (no inner cast on the substituted result):
+`app`, `fst`, `boolElim`.
+
+Three "medium" cases (the `Term.subst` clause produces a
+`Ty.subst0_subst_commute`-cast on the result, which we strip via
+`eqRec_heq` before applying the constructor congruence): `appPi`,
+`pair`, `snd`. -/
+
+/-- Recursive HEq case of `Term.subst_id` for `app`. -/
+theorem Term.subst_id_HEq_app
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {T₁ T₂ : Ty scope}
+    (f : Term Γ (T₁.arrow T₂)) (a : Term Γ T₁)
+    (ih_f : HEq (Term.subst (TermSubst.identity Γ) f) f)
+    (ih_a : HEq (Term.subst (TermSubst.identity Γ) a) a) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.app f a))
+        (Term.app (context := Γ) f a) := by
+  show HEq (Term.app (Term.subst (TermSubst.identity Γ) f)
+                     (Term.subst (TermSubst.identity Γ) a))
+           (Term.app f a)
+  exact Term.app_HEq_congr (Ty.subst_id T₁) (Ty.subst_id T₂)
+    _ _ ih_f _ _ ih_a
+
+/-- Recursive HEq case of `Term.subst_id` for `fst`. -/
+theorem Term.subst_id_HEq_fst
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {first : Ty scope} {second : Ty (scope + 1)}
+    (p : Term Γ (Ty.sigmaTy first second))
+    (ih_p : HEq (Term.subst (TermSubst.identity Γ) p) p) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.fst p))
+        (Term.fst (context := Γ) p) := by
+  show HEq (Term.fst (Term.subst (TermSubst.identity Γ) p))
+           (Term.fst p)
+  apply Term.fst_HEq_congr (Ty.subst_id first)
+    ((Ty.subst_congr Subst.lift_identity_equiv second).trans
+     (Ty.subst_id second))
+  exact ih_p
+
+/-- Recursive HEq case of `Term.subst_id` for `boolElim`. -/
+theorem Term.subst_id_HEq_boolElim
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope} {result : Ty scope}
+    (s : Term Γ Ty.bool) (t : Term Γ result) (e : Term Γ result)
+    (ih_s : HEq (Term.subst (TermSubst.identity Γ) s) s)
+    (ih_t : HEq (Term.subst (TermSubst.identity Γ) t) t)
+    (ih_e : HEq (Term.subst (TermSubst.identity Γ) e) e) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.boolElim s t e))
+        (Term.boolElim (context := Γ) s t e) := by
+  show HEq (Term.boolElim
+            (Term.subst (TermSubst.identity Γ) s)
+            (Term.subst (TermSubst.identity Γ) t)
+            (Term.subst (TermSubst.identity Γ) e))
+           (Term.boolElim s t e)
+  apply Term.boolElim_HEq_congr (Ty.subst_id result)
+    _ _ (eq_of_heq ih_s)
+    _ _ ih_t
+    _ _ ih_e
+
+/-- Recursive HEq case of `Term.subst_id` for `appPi`.  The
+substituted result carries a `Ty.subst0_subst_commute` cast on
+the outside; `eqRec_heq` strips it before constructor congruence. -/
+theorem Term.subst_id_HEq_appPi
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {dom : Ty scope} {cod : Ty (scope + 1)}
+    (f : Term Γ (Ty.piTy dom cod)) (a : Term Γ dom)
+    (ih_f : HEq (Term.subst (TermSubst.identity Γ) f) f)
+    (ih_a : HEq (Term.subst (TermSubst.identity Γ) a) a) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.appPi f a))
+        (Term.appPi (context := Γ) f a) := by
+  show HEq
+    ((Ty.subst0_subst_commute cod dom Subst.identity).symm ▸
+      Term.appPi (Term.subst (TermSubst.identity Γ) f)
+                 (Term.subst (TermSubst.identity Γ) a))
+    (Term.appPi f a)
+  apply HEq.trans (eqRec_heq _ _)
+  exact Term.appPi_HEq_congr (Ty.subst_id dom)
+    ((Ty.subst_congr Subst.lift_identity_equiv cod).trans
+     (Ty.subst_id cod))
+    _ _ ih_f _ _ ih_a
+
+/-- Recursive HEq case of `Term.subst_id` for `pair`. -/
+theorem Term.subst_id_HEq_pair
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {first : Ty scope} {second : Ty (scope + 1)}
+    (v : Term Γ first) (w : Term Γ (second.subst0 first))
+    (ih_v : HEq (Term.subst (TermSubst.identity Γ) v) v)
+    (ih_w : HEq (Term.subst (TermSubst.identity Γ) w) w) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.pair v w))
+        (Term.pair (context := Γ) v w) := by
+  show HEq
+    (Term.pair (Term.subst (TermSubst.identity Γ) v)
+      ((Ty.subst0_subst_commute second first Subst.identity) ▸
+        (Term.subst (TermSubst.identity Γ) w)))
+    (Term.pair v w)
+  apply Term.pair_HEq_congr (Ty.subst_id first)
+    ((Ty.subst_congr Subst.lift_identity_equiv second).trans
+     (Ty.subst_id second))
+    _ _ ih_v
+  apply HEq.trans (eqRec_heq _ _)
+  exact ih_w
+
+/-- Recursive HEq case of `Term.subst_id` for `snd`. -/
+theorem Term.subst_id_HEq_snd
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {first : Ty scope} {second : Ty (scope + 1)}
+    (p : Term Γ (Ty.sigmaTy first second))
+    (ih_p : HEq (Term.subst (TermSubst.identity Γ) p) p) :
+    HEq (Term.subst (TermSubst.identity Γ) (Term.snd p))
+        (Term.snd (context := Γ) p) := by
+  show HEq
+    ((Ty.subst0_subst_commute second first Subst.identity).symm ▸
+      Term.snd (Term.subst (TermSubst.identity Γ) p))
+    (Term.snd p)
+  apply HEq.trans (eqRec_heq _ _)
+  apply Term.snd_HEq_congr (Ty.subst_id first)
+    ((Ty.subst_congr Subst.lift_identity_equiv second).trans
+     (Ty.subst_id second))
+  exact ih_p
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
