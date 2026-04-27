@@ -2657,6 +2657,92 @@ theorem Term.subst_weaken_commute_HEq_boolElim
     _ _ ih_t
     _ _ ih_e
 
+/-! ### v1.30 — Subst-level pointwise equivalence under double lift,
+plus the `fst` closed-context case for subst-weaken commute.
+
+The fst case differs from app / boolElim because the input
+`p : Term Γ (Ty.sigmaTy first second)` has a sigma type whose
+second component lives at `Ty (scope + 1)` and threads through
+a binder-lift on both Term.weaken X and Term.subst σt sides.
+
+For the natural HEq-congruence apply through `Term.fst_HEq_congr`,
+we need an equation between the two second-component types:
+
+  (second.rename Renaming.weaken.lift).subst σ.lift.lift
+    = (second.subst σ.lift).rename Renaming.weaken.lift
+
+This follows from chaining `Ty.rename_subst_commute` →
+`Ty.subst_congr` over a pointwise Subst equivalence →
+`Ty.subst_rename_commute.symm`.  The pointwise equivalence
+`Subst.precompose Renaming.weaken.lift σ.lift.lift ≡
+ Subst.renameAfter σ.lift Renaming.weaken.lift` is the new
+infrastructure — it specialises the general
+`Subst.lift_renameAfter_commute` and
+`Subst.lift_precompose_commute` to the weaken case at the
+double-lift level, where Fin position 0 is `rfl` and position
+k+1 is `Ty.rename_weaken_commute.symm`. -/
+
+/-- Pointwise equivalence: precomposing the lifted weakening
+renaming with a double-lifted substitution equals applying the
+lifted substitution then renameAftering by the lifted weakening.
+
+  Subst.precompose Renaming.weaken.lift σ.lift.lift
+    ≡pointwise≡
+  Subst.renameAfter σ.lift Renaming.weaken.lift
+
+At position 0 both sides reduce to `Ty.tyVar ⟨0, _⟩` (the
+freshly-bound variable).  At position `k+1` both sides reduce
+to a doubly-weakened `σ ⟨k, _⟩`; the equation is
+`Ty.rename_weaken_commute (σ ⟨k, _⟩) Renaming.weaken`.symm. -/
+theorem Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift
+    {s t : Nat} (σ : Subst s t) :
+    Subst.equiv
+      (Subst.precompose (@Renaming.weaken s).lift σ.lift.lift)
+      (Subst.renameAfter σ.lift (@Renaming.weaken t).lift) := fun i =>
+  match i with
+  | ⟨0, _⟩       => rfl
+  | ⟨k + 1, hk⟩  =>
+      (Ty.rename_weaken_commute
+        (σ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) Renaming.weaken).symm
+
+/-- Closed-context recursive case for `fst`.  No casts on
+either side (Term.weaken X and Term.subst σt both push through
+`Term.fst` definitionally), but the type-level h_second
+equation requires the rename-subst commute chain plus the
+pointwise equivalence above.  Combine via
+`Term.fst_HEq_congr` with h_first = `Ty.subst_weaken_commute
+first σ` and h_second from the chain. -/
+theorem Term.subst_weaken_commute_HEq_fst
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope)
+    {first : Ty scope} {second : Ty (scope + 1)}
+    (p : Term Γ (Ty.sigmaTy first second))
+    (ih_p : HEq
+              (Term.subst (σt.lift X) (Term.weaken X p))
+              (Term.weaken (X.subst σ) (Term.subst σt p))) :
+    HEq
+      (Term.subst (σt.lift X) (Term.weaken X (Term.fst p)))
+      (Term.weaken (X.subst σ) (Term.subst σt (Term.fst p))) := by
+  show HEq
+    (Term.fst (Term.subst (σt.lift X) (Term.weaken X p)))
+    (Term.fst (Term.weaken (X.subst σ) (Term.subst σt p)))
+  -- Bridge the second-component sigmaTy types via the
+  -- rename-subst commute chain.
+  have h_second :
+      (second.rename Renaming.weaken.lift).subst σ.lift.lift
+        = (second.subst σ.lift).rename Renaming.weaken.lift :=
+    (Ty.rename_subst_commute second Renaming.weaken.lift σ.lift.lift).trans
+      ((Ty.subst_congr
+          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
+          second).trans
+        (Ty.subst_rename_commute second σ.lift Renaming.weaken.lift).symm)
+  exact Term.fst_HEq_congr
+    (Ty.subst_weaken_commute first σ)
+    h_second
+    _ _ ih_p
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
