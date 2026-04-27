@@ -497,6 +497,140 @@ theorem Ty.rename_eq_subst :
       have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
 
+/-! ## Categorical structure: identity and composition.
+
+These lemmas turn `Subst` into a category enriched over `Ty`:
+
+  * `Subst.identity` is the identity object.
+  * `Subst.compose` (defined below the supporting weaken-commute lemma)
+    is the composition.
+  * `Ty.subst` is the action of this category on `Ty`.
+  * `Ty.subst_id` (identity law) and `Ty.subst_compose` (associativity
+    of action) make the action functorial.
+
+Together these say: substitution behaves algebraically. -/
+
+/-- The identity substitution maps each variable to its own tyVar
+reference.  Identity element of substitution composition. -/
+def Subst.identity {scope : Nat} : Subst scope scope := fun i => Ty.tyVar i
+
+/-- Lifting the identity substitution gives the identity at the
+extended scope (pointwise).  Both Fin cases are `rfl`. -/
+theorem Subst.lift_identity_equiv {scope : Nat} :
+    Subst.equiv (@Subst.identity scope).lift Subst.identity := fun i =>
+  match i with
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
+/-- **Identity law for substitution**: `T.subst Subst.identity = T`.
+The substitution that maps every variable to itself is the identity
+operation on `Ty`.  Proven by structural induction on `T`, using
+`.symm ▸` to rewrite the goal toward `rfl`. -/
+theorem Ty.subst_id :
+    ∀ {scope : Nat} (T : Ty scope), T.subst Subst.identity = T
+  | _, .unit => rfl
+  | _, .arrow X Y => by
+      have hX := Ty.subst_id X
+      have hY := Ty.subst_id Y
+      show (X.subst Subst.identity).arrow (Y.subst Subst.identity) = X.arrow Y
+      exact hX.symm ▸ hY.symm ▸ rfl
+  | _, .piTy X Y => by
+      have hX := Ty.subst_id X
+      have hCong := Ty.subst_congr Subst.lift_identity_equiv Y
+      have hY := Ty.subst_id Y
+      show (X.subst Subst.identity).piTy (Y.subst Subst.identity.lift) = X.piTy Y
+      exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
+  | _, .tyVar _ => rfl
+  | _, .sigmaTy X Y => by
+      have hX := Ty.subst_id X
+      have hCong := Ty.subst_congr Subst.lift_identity_equiv Y
+      have hY := Ty.subst_id Y
+      show (X.subst Subst.identity).sigmaTy (Y.subst Subst.identity.lift)
+         = X.sigmaTy Y
+      exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
+
+/-- Substitution commutes with weakening: substituting after
+weakening = weakening after substituting (with appropriately lifted
+substitution).  Stepping stone for the composition law `Ty.subst_compose`.
+
+Proven by structural induction on `T`.  The `tyVar` case relies on
+Fin proof irrelevance making `(σ i).weaken = (σ ⟨i.val, _⟩).weaken`
+definitionally. -/
+theorem Ty.subst_weaken_commute :
+    ∀ {s t : Nat} (T : Ty s) (σ : Subst s t),
+    (T.weaken).subst σ.lift = (T.subst σ).weaken
+  | _, _, .unit, _ => rfl
+  | _, _, .arrow X Y, σ => by
+      show ((X.weaken).subst σ.lift).arrow ((Y.weaken).subst σ.lift)
+         = ((X.subst σ).weaken).arrow ((Y.subst σ).weaken)
+      have hX := Ty.subst_weaken_commute X σ
+      have hY := Ty.subst_weaken_commute Y σ
+      exact hX ▸ hY ▸ rfl
+  | _, _, .piTy X Y, σ => by
+      show ((X.weaken).subst σ.lift).piTy ((Y.weaken).subst σ.lift.lift)
+         = ((X.subst σ).weaken).piTy ((Y.subst σ.lift).weaken)
+      have hX := Ty.subst_weaken_commute X σ
+      have hY := Ty.subst_weaken_commute Y σ.lift
+      exact hX ▸ hY ▸ rfl
+  | _, _, .tyVar _, _ => rfl
+  | _, _, .sigmaTy X Y, σ => by
+      show ((X.weaken).subst σ.lift).sigmaTy ((Y.weaken).subst σ.lift.lift)
+         = ((X.subst σ).weaken).sigmaTy ((Y.subst σ.lift).weaken)
+      have hX := Ty.subst_weaken_commute X σ
+      have hY := Ty.subst_weaken_commute Y σ.lift
+      exact hX ▸ hY ▸ rfl
+
+/-- Composition of substitutions: apply `σ₁` first, then `σ₂` to each
+substituent.  The category-theoretic composition. -/
+def Subst.compose {s m t : Nat} (σ₁ : Subst s m) (σ₂ : Subst m t) :
+    Subst s t :=
+  fun i => (σ₁ i).subst σ₂
+
+/-- Lifting commutes with substitution composition (pointwise).  The
+non-trivial `k+1` case reduces to `Ty.subst_weaken_commute`. -/
+theorem Subst.lift_compose_equiv {s m t : Nat}
+    (σ₁ : Subst s m) (σ₂ : Subst m t) :
+    Subst.equiv (Subst.compose σ₁.lift σ₂.lift)
+                ((Subst.compose σ₁ σ₂).lift) := fun i =>
+  match i with
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, hk⟩ =>
+      Ty.subst_weaken_commute (σ₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ₂
+
+/-- **Composition law for substitution**: `(T.subst σ₁).subst σ₂ =
+T.subst (Subst.compose σ₁ σ₂)`.  Together with `Ty.subst_id`, this
+makes `Subst` a category enriched over `Ty` and `Ty.subst` its
+functorial action.  Proven by structural induction on `T`, using
+`Subst.lift_compose_equiv` + `Ty.subst_congr` for the binder cases. -/
+theorem Ty.subst_compose :
+    ∀ {s m t : Nat} (T : Ty s) (σ₁ : Subst s m) (σ₂ : Subst m t),
+    (T.subst σ₁).subst σ₂ = T.subst (Subst.compose σ₁ σ₂)
+  | _, _, _, .unit, _, _ => rfl
+  | _, _, _, .arrow X Y, σ₁, σ₂ => by
+      show ((X.subst σ₁).subst σ₂).arrow ((Y.subst σ₁).subst σ₂)
+         = (X.subst (Subst.compose σ₁ σ₂)).arrow
+           (Y.subst (Subst.compose σ₁ σ₂))
+      have hX := Ty.subst_compose X σ₁ σ₂
+      have hY := Ty.subst_compose Y σ₁ σ₂
+      exact hX ▸ hY ▸ rfl
+  | _, _, _, .piTy X Y, σ₁, σ₂ => by
+      show ((X.subst σ₁).subst σ₂).piTy ((Y.subst σ₁.lift).subst σ₂.lift)
+         = (X.subst (Subst.compose σ₁ σ₂)).piTy
+           (Y.subst (Subst.compose σ₁ σ₂).lift)
+      have hX := Ty.subst_compose X σ₁ σ₂
+      have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
+      have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, _, .tyVar _, _, _ => rfl
+  | _, _, _, .sigmaTy X Y, σ₁, σ₂ => by
+      show ((X.subst σ₁).subst σ₂).sigmaTy ((Y.subst σ₁.lift).subst σ₂.lift)
+         = (X.subst (Subst.compose σ₁ σ₂)).sigmaTy
+           (Y.subst (Subst.compose σ₁ σ₂).lift)
+      have hX := Ty.subst_compose X σ₁ σ₂
+      have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
+      have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+
 /-! ## Contexts
 
 `Ctx mode scope` is a typed context at the given mode containing
