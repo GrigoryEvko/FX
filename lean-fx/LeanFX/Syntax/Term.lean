@@ -278,6 +278,169 @@ def Ty.subst0 {scope : Nat} (codomain : Ty (scope + 1))
     (substituent : Ty scope) : Ty scope :=
   Ty.subst codomain (Subst.singleton substituent)
 
+/-! ## v1.7 — substitution-lemma hierarchy.
+
+The mathematical heart of dependent type theory.  These lemmas
+characterise how `Ty.subst` interacts with `Ty.rename`, with itself,
+and with the lifting operation.  Together they form the foundation
+for term-level substitution, β-reduction, and the conversion
+algorithm.
+
+The lemmas below avoid function extensionality by working with
+**pointwise** substitution equivalence (`Subst.equiv`) rather than
+requiring two substitutions be Lean-equal.  This is essential for
+zero-axiom soundness: funext uses `propext`, and our entire kernel
+is constructive over Lean's inductive machinery. -/
+
+/-- Pointwise equivalence of substitutions.  Two substitutions
+`σ₁ σ₂ : Subst s t` are equivalent if they agree at every variable.
+Used in lieu of Lean-level function equality (which would require
+`funext` and thus `propext`). -/
+def Subst.equiv {s t : Nat} (σ₁ σ₂ : Subst s t) : Prop :=
+  ∀ i, σ₁ i = σ₂ i
+
+/-- Lifting preserves substitution equivalence: if `σ₁ ≡ σ₂` pointwise
+then `σ₁.lift ≡ σ₂.lift` pointwise. -/
+theorem Subst.lift_equiv {s t : Nat} {σ₁ σ₂ : Subst s t}
+    (h : Subst.equiv σ₁ σ₂) : Subst.equiv σ₁.lift σ₂.lift := fun i =>
+  match i with
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, hk⟩ =>
+      congrArg Ty.weaken (h ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
+
+/-- `Ty.subst` respects substitution equivalence: pointwise-equivalent
+substitutions produce equal results.  Proven by structural induction
+on `T`, using `Subst.lift_equiv` for the binder cases. -/
+theorem Ty.subst_congr {s t : Nat} {σ₁ σ₂ : Subst s t}
+    (h : Subst.equiv σ₁ σ₂) : ∀ T : Ty s, T.subst σ₁ = T.subst σ₂
+  | .unit         => rfl
+  | .arrow X Y    => by
+      show Ty.arrow (X.subst σ₁) (Y.subst σ₁) = Ty.arrow (X.subst σ₂) (Y.subst σ₂)
+      have hX := Ty.subst_congr h X
+      have hY := Ty.subst_congr h Y
+      exact hX ▸ hY ▸ rfl
+  | .piTy X Y     => by
+      show Ty.piTy (X.subst σ₁) (Y.subst σ₁.lift)
+         = Ty.piTy (X.subst σ₂) (Y.subst σ₂.lift)
+      have hX := Ty.subst_congr h X
+      have hY := Ty.subst_congr (Subst.lift_equiv h) Y
+      exact hX ▸ hY ▸ rfl
+  | .tyVar i      => h i
+  | .sigmaTy X Y  => by
+      show Ty.sigmaTy (X.subst σ₁) (Y.subst σ₁.lift)
+         = Ty.sigmaTy (X.subst σ₂) (Y.subst σ₂.lift)
+      have hX := Ty.subst_congr h X
+      have hY := Ty.subst_congr (Subst.lift_equiv h) Y
+      exact hX ▸ hY ▸ rfl
+
+/-- Substitution composed with renaming: applies the substitution
+first, then renames each substituent.  The "after" naming follows
+the order of operations: `renameAfter σ ρ i = (σ i).rename ρ`. -/
+def Subst.renameAfter {s m t : Nat} (σ : Subst s m) (ρ : Renaming m t) :
+    Subst s t :=
+  fun i => (σ i).rename ρ
+
+/-- Lifting commutes with the renameAfter composition (pointwise).
+The non-trivial case `i = ⟨k+1, h⟩` reduces to `Ty.rename_weaken_commute`
+applied to the substituent `σ ⟨k, _⟩`. -/
+theorem Subst.lift_renameAfter_commute {s m t : Nat}
+    (σ : Subst s m) (ρ : Renaming m t) :
+    Subst.equiv (Subst.renameAfter σ.lift ρ.lift)
+                ((Subst.renameAfter σ ρ).lift) := fun i =>
+  match i with
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, hk⟩ =>
+      Ty.rename_weaken_commute (σ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) ρ
+
+/-- **The substitution-rename commute lemma** — the mathematical
+heart of the v1.7 layer.  Substituting then renaming a type equals
+substituting with renamed substituents (pointwise via `renameAfter`).
+
+This is the load-bearing lemma for `Term.rename`'s `appPi`/`pair`/
+`snd` cases (whose result types involve `Ty.subst0`) and ultimately
+for β-reduction.  Proven by structural induction on `T`, with the
+`piTy`/`sigmaTy` cases using `Subst.lift_renameAfter_commute` +
+`Ty.subst_congr`. -/
+theorem Ty.subst_rename_commute :
+    ∀ {s m t : Nat} (T : Ty s) (σ : Subst s m) (ρ : Renaming m t),
+    (T.subst σ).rename ρ = T.subst (Subst.renameAfter σ ρ)
+  | _, _, _, .unit, _, _ => rfl
+  | _, _, _, .arrow X Y, σ, ρ => by
+      show Ty.arrow ((X.subst σ).rename ρ) ((Y.subst σ).rename ρ)
+         = Ty.arrow (X.subst (Subst.renameAfter σ ρ))
+                    (Y.subst (Subst.renameAfter σ ρ))
+      have hX := Ty.subst_rename_commute X σ ρ
+      have hY := Ty.subst_rename_commute Y σ ρ
+      exact hX ▸ hY ▸ rfl
+  | _, _, _, .piTy X Y, σ, ρ => by
+      show Ty.piTy ((X.subst σ).rename ρ) ((Y.subst σ.lift).rename ρ.lift)
+         = Ty.piTy (X.subst (Subst.renameAfter σ ρ))
+                   (Y.subst (Subst.renameAfter σ ρ).lift)
+      have hX := Ty.subst_rename_commute X σ ρ
+      have hY := Ty.subst_rename_commute Y σ.lift ρ.lift
+      have hCong := Ty.subst_congr (Subst.lift_renameAfter_commute σ ρ) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, _, .tyVar _, _, _ => rfl
+  | _, _, _, .sigmaTy X Y, σ, ρ => by
+      show Ty.sigmaTy ((X.subst σ).rename ρ) ((Y.subst σ.lift).rename ρ.lift)
+         = Ty.sigmaTy (X.subst (Subst.renameAfter σ ρ))
+                      (Y.subst (Subst.renameAfter σ ρ).lift)
+      have hX := Ty.subst_rename_commute X σ ρ
+      have hY := Ty.subst_rename_commute Y σ.lift ρ.lift
+      have hCong := Ty.subst_congr (Subst.lift_renameAfter_commute σ ρ) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+
+/-- Renaming followed by substitution: precompose the renaming, then
+substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
+def Subst.precompose {s m t : Nat} (ρ : Renaming s m) (σ : Subst m t) :
+    Subst s t :=
+  fun i => σ (ρ i)
+
+/-- Lifting commutes with precompose (pointwise).  Both `k = 0` and
+`k+1` cases reduce to `rfl` thanks to Fin proof irrelevance. -/
+theorem Subst.lift_precompose_commute {s m t : Nat}
+    (ρ : Renaming s m) (σ : Subst m t) :
+    Subst.equiv (Subst.precompose ρ.lift σ.lift)
+                ((Subst.precompose ρ σ).lift) := fun i =>
+  match i with
+  | ⟨0, _⟩       => rfl
+  | ⟨_ + 1, _⟩   => rfl
+
+/-- **The rename-subst commute lemma** — the symmetric counterpart to
+`Ty.subst_rename_commute`.  Renaming then substituting equals substituting
+with a precomposed substitution.  This is the OTHER direction of the
+substitution-rename interaction; together with `subst_rename_commute`
+they let us derive `subst0_rename_commute` and the full β-reduction
+soundness chain. -/
+theorem Ty.rename_subst_commute :
+    ∀ {s m t : Nat} (T : Ty s) (ρ : Renaming s m) (σ : Subst m t),
+    (T.rename ρ).subst σ = T.subst (Subst.precompose ρ σ)
+  | _, _, _, .unit, _, _ => rfl
+  | _, _, _, .arrow X Y, ρ, σ => by
+      show Ty.arrow ((X.rename ρ).subst σ) ((Y.rename ρ).subst σ)
+         = Ty.arrow (X.subst (Subst.precompose ρ σ))
+                    (Y.subst (Subst.precompose ρ σ))
+      have hX := Ty.rename_subst_commute X ρ σ
+      have hY := Ty.rename_subst_commute Y ρ σ
+      exact hX ▸ hY ▸ rfl
+  | _, _, _, .piTy X Y, ρ, σ => by
+      show Ty.piTy ((X.rename ρ).subst σ) ((Y.rename ρ.lift).subst σ.lift)
+         = Ty.piTy (X.subst (Subst.precompose ρ σ))
+                   (Y.subst (Subst.precompose ρ σ).lift)
+      have hX := Ty.rename_subst_commute X ρ σ
+      have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
+      have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, _, .tyVar _, _, _ => rfl
+  | _, _, _, .sigmaTy X Y, ρ, σ => by
+      show Ty.sigmaTy ((X.rename ρ).subst σ) ((Y.rename ρ.lift).subst σ.lift)
+         = Ty.sigmaTy (X.subst (Subst.precompose ρ σ))
+                      (Y.subst (Subst.precompose ρ σ).lift)
+      have hX := Ty.rename_subst_commute X ρ σ
+      have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
+      have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+
 /-! ## Contexts
 
 `Ctx mode scope` is a typed context at the given mode containing
@@ -690,6 +853,17 @@ theorem Step.toStar
     {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
     {t₁ t₂ : Term ctx T} (h : Step t₁ t₂) : StepStar t₁ t₂ :=
   StepStar.step h (StepStar.refl t₂)
+
+/-- Transitivity of multi-step reduction.  Together with `refl` this
+makes `StepStar` an equivalence-relation-like object and is
+load-bearing for the eventual conversion algorithm — in particular
+for showing common-reducts when comparing terms. -/
+theorem StepStar.trans
+    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {t₁ t₂ t₃ : Term ctx T} :
+    StepStar t₁ t₂ → StepStar t₂ t₃ → StepStar t₁ t₃
+  | .refl _, h         => h
+  | .step s rest, h    => .step s (StepStar.trans rest h)
 
 /-! ## v1.1 — Lookup helpers, term measures, first proven theorem.
 
