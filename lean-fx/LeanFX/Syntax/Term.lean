@@ -157,70 +157,136 @@ def Ty.rename {source target : Nat} :
   | .tyVar i, ρ       => .tyVar (ρ i)
   | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
 
-/-- Structurally extend a type's scope by one.  Direct structural
-recursion — kept as a separate definition (rather than derived from
-`Ty.rename`) so that the `Ty.rename_weaken_commute` lemma below admits
-a clean structural induction proof using `▸ rfl`.
+/-! ## v1.10 — rename composition algebra.
 
-**Latent bug** (documented for v1.7+ to fix): the `piTy` case shifts
-ALL variables in the codomain, including the locally-bound var 0.
-This is *correct* for v1.0–v1.4 (no `Ty.tyVar`), and *not exercised*
-by v1.5 smoke tests (which use `tyVar` only at top level or inside
-`arrow`, not inside a `piTy` codomain).  The principled fix is
-`Ty.weaken := t.rename Renaming.weaken`, which gives binder-aware
-shifting via `ρ.lift`; that change makes the rwc lemma harder to
-prove (rename-composition + pointwise renaming equality required).
-v1.7+ will pair the fix with the additional lemma machinery.
+Adding `Ty.rename_congr` and `Ty.rename_compose` upfront (via direct
+structural induction, no subst infra needed) lets us redefine
+`Ty.weaken` as `T.rename Renaming.weaken` (the principled, binder-aware
+form) and re-derive the load-bearing `Ty.rename_weaken_commute` lemma
+without circular dependencies on the v1.7 substitution hierarchy. -/
+
+/-- Pointwise renaming equivalence.  Two renamings agree if they map
+every position to the same target. -/
+def Renaming.equiv {s t : Nat} (ρ₁ ρ₂ : Renaming s t) : Prop :=
+  ∀ i, ρ₁ i = ρ₂ i
+
+/-- Lifting preserves pointwise renaming equivalence. -/
+theorem Renaming.lift_equiv {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
+    (h : Renaming.equiv ρ₁ ρ₂) : Renaming.equiv ρ₁.lift ρ₂.lift := fun i =>
+  match i with
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, hk⟩ =>
+      congrArg Fin.succ (h ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
+
+/-- Pointwise-equivalent renamings produce equal results on every
+type.  Direct structural induction on `Ty`, using `Renaming.lift_equiv`
+for the binder cases.  No subst infrastructure required. -/
+theorem Ty.rename_congr {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
+    (h : Renaming.equiv ρ₁ ρ₂) :
+    ∀ T : Ty s, T.rename ρ₁ = T.rename ρ₂
+  | .unit         => rfl
+  | .arrow A B    => by
+      show Ty.arrow (A.rename ρ₁) (B.rename ρ₁)
+         = Ty.arrow (A.rename ρ₂) (B.rename ρ₂)
+      have hA := Ty.rename_congr h A
+      have hB := Ty.rename_congr h B
+      exact hA ▸ hB ▸ rfl
+  | .piTy A B     => by
+      show Ty.piTy (A.rename ρ₁) (B.rename ρ₁.lift)
+         = Ty.piTy (A.rename ρ₂) (B.rename ρ₂.lift)
+      have hA := Ty.rename_congr h A
+      have hB := Ty.rename_congr (Renaming.lift_equiv h) B
+      exact hA ▸ hB ▸ rfl
+  | .tyVar i      => congrArg Ty.tyVar (h i)
+  | .sigmaTy A B  => by
+      show Ty.sigmaTy (A.rename ρ₁) (B.rename ρ₁.lift)
+         = Ty.sigmaTy (A.rename ρ₂) (B.rename ρ₂.lift)
+      have hA := Ty.rename_congr h A
+      have hB := Ty.rename_congr (Renaming.lift_equiv h) B
+      exact hA ▸ hB ▸ rfl
+
+/-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
+def Renaming.compose {s m t : Nat}
+    (ρ₁ : Renaming s m) (ρ₂ : Renaming m t) : Renaming s t :=
+  fun i => ρ₂ (ρ₁ i)
+
+/-- Lifting commutes with renaming composition (pointwise).  Both Fin
+cases reduce to `rfl` thanks to the constructor-only structure of
+`Renaming.lift`. -/
+theorem Renaming.lift_compose_equiv {s m t : Nat}
+    (ρ₁ : Renaming s m) (ρ₂ : Renaming m t) :
+    Renaming.equiv (Renaming.compose ρ₁.lift ρ₂.lift)
+                   (Renaming.compose ρ₁ ρ₂).lift
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
+/-- **Renaming composition** at the `Ty` level.  Direct structural
+induction on `T`; the binder cases use `Ty.rename_congr` plus
+`Renaming.lift_compose_equiv` to bridge the lifted-then-composed and
+composed-then-lifted forms. -/
+theorem Ty.rename_compose {s m t : Nat} :
+    ∀ (T : Ty s) (ρ₁ : Renaming s m) (ρ₂ : Renaming m t),
+    (T.rename ρ₁).rename ρ₂ = T.rename (Renaming.compose ρ₁ ρ₂)
+  | .unit, _, _ => rfl
+  | .arrow A B, ρ₁, ρ₂ => by
+      show Ty.arrow ((A.rename ρ₁).rename ρ₂) ((B.rename ρ₁).rename ρ₂)
+         = Ty.arrow (A.rename (Renaming.compose ρ₁ ρ₂))
+                    (B.rename (Renaming.compose ρ₁ ρ₂))
+      have hA := Ty.rename_compose A ρ₁ ρ₂
+      have hB := Ty.rename_compose B ρ₁ ρ₂
+      exact hA ▸ hB ▸ rfl
+  | .piTy A B, ρ₁, ρ₂ => by
+      show Ty.piTy ((A.rename ρ₁).rename ρ₂)
+                   ((B.rename ρ₁.lift).rename ρ₂.lift)
+         = Ty.piTy (A.rename (Renaming.compose ρ₁ ρ₂))
+                   (B.rename (Renaming.compose ρ₁ ρ₂).lift)
+      have hA := Ty.rename_compose A ρ₁ ρ₂
+      have hB := Ty.rename_compose B ρ₁.lift ρ₂.lift
+      have hLift :=
+        Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
+      exact hA ▸ (hB.trans hLift) ▸ rfl
+  | .tyVar _, _, _ => rfl
+  | .sigmaTy A B, ρ₁, ρ₂ => by
+      show Ty.sigmaTy ((A.rename ρ₁).rename ρ₂)
+                      ((B.rename ρ₁.lift).rename ρ₂.lift)
+         = Ty.sigmaTy (A.rename (Renaming.compose ρ₁ ρ₂))
+                      (B.rename (Renaming.compose ρ₁ ρ₂).lift)
+      have hA := Ty.rename_compose A ρ₁ ρ₂
+      have hB := Ty.rename_compose B ρ₁.lift ρ₂.lift
+      have hLift :=
+        Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
+      exact hA ▸ (hB.trans hLift) ▸ rfl
+
+/-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
+Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
+stays fixed via `Renaming.weaken.lift` while outer references shift.
+Eliminates the v1.0 latent bug where `(piTy A B).weaken` shifted every
+variable in `B`, including the local binder.
 
 Marked `@[reducible]` so Lean's unifier and `rfl` unfold it eagerly. -/
 @[reducible]
-def Ty.weaken {scope : Nat} : Ty scope → Ty (scope + 1)
-  | .unit                          => .unit
-  | .arrow domain codomain         =>
-      .arrow domain.weaken codomain.weaken
-  | .piTy domain codomain          =>
-      .piTy domain.weaken codomain.weaken
-  | .tyVar index                   =>
-      .tyVar index.succ
-  | .sigmaTy firstType secondType  =>
-      .sigmaTy firstType.weaken secondType.weaken
+def Ty.weaken {scope : Nat} (T : Ty scope) : Ty (scope + 1) :=
+  T.rename Renaming.weaken
 
 /-- The fundamental rename-weaken commutativity lemma.  Says that
 weakening (insert outer binder) commutes with renaming when the
 renaming is appropriately lifted.
 
-This is the load-bearing lemma that unblocks `Term.rename` (and thus
-`Term.weaken`, `Term.subst`, β-reduction).  Without it, `Term.rename`'s
-`lam` case cannot type-check — body's renamed type would be
-`(B.weaken).rename ρ.lift` while the constructor wants
-`(B.rename ρ).weaken`.
-
-Proven by direct structural pattern match on `T`, using `▸` to
-combine inductive hypotheses.  Axiom-free: `▸` is `Eq.rec` on `Ty`
-(which lives in `Type`, not `Prop`), so no `propext` needed. -/
-theorem Ty.rename_weaken_commute :
-    ∀ {source target : Nat} (T : Ty source) (ρ : Renaming source target),
-    (T.weaken).rename ρ.lift = (T.rename ρ).weaken
-  | _, _, .unit, _ => rfl
-  | _, _, .arrow A B, ρ => by
-      show Ty.arrow (A.weaken.rename ρ.lift) (B.weaken.rename ρ.lift)
-         = Ty.arrow (A.rename ρ).weaken (B.rename ρ).weaken
-      have hA := Ty.rename_weaken_commute A ρ
-      have hB := Ty.rename_weaken_commute B ρ
-      exact hA ▸ hB ▸ rfl
-  | _, _, .piTy A B, ρ => by
-      show Ty.piTy (A.weaken.rename ρ.lift) (B.weaken.rename ρ.lift.lift)
-         = Ty.piTy (A.rename ρ).weaken (B.rename ρ.lift).weaken
-      have hA := Ty.rename_weaken_commute A ρ
-      have hB := Ty.rename_weaken_commute B ρ.lift
-      exact hA ▸ hB ▸ rfl
-  | _, _, .tyVar _, _ => rfl
-  | _, _, .sigmaTy A B, ρ => by
-      show Ty.sigmaTy (A.weaken.rename ρ.lift) (B.weaken.rename ρ.lift.lift)
-         = Ty.sigmaTy (A.rename ρ).weaken (B.rename ρ.lift).weaken
-      have hA := Ty.rename_weaken_commute A ρ
-      have hB := Ty.rename_weaken_commute B ρ.lift
-      exact hA ▸ hB ▸ rfl
+In v1.10, this is derived from `Ty.rename_compose` plus pointwise
+renaming equivalence: both sides become `T.rename` applied to two
+renamings that agree pointwise (both equal `Fin.succ ∘ ρ` modulo Fin
+proof irrelevance). -/
+theorem Ty.rename_weaken_commute {source target : Nat}
+    (T : Ty source) (ρ : Renaming source target) :
+    (T.weaken).rename ρ.lift = (T.rename ρ).weaken := by
+  show (T.rename Renaming.weaken).rename ρ.lift
+     = (T.rename ρ).rename Renaming.weaken
+  have hSwap :
+      Renaming.equiv (Renaming.compose Renaming.weaken ρ.lift)
+                     (Renaming.compose ρ Renaming.weaken) := fun _ => rfl
+  exact (Ty.rename_compose T Renaming.weaken ρ.lift).trans
+          ((Ty.rename_congr hSwap T).trans
+            (Ty.rename_compose T ρ Renaming.weaken).symm)
 
 /-! ## Substitution — the same trick scaled up.
 
@@ -553,32 +619,22 @@ theorem Ty.subst_id :
 weakening = weakening after substituting (with appropriately lifted
 substitution).  Stepping stone for the composition law `Ty.subst_compose`.
 
-Proven by structural induction on `T`.  The `tyVar` case relies on
-Fin proof irrelevance making `(σ i).weaken = (σ ⟨i.val, _⟩).weaken`
-definitionally. -/
-theorem Ty.subst_weaken_commute :
-    ∀ {s t : Nat} (T : Ty s) (σ : Subst s t),
-    (T.weaken).subst σ.lift = (T.subst σ).weaken
-  | _, _, .unit, _ => rfl
-  | _, _, .arrow X Y, σ => by
-      show ((X.weaken).subst σ.lift).arrow ((Y.weaken).subst σ.lift)
-         = ((X.subst σ).weaken).arrow ((Y.subst σ).weaken)
-      have hX := Ty.subst_weaken_commute X σ
-      have hY := Ty.subst_weaken_commute Y σ
-      exact hX ▸ hY ▸ rfl
-  | _, _, .piTy X Y, σ => by
-      show ((X.weaken).subst σ.lift).piTy ((Y.weaken).subst σ.lift.lift)
-         = ((X.subst σ).weaken).piTy ((Y.subst σ.lift).weaken)
-      have hX := Ty.subst_weaken_commute X σ
-      have hY := Ty.subst_weaken_commute Y σ.lift
-      exact hX ▸ hY ▸ rfl
-  | _, _, .tyVar _, _ => rfl
-  | _, _, .sigmaTy X Y, σ => by
-      show ((X.weaken).subst σ.lift).sigmaTy ((Y.weaken).subst σ.lift.lift)
-         = ((X.subst σ).weaken).sigmaTy ((Y.subst σ.lift).weaken)
-      have hX := Ty.subst_weaken_commute X σ
-      have hY := Ty.subst_weaken_commute Y σ.lift
-      exact hX ▸ hY ▸ rfl
+In v1.10, with `Ty.weaken := T.rename Renaming.weaken`, this is derived
+from `Ty.rename_subst_commute` and `Ty.subst_rename_commute` plus the
+pointwise equivalence `Subst.precompose Renaming.weaken σ.lift ≡
+Subst.renameAfter σ Renaming.weaken`.  The pointwise equivalence is
+trivial (both forms reduce to `(σ i).rename Renaming.weaken` by
+`Subst.lift`'s defn at successor positions). -/
+theorem Ty.subst_weaken_commute {s t : Nat} (T : Ty s) (σ : Subst s t) :
+    (T.weaken).subst σ.lift = (T.subst σ).weaken := by
+  show (T.rename Renaming.weaken).subst σ.lift
+     = (T.subst σ).rename Renaming.weaken
+  have hPointwise :
+      Subst.equiv (Subst.precompose Renaming.weaken σ.lift)
+                  (Subst.renameAfter σ Renaming.weaken) := fun _ => rfl
+  exact (Ty.rename_subst_commute T Renaming.weaken σ.lift).trans
+          ((Ty.subst_congr hPointwise T).trans
+            (Ty.subst_rename_commute T σ Renaming.weaken).symm)
 
 /-- Composition of substitutions: apply `σ₁` first, then `σ₂` to each
 substituent.  The category-theoretic composition. -/
@@ -1038,13 +1094,205 @@ def Term.rename {m scope scope'}
       (Ty.subst0_rename_commute secondType firstType ρ).symm ▸
         Term.snd (Term.rename ρt p)
 
-/-! `Term.weaken` is deferred until the latent `Ty.weaken` vs
-`Ty.rename Renaming.weaken` inequality is reconciled (the v1.5+ piTy
-case of `Ty.weaken` shifts the locally-bound variable while
-`Ty.rename Renaming.weaken` correctly preserves it via `lift`).  The
-fix is `Ty.weaken := T.rename Renaming.weaken` (a unification step
-deferred to v1.10+ alongside `Ty.rename_compose`).  In the meantime,
-`Term.rename` itself handles all the renaming use-cases. -/
+/-! ## v1.10 — term-level weakening.
+
+With `Ty.weaken` redefined as `T.rename Renaming.weaken`, the witness
+that `varType` commutes with the shift renaming is `rfl` per position,
+so `Term.weaken` reduces to a `Term.rename` along `Renaming.weaken`. -/
+
+/-- The shift-by-one renaming witnesses a `TermRenaming` from `Γ` to
+`Γ.cons newType`: the position-equality `varType (Γ.cons newType) (Fin.succ i) = (varType Γ i).rename Renaming.weaken`
+is `rfl` because both sides reduce to the same `Ty.rename` application
+under the new `Ty.weaken := T.rename Renaming.weaken` defn. -/
+theorem TermRenaming.weaken {m : Mode} {scope : Nat}
+    (Γ : Ctx m scope) (newType : Ty scope) :
+    TermRenaming Γ (Γ.cons newType) Renaming.weaken := fun _ => rfl
+
+/-- Weaken a term by extending its context with one fresh binding.
+The result type is the original type weakened in lockstep, mirroring
+the type-level `Ty.weaken`.  Implemented via `Term.rename` with the
+shift-by-one renaming. -/
+def Term.weaken {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    (newType : Ty scope) {T : Ty scope} (term : Term Γ T) :
+    Term (Γ.cons newType) T.weaken :=
+  Term.rename (TermRenaming.weaken Γ newType) term
+
+/-! ## v1.10 — term-level substitution.
+
+`TermSubst Γ Δ σ` is a term-valued substitution paralleling the
+type-level `Subst σ`: for each position `i` in `Γ`, it supplies a
+term in `Δ` whose type is the substituted `varType`.  `TermSubst.lift`
+extends a substitution under a binder using `Term.weaken` to relocate
+predecessor terms into the extended target context. -/
+
+/-- A term-level substitution maps each position of `Γ` to a term in
+`Δ` whose type is `varType Γ` substituted by the underlying type-level
+σ.  The type-equality is computed via `Ty.subst`. -/
+abbrev TermSubst {m : Mode} {scope scope' : Nat}
+    (Γ : Ctx m scope) (Δ : Ctx m scope')
+    (σ : Subst scope scope') : Type :=
+  ∀ (i : Fin scope), Term Δ ((varType Γ i).subst σ)
+
+/-- Lift a term-level substitution under a binder.  Position 0 in the
+extended source context maps to `Term.var ⟨0, _⟩` in the extended
+target (cast through `Ty.subst_weaken_commute`); positions `k + 1`
+weaken the predecessor's image into the extended target context. -/
+def TermSubst.lift {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'}
+    (σt : TermSubst Γ Δ σ) (newType : Ty scope) :
+    TermSubst (Γ.cons newType) (Δ.cons (newType.subst σ)) σ.lift :=
+  fun i =>
+    match i with
+    | ⟨0, _⟩ =>
+        (Ty.subst_weaken_commute newType σ).symm ▸
+          (Term.var ⟨0, Nat.zero_lt_succ _⟩ :
+            Term (Δ.cons (newType.subst σ)) (newType.subst σ).weaken)
+    | ⟨k + 1, h⟩ =>
+        (Ty.subst_weaken_commute
+            (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) σ).symm ▸
+          Term.weaken (newType.subst σ)
+            (σt ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+
+/-- Weakening then substituting with the singleton substitution is
+the identity on `Ty`.  The shift renames every original variable up
+by one, then `Subst.singleton X` at position `k + 1` returns the
+`Ty.tyVar k` corresponding to the original position — i.e., the
+substitution acts as the identity. -/
+theorem Ty.weaken_subst_singleton {scope : Nat}
+    (T : Ty scope) (X : Ty scope) :
+    T.weaken.subst (Subst.singleton X) = T := by
+  show (T.rename Renaming.weaken).subst (Subst.singleton X) = T
+  have hRSC :=
+    Ty.rename_subst_commute T Renaming.weaken (Subst.singleton X)
+  have hPointwise :
+      Subst.equiv
+        (Subst.precompose Renaming.weaken (Subst.singleton X))
+        Subst.identity := fun _ => rfl
+  have hCong := Ty.subst_congr hPointwise T
+  have hId := Ty.subst_id T
+  exact hRSC.trans (hCong.trans hId)
+
+/-- The single-substituent term substitution: position 0 maps to
+`arg`, positions `k + 1` map to `Term.var ⟨k, _⟩` in the original
+context (variable shifts down by one because the outer scope has one
+fewer binder than the input).  The underlying type-level σ is
+`Subst.singleton T_arg` for the argument's type `T_arg`.  Both Fin
+cases require a cast through `Ty.weaken_subst_singleton` to align the
+substituted-varType form. -/
+def TermSubst.singleton {m : Mode} {scope : Nat}
+    {Γ : Ctx m scope} {T_arg : Ty scope}
+    (arg : Term Γ T_arg) :
+    TermSubst (Γ.cons T_arg) Γ (Subst.singleton T_arg) :=
+  fun i =>
+    match i with
+    | ⟨0, _⟩ =>
+        (Ty.weaken_subst_singleton T_arg T_arg).symm ▸ arg
+    | ⟨k + 1, h⟩ =>
+        (Ty.weaken_subst_singleton
+            (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) T_arg).symm ▸
+          Term.var ⟨k, Nat.lt_of_succ_lt_succ h⟩
+
+/-! ## v1.10 — substitution-substitution commutativity.
+
+The lemma analogous to `Ty.subst0_rename_commute`: `subst0` distributes
+through an outer subst by lifting the codomain's substitution and
+substituting the renamed substituent.  Used by `Term.subst`'s
+`appPi` / `pair` / `snd` cases to align result types. -/
+
+/-- The pointwise equivalence underpinning `Ty.subst0_subst_commute`:
+substituting then composing with σ equals lifting σ under the binder
+then composing with the singleton-substituent (already substituted by
+σ).  Both sides at position 0 evaluate to `(substituent).subst σ`;
+at positions `k + 1`, both evaluate to `σ ⟨k, _⟩`. -/
+theorem Subst.singleton_compose_equiv_lift_compose_singleton
+    {scope target : Nat}
+    (substituent : Ty scope) (σ : Subst scope target) :
+    Subst.equiv
+      (Subst.compose (Subst.singleton substituent) σ)
+      (Subst.compose σ.lift (Subst.singleton (substituent.subst σ))) :=
+  fun i =>
+    match i with
+    | ⟨0, _⟩      => rfl
+    | ⟨k + 1, h⟩  => by
+        show (Ty.tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩).subst σ
+           = ((σ ⟨k, Nat.lt_of_succ_lt_succ h⟩).rename Renaming.weaken).subst
+               (Subst.singleton (substituent.subst σ))
+        have hRSC :=
+          Ty.rename_subst_commute (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+            Renaming.weaken (Subst.singleton (substituent.subst σ))
+        have hPointwise :
+            Subst.equiv
+              (Subst.precompose Renaming.weaken
+                (Subst.singleton (substituent.subst σ)))
+              Subst.identity := fun _ => rfl
+        have hCong := Ty.subst_congr hPointwise
+                        (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+        have hId := Ty.subst_id (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+        exact (hRSC.trans (hCong.trans hId)).symm
+
+/-- The practical specialisation: substituting the outermost variable
+then applying an outer substitution equals lifting the outer
+substitution under the binder then substituting the substituted
+substituent. -/
+theorem Ty.subst0_subst_commute {scope target : Nat}
+    (T : Ty (scope + 1)) (X : Ty scope) (σ : Subst scope target) :
+    (T.subst0 X).subst σ
+      = (T.subst σ.lift).subst0 (X.subst σ) := by
+  show (T.subst (Subst.singleton X)).subst σ
+     = (T.subst σ.lift).subst (Subst.singleton (X.subst σ))
+  have hLeft := Ty.subst_compose T (Subst.singleton X) σ
+  have hRight := Ty.subst_compose T σ.lift (Subst.singleton (X.subst σ))
+  have hCong := Ty.subst_congr
+    (Subst.singleton_compose_equiv_lift_compose_singleton X σ) T
+  exact hLeft.trans (hCong.trans hRight.symm)
+
+/-- **Term-level substitution** — apply a term-level substitution `σt`
+(and the underlying type-level σ) to a `Term`, producing a `Term` in
+the target context with the substituted type.
+
+The variable case looks up the substituent term via `σt`; the binder
+cases (`lam`, `lamPi`) use `TermSubst.lift` to extend σt under the new
+binder and align body types via `Ty.subst_weaken_commute`; the
+projection-laden cases (`appPi`, `pair`, `snd`) use
+`Ty.subst0_subst_commute` to align `subst0`-shaped result types. -/
+def Term.subst {m scope scope'}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'}
+    (σt : TermSubst Γ Δ σ) :
+    {T : Ty scope} → Term Γ T → Term Δ (T.subst σ)
+  | _, .var i      => σt i
+  | _, .unit       => Term.unit
+  | _, .lam (codomainType := codomainType) body =>
+      Term.lam (codomainType := codomainType.subst σ)
+        ((Ty.subst_weaken_commute codomainType σ) ▸
+          (Term.subst (TermSubst.lift σt _) body))
+  | _, .app f a    =>
+      Term.app (Term.subst σt f) (Term.subst σt a)
+  | _, .lamPi (domainType := domainType) body =>
+      Term.lamPi (Term.subst (TermSubst.lift σt domainType) body)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType) f a =>
+      (Ty.subst0_subst_commute codomainType domainType σ).symm ▸
+        Term.appPi (Term.subst σt f) (Term.subst σt a)
+  | _, .pair (firstType := firstType) (secondType := secondType)
+             firstVal secondVal =>
+      Term.pair (Term.subst σt firstVal)
+        ((Ty.subst0_subst_commute secondType firstType σ) ▸
+          (Term.subst σt secondVal))
+  | _, .fst p      => Term.fst (Term.subst σt p)
+  | _, .snd (firstType := firstType) (secondType := secondType) p =>
+      (Ty.subst0_subst_commute secondType firstType σ).symm ▸
+        Term.snd (Term.subst σt p)
+
+/-- **Single-variable term substitution** — substitute `arg` for var 0
+in `body`.  Used by β-reduction.  Result type is computed via
+`Ty.subst0` at the type level, matching `Term.appPi`'s result-type
+shape exactly. -/
+def Term.subst0 {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {T_arg : Ty scope} {T_body : Ty (scope + 1)}
+    (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
+    Term Γ (T_body.subst0 T_arg) :=
+  Term.subst (TermSubst.singleton arg) body
 
 /-! ## v1.6 — typed reduction.
 
@@ -1055,21 +1303,22 @@ structurally — both sides of every constructor carry identical `mode`,
 definitional**: there is no separate "preservation" theorem to prove,
 because no `Step` proof can witness a type change.
 
-Currently this layer covers **congruence** rules only — `Step` propagates
-under each binary/unary term constructor.  The β rule (`(λx.body) a ⟶
-body[a/x]`) is deferred to v1.7+ pending `Term.subst`, which itself
-requires the rename-substitution lemmas hierarchy that builds on the
-existing `Ty.rename_weaken_commute`.
+v1.10 adds full β-reduction (`betaApp`, `betaAppPi`) plus a Σ-pair
+projection rule.  Both β rules use `Term.subst0` from v1.10's term-
+substitution discipline; the Σ rules require a cast through
+`Ty.subst0`'s definitional unfolding for the `secondVal`'s type.
 
 The reflexive-transitive closure `StepStar` lifts single-step to
 multi-step reduction.  Together, `Step` and `StepStar` are the basis
-for v1.7+ conversion algorithms and the eventual normaliser. -/
+for the conversion algorithm and eventual normaliser. -/
 
 /-- Single-step reduction between terms of the *same* type.  The shared
 typing is structural: every constructor's input and output `Term` carry
 the same `Ctx` and `Ty`, so subject reduction holds definitionally.
 
-v1.6 has congruence rules only; β/η await Term-level substitution. -/
+v1.10 covers both congruence rules and the β-reduction rules
+(`betaApp`, `betaAppPi`) plus Σ-projection rules (`betaFstPair`,
+`betaSndPair`). -/
 inductive Step :
     {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
     {T : Ty scope} → Term ctx T → Term ctx T → Prop
@@ -1159,6 +1408,54 @@ inductive Step :
         {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
       Step pairTerm pairTerm' →
       Step (Term.snd pairTerm) (Term.snd pairTerm')
+  /-- **β-reduction for non-dependent application**: `(λx. body) arg ⟶
+  body[arg/x]`.  The result type matches `Term.app`'s codomain because
+  `body : Term (ctx.cons domainType) codomainType.weaken` and
+  substituting at the type level via `body.subst0 (...)` reduces
+  `codomainType.weaken.subst0 _` to `codomainType` per
+  `Ty.weaken_subst_singleton`.  We thread the cast through `▸`. -/
+  | betaApp :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        (body : Term (ctx.cons domainType) codomainType.weaken)
+        (arg : Term ctx domainType),
+      Step (Term.app (Term.lam (codomainType := codomainType) body) arg)
+           ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 body arg)
+  /-- **β-reduction for dependent application**: `(λx. body) arg ⟶
+  body[arg/x]` where the codomain may depend on `x` via `tyVar 0`.
+  No cast needed: `body.subst0 arg : Term ctx (codomainType.subst0
+  domainType)` matches `Term.appPi`'s declared result type exactly. -/
+  | betaAppPi :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        (body : Term (ctx.cons domainType) codomainType)
+        (arg : Term ctx domainType),
+      Step (Term.appPi (Term.lamPi (domainType := domainType) body) arg)
+           (Term.subst0 body arg)
+  /-- **Σ first projection**: `fst (pair a b) ⟶ a`. -/
+  | betaFstPair :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        (firstVal : Term ctx firstType)
+        (secondVal : Term ctx (secondType.subst0 firstType)),
+      Step (Term.fst
+              (Term.pair (firstType := firstType)
+                         (secondType := secondType) firstVal secondVal))
+           firstVal
+  /-- **Σ second projection**: `snd (pair a b) ⟶ b`.  The result type
+  is `Term ctx (secondType.subst0 firstType)` — both `Term.snd`'s
+  declared result and `secondVal`'s declared type — so no cast is
+  needed. -/
+  | betaSndPair :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        (firstVal : Term ctx firstType)
+        (secondVal : Term ctx (secondType.subst0 firstType)),
+      Step (Term.snd
+              (Term.pair (firstType := firstType)
+                         (secondType := secondType) firstVal secondVal))
+           secondVal
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -1202,6 +1499,64 @@ theorem StepStar.trans
     StepStar t₁ t₂ → StepStar t₂ t₃ → StepStar t₁ t₃
   | .refl _, h         => h
   | .step s rest, h    => .step s (StepStar.trans rest h)
+
+/-! ## v1.10 β-reduction smoke tests.
+
+Each rule's *existence* and *well-typedness* is the key smoke test:
+the constructor packs a closed Step proof when applied to a body and
+argument, and Lean's kernel verifies the result type matches each
+rule's declared form.  We assert by `Exists.intro` rather than by
+`rfl` on the reduct because the result terms carry `▸` casts whose
+proofs are non-`rfl`-elaborated even when the underlying equation
+holds by computation.  Definitional convertibility of the casts is a
+v1.11 normalisation-by-evaluation concern; v1.10 establishes the
+typed-reduction relation. -/
+
+/-- **Non-dependent β exists**: `(λx:unit. x) unit ⟶ ?` for some
+target term in the same context and at the same type.  Constructor
+arguments fully explicit via `@Step.betaApp` so Lean's elaborator
+binds every implicit on the spot. -/
+example (mode : Mode) :
+    ∃ (target : Term (Ctx.nil mode) Ty.unit),
+      Step (Term.app (mode := mode)
+              (Term.lam (domainType := Ty.unit) (codomainType := Ty.unit)
+                (Term.var ⟨0, Nat.zero_lt_succ _⟩))
+              Term.unit) target :=
+  ⟨_, @Step.betaApp mode 0 (Ctx.nil mode) Ty.unit Ty.unit
+        (Term.var ⟨0, Nat.zero_lt_succ _⟩) Term.unit⟩
+
+/-- **Σ first projection exists**: `fst (pair a b) ⟶ a` is constructed
+in any context for arbitrary `a`, `b` of the appropriate types. -/
+example (mode : Mode)
+    (a : Term (Ctx.nil mode) Ty.unit)
+    (b : Term (Ctx.nil mode) (Ty.unit.subst0 Ty.unit)) :
+    Step
+      (Term.fst (Term.pair (firstType := Ty.unit)
+                            (secondType := Ty.unit) a b))
+      a :=
+  Step.betaFstPair a b
+
+/-- **Σ second projection exists**: `snd (pair a b) ⟶ b`. -/
+example (mode : Mode)
+    (a : Term (Ctx.nil mode) Ty.unit)
+    (b : Term (Ctx.nil mode) (Ty.unit.subst0 Ty.unit)) :
+    Step
+      (Term.snd (Term.pair (firstType := Ty.unit)
+                            (secondType := Ty.unit) a b))
+      b :=
+  Step.betaSndPair a b
+
+/-- **β lifts to multi-step**: the application `(λx. x) unit` admits a
+`StepStar` derivation reaching some normal form. -/
+example (mode : Mode) :
+    ∃ (target : Term (Ctx.nil mode) Ty.unit),
+      StepStar (Term.app (mode := mode)
+                  (Term.lam (domainType := Ty.unit) (codomainType := Ty.unit)
+                    (Term.var ⟨0, Nat.zero_lt_succ _⟩))
+                  Term.unit) target :=
+  ⟨_, Step.toStar
+        (@Step.betaApp mode 0 (Ctx.nil mode) Ty.unit Ty.unit
+          (Term.var ⟨0, Nat.zero_lt_succ _⟩) Term.unit)⟩
 
 /-! ## v1.1 — Lookup helpers, term measures, first proven theorem.
 
