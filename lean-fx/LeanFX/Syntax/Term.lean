@@ -2337,6 +2337,30 @@ theorem Term.subst_id {m : Mode} {scope : Nat} {Γ : Ctx m scope}
     (Ty.subst_id T) ▸ Term.subst (TermSubst.identity Γ) t = t :=
   eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.subst_id_HEq t))
 
+/-! ### v1.26 — Cast-through-Term.subst HEq helper.
+
+Auxiliary HEq lemma: pushing a propositional type-cast on the
+input of `Term.subst` is HEq to applying the substitution
+directly.  Proven by `cases h; rfl` — once the cast equation is
+substituted by the trivial reflexivity, both sides are
+literally identical.
+
+Useful for downstream theorems where the input term carries a
+type-level cast that needs to escape the `Term.subst` call so
+the substitution's structural recursion can fire on the bare
+constructor.  In particular, this is the bridge for
+`TermSubst.lift_compose_pointwise` (v1.27+) at position 0,
+where `(σt₁.lift newType) ⟨0, _⟩` produces a casted `Term.var`
+that must flow through an outer `Term.subst σt₂`. -/
+theorem Term.subst_HEq_cast_input
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    {T₁ T₂ : Ty scope} (h : T₁ = T₂) (t : Term Γ T₁) :
+    HEq (Term.subst σt (h ▸ t)) (Term.subst σt t) := by
+  cases h
+  rfl
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
