@@ -1499,15 +1499,12 @@ inductive StepStar :
         {t₁ t₂ t₃ : Term ctx T},
       Step t₁ t₂ → StepStar t₂ t₃ → StepStar t₁ t₃
 
-/-- **Subject reduction is definitional**: if `Step t₁ t₂` holds, then
-`t₁` and `t₂` have the same type by the relation's signature.  No proof
-needed — the indices enforce it.  This `example` makes it explicit. -/
-example {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    {t₁ t₂ : Term ctx T} (_step : Step t₁ t₂) : Term ctx T := t₂
-
-/-- Multi-step reduction is reflexive (zero-step from `refl`). -/
-example {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    (t : Term ctx T) : StepStar t t := StepStar.refl t
+/-! Subject reduction is **structural** in this kernel: `Step`,
+`StepStar`, and `Conv` (introduced below) all share their
+`{ctx} {T}` indices between input and output terms, so every
+well-typed input produces a well-typed output by the relations'
+signatures alone.  No inductive subject-reduction theorem to state
+— the typing is in the relation's type. -/
 
 /-- Single steps lift to multi-step. -/
 theorem Step.toStar
@@ -1584,75 +1581,230 @@ theorem Step.toConv
     {t₁ t₂ : Term ctx T} (h : Step t₁ t₂) : Conv t₁ t₂ :=
   Conv.fromStep h
 
-/-! ## v1.11 — subject reduction theorems.
+/-! ## v1.11 — Conv structural congruences.
 
-Subject reduction (well-typed terms stay well-typed under reduction)
-is **definitional** in this kernel: `Step t₁ t₂`'s indices already
-fix `t₁` and `t₂` to live in the same context at the same type.  No
-inductive argument needed.  We name the result explicitly so other
-modules can cite it. -/
+Without these, threading `Conv` through subterms requires manually
+applying each `Step` congruence constructor and lifting via
+`Conv.fromStep` + `Conv.trans`.  Each theorem here is by induction on
+the underlying `Conv` proof: the four cases are reflexivity, symmetry,
+transitivity, and `fromStep` (which lifts via the corresponding
+`Step` congruence rule).  Together they make `Conv` a *full
+congruence relation* over the term constructors. -/
 
-/-- **Subject reduction for `Step`**: a single-step reduction
-preserves the typing context and the type.  Trivial — the relation's
-indices enforce it. -/
-theorem Step.preserves_typing
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    {t₁ t₂ : Term ctx T} (_h : Step t₁ t₂) :
-    Term ctx T = Term ctx T := rfl
+/-- Convertibility threads through the function position of `Term.app`. -/
+theorem Conv.app_cong_left {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
+    (a : Term ctx domainType) (h : Conv f₁ f₂) :
+    Conv (Term.app f₁ a) (Term.app f₂ a) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.appLeft s)
 
-/-- **Subject reduction for `StepStar`**: multi-step reduction
-preserves typing.  Same reasoning — definitional. -/
-theorem StepStar.preserves_typing
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    {t₁ t₂ : Term ctx T} (_h : StepStar t₁ t₂) :
-    Term ctx T = Term ctx T := rfl
+/-- Convertibility threads through the argument position of `Term.app`. -/
+theorem Conv.app_cong_right {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    (f : Term ctx (Ty.arrow domainType codomainType))
+    {a₁ a₂ : Term ctx domainType} (h : Conv a₁ a₂) :
+    Conv (Term.app f a₁) (Term.app f a₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.appRight s)
 
-/-- **Subject reduction for `Conv`**: convertible terms share their
-typing context and type.  Definitional via the indices. -/
-theorem Conv.preserves_typing
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    {t₁ t₂ : Term ctx T} (_h : Conv t₁ t₂) :
-    Term ctx T = Term ctx T := rfl
+/-- Convertibility threads through both positions of `Term.app`. -/
+theorem Conv.app_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
+    {a₁ a₂ : Term ctx domainType}
+    (h_f : Conv f₁ f₂) (h_a : Conv a₁ a₂) :
+    Conv (Term.app f₁ a₁) (Term.app f₂ a₂) :=
+  Conv.trans (Conv.app_cong_left a₁ h_f) (Conv.app_cong_right f₂ h_a)
+
+/-- Convertibility threads through the body of `Term.lam`. -/
+theorem Conv.lam_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {body₁ body₂ : Term (ctx.cons domainType) codomainType.weaken}
+    (h : Conv body₁ body₂) :
+    Conv (Term.lam (codomainType := codomainType) body₁)
+         (Term.lam (codomainType := codomainType) body₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.lamBody s)
+
+/-- Convertibility threads through the body of `Term.lamPi`. -/
+theorem Conv.lamPi_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    {body₁ body₂ : Term (ctx.cons domainType) codomainType}
+    (h : Conv body₁ body₂) :
+    Conv (Term.lamPi (domainType := domainType) body₁)
+         (Term.lamPi (domainType := domainType) body₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.lamPiBody s)
+
+/-- Convertibility threads through the function position of `Term.appPi`. -/
+theorem Conv.appPi_cong_left {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
+    (a : Term ctx domainType) (h : Conv f₁ f₂) :
+    Conv (Term.appPi f₁ a) (Term.appPi f₂ a) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.appPiLeft s)
+
+/-- Convertibility threads through the argument position of `Term.appPi`. -/
+theorem Conv.appPi_cong_right {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    (f : Term ctx (Ty.piTy domainType codomainType))
+    {a₁ a₂ : Term ctx domainType} (h : Conv a₁ a₂) :
+    Conv (Term.appPi f a₁) (Term.appPi f a₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.appPiRight s)
+
+/-- Convertibility threads through both positions of `Term.appPi`. -/
+theorem Conv.appPi_cong {mode scope} {ctx : Ctx mode scope}
+    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+    {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
+    {a₁ a₂ : Term ctx domainType}
+    (h_f : Conv f₁ f₂) (h_a : Conv a₁ a₂) :
+    Conv (Term.appPi f₁ a₁) (Term.appPi f₂ a₂) :=
+  Conv.trans (Conv.appPi_cong_left a₁ h_f) (Conv.appPi_cong_right f₂ h_a)
+
+/-- Convertibility threads through the first component of `Term.pair`. -/
+theorem Conv.pair_cong_first {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {firstVal₁ firstVal₂ : Term ctx firstType}
+    (secondVal : Term ctx (secondType.subst0 firstType))
+    (h : Conv firstVal₁ firstVal₂) :
+    Conv (Term.pair (firstType := firstType) (secondType := secondType)
+                    firstVal₁ secondVal)
+         (Term.pair (firstType := firstType) (secondType := secondType)
+                    firstVal₂ secondVal) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.pairLeft s)
+
+/-- Convertibility threads through the second component of `Term.pair`. -/
+theorem Conv.pair_cong_second {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    (firstVal : Term ctx firstType)
+    {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
+    (h : Conv secondVal₁ secondVal₂) :
+    Conv (Term.pair firstVal secondVal₁)
+         (Term.pair firstVal secondVal₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.pairRight s)
+
+/-- Convertibility threads through both components of `Term.pair`. -/
+theorem Conv.pair_cong {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {firstVal₁ firstVal₂ : Term ctx firstType}
+    {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
+    (h_first : Conv firstVal₁ firstVal₂)
+    (h_second : Conv secondVal₁ secondVal₂) :
+    Conv (Term.pair firstVal₁ secondVal₁)
+         (Term.pair firstVal₂ secondVal₂) :=
+  Conv.trans (Conv.pair_cong_first secondVal₁ h_first)
+             (Conv.pair_cong_second firstVal₂ h_second)
+
+/-- Convertibility threads through `Term.fst`. -/
+theorem Conv.fst_cong {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
+    (h : Conv p₁ p₂) :
+    Conv (Term.fst p₁) (Term.fst p₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.fstCong s)
+
+/-- Convertibility threads through `Term.snd`. -/
+theorem Conv.snd_cong {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
+    (h : Conv p₁ p₂) :
+    Conv (Term.snd p₁) (Term.snd p₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.sndCong s)
+
+/-! ## v1.11 — η-equivalence in natural direction.
+
+Step's η-rules are *contractions* (collapse the η-redex back to the
+underlying value).  These wrappers state η as an *equivalence*
+(`f ≡ λx. f x`), which is the more common reading and the form
+typical conversion algorithms compare against. -/
+
+/-- **η-equivalence for arrow**: `f ≡ λx. f x`. -/
+theorem Term.eta_arrow_eq {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    (f : Term ctx (Ty.arrow domainType codomainType)) :
+    Conv f
+         (Term.lam (codomainType := codomainType)
+            (Term.app (Term.weaken domainType f)
+                      (Term.var ⟨0, Nat.zero_lt_succ _⟩))) :=
+  Conv.sym (Step.etaArrow f).toConv
+
+/-- **η-equivalence for Σ**: `p ≡ pair (fst p) (snd p)`. -/
+theorem Term.eta_sigma_eq {mode scope} {ctx : Ctx mode scope}
+    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+    (p : Term ctx (Ty.sigmaTy firstType secondType)) :
+    Conv p
+         (Term.pair (firstType := firstType)
+                     (secondType := secondType)
+            (Term.fst p) (Term.snd p)) :=
+  Conv.sym (Step.etaSigma p).toConv
 
 /-! ## v1.11 — cast-identity discipline (proof irrelevance).
 
 The β-reduction's result terms carry `▸` casts whose proofs are
-non-`rfl`-elaborated equalities.  By Lean 4's Prop-level proof
-irrelevance, every `Eq` proof of a definitionally-true equation is
-*definitionally equal* to `rfl`, so the cast is identity.  These
-lemmas pin that invariant for cast-aware downstream reasoning. -/
+non-`rfl`-elaborated equalities.  Lean 4's Prop-level proof
+irrelevance makes every `Eq` proof of a definitionally-true equation
+*definitionally equal* to `rfl`, so the cast reduces to identity. -/
 
-/-- The cast through any equality on a term is the same term, modulo
-Prop proof irrelevance.  Lean's kernel substitutes `Eq.refl` for any
-proof when both sides of the equation are definitionally equal,
-making the cast a no-op. -/
+/-- The cast through any `T = T` equality on a term is the identity
+modulo Prop proof irrelevance.  Lean's kernel substitutes `Eq.refl`
+for any proof when both sides are definitionally equal. -/
 theorem Term.cast_identity
     {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
     (h : T = T) (term : Term ctx T) :
     h ▸ term = term := rfl
 
-/-- The cast through `(rfl).symm` is identity.  Used by the β-rules'
-result casts to recover the underlying term when the equation type
-reduces to `T = T`. -/
-theorem Term.cast_symm_rfl
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    (term : Term ctx T) :
-    (Eq.refl T).symm ▸ term = term := rfl
+/-! ## v1.11 — confluence: the algebraic groundwork.
 
-/-! ## v1.11 — confluence: the Step relation is well-defined.
-
-Full confluence (the diamond property: if `t ⟶ t₁` and `t ⟶ t₂`,
-there exists `t'` with `t₁ ⟶* t'` and `t₂ ⟶* t'`) requires parallel
+Full confluence (the diamond property: if `t ⟶ t₁` and `t ⟶ t₂`, there
+exists `t'` with `t₁ ⟶* t'` and `t₂ ⟶* t'`) requires parallel
 reduction and the Tait–Martin-Löf method, ~200+ lines.  v1.11 lays
-the algebraic groundwork: `Conv` is shown to be a true equivalence
-relation (already by its constructor signature), and `StepStar`'s
-"prepend an arbitrary single step" is given an explicit name for
-chaining. -/
+the algebraic groundwork: `Conv` is a true equivalence relation by
+its constructor signature plus the structural-congruence theorems
+above; `StepStar.append` provides the right-side companion to
+`StepStar.step` for typical reduction-trace manipulation in the
+eventual confluence proof. -/
 
-/-- Append a single step to an existing multi-step path.  The
-companion to `StepStar.step` (which prepends): both directions are
-needed for typical reduction-trace manipulation in conversion
-algorithms. -/
+/-- Append a single step to an existing multi-step path.  The companion
+to `StepStar.step` (which prepends): both directions are needed for
+typical reduction-trace manipulation in conversion algorithms. -/
 theorem StepStar.append
     {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
     {t₁ t₂ t₃ : Term ctx T} :
@@ -1660,29 +1812,10 @@ theorem StepStar.append
   fun stars step =>
     StepStar.trans stars (Step.toStar step)
 
-/-- Conv is reflexive (constructor `refl`); restated as a theorem for
-proof-search ergonomics. -/
-theorem Conv.is_refl
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    (t : Term ctx T) : Conv t t := Conv.refl t
+/-! ## v1.11 — η + Conv smoke tests. -/
 
-/-- Conv is symmetric (constructor `sym`); restated. -/
-theorem Conv.is_sym
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    {t₁ t₂ : Term ctx T} (h : Conv t₁ t₂) : Conv t₂ t₁ :=
-  Conv.sym h
-
-/-- Conv is transitive (constructor `trans`); restated. -/
-theorem Conv.is_trans
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
-    {t₁ t₂ t₃ : Term ctx T}
-    (h₁₂ : Conv t₁ t₂) (h₂₃ : Conv t₂ t₃) : Conv t₁ t₃ :=
-  Conv.trans h₁₂ h₂₃
-
-/-! ## v1.11 — η-rule smoke tests. -/
-
-/-- **η for arrow**: contracting an η-redex over a closed function
-yields back the original function. -/
+/-- **η for arrow** at the Step level: contracting an η-redex over a
+closed function yields back the original function. -/
 example (mode : Mode)
     (f : Term (Ctx.nil mode) (Ty.arrow Ty.unit Ty.unit)) :
     Step (Term.lam (codomainType := Ty.unit)
@@ -1691,8 +1824,8 @@ example (mode : Mode)
          f :=
   Step.etaArrow f
 
-/-- **η for Σ**: collapsing a pair of projections back to the
-original pair value. -/
+/-- **η for Σ** at the Step level: collapsing a pair of projections
+back to the original pair value. -/
 example (mode : Mode)
     (p : Term (Ctx.nil mode) (Ty.sigmaTy Ty.unit Ty.unit)) :
     Step (Term.pair (firstType := Ty.unit) (secondType := Ty.unit)
@@ -1700,18 +1833,31 @@ example (mode : Mode)
          p :=
   Step.etaSigma p
 
-/-- **β + η interleave**: a β-step followed by an η-step composes via
-`Conv.trans`.  This confirms `Conv`'s equivalence-relation shape is
-usable for conversion checking. -/
-example (mode : Mode)
-    (f : Term (Ctx.nil mode) (Ty.arrow Ty.unit Ty.unit))
-    (a : Term (Ctx.nil mode) Ty.unit) :
-    ∃ (target : Term (Ctx.nil mode) Ty.unit),
-      Conv (Term.app f a) target :=
-  ⟨_, Conv.refl _⟩
+/-- **Conv as a real congruence relation**: given convertibility on
+the function and argument, convertibility holds at the application.
+This exercises the v1.11 structural-congruence machinery
+(`Conv.app_cong`) and confirms `Conv` is more than an opaque
+equivalence — it threads through subterms automatically. -/
+example {mode scope} {ctx : Ctx mode scope}
+    {domainType codomainType : Ty scope}
+    {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
+    {a₁ a₂ : Term ctx domainType}
+    (h_f : Conv f₁ f₂) (h_a : Conv a₁ a₂) :
+    Conv (Term.app f₁ a₁) (Term.app f₂ a₂) :=
+  Conv.app_cong h_f h_a
 
-/-- **Cast simplification check**: a `▸` over a `T = T` equality is
-the identity (Lean's proof-irrelevance reduces the cast). -/
+/-- **η-equivalence in natural direction**: a function is convertible
+with its η-expansion.  Direct from `Term.eta_arrow_eq`. -/
+example (mode : Mode)
+    (f : Term (Ctx.nil mode) (Ty.arrow Ty.unit Ty.unit)) :
+    Conv f
+         (Term.lam (codomainType := Ty.unit)
+            (Term.app (Term.weaken Ty.unit f)
+                      (Term.var ⟨0, Nat.zero_lt_succ _⟩))) :=
+  Term.eta_arrow_eq f
+
+/-- **Cast simplification**: a `▸` over a `T = T` equality is the
+identity (Lean's proof-irrelevance reduces the cast). -/
 example (mode : Mode) (term : Term (Ctx.nil mode) Ty.unit)
     (h : (Ty.unit : Ty 0) = Ty.unit) :
     h ▸ term = term :=
