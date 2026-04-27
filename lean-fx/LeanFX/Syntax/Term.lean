@@ -70,6 +70,23 @@ inductive Ty : Nat → Nat → Type
               Ty level scope
   /-- Boolean type. -/
   | bool : {level scope : Nat} → Ty level scope
+  /-- Universe of small types — `Type<u>` lives at level `u + 1`,
+  matching the standard MLTT rule `Type u : Type (u+1)`.
+
+  Encoded with a *level-polymorphic* signature plus a propositional
+  witness `levelEq : level = u + 1`.  This sidesteps a Lean pattern-
+  elaborator limitation: a constructor whose type rigidly fixes the
+  level (e.g. `Ty (u + 1) scope` directly) blocks pattern-form matches
+  in any theorem whose goal involves the matched scrutinee through
+  `T.subst` / `T.rename`, because the elaborator cannot refine the
+  rigid `level` header binder.  Carrying the equation as a propositional
+  argument keeps the constructor's level polymorphic; the proposition
+  is consumed at use-site (typically `rfl`).
+
+  Cumulativity (`Ty (u+1) → Ty (u+2)`) lands in v1.28; polymorphic Π
+  over `Type<u>` lands in v1.29. -/
+  | universe : {level scope : Nat} → (u : Nat) → (levelEq : level = u + 1) →
+               Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
 `Ty`'s index is a bare `Nat`, so the discrimination obligations
@@ -125,6 +142,7 @@ def Ty.rename {level source target : Nat} :
   | .tyVar i, ρ       => .tyVar (ρ i)
   | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
   | .bool, _          => .bool
+  | .universe u h, _  => .universe u h
 
 /-! ## Rename composition algebra.
 
@@ -173,6 +191,7 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
       have hB := Ty.rename_congr (Renaming.lift_equiv h) B
       exact hA ▸ hB ▸ rfl
   | .bool         => rfl
+  | .universe _ _ => rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -236,6 +255,7 @@ theorem Ty.rename_compose {level s m t : Nat} :
         Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
       exact hA ▸ (hB.trans hLift) ▸ rfl
   | .bool, _, _ => rfl
+  | .universe _ _, _, _ => rfl
 
 /-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
 Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
@@ -317,6 +337,7 @@ def Ty.subst {level source target : Nat} :
   | .tyVar i, σ       => σ i
   | .sigmaTy A B, σ   => .sigmaTy (Ty.subst A σ) (Ty.subst B σ.lift)
   | .bool, _          => .bool
+  | .universe u h, _  => .universe u h
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -373,6 +394,7 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
       have hY := Ty.subst_congr (Subst.lift_equiv h) Y
       exact hX ▸ hY ▸ rfl
   | .bool         => rfl
+  | .universe _ _ => rfl
 
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -431,6 +453,7 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
       have hCong := Ty.subst_congr (Subst.lift_renameAfter_commute σ ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _, _ => rfl
+  | .universe _ _, _, _ => rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -483,6 +506,7 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
       have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _, _ => rfl
+  | .universe _ _, _, _ => rfl
 
 /-! ## Renaming as a special case of substitution.
 
@@ -540,6 +564,7 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _ => rfl
+  | .universe _ _, _ => rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -594,6 +619,7 @@ theorem Ty.subst_id {level scope : Nat} :
          = X.sigmaTy Y
       exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
   | .bool => rfl
+  | .universe _ _ => rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -667,6 +693,7 @@ theorem Ty.subst_compose {level s m t : Nat} :
       have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
   | .bool, _, _ => rfl
+  | .universe _ _, _, _ => rfl
 
 /-! ## Monoid laws for Renaming and Subst.
 
@@ -4643,6 +4670,27 @@ example {firstType : Ty 0 0} {secondType : Ty 0 1}
     (p : Term EmptyCtx (Ty.sigmaTy firstType secondType)) :
     Step (Term.pair (Term.fst p) (Term.snd p)) p :=
   Step.etaSigma p
+
+/-- `Type<0> : Ty 1 0` — the smallest universe lives at level 1.
+Demonstrates the propositional-equation encoding (`Ty.universe u rfl`):
+the `rfl : 1 = 0 + 1` is supplied at the use site to constrain the
+otherwise-polymorphic level of the constructor. -/
+example : Ty 1 0 := Ty.universe 0 rfl
+
+/-- `Type<3> : Ty 4 0` — universe at an arbitrary level. -/
+example : Ty 4 0 := Ty.universe 3 rfl
+
+/-- The universe is preserved by renaming: `(Type<u>).rename ρ = Type<u>`. -/
+example {scope target : Nat} (ρ : Renaming scope target) :
+    (Ty.universe (level := 1) (scope := scope) 0 rfl).rename ρ
+      = Ty.universe (level := 1) (scope := target) 0 rfl :=
+  rfl
+
+/-- The universe is preserved by substitution: `(Type<u>).subst σ = Type<u>`. -/
+example {scope target : Nat} (σ : Subst 1 scope target) :
+    (Ty.universe (level := 1) (scope := scope) 0 rfl).subst σ
+      = Ty.universe (level := 1) (scope := target) 0 rfl :=
+  rfl
 
 /-- A single Step lifts to multi-step. -/
 example (t e : Term EmptyCtx Ty.bool) :
