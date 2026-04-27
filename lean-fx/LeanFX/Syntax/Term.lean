@@ -441,6 +441,62 @@ theorem Ty.rename_subst_commute :
       have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
 
+/-! ## v1.7 finale — renaming as a special case of substitution.
+
+The deepest beauty of the substitution discipline: **renaming is a
+particular kind of substitution**, where each variable maps to a
+type-variable reference (rather than a more elaborate `Ty`).  This
+unifies the two operations under one mathematical umbrella. -/
+
+/-- Coerce a renaming into a substitution: each variable index `ρ i`
+becomes the type-variable reference `Ty.tyVar (ρ i)`. -/
+def Renaming.toSubst {s t : Nat} (ρ : Renaming s t) : Subst s t :=
+  fun i => Ty.tyVar (ρ i)
+
+/-- Lifting commutes with the renaming-to-substitution coercion
+(pointwise).  Both cases reduce to `rfl`. -/
+theorem Renaming.lift_toSubst_equiv {s t : Nat} (ρ : Renaming s t) :
+    Subst.equiv (Renaming.toSubst ρ.lift) (Renaming.toSubst ρ).lift :=
+  fun i =>
+    match i with
+    | ⟨0, _⟩      => rfl
+    | ⟨_ + 1, _⟩  => rfl
+
+/-- **Renaming = Substitution** under the natural coercion.  This is
+the conceptual cap of the v1.7 substitution discipline: renaming is
+not a separate primitive operation but a special case of substitution
+where the substituent for each variable is a `tyVar`.  All renaming
+lemmas are derivable from the corresponding substitution lemmas via
+this isomorphism. -/
+theorem Ty.rename_eq_subst :
+    ∀ {s t : Nat} (T : Ty s) (ρ : Renaming s t),
+    T.rename ρ = T.subst (Renaming.toSubst ρ)
+  | _, _, .unit, _ => rfl
+  | _, _, .arrow X Y, ρ => by
+      show Ty.arrow (X.rename ρ) (Y.rename ρ)
+         = Ty.arrow (X.subst (Renaming.toSubst ρ))
+                    (Y.subst (Renaming.toSubst ρ))
+      have hX := Ty.rename_eq_subst X ρ
+      have hY := Ty.rename_eq_subst Y ρ
+      exact hX ▸ hY ▸ rfl
+  | _, _, .piTy X Y, ρ => by
+      show Ty.piTy (X.rename ρ) (Y.rename ρ.lift)
+         = Ty.piTy (X.subst (Renaming.toSubst ρ))
+                   (Y.subst (Renaming.toSubst ρ).lift)
+      have hX := Ty.rename_eq_subst X ρ
+      have hY := Ty.rename_eq_subst Y ρ.lift
+      have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+  | _, _, .tyVar _, _ => rfl
+  | _, _, .sigmaTy X Y, ρ => by
+      show Ty.sigmaTy (X.rename ρ) (Y.rename ρ.lift)
+         = Ty.sigmaTy (X.subst (Renaming.toSubst ρ))
+                      (Y.subst (Renaming.toSubst ρ).lift)
+      have hX := Ty.rename_eq_subst X ρ
+      have hY := Ty.rename_eq_subst Y ρ.lift
+      have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
+      exact hX ▸ hY ▸ hCong ▸ rfl
+
 /-! ## Contexts
 
 `Ctx mode scope` is a typed context at the given mode containing
