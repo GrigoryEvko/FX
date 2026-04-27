@@ -1859,6 +1859,22 @@ theorem Term.snd_HEq_congr
   cases h_p
   rfl
 
+/-- **General HEq congruence for `Term.weaken`.**  Stronger than
+`Term.heq_weaken_strip_cast` (which only handled an inner cast):
+this allows the newType parameter AND the input term to differ
+across the HEq.  Three `cases` discharge the three propositional
+equalities; once unified, `rfl`. -/
+theorem Term.weaken_HEq_congr
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    {newType₁ newType₂ : Ty scope} (h_new : newType₁ = newType₂)
+    {T₁ T₂ : Ty scope} (h_T : T₁ = T₂)
+    (t₁ : Term Γ T₁) (t₂ : Term Γ T₂) (h_t : HEq t₁ t₂) :
+    HEq (Term.weaken newType₁ t₁) (Term.weaken newType₂ t₂) := by
+  cases h_new
+  cases h_T
+  cases h_t
+  rfl
+
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
     {m : Mode} {scope : Nat} {Γ : Ctx m scope}
@@ -2046,6 +2062,65 @@ theorem Term.subst_id_HEq_snd
     ((Ty.subst_congr Subst.lift_identity_equiv second).trans
      (Ty.subst_id second))
   exact ih_p
+
+/-! ### v1.24 — `TermSubst.lift_HEq_pointwise`.
+
+Pointwise HEq for the lifted versions of two TermSubsts that are
+themselves pointwise HEq (and whose underlying Substs are
+pointwise equal).  The position-0 case bridges through the
+context-shape difference (newType.subst σ₁ vs newType.subst σ₂);
+the position-(k+1) case bridges through `Term.weaken_HEq_congr`.
+
+Used by the binder cases of `Term.subst_HEq_pointwise` (lam,
+lamPi) — the recursive call descends under a binder, which
+extends the TermSubsts by `lift`, and the new pointwise-HEq
+hypothesis is exactly what this theorem produces. -/
+theorem TermSubst.lift_HEq_pointwise
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ₁ σ₂ : Subst scope scope'}
+    (σt₁ : TermSubst Γ Δ σ₁) (σt₂ : TermSubst Γ Δ σ₂)
+    (h_subst : Subst.equiv σ₁ σ₂)
+    (h_pointwise : ∀ i, HEq (σt₁ i) (σt₂ i))
+    (newType : Ty scope) :
+    ∀ i, HEq (TermSubst.lift σt₁ newType i)
+             (TermSubst.lift σt₂ newType i) := by
+  -- Bridging fact: newType.subst σ₁ = newType.subst σ₂.
+  have h_new : newType.subst σ₁ = newType.subst σ₂ :=
+    Ty.subst_congr h_subst newType
+  intro i
+  match i with
+  | ⟨0, _⟩ =>
+    -- LHS = (Ty.subst_weaken_commute newType σ₁).symm ▸
+    --        Term.var (context := Δ.cons (newType.subst σ₁)) ⟨0, _⟩
+    -- RHS = (Ty.subst_weaken_commute newType σ₂).symm ▸
+    --        Term.var (context := Δ.cons (newType.subst σ₂)) ⟨0, _⟩
+    -- Strip outer casts on both sides via eqRec_heq, bridge naked
+    -- Term.var values via heq_var_across_ctx_eq + congrArg-cons.
+    -- Note: Term.var lives at scope' + 1, so the Fin uses
+    -- Nat.zero_lt_succ scope' (NOT the Fin destructure's h0 which
+    -- is at scope + 1).
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans
+      (heq_var_across_ctx_eq (congrArg (Δ.cons) h_new)
+        ⟨0, Nat.zero_lt_succ scope'⟩)
+    exact (eqRec_heq _ _).symm
+  | ⟨k + 1, hk⟩ =>
+    -- LHS = (Ty.subst_weaken_commute (varType Γ ⟨k,_⟩) σ₁).symm ▸
+    --        Term.weaken (newType.subst σ₁) (σt₁ ⟨k, _⟩)
+    -- RHS = (Ty.subst_weaken_commute (varType Γ ⟨k,_⟩) σ₂).symm ▸
+    --        Term.weaken (newType.subst σ₂) (σt₂ ⟨k, _⟩)
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans (b :=
+      Term.weaken (newType.subst σ₂)
+        (σt₂ ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
+    · exact Term.weaken_HEq_congr h_new
+        (Ty.subst_congr h_subst
+          (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
+        (σt₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
+        (σt₂ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
+        (h_pointwise ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
+    · exact (eqRec_heq _ _).symm
 
 /-! ## v1.6 — typed reduction.
 
