@@ -2852,6 +2852,78 @@ theorem Term.subst_weaken_commute_HEq_snd
     h_second
     _ _ ih_p
 
+/-! ### v1.32 — Closed-context pair case for subst-weaken commute.
+
+The `pair` case is structurally distinct from `fst`/`snd` (and
+the trickiest closed case so far): the outer `Term.pair`
+constructor has NO cast in either Term.subst's or Term.rename's
+clauses, but the **secondVal argument** carries a
+`Ty.subst0_*_commute` cast inside it on both sides.  After
+Term.subst/Term.weaken push through the outer Term.pair, the
+inner secondVal lives at a four-cast-nested expression — two
+LHS casts (Ty.subst0_rename_commute then Ty.subst0_subst_commute)
+and two RHS casts (Ty.subst0_subst_commute then
+Ty.subst0_rename_commute).
+
+The h_w argument to `Term.pair_HEq_congr` peels these in
+onion-layer order: outer casts via `eqRec_heq`, inner casts via
+the `Term.subst_HEq_cast_input` (v1.26) and
+`Term.weaken_HEq_cast_input` (v1.31) helpers, with `ih_w`
+bridging the bare middle. -/
+theorem Term.subst_weaken_commute_HEq_pair
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope)
+    {first : Ty scope} {second : Ty (scope + 1)}
+    (v : Term Γ first) (w : Term Γ (second.subst0 first))
+    (ih_v : HEq
+              (Term.subst (σt.lift X) (Term.weaken X v))
+              (Term.weaken (X.subst σ) (Term.subst σt v)))
+    (ih_w : HEq
+              (Term.subst (σt.lift X) (Term.weaken X w))
+              (Term.weaken (X.subst σ) (Term.subst σt w))) :
+    HEq
+      (Term.subst (σt.lift X) (Term.weaken X (Term.pair v w)))
+      (Term.weaken (X.subst σ) (Term.subst σt (Term.pair v w))) := by
+  -- Same h_second as fst/snd.
+  have h_second :
+      (second.rename Renaming.weaken.lift).subst σ.lift.lift
+        = (second.subst σ.lift).rename Renaming.weaken.lift :=
+    (Ty.rename_subst_commute second Renaming.weaken.lift σ.lift.lift).trans
+      ((Ty.subst_congr
+          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
+          second).trans
+        (Ty.subst_rename_commute second σ.lift Renaming.weaken.lift).symm)
+  -- Apply Term.pair_HEq_congr first; Lean computes the actual
+  -- goal-shape with whatever cast forms it produces internally.
+  -- The first three args (h_first, h_second, h_v) discharge
+  -- directly; the secondVal HEq goal is resolved by the
+  -- four-cast chain inline.
+  apply Term.pair_HEq_congr
+    (Ty.subst_weaken_commute first σ)
+    h_second
+    _ _ ih_v
+  -- Goal: HEq of secondVal arguments.  Strip outer cast on LHS.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Push the inner cast on LHS through Term.subst via v1.26 helper.
+  apply HEq.trans
+    (Term.subst_HEq_cast_input
+      (σt.lift X)
+      (Ty.subst0_rename_commute second first Renaming.weaken)
+      (Term.weaken X w))
+  -- Bridge via IH on w.
+  apply HEq.trans ih_w
+  -- Flip and process RHS.
+  apply HEq.symm
+  -- Strip outer cast on RHS.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Push the inner cast on RHS through Term.weaken via v1.31 helper.
+  exact Term.weaken_HEq_cast_input
+    (X.subst σ)
+    (Ty.subst0_subst_commute second first σ)
+    (Term.subst σt w)
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
