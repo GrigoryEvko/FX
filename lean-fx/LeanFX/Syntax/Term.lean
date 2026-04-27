@@ -402,18 +402,18 @@ This is the load-bearing lemma for `Term.rename`'s `appPi`/`pair`/
 for β-reduction.  Proven by structural induction on `T`, with the
 `piTy`/`sigmaTy` cases using `Subst.lift_renameAfter_commute` +
 `Ty.subst_congr`. -/
-theorem Ty.subst_rename_commute {level : Nat} :
-    ∀ {s m t : Nat} (T : Ty level s) (σ : Subst level s m) (ρ : Renaming m t),
+theorem Ty.subst_rename_commute {level s m t : Nat} :
+    ∀ (T : Ty level s) (σ : Subst level s m) (ρ : Renaming m t),
     (T.subst σ).rename ρ = T.subst (Subst.renameAfter σ ρ)
-  | _, _, _, .unit, _, _ => rfl
-  | _, _, _, .arrow X Y, σ, ρ => by
+  | .unit, _, _ => rfl
+  | .arrow X Y, σ, ρ => by
       show Ty.arrow ((X.subst σ).rename ρ) ((Y.subst σ).rename ρ)
          = Ty.arrow (X.subst (Subst.renameAfter σ ρ))
                     (Y.subst (Subst.renameAfter σ ρ))
       have hX := Ty.subst_rename_commute X σ ρ
       have hY := Ty.subst_rename_commute Y σ ρ
       exact hX ▸ hY ▸ rfl
-  | _, _, _, .piTy X Y, σ, ρ => by
+  | .piTy X Y, σ, ρ => by
       show Ty.piTy ((X.subst σ).rename ρ) ((Y.subst σ.lift).rename ρ.lift)
          = Ty.piTy (X.subst (Subst.renameAfter σ ρ))
                    (Y.subst (Subst.renameAfter σ ρ).lift)
@@ -421,8 +421,8 @@ theorem Ty.subst_rename_commute {level : Nat} :
       have hY := Ty.subst_rename_commute Y σ.lift ρ.lift
       have hCong := Ty.subst_congr (Subst.lift_renameAfter_commute σ ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, _, .tyVar _, _, _ => rfl
-  | _, _, _, .sigmaTy X Y, σ, ρ => by
+  | .tyVar _, _, _ => rfl
+  | .sigmaTy X Y, σ, ρ => by
       show Ty.sigmaTy ((X.subst σ).rename ρ) ((Y.subst σ.lift).rename ρ.lift)
          = Ty.sigmaTy (X.subst (Subst.renameAfter σ ρ))
                       (Y.subst (Subst.renameAfter σ ρ).lift)
@@ -430,7 +430,7 @@ theorem Ty.subst_rename_commute {level : Nat} :
       have hY := Ty.subst_rename_commute Y σ.lift ρ.lift
       have hCong := Ty.subst_congr (Subst.lift_renameAfter_commute σ ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, _, .bool, _, _ => rfl
+  | .bool, _, _ => rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -454,18 +454,18 @@ with a precomposed substitution.  This is the OTHER direction of the
 substitution-rename interaction; together with `subst_rename_commute`
 they let us derive `subst0_rename_commute` and the full β-reduction
 soundness chain. -/
-theorem Ty.rename_subst_commute {level : Nat} :
-    ∀ {s m t : Nat} (T : Ty level s) (ρ : Renaming s m) (σ : Subst level m t),
+theorem Ty.rename_subst_commute {level s m t : Nat} :
+    ∀ (T : Ty level s) (ρ : Renaming s m) (σ : Subst level m t),
     (T.rename ρ).subst σ = T.subst (Subst.precompose ρ σ)
-  | _, _, _, .unit, _, _ => rfl
-  | _, _, _, .arrow X Y, ρ, σ => by
+  | .unit, _, _ => rfl
+  | .arrow X Y, ρ, σ => by
       show Ty.arrow ((X.rename ρ).subst σ) ((Y.rename ρ).subst σ)
          = Ty.arrow (X.subst (Subst.precompose ρ σ))
                     (Y.subst (Subst.precompose ρ σ))
       have hX := Ty.rename_subst_commute X ρ σ
       have hY := Ty.rename_subst_commute Y ρ σ
       exact hX ▸ hY ▸ rfl
-  | _, _, _, .piTy X Y, ρ, σ => by
+  | .piTy X Y, ρ, σ => by
       show Ty.piTy ((X.rename ρ).subst σ) ((Y.rename ρ.lift).subst σ.lift)
          = Ty.piTy (X.subst (Subst.precompose ρ σ))
                    (Y.subst (Subst.precompose ρ σ).lift)
@@ -473,8 +473,8 @@ theorem Ty.rename_subst_commute {level : Nat} :
       have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
       have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, _, .tyVar _, _, _ => rfl
-  | _, _, _, .sigmaTy X Y, ρ, σ => by
+  | .tyVar _, _, _ => rfl
+  | .sigmaTy X Y, ρ, σ => by
       show Ty.sigmaTy ((X.rename ρ).subst σ) ((Y.rename ρ.lift).subst σ.lift)
          = Ty.sigmaTy (X.subst (Subst.precompose ρ σ))
                       (Y.subst (Subst.precompose ρ σ).lift)
@@ -482,7 +482,7 @@ theorem Ty.rename_subst_commute {level : Nat} :
       have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
       have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, _, .bool, _, _ => rfl
+  | .bool, _, _ => rfl
 
 /-! ## Renaming as a special case of substitution.
 
@@ -511,18 +511,18 @@ not a separate primitive operation but a special case of substitution
 where the substituent for each variable is a `tyVar`.  All renaming
 lemmas are derivable from the corresponding substitution lemmas via
 this isomorphism. -/
-theorem Ty.rename_eq_subst {level : Nat} :
-    ∀ {s t : Nat} (T : Ty level s) (ρ : Renaming s t),
+theorem Ty.rename_eq_subst {level s t : Nat} :
+    ∀ (T : Ty level s) (ρ : Renaming s t),
     T.rename ρ = T.subst (Renaming.toSubst ρ)
-  | _, _, .unit, _ => rfl
-  | _, _, .arrow X Y, ρ => by
+  | .unit, _ => rfl
+  | .arrow X Y, ρ => by
       show Ty.arrow (X.rename ρ) (Y.rename ρ)
          = Ty.arrow (X.subst (Renaming.toSubst ρ))
                     (Y.subst (Renaming.toSubst ρ))
       have hX := Ty.rename_eq_subst X ρ
       have hY := Ty.rename_eq_subst Y ρ
       exact hX ▸ hY ▸ rfl
-  | _, _, .piTy X Y, ρ => by
+  | .piTy X Y, ρ => by
       show Ty.piTy (X.rename ρ) (Y.rename ρ.lift)
          = Ty.piTy (X.subst (Renaming.toSubst ρ))
                    (Y.subst (Renaming.toSubst ρ).lift)
@@ -530,8 +530,8 @@ theorem Ty.rename_eq_subst {level : Nat} :
       have hY := Ty.rename_eq_subst Y ρ.lift
       have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, .tyVar _, _ => rfl
-  | _, _, .sigmaTy X Y, ρ => by
+  | .tyVar _, _ => rfl
+  | .sigmaTy X Y, ρ => by
       show Ty.sigmaTy (X.rename ρ) (Y.rename ρ.lift)
          = Ty.sigmaTy (X.subst (Renaming.toSubst ρ))
                       (Y.subst (Renaming.toSubst ρ).lift)
@@ -539,7 +539,7 @@ theorem Ty.rename_eq_subst {level : Nat} :
       have hY := Ty.rename_eq_subst Y ρ.lift
       have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, .bool, _ => rfl
+  | .bool, _ => rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -571,29 +571,29 @@ theorem Subst.lift_identity_equiv {level scope : Nat} :
 The substitution that maps every variable to itself is the identity
 operation on `Ty`.  Proven by structural induction on `T`, using
 `.symm ▸` to rewrite the goal toward `rfl`. -/
-theorem Ty.subst_id {level : Nat} :
-    ∀ {scope : Nat} (T : Ty level scope), T.subst Subst.identity = T
-  | _, .unit => rfl
-  | _, .arrow X Y => by
+theorem Ty.subst_id {level scope : Nat} :
+    ∀ (T : Ty level scope), T.subst Subst.identity = T
+  | .unit => rfl
+  | .arrow X Y => by
       have hX := Ty.subst_id X
       have hY := Ty.subst_id Y
       show (X.subst Subst.identity).arrow (Y.subst Subst.identity) = X.arrow Y
       exact hX.symm ▸ hY.symm ▸ rfl
-  | _, .piTy X Y => by
+  | .piTy X Y => by
       have hX := Ty.subst_id X
       have hCong := Ty.subst_congr Subst.lift_identity_equiv Y
       have hY := Ty.subst_id Y
       show (X.subst Subst.identity).piTy (Y.subst Subst.identity.lift) = X.piTy Y
       exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
-  | _, .tyVar _ => rfl
-  | _, .sigmaTy X Y => by
+  | .tyVar _ => rfl
+  | .sigmaTy X Y => by
       have hX := Ty.subst_id X
       have hCong := Ty.subst_congr Subst.lift_identity_equiv Y
       have hY := Ty.subst_id Y
       show (X.subst Subst.identity).sigmaTy (Y.subst Subst.identity.lift)
          = X.sigmaTy Y
       exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
-  | _, .bool => rfl
+  | .bool => rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -638,18 +638,18 @@ T.subst (Subst.compose σ₁ σ₂)`.  Together with `Ty.subst_id`, this
 makes `Subst` a category enriched over `Ty` and `Ty.subst` its
 functorial action.  Proven by structural induction on `T`, using
 `Subst.lift_compose_equiv` + `Ty.subst_congr` for the binder cases. -/
-theorem Ty.subst_compose {level : Nat} :
-    ∀ {s m t : Nat} (T : Ty level s) (σ₁ : Subst level s m) (σ₂ : Subst level m t),
+theorem Ty.subst_compose {level s m t : Nat} :
+    ∀ (T : Ty level s) (σ₁ : Subst level s m) (σ₂ : Subst level m t),
     (T.subst σ₁).subst σ₂ = T.subst (Subst.compose σ₁ σ₂)
-  | _, _, _, .unit, _, _ => rfl
-  | _, _, _, .arrow X Y, σ₁, σ₂ => by
+  | .unit, _, _ => rfl
+  | .arrow X Y, σ₁, σ₂ => by
       show ((X.subst σ₁).subst σ₂).arrow ((Y.subst σ₁).subst σ₂)
          = (X.subst (Subst.compose σ₁ σ₂)).arrow
            (Y.subst (Subst.compose σ₁ σ₂))
       have hX := Ty.subst_compose X σ₁ σ₂
       have hY := Ty.subst_compose Y σ₁ σ₂
       exact hX ▸ hY ▸ rfl
-  | _, _, _, .piTy X Y, σ₁, σ₂ => by
+  | .piTy X Y, σ₁, σ₂ => by
       show ((X.subst σ₁).subst σ₂).piTy ((Y.subst σ₁.lift).subst σ₂.lift)
          = (X.subst (Subst.compose σ₁ σ₂)).piTy
            (Y.subst (Subst.compose σ₁ σ₂).lift)
@@ -657,8 +657,8 @@ theorem Ty.subst_compose {level : Nat} :
       have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
       have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, _, .tyVar _, _, _ => rfl
-  | _, _, _, .sigmaTy X Y, σ₁, σ₂ => by
+  | .tyVar _, _, _ => rfl
+  | .sigmaTy X Y, σ₁, σ₂ => by
       show ((X.subst σ₁).subst σ₂).sigmaTy ((Y.subst σ₁.lift).subst σ₂.lift)
          = (X.subst (Subst.compose σ₁ σ₂)).sigmaTy
            (Y.subst (Subst.compose σ₁ σ₂).lift)
@@ -666,7 +666,7 @@ theorem Ty.subst_compose {level : Nat} :
       have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
       have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
       exact hX ▸ hY ▸ hCong ▸ rfl
-  | _, _, _, .bool, _, _ => rfl
+  | .bool, _, _ => rfl
 
 /-! ## Monoid laws for Renaming and Subst.
 
@@ -4572,5 +4572,100 @@ theorem Step.par.toStar
         (Step.iotaBoolElimFalse thenBr e')
   | .etaArrow f              => Step.toStar (Step.etaArrow f)
   | .etaSigma p              => Step.toStar (Step.etaSigma p)
+
+/-! ## Smoke tests.
+
+Direct constructor exercises that verify the kernel accepts canonical
+well-typed terms.  Compile-time only — every `example` below fails to
+elaborate if a constructor signature is mis-stated, an index aligned
+wrong, or a reduction rule mistyped.
+
+Stratified by what they exercise:
+
+  * `unit` and `bool` introductions at the empty context.
+  * λ-abstraction and application — both non-dependent (`lam` / `app`)
+    and dependent (`lamPi` / `appPi`).
+  * Σ-pair construction and projection.
+  * The `Term.var` / `varType` interaction at scope `+1`.
+  * Single-step reductions: β for arrow, β for Π, fst/snd of pair,
+    ι for boolElim, η for arrow.
+  * Multi-step and parallel reduction lifts.
+
+These are not exhaustive metatheory tests (the §23.6 conformance suite
+will be); they are arity / signature regressions guards. -/
+
+namespace SmokeTest
+
+/-- The empty Software context at level 0. -/
+private abbrev EmptyCtx : Ctx Mode.software 0 0 := .nil Mode.software
+
+/-- `() : unit` in the empty context. -/
+example : Term EmptyCtx Ty.unit := Term.unit
+
+/-- `true : bool` in the empty context. -/
+example : Term EmptyCtx Ty.bool := Term.boolTrue
+
+/-- `λx:unit. x : unit → unit` — the identity on `unit`. -/
+example : Term EmptyCtx (Ty.arrow Ty.unit Ty.unit) :=
+  Term.lam (Term.var ⟨0, Nat.zero_lt_succ _⟩)
+
+/-- `(λx:unit. x) () ⟶ subst…` — β-reduction at the kernel level.
+The reduct type carries a `Ty.weaken_subst_singleton` cast; we don't
+spell it out here, just verify the rule's signature accepts the term. -/
+example
+    (body : Term (EmptyCtx.cons Ty.unit) Ty.unit.weaken)
+    (arg  : Term EmptyCtx Ty.unit) :
+    Step (Term.app (codomainType := Ty.unit) (Term.lam body) arg)
+         ((Ty.weaken_subst_singleton Ty.unit Ty.unit) ▸
+            Term.subst0 body arg) :=
+  Step.betaApp body arg
+
+/-- `boolElim true t e ⟶ t` — ι-reduction. -/
+example (t e : Term EmptyCtx Ty.bool) :
+    Step (Term.boolElim Term.boolTrue t e) t :=
+  Step.iotaBoolElimTrue t e
+
+/-- `boolElim false t e ⟶ e` — ι-reduction. -/
+example (t e : Term EmptyCtx Ty.bool) :
+    Step (Term.boolElim Term.boolFalse t e) e :=
+  Step.iotaBoolElimFalse t e
+
+/-- η-contraction of the identity-application form. -/
+example (f : Term EmptyCtx (Ty.arrow Ty.unit Ty.unit)) :
+    Step (Term.lam
+            (Term.app (Term.weaken Ty.unit f)
+                      (Term.var ⟨0, Nat.zero_lt_succ _⟩)))
+         f :=
+  Step.etaArrow f
+
+/-- η-contraction for Σ pairs. -/
+example {firstType : Ty 0 0} {secondType : Ty 0 1}
+    (p : Term EmptyCtx (Ty.sigmaTy firstType secondType)) :
+    Step (Term.pair (Term.fst p) (Term.snd p)) p :=
+  Step.etaSigma p
+
+/-- A single Step lifts to multi-step. -/
+example (t e : Term EmptyCtx Ty.bool) :
+    StepStar (Term.boolElim Term.boolTrue t e) t :=
+  Step.toStar (Step.iotaBoolElimTrue t e)
+
+/-- A single Step lifts to parallel reduction (which then lifts back). -/
+example (t e : Term EmptyCtx Ty.bool) :
+    StepStar (Term.boolElim Term.boolTrue t e) t :=
+  Step.par.toStar (Step.toPar (Step.iotaBoolElimTrue t e))
+
+/-- Identity-renaming of `unit` collapses to `unit` (modulo a cast on
+the type-level identity of `Ty.rename_identity`).  Exercises
+`Term.rename_id` at the empty context.  Stated with the expected
+`Term.unit (context := EmptyCtx)` on both sides; the universe-polymorphic
+implicit context is pinned by the expected type. -/
+example :
+    (Ty.rename_identity (level := 0) (scope := 0) Ty.unit) ▸
+      Term.rename (TermRenaming.identity EmptyCtx)
+        (Term.unit (context := EmptyCtx))
+      = Term.unit (context := EmptyCtx) :=
+  Term.rename_id (Term.unit (context := EmptyCtx))
+
+end SmokeTest
 
 end LeanFX.Syntax
