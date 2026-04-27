@@ -969,6 +969,17 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       (thenBranch : Term context resultType) →
       (elseBranch : Term context resultType) →
       Term context resultType
+  /-- Natural-number introduction — `0`. -/
+  | natZero :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      Term context Ty.nat
+  /-- Natural-number introduction — `succ n`. -/
+  | natSucc :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      (predecessor : Term context Ty.nat) →
+      Term context Ty.nat
 
 /-! ## Term-level renaming.
 
@@ -1073,6 +1084,8 @@ def Term.rename {m scope scope'}
       Term.boolElim (Term.rename ρt scrutinee)
                     (Term.rename ρt thenBr)
                     (Term.rename ρt elseBr)
+  | _, .natZero        => Term.natZero
+  | _, .natSucc pred   => Term.natSucc (Term.rename ρt pred)
 
 /-! ## Term-level weakening. -/
 
@@ -1263,6 +1276,8 @@ def Term.subst {m scope scope'}
       Term.boolElim (Term.subst σt scrutinee)
                     (Term.subst σt thenBr)
                     (Term.subst σt elseBr)
+  | _, .natZero      => Term.natZero
+  | _, .natSucc pred => Term.natSucc (Term.subst σt pred)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -1553,6 +1568,17 @@ theorem Term.boolElim_HEq_congr
   cases h_s
   cases h_t
   cases h_e
+  rfl
+
+/-- HEq congruence for `Term.natSucc`.  natSucc has no type-level
+indices that vary, so this collapses to plain equality of the
+predecessor-term — we accept HEq for symmetry with the other
+constructor congruences. -/
+theorem Term.natSucc_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    (p₁ p₂ : Term Γ Ty.nat) (h_p : HEq p₁ p₂) :
+    HEq (Term.natSucc p₁) (Term.natSucc p₂) := by
+  cases h_p
   rfl
 
 /-! ## `Term.subst_id_HEq` leaf cases.
@@ -1886,6 +1912,13 @@ theorem Term.subst_HEq_pointwise
             (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise s))
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise t)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise e)
+  | _, .natZero => by cases h_ctx; exact HEq.refl _
+  | _, .natSucc pred => by
+    cases h_ctx
+    show HEq (Term.natSucc (Term.subst σt₁ pred))
+             (Term.natSucc (Term.subst σt₂ pred))
+    exact Term.natSucc_HEq_congr _ _
+      (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise pred)
 
 /-! ## `Term.subst_id_HEq`.
 
@@ -1949,6 +1982,9 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
   | _, .boolElim s t e =>
     Term.subst_id_HEq_boolElim s t e
       (Term.subst_id_HEq s) (Term.subst_id_HEq t) (Term.subst_id_HEq e)
+  | _, .natZero => HEq.refl _
+  | _, .natSucc pred =>
+    Term.natSucc_HEq_congr _ _ (Term.subst_id_HEq pred)
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
@@ -2177,6 +2213,13 @@ theorem Term.rename_HEq_pointwise
       (TermRenaming.lift ρt₂ dom)
       (Renaming.lift_equiv h_ρ)
       body
+  | _, .natZero => by cases h_ctx; exact HEq.refl _
+  | _, .natSucc pred => by
+    cases h_ctx
+    show HEq (Term.natSucc (Term.rename ρt₁ pred))
+             (Term.natSucc (Term.rename ρt₂ pred))
+    exact Term.natSucc_HEq_congr _ _
+      (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ pred)
 
 /-! ## `Term.rename_id_HEq`.
 
@@ -2314,6 +2357,9 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
         Renaming.lift_identity_equiv
         body)
     exact Term.rename_id_HEq body
+  | _, .natZero => HEq.refl _
+  | _, .natSucc pred =>
+    Term.natSucc_HEq_congr _ _ (Term.rename_id_HEq pred)
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
@@ -2522,6 +2568,9 @@ theorem Term.rename_compose_HEq
       (TermRenaming.lift (TermRenaming.compose ρt₁ ρt₂) dom)
       (Renaming.lift_compose_equiv ρ₁ ρ₂)
       body
+  | _, .natZero => HEq.refl _
+  | _, .natSucc pred =>
+    Term.natSucc_HEq_congr _ _ (Term.rename_compose_HEq ρt₁ ρt₂ pred)
 
 /-! ## `Term.rename_weaken_commute_HEq`.
 
@@ -2951,6 +3000,9 @@ theorem Term.subst_rename_commute_HEq
       (Subst.lift_renameAfter_commute σ ρ)
       (TermSubst.lift_renameAfter_pointwise σt ρt dom)
       body
+  | _, .natZero => HEq.refl _
+  | _, .natSucc pred =>
+    Term.natSucc_HEq_congr _ _ (Term.subst_rename_commute_HEq σt ρt pred)
 
 /-! ## `Term.rename_subst_commute_HEq`.
 
@@ -3123,6 +3175,9 @@ theorem Term.rename_subst_commute_HEq
       (Subst.lift_precompose_commute ρ σ')
       (TermSubst.lift_precompose_pointwise ρt σt' dom)
       body
+  | _, .natZero => HEq.refl _
+  | _, .natSucc pred =>
+    Term.natSucc_HEq_congr _ _ (Term.rename_subst_commute_HEq ρt σt' pred)
 
 /-! ## `Term.subst_weaken_commute_HEq`.
 
@@ -3428,6 +3483,9 @@ theorem Term.subst_compose_HEq
       (fun i =>
         (TermSubst.lift_compose_pointwise σt₁ σt₂ dom i).symm)
       body
+  | _, .natZero => HEq.refl _
+  | _, .natSucc pred =>
+    Term.natSucc_HEq_congr _ _ (Term.subst_compose_HEq σt₁ σt₂ pred)
 
 /-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
@@ -4722,6 +4780,37 @@ example {level scope target : Nat} (ρ : Renaming scope target) :
 example {level scope target : Nat} (σ : Subst level scope target) :
     (Ty.nat (level := level) (scope := scope)).subst σ
       = Ty.nat (level := level) (scope := target) :=
+  rfl
+
+/-- `0 : Nat` in the empty context. -/
+example : Term EmptyCtx Ty.nat := Term.natZero
+
+/-- `1 : Nat` — `succ 0`. -/
+example : Term EmptyCtx Ty.nat := Term.natSucc Term.natZero
+
+/-- `3 : Nat` — three-fold succ application. -/
+example : Term EmptyCtx Ty.nat :=
+  Term.natSucc (Term.natSucc (Term.natSucc Term.natZero))
+
+/-- `Term.natZero` is preserved by renaming. -/
+example {level scope target : Nat}
+    {Γ : Ctx Mode.software level scope}
+    {Δ : Ctx Mode.software level target}
+    {ρ : Renaming scope target}
+    (ρt : TermRenaming Γ Δ ρ) :
+    Term.rename ρt (Term.natZero (context := Γ))
+      = Term.natZero (context := Δ) :=
+  rfl
+
+/-- `Term.natSucc` commutes with renaming. -/
+example {level scope target : Nat}
+    {Γ : Ctx Mode.software level scope}
+    {Δ : Ctx Mode.software level target}
+    {ρ : Renaming scope target}
+    (ρt : TermRenaming Γ Δ ρ)
+    (pred : Term Γ Ty.nat) :
+    Term.rename ρt (Term.natSucc pred)
+      = Term.natSucc (Term.rename ρt pred) :=
   rfl
 
 /-- A single Step lifts to multi-step. -/
