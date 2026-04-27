@@ -1521,7 +1521,8 @@ The recursive cases (`lam`, `app`, `lamPi`, `appPi`, `pair`,
 `fst`, `snd`, `boolElim`) require an additional pointwise
 equivalence between `TermSubst.lift (TermSubst.identity Γ)` and
 `TermSubst.identity (Γ.cons _)` to thread the inductive hypothesis
-through the binder cases.  That stepping stone is v1.20+. -/
+through the binder cases.  That stepping stone is the v1.20
+`TermSubst.lift_identity_pointwise` theorem below. -/
 
 /-- Cast cancellation: applying `h ▸` after `h.symm ▸` returns
 the original.  Standard fact about `Eq.rec`, axiom-free via
@@ -1579,7 +1580,7 @@ theorem Term.subst_id_boolFalse {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
       Term.subst (TermSubst.identity Γ) (Term.boolFalse (context := Γ))
     = Term.boolFalse := rfl
 
-/-! ### v1.20 — Ty-level bridge lemmas for `TermSubst.lift (TermSubst.identity Γ)`.
+/-! ### v1.20 — Bridge layer for `TermSubst.lift (TermSubst.identity Γ)`.
 
 Proving `Term.subst_id` over the recursive cases (`lam`, `app`,
 `lamPi`, `appPi`, `pair`, `fst`, `snd`, `boolElim`) requires
@@ -1587,26 +1588,26 @@ threading an inductive hypothesis through `TermSubst.lift`'s
 extension of the substitution under a binder.  The recursive call
 operates on `TermSubst.lift (TermSubst.identity Γ) newType`, but the
 IH is stated in terms of `TermSubst.identity (Γ.cons newType)`.
-These two TermSubsts have **different types**:
+These two TermSubsts have **different types** along three axes:
 
-  * Lift produces `TermSubst (Γ.cons newType) (Γ.cons (newType.subst
-    Subst.identity)) Subst.identity.lift`.
-  * Identity-cons produces `TermSubst (Γ.cons newType) (Γ.cons
-    newType) Subst.identity`.
+  1. **Context**: `Γ.cons (newType.subst Subst.identity)` vs
+     `Γ.cons newType`.  Bridged by `Ty.subst_id newType`.
+  2. **Term type**: `T.subst Subst.identity.lift` vs `T.subst
+     Subst.identity` (and ultimately `T`).  Bridged by
+     `Ty.subst_lift_identity_eq_subst_identity` and `Ty.subst_id`.
+  3. **Underlying substitution**: `Subst.identity.lift` vs
+     `Subst.identity`.  Pointwise equivalent via
+     `Subst.lift_identity_equiv`.
 
-The contexts differ via `Ty.subst_id newType`; the underlying
-substitutions differ via `Subst.lift_identity_equiv`.  A full HEq-
-based equivalence between the two TermSubsts is a substantial
-proof that requires three-way dependent-cast bridging across
-context shape, term type, and substitution shape simultaneously.
+This section ships:
 
-This v1.20 lays the **Ty-level groundwork** — three lemmas about
-how `Subst.identity.lift` interacts with weakening and substitution
-at the type level.  These lemmas are used directly in v1.21+ to
-align the type-level shape of subterms before Term-level
-manipulation.  The full HEq theorem `TermSubst.lift_identity_HEq`
-remains for v1.20.5 / v1.21 once the recursive cases of
-`Term.subst_id` reveal which exact form they need. -/
+  * Two Ty-level bridge lemmas (`subst_lift_identity_eq_subst_identity`,
+    `weaken_subst_lift_identity`) closing axis (2) at the type level.
+  * Three HEq-bridge helpers (`heq_var_across_ctx_eq`,
+    `Term.heq_weaken_strip_cast`, `heq_weaken_var_across_ctx_eq`)
+    closing axis (1) at the Term level.
+  * The full `TermSubst.lift_identity_pointwise` theorem stitching
+    all three axes via `HEq.trans` + `eqRec_heq`. -/
 
 /-- **Lifted-identity substitution behaves like identity on any
 type.**  For any `T : Ty (scope + 1)`, substituting via
@@ -1626,78 +1627,9 @@ weakened type unchanged.  This is the exact bridging fact needed
 when `Term.subst_id`'s recursive cases handle a body's substituted
 type at the extended scope. -/
 theorem Ty.weaken_subst_lift_identity {scope : Nat} (T : Ty scope) :
-    T.weaken.subst (@Subst.identity scope).lift = T.weaken := by
-  have h₁ := Ty.subst_lift_identity_eq_subst_identity T.weaken
-  have h₂ := Ty.subst_id T.weaken
-  exact h₁.trans h₂
-
-/-- **`varType` at position 0 of an extended context substituted by
-lifted identity returns the freshly-bound type weakened.**  Specialises
-`Ty.weaken_subst_lift_identity` at `T = newType`, exposing the
-exact type signature `Term.subst (TermSubst.lift (TermSubst.identity Γ)
-newType)` carries at position 0 of the extended context. -/
-theorem Ty.varType_zero_subst_lift_identity {m : Mode} {scope : Nat}
-    {Γ : Ctx m scope} (newType : Ty scope) :
-    (varType (Γ.cons newType) ⟨0, Nat.zero_lt_succ _⟩).subst
-        (@Subst.identity scope).lift
-      = newType.weaken := by
-  -- varType (Γ.cons newType) ⟨0, _⟩ reduces to newType.weaken by definition.
-  show newType.weaken.subst (@Subst.identity scope).lift = newType.weaken
-  exact Ty.weaken_subst_lift_identity newType
-
-/-! ### v1.20 — Position-resolved unfoldings of `TermSubst.lift (identity)`.
-
-The two unfolding theorems below state explicitly what `TermSubst.lift
-(TermSubst.identity Γ) newType` returns at each Fin position.  Both
-hold by `rfl` (definitional unfolding of `TermSubst.lift`) but naming
-them lets v1.21+ rewrite at the position-resolved form rather than
-re-deriving from `TermSubst.lift`'s body each time. -/
-
-/-- Position-0 unfolding: `TermSubst.lift (identity Γ) newType ⟨0, _⟩`
-is definitionally the cast of `Term.var ⟨0, _⟩` through
-`Ty.subst_weaken_commute newType Subst.identity`. -/
-theorem TermSubst.lift_identity_zero_eq {m : Mode} {scope : Nat}
-    (Γ : Ctx m scope) (newType : Ty scope) :
-    TermSubst.lift (TermSubst.identity Γ) newType
-        ⟨0, Nat.zero_lt_succ _⟩
-      = (Ty.subst_weaken_commute newType Subst.identity).symm ▸
-          (Term.var (context := Γ.cons (newType.subst Subst.identity))
-            ⟨0, Nat.zero_lt_succ _⟩) := rfl
-
-/-- Position-(k+1) unfolding: `TermSubst.lift (identity Γ) newType
-⟨k + 1, h⟩` is the cast of the weakened `TermSubst.identity Γ`
-result. -/
-theorem TermSubst.lift_identity_succ_eq {m : Mode} {scope : Nat}
-    (Γ : Ctx m scope) (newType : Ty scope)
-    (k : Nat) (h : k + 1 < scope + 1) :
-    TermSubst.lift (TermSubst.identity Γ) newType ⟨k + 1, h⟩
-      = (Ty.subst_weaken_commute
-          (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
-          Subst.identity).symm ▸
-          Term.weaken (newType.subst Subst.identity)
-            (TermSubst.identity Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) := rfl
-
-/-! ### v1.20 — `TermSubst.lift_identity_pointwise` (HEq-form).
-
-The full HEq theorem bridging `TermSubst.lift (TermSubst.identity Γ)
-newType` and `TermSubst.identity (Γ.cons newType)` at every Fin
-position.  The two TermSubsts have **different types** in three
-simultaneous dimensions:
-
-  1. **Context**: `Γ.cons (newType.subst Subst.identity)` vs
-     `Γ.cons newType`.  Bridged by `Ty.subst_id newType` lifted
-     through `Ctx.cons`.
-  2. **Term type**: `T.subst Subst.identity.lift` vs `T.subst
-     Subst.identity` (and ultimately `T`).  Bridged by
-     `Ty.subst_lift_identity_eq_subst_identity` and `Ty.subst_id`.
-  3. **Underlying substitution**: `Subst.identity.lift` vs
-     `Subst.identity`.  Pointwise equivalent via
-     `Subst.lift_identity_equiv`.
-
-The proof strategy uses helper lemmas that bridge context-shape
-differences via `cases` on a propositional context-equality.  Each
-helper isolates one cast direction so the main theorem can compose
-them via `HEq.trans`. -/
+    T.weaken.subst (@Subst.identity scope).lift = T.weaken :=
+  (Ty.subst_lift_identity_eq_subst_identity T.weaken).trans
+    (Ty.subst_id T.weaken)
 
 /-- **HEq across context-shape change for `Term.var`**: if two
 contexts at the same scope are propositionally equal, then the
@@ -2767,18 +2699,11 @@ example (mode : Mode) :
         (@Step.betaApp mode 0 (Ctx.nil mode) Ty.unit Ty.unit
           (Term.var ⟨0, Nat.zero_lt_succ _⟩) Term.unit)⟩
 
-/-! ## v1.1 — Lookup helpers, term measures, first proven theorem.
+/-! ## v1.1 — Term measures and the first proven theorem.
 
 The definitions below add the first **theorem** (not just `example`) of
 the package, exercising structural induction over the indexed `Term`
 family.  Each must stay axiom-free per the binder-form rule. -/
-
-/-- Extract the underlying de Bruijn index from a Fin position.
-v1.9: with the variable now stored directly as `Fin scope`, this is
-simply `.val`.  The companion bound `predecessor.toIndex < scope` is
-already part of the Fin's `isLt` field, so no separate lemma is
-needed. -/
-def Fin.toIndex {scope : Nat} (i : Fin scope) : Nat := i.val
 
 /-- Total constructor count of a term — distinct from `depth` (height)
 and `lamCount` (only λ-nodes).  Useful as a strong termination measure
@@ -2917,9 +2842,6 @@ example (mode : Mode) : (identityAppliedToUnit mode).size = 4 := rfl
 /-- The varCount of `id unit` is 1: one `var` from the lam body, the
 top-level `unit` doesn't count, the `app` and `lam` don't count. -/
 example (mode : Mode) : (identityAppliedToUnit mode).varCount = 1 := rfl
-
-/-- The toIndex of position 0 is 0; of position 1 is 1. -/
-example : Fin.toIndex (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) = 0 := rfl
 
 /-! ## v1.3 — dependent `piTy` demonstrations.
 
