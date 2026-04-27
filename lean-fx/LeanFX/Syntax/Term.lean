@@ -2122,6 +2122,140 @@ theorem TermSubst.lift_HEq_pointwise
         (h_pointwise ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
     · exact (eqRec_heq _ _).symm
 
+/-! ### v1.24 — `Term.subst_HEq_pointwise`: substitution respects
+pointwise HEq of TermSubsts.
+
+The "general" form lets the target contexts of the two TermSubsts
+differ propositionally (`Δ₁ ≠ Δ₂` but `Δ₁ = Δ₂`); this
+generality is needed for the binder-case recursive calls, where
+`TermSubst.lift σt₁ dom` and `TermSubst.lift σt₂ dom` land in
+`Δ.cons (dom.subst σ₁)` vs `Δ.cons (dom.subst σ₂)` — same scope,
+different concrete contexts.
+
+Pattern-matched recursive theorem, axiom-free per the project's
+binder-form discipline.  Each binder case descends via
+`TermSubst.lift_HEq_pointwise` to maintain the pointwise hypothesis
+under the extended scope. -/
+theorem Term.subst_HEq_pointwise
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ₁ Δ₂ : Ctx m scope'}
+    (h_ctx : Δ₁ = Δ₂)
+    {σ₁ σ₂ : Subst scope scope'}
+    (σt₁ : TermSubst Γ Δ₁ σ₁) (σt₂ : TermSubst Γ Δ₂ σ₂)
+    (h_subst : Subst.equiv σ₁ σ₂)
+    (h_pointwise : ∀ i, HEq (σt₁ i) (σt₂ i)) :
+    {T : Ty scope} → (t : Term Γ T) →
+      HEq (Term.subst σt₁ t) (Term.subst σt₂ t)
+  | _, .var i => h_pointwise i
+  | _, .unit => by cases h_ctx; exact HEq.refl _
+  | _, .app (domainType := T₁) (codomainType := T₂) f a => by
+    cases h_ctx
+    show HEq (Term.app (Term.subst σt₁ f) (Term.subst σt₁ a))
+             (Term.app (Term.subst σt₂ f) (Term.subst σt₂ a))
+    exact Term.app_HEq_congr
+      (Ty.subst_congr h_subst T₁) (Ty.subst_congr h_subst T₂)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise f)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise a)
+  | _, .lam (domainType := dom) (codomainType := cod) body => by
+    cases h_ctx
+    show HEq
+      (Term.lam (codomainType := cod.subst σ₁)
+        ((Ty.subst_weaken_commute cod σ₁) ▸
+          (Term.subst (TermSubst.lift σt₁ dom) body)))
+      (Term.lam (codomainType := cod.subst σ₂)
+        ((Ty.subst_weaken_commute cod σ₂) ▸
+          (Term.subst (TermSubst.lift σt₂ dom) body)))
+    apply Term.lam_HEq_congr
+      (Ty.subst_congr h_subst dom) (Ty.subst_congr h_subst cod)
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans
+      (Term.subst_HEq_pointwise
+        (congrArg Δ₁.cons (Ty.subst_congr h_subst dom))
+        (TermSubst.lift σt₁ dom) (TermSubst.lift σt₂ dom)
+        (Subst.lift_equiv h_subst)
+        (TermSubst.lift_HEq_pointwise σt₁ σt₂ h_subst h_pointwise dom)
+        body)
+    exact (eqRec_heq _ _).symm
+  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
+    cases h_ctx
+    show HEq
+      (Term.lamPi (Term.subst (TermSubst.lift σt₁ dom) body))
+      (Term.lamPi (Term.subst (TermSubst.lift σt₂ dom) body))
+    apply Term.lamPi_HEq_congr
+      (Ty.subst_congr h_subst dom)
+      (Ty.subst_congr (Subst.lift_equiv h_subst) cod)
+    exact Term.subst_HEq_pointwise
+      (congrArg Δ₁.cons (Ty.subst_congr h_subst dom))
+      (TermSubst.lift σt₁ dom) (TermSubst.lift σt₂ dom)
+      (Subst.lift_equiv h_subst)
+      (TermSubst.lift_HEq_pointwise σt₁ σt₂ h_subst h_pointwise dom)
+      body
+  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
+    cases h_ctx
+    show HEq
+      ((Ty.subst0_subst_commute cod dom σ₁).symm ▸
+        Term.appPi (Term.subst σt₁ f) (Term.subst σt₁ a))
+      ((Ty.subst0_subst_commute cod dom σ₂).symm ▸
+        Term.appPi (Term.subst σt₂ f) (Term.subst σt₂ a))
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans (b :=
+      Term.appPi (Term.subst σt₂ f) (Term.subst σt₂ a))
+    · exact Term.appPi_HEq_congr
+        (Ty.subst_congr h_subst dom)
+        (Ty.subst_congr (Subst.lift_equiv h_subst) cod)
+        _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise f)
+        _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise a)
+    · exact (eqRec_heq _ _).symm
+  | _, .pair (firstType := first) (secondType := second) v w => by
+    cases h_ctx
+    show HEq
+      (Term.pair (Term.subst σt₁ v)
+        ((Ty.subst0_subst_commute second first σ₁) ▸ (Term.subst σt₁ w)))
+      (Term.pair (Term.subst σt₂ v)
+        ((Ty.subst0_subst_commute second first σ₂) ▸ (Term.subst σt₂ w)))
+    apply Term.pair_HEq_congr
+      (Ty.subst_congr h_subst first)
+      (Ty.subst_congr (Subst.lift_equiv h_subst) second)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans
+      (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise w)
+    exact (eqRec_heq _ _).symm
+  | _, .fst (firstType := first) (secondType := second) p => by
+    cases h_ctx
+    show HEq (Term.fst (Term.subst σt₁ p)) (Term.fst (Term.subst σt₂ p))
+    exact Term.fst_HEq_congr
+      (Ty.subst_congr h_subst first)
+      (Ty.subst_congr (Subst.lift_equiv h_subst) second)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise p)
+  | _, .snd (firstType := first) (secondType := second) p => by
+    cases h_ctx
+    show HEq
+      ((Ty.subst0_subst_commute second first σ₁).symm ▸
+        Term.snd (Term.subst σt₁ p))
+      ((Ty.subst0_subst_commute second first σ₂).symm ▸
+        Term.snd (Term.subst σt₂ p))
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans (b := Term.snd (Term.subst σt₂ p))
+    · exact Term.snd_HEq_congr
+        (Ty.subst_congr h_subst first)
+        (Ty.subst_congr (Subst.lift_equiv h_subst) second)
+        _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise p)
+    · exact (eqRec_heq _ _).symm
+  | _, .boolTrue => by cases h_ctx; exact HEq.refl _
+  | _, .boolFalse => by cases h_ctx; exact HEq.refl _
+  | _, .boolElim (resultType := result) s t e => by
+    cases h_ctx
+    show HEq
+      (Term.boolElim (Term.subst σt₁ s) (Term.subst σt₁ t) (Term.subst σt₁ e))
+      (Term.boolElim (Term.subst σt₂ s) (Term.subst σt₂ t) (Term.subst σt₂ e))
+    exact Term.boolElim_HEq_congr
+      (Ty.subst_congr h_subst result)
+      _ _ (eq_of_heq
+            (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise s))
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise t)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise e)
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
