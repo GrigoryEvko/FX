@@ -93,6 +93,17 @@ inductive Ty : Nat → Type
   `Ty.subst` looks up the substituent for each variable instead of
   threading a placeholder.  v1.5+. -/
   | tyVar : {scope : Nat} → (index : Fin scope) → Ty scope
+  /-- Dependent pair type — the second component's type may reference
+  the first component via a tyVar in `codomain`.  Mirrors `piTy` in
+  structure: codomain at scope `+1`.  v1.6+.
+
+  Demonstrates the v1.4+ substitution discipline generalises: the
+  exact same `Ty.subst0` machinery used by `appPi`'s result type also
+  handles `pair`'s second-component type and `snd`'s eliminator. -/
+  | sigmaTy : {scope : Nat} →
+              (firstType : Ty scope) →
+              (secondType : Ty (scope + 1)) →
+              Ty scope
 
 /-! ## v1.4 — renaming machinery (foundation for substitution).
 
@@ -140,10 +151,11 @@ matching the codomain's scope.  No axioms required.
 This is the more primitive operation; `Ty.weaken` is derived from it. -/
 def Ty.rename {source target : Nat} :
     Ty source → Renaming source target → Ty target
-  | .unit, _       => .unit
-  | .arrow A B, ρ  => .arrow (A.rename ρ) (B.rename ρ)
-  | .piTy A B, ρ   => .piTy (A.rename ρ) (B.rename ρ.lift)
-  | .tyVar i, ρ    => .tyVar (ρ i)
+  | .unit, _          => .unit
+  | .arrow A B, ρ     => .arrow (A.rename ρ) (B.rename ρ)
+  | .piTy A B, ρ      => .piTy (A.rename ρ) (B.rename ρ.lift)
+  | .tyVar i, ρ       => .tyVar (ρ i)
+  | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
 
 /-- Structurally extend a type's scope by one.  Direct structural
 recursion — kept as a separate definition (rather than derived from
@@ -170,6 +182,8 @@ def Ty.weaken {scope : Nat} : Ty scope → Ty (scope + 1)
       .piTy domain.weaken codomain.weaken
   | .tyVar index                   =>
       .tyVar index.succ
+  | .sigmaTy firstType secondType  =>
+      .sigmaTy firstType.weaken secondType.weaken
 
 /-- The fundamental rename-weaken commutativity lemma.  Says that
 weakening (insert outer binder) commutes with renaming when the
@@ -201,6 +215,12 @@ theorem Ty.rename_weaken_commute :
       have hB := Ty.rename_weaken_commute B ρ.lift
       exact hA ▸ hB ▸ rfl
   | _, _, .tyVar _, _ => rfl
+  | _, _, .sigmaTy A B, ρ => by
+      show Ty.sigmaTy (A.weaken.rename ρ.lift) (B.weaken.rename ρ.lift.lift)
+         = Ty.sigmaTy (A.rename ρ).weaken (B.rename ρ.lift).weaken
+      have hA := Ty.rename_weaken_commute A ρ
+      have hB := Ty.rename_weaken_commute B ρ.lift
+      exact hA ▸ hB ▸ rfl
 
 /-! ## Substitution — the same trick scaled up.
 
@@ -245,10 +265,11 @@ def Subst.singleton {scope : Nat} (substituent : Ty scope) :
 by `σ.lift`, no Nat arithmetic identities required.  Axiom-free. -/
 def Ty.subst {source target : Nat} :
     Ty source → Subst source target → Ty target
-  | .unit, _       => .unit
-  | .arrow A B, σ  => .arrow (Ty.subst A σ) (Ty.subst B σ)
-  | .piTy A B, σ   => .piTy (Ty.subst A σ) (Ty.subst B σ.lift)
-  | .tyVar i, σ    => σ i
+  | .unit, _          => .unit
+  | .arrow A B, σ     => .arrow (Ty.subst A σ) (Ty.subst B σ)
+  | .piTy A B, σ      => .piTy (Ty.subst A σ) (Ty.subst B σ.lift)
+  | .tyVar i, σ       => σ i
+  | .sigmaTy A B, σ   => .sigmaTy (Ty.subst A σ) (Ty.subst B σ.lift)
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -378,6 +399,34 @@ inductive Term : {mode : Mode} → {scope : Nat} →
       (functionTerm : Term context (Ty.piTy domainType codomainType)) →
       (argumentTerm : Term context domainType) →
       Term context (codomainType.subst0 domainType)
+  /-- Pair introduction for dependent `sigmaTy`.  The second
+  component's type is `secondType` with var 0 substituted by
+  `firstType` — same `Ty.subst0` mechanism `appPi` uses. -/
+  | pair :
+      {mode : Mode} → {scope : Nat} →
+      {context : Ctx mode scope} →
+      {firstType : Ty scope} →
+      {secondType : Ty (scope + 1)} →
+      (firstVal : Term context firstType) →
+      (secondVal : Term context (secondType.subst0 firstType)) →
+      Term context (Ty.sigmaTy firstType secondType)
+  /-- First projection.  Extracts the first component of a pair. -/
+  | fst :
+      {mode : Mode} → {scope : Nat} →
+      {context : Ctx mode scope} →
+      {firstType : Ty scope} →
+      {secondType : Ty (scope + 1)} →
+      (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
+      Term context firstType
+  /-- Second projection.  Result type uses the same `subst0`
+  placeholder substitution as `pair`. -/
+  | snd :
+      {mode : Mode} → {scope : Nat} →
+      {context : Ctx mode scope} →
+      {firstType : Ty scope} →
+      {secondType : Ty (scope + 1)} →
+      (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
+      Term context (secondType.subst0 firstType)
 
 /-! ## Demonstrations of intrinsic-typing usability.
 
@@ -402,6 +451,10 @@ def Term.depth
   | .lamPi body                     => body.depth + 1
   | .appPi functionTerm argumentTerm =>
       max functionTerm.depth argumentTerm.depth + 1
+  | .pair firstVal secondVal        =>
+      max firstVal.depth secondVal.depth + 1
+  | .fst pairTerm                   => pairTerm.depth + 1
+  | .snd pairTerm                   => pairTerm.depth + 1
 
 /-- Count of `lam` constructors in a term.  Second recursive function
 over the indexed family — confirms pattern matching generalises beyond
@@ -418,6 +471,10 @@ def Term.lamCount
   | .lamPi body                     => body.lamCount + 1
   | .appPi functionTerm argumentTerm =>
       functionTerm.lamCount + argumentTerm.lamCount
+  | .pair firstVal secondVal        =>
+      firstVal.lamCount + secondVal.lamCount
+  | .fst pairTerm                   => pairTerm.lamCount
+  | .snd pairTerm                   => pairTerm.lamCount
 
 /-- The empty context contains no bindings — confirms `nomatch` works on
 the new indexed `Lookup` family with `Nat` scope and mode parameters. -/
@@ -488,6 +545,152 @@ example {mode : Mode} {targetType : Ty 0}
     (lookup : Lookup (Ctx.nil mode) targetType) : False :=
   Lookup.notInEmpty lookup
 
+/-! ## v1.6 — typed reduction.
+
+Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
+between terms of the *same* type.  The shared type is enforced
+structurally — both sides of every constructor carry identical `mode`,
+`scope`, `ctx`, and `T` indices, which means **subject reduction is
+definitional**: there is no separate "preservation" theorem to prove,
+because no `Step` proof can witness a type change.
+
+Currently this layer covers **congruence** rules only — `Step` propagates
+under each binary/unary term constructor.  The β rule (`(λx.body) a ⟶
+body[a/x]`) is deferred to v1.7+ pending `Term.subst`, which itself
+requires the rename-substitution lemmas hierarchy that builds on the
+existing `Ty.rename_weaken_commute`.
+
+The reflexive-transitive closure `StepStar` lifts single-step to
+multi-step reduction.  Together, `Step` and `StepStar` are the basis
+for v1.7+ conversion algorithms and the eventual normaliser. -/
+
+/-- Single-step reduction between terms of the *same* type.  The shared
+typing is structural: every constructor's input and output `Term` carry
+the same `Ctx` and `Ty`, so subject reduction holds definitionally.
+
+v1.6 has congruence rules only; β/η await Term-level substitution. -/
+inductive Step :
+    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
+    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+  /-- Step inside the function position of a non-dependent application. -/
+  | appLeft  :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        {functionTerm functionTerm' :
+          Term ctx (.arrow domainType codomainType)}
+        {argumentTerm : Term ctx domainType},
+      Step functionTerm functionTerm' →
+      Step (Term.app functionTerm argumentTerm)
+           (Term.app functionTerm' argumentTerm)
+  /-- Step inside the argument position of a non-dependent application. -/
+  | appRight :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        {functionTerm : Term ctx (.arrow domainType codomainType)}
+        {argumentTerm argumentTerm' : Term ctx domainType},
+      Step argumentTerm argumentTerm' →
+      Step (Term.app functionTerm argumentTerm)
+           (Term.app functionTerm argumentTerm')
+  /-- Step inside the body of a non-dependent λ-abstraction. -/
+  | lamBody  :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType codomainType : Ty scope}
+        {body body' : Term (ctx.cons domainType) codomainType.weaken},
+      Step body body' →
+      Step (Term.lam (codomainType := codomainType) body)
+           (Term.lam (codomainType := codomainType) body')
+  /-- Step inside the function position of a dependent application. -/
+  | appPiLeft :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        {functionTerm functionTerm' :
+          Term ctx (.piTy domainType codomainType)}
+        {argumentTerm : Term ctx domainType},
+      Step functionTerm functionTerm' →
+      Step (Term.appPi functionTerm argumentTerm)
+           (Term.appPi functionTerm' argumentTerm)
+  /-- Step inside the argument position of a dependent application. -/
+  | appPiRight :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        {functionTerm : Term ctx (.piTy domainType codomainType)}
+        {argumentTerm argumentTerm' : Term ctx domainType},
+      Step argumentTerm argumentTerm' →
+      Step (Term.appPi functionTerm argumentTerm)
+           (Term.appPi functionTerm argumentTerm')
+  /-- Step inside the body of a dependent λ-abstraction. -/
+  | lamPiBody :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+        {body body' : Term (ctx.cons domainType) codomainType},
+      Step body body' →
+      Step (Term.lamPi (domainType := domainType) body)
+           (Term.lamPi (domainType := domainType) body')
+  /-- Step inside the first component of a pair. -/
+  | pairLeft :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {firstVal firstVal' : Term ctx firstType}
+        {secondVal : Term ctx (secondType.subst0 firstType)},
+      Step firstVal firstVal' →
+      Step (Term.pair (secondType := secondType) firstVal secondVal)
+           (Term.pair (secondType := secondType) firstVal' secondVal)
+  /-- Step inside the second component of a pair. -/
+  | pairRight :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {firstVal : Term ctx firstType}
+        {secondVal secondVal' : Term ctx (secondType.subst0 firstType)},
+      Step secondVal secondVal' →
+      Step (Term.pair firstVal secondVal)
+           (Term.pair firstVal secondVal')
+  /-- Step inside the argument of a first projection. -/
+  | fstCong :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
+      Step pairTerm pairTerm' →
+      Step (Term.fst pairTerm) (Term.fst pairTerm')
+  /-- Step inside the argument of a second projection. -/
+  | sndCong :
+      ∀ {mode scope} {ctx : Ctx mode scope}
+        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+        {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
+      Step pairTerm pairTerm' →
+      Step (Term.snd pairTerm) (Term.snd pairTerm')
+
+/-- Reflexive-transitive closure of `Step` — multi-step reduction.
+Captures the eventual reach of the reduction relation. -/
+inductive StepStar :
+    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
+    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+  /-- Zero-step: a term reduces to itself. -/
+  | refl :
+      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+        (t : Term ctx T),
+      StepStar t t
+  /-- Prepend a single step to an existing multi-step path. -/
+  | step :
+      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+        {t₁ t₂ t₃ : Term ctx T},
+      Step t₁ t₂ → StepStar t₂ t₃ → StepStar t₁ t₃
+
+/-- **Subject reduction is definitional**: if `Step t₁ t₂` holds, then
+`t₁` and `t₂` have the same type by the relation's signature.  No proof
+needed — the indices enforce it.  This `example` makes it explicit. -/
+example {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {t₁ t₂ : Term ctx T} (_step : Step t₁ t₂) : Term ctx T := t₂
+
+/-- Multi-step reduction is reflexive (zero-step from `refl`). -/
+example {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    (t : Term ctx T) : StepStar t t := StepStar.refl t
+
+/-- Single steps lift to multi-step. -/
+theorem Step.toStar
+    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {t₁ t₂ : Term ctx T} (h : Step t₁ t₂) : StepStar t₁ t₂ :=
+  StepStar.step h (StepStar.refl t₂)
+
 /-! ## v1.1 — Lookup helpers, term measures, first proven theorem.
 
 The definitions below add the first **theorem** (not just `example`) of
@@ -520,6 +723,10 @@ def Term.size
   | .lamPi body                     => body.size + 1
   | .appPi functionTerm argumentTerm =>
       functionTerm.size + argumentTerm.size + 1
+  | .pair firstVal secondVal        =>
+      firstVal.size + secondVal.size + 1
+  | .fst pairTerm                   => pairTerm.size + 1
+  | .snd pairTerm                   => pairTerm.size + 1
 
 /-- Count of variable occurrences in a term.  Independent measure to
 `size`, `depth`, and `lamCount` — confirms that pattern matching on
@@ -537,6 +744,10 @@ def Term.varCount
   | .lamPi body                     => body.varCount
   | .appPi functionTerm argumentTerm =>
       functionTerm.varCount + argumentTerm.varCount
+  | .pair firstVal secondVal        =>
+      firstVal.varCount + secondVal.varCount
+  | .fst pairTerm                   => pairTerm.varCount
+  | .snd pairTerm                   => pairTerm.varCount
 
 /-- The first **non-trivial theorem** of the package.  Every term has
 `lamCount` bounded by `size` — i.e. you can't have more λ-binders than
@@ -562,6 +773,13 @@ theorem Term.lamCount_le_size
         (Nat.add_le_add
           (Term.lamCount_le_size functionTerm)
           (Term.lamCount_le_size argumentTerm))
+  | .pair firstVal secondVal =>
+      Nat.le_succ_of_le
+        (Nat.add_le_add
+          (Term.lamCount_le_size firstVal)
+          (Term.lamCount_le_size secondVal))
+  | .fst pairTerm => Nat.le_succ_of_le (Term.lamCount_le_size pairTerm)
+  | .snd pairTerm => Nat.le_succ_of_le (Term.lamCount_le_size pairTerm)
 
 /-- Companion theorem: `varCount` is also bounded by `size`.  Same
 proof shape as `lamCount_le_size`; confirms the pattern generalises. -/
@@ -583,6 +801,13 @@ theorem Term.varCount_le_size
         (Nat.add_le_add
           (Term.varCount_le_size functionTerm)
           (Term.varCount_le_size argumentTerm))
+  | .pair firstVal secondVal =>
+      Nat.le_succ_of_le
+        (Nat.add_le_add
+          (Term.varCount_le_size firstVal)
+          (Term.varCount_le_size secondVal))
+  | .fst pairTerm => Nat.le_succ_of_le (Term.varCount_le_size pairTerm)
+  | .snd pairTerm => Nat.le_succ_of_le (Term.varCount_le_size pairTerm)
 
 /-! ## v1.1 smoke tests -/
 
