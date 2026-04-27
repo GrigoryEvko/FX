@@ -26,6 +26,12 @@ Contents, in dependency order:
 namespace LeanFX.Syntax
 open LeanFX.Mode
 
+/-! Section-scope universe-level variable.  Auto-injected as an
+implicit binder into theorems whose signatures lexically mention
+`level` (which, after the v1.27 refactor, includes most theorems
+about `Ty`, `Subst`, `Ctx`, `Term`, `TermRenaming`, or `TermSubst`). -/
+variable {level : Nat}
+
 /-! ## Types
 
 Types are parameterised by their scope size — the number of free
@@ -39,47 +45,31 @@ non-dependent `arrow`, and dependent `piTy`.  The `arrow` constructor is
 a convenience for non-dependent function types where the codomain does
 not reference the freshly-bound variable; `piTy` is the genuinely
 dependent form where the codomain lives at scope `+1`. -/
-inductive Ty : Nat → Type
-  /-- The unit type — exists at every scope. -/
-  | unit  : {scope : Nat} → Ty scope
-  /-- Non-dependent function type.  Both domain and codomain live in
-  the same scope; codomain cannot reference the freshly-bound variable.
-  Kept as a separate constructor (rather than derived from `piTy` via
-  weakening of the codomain) so that pattern matching against arrow is
-  direct without needing to recognise a weakened-codomain `piTy`. -/
-  | arrow : {scope : Nat} →
-            (domain : Ty scope) →
-            (codomain : Ty scope) →
-            Ty scope
-  /-- Dependent function type — codomain lives at scope `+1` and may
-  reference the freshly-bound variable via `tyVar`. -/
-  | piTy  : {scope : Nat} →
-            (domain : Ty scope) →
-            (codomain : Ty (scope + 1)) →
-            Ty scope
-  /-- Type-level variable reference — references the type at de Bruijn
-  position `i` in the current scope.  This is what makes the
-  substitution machinery actually *do* something: with `tyVar` in `Ty`,
-  `Ty.subst` looks up the substituent for each variable instead of
-  threading a placeholder.  v1.5+. -/
-  | tyVar : {scope : Nat} → (index : Fin scope) → Ty scope
-  /-- Dependent pair type — the second component's type may reference
-  the first component via a tyVar in `codomain`.  Mirrors `piTy` in
-  structure: codomain at scope `+1`.  v1.6+.
-
-  Demonstrates the v1.4+ substitution discipline generalises: the
-  exact same `Ty.subst0` machinery used by `appPi`'s result type also
-  handles `pair`'s second-component type and `snd`'s eliminator. -/
-  | sigmaTy : {scope : Nat} →
-              (firstType : Ty scope) →
-              (secondType : Ty (scope + 1)) →
-              Ty scope
-  /-- Boolean type — the smallest non-trivial inductive.  Adding `bool`
-  exercises the "mechanical extension under a new Ty constructor"
-  property: every Ty-recursive function gains a single `.bool` arm
-  (returning `.bool` for renaming/substitution, `rfl` for the
-  congruence/composition/identity theorems).  v1.13+. -/
-  | bool : {scope : Nat} → Ty scope
+inductive Ty : Nat → Nat → Type
+  /-- The unit type — polymorphic at any level / scope. -/
+  | unit  : {level scope : Nat} → Ty level scope
+  /-- Non-dependent function type — domain and codomain at the same
+  level and scope. -/
+  | arrow : {level scope : Nat} →
+            (domain : Ty level scope) →
+            (codomain : Ty level scope) →
+            Ty level scope
+  /-- Dependent function type — codomain at scope `+1`, all parts at
+  the same level (uniform-level discipline; v1.30+ adds polymorphic
+  levels via universe `max`). -/
+  | piTy  : {level scope : Nat} →
+            (domain : Ty level scope) →
+            (codomain : Ty level (scope + 1)) →
+            Ty level scope
+  /-- Type-level variable reference. -/
+  | tyVar : {level scope : Nat} → (index : Fin scope) → Ty level scope
+  /-- Dependent pair type. -/
+  | sigmaTy : {level scope : Nat} →
+              (firstType : Ty level scope) →
+              (secondType : Ty level (scope + 1)) →
+              Ty level scope
+  /-- Boolean type. -/
+  | bool : {level scope : Nat} → Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
 `Ty`'s index is a bare `Nat`, so the discrimination obligations
@@ -127,8 +117,8 @@ receives a renaming whose source scope is `source + 1` — definitionally
 matching the codomain's scope.  No axioms required.
 
 This is the more primitive operation; `Ty.weaken` is derived from it. -/
-def Ty.rename {source target : Nat} :
-    Ty source → Renaming source target → Ty target
+def Ty.rename {level source target : Nat} :
+    Ty level source → Renaming source target → Ty level target
   | .unit, _          => .unit
   | .arrow A B, ρ     => .arrow (A.rename ρ) (B.rename ρ)
   | .piTy A B, ρ      => .piTy (A.rename ρ) (B.rename ρ.lift)
@@ -159,9 +149,9 @@ theorem Renaming.lift_equiv {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
 /-- Pointwise-equivalent renamings produce equal results on every
 type.  Direct structural induction on `Ty`, using `Renaming.lift_equiv`
 for the binder cases.  No subst infrastructure required. -/
-theorem Ty.rename_congr {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
+theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
     (h : Renaming.equiv ρ₁ ρ₂) :
-    ∀ T : Ty s, T.rename ρ₁ = T.rename ρ₂
+    ∀ T : Ty level s, T.rename ρ₁ = T.rename ρ₂
   | .unit         => rfl
   | .arrow A B    => by
       show Ty.arrow (A.rename ρ₁) (B.rename ρ₁)
@@ -213,8 +203,8 @@ theorem Renaming.lift_identity_equiv {scope : Nat} :
 induction on `T`; the binder cases use `Ty.rename_congr` plus
 `Renaming.lift_compose_equiv` to bridge the lifted-then-composed and
 composed-then-lifted forms. -/
-theorem Ty.rename_compose {s m t : Nat} :
-    ∀ (T : Ty s) (ρ₁ : Renaming s m) (ρ₂ : Renaming m t),
+theorem Ty.rename_compose {level s m t : Nat} :
+    ∀ (T : Ty level s) (ρ₁ : Renaming s m) (ρ₂ : Renaming m t),
     (T.rename ρ₁).rename ρ₂ = T.rename (Renaming.compose ρ₁ ρ₂)
   | .unit, _, _ => rfl
   | .arrow A B, ρ₁, ρ₂ => by
@@ -255,7 +245,7 @@ variable in `B`, including the local binder.
 
 Marked `@[reducible]` so Lean's unifier and `rfl` unfold it eagerly. -/
 @[reducible]
-def Ty.weaken {scope : Nat} (T : Ty scope) : Ty (scope + 1) :=
+def Ty.weaken {level scope : Nat} (T : Ty level scope) : Ty level (scope + 1) :=
   T.rename Renaming.weaken
 
 /-- The fundamental rename-weaken commutativity lemma.  Says that
@@ -266,8 +256,8 @@ In v1.10, this is derived from `Ty.rename_compose` plus pointwise
 renaming equivalence: both sides become `T.rename` applied to two
 renamings that agree pointwise (both equal `Fin.succ ∘ ρ` modulo Fin
 proof irrelevance). -/
-theorem Ty.rename_weaken_commute {source target : Nat}
-    (T : Ty source) (ρ : Renaming source target) :
+theorem Ty.rename_weaken_commute {level source target : Nat}
+    (T : Ty level source) (ρ : Renaming source target) :
     (T.weaken).rename ρ.lift = (T.rename ρ).weaken := by
   show (T.rename Renaming.weaken).rename ρ.lift
      = (T.rename ρ).rename Renaming.weaken
@@ -280,8 +270,8 @@ theorem Ty.rename_weaken_commute {source target : Nat}
 
 /-! ## Substitution — the same trick scaled up.
 
-`Subst source target` is a function-typed family mapping `Fin source`
-to `Ty target`.  Just as with `Renaming`, the substitution data carries
+`Subst level source target` is a function-typed family mapping `Fin source`
+to `Ty level target`.  Just as with `Renaming`, the substitution data carries
 both endpoints as free parameters; lifting under a binder advances both
 to `source + 1` and `target + 1`, definitionally matching the
 recursive call's indices.
@@ -291,17 +281,17 @@ by `Ty.subst` — it threads through the recursion as a token.  When
 v1.5+ adds `Ty.tyVar`, the `var` case will look up the substituent
 via `σ`. -/
 
-/-- Parallel substitution: each `Fin source` index maps to a `Ty target`
+/-- Parallel substitution: each `Fin source` index maps to a `Ty level target`
 substituent.  Function-typed; `lift` advances source and target in
 lockstep. -/
-abbrev Subst (source target : Nat) : Type := Fin source → Ty target
+abbrev Subst (level source target : Nat) : Type := Fin source → Ty level target
 
 /-- Lift a substitution under a binder.  Var 0 in the lifted scope is
 the freshly-bound variable, represented as `Ty.tyVar 0`.  Var `k + 1`
 is the original substituent for `k` weakened to the extended target
 scope. -/
-def Subst.lift {source target : Nat} (σ : Subst source target) :
-    Subst (source + 1) (target + 1)
+def Subst.lift {level source target : Nat} (σ : Subst level source target) :
+    Subst level (source + 1) (target + 1)
   | ⟨0, _⟩      => .tyVar ⟨0, Nat.zero_lt_succ _⟩
   | ⟨k + 1, h⟩  => (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken
 
@@ -310,8 +300,8 @@ def Subst.lift {source target : Nat} (σ : Subst source target) :
 "identity" mapping that decrements the de Bruijn index by one
 (reflecting that the outer scope has one fewer binder than the
 input scope). -/
-def Subst.singleton {scope : Nat} (substituent : Ty scope) :
-    Subst (scope + 1) scope
+def Subst.singleton {level scope : Nat} (substituent : Ty level scope) :
+    Subst level (scope + 1) scope
   | ⟨0, _⟩      => substituent
   | ⟨k + 1, h⟩  => .tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩
 
@@ -319,8 +309,8 @@ def Subst.singleton {scope : Nat} (substituent : Ty scope) :
 `piTy` case lifts the substitution under the new binder; just like
 `Ty.rename`, the recursive call's indices are supplied definitionally
 by `σ.lift`, no Nat arithmetic identities required.  Axiom-free. -/
-def Ty.subst {source target : Nat} :
-    Ty source → Subst source target → Ty target
+def Ty.subst {level source target : Nat} :
+    Ty level source → Subst level source target → Ty level target
   | .unit, _          => .unit
   | .arrow A B, σ     => .arrow (Ty.subst A σ) (Ty.subst B σ)
   | .piTy A B, σ      => .piTy (Ty.subst A σ) (Ty.subst B σ.lift)
@@ -331,8 +321,8 @@ def Ty.subst {source target : Nat} :
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
 application. -/
-def Ty.subst0 {scope : Nat} (codomain : Ty (scope + 1))
-    (substituent : Ty scope) : Ty scope :=
+def Ty.subst0 {level scope : Nat} (codomain : Ty level (scope + 1))
+    (substituent : Ty level scope) : Ty level scope :=
   Ty.subst codomain (Subst.singleton substituent)
 
 /-! ## Substitution-lemma hierarchy.
@@ -343,15 +333,15 @@ lifting.  All lemmas use pointwise substitution equivalence
 pull in `propext`. -/
 
 /-- Pointwise equivalence of substitutions.  Two substitutions
-`σ₁ σ₂ : Subst s t` are equivalent if they agree at every variable.
+`σ₁ σ₂ : Subst level s t` are equivalent if they agree at every variable.
 Used in lieu of Lean-level function equality (which would require
 `funext` and thus `propext`). -/
-def Subst.equiv {s t : Nat} (σ₁ σ₂ : Subst s t) : Prop :=
+def Subst.equiv {level s t : Nat} (σ₁ σ₂ : Subst level s t) : Prop :=
   ∀ i, σ₁ i = σ₂ i
 
 /-- Lifting preserves substitution equivalence: if `σ₁ ≡ σ₂` pointwise
 then `σ₁.lift ≡ σ₂.lift` pointwise. -/
-theorem Subst.lift_equiv {s t : Nat} {σ₁ σ₂ : Subst s t}
+theorem Subst.lift_equiv {level s t : Nat} {σ₁ σ₂ : Subst level s t}
     (h : Subst.equiv σ₁ σ₂) : Subst.equiv σ₁.lift σ₂.lift := fun i =>
   match i with
   | ⟨0, _⟩      => rfl
@@ -361,8 +351,8 @@ theorem Subst.lift_equiv {s t : Nat} {σ₁ σ₂ : Subst s t}
 /-- `Ty.subst` respects substitution equivalence: pointwise-equivalent
 substitutions produce equal results.  Proven by structural induction
 on `T`, using `Subst.lift_equiv` for the binder cases. -/
-theorem Ty.subst_congr {s t : Nat} {σ₁ σ₂ : Subst s t}
-    (h : Subst.equiv σ₁ σ₂) : ∀ T : Ty s, T.subst σ₁ = T.subst σ₂
+theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
+    (h : Subst.equiv σ₁ σ₂) : ∀ T : Ty level s, T.subst σ₁ = T.subst σ₂
   | .unit         => rfl
   | .arrow X Y    => by
       show Ty.arrow (X.subst σ₁) (Y.subst σ₁) = Ty.arrow (X.subst σ₂) (Y.subst σ₂)
@@ -387,15 +377,15 @@ theorem Ty.subst_congr {s t : Nat} {σ₁ σ₂ : Subst s t}
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
 the order of operations: `renameAfter σ ρ i = (σ i).rename ρ`. -/
-def Subst.renameAfter {s m t : Nat} (σ : Subst s m) (ρ : Renaming m t) :
-    Subst s t :=
+def Subst.renameAfter {level s m t : Nat} (σ : Subst level s m) (ρ : Renaming m t) :
+    Subst level s t :=
   fun i => (σ i).rename ρ
 
 /-- Lifting commutes with the renameAfter composition (pointwise).
 The non-trivial case `i = ⟨k+1, h⟩` reduces to `Ty.rename_weaken_commute`
 applied to the substituent `σ ⟨k, _⟩`. -/
-theorem Subst.lift_renameAfter_commute {s m t : Nat}
-    (σ : Subst s m) (ρ : Renaming m t) :
+theorem Subst.lift_renameAfter_commute {level s m t : Nat}
+    (σ : Subst level s m) (ρ : Renaming m t) :
     Subst.equiv (Subst.renameAfter σ.lift ρ.lift)
                 ((Subst.renameAfter σ ρ).lift) := fun i =>
   match i with
@@ -412,8 +402,8 @@ This is the load-bearing lemma for `Term.rename`'s `appPi`/`pair`/
 for β-reduction.  Proven by structural induction on `T`, with the
 `piTy`/`sigmaTy` cases using `Subst.lift_renameAfter_commute` +
 `Ty.subst_congr`. -/
-theorem Ty.subst_rename_commute :
-    ∀ {s m t : Nat} (T : Ty s) (σ : Subst s m) (ρ : Renaming m t),
+theorem Ty.subst_rename_commute {level : Nat} :
+    ∀ {s m t : Nat} (T : Ty level s) (σ : Subst level s m) (ρ : Renaming m t),
     (T.subst σ).rename ρ = T.subst (Subst.renameAfter σ ρ)
   | _, _, _, .unit, _, _ => rfl
   | _, _, _, .arrow X Y, σ, ρ => by
@@ -444,14 +434,14 @@ theorem Ty.subst_rename_commute :
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
-def Subst.precompose {s m t : Nat} (ρ : Renaming s m) (σ : Subst m t) :
-    Subst s t :=
+def Subst.precompose {level s m t : Nat} (ρ : Renaming s m) (σ : Subst level m t) :
+    Subst level s t :=
   fun i => σ (ρ i)
 
 /-- Lifting commutes with precompose (pointwise).  Both `k = 0` and
 `k+1` cases reduce to `rfl` thanks to Fin proof irrelevance. -/
-theorem Subst.lift_precompose_commute {s m t : Nat}
-    (ρ : Renaming s m) (σ : Subst m t) :
+theorem Subst.lift_precompose_commute {level s m t : Nat}
+    (ρ : Renaming s m) (σ : Subst level m t) :
     Subst.equiv (Subst.precompose ρ.lift σ.lift)
                 ((Subst.precompose ρ σ).lift) := fun i =>
   match i with
@@ -464,8 +454,8 @@ with a precomposed substitution.  This is the OTHER direction of the
 substitution-rename interaction; together with `subst_rename_commute`
 they let us derive `subst0_rename_commute` and the full β-reduction
 soundness chain. -/
-theorem Ty.rename_subst_commute :
-    ∀ {s m t : Nat} (T : Ty s) (ρ : Renaming s m) (σ : Subst m t),
+theorem Ty.rename_subst_commute {level : Nat} :
+    ∀ {s m t : Nat} (T : Ty level s) (ρ : Renaming s m) (σ : Subst level m t),
     (T.rename ρ).subst σ = T.subst (Subst.precompose ρ σ)
   | _, _, _, .unit, _, _ => rfl
   | _, _, _, .arrow X Y, ρ, σ => by
@@ -502,13 +492,14 @@ corresponding substitution lemmas via this coercion. -/
 
 /-- Coerce a renaming into a substitution: each variable index `ρ i`
 becomes the type-variable reference `Ty.tyVar (ρ i)`. -/
-def Renaming.toSubst {s t : Nat} (ρ : Renaming s t) : Subst s t :=
+def Renaming.toSubst {s t : Nat} (ρ : Renaming s t) : Subst level s t :=
   fun i => Ty.tyVar (ρ i)
 
 /-- Lifting commutes with the renaming-to-substitution coercion
 (pointwise).  Both cases reduce to `rfl`. -/
 theorem Renaming.lift_toSubst_equiv {s t : Nat} (ρ : Renaming s t) :
-    Subst.equiv (Renaming.toSubst ρ.lift) (Renaming.toSubst ρ).lift :=
+    Subst.equiv (Renaming.toSubst (level := level) ρ.lift)
+                (Renaming.toSubst (level := level) ρ).lift :=
   fun i =>
     match i with
     | ⟨0, _⟩      => rfl
@@ -520,8 +511,8 @@ not a separate primitive operation but a special case of substitution
 where the substituent for each variable is a `tyVar`.  All renaming
 lemmas are derivable from the corresponding substitution lemmas via
 this isomorphism. -/
-theorem Ty.rename_eq_subst :
-    ∀ {s t : Nat} (T : Ty s) (ρ : Renaming s t),
+theorem Ty.rename_eq_subst {level : Nat} :
+    ∀ {s t : Nat} (T : Ty level s) (ρ : Renaming s t),
     T.rename ρ = T.subst (Renaming.toSubst ρ)
   | _, _, .unit, _ => rfl
   | _, _, .arrow X Y, ρ => by
@@ -565,12 +556,13 @@ Together these say: substitution behaves algebraically. -/
 
 /-- The identity substitution maps each variable to its own tyVar
 reference.  Identity element of substitution composition. -/
-def Subst.identity {scope : Nat} : Subst scope scope := fun i => Ty.tyVar i
+def Subst.identity {level scope : Nat} : Subst level scope scope := fun i => Ty.tyVar i
 
 /-- Lifting the identity substitution gives the identity at the
 extended scope (pointwise).  Both Fin cases are `rfl`. -/
-theorem Subst.lift_identity_equiv {scope : Nat} :
-    Subst.equiv (@Subst.identity scope).lift Subst.identity := fun i =>
+theorem Subst.lift_identity_equiv {level scope : Nat} :
+    Subst.equiv (@Subst.identity level scope).lift
+                (@Subst.identity level (scope + 1)) := fun i =>
   match i with
   | ⟨0, _⟩      => rfl
   | ⟨_ + 1, _⟩  => rfl
@@ -579,8 +571,8 @@ theorem Subst.lift_identity_equiv {scope : Nat} :
 The substitution that maps every variable to itself is the identity
 operation on `Ty`.  Proven by structural induction on `T`, using
 `.symm ▸` to rewrite the goal toward `rfl`. -/
-theorem Ty.subst_id :
-    ∀ {scope : Nat} (T : Ty scope), T.subst Subst.identity = T
+theorem Ty.subst_id {level : Nat} :
+    ∀ {scope : Nat} (T : Ty level scope), T.subst Subst.identity = T
   | _, .unit => rfl
   | _, .arrow X Y => by
       have hX := Ty.subst_id X
@@ -613,7 +605,7 @@ pointwise equivalence `Subst.precompose Renaming.weaken σ.lift ≡
 Subst.renameAfter σ Renaming.weaken`.  The pointwise equivalence is
 trivial (both forms reduce to `(σ i).rename Renaming.weaken` by
 `Subst.lift`'s defn at successor positions). -/
-theorem Ty.subst_weaken_commute {s t : Nat} (T : Ty s) (σ : Subst s t) :
+theorem Ty.subst_weaken_commute {level s t : Nat} (T : Ty level s) (σ : Subst level s t) :
     (T.weaken).subst σ.lift = (T.subst σ).weaken := by
   show (T.rename Renaming.weaken).subst σ.lift
      = (T.subst σ).rename Renaming.weaken
@@ -626,14 +618,14 @@ theorem Ty.subst_weaken_commute {s t : Nat} (T : Ty s) (σ : Subst s t) :
 
 /-- Composition of substitutions: apply `σ₁` first, then `σ₂` to each
 substituent.  The category-theoretic composition. -/
-def Subst.compose {s m t : Nat} (σ₁ : Subst s m) (σ₂ : Subst m t) :
-    Subst s t :=
+def Subst.compose {level s m t : Nat} (σ₁ : Subst level s m) (σ₂ : Subst level m t) :
+    Subst level s t :=
   fun i => (σ₁ i).subst σ₂
 
 /-- Lifting commutes with substitution composition (pointwise).  The
 non-trivial `k+1` case reduces to `Ty.subst_weaken_commute`. -/
-theorem Subst.lift_compose_equiv {s m t : Nat}
-    (σ₁ : Subst s m) (σ₂ : Subst m t) :
+theorem Subst.lift_compose_equiv {level s m t : Nat}
+    (σ₁ : Subst level s m) (σ₂ : Subst level m t) :
     Subst.equiv (Subst.compose σ₁.lift σ₂.lift)
                 ((Subst.compose σ₁ σ₂).lift) := fun i =>
   match i with
@@ -646,8 +638,8 @@ T.subst (Subst.compose σ₁ σ₂)`.  Together with `Ty.subst_id`, this
 makes `Subst` a category enriched over `Ty` and `Ty.subst` its
 functorial action.  Proven by structural induction on `T`, using
 `Subst.lift_compose_equiv` + `Ty.subst_congr` for the binder cases. -/
-theorem Ty.subst_compose :
-    ∀ {s m t : Nat} (T : Ty s) (σ₁ : Subst s m) (σ₂ : Subst m t),
+theorem Ty.subst_compose {level : Nat} :
+    ∀ {s m t : Nat} (T : Ty level s) (σ₁ : Subst level s m) (σ₂ : Subst level m t),
     (T.subst σ₁).subst σ₂ = T.subst (Subst.compose σ₁ σ₂)
   | _, _, _, .unit, _, _ => rfl
   | _, _, _, .arrow X Y, σ₁, σ₂ => by
@@ -707,7 +699,7 @@ theorem Renaming.compose_assoc {s m₁ m₂ t : Nat}
 identity substitution leaves the substitution pointwise unchanged.
 Pointwise `rfl` because `Subst.identity i = Ty.tyVar i` and the
 `tyVar` arm of `Ty.subst` looks up the substituent directly. -/
-theorem Subst.compose_identity_left {s t : Nat} (σ : Subst s t) :
+theorem Subst.compose_identity_left {level s t : Nat} (σ : Subst level s t) :
     Subst.equiv (Subst.compose Subst.identity σ) σ :=
   fun _ => rfl
 
@@ -715,15 +707,15 @@ theorem Subst.compose_identity_left {s t : Nat} (σ : Subst s t) :
 identity substitution leaves the substitution pointwise unchanged.
 Pointwise via `Ty.subst_id`: each substituent's identity-
 substitution equals itself. -/
-theorem Subst.compose_identity_right {s t : Nat} (σ : Subst s t) :
+theorem Subst.compose_identity_right {level s t : Nat} (σ : Subst level s t) :
     Subst.equiv (Subst.compose σ Subst.identity) σ :=
   fun i => Ty.subst_id (σ i)
 
 /-- Substitution composition is associative.  Pointwise via
 `Ty.subst_compose`: at each position both sides reduce to
 `((σ₁ i).subst σ₂).subst σ₃`. -/
-theorem Subst.compose_assoc {s m₁ m₂ t : Nat}
-    (σ₁ : Subst s m₁) (σ₂ : Subst m₁ m₂) (σ₃ : Subst m₂ t) :
+theorem Subst.compose_assoc {level s m₁ m₂ t : Nat}
+    (σ₁ : Subst level s m₁) (σ₂ : Subst level m₁ m₂) (σ₃ : Subst level m₂ t) :
     Subst.equiv (Subst.compose σ₁ (Subst.compose σ₂ σ₃))
                 (Subst.compose (Subst.compose σ₁ σ₂) σ₃) :=
   fun i => (Ty.subst_compose (σ₁ i) σ₂ σ₃).symm
@@ -732,8 +724,8 @@ theorem Subst.compose_assoc {s m₁ m₂ t : Nat}
 formulations: substitution-then-rename equals lifted-rename-then-
 substitution-with-renamed-substituent.  The auxiliary lemma needed for
 the `Ty.subst0_rename_commute` derivation. -/
-theorem Subst.singleton_renameAfter_equiv_precompose {scope target : Nat}
-    (A : Ty scope) (ρ : Renaming scope target) :
+theorem Subst.singleton_renameAfter_equiv_precompose {level scope target : Nat}
+    (A : Ty level scope) (ρ : Renaming scope target) :
     Subst.equiv (Subst.renameAfter (Subst.singleton A) ρ)
                 (Subst.precompose ρ.lift (Subst.singleton (A.rename ρ))) :=
   fun i => match i with
@@ -750,8 +742,8 @@ Proven by chaining the general lemmas (`subst_rename_commute`,
 `rename_subst_commute`) with the singleton-substitution pointwise
 equivalence — no fresh structural induction needed.  Showcases how
 the v1.7 algebraic structure subsumes ad-hoc lemmas. -/
-theorem Ty.subst0_rename_commute {scope target : Nat}
-    (T : Ty (scope + 1)) (A : Ty scope) (ρ : Renaming scope target) :
+theorem Ty.subst0_rename_commute {level scope target : Nat}
+    (T : Ty level (scope + 1)) (A : Ty level scope) (ρ : Renaming scope target) :
     (T.subst0 A).rename ρ = (T.rename ρ.lift).subst0 (A.rename ρ) := by
   have h1 := Ty.subst_rename_commute T (Subst.singleton A) ρ
   have h2 := Ty.subst_congr
@@ -761,25 +753,25 @@ theorem Ty.subst0_rename_commute {scope target : Nat}
 
 /-! ## Contexts
 
-`Ctx mode scope` is a typed context at the given mode containing
+`Ctx mode level scope` is a typed context at the given mode containing
 `scope`-many bindings.  Each binding carries its type *at the scope
 that existed when it was bound* — so `cons context bindingType` extends
-a `Ctx mode scope` with a `Ty scope`, and the result has scope
+a `Ctx mode level scope` with a `Ty level scope`, and the result has scope
 `scope + 1`. -/
 
 /-- Typed contexts at a fixed mode, indexed by the number of bindings.
 v1.0 is single-mode: every binding lives at the context's mode.  v1.5+
 will introduce `lock` to cross modes via modalities. -/
-inductive Ctx : Mode → Nat → Type
-  /-- The empty context at any mode. -/
-  | nil  : (mode : Mode) → Ctx mode 0
-  /-- Extend a context by binding a type that lives in the prefix's
-  scope.  The bound variable is fresh; subsequent bindings see it in
-  scope. -/
-  | cons : {mode : Mode} → {scope : Nat} →
-           (context : Ctx mode scope) →
-           (bindingType : Ty scope) →
-           Ctx mode (scope + 1)
+inductive Ctx : Mode → Nat → Nat → Type
+  /-- The empty context at any mode and any level. -/
+  | nil  : (mode : Mode) → {level : Nat} → Ctx mode level 0
+  /-- Extend a context by binding a type at the same level.  Uniform-
+  level discipline: every binding in a single context lives at the
+  same universe level. -/
+  | cons : {mode : Mode} → {level scope : Nat} →
+           (context : Ctx mode level scope) →
+           (bindingType : Ty level scope) →
+           Ctx mode level (scope + 1)
 
 /-! ## Variable resolution — v1.9 Fin-indexed.
 
@@ -806,10 +798,10 @@ type; variable `k + 1` recurses into the prefix.  Marked
 `Term.var` constructions and pattern matches. -/
 @[reducible]
 def varType :
-    {mode : Mode} → {scope : Nat} →
-    (context : Ctx mode scope) → Fin scope → Ty scope
-  | _, _, .cons _ bindingType, ⟨0, _⟩      => bindingType.weaken
-  | _, _, .cons prefixCtx _,   ⟨k + 1, h⟩  =>
+    {mode : Mode} → {level scope : Nat} →
+    (context : Ctx mode level scope) → Fin scope → Ty level scope
+  | _, _, _, .cons _ bindingType, ⟨0, _⟩      => bindingType.weaken
+  | _, _, _, .cons prefixCtx _,   ⟨k + 1, h⟩  =>
       (varType prefixCtx ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken
 
 /-! ## Terms
@@ -821,37 +813,37 @@ rejected before any program is written using it. -/
 
 /-- Intrinsically-typed terms.  No separate typing relation — the
 constructor signatures *are* the typing rules. -/
-inductive Term : {mode : Mode} → {scope : Nat} →
-                 (context : Ctx mode scope) → Ty scope → Type
+inductive Term : {mode : Mode} → {level scope : Nat} →
+                 (context : Ctx mode level scope) → Ty level scope → Type
   /-- Variable rule.  A term is a variable iff it carries a Fin-scoped
   position; the type is computed by `varType` from the context.
   Replaces the v1.0 `Lookup`-indexed form, which forced propext through
   the match compiler at term-level renaming.  v1.9. -/
   | var :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
       (position : Fin scope) →
       Term context (varType context position)
   /-- Unit introduction at every scope. -/
   | unit :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
       Term context Ty.unit
   /-- λ-abstraction.  The body is checked in the context extended with
   the bound variable; its expected type is the codomain weakened to
   the extended scope. -/
   | lam :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {domainType codomainType : Ty scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {domainType codomainType : Ty level scope} →
       (body : Term (Ctx.cons context domainType) codomainType.weaken) →
       Term context (Ty.arrow domainType codomainType)
   /-- Non-dependent application — function expects the codomain at the
   same scope as the domain. -/
   | app :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {domainType codomainType : Ty scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {domainType codomainType : Ty level scope} →
       (functionTerm : Term context (Ty.arrow domainType codomainType)) →
       (argumentTerm : Term context domainType) →
       Term context codomainType
@@ -859,10 +851,10 @@ inductive Term : {mode : Mode} → {scope : Nat} →
   directly (at scope `+1`) — no weakening needed because `piTy`'s
   codomain is already at the extended scope. -/
   | lamPi :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {domainType : Ty scope} →
-      {codomainType : Ty (scope + 1)} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {domainType : Ty level scope} →
+      {codomainType : Ty level (scope + 1)} →
       (body : Term (Ctx.cons context domainType) codomainType) →
       Term context (Ty.piTy domainType codomainType)
   /-- Application for dependent `piTy`.  Result type is the codomain
@@ -875,10 +867,10 @@ inductive Term : {mode : Mode} → {scope : Nat} →
   no variable references).  When `Ty.tyVar` lands in v1.5+, this rule
   remains unchanged but `subst0` actually looks up the substituent. -/
   | appPi :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {domainType : Ty scope} →
-      {codomainType : Ty (scope + 1)} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {domainType : Ty level scope} →
+      {codomainType : Ty level (scope + 1)} →
       (functionTerm : Term context (Ty.piTy domainType codomainType)) →
       (argumentTerm : Term context domainType) →
       Term context (codomainType.subst0 domainType)
@@ -886,50 +878,50 @@ inductive Term : {mode : Mode} → {scope : Nat} →
   component's type is `secondType` with var 0 substituted by
   `firstType` — same `Ty.subst0` mechanism `appPi` uses. -/
   | pair :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {firstType : Ty scope} →
-      {secondType : Ty (scope + 1)} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {firstType : Ty level scope} →
+      {secondType : Ty level (scope + 1)} →
       (firstVal : Term context firstType) →
       (secondVal : Term context (secondType.subst0 firstType)) →
       Term context (Ty.sigmaTy firstType secondType)
   /-- First projection.  Extracts the first component of a pair. -/
   | fst :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {firstType : Ty scope} →
-      {secondType : Ty (scope + 1)} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {firstType : Ty level scope} →
+      {secondType : Ty level (scope + 1)} →
       (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
       Term context firstType
   /-- Second projection.  Result type uses the same `subst0`
   placeholder substitution as `pair`. -/
   | snd :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {firstType : Ty scope} →
-      {secondType : Ty (scope + 1)} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {firstType : Ty level scope} →
+      {secondType : Ty level (scope + 1)} →
       (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
       Term context (secondType.subst0 firstType)
   /-- Boolean introduction — `true` literal at every context.  v1.13+. -/
   | boolTrue :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
       Term context Ty.bool
   /-- Boolean introduction — `false` literal at every context.  v1.13+. -/
   | boolFalse :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
       Term context Ty.bool
   /-- Boolean elimination (non-dependent) — case-analysis on a boolean
   scrutinee produces one of two same-typed branches.  Non-dependent
-  because the result type is a fixed `Ty scope`, not a function on
+  because the result type is a fixed `Ty level scope`, not a function on
   `bool`; dependent elim would require representing motives as
   functions on `Term`-valued booleans, which doesn't fit the current
   scope-only `Ty` indexing.  v1.14+. -/
   | boolElim :
-      {mode : Mode} → {scope : Nat} →
-      {context : Ctx mode scope} →
-      {resultType : Ty scope} →
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {resultType : Ty level scope} →
       (scrutinee : Term context Ty.bool) →
       (thenBranch : Term context resultType) →
       (elseBranch : Term context resultType) →
@@ -947,8 +939,8 @@ match compiler emitting `Ctx.noConfusion`. -/
 with two contexts: at every position `i` of `Γ`, the looked-up type at
 `ρ i` in `Δ` equals the looked-up type at `i` in `Γ` after renaming.
 Replaces the v1.8 type-of-Lookups formulation. -/
-def TermRenaming {m : Mode} {scope scope' : Nat}
-    (Γ : Ctx m scope) (Δ : Ctx m scope')
+def TermRenaming {m : Mode} {level scope scope' : Nat}
+    (Γ : Ctx m level scope) (Δ : Ctx m level scope')
     (ρ : Renaming scope scope') : Prop :=
   ∀ (i : Fin scope), varType Δ (ρ i) = (varType Γ i).rename ρ
 
@@ -957,10 +949,10 @@ def TermRenaming {m : Mode} {scope scope' : Nat}
 `⟨k+1, h⟩`), so the match never sees a cons-specialised Ctx index.
 Both Fin cases reduce to `Ty.rename_weaken_commute` plus, in the
 successor case, the predecessor's `ρt` proof. -/
-theorem TermRenaming.lift {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+theorem TermRenaming.lift {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
     {ρ : Renaming scope scope'}
-    (ρt : TermRenaming Γ Δ ρ) (newType : Ty scope) :
+    (ρt : TermRenaming Γ Δ ρ) (newType : Ty level scope) :
     TermRenaming (Γ.cons newType) (Δ.cons (newType.rename ρ)) ρ.lift := by
   intro i
   match i with
@@ -982,7 +974,7 @@ the existing v1.7 substitution discipline: `Ty.rename` factors through
 identity renaming corresponds to the identity substitution pointwise
 (both map `i` to `Ty.tyVar i`); and the substitution discipline already
 provides `Ty.subst_id`.  No fresh structural induction needed. -/
-theorem Ty.rename_identity {scope : Nat} (T : Ty scope) :
+theorem Ty.rename_identity {level scope : Nat} (T : Ty level scope) :
     T.rename Renaming.identity = T :=
   let renamingIdEqSubstId :
       Subst.equiv (Renaming.toSubst (@Renaming.identity scope))
@@ -992,7 +984,7 @@ theorem Ty.rename_identity {scope : Nat} (T : Ty scope) :
 
 /-- The identity term-level renaming.  Witnesses `TermRenaming Γ Γ id`
 from `Ty.rename_identity`. -/
-theorem TermRenaming.identity {m : Mode} {scope : Nat} (Γ : Ctx m scope) :
+theorem TermRenaming.identity {m : Mode} {level scope : Nat} (Γ : Ctx m level scope) :
     TermRenaming Γ Γ Renaming.identity := fun i =>
   (Ty.rename_identity (varType Γ i)).symm
 
@@ -1006,10 +998,10 @@ use the v1.7 substitution-rename commute lemmas.  Every cast is via
 `▸` on a `Type`-valued `Term` motive, going through `Eq.rec` — no
 match-compiler `noConfusion`, no propext. -/
 def Term.rename {m scope scope'}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
     {ρ : Renaming scope scope'}
     (ρt : TermRenaming Γ Δ ρ) :
-    {T : Ty scope} → Term Γ T → Term Δ (T.rename ρ)
+    {T : Ty level scope} → Term Γ T → Term Δ (T.rename ρ)
   | _, .var i => (ρt i) ▸ Term.var (ρ i)
   | _, .unit       => Term.unit
   | _, .lam (codomainType := codomainType) body =>
@@ -1045,16 +1037,16 @@ def Term.rename {m scope scope'}
 `Γ.cons newType`: the position-equality `varType (Γ.cons newType) (Fin.succ i) = (varType Γ i).rename Renaming.weaken`
 is `rfl` because both sides reduce to the same `Ty.rename` application
 under the new `Ty.weaken := T.rename Renaming.weaken` defn. -/
-theorem TermRenaming.weaken {m : Mode} {scope : Nat}
-    (Γ : Ctx m scope) (newType : Ty scope) :
+theorem TermRenaming.weaken {m : Mode} {level scope : Nat}
+    (Γ : Ctx m level scope) (newType : Ty level scope) :
     TermRenaming Γ (Γ.cons newType) Renaming.weaken := fun _ => rfl
 
 /-- Weaken a term by extending its context with one fresh binding.
 The result type is the original type weakened in lockstep, mirroring
 the type-level `Ty.weaken`.  Implemented via `Term.rename` with the
 shift-by-one renaming. -/
-def Term.weaken {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    (newType : Ty scope) {T : Ty scope} (term : Term Γ T) :
+def Term.weaken {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    (newType : Ty level scope) {T : Ty level scope} (term : Term Γ T) :
     Term (Γ.cons newType) T.weaken :=
   Term.rename (TermRenaming.weaken Γ newType) term
 
@@ -1068,19 +1060,19 @@ extended target. -/
 /-- A term-level substitution maps each position of `Γ` to a term in
 `Δ` whose type is `varType Γ` substituted by the underlying type-level
 σ.  The type-equality is computed via `Ty.subst`. -/
-abbrev TermSubst {m : Mode} {scope scope' : Nat}
-    (Γ : Ctx m scope) (Δ : Ctx m scope')
-    (σ : Subst scope scope') : Type :=
+abbrev TermSubst {m : Mode} {level scope scope' : Nat}
+    (Γ : Ctx m level scope) (Δ : Ctx m level scope')
+    (σ : Subst level scope scope') : Type :=
   ∀ (i : Fin scope), Term Δ ((varType Γ i).subst σ)
 
 /-- Lift a term-level substitution under a binder.  Position 0 in the
 extended source context maps to `Term.var ⟨0, _⟩` in the extended
 target (cast through `Ty.subst_weaken_commute`); positions `k + 1`
 weaken the predecessor's image into the extended target context. -/
-def TermSubst.lift {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'}
-    (σt : TermSubst Γ Δ σ) (newType : Ty scope) :
+def TermSubst.lift {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ : Subst level scope scope'}
+    (σt : TermSubst Γ Δ σ) (newType : Ty level scope) :
     TermSubst (Γ.cons newType) (Δ.cons (newType.subst σ)) σ.lift :=
   fun i =>
     match i with
@@ -1099,8 +1091,8 @@ the identity on `Ty`.  The shift renames every original variable up
 by one, then `Subst.singleton X` at position `k + 1` returns the
 `Ty.tyVar k` corresponding to the original position — i.e., the
 substitution acts as the identity. -/
-theorem Ty.weaken_subst_singleton {scope : Nat}
-    (T : Ty scope) (X : Ty scope) :
+theorem Ty.weaken_subst_singleton {level scope : Nat}
+    (T : Ty level scope) (X : Ty level scope) :
     T.weaken.subst (Subst.singleton X) = T := by
   show (T.rename Renaming.weaken).subst (Subst.singleton X) = T
   have hRSC :=
@@ -1120,8 +1112,8 @@ fewer binder than the input).  The underlying type-level σ is
 `Subst.singleton T_arg` for the argument's type `T_arg`.  Both Fin
 cases require a cast through `Ty.weaken_subst_singleton` to align the
 substituted-varType form. -/
-def TermSubst.singleton {m : Mode} {scope : Nat}
-    {Γ : Ctx m scope} {T_arg : Ty scope}
+def TermSubst.singleton {m : Mode} {level scope : Nat}
+    {Γ : Ctx m level scope} {T_arg : Ty level scope}
     (arg : Term Γ T_arg) :
     TermSubst (Γ.cons T_arg) Γ (Subst.singleton T_arg) :=
   fun i =>
@@ -1145,8 +1137,8 @@ then composing with the singleton-substituent (already substituted by
 σ).  Both sides at position 0 evaluate to `(substituent).subst σ`;
 at positions `k + 1`, both evaluate to `σ ⟨k, _⟩`. -/
 theorem Subst.singleton_compose_equiv_lift_compose_singleton
-    {scope target : Nat}
-    (substituent : Ty scope) (σ : Subst scope target) :
+    {level scope target : Nat}
+    (substituent : Ty level scope) (σ : Subst level scope target) :
     Subst.equiv
       (Subst.compose (Subst.singleton substituent) σ)
       (Subst.compose σ.lift (Subst.singleton (substituent.subst σ))) :=
@@ -1174,8 +1166,8 @@ theorem Subst.singleton_compose_equiv_lift_compose_singleton
 then applying an outer substitution equals lifting the outer
 substitution under the binder then substituting the substituted
 substituent. -/
-theorem Ty.subst0_subst_commute {scope target : Nat}
-    (T : Ty (scope + 1)) (X : Ty scope) (σ : Subst scope target) :
+theorem Ty.subst0_subst_commute {level scope target : Nat}
+    (T : Ty level (scope + 1)) (X : Ty level scope) (σ : Subst level scope target) :
     (T.subst0 X).subst σ
       = (T.subst σ.lift).subst0 (X.subst σ) := by
   show (T.subst (Subst.singleton X)).subst σ
@@ -1196,10 +1188,10 @@ binder and align body types via `Ty.subst_weaken_commute`; the
 projection-laden cases (`appPi`, `pair`, `snd`) use
 `Ty.subst0_subst_commute` to align `subst0`-shaped result types. -/
 def Term.subst {m scope scope'}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ : Subst level scope scope'}
     (σt : TermSubst Γ Δ σ) :
-    {T : Ty scope} → Term Γ T → Term Δ (T.subst σ)
+    {T : Ty level scope} → Term Γ T → Term Δ (T.subst σ)
   | _, .var i      => σt i
   | _, .unit       => Term.unit
   | _, .lam (codomainType := codomainType) body =>
@@ -1233,8 +1225,8 @@ def Term.subst {m scope scope'}
 in `body`.  Used by β-reduction.  Result type is computed via
 `Ty.subst0` at the type level, matching `Term.appPi`'s result-type
 shape exactly. -/
-def Term.subst0 {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {T_arg : Ty scope} {T_body : Ty (scope + 1)}
+def Term.subst0 {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
     (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
     Term Γ (T_body.subst0 T_arg) :=
   Term.subst (TermSubst.singleton arg) body
@@ -1249,15 +1241,15 @@ dependent-cast wrangling because `Term.subst σt t : Term Δ (T.subst
 
 /-- Identity term-substitution: each position `i` maps to `Term.var i`,
 cast through `Ty.subst_id` to live at `(varType Γ i).subst Subst.identity`. -/
-def TermSubst.identity {m : Mode} {scope : Nat} (Γ : Ctx m scope) :
+def TermSubst.identity {m : Mode} {level scope : Nat} (Γ : Ctx m level scope) :
     TermSubst Γ Γ Subst.identity := fun i =>
   (Ty.subst_id (varType Γ i)).symm ▸ Term.var i
 
 /-- Compose two term-substitutions: apply `σt₁` then substitute the
 result by `σt₂`, casting through `Ty.subst_compose`. -/
-def TermSubst.compose {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
-    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+def TermSubst.compose {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
+    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
     (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂) :
     TermSubst Γ₁ Γ₃ (Subst.compose σ₁ σ₂) := fun i =>
   Ty.subst_compose (varType Γ₁ i) σ₁ σ₂ ▸ Term.subst σt₂ (σt₁ i)
@@ -1274,8 +1266,8 @@ contexts at the same scope are propositionally equal, then the
 `Term.var` constructor at the same Fin position produces HEq
 values across them.  Proven by `cases` on the context equality —
 both sides become identical, and HEq reduces to Eq.refl. -/
-theorem heq_var_across_ctx_eq {m : Mode} {scope : Nat}
-    {Γ Δ : Ctx m scope} (h_ctx : Γ = Δ) (i : Fin scope) :
+theorem heq_var_across_ctx_eq {m : Mode} {level scope : Nat}
+    {Γ Δ : Ctx m level scope} (h_ctx : Γ = Δ) (i : Fin scope) :
     HEq (Term.var (context := Γ) i) (Term.var (context := Δ) i) := by
   cases h_ctx
   rfl
@@ -1286,8 +1278,8 @@ type cast on the input.  Proven by `cases` on the equation —
 both T₁ and T₂ are local variables, so the substitution succeeds
 and the cast vanishes. -/
 theorem Term.heq_weaken_strip_cast
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    (newType : Ty scope) {T₁ T₂ : Ty scope} (h : T₁ = T₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    (newType : Ty level scope) {T₁ T₂ : Ty level scope} (h : T₁ = T₂)
     (t : Term Γ T₁) :
     HEq (Term.weaken newType (h ▸ t)) (Term.weaken newType t) := by
   cases h
@@ -1302,9 +1294,9 @@ context-shape and the inner cast.  Uses
 `Term.weaken X (Term.var ⟨k, _⟩) = Term.var ⟨k+1, _⟩` by `rfl`
 (through `Term.rename`'s var arm + `TermRenaming.weaken`'s
 rfl-pointwise + `Renaming.weaken = Fin.succ`). -/
-theorem heq_weaken_var_across_ctx_eq {m : Mode} {scope : Nat}
-    {Γ Δ : Ctx m scope} (h_ctx : Γ = Δ)
-    (newTypeΓ : Ty scope) (newTypeΔ : Ty scope)
+theorem heq_weaken_var_across_ctx_eq {m : Mode} {level scope : Nat}
+    {Γ Δ : Ctx m level scope} (h_ctx : Γ = Δ)
+    (newTypeΓ : Ty level scope) (newTypeΔ : Ty level scope)
     (h_new : newTypeΓ = newTypeΔ)
     (k : Nat) (hk : k + 1 < scope + 1) :
     HEq
@@ -1336,8 +1328,8 @@ propositionally (via `Ty.subst_id newType` and
 because both differences manifest at the type level of the
 substituent terms. -/
 theorem TermSubst.lift_identity_pointwise
-    {m : Mode} {scope : Nat}
-    (Γ : Ctx m scope) (newType : Ty scope) :
+    {m : Mode} {level scope : Nat}
+    (Γ : Ctx m level scope) (newType : Ty level scope) :
     ∀ (i : Fin (scope + 1)),
       HEq
         (TermSubst.lift (TermSubst.identity Γ) newType i)
@@ -1392,8 +1384,8 @@ descends through `Term.subst` / `Term.rename` and needs to bridge
 
 /-- HEq congruence for `Term.app`. -/
 theorem Term.app_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {T₁_a T₁_b T₂_a T₂_b : Ty scope}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {T₁_a T₁_b T₂_a T₂_b : Ty level scope}
     (h_T₁ : T₁_a = T₁_b) (h_T₂ : T₂_a = T₂_b)
     (f₁ : Term Γ (T₁_a.arrow T₂_a)) (f₂ : Term Γ (T₁_b.arrow T₂_b))
     (h_f : HEq f₁ f₂)
@@ -1407,9 +1399,9 @@ theorem Term.app_HEq_congr
 
 /-- HEq congruence for `Term.lam`. -/
 theorem Term.lam_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {dom₁ dom₂ : Ty scope} (h_dom : dom₁ = dom₂)
-    {cod₁ cod₂ : Ty scope} (h_cod : cod₁ = cod₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {dom₁ dom₂ : Ty level scope} (h_dom : dom₁ = dom₂)
+    {cod₁ cod₂ : Ty level scope} (h_cod : cod₁ = cod₂)
     (body₁ : Term (Γ.cons dom₁) cod₁.weaken)
     (body₂ : Term (Γ.cons dom₂) cod₂.weaken)
     (h_body : HEq body₁ body₂) :
@@ -1421,9 +1413,9 @@ theorem Term.lam_HEq_congr
 
 /-- HEq congruence for `Term.lamPi`. -/
 theorem Term.lamPi_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {dom₁ dom₂ : Ty scope} (h_dom : dom₁ = dom₂)
-    {cod₁ cod₂ : Ty (scope + 1)} (h_cod : cod₁ = cod₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {dom₁ dom₂ : Ty level scope} (h_dom : dom₁ = dom₂)
+    {cod₁ cod₂ : Ty level (scope + 1)} (h_cod : cod₁ = cod₂)
     (body₁ : Term (Γ.cons dom₁) cod₁)
     (body₂ : Term (Γ.cons dom₂) cod₂)
     (h_body : HEq body₁ body₂) :
@@ -1435,9 +1427,9 @@ theorem Term.lamPi_HEq_congr
 
 /-- HEq congruence for `Term.appPi`. -/
 theorem Term.appPi_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {dom₁ dom₂ : Ty scope} (h_dom : dom₁ = dom₂)
-    {cod₁ cod₂ : Ty (scope + 1)} (h_cod : cod₁ = cod₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {dom₁ dom₂ : Ty level scope} (h_dom : dom₁ = dom₂)
+    {cod₁ cod₂ : Ty level (scope + 1)} (h_cod : cod₁ = cod₂)
     (f₁ : Term Γ (Ty.piTy dom₁ cod₁))
     (f₂ : Term Γ (Ty.piTy dom₂ cod₂))
     (h_f : HEq f₁ f₂)
@@ -1451,9 +1443,9 @@ theorem Term.appPi_HEq_congr
 
 /-- HEq congruence for `Term.pair`. -/
 theorem Term.pair_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {first₁ first₂ : Ty scope} (h_first : first₁ = first₂)
-    {second₁ second₂ : Ty (scope + 1)} (h_second : second₁ = second₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {first₁ first₂ : Ty level scope} (h_first : first₁ = first₂)
+    {second₁ second₂ : Ty level (scope + 1)} (h_second : second₁ = second₂)
     (v₁ : Term Γ first₁) (v₂ : Term Γ first₂) (h_v : HEq v₁ v₂)
     (w₁ : Term Γ (second₁.subst0 first₁))
     (w₂ : Term Γ (second₂.subst0 first₂)) (h_w : HEq w₁ w₂) :
@@ -1466,9 +1458,9 @@ theorem Term.pair_HEq_congr
 
 /-- HEq congruence for `Term.fst`. -/
 theorem Term.fst_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {first₁ first₂ : Ty scope} (h_first : first₁ = first₂)
-    {second₁ second₂ : Ty (scope + 1)} (h_second : second₁ = second₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {first₁ first₂ : Ty level scope} (h_first : first₁ = first₂)
+    {second₁ second₂ : Ty level (scope + 1)} (h_second : second₁ = second₂)
     (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
     (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
     HEq (Term.fst p₁) (Term.fst p₂) := by
@@ -1479,9 +1471,9 @@ theorem Term.fst_HEq_congr
 
 /-- HEq congruence for `Term.snd`. -/
 theorem Term.snd_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {first₁ first₂ : Ty scope} (h_first : first₁ = first₂)
-    {second₁ second₂ : Ty (scope + 1)} (h_second : second₁ = second₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {first₁ first₂ : Ty level scope} (h_first : first₁ = first₂)
+    {second₁ second₂ : Ty level (scope + 1)} (h_second : second₁ = second₂)
     (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
     (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
     HEq (Term.snd p₁) (Term.snd p₂) := by
@@ -1496,9 +1488,9 @@ this allows the newType parameter AND the input term to differ
 across the HEq.  Three `cases` discharge the three propositional
 equalities; once unified, `rfl`. -/
 theorem Term.weaken_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {newType₁ newType₂ : Ty scope} (h_new : newType₁ = newType₂)
-    {T₁ T₂ : Ty scope} (h_T : T₁ = T₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {newType₁ newType₂ : Ty level scope} (h_new : newType₁ = newType₂)
+    {T₁ T₂ : Ty level scope} (h_T : T₁ = T₂)
     (t₁ : Term Γ T₁) (t₂ : Term Γ T₂) (h_t : HEq t₁ t₂) :
     HEq (Term.weaken newType₁ t₁) (Term.weaken newType₂ t₂) := by
   cases h_new
@@ -1508,8 +1500,8 @@ theorem Term.weaken_HEq_congr
 
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {result₁ result₂ : Ty scope} (h_result : result₁ = result₂)
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
     (s₁ s₂ : Term Γ Ty.bool) (h_s : s₁ = s₂)
     (t₁ : Term Γ result₁) (t₂ : Term Γ result₂) (h_t : HEq t₁ t₂)
     (e₁ : Term Γ result₁) (e₂ : Term Γ result₂) (h_e : HEq e₁ e₂) :
@@ -1528,7 +1520,7 @@ have substitution-independent types so reduce to `HEq.refl`. -/
 
 /-- Leaf HEq case of `Term.subst_id` for `var`. -/
 theorem Term.subst_id_HEq_var
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope} (i : Fin scope) :
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} (i : Fin scope) :
     HEq (Term.subst (TermSubst.identity Γ) (Term.var i))
         (Term.var (context := Γ) i) := by
   show HEq ((Ty.subst_id (varType Γ i)).symm ▸ Term.var i) (Term.var i)
@@ -1536,21 +1528,21 @@ theorem Term.subst_id_HEq_var
 
 /-- Leaf HEq case of `Term.subst_id` for `unit`. -/
 theorem Term.subst_id_HEq_unit
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
     HEq (Term.subst (TermSubst.identity Γ) (Term.unit (context := Γ)))
         (Term.unit (context := Γ)) :=
   HEq.refl _
 
 /-- Leaf HEq case of `Term.subst_id` for `boolTrue`. -/
 theorem Term.subst_id_HEq_boolTrue
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
     HEq (Term.subst (TermSubst.identity Γ) (Term.boolTrue (context := Γ)))
         (Term.boolTrue (context := Γ)) :=
   HEq.refl _
 
 /-- Leaf HEq case of `Term.subst_id` for `boolFalse`. -/
 theorem Term.subst_id_HEq_boolFalse
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
     HEq (Term.subst (TermSubst.identity Γ) (Term.boolFalse (context := Γ)))
         (Term.boolFalse (context := Γ)) :=
   HEq.refl _
@@ -1565,8 +1557,8 @@ The cast-bearing cases (`appPi`, `pair`, `snd`) strip the outer
 
 /-- Recursive HEq case of `Term.subst_id` for `app`. -/
 theorem Term.subst_id_HEq_app
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {T₁ T₂ : Ty scope}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {T₁ T₂ : Ty level scope}
     (f : Term Γ (T₁.arrow T₂)) (a : Term Γ T₁)
     (ih_f : HEq (Term.subst (TermSubst.identity Γ) f) f)
     (ih_a : HEq (Term.subst (TermSubst.identity Γ) a) a) :
@@ -1580,8 +1572,8 @@ theorem Term.subst_id_HEq_app
 
 /-- Recursive HEq case of `Term.subst_id` for `fst`. -/
 theorem Term.subst_id_HEq_fst
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {first : Ty scope} {second : Ty (scope + 1)}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {first : Ty level scope} {second : Ty level (scope + 1)}
     (p : Term Γ (Ty.sigmaTy first second))
     (ih_p : HEq (Term.subst (TermSubst.identity Γ) p) p) :
     HEq (Term.subst (TermSubst.identity Γ) (Term.fst p))
@@ -1595,7 +1587,7 @@ theorem Term.subst_id_HEq_fst
 
 /-- Recursive HEq case of `Term.subst_id` for `boolElim`. -/
 theorem Term.subst_id_HEq_boolElim
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope} {result : Ty scope}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} {result : Ty level scope}
     (s : Term Γ Ty.bool) (t : Term Γ result) (e : Term Γ result)
     (ih_s : HEq (Term.subst (TermSubst.identity Γ) s) s)
     (ih_t : HEq (Term.subst (TermSubst.identity Γ) t) t)
@@ -1616,8 +1608,8 @@ theorem Term.subst_id_HEq_boolElim
 substituted result carries a `Ty.subst0_subst_commute` cast on
 the outside; `eqRec_heq` strips it before constructor congruence. -/
 theorem Term.subst_id_HEq_appPi
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {dom : Ty scope} {cod : Ty (scope + 1)}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {dom : Ty level scope} {cod : Ty level (scope + 1)}
     (f : Term Γ (Ty.piTy dom cod)) (a : Term Γ dom)
     (ih_f : HEq (Term.subst (TermSubst.identity Γ) f) f)
     (ih_a : HEq (Term.subst (TermSubst.identity Γ) a) a) :
@@ -1636,8 +1628,8 @@ theorem Term.subst_id_HEq_appPi
 
 /-- Recursive HEq case of `Term.subst_id` for `pair`. -/
 theorem Term.subst_id_HEq_pair
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {first : Ty scope} {second : Ty (scope + 1)}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {first : Ty level scope} {second : Ty level (scope + 1)}
     (v : Term Γ first) (w : Term Γ (second.subst0 first))
     (ih_v : HEq (Term.subst (TermSubst.identity Γ) v) v)
     (ih_w : HEq (Term.subst (TermSubst.identity Γ) w) w) :
@@ -1657,8 +1649,8 @@ theorem Term.subst_id_HEq_pair
 
 /-- Recursive HEq case of `Term.subst_id` for `snd`. -/
 theorem Term.subst_id_HEq_snd
-    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {first : Ty scope} {second : Ty (scope + 1)}
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {first : Ty level scope} {second : Ty level (scope + 1)}
     (p : Term Γ (Ty.sigmaTy first second))
     (ih_p : HEq (Term.subst (TermSubst.identity Γ) p) p) :
     HEq (Term.subst (TermSubst.identity Γ) (Term.snd p))
@@ -1680,13 +1672,13 @@ themselves (and whose underlying Substs are pointwise equal).  Used
 by the binder cases of `Term.subst_HEq_pointwise` to extend the
 hypothesis under each new binder. -/
 theorem TermSubst.lift_HEq_pointwise
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ₁ σ₂ : Subst scope scope'}
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ₁ σ₂ : Subst level scope scope'}
     (σt₁ : TermSubst Γ Δ σ₁) (σt₂ : TermSubst Γ Δ σ₂)
     (h_subst : Subst.equiv σ₁ σ₂)
     (h_pointwise : ∀ i, HEq (σt₁ i) (σt₂ i))
-    (newType : Ty scope) :
+    (newType : Ty level scope) :
     ∀ i, HEq (TermSubst.lift σt₁ newType i)
              (TermSubst.lift σt₂ newType i) := by
   -- Bridging fact: newType.subst σ₁ = newType.subst σ₂.
@@ -1733,14 +1725,14 @@ Substitution respects pointwise HEq of TermSubsts.  The `h_ctx :
 `TermSubst.lift σt_i dom` lands in `Δ.cons (dom.subst σ_i)` —
 same scope, different concrete contexts. -/
 theorem Term.subst_HEq_pointwise
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ₁ Δ₂ : Ctx m scope'}
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ₁ Δ₂ : Ctx m level scope'}
     (h_ctx : Δ₁ = Δ₂)
-    {σ₁ σ₂ : Subst scope scope'}
+    {σ₁ σ₂ : Subst level scope scope'}
     (σt₁ : TermSubst Γ Δ₁ σ₁) (σt₂ : TermSubst Γ Δ₂ σ₂)
     (h_subst : Subst.equiv σ₁ σ₂)
     (h_pointwise : ∀ i, HEq (σt₁ i) (σt₂ i)) :
-    {T : Ty scope} → (t : Term Γ T) →
+    {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.subst σt₁ t) (Term.subst σt₂ t)
   | _, .var i => h_pointwise i
   | _, .unit => by cases h_ctx; exact HEq.refl _
@@ -1858,8 +1850,8 @@ Full HEq form of subst-by-identity.  Structural induction; binder
 cases use `Term.subst_HEq_pointwise` to bridge
 `TermSubst.lift (TermSubst.identity Γ)` to
 `TermSubst.identity (Γ.cons _)` via `lift_identity_pointwise`. -/
-theorem Term.subst_id_HEq {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
-    {T : Ty scope} → (t : Term Γ T) →
+theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
+    {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.subst (TermSubst.identity Γ) t) t
   | _, .var i => Term.subst_id_HEq_var i
   | _, .unit => Term.subst_id_HEq_unit
@@ -1918,8 +1910,8 @@ theorem Term.subst_id_HEq {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
 Corollary of `Term.subst_id_HEq` + `eqRec_heq`. -/
-theorem Term.subst_id {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {T : Ty scope} (t : Term Γ T) :
+theorem Term.subst_id {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {T : Ty level scope} (t : Term Γ T) :
     (Ty.subst_id T) ▸ Term.subst (TermSubst.identity Γ) t = t :=
   eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.subst_id_HEq t))
 
@@ -1930,10 +1922,10 @@ substitution's structural recursion can fire on the bare
 constructor.  Bridge for `lift_compose_pointwise_zero` and the
 cast-bearing closed-context commute cases. -/
 theorem Term.subst_HEq_cast_input
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    {T₁ T₂ : Ty scope} (h : T₁ = T₂) (t : Term Γ T₁) :
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ : Subst level scope scope'} (σt : TermSubst Γ Δ σ)
+    {T₁ T₂ : Ty level scope} (h : T₁ = T₂) (t : Term Γ T₁) :
     HEq (Term.subst σt (h ▸ t)) (Term.subst σt t) := by
   cases h
   rfl
@@ -1945,11 +1937,11 @@ composing the two lifts on the freshly-bound variable.  The position-
 `k+1` case requires `Term.subst_weaken_commute_HEq` (binder cases
 deferred) and is shipped as a separate companion. -/
 theorem TermSubst.lift_compose_pointwise_zero
-    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
-    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
+    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
     (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
-    (newType : Ty scope₁) :
+    (newType : Ty level scope₁) :
     HEq
       (TermSubst.lift (TermSubst.compose σt₁ σt₂) newType
         ⟨0, Nat.zero_lt_succ _⟩)
@@ -2005,13 +1997,13 @@ accommodates the binder cases, where `TermRenaming.lift ρt_i dom`
 lands in `Δ_i.cons (dom.rename ρ_i)` — different cons-extensions
 across i = 1, 2. -/
 theorem Term.rename_HEq_pointwise
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ₁ Δ₂ : Ctx m scope'}
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ₁ Δ₂ : Ctx m level scope'}
     (h_ctx : Δ₁ = Δ₂)
     {ρ₁ ρ₂ : Renaming scope scope'}
     (ρt₁ : TermRenaming Γ Δ₁ ρ₁) (ρt₂ : TermRenaming Γ Δ₂ ρ₂)
     (h_ρ : Renaming.equiv ρ₁ ρ₂) :
-    {T : Ty scope} → (t : Term Γ T) →
+    {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.rename ρt₁ t) (Term.rename ρt₂ t)
   | _, .var i => by
     cases h_ctx
@@ -2159,10 +2151,10 @@ without needing a separate `lift_identity_pointwise` stepping stone
 HEq on the witness is non-trivial).
 
 Closed-context cases use the constructor HEq congruences plus
-`Ty.rename_identity` at each Ty index.  Cast-bearing cases
+`Ty.rename_identity` at each Ty level index.  Cast-bearing cases
 (appPi/pair/snd) strip outer casts via `eqRec_heq`. -/
-theorem Term.rename_id_HEq {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
-    {T : Ty scope} → (t : Term Γ T) →
+theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
+    {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.rename (TermRenaming.identity Γ) t) t
   | _, .var i => by
     -- LHS: (TermRenaming.identity Γ i) ▸ Term.var (Renaming.identity i)
@@ -2283,8 +2275,8 @@ theorem Term.rename_id_HEq {m : Mode} {scope : Nat} {Γ : Ctx m scope} :
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
 `Term.subst_id_HEq`. -/
-theorem Term.rename_id {m : Mode} {scope : Nat} {Γ : Ctx m scope}
-    {T : Ty scope} (t : Term Γ T) :
+theorem Term.rename_id {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {T : Ty level scope} (t : Term Γ T) :
     (Ty.rename_identity T) ▸ Term.rename (TermRenaming.identity Γ) t = t :=
   eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.rename_id_HEq t))
 
@@ -2293,8 +2285,8 @@ theorem Term.rename_id {m : Mode} {scope : Nat} {Γ : Ctx m scope}
 /-- Composition of term-level renamings.  Position-equality witness
 chains the two `TermRenaming`s through `Ty.rename_compose`. -/
 theorem TermRenaming.compose
-    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
     {ρ₁ : Renaming scope₁ scope₂} {ρ₂ : Renaming scope₂ scope₃}
     (ρt₁ : TermRenaming Γ₁ Γ₂ ρ₁) (ρt₂ : TermRenaming Γ₂ Γ₃ ρ₂) :
     TermRenaming Γ₁ Γ₃ (Renaming.compose ρ₁ ρ₂) := fun i => by
@@ -2308,10 +2300,10 @@ theorem TermRenaming.compose
 out to an HEq.  Mirror of `Term.subst_HEq_cast_input` and
 `Term.weaken_HEq_cast_input`. -/
 theorem Term.rename_HEq_cast_input
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
     {ρ : Renaming scope scope'} (ρt : TermRenaming Γ Δ ρ)
-    {T₁ T₂ : Ty scope} (h : T₁ = T₂) (t : Term Γ T₁) :
+    {T₁ T₂ : Ty level scope} (h : T₁ = T₂) (t : Term Γ T₁) :
     HEq (Term.rename ρt (h ▸ t)) (Term.rename ρt t) := by
   cases h
   rfl
@@ -2328,11 +2320,11 @@ Binder cases bridge `TermRenaming.lift (compose ρt₁ ρt₂) dom` against
 `compose (lift ρt₁ dom) (lift ρt₂ (dom.rename ρ₁))` via
 `Term.rename_HEq_pointwise` over `Renaming.lift_compose_equiv`. -/
 theorem Term.rename_compose_HEq
-    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
     {ρ₁ : Renaming scope₁ scope₂} {ρ₂ : Renaming scope₂ scope₃}
     (ρt₁ : TermRenaming Γ₁ Γ₂ ρ₁) (ρt₂ : TermRenaming Γ₂ Γ₃ ρ₂) :
-    {T : Ty scope₁} → (t : Term Γ₁ T) →
+    {T : Ty level scope₁} → (t : Term Γ₁ T) →
       HEq (Term.rename ρt₂ (Term.rename ρt₁ t))
           (Term.rename (TermRenaming.compose ρt₁ ρt₂) t)
   | _, .var i => by
@@ -2504,10 +2496,10 @@ underlying renamings (`compose Renaming.weaken ρ.lift` and `compose
 modulo Fin proof-irrelevance.  The bridge is `Term.rename_HEq_pointwise`
 (v1.36) over the trivial pointwise witness. -/
 theorem Term.rename_weaken_commute_HEq
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
     {ρ : Renaming scope scope'} (ρt : TermRenaming Γ Δ ρ)
-    (newType : Ty scope) {T : Ty scope} (t : Term Γ T) :
+    (newType : Ty level scope) {T : Ty level scope} (t : Term Γ T) :
     HEq (Term.rename (TermRenaming.lift ρt newType) (Term.weaken newType t))
         (Term.weaken (newType.rename ρ) (Term.rename ρt t)) := by
   -- Unfold both Term.weaken applications into Term.rename.
@@ -2552,9 +2544,9 @@ the term-level analogue of `Subst.lift_renameAfter_commute`. -/
 context.  At each position, applies σt then renames the result via
 ρt; the result type is bridged via `Ty.subst_rename_commute`. -/
 def TermSubst.renameAfter
-    {m : Mode} {scope scope_m scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope_m} {Δ' : Ctx m scope'}
-    {σ : Subst scope scope_m} {ρ : Renaming scope_m scope'}
+    {m : Mode} {level scope scope_m scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope_m} {Δ' : Ctx m level scope'}
+    {σ : Subst level scope scope_m} {ρ : Renaming scope_m scope'}
     (σt : TermSubst Γ Δ σ) (ρt : TermRenaming Δ Δ' ρ) :
     TermSubst Γ Δ' (Subst.renameAfter σ ρ) := fun i =>
   Ty.subst_rename_commute (varType Γ i) σ ρ ▸ Term.rename ρt (σt i)
@@ -2568,11 +2560,11 @@ with propositionally-distinct `newType` and inner type — the v1.38
 `rename_weaken_commute_HEq` collapses LHS to weaken-of-rename, then
 `Term.weaken_HEq_congr` bridges the two `Term.weaken` shapes. -/
 theorem TermSubst.lift_renameAfter_pointwise
-    {m : Mode} {scope scope_m scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope_m} {Δ' : Ctx m scope'}
-    {σ : Subst scope scope_m} {ρ : Renaming scope_m scope'}
+    {m : Mode} {level scope scope_m scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope_m} {Δ' : Ctx m level scope'}
+    {σ : Subst level scope scope_m} {ρ : Renaming scope_m scope'}
     (σt : TermSubst Γ Δ σ) (ρt : TermRenaming Δ Δ' ρ)
-    (newType : Ty scope) :
+    (newType : Ty level scope) :
     ∀ (i : Fin (scope + 1)),
       HEq
         (TermSubst.renameAfter (σt.lift newType)
@@ -2667,9 +2659,9 @@ At each position i, looks up σt' at the renamed position ρ i; the
 result type is bridged via the TermRenaming's witness lifted by
 `congrArg (·.subst σ')` and chained with `Ty.rename_subst_commute`. -/
 def TermSubst.precompose
-    {m : Mode} {scope scope_m scope' : Nat}
-    {Γ : Ctx m scope} {Γ' : Ctx m scope_m} {Δ : Ctx m scope'}
-    {ρ : Renaming scope scope_m} {σ' : Subst scope_m scope'}
+    {m : Mode} {level scope scope_m scope' : Nat}
+    {Γ : Ctx m level scope} {Γ' : Ctx m level scope_m} {Δ : Ctx m level scope'}
+    {ρ : Renaming scope scope_m} {σ' : Subst level scope_m scope'}
     (ρt : TermRenaming Γ Γ' ρ) (σt' : TermSubst Γ' Δ σ') :
     TermSubst Γ Δ (Subst.precompose ρ σ') := fun i =>
   let h_witness : (varType Γ' (ρ i)).subst σ'
@@ -2686,11 +2678,11 @@ distinct cons-extended targets bridged by `Ty.rename_subst_commute
 newType ρ σ'`.  Position `k + 1` reduces both sides to `Term.weaken`
 forms that `Term.weaken_HEq_congr` collapses. -/
 theorem TermSubst.lift_precompose_pointwise
-    {m : Mode} {scope scope_m scope' : Nat}
-    {Γ : Ctx m scope} {Γ' : Ctx m scope_m} {Δ : Ctx m scope'}
-    {ρ : Renaming scope scope_m} {σ' : Subst scope_m scope'}
+    {m : Mode} {level scope scope_m scope' : Nat}
+    {Γ : Ctx m level scope} {Γ' : Ctx m level scope_m} {Δ : Ctx m level scope'}
+    {ρ : Renaming scope scope_m} {σ' : Subst level scope_m scope'}
     (ρt : TermRenaming Γ Γ' ρ) (σt' : TermSubst Γ' Δ σ')
-    (newType : Ty scope) :
+    (newType : Ty level scope) :
     ∀ (i : Fin (scope + 1)),
       HEq
         (TermSubst.precompose (ρt.lift newType)
@@ -2752,7 +2744,7 @@ Term-level analogue of `Ty.subst_rename_commute`:
 
 12-case structural induction on the term.  Closed-context cases
 combine the constructor HEq congruence (v1.21) with
-`Ty.subst_rename_commute` at each Ty index.  Cast-bearing cases
+`Ty.subst_rename_commute` at each Ty level index.  Cast-bearing cases
 (appPi/pair/snd) peel outer casts via `eqRec_heq` and push inner
 casts through `Term.{rename,subst}_HEq_cast_input` (v1.26 / v1.37).
 Binder cases (lam/lamPi) use the IH at lifted TermSubst/TermRenaming,
@@ -2760,11 +2752,11 @@ then bridge `renameAfter (lift σt dom) (lift ρt (dom.subst σ))`
 against `lift (renameAfter σt ρt) dom` via `Term.subst_HEq_pointwise`
 (v1.24) over `TermSubst.lift_renameAfter_pointwise` (v1.39). -/
 theorem Term.subst_rename_commute_HEq
-    {m : Mode} {scope scope_m scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope_m} {Δ' : Ctx m scope'}
-    {σ : Subst scope scope_m} {ρ : Renaming scope_m scope'}
+    {m : Mode} {level scope scope_m scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope_m} {Δ' : Ctx m level scope'}
+    {σ : Subst level scope scope_m} {ρ : Renaming scope_m scope'}
     (σt : TermSubst Γ Δ σ) (ρt : TermRenaming Δ Δ' ρ) :
-    {T : Ty scope} → (t : Term Γ T) →
+    {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.rename ρt (Term.subst σt t))
           (Term.subst (TermSubst.renameAfter σt ρt) t)
   | _, .var i => by
@@ -2932,11 +2924,11 @@ for the cast-bearing cases, and `Term.subst_HEq_pointwise` over
 `TermSubst.lift_precompose_pointwise` (v1.41) for the binder
 cases. -/
 theorem Term.rename_subst_commute_HEq
-    {m : Mode} {scope scope_m scope' : Nat}
-    {Γ : Ctx m scope} {Γ' : Ctx m scope_m} {Δ : Ctx m scope'}
-    {ρ : Renaming scope scope_m} {σ' : Subst scope_m scope'}
+    {m : Mode} {level scope scope_m scope' : Nat}
+    {Γ : Ctx m level scope} {Γ' : Ctx m level scope_m} {Δ : Ctx m level scope'}
+    {ρ : Renaming scope scope_m} {σ' : Subst level scope_m scope'}
     (ρt : TermRenaming Γ Γ' ρ) (σt' : TermSubst Γ' Δ σ') :
-    {T : Ty scope} → (t : Term Γ T) →
+    {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.subst σt' (Term.rename ρt t))
           (Term.subst (TermSubst.precompose ρt σt') t)
   | _, .var i => by
@@ -2951,7 +2943,7 @@ theorem Term.rename_subst_commute_HEq
     -- congrArg-on-lambda before checking the ▸ type alignment.
     have h_witness : (varType Γ' (ρ i)).subst σ'
                        = ((varType Γ i).rename ρ).subst σ' :=
-      congrArg (fun T : Ty scope_m => T.subst σ') (ρt i)
+      congrArg (fun T : Ty level scope_m => T.subst σ') (ρt i)
     have h_chain : (varType Γ' (ρ i)).subst σ'
                      = (varType Γ i).subst (Subst.precompose ρ σ') :=
       h_witness.trans
@@ -3113,10 +3105,10 @@ app,boolElim,fst,snd,pair,appPi}`); the binder cases (`lam`,
 `lamPi`) that were missing in those layered theorems are now
 covered by the same corollary.  Mirrors v1.38 exactly. -/
 theorem Term.subst_weaken_commute_HEq
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
-    (newType : Ty scope) {T : Ty scope} (t : Term Γ T) :
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ : Subst level scope scope'} (σt : TermSubst Γ Δ σ)
+    (newType : Ty level scope) {T : Ty level scope} (t : Term Γ T) :
     HEq (Term.subst (σt.lift newType) (Term.weaken newType t))
         (Term.weaken (newType.subst σ) (Term.subst σt t)) := by
   -- Unfold both Term.weaken applications into Term.rename.
@@ -3177,11 +3169,11 @@ forms differ only by `Ty.subst_compose newType σ₁ σ₂` on the
 `newType` and the per-position analogue on the inner type;
 `Term.weaken_HEq_congr` closes via `eqRec_heq`. -/
 theorem TermSubst.lift_compose_pointwise
-    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
-    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
+    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
     (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
-    (newType : Ty scope₁) :
+    (newType : Ty level scope₁) :
     ∀ (i : Fin (scope₁ + 1)),
       HEq
         (TermSubst.lift (TermSubst.compose σt₁ σt₂) newType i)
@@ -3234,7 +3226,7 @@ bridged by `Ty.subst_compose`).  HEq carries the difference.
 
   * Closed-context cases (var, unit/boolTrue/boolFalse, app, fst,
     boolElim) combine constructor HEq congruences with
-    `Ty.subst_compose` at each Ty index.
+    `Ty.subst_compose` at each Ty level index.
   * Cast-bearing cases (appPi/pair/snd) peel outer casts via
     `eqRec_heq` and push inner casts through
     `Term.subst_HEq_cast_input`.  The sigmaTy/piTy second-component
@@ -3249,11 +3241,11 @@ bridged by `Ty.subst_compose`).  HEq carries the difference.
 Mirrors v1.40 / v1.42 with subst on both sides instead of mixed
 subst+rename. -/
 theorem Term.subst_compose_HEq
-    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
-    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
+    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
     (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂) :
-    {T : Ty scope₁} → (t : Term Γ₁ T) →
+    {T : Ty level scope₁} → (t : Term Γ₁ T) →
       HEq (Term.subst σt₂ (Term.subst σt₁ t))
           (Term.subst (TermSubst.compose σt₁ σt₂) t)
   | _, .var i => by
@@ -3398,11 +3390,11 @@ theorem Term.subst_compose_HEq
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
 from `Term.subst_id_HEq`. -/
 theorem Term.subst_compose
-    {m : Mode} {scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
-    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
+    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
     (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
-    {T : Ty scope₁} (t : Term Γ₁ T) :
+    {T : Ty level scope₁} (t : Term Γ₁ T) :
     Term.subst σt₂ (Term.subst σt₁ t)
       = (Ty.subst_compose T σ₁ σ₂).symm
           ▸ Term.subst (TermSubst.compose σt₁ σt₂) t :=
@@ -3425,9 +3417,9 @@ pointwise unchanged.  At each position, LHS is
 through `Term.subst_HEq_cast_input` and the var arm of `Term.subst`
 collapses to `σt i`. -/
 theorem TermSubst.compose_identity_left_pointwise
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ) :
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ : Subst level scope scope'} (σt : TermSubst Γ Δ σ) :
     ∀ i, HEq (TermSubst.compose (TermSubst.identity Γ) σt i) (σt i) := by
   intro i
   -- Strip outer cast from TermSubst.compose's definition.
@@ -3444,9 +3436,9 @@ theorem TermSubst.compose_identity_left_pointwise
 pointwise unchanged.  At each position, the inner `Term.subst (identity
 Δ) (σt i)` collapses via `Term.subst_id_HEq` (v1.25). -/
 theorem TermSubst.compose_identity_right_pointwise
-    {m : Mode} {scope scope' : Nat}
-    {Γ : Ctx m scope} {Δ : Ctx m scope'}
-    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ) :
+    {m : Mode} {level scope scope' : Nat}
+    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
+    {σ : Subst level scope scope'} (σt : TermSubst Γ Δ σ) :
     ∀ i, HEq (TermSubst.compose σt (TermSubst.identity Δ) i) (σt i) := by
   intro i
   apply HEq.trans (eqRec_heq _ _)
@@ -3459,12 +3451,12 @@ LHS naked is `Term.subst (compose σt₂ σt₃) (σt₁ i)`, which by
 expression after pushing its inner `Ty.subst_compose` cast through
 the outer `Term.subst σt₃` via `Term.subst_HEq_cast_input`. -/
 theorem TermSubst.compose_assoc_pointwise
-    {m : Mode} {scope₁ scope₂ scope₃ scope₄ : Nat}
-    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂}
-    {Γ₃ : Ctx m scope₃} {Γ₄ : Ctx m scope₄}
-    {σ₁ : Subst scope₁ scope₂}
-    {σ₂ : Subst scope₂ scope₃}
-    {σ₃ : Subst scope₃ scope₄}
+    {m : Mode} {level scope₁ scope₂ scope₃ scope₄ : Nat}
+    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂}
+    {Γ₃ : Ctx m level scope₃} {Γ₄ : Ctx m level scope₄}
+    {σ₁ : Subst level scope₁ scope₂}
+    {σ₂ : Subst level scope₂ scope₃}
+    {σ₃ : Subst level scope₃ scope₄}
     (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
     (σt₃ : TermSubst Γ₃ Γ₄ σ₃) :
     ∀ i, HEq
@@ -3498,12 +3490,12 @@ preservation theorem needed.  Covers congruence, β (`betaApp`,
 
 /-- Single-step reduction between terms of the same type. -/
 inductive Step :
-    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
-    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {T : Ty level scope} → Term ctx T → Term ctx T → Prop
   /-- Step inside the function position of a non-dependent application. -/
   | appLeft  :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         {functionTerm functionTerm' :
           Term ctx (.arrow domainType codomainType)}
         {argumentTerm : Term ctx domainType},
@@ -3512,8 +3504,8 @@ inductive Step :
            (Term.app functionTerm' argumentTerm)
   /-- Step inside the argument position of a non-dependent application. -/
   | appRight :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         {functionTerm : Term ctx (.arrow domainType codomainType)}
         {argumentTerm argumentTerm' : Term ctx domainType},
       Step argumentTerm argumentTerm' →
@@ -3521,16 +3513,16 @@ inductive Step :
            (Term.app functionTerm argumentTerm')
   /-- Step inside the body of a non-dependent λ-abstraction. -/
   | lamBody  :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         {body body' : Term (ctx.cons domainType) codomainType.weaken},
       Step body body' →
       Step (Term.lam (codomainType := codomainType) body)
            (Term.lam (codomainType := codomainType) body')
   /-- Step inside the function position of a dependent application. -/
   | appPiLeft :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {functionTerm functionTerm' :
           Term ctx (.piTy domainType codomainType)}
         {argumentTerm : Term ctx domainType},
@@ -3539,8 +3531,8 @@ inductive Step :
            (Term.appPi functionTerm' argumentTerm)
   /-- Step inside the argument position of a dependent application. -/
   | appPiRight :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {functionTerm : Term ctx (.piTy domainType codomainType)}
         {argumentTerm argumentTerm' : Term ctx domainType},
       Step argumentTerm argumentTerm' →
@@ -3548,16 +3540,16 @@ inductive Step :
            (Term.appPi functionTerm argumentTerm')
   /-- Step inside the body of a dependent λ-abstraction. -/
   | lamPiBody :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {body body' : Term (ctx.cons domainType) codomainType},
       Step body body' →
       Step (Term.lamPi (domainType := domainType) body)
            (Term.lamPi (domainType := domainType) body')
   /-- Step inside the first component of a pair. -/
   | pairLeft :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {firstVal firstVal' : Term ctx firstType}
         {secondVal : Term ctx (secondType.subst0 firstType)},
       Step firstVal firstVal' →
@@ -3565,8 +3557,8 @@ inductive Step :
            (Term.pair (secondType := secondType) firstVal' secondVal)
   /-- Step inside the second component of a pair. -/
   | pairRight :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {firstVal : Term ctx firstType}
         {secondVal secondVal' : Term ctx (secondType.subst0 firstType)},
       Step secondVal secondVal' →
@@ -3574,15 +3566,15 @@ inductive Step :
            (Term.pair firstVal secondVal')
   /-- Step inside the argument of a first projection. -/
   | fstCong :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
       Step pairTerm pairTerm' →
       Step (Term.fst pairTerm) (Term.fst pairTerm')
   /-- Step inside the argument of a second projection. -/
   | sndCong :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
       Step pairTerm pairTerm' →
       Step (Term.snd pairTerm) (Term.snd pairTerm')
@@ -3593,8 +3585,8 @@ inductive Step :
   `codomainType.weaken.subst0 _` to `codomainType` per
   `Ty.weaken_subst_singleton`.  We thread the cast through `▸`. -/
   | betaApp :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         (body : Term (ctx.cons domainType) codomainType.weaken)
         (arg : Term ctx domainType),
       Step (Term.app (Term.lam (codomainType := codomainType) body) arg)
@@ -3605,16 +3597,16 @@ inductive Step :
   No cast needed: `body.subst0 arg : Term ctx (codomainType.subst0
   domainType)` matches `Term.appPi`'s declared result type exactly. -/
   | betaAppPi :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         (body : Term (ctx.cons domainType) codomainType)
         (arg : Term ctx domainType),
       Step (Term.appPi (Term.lamPi (domainType := domainType) body) arg)
            (Term.subst0 body arg)
   /-- **Σ first projection**: `fst (pair a b) ⟶ a`. -/
   | betaFstPair :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (firstVal : Term ctx firstType)
         (secondVal : Term ctx (secondType.subst0 firstType)),
       Step (Term.fst
@@ -3626,8 +3618,8 @@ inductive Step :
   declared result and `secondVal`'s declared type — so no cast is
   needed. -/
   | betaSndPair :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (firstVal : Term ctx firstType)
         (secondVal : Term ctx (secondType.subst0 firstType)),
       Step (Term.snd
@@ -3641,8 +3633,8 @@ inductive Step :
   immediate: `Term.weaken` precludes any use of the bound variable in
   `f`, so contracting cannot lose information. -/
   | etaArrow :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         (f : Term ctx (Ty.arrow domainType codomainType)),
       Step (Term.lam (codomainType := codomainType)
               (Term.app (Term.weaken domainType f)
@@ -3653,8 +3645,8 @@ inductive Step :
   its projections collapses to the original pair value.  The result
   type matches because both sides have type `Term ctx (sigmaTy A B)`. -/
   | etaSigma :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (p : Term ctx (Ty.sigmaTy firstType secondType)),
       Step (Term.pair (firstType := firstType)
                        (secondType := secondType)
@@ -3664,8 +3656,8 @@ inductive Step :
   with the two ι-rules below, completes the boolean-evaluation
   story.  v1.14+. -/
   | boolElimScrutinee :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         {scrutinee scrutinee' : Term ctx Ty.bool}
         {thenBr elseBr : Term ctx resultType},
       Step scrutinee scrutinee' →
@@ -3673,8 +3665,8 @@ inductive Step :
            (Term.boolElim scrutinee' thenBr elseBr)
   /-- Step inside the then-branch position of a `boolElim`. -/
   | boolElimThen :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         {scrutinee : Term ctx Ty.bool}
         {thenBr thenBr' : Term ctx resultType}
         {elseBr : Term ctx resultType},
@@ -3683,8 +3675,8 @@ inductive Step :
            (Term.boolElim scrutinee thenBr' elseBr)
   /-- Step inside the else-branch position of a `boolElim`. -/
   | boolElimElse :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         {scrutinee : Term ctx Ty.bool}
         {thenBr : Term ctx resultType}
         {elseBr elseBr' : Term ctx resultType},
@@ -3694,31 +3686,31 @@ inductive Step :
   /-- **ι-reduction for boolElim on `true`**: `boolElim true t e ⟶ t`.
   No cast: both sides have the same `resultType`.  v1.14+. -/
   | iotaBoolElimTrue :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         (thenBr elseBr : Term ctx resultType),
       Step (Term.boolElim Term.boolTrue thenBr elseBr) thenBr
   /-- **ι-reduction for boolElim on `false`**: `boolElim false t e ⟶ e`.
   No cast: both sides have the same `resultType`.  v1.14+. -/
   | iotaBoolElimFalse :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         (thenBr elseBr : Term ctx resultType),
       Step (Term.boolElim Term.boolFalse thenBr elseBr) elseBr
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
 inductive StepStar :
-    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
-    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {T : Ty level scope} → Term ctx T → Term ctx T → Prop
   /-- Zero-step: a term reduces to itself. -/
   | refl :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         (t : Term ctx T),
       StepStar t t
   /-- Prepend a single step to an existing multi-step path. -/
   | step :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         {t₁ t₂ t₃ : Term ctx T},
       Step t₁ t₂ → StepStar t₂ t₃ → StepStar t₁ t₃
 
@@ -3731,7 +3723,7 @@ signatures alone.  No inductive subject-reduction theorem to state
 
 /-- Single steps lift to multi-step. -/
 theorem Step.toStar
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ : Term ctx T} (h : Step t₁ t₂) : StepStar t₁ t₂ :=
   StepStar.step h (StepStar.refl t₂)
 
@@ -3740,7 +3732,7 @@ makes `StepStar` an equivalence-relation-like object and is
 load-bearing for the eventual conversion algorithm — in particular
 for showing common-reducts when comparing terms. -/
 theorem StepStar.trans
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ t₃ : Term ctx T} :
     StepStar t₁ t₂ → StepStar t₂ t₃ → StepStar t₁ t₃
   | .refl _, h         => h
@@ -3752,8 +3744,8 @@ Multi-step threading through each constructor.  Per-position and
 combined forms; induction on `StepStar` with `refl`/`step` arms. -/
 
 /-- Multi-step reduction threads through the function position of `Term.app`. -/
-theorem StepStar.app_cong_left {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem StepStar.app_cong_left {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
     (a : Term ctx domainType) :
     StepStar f₁ f₂ → StepStar (Term.app f₁ a) (Term.app f₂ a)
@@ -3762,8 +3754,8 @@ theorem StepStar.app_cong_left {mode scope} {ctx : Ctx mode scope}
       StepStar.step (Step.appLeft s) (StepStar.app_cong_left a rest)
 
 /-- Multi-step reduction threads through the argument position of `Term.app`. -/
-theorem StepStar.app_cong_right {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem StepStar.app_cong_right {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     (f : Term ctx (Ty.arrow domainType codomainType))
     {a₁ a₂ : Term ctx domainType} :
     StepStar a₁ a₂ → StepStar (Term.app f a₁) (Term.app f a₂)
@@ -3772,8 +3764,8 @@ theorem StepStar.app_cong_right {mode scope} {ctx : Ctx mode scope}
       StepStar.step (Step.appRight s) (StepStar.app_cong_right f rest)
 
 /-- Multi-step reduction threads through both positions of `Term.app`. -/
-theorem StepStar.app_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem StepStar.app_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
     {a₁ a₂ : Term ctx domainType}
     (h_f : StepStar f₁ f₂) (h_a : StepStar a₁ a₂) :
@@ -3782,8 +3774,8 @@ theorem StepStar.app_cong {mode scope} {ctx : Ctx mode scope}
                  (StepStar.app_cong_right f₂ h_a)
 
 /-- Multi-step reduction threads through the body of `Term.lam`. -/
-theorem StepStar.lam_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem StepStar.lam_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     {body₁ body₂ : Term (ctx.cons domainType) codomainType.weaken} :
     StepStar body₁ body₂ →
     StepStar (Term.lam (codomainType := codomainType) body₁)
@@ -3793,8 +3785,8 @@ theorem StepStar.lam_cong {mode scope} {ctx : Ctx mode scope}
       StepStar.step (Step.lamBody s) (StepStar.lam_cong rest)
 
 /-- Multi-step reduction threads through the body of `Term.lamPi`. -/
-theorem StepStar.lamPi_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem StepStar.lamPi_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {body₁ body₂ : Term (ctx.cons domainType) codomainType} :
     StepStar body₁ body₂ →
     StepStar (Term.lamPi (domainType := domainType) body₁)
@@ -3804,8 +3796,8 @@ theorem StepStar.lamPi_cong {mode scope} {ctx : Ctx mode scope}
       StepStar.step (Step.lamPiBody s) (StepStar.lamPi_cong rest)
 
 /-- Multi-step reduction threads through the function position of `Term.appPi`. -/
-theorem StepStar.appPi_cong_left {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem StepStar.appPi_cong_left {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     (a : Term ctx domainType) :
     StepStar f₁ f₂ → StepStar (Term.appPi f₁ a) (Term.appPi f₂ a)
@@ -3815,8 +3807,8 @@ theorem StepStar.appPi_cong_left {mode scope} {ctx : Ctx mode scope}
         (StepStar.appPi_cong_left a rest)
 
 /-- Multi-step reduction threads through the argument position of `Term.appPi`. -/
-theorem StepStar.appPi_cong_right {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem StepStar.appPi_cong_right {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     (f : Term ctx (Ty.piTy domainType codomainType))
     {a₁ a₂ : Term ctx domainType} :
     StepStar a₁ a₂ → StepStar (Term.appPi f a₁) (Term.appPi f a₂)
@@ -3826,8 +3818,8 @@ theorem StepStar.appPi_cong_right {mode scope} {ctx : Ctx mode scope}
         (StepStar.appPi_cong_right f rest)
 
 /-- Multi-step reduction threads through both positions of `Term.appPi`. -/
-theorem StepStar.appPi_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem StepStar.appPi_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     {a₁ a₂ : Term ctx domainType}
     (h_f : StepStar f₁ f₂) (h_a : StepStar a₁ a₂) :
@@ -3836,8 +3828,8 @@ theorem StepStar.appPi_cong {mode scope} {ctx : Ctx mode scope}
                  (StepStar.appPi_cong_right f₂ h_a)
 
 /-- Multi-step reduction threads through the first component of `Term.pair`. -/
-theorem StepStar.pair_cong_first {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem StepStar.pair_cong_first {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {firstVal₁ firstVal₂ : Term ctx firstType}
     (secondVal : Term ctx (secondType.subst0 firstType)) :
     StepStar firstVal₁ firstVal₂ →
@@ -3852,8 +3844,8 @@ theorem StepStar.pair_cong_first {mode scope} {ctx : Ctx mode scope}
         (StepStar.pair_cong_first secondVal rest)
 
 /-- Multi-step reduction threads through the second component of `Term.pair`. -/
-theorem StepStar.pair_cong_second {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem StepStar.pair_cong_second {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     (firstVal : Term ctx firstType)
     {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)} :
     StepStar secondVal₁ secondVal₂ →
@@ -3865,8 +3857,8 @@ theorem StepStar.pair_cong_second {mode scope} {ctx : Ctx mode scope}
         (StepStar.pair_cong_second firstVal rest)
 
 /-- Multi-step reduction threads through both components of `Term.pair`. -/
-theorem StepStar.pair_cong {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem StepStar.pair_cong {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {firstVal₁ firstVal₂ : Term ctx firstType}
     {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
     (h_first : StepStar firstVal₁ firstVal₂)
@@ -3877,8 +3869,8 @@ theorem StepStar.pair_cong {mode scope} {ctx : Ctx mode scope}
                  (StepStar.pair_cong_second firstVal₂ h_second)
 
 /-- Multi-step reduction threads through `Term.fst`. -/
-theorem StepStar.fst_cong {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem StepStar.fst_cong {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)} :
     StepStar p₁ p₂ → StepStar (Term.fst p₁) (Term.fst p₂)
   | .refl _      => StepStar.refl _
@@ -3886,8 +3878,8 @@ theorem StepStar.fst_cong {mode scope} {ctx : Ctx mode scope}
       StepStar.step (Step.fstCong s) (StepStar.fst_cong rest)
 
 /-- Multi-step reduction threads through `Term.snd`. -/
-theorem StepStar.snd_cong {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem StepStar.snd_cong {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)} :
     StepStar p₁ p₂ → StepStar (Term.snd p₁) (Term.snd p₂)
   | .refl _      => StepStar.refl _
@@ -3919,49 +3911,49 @@ Key properties (proved here / deferred):
 Subject preservation is structural: input and output share `{ctx} {T}`
 indices, so every `Step.par` proof witnesses same-typed reduction. -/
 inductive Step.par :
-    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
-    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {T : Ty level scope} → Term ctx T → Term ctx T → Prop
   /-- Reflexivity — any term parallel-reduces to itself in zero steps. -/
   | refl :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         (t : Term ctx T),
       Step.par t t
   /-- Parallel reduction inside a non-dependent application. -/
   | app :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         {f f' : Term ctx (.arrow domainType codomainType)}
         {a a' : Term ctx domainType},
       Step.par f f' → Step.par a a' →
       Step.par (Term.app f a) (Term.app f' a')
   /-- Parallel reduction inside a non-dependent λ-abstraction's body. -/
   | lam :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         {body body' : Term (ctx.cons domainType) codomainType.weaken},
       Step.par body body' →
       Step.par (Term.lam (codomainType := codomainType) body)
                (Term.lam (codomainType := codomainType) body')
   /-- Parallel reduction inside a dependent λ-abstraction's body. -/
   | lamPi :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {body body' : Term (ctx.cons domainType) codomainType},
       Step.par body body' →
       Step.par (Term.lamPi (domainType := domainType) body)
                (Term.lamPi (domainType := domainType) body')
   /-- Parallel reduction inside a dependent application. -/
   | appPi :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {f f' : Term ctx (.piTy domainType codomainType)}
         {a a' : Term ctx domainType},
       Step.par f f' → Step.par a a' →
       Step.par (Term.appPi f a) (Term.appPi f' a')
   /-- Parallel reduction inside a Σ-pair's two components. -/
   | pair :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {firstVal firstVal' : Term ctx firstType}
         {secondVal secondVal' : Term ctx (secondType.subst0 firstType)},
       Step.par firstVal firstVal' → Step.par secondVal secondVal' →
@@ -3969,20 +3961,20 @@ inductive Step.par :
                (Term.pair firstVal' secondVal')
   /-- Parallel reduction inside a first projection. -/
   | fst :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {p p' : Term ctx (.sigmaTy firstType secondType)},
       Step.par p p' → Step.par (Term.fst p) (Term.fst p')
   /-- Parallel reduction inside a second projection. -/
   | snd :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {p p' : Term ctx (.sigmaTy firstType secondType)},
       Step.par p p' → Step.par (Term.snd p) (Term.snd p')
   /-- Parallel reduction inside all three positions of a `boolElim`. -/
   | boolElim :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         {scrutinee scrutinee' : Term ctx Ty.bool}
         {thenBr thenBr' : Term ctx resultType}
         {elseBr elseBr' : Term ctx resultType},
@@ -3996,8 +3988,8 @@ inductive Step.par :
   substitution.  This is the rule that makes confluence work — both the
   body and the argument may reduce in lockstep with the contraction. -/
   | betaApp :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         {body body' : Term (ctx.cons domainType) codomainType.weaken}
         {arg arg' : Term ctx domainType},
       Step.par body body' → Step.par arg arg' →
@@ -4009,8 +4001,8 @@ inductive Step.par :
   needed because `body.subst0 arg : Term ctx (codomainType.subst0
   domainType)` matches `Term.appPi`'s declared result type exactly. -/
   | betaAppPi :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {body body' : Term (ctx.cons domainType) codomainType}
         {arg arg' : Term ctx domainType},
       Step.par body body' → Step.par arg arg' →
@@ -4019,8 +4011,8 @@ inductive Step.par :
   /-- **Parallel Σ first projection**: `fst (pair a b) → a'` with
   `Step.par a a'`. -/
   | betaFstPair :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {firstVal firstVal' : Term ctx firstType}
         (secondVal : Term ctx (secondType.subst0 firstType)),
       Step.par firstVal firstVal' →
@@ -4031,8 +4023,8 @@ inductive Step.par :
   /-- **Parallel Σ second projection**: `snd (pair a b) → b'` with
   `Step.par b b'`. -/
   | betaSndPair :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (firstVal : Term ctx firstType)
         {secondVal secondVal' : Term ctx (secondType.subst0 firstType)},
       Step.par secondVal secondVal' →
@@ -4043,8 +4035,8 @@ inductive Step.par :
   /-- **Parallel ι-reduction on `boolTrue`**: `boolElim true t e → t'`
   with `Step.par t t'`. -/
   | iotaBoolElimTrue :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         {thenBr thenBr' : Term ctx resultType}
         (elseBr : Term ctx resultType),
       Step.par thenBr thenBr' →
@@ -4052,8 +4044,8 @@ inductive Step.par :
   /-- **Parallel ι-reduction on `boolFalse`**: `boolElim false t e →
   e'` with `Step.par e e'`. -/
   | iotaBoolElimFalse :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {resultType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
         (thenBr : Term ctx resultType)
         {elseBr elseBr' : Term ctx resultType},
       Step.par elseBr elseBr' →
@@ -4064,8 +4056,8 @@ inductive Step.par :
   (the body must be specifically `f.weaken x`); confluence with βι
   composes through this rule by post-applying the η-contraction. -/
   | etaArrow :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {domainType codomainType : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
         (f : Term ctx (Ty.arrow domainType codomainType)),
       Step.par (Term.lam (codomainType := codomainType)
                   (Term.app (Term.weaken domainType f)
@@ -4073,8 +4065,8 @@ inductive Step.par :
                f
   /-- **η-contraction for Σ-pair** at the parallel level. -/
   | etaSigma :
-      ∀ {mode scope} {ctx : Ctx mode scope}
-        {firstType : Ty scope} {secondType : Ty (scope + 1)}
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (p : Term ctx (Ty.sigmaTy firstType secondType)),
       Step.par (Term.pair (firstType := firstType)
                            (secondType := secondType)
@@ -4085,7 +4077,7 @@ inductive Step.par :
 constructor has a corresponding `Step.par` form where the non-changing
 subterm reduces by reflexivity. -/
 theorem Step.toPar
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ : Term ctx T} : Step t₁ t₂ → Step.par t₁ t₂
   | .appLeft s            => .app (Step.toPar s) (.refl _)
   | .appRight s           => .app (.refl _) (Step.toPar s)
@@ -4119,26 +4111,26 @@ congruence rules below are derived theorems. -/
 terms of the same type.  Subject preservation is definitional (the
 relation's indices fix the type). -/
 inductive Conv :
-    {mode : Mode} → {scope : Nat} → {ctx : Ctx mode scope} →
-    {T : Ty scope} → Term ctx T → Term ctx T → Prop
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {T : Ty level scope} → Term ctx T → Term ctx T → Prop
   /-- Reflexivity: every term is convertible with itself. -/
   | refl :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         (t : Term ctx T),
       Conv t t
   /-- Symmetry: convertibility is bidirectional. -/
   | sym :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         {t₁ t₂ : Term ctx T},
       Conv t₁ t₂ → Conv t₂ t₁
   /-- Transitivity: convertibility chains. -/
   | trans :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         {t₁ t₂ t₃ : Term ctx T},
       Conv t₁ t₂ → Conv t₂ t₃ → Conv t₁ t₃
   /-- Embedding: every single-step reduction is a conversion. -/
   | fromStep :
-      ∀ {mode scope} {ctx : Ctx mode scope} {T : Ty scope}
+      ∀ {mode level scope} {ctx : Ctx mode level scope} {T : Ty level scope}
         {t₁ t₂ : Term ctx T},
       Step t₁ t₂ → Conv t₁ t₂
 
@@ -4147,7 +4139,7 @@ steps is a conversion in the forward direction.  Proven by induction
 on `StepStar`: the empty case is reflexivity, the step case composes
 `fromStep` with the inductive hypothesis via `trans`. -/
 theorem StepStar.toConv
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ : Term ctx T} :
     StepStar t₁ t₂ → Conv t₁ t₂
   | .refl t       => Conv.refl t
@@ -4157,7 +4149,7 @@ theorem StepStar.toConv
 intermediary.  Direct from `Conv.fromStep`; provided as a named
 theorem for symmetry with `Step.toStar`. -/
 theorem Step.toConv
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ : Term ctx T} (h : Step t₁ t₂) : Conv t₁ t₂ :=
   Conv.fromStep h
 
@@ -4166,8 +4158,8 @@ theorem Step.toConv
 Make `Conv` a full congruence relation over the term constructors. -/
 
 /-- Convertibility threads through the function position of `Term.app`. -/
-theorem Conv.app_cong_left {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem Conv.app_cong_left {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
     (a : Term ctx domainType) (h : Conv f₁ f₂) :
     Conv (Term.app f₁ a) (Term.app f₂ a) := by
@@ -4178,8 +4170,8 @@ theorem Conv.app_cong_left {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.appLeft s)
 
 /-- Convertibility threads through the argument position of `Term.app`. -/
-theorem Conv.app_cong_right {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem Conv.app_cong_right {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     (f : Term ctx (Ty.arrow domainType codomainType))
     {a₁ a₂ : Term ctx domainType} (h : Conv a₁ a₂) :
     Conv (Term.app f a₁) (Term.app f a₂) := by
@@ -4190,8 +4182,8 @@ theorem Conv.app_cong_right {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.appRight s)
 
 /-- Convertibility threads through both positions of `Term.app`. -/
-theorem Conv.app_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem Conv.app_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
     {a₁ a₂ : Term ctx domainType}
     (h_f : Conv f₁ f₂) (h_a : Conv a₁ a₂) :
@@ -4199,8 +4191,8 @@ theorem Conv.app_cong {mode scope} {ctx : Ctx mode scope}
   Conv.trans (Conv.app_cong_left a₁ h_f) (Conv.app_cong_right f₂ h_a)
 
 /-- Convertibility threads through the body of `Term.lam`. -/
-theorem Conv.lam_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem Conv.lam_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     {body₁ body₂ : Term (ctx.cons domainType) codomainType.weaken}
     (h : Conv body₁ body₂) :
     Conv (Term.lam (codomainType := codomainType) body₁)
@@ -4212,8 +4204,8 @@ theorem Conv.lam_cong {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.lamBody s)
 
 /-- Convertibility threads through the body of `Term.lamPi`. -/
-theorem Conv.lamPi_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem Conv.lamPi_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {body₁ body₂ : Term (ctx.cons domainType) codomainType}
     (h : Conv body₁ body₂) :
     Conv (Term.lamPi (domainType := domainType) body₁)
@@ -4225,8 +4217,8 @@ theorem Conv.lamPi_cong {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.lamPiBody s)
 
 /-- Convertibility threads through the function position of `Term.appPi`. -/
-theorem Conv.appPi_cong_left {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem Conv.appPi_cong_left {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     (a : Term ctx domainType) (h : Conv f₁ f₂) :
     Conv (Term.appPi f₁ a) (Term.appPi f₂ a) := by
@@ -4237,8 +4229,8 @@ theorem Conv.appPi_cong_left {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.appPiLeft s)
 
 /-- Convertibility threads through the argument position of `Term.appPi`. -/
-theorem Conv.appPi_cong_right {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem Conv.appPi_cong_right {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     (f : Term ctx (Ty.piTy domainType codomainType))
     {a₁ a₂ : Term ctx domainType} (h : Conv a₁ a₂) :
     Conv (Term.appPi f a₁) (Term.appPi f a₂) := by
@@ -4249,8 +4241,8 @@ theorem Conv.appPi_cong_right {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.appPiRight s)
 
 /-- Convertibility threads through both positions of `Term.appPi`. -/
-theorem Conv.appPi_cong {mode scope} {ctx : Ctx mode scope}
-    {domainType : Ty scope} {codomainType : Ty (scope + 1)}
+theorem Conv.appPi_cong {mode level scope} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     {a₁ a₂ : Term ctx domainType}
     (h_f : Conv f₁ f₂) (h_a : Conv a₁ a₂) :
@@ -4258,8 +4250,8 @@ theorem Conv.appPi_cong {mode scope} {ctx : Ctx mode scope}
   Conv.trans (Conv.appPi_cong_left a₁ h_f) (Conv.appPi_cong_right f₂ h_a)
 
 /-- Convertibility threads through the first component of `Term.pair`. -/
-theorem Conv.pair_cong_first {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem Conv.pair_cong_first {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {firstVal₁ firstVal₂ : Term ctx firstType}
     (secondVal : Term ctx (secondType.subst0 firstType))
     (h : Conv firstVal₁ firstVal₂) :
@@ -4274,8 +4266,8 @@ theorem Conv.pair_cong_first {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.pairLeft s)
 
 /-- Convertibility threads through the second component of `Term.pair`. -/
-theorem Conv.pair_cong_second {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem Conv.pair_cong_second {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     (firstVal : Term ctx firstType)
     {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
     (h : Conv secondVal₁ secondVal₂) :
@@ -4288,8 +4280,8 @@ theorem Conv.pair_cong_second {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.pairRight s)
 
 /-- Convertibility threads through both components of `Term.pair`. -/
-theorem Conv.pair_cong {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem Conv.pair_cong {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {firstVal₁ firstVal₂ : Term ctx firstType}
     {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
     (h_first : Conv firstVal₁ firstVal₂)
@@ -4300,8 +4292,8 @@ theorem Conv.pair_cong {mode scope} {ctx : Ctx mode scope}
              (Conv.pair_cong_second firstVal₂ h_second)
 
 /-- Convertibility threads through `Term.fst`. -/
-theorem Conv.fst_cong {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem Conv.fst_cong {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
     (h : Conv p₁ p₂) :
     Conv (Term.fst p₁) (Term.fst p₂) := by
@@ -4312,8 +4304,8 @@ theorem Conv.fst_cong {mode scope} {ctx : Ctx mode scope}
   | fromStep s          => exact Conv.fromStep (Step.fstCong s)
 
 /-- Convertibility threads through `Term.snd`. -/
-theorem Conv.snd_cong {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem Conv.snd_cong {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
     (h : Conv p₁ p₂) :
     Conv (Term.snd p₁) (Term.snd p₂) := by
@@ -4330,8 +4322,8 @@ wrappers state η as `f ≡ λx. f x`, the form conversion algorithms
 typically check. -/
 
 /-- **η-equivalence for arrow**: `f ≡ λx. f x`. -/
-theorem Term.eta_arrow_eq {mode scope} {ctx : Ctx mode scope}
-    {domainType codomainType : Ty scope}
+theorem Term.eta_arrow_eq {mode level scope} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
     (f : Term ctx (Ty.arrow domainType codomainType)) :
     Conv f
          (Term.lam (codomainType := codomainType)
@@ -4340,8 +4332,8 @@ theorem Term.eta_arrow_eq {mode scope} {ctx : Ctx mode scope}
   Conv.sym (Step.etaArrow f).toConv
 
 /-- **η-equivalence for Σ**: `p ≡ pair (fst p) (snd p)`. -/
-theorem Term.eta_sigma_eq {mode scope} {ctx : Ctx mode scope}
-    {firstType : Ty scope} {secondType : Ty (scope + 1)}
+theorem Term.eta_sigma_eq {mode level scope} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     (p : Term ctx (Ty.sigmaTy firstType secondType)) :
     Conv p
          (Term.pair (firstType := firstType)
@@ -4353,7 +4345,7 @@ theorem Term.eta_sigma_eq {mode scope} {ctx : Ctx mode scope}
 to `StepStar.step` (which prepends).  Both directions are useful for
 trace manipulation in conversion algorithms. -/
 theorem StepStar.append
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ t₃ : Term ctx T} :
     StepStar t₁ t₂ → Step t₂ t₃ → StepStar t₁ t₃ :=
   fun stars step =>
@@ -4366,8 +4358,8 @@ three positions, plus combined three-position congruences. -/
 
 /-- Multi-step reduction threads through `boolElim`'s scrutinee. -/
 theorem StepStar.boolElim_cong_scrutinee
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     {scrutinee₁ scrutinee₂ : Term ctx Ty.bool}
     (thenBr elseBr : Term ctx resultType) :
     StepStar scrutinee₁ scrutinee₂ →
@@ -4380,8 +4372,8 @@ theorem StepStar.boolElim_cong_scrutinee
 
 /-- Multi-step reduction threads through `boolElim`'s then-branch. -/
 theorem StepStar.boolElim_cong_then
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     (scrutinee : Term ctx Ty.bool)
     {thenBr₁ thenBr₂ : Term ctx resultType}
     (elseBr : Term ctx resultType) :
@@ -4395,8 +4387,8 @@ theorem StepStar.boolElim_cong_then
 
 /-- Multi-step reduction threads through `boolElim`'s else-branch. -/
 theorem StepStar.boolElim_cong_else
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     (scrutinee : Term ctx Ty.bool)
     (thenBr : Term ctx resultType)
     {elseBr₁ elseBr₂ : Term ctx resultType} :
@@ -4412,8 +4404,8 @@ theorem StepStar.boolElim_cong_else
 positions simultaneously.  Sequenced via three `trans` calls over
 the single-position congruences. -/
 theorem StepStar.boolElim_cong
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     {scrutinee₁ scrutinee₂ : Term ctx Ty.bool}
     {thenBr₁ thenBr₂ elseBr₁ elseBr₂ : Term ctx resultType}
     (h_scr : StepStar scrutinee₁ scrutinee₂)
@@ -4429,8 +4421,8 @@ theorem StepStar.boolElim_cong
 
 /-- Definitional equivalence threads through `boolElim`'s scrutinee. -/
 theorem Conv.boolElim_cong_scrutinee
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     {scrutinee₁ scrutinee₂ : Term ctx Ty.bool}
     (thenBr elseBr : Term ctx resultType) :
     Conv scrutinee₁ scrutinee₂ →
@@ -4447,8 +4439,8 @@ theorem Conv.boolElim_cong_scrutinee
 
 /-- Definitional equivalence threads through `boolElim`'s then-branch. -/
 theorem Conv.boolElim_cong_then
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     (scrutinee : Term ctx Ty.bool)
     {thenBr₁ thenBr₂ : Term ctx resultType}
     (elseBr : Term ctx resultType) :
@@ -4466,8 +4458,8 @@ theorem Conv.boolElim_cong_then
 
 /-- Definitional equivalence threads through `boolElim`'s else-branch. -/
 theorem Conv.boolElim_cong_else
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     (scrutinee : Term ctx Ty.bool)
     (thenBr : Term ctx resultType)
     {elseBr₁ elseBr₂ : Term ctx resultType} :
@@ -4486,8 +4478,8 @@ theorem Conv.boolElim_cong_else
 /-- Definitional equivalence threads through all three `boolElim`
 positions simultaneously. -/
 theorem Conv.boolElim_cong
-    {mode scope} {ctx : Ctx mode scope}
-    {resultType : Ty scope}
+    {mode level scope} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
     {scrutinee₁ scrutinee₂ : Term ctx Ty.bool}
     {thenBr₁ thenBr₂ elseBr₁ elseBr₂ : Term ctx resultType}
     (h_scr : Conv scrutinee₁ scrutinee₂)
@@ -4517,7 +4509,7 @@ Together with Step.toPar (v1.48), this establishes the bridge between
 StepStar and the reflexive-transitive closure of Step.par — the
 Tait–Martin-Löf reformulation that makes confluence tractable. -/
 theorem Step.par.toStar
-    {mode : Mode} {scope : Nat} {ctx : Ctx mode scope} {T : Ty scope}
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope} {T : Ty level scope}
     {t₁ t₂ : Term ctx T} : Step.par t₁ t₂ → StepStar t₁ t₂
   | .refl t                  => StepStar.refl t
   | .app par_f par_a         =>
