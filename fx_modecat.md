@@ -12,9 +12,12 @@ completed R0 task).  Bump the version and append to the Decision
 Ledger (§10) when the mode theory changes.
 
 **Companion documents**:
-  * `fx_design.md` — canonical language spec.
-  * `fx_reframing.md` — theoretical commitment; §3 is the
-    conceptual precursor to this document.
+  * `fx_design.md` — canonical language spec.  §6 (mode theory
+    and modalities), §27 (kernel canonicity / metatheory), §30
+    (kernel discipline) and Appendix H (axiom allowlist) are
+    the conceptual precursor to this document; they fold in
+    the content of the now-deleted `fx_reframing.md`
+    (commit 4a5697ca).
   * `fx_grammar.md` — surface syntax (LALR(1) EBNF).
   * `fx_lexer.md` — tokenization.
   * `leanx/FX/KernelMTT/*.lean` — MECHANIZED definitions.  When
@@ -43,15 +46,16 @@ synthesizability, wire-format contracts) reduces to data in
 this mode theory — either as a modality, a 2-cell, or a
 missing 2-cell.
 
-Per `fx_reframing.md §2.1`, FX's type system is an MTT instance
-parameterized at this mode theory.  Per `fx_reframing.md §2.4`,
-the mode theory is **fixed per reframe version**; extending it
-requires an RFC and a version bump.
+Per `fx_design.md §6` (which now folds in the reframing
+content from the deleted `fx_reframing.md`), FX's type system is
+an MTT instance parameterized at this mode theory.  The mode
+theory is **fixed per reframe version**; extending it requires
+an RFC and a version bump.
 
 ### 1.2 What this document does NOT specify
 
-  * The MTT kernel's type-formation rules (see `fx_reframing.md
-    §4` and future `fx_design.md` §6 revisions).
+  * The MTT kernel's type-formation rules (see `fx_design.md`
+    §6 / Appendix H).
   * User-level grade dimensions declared via `grade_dimension`
     (per `fx_design.md §6.6`) — these are peripheries that
     extend the modality namespace at user scope, but do NOT
@@ -76,14 +80,16 @@ theorems in `FX/KernelMTT/Coherence.lean`.
 trusted `FX/Kernel/**` path until the Phase R1 acceptance gate
 (task R1.14) closes.  After R5 migration (task R5.2), the MTT
 tree becomes TRUSTED and the legacy kernel deprecates for 12
-months before removal per `fx_reframing.md §8.7`.
+months before removal (per the kernel-discipline commitments
+in `fx_design.md` §30).
 
 ### 1.5 How to update this document
 
 Changes to the mode theory REQUIRE:
 
-  1. An RFC per `fx_reframing.md §9.2` (for changes to the
-     4-mode enum or the 20-modality count).
+  1. An RFC for changes to the 4-mode enum or the 20-modality
+     count (per the kernel-discipline / axiom-allowlist regime
+     in `fx_design.md` §30 / Appendix H).
   2. A decision-ledger row (§10 below) stating the change and
      its rationale.
   3. Synchronized edits in the corresponding Lean files, with
@@ -91,7 +97,7 @@ Changes to the mode theory REQUIRE:
   4. A reframe-version bump.
 
 Ledger rows append only; prior rows stay on record even when
-reversed (same discipline as `fx_reframing.md §0.1`).
+reversed.
 
 ---
 
@@ -129,7 +135,8 @@ Pinned in `Mode.lean` via `Mode.config : Mode → ModeConfig`.
 
 ### 2.2 Cross-references
 
-  * `fx_reframing.md §3.1` — conceptual introduction.
+  * `fx_design.md §6` — conceptual introduction (folds in the
+    former `fx_reframing.md §3.1`).
   * `fx_design.md §1.1` — the 21-dimension framing these modes
     partition.
   * `leanx/FX/KernelMTT/Mode.lean` — Lean definition + 10
@@ -146,7 +153,8 @@ Modalities are mode-indexed endo-functors: a modality at mode
 `M` takes a type at `M` and returns a type at `M` annotated
 with additional structure (a grade, a state, a validity
 predicate).  The 20 modalities partition into four `ModalityKind`
-categories per `fx_reframing.md §3.2`:
+categories (per `fx_design.md §6.3` / former
+`fx_reframing.md §3.2`):
 
   * **commutativeSemiring** — grade algebras closed under
     `+` and `*` (Atkey 2018 / Wood-Atkey 2022).
@@ -187,12 +195,14 @@ The Hardware mode inherits a strict subset of Software
 modalities — `clock`, `repr`, `precision`, `complexity` — in
 the canonical filter order (not in spec-prose order).  Pinned
 in `Mode.hardwareModalityNames` with a documented reorder
-explaining the drift from `fx_reframing.md §3.3`'s prose to
-the canonical filter order.
+explaining the drift from the spec prose (per `fx_design.md`
+§18.7 / former `fx_reframing.md §3.3`) to the canonical
+filter order.
 
 ### 3.3 Wire modalities (2)
 
-Wire-only modalities per `fx_reframing.md §3.4`:
+Wire-only modalities (per `fx_design.md §14` / former
+`fx_reframing.md §3.4`):
 
   * `protocol` — typestate for session-type encoding
     (Tier T).
@@ -217,9 +227,9 @@ admissibility lattice.
 
 ### 3.5 Cross-references
 
-  * `fx_reframing.md §3.2–§3.4` — per-mode modality catalog.
   * `fx_design.md §6.3` — the 21-dimension semantics each
-    modality lifts from.
+    modality lifts from (folds in the former
+    `fx_reframing.md §3.2–§3.4` per-mode modality catalog).
   * `leanx/FX/KernelMTT/Modality.lean` — Lean definition + 12
     pinning theorems including agreement with `Mode.lean`.
 
@@ -230,9 +240,10 @@ admissibility lattice.
 **Count**: 4 records, 6 directed edges.  **Lean authority**:
 `FX/KernelMTT/Adjunction.lean`.
 
-Per `fx_reframing.md §3.5`, four adjunction records organize
-the cross-mode semantics.  Two are PROPER (carry backward
-morphism + unit/counit 2-cells); two are one-way or partial.
+Per `fx_design.md §6` (formerly `fx_reframing.md §3.5`), four
+adjunction records organize the cross-mode semantics.  Two are
+PROPER (carry backward morphism + unit/counit 2-cells); two are
+one-way or partial.
 
 | §    | Record               | Left      | Right     | Forward     | Backward  | Proper |
 | ---- | -------------------- | --------- | --------- | ----------- | --------- | ------ |
@@ -243,7 +254,8 @@ morphism + unit/counit 2-cells); two are one-way or partial.
 
 ### 4.1 `ghost ⊣ erase` (§3.5.1)
 
-Canonical 2LTT separation per `fx_reframing.md §4.6`.  Every
+Canonical 2LTT separation (per `fx_design.md §6` / former
+`fx_reframing.md §4.6`).  Every
 ghost value lifts to a zero-runtime-cost Software view (the
 left-adjoint `ghost : Ghost → Software`); every Software value
 has a canonical erase-to-Ghost view (the right-adjoint
@@ -319,7 +331,8 @@ Per `Adjunction.lean` (R0.4 + R0.8):
 
 ### 4.6 Cross-references
 
-  * `fx_reframing.md §3.5` — conceptual introduction.
+  * `fx_design.md §6` — conceptual introduction (folds in the
+    former `fx_reframing.md §3.5`).
   * `fx_design.md §14.5` — contract `decode`/`encode`.
   * `fx_design.md §18.8` — synthesizability rules.
   * `leanx/FX/KernelMTT/Adjunction.lean` — Lean definition +
@@ -381,9 +394,9 @@ et al.: the reverse or sibling direction never `subsumes`.
 
 ### 5.4 Cross-references
 
-  * `fx_reframing.md §3.6.1` — subsumption as 2-cells.
   * `fx_design.md §6.2–§6.3` — dimension-by-dimension
-    subsumption orders.
+    subsumption orders (folds in the former
+    `fx_reframing.md §3.6.1` "subsumption as 2-cells" framing).
   * `leanx/FX/KernelMTT/TwoCells.lean` — Lean definition + 21
     pinning theorems.
 
@@ -394,8 +407,9 @@ et al.: the reverse or sibling direction never `subsumes`.
 **Count**: 9 primary rules + 3 reductions.  **Lean authority**:
 `FX/KernelMTT/Collisions.lean`.
 
-Per `fx_reframing.md §3.6.2`, every `fx_design.md §6.8` collision
-rule corresponds to the **non-existence** of a coherent 2-cell
+Every `fx_design.md §6.8` collision rule (formerly framed in
+`fx_reframing.md §3.6.2`) corresponds to the **non-existence**
+of a coherent 2-cell
 for a specific multi-modality composition.  Adding a 2-cell
 admits the composition; adding a collision rule is a commitment
 that the 2-cell does NOT exist.
@@ -442,8 +456,9 @@ Pinned in `Coherence.collisions_have_multiple_sources` and
 
 ### 6.4 Cross-references
 
-  * `fx_reframing.md §3.6.2` — collisions as missing 2-cells.
-  * `fx_design.md §6.8` — primary collision catalog.
+  * `fx_design.md §6.8` — primary collision catalog (folds in
+    the former `fx_reframing.md §3.6.2` "collisions as missing
+    2-cells" framing).
   * `leanx/FX/KernelMTT/Collisions.lean` — Lean definition + 14
     pinning theorems.
 
@@ -453,8 +468,9 @@ Pinned in `Coherence.collisions_have_multiple_sources` and
 
 **Lean authority**: `FX/KernelMTT/Coherence.lean`.
 
-Per `fx_reframing.md §3.8`, the mode theory's validity reduces
-to four machine-checkable conditions.  R0.7 discharges the
+The mode theory's validity reduces to four machine-checkable
+conditions (per `fx_design.md §27` / former
+`fx_reframing.md §3.8`).  R0.7 discharges the
 enumerated-data-layer obligations; R1's kernel scaffold picks
 up the semantic obligations.
 
@@ -495,8 +511,9 @@ edge is in `Mode.config`'s morphism lists
 
 ### 7.4 Canonicity (deferred to R1)
 
-Per `fx_reframing.md §3.8.4`, canonicity of the MTT instance
-follows from Gratzer LICS 2022.  At R0 we only pin the
+Canonicity of the MTT instance follows from Gratzer LICS 2022
+(per `fx_design.md §27` / former `fx_reframing.md §3.8.4`).
+At R0 we only pin the
 PRE-CONDITIONS (enumeration closure + within-modality
 invariant); the actual canonicity theorem is an R1 obligation.
 
@@ -509,7 +526,8 @@ R0.2–R0.8's enumerated data drifts, this conjunction fails
 
 ### 7.6 Cross-references
 
-  * `fx_reframing.md §3.8` — validity of the mode theory.
+  * `fx_design.md §27` — validity of the mode theory (folds in
+    the former `fx_reframing.md §3.8` framing).
   * `leanx/FX/KernelMTT/Coherence.lean` — Lean proofs + 40+
     theorems.
 
@@ -639,12 +657,12 @@ session progress, and association-invariant preservation
 ## 10. Decision Ledger
 
 Append-only record of mode-theory changes.  Rows stay on record
-even when superseded (same discipline as `fx_reframing.md §0.1`
-and `leanx/docs/smt-placement.md §11`).
+even when superseded (same discipline as
+`leanx/docs/smt-placement.md §11`).
 
 | Row | Date       | Change                                                                 | Reframe version | Rationale |
 | --- | ---------- | ---------------------------------------------------------------------- | --------------- | --------- |
-| L1  | 2026-04-24 | Initial R0 scaffold: 4 modes, 20 modalities, 4 adjunctions, 27 2-cells, 9+3 collisions, unit/counit 2-cells for 2 proper adjunctions. | R0.8            | Close Phase R0 per `fx_reframing.md §8.3`; baseline for R1 kernel work. |
+| L1  | 2026-04-24 | Initial R0 scaffold: 4 modes, 20 modalities, 4 adjunctions, 27 2-cells, 9+3 collisions, unit/counit 2-cells for 2 proper adjunctions. | R0.8            | Close Phase R0 (kernel-discipline commitments per `fx_design.md` §30 / Appendix H); baseline for R1 kernel work. |
 | L2  | 2026-04-24 | R1.1 aggregator lands: `leanx/FX/KernelMTT.lean` re-exports the 6 scaffold submodules; `scaffoldVersion = "R1.1"` + 9-entry `closedRTasks` ledger.  Test module `Tests.KernelMTT.AggregatorTests` pins the version tag and the exact closed-task list. | R1.1            | Provide a single-import surface for R1.2+ downstream files.  Machine-checkable completion state via the Lean version tag means an agent inspecting the scaffold sees structural progress, not just file listings. |
 
 Future rows append below.
@@ -678,18 +696,24 @@ Future rows append below.
 
 ### 11.3 Companion spec sections
 
-| Concern            | This doc | `fx_reframing.md`    | `fx_design.md`    |
-| ------------------ | -------- | -------------------- | ----------------- |
-| Modes              | §2       | §3.1                 | §1.1              |
-| Software modalities | §3.1    | §3.2                 | §6.3              |
-| Hardware modalities | §3.2    | §3.3                 | §18.7             |
-| Wire modalities    | §3.3     | §3.4                 | §14               |
-| Adjunctions        | §4       | §3.5                 | §14.5, §18.8      |
-| Subsumption 2-cells | §5      | §3.6.1               | §6.2–§6.3         |
-| Collisions         | §6       | §3.6.2               | §6.8              |
-| Coherence          | §7       | §3.8                 | —                 |
-| Unit/counit        | §8       | §3.5.1, §3.5.3       | —                 |
-| R2 frontier        | §9       | §4, §8 roadmap       | —                 |
+`fx_reframing.md` was deleted in commit 4a5697ca; its content
+folded into `fx_design.md` (chiefly §6 / §27 / §30 / Appendix
+H).  The mapping below records both the live `fx_design.md`
+anchor and the legacy `fx_reframing.md` section (for readers
+auditing pre-merge artifacts).
+
+| Concern            | This doc | Legacy `fx_reframing.md` | `fx_design.md`    |
+| ------------------ | -------- | ------------------------ | ----------------- |
+| Modes              | §2       | §3.1                     | §1.1, §6          |
+| Software modalities | §3.1    | §3.2                     | §6.3              |
+| Hardware modalities | §3.2    | §3.3                     | §18.7             |
+| Wire modalities    | §3.3     | §3.4                     | §14               |
+| Adjunctions        | §4       | §3.5                     | §6, §14.5, §18.8  |
+| Subsumption 2-cells | §5      | §3.6.1                   | §6.2–§6.3         |
+| Collisions         | §6       | §3.6.2                   | §6.8              |
+| Coherence          | §7       | §3.8                     | §27               |
+| Unit/counit        | §8       | §3.5.1, §3.5.3           | §6                |
+| R2 frontier        | §9       | §4, §8 roadmap           | §30 / Appendix H  |
 
 ---
 
