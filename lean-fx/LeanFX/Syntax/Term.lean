@@ -2743,6 +2743,115 @@ theorem Term.subst_weaken_commute_HEq_fst
     h_second
     _ _ ih_p
 
+/-! ### v1.31 — Cast-through-Term.weaken HEq helper, plus the
+`snd` closed-context case for subst-weaken commute.
+
+`Term.weaken_HEq_cast_input` is the weaken-side analogue of v1.26's
+`Term.subst_HEq_cast_input` — pushes a propositional type-cast on
+the input out to an HEq.  Needed because `Term.weaken X` (=
+`Term.rename`) pattern-matches on the term's outer constructor;
+a casted term has `Eq.rec` as its outer construct, blocking
+reduction.
+
+The `snd` case is the cast-mirror of `fst`: same single-argument
+sigmaTy projection, same h_first / h_second from
+Ty.subst_weaken_commute and the v1.30 helper, but both
+`Term.subst` and `Term.rename` wrap their `Term.snd` result in
+`(Ty.subst0_*_commute).symm ▸` casts.  The proof strips the
+outer casts via `eqRec_heq` and pushes the inner casts through
+the constructor with the cast-input helpers. -/
+
+/-- Push a propositional type-cast on the input of `Term.weaken X`
+out to an HEq.  `cases h; rfl` once the equation is trivialized. -/
+theorem Term.weaken_HEq_cast_input
+    {m : Mode} {scope : Nat} {Γ : Ctx m scope}
+    (X : Ty scope) {T₁ T₂ : Ty scope} (h : T₁ = T₂) (t : Term Γ T₁) :
+    HEq (Term.weaken X (h ▸ t)) (Term.weaken X t) := by
+  cases h
+  rfl
+
+/-- Closed-context recursive case for `snd`.  Both `Term.weaken X`
+and `Term.subst σt` wrap the resulting `Term.snd` in
+`(Ty.subst0_*_commute).symm ▸` casts; the proof strips both via
+`eqRec_heq` and the cast-input helpers, then applies
+`Term.snd_HEq_congr` with the same h_first / h_second pair as
+`fst`. -/
+theorem Term.subst_weaken_commute_HEq_snd
+    {m : Mode} {scope scope' : Nat}
+    {Γ : Ctx m scope} {Δ : Ctx m scope'}
+    {σ : Subst scope scope'} (σt : TermSubst Γ Δ σ)
+    (X : Ty scope)
+    {first : Ty scope} {second : Ty (scope + 1)}
+    (p : Term Γ (Ty.sigmaTy first second))
+    (ih_p : HEq
+              (Term.subst (σt.lift X) (Term.weaken X p))
+              (Term.weaken (X.subst σ) (Term.subst σt p))) :
+    HEq
+      (Term.subst (σt.lift X) (Term.weaken X (Term.snd p)))
+      (Term.weaken (X.subst σ) (Term.subst σt (Term.snd p))) := by
+  -- Same h_second equation as fst.
+  have h_second :
+      (second.rename Renaming.weaken.lift).subst σ.lift.lift
+        = (second.subst σ.lift).rename Renaming.weaken.lift :=
+    (Ty.rename_subst_commute second Renaming.weaken.lift σ.lift.lift).trans
+      ((Ty.subst_congr
+          (Subst.precompose_weaken_lift_double_eq_renameAfter_lift_weaken_lift σ)
+          second).trans
+        (Ty.subst_rename_commute second σ.lift Renaming.weaken.lift).symm)
+  -- LHS path:
+  --   Term.weaken X (Term.snd p)
+  --   = (Ty.subst0_rename_commute second first Renaming.weaken).symm ▸
+  --       Term.snd (Term.weaken X p)
+  --   Term.subst (σt.lift X) on this casted term — push cast
+  --   through via Term.subst_HEq_cast_input, then Term.subst's
+  --   snd clause emits a (Ty.subst0_subst_commute ...).symm ▸
+  --   wrapper.
+  apply HEq.trans
+    (Term.subst_HEq_cast_input
+      (σt.lift X)
+      (Ty.subst0_rename_commute second first Renaming.weaken).symm
+      (Term.snd (Term.weaken X p)))
+  -- After helper: HEq (Term.subst (σt.lift X) (Term.snd (Term.weaken X p))) RHS
+  -- Term.subst's snd clause:
+  show HEq
+    ((Ty.subst0_subst_commute (second.rename Renaming.weaken.lift)
+        (first.rename Renaming.weaken) σ.lift).symm ▸
+      Term.snd (Term.subst (σt.lift X) (Term.weaken X p)))
+    _
+  -- Strip outer cast on LHS via eqRec_heq.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Now: HEq (Term.snd (Term.subst (σt.lift X) (Term.weaken X p)))
+  --          (Term.weaken (X.subst σ) (Term.subst σt (Term.snd p)))
+  --
+  -- RHS path: flip and process Term.weaken (X.subst σ) on a casted Term.snd.
+  apply HEq.symm
+  -- Term.subst σt (Term.snd p) =
+  --   (Ty.subst0_subst_commute second first σ).symm ▸ Term.snd (Term.subst σt p)
+  -- Term.weaken (X.subst σ) on casted — push through.
+  apply HEq.trans
+    (Term.weaken_HEq_cast_input
+      (X.subst σ)
+      (Ty.subst0_subst_commute second first σ).symm
+      (Term.snd (Term.subst σt p)))
+  -- After helper: HEq (Term.weaken (X.subst σ) (Term.snd (Term.subst σt p))) LHS
+  -- Term.weaken's snd clause:
+  show HEq
+    ((Ty.subst0_rename_commute (second.subst σ.lift) (first.subst σ)
+        Renaming.weaken).symm ▸
+      Term.snd (Term.weaken (X.subst σ) (Term.subst σt p)))
+    _
+  -- Strip outer cast.
+  apply HEq.trans (eqRec_heq _ _)
+  -- Flip back to LHS-orientation.
+  apply HEq.symm
+  -- Now: HEq (Term.snd (Term.subst (σt.lift X) (Term.weaken X p)))
+  --          (Term.snd (Term.weaken (X.subst σ) (Term.subst σt p)))
+  -- Apply Term.snd_HEq_congr.
+  exact Term.snd_HEq_congr
+    (Ty.subst_weaken_commute first σ)
+    h_second
+    _ _ ih_p
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
