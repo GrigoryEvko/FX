@@ -1366,6 +1366,82 @@ def Term.subst0 {m : Mode} {scope : Nat} {Γ : Ctx m scope}
     Term Γ (T_body.subst0 T_arg) :=
   Term.subst (TermSubst.singleton arg) body
 
+/-! ## v1.17 — Categorical structure of TermRenaming and TermSubst.
+
+`Subst` and `Renaming` form *categories* enriched over `Ty`:
+identity and composition exist at the type level, and
+`Ty.subst_id` / `Ty.subst_compose` make `Ty.subst` a functor
+(§v1.10).  This section lifts identity and composition up to the
+*term* level — `TermSubst.identity` and `TermSubst.compose`
+witness the same structure on the term-valued substitutions.
+
+The functoriality theorems at the term level (`Term.subst_id`,
+`Term.subst_compose`) require careful dependent-cast wrangling
+because `Term.subst σt t` lives at type `Term Δ (T.subst σ)`,
+which is propositionally but not definitionally equal to
+`Term Δ T` when `σ = Subst.identity`.  v1.18 attacks
+`Term.subst_id`; v1.19 attacks `Term.subst_compose`. -/
+
+/-- Composition of term-level renamings.  Mirrors `Renaming.compose`
+at the type level.
+
+The position-equality witness chains the two underlying
+`TermRenaming`s through `Ty.rename_compose`: applying ρ₂ to ρ₁ to
+position `i` reaches `varType Γ₁ i` renamed by the composed
+renaming. -/
+theorem TermRenaming.compose {m : Mode} {scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {ρ₁ : Renaming scope₁ scope₂} {ρ₂ : Renaming scope₂ scope₃}
+    (ρt₁ : TermRenaming Γ₁ Γ₂ ρ₁) (ρt₂ : TermRenaming Γ₂ Γ₃ ρ₂) :
+    TermRenaming Γ₁ Γ₃ (Renaming.compose ρ₁ ρ₂) := fun i => by
+  -- Goal: varType Γ₃ (Renaming.compose ρ₁ ρ₂ i) =
+  --       (varType Γ₁ i).rename (Renaming.compose ρ₁ ρ₂)
+  -- Renaming.compose ρ₁ ρ₂ i ≡ ρ₂ (ρ₁ i) by defn
+  show varType Γ₃ (ρ₂ (ρ₁ i))
+     = (varType Γ₁ i).rename (Renaming.compose ρ₁ ρ₂)
+  -- Step 1: ρt₂ at position (ρ₁ i):
+  --   varType Γ₃ (ρ₂ (ρ₁ i)) = (varType Γ₂ (ρ₁ i)).rename ρ₂
+  rw [ρt₂ (ρ₁ i)]
+  -- Step 2: ρt₁ at position i, transported under .rename ρ₂:
+  --   (varType Γ₂ (ρ₁ i)).rename ρ₂ = ((varType Γ₁ i).rename ρ₁).rename ρ₂
+  rw [ρt₁ i]
+  -- Step 3: rename composition:
+  --   ((varType Γ₁ i).rename ρ₁).rename ρ₂
+  --     = (varType Γ₁ i).rename (Renaming.compose ρ₁ ρ₂)
+  exact Ty.rename_compose (varType Γ₁ i) ρ₁ ρ₂
+
+/-- The identity term-level substitution.  Mirrors `Subst.identity`
+at the type level.
+
+For each position `i`, returns `Term.var i` transported across
+`Ty.subst_id (varType Γ i)` so the result lives at the expected
+type `Term Γ ((varType Γ i).subst Subst.identity)`. -/
+def TermSubst.identity {m : Mode} {scope : Nat} (Γ : Ctx m scope) :
+    TermSubst Γ Γ Subst.identity := fun i =>
+  -- Term.var i : Term Γ (varType Γ i)
+  -- Need:        Term Γ ((varType Γ i).subst Subst.identity)
+  -- Bridge:      Ty.subst_id (varType Γ i) :
+  --              (varType Γ i).subst Subst.identity = varType Γ i
+  (Ty.subst_id (varType Γ i)).symm ▸ Term.var i
+
+/-- Composition of term-level substitutions.  Mirrors
+`Subst.compose` at the type level.
+
+Each position `i` first applies σt₁ (giving a term in Γ₂ at the
+σ₁-substituted type), then applies σt₂ (further substituting by
+σ₂), then transports across `Ty.subst_compose` to align with the
+expected `Subst.compose σ₁ σ₂`-substituted type. -/
+def TermSubst.compose {m : Mode} {scope₁ scope₂ scope₃ : Nat}
+    {Γ₁ : Ctx m scope₁} {Γ₂ : Ctx m scope₂} {Γ₃ : Ctx m scope₃}
+    {σ₁ : Subst scope₁ scope₂} {σ₂ : Subst scope₂ scope₃}
+    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂) :
+    TermSubst Γ₁ Γ₃ (Subst.compose σ₁ σ₂) := fun i =>
+  -- σt₁ i             : Term Γ₂ ((varType Γ₁ i).subst σ₁)
+  -- Term.subst σt₂ _  : Term Γ₃ (((varType Γ₁ i).subst σ₁).subst σ₂)
+  -- Need              : Term Γ₃ ((varType Γ₁ i).subst (Subst.compose σ₁ σ₂))
+  -- Bridge            : Ty.subst_compose (varType Γ₁ i) σ₁ σ₂
+  Ty.subst_compose (varType Γ₁ i) σ₁ σ₂ ▸ Term.subst σt₂ (σt₁ i)
+
 /-! ## v1.6 — typed reduction.
 
 Single-step reduction `Step t₁ t₂` is a `Prop`-valued indexed relation
