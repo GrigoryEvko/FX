@@ -157,6 +157,15 @@ inductive RawTerm : Nat → Type
   `RawTerm.refl rt` is the raw form of `Term.refl` (v2.2h); it
   inhabits the Ty.id type whose endpoints are both `rt`. -/
   | refl : {scope : Nat} → (term : RawTerm scope) → RawTerm scope
+  /-- J eliminator at the raw level — `idJ baseCase witness`.  Mirror
+  of the intrinsic `Term.idJ` (v2.2m).  The closed-endpoint regime
+  doesn't need separate type-level annotations on the raw side; the
+  bridge `Term.toRaw` erases the carrier/leftEnd/rightEnd/resultType
+  annotations and ships just the data. -/
+  | idJ : {scope : Nat} →
+          (baseCase : RawTerm scope) →
+          (witness : RawTerm scope) →
+          RawTerm scope
 
 /-! ### RawTerm smoke tests — every constructor instantiable at scope 0
 or scope 1 (for `lam` / `varRef`).  No theorems yet; just constructor
@@ -643,6 +652,8 @@ def RawTerm.rename {source target : Nat} :
         (RawTerm.rename leftBranch ρ)
         (RawTerm.rename rightBranch ρ)
   | .refl term, ρ           => .refl (RawTerm.rename term ρ)
+  | .idJ baseCase witness, ρ =>
+      .idJ (RawTerm.rename baseCase ρ) (RawTerm.rename witness ρ)
 
 /-- Pointwise-equivalent renamings produce equal results on every
 raw term.  Same pattern as `Ty.rename_congr` — direct structural
@@ -799,6 +810,14 @@ theorem RawTerm.rename_congr {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
       show RawTerm.refl (RawTerm.rename term ρ₁)
          = RawTerm.refl (RawTerm.rename term ρ₂)
       exact hTerm ▸ rfl
+  | .idJ baseCase witness => by
+      have hBase    := RawTerm.rename_congr h baseCase
+      have hWitness := RawTerm.rename_congr h witness
+      show RawTerm.idJ (RawTerm.rename baseCase ρ₁)
+                       (RawTerm.rename witness ρ₁)
+         = RawTerm.idJ (RawTerm.rename baseCase ρ₂)
+                       (RawTerm.rename witness ρ₂)
+      exact hBase ▸ hWitness ▸ rfl
 
 /-- Renaming composition law for raw terms.  Same shape as
 `Ty.rename_compose`; `lam` arm uses `Renaming.lift_compose_equiv` to
@@ -972,6 +991,15 @@ theorem RawTerm.rename_compose {s m t : Nat} :
          = RawTerm.refl
              (RawTerm.rename term (Renaming.compose ρ₁ ρ₂))
       exact hTerm ▸ rfl
+  | .idJ baseCase witness, ρ₁, ρ₂ => by
+      have hBase    := RawTerm.rename_compose baseCase ρ₁ ρ₂
+      have hWitness := RawTerm.rename_compose witness ρ₁ ρ₂
+      show RawTerm.idJ ((RawTerm.rename baseCase ρ₁).rename ρ₂)
+                       ((RawTerm.rename witness ρ₁).rename ρ₂)
+         = RawTerm.idJ
+             (RawTerm.rename baseCase (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename witness (Renaming.compose ρ₁ ρ₂))
+      exact hBase ▸ hWitness ▸ rfl
 
 /-- v2.2b weakening on raw terms — derived from rename. -/
 @[reducible]
@@ -1977,6 +2005,33 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {carrier : Ty level scope} →
       (rawTerm : RawTerm 0) →
       Term context (Ty.id carrier rawTerm rawTerm)
+  /-- **J eliminator for identity types** (closed-endpoint, non-dependent
+  motive form).  Given a base case `baseCase : resultType` and a
+  witness `witness : Id carrier leftEnd rightEnd`, produces a term of
+  `resultType`.
+
+  In the closed-endpoint regime, a `Term.refl` witness can only
+  inhabit `Id A rt rt` (both endpoints equal), so the only canonical
+  J reduction is the ι-rule `J base (refl rt) ⟶ base`.  The
+  non-dependent motive (`resultType : Ty level scope` instead of a
+  motive function over endpoints) keeps the constructor signature
+  inside the kernel without needing Term-mentioning Ty constructors
+  beyond Ty.id itself.
+
+  Full dependent J — where the result type depends on the endpoints
+  and the witness — requires open endpoints + a motive of shape
+  `(a b : A) → Id A a b → Ty`.  That waits for the joint Subst
+  refactor (v2.3+), at which point this constructor becomes a
+  specialised non-dependent form derivable from dependent J. -/
+  | idJ :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {carrier : Ty level scope} →
+      {leftEnd rightEnd : RawTerm 0} →
+      {resultType : Ty level scope} →
+      (baseCase : Term context resultType) →
+      (witness : Term context (Ty.id carrier leftEnd rightEnd)) →
+      Term context resultType
 
 /-! ## Term-level renaming.
 
@@ -2111,6 +2166,8 @@ def Term.rename {m scope scope'}
                        (Term.rename ρt leftBranch)
                        (Term.rename ρt rightBranch)
   | _, .refl rawTerm => Term.refl rawTerm
+  | _, .idJ baseCase witness =>
+      Term.idJ (Term.rename ρt baseCase) (Term.rename ρt witness)
 
 /-! ## Term-level weakening. -/
 
@@ -2331,6 +2388,8 @@ def Term.subst {m scope scope'}
                        (Term.subst σt leftBranch)
                        (Term.subst σt rightBranch)
   | _, .refl rawTerm => Term.refl rawTerm
+  | _, .idJ baseCase witness =>
+      Term.idJ (Term.subst σt baseCase) (Term.subst σt witness)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -2816,6 +2875,30 @@ theorem Term.refl_HEq_congr
   cases h_carrier
   rfl
 
+/-- HEq congruence for `Term.idJ`.  Four Ty-level equations (carrier,
+leftEnd, rightEnd, resultType) and two HEq sub-term arguments
+(baseCase and witness).  The witness's type depends on `carrier`,
+`leftEnd`, `rightEnd`, so its HEq must travel via `cases` on those
+three equations before HEq collapses to plain equality. -/
+theorem Term.idJ_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {carrier₁ carrier₂ : Ty level scope} (h_carrier : carrier₁ = carrier₂)
+    {leftEnd₁ leftEnd₂ : RawTerm 0} (h_leftEnd : leftEnd₁ = leftEnd₂)
+    {rightEnd₁ rightEnd₂ : RawTerm 0} (h_rightEnd : rightEnd₁ = rightEnd₂)
+    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
+    (base₁ : Term Γ result₁) (base₂ : Term Γ result₂) (h_base : HEq base₁ base₂)
+    (witness₁ : Term Γ (Ty.id carrier₁ leftEnd₁ rightEnd₁))
+    (witness₂ : Term Γ (Ty.id carrier₂ leftEnd₂ rightEnd₂))
+    (h_witness : HEq witness₁ witness₂) :
+    HEq (Term.idJ base₁ witness₁) (Term.idJ base₂ witness₂) := by
+  cases h_carrier
+  cases h_leftEnd
+  cases h_rightEnd
+  cases h_result
+  cases h_base
+  cases h_witness
+  rfl
+
 /-! ## `Term.subst_id_HEq` leaf cases.
 
 Four leaf constructors: `var` strips the inner `(Ty.subst_id _).symm
@@ -3255,6 +3338,14 @@ theorem Term.subst_HEq_pointwise
   | _, .refl (carrier := carrier) rawTerm => by
     cases h_ctx
     exact Term.refl_HEq_congr (Ty.subst_congr h_subst carrier) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness => by
+    cases h_ctx
+    exact Term.idJ_HEq_congr
+      (Ty.subst_congr h_subst carrier) rfl rfl
+      (Ty.subst_congr h_subst result)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise baseCase)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise witness)
 
 /-! ## `Term.subst_id_HEq`.
 
@@ -3382,6 +3473,13 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
       _ _ (Term.subst_id_HEq rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.subst_id carrier) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness =>
+    Term.idJ_HEq_congr
+      (Ty.subst_id carrier) rfl rfl
+      (Ty.subst_id result)
+      _ _ (Term.subst_id_HEq baseCase)
+      _ _ (Term.subst_id_HEq witness)
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
@@ -3714,6 +3812,14 @@ theorem Term.rename_HEq_pointwise
   | _, .refl (carrier := carrier) rawTerm => by
     cases h_ctx
     exact Term.refl_HEq_congr (Ty.rename_congr h_ρ carrier) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness => by
+    cases h_ctx
+    exact Term.idJ_HEq_congr
+      (Ty.rename_congr h_ρ carrier) rfl rfl
+      (Ty.rename_congr h_ρ result)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ baseCase)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ witness)
 
 /-! ## `Term.rename_id_HEq`.
 
@@ -3917,6 +4023,13 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       _ _ (Term.rename_id_HEq rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.rename_identity carrier) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness =>
+    Term.idJ_HEq_congr
+      (Ty.rename_identity carrier) rfl rfl
+      (Ty.rename_identity result)
+      _ _ (Term.rename_id_HEq baseCase)
+      _ _ (Term.rename_id_HEq witness)
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
@@ -4199,6 +4312,13 @@ theorem Term.rename_compose_HEq
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.rename_compose carrier ρ₁ ρ₂) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness =>
+    Term.idJ_HEq_congr
+      (Ty.rename_compose carrier ρ₁ ρ₂) rfl rfl
+      (Ty.rename_compose result ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ baseCase)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ witness)
 
 /-! ## `Term.rename_weaken_commute_HEq`.
 
@@ -4702,6 +4822,13 @@ theorem Term.subst_rename_commute_HEq
       _ _ (Term.subst_rename_commute_HEq σt ρt rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.subst_rename_commute carrier σ ρ) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness =>
+    Term.idJ_HEq_congr
+      (Ty.subst_rename_commute carrier σ ρ) rfl rfl
+      (Ty.subst_rename_commute result σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt baseCase)
+      _ _ (Term.subst_rename_commute_HEq σt ρt witness)
 
 /-! ## `Term.rename_subst_commute_HEq`.
 
@@ -4948,6 +5075,13 @@ theorem Term.rename_subst_commute_HEq
       _ _ (Term.rename_subst_commute_HEq ρt σt' rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.rename_subst_commute carrier ρ σ') rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness =>
+    Term.idJ_HEq_congr
+      (Ty.rename_subst_commute carrier ρ σ') rfl rfl
+      (Ty.rename_subst_commute result ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' baseCase)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' witness)
 
 /-! ## `Term.subst_weaken_commute_HEq`.
 
@@ -5327,6 +5461,13 @@ theorem Term.subst_compose_HEq
       _ _ (Term.subst_compose_HEq σt₁ σt₂ rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.subst_compose carrier σ₁ σ₂) rawTerm
+  | _, .idJ (carrier := carrier) (resultType := result)
+            baseCase witness =>
+    Term.idJ_HEq_congr
+      (Ty.subst_compose carrier σ₁ σ₂) rfl rfl
+      (Ty.subst_compose result σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ baseCase)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ witness)
 
 /-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
@@ -5485,6 +5626,8 @@ def Term.toRaw {mode : Mode} {level scope : Nat} {context : Ctx mode level scope
       RawTerm.eitherMatch scrutinee.toRaw leftBranch.toRaw rightBranch.toRaw
   | _, .refl rawTerm     =>
       RawTerm.refl (RawTerm.weakenToScope scope rawTerm)
+  | _, .idJ baseCase witness =>
+      RawTerm.idJ baseCase.toRaw witness.toRaw
 
 /-! ## Typed reduction (`Step`, `StepStar`).
 
@@ -8748,6 +8891,60 @@ example :
       (Term.refl (context := EmptyCtx)
                  (carrier := Ty.bool) RawTerm.boolTrue) :=
   Conv.refl _
+
+/-! ### Term.idJ — J eliminator (closed-endpoint, non-dependent motive). -/
+
+/-- `idJ baseCase witness : resultType` — given a base case and a
+witness of an identity, produce a result of the same motive type.
+Here: `idJ true (refl true) : Bool`. -/
+example :
+    Term EmptyCtx Ty.bool :=
+  Term.idJ (carrier := Ty.bool) (resultType := Ty.bool)
+    Term.boolTrue
+    (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
+               RawTerm.boolTrue)
+
+/-- `Term.idJ` is preserved by renaming. -/
+example {target : Nat}
+    {Δ : Ctx Mode.software 0 target}
+    {ρ : Renaming 0 target}
+    (ρt : TermRenaming EmptyCtx Δ ρ) :
+    Term.rename ρt
+      (Term.idJ (carrier := Ty.bool) (resultType := Ty.bool)
+        Term.boolTrue
+        (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
+                   RawTerm.boolTrue))
+      = Term.idJ (context := Δ) (carrier := Ty.bool)
+                 (resultType := Ty.bool)
+        Term.boolTrue
+        (Term.refl (context := Δ) (carrier := Ty.bool)
+                   RawTerm.boolTrue) :=
+  rfl
+
+/-- `Term.idJ` is preserved by substitution. -/
+example {target : Nat}
+    {Δ : Ctx Mode.software 0 target}
+    {σ : Subst 0 0 target}
+    (σt : TermSubst EmptyCtx Δ σ) :
+    Term.subst σt
+      (Term.idJ (carrier := Ty.bool) (resultType := Ty.bool)
+        Term.boolTrue
+        (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
+                   RawTerm.boolTrue))
+      = Term.idJ (context := Δ) (carrier := Ty.bool)
+                 (resultType := Ty.bool)
+        Term.boolTrue
+        (Term.refl (context := Δ) (carrier := Ty.bool)
+                   RawTerm.boolTrue) :=
+  rfl
+
+/-- `Term.idJ.toRaw = RawTerm.idJ baseCase.toRaw witness.toRaw`. -/
+example :
+    (Term.idJ (carrier := Ty.bool) (resultType := Ty.bool)
+       (Term.boolTrue (context := EmptyCtx))
+       (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
+                  RawTerm.boolTrue)).toRaw
+      = RawTerm.idJ RawTerm.boolTrue (RawTerm.refl RawTerm.boolTrue) := rfl
 
 end SmokeTest
 
