@@ -4979,6 +4979,74 @@ inductive Step :
         (someBranch : Term ctx (Ty.arrow elementType resultType)),
       Step (Term.optionMatch (Term.optionSome value) noneBranch someBranch)
            (Term.app someBranch value)
+  /-- Step inside `Term.eitherInl`'s value. -/
+  | eitherInlValue :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType : Ty level scope}
+        {value value' : Term ctx leftType},
+      Step value value' →
+      Step (Term.eitherInl (rightType := rightType) value)
+           (Term.eitherInl (rightType := rightType) value')
+  /-- Step inside `Term.eitherInr`'s value. -/
+  | eitherInrValue :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType : Ty level scope}
+        {value value' : Term ctx rightType},
+      Step value value' →
+      Step (Term.eitherInr (leftType := leftType) value)
+           (Term.eitherInr (leftType := leftType) value')
+  /-- Step inside `Term.eitherMatch`'s scrutinee. -/
+  | eitherMatchScrutinee :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx (Ty.either leftType rightType)}
+        {leftBranch : Term ctx (Ty.arrow leftType resultType)}
+        {rightBranch : Term ctx (Ty.arrow rightType resultType)},
+      Step scrutinee scrutinee' →
+      Step (Term.eitherMatch scrutinee leftBranch rightBranch)
+           (Term.eitherMatch scrutinee' leftBranch rightBranch)
+  /-- Step inside `Term.eitherMatch`'s left-branch. -/
+  | eitherMatchLeft :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.either leftType rightType)}
+        {leftBranch leftBranch' : Term ctx (Ty.arrow leftType resultType)}
+        {rightBranch : Term ctx (Ty.arrow rightType resultType)},
+      Step leftBranch leftBranch' →
+      Step (Term.eitherMatch scrutinee leftBranch rightBranch)
+           (Term.eitherMatch scrutinee leftBranch' rightBranch)
+  /-- Step inside `Term.eitherMatch`'s right-branch. -/
+  | eitherMatchRight :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.either leftType rightType)}
+        {leftBranch : Term ctx (Ty.arrow leftType resultType)}
+        {rightBranch rightBranch' : Term ctx (Ty.arrow rightType resultType)},
+      Step rightBranch rightBranch' →
+      Step (Term.eitherMatch scrutinee leftBranch rightBranch)
+           (Term.eitherMatch scrutinee leftBranch rightBranch')
+  /-- **ι-reduction for eitherMatch on `inl`**:
+  `eitherMatch (inl v) lb rb ⟶ lb v`. -/
+  | iotaEitherMatchInl :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        (value : Term ctx leftType)
+        (leftBranch : Term ctx (Ty.arrow leftType resultType))
+        (rightBranch : Term ctx (Ty.arrow rightType resultType)),
+      Step (Term.eitherMatch (Term.eitherInl (rightType := rightType) value)
+              leftBranch rightBranch)
+           (Term.app leftBranch value)
+  /-- **ι-reduction for eitherMatch on `inr`**:
+  `eitherMatch (inr v) lb rb ⟶ rb v`. -/
+  | iotaEitherMatchInr :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        (value : Term ctx rightType)
+        (leftBranch : Term ctx (Ty.arrow leftType resultType))
+        (rightBranch : Term ctx (Ty.arrow rightType resultType)),
+      Step (Term.eitherMatch (Term.eitherInr (leftType := leftType) value)
+              leftBranch rightBranch)
+           (Term.app rightBranch value)
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -5461,6 +5529,60 @@ inductive Step.par :
       Step.par someBranch someBranch' →
       Step.par (Term.optionMatch (Term.optionSome value) noneBranch someBranch)
                (Term.app someBranch' value')
+  /-- Parallel reduction inside the value of `Term.eitherInl`. -/
+  | eitherInl :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType : Ty level scope}
+        {value value' : Term ctx leftType},
+      Step.par value value' →
+      Step.par (Term.eitherInl (rightType := rightType) value)
+               (Term.eitherInl (rightType := rightType) value')
+  /-- Parallel reduction inside the value of `Term.eitherInr`. -/
+  | eitherInr :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType : Ty level scope}
+        {value value' : Term ctx rightType},
+      Step.par value value' →
+      Step.par (Term.eitherInr (leftType := leftType) value)
+               (Term.eitherInr (leftType := leftType) value')
+  /-- Parallel reduction inside all three positions of `Term.eitherMatch`. -/
+  | eitherMatch :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx (Ty.either leftType rightType)}
+        {leftBranch leftBranch' : Term ctx (Ty.arrow leftType resultType)}
+        {rightBranch rightBranch' : Term ctx (Ty.arrow rightType resultType)},
+      Step.par scrutinee scrutinee' →
+      Step.par leftBranch leftBranch' →
+      Step.par rightBranch rightBranch' →
+      Step.par (Term.eitherMatch scrutinee leftBranch rightBranch)
+               (Term.eitherMatch scrutinee' leftBranch' rightBranch')
+  /-- **Parallel ι-reduction on `inl`**: `eitherMatch (inl v) lb rb → lb' v'`
+  with parallel reductions in value and leftBranch. -/
+  | iotaEitherMatchInl :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {value value' : Term ctx leftType}
+        {leftBranch leftBranch' : Term ctx (Ty.arrow leftType resultType)}
+        (rightBranch : Term ctx (Ty.arrow rightType resultType)),
+      Step.par value value' →
+      Step.par leftBranch leftBranch' →
+      Step.par (Term.eitherMatch (Term.eitherInl (rightType := rightType) value)
+                  leftBranch rightBranch)
+               (Term.app leftBranch' value')
+  /-- **Parallel ι-reduction on `inr`**: `eitherMatch (inr v) lb rb → rb' v'`
+  with parallel reductions in value and rightBranch. -/
+  | iotaEitherMatchInr :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {value value' : Term ctx rightType}
+        (leftBranch : Term ctx (Ty.arrow leftType resultType))
+        {rightBranch rightBranch' : Term ctx (Ty.arrow rightType resultType)},
+      Step.par value value' →
+      Step.par rightBranch rightBranch' →
+      Step.par (Term.eitherMatch (Term.eitherInr (leftType := leftType) value)
+                  leftBranch rightBranch)
+               (Term.app rightBranch' value')
   /-- **η-contraction for non-dependent arrow** at the parallel level.
   Same shape as `Step.etaArrow`: the η-redex `λx. f.weaken x` contracts
   to `f`.  No subterm-parallel rule because the redex shape is rigid
@@ -5532,6 +5654,15 @@ theorem Step.toPar
   | .iotaOptionMatchNone n s => .iotaOptionMatchNone s (.refl n)
   | .iotaOptionMatchSome v _ s =>
       .iotaOptionMatchSome _ (.refl v) (.refl s)
+  | .eitherInlValue s     => .eitherInl (Step.toPar s)
+  | .eitherInrValue s     => .eitherInr (Step.toPar s)
+  | .eitherMatchScrutinee s => .eitherMatch (Step.toPar s) (.refl _) (.refl _)
+  | .eitherMatchLeft s    => .eitherMatch (.refl _) (Step.toPar s) (.refl _)
+  | .eitherMatchRight s   => .eitherMatch (.refl _) (.refl _) (Step.toPar s)
+  | .iotaEitherMatchInl v lb rb =>
+      .iotaEitherMatchInl rb (.refl v) (.refl lb)
+  | .iotaEitherMatchInr v lb rb =>
+      .iotaEitherMatchInr lb (.refl v) (.refl rb)
 
 /-! ## Definitional conversion (`Conv`).
 
@@ -6297,6 +6428,98 @@ theorem Conv.optionMatch_cong
       (Conv.optionMatch_cong_none scrutinee₂ someBranch₁ h_none)
       (Conv.optionMatch_cong_some scrutinee₂ noneBranch₂ h_some))
 
+/-! ## Either Conv congruences (mirror the option versions). -/
+
+/-- Definitional equivalence threads through `Term.eitherInl`'s value. -/
+theorem Conv.eitherInl_cong {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {value₁ value₂ : Term ctx leftType} (h : Conv value₁ value₂) :
+    Conv (Term.eitherInl (rightType := rightType) value₁)
+         (Term.eitherInl (rightType := rightType) value₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.eitherInlValue s)
+
+/-- Definitional equivalence threads through `Term.eitherInr`'s value. -/
+theorem Conv.eitherInr_cong {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {value₁ value₂ : Term ctx rightType} (h : Conv value₁ value₂) :
+    Conv (Term.eitherInr (leftType := leftType) value₁)
+         (Term.eitherInr (leftType := leftType) value₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.eitherInrValue s)
+
+/-- Definitional equivalence threads through `eitherMatch`'s scrutinee. -/
+theorem Conv.eitherMatch_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.either leftType rightType)}
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    (rightBranch : Term ctx (Ty.arrow rightType resultType))
+    (h : Conv scrutinee₁ scrutinee₂) :
+    Conv (Term.eitherMatch scrutinee₁ leftBranch rightBranch)
+         (Term.eitherMatch scrutinee₂ leftBranch rightBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.eitherMatchScrutinee s)
+
+/-- Definitional equivalence threads through `eitherMatch`'s left-branch. -/
+theorem Conv.eitherMatch_cong_left
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.either leftType rightType))
+    {leftBranch₁ leftBranch₂ : Term ctx (Ty.arrow leftType resultType)}
+    (rightBranch : Term ctx (Ty.arrow rightType resultType))
+    (h : Conv leftBranch₁ leftBranch₂) :
+    Conv (Term.eitherMatch scrutinee leftBranch₁ rightBranch)
+         (Term.eitherMatch scrutinee leftBranch₂ rightBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.eitherMatchLeft s)
+
+/-- Definitional equivalence threads through `eitherMatch`'s right-branch. -/
+theorem Conv.eitherMatch_cong_right
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.either leftType rightType))
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    {rightBranch₁ rightBranch₂ : Term ctx (Ty.arrow rightType resultType)}
+    (h : Conv rightBranch₁ rightBranch₂) :
+    Conv (Term.eitherMatch scrutinee leftBranch rightBranch₁)
+         (Term.eitherMatch scrutinee leftBranch rightBranch₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.eitherMatchRight s)
+
+/-- Definitional equivalence threads through all three `eitherMatch` positions. -/
+theorem Conv.eitherMatch_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.either leftType rightType)}
+    {leftBranch₁ leftBranch₂ : Term ctx (Ty.arrow leftType resultType)}
+    {rightBranch₁ rightBranch₂ : Term ctx (Ty.arrow rightType resultType)}
+    (h_scr : Conv scrutinee₁ scrutinee₂)
+    (h_left : Conv leftBranch₁ leftBranch₂)
+    (h_right : Conv rightBranch₁ rightBranch₂) :
+    Conv (Term.eitherMatch scrutinee₁ leftBranch₁ rightBranch₁)
+         (Term.eitherMatch scrutinee₂ leftBranch₂ rightBranch₂) :=
+  Conv.trans
+    (Conv.eitherMatch_cong_scrutinee leftBranch₁ rightBranch₁ h_scr)
+    (Conv.trans
+      (Conv.eitherMatch_cong_left scrutinee₂ rightBranch₁ h_left)
+      (Conv.eitherMatch_cong_right scrutinee₂ leftBranch₂ h_right))
+
 /-! ## StepStar congruences for nat (defined above the Conv versions
 because Step.par.toStar consumes them). -/
 
@@ -6450,6 +6673,96 @@ theorem StepStar.optionMatch_cong
       (StepStar.optionMatch_cong_none scrutinee₂ someBranch₁ h_none)
       (StepStar.optionMatch_cong_some scrutinee₂ noneBranch₂ h_some))
 
+/-! ## Either StepStar congruences (placed before Step.par.toStar
+which consumes them). -/
+
+/-- Multi-step reduction threads through `Term.eitherInl`. -/
+theorem StepStar.eitherInl_cong {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {value₁ value₂ : Term ctx leftType} :
+    StepStar value₁ value₂ →
+    StepStar (Term.eitherInl (rightType := rightType) value₁)
+             (Term.eitherInl (rightType := rightType) value₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.eitherInlValue s)
+        (StepStar.eitherInl_cong rest)
+
+/-- Multi-step reduction threads through `Term.eitherInr`. -/
+theorem StepStar.eitherInr_cong {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {value₁ value₂ : Term ctx rightType} :
+    StepStar value₁ value₂ →
+    StepStar (Term.eitherInr (leftType := leftType) value₁)
+             (Term.eitherInr (leftType := leftType) value₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.eitherInrValue s)
+        (StepStar.eitherInr_cong rest)
+
+/-- Multi-step reduction threads through `eitherMatch`'s scrutinee. -/
+theorem StepStar.eitherMatch_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.either leftType rightType)}
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    (rightBranch : Term ctx (Ty.arrow rightType resultType)) :
+    StepStar scrutinee₁ scrutinee₂ →
+    StepStar (Term.eitherMatch scrutinee₁ leftBranch rightBranch)
+             (Term.eitherMatch scrutinee₂ leftBranch rightBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.eitherMatchScrutinee s)
+        (StepStar.eitherMatch_cong_scrutinee leftBranch rightBranch rest)
+
+/-- Multi-step reduction threads through `eitherMatch`'s left-branch. -/
+theorem StepStar.eitherMatch_cong_left
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.either leftType rightType))
+    {leftBranch₁ leftBranch₂ : Term ctx (Ty.arrow leftType resultType)}
+    (rightBranch : Term ctx (Ty.arrow rightType resultType)) :
+    StepStar leftBranch₁ leftBranch₂ →
+    StepStar (Term.eitherMatch scrutinee leftBranch₁ rightBranch)
+             (Term.eitherMatch scrutinee leftBranch₂ rightBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.eitherMatchLeft s)
+        (StepStar.eitherMatch_cong_left scrutinee rightBranch rest)
+
+/-- Multi-step reduction threads through `eitherMatch`'s right-branch. -/
+theorem StepStar.eitherMatch_cong_right
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.either leftType rightType))
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    {rightBranch₁ rightBranch₂ : Term ctx (Ty.arrow rightType resultType)} :
+    StepStar rightBranch₁ rightBranch₂ →
+    StepStar (Term.eitherMatch scrutinee leftBranch rightBranch₁)
+             (Term.eitherMatch scrutinee leftBranch rightBranch₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.eitherMatchRight s)
+        (StepStar.eitherMatch_cong_right scrutinee leftBranch rest)
+
+/-- Multi-step reduction threads through all three `eitherMatch` positions. -/
+theorem StepStar.eitherMatch_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.either leftType rightType)}
+    {leftBranch₁ leftBranch₂ : Term ctx (Ty.arrow leftType resultType)}
+    {rightBranch₁ rightBranch₂ : Term ctx (Ty.arrow rightType resultType)}
+    (h_scr : StepStar scrutinee₁ scrutinee₂)
+    (h_left : StepStar leftBranch₁ leftBranch₂)
+    (h_right : StepStar rightBranch₁ rightBranch₂) :
+    StepStar (Term.eitherMatch scrutinee₁ leftBranch₁ rightBranch₁)
+             (Term.eitherMatch scrutinee₂ leftBranch₂ rightBranch₂) :=
+  StepStar.trans
+    (StepStar.eitherMatch_cong_scrutinee leftBranch₁ rightBranch₁ h_scr)
+    (StepStar.trans
+      (StepStar.eitherMatch_cong_left scrutinee₂ rightBranch₁ h_left)
+      (StepStar.eitherMatch_cong_right scrutinee₂ leftBranch₂ h_right))
+
 /-! ## `Step.par.toStar` — parallel reduction lifts to multi-step.
 
 Each Step.par constructor decomposes into a sequence of single Step's
@@ -6596,6 +6909,33 @@ theorem Step.par.toStar
           (StepStar.refl noneBranch)
           (Step.par.toStar par_some))
         (Step.toStar (Step.iotaOptionMatchSome v' noneBranch sm'))
+  | .eitherInl par_value     =>
+      StepStar.eitherInl_cong (Step.par.toStar par_value)
+  | .eitherInr par_value     =>
+      StepStar.eitherInr_cong (Step.par.toStar par_value)
+  | .eitherMatch par_s par_l par_r =>
+      StepStar.eitherMatch_cong
+        (Step.par.toStar par_s)
+        (Step.par.toStar par_l)
+        (Step.par.toStar par_r)
+  | .iotaEitherMatchInl
+        (value' := v') (leftBranch' := lb')
+        rightBranch par_value par_left =>
+      StepStar.trans
+        (StepStar.eitherMatch_cong
+          (StepStar.eitherInl_cong (Step.par.toStar par_value))
+          (Step.par.toStar par_left)
+          (StepStar.refl rightBranch))
+        (Step.toStar (Step.iotaEitherMatchInl v' lb' rightBranch))
+  | .iotaEitherMatchInr
+        (value' := v') (rightBranch' := rb')
+        leftBranch par_value par_right =>
+      StepStar.trans
+        (StepStar.eitherMatch_cong
+          (StepStar.eitherInr_cong (Step.par.toStar par_value))
+          (StepStar.refl leftBranch)
+          (Step.par.toStar par_right))
+        (Step.toStar (Step.iotaEitherMatchInr v' leftBranch rb'))
   | .etaArrow f              => Step.toStar (Step.etaArrow f)
   | .etaSigma p              => Step.toStar (Step.etaSigma p)
 
