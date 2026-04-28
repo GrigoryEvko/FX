@@ -1,6 +1,5 @@
 import LeanFX.Mode.Defn
 import LeanFX.Syntax.Term
-import LeanFX.Syntax.Raw
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
 
@@ -8,48 +7,57 @@ This is the public root of the package.  Every public-facing
 definition lives in `LeanFX/...` and is re-exported here in
 dependency order.
 
-## One kernel, two layers
+## One kernel, one file
 
-A single kernel that **bypasses Lean 4's elaborator limitation
-from both sides** — intrinsic typing where Lean accepts it, raw
-syntax where it doesn't — and links the two via bridge functions.
-Both layers live in `LeanFX/Syntax/`:
+A single intrinsic kernel that **bypasses Lean 4's mutual-index
+limitation by sequential composition** — declare `RawTerm : Nat →
+Type` BEFORE `Ty`, so `Ty.id`'s reference to `RawTerm` is a
+forward citation, not a mutual cross-reference.
 
-  * `LeanFX.Syntax` (intrinsic layer, `Term.lean`) — `Ty : Nat →
-    Nat → Type`, `Ctx`, `Term : (Γ : Ctx) → Ty → Type`.  Typing is
-    construction; constructor signatures *are* the typing rules.
-    Most of the kernel lives here: substitution, reduction,
-    parallel reduction, Conv, identity-proof scaffold.  ~7,800
-    lines, 100% zero-axiom.
+Everything lives in `LeanFX.Syntax.Term`:
 
-  * `LeanFX.Syntax.Raw` (raw layer, `Raw.lean`) — `Ty : Nat → Nat
-    → Type` and `Term : Nat → Nat → Type` mutual, where `Ty.tyId`
-    references raw `Term` values in *argument position*.  This
-    sidesteps the mutual-index-signature limit
-    (`feedback_lean_mutual_index_rule.md`).  Provides the
-    Term-mentioning `Ty` constructors (identity types, future J
-    eliminator, parametricity bridges) that the intrinsic layer
-    architecturally cannot host.
+  * `RawTerm : Nat → Type` — well-scoped raw syntax (25
+    constructors including `refl` and `idJ`).  Substrate for
+    identity-type endpoints.
 
-## Why this works
+  * `Ty : Nat → Nat → Type` — well-scoped intrinsic types,
+    indexed by universe level + scope.  `Ty.id carrier lhs rhs`
+    references RawTerm endpoints in argument position.
 
-Lean 4's elaborator forbids cross-mutual references in *mutual
-inductive index family signatures*.  It admits cross-references in
-*constructor argument types*.  The fix that crystallised after the
-prototype: define raw `Ty/Term` MUTUAL with each other (so
-`Ty.tyId` can reference raw `Term` in args), then build the
-intrinsic kernel SEPARATELY on top with its own `Ty/Term/Ctx`.
-Two layers, one kernel; the bridge between them is the future
-`Term.toRaw : intrinsic.Term Γ T → Raw.Term level scope` and
-companion lift.
+  * `Ctx : Mode → Nat → Nat → Type` — typed contexts.
+
+  * `Term : Ctx → Ty → Type` — intrinsically-typed terms.
+    Constructor signatures *are* the typing rules.  Includes
+    `Term.refl` and `Term.idJ` for identity-type introduction
+    and elimination.
+
+  * `Term.toRaw : Term Γ T → RawTerm scope` — the bridge that
+    erases intrinsic typing back to raw syntax.
+
+  * Substitution, parallel reduction (`Step`, `Step.par`,
+    `StepStar`, `Conv`), and the J ι-rule.
+
+~9,400 lines, 100% zero-axiom across every declaration.
+
+## The unified architecture
+
+Earlier prototypes split this into two files: an intrinsic kernel
+(this `Term.lean`) and a raw mutual kernel (`Raw.lean`) that
+hosted `Ty.tyId` mutual with raw `Term`.  The mutual approach
+was needed because `Ty` had to reference Term-shaped values, and
+intrinsic mutual `Ctx⇄Ty⇄Term` is rejected by Lean 4's elaborator
+(`feedback_lean_mutual_index_rule.md`).
+
+The sequential-composition trick (RawTerm declared before Ty)
+sidesteps the elaborator restriction entirely while keeping
+intrinsic discipline.  `Raw.lean` was deleted in v2.2p.
 
 ## Trust base
 
   * Lean 4 kernel (~6 KLoC C++; accepted as TCB).
   * `LeanFX.Mode.Defn` — the four-mode enum.  Audited as input data.
-  * `LeanFX.Syntax.Term` — intrinsic Ty + Ctx + Term GADT.
-  * `LeanFX.Syntax.Raw` — raw mutual `Ty + Term` with `Ty.tyId`.
+  * `LeanFX.Syntax.Term` — RawTerm + Ty + Ctx + Term + reductions.
 
-Everything else — substitution, reduction, conversion, typing,
-subject reduction, the bidirectional checker, the elaborator —
-operates *on* the kernel and physically cannot extend it. -/
+Everything else — typing, conversion, subject reduction, the
+bidirectional checker, the elaborator — operates *on* the kernel
+and physically cannot extend it. -/
