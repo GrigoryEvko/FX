@@ -8,15 +8,24 @@ The list is one-to-one with `../fx_design.md` Appendix H.  Changes to
 this file require coordinated updates to Appendix H, an RFC under
 `docs/rfcs/`, and two maintainer approvals.
 
-**Total: 33 entries.  The count is load-bearing.**
+**33 entries.  This is an upper-bound ceiling on the trusted base,
+not a target.  Currently 0 entries are declared as `axiom` in Lean.**
+
+The 33-entry count is the per-rule granular allowlist that
+`scripts/axiom-audit.sh` grep-matches; `fx_design.md` Appendix H §H.11
+groups these into 23 canonical categories (level arithmetic absorbed
+into U-form, etc.).  Both counts describe the same allowlist; only the
+declared subset matters for the trusted base.
 
 ## Current state (Phase 2.2)
 
-**0 of 33 entries declared as `axiom` in Lean.**  Many entries are
-now **realized** — a partial-def function in `FX/Kernel/Typing.lean`
-or `FX/Kernel/Reduction.lean` implements the rule directly, and no
-axiom declaration is needed.  Others remain **pending** as their
-term forms and kernel rules ship in Phase 2.3+.
+**0 of 33 entries declared as `axiom` in Lean.**  `#print axioms`
+confirms every kernel theorem is constructive over Lean 4's TCB.
+Many entries are now **realized** — a partial-def function in
+`FX/Kernel/Typing.lean` or `FX/Kernel/Reduction.lean` implements
+the rule directly, and no axiom declaration is needed.  Others
+remain **pending** as their term forms and kernel rules ship in
+Phase 2.3+.
 
 The `scripts/axiom-audit.sh` gate passes at every commit because no
 `axiom` is declared in `FX/Kernel/**` yet — every rule in scope for
@@ -27,10 +36,20 @@ that termination-checks under Lean's kernel via fuel or
 
 Whenever possible we prefer to realize an Appendix-H entry as a
 **proved theorem** or a **realized `partial def`** over the
-relevant finite structure.  Only the genuinely axiomatic rules —
-principally the `U-emit` hardware-memory-model refinement (§H.10)
-and the strong-normalization meta-theorems (Phase 8) — will be
-declared as `axiom` when their content lands.
+relevant finite structure.  Only three entries are genuinely
+axiomatic when their MTT extensions land:
+
+  * `U-emit` (§H.10) — hardware-memory-model refinement, ~120-lemma
+    proof obligation against per-arch ISA semantics.
+  * `ua_wire` / ModalUniv-Wire (§H.7a) — modal univalence at the
+    Wire mode for contract migration.
+  * `HIT` (§H.7) — currently the single HIT primitive subsuming
+    Quot; itself avoidable via a setoid encoding if needed.
+
+Plus the strong-normalization meta-theorems (Phase 8), which will
+be declared as `axiom` when their content lands.  All other entries
+are intended to be discharged as theorems or realized as `partial
+def` code.
 
 The status column below distinguishes:
 
@@ -315,9 +334,11 @@ current declaration.
 ## 13. Non-axioms (derived)
 
 Every surface feature in `fx_design.md` §3–§26 is **derived** from the
-33 entries above (whether declared as `axiom` or proved as theorem),
-not axiomatic in its own right.  The derivations live in
-`FX/Derived/`:
+33-entry allowlist above (whether declared as `axiom` or proved as
+theorem), not axiomatic in its own right.  The current declared
+trusted base is the empty subset; the allowlist is the upper-bound
+ceiling enforced by `scripts/axiom-audit.sh`.  The derivations live
+in `FX/Derived/`:
 
 * `FX/Derived/Adt.lean`       §3.3 algebraic data types
 * `FX/Derived/Record.lean`    §3.4 records
