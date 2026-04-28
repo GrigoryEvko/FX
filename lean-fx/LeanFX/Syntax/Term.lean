@@ -541,6 +541,423 @@ theorem Ty.rename_weaken_commute {level source target : Nat}
           ((Ty.rename_congr hSwap T).trans
             (Ty.rename_compose T ρ Renaming.weaken).symm)
 
+/-! ## RawTerm renaming.
+
+`RawTerm` uses the same `Renaming` machinery as `Ty` — purely
+positional remapping `Fin source → Fin target`.  Every constructor's
+arm just recurses (with `Renaming.lift` under the `lam` binder).
+Categorical laws — `rename_congr`, `rename_compose`, `rename_identity`,
+`rename_weaken_commute` — mirror their `Ty` counterparts exactly.
+
+Used by the upcoming `Ty.id` arm of `Ty.rename` (v2.2c) to thread
+renaming through identity-type endpoints. -/
+
+/-- Apply a renaming to a raw term.  Pattern-form match over each of
+the 23 RawTerm constructors; under `lam`'s binder we lift the
+renaming so the body's free variables shift correctly. -/
+def RawTerm.rename {source target : Nat} :
+    RawTerm source → Renaming source target → RawTerm target
+  | .var position, ρ        => .var (ρ position)
+  | .unit, _                => .unit
+  | .boolTrue, _            => .boolTrue
+  | .boolFalse, _           => .boolFalse
+  | .natZero, _             => .natZero
+  | .natSucc predecessor, ρ => .natSucc (RawTerm.rename predecessor ρ)
+  | .lam body, ρ            => .lam (RawTerm.rename body ρ.lift)
+  | .app function argument, ρ =>
+      .app (RawTerm.rename function ρ) (RawTerm.rename argument ρ)
+  | .pair first second, ρ =>
+      .pair (RawTerm.rename first ρ) (RawTerm.rename second ρ)
+  | .fst pairTerm, ρ        => .fst (RawTerm.rename pairTerm ρ)
+  | .snd pairTerm, ρ        => .snd (RawTerm.rename pairTerm ρ)
+  | .boolElim scrutinee thenBranch elseBranch, ρ =>
+      .boolElim
+        (RawTerm.rename scrutinee ρ)
+        (RawTerm.rename thenBranch ρ)
+        (RawTerm.rename elseBranch ρ)
+  | .natElim scrutinee zeroBranch succBranch, ρ =>
+      .natElim
+        (RawTerm.rename scrutinee ρ)
+        (RawTerm.rename zeroBranch ρ)
+        (RawTerm.rename succBranch ρ)
+  | .natRec scrutinee zeroBranch succBranch, ρ =>
+      .natRec
+        (RawTerm.rename scrutinee ρ)
+        (RawTerm.rename zeroBranch ρ)
+        (RawTerm.rename succBranch ρ)
+  | .listNil, _             => .listNil
+  | .listCons head tail, ρ =>
+      .listCons (RawTerm.rename head ρ) (RawTerm.rename tail ρ)
+  | .listElim scrutinee nilBranch consBranch, ρ =>
+      .listElim
+        (RawTerm.rename scrutinee ρ)
+        (RawTerm.rename nilBranch ρ)
+        (RawTerm.rename consBranch ρ)
+  | .optionNone, _          => .optionNone
+  | .optionSome value, ρ    => .optionSome (RawTerm.rename value ρ)
+  | .optionMatch scrutinee noneBranch someBranch, ρ =>
+      .optionMatch
+        (RawTerm.rename scrutinee ρ)
+        (RawTerm.rename noneBranch ρ)
+        (RawTerm.rename someBranch ρ)
+  | .eitherInl value, ρ     => .eitherInl (RawTerm.rename value ρ)
+  | .eitherInr value, ρ     => .eitherInr (RawTerm.rename value ρ)
+  | .eitherMatch scrutinee leftBranch rightBranch, ρ =>
+      .eitherMatch
+        (RawTerm.rename scrutinee ρ)
+        (RawTerm.rename leftBranch ρ)
+        (RawTerm.rename rightBranch ρ)
+  | .refl term, ρ           => .refl (RawTerm.rename term ρ)
+
+/-- Pointwise-equivalent renamings produce equal results on every
+raw term.  Same pattern as `Ty.rename_congr` — direct structural
+induction with `Renaming.lift_equiv` for the binder case. -/
+theorem RawTerm.rename_congr {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
+    (h : Renaming.equiv ρ₁ ρ₂) :
+    ∀ rawTerm : RawTerm s, rawTerm.rename ρ₁ = rawTerm.rename ρ₂
+  | .var position => congrArg RawTerm.var (h position)
+  | .unit         => rfl
+  | .boolTrue     => rfl
+  | .boolFalse    => rfl
+  | .natZero      => rfl
+  | .natSucc predecessor => by
+      have hPred := RawTerm.rename_congr h predecessor
+      show RawTerm.natSucc (RawTerm.rename predecessor ρ₁)
+         = RawTerm.natSucc (RawTerm.rename predecessor ρ₂)
+      exact hPred ▸ rfl
+  | .lam body => by
+      have hBody := RawTerm.rename_congr (Renaming.lift_equiv h) body
+      show RawTerm.lam (RawTerm.rename body ρ₁.lift)
+         = RawTerm.lam (RawTerm.rename body ρ₂.lift)
+      exact hBody ▸ rfl
+  | .app function argument => by
+      have hFunc := RawTerm.rename_congr h function
+      have hArg  := RawTerm.rename_congr h argument
+      show RawTerm.app (RawTerm.rename function ρ₁)
+                       (RawTerm.rename argument ρ₁)
+         = RawTerm.app (RawTerm.rename function ρ₂)
+                       (RawTerm.rename argument ρ₂)
+      exact hFunc ▸ hArg ▸ rfl
+  | .pair first second => by
+      have hFirst  := RawTerm.rename_congr h first
+      have hSecond := RawTerm.rename_congr h second
+      show RawTerm.pair (RawTerm.rename first ρ₁)
+                        (RawTerm.rename second ρ₁)
+         = RawTerm.pair (RawTerm.rename first ρ₂)
+                        (RawTerm.rename second ρ₂)
+      exact hFirst ▸ hSecond ▸ rfl
+  | .fst pairTerm => by
+      have hPair := RawTerm.rename_congr h pairTerm
+      show RawTerm.fst (RawTerm.rename pairTerm ρ₁)
+         = RawTerm.fst (RawTerm.rename pairTerm ρ₂)
+      exact hPair ▸ rfl
+  | .snd pairTerm => by
+      have hPair := RawTerm.rename_congr h pairTerm
+      show RawTerm.snd (RawTerm.rename pairTerm ρ₁)
+         = RawTerm.snd (RawTerm.rename pairTerm ρ₂)
+      exact hPair ▸ rfl
+  | .boolElim scrutinee thenBranch elseBranch => by
+      have hScr  := RawTerm.rename_congr h scrutinee
+      have hThen := RawTerm.rename_congr h thenBranch
+      have hElse := RawTerm.rename_congr h elseBranch
+      show RawTerm.boolElim
+             (RawTerm.rename scrutinee ρ₁)
+             (RawTerm.rename thenBranch ρ₁)
+             (RawTerm.rename elseBranch ρ₁)
+         = RawTerm.boolElim
+             (RawTerm.rename scrutinee ρ₂)
+             (RawTerm.rename thenBranch ρ₂)
+             (RawTerm.rename elseBranch ρ₂)
+      exact hScr ▸ hThen ▸ hElse ▸ rfl
+  | .natElim scrutinee zeroBranch succBranch => by
+      have hScr  := RawTerm.rename_congr h scrutinee
+      have hZero := RawTerm.rename_congr h zeroBranch
+      have hSucc := RawTerm.rename_congr h succBranch
+      show RawTerm.natElim
+             (RawTerm.rename scrutinee ρ₁)
+             (RawTerm.rename zeroBranch ρ₁)
+             (RawTerm.rename succBranch ρ₁)
+         = RawTerm.natElim
+             (RawTerm.rename scrutinee ρ₂)
+             (RawTerm.rename zeroBranch ρ₂)
+             (RawTerm.rename succBranch ρ₂)
+      exact hScr ▸ hZero ▸ hSucc ▸ rfl
+  | .natRec scrutinee zeroBranch succBranch => by
+      have hScr  := RawTerm.rename_congr h scrutinee
+      have hZero := RawTerm.rename_congr h zeroBranch
+      have hSucc := RawTerm.rename_congr h succBranch
+      show RawTerm.natRec
+             (RawTerm.rename scrutinee ρ₁)
+             (RawTerm.rename zeroBranch ρ₁)
+             (RawTerm.rename succBranch ρ₁)
+         = RawTerm.natRec
+             (RawTerm.rename scrutinee ρ₂)
+             (RawTerm.rename zeroBranch ρ₂)
+             (RawTerm.rename succBranch ρ₂)
+      exact hScr ▸ hZero ▸ hSucc ▸ rfl
+  | .listNil => rfl
+  | .listCons head tail => by
+      have hHead := RawTerm.rename_congr h head
+      have hTail := RawTerm.rename_congr h tail
+      show RawTerm.listCons (RawTerm.rename head ρ₁)
+                            (RawTerm.rename tail ρ₁)
+         = RawTerm.listCons (RawTerm.rename head ρ₂)
+                            (RawTerm.rename tail ρ₂)
+      exact hHead ▸ hTail ▸ rfl
+  | .listElim scrutinee nilBranch consBranch => by
+      have hScr  := RawTerm.rename_congr h scrutinee
+      have hNil  := RawTerm.rename_congr h nilBranch
+      have hCons := RawTerm.rename_congr h consBranch
+      show RawTerm.listElim
+             (RawTerm.rename scrutinee ρ₁)
+             (RawTerm.rename nilBranch ρ₁)
+             (RawTerm.rename consBranch ρ₁)
+         = RawTerm.listElim
+             (RawTerm.rename scrutinee ρ₂)
+             (RawTerm.rename nilBranch ρ₂)
+             (RawTerm.rename consBranch ρ₂)
+      exact hScr ▸ hNil ▸ hCons ▸ rfl
+  | .optionNone => rfl
+  | .optionSome value => by
+      have hValue := RawTerm.rename_congr h value
+      show RawTerm.optionSome (RawTerm.rename value ρ₁)
+         = RawTerm.optionSome (RawTerm.rename value ρ₂)
+      exact hValue ▸ rfl
+  | .optionMatch scrutinee noneBranch someBranch => by
+      have hScr  := RawTerm.rename_congr h scrutinee
+      have hNone := RawTerm.rename_congr h noneBranch
+      have hSome := RawTerm.rename_congr h someBranch
+      show RawTerm.optionMatch
+             (RawTerm.rename scrutinee ρ₁)
+             (RawTerm.rename noneBranch ρ₁)
+             (RawTerm.rename someBranch ρ₁)
+         = RawTerm.optionMatch
+             (RawTerm.rename scrutinee ρ₂)
+             (RawTerm.rename noneBranch ρ₂)
+             (RawTerm.rename someBranch ρ₂)
+      exact hScr ▸ hNone ▸ hSome ▸ rfl
+  | .eitherInl value => by
+      have hValue := RawTerm.rename_congr h value
+      show RawTerm.eitherInl (RawTerm.rename value ρ₁)
+         = RawTerm.eitherInl (RawTerm.rename value ρ₂)
+      exact hValue ▸ rfl
+  | .eitherInr value => by
+      have hValue := RawTerm.rename_congr h value
+      show RawTerm.eitherInr (RawTerm.rename value ρ₁)
+         = RawTerm.eitherInr (RawTerm.rename value ρ₂)
+      exact hValue ▸ rfl
+  | .eitherMatch scrutinee leftBranch rightBranch => by
+      have hScr   := RawTerm.rename_congr h scrutinee
+      have hLeft  := RawTerm.rename_congr h leftBranch
+      have hRight := RawTerm.rename_congr h rightBranch
+      show RawTerm.eitherMatch
+             (RawTerm.rename scrutinee ρ₁)
+             (RawTerm.rename leftBranch ρ₁)
+             (RawTerm.rename rightBranch ρ₁)
+         = RawTerm.eitherMatch
+             (RawTerm.rename scrutinee ρ₂)
+             (RawTerm.rename leftBranch ρ₂)
+             (RawTerm.rename rightBranch ρ₂)
+      exact hScr ▸ hLeft ▸ hRight ▸ rfl
+  | .refl term => by
+      have hTerm := RawTerm.rename_congr h term
+      show RawTerm.refl (RawTerm.rename term ρ₁)
+         = RawTerm.refl (RawTerm.rename term ρ₂)
+      exact hTerm ▸ rfl
+
+/-- Renaming composition law for raw terms.  Same shape as
+`Ty.rename_compose`; `lam` arm uses `Renaming.lift_compose_equiv` to
+bridge `(lift ρ₁; lift ρ₂)` with `lift (ρ₁; ρ₂)`. -/
+theorem RawTerm.rename_compose {s m t : Nat} :
+    ∀ (rawTerm : RawTerm s) (ρ₁ : Renaming s m) (ρ₂ : Renaming m t),
+      (rawTerm.rename ρ₁).rename ρ₂
+        = rawTerm.rename (Renaming.compose ρ₁ ρ₂)
+  | .var _, _, _   => rfl
+  | .unit, _, _    => rfl
+  | .boolTrue, _, _ => rfl
+  | .boolFalse, _, _ => rfl
+  | .natZero, _, _ => rfl
+  | .natSucc predecessor, ρ₁, ρ₂ => by
+      have hPred := RawTerm.rename_compose predecessor ρ₁ ρ₂
+      show RawTerm.natSucc ((RawTerm.rename predecessor ρ₁).rename ρ₂)
+         = RawTerm.natSucc
+             (RawTerm.rename predecessor (Renaming.compose ρ₁ ρ₂))
+      exact hPred ▸ rfl
+  | .lam body, ρ₁, ρ₂ => by
+      have hBody := RawTerm.rename_compose body ρ₁.lift ρ₂.lift
+      have hLift :=
+        RawTerm.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) body
+      show RawTerm.lam ((RawTerm.rename body ρ₁.lift).rename ρ₂.lift)
+         = RawTerm.lam
+             (RawTerm.rename body (Renaming.compose ρ₁ ρ₂).lift)
+      exact (hBody.trans hLift) ▸ rfl
+  | .app function argument, ρ₁, ρ₂ => by
+      have hFunc := RawTerm.rename_compose function ρ₁ ρ₂
+      have hArg  := RawTerm.rename_compose argument ρ₁ ρ₂
+      show RawTerm.app
+             ((RawTerm.rename function ρ₁).rename ρ₂)
+             ((RawTerm.rename argument ρ₁).rename ρ₂)
+         = RawTerm.app
+             (RawTerm.rename function (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename argument (Renaming.compose ρ₁ ρ₂))
+      exact hFunc ▸ hArg ▸ rfl
+  | .pair first second, ρ₁, ρ₂ => by
+      have hFirst  := RawTerm.rename_compose first ρ₁ ρ₂
+      have hSecond := RawTerm.rename_compose second ρ₁ ρ₂
+      show RawTerm.pair
+             ((RawTerm.rename first ρ₁).rename ρ₂)
+             ((RawTerm.rename second ρ₁).rename ρ₂)
+         = RawTerm.pair
+             (RawTerm.rename first (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename second (Renaming.compose ρ₁ ρ₂))
+      exact hFirst ▸ hSecond ▸ rfl
+  | .fst pairTerm, ρ₁, ρ₂ => by
+      have hPair := RawTerm.rename_compose pairTerm ρ₁ ρ₂
+      show RawTerm.fst ((RawTerm.rename pairTerm ρ₁).rename ρ₂)
+         = RawTerm.fst
+             (RawTerm.rename pairTerm (Renaming.compose ρ₁ ρ₂))
+      exact hPair ▸ rfl
+  | .snd pairTerm, ρ₁, ρ₂ => by
+      have hPair := RawTerm.rename_compose pairTerm ρ₁ ρ₂
+      show RawTerm.snd ((RawTerm.rename pairTerm ρ₁).rename ρ₂)
+         = RawTerm.snd
+             (RawTerm.rename pairTerm (Renaming.compose ρ₁ ρ₂))
+      exact hPair ▸ rfl
+  | .boolElim scrutinee thenBranch elseBranch, ρ₁, ρ₂ => by
+      have hScr  := RawTerm.rename_compose scrutinee ρ₁ ρ₂
+      have hThen := RawTerm.rename_compose thenBranch ρ₁ ρ₂
+      have hElse := RawTerm.rename_compose elseBranch ρ₁ ρ₂
+      show RawTerm.boolElim
+             ((RawTerm.rename scrutinee ρ₁).rename ρ₂)
+             ((RawTerm.rename thenBranch ρ₁).rename ρ₂)
+             ((RawTerm.rename elseBranch ρ₁).rename ρ₂)
+         = RawTerm.boolElim
+             (RawTerm.rename scrutinee (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename thenBranch (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename elseBranch (Renaming.compose ρ₁ ρ₂))
+      exact hScr ▸ hThen ▸ hElse ▸ rfl
+  | .natElim scrutinee zeroBranch succBranch, ρ₁, ρ₂ => by
+      have hScr  := RawTerm.rename_compose scrutinee ρ₁ ρ₂
+      have hZero := RawTerm.rename_compose zeroBranch ρ₁ ρ₂
+      have hSucc := RawTerm.rename_compose succBranch ρ₁ ρ₂
+      show RawTerm.natElim
+             ((RawTerm.rename scrutinee ρ₁).rename ρ₂)
+             ((RawTerm.rename zeroBranch ρ₁).rename ρ₂)
+             ((RawTerm.rename succBranch ρ₁).rename ρ₂)
+         = RawTerm.natElim
+             (RawTerm.rename scrutinee (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename zeroBranch (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename succBranch (Renaming.compose ρ₁ ρ₂))
+      exact hScr ▸ hZero ▸ hSucc ▸ rfl
+  | .natRec scrutinee zeroBranch succBranch, ρ₁, ρ₂ => by
+      have hScr  := RawTerm.rename_compose scrutinee ρ₁ ρ₂
+      have hZero := RawTerm.rename_compose zeroBranch ρ₁ ρ₂
+      have hSucc := RawTerm.rename_compose succBranch ρ₁ ρ₂
+      show RawTerm.natRec
+             ((RawTerm.rename scrutinee ρ₁).rename ρ₂)
+             ((RawTerm.rename zeroBranch ρ₁).rename ρ₂)
+             ((RawTerm.rename succBranch ρ₁).rename ρ₂)
+         = RawTerm.natRec
+             (RawTerm.rename scrutinee (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename zeroBranch (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename succBranch (Renaming.compose ρ₁ ρ₂))
+      exact hScr ▸ hZero ▸ hSucc ▸ rfl
+  | .listNil, _, _ => rfl
+  | .listCons head tail, ρ₁, ρ₂ => by
+      have hHead := RawTerm.rename_compose head ρ₁ ρ₂
+      have hTail := RawTerm.rename_compose tail ρ₁ ρ₂
+      show RawTerm.listCons
+             ((RawTerm.rename head ρ₁).rename ρ₂)
+             ((RawTerm.rename tail ρ₁).rename ρ₂)
+         = RawTerm.listCons
+             (RawTerm.rename head (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename tail (Renaming.compose ρ₁ ρ₂))
+      exact hHead ▸ hTail ▸ rfl
+  | .listElim scrutinee nilBranch consBranch, ρ₁, ρ₂ => by
+      have hScr  := RawTerm.rename_compose scrutinee ρ₁ ρ₂
+      have hNil  := RawTerm.rename_compose nilBranch ρ₁ ρ₂
+      have hCons := RawTerm.rename_compose consBranch ρ₁ ρ₂
+      show RawTerm.listElim
+             ((RawTerm.rename scrutinee ρ₁).rename ρ₂)
+             ((RawTerm.rename nilBranch ρ₁).rename ρ₂)
+             ((RawTerm.rename consBranch ρ₁).rename ρ₂)
+         = RawTerm.listElim
+             (RawTerm.rename scrutinee (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename nilBranch (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename consBranch (Renaming.compose ρ₁ ρ₂))
+      exact hScr ▸ hNil ▸ hCons ▸ rfl
+  | .optionNone, _, _ => rfl
+  | .optionSome value, ρ₁, ρ₂ => by
+      have hValue := RawTerm.rename_compose value ρ₁ ρ₂
+      show RawTerm.optionSome ((RawTerm.rename value ρ₁).rename ρ₂)
+         = RawTerm.optionSome
+             (RawTerm.rename value (Renaming.compose ρ₁ ρ₂))
+      exact hValue ▸ rfl
+  | .optionMatch scrutinee noneBranch someBranch, ρ₁, ρ₂ => by
+      have hScr  := RawTerm.rename_compose scrutinee ρ₁ ρ₂
+      have hNone := RawTerm.rename_compose noneBranch ρ₁ ρ₂
+      have hSome := RawTerm.rename_compose someBranch ρ₁ ρ₂
+      show RawTerm.optionMatch
+             ((RawTerm.rename scrutinee ρ₁).rename ρ₂)
+             ((RawTerm.rename noneBranch ρ₁).rename ρ₂)
+             ((RawTerm.rename someBranch ρ₁).rename ρ₂)
+         = RawTerm.optionMatch
+             (RawTerm.rename scrutinee (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename noneBranch (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename someBranch (Renaming.compose ρ₁ ρ₂))
+      exact hScr ▸ hNone ▸ hSome ▸ rfl
+  | .eitherInl value, ρ₁, ρ₂ => by
+      have hValue := RawTerm.rename_compose value ρ₁ ρ₂
+      show RawTerm.eitherInl ((RawTerm.rename value ρ₁).rename ρ₂)
+         = RawTerm.eitherInl
+             (RawTerm.rename value (Renaming.compose ρ₁ ρ₂))
+      exact hValue ▸ rfl
+  | .eitherInr value, ρ₁, ρ₂ => by
+      have hValue := RawTerm.rename_compose value ρ₁ ρ₂
+      show RawTerm.eitherInr ((RawTerm.rename value ρ₁).rename ρ₂)
+         = RawTerm.eitherInr
+             (RawTerm.rename value (Renaming.compose ρ₁ ρ₂))
+      exact hValue ▸ rfl
+  | .eitherMatch scrutinee leftBranch rightBranch, ρ₁, ρ₂ => by
+      have hScr   := RawTerm.rename_compose scrutinee ρ₁ ρ₂
+      have hLeft  := RawTerm.rename_compose leftBranch ρ₁ ρ₂
+      have hRight := RawTerm.rename_compose rightBranch ρ₁ ρ₂
+      show RawTerm.eitherMatch
+             ((RawTerm.rename scrutinee ρ₁).rename ρ₂)
+             ((RawTerm.rename leftBranch ρ₁).rename ρ₂)
+             ((RawTerm.rename rightBranch ρ₁).rename ρ₂)
+         = RawTerm.eitherMatch
+             (RawTerm.rename scrutinee (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename leftBranch (Renaming.compose ρ₁ ρ₂))
+             (RawTerm.rename rightBranch (Renaming.compose ρ₁ ρ₂))
+      exact hScr ▸ hLeft ▸ hRight ▸ rfl
+  | .refl term, ρ₁, ρ₂ => by
+      have hTerm := RawTerm.rename_compose term ρ₁ ρ₂
+      show RawTerm.refl ((RawTerm.rename term ρ₁).rename ρ₂)
+         = RawTerm.refl
+             (RawTerm.rename term (Renaming.compose ρ₁ ρ₂))
+      exact hTerm ▸ rfl
+
+/-- v2.2b weakening on raw terms — derived from rename. -/
+@[reducible]
+def RawTerm.weaken {scope : Nat}
+    (rawTerm : RawTerm scope) : RawTerm (scope + 1) :=
+  rawTerm.rename Renaming.weaken
+
+/-- Weakening commutes with renaming on raw terms — same proof
+shape as `Ty.rename_weaken_commute`. -/
+theorem RawTerm.rename_weaken_commute {source target : Nat}
+    (rawTerm : RawTerm source) (ρ : Renaming source target) :
+    (rawTerm.weaken).rename ρ.lift = (rawTerm.rename ρ).weaken := by
+  show (rawTerm.rename Renaming.weaken).rename ρ.lift
+     = (rawTerm.rename ρ).rename Renaming.weaken
+  have hSwap :
+      Renaming.equiv (Renaming.compose Renaming.weaken ρ.lift)
+                     (Renaming.compose ρ Renaming.weaken) := fun _ => rfl
+  exact (RawTerm.rename_compose rawTerm Renaming.weaken ρ.lift).trans
+          ((RawTerm.rename_congr hSwap rawTerm).trans
+            (RawTerm.rename_compose rawTerm ρ Renaming.weaken).symm)
+
 /-! ## Substitution — the same trick scaled up.
 
 `Subst level source target` is a function-typed family mapping `Fin source`
