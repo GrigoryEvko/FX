@@ -301,10 +301,34 @@ inductive Ty : Nat → Nat → Type
              (leftType : Ty level scope) →
              (rightType : Ty level scope) →
              Ty level scope
+  /-- **Identity type** — propositional equality between two raw
+  terms.  The endpoints `lhs` and `rhs` are `RawTerm 0` (closed) in
+  this slice; the open-endpoint extension `(lhs rhs : RawTerm scope)`
+  requires the joint Subst refactor (v2.3+) since substitution must
+  thread through endpoint variable references.
+
+  Closed-endpoint identity types cover canonical examples
+  (`Id Bool true true`, `Id Nat (succ zero) (succ zero)`,
+  `Id (Bool → Bool) (λx.x) (λx.x)`).  Identity types over bound
+  variables (`λ(x y : A). Id A x y`) need the open extension.
+
+  The constructor reuses RawTerm — the substrate landed in v2.2a —
+  in argument position, sequentially after RawTerm's full
+  declaration.  No mutual block is required: RawTerm is fully
+  defined before Ty's inductive declaration begins, so this
+  reference is syntactically a forward citation of an existing
+  type. -/
+  | id : {level scope : Nat} →
+         (carrier : Ty level scope) →
+         (lhs : RawTerm 0) →
+         (rhs : RawTerm 0) →
+         Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
-`Ty`'s index is a bare `Nat`, so the discrimination obligations
-are propext-free `Eq.rec` over an irrelevant motive. -/
+`Ty`'s indices are bare `Nat`s.  The new `Ty.id` constructor adds
+a `RawTerm 0` field which also has decidable equality (auto-derived
+below via `deriving instance DecidableEq for RawTerm`). -/
+deriving instance DecidableEq for RawTerm
 deriving instance DecidableEq for Ty
 
 /-! ## Renaming machinery.
@@ -362,6 +386,7 @@ def Ty.rename {level source target : Nat} :
   | .option elemType, ρ => .option (elemType.rename ρ)
   | .either leftType rightType, ρ =>
       .either (leftType.rename ρ) (rightType.rename ρ)
+  | .id carrier lhs rhs, ρ => .id (carrier.rename ρ) lhs rhs
 
 /-! ## Rename composition algebra.
 
@@ -426,6 +451,11 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
       have hLeft  := Ty.rename_congr h leftType
       have hRight := Ty.rename_congr h rightType
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs => by
+      show Ty.id (carrier.rename ρ₁) lhs rhs
+         = Ty.id (carrier.rename ρ₂) lhs rhs
+      have hCarrier := Ty.rename_congr h carrier
+      exact hCarrier ▸ rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -509,6 +539,11 @@ theorem Ty.rename_compose {level s m t : Nat} :
       have hLeft  := Ty.rename_compose leftType ρ₁ ρ₂
       have hRight := Ty.rename_compose rightType ρ₁ ρ₂
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs, ρ₁, ρ₂ => by
+      show Ty.id ((carrier.rename ρ₁).rename ρ₂) lhs rhs
+         = Ty.id (carrier.rename (Renaming.compose ρ₁ ρ₂)) lhs rhs
+      have hCarrier := Ty.rename_compose carrier ρ₁ ρ₂
+      exact hCarrier ▸ rfl
 
 /-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
 Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
@@ -1013,6 +1048,7 @@ def Ty.subst {level source target : Nat} :
   | .option elemType, σ => .option (Ty.subst elemType σ)
   | .either leftType rightType, σ =>
       .either (Ty.subst leftType σ) (Ty.subst rightType σ)
+  | .id carrier lhs rhs, σ => .id (Ty.subst carrier σ) lhs rhs
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -1085,6 +1121,11 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
       have hLeft  := Ty.subst_congr h leftType
       have hRight := Ty.subst_congr h rightType
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs => by
+      show Ty.id (carrier.subst σ₁) lhs rhs
+         = Ty.id (carrier.subst σ₂) lhs rhs
+      have hCarrier := Ty.subst_congr h carrier
+      exact hCarrier ▸ rfl
 
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -1163,6 +1204,11 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
       have hLeft  := Ty.subst_rename_commute leftType σ ρ
       have hRight := Ty.subst_rename_commute rightType σ ρ
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs, σ, ρ => by
+      show Ty.id ((carrier.subst σ).rename ρ) lhs rhs
+         = Ty.id (carrier.subst (Subst.renameAfter σ ρ)) lhs rhs
+      have hCarrier := Ty.subst_rename_commute carrier σ ρ
+      exact hCarrier ▸ rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -1235,6 +1281,11 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
       have hLeft  := Ty.rename_subst_commute leftType ρ σ
       have hRight := Ty.rename_subst_commute rightType ρ σ
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs, ρ, σ => by
+      show Ty.id ((carrier.rename ρ).subst σ) lhs rhs
+         = Ty.id (carrier.subst (Subst.precompose ρ σ)) lhs rhs
+      have hCarrier := Ty.rename_subst_commute carrier ρ σ
+      exact hCarrier ▸ rfl
 
 /-! ## Renaming as a special case of substitution.
 
@@ -1309,6 +1360,11 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       have hLeft  := Ty.rename_eq_subst leftType ρ
       have hRight := Ty.rename_eq_subst rightType ρ
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs, ρ => by
+      show Ty.id (carrier.rename ρ) lhs rhs
+         = Ty.id (carrier.subst (Renaming.toSubst ρ)) lhs rhs
+      have hCarrier := Ty.rename_eq_subst carrier ρ
+      exact hCarrier ▸ rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -1380,6 +1436,11 @@ theorem Ty.subst_id {level scope : Nat} :
              (rightType.subst Subst.identity)
            = leftType.either rightType
       exact hLeft.symm ▸ hRight.symm ▸ rfl
+  | .id carrier lhs rhs => by
+      have hCarrier := Ty.subst_id carrier
+      show Ty.id (carrier.subst Subst.identity) lhs rhs
+         = Ty.id carrier lhs rhs
+      exact hCarrier.symm ▸ rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -1473,6 +1534,11 @@ theorem Ty.subst_compose {level s m t : Nat} :
       have hLeft  := Ty.subst_compose leftType σ₁ σ₂
       have hRight := Ty.subst_compose rightType σ₁ σ₂
       exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs, σ₁, σ₂ => by
+      show Ty.id ((carrier.subst σ₁).subst σ₂) lhs rhs
+         = Ty.id (carrier.subst (Subst.compose σ₁ σ₂)) lhs rhs
+      have hCarrier := Ty.subst_compose carrier σ₁ σ₂
+      exact hCarrier ▸ rfl
 
 /-! ## Monoid laws for Renaming and Subst.
 
