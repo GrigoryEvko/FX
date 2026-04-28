@@ -4607,6 +4607,63 @@ inductive Step :
            (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))),
       Step (Term.listElim (Term.listCons head tail) nilBranch consBranch)
            (Term.app (Term.app consBranch head) tail)
+  /-- Step inside `Term.optionSome`'s value. -/
+  | optionSomeValue :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType : Ty level scope}
+        {value value' : Term ctx elementType},
+      Step value value' →
+      Step (Term.optionSome value) (Term.optionSome value')
+  /-- Step inside `Term.optionMatch`'s scrutinee. -/
+  | optionMatchScrutinee :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx (Ty.option elementType)}
+        {noneBranch : Term ctx resultType}
+        {someBranch : Term ctx (Ty.arrow elementType resultType)},
+      Step scrutinee scrutinee' →
+      Step (Term.optionMatch scrutinee noneBranch someBranch)
+           (Term.optionMatch scrutinee' noneBranch someBranch)
+  /-- Step inside `Term.optionMatch`'s none-branch. -/
+  | optionMatchNone :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.option elementType)}
+        {noneBranch noneBranch' : Term ctx resultType}
+        {someBranch : Term ctx (Ty.arrow elementType resultType)},
+      Step noneBranch noneBranch' →
+      Step (Term.optionMatch scrutinee noneBranch someBranch)
+           (Term.optionMatch scrutinee noneBranch' someBranch)
+  /-- Step inside `Term.optionMatch`'s some-branch. -/
+  | optionMatchSome :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.option elementType)}
+        {noneBranch : Term ctx resultType}
+        {someBranch someBranch' : Term ctx (Ty.arrow elementType resultType)},
+      Step someBranch someBranch' →
+      Step (Term.optionMatch scrutinee noneBranch someBranch)
+           (Term.optionMatch scrutinee noneBranch someBranch')
+  /-- **ι-reduction for optionMatch on `none`**:
+  `optionMatch none n s ⟶ n`. -/
+  | iotaOptionMatchNone :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        (noneBranch : Term ctx resultType)
+        (someBranch : Term ctx (Ty.arrow elementType resultType)),
+      Step (Term.optionMatch (elementType := elementType) Term.optionNone
+              noneBranch someBranch)
+           noneBranch
+  /-- **ι-reduction for optionMatch on `some`**:
+  `optionMatch (some v) n s ⟶ s v`. -/
+  | iotaOptionMatchSome :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        (value : Term ctx elementType)
+        (noneBranch : Term ctx resultType)
+        (someBranch : Term ctx (Ty.arrow elementType resultType)),
+      Step (Term.optionMatch (Term.optionSome value) noneBranch someBranch)
+           (Term.app someBranch value)
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -5047,6 +5104,48 @@ inductive Step.par :
       Step.par consBranch consBranch' →
       Step.par (Term.listElim (Term.listCons head tail) nilBranch consBranch)
                (Term.app (Term.app consBranch' head') tail')
+  /-- Parallel reduction inside the value of `Term.optionSome`. -/
+  | optionSome :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType : Ty level scope}
+        {value value' : Term ctx elementType},
+      Step.par value value' →
+      Step.par (Term.optionSome value) (Term.optionSome value')
+  /-- Parallel reduction inside all three positions of `Term.optionMatch`. -/
+  | optionMatch :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx (Ty.option elementType)}
+        {noneBranch noneBranch' : Term ctx resultType}
+        {someBranch someBranch' : Term ctx (Ty.arrow elementType resultType)},
+      Step.par scrutinee scrutinee' →
+      Step.par noneBranch noneBranch' →
+      Step.par someBranch someBranch' →
+      Step.par (Term.optionMatch scrutinee noneBranch someBranch)
+               (Term.optionMatch scrutinee' noneBranch' someBranch')
+  /-- **Parallel ι-reduction on `none`**: `optionMatch none n s → n'`
+  with `Step.par n n'`. -/
+  | iotaOptionMatchNone :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {noneBranch noneBranch' : Term ctx resultType}
+        (someBranch : Term ctx (Ty.arrow elementType resultType)),
+      Step.par noneBranch noneBranch' →
+      Step.par (Term.optionMatch (elementType := elementType) Term.optionNone
+                  noneBranch someBranch)
+               noneBranch'
+  /-- **Parallel ι-reduction on `some`**: `optionMatch (some v) n s → s' v'`
+  with parallel reductions in value and someBranch. -/
+  | iotaOptionMatchSome :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {value value' : Term ctx elementType}
+        (noneBranch : Term ctx resultType)
+        {someBranch someBranch' : Term ctx (Ty.arrow elementType resultType)},
+      Step.par value value' →
+      Step.par someBranch someBranch' →
+      Step.par (Term.optionMatch (Term.optionSome value) noneBranch someBranch)
+               (Term.app someBranch' value')
   /-- **η-contraction for non-dependent arrow** at the parallel level.
   Same shape as `Step.etaArrow`: the η-redex `λx. f.weaken x` contracts
   to `f`.  No subterm-parallel rule because the redex shape is rigid
@@ -5111,6 +5210,13 @@ theorem Step.toPar
   | .iotaListElimNil n c  => .iotaListElimNil c (.refl n)
   | .iotaListElimCons h t _ c =>
       .iotaListElimCons _ (.refl h) (.refl t) (.refl c)
+  | .optionSomeValue s    => .optionSome (Step.toPar s)
+  | .optionMatchScrutinee s => .optionMatch (Step.toPar s) (.refl _) (.refl _)
+  | .optionMatchNone s    => .optionMatch (.refl _) (Step.toPar s) (.refl _)
+  | .optionMatchSome s    => .optionMatch (.refl _) (.refl _) (Step.toPar s)
+  | .iotaOptionMatchNone n s => .iotaOptionMatchNone s (.refl n)
+  | .iotaOptionMatchSome v _ s =>
+      .iotaOptionMatchSome _ (.refl v) (.refl s)
 
 /-! ## Definitional conversion (`Conv`).
 
@@ -5797,6 +5903,85 @@ theorem Conv.listElim_cong
       (Conv.listElim_cong_nil scrutinee₂ consBranch₁ h_nil)
       (Conv.listElim_cong_cons scrutinee₂ nilBranch₂ h_cons))
 
+/-! ## Option Conv congruences (mirror the list versions). -/
+
+/-- Definitional equivalence threads through `Term.optionSome`'s value. -/
+theorem Conv.optionSome_cong {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {value₁ value₂ : Term ctx elementType} (h : Conv value₁ value₂) :
+    Conv (Term.optionSome value₁) (Term.optionSome value₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.optionSomeValue s)
+
+/-- Definitional equivalence threads through `optionMatch`'s scrutinee. -/
+theorem Conv.optionMatch_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.option elementType)}
+    (noneBranch : Term ctx resultType)
+    (someBranch : Term ctx (Ty.arrow elementType resultType))
+    (h : Conv scrutinee₁ scrutinee₂) :
+    Conv (Term.optionMatch scrutinee₁ noneBranch someBranch)
+         (Term.optionMatch scrutinee₂ noneBranch someBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.optionMatchScrutinee s)
+
+/-- Definitional equivalence threads through `optionMatch`'s none-branch. -/
+theorem Conv.optionMatch_cong_none
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.option elementType))
+    {noneBranch₁ noneBranch₂ : Term ctx resultType}
+    (someBranch : Term ctx (Ty.arrow elementType resultType))
+    (h : Conv noneBranch₁ noneBranch₂) :
+    Conv (Term.optionMatch scrutinee noneBranch₁ someBranch)
+         (Term.optionMatch scrutinee noneBranch₂ someBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.optionMatchNone s)
+
+/-- Definitional equivalence threads through `optionMatch`'s some-branch. -/
+theorem Conv.optionMatch_cong_some
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.option elementType))
+    (noneBranch : Term ctx resultType)
+    {someBranch₁ someBranch₂ : Term ctx (Ty.arrow elementType resultType)}
+    (h : Conv someBranch₁ someBranch₂) :
+    Conv (Term.optionMatch scrutinee noneBranch someBranch₁)
+         (Term.optionMatch scrutinee noneBranch someBranch₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.optionMatchSome s)
+
+/-- Definitional equivalence threads through all three `optionMatch` positions. -/
+theorem Conv.optionMatch_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.option elementType)}
+    {noneBranch₁ noneBranch₂ : Term ctx resultType}
+    {someBranch₁ someBranch₂ : Term ctx (Ty.arrow elementType resultType)}
+    (h_scr : Conv scrutinee₁ scrutinee₂)
+    (h_none : Conv noneBranch₁ noneBranch₂)
+    (h_some : Conv someBranch₁ someBranch₂) :
+    Conv (Term.optionMatch scrutinee₁ noneBranch₁ someBranch₁)
+         (Term.optionMatch scrutinee₂ noneBranch₂ someBranch₂) :=
+  Conv.trans
+    (Conv.optionMatch_cong_scrutinee noneBranch₁ someBranch₁ h_scr)
+    (Conv.trans
+      (Conv.optionMatch_cong_none scrutinee₂ someBranch₁ h_none)
+      (Conv.optionMatch_cong_some scrutinee₂ noneBranch₂ h_some))
+
 /-! ## StepStar congruences for nat (defined above the Conv versions
 because Step.par.toStar consumes them). -/
 
@@ -5872,6 +6057,83 @@ theorem StepStar.natElim_cong
     (StepStar.trans
       (StepStar.natElim_cong_zero scrutinee₂ succBranch₁ h_zero)
       (StepStar.natElim_cong_succ scrutinee₂ zeroBranch₂ h_succ))
+
+/-! ## Option StepStar congruences (placed before Step.par.toStar
+which consumes them). -/
+
+/-- Multi-step reduction threads through `Term.optionSome`. -/
+theorem StepStar.optionSome_cong {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {value₁ value₂ : Term ctx elementType} :
+    StepStar value₁ value₂ →
+    StepStar (Term.optionSome value₁) (Term.optionSome value₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.optionSomeValue s)
+        (StepStar.optionSome_cong rest)
+
+/-- Multi-step reduction threads through `optionMatch`'s scrutinee. -/
+theorem StepStar.optionMatch_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.option elementType)}
+    (noneBranch : Term ctx resultType)
+    (someBranch : Term ctx (Ty.arrow elementType resultType)) :
+    StepStar scrutinee₁ scrutinee₂ →
+    StepStar (Term.optionMatch scrutinee₁ noneBranch someBranch)
+             (Term.optionMatch scrutinee₂ noneBranch someBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.optionMatchScrutinee s)
+        (StepStar.optionMatch_cong_scrutinee noneBranch someBranch rest)
+
+/-- Multi-step reduction threads through `optionMatch`'s none-branch. -/
+theorem StepStar.optionMatch_cong_none
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.option elementType))
+    {noneBranch₁ noneBranch₂ : Term ctx resultType}
+    (someBranch : Term ctx (Ty.arrow elementType resultType)) :
+    StepStar noneBranch₁ noneBranch₂ →
+    StepStar (Term.optionMatch scrutinee noneBranch₁ someBranch)
+             (Term.optionMatch scrutinee noneBranch₂ someBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.optionMatchNone s)
+        (StepStar.optionMatch_cong_none scrutinee someBranch rest)
+
+/-- Multi-step reduction threads through `optionMatch`'s some-branch. -/
+theorem StepStar.optionMatch_cong_some
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.option elementType))
+    (noneBranch : Term ctx resultType)
+    {someBranch₁ someBranch₂ : Term ctx (Ty.arrow elementType resultType)} :
+    StepStar someBranch₁ someBranch₂ →
+    StepStar (Term.optionMatch scrutinee noneBranch someBranch₁)
+             (Term.optionMatch scrutinee noneBranch someBranch₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.optionMatchSome s)
+        (StepStar.optionMatch_cong_some scrutinee noneBranch rest)
+
+/-- Multi-step reduction threads through all three `optionMatch` positions. -/
+theorem StepStar.optionMatch_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.option elementType)}
+    {noneBranch₁ noneBranch₂ : Term ctx resultType}
+    {someBranch₁ someBranch₂ : Term ctx (Ty.arrow elementType resultType)}
+    (h_scr : StepStar scrutinee₁ scrutinee₂)
+    (h_none : StepStar noneBranch₁ noneBranch₂)
+    (h_some : StepStar someBranch₁ someBranch₂) :
+    StepStar (Term.optionMatch scrutinee₁ noneBranch₁ someBranch₁)
+             (Term.optionMatch scrutinee₂ noneBranch₂ someBranch₂) :=
+  StepStar.trans
+    (StepStar.optionMatch_cong_scrutinee noneBranch₁ someBranch₁ h_scr)
+    (StepStar.trans
+      (StepStar.optionMatch_cong_none scrutinee₂ someBranch₁ h_none)
+      (StepStar.optionMatch_cong_some scrutinee₂ noneBranch₂ h_some))
 
 /-! ## `Step.par.toStar` — parallel reduction lifts to multi-step.
 
@@ -5996,6 +6258,29 @@ theorem Step.par.toStar
           (StepStar.refl nilBranch)
           (Step.par.toStar par_c))
         (Step.toStar (Step.iotaListElimCons h' t' nilBranch c'))
+  | .optionSome par_value    =>
+      StepStar.optionSome_cong (Step.par.toStar par_value)
+  | .optionMatch par_s par_n par_sm =>
+      StepStar.optionMatch_cong
+        (Step.par.toStar par_s)
+        (Step.par.toStar par_n)
+        (Step.par.toStar par_sm)
+  | .iotaOptionMatchNone (noneBranch' := n') someBranch par_n =>
+      StepStar.append
+        (StepStar.optionMatch_cong
+          (StepStar.refl Term.optionNone)
+          (Step.par.toStar par_n)
+          (StepStar.refl someBranch))
+        (Step.iotaOptionMatchNone n' someBranch)
+  | .iotaOptionMatchSome
+        (value' := v') (someBranch' := sm')
+        noneBranch par_value par_some =>
+      StepStar.trans
+        (StepStar.optionMatch_cong
+          (StepStar.optionSome_cong (Step.par.toStar par_value))
+          (StepStar.refl noneBranch)
+          (Step.par.toStar par_some))
+        (Step.toStar (Step.iotaOptionMatchSome v' noneBranch sm'))
   | .etaArrow f              => Step.toStar (Step.etaArrow f)
   | .etaSigma p              => Step.toStar (Step.etaSigma p)
 
