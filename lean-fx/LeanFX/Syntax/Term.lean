@@ -1944,6 +1944,26 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       (leftBranch : Term context (Ty.arrow leftType resultType)) →
       (rightBranch : Term context (Ty.arrow rightType resultType)) →
       Term context resultType
+  /-- **Reflexivity introduction for identity types** — `refl rawTerm`
+  inhabits `Id carrier rawTerm rawTerm` for any FX type `carrier` and
+  any closed raw term `rawTerm`.
+
+  The closed-endpoint shape (`RawTerm 0`) matches `Ty.id`'s
+  closed-endpoint signature.  Open endpoints (`λ(x y : A). Id A x y`)
+  wait for the joint Subst refactor (v2.2d).
+
+  This layer does NOT enforce that `rawTerm` actually inhabits
+  `carrier` at the FX level — endpoint type-correctness is a
+  property checked by `HasType` / the bridge `Term.toRaw`
+  (v2.2j).  Within the kernel, `Term.refl` is the introduction
+  form for `Ty.id` as an inductive proposition; the J eliminator
+  (v2.2m) consumes it. -/
+  | refl :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {carrier : Ty level scope} →
+      (rawTerm : RawTerm 0) →
+      Term context (Ty.id carrier rawTerm rawTerm)
 
 /-! ## Term-level renaming.
 
@@ -2077,6 +2097,7 @@ def Term.rename {m scope scope'}
       Term.eitherMatch (Term.rename ρt scrutinee)
                        (Term.rename ρt leftBranch)
                        (Term.rename ρt rightBranch)
+  | _, .refl rawTerm => Term.refl rawTerm
 
 /-! ## Term-level weakening. -/
 
@@ -2296,6 +2317,7 @@ def Term.subst {m scope scope'}
       Term.eitherMatch (Term.subst σt scrutinee)
                        (Term.subst σt leftBranch)
                        (Term.subst σt rightBranch)
+  | _, .refl rawTerm => Term.refl rawTerm
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -2765,6 +2787,22 @@ theorem Term.eitherMatch_HEq_congr
   cases h_rb
   rfl
 
+/-- HEq congruence for `Term.refl`.  Only the `carrier` Ty varies
+between sides; the closed-endpoint `rawTerm : RawTerm 0` is shared
+verbatim, so it does not need an HEq parameter.  Two
+propositionally-distinct carriers produce `Term`s at
+propositionally-distinct types `Ty.id carrier₁ rawTerm rawTerm` vs
+`Ty.id carrier₂ rawTerm rawTerm`; HEq collapses them via `cases
+h_carrier`. -/
+theorem Term.refl_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {carrier₁ carrier₂ : Ty level scope} (h_carrier : carrier₁ = carrier₂)
+    (rawTerm : RawTerm 0) :
+    HEq (Term.refl (context := Γ) (carrier := carrier₁) rawTerm)
+        (Term.refl (context := Γ) (carrier := carrier₂) rawTerm) := by
+  cases h_carrier
+  rfl
+
 /-! ## `Term.subst_id_HEq` leaf cases.
 
 Four leaf constructors: `var` strips the inner `(Ty.subst_id _).symm
@@ -3201,6 +3239,9 @@ theorem Term.subst_HEq_pointwise
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise leftBranch)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise rightBranch)
+  | _, .refl (carrier := carrier) rawTerm => by
+    cases h_ctx
+    exact Term.refl_HEq_congr (Ty.subst_congr h_subst carrier) rawTerm
 
 /-! ## `Term.subst_id_HEq`.
 
@@ -3326,6 +3367,8 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
       _ _ (Term.subst_id_HEq scrutinee)
       _ _ (Term.subst_id_HEq leftBranch)
       _ _ (Term.subst_id_HEq rightBranch)
+  | _, .refl (carrier := carrier) rawTerm =>
+    Term.refl_HEq_congr (Ty.subst_id carrier) rawTerm
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
@@ -3655,6 +3698,9 @@ theorem Term.rename_HEq_pointwise
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ leftBranch)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ rightBranch)
+  | _, .refl (carrier := carrier) rawTerm => by
+    cases h_ctx
+    exact Term.refl_HEq_congr (Ty.rename_congr h_ρ carrier) rawTerm
 
 /-! ## `Term.rename_id_HEq`.
 
@@ -3856,6 +3902,8 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       _ _ (Term.rename_id_HEq scrutinee)
       _ _ (Term.rename_id_HEq leftBranch)
       _ _ (Term.rename_id_HEq rightBranch)
+  | _, .refl (carrier := carrier) rawTerm =>
+    Term.refl_HEq_congr (Ty.rename_identity carrier) rawTerm
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
@@ -4136,6 +4184,8 @@ theorem Term.rename_compose_HEq
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ leftBranch)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ rightBranch)
+  | _, .refl (carrier := carrier) rawTerm =>
+    Term.refl_HEq_congr (Ty.rename_compose carrier ρ₁ ρ₂) rawTerm
 
 /-! ## `Term.rename_weaken_commute_HEq`.
 
@@ -4637,6 +4687,8 @@ theorem Term.subst_rename_commute_HEq
       _ _ (Term.subst_rename_commute_HEq σt ρt scrutinee)
       _ _ (Term.subst_rename_commute_HEq σt ρt leftBranch)
       _ _ (Term.subst_rename_commute_HEq σt ρt rightBranch)
+  | _, .refl (carrier := carrier) rawTerm =>
+    Term.refl_HEq_congr (Ty.subst_rename_commute carrier σ ρ) rawTerm
 
 /-! ## `Term.rename_subst_commute_HEq`.
 
@@ -4881,6 +4933,8 @@ theorem Term.rename_subst_commute_HEq
       _ _ (Term.rename_subst_commute_HEq ρt σt' scrutinee)
       _ _ (Term.rename_subst_commute_HEq ρt σt' leftBranch)
       _ _ (Term.rename_subst_commute_HEq ρt σt' rightBranch)
+  | _, .refl (carrier := carrier) rawTerm =>
+    Term.refl_HEq_congr (Ty.rename_subst_commute carrier ρ σ') rawTerm
 
 /-! ## `Term.subst_weaken_commute_HEq`.
 
@@ -5258,6 +5312,8 @@ theorem Term.subst_compose_HEq
       _ _ (Term.subst_compose_HEq σt₁ σt₂ scrutinee)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ leftBranch)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ rightBranch)
+  | _, .refl (carrier := carrier) rawTerm =>
+    Term.refl_HEq_congr (Ty.subst_compose carrier σ₁ σ₂) rawTerm
 
 /-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
@@ -8467,6 +8523,61 @@ example :
         (Term.unit (context := EmptyCtx))
       = Term.unit (context := EmptyCtx) :=
   Term.rename_id (Term.unit (context := EmptyCtx))
+
+/-! ### Term.refl — closed-endpoint identity-type introduction. -/
+
+/-- `Term.refl true_raw : Id Bool true_raw true_raw` — the simplest
+identity witness, with carrier `Ty.bool` and both endpoints the closed
+raw boolean `true`. -/
+example :
+    Term EmptyCtx (Ty.id Ty.bool RawTerm.boolTrue RawTerm.boolTrue) :=
+  Term.refl RawTerm.boolTrue
+
+/-- `Term.refl 0_raw : Id Nat 0 0`. -/
+example :
+    Term EmptyCtx (Ty.id Ty.nat RawTerm.natZero RawTerm.natZero) :=
+  Term.refl RawTerm.natZero
+
+/-- `Term.refl unit_raw : Id Unit () ()`. -/
+example :
+    Term EmptyCtx (Ty.id Ty.unit RawTerm.unit RawTerm.unit) :=
+  Term.refl RawTerm.unit
+
+/-- Iterated identity at the term level — `refl(refl(true)) :
+Id (Id Bool true true) refl(true) refl(true)`.  Carrier is itself a
+`Ty.id`; endpoints are `RawTerm.refl RawTerm.boolTrue`.  This
+exercises `Ty.id` carrying a `Ty.id` and `Term.refl` carrying a
+`RawTerm.refl`. -/
+example :
+    Term EmptyCtx
+      (Ty.id (Ty.id Ty.bool RawTerm.boolTrue RawTerm.boolTrue)
+             (RawTerm.refl RawTerm.boolTrue)
+             (RawTerm.refl RawTerm.boolTrue)) :=
+  Term.refl (RawTerm.refl RawTerm.boolTrue)
+
+/-- `Term.refl` is preserved by renaming: `rename ρt (refl rt) = refl rt`
+modulo the carrier renaming.  At scope 0 the renaming has no effect on
+the carrier (closed type), so the equation reduces to `rfl`. -/
+example {target : Nat}
+    {Δ : Ctx Mode.software 0 target}
+    {ρ : Renaming 0 target}
+    (ρt : TermRenaming EmptyCtx Δ ρ) :
+    Term.rename ρt
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue)
+      = Term.refl (context := Δ) (carrier := Ty.bool) RawTerm.boolTrue :=
+  rfl
+
+/-- `Term.refl` is preserved by substitution. -/
+example {target : Nat}
+    {Δ : Ctx Mode.software 0 target}
+    {σ : Subst 0 0 target}
+    (σt : TermSubst EmptyCtx Δ σ) :
+    Term.subst σt
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue)
+      = Term.refl (context := Δ) (carrier := Ty.bool) RawTerm.boolTrue :=
+  rfl
 
 end SmokeTest
 
