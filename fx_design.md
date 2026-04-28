@@ -162,17 +162,25 @@ an unordered map's order are rejected.  No reduction step has
 undefined behavior; no compiler optimization silently changes the
 observable result unless a relevant capability is granted.
 
-**Finite kernel, enumerable trust.**  The language stands on ~33
-kernel axioms (Appendix H): universes, dependent product and sum,
-one identity type, quotients, graded binders for Wood-Atkey 2022
-context division, and one emit-table axiom connecting atomic
-source operations to per-architecture instruction sequences
-(§20.5).  Every surface feature in §3 – §26 has a Kernel
-Translation subsection reducing it to these axioms.  `fxc
---show-axioms` prints the transitive axiom dependency of any
-definition plus any `sorry`, `axiom`, or SMT-oracle discharges
-it relies on.  The trusted base is enumerable per-definition
-rather than global.  Reference implementation in Lean 4 (§30.8).
+**Finite kernel, enumerable trust.**  Appendix H enumerates an
+upper-bound allowlist of kernel axioms — universes, dependent
+product and sum, one identity type, quotients (via HIT), graded
+binders for Wood-Atkey 2022 context division, and one emit-table
+axiom connecting atomic source operations to per-architecture
+instruction sequences (§20.5).  The reference Lean 4
+implementation (§30.8) currently declares **zero axioms** in its
+trusted kernel trees; every realized rule executes as
+constructive Lean code, and `#print axioms` confirms it.  Three
+allowlist entries — `U-emit` (hardware ISA refinement), `ua_wire`
+(modal univalence at Wire mode), and `HIT` (avoidable via setoid
+encoding) — remain genuinely axiomatic for their declared MTT
+extensions; the rest are intended to be discharged as theorems
+or realized as `partial def` code.  Every surface feature in §3
+– §26 has a Kernel Translation subsection reducing it to this
+allowlist.  `fxc --show-axioms` prints the transitive axiom
+dependency of any definition plus any `sorry`, `axiom`, or
+SMT-oracle discharges it relies on.  The trusted base is
+enumerable per-definition rather than global.
 
 **The compiler as a proof partner.**  Refinement predicates and
 `pre`/`post`/`decreases` clauses are discharged by an SMT oracle
@@ -7131,9 +7139,10 @@ rule:
   * **Complexity (dim 13)**: cost(send) + cost(recv)
     accumulates per the send/recv pair's declared cost.
 
-No new kernel axiom needed.  The 23-axiom allowlist (Appendix
-H) remains intact; §11 session types are a derivation from
-Coind-form/elim + Later guarded recursion + existing grade rules.
+No new kernel axiom needed.  The Appendix H allowlist (the
+upper-bound ceiling on the trusted base) remains intact; §11
+session types are a derivation from Coind-form/elim + Later
+guarded recursion + existing grade rules.
 
 **Duality as a kernel function.**  `dual : SessionType →
 SessionType` is a total function over the session-type
@@ -7249,7 +7258,8 @@ underlying type theory.  The `Coind` family that supplies
 the state space for each session type, and the kernel
 subtyping relation extended with the Gay-Hole rules of
 §11.19, are kernel extensions whose axioms sit within the
-33-entry allowlist of Appendix H.  The binary combinator
+Appendix H allowlist (the upper-bound ceiling on the trusted
+base).  The binary combinator
 syntax, the queue-type extension to Γ, global types and
 projection, the association check, the crash-stop
 machinery, the pattern library, and the precise-async
@@ -14875,9 +14885,13 @@ enumerable trusted base: ~40 axiom schemas from which all of ZFC
 set theory and most mathematics is derived, checkable by a 300-line
 verifier.  FX adopts the discipline without the specific encoding:
 
- 1. **Finite axiom list.** ~32 axioms, stated in Lean 4, listed in
-    Appendix H.  Every soundness argument reduces to "the 32 axioms
-    are consistent."
+ 1. **Finite axiom allowlist.** A 23-entry upper-bound allowlist,
+    stated in Lean 4 and listed in Appendix H §H.11.  This is a
+    safety ceiling, not a target — the reference implementation
+    currently declares **zero axioms** in its trusted kernel trees
+    and aims to discharge each entry as a theorem or realize it as
+    constructive code.  Every soundness argument reduces to "the
+    declared subset of the allowlist is consistent."
  2. **Derivation-only extensions.** Every §3-§26 feature has a
     "Kernel Translation" subsection showing exactly how the surface
     syntax reduces to kernel terms.  New language features are
@@ -14891,11 +14905,11 @@ verifier.  FX adopts the discipline without the specific encoding:
     stage-2 compiler is FX compiled through stage 1; stage 3 is
     self-compiled as fixpoint check (§30.9).
 
-Effect: FX can stand up and say "these 32 axioms are what we
-assume; everything else is derived; here's the Lean 4 mechanization
-of the soundness proof."  C++, Rust, Swift, and Go cannot make this
-claim.  Lean 4, Coq, F*, Agda, and Idris can — FX joins that
-family.
+Effect: FX can stand up and say "the declared kernel subset is
+what we assume; everything else is derived; here's the Lean 4
+mechanization of the soundness proof."  C++, Rust, Swift, and Go
+cannot make this claim.  Lean 4, Coq, F*, Agda, and Idris can —
+FX joins that family.
 
 ### 30.2 Kernel Terms
 
@@ -15051,20 +15065,26 @@ Emit-table             1     U-emit relating atomic source operations
 Total                 23
 ```
 
-Twenty-three axioms.  Publishable on a single page.  The
-reduction from earlier ad-hoc kernels (Coq's ~70, Lean 4's ~30,
-F*'s ~30) tracks the systematic absorption of derivable
-constructs into the modality framework: the bridge modality
-(§6.9 derived; B-form axiom) replaces user-defined
-parametricity instances; HITs replace per-quotient axioms;
-2LTT mode separation replaces the per-binding ghost grade.
+Twenty-three entries — an upper-bound allowlist, publishable on
+a single page.  The reference Lean 4 implementation currently
+declares **zero axioms** in its trusted kernel trees; only three
+entries (`U-emit`, `ua_wire`, `HIT`) remain genuinely axiomatic
+when their MTT extensions land, and `HIT` is itself avoidable
+via a setoid encoding.  The reduction from earlier ad-hoc
+kernels (Coq's ~70, Lean 4's ~30, F*'s ~30) tracks the
+systematic absorption of derivable constructs into the modality
+framework: the bridge modality (§6.9 derived; B-form axiom)
+replaces user-defined parametricity instances; HITs replace
+per-quotient axioms; 2LTT mode separation replaces the
+per-binding ghost grade.
 
 ### 30.7 The Kernel Translation Pattern
 
 Every surface feature in §3-§26 has a **Kernel Translation**
 subsection showing the exact kernel term it elaborates to, the
 axioms invoked, and any composition proof obligations.  This is
-the discipline that keeps the axiom list at 32.
+the discipline that keeps the declared subset of the allowlist
+at zero today and the allowlist itself at its 23-entry ceiling.
 
 Three illustrative translations:
 
@@ -15141,8 +15161,8 @@ fetch_add : Π (T :_erased Type<0>)
 ```
 
 The pattern: **every feature points at a specific small subset of
-the 32 axioms**.  Users auditing their code walk the dependency
-graph via `fxc --show-axioms`.
+the Appendix H allowlist**.  Users auditing their code walk the
+dependency graph via `fxc --show-axioms`.
 
 ### 30.8 Lean 4 Reference Implementation
 
@@ -15159,7 +15179,7 @@ FX/
     Term.lean           -- Kernel terms (the ten forms of §30.2)
     Grade.lean          -- Grade vector, 22 dimensions
     Context.lean        -- Typing context
-    Typing.lean         -- The ~32 axioms as inductive relations
+    Typing.lean         -- The Appendix H allowlist as inductive relations
     Reduction.lean      -- β, ι, ν reduction
     Conversion.lean     -- Definitional equality
     Subtyping.lean      -- Universe cumulativity, grade subsumption
@@ -15797,9 +15817,10 @@ Z3 as external binary               SMT oracle with auditable UNSAT cores
 OCaml extraction                    Native x86/ARM/RV64/MIPS64 codegen per
                                     §20.5 emit tables
 OCaml stage-0 bootstrap             Lean 4 stage-0 bootstrap (§30.8-31.9)
-~40 axiom equivalents (implicit)    33 explicit kernel axioms (§30,
-                                    Appendix H); 'fxc --show-axioms' for
-                                    per-definition dependency audit
+~40 axiom equivalents (implicit)    23-entry kernel axiom allowlist (§30,
+                                    Appendix H), 0 declared today;
+                                    'fxc --show-axioms' for per-definition
+                                    dependency audit
 No explicit kernel calculus         Finite MLTT-family kernel + graded
                                     modalities + emit-table axiom (§30)
 Universe variables u#i (F*-style)   Predicative cumulative hierarchy
@@ -16226,10 +16247,21 @@ problem doesn't arise.
 
 ## Appendix H: Complete Kernel Axiom List
 
-The full enumeration of the 23 kernel axioms referenced in §30.
-Every FX definition depends on a subset of this list (see
-`fxi --show-axioms`).  Every axiom is stated as a Lean 4
-inductive rule in the reference implementation.
+The full enumeration of the 23-entry kernel axiom allowlist
+referenced in §30 — an upper-bound ceiling on the trusted base,
+not a target.  The reference Lean 4 implementation currently
+declares **zero axioms** in its trusted kernel trees
+(`leanx/FX/Kernel/**` and `lean-fx/`); each entry is intended to
+be discharged as a theorem or realized as constructive code
+where possible.  Three entries — `U-emit` (hardware ISA
+refinement, §H.10), `ua_wire` (modal univalence at Wire mode,
+§H.7a), and `HIT` (avoidable via setoid encoding, §H.7) —
+remain genuinely axiomatic for their declared MTT extensions.
+Every FX definition depends on a subset of this allowlist (see
+`fxi --show-axioms`).  Every entry is stated as a Lean 4
+inductive rule in the reference implementation; the audit
+script `axiom-audit.sh` enforces that the declared subset never
+exceeds the allowlist.
 
 The detailed sections H.1-H.7c below decompose each category
 schematically.  Several entries are *implementation
@@ -16512,8 +16544,13 @@ Emit-table               1   (U-emit: source atomic op → ISA sequence)
                         23
 ```
 
-Twenty-three axioms.  The reduction from earlier ad-hoc kernels
-tracks the systematic absorption of derivable constructs:
+Twenty-three entries — the upper-bound allowlist enforced by
+`scripts/axiom-audit.sh`.  Zero are declared as `axiom` in the
+reference Lean 4 implementation today; only `U-emit`, `ua_wire`,
+and `HIT` are genuinely axiomatic when their extensions land,
+and `HIT` itself is avoidable via a setoid encoding.  The
+reduction from earlier ad-hoc kernels tracks the systematic
+absorption of derivable constructs:
 
   * Quot's three axioms (Quot-form / Quot-mk / Quot-lift) collapse
     into the single HIT primitive.  Quotient types remain in the
@@ -16537,8 +16574,9 @@ operations on specific target architectures.
 
 ### H.12 Derived, Not Axiomatic
 
-Every surface feature below is **derived** from the 23 axioms
-(see the "Kernel Translation" subsection of each chapter):
+Every surface feature below is **derived** from the 23-entry
+allowlist above (see the "Kernel Translation" subsection of each
+chapter):
 
 ```
 §3.3 ADTs                      →  Ind
@@ -16573,11 +16611,12 @@ Every surface feature below is **derived** from the 23 axioms
 §21 optimization                →  equivalence-preserving rewrites
 §22 sketch mode                 →  same kernel, looser elaborator
 §23 testing                    →  Bool-valued functions + Π quantifiers
-§26 stdlib                      →  definitions over the 23 axioms
+§26 stdlib                      →  definitions over the allowlist
 ```
 
 Each row is a proof obligation: show the reduction is typeable
-using only the 23 axioms plus previously-derived constructs.
-When the reduction fails to typecheck, the feature is either
-not axiomatizable in the current kernel (requires a new axiom,
-with justification) or needs redesign.
+using only the 23-entry allowlist plus previously-derived
+constructs.  When the reduction fails to typecheck, the feature
+is either not axiomatizable in the current kernel (requires a
+new entry on the allowlist, with justification) or needs
+redesign.
