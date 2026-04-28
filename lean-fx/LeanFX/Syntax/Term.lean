@@ -8715,6 +8715,40 @@ example :
     RawTerm.weakenToScope 2 RawTerm.boolTrue
       = (RawTerm.boolTrue (scope := 0)).weaken.weaken := rfl
 
+/-! ### Term.refl in Step / StepStar / Step.par / Conv.
+
+`Term.refl` is a value — no β/η reductions apply to it.  The ι-rule
+for J (the Id eliminator) lands in v2.2m and introduces
+`Step.iotaIdJRefl`.  The existing reflexivity constructors of every
+reduction relation accept `Term.refl` directly. -/
+
+/-- `Term.refl` is multi-step-related to itself by zero steps. -/
+example :
+    StepStar
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue)
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue) :=
+  StepStar.refl _
+
+/-- `Term.refl` parallel-reduces to itself in zero steps. -/
+example :
+    Step.par
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue)
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue) :=
+  Step.par.refl _
+
+/-- `Term.refl` is convertible with itself. -/
+example :
+    Conv
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue)
+      (Term.refl (context := EmptyCtx)
+                 (carrier := Ty.bool) RawTerm.boolTrue) :=
+  Conv.refl _
+
 end SmokeTest
 
 end LeanFX.Syntax
