@@ -1159,6 +1159,35 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       (zeroBranch : Term context resultType) →
       (succBranch : Term context (Ty.arrow Ty.nat resultType)) →
       Term context resultType
+  /-- Primitive recursion on naturals — Church-style recursor with
+  induction hypothesis.  Strictly stronger than `natElim`
+  (case-analysis): the succ-branch sees BOTH the predecessor `n` and
+  the recursive result `natRec n z s : resultType`.
+
+  Surface analogue:
+      `natRec(scrutinee, z, fn n ih => …)` — `ih` is the recursion's
+      result on the predecessor.  Primitive recursion captures
+      addition, multiplication, factorial, fold/Foldr, etc.
+
+  Reduction:
+      `natRec 0       z s ⟶ z`
+      `natRec (succ n) z s ⟶ s n (natRec n z s)`
+
+  Result type is fixed (non-dependent), parallel to `natElim`.
+  *True* dependent induction (`natInd`) — where the result type
+  varies with the scrutinee — requires either universe codes
+  (`El : Term Γ (Ty.universe u rfl) → Ty u scope`) or term-aware
+  Ty indexing.  Both deferred until after v1.40 identity types,
+  which supplies the cast machinery the dependent ι-rule needs. -/
+  | natRec :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {resultType : Ty level scope} →
+      (scrutinee : Term context Ty.nat) →
+      (zeroBranch : Term context resultType) →
+      (succBranch : Term context
+         (Ty.arrow Ty.nat (Ty.arrow resultType resultType))) →
+      Term context resultType
   /-- Empty list — `[]` at any element type.  The `elementType` is an
   implicit argument that callers supply via the expected return type
   (or `(elementType := T)`). -/
@@ -1353,6 +1382,10 @@ def Term.rename {m scope scope'}
                     (Term.rename ρt elseBr)
   | _, .natZero        => Term.natZero
   | _, .natSucc pred   => Term.natSucc (Term.rename ρt pred)
+  | _, .natRec scrutinee zeroBranch succBranch =>
+      Term.natRec (Term.rename ρt scrutinee)
+                  (Term.rename ρt zeroBranch)
+                  (Term.rename ρt succBranch)
   | _, .natElim scrutinee zeroBranch succBranch =>
       Term.natElim (Term.rename ρt scrutinee)
                    (Term.rename ρt zeroBranch)
@@ -1568,6 +1601,10 @@ def Term.subst {m scope scope'}
                     (Term.subst σt elseBr)
   | _, .natZero      => Term.natZero
   | _, .natSucc pred => Term.natSucc (Term.subst σt pred)
+  | _, .natRec scrutinee zeroBranch succBranch =>
+      Term.natRec (Term.subst σt scrutinee)
+                  (Term.subst σt zeroBranch)
+                  (Term.subst σt succBranch)
   | _, .natElim scrutinee zeroBranch succBranch =>
       Term.natElim (Term.subst σt scrutinee)
                    (Term.subst σt zeroBranch)
@@ -1904,6 +1941,24 @@ theorem Term.natElim_HEq_congr
     (f₂ : Term Γ (Ty.arrow Ty.nat result₂))
     (h_f : HEq f₁ f₂) :
     HEq (Term.natElim s₁ z₁ f₁) (Term.natElim s₂ z₂ f₂) := by
+  cases h_result
+  cases h_s
+  cases h_z
+  cases h_f
+  rfl
+
+/-- HEq congruence for `Term.natRec`.  Same shape as `natElim_HEq_congr`
+but with succBranch typed `Ty.arrow Ty.nat (Ty.arrow result result)` —
+the predecessor + IH curried form for primitive recursion. -/
+theorem Term.natRec_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
+    (s₁ s₂ : Term Γ Ty.nat) (h_s : s₁ = s₂)
+    (z₁ : Term Γ result₁) (z₂ : Term Γ result₂) (h_z : HEq z₁ z₂)
+    (f₁ : Term Γ (Ty.arrow Ty.nat (Ty.arrow result₁ result₁)))
+    (f₂ : Term Γ (Ty.arrow Ty.nat (Ty.arrow result₂ result₂)))
+    (h_f : HEq f₁ f₂) :
+    HEq (Term.natRec s₁ z₁ f₁) (Term.natRec s₂ z₂ f₂) := by
   cases h_result
   cases h_s
   cases h_z
@@ -2395,6 +2450,14 @@ theorem Term.subst_HEq_pointwise
             (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee))
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise zeroBranch)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch => by
+    cases h_ctx
+    exact Term.natRec_HEq_congr
+      (Ty.subst_congr h_subst result)
+      _ _ (eq_of_heq
+            (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee))
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise zeroBranch)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise succBranch)
   | _, .listNil (elementType := elem) => by
     cases h_ctx
     exact Term.listNil_HEq_congr (Ty.subst_congr h_subst elem)
@@ -2543,6 +2606,12 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
                     (Term.subst (TermSubst.identity Γ) succBranch))
       (Term.natElim scrutinee zeroBranch succBranch)
     exact Term.natElim_HEq_congr
+      (Ty.subst_id result)
+      _ _ (eq_of_heq (Term.subst_id_HEq scrutinee))
+      _ _ (Term.subst_id_HEq zeroBranch)
+      _ _ (Term.subst_id_HEq succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+    Term.natRec_HEq_congr
       (Ty.subst_id result)
       _ _ (eq_of_heq (Term.subst_id_HEq scrutinee))
       _ _ (Term.subst_id_HEq zeroBranch)
@@ -2838,6 +2907,13 @@ theorem Term.rename_HEq_pointwise
       _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee))
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ zeroBranch)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch => by
+    cases h_ctx
+    exact Term.natRec_HEq_congr
+      (Ty.rename_congr h_ρ result)
+      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee))
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ zeroBranch)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ succBranch)
   | _, .listNil (elementType := elem) => by
     cases h_ctx
     exact Term.listNil_HEq_congr (Ty.rename_congr h_ρ elem)
@@ -3059,6 +3135,12 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
         (Term.rename (TermRenaming.identity Γ) succBranch))
       (Term.natElim scrutinee zeroBranch succBranch)
     exact Term.natElim_HEq_congr
+      (Ty.rename_identity result)
+      _ _ (eq_of_heq (Term.rename_id_HEq scrutinee))
+      _ _ (Term.rename_id_HEq zeroBranch)
+      _ _ (Term.rename_id_HEq succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+    Term.natRec_HEq_congr
       (Ty.rename_identity result)
       _ _ (eq_of_heq (Term.rename_id_HEq scrutinee))
       _ _ (Term.rename_id_HEq zeroBranch)
@@ -3328,6 +3410,12 @@ theorem Term.rename_compose_HEq
         (Term.rename (TermRenaming.compose ρt₁ ρt₂) zeroBranch)
         (Term.rename (TermRenaming.compose ρt₁ ρt₂) succBranch))
     exact Term.natElim_HEq_congr
+      (Ty.rename_compose result ρ₁ ρ₂)
+      _ _ (eq_of_heq (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee))
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ zeroBranch)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+    Term.natRec_HEq_congr
       (Ty.rename_compose result ρ₁ ρ₂)
       _ _ (eq_of_heq (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee))
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ zeroBranch)
@@ -3827,6 +3915,12 @@ theorem Term.subst_rename_commute_HEq
       _ _ (eq_of_heq (Term.subst_rename_commute_HEq σt ρt scrutinee))
       _ _ (Term.subst_rename_commute_HEq σt ρt zeroBranch)
       _ _ (Term.subst_rename_commute_HEq σt ρt succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+    Term.natRec_HEq_congr
+      (Ty.subst_rename_commute result σ ρ)
+      _ _ (eq_of_heq (Term.subst_rename_commute_HEq σt ρt scrutinee))
+      _ _ (Term.subst_rename_commute_HEq σt ρt zeroBranch)
+      _ _ (Term.subst_rename_commute_HEq σt ρt succBranch)
   | _, .listNil (elementType := elem) =>
     Term.listNil_HEq_congr (Ty.subst_rename_commute elem σ ρ)
   | _, .listCons (elementType := elem) hd tl =>
@@ -4061,6 +4155,12 @@ theorem Term.rename_subst_commute_HEq
         (Term.subst (TermSubst.precompose ρt σt') zeroBranch)
         (Term.subst (TermSubst.precompose ρt σt') succBranch))
     exact Term.natElim_HEq_congr
+      (Ty.rename_subst_commute result ρ σ')
+      _ _ (eq_of_heq (Term.rename_subst_commute_HEq ρt σt' scrutinee))
+      _ _ (Term.rename_subst_commute_HEq ρt σt' zeroBranch)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+    Term.natRec_HEq_congr
       (Ty.rename_subst_commute result ρ σ')
       _ _ (eq_of_heq (Term.rename_subst_commute_HEq ρt σt' scrutinee))
       _ _ (Term.rename_subst_commute_HEq ρt σt' zeroBranch)
@@ -4432,6 +4532,12 @@ theorem Term.subst_compose_HEq
         (Term.subst (TermSubst.compose σt₁ σt₂) zeroBranch)
         (Term.subst (TermSubst.compose σt₁ σt₂) succBranch))
     exact Term.natElim_HEq_congr
+      (Ty.subst_compose result σ₁ σ₂)
+      _ _ (eq_of_heq (Term.subst_compose_HEq σt₁ σt₂ scrutinee))
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ zeroBranch)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ succBranch)
+  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+    Term.natRec_HEq_congr
       (Ty.subst_compose result σ₁ σ₂)
       _ _ (eq_of_heq (Term.subst_compose_HEq σt₁ σt₂ scrutinee))
       _ _ (Term.subst_compose_HEq σt₁ σt₂ zeroBranch)
