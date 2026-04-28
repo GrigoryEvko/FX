@@ -1044,6 +1044,23 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       (zeroBranch : Term context resultType) →
       (succBranch : Term context (Ty.arrow Ty.nat resultType)) →
       Term context resultType
+  /-- Empty list — `[]` at any element type.  The `elementType` is an
+  implicit argument that callers supply via the expected return type
+  (or `(elementType := T)`). -/
+  | listNil :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {elementType : Ty level scope} →
+      Term context (Ty.list elementType)
+  /-- List cons — `head :: tail`.  Both head and tail share the same
+  element type, propagated to the result. -/
+  | listCons :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {elementType : Ty level scope} →
+      (head : Term context elementType) →
+      (tail : Term context (Ty.list elementType)) →
+      Term context (Ty.list elementType)
 
 /-! ## Term-level renaming.
 
@@ -1154,6 +1171,9 @@ def Term.rename {m scope scope'}
       Term.natElim (Term.rename ρt scrutinee)
                    (Term.rename ρt zeroBranch)
                    (Term.rename ρt succBranch)
+  | _, .listNil       => Term.listNil
+  | _, .listCons hd tl =>
+      Term.listCons (Term.rename ρt hd) (Term.rename ρt tl)
 
 /-! ## Term-level weakening. -/
 
@@ -1350,6 +1370,9 @@ def Term.subst {m scope scope'}
       Term.natElim (Term.subst σt scrutinee)
                    (Term.subst σt zeroBranch)
                    (Term.subst σt succBranch)
+  | _, .listNil       => Term.listNil
+  | _, .listCons hd tl =>
+      Term.listCons (Term.subst σt hd) (Term.subst σt tl)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -1667,6 +1690,29 @@ theorem Term.natElim_HEq_congr
   cases h_s
   cases h_z
   cases h_f
+  rfl
+
+/-- HEq congruence for `Term.listNil`.  Only the elementType varies
+between sides; no value arguments. -/
+theorem Term.listNil_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂) :
+    HEq (Term.listNil (context := Γ) (elementType := elem₁))
+        (Term.listNil (context := Γ) (elementType := elem₂)) := by
+  cases h_elem
+  rfl
+
+/-- HEq congruence for `Term.listCons`. -/
+theorem Term.listCons_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
+    (h₁ : Term Γ elem₁) (h₂ : Term Γ elem₂) (h_h : HEq h₁ h₂)
+    (t₁ : Term Γ (Ty.list elem₁)) (t₂ : Term Γ (Ty.list elem₂))
+    (h_t : HEq t₁ t₂) :
+    HEq (Term.listCons h₁ t₁) (Term.listCons h₂ t₂) := by
+  cases h_elem
+  cases h_h
+  cases h_t
   rfl
 
 /-! ## `Term.subst_id_HEq` leaf cases.
@@ -2022,6 +2068,17 @@ theorem Term.subst_HEq_pointwise
             (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee))
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise zeroBranch)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise succBranch)
+  | _, .listNil (elementType := elem) => by
+    cases h_ctx
+    exact Term.listNil_HEq_congr (Ty.subst_congr h_subst elem)
+  | _, .listCons (elementType := elem) hd tl => by
+    cases h_ctx
+    show HEq (Term.listCons (Term.subst σt₁ hd) (Term.subst σt₁ tl))
+             (Term.listCons (Term.subst σt₂ hd) (Term.subst σt₂ tl))
+    exact Term.listCons_HEq_congr
+      (Ty.subst_congr h_subst elem)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise hd)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise tl)
 
 /-! ## `Term.subst_id_HEq`.
 
@@ -2099,6 +2156,13 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
       _ _ (eq_of_heq (Term.subst_id_HEq scrutinee))
       _ _ (Term.subst_id_HEq zeroBranch)
       _ _ (Term.subst_id_HEq succBranch)
+  | _, .listNil (elementType := elem) =>
+    Term.listNil_HEq_congr (Ty.subst_id elem)
+  | _, .listCons (elementType := elem) hd tl =>
+    Term.listCons_HEq_congr
+      (Ty.subst_id elem)
+      _ _ (Term.subst_id_HEq hd)
+      _ _ (Term.subst_id_HEq tl)
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
@@ -2348,6 +2412,17 @@ theorem Term.rename_HEq_pointwise
       _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee))
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ zeroBranch)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ succBranch)
+  | _, .listNil (elementType := elem) => by
+    cases h_ctx
+    exact Term.listNil_HEq_congr (Ty.rename_congr h_ρ elem)
+  | _, .listCons (elementType := elem) hd tl => by
+    cases h_ctx
+    show HEq (Term.listCons (Term.rename ρt₁ hd) (Term.rename ρt₁ tl))
+             (Term.listCons (Term.rename ρt₂ hd) (Term.rename ρt₂ tl))
+    exact Term.listCons_HEq_congr
+      (Ty.rename_congr h_ρ elem)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ hd)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ tl)
 
 /-! ## `Term.rename_id_HEq`.
 
@@ -2500,6 +2575,13 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       _ _ (eq_of_heq (Term.rename_id_HEq scrutinee))
       _ _ (Term.rename_id_HEq zeroBranch)
       _ _ (Term.rename_id_HEq succBranch)
+  | _, .listNil (elementType := elem) =>
+    Term.listNil_HEq_congr (Ty.rename_identity elem)
+  | _, .listCons (elementType := elem) hd tl =>
+    Term.listCons_HEq_congr
+      (Ty.rename_identity elem)
+      _ _ (Term.rename_id_HEq hd)
+      _ _ (Term.rename_id_HEq tl)
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
@@ -2726,6 +2808,13 @@ theorem Term.rename_compose_HEq
       _ _ (eq_of_heq (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee))
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ zeroBranch)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ succBranch)
+  | _, .listNil (elementType := elem) =>
+    Term.listNil_HEq_congr (Ty.rename_compose elem ρ₁ ρ₂)
+  | _, .listCons (elementType := elem) hd tl =>
+    Term.listCons_HEq_congr
+      (Ty.rename_compose elem ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ hd)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ tl)
 
 /-! ## `Term.rename_weaken_commute_HEq`.
 
@@ -3173,6 +3262,13 @@ theorem Term.subst_rename_commute_HEq
       _ _ (eq_of_heq (Term.subst_rename_commute_HEq σt ρt scrutinee))
       _ _ (Term.subst_rename_commute_HEq σt ρt zeroBranch)
       _ _ (Term.subst_rename_commute_HEq σt ρt succBranch)
+  | _, .listNil (elementType := elem) =>
+    Term.listNil_HEq_congr (Ty.subst_rename_commute elem σ ρ)
+  | _, .listCons (elementType := elem) hd tl =>
+    Term.listCons_HEq_congr
+      (Ty.subst_rename_commute elem σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt hd)
+      _ _ (Term.subst_rename_commute_HEq σt ρt tl)
 
 /-! ## `Term.rename_subst_commute_HEq`.
 
@@ -3363,6 +3459,13 @@ theorem Term.rename_subst_commute_HEq
       _ _ (eq_of_heq (Term.rename_subst_commute_HEq ρt σt' scrutinee))
       _ _ (Term.rename_subst_commute_HEq ρt σt' zeroBranch)
       _ _ (Term.rename_subst_commute_HEq ρt σt' succBranch)
+  | _, .listNil (elementType := elem) =>
+    Term.listNil_HEq_congr (Ty.rename_subst_commute elem ρ σ')
+  | _, .listCons (elementType := elem) hd tl =>
+    Term.listCons_HEq_congr
+      (Ty.rename_subst_commute elem ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' hd)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' tl)
 
 /-! ## `Term.subst_weaken_commute_HEq`.
 
@@ -3686,6 +3789,13 @@ theorem Term.subst_compose_HEq
       _ _ (eq_of_heq (Term.subst_compose_HEq σt₁ σt₂ scrutinee))
       _ _ (Term.subst_compose_HEq σt₁ σt₂ zeroBranch)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ succBranch)
+  | _, .listNil (elementType := elem) =>
+    Term.listNil_HEq_congr (Ty.subst_compose elem σ₁ σ₂)
+  | _, .listCons (elementType := elem) hd tl =>
+    Term.listCons_HEq_congr
+      (Ty.subst_compose elem σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ hd)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ tl)
 
 /-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
@@ -5334,6 +5444,44 @@ example {level scope target : Nat}
 example {level scope target : Nat}
     (σ : Subst level scope target) (elemType : Ty level scope) :
     (Ty.list elemType).subst σ = Ty.list (elemType.subst σ) :=
+  rfl
+
+/-- Empty list of nat: `[] : list nat`. -/
+example : Term EmptyCtx (Ty.list Ty.nat) :=
+  Term.listNil
+
+/-- Singleton list: `[0] : list nat`. -/
+example : Term EmptyCtx (Ty.list Ty.nat) :=
+  Term.listCons Term.natZero Term.listNil
+
+/-- Three-element list: `[0, 1, 2] : list nat`. -/
+example : Term EmptyCtx (Ty.list Ty.nat) :=
+  Term.listCons Term.natZero
+    (Term.listCons (Term.natSucc Term.natZero)
+      (Term.listCons (Term.natSucc (Term.natSucc Term.natZero))
+        Term.listNil))
+
+/-- `Term.listNil` is preserved by renaming. -/
+example {level scope target : Nat}
+    {Γ : Ctx Mode.software level scope}
+    {Δ : Ctx Mode.software level target}
+    {ρ : Renaming scope target}
+    (ρt : TermRenaming Γ Δ ρ)
+    {elem : Ty level scope} :
+    Term.rename ρt (Term.listNil (context := Γ) (elementType := elem))
+      = Term.listNil (context := Δ) (elementType := elem.rename ρ) :=
+  rfl
+
+/-- `Term.listCons` commutes with renaming on head and tail. -/
+example {level scope target : Nat}
+    {Γ : Ctx Mode.software level scope}
+    {Δ : Ctx Mode.software level target}
+    {ρ : Renaming scope target}
+    (ρt : TermRenaming Γ Δ ρ)
+    {elem : Ty level scope}
+    (hd : Term Γ elem) (tl : Term Γ (Ty.list elem)) :
+    Term.rename ρt (Term.listCons hd tl)
+      = Term.listCons (Term.rename ρt hd) (Term.rename ρt tl) :=
   rfl
 
 /-- ι-reduction on zero: `natElim 0 z f ⟶ z`. -/
