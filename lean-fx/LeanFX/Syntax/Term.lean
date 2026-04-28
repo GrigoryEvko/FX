@@ -4284,6 +4284,77 @@ inductive Step :
         (succBranch : Term ctx (Ty.arrow Ty.nat resultType)),
       Step (Term.natElim (Term.natSucc predecessor) zeroBranch succBranch)
            (Term.app succBranch predecessor)
+  /-- Step inside the head of a `Term.listCons`. -/
+  | listConsHead :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType : Ty level scope}
+        {hd hd' : Term ctx elementType}
+        {tl : Term ctx (Ty.list elementType)},
+      Step hd hd' →
+      Step (Term.listCons hd tl) (Term.listCons hd' tl)
+  /-- Step inside the tail of a `Term.listCons`. -/
+  | listConsTail :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType : Ty level scope}
+        {hd : Term ctx elementType}
+        {tl tl' : Term ctx (Ty.list elementType)},
+      Step tl tl' →
+      Step (Term.listCons hd tl) (Term.listCons hd tl')
+  /-- Step inside `Term.listElim`'s scrutinee. -/
+  | listElimScrutinee :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx (Ty.list elementType)}
+        {nilBranch : Term ctx resultType}
+        {consBranch : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))},
+      Step scrutinee scrutinee' →
+      Step (Term.listElim scrutinee nilBranch consBranch)
+           (Term.listElim scrutinee' nilBranch consBranch)
+  /-- Step inside `Term.listElim`'s nil-branch. -/
+  | listElimNil :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.list elementType)}
+        {nilBranch nilBranch' : Term ctx resultType}
+        {consBranch : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))},
+      Step nilBranch nilBranch' →
+      Step (Term.listElim scrutinee nilBranch consBranch)
+           (Term.listElim scrutinee nilBranch' consBranch)
+  /-- Step inside `Term.listElim`'s cons-branch. -/
+  | listElimCons :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.list elementType)}
+        {nilBranch : Term ctx resultType}
+        {consBranch consBranch' : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))},
+      Step consBranch consBranch' →
+      Step (Term.listElim scrutinee nilBranch consBranch)
+           (Term.listElim scrutinee nilBranch consBranch')
+  /-- **ι-reduction for listElim on `[]`**: `listElim [] n c ⟶ n`. -/
+  | iotaListElimNil :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        (nilBranch : Term ctx resultType)
+        (consBranch : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))),
+      Step (Term.listElim (elementType := elementType) Term.listNil
+              nilBranch consBranch)
+           nilBranch
+  /-- **ι-reduction for listElim on `cons`**: `listElim (cons h t) n c ⟶
+  c h t` — apply the curried consBranch to head and tail. -/
+  | iotaListElimCons :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        (head : Term ctx elementType)
+        (tail : Term ctx (Ty.list elementType))
+        (nilBranch : Term ctx resultType)
+        (consBranch : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))),
+      Step (Term.listElim (Term.listCons head tail) nilBranch consBranch)
+           (Term.app (Term.app consBranch head) tail)
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -4676,6 +4747,54 @@ inductive Step.par :
       Step.par succBranch succBranch' →
       Step.par (Term.natElim (Term.natSucc predecessor) zeroBranch succBranch)
                (Term.app succBranch' predecessor')
+  /-- Parallel reduction inside both head and tail of a `Term.listCons`. -/
+  | listCons :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType : Ty level scope}
+        {hd hd' : Term ctx elementType}
+        {tl tl' : Term ctx (Ty.list elementType)},
+      Step.par hd hd' → Step.par tl tl' →
+      Step.par (Term.listCons hd tl) (Term.listCons hd' tl')
+  /-- Parallel reduction inside all three positions of a `Term.listElim`. -/
+  | listElim :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee scrutinee' : Term ctx (Ty.list elementType)}
+        {nilBranch nilBranch' : Term ctx resultType}
+        {consBranch consBranch' : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))},
+      Step.par scrutinee scrutinee' →
+      Step.par nilBranch nilBranch' →
+      Step.par consBranch consBranch' →
+      Step.par (Term.listElim scrutinee nilBranch consBranch)
+               (Term.listElim scrutinee' nilBranch' consBranch')
+  /-- **Parallel ι-reduction on `[]`**: `listElim [] n c → n'`
+  with `Step.par n n'`. -/
+  | iotaListElimNil :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {nilBranch nilBranch' : Term ctx resultType}
+        (consBranch : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))),
+      Step.par nilBranch nilBranch' →
+      Step.par (Term.listElim (elementType := elementType) Term.listNil
+                  nilBranch consBranch)
+               nilBranch'
+  /-- **Parallel ι-reduction on `cons`**: `listElim (cons h t) n c →
+  c' h' t'` with parallel reductions in head, tail, and consBranch. -/
+  | iotaListElimCons :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {head head' : Term ctx elementType}
+        {tail tail' : Term ctx (Ty.list elementType)}
+        (nilBranch : Term ctx resultType)
+        {consBranch consBranch' : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))},
+      Step.par head head' →
+      Step.par tail tail' →
+      Step.par consBranch consBranch' →
+      Step.par (Term.listElim (Term.listCons head tail) nilBranch consBranch)
+               (Term.app (Term.app consBranch' head') tail')
   /-- **η-contraction for non-dependent arrow** at the parallel level.
   Same shape as `Step.etaArrow`: the η-redex `λx. f.weaken x` contracts
   to `f`.  No subterm-parallel rule because the redex shape is rigid
@@ -4732,6 +4851,14 @@ theorem Step.toPar
   | .natElimSucc s        => .natElim (.refl _) (.refl _) (Step.toPar s)
   | .iotaNatElimZero z f  => .iotaNatElimZero f (.refl z)
   | .iotaNatElimSucc n _ f => .iotaNatElimSucc _ (.refl n) (.refl f)
+  | .listConsHead s       => .listCons (Step.toPar s) (.refl _)
+  | .listConsTail s       => .listCons (.refl _) (Step.toPar s)
+  | .listElimScrutinee s  => .listElim (Step.toPar s) (.refl _) (.refl _)
+  | .listElimNil s        => .listElim (.refl _) (Step.toPar s) (.refl _)
+  | .listElimCons s       => .listElim (.refl _) (.refl _) (Step.toPar s)
+  | .iotaListElimNil n c  => .iotaListElimNil c (.refl n)
+  | .iotaListElimCons h t _ c =>
+      .iotaListElimCons _ (.refl h) (.refl t) (.refl c)
 
 /-! ## Definitional conversion (`Conv`).
 
@@ -5207,6 +5334,217 @@ theorem Conv.natElim_cong
       (Conv.natElim_cong_zero scrutinee₂ succBranch₁ h_zero)
       (Conv.natElim_cong_succ scrutinee₂ zeroBranch₂ h_succ))
 
+/-! ## Natural-number Conv congruences end here.
+
+The list-side congruences (Step / StepStar / Conv on listCons / listElim)
+mirror the natElim layout but with `elementType` as an extra parametric
+implicit. -/
+
+/-- Multi-step reduction threads through `listCons`'s head. -/
+theorem StepStar.listCons_cong_head {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {hd₁ hd₂ : Term ctx elementType}
+    (tl : Term ctx (Ty.list elementType)) :
+    StepStar hd₁ hd₂ →
+    StepStar (Term.listCons hd₁ tl) (Term.listCons hd₂ tl)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.listConsHead s)
+        (StepStar.listCons_cong_head tl rest)
+
+/-- Multi-step reduction threads through `listCons`'s tail. -/
+theorem StepStar.listCons_cong_tail {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (hd : Term ctx elementType)
+    {tl₁ tl₂ : Term ctx (Ty.list elementType)} :
+    StepStar tl₁ tl₂ →
+    StepStar (Term.listCons hd tl₁) (Term.listCons hd tl₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.listConsTail s)
+        (StepStar.listCons_cong_tail hd rest)
+
+/-- Multi-step reduction threads through both head and tail of `listCons`. -/
+theorem StepStar.listCons_cong {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {hd₁ hd₂ : Term ctx elementType}
+    {tl₁ tl₂ : Term ctx (Ty.list elementType)}
+    (h_hd : StepStar hd₁ hd₂) (h_tl : StepStar tl₁ tl₂) :
+    StepStar (Term.listCons hd₁ tl₁) (Term.listCons hd₂ tl₂) :=
+  StepStar.trans (StepStar.listCons_cong_head tl₁ h_hd)
+                 (StepStar.listCons_cong_tail hd₂ h_tl)
+
+/-- Multi-step reduction threads through `listElim`'s scrutinee. -/
+theorem StepStar.listElim_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.list elementType)}
+    (nilBranch : Term ctx resultType)
+    (consBranch : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))) :
+    StepStar scrutinee₁ scrutinee₂ →
+    StepStar (Term.listElim scrutinee₁ nilBranch consBranch)
+             (Term.listElim scrutinee₂ nilBranch consBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.listElimScrutinee s)
+        (StepStar.listElim_cong_scrutinee nilBranch consBranch rest)
+
+/-- Multi-step reduction threads through `listElim`'s nil-branch. -/
+theorem StepStar.listElim_cong_nil
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.list elementType))
+    {nilBranch₁ nilBranch₂ : Term ctx resultType}
+    (consBranch : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))) :
+    StepStar nilBranch₁ nilBranch₂ →
+    StepStar (Term.listElim scrutinee nilBranch₁ consBranch)
+             (Term.listElim scrutinee nilBranch₂ consBranch)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.listElimNil s)
+        (StepStar.listElim_cong_nil scrutinee consBranch rest)
+
+/-- Multi-step reduction threads through `listElim`'s cons-branch. -/
+theorem StepStar.listElim_cong_cons
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.list elementType))
+    (nilBranch : Term ctx resultType)
+    {consBranch₁ consBranch₂ : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))} :
+    StepStar consBranch₁ consBranch₂ →
+    StepStar (Term.listElim scrutinee nilBranch consBranch₁)
+             (Term.listElim scrutinee nilBranch consBranch₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.listElimCons s)
+        (StepStar.listElim_cong_cons scrutinee nilBranch rest)
+
+/-- Multi-step reduction threads through all three `listElim` positions. -/
+theorem StepStar.listElim_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.list elementType)}
+    {nilBranch₁ nilBranch₂ : Term ctx resultType}
+    {consBranch₁ consBranch₂ : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))}
+    (h_scr : StepStar scrutinee₁ scrutinee₂)
+    (h_nil : StepStar nilBranch₁ nilBranch₂)
+    (h_cons : StepStar consBranch₁ consBranch₂) :
+    StepStar (Term.listElim scrutinee₁ nilBranch₁ consBranch₁)
+             (Term.listElim scrutinee₂ nilBranch₂ consBranch₂) :=
+  StepStar.trans
+    (StepStar.listElim_cong_scrutinee nilBranch₁ consBranch₁ h_scr)
+    (StepStar.trans
+      (StepStar.listElim_cong_nil scrutinee₂ consBranch₁ h_nil)
+      (StepStar.listElim_cong_cons scrutinee₂ nilBranch₂ h_cons))
+
+/-- Definitional equivalence threads through `listCons`'s head. -/
+theorem Conv.listCons_cong_head {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {hd₁ hd₂ : Term ctx elementType}
+    (tl : Term ctx (Ty.list elementType)) (h : Conv hd₁ hd₂) :
+    Conv (Term.listCons hd₁ tl) (Term.listCons hd₂ tl) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.listConsHead s)
+
+/-- Definitional equivalence threads through `listCons`'s tail. -/
+theorem Conv.listCons_cong_tail {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (hd : Term ctx elementType)
+    {tl₁ tl₂ : Term ctx (Ty.list elementType)} (h : Conv tl₁ tl₂) :
+    Conv (Term.listCons hd tl₁) (Term.listCons hd tl₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.listConsTail s)
+
+/-- Definitional equivalence threads through both `listCons` positions. -/
+theorem Conv.listCons_cong {mode level scope} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {hd₁ hd₂ : Term ctx elementType}
+    {tl₁ tl₂ : Term ctx (Ty.list elementType)}
+    (h_hd : Conv hd₁ hd₂) (h_tl : Conv tl₁ tl₂) :
+    Conv (Term.listCons hd₁ tl₁) (Term.listCons hd₂ tl₂) :=
+  Conv.trans (Conv.listCons_cong_head tl₁ h_hd)
+             (Conv.listCons_cong_tail hd₂ h_tl)
+
+/-- Definitional equivalence threads through `listElim`'s scrutinee. -/
+theorem Conv.listElim_cong_scrutinee
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.list elementType)}
+    (nilBranch : Term ctx resultType)
+    (consBranch : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
+    (h : Conv scrutinee₁ scrutinee₂) :
+    Conv (Term.listElim scrutinee₁ nilBranch consBranch)
+         (Term.listElim scrutinee₂ nilBranch consBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.listElimScrutinee s)
+
+/-- Definitional equivalence threads through `listElim`'s nil-branch. -/
+theorem Conv.listElim_cong_nil
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.list elementType))
+    {nilBranch₁ nilBranch₂ : Term ctx resultType}
+    (consBranch : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
+    (h : Conv nilBranch₁ nilBranch₂) :
+    Conv (Term.listElim scrutinee nilBranch₁ consBranch)
+         (Term.listElim scrutinee nilBranch₂ consBranch) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.listElimNil s)
+
+/-- Definitional equivalence threads through `listElim`'s cons-branch. -/
+theorem Conv.listElim_cong_cons
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (scrutinee : Term ctx (Ty.list elementType))
+    (nilBranch : Term ctx resultType)
+    {consBranch₁ consBranch₂ : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))}
+    (h : Conv consBranch₁ consBranch₂) :
+    Conv (Term.listElim scrutinee nilBranch consBranch₁)
+         (Term.listElim scrutinee nilBranch consBranch₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.listElimCons s)
+
+/-- Definitional equivalence threads through all three `listElim` positions. -/
+theorem Conv.listElim_cong
+    {mode level scope} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee₁ scrutinee₂ : Term ctx (Ty.list elementType)}
+    {nilBranch₁ nilBranch₂ : Term ctx resultType}
+    {consBranch₁ consBranch₂ : Term ctx
+       (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))}
+    (h_scr : Conv scrutinee₁ scrutinee₂)
+    (h_nil : Conv nilBranch₁ nilBranch₂)
+    (h_cons : Conv consBranch₁ consBranch₂) :
+    Conv (Term.listElim scrutinee₁ nilBranch₁ consBranch₁)
+         (Term.listElim scrutinee₂ nilBranch₂ consBranch₂) :=
+  Conv.trans
+    (Conv.listElim_cong_scrutinee nilBranch₁ consBranch₁ h_scr)
+    (Conv.trans
+      (Conv.listElim_cong_nil scrutinee₂ consBranch₁ h_nil)
+      (Conv.listElim_cong_cons scrutinee₂ nilBranch₂ h_cons))
+
 /-! ## StepStar congruences for nat (defined above the Conv versions
 because Step.par.toStar consumes them). -/
 
@@ -5383,6 +5721,29 @@ theorem Step.par.toStar
           (StepStar.refl zeroBranch)
           (Step.par.toStar par_f))
         (Step.toStar (Step.iotaNatElimSucc n' zeroBranch f'))
+  | .listCons par_hd par_tl  =>
+      StepStar.listCons_cong (Step.par.toStar par_hd) (Step.par.toStar par_tl)
+  | .listElim par_s par_n par_c =>
+      StepStar.listElim_cong
+        (Step.par.toStar par_s)
+        (Step.par.toStar par_n)
+        (Step.par.toStar par_c)
+  | .iotaListElimNil (nilBranch' := n') consBranch par_n =>
+      StepStar.append
+        (StepStar.listElim_cong
+          (StepStar.refl Term.listNil)
+          (Step.par.toStar par_n)
+          (StepStar.refl consBranch))
+        (Step.iotaListElimNil n' consBranch)
+  | .iotaListElimCons
+        (head' := h') (tail' := t') (consBranch' := c')
+        nilBranch par_h par_t par_c =>
+      StepStar.trans
+        (StepStar.listElim_cong
+          (StepStar.listCons_cong (Step.par.toStar par_h) (Step.par.toStar par_t))
+          (StepStar.refl nilBranch)
+          (Step.par.toStar par_c))
+        (Step.toStar (Step.iotaListElimCons h' t' nilBranch c'))
   | .etaArrow f              => Step.toStar (Step.etaArrow f)
   | .etaSigma p              => Step.toStar (Step.etaSigma p)
 
@@ -5633,6 +5994,36 @@ example {level scope target : Nat}
                       (Term.rename ρt nilBranch)
                       (Term.rename ρt consBranch) :=
   rfl
+
+/-- ι-reduction on `[]`: `listElim [] n c ⟶ n`. -/
+example {elem result : Ty 0 0}
+    (n : Term EmptyCtx result)
+    (c : Term EmptyCtx (Ty.arrow elem (Ty.arrow (Ty.list elem) result))) :
+    Step (Term.listElim (elementType := elem) Term.listNil n c) n :=
+  Step.iotaListElimNil n c
+
+/-- ι-reduction on `cons`: `listElim (cons h t) n c ⟶ c h t`. -/
+example {elem result : Ty 0 0}
+    (h : Term EmptyCtx elem) (t : Term EmptyCtx (Ty.list elem))
+    (n : Term EmptyCtx result)
+    (c : Term EmptyCtx (Ty.arrow elem (Ty.arrow (Ty.list elem) result))) :
+    Step (Term.listElim (Term.listCons h t) n c)
+         (Term.app (Term.app c h) t) :=
+  Step.iotaListElimCons h t n c
+
+/-- A single-step list ι lifts to multi-step. -/
+example {elem result : Ty 0 0}
+    (n : Term EmptyCtx result)
+    (c : Term EmptyCtx (Ty.arrow elem (Ty.arrow (Ty.list elem) result))) :
+    StepStar (Term.listElim (elementType := elem) Term.listNil n c) n :=
+  Step.toStar (Step.iotaListElimNil n c)
+
+/-- Step.par lifts: list ι reaches multi-step via the parallel bridge. -/
+example {elem result : Ty 0 0}
+    (n : Term EmptyCtx result)
+    (c : Term EmptyCtx (Ty.arrow elem (Ty.arrow (Ty.list elem) result))) :
+    StepStar (Term.listElim (elementType := elem) Term.listNil n c) n :=
+  Step.par.toStar (Step.toPar (Step.iotaListElimNil n c))
 
 /-- ι-reduction on zero: `natElim 0 z f ⟶ z`. -/
 example {result : Ty 0 0}
