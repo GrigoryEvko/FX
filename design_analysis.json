@@ -10180,7 +10180,7 @@
       "line": 9826,
       "content_lines": 5,
       "analysis": {
-        "what_fx_does": "Chapter header introducing FX's commitment to a finite axiomatic kernel in the Metamath tradition. Every surface feature in §3-§26 reduces mechanically to ~33 kernel terms; every kernel term is checked against 33 axioms (Appendix H). Kernel is implemented in Lean 4 as reference stage-0 bootstrap host. Audit trail per-definition via `fxc --show-axioms`.",
+        "what_fx_does": "Chapter header introducing FX's commitment to a finite axiomatic kernel in the Metamath tradition. Every surface feature in §3-§26 reduces mechanically to kernel terms; every kernel term is checked against the Appendix H allowlist (23 canonical entries / 33 per-rule rows in leanx/AXIOMS.md). The allowlist is an upper-bound ceiling on the trusted base — the reference Lean 4 implementation currently declares 0 axioms in its trusted kernel trees, with 3 entries (U-emit, ua_wire, HIT) genuinely axiomatic when their MTT extensions land. Kernel is implemented in Lean 4 as reference stage-0 bootstrap host. Audit trail per-definition via `fxc --show-axioms`.",
         "closest_prior_art": [
           {
             "system": "Metamath (Megill)",
@@ -10680,7 +10680,7 @@
       "line": 10455,
       "content_lines": 235,
       "analysis": {
-        "what_fx_does": "Complete enumeration of the 33 kernel axioms referenced by §31, grouped into ten categories (5 universes, 3 Pi, 3 Sigma, 4 Ind, 4 Coind, 3 Id, 3 Quot, 5 grade algebra, 2 subsumption/conversion, 1 emit-table). Each axiom has a short name, inference-rule schematic form, and one-line rationale. Plus a 'Derived, Not Axiomatic' table showing every §3-§26 surface feature reducing to these axioms.",
+        "what_fx_does": "Complete enumeration of the kernel axiom allowlist referenced by §30 — a 23-entry upper-bound ceiling on the trusted base (33 per-rule rows in leanx/AXIOMS.md), grouped into categories (universes, Pi, Sigma, Ind, Coind, Id, HIT, modal univalence, Bridge/Later, grade algebra, subsumption/conversion, emit-table). Each entry has a short name, inference-rule schematic form, and one-line rationale. Plus a 'Derived, Not Axiomatic' table showing every §3-§26 surface feature reducing to these entries. The reference Lean 4 implementation currently declares 0 axioms; only U-emit, ua_wire, and HIT remain genuinely axiomatic when their extensions land.",
         "closest_prior_art": [
           {
             "system": "Coq's Print Assumptions",
