@@ -101,6 +101,11 @@ inductive Ty : Nat → Nat → Type
   / `Term.listCons` / `Term.listElim` (and ι rules) in successor
   slices; this commit ships only the type. -/
   | list : {level scope : Nat} → (elementType : Ty level scope) → Ty level scope
+  /-- Optional values over an arbitrary element type.  Second
+  parametric type — same uniform-level discipline as `list`.  Comes
+  with `Term.optionNone` / `Term.optionSome` (single arg) /
+  `Term.optionMatch` and ι rules in successor slices. -/
+  | option : {level scope : Nat} → (elementType : Ty level scope) → Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
 `Ty`'s index is a bare `Nat`, so the discrimination obligations
@@ -159,6 +164,7 @@ def Ty.rename {level source target : Nat} :
   | .universe u h, _  => .universe u h
   | .nat, _           => .nat
   | .list elemType, ρ => .list (elemType.rename ρ)
+  | .option elemType, ρ => .option (elemType.rename ρ)
 
 /-! ## Rename composition algebra.
 
@@ -211,6 +217,10 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
   | .nat          => rfl
   | .list elemType => by
       show Ty.list (elemType.rename ρ₁) = Ty.list (elemType.rename ρ₂)
+      have hElem := Ty.rename_congr h elemType
+      exact hElem ▸ rfl
+  | .option elemType => by
+      show Ty.option (elemType.rename ρ₁) = Ty.option (elemType.rename ρ₂)
       have hElem := Ty.rename_congr h elemType
       exact hElem ▸ rfl
 
@@ -281,6 +291,11 @@ theorem Ty.rename_compose {level s m t : Nat} :
   | .list elemType, ρ₁, ρ₂ => by
       show Ty.list ((elemType.rename ρ₁).rename ρ₂)
          = Ty.list (elemType.rename (Renaming.compose ρ₁ ρ₂))
+      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
+      exact hElem ▸ rfl
+  | .option elemType, ρ₁, ρ₂ => by
+      show Ty.option ((elemType.rename ρ₁).rename ρ₂)
+         = Ty.option (elemType.rename (Renaming.compose ρ₁ ρ₂))
       have hElem := Ty.rename_compose elemType ρ₁ ρ₂
       exact hElem ▸ rfl
 
@@ -367,6 +382,7 @@ def Ty.subst {level source target : Nat} :
   | .universe u h, _  => .universe u h
   | .nat, _           => .nat
   | .list elemType, σ => .list (Ty.subst elemType σ)
+  | .option elemType, σ => .option (Ty.subst elemType σ)
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -427,6 +443,10 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
   | .nat          => rfl
   | .list elemType => by
       show Ty.list (elemType.subst σ₁) = Ty.list (elemType.subst σ₂)
+      have hElem := Ty.subst_congr h elemType
+      exact hElem ▸ rfl
+  | .option elemType => by
+      show Ty.option (elemType.subst σ₁) = Ty.option (elemType.subst σ₂)
       have hElem := Ty.subst_congr h elemType
       exact hElem ▸ rfl
 
@@ -494,6 +514,11 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
          = Ty.list (elemType.subst (Subst.renameAfter σ ρ))
       have hElem := Ty.subst_rename_commute elemType σ ρ
       exact hElem ▸ rfl
+  | .option elemType, σ, ρ => by
+      show Ty.option ((elemType.subst σ).rename ρ)
+         = Ty.option (elemType.subst (Subst.renameAfter σ ρ))
+      have hElem := Ty.subst_rename_commute elemType σ ρ
+      exact hElem ▸ rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -551,6 +576,11 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
   | .list elemType, ρ, σ => by
       show Ty.list ((elemType.rename ρ).subst σ)
          = Ty.list (elemType.subst (Subst.precompose ρ σ))
+      have hElem := Ty.rename_subst_commute elemType ρ σ
+      exact hElem ▸ rfl
+  | .option elemType, ρ, σ => by
+      show Ty.option ((elemType.rename ρ).subst σ)
+         = Ty.option (elemType.subst (Subst.precompose ρ σ))
       have hElem := Ty.rename_subst_commute elemType ρ σ
       exact hElem ▸ rfl
 
@@ -616,6 +646,10 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       show Ty.list (elemType.rename ρ) = Ty.list (elemType.subst (Renaming.toSubst ρ))
       have hElem := Ty.rename_eq_subst elemType ρ
       exact hElem ▸ rfl
+  | .option elemType, ρ => by
+      show Ty.option (elemType.rename ρ) = Ty.option (elemType.subst (Renaming.toSubst ρ))
+      have hElem := Ty.rename_eq_subst elemType ρ
+      exact hElem ▸ rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -675,6 +709,10 @@ theorem Ty.subst_id {level scope : Nat} :
   | .list elemType => by
       have hElem := Ty.subst_id elemType
       show (elemType.subst Subst.identity).list = elemType.list
+      exact hElem.symm ▸ rfl
+  | .option elemType => by
+      have hElem := Ty.subst_id elemType
+      show (elemType.subst Subst.identity).option = elemType.option
       exact hElem.symm ▸ rfl
 
 /-- Substitution commutes with weakening: substituting after
@@ -754,6 +792,11 @@ theorem Ty.subst_compose {level s m t : Nat} :
   | .list elemType, σ₁, σ₂ => by
       show Ty.list ((elemType.subst σ₁).subst σ₂)
          = Ty.list (elemType.subst (Subst.compose σ₁ σ₂))
+      have hElem := Ty.subst_compose elemType σ₁ σ₂
+      exact hElem ▸ rfl
+  | .option elemType, σ₁, σ₂ => by
+      show Ty.option ((elemType.subst σ₁).subst σ₂)
+         = Ty.option (elemType.subst (Subst.compose σ₁ σ₂))
       have hElem := Ty.subst_compose elemType σ₁ σ₂
       exact hElem ▸ rfl
 
@@ -1076,6 +1119,32 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       (consBranch : Term context
          (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))) →
       Term context resultType
+  /-- Empty option — `none`.  ElementType is supplied via the expected
+  return type or `(elementType := T)`. -/
+  | optionNone :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {elementType : Ty level scope} →
+      Term context (Ty.option elementType)
+  /-- Option wrap — `some value`. -/
+  | optionSome :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {elementType : Ty level scope} →
+      (value : Term context elementType) →
+      Term context (Ty.option elementType)
+  /-- Option elimination (case-analysis form).  None case: `noneBranch`.
+  Some case: apply `someBranch : elem → result` to the contained value.
+  Mirror of `listElim` but with no tail in the some-case. -/
+  | optionMatch :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {elementType : Ty level scope} →
+      {resultType : Ty level scope} →
+      (scrutinee : Term context (Ty.option elementType)) →
+      (noneBranch : Term context resultType) →
+      (someBranch : Term context (Ty.arrow elementType resultType)) →
+      Term context resultType
 
 /-! ## Term-level renaming.
 
@@ -1193,6 +1262,12 @@ def Term.rename {m scope scope'}
       Term.listElim (Term.rename ρt scrutinee)
                     (Term.rename ρt nilBranch)
                     (Term.rename ρt consBranch)
+  | _, .optionNone     => Term.optionNone
+  | _, .optionSome v   => Term.optionSome (Term.rename ρt v)
+  | _, .optionMatch scrutinee noneBranch someBranch =>
+      Term.optionMatch (Term.rename ρt scrutinee)
+                       (Term.rename ρt noneBranch)
+                       (Term.rename ρt someBranch)
 
 /-! ## Term-level weakening. -/
 
@@ -1396,6 +1471,12 @@ def Term.subst {m scope scope'}
       Term.listElim (Term.subst σt scrutinee)
                     (Term.subst σt nilBranch)
                     (Term.subst σt consBranch)
+  | _, .optionNone     => Term.optionNone
+  | _, .optionSome v   => Term.optionSome (Term.subst σt v)
+  | _, .optionMatch scrutinee noneBranch someBranch =>
+      Term.optionMatch (Term.subst σt scrutinee)
+                       (Term.subst σt noneBranch)
+                       (Term.subst σt someBranch)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -1757,6 +1838,44 @@ theorem Term.listElim_HEq_congr
   cases h_s
   cases h_n
   cases h_c
+  rfl
+
+/-- HEq congruence for `Term.optionNone` — only elementType varies. -/
+theorem Term.optionNone_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂) :
+    HEq (Term.optionNone (context := Γ) (elementType := elem₁))
+        (Term.optionNone (context := Γ) (elementType := elem₂)) := by
+  cases h_elem
+  rfl
+
+/-- HEq congruence for `Term.optionSome`. -/
+theorem Term.optionSome_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
+    (v₁ : Term Γ elem₁) (v₂ : Term Γ elem₂) (h_v : HEq v₁ v₂) :
+    HEq (Term.optionSome v₁) (Term.optionSome v₂) := by
+  cases h_elem
+  cases h_v
+  rfl
+
+/-- HEq congruence for `Term.optionMatch`. -/
+theorem Term.optionMatch_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
+    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
+    (s₁ : Term Γ (Ty.option elem₁)) (s₂ : Term Γ (Ty.option elem₂))
+    (h_s : HEq s₁ s₂)
+    (n₁ : Term Γ result₁) (n₂ : Term Γ result₂) (h_n : HEq n₁ n₂)
+    (sm₁ : Term Γ (Ty.arrow elem₁ result₁))
+    (sm₂ : Term Γ (Ty.arrow elem₂ result₂))
+    (h_sm : HEq sm₁ sm₂) :
+    HEq (Term.optionMatch s₁ n₁ sm₁) (Term.optionMatch s₂ n₂ sm₂) := by
+  cases h_elem
+  cases h_result
+  cases h_s
+  cases h_n
+  cases h_sm
   rfl
 
 /-! ## `Term.subst_id_HEq` leaf cases.
@@ -2139,6 +2258,32 @@ theorem Term.subst_HEq_pointwise
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise nilBranch)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise consBranch)
+  | _, .optionNone (elementType := elem) => by
+    cases h_ctx
+    exact Term.optionNone_HEq_congr (Ty.subst_congr h_subst elem)
+  | _, .optionSome (elementType := elem) v => by
+    cases h_ctx
+    show HEq (Term.optionSome (Term.subst σt₁ v))
+             (Term.optionSome (Term.subst σt₂ v))
+    exact Term.optionSome_HEq_congr
+      (Ty.subst_congr h_subst elem)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch => by
+    cases h_ctx
+    show HEq
+      (Term.optionMatch (Term.subst σt₁ scrutinee)
+                        (Term.subst σt₁ noneBranch)
+                        (Term.subst σt₁ someBranch))
+      (Term.optionMatch (Term.subst σt₂ scrutinee)
+                        (Term.subst σt₂ noneBranch)
+                        (Term.subst σt₂ someBranch))
+    exact Term.optionMatch_HEq_congr
+      (Ty.subst_congr h_subst elem)
+      (Ty.subst_congr h_subst result)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise noneBranch)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise someBranch)
 
 /-! ## `Term.subst_id_HEq`.
 
@@ -2230,6 +2375,19 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
       _ _ (Term.subst_id_HEq scrutinee)
       _ _ (Term.subst_id_HEq nilBranch)
       _ _ (Term.subst_id_HEq consBranch)
+  | _, .optionNone (elementType := elem) =>
+    Term.optionNone_HEq_congr (Ty.subst_id elem)
+  | _, .optionSome (elementType := elem) v =>
+    Term.optionSome_HEq_congr
+      (Ty.subst_id elem)
+      _ _ (Term.subst_id_HEq v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch =>
+    Term.optionMatch_HEq_congr
+      (Ty.subst_id elem) (Ty.subst_id result)
+      _ _ (Term.subst_id_HEq scrutinee)
+      _ _ (Term.subst_id_HEq noneBranch)
+      _ _ (Term.subst_id_HEq someBranch)
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
@@ -2505,6 +2663,31 @@ theorem Term.rename_HEq_pointwise
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ nilBranch)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ consBranch)
+  | _, .optionNone (elementType := elem) => by
+    cases h_ctx
+    exact Term.optionNone_HEq_congr (Ty.rename_congr h_ρ elem)
+  | _, .optionSome (elementType := elem) v => by
+    cases h_ctx
+    show HEq (Term.optionSome (Term.rename ρt₁ v))
+             (Term.optionSome (Term.rename ρt₂ v))
+    exact Term.optionSome_HEq_congr
+      (Ty.rename_congr h_ρ elem)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch => by
+    cases h_ctx
+    show HEq
+      (Term.optionMatch (Term.rename ρt₁ scrutinee)
+                        (Term.rename ρt₁ noneBranch)
+                        (Term.rename ρt₁ someBranch))
+      (Term.optionMatch (Term.rename ρt₂ scrutinee)
+                        (Term.rename ρt₂ noneBranch)
+                        (Term.rename ρt₂ someBranch))
+    exact Term.optionMatch_HEq_congr
+      (Ty.rename_congr h_ρ elem) (Ty.rename_congr h_ρ result)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ noneBranch)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ someBranch)
 
 /-! ## `Term.rename_id_HEq`.
 
@@ -2671,6 +2854,19 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       _ _ (Term.rename_id_HEq scrutinee)
       _ _ (Term.rename_id_HEq nilBranch)
       _ _ (Term.rename_id_HEq consBranch)
+  | _, .optionNone (elementType := elem) =>
+    Term.optionNone_HEq_congr (Ty.rename_identity elem)
+  | _, .optionSome (elementType := elem) v =>
+    Term.optionSome_HEq_congr
+      (Ty.rename_identity elem)
+      _ _ (Term.rename_id_HEq v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch =>
+    Term.optionMatch_HEq_congr
+      (Ty.rename_identity elem) (Ty.rename_identity result)
+      _ _ (Term.rename_id_HEq scrutinee)
+      _ _ (Term.rename_id_HEq noneBranch)
+      _ _ (Term.rename_id_HEq someBranch)
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
@@ -2912,6 +3108,20 @@ theorem Term.rename_compose_HEq
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ nilBranch)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ consBranch)
+  | _, .optionNone (elementType := elem) =>
+    Term.optionNone_HEq_congr (Ty.rename_compose elem ρ₁ ρ₂)
+  | _, .optionSome (elementType := elem) v =>
+    Term.optionSome_HEq_congr
+      (Ty.rename_compose elem ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch =>
+    Term.optionMatch_HEq_congr
+      (Ty.rename_compose elem ρ₁ ρ₂)
+      (Ty.rename_compose result ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ noneBranch)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ someBranch)
 
 /-! ## `Term.rename_weaken_commute_HEq`.
 
@@ -3374,6 +3584,20 @@ theorem Term.subst_rename_commute_HEq
       _ _ (Term.subst_rename_commute_HEq σt ρt scrutinee)
       _ _ (Term.subst_rename_commute_HEq σt ρt nilBranch)
       _ _ (Term.subst_rename_commute_HEq σt ρt consBranch)
+  | _, .optionNone (elementType := elem) =>
+    Term.optionNone_HEq_congr (Ty.subst_rename_commute elem σ ρ)
+  | _, .optionSome (elementType := elem) v =>
+    Term.optionSome_HEq_congr
+      (Ty.subst_rename_commute elem σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch =>
+    Term.optionMatch_HEq_congr
+      (Ty.subst_rename_commute elem σ ρ)
+      (Ty.subst_rename_commute result σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt scrutinee)
+      _ _ (Term.subst_rename_commute_HEq σt ρt noneBranch)
+      _ _ (Term.subst_rename_commute_HEq σt ρt someBranch)
 
 /-! ## `Term.rename_subst_commute_HEq`.
 
@@ -3579,6 +3803,20 @@ theorem Term.rename_subst_commute_HEq
       _ _ (Term.rename_subst_commute_HEq ρt σt' scrutinee)
       _ _ (Term.rename_subst_commute_HEq ρt σt' nilBranch)
       _ _ (Term.rename_subst_commute_HEq ρt σt' consBranch)
+  | _, .optionNone (elementType := elem) =>
+    Term.optionNone_HEq_congr (Ty.rename_subst_commute elem ρ σ')
+  | _, .optionSome (elementType := elem) v =>
+    Term.optionSome_HEq_congr
+      (Ty.rename_subst_commute elem ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch =>
+    Term.optionMatch_HEq_congr
+      (Ty.rename_subst_commute elem ρ σ')
+      (Ty.rename_subst_commute result ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' scrutinee)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' noneBranch)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' someBranch)
 
 /-! ## `Term.subst_weaken_commute_HEq`.
 
@@ -3917,6 +4155,20 @@ theorem Term.subst_compose_HEq
       _ _ (Term.subst_compose_HEq σt₁ σt₂ scrutinee)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ nilBranch)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ consBranch)
+  | _, .optionNone (elementType := elem) =>
+    Term.optionNone_HEq_congr (Ty.subst_compose elem σ₁ σ₂)
+  | _, .optionSome (elementType := elem) v =>
+    Term.optionSome_HEq_congr
+      (Ty.subst_compose elem σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ v)
+  | _, .optionMatch (elementType := elem) (resultType := result)
+        scrutinee noneBranch someBranch =>
+    Term.optionMatch_HEq_congr
+      (Ty.subst_compose elem σ₁ σ₂)
+      (Ty.subst_compose result σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ scrutinee)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ noneBranch)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ someBranch)
 
 /-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
