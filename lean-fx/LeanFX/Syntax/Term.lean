@@ -106,6 +106,16 @@ inductive Ty : Nat → Nat → Type
   with `Term.optionNone` / `Term.optionSome` (single arg) /
   `Term.optionMatch` and ι rules in successor slices. -/
   | option : {level scope : Nat} → (elementType : Ty level scope) → Ty level scope
+  /-- Tagged sum (disjoint union) of two element types.  First *binary*
+  parametric type in the kernel: both `leftType` and `rightType` live
+  at the same level and scope as the result.  Same uniform-level
+  discipline as `list` / `option` extended to two indices.  Comes with
+  `Term.eitherInl` / `Term.eitherInr` / `Term.eitherMatch` and ι rules
+  in successor slices. -/
+  | either : {level scope : Nat} →
+             (leftType : Ty level scope) →
+             (rightType : Ty level scope) →
+             Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
 `Ty`'s index is a bare `Nat`, so the discrimination obligations
@@ -165,6 +175,8 @@ def Ty.rename {level source target : Nat} :
   | .nat, _           => .nat
   | .list elemType, ρ => .list (elemType.rename ρ)
   | .option elemType, ρ => .option (elemType.rename ρ)
+  | .either leftType rightType, ρ =>
+      .either (leftType.rename ρ) (rightType.rename ρ)
 
 /-! ## Rename composition algebra.
 
@@ -223,6 +235,12 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
       show Ty.option (elemType.rename ρ₁) = Ty.option (elemType.rename ρ₂)
       have hElem := Ty.rename_congr h elemType
       exact hElem ▸ rfl
+  | .either leftType rightType => by
+      show Ty.either (leftType.rename ρ₁) (rightType.rename ρ₁)
+         = Ty.either (leftType.rename ρ₂) (rightType.rename ρ₂)
+      have hLeft  := Ty.rename_congr h leftType
+      have hRight := Ty.rename_congr h rightType
+      exact hLeft ▸ hRight ▸ rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -298,6 +316,14 @@ theorem Ty.rename_compose {level s m t : Nat} :
          = Ty.option (elemType.rename (Renaming.compose ρ₁ ρ₂))
       have hElem := Ty.rename_compose elemType ρ₁ ρ₂
       exact hElem ▸ rfl
+  | .either leftType rightType, ρ₁, ρ₂ => by
+      show Ty.either ((leftType.rename ρ₁).rename ρ₂)
+                     ((rightType.rename ρ₁).rename ρ₂)
+         = Ty.either (leftType.rename (Renaming.compose ρ₁ ρ₂))
+                     (rightType.rename (Renaming.compose ρ₁ ρ₂))
+      have hLeft  := Ty.rename_compose leftType ρ₁ ρ₂
+      have hRight := Ty.rename_compose rightType ρ₁ ρ₂
+      exact hLeft ▸ hRight ▸ rfl
 
 /-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
 Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
@@ -383,6 +409,8 @@ def Ty.subst {level source target : Nat} :
   | .nat, _           => .nat
   | .list elemType, σ => .list (Ty.subst elemType σ)
   | .option elemType, σ => .option (Ty.subst elemType σ)
+  | .either leftType rightType, σ =>
+      .either (Ty.subst leftType σ) (Ty.subst rightType σ)
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -449,6 +477,12 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
       show Ty.option (elemType.subst σ₁) = Ty.option (elemType.subst σ₂)
       have hElem := Ty.subst_congr h elemType
       exact hElem ▸ rfl
+  | .either leftType rightType => by
+      show Ty.either (leftType.subst σ₁) (rightType.subst σ₁)
+         = Ty.either (leftType.subst σ₂) (rightType.subst σ₂)
+      have hLeft  := Ty.subst_congr h leftType
+      have hRight := Ty.subst_congr h rightType
+      exact hLeft ▸ hRight ▸ rfl
 
 /-- Substitution composed with renaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -519,6 +553,14 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
          = Ty.option (elemType.subst (Subst.renameAfter σ ρ))
       have hElem := Ty.subst_rename_commute elemType σ ρ
       exact hElem ▸ rfl
+  | .either leftType rightType, σ, ρ => by
+      show Ty.either ((leftType.subst σ).rename ρ)
+                     ((rightType.subst σ).rename ρ)
+         = Ty.either (leftType.subst (Subst.renameAfter σ ρ))
+                     (rightType.subst (Subst.renameAfter σ ρ))
+      have hLeft  := Ty.subst_rename_commute leftType σ ρ
+      have hRight := Ty.subst_rename_commute rightType σ ρ
+      exact hLeft ▸ hRight ▸ rfl
 
 /-- Renaming followed by substitution: precompose the renaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -583,6 +625,14 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
          = Ty.option (elemType.subst (Subst.precompose ρ σ))
       have hElem := Ty.rename_subst_commute elemType ρ σ
       exact hElem ▸ rfl
+  | .either leftType rightType, ρ, σ => by
+      show Ty.either ((leftType.rename ρ).subst σ)
+                     ((rightType.rename ρ).subst σ)
+         = Ty.either (leftType.subst (Subst.precompose ρ σ))
+                     (rightType.subst (Subst.precompose ρ σ))
+      have hLeft  := Ty.rename_subst_commute leftType ρ σ
+      have hRight := Ty.rename_subst_commute rightType ρ σ
+      exact hLeft ▸ hRight ▸ rfl
 
 /-! ## Renaming as a special case of substitution.
 
@@ -650,6 +700,13 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       show Ty.option (elemType.rename ρ) = Ty.option (elemType.subst (Renaming.toSubst ρ))
       have hElem := Ty.rename_eq_subst elemType ρ
       exact hElem ▸ rfl
+  | .either leftType rightType, ρ => by
+      show Ty.either (leftType.rename ρ) (rightType.rename ρ)
+         = Ty.either (leftType.subst (Renaming.toSubst ρ))
+                     (rightType.subst (Renaming.toSubst ρ))
+      have hLeft  := Ty.rename_eq_subst leftType ρ
+      have hRight := Ty.rename_eq_subst rightType ρ
+      exact hLeft ▸ hRight ▸ rfl
 
 /-! ## Categorical structure: identity and composition.
 
@@ -714,6 +771,13 @@ theorem Ty.subst_id {level scope : Nat} :
       have hElem := Ty.subst_id elemType
       show (elemType.subst Subst.identity).option = elemType.option
       exact hElem.symm ▸ rfl
+  | .either leftType rightType => by
+      have hLeft  := Ty.subst_id leftType
+      have hRight := Ty.subst_id rightType
+      show (leftType.subst Subst.identity).either
+             (rightType.subst Subst.identity)
+           = leftType.either rightType
+      exact hLeft.symm ▸ hRight.symm ▸ rfl
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -799,6 +863,14 @@ theorem Ty.subst_compose {level s m t : Nat} :
          = Ty.option (elemType.subst (Subst.compose σ₁ σ₂))
       have hElem := Ty.subst_compose elemType σ₁ σ₂
       exact hElem ▸ rfl
+  | .either leftType rightType, σ₁, σ₂ => by
+      show Ty.either ((leftType.subst σ₁).subst σ₂)
+                     ((rightType.subst σ₁).subst σ₂)
+         = Ty.either (leftType.subst (Subst.compose σ₁ σ₂))
+                     (rightType.subst (Subst.compose σ₁ σ₂))
+      have hLeft  := Ty.subst_compose leftType σ₁ σ₂
+      have hRight := Ty.subst_compose rightType σ₁ σ₂
+      exact hLeft ▸ hRight ▸ rfl
 
 /-! ## Monoid laws for Renaming and Subst.
 
@@ -1145,6 +1217,36 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       (noneBranch : Term context resultType) →
       (someBranch : Term context (Ty.arrow elementType resultType)) →
       Term context resultType
+  /-- Sum left-injection — `inl value` at element type `leftType`,
+  with `rightType` carried implicitly via the expected return type. -/
+  | eitherInl :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {leftType rightType : Ty level scope} →
+      (value : Term context leftType) →
+      Term context (Ty.either leftType rightType)
+  /-- Sum right-injection — `inr value` at element type `rightType`,
+  with `leftType` carried implicitly. -/
+  | eitherInr :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {leftType rightType : Ty level scope} →
+      (value : Term context rightType) →
+      Term context (Ty.either leftType rightType)
+  /-- Sum elimination (case-analysis form).  Left case: apply
+  `leftBranch : leftType → resultType` to the contained value.
+  Right case: apply `rightBranch : rightType → resultType`.
+  Symmetric to `optionMatch` but with both branches function-shaped
+  (since both carry payloads). -/
+  | eitherMatch :
+      {mode : Mode} → {level scope : Nat} →
+      {context : Ctx mode level scope} →
+      {leftType rightType : Ty level scope} →
+      {resultType : Ty level scope} →
+      (scrutinee : Term context (Ty.either leftType rightType)) →
+      (leftBranch : Term context (Ty.arrow leftType resultType)) →
+      (rightBranch : Term context (Ty.arrow rightType resultType)) →
+      Term context resultType
 
 /-! ## Term-level renaming.
 
@@ -1268,6 +1370,12 @@ def Term.rename {m scope scope'}
       Term.optionMatch (Term.rename ρt scrutinee)
                        (Term.rename ρt noneBranch)
                        (Term.rename ρt someBranch)
+  | _, .eitherInl v    => Term.eitherInl (Term.rename ρt v)
+  | _, .eitherInr v    => Term.eitherInr (Term.rename ρt v)
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
+      Term.eitherMatch (Term.rename ρt scrutinee)
+                       (Term.rename ρt leftBranch)
+                       (Term.rename ρt rightBranch)
 
 /-! ## Term-level weakening. -/
 
@@ -1477,6 +1585,12 @@ def Term.subst {m scope scope'}
       Term.optionMatch (Term.subst σt scrutinee)
                        (Term.subst σt noneBranch)
                        (Term.subst σt someBranch)
+  | _, .eitherInl v    => Term.eitherInl (Term.subst σt v)
+  | _, .eitherInr v    => Term.eitherInr (Term.subst σt v)
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
+      Term.eitherMatch (Term.subst σt scrutinee)
+                       (Term.subst σt leftBranch)
+                       (Term.subst σt rightBranch)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -1876,6 +1990,56 @@ theorem Term.optionMatch_HEq_congr
   cases h_s
   cases h_n
   cases h_sm
+  rfl
+
+/-- HEq congruence for `Term.eitherInl`.  Both `leftType` and
+`rightType` may vary; only the `leftType` value is supplied. -/
+theorem Term.eitherInl_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {left₁ left₂ : Ty level scope} (h_left : left₁ = left₂)
+    {right₁ right₂ : Ty level scope} (h_right : right₁ = right₂)
+    (v₁ : Term Γ left₁) (v₂ : Term Γ left₂) (h_v : HEq v₁ v₂) :
+    HEq (Term.eitherInl (rightType := right₁) v₁)
+        (Term.eitherInl (rightType := right₂) v₂) := by
+  cases h_left
+  cases h_right
+  cases h_v
+  rfl
+
+/-- HEq congruence for `Term.eitherInr`.  Symmetric to `eitherInl_HEq_congr`. -/
+theorem Term.eitherInr_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {left₁ left₂ : Ty level scope} (h_left : left₁ = left₂)
+    {right₁ right₂ : Ty level scope} (h_right : right₁ = right₂)
+    (v₁ : Term Γ right₁) (v₂ : Term Γ right₂) (h_v : HEq v₁ v₂) :
+    HEq (Term.eitherInr (leftType := left₁) v₁)
+        (Term.eitherInr (leftType := left₂) v₂) := by
+  cases h_left
+  cases h_right
+  cases h_v
+  rfl
+
+/-- HEq congruence for `Term.eitherMatch`.  Three Ty-index equalities
+(left, right, result) and three sub-term HEqs (scrutinee, leftBranch,
+rightBranch). -/
+theorem Term.eitherMatch_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {left₁ left₂ : Ty level scope} (h_left : left₁ = left₂)
+    {right₁ right₂ : Ty level scope} (h_right : right₁ = right₂)
+    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
+    (s₁ : Term Γ (Ty.either left₁ right₁))
+    (s₂ : Term Γ (Ty.either left₂ right₂)) (h_s : HEq s₁ s₂)
+    (lb₁ : Term Γ (Ty.arrow left₁ result₁))
+    (lb₂ : Term Γ (Ty.arrow left₂ result₂)) (h_lb : HEq lb₁ lb₂)
+    (rb₁ : Term Γ (Ty.arrow right₁ result₁))
+    (rb₂ : Term Γ (Ty.arrow right₂ result₂)) (h_rb : HEq rb₁ rb₂) :
+    HEq (Term.eitherMatch s₁ lb₁ rb₁) (Term.eitherMatch s₂ lb₂ rb₂) := by
+  cases h_left
+  cases h_right
+  cases h_result
+  cases h_s
+  cases h_lb
+  cases h_rb
   rfl
 
 /-! ## `Term.subst_id_HEq` leaf cases.
@@ -2284,6 +2448,28 @@ theorem Term.subst_HEq_pointwise
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise noneBranch)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v => by
+    cases h_ctx
+    exact Term.eitherInl_HEq_congr
+      (Ty.subst_congr h_subst lefT)
+      (Ty.subst_congr h_subst righT)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v => by
+    cases h_ctx
+    exact Term.eitherInr_HEq_congr
+      (Ty.subst_congr h_subst lefT)
+      (Ty.subst_congr h_subst righT)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch => by
+    cases h_ctx
+    exact Term.eitherMatch_HEq_congr
+      (Ty.subst_congr h_subst lefT)
+      (Ty.subst_congr h_subst righT)
+      (Ty.subst_congr h_subst result)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise leftBranch)
+      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise rightBranch)
 
 /-! ## `Term.subst_id_HEq`.
 
@@ -2388,6 +2574,21 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
       _ _ (Term.subst_id_HEq scrutinee)
       _ _ (Term.subst_id_HEq noneBranch)
       _ _ (Term.subst_id_HEq someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInl_HEq_congr
+      (Ty.subst_id lefT) (Ty.subst_id righT)
+      _ _ (Term.subst_id_HEq v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInr_HEq_congr
+      (Ty.subst_id lefT) (Ty.subst_id righT)
+      _ _ (Term.subst_id_HEq v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch =>
+    Term.eitherMatch_HEq_congr
+      (Ty.subst_id lefT) (Ty.subst_id righT) (Ty.subst_id result)
+      _ _ (Term.subst_id_HEq scrutinee)
+      _ _ (Term.subst_id_HEq leftBranch)
+      _ _ (Term.subst_id_HEq rightBranch)
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
@@ -2688,6 +2889,28 @@ theorem Term.rename_HEq_pointwise
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ noneBranch)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v => by
+    cases h_ctx
+    exact Term.eitherInl_HEq_congr
+      (Ty.rename_congr h_ρ lefT)
+      (Ty.rename_congr h_ρ righT)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v => by
+    cases h_ctx
+    exact Term.eitherInr_HEq_congr
+      (Ty.rename_congr h_ρ lefT)
+      (Ty.rename_congr h_ρ righT)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch => by
+    cases h_ctx
+    exact Term.eitherMatch_HEq_congr
+      (Ty.rename_congr h_ρ lefT)
+      (Ty.rename_congr h_ρ righT)
+      (Ty.rename_congr h_ρ result)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ leftBranch)
+      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ rightBranch)
 
 /-! ## `Term.rename_id_HEq`.
 
@@ -2867,6 +3090,22 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       _ _ (Term.rename_id_HEq scrutinee)
       _ _ (Term.rename_id_HEq noneBranch)
       _ _ (Term.rename_id_HEq someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInl_HEq_congr
+      (Ty.rename_identity lefT) (Ty.rename_identity righT)
+      _ _ (Term.rename_id_HEq v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInr_HEq_congr
+      (Ty.rename_identity lefT) (Ty.rename_identity righT)
+      _ _ (Term.rename_id_HEq v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch =>
+    Term.eitherMatch_HEq_congr
+      (Ty.rename_identity lefT) (Ty.rename_identity righT)
+      (Ty.rename_identity result)
+      _ _ (Term.rename_id_HEq scrutinee)
+      _ _ (Term.rename_id_HEq leftBranch)
+      _ _ (Term.rename_id_HEq rightBranch)
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
@@ -3122,6 +3361,25 @@ theorem Term.rename_compose_HEq
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ noneBranch)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInl_HEq_congr
+      (Ty.rename_compose lefT ρ₁ ρ₂)
+      (Ty.rename_compose righT ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInr_HEq_congr
+      (Ty.rename_compose lefT ρ₁ ρ₂)
+      (Ty.rename_compose righT ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch =>
+    Term.eitherMatch_HEq_congr
+      (Ty.rename_compose lefT ρ₁ ρ₂)
+      (Ty.rename_compose righT ρ₁ ρ₂)
+      (Ty.rename_compose result ρ₁ ρ₂)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ leftBranch)
+      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ rightBranch)
 
 /-! ## `Term.rename_weaken_commute_HEq`.
 
@@ -3598,6 +3856,25 @@ theorem Term.subst_rename_commute_HEq
       _ _ (Term.subst_rename_commute_HEq σt ρt scrutinee)
       _ _ (Term.subst_rename_commute_HEq σt ρt noneBranch)
       _ _ (Term.subst_rename_commute_HEq σt ρt someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInl_HEq_congr
+      (Ty.subst_rename_commute lefT σ ρ)
+      (Ty.subst_rename_commute righT σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInr_HEq_congr
+      (Ty.subst_rename_commute lefT σ ρ)
+      (Ty.subst_rename_commute righT σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch =>
+    Term.eitherMatch_HEq_congr
+      (Ty.subst_rename_commute lefT σ ρ)
+      (Ty.subst_rename_commute righT σ ρ)
+      (Ty.subst_rename_commute result σ ρ)
+      _ _ (Term.subst_rename_commute_HEq σt ρt scrutinee)
+      _ _ (Term.subst_rename_commute_HEq σt ρt leftBranch)
+      _ _ (Term.subst_rename_commute_HEq σt ρt rightBranch)
 
 /-! ## `Term.rename_subst_commute_HEq`.
 
@@ -3817,6 +4094,25 @@ theorem Term.rename_subst_commute_HEq
       _ _ (Term.rename_subst_commute_HEq ρt σt' scrutinee)
       _ _ (Term.rename_subst_commute_HEq ρt σt' noneBranch)
       _ _ (Term.rename_subst_commute_HEq ρt σt' someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInl_HEq_congr
+      (Ty.rename_subst_commute lefT ρ σ')
+      (Ty.rename_subst_commute righT ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInr_HEq_congr
+      (Ty.rename_subst_commute lefT ρ σ')
+      (Ty.rename_subst_commute righT ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch =>
+    Term.eitherMatch_HEq_congr
+      (Ty.rename_subst_commute lefT ρ σ')
+      (Ty.rename_subst_commute righT ρ σ')
+      (Ty.rename_subst_commute result ρ σ')
+      _ _ (Term.rename_subst_commute_HEq ρt σt' scrutinee)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' leftBranch)
+      _ _ (Term.rename_subst_commute_HEq ρt σt' rightBranch)
 
 /-! ## `Term.subst_weaken_commute_HEq`.
 
@@ -4169,6 +4465,25 @@ theorem Term.subst_compose_HEq
       _ _ (Term.subst_compose_HEq σt₁ σt₂ scrutinee)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ noneBranch)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ someBranch)
+  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInl_HEq_congr
+      (Ty.subst_compose lefT σ₁ σ₂)
+      (Ty.subst_compose righT σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ v)
+  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+    Term.eitherInr_HEq_congr
+      (Ty.subst_compose lefT σ₁ σ₂)
+      (Ty.subst_compose righT σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ v)
+  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+        scrutinee leftBranch rightBranch =>
+    Term.eitherMatch_HEq_congr
+      (Ty.subst_compose lefT σ₁ σ₂)
+      (Ty.subst_compose righT σ₁ σ₂)
+      (Ty.subst_compose result σ₁ σ₂)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ scrutinee)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ leftBranch)
+      _ _ (Term.subst_compose_HEq σt₁ σt₂ rightBranch)
 
 /-- The explicit-`▸` form of `Term.subst_compose`: `eq_of_heq` plus
 the outer cast strip.  Mirrors the v1.25 derivation of `Term.subst_id`
