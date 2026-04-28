@@ -1,6 +1,6 @@
 import LeanFX.Mode.Defn
 import LeanFX.Syntax.Term
-import LeanFX.KernelMTT.Syntax
+import LeanFX.Syntax.Raw
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
 
@@ -8,45 +8,48 @@ This is the public root of the package.  Every public-facing
 definition lives in `LeanFX/...` and is re-exported here in
 dependency order.
 
-## The two kernels
+## One kernel, two layers
 
-KernelV1 (`LeanFX.Syntax.Term`) is the **intrinsic** kernel: typing
-is *construction*, `Term Γ m T` is a Lean type whose only inhabitants
-are well-typed FX terms in context `Γ`, at mode `m`, of type `T`.
-Constructor signatures *are* the typing rules.  Discovered limit:
-Lean 4's mutual elaborator forbids cross-mutual references in index
-family signatures (see `feedback_lean_mutual_index_rule.md`), which
-makes Term-mentioning Ty constructors (identity types, dependent J)
-unreachable.
+A single kernel that **bypasses Lean 4's elaborator limitation
+from both sides** — intrinsic typing where Lean accepts it, raw
+syntax where it doesn't — and links the two via bridge functions.
+Both layers live in `LeanFX/Syntax/`:
 
-KernelMTT (`LeanFX.KernelMTT.Syntax`) is the **extrinsic** kernel:
-mutual `Ty` + raw `Term` admits Term in Ty's argument positions
-(working around the elaborator restriction); type correctness lives
-in a separate `HasType` predicate.  This is the Allais–McBride
-well-scoped pattern, the standard MLTT formalization choice.
-KernelMTT can express the full MTT spine — identity types, J,
-parametricity modalities — that KernelV1 architecturally cannot.
+  * `LeanFX.Syntax` (intrinsic layer, `Term.lean`) — `Ty : Nat →
+    Nat → Type`, `Ctx`, `Term : (Γ : Ctx) → Ty → Type`.  Typing is
+    construction; constructor signatures *are* the typing rules.
+    Most of the kernel lives here: substitution, reduction,
+    parallel reduction, Conv, identity-proof scaffold.  ~7,800
+    lines, 100% zero-axiom.
 
-## Migration plan
+  * `LeanFX.Syntax.Raw` (raw layer, `Raw.lean`) — `Ty : Nat → Nat
+    → Type` and `Term : Nat → Nat → Type` mutual, where `Ty.tyId`
+    references raw `Term` values in *argument position*.  This
+    sidesteps the mutual-index-signature limit
+    (`feedback_lean_mutual_index_rule.md`).  Provides the
+    Term-mentioning `Ty` constructors (identity types, future J
+    eliminator, parametricity bridges) that the intrinsic layer
+    architecturally cannot host.
 
-KernelV1 stays in active development through v1.x — vec, generic
-inductive families, the parametric-type recipe.  KernelMTT advances
-through v2.x in parallel (see `LeanFX.KernelMTT` for the slice
-plan).  Once KernelMTT reaches feature parity (~v2.5), downstream
-tooling migrates over and KernelV1 enters a 12-month deprecation
-window per task #503.
+## Why this works
+
+Lean 4's elaborator forbids cross-mutual references in *mutual
+inductive index family signatures*.  It admits cross-references in
+*constructor argument types*.  The fix that crystallised after the
+prototype: define raw `Ty/Term` MUTUAL with each other (so
+`Ty.tyId` can reference raw `Term` in args), then build the
+intrinsic kernel SEPARATELY on top with its own `Ty/Term/Ctx`.
+Two layers, one kernel; the bridge between them is the future
+`Term.toRaw : intrinsic.Term Γ T → Raw.Term level scope` and
+companion lift.
 
 ## Trust base
 
   * Lean 4 kernel (~6 KLoC C++; accepted as TCB).
   * `LeanFX.Mode.Defn` — the four-mode enum.  Audited as input data.
-  * `LeanFX.Syntax.Term` — KernelV1: intrinsic Term GADT.
-  * `LeanFX.KernelMTT.Syntax` — KernelMTT: mutual Ty + raw Term.
+  * `LeanFX.Syntax.Term` — intrinsic Ty + Ctx + Term GADT.
+  * `LeanFX.Syntax.Raw` — raw mutual `Ty + Term` with `Ty.tyId`.
 
 Everything else — substitution, reduction, conversion, typing,
 subject reduction, the bidirectional checker, the elaborator —
-operates *on* the kernel and physically cannot extend it.  In
-KernelV1, bugs in derived layers cause false rejections or non-
-termination, never false acceptances.  In KernelMTT, the same holds
-provided the explicit subject-reduction proofs (v2.0e+) discharge
-the burden previously implicit in intrinsic constructors. -/
+operates *on* the kernel and physically cannot extend it. -/
