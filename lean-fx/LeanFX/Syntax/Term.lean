@@ -6154,6 +6154,38 @@ inductive Step :
       Step (Term.eitherMatch (Term.eitherInr (leftType := leftType) value)
               leftBranch rightBranch)
            (Term.app rightBranch value)
+  /-- Step inside `Term.idJ`'s baseCase position. -/
+  | idJBase :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+        {resultType : Ty level scope}
+        {baseCase baseCase' : Term ctx resultType}
+        {witness : Term ctx (Ty.id carrier leftEnd rightEnd)},
+      Step baseCase baseCase' →
+      Step (Term.idJ baseCase witness) (Term.idJ baseCase' witness)
+  /-- Step inside `Term.idJ`'s witness position. -/
+  | idJWitness :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+        {resultType : Ty level scope}
+        (baseCase : Term ctx resultType)
+        {witness witness' : Term ctx (Ty.id carrier leftEnd rightEnd)},
+      Step witness witness' →
+      Step (Term.idJ baseCase witness) (Term.idJ baseCase witness')
+  /-- **ι-reduction for J at refl**: `J base (refl rt) ⟶ base`.  The
+  defining computational behaviour of identity types: a refl-witness
+  collapses to its base case.  In the closed-endpoint regime, this is
+  the only canonical J reduction (open-endpoint dependent J adds a
+  cast through the path's transport, deferred to v2.3+). -/
+  | iotaIdJRefl :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {carrier : Ty level scope} {endpoint : RawTerm 0}
+        {resultType : Ty level scope}
+        (baseCase : Term ctx resultType),
+      Step (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                     (rightEnd := endpoint) baseCase
+                     (Term.refl (carrier := carrier) endpoint))
+           baseCase
 
 /-- Reflexive-transitive closure of `Step` — multi-step reduction.
 Captures the eventual reach of the reduction relation. -/
@@ -6752,6 +6784,29 @@ inductive Step.par :
                            (secondType := secondType)
                   (Term.fst p) (Term.snd p))
                p
+  /-- Parallel reduction inside both positions of `Term.idJ`. -/
+  | idJ :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+        {resultType : Ty level scope}
+        {baseCase baseCase' : Term ctx resultType}
+        {witness witness' : Term ctx (Ty.id carrier leftEnd rightEnd)},
+      Step.par baseCase baseCase' →
+      Step.par witness witness' →
+      Step.par (Term.idJ baseCase witness)
+               (Term.idJ baseCase' witness')
+  /-- **Parallel ι-reduction at refl**: `J base (refl rt) → base'` with
+  parallel reduction in baseCase. -/
+  | iotaIdJRefl :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {carrier : Ty level scope} {endpoint : RawTerm 0}
+        {resultType : Ty level scope}
+        {baseCase baseCase' : Term ctx resultType},
+      Step.par baseCase baseCase' →
+      Step.par (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                         (rightEnd := endpoint) baseCase
+                         (Term.refl (carrier := carrier) endpoint))
+               baseCase'
 
 /-- Single-step reduction lifts to parallel reduction.  Each `Step`
 constructor has a corresponding `Step.par` form where the non-changing
@@ -6816,6 +6871,9 @@ theorem Step.toPar
       .iotaEitherMatchInl rb (.refl v) (.refl lb)
   | .iotaEitherMatchInr v lb rb =>
       .iotaEitherMatchInr lb (.refl v) (.refl rb)
+  | .idJBase s              => .idJ (Step.toPar s) (.refl _)
+  | .idJWitness _ s         => .idJ (.refl _) (Step.toPar s)
+  | .iotaIdJRefl base       => .iotaIdJRefl (.refl base)
 
 /-! ## Definitional conversion (`Conv`).
 
@@ -7746,6 +7804,49 @@ theorem Conv.eitherMatch_cong
       (Conv.eitherMatch_cong_left scrutinee₂ rightBranch₁ h_left)
       (Conv.eitherMatch_cong_right scrutinee₂ leftBranch₂ h_right))
 
+/-! ## idJ Conv congruences. -/
+
+/-- Definitional equivalence threads through `Term.idJ`'s baseCase. -/
+theorem Conv.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {resultType : Ty level scope}
+    {baseCase₁ baseCase₂ : Term ctx resultType}
+    (witness : Term ctx (Ty.id carrier leftEnd rightEnd))
+    (h : Conv baseCase₁ baseCase₂) :
+    Conv (Term.idJ baseCase₁ witness) (Term.idJ baseCase₂ witness) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.idJBase s)
+
+/-- Definitional equivalence threads through `Term.idJ`'s witness. -/
+theorem Conv.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {resultType : Ty level scope}
+    (baseCase : Term ctx resultType)
+    {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}
+    (h : Conv witness₁ witness₂) :
+    Conv (Term.idJ baseCase witness₁) (Term.idJ baseCase witness₂) := by
+  induction h with
+  | refl _              => exact Conv.refl _
+  | sym _ ih            => exact Conv.sym ih
+  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
+  | fromStep s          => exact Conv.fromStep (Step.idJWitness baseCase s)
+
+/-- Definitional equivalence threads through both `Term.idJ` positions. -/
+theorem Conv.idJ_cong {mode level scope} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {resultType : Ty level scope}
+    {baseCase₁ baseCase₂ : Term ctx resultType}
+    {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}
+    (h_base : Conv baseCase₁ baseCase₂)
+    (h_witness : Conv witness₁ witness₂) :
+    Conv (Term.idJ baseCase₁ witness₁) (Term.idJ baseCase₂ witness₂) :=
+  Conv.trans
+    (Conv.idJ_cong_base witness₁ h_base)
+    (Conv.idJ_cong_witness baseCase₂ h_witness)
+
 /-! ## StepStar congruences for nat (defined above the Conv versions
 because Step.par.toStar consumes them). -/
 
@@ -8059,6 +8160,48 @@ theorem StepStar.eitherMatch_cong
       (StepStar.eitherMatch_cong_left scrutinee₂ rightBranch₁ h_left)
       (StepStar.eitherMatch_cong_right scrutinee₂ leftBranch₂ h_right))
 
+/-! ## idJ StepStar congruences (placed before Step.par.toStar
+which consumes them). -/
+
+/-- Multi-step reduction threads through `Term.idJ`'s baseCase. -/
+theorem StepStar.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {resultType : Ty level scope}
+    {baseCase₁ baseCase₂ : Term ctx resultType}
+    (witness : Term ctx (Ty.id carrier leftEnd rightEnd)) :
+    StepStar baseCase₁ baseCase₂ →
+    StepStar (Term.idJ baseCase₁ witness) (Term.idJ baseCase₂ witness)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.idJBase s)
+        (StepStar.idJ_cong_base witness rest)
+
+/-- Multi-step reduction threads through `Term.idJ`'s witness. -/
+theorem StepStar.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {resultType : Ty level scope}
+    (baseCase : Term ctx resultType)
+    {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)} :
+    StepStar witness₁ witness₂ →
+    StepStar (Term.idJ baseCase witness₁) (Term.idJ baseCase witness₂)
+  | .refl _      => StepStar.refl _
+  | .step s rest =>
+      StepStar.step (Step.idJWitness baseCase s)
+        (StepStar.idJ_cong_witness baseCase rest)
+
+/-- Multi-step reduction threads through both positions of `Term.idJ`. -/
+theorem StepStar.idJ_cong {mode level scope} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {resultType : Ty level scope}
+    {baseCase₁ baseCase₂ : Term ctx resultType}
+    {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}
+    (h_base : StepStar baseCase₁ baseCase₂)
+    (h_witness : StepStar witness₁ witness₂) :
+    StepStar (Term.idJ baseCase₁ witness₁) (Term.idJ baseCase₂ witness₂) :=
+  StepStar.trans
+    (StepStar.idJ_cong_base witness₁ h_base)
+    (StepStar.idJ_cong_witness baseCase₂ h_witness)
+
 /-! ## `Step.par.toStar` — parallel reduction lifts to multi-step.
 
 Each Step.par constructor decomposes into a sequence of single Step's
@@ -8255,6 +8398,12 @@ theorem Step.par.toStar
         (Step.toStar (Step.iotaEitherMatchInr v' leftBranch rb'))
   | .etaArrow f              => Step.toStar (Step.etaArrow f)
   | .etaSigma p              => Step.toStar (Step.etaSigma p)
+  | .idJ par_base par_witness =>
+      StepStar.idJ_cong (Step.par.toStar par_base) (Step.par.toStar par_witness)
+  | .iotaIdJRefl (baseCase' := base') par_base =>
+      StepStar.append
+        (StepStar.idJ_cong_base _ (Step.par.toStar par_base))
+        (Step.iotaIdJRefl base')
 
 /-! ## External identity proofs.
 
@@ -8945,6 +9094,42 @@ example :
        (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
                   RawTerm.boolTrue)).toRaw
       = RawTerm.idJ RawTerm.boolTrue (RawTerm.refl RawTerm.boolTrue) := rfl
+
+/-- **ι-reduction for J at refl**: `J base (refl rt) ⟶ base`. -/
+example :
+    Step
+      (Term.idJ (context := EmptyCtx) (carrier := Ty.bool)
+                (resultType := Ty.bool) Term.boolTrue
+        (Term.refl (carrier := Ty.bool) RawTerm.boolTrue))
+      Term.boolTrue :=
+  Step.iotaIdJRefl Term.boolTrue
+
+/-- The ι-rule lifts to multi-step. -/
+example :
+    StepStar
+      (Term.idJ (context := EmptyCtx) (carrier := Ty.bool)
+                (resultType := Ty.bool) Term.boolTrue
+        (Term.refl (carrier := Ty.bool) RawTerm.boolTrue))
+      Term.boolTrue :=
+  Step.toStar (Step.iotaIdJRefl Term.boolTrue)
+
+/-- The ι-rule lifts via the parallel-reduction bridge. -/
+example :
+    StepStar
+      (Term.idJ (context := EmptyCtx) (carrier := Ty.bool)
+                (resultType := Ty.bool) Term.boolTrue
+        (Term.refl (carrier := Ty.bool) RawTerm.boolTrue))
+      Term.boolTrue :=
+  Step.par.toStar (Step.toPar (Step.iotaIdJRefl Term.boolTrue))
+
+/-- ι at refl is a definitional equivalence. -/
+example :
+    Conv
+      (Term.idJ (context := EmptyCtx) (carrier := Ty.bool)
+                (resultType := Ty.bool) Term.boolTrue
+        (Term.refl (carrier := Ty.bool) RawTerm.boolTrue))
+      Term.boolTrue :=
+  (Step.iotaIdJRefl Term.boolTrue).toConv
 
 end SmokeTest
 
