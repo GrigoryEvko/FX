@@ -93,8 +93,9 @@ itself.  `leanx` does not add anything to this layer.
 
 Approximately 10–15k lines of Lean 4 across `FX/Kernel/**` plus the
 metatheory proofs in `FX/Metatheory/**`.  This layer is subject to the
-**zero-sorry invariant** and the **33-axiom allowlist** (§4).  A bug
-here is an FX soundness bug.
+**zero-sorry invariant** and the **33-entry axiom allowlist** (§4) —
+an upper-bound ceiling on the trusted base, currently with 0 declared
+axioms.  A bug here is an FX soundness bug.
 
 ### Layer 2 — SMT oracle
 
@@ -186,13 +187,15 @@ Every open `sorry` is tracked in `SORRY.md` with owner, reason, and
 removal target date.  The count is reported per release; the invariant
 is that it **never increases** between releases.
 
-### Axiom allowlist (33 axioms)
+### Axiom allowlist (33-entry ceiling, 0 declared today)
 
-`AXIOMS.md` contains the canonical list of axioms, one-to-one with
+`AXIOMS.md` contains the canonical allowlist, one-to-one with
 Appendix H of `fx_design.md`.  Axioms are declared in `FX/Kernel/**`
-as `axiom` declarations.
+as `axiom` declarations; today none are.  The allowlist is the
+upper-bound ceiling on the trusted base — `scripts/axiom-audit.sh`
+enforces that the declared subset never exceeds it.
 
-The list is closed.  Adding a 34th axiom requires:
+The list is closed.  Adding a 34th entry requires:
 
 1. A PR updating `AXIOMS.md`.
 2. An RFC in `docs/rfcs/` justifying: what feature requires the axiom,
@@ -228,7 +231,7 @@ leanx/
 ├── README.md                    quick orientation
 ├── SPEC.md                      this document
 ├── BOOTSTRAP.md                 how to build fxc via leanx
-├── AXIOMS.md                    canonical 33-axiom allowlist
+├── AXIOMS.md                    canonical 33-entry axiom allowlist (ceiling)
 ├── SORRY.md                     open sorry tracker (one table row each)
 ├── lakefile.lean                Lake build configuration
 ├── lean-toolchain               Lean version pin
@@ -884,7 +887,8 @@ build` + `lake test` + `scripts/axiom-audit.sh`:
 * `leanx/FX/Kernel/Typing.lean` — empty relation.
 * `leanx/FX/Cli/Main.lean` — "fxi: not yet implemented" stub.
 * `leanx/scripts/axiom-audit.sh` — functional, passes on empty state.
-* `leanx/AXIOMS.md` — the 33-axiom list.
+* `leanx/AXIOMS.md` — the 33-entry axiom allowlist (ceiling; 0
+  declared today).
 * `leanx/SORRY.md` — empty (no sorries yet).
 
 **Exit criterion:** `lake build` succeeds, `scripts/axiom-audit.sh`

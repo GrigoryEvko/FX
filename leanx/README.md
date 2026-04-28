@@ -11,8 +11,9 @@ compiler (`../compiler/`, forthcoming).
 ## Quick orientation
 
 * **`SPEC.md`** — the full design specification for leanx.  Read this.
-* **`AXIOMS.md`** — the canonical 33-entry allowlist; status column
-  distinguishes `pending` / `stated` / `proved`.
+* **`AXIOMS.md`** — the canonical 33-entry allowlist (upper-bound
+  ceiling; 0 declared as `axiom` today); status column distinguishes
+  `pending` / `stated` / `proved`.
 * **`BOOTSTRAP.md`** — how to use leanx to bootstrap `fxc` from source.
 * **`SORRY.md`** — tracker for open `sorry` placeholders (must never
   appear in `FX/Kernel/**` or `FX/Metatheory/**`).
@@ -39,7 +40,8 @@ Three layers:
 
 1. **Lean 4 kernel** (~10k LOC C++, being verified by Lean4Lean).
 2. **leanx kernel** (`FX/Kernel/**`, ~3000 LOC Lean; zero sorry,
-   33 axioms from `AXIOMS.md`).
+   zero declared axioms today against the 33-entry `AXIOMS.md`
+   ceiling).
 3. **Z3 SMT oracle** (external subprocess; queries logged to
    `audit.smtq`).
 
