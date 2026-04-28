@@ -993,6 +993,19 @@ theorem RawTerm.rename_weaken_commute {source target : Nat}
           ((RawTerm.rename_congr hSwap rawTerm).trans
             (RawTerm.rename_compose rawTerm ρ Renaming.weaken).symm)
 
+/-- **Iterated weakening of a closed raw term** — embed `RawTerm 0` into
+`RawTerm target` for any target scope.  Used by `Term.toRaw` (v2.2j) to
+lift `Term.refl`'s closed-endpoint `rawTerm` into the surrounding
+context's scope.
+
+Semantically a no-op (`RawTerm 0` has no free variables to shift), but
+required as a constructive function because Lean's type system insists
+on an explicit witness.  Iterates `RawTerm.weaken` exactly `target`
+times via structural recursion on `target` — zero axioms. -/
+def RawTerm.weakenToScope : (target : Nat) → RawTerm 0 → RawTerm target
+  | 0,         rawTerm => rawTerm
+  | step + 1,  rawTerm => (RawTerm.weakenToScope step rawTerm).weaken
+
 /-! ## Substitution — the same trick scaled up.
 
 `Subst level source target` is a function-typed family mapping `Fin source`
@@ -5408,6 +5421,71 @@ theorem TermSubst.compose_assoc_pointwise
     (Ty.subst_compose (varType Γ₁ i) σ₁ σ₂)
     (Term.subst σt₂ (σt₁ i))
 
+/-! ## `Term.toRaw` — the intrinsic-to-raw bridge.
+
+Every well-typed intrinsic `Term context T` has a corresponding raw
+`RawTerm scope` obtained by erasing all Ty-level annotations.  This
+bridge witnesses that the intrinsic kernel embeds into the raw
+syntax — half of the v2.2 architectural commitment that intrinsic
+discipline and Term-mentioning identity types coexist in one kernel.
+
+## Erasure correspondence
+
+Each intrinsic constructor maps to the corresponding raw constructor:
+
+  * `var`/`unit`/`bool*`/`nat*`/`list*`/`option*`/`either*` —
+    structural, no annotations to erase.
+  * `lam`/`lamPi` both collapse to `RawTerm.lam` (Curry-style; no
+    domain annotation in the raw syntax).
+  * `app`/`appPi` both collapse to `RawTerm.app`.
+  * `pair`/`fst`/`snd` — direct.
+  * `boolElim`/`natElim`/`natRec`/`listElim`/`optionMatch`/
+    `eitherMatch` — direct (the result-type annotation is erased).
+  * `refl rawTerm` — the rawTerm endpoint is closed (`RawTerm 0`),
+    embedded into the context's scope via `RawTerm.weakenToScope`.
+
+Subterms recurse with the appropriate scope: lam-bodies recurse at
+`scope + 1`, all others at the same `scope`. -/
+def Term.toRaw {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    {T : Ty level scope} → Term context T → RawTerm scope
+  | _, .var position    => RawTerm.var position
+  | _, .unit            => RawTerm.unit
+  | _, .lam body        => RawTerm.lam body.toRaw
+  | _, .app function argument =>
+      RawTerm.app function.toRaw argument.toRaw
+  | _, .lamPi body      => RawTerm.lam body.toRaw
+  | _, .appPi function argument =>
+      RawTerm.app function.toRaw argument.toRaw
+  | _, .pair firstVal secondVal =>
+      RawTerm.pair firstVal.toRaw secondVal.toRaw
+  | _, .fst pairTerm    => RawTerm.fst pairTerm.toRaw
+  | _, .snd pairTerm    => RawTerm.snd pairTerm.toRaw
+  | _, .boolTrue        => RawTerm.boolTrue
+  | _, .boolFalse       => RawTerm.boolFalse
+  | _, .boolElim scrutinee thenBranch elseBranch =>
+      RawTerm.boolElim scrutinee.toRaw thenBranch.toRaw elseBranch.toRaw
+  | _, .natZero         => RawTerm.natZero
+  | _, .natSucc predecessor => RawTerm.natSucc predecessor.toRaw
+  | _, .natElim scrutinee zeroBranch succBranch =>
+      RawTerm.natElim scrutinee.toRaw zeroBranch.toRaw succBranch.toRaw
+  | _, .natRec scrutinee zeroBranch succBranch =>
+      RawTerm.natRec scrutinee.toRaw zeroBranch.toRaw succBranch.toRaw
+  | _, .listNil         => RawTerm.listNil
+  | _, .listCons head tail =>
+      RawTerm.listCons head.toRaw tail.toRaw
+  | _, .listElim scrutinee nilBranch consBranch =>
+      RawTerm.listElim scrutinee.toRaw nilBranch.toRaw consBranch.toRaw
+  | _, .optionNone      => RawTerm.optionNone
+  | _, .optionSome value => RawTerm.optionSome value.toRaw
+  | _, .optionMatch scrutinee noneBranch someBranch =>
+      RawTerm.optionMatch scrutinee.toRaw noneBranch.toRaw someBranch.toRaw
+  | _, .eitherInl value  => RawTerm.eitherInl value.toRaw
+  | _, .eitherInr value  => RawTerm.eitherInr value.toRaw
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
+      RawTerm.eitherMatch scrutinee.toRaw leftBranch.toRaw rightBranch.toRaw
+  | _, .refl rawTerm     =>
+      RawTerm.refl (RawTerm.weakenToScope scope rawTerm)
+
 /-! ## Typed reduction (`Step`, `StepStar`).
 
 `Step t₁ t₂` is `Prop`-valued and shares its `{ctx} {T}` indices
@@ -8578,6 +8656,64 @@ example {target : Nat}
                  (carrier := Ty.bool) RawTerm.boolTrue)
       = Term.refl (context := Δ) (carrier := Ty.bool) RawTerm.boolTrue :=
   rfl
+
+/-! ### Term.toRaw — intrinsic-to-raw bridge.
+
+`Term.toRaw` erases the typing information from an intrinsic Term to
+produce the corresponding RawTerm.  Each test pins a specific Term
+constructor and verifies the raw counterpart. -/
+
+/-- `Term.unit.toRaw = RawTerm.unit`. -/
+example : (Term.unit (context := EmptyCtx)).toRaw = RawTerm.unit := rfl
+
+/-- `Term.boolTrue.toRaw = RawTerm.boolTrue`. -/
+example :
+    (Term.boolTrue (context := EmptyCtx)).toRaw = RawTerm.boolTrue := rfl
+
+/-- `Term.boolFalse.toRaw = RawTerm.boolFalse`. -/
+example :
+    (Term.boolFalse (context := EmptyCtx)).toRaw = RawTerm.boolFalse := rfl
+
+/-- `Term.natZero.toRaw = RawTerm.natZero`. -/
+example :
+    (Term.natZero (context := EmptyCtx)).toRaw = RawTerm.natZero := rfl
+
+/-- `(succ 0).toRaw = succ_raw 0_raw`. -/
+example :
+    (Term.natSucc (Term.natZero (context := EmptyCtx))).toRaw
+      = RawTerm.natSucc RawTerm.natZero := rfl
+
+/-- The `lam`/`lamPi` collapse: both produce `RawTerm.lam`. -/
+example :
+    (Term.lam (codomainType := Ty.unit)
+        (Term.var (context := EmptyCtx.cons Ty.unit)
+                  ⟨0, Nat.zero_lt_succ _⟩)).toRaw
+      = RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩) := rfl
+
+/-- `(true, 0).toRaw = pair_raw boolTrue_raw natZero_raw`. -/
+example :
+    (Term.pair (firstType := Ty.bool) (secondType := Ty.nat.weaken)
+       (Term.boolTrue (context := EmptyCtx))
+       (Term.natZero (context := EmptyCtx))).toRaw
+      = RawTerm.pair RawTerm.boolTrue RawTerm.natZero := rfl
+
+/-- `(refl true).toRaw = refl_raw true_raw` — the bridge erases the
+identity-type annotation but preserves the reflexivity content,
+weakening the closed endpoint into the empty scope (which is a no-op
+since `weakenToScope 0` is the identity). -/
+example :
+    (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
+       RawTerm.boolTrue).toRaw
+      = RawTerm.refl RawTerm.boolTrue := rfl
+
+/-- `weakenToScope 0 rt = rt` — the base case is the identity. -/
+example (rt : RawTerm 0) : RawTerm.weakenToScope 0 rt = rt := rfl
+
+/-- `weakenToScope 2 boolTrue = (boolTrue.weaken).weaken` —
+demonstrates iteration. -/
+example :
+    RawTerm.weakenToScope 2 RawTerm.boolTrue
+      = (RawTerm.boolTrue (scope := 0)).weaken.weaken := rfl
 
 end SmokeTest
 
