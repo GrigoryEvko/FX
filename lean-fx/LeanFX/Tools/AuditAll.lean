@@ -68,6 +68,10 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.RawTermSubst.dropNewest_optionalRenamingSquare
 #assert_no_axioms LeanFX.Syntax.RawTerm.subst_optRename_commute
 #assert_no_axioms LeanFX.Syntax.RawTerm.dropNewest_optRename_commute
+#assert_no_axioms LeanFX.Syntax.Subst.lift_optionalRenamingSquare
+#assert_no_axioms LeanFX.Syntax.Subst.singleton_optionalRenamingSquare
+#assert_no_axioms LeanFX.Syntax.Ty.subst_optRename_commute
+#assert_no_axioms LeanFX.Syntax.Ty.subst0_optRename_success
 #assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_weaken
 #assert_no_axioms LeanFX.Syntax.RawTerm.optRename_sound
 #assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_sound
