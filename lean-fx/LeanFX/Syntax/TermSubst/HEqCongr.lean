@@ -237,6 +237,17 @@ theorem Term.weaken_HEq_congr
     HEq (Term.weaken newType₁ t₁) (Term.weaken newType₂ t₂) := by
   term_heq_congr
 
+/-- Apply the same type cast to both sides of a same-source HEq. -/
+theorem Term.castSame_HEq_congr
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    {firstTerm secondTerm : Term Γ sourceType}
+    (termEquality : HEq firstTerm secondTerm) :
+    HEq (typeEquality ▸ firstTerm) (typeEquality ▸ secondTerm) := by
+  cases typeEquality
+  exact termEquality
+
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
     {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
