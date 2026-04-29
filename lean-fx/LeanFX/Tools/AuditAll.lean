@@ -72,5 +72,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty.optRename_sound
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_sound
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_eq_some_iff_weaken
+#assert_no_axioms LeanFX.Syntax.StrengthenedTerm.original_eq_of_strengthen
+#assert_no_axioms LeanFX.Syntax.StrengthenedTerm.termAs
+#assert_no_axioms LeanFX.Syntax.TermOptionalRenaming.unweaken
 
 end LeanFX.Tools.AuditAll

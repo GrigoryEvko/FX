@@ -9,4 +9,5 @@ import LeanFX.Syntax.ToRaw
 import LeanFX.Syntax.Reduction
 import LeanFX.Syntax.Identity
 import LeanFX.Syntax.Strengthen
+import LeanFX.Syntax.TermStrengthen
 import LeanFX.Syntax.Smoke
