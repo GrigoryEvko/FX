@@ -205,4 +205,626 @@ theorem lift {mode : Mode} {sourceScope targetScope : Nat}
 
 end TermOptionalRenaming
 
+/-! ## Typed optional renaming for terms. -/
+
+/-- Bind an `Option` while exposing the proof that the successful
+branch is the one being used.  This is the dependent version of
+`Option.bind` needed when a typed constructor also has to return the
+proof that its type optional-renamed successfully. -/
+def Option.bindSome {valueType resultType : Type}
+    (optionalValue : Option valueType)
+    (next :
+      (mappedValue : valueType) → optionalValue = some mappedValue →
+        Option resultType) :
+    Option resultType :=
+  match optionalValue with
+  | none => none
+  | some mappedValue => next mappedValue rfl
+
+/-- Successful optional renaming of arrow components rebuilds the
+renamed arrow type. -/
+theorem Ty.arrow_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {domainType codomainType : Ty level source}
+    {renamedDomain renamedCodomain : Ty level target}
+    (domainMaps : domainType.optRename optionalRenaming = some renamedDomain)
+    (codomainMaps :
+      codomainType.optRename optionalRenaming = some renamedCodomain) :
+    (Ty.arrow domainType codomainType).optRename optionalRenaming =
+      some (Ty.arrow renamedDomain renamedCodomain) := by
+  change Option.bind (domainType.optRename optionalRenaming)
+      (fun mappedDomain =>
+        Option.bind (codomainType.optRename optionalRenaming)
+          (fun mappedCodomain =>
+            some (Ty.arrow mappedDomain mappedCodomain))) =
+    some (Ty.arrow renamedDomain renamedCodomain)
+  rw [domainMaps, codomainMaps]
+  rfl
+
+/-- Successful optional renaming of dependent-pi components rebuilds
+the renamed `piTy`. -/
+theorem Ty.piTy_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {domainType : Ty level source} {codomainType : Ty level (source + 1)}
+    {renamedDomain : Ty level target}
+    {renamedCodomain : Ty level (target + 1)}
+    (domainMaps : domainType.optRename optionalRenaming = some renamedDomain)
+    (codomainMaps :
+      codomainType.optRename optionalRenaming.lift = some renamedCodomain) :
+    (Ty.piTy domainType codomainType).optRename optionalRenaming =
+      some (Ty.piTy renamedDomain renamedCodomain) := by
+  change Option.bind (domainType.optRename optionalRenaming)
+      (fun mappedDomain =>
+        Option.bind (codomainType.optRename optionalRenaming.lift)
+          (fun mappedCodomain =>
+            some (Ty.piTy mappedDomain mappedCodomain))) =
+    some (Ty.piTy renamedDomain renamedCodomain)
+  rw [domainMaps, codomainMaps]
+  rfl
+
+/-- Successful optional renaming of dependent-sigma components rebuilds
+the renamed `sigmaTy`. -/
+theorem Ty.sigmaTy_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {firstType : Ty level source} {secondType : Ty level (source + 1)}
+    {renamedFirst : Ty level target}
+    {renamedSecond : Ty level (target + 1)}
+    (firstMaps : firstType.optRename optionalRenaming = some renamedFirst)
+    (secondMaps :
+      secondType.optRename optionalRenaming.lift = some renamedSecond) :
+    (Ty.sigmaTy firstType secondType).optRename optionalRenaming =
+      some (Ty.sigmaTy renamedFirst renamedSecond) := by
+  change Option.bind (firstType.optRename optionalRenaming)
+      (fun mappedFirst =>
+        Option.bind (secondType.optRename optionalRenaming.lift)
+          (fun mappedSecond =>
+            some (Ty.sigmaTy mappedFirst mappedSecond))) =
+    some (Ty.sigmaTy renamedFirst renamedSecond)
+  rw [firstMaps, secondMaps]
+  rfl
+
+/-- Successful optional renaming of a list element type rebuilds the
+renamed list type. -/
+theorem Ty.list_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {elementType : Ty level source} {renamedElement : Ty level target}
+    (elementMaps :
+      elementType.optRename optionalRenaming = some renamedElement) :
+    (Ty.list elementType).optRename optionalRenaming =
+      some (Ty.list renamedElement) := by
+  change Option.map Ty.list (elementType.optRename optionalRenaming) =
+    some (Ty.list renamedElement)
+  rw [elementMaps]
+  rfl
+
+/-- Successful optional renaming of an option element type rebuilds the
+renamed option type. -/
+theorem Ty.option_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {elementType : Ty level source} {renamedElement : Ty level target}
+    (elementMaps :
+      elementType.optRename optionalRenaming = some renamedElement) :
+    (Ty.option elementType).optRename optionalRenaming =
+      some (Ty.option renamedElement) := by
+  change Option.map Ty.option (elementType.optRename optionalRenaming) =
+    some (Ty.option renamedElement)
+  rw [elementMaps]
+  rfl
+
+/-- Successful optional renaming of either components rebuilds the
+renamed either type. -/
+theorem Ty.either_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {leftType rightType : Ty level source}
+    {renamedLeft renamedRight : Ty level target}
+    (leftMaps : leftType.optRename optionalRenaming = some renamedLeft)
+    (rightMaps : rightType.optRename optionalRenaming = some renamedRight) :
+    (Ty.either leftType rightType).optRename optionalRenaming =
+      some (Ty.either renamedLeft renamedRight) := by
+  change Option.bind (leftType.optRename optionalRenaming)
+      (fun mappedLeft =>
+        Option.bind (rightType.optRename optionalRenaming)
+          (fun mappedRight =>
+            some (Ty.either mappedLeft mappedRight))) =
+    some (Ty.either renamedLeft renamedRight)
+  rw [leftMaps, rightMaps]
+  rfl
+
+/-- Successful optional renaming of identity components rebuilds the
+renamed identity type. -/
+theorem Ty.id_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    {carrier : Ty level source} {leftEnd rightEnd : RawTerm source}
+    {renamedCarrier : Ty level target}
+    {renamedLeft renamedRight : RawTerm target}
+    (carrierMaps : carrier.optRename optionalRenaming = some renamedCarrier)
+    (leftMaps : leftEnd.optRename optionalRenaming = some renamedLeft)
+    (rightMaps : rightEnd.optRename optionalRenaming = some renamedRight) :
+    (Ty.id carrier leftEnd rightEnd).optRename optionalRenaming =
+      some (Ty.id renamedCarrier renamedLeft renamedRight) := by
+  change Option.bind (carrier.optRename optionalRenaming)
+      (fun mappedCarrier =>
+        Option.bind (leftEnd.optRename optionalRenaming)
+          (fun mappedLeft =>
+            Option.bind (rightEnd.optRename optionalRenaming)
+              (fun mappedRight =>
+                some (Ty.id mappedCarrier mappedLeft mappedRight)))) =
+    some (Ty.id renamedCarrier renamedLeft renamedRight)
+  rw [carrierMaps, leftMaps, rightMaps]
+  rfl
+
+/-- Apply an optional renaming to an intrinsically typed term.
+
+The result is packaged with the renamed type because strengthening can
+drop variables from both the term and its type.  Constructor cases bind
+the renamed type components first, then use `OptionalRenamedTerm.termAs`
+to cast recursively-renamed subterms to the expected constructor input
+types. -/
+def Term.optRename {mode : Mode} {sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {optionalRenaming : OptionalRenaming sourceScope targetScope}
+    (renamingIsCompatible :
+      TermOptionalRenaming sourceContext targetContext optionalRenaming) :
+    {sourceType : Ty level sourceScope} →
+      Term sourceContext sourceType →
+        Option (OptionalRenamedTerm targetContext optionalRenaming sourceType)
+  | _, .var sourcePosition =>
+      Option.bindSome (optionalRenaming sourcePosition)
+        fun targetPosition positionMaps =>
+        some {
+          renamedType := varType targetContext targetPosition
+          typeEquality :=
+            renamingIsCompatible sourcePosition targetPosition positionMaps
+          term := Term.var targetPosition
+        }
+  | _, .unit =>
+      some {
+        renamedType := Ty.unit
+        typeEquality := rfl
+        term := Term.unit
+      }
+  | _, .lam (domainType := domainType) (codomainType := codomainType) body =>
+      Option.bindSome (domainType.optRename optionalRenaming)
+        fun renamedDomain domainMaps =>
+        Option.bindSome (codomainType.optRename optionalRenaming)
+          fun renamedCodomain codomainMaps =>
+          Option.bind
+            (Term.optRename
+              (TermOptionalRenaming.lift renamingIsCompatible domainMaps) body)
+            fun renamedBody =>
+              some {
+                renamedType := Ty.arrow renamedDomain renamedCodomain
+                typeEquality :=
+                  Ty.arrow_optRename_success optionalRenaming domainMaps
+                    codomainMaps
+                term :=
+                  Term.lam
+                    (domainType := renamedDomain)
+                    (codomainType := renamedCodomain)
+                    (OptionalRenamedTerm.termAs renamedBody (by
+                      rw [Ty.weaken_optRename_lift optionalRenaming codomainType]
+                      rw [codomainMaps]
+                      rfl))
+              }
+  | _, .app (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm =>
+      Option.bindSome (domainType.optRename optionalRenaming)
+        fun renamedDomain domainMaps =>
+        Option.bindSome (codomainType.optRename optionalRenaming)
+          fun renamedCodomain codomainMaps =>
+          Option.bind (Term.optRename renamingIsCompatible functionTerm)
+            fun renamedFunction =>
+              Option.bind (Term.optRename renamingIsCompatible argumentTerm)
+                fun renamedArgument =>
+                  some {
+                    renamedType := renamedCodomain
+                    typeEquality := codomainMaps
+                    term :=
+                      Term.app
+                        (OptionalRenamedTerm.termAs renamedFunction
+                          (Ty.arrow_optRename_success optionalRenaming
+                            domainMaps codomainMaps))
+                        (OptionalRenamedTerm.termAs renamedArgument domainMaps)
+                  }
+  | _, .lamPi (domainType := domainType) (codomainType := codomainType) body =>
+      Option.bindSome (domainType.optRename optionalRenaming)
+        fun renamedDomain domainMaps =>
+        Option.bindSome (codomainType.optRename optionalRenaming.lift)
+          fun renamedCodomain codomainMaps =>
+            Option.bind
+              (Term.optRename
+                (TermOptionalRenaming.lift renamingIsCompatible domainMaps) body)
+              fun renamedBody =>
+                some {
+                  renamedType := Ty.piTy renamedDomain renamedCodomain
+                  typeEquality :=
+                    Ty.piTy_optRename_success optionalRenaming domainMaps
+                      codomainMaps
+                  term :=
+                    Term.lamPi
+                      (OptionalRenamedTerm.termAs renamedBody codomainMaps)
+                }
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm =>
+      Option.bindSome (domainType.optRename optionalRenaming)
+        fun renamedDomain domainMaps =>
+        Option.bindSome (codomainType.optRename optionalRenaming.lift)
+          fun renamedCodomain codomainMaps =>
+            Option.bind (Term.optRename renamingIsCompatible functionTerm)
+              fun renamedFunction =>
+                Option.bind (Term.optRename renamingIsCompatible argumentTerm)
+                  fun renamedArgument =>
+                    some {
+                      renamedType := renamedCodomain.subst0 renamedDomain
+                      typeEquality :=
+                        Ty.subst0_optRename_success optionalRenaming codomainType
+                          domainType renamedDomain renamedCodomain codomainMaps
+                          domainMaps
+                      term :=
+                        Term.appPi
+                          (OptionalRenamedTerm.termAs renamedFunction
+                            (Ty.piTy_optRename_success optionalRenaming
+                              domainMaps codomainMaps))
+                          (OptionalRenamedTerm.termAs renamedArgument domainMaps)
+                    }
+  | _, .pair (firstType := firstType) (secondType := secondType)
+        firstVal secondVal =>
+      Option.bindSome (firstType.optRename optionalRenaming)
+        fun renamedFirst firstMaps =>
+        Option.bindSome (secondType.optRename optionalRenaming.lift)
+          fun renamedSecond secondMaps =>
+            Option.bind (Term.optRename renamingIsCompatible firstVal)
+              fun renamedFirstVal =>
+                Option.bind (Term.optRename renamingIsCompatible secondVal)
+                  fun renamedSecondVal =>
+                    some {
+                      renamedType := Ty.sigmaTy renamedFirst renamedSecond
+                      typeEquality :=
+                        Ty.sigmaTy_optRename_success optionalRenaming firstMaps
+                          secondMaps
+                      term :=
+                        Term.pair
+                          (OptionalRenamedTerm.termAs renamedFirstVal firstMaps)
+                          (OptionalRenamedTerm.termAs renamedSecondVal
+                            (Ty.subst0_optRename_success optionalRenaming
+                              secondType firstType renamedFirst renamedSecond
+                              secondMaps firstMaps))
+                    }
+  | _, .fst (firstType := firstType) (secondType := secondType) pairTerm =>
+      Option.bindSome (firstType.optRename optionalRenaming)
+        fun renamedFirst firstMaps =>
+        Option.bindSome (secondType.optRename optionalRenaming.lift)
+          fun renamedSecond secondMaps =>
+            Option.bind (Term.optRename renamingIsCompatible pairTerm)
+              fun renamedPair =>
+                some {
+                  renamedType := renamedFirst
+                  typeEquality := firstMaps
+                  term :=
+                    Term.fst
+                      (OptionalRenamedTerm.termAs renamedPair
+                        (Ty.sigmaTy_optRename_success optionalRenaming
+                          firstMaps secondMaps))
+                }
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm =>
+      Option.bindSome (firstType.optRename optionalRenaming)
+        fun renamedFirst firstMaps =>
+        Option.bindSome (secondType.optRename optionalRenaming.lift)
+          fun renamedSecond secondMaps =>
+            Option.bind (Term.optRename renamingIsCompatible pairTerm)
+              fun renamedPair =>
+                some {
+                  renamedType := renamedSecond.subst0 renamedFirst
+                  typeEquality :=
+                    Ty.subst0_optRename_success optionalRenaming secondType
+                      firstType renamedFirst renamedSecond secondMaps firstMaps
+                  term :=
+                    Term.snd
+                      (OptionalRenamedTerm.termAs renamedPair
+                        (Ty.sigmaTy_optRename_success optionalRenaming
+                          firstMaps secondMaps))
+                }
+  | _, .boolTrue =>
+      some {
+        renamedType := Ty.bool
+        typeEquality := rfl
+        term := Term.boolTrue
+      }
+  | _, .boolFalse =>
+      some {
+        renamedType := Ty.bool
+        typeEquality := rfl
+        term := Term.boolFalse
+      }
+  | _, .boolElim (resultType := resultType)
+        scrutinee thenBranch elseBranch =>
+      Option.bindSome (resultType.optRename optionalRenaming)
+        fun renamedResult resultMaps =>
+        Option.bind (Term.optRename renamingIsCompatible scrutinee)
+          fun renamedScrutinee =>
+            Option.bind (Term.optRename renamingIsCompatible thenBranch)
+              fun renamedThen =>
+                Option.bind (Term.optRename renamingIsCompatible elseBranch)
+                  fun renamedElse =>
+                    some {
+                      renamedType := renamedResult
+                      typeEquality := resultMaps
+                      term :=
+                        Term.boolElim
+                          (OptionalRenamedTerm.termAs renamedScrutinee rfl)
+                          (OptionalRenamedTerm.termAs renamedThen resultMaps)
+                          (OptionalRenamedTerm.termAs renamedElse resultMaps)
+                    }
+  | _, .natZero =>
+      some {
+        renamedType := Ty.nat
+        typeEquality := rfl
+        term := Term.natZero
+      }
+  | _, .natSucc predecessor =>
+      Option.bind (Term.optRename renamingIsCompatible predecessor)
+        fun renamedPredecessor =>
+          some {
+            renamedType := Ty.nat
+            typeEquality := rfl
+            term :=
+              Term.natSucc
+                (OptionalRenamedTerm.termAs renamedPredecessor rfl)
+          }
+  | _, .natRec (resultType := resultType)
+        scrutinee zeroBranch succBranch =>
+      Option.bindSome (resultType.optRename optionalRenaming)
+        fun renamedResult resultMaps =>
+        Option.bind (Term.optRename renamingIsCompatible scrutinee)
+          fun renamedScrutinee =>
+            Option.bind (Term.optRename renamingIsCompatible zeroBranch)
+              fun renamedZero =>
+                Option.bind (Term.optRename renamingIsCompatible succBranch)
+                  fun renamedSucc =>
+                    some {
+                      renamedType := renamedResult
+                      typeEquality := resultMaps
+                      term :=
+                        Term.natRec
+                          (OptionalRenamedTerm.termAs renamedScrutinee rfl)
+                          (OptionalRenamedTerm.termAs renamedZero resultMaps)
+                          (OptionalRenamedTerm.termAs renamedSucc
+                            (Ty.arrow_optRename_success optionalRenaming rfl
+                              (Ty.arrow_optRename_success optionalRenaming
+                                resultMaps resultMaps)))
+                    }
+  | _, .natElim (resultType := resultType)
+        scrutinee zeroBranch succBranch =>
+      Option.bindSome (resultType.optRename optionalRenaming)
+        fun renamedResult resultMaps =>
+        Option.bind (Term.optRename renamingIsCompatible scrutinee)
+          fun renamedScrutinee =>
+            Option.bind (Term.optRename renamingIsCompatible zeroBranch)
+              fun renamedZero =>
+                Option.bind (Term.optRename renamingIsCompatible succBranch)
+                  fun renamedSucc =>
+                    some {
+                      renamedType := renamedResult
+                      typeEquality := resultMaps
+                      term :=
+                        Term.natElim
+                          (OptionalRenamedTerm.termAs renamedScrutinee rfl)
+                          (OptionalRenamedTerm.termAs renamedZero resultMaps)
+                          (OptionalRenamedTerm.termAs renamedSucc
+                            (Ty.arrow_optRename_success optionalRenaming rfl
+                              resultMaps))
+                    }
+  | _, .listNil (elementType := elementType) =>
+      Option.bindSome (elementType.optRename optionalRenaming)
+        fun renamedElement elementMaps =>
+        some {
+          renamedType := Ty.list renamedElement
+          typeEquality :=
+            Ty.list_optRename_success optionalRenaming elementMaps
+          term := Term.listNil
+        }
+  | _, .listCons (elementType := elementType) head tail =>
+      Option.bindSome (elementType.optRename optionalRenaming)
+        fun renamedElement elementMaps =>
+        Option.bind (Term.optRename renamingIsCompatible head)
+          fun renamedHead =>
+            Option.bind (Term.optRename renamingIsCompatible tail)
+              fun renamedTail =>
+                some {
+                  renamedType := Ty.list renamedElement
+                  typeEquality :=
+                    Ty.list_optRename_success optionalRenaming elementMaps
+                  term :=
+                    Term.listCons
+                      (OptionalRenamedTerm.termAs renamedHead elementMaps)
+                      (OptionalRenamedTerm.termAs renamedTail
+                        (Ty.list_optRename_success optionalRenaming
+                          elementMaps))
+                }
+  | _, .listElim (elementType := elementType) (resultType := resultType)
+        scrutinee nilBranch consBranch =>
+      Option.bindSome (elementType.optRename optionalRenaming)
+        fun renamedElement elementMaps =>
+        Option.bindSome (resultType.optRename optionalRenaming)
+          fun renamedResult resultMaps =>
+          Option.bind (Term.optRename renamingIsCompatible scrutinee)
+            fun renamedScrutinee =>
+              Option.bind (Term.optRename renamingIsCompatible nilBranch)
+                fun renamedNil =>
+                  Option.bind (Term.optRename renamingIsCompatible consBranch)
+                    fun renamedCons =>
+                      some {
+                        renamedType := renamedResult
+                        typeEquality := resultMaps
+                        term :=
+                          Term.listElim
+                            (OptionalRenamedTerm.termAs renamedScrutinee
+                              (Ty.list_optRename_success optionalRenaming
+                                elementMaps))
+                            (OptionalRenamedTerm.termAs renamedNil resultMaps)
+                            (OptionalRenamedTerm.termAs renamedCons
+                              (Ty.arrow_optRename_success optionalRenaming
+                                elementMaps
+                                (Ty.arrow_optRename_success optionalRenaming
+                                  (Ty.list_optRename_success optionalRenaming
+                                    elementMaps)
+                                  resultMaps)))
+                      }
+  | _, .optionNone (elementType := elementType) =>
+      Option.bindSome (elementType.optRename optionalRenaming)
+        fun renamedElement elementMaps =>
+        some {
+          renamedType := Ty.option renamedElement
+          typeEquality :=
+            Ty.option_optRename_success optionalRenaming elementMaps
+          term := Term.optionNone
+        }
+  | _, .optionSome (elementType := elementType) value =>
+      Option.bindSome (elementType.optRename optionalRenaming)
+        fun renamedElement elementMaps =>
+        Option.bind (Term.optRename renamingIsCompatible value)
+          fun renamedValue =>
+            some {
+              renamedType := Ty.option renamedElement
+              typeEquality :=
+                Ty.option_optRename_success optionalRenaming elementMaps
+              term :=
+                Term.optionSome
+                  (OptionalRenamedTerm.termAs renamedValue elementMaps)
+            }
+  | _, .optionMatch (elementType := elementType) (resultType := resultType)
+        scrutinee noneBranch someBranch =>
+      Option.bindSome (elementType.optRename optionalRenaming)
+        fun renamedElement elementMaps =>
+        Option.bindSome (resultType.optRename optionalRenaming)
+          fun renamedResult resultMaps =>
+          Option.bind (Term.optRename renamingIsCompatible scrutinee)
+            fun renamedScrutinee =>
+              Option.bind (Term.optRename renamingIsCompatible noneBranch)
+                fun renamedNone =>
+                  Option.bind (Term.optRename renamingIsCompatible someBranch)
+                    fun renamedSome =>
+                      some {
+                        renamedType := renamedResult
+                        typeEquality := resultMaps
+                        term :=
+                          Term.optionMatch
+                            (OptionalRenamedTerm.termAs renamedScrutinee
+                              (Ty.option_optRename_success optionalRenaming
+                                elementMaps))
+                            (OptionalRenamedTerm.termAs renamedNone resultMaps)
+                            (OptionalRenamedTerm.termAs renamedSome
+                              (Ty.arrow_optRename_success optionalRenaming
+                                elementMaps resultMaps))
+                      }
+  | _, .eitherInl (leftType := leftType) (rightType := rightType) value =>
+      Option.bindSome (leftType.optRename optionalRenaming)
+        fun renamedLeft leftMaps =>
+        Option.bindSome (rightType.optRename optionalRenaming)
+          fun renamedRight rightMaps =>
+          Option.bind (Term.optRename renamingIsCompatible value)
+            fun renamedValue =>
+              some {
+                renamedType := Ty.either renamedLeft renamedRight
+                typeEquality :=
+                  Ty.either_optRename_success optionalRenaming leftMaps
+                    rightMaps
+                term :=
+                  Term.eitherInl
+                    (OptionalRenamedTerm.termAs renamedValue leftMaps)
+              }
+  | _, .eitherInr (leftType := leftType) (rightType := rightType) value =>
+      Option.bindSome (leftType.optRename optionalRenaming)
+        fun renamedLeft leftMaps =>
+        Option.bindSome (rightType.optRename optionalRenaming)
+          fun renamedRight rightMaps =>
+          Option.bind (Term.optRename renamingIsCompatible value)
+            fun renamedValue =>
+              some {
+                renamedType := Ty.either renamedLeft renamedRight
+                typeEquality :=
+                  Ty.either_optRename_success optionalRenaming leftMaps
+                    rightMaps
+                term :=
+                  Term.eitherInr
+                    (OptionalRenamedTerm.termAs renamedValue rightMaps)
+              }
+  | _, .eitherMatch (leftType := leftType) (rightType := rightType)
+        (resultType := resultType) scrutinee leftBranch rightBranch =>
+      Option.bindSome (leftType.optRename optionalRenaming)
+        fun renamedLeft leftMaps =>
+        Option.bindSome (rightType.optRename optionalRenaming)
+          fun renamedRight rightMaps =>
+          Option.bindSome (resultType.optRename optionalRenaming)
+            fun renamedResult resultMaps =>
+              Option.bind (Term.optRename renamingIsCompatible scrutinee)
+                fun renamedScrutinee =>
+                  Option.bind (Term.optRename renamingIsCompatible leftBranch)
+                    fun renamedLeftBranch =>
+                      Option.bind (Term.optRename renamingIsCompatible rightBranch)
+                        fun renamedRightBranch =>
+                          some {
+                            renamedType := renamedResult
+                            typeEquality := resultMaps
+                            term :=
+                              Term.eitherMatch
+                                (OptionalRenamedTerm.termAs renamedScrutinee
+                                  (Ty.either_optRename_success optionalRenaming
+                                    leftMaps rightMaps))
+                                (OptionalRenamedTerm.termAs renamedLeftBranch
+                                  (Ty.arrow_optRename_success optionalRenaming
+                                    leftMaps resultMaps))
+                                (OptionalRenamedTerm.termAs renamedRightBranch
+                                  (Ty.arrow_optRename_success optionalRenaming
+                                    rightMaps resultMaps))
+                          }
+  | _, .refl (carrier := carrier) rawTerm =>
+      Option.bindSome (carrier.optRename optionalRenaming)
+        fun renamedCarrier carrierMaps =>
+        Option.bindSome (rawTerm.optRename optionalRenaming)
+          fun renamedRawTerm rawTermMaps =>
+          some {
+            renamedType := Ty.id renamedCarrier renamedRawTerm renamedRawTerm
+            typeEquality :=
+              Ty.id_optRename_success optionalRenaming carrierMaps rawTermMaps
+                rawTermMaps
+            term := Term.refl renamedRawTerm
+          }
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd)
+        (rightEnd := rightEnd) (resultType := resultType)
+        baseCase witness =>
+      Option.bindSome (carrier.optRename optionalRenaming)
+        fun renamedCarrier carrierMaps =>
+        Option.bindSome (leftEnd.optRename optionalRenaming)
+          fun renamedLeft leftMaps =>
+          Option.bindSome (rightEnd.optRename optionalRenaming)
+            fun renamedRight rightMaps =>
+            Option.bindSome (resultType.optRename optionalRenaming)
+              fun renamedResult resultMaps =>
+                Option.bind (Term.optRename renamingIsCompatible baseCase)
+                  fun renamedBase =>
+                    Option.bind (Term.optRename renamingIsCompatible witness)
+                      fun renamedWitness =>
+                        some {
+                          renamedType := renamedResult
+                          typeEquality := resultMaps
+                          term :=
+                            Term.idJ
+                              (OptionalRenamedTerm.termAs renamedBase resultMaps)
+                              (OptionalRenamedTerm.termAs renamedWitness
+                                (Ty.id_optRename_success optionalRenaming
+                                  carrierMaps leftMaps rightMaps))
+                        }
+
+/-- Strengthen a typed term by dropping the newest context variable,
+when both the term and its type are independent of that variable. -/
+def Term.strengthen {mode : Mode} {scope : Nat}
+    {context : Ctx mode level scope} {newType : Ty level scope}
+    {extendedType : Ty level (scope + 1)}
+    (term : Term (context.cons newType) extendedType) :
+    Option (StrengthenedTerm context extendedType) :=
+  Option.map OptionalRenamedTerm.toStrengthened
+    (Term.optRename (TermOptionalRenaming.unweaken context newType) term)
+
 end LeanFX.Syntax

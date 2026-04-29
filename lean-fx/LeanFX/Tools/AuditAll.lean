@@ -82,6 +82,13 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty.rename_optRename
 #assert_no_axioms LeanFX.Syntax.Ty.rename_optRename_commute
 #assert_no_axioms LeanFX.Syntax.Ty.weaken_optRename_lift
+#assert_no_axioms LeanFX.Syntax.Ty.arrow_optRename_success
+#assert_no_axioms LeanFX.Syntax.Ty.piTy_optRename_success
+#assert_no_axioms LeanFX.Syntax.Ty.sigmaTy_optRename_success
+#assert_no_axioms LeanFX.Syntax.Ty.list_optRename_success
+#assert_no_axioms LeanFX.Syntax.Ty.option_optRename_success
+#assert_no_axioms LeanFX.Syntax.Ty.either_optRename_success
+#assert_no_axioms LeanFX.Syntax.Ty.id_optRename_success
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_weaken
 #assert_no_axioms LeanFX.Syntax.Ty.optRename_sound
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_sound
@@ -94,5 +101,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.TermOptionalRenaming.identity
 #assert_no_axioms LeanFX.Syntax.TermOptionalRenaming.unweaken
 #assert_no_axioms LeanFX.Syntax.TermOptionalRenaming.lift
+#assert_no_axioms LeanFX.Syntax.Option.bindSome
+#assert_no_axioms LeanFX.Syntax.Term.optRename
+#assert_no_axioms LeanFX.Syntax.Term.strengthen
 
 end LeanFX.Tools.AuditAll
