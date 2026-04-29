@@ -248,6 +248,16 @@ theorem Term.castSame_HEq_congr
   cases typeEquality
   exact termEquality
 
+/-- Relate a term to the same term cast along a type equality. -/
+theorem Term.castRight_HEq
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    (sourceTerm : Term Γ sourceType) :
+    HEq sourceTerm (typeEquality ▸ sourceTerm) := by
+  cases typeEquality
+  rfl
+
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
     {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}

@@ -463,6 +463,24 @@ theorem Term.subst_HEq_cast_input
   cases h
   rfl
 
+/-- Push a type-cast on a one-hole-substitution body out through
+`Term.subst0`. -/
+theorem Term.subst0_HEq_cast_input
+    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {argumentType : Ty level scope}
+    {sourceBodyType targetBodyType : Ty level (scope + 1)}
+    (bodyTypeEquality : sourceBodyType = targetBodyType)
+    (bodyTerm : Term (Γ.cons argumentType) sourceBodyType)
+    (argumentTerm : Term Γ argumentType) :
+    HEq (Term.subst0 (bodyTypeEquality ▸ bodyTerm) argumentTerm)
+      (Term.subst0 bodyTerm argumentTerm) := by
+  show HEq
+    (Term.subst (TermSubst.singleton argumentTerm)
+      (bodyTypeEquality ▸ bodyTerm))
+    (Term.subst (TermSubst.singleton argumentTerm) bodyTerm)
+  exact Term.subst_HEq_cast_input
+    (TermSubst.singleton argumentTerm) bodyTypeEquality bodyTerm
+
 /-! ## `TermSubst.lift_compose_pointwise` at position 0.
 
 Lifting a composed term-substitution under a binder agrees HEq with
