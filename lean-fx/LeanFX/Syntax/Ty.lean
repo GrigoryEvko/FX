@@ -134,6 +134,87 @@ def universeCumul {scope : Nat}
     Ty upperLevel scope :=
   Ty.universe universeLevel (Nat.le_trans lowerLevelFits canLiftLevel)
 
+/-- Lift a type from a lower universe level into a higher ambient
+level. This is the reusable form of universe cumulativity for all
+current type constructors; it is a function, not a `Ty` constructor,
+so substitution never has to reconcile a mismatched constructor index. -/
+def liftLevel {lowerLevel upperLevel scope : Nat}
+    (canLiftLevel : lowerLevel ≤ upperLevel) :
+    Ty lowerLevel scope → Ty upperLevel scope
+  | Ty.unit => Ty.unit
+  | Ty.arrow domainType codomainType =>
+      Ty.arrow (domainType.liftLevel canLiftLevel)
+        (codomainType.liftLevel canLiftLevel)
+  | Ty.piTy domainType codomainType =>
+      Ty.piTy (domainType.liftLevel canLiftLevel)
+        (codomainType.liftLevel canLiftLevel)
+  | Ty.tyVar position => Ty.tyVar position
+  | Ty.sigmaTy firstType secondType =>
+      Ty.sigmaTy (firstType.liftLevel canLiftLevel)
+        (secondType.liftLevel canLiftLevel)
+  | Ty.bool => Ty.bool
+  | Ty.universe universeLevel levelFits =>
+      Ty.universe universeLevel (Nat.le_trans levelFits canLiftLevel)
+  | Ty.nat => Ty.nat
+  | Ty.list elementType =>
+      Ty.list (elementType.liftLevel canLiftLevel)
+  | Ty.vec elementType length =>
+      Ty.vec (elementType.liftLevel canLiftLevel) length
+  | Ty.option elementType =>
+      Ty.option (elementType.liftLevel canLiftLevel)
+  | Ty.either leftType rightType =>
+      Ty.either (leftType.liftLevel canLiftLevel)
+        (rightType.liftLevel canLiftLevel)
+  | Ty.id carrier leftEndpoint rightEndpoint =>
+      Ty.id (carrier.liftLevel canLiftLevel) leftEndpoint rightEndpoint
+
+/-- Constructive maximum for universe levels.
+
+This deliberately avoids Lean's generic `max` theorem layer, whose
+standard proofs currently pull in `propext` through library
+dependencies. -/
+def levelMax : Nat → Nat → Nat
+  | 0, rightLevel => rightLevel
+  | leftLevel + 1, 0 => leftLevel + 1
+  | leftLevel + 1, rightLevel + 1 => levelMax leftLevel rightLevel + 1
+
+/-- Left side is below `levelMax`, proved by structural recursion. -/
+theorem level_le_max_left : (leftLevel rightLevel : Nat) →
+    leftLevel ≤ levelMax leftLevel rightLevel
+  | 0, _ => Nat.zero_le _
+  | leftLevel + 1, 0 => Nat.le_refl _
+  | leftLevel + 1, rightLevel + 1 => by
+      exact Nat.succ_le_succ (level_le_max_left leftLevel rightLevel)
+
+/-- Right side is below `levelMax`, proved by structural recursion. -/
+theorem level_le_max_right : (leftLevel rightLevel : Nat) →
+    rightLevel ≤ levelMax leftLevel rightLevel
+  | _, 0 => Nat.zero_le _
+  | 0, rightLevel + 1 => Nat.le_refl _
+  | leftLevel + 1, rightLevel + 1 => by
+      exact Nat.succ_le_succ (level_le_max_right leftLevel rightLevel)
+
+/-- Universe-polymorphic dependent function formation.
+
+Both sides are lifted into the least common ambient level accepted by
+the current uniform-level `Ty.piTy` constructor. -/
+def piTyLevel {domainLevel codomainLevel scope : Nat}
+    (domainType : Ty domainLevel scope)
+    (codomainType : Ty codomainLevel (scope + 1)) :
+    Ty (Ty.levelMax domainLevel codomainLevel) scope :=
+  Ty.piTy
+    (domainType.liftLevel (Ty.level_le_max_left domainLevel codomainLevel))
+    (codomainType.liftLevel (Ty.level_le_max_right domainLevel codomainLevel))
+
+/-- Universe-polymorphic dependent pair formation. -/
+def sigmaTyLevel {firstLevel secondLevel scope : Nat}
+    (firstType : Ty firstLevel scope)
+    (secondType : Ty secondLevel (scope + 1)) :
+    Ty (Ty.levelMax firstLevel secondLevel) scope :=
+  Ty.sigmaTy
+    (firstType.liftLevel (Ty.level_le_max_left firstLevel secondLevel))
+    (secondType.liftLevel (Ty.level_le_max_right firstLevel secondLevel))
+
 end Ty
 
 /-! ## Renaming machinery.

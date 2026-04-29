@@ -150,6 +150,30 @@ example {scope target : Nat} (σ : Subst 1 scope target) :
       = Ty.universe (level := 1) (scope := target) 0 (Nat.le_refl 1) :=
   rfl
 
+/-- General level lifting sends a lower-level type into a higher ambient level. -/
+example : Ty 3 0 :=
+  Ty.liftLevel (lowerLevel := 1) (upperLevel := 3) (scope := 0)
+    (Nat.succ_le_succ (Nat.zero_le 2))
+    (Ty.universe 0 (Nat.le_refl 1))
+
+/-- Universe-polymorphic Π formation lifts domain and codomain into `max`. -/
+example : Ty 2 0 :=
+  Ty.piTyLevel
+    (domainLevel := 1)
+    (codomainLevel := 2)
+    (scope := 0)
+    (Ty.universe 0 (Nat.le_refl 1))
+    (Ty.universe 1 (Nat.le_refl 2))
+
+/-- Universe-polymorphic Σ formation follows the same level discipline as Π. -/
+example : Ty 2 0 :=
+  Ty.sigmaTyLevel
+    (firstLevel := 1)
+    (secondLevel := 2)
+    (scope := 0)
+    (Ty.universe 0 (Nat.le_refl 1))
+    (Ty.universe 1 (Nat.le_refl 2))
+
 /-- `Ty.nat` is level-polymorphic — exists at any universe level. -/
 example : Ty 0 0 := Ty.nat
 example : Ty 5 7 := Ty.nat
