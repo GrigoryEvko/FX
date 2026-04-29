@@ -1,5 +1,6 @@
 import LeanFX.Mode.Modality
 import LeanFX.Mode.TwoCell
+import LeanFX.Mode.Composable
 import LeanFX.Syntax.Term
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
@@ -26,6 +27,7 @@ The intrinsic kernel is split by dependency layer while preserving
   * `LeanFX.Syntax.Smoke` — constructor/reduction smoke coverage.
   * `LeanFX.Mode.Modality` — abstract mode 1-category substrate.
   * `LeanFX.Mode.TwoCell` — abstract Prop-valued modal 2-cells.
+  * `LeanFX.Mode.Composable` — decidable admissible modal composition.
 
 The split is still one sequential kernel architecture: `RawTerm` is
 declared before `Ty`, so `Ty.id` references raw endpoints without a
