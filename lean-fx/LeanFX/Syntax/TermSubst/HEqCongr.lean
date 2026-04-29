@@ -12,6 +12,16 @@ types differ propositionally (e.g. `Term Γ (T.subst Subst.identity)`
 vs `Term Γ T`).  HEq is the right notion of equality; the lemmas
 below collapse outer casts and align cons-extended contexts. -/
 
+/-- Constructor-level HEq congruence closer.
+
+All `Term.<ctor>_HEq_congr` lemmas have the same proof shape:
+substitute propositional equalities and heterogeneous equalities until
+both constructor applications are definitionally identical, then close
+with `rfl`.  Keeping this as a local tactic makes future constructors
+add one proof line instead of another hand-written `cases` cascade. -/
+macro "term_heq_congr" : tactic =>
+  `(tactic| (subst_vars; rfl))
+
 /-- **HEq across context-shape change for `Term.var`**: if two
 contexts at the same scope are propositionally equal, then the
 `Term.var` constructor at the same Fin position produces HEq
@@ -142,11 +152,7 @@ theorem Term.app_HEq_congr
     (h_f : HEq f₁ f₂)
     (a₁ : Term Γ T₁_a) (a₂ : Term Γ T₁_b) (h_a : HEq a₁ a₂) :
     HEq (Term.app f₁ a₁) (Term.app f₂ a₂) := by
-  cases h_T₁
-  cases h_T₂
-  cases h_f
-  cases h_a
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.lam`. -/
 theorem Term.lam_HEq_congr
@@ -157,10 +163,7 @@ theorem Term.lam_HEq_congr
     (body₂ : Term (Γ.cons dom₂) cod₂.weaken)
     (h_body : HEq body₁ body₂) :
     HEq (Term.lam body₁) (Term.lam body₂) := by
-  cases h_dom
-  cases h_cod
-  cases h_body
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.lamPi`. -/
 theorem Term.lamPi_HEq_congr
@@ -171,10 +174,7 @@ theorem Term.lamPi_HEq_congr
     (body₂ : Term (Γ.cons dom₂) cod₂)
     (h_body : HEq body₁ body₂) :
     HEq (Term.lamPi body₁) (Term.lamPi body₂) := by
-  cases h_dom
-  cases h_cod
-  cases h_body
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.appPi`. -/
 theorem Term.appPi_HEq_congr
@@ -186,11 +186,7 @@ theorem Term.appPi_HEq_congr
     (h_f : HEq f₁ f₂)
     (a₁ : Term Γ dom₁) (a₂ : Term Γ dom₂) (h_a : HEq a₁ a₂) :
     HEq (Term.appPi f₁ a₁) (Term.appPi f₂ a₂) := by
-  cases h_dom
-  cases h_cod
-  cases h_f
-  cases h_a
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.pair`. -/
 theorem Term.pair_HEq_congr
@@ -201,11 +197,7 @@ theorem Term.pair_HEq_congr
     (w₁ : Term Γ (second₁.subst0 first₁))
     (w₂ : Term Γ (second₂.subst0 first₂)) (h_w : HEq w₁ w₂) :
     HEq (Term.pair v₁ w₁) (Term.pair v₂ w₂) := by
-  cases h_first
-  cases h_second
-  cases h_v
-  cases h_w
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.fst`. -/
 theorem Term.fst_HEq_congr
@@ -215,10 +207,7 @@ theorem Term.fst_HEq_congr
     (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
     (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
     HEq (Term.fst p₁) (Term.fst p₂) := by
-  cases h_first
-  cases h_second
-  cases h_p
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.snd`. -/
 theorem Term.snd_HEq_congr
@@ -228,10 +217,7 @@ theorem Term.snd_HEq_congr
     (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
     (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
     HEq (Term.snd p₁) (Term.snd p₂) := by
-  cases h_first
-  cases h_second
-  cases h_p
-  rfl
+  term_heq_congr
 
 /-- **General HEq congruence for `Term.weaken`.**  Stronger than
 `Term.heq_weaken_strip_cast` (which only handled an inner cast):
@@ -244,10 +230,7 @@ theorem Term.weaken_HEq_congr
     {T₁ T₂ : Ty level scope} (h_T : T₁ = T₂)
     (t₁ : Term Γ T₁) (t₂ : Term Γ T₂) (h_t : HEq t₁ t₂) :
     HEq (Term.weaken newType₁ t₁) (Term.weaken newType₂ t₂) := by
-  cases h_new
-  cases h_T
-  cases h_t
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
@@ -257,11 +240,7 @@ theorem Term.boolElim_HEq_congr
     (t₁ : Term Γ result₁) (t₂ : Term Γ result₂) (h_t : HEq t₁ t₂)
     (e₁ : Term Γ result₁) (e₂ : Term Γ result₂) (h_e : HEq e₁ e₂) :
     HEq (Term.boolElim s₁ t₁ e₁) (Term.boolElim s₂ t₂ e₂) := by
-  cases h_result
-  cases h_s
-  cases h_t
-  cases h_e
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.natSucc`.  natSucc has no type-level
 indices that vary, so this collapses to plain equality of the
@@ -271,8 +250,7 @@ theorem Term.natSucc_HEq_congr
     {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     (p₁ p₂ : Term Γ Ty.nat) (h_p : HEq p₁ p₂) :
     HEq (Term.natSucc p₁) (Term.natSucc p₂) := by
-  cases h_p
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.natElim`. -/
 theorem Term.natElim_HEq_congr
@@ -284,11 +262,7 @@ theorem Term.natElim_HEq_congr
     (f₂ : Term Γ (Ty.arrow Ty.nat result₂))
     (h_f : HEq f₁ f₂) :
     HEq (Term.natElim s₁ z₁ f₁) (Term.natElim s₂ z₂ f₂) := by
-  cases h_result
-  cases h_s
-  cases h_z
-  cases h_f
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.natRec`.  Same shape as `natElim_HEq_congr`
 but with succBranch typed `Ty.arrow Ty.nat (Ty.arrow result result)` —
@@ -302,11 +276,7 @@ theorem Term.natRec_HEq_congr
     (f₂ : Term Γ (Ty.arrow Ty.nat (Ty.arrow result₂ result₂)))
     (h_f : HEq f₁ f₂) :
     HEq (Term.natRec s₁ z₁ f₁) (Term.natRec s₂ z₂ f₂) := by
-  cases h_result
-  cases h_s
-  cases h_z
-  cases h_f
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.listNil`.  Only the elementType varies
 between sides; no value arguments. -/
@@ -315,8 +285,7 @@ theorem Term.listNil_HEq_congr
     {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂) :
     HEq (Term.listNil (context := Γ) (elementType := elem₁))
         (Term.listNil (context := Γ) (elementType := elem₂)) := by
-  cases h_elem
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.listCons`. -/
 theorem Term.listCons_HEq_congr
@@ -326,10 +295,7 @@ theorem Term.listCons_HEq_congr
     (t₁ : Term Γ (Ty.list elem₁)) (t₂ : Term Γ (Ty.list elem₂))
     (h_t : HEq t₁ t₂) :
     HEq (Term.listCons h₁ t₁) (Term.listCons h₂ t₂) := by
-  cases h_elem
-  cases h_h
-  cases h_t
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.listElim`.  Both `elementType` and
 `resultType` may vary; the consBranch type
@@ -345,12 +311,7 @@ theorem Term.listElim_HEq_congr
     (c₂ : Term Γ (Ty.arrow elem₂ (Ty.arrow (Ty.list elem₂) result₂)))
     (h_c : HEq c₁ c₂) :
     HEq (Term.listElim s₁ n₁ c₁) (Term.listElim s₂ n₂ c₂) := by
-  cases h_elem
-  cases h_result
-  cases h_s
-  cases h_n
-  cases h_c
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.optionNone` — only elementType varies. -/
 theorem Term.optionNone_HEq_congr
@@ -358,8 +319,7 @@ theorem Term.optionNone_HEq_congr
     {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂) :
     HEq (Term.optionNone (context := Γ) (elementType := elem₁))
         (Term.optionNone (context := Γ) (elementType := elem₂)) := by
-  cases h_elem
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.optionSome`. -/
 theorem Term.optionSome_HEq_congr
@@ -367,9 +327,7 @@ theorem Term.optionSome_HEq_congr
     {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
     (v₁ : Term Γ elem₁) (v₂ : Term Γ elem₂) (h_v : HEq v₁ v₂) :
     HEq (Term.optionSome v₁) (Term.optionSome v₂) := by
-  cases h_elem
-  cases h_v
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.optionMatch`. -/
 theorem Term.optionMatch_HEq_congr
@@ -383,12 +341,7 @@ theorem Term.optionMatch_HEq_congr
     (sm₂ : Term Γ (Ty.arrow elem₂ result₂))
     (h_sm : HEq sm₁ sm₂) :
     HEq (Term.optionMatch s₁ n₁ sm₁) (Term.optionMatch s₂ n₂ sm₂) := by
-  cases h_elem
-  cases h_result
-  cases h_s
-  cases h_n
-  cases h_sm
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.eitherInl`.  Both `leftType` and
 `rightType` may vary; only the `leftType` value is supplied. -/
@@ -399,10 +352,7 @@ theorem Term.eitherInl_HEq_congr
     (v₁ : Term Γ left₁) (v₂ : Term Γ left₂) (h_v : HEq v₁ v₂) :
     HEq (Term.eitherInl (rightType := right₁) v₁)
         (Term.eitherInl (rightType := right₂) v₂) := by
-  cases h_left
-  cases h_right
-  cases h_v
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.eitherInr`.  Symmetric to `eitherInl_HEq_congr`. -/
 theorem Term.eitherInr_HEq_congr
@@ -412,10 +362,7 @@ theorem Term.eitherInr_HEq_congr
     (v₁ : Term Γ right₁) (v₂ : Term Γ right₂) (h_v : HEq v₁ v₂) :
     HEq (Term.eitherInr (leftType := left₁) v₁)
         (Term.eitherInr (leftType := left₂) v₂) := by
-  cases h_left
-  cases h_right
-  cases h_v
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.eitherMatch`.  Three Ty-index equalities
 (left, right, result) and three sub-term HEqs (scrutinee, leftBranch,
@@ -432,13 +379,7 @@ theorem Term.eitherMatch_HEq_congr
     (rb₁ : Term Γ (Ty.arrow right₁ result₁))
     (rb₂ : Term Γ (Ty.arrow right₂ result₂)) (h_rb : HEq rb₁ rb₂) :
     HEq (Term.eitherMatch s₁ lb₁ rb₁) (Term.eitherMatch s₂ lb₂ rb₂) := by
-  cases h_left
-  cases h_right
-  cases h_result
-  cases h_s
-  cases h_lb
-  cases h_rb
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.refl`.  Only the `carrier` Ty varies
 between sides; the open endpoint `rawTerm : RawTerm scope` is shared
@@ -453,9 +394,7 @@ theorem Term.refl_HEq_congr
     {rawTerm₁ rawTerm₂ : RawTerm scope} (h_rawTerm : rawTerm₁ = rawTerm₂) :
     HEq (Term.refl (context := Γ) (carrier := carrier₁) rawTerm₁)
         (Term.refl (context := Γ) (carrier := carrier₂) rawTerm₂) := by
-  cases h_carrier
-  cases h_rawTerm
-  rfl
+  term_heq_congr
 
 /-- HEq congruence for `Term.idJ`.  Four Ty-level equations (carrier,
 leftEnd, rightEnd, resultType) and two HEq sub-term arguments
@@ -473,13 +412,7 @@ theorem Term.idJ_HEq_congr
     (witness₂ : Term Γ (Ty.id carrier₂ leftEnd₂ rightEnd₂))
     (h_witness : HEq witness₁ witness₂) :
     HEq (Term.idJ base₁ witness₁) (Term.idJ base₂ witness₂) := by
-  cases h_carrier
-  cases h_leftEnd
-  cases h_rightEnd
-  cases h_result
-  cases h_base
-  cases h_witness
-  rfl
+  term_heq_congr
 
 /-! ## `Term.subst_id_HEq` leaf cases.
 
