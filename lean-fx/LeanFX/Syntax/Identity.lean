@@ -112,6 +112,43 @@ def ofEq {term₁ term₂ : Term context resultType} :
     term₁ = term₂ → IdProof term₁ term₂
   | rfl => IdProof.refl _
 
+/-- Dependent path induction for external identity proofs.
+
+The motive may depend on the right endpoint and on the path itself.
+Pattern matching on `refl` reduces both endpoint and proof to the base
+case, giving the full J eliminator for the external `IdProof` layer. -/
+def idJ {leftTerm : Term context resultType}
+    (motive :
+      (rightTerm : Term context resultType) →
+        IdProof leftTerm rightTerm → Type)
+    (baseCase : motive leftTerm (IdProof.refl leftTerm)) :
+    {rightTerm : Term context resultType} →
+      (path : IdProof leftTerm rightTerm) →
+        motive rightTerm path
+  | _, .refl _ => baseCase
+
+/-- Non-dependent transport along an external identity proof. -/
+def transport {leftTerm : Term context resultType}
+    (motive : Term context resultType → Type)
+    (baseCase : motive leftTerm) :
+    {rightTerm : Term context resultType} →
+      IdProof leftTerm rightTerm → motive rightTerm
+  | _, .refl _ => baseCase
+
+/-- The dependent eliminator computes at reflexivity. -/
+example {leftTerm : Term context resultType}
+    (motive :
+      (rightTerm : Term context resultType) →
+        IdProof leftTerm rightTerm → Type)
+    (baseCase : motive leftTerm (IdProof.refl leftTerm)) :
+    IdProof.idJ motive baseCase (IdProof.refl leftTerm) = baseCase := rfl
+
+/-- Transport computes at reflexivity. -/
+example {leftTerm : Term context resultType}
+    (motive : Term context resultType → Type)
+    (baseCase : motive leftTerm) :
+    IdProof.transport motive baseCase (IdProof.refl leftTerm) = baseCase := rfl
+
 end IdProof
 
 end LeanFX.Syntax
