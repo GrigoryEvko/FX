@@ -43,6 +43,34 @@ open LeanFX.Mode
 
 variable {level : Nat}
 
+/-- Binary function congruence helper for optional-renaming proofs. -/
+theorem congrArgTwo {firstType secondType resultType : Sort _}
+    {function : firstType → secondType → resultType}
+    {firstValue firstValue' : firstType}
+    {secondValue secondValue' : secondType}
+    (firstEquality : firstValue = firstValue')
+    (secondEquality : secondValue = secondValue') :
+    function firstValue secondValue = function firstValue' secondValue' := by
+  cases firstEquality
+  cases secondEquality
+  rfl
+
+/-- Ternary function congruence helper for optional-renaming proofs. -/
+theorem congrArgThree {firstType secondType thirdType resultType : Sort _}
+    {function : firstType → secondType → thirdType → resultType}
+    {firstValue firstValue' : firstType}
+    {secondValue secondValue' : secondType}
+    {thirdValue thirdValue' : thirdType}
+    (firstEquality : firstValue = firstValue')
+    (secondEquality : secondValue = secondValue')
+    (thirdEquality : thirdValue = thirdValue') :
+    function firstValue secondValue thirdValue =
+      function firstValue' secondValue' thirdValue' := by
+  cases firstEquality
+  cases secondEquality
+  cases thirdEquality
+  rfl
+
 /-! ## Optional renaming algebra. -/
 
 /-- A partial renaming `OptionalRenaming source target` maps a position
@@ -86,6 +114,19 @@ def OptionalRenaming.lift {source target : Nat}
 def OptionalRenaming.equiv {source target : Nat}
     (firstRenaming secondRenaming : OptionalRenaming source target) : Prop :=
   ∀ position, firstRenaming position = secondRenaming position
+
+/-- `totalRenaming` is a right inverse for the successful outputs of
+`optionalRenaming`: whenever a source position maps to `some target`,
+renaming `target` back with `totalRenaming` recovers the source
+position.  This is the semantic condition needed to prove that a
+successful optional rename can be weakened/renamed back to the
+original syntax. -/
+def OptionalRenaming.RightInverse {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    (totalRenaming : Renaming target source) : Prop :=
+  ∀ sourcePosition targetPosition,
+    optionalRenaming sourcePosition = some targetPosition →
+      totalRenaming targetPosition = sourcePosition
 
 /-- Lifting preserves pointwise equivalence. -/
 theorem OptionalRenaming.lift_equiv {source target : Nat}
@@ -138,6 +179,46 @@ theorem OptionalRenaming.lift_afterRenaming_equiv {source middle target : Nat}
       (OptionalRenaming.afterRenaming totalRenaming optionalRenaming).lift
   | ⟨0, _⟩ => rfl
   | ⟨_ + 1, _⟩ => rfl
+
+/-- `OptionalRenaming.unweaken` is right-inverted by ordinary weakening:
+if dropping the newest variable succeeds, weakening the result points
+back to the original position. -/
+theorem OptionalRenaming.unweaken_rightInverse {scope : Nat} :
+    OptionalRenaming.RightInverse
+      (@OptionalRenaming.unweaken scope) Renaming.weaken
+  | ⟨0, _⟩, targetPosition, mappedPosition => by
+      cases mappedPosition
+  | ⟨position + 1, isWithinSucc⟩, targetPosition, mappedPosition => by
+      cases mappedPosition
+      rfl
+
+/-- Right-inverse evidence is stable under binders. -/
+theorem OptionalRenaming.lift_rightInverse {source target : Nat}
+    {optionalRenaming : OptionalRenaming source target}
+    {totalRenaming : Renaming target source}
+    (renamingHasRightInverse :
+      OptionalRenaming.RightInverse optionalRenaming totalRenaming) :
+    OptionalRenaming.RightInverse optionalRenaming.lift totalRenaming.lift
+  | ⟨0, _⟩, targetPosition, mappedPosition => by
+      change some ⟨0, Nat.zero_lt_succ target⟩ = some targetPosition at mappedPosition
+      cases mappedPosition
+      rfl
+  | ⟨sourcePosition + 1, isWithinSource⟩, targetPosition, mappedPosition => by
+      let sourcePredecessor : Fin source :=
+        ⟨sourcePosition, Nat.lt_of_succ_lt_succ isWithinSource⟩
+      change Option.map Fin.succ (optionalRenaming sourcePredecessor) =
+          some targetPosition at mappedPosition
+      cases predecessorMapping : optionalRenaming sourcePredecessor with
+      | none =>
+          rw [predecessorMapping] at mappedPosition
+          cases mappedPosition
+      | some targetPredecessor =>
+          rw [predecessorMapping] at mappedPosition
+          cases mappedPosition
+          have sourceEquality :=
+            renamingHasRightInverse
+              sourcePredecessor targetPredecessor predecessorMapping
+          exact congrArg Fin.succ sourceEquality
 
 /-! ## Optional renaming on raw terms.
 
@@ -640,6 +721,7 @@ theorem RawTerm.rename_optRename {source middle target : Nat}
       simp only [RawTerm.rename, RawTerm.optRename]
       rw [baseComposition, witnessComposition]
 
+
 /-- The strengthening operation on raw terms — partial inverse of
 `RawTerm.weaken`.  Returns `some t` exactly when the input does not
 reference the freshly bound variable. -/
@@ -666,6 +748,516 @@ theorem RawTerm.strengthen_weaken {scope : Nat}
       rawTerm
   exact composition.trans
     (identityEquivalence.trans (RawTerm.optRename_identity rawTerm))
+
+/-- Soundness for successful raw optional renaming.  If an optional
+renaming succeeds and `totalRenaming` right-inverts every successful
+position mapping, then renaming the result back with `totalRenaming`
+reconstructs the original raw term. -/
+theorem RawTerm.optRename_sound {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    (totalRenaming : Renaming target source)
+    (renamingHasRightInverse :
+      OptionalRenaming.RightInverse optionalRenaming totalRenaming) :
+  ∀ (rawTerm : RawTerm source) (renamedRawTerm : RawTerm target),
+      rawTerm.optRename optionalRenaming = some renamedRawTerm →
+        renamedRawTerm.rename totalRenaming = rawTerm := by
+  intro rawTerm
+  induction rawTerm generalizing target with
+  | var position =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.var (optionalRenaming position) =
+        some renamedRawTerm at renamingSucceeded
+      cases positionMapping : optionalRenaming position with
+      | none =>
+          rw [positionMapping] at renamingSucceeded
+          cases renamingSucceeded
+      | some targetPosition =>
+          rw [positionMapping] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.var
+            (renamingHasRightInverse position targetPosition positionMapping)
+  | unit =>
+      intro renamedRawTerm renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | boolTrue =>
+      intro renamedRawTerm renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | boolFalse =>
+      intro renamedRawTerm renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | natZero =>
+      intro renamedRawTerm renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | natSucc predecessor predecessorSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.natSucc
+          (predecessor.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases predecessorRenaming : predecessor.optRename optionalRenaming with
+      | none =>
+          rw [predecessorRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedPredecessor =>
+          rw [predecessorRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.natSucc
+            (predecessorSound optionalRenaming totalRenaming
+              renamingHasRightInverse renamedPredecessor predecessorRenaming)
+  | lam body bodySound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.lam
+          (body.optRename optionalRenaming.lift) =
+        some renamedRawTerm at renamingSucceeded
+      cases bodyRenaming : body.optRename optionalRenaming.lift with
+      | none =>
+          rw [bodyRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedBody =>
+          rw [bodyRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.lam
+            (bodySound optionalRenaming.lift totalRenaming.lift
+              (OptionalRenaming.lift_rightInverse renamingHasRightInverse)
+              renamedBody bodyRenaming)
+  | app function argument functionSound argumentSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (function.optRename optionalRenaming)
+          (fun renamedFunction =>
+            Option.bind (argument.optRename optionalRenaming)
+              (fun renamedArgument =>
+                some (RawTerm.app renamedFunction renamedArgument))) =
+        some renamedRawTerm at renamingSucceeded
+      cases functionRenaming : function.optRename optionalRenaming with
+      | none =>
+          rw [functionRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedFunction =>
+          rw [functionRenaming] at renamingSucceeded
+          cases argumentRenaming : argument.optRename optionalRenaming with
+          | none =>
+              rw [argumentRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedArgument =>
+              rw [argumentRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := RawTerm.app)
+                (functionSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedFunction functionRenaming)
+                (argumentSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedArgument argumentRenaming)
+  | pair first second firstSound secondSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (first.optRename optionalRenaming)
+          (fun renamedFirst =>
+            Option.bind (second.optRename optionalRenaming)
+              (fun renamedSecond =>
+                some (RawTerm.pair renamedFirst renamedSecond))) =
+        some renamedRawTerm at renamingSucceeded
+      cases firstRenaming : first.optRename optionalRenaming with
+      | none =>
+          rw [firstRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedFirst =>
+          rw [firstRenaming] at renamingSucceeded
+          cases secondRenaming : second.optRename optionalRenaming with
+          | none =>
+              rw [secondRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedSecond =>
+              rw [secondRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := RawTerm.pair)
+                (firstSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedFirst firstRenaming)
+                (secondSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedSecond secondRenaming)
+  | fst pairTerm pairSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.fst (pairTerm.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases pairRenaming : pairTerm.optRename optionalRenaming with
+      | none =>
+          rw [pairRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedPair =>
+          rw [pairRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.fst
+            (pairSound optionalRenaming totalRenaming renamingHasRightInverse
+              renamedPair pairRenaming)
+  | snd pairTerm pairSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.snd (pairTerm.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases pairRenaming : pairTerm.optRename optionalRenaming with
+      | none =>
+          rw [pairRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedPair =>
+          rw [pairRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.snd
+            (pairSound optionalRenaming totalRenaming renamingHasRightInverse
+              renamedPair pairRenaming)
+  | boolElim scrutinee thenBranch elseBranch
+      scrutineeSound thenSound elseSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (scrutinee.optRename optionalRenaming)
+          (fun renamedScrutinee =>
+            Option.bind (thenBranch.optRename optionalRenaming)
+              (fun renamedThen =>
+                Option.bind (elseBranch.optRename optionalRenaming)
+                  (fun renamedElse =>
+                    some (RawTerm.boolElim renamedScrutinee
+                      renamedThen renamedElse)))) =
+        some renamedRawTerm at renamingSucceeded
+      cases scrutineeRenaming : scrutinee.optRename optionalRenaming with
+      | none =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedScrutinee =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases thenRenaming : thenBranch.optRename optionalRenaming with
+          | none =>
+              rw [thenRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedThen =>
+              rw [thenRenaming] at renamingSucceeded
+              cases elseRenaming : elseBranch.optRename optionalRenaming with
+              | none =>
+                  rw [elseRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedElse =>
+                  rw [elseRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := RawTerm.boolElim)
+                    (scrutineeSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedScrutinee scrutineeRenaming)
+                    (thenSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedThen thenRenaming)
+                    (elseSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedElse elseRenaming)
+  | natElim scrutinee zeroBranch succBranch
+      scrutineeSound zeroSound succSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (scrutinee.optRename optionalRenaming)
+          (fun renamedScrutinee =>
+            Option.bind (zeroBranch.optRename optionalRenaming)
+              (fun renamedZero =>
+                Option.bind (succBranch.optRename optionalRenaming)
+                  (fun renamedSucc =>
+                    some (RawTerm.natElim renamedScrutinee
+                      renamedZero renamedSucc)))) =
+        some renamedRawTerm at renamingSucceeded
+      cases scrutineeRenaming : scrutinee.optRename optionalRenaming with
+      | none =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedScrutinee =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases zeroRenaming : zeroBranch.optRename optionalRenaming with
+          | none =>
+              rw [zeroRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedZero =>
+              rw [zeroRenaming] at renamingSucceeded
+              cases succRenaming : succBranch.optRename optionalRenaming with
+              | none =>
+                  rw [succRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedSucc =>
+                  rw [succRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := RawTerm.natElim)
+                    (scrutineeSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedScrutinee scrutineeRenaming)
+                    (zeroSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedZero zeroRenaming)
+                    (succSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedSucc succRenaming)
+  | natRec scrutinee zeroBranch succBranch
+      scrutineeSound zeroSound succSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (scrutinee.optRename optionalRenaming)
+          (fun renamedScrutinee =>
+            Option.bind (zeroBranch.optRename optionalRenaming)
+              (fun renamedZero =>
+                Option.bind (succBranch.optRename optionalRenaming)
+                  (fun renamedSucc =>
+                    some (RawTerm.natRec renamedScrutinee
+                      renamedZero renamedSucc)))) =
+        some renamedRawTerm at renamingSucceeded
+      cases scrutineeRenaming : scrutinee.optRename optionalRenaming with
+      | none =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedScrutinee =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases zeroRenaming : zeroBranch.optRename optionalRenaming with
+          | none =>
+              rw [zeroRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedZero =>
+              rw [zeroRenaming] at renamingSucceeded
+              cases succRenaming : succBranch.optRename optionalRenaming with
+              | none =>
+                  rw [succRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedSucc =>
+                  rw [succRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := RawTerm.natRec)
+                    (scrutineeSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedScrutinee scrutineeRenaming)
+                    (zeroSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedZero zeroRenaming)
+                    (succSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedSucc succRenaming)
+  | listNil =>
+      intro renamedRawTerm renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | listCons head tail headSound tailSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (head.optRename optionalRenaming)
+          (fun renamedHead =>
+            Option.bind (tail.optRename optionalRenaming)
+              (fun renamedTail =>
+                some (RawTerm.listCons renamedHead renamedTail))) =
+        some renamedRawTerm at renamingSucceeded
+      cases headRenaming : head.optRename optionalRenaming with
+      | none =>
+          rw [headRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedHead =>
+          rw [headRenaming] at renamingSucceeded
+          cases tailRenaming : tail.optRename optionalRenaming with
+          | none =>
+              rw [tailRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedTail =>
+              rw [tailRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := RawTerm.listCons)
+                (headSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedHead headRenaming)
+                (tailSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedTail tailRenaming)
+  | listElim scrutinee nilBranch consBranch
+      scrutineeSound nilSound consSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (scrutinee.optRename optionalRenaming)
+          (fun renamedScrutinee =>
+            Option.bind (nilBranch.optRename optionalRenaming)
+              (fun renamedNil =>
+                Option.bind (consBranch.optRename optionalRenaming)
+                  (fun renamedCons =>
+                    some (RawTerm.listElim renamedScrutinee
+                      renamedNil renamedCons)))) =
+        some renamedRawTerm at renamingSucceeded
+      cases scrutineeRenaming : scrutinee.optRename optionalRenaming with
+      | none =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedScrutinee =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases nilRenaming : nilBranch.optRename optionalRenaming with
+          | none =>
+              rw [nilRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedNil =>
+              rw [nilRenaming] at renamingSucceeded
+              cases consRenaming : consBranch.optRename optionalRenaming with
+              | none =>
+                  rw [consRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedCons =>
+                  rw [consRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := RawTerm.listElim)
+                    (scrutineeSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedScrutinee scrutineeRenaming)
+                    (nilSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedNil nilRenaming)
+                    (consSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedCons consRenaming)
+  | optionNone =>
+      intro renamedRawTerm renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | optionSome value valueSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.optionSome (value.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases valueRenaming : value.optRename optionalRenaming with
+      | none =>
+          rw [valueRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedValue =>
+          rw [valueRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.optionSome
+            (valueSound optionalRenaming totalRenaming renamingHasRightInverse
+              renamedValue valueRenaming)
+  | optionMatch scrutinee noneBranch someBranch
+      scrutineeSound noneSound someSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (scrutinee.optRename optionalRenaming)
+          (fun renamedScrutinee =>
+            Option.bind (noneBranch.optRename optionalRenaming)
+              (fun renamedNone =>
+                Option.bind (someBranch.optRename optionalRenaming)
+                  (fun renamedSome =>
+                    some (RawTerm.optionMatch renamedScrutinee
+                      renamedNone renamedSome)))) =
+        some renamedRawTerm at renamingSucceeded
+      cases scrutineeRenaming : scrutinee.optRename optionalRenaming with
+      | none =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedScrutinee =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases noneRenaming : noneBranch.optRename optionalRenaming with
+          | none =>
+              rw [noneRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedNone =>
+              rw [noneRenaming] at renamingSucceeded
+              cases someRenaming : someBranch.optRename optionalRenaming with
+              | none =>
+                  rw [someRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedSome =>
+                  rw [someRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := RawTerm.optionMatch)
+                    (scrutineeSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedScrutinee scrutineeRenaming)
+                    (noneSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedNone noneRenaming)
+                    (someSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedSome someRenaming)
+  | eitherInl value valueSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.eitherInl (value.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases valueRenaming : value.optRename optionalRenaming with
+      | none =>
+          rw [valueRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedValue =>
+          rw [valueRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.eitherInl
+            (valueSound optionalRenaming totalRenaming renamingHasRightInverse
+              renamedValue valueRenaming)
+  | eitherInr value valueSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.eitherInr (value.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases valueRenaming : value.optRename optionalRenaming with
+      | none =>
+          rw [valueRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedValue =>
+          rw [valueRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.eitherInr
+            (valueSound optionalRenaming totalRenaming renamingHasRightInverse
+              renamedValue valueRenaming)
+  | eitherMatch scrutinee leftBranch rightBranch
+      scrutineeSound leftSound rightSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (scrutinee.optRename optionalRenaming)
+          (fun renamedScrutinee =>
+            Option.bind (leftBranch.optRename optionalRenaming)
+              (fun renamedLeft =>
+                Option.bind (rightBranch.optRename optionalRenaming)
+                  (fun renamedRight =>
+                    some (RawTerm.eitherMatch renamedScrutinee
+                      renamedLeft renamedRight)))) =
+        some renamedRawTerm at renamingSucceeded
+      cases scrutineeRenaming : scrutinee.optRename optionalRenaming with
+      | none =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedScrutinee =>
+          rw [scrutineeRenaming] at renamingSucceeded
+          cases leftRenaming : leftBranch.optRename optionalRenaming with
+          | none =>
+              rw [leftRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedLeft =>
+              rw [leftRenaming] at renamingSucceeded
+              cases rightRenaming : rightBranch.optRename optionalRenaming with
+              | none =>
+                  rw [rightRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedRight =>
+                  rw [rightRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := RawTerm.eitherMatch)
+                    (scrutineeSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedScrutinee scrutineeRenaming)
+                    (leftSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedLeft leftRenaming)
+                    (rightSound optionalRenaming totalRenaming renamingHasRightInverse
+                      renamedRight rightRenaming)
+  | refl term termSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.map RawTerm.refl (term.optRename optionalRenaming) =
+        some renamedRawTerm at renamingSucceeded
+      cases termRenaming : term.optRename optionalRenaming with
+      | none =>
+          rw [termRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedTerm =>
+          rw [termRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg RawTerm.refl
+            (termSound optionalRenaming totalRenaming renamingHasRightInverse
+              renamedTerm termRenaming)
+  | idJ baseCase witness baseSound witnessSound =>
+      intro renamedRawTerm renamingSucceeded
+      change Option.bind (baseCase.optRename optionalRenaming)
+          (fun renamedBase =>
+            Option.bind (witness.optRename optionalRenaming)
+              (fun renamedWitness =>
+                some (RawTerm.idJ renamedBase renamedWitness))) =
+        some renamedRawTerm at renamingSucceeded
+      cases baseRenaming : baseCase.optRename optionalRenaming with
+      | none =>
+          rw [baseRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedBase =>
+          rw [baseRenaming] at renamingSucceeded
+          cases witnessRenaming : witness.optRename optionalRenaming with
+          | none =>
+              rw [witnessRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedWitness =>
+              rw [witnessRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := RawTerm.idJ)
+                (baseSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedBase baseRenaming)
+                (witnessSound optionalRenaming totalRenaming renamingHasRightInverse
+                  renamedWitness witnessRenaming)
+
+/-- Soundness for raw-term strengthening: if strengthening succeeds,
+then weakening the strengthened result reconstructs the original raw
+term. -/
+theorem RawTerm.strengthen_sound {scope : Nat}
+    (rawTerm : RawTerm (scope + 1)) (strengthenedRawTerm : RawTerm scope)
+    (strengtheningSucceeded : rawTerm.strengthen = some strengthenedRawTerm) :
+    strengthenedRawTerm.weaken = rawTerm :=
+  RawTerm.optRename_sound OptionalRenaming.unweaken Renaming.weaken
+    OptionalRenaming.unweaken_rightInverse
+    rawTerm strengthenedRawTerm strengtheningSucceeded
 
 /-! ## Optional renaming on types. -/
 
@@ -949,6 +1541,237 @@ theorem Ty.rename_optRename {source middle target : Nat}
       simp only [Ty.rename, Ty.optRename]
       rw [carrierComposition, leftComposition, rightComposition]
 
+/-- Soundness for successful type optional renaming.  If an optional
+renaming succeeds and `totalRenaming` right-inverts every successful
+position mapping, then renaming the result back with `totalRenaming`
+reconstructs the original type. -/
+theorem Ty.optRename_sound {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    (totalRenaming : Renaming target source)
+    (renamingHasRightInverse :
+      OptionalRenaming.RightInverse optionalRenaming totalRenaming) :
+    ∀ (resultType : Ty level source) (renamedType : Ty level target),
+      resultType.optRename optionalRenaming = some renamedType →
+        renamedType.rename totalRenaming = resultType := by
+  intro resultType
+  induction resultType generalizing target with
+  | unit =>
+      intro renamedType renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | arrow domain codomain domainSound codomainSound =>
+      intro renamedType renamingSucceeded
+      change Option.bind (domain.optRename optionalRenaming)
+          (fun renamedDomain =>
+            Option.bind (codomain.optRename optionalRenaming)
+              (fun renamedCodomain =>
+                some (Ty.arrow renamedDomain renamedCodomain))) =
+        some renamedType at renamingSucceeded
+      cases domainRenaming : domain.optRename optionalRenaming with
+      | none =>
+          rw [domainRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedDomain =>
+          rw [domainRenaming] at renamingSucceeded
+          cases codomainRenaming : codomain.optRename optionalRenaming with
+          | none =>
+              rw [codomainRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedCodomain =>
+              rw [codomainRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := Ty.arrow)
+                (domainSound optionalRenaming totalRenaming
+                  renamingHasRightInverse renamedDomain domainRenaming)
+                (codomainSound optionalRenaming totalRenaming
+                  renamingHasRightInverse renamedCodomain codomainRenaming)
+  | piTy domain codomain domainSound codomainSound =>
+      intro renamedType renamingSucceeded
+      change Option.bind (domain.optRename optionalRenaming)
+          (fun renamedDomain =>
+            Option.bind (codomain.optRename optionalRenaming.lift)
+              (fun renamedCodomain =>
+                some (Ty.piTy renamedDomain renamedCodomain))) =
+        some renamedType at renamingSucceeded
+      cases domainRenaming : domain.optRename optionalRenaming with
+      | none =>
+          rw [domainRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedDomain =>
+          rw [domainRenaming] at renamingSucceeded
+          cases codomainRenaming : codomain.optRename optionalRenaming.lift with
+          | none =>
+              rw [codomainRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedCodomain =>
+              rw [codomainRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := Ty.piTy)
+                (domainSound optionalRenaming totalRenaming
+                  renamingHasRightInverse renamedDomain domainRenaming)
+                (codomainSound optionalRenaming.lift totalRenaming.lift
+                  (OptionalRenaming.lift_rightInverse renamingHasRightInverse)
+                  renamedCodomain codomainRenaming)
+  | tyVar position =>
+      intro renamedType renamingSucceeded
+      change Option.map Ty.tyVar (optionalRenaming position) =
+        some renamedType at renamingSucceeded
+      cases positionMapping : optionalRenaming position with
+      | none =>
+          rw [positionMapping] at renamingSucceeded
+          cases renamingSucceeded
+      | some targetPosition =>
+          rw [positionMapping] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg Ty.tyVar
+            (renamingHasRightInverse position targetPosition positionMapping)
+  | sigmaTy firstType secondType firstSound secondSound =>
+      intro renamedType renamingSucceeded
+      change Option.bind (firstType.optRename optionalRenaming)
+          (fun renamedFirst =>
+            Option.bind (secondType.optRename optionalRenaming.lift)
+              (fun renamedSecond =>
+                some (Ty.sigmaTy renamedFirst renamedSecond))) =
+        some renamedType at renamingSucceeded
+      cases firstRenaming : firstType.optRename optionalRenaming with
+      | none =>
+          rw [firstRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedFirst =>
+          rw [firstRenaming] at renamingSucceeded
+          cases secondRenaming : secondType.optRename optionalRenaming.lift with
+          | none =>
+              rw [secondRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedSecond =>
+              rw [secondRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := Ty.sigmaTy)
+                (firstSound optionalRenaming totalRenaming
+                  renamingHasRightInverse renamedFirst firstRenaming)
+                (secondSound optionalRenaming.lift totalRenaming.lift
+                  (OptionalRenaming.lift_rightInverse renamingHasRightInverse)
+                  renamedSecond secondRenaming)
+  | bool =>
+      intro renamedType renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | «universe» universeLevel levelFits =>
+      intro renamedType renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | nat =>
+      intro renamedType renamingSucceeded
+      cases renamingSucceeded
+      rfl
+  | list elementType elementSound =>
+      intro renamedType renamingSucceeded
+      change Option.map Ty.list (elementType.optRename optionalRenaming) =
+        some renamedType at renamingSucceeded
+      cases elementRenaming : elementType.optRename optionalRenaming with
+      | none =>
+          rw [elementRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedElement =>
+          rw [elementRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg Ty.list
+            (elementSound optionalRenaming totalRenaming
+              renamingHasRightInverse renamedElement elementRenaming)
+  | vec elementType length elementSound =>
+      intro renamedType renamingSucceeded
+      change Option.map (fun renamedElement => Ty.vec renamedElement length)
+          (elementType.optRename optionalRenaming) =
+        some renamedType at renamingSucceeded
+      cases elementRenaming : elementType.optRename optionalRenaming with
+      | none =>
+          rw [elementRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedElement =>
+          rw [elementRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg (fun recoveredElement => Ty.vec recoveredElement length)
+            (elementSound optionalRenaming totalRenaming
+              renamingHasRightInverse renamedElement elementRenaming)
+  | option elementType elementSound =>
+      intro renamedType renamingSucceeded
+      change Option.map Ty.option (elementType.optRename optionalRenaming) =
+        some renamedType at renamingSucceeded
+      cases elementRenaming : elementType.optRename optionalRenaming with
+      | none =>
+          rw [elementRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedElement =>
+          rw [elementRenaming] at renamingSucceeded
+          cases renamingSucceeded
+          exact congrArg Ty.option
+            (elementSound optionalRenaming totalRenaming
+              renamingHasRightInverse renamedElement elementRenaming)
+  | either leftType rightType leftSound rightSound =>
+      intro renamedType renamingSucceeded
+      change Option.bind (leftType.optRename optionalRenaming)
+          (fun renamedLeft =>
+            Option.bind (rightType.optRename optionalRenaming)
+              (fun renamedRight =>
+                some (Ty.either renamedLeft renamedRight))) =
+        some renamedType at renamingSucceeded
+      cases leftRenaming : leftType.optRename optionalRenaming with
+      | none =>
+          rw [leftRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedLeft =>
+          rw [leftRenaming] at renamingSucceeded
+          cases rightRenaming : rightType.optRename optionalRenaming with
+          | none =>
+              rw [rightRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedRight =>
+              rw [rightRenaming] at renamingSucceeded
+              cases renamingSucceeded
+              exact congrArgTwo (function := Ty.either)
+                (leftSound optionalRenaming totalRenaming
+                  renamingHasRightInverse renamedLeft leftRenaming)
+                (rightSound optionalRenaming totalRenaming
+                  renamingHasRightInverse renamedRight rightRenaming)
+  | id carrier leftEndpoint rightEndpoint carrierSound =>
+      intro renamedType renamingSucceeded
+      change Option.bind (carrier.optRename optionalRenaming)
+          (fun renamedCarrier =>
+            Option.bind (leftEndpoint.optRename optionalRenaming)
+              (fun renamedLeft =>
+                Option.bind (rightEndpoint.optRename optionalRenaming)
+                  (fun renamedRight =>
+                    some (Ty.id renamedCarrier renamedLeft renamedRight)))) =
+        some renamedType at renamingSucceeded
+      cases carrierRenaming : carrier.optRename optionalRenaming with
+      | none =>
+          rw [carrierRenaming] at renamingSucceeded
+          cases renamingSucceeded
+      | some renamedCarrier =>
+          rw [carrierRenaming] at renamingSucceeded
+          cases leftRenaming : leftEndpoint.optRename optionalRenaming with
+          | none =>
+              rw [leftRenaming] at renamingSucceeded
+              cases renamingSucceeded
+          | some renamedLeft =>
+              rw [leftRenaming] at renamingSucceeded
+              cases rightRenaming : rightEndpoint.optRename optionalRenaming with
+              | none =>
+                  rw [rightRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+              | some renamedRight =>
+                  rw [rightRenaming] at renamingSucceeded
+                  cases renamingSucceeded
+                  exact congrArgThree (function := Ty.id)
+                    (carrierSound optionalRenaming totalRenaming
+                      renamingHasRightInverse renamedCarrier carrierRenaming)
+                    (RawTerm.optRename_sound optionalRenaming totalRenaming
+                      renamingHasRightInverse leftEndpoint
+                      renamedLeft leftRenaming)
+                    (RawTerm.optRename_sound optionalRenaming totalRenaming
+                      renamingHasRightInverse rightEndpoint
+                      renamedRight rightRenaming)
+
 /-- The strengthening operation on types — partial inverse of `Ty.weaken`. -/
 @[reducible]
 def Ty.strengthen {scope : Nat}
@@ -972,6 +1795,16 @@ theorem Ty.strengthen_weaken {scope : Nat}
       resultType
   exact composition.trans
     (identityEquivalence.trans (Ty.optRename_identity resultType))
+
+/-- Soundness for type strengthening: if strengthening succeeds, then
+weakening the strengthened result reconstructs the original type. -/
+theorem Ty.strengthen_sound {scope : Nat}
+    (resultType : Ty level (scope + 1)) (strengthenedType : Ty level scope)
+    (strengtheningSucceeded : resultType.strengthen = some strengthenedType) :
+    strengthenedType.weaken = resultType :=
+  Ty.optRename_sound OptionalRenaming.unweaken Renaming.weaken
+    OptionalRenaming.unweaken_rightInverse
+    resultType strengthenedType strengtheningSucceeded
 
 /-! ## Strengthening smoke tests. -/
 

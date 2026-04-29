@@ -54,13 +54,21 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Conv.subst_compatible
 #assert_no_axioms LeanFX.Syntax.Step.par.toStar
 #assert_no_axioms LeanFX.Syntax.IdProof.transport
+#assert_no_axioms LeanFX.Syntax.OptionalRenaming.unweaken_rightInverse
+#assert_no_axioms LeanFX.Syntax.OptionalRenaming.lift_rightInverse
 #assert_no_axioms LeanFX.Syntax.RawTerm.optRename
+#assert_no_axioms LeanFX.Syntax.RawTerm.optRename_congr
 #assert_no_axioms LeanFX.Syntax.RawTerm.optRename_identity
 #assert_no_axioms LeanFX.Syntax.RawTerm.rename_optRename
 #assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_weaken
+#assert_no_axioms LeanFX.Syntax.RawTerm.optRename_sound
+#assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_sound
 #assert_no_axioms LeanFX.Syntax.Ty.optRename
+#assert_no_axioms LeanFX.Syntax.Ty.optRename_congr
 #assert_no_axioms LeanFX.Syntax.Ty.optRename_identity
 #assert_no_axioms LeanFX.Syntax.Ty.rename_optRename
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_weaken
+#assert_no_axioms LeanFX.Syntax.Ty.optRename_sound
+#assert_no_axioms LeanFX.Syntax.Ty.strengthen_sound
 
 end LeanFX.Tools.AuditAll
