@@ -4,8 +4,7 @@
 
 **Hard rule, no exceptions.**  Before writing, modifying, or
 reviewing any FX kernel, elaborator, or derived-layer code —
-including every fresh conversation start and every reset of working
-context —
+including every fresh conversation start —
 read every line of the following three documents in full:
 
   1. `fx_design.md` — 16583 lines — canonical language spec
@@ -31,6 +30,10 @@ and Appendix H.
 
   * On clean-context / fresh-conversation start: read all three
     docs fully before touching code or tasks.
+  * Session compaction is not a fresh conversation start.  After
+    `/compact` or automatic context compaction, continue from the
+    compacted summary and refresh only the spec sections directly
+    relevant to the code being changed.
   * Do NOT rely on summaries, CLAUDE.md excerpts, or memory
     entries as substitutes for reading the specs themselves.
     Memories and CLAUDE.md are index layers over the specs, not
