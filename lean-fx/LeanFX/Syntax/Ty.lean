@@ -47,18 +47,18 @@ inductive Ty : Nat → Nat → Type
   matching the standard MLTT rule `Type u : Type (u+1)`.
 
   Encoded with a *level-polymorphic* signature plus a propositional
-  witness `levelEq : level = u + 1`.  This sidesteps a Lean pattern-
+  witness `levelFits : u + 1 ≤ level`.  This sidesteps a Lean pattern-
   elaborator limitation: a constructor whose type rigidly fixes the
   level (e.g. `Ty (u + 1) scope` directly) blocks pattern-form matches
   in any theorem whose goal involves the matched scrutinee through
   `T.subst` / `T.rename`, because the elaborator cannot refine the
-  rigid `level` header binder.  Carrying the equation as a propositional
-  argument keeps the constructor's level polymorphic; the proposition
-  is consumed at use-site (typically `rfl`).
+  rigid `level` header binder.  Carrying a cumulative bound as a
+  propositional argument keeps the constructor's level polymorphic and
+  represents U-cumul without a separate `Ty.cumul` syntax node.
 
   Cumulativity (`Ty (u+1) → Ty (u+2)`) lands in v1.28; polymorphic Π
   over `Type<u>` lands in v1.29. -/
-  | universe : {level scope : Nat} → (u : Nat) → (levelEq : level = u + 1) →
+  | universe : {level scope : Nat} → (u : Nat) → (levelFits : u + 1 ≤ level) →
                Ty level scope
   /-- The natural numbers — level-polymorphic since `Nat` makes sense
   at any universe.  Comes with `Term.natZero` (`0`) and `Term.natSucc`
@@ -112,6 +112,22 @@ inductive Ty : Nat → Nat → Type
 via the auto-derived `RawTerm` instance. -/
 deriving instance DecidableEq for RawTerm
 deriving instance DecidableEq for Ty
+
+namespace Ty
+
+/-- Lift a universe code into any higher ambient universe level.
+
+This is the constructive representation of U-cumul for the current
+Tarski-style `Ty.universe` constructor: `Type<u>` is admissible at
+every `level` satisfying `u + 1 ≤ level`. -/
+def universeCumul {scope : Nat}
+    (universeLevel lowerLevel upperLevel : Nat)
+    (lowerLevelFits : universeLevel + 1 ≤ lowerLevel)
+    (canLiftLevel : lowerLevel ≤ upperLevel) :
+    Ty upperLevel scope :=
+  Ty.universe universeLevel (Nat.le_trans lowerLevelFits canLiftLevel)
+
+end Ty
 
 /-! ## Renaming machinery.
 
@@ -663,6 +679,20 @@ def Ty.rename {level source target : Nat} :
       .either (leftType.rename ρ) (rightType.rename ρ)
   | .id carrier lhs rhs, ρ =>
       .id (carrier.rename ρ) (lhs.rename ρ) (rhs.rename ρ)
+
+/-- Renaming preserves cumulative universe witnesses definitionally. -/
+theorem Ty.rename_universeCumul {scope target : Nat}
+    (rawRenaming : Renaming scope target)
+    (universeLevel lowerLevel upperLevel : Nat)
+    (lowerLevelFits : universeLevel + 1 ≤ lowerLevel)
+    (canLiftLevel : lowerLevel ≤ upperLevel) :
+    (Ty.universeCumul (scope := scope)
+      universeLevel lowerLevel upperLevel lowerLevelFits canLiftLevel).rename
+        rawRenaming =
+      Ty.universeCumul (scope := target)
+        universeLevel lowerLevel upperLevel lowerLevelFits canLiftLevel :=
+  rfl
+
 /-- Pointwise-equivalent renamings produce equal results on every
 type.  Direct structural induction on `Ty`, using `Renaming.lift_equiv`
 for the binder cases.  No subst infrastructure required. -/

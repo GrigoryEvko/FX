@@ -36,7 +36,7 @@ inductive Code : Nat → Nat → Type
   /-- Code for a universe type. -/
   | codeUniverse : {level scope : Nat} →
       (universeLevel : Nat) →
-      (levelEq : level = universeLevel + 1) →
+      (levelFits : universeLevel + 1 ≤ level) →
       Code level scope
   /-- Code for lists. -/
   | codeList : {level scope : Nat} →
@@ -91,7 +91,7 @@ example : Code 0 0 :=
 
 /-- Code for `Type 0 : Type 1`. -/
 example : Code 1 0 :=
-  Code.codeUniverse 0 rfl
+  Code.codeUniverse 0 (Nat.le_refl 1)
 
 /-- Code for a list. -/
 example : Code 0 0 :=

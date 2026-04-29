@@ -127,24 +127,27 @@ example :
       = IdProof.refl Term.boolTrue := rfl
 
 /-- `Type<0> : Ty 1 0` — the smallest universe lives at level 1.
-Demonstrates the propositional-equation encoding (`Ty.universe u rfl`):
-the `rfl : 1 = 0 + 1` is supplied at the use site to constrain the
-otherwise-polymorphic level of the constructor. -/
-example : Ty 1 0 := Ty.universe 0 rfl
+Demonstrates the cumulative-bound encoding: the proof `1 ≤ 1` is
+supplied at the use site, and larger ambient universe levels can use
+the same constructor. -/
+example : Ty 1 0 := Ty.universe 0 (Nat.le_refl 1)
+
+/-- Cumulativity: `Type<0>` is also available at higher levels. -/
+example : Ty 2 0 := Ty.universe 0 (Nat.succ_le_succ (Nat.zero_le 1))
 
 /-- `Type<3> : Ty 4 0` — universe at an arbitrary level. -/
-example : Ty 4 0 := Ty.universe 3 rfl
+example : Ty 4 0 := Ty.universe 3 (Nat.le_refl 4)
 
 /-- The universe is preserved by rawRenaming: `(Type<u>).rename ρ = Type<u>`. -/
 example {scope target : Nat} (ρ : Renaming scope target) :
-    (Ty.universe (level := 1) (scope := scope) 0 rfl).rename ρ
-      = Ty.universe (level := 1) (scope := target) 0 rfl :=
+    (Ty.universe (level := 1) (scope := scope) 0 (Nat.le_refl 1)).rename ρ
+      = Ty.universe (level := 1) (scope := target) 0 (Nat.le_refl 1) :=
   rfl
 
 /-- The universe is preserved by substitution: `(Type<u>).subst σ = Type<u>`. -/
 example {scope target : Nat} (σ : Subst 1 scope target) :
-    (Ty.universe (level := 1) (scope := scope) 0 rfl).subst σ
-      = Ty.universe (level := 1) (scope := target) 0 rfl :=
+    (Ty.universe (level := 1) (scope := scope) 0 (Nat.le_refl 1)).subst σ
+      = Ty.universe (level := 1) (scope := target) 0 (Nat.le_refl 1) :=
   rfl
 
 /-- `Ty.nat` is level-polymorphic — exists at any universe level. -/
