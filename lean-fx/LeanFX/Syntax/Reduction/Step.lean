@@ -563,4 +563,20 @@ inductive Step :
                      (Term.refl (carrier := carrier) endpoint))
            baseCase
 
+/-- Transport a single-step reduction across the same type equality on
+both endpoints.  This is the reduction-level analogue of the repeated
+`Eq.rec` bridges used in term substitution proofs: when a constructor
+such as `Term.rename` inserts the same cast on both sides of a
+congruence, the reduction proof itself is unchanged after eliminating
+the equality. -/
+theorem Step.castBoth
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    {beforeTerm afterTerm : Term ctx sourceType}
+    (singleStep : Step beforeTerm afterTerm) :
+    Step (typeEquality ▸ beforeTerm) (typeEquality ▸ afterTerm) := by
+  cases typeEquality
+  exact singleStep
+
 end LeanFX.Syntax
