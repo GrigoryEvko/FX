@@ -1,4 +1,4 @@
-import LeanFX.Syntax.Strengthen
+import LeanFX.Syntax.StrengthenSubst
 import LeanFX.Syntax.TypedTerm
 
 namespace LeanFX.Syntax
