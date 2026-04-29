@@ -16,10 +16,10 @@ theorem StepStar.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
     (witness : Term ctx (Ty.id carrier leftEnd rightEnd)) :
     StepStar baseCase₁ baseCase₂ →
     StepStar (Term.idJ baseCase₁ witness) (Term.idJ baseCase₂ witness)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.idJBase s)
-        (StepStar.idJ_cong_base witness rest)
+  :=
+    StepStar.mapStep
+      (fun baseCase => Term.idJ baseCase witness)
+      (fun singleStep => Step.idJBase singleStep)
 
 /-- Multi-step reduction threads through `Term.idJ`'s witness. -/
 theorem StepStar.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
@@ -29,10 +29,10 @@ theorem StepStar.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope
     {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)} :
     StepStar witness₁ witness₂ →
     StepStar (Term.idJ baseCase witness₁) (Term.idJ baseCase witness₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.idJWitness baseCase s)
-        (StepStar.idJ_cong_witness baseCase rest)
+  :=
+    StepStar.mapStep
+      (fun witness => Term.idJ baseCase witness)
+      (fun singleStep => Step.idJWitness baseCase singleStep)
 
 /-- Multi-step reduction threads through both positions of `Term.idJ`. -/
 theorem StepStar.idJ_cong {mode level scope} {ctx : Ctx mode level scope}

@@ -14,10 +14,10 @@ theorem StepStar.optionSome_cong {mode level scope} {ctx : Ctx mode level scope}
     {value₁ value₂ : Term ctx elementType} :
     StepStar value₁ value₂ →
     StepStar (Term.optionSome value₁) (Term.optionSome value₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.optionSomeValue s)
-        (StepStar.optionSome_cong rest)
+  :=
+    StepStar.mapStep
+      (fun value => Term.optionSome value)
+      (fun singleStep => Step.optionSomeValue singleStep)
 
 /-- Multi-step reduction threads through `optionMatch`'s scrutinee. -/
 theorem StepStar.optionMatch_cong_scrutinee
@@ -29,10 +29,10 @@ theorem StepStar.optionMatch_cong_scrutinee
     StepStar scrutinee₁ scrutinee₂ →
     StepStar (Term.optionMatch scrutinee₁ noneBranch someBranch)
              (Term.optionMatch scrutinee₂ noneBranch someBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.optionMatchScrutinee s)
-        (StepStar.optionMatch_cong_scrutinee noneBranch someBranch rest)
+  :=
+    StepStar.mapStep
+      (fun scrutinee => Term.optionMatch scrutinee noneBranch someBranch)
+      (fun singleStep => Step.optionMatchScrutinee singleStep)
 
 /-- Multi-step reduction threads through `optionMatch`'s none-branch. -/
 theorem StepStar.optionMatch_cong_none
@@ -44,10 +44,10 @@ theorem StepStar.optionMatch_cong_none
     StepStar noneBranch₁ noneBranch₂ →
     StepStar (Term.optionMatch scrutinee noneBranch₁ someBranch)
              (Term.optionMatch scrutinee noneBranch₂ someBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.optionMatchNone s)
-        (StepStar.optionMatch_cong_none scrutinee someBranch rest)
+  :=
+    StepStar.mapStep
+      (fun noneBranch => Term.optionMatch scrutinee noneBranch someBranch)
+      (fun singleStep => Step.optionMatchNone singleStep)
 
 /-- Multi-step reduction threads through `optionMatch`'s some-branch. -/
 theorem StepStar.optionMatch_cong_some
@@ -59,10 +59,10 @@ theorem StepStar.optionMatch_cong_some
     StepStar someBranch₁ someBranch₂ →
     StepStar (Term.optionMatch scrutinee noneBranch someBranch₁)
              (Term.optionMatch scrutinee noneBranch someBranch₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.optionMatchSome s)
-        (StepStar.optionMatch_cong_some scrutinee noneBranch rest)
+  :=
+    StepStar.mapStep
+      (fun someBranch => Term.optionMatch scrutinee noneBranch someBranch)
+      (fun singleStep => Step.optionMatchSome singleStep)
 
 /-- Multi-step reduction threads through all three `optionMatch` positions. -/
 theorem StepStar.optionMatch_cong

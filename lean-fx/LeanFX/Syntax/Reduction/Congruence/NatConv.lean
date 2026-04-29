@@ -14,12 +14,11 @@ and `Term.natElim`'s three positions, mirroring the boolean section. -/
 theorem Conv.natSucc_cong {mode level scope} {ctx : Ctx mode level scope}
     {pred₁ pred₂ : Term ctx Ty.nat}
     (h : Conv pred₁ pred₂) :
-    Conv (Term.natSucc pred₁) (Term.natSucc pred₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natSuccPred s)
+    Conv (Term.natSucc pred₁) (Term.natSucc pred₂) :=
+  Conv.mapStep
+    (fun predecessor => Term.natSucc predecessor)
+    (fun singleStep => Step.natSuccPred singleStep)
+    h
 
 /-- Definitional equivalence threads through `natElim`'s scrutinee. -/
 theorem Conv.natElim_cong_scrutinee
@@ -30,12 +29,11 @@ theorem Conv.natElim_cong_scrutinee
     (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
     (h : Conv scrutinee₁ scrutinee₂) :
     Conv (Term.natElim scrutinee₁ zeroBranch succBranch)
-         (Term.natElim scrutinee₂ zeroBranch succBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natElimScrutinee s)
+         (Term.natElim scrutinee₂ zeroBranch succBranch) :=
+  Conv.mapStep
+    (fun scrutinee => Term.natElim scrutinee zeroBranch succBranch)
+    (fun singleStep => Step.natElimScrutinee singleStep)
+    h
 
 /-- Definitional equivalence threads through `natElim`'s zero-branch. -/
 theorem Conv.natElim_cong_zero
@@ -46,12 +44,11 @@ theorem Conv.natElim_cong_zero
     (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
     (h : Conv zeroBranch₁ zeroBranch₂) :
     Conv (Term.natElim scrutinee zeroBranch₁ succBranch)
-         (Term.natElim scrutinee zeroBranch₂ succBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natElimZero s)
+         (Term.natElim scrutinee zeroBranch₂ succBranch) :=
+  Conv.mapStep
+    (fun zeroBranch => Term.natElim scrutinee zeroBranch succBranch)
+    (fun singleStep => Step.natElimZero singleStep)
+    h
 
 /-- Definitional equivalence threads through `natElim`'s succ-branch. -/
 theorem Conv.natElim_cong_succ
@@ -62,12 +59,11 @@ theorem Conv.natElim_cong_succ
     {succBranch₁ succBranch₂ : Term ctx (Ty.arrow Ty.nat resultType)}
     (h : Conv succBranch₁ succBranch₂) :
     Conv (Term.natElim scrutinee zeroBranch succBranch₁)
-         (Term.natElim scrutinee zeroBranch succBranch₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natElimSucc s)
+         (Term.natElim scrutinee zeroBranch succBranch₂) :=
+  Conv.mapStep
+    (fun succBranch => Term.natElim scrutinee zeroBranch succBranch)
+    (fun singleStep => Step.natElimSucc singleStep)
+    h
 
 /-- Definitional equivalence threads through all three `natElim` positions. -/
 theorem Conv.natElim_cong
@@ -100,12 +96,11 @@ theorem Conv.natRec_cong_scrutinee
        (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
     (h : Conv scrutinee₁ scrutinee₂) :
     Conv (Term.natRec scrutinee₁ zeroBranch succBranch)
-         (Term.natRec scrutinee₂ zeroBranch succBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natRecScrutinee s)
+         (Term.natRec scrutinee₂ zeroBranch succBranch) :=
+  Conv.mapStep
+    (fun scrutinee => Term.natRec scrutinee zeroBranch succBranch)
+    (fun singleStep => Step.natRecScrutinee singleStep)
+    h
 
 /-- Definitional equivalence threads through `natRec`'s zero-branch. -/
 theorem Conv.natRec_cong_zero
@@ -117,12 +112,11 @@ theorem Conv.natRec_cong_zero
        (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
     (h : Conv zeroBranch₁ zeroBranch₂) :
     Conv (Term.natRec scrutinee zeroBranch₁ succBranch)
-         (Term.natRec scrutinee zeroBranch₂ succBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natRecZero s)
+         (Term.natRec scrutinee zeroBranch₂ succBranch) :=
+  Conv.mapStep
+    (fun zeroBranch => Term.natRec scrutinee zeroBranch succBranch)
+    (fun singleStep => Step.natRecZero singleStep)
+    h
 
 /-- Definitional equivalence threads through `natRec`'s succ-branch. -/
 theorem Conv.natRec_cong_succ
@@ -134,12 +128,11 @@ theorem Conv.natRec_cong_succ
        (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
     (h : Conv succBranch₁ succBranch₂) :
     Conv (Term.natRec scrutinee zeroBranch succBranch₁)
-         (Term.natRec scrutinee zeroBranch succBranch₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.natRecSucc s)
+         (Term.natRec scrutinee zeroBranch succBranch₂) :=
+  Conv.mapStep
+    (fun succBranch => Term.natRec scrutinee zeroBranch succBranch)
+    (fun singleStep => Step.natRecSucc singleStep)
+    h
 
 /-- Definitional equivalence threads through all three `natRec` positions. -/
 theorem Conv.natRec_cong

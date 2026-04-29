@@ -14,12 +14,11 @@ theorem Conv.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
     {baseCase₁ baseCase₂ : Term ctx resultType}
     (witness : Term ctx (Ty.id carrier leftEnd rightEnd))
     (h : Conv baseCase₁ baseCase₂) :
-    Conv (Term.idJ baseCase₁ witness) (Term.idJ baseCase₂ witness) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.idJBase s)
+    Conv (Term.idJ baseCase₁ witness) (Term.idJ baseCase₂ witness) :=
+  Conv.mapStep
+    (fun baseCase => Term.idJ baseCase witness)
+    (fun singleStep => Step.idJBase singleStep)
+    h
 
 /-- Definitional equivalence threads through `Term.idJ`'s witness. -/
 theorem Conv.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
@@ -28,12 +27,11 @@ theorem Conv.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
     (baseCase : Term ctx resultType)
     {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}
     (h : Conv witness₁ witness₂) :
-    Conv (Term.idJ baseCase witness₁) (Term.idJ baseCase witness₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.idJWitness baseCase s)
+    Conv (Term.idJ baseCase witness₁) (Term.idJ baseCase witness₂) :=
+  Conv.mapStep
+    (fun witness => Term.idJ baseCase witness)
+    (fun singleStep => Step.idJWitness baseCase singleStep)
+    h
 
 /-- Definitional equivalence threads through both `Term.idJ` positions. -/
 theorem Conv.idJ_cong {mode level scope} {ctx : Ctx mode level scope}

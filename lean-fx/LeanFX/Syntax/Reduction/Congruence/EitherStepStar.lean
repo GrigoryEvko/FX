@@ -15,10 +15,10 @@ theorem StepStar.eitherInl_cong {mode level scope} {ctx : Ctx mode level scope}
     StepStar value₁ value₂ →
     StepStar (Term.eitherInl (rightType := rightType) value₁)
              (Term.eitherInl (rightType := rightType) value₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.eitherInlValue s)
-        (StepStar.eitherInl_cong rest)
+  :=
+    StepStar.mapStep
+      (fun value => Term.eitherInl (rightType := rightType) value)
+      (fun singleStep => Step.eitherInlValue singleStep)
 
 /-- Multi-step reduction threads through `Term.eitherInr`. -/
 theorem StepStar.eitherInr_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -27,10 +27,10 @@ theorem StepStar.eitherInr_cong {mode level scope} {ctx : Ctx mode level scope}
     StepStar value₁ value₂ →
     StepStar (Term.eitherInr (leftType := leftType) value₁)
              (Term.eitherInr (leftType := leftType) value₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.eitherInrValue s)
-        (StepStar.eitherInr_cong rest)
+  :=
+    StepStar.mapStep
+      (fun value => Term.eitherInr (leftType := leftType) value)
+      (fun singleStep => Step.eitherInrValue singleStep)
 
 /-- Multi-step reduction threads through `eitherMatch`'s scrutinee. -/
 theorem StepStar.eitherMatch_cong_scrutinee
@@ -42,10 +42,10 @@ theorem StepStar.eitherMatch_cong_scrutinee
     StepStar scrutinee₁ scrutinee₂ →
     StepStar (Term.eitherMatch scrutinee₁ leftBranch rightBranch)
              (Term.eitherMatch scrutinee₂ leftBranch rightBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.eitherMatchScrutinee s)
-        (StepStar.eitherMatch_cong_scrutinee leftBranch rightBranch rest)
+  :=
+    StepStar.mapStep
+      (fun scrutinee => Term.eitherMatch scrutinee leftBranch rightBranch)
+      (fun singleStep => Step.eitherMatchScrutinee singleStep)
 
 /-- Multi-step reduction threads through `eitherMatch`'s left-branch. -/
 theorem StepStar.eitherMatch_cong_left
@@ -57,10 +57,10 @@ theorem StepStar.eitherMatch_cong_left
     StepStar leftBranch₁ leftBranch₂ →
     StepStar (Term.eitherMatch scrutinee leftBranch₁ rightBranch)
              (Term.eitherMatch scrutinee leftBranch₂ rightBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.eitherMatchLeft s)
-        (StepStar.eitherMatch_cong_left scrutinee rightBranch rest)
+  :=
+    StepStar.mapStep
+      (fun leftBranch => Term.eitherMatch scrutinee leftBranch rightBranch)
+      (fun singleStep => Step.eitherMatchLeft singleStep)
 
 /-- Multi-step reduction threads through `eitherMatch`'s right-branch. -/
 theorem StepStar.eitherMatch_cong_right
@@ -72,10 +72,10 @@ theorem StepStar.eitherMatch_cong_right
     StepStar rightBranch₁ rightBranch₂ →
     StepStar (Term.eitherMatch scrutinee leftBranch rightBranch₁)
              (Term.eitherMatch scrutinee leftBranch rightBranch₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.eitherMatchRight s)
-        (StepStar.eitherMatch_cong_right scrutinee leftBranch rest)
+  :=
+    StepStar.mapStep
+      (fun rightBranch => Term.eitherMatch scrutinee leftBranch rightBranch)
+      (fun singleStep => Step.eitherMatchRight singleStep)
 
 /-- Multi-step reduction threads through all three `eitherMatch` positions. -/
 theorem StepStar.eitherMatch_cong

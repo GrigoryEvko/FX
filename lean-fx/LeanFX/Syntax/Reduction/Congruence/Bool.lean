@@ -19,10 +19,10 @@ theorem StepStar.boolElim_cong_scrutinee
     StepStar scrutinee₁ scrutinee₂ →
     StepStar (Term.boolElim scrutinee₁ thenBr elseBr)
              (Term.boolElim scrutinee₂ thenBr elseBr)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.boolElimScrutinee s)
-        (StepStar.boolElim_cong_scrutinee thenBr elseBr rest)
+  :=
+    StepStar.mapStep
+      (fun scrutinee => Term.boolElim scrutinee thenBr elseBr)
+      (fun singleStep => Step.boolElimScrutinee singleStep)
 
 /-- Multi-step reduction threads through `boolElim`'s then-branch. -/
 theorem StepStar.boolElim_cong_then
@@ -34,10 +34,10 @@ theorem StepStar.boolElim_cong_then
     StepStar thenBr₁ thenBr₂ →
     StepStar (Term.boolElim scrutinee thenBr₁ elseBr)
              (Term.boolElim scrutinee thenBr₂ elseBr)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.boolElimThen s)
-        (StepStar.boolElim_cong_then scrutinee elseBr rest)
+  :=
+    StepStar.mapStep
+      (fun thenBranch => Term.boolElim scrutinee thenBranch elseBr)
+      (fun singleStep => Step.boolElimThen singleStep)
 
 /-- Multi-step reduction threads through `boolElim`'s else-branch. -/
 theorem StepStar.boolElim_cong_else
@@ -49,10 +49,10 @@ theorem StepStar.boolElim_cong_else
     StepStar elseBr₁ elseBr₂ →
     StepStar (Term.boolElim scrutinee thenBr elseBr₁)
              (Term.boolElim scrutinee thenBr elseBr₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.boolElimElse s)
-        (StepStar.boolElim_cong_else scrutinee thenBr rest)
+  :=
+    StepStar.mapStep
+      (fun elseBranch => Term.boolElim scrutinee thenBr elseBranch)
+      (fun singleStep => Step.boolElimElse singleStep)
 
 /-- Multi-step reduction threads through all three `boolElim`
 positions simultaneously.  Sequenced via three `trans` calls over
@@ -82,14 +82,10 @@ theorem Conv.boolElim_cong_scrutinee
     Conv scrutinee₁ scrutinee₂ →
     Conv (Term.boolElim scrutinee₁ thenBr elseBr)
          (Term.boolElim scrutinee₂ thenBr elseBr)
-  | .refl _      => Conv.refl _
-  | .sym h       =>
-      Conv.sym (Conv.boolElim_cong_scrutinee thenBr elseBr h)
-  | .trans h₁ h₂ =>
-      Conv.trans
-        (Conv.boolElim_cong_scrutinee thenBr elseBr h₁)
-        (Conv.boolElim_cong_scrutinee thenBr elseBr h₂)
-  | .fromStep s  => Conv.fromStep (Step.boolElimScrutinee s)
+  :=
+    Conv.mapStep
+      (fun scrutinee => Term.boolElim scrutinee thenBr elseBr)
+      (fun singleStep => Step.boolElimScrutinee singleStep)
 
 /-- Definitional equivalence threads through `boolElim`'s then-branch. -/
 theorem Conv.boolElim_cong_then
@@ -101,14 +97,10 @@ theorem Conv.boolElim_cong_then
     Conv thenBr₁ thenBr₂ →
     Conv (Term.boolElim scrutinee thenBr₁ elseBr)
          (Term.boolElim scrutinee thenBr₂ elseBr)
-  | .refl _      => Conv.refl _
-  | .sym h       =>
-      Conv.sym (Conv.boolElim_cong_then scrutinee elseBr h)
-  | .trans h₁ h₂ =>
-      Conv.trans
-        (Conv.boolElim_cong_then scrutinee elseBr h₁)
-        (Conv.boolElim_cong_then scrutinee elseBr h₂)
-  | .fromStep s  => Conv.fromStep (Step.boolElimThen s)
+  :=
+    Conv.mapStep
+      (fun thenBranch => Term.boolElim scrutinee thenBranch elseBr)
+      (fun singleStep => Step.boolElimThen singleStep)
 
 /-- Definitional equivalence threads through `boolElim`'s else-branch. -/
 theorem Conv.boolElim_cong_else
@@ -120,14 +112,10 @@ theorem Conv.boolElim_cong_else
     Conv elseBr₁ elseBr₂ →
     Conv (Term.boolElim scrutinee thenBr elseBr₁)
          (Term.boolElim scrutinee thenBr elseBr₂)
-  | .refl _      => Conv.refl _
-  | .sym h       =>
-      Conv.sym (Conv.boolElim_cong_else scrutinee thenBr h)
-  | .trans h₁ h₂ =>
-      Conv.trans
-        (Conv.boolElim_cong_else scrutinee thenBr h₁)
-        (Conv.boolElim_cong_else scrutinee thenBr h₂)
-  | .fromStep s  => Conv.fromStep (Step.boolElimElse s)
+  :=
+    Conv.mapStep
+      (fun elseBranch => Term.boolElim scrutinee thenBr elseBranch)
+      (fun singleStep => Step.boolElimElse singleStep)
 
 /-- Definitional equivalence threads through all three `boolElim`
 positions simultaneously. -/

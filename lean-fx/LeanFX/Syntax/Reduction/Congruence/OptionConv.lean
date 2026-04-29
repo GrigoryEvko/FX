@@ -11,12 +11,11 @@ variable {level : Nat}
 theorem Conv.optionSome_cong {mode level scope} {ctx : Ctx mode level scope}
     {elementType : Ty level scope}
     {value₁ value₂ : Term ctx elementType} (h : Conv value₁ value₂) :
-    Conv (Term.optionSome value₁) (Term.optionSome value₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.optionSomeValue s)
+    Conv (Term.optionSome value₁) (Term.optionSome value₂) :=
+  Conv.mapStep
+    (fun value => Term.optionSome value)
+    (fun singleStep => Step.optionSomeValue singleStep)
+    h
 
 /-- Definitional equivalence threads through `optionMatch`'s scrutinee. -/
 theorem Conv.optionMatch_cong_scrutinee
@@ -27,12 +26,11 @@ theorem Conv.optionMatch_cong_scrutinee
     (someBranch : Term ctx (Ty.arrow elementType resultType))
     (h : Conv scrutinee₁ scrutinee₂) :
     Conv (Term.optionMatch scrutinee₁ noneBranch someBranch)
-         (Term.optionMatch scrutinee₂ noneBranch someBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.optionMatchScrutinee s)
+         (Term.optionMatch scrutinee₂ noneBranch someBranch) :=
+  Conv.mapStep
+    (fun scrutinee => Term.optionMatch scrutinee noneBranch someBranch)
+    (fun singleStep => Step.optionMatchScrutinee singleStep)
+    h
 
 /-- Definitional equivalence threads through `optionMatch`'s none-branch. -/
 theorem Conv.optionMatch_cong_none
@@ -43,12 +41,11 @@ theorem Conv.optionMatch_cong_none
     (someBranch : Term ctx (Ty.arrow elementType resultType))
     (h : Conv noneBranch₁ noneBranch₂) :
     Conv (Term.optionMatch scrutinee noneBranch₁ someBranch)
-         (Term.optionMatch scrutinee noneBranch₂ someBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.optionMatchNone s)
+         (Term.optionMatch scrutinee noneBranch₂ someBranch) :=
+  Conv.mapStep
+    (fun noneBranch => Term.optionMatch scrutinee noneBranch someBranch)
+    (fun singleStep => Step.optionMatchNone singleStep)
+    h
 
 /-- Definitional equivalence threads through `optionMatch`'s some-branch. -/
 theorem Conv.optionMatch_cong_some
@@ -59,12 +56,11 @@ theorem Conv.optionMatch_cong_some
     {someBranch₁ someBranch₂ : Term ctx (Ty.arrow elementType resultType)}
     (h : Conv someBranch₁ someBranch₂) :
     Conv (Term.optionMatch scrutinee noneBranch someBranch₁)
-         (Term.optionMatch scrutinee noneBranch someBranch₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.optionMatchSome s)
+         (Term.optionMatch scrutinee noneBranch someBranch₂) :=
+  Conv.mapStep
+    (fun someBranch => Term.optionMatch scrutinee noneBranch someBranch)
+    (fun singleStep => Step.optionMatchSome singleStep)
+    h
 
 /-- Definitional equivalence threads through all three `optionMatch` positions. -/
 theorem Conv.optionMatch_cong

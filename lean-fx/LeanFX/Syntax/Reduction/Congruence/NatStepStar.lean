@@ -13,10 +13,10 @@ theorem StepStar.natSucc_cong {mode level scope} {ctx : Ctx mode level scope}
     {pred₁ pred₂ : Term ctx Ty.nat} :
     StepStar pred₁ pred₂ →
     StepStar (Term.natSucc pred₁) (Term.natSucc pred₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natSuccPred s)
-        (StepStar.natSucc_cong rest)
+  :=
+    StepStar.mapStep
+      (fun predecessor => Term.natSucc predecessor)
+      (fun singleStep => Step.natSuccPred singleStep)
 
 /-- Multi-step reduction threads through `natElim`'s scrutinee. -/
 theorem StepStar.natElim_cong_scrutinee
@@ -28,10 +28,10 @@ theorem StepStar.natElim_cong_scrutinee
     StepStar scrutinee₁ scrutinee₂ →
     StepStar (Term.natElim scrutinee₁ zeroBranch succBranch)
              (Term.natElim scrutinee₂ zeroBranch succBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natElimScrutinee s)
-        (StepStar.natElim_cong_scrutinee zeroBranch succBranch rest)
+  :=
+    StepStar.mapStep
+      (fun scrutinee => Term.natElim scrutinee zeroBranch succBranch)
+      (fun singleStep => Step.natElimScrutinee singleStep)
 
 /-- Multi-step reduction threads through `natElim`'s zero-branch. -/
 theorem StepStar.natElim_cong_zero
@@ -43,10 +43,10 @@ theorem StepStar.natElim_cong_zero
     StepStar zeroBranch₁ zeroBranch₂ →
     StepStar (Term.natElim scrutinee zeroBranch₁ succBranch)
              (Term.natElim scrutinee zeroBranch₂ succBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natElimZero s)
-        (StepStar.natElim_cong_zero scrutinee succBranch rest)
+  :=
+    StepStar.mapStep
+      (fun zeroBranch => Term.natElim scrutinee zeroBranch succBranch)
+      (fun singleStep => Step.natElimZero singleStep)
 
 /-- Multi-step reduction threads through `natElim`'s succ-branch. -/
 theorem StepStar.natElim_cong_succ
@@ -58,10 +58,10 @@ theorem StepStar.natElim_cong_succ
     StepStar succBranch₁ succBranch₂ →
     StepStar (Term.natElim scrutinee zeroBranch succBranch₁)
              (Term.natElim scrutinee zeroBranch succBranch₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natElimSucc s)
-        (StepStar.natElim_cong_succ scrutinee zeroBranch rest)
+  :=
+    StepStar.mapStep
+      (fun succBranch => Term.natElim scrutinee zeroBranch succBranch)
+      (fun singleStep => Step.natElimSucc singleStep)
 
 /-- Multi-step reduction threads through all three `natElim` positions. -/
 theorem StepStar.natElim_cong
@@ -95,10 +95,10 @@ theorem StepStar.natRec_cong_scrutinee
     StepStar scrutinee₁ scrutinee₂ →
     StepStar (Term.natRec scrutinee₁ zeroBranch succBranch)
              (Term.natRec scrutinee₂ zeroBranch succBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natRecScrutinee s)
-        (StepStar.natRec_cong_scrutinee zeroBranch succBranch rest)
+  :=
+    StepStar.mapStep
+      (fun scrutinee => Term.natRec scrutinee zeroBranch succBranch)
+      (fun singleStep => Step.natRecScrutinee singleStep)
 
 /-- Multi-step reduction threads through `natRec`'s zero-branch. -/
 theorem StepStar.natRec_cong_zero
@@ -111,10 +111,10 @@ theorem StepStar.natRec_cong_zero
     StepStar zeroBranch₁ zeroBranch₂ →
     StepStar (Term.natRec scrutinee zeroBranch₁ succBranch)
              (Term.natRec scrutinee zeroBranch₂ succBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natRecZero s)
-        (StepStar.natRec_cong_zero scrutinee succBranch rest)
+  :=
+    StepStar.mapStep
+      (fun zeroBranch => Term.natRec scrutinee zeroBranch succBranch)
+      (fun singleStep => Step.natRecZero singleStep)
 
 /-- Multi-step reduction threads through `natRec`'s succ-branch. -/
 theorem StepStar.natRec_cong_succ
@@ -127,10 +127,10 @@ theorem StepStar.natRec_cong_succ
     StepStar succBranch₁ succBranch₂ →
     StepStar (Term.natRec scrutinee zeroBranch succBranch₁)
              (Term.natRec scrutinee zeroBranch succBranch₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.natRecSucc s)
-        (StepStar.natRec_cong_succ scrutinee zeroBranch rest)
+  :=
+    StepStar.mapStep
+      (fun succBranch => Term.natRec scrutinee zeroBranch succBranch)
+      (fun singleStep => Step.natRecSucc singleStep)
 
 /-- Multi-step reduction threads through all three `natRec` positions. -/
 theorem StepStar.natRec_cong

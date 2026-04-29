@@ -18,10 +18,10 @@ theorem StepStar.listCons_cong_head {mode level scope} {ctx : Ctx mode level sco
     (tl : Term ctx (Ty.list elementType)) :
     StepStar hd₁ hd₂ →
     StepStar (Term.listCons hd₁ tl) (Term.listCons hd₂ tl)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.listConsHead s)
-        (StepStar.listCons_cong_head tl rest)
+  :=
+    StepStar.mapStep
+      (fun head => Term.listCons head tl)
+      (fun singleStep => Step.listConsHead singleStep)
 
 /-- Multi-step reduction threads through `listCons`'s tail. -/
 theorem StepStar.listCons_cong_tail {mode level scope} {ctx : Ctx mode level scope}
@@ -30,10 +30,10 @@ theorem StepStar.listCons_cong_tail {mode level scope} {ctx : Ctx mode level sco
     {tl₁ tl₂ : Term ctx (Ty.list elementType)} :
     StepStar tl₁ tl₂ →
     StepStar (Term.listCons hd tl₁) (Term.listCons hd tl₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.listConsTail s)
-        (StepStar.listCons_cong_tail hd rest)
+  :=
+    StepStar.mapStep
+      (fun tail => Term.listCons hd tail)
+      (fun singleStep => Step.listConsTail singleStep)
 
 /-- Multi-step reduction threads through both head and tail of `listCons`. -/
 theorem StepStar.listCons_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -56,10 +56,10 @@ theorem StepStar.listElim_cong_scrutinee
     StepStar scrutinee₁ scrutinee₂ →
     StepStar (Term.listElim scrutinee₁ nilBranch consBranch)
              (Term.listElim scrutinee₂ nilBranch consBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.listElimScrutinee s)
-        (StepStar.listElim_cong_scrutinee nilBranch consBranch rest)
+  :=
+    StepStar.mapStep
+      (fun scrutinee => Term.listElim scrutinee nilBranch consBranch)
+      (fun singleStep => Step.listElimScrutinee singleStep)
 
 /-- Multi-step reduction threads through `listElim`'s nil-branch. -/
 theorem StepStar.listElim_cong_nil
@@ -72,10 +72,10 @@ theorem StepStar.listElim_cong_nil
     StepStar nilBranch₁ nilBranch₂ →
     StepStar (Term.listElim scrutinee nilBranch₁ consBranch)
              (Term.listElim scrutinee nilBranch₂ consBranch)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.listElimNil s)
-        (StepStar.listElim_cong_nil scrutinee consBranch rest)
+  :=
+    StepStar.mapStep
+      (fun nilBranch => Term.listElim scrutinee nilBranch consBranch)
+      (fun singleStep => Step.listElimNil singleStep)
 
 /-- Multi-step reduction threads through `listElim`'s cons-branch. -/
 theorem StepStar.listElim_cong_cons
@@ -88,10 +88,10 @@ theorem StepStar.listElim_cong_cons
     StepStar consBranch₁ consBranch₂ →
     StepStar (Term.listElim scrutinee nilBranch consBranch₁)
              (Term.listElim scrutinee nilBranch consBranch₂)
-  | .refl _      => StepStar.refl _
-  | .step s rest =>
-      StepStar.step (Step.listElimCons s)
-        (StepStar.listElim_cong_cons scrutinee nilBranch rest)
+  :=
+    StepStar.mapStep
+      (fun consBranch => Term.listElim scrutinee nilBranch consBranch)
+      (fun singleStep => Step.listElimCons singleStep)
 
 /-- Multi-step reduction threads through all three `listElim` positions. -/
 theorem StepStar.listElim_cong
@@ -117,24 +117,22 @@ theorem Conv.listCons_cong_head {mode level scope} {ctx : Ctx mode level scope}
     {elementType : Ty level scope}
     {hd₁ hd₂ : Term ctx elementType}
     (tl : Term ctx (Ty.list elementType)) (h : Conv hd₁ hd₂) :
-    Conv (Term.listCons hd₁ tl) (Term.listCons hd₂ tl) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.listConsHead s)
+    Conv (Term.listCons hd₁ tl) (Term.listCons hd₂ tl) :=
+  Conv.mapStep
+    (fun head => Term.listCons head tl)
+    (fun singleStep => Step.listConsHead singleStep)
+    h
 
 /-- Definitional equivalence threads through `listCons`'s tail. -/
 theorem Conv.listCons_cong_tail {mode level scope} {ctx : Ctx mode level scope}
     {elementType : Ty level scope}
     (hd : Term ctx elementType)
     {tl₁ tl₂ : Term ctx (Ty.list elementType)} (h : Conv tl₁ tl₂) :
-    Conv (Term.listCons hd tl₁) (Term.listCons hd tl₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.listConsTail s)
+    Conv (Term.listCons hd tl₁) (Term.listCons hd tl₂) :=
+  Conv.mapStep
+    (fun tail => Term.listCons hd tail)
+    (fun singleStep => Step.listConsTail singleStep)
+    h
 
 /-- Definitional equivalence threads through both `listCons` positions. -/
 theorem Conv.listCons_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -156,12 +154,11 @@ theorem Conv.listElim_cong_scrutinee
        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
     (h : Conv scrutinee₁ scrutinee₂) :
     Conv (Term.listElim scrutinee₁ nilBranch consBranch)
-         (Term.listElim scrutinee₂ nilBranch consBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.listElimScrutinee s)
+         (Term.listElim scrutinee₂ nilBranch consBranch) :=
+  Conv.mapStep
+    (fun scrutinee => Term.listElim scrutinee nilBranch consBranch)
+    (fun singleStep => Step.listElimScrutinee singleStep)
+    h
 
 /-- Definitional equivalence threads through `listElim`'s nil-branch. -/
 theorem Conv.listElim_cong_nil
@@ -173,12 +170,11 @@ theorem Conv.listElim_cong_nil
        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
     (h : Conv nilBranch₁ nilBranch₂) :
     Conv (Term.listElim scrutinee nilBranch₁ consBranch)
-         (Term.listElim scrutinee nilBranch₂ consBranch) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.listElimNil s)
+         (Term.listElim scrutinee nilBranch₂ consBranch) :=
+  Conv.mapStep
+    (fun nilBranch => Term.listElim scrutinee nilBranch consBranch)
+    (fun singleStep => Step.listElimNil singleStep)
+    h
 
 /-- Definitional equivalence threads through `listElim`'s cons-branch. -/
 theorem Conv.listElim_cong_cons
@@ -190,12 +186,11 @@ theorem Conv.listElim_cong_cons
        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))}
     (h : Conv consBranch₁ consBranch₂) :
     Conv (Term.listElim scrutinee nilBranch consBranch₁)
-         (Term.listElim scrutinee nilBranch consBranch₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.listElimCons s)
+         (Term.listElim scrutinee nilBranch consBranch₂) :=
+  Conv.mapStep
+    (fun consBranch => Term.listElim scrutinee nilBranch consBranch)
+    (fun singleStep => Step.listElimCons singleStep)
+    h
 
 /-- Definitional equivalence threads through all three `listElim` positions. -/
 theorem Conv.listElim_cong
