@@ -579,4 +579,33 @@ theorem Step.castBoth
   cases typeEquality
   exact singleStep
 
+/-- Replace the source endpoint of a same-typed single-step reduction
+by propositionally equal syntax.  β/η preservation proofs use this
+after exposing a renamed redex as the source expected by a primitive
+`Step` constructor. -/
+theorem Step.castSource
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm beforeTerm' afterTerm : Term ctx termType}
+    (sourceEquality : beforeTerm = beforeTerm')
+    (singleStep : Step beforeTerm afterTerm) :
+    Step beforeTerm' afterTerm := by
+  cases sourceEquality
+  exact singleStep
+
+/-- Replace the target endpoint of a same-typed single-step reduction
+by propositionally equal syntax.  β/ι preservation proofs use this
+after the primitive reduction constructor produces the canonical
+renamed reduct and a commute lemma identifies it with the renamed
+original reduct. -/
+theorem Step.castTarget
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm afterTerm afterTerm' : Term ctx termType}
+    (targetEquality : afterTerm = afterTerm')
+    (singleStep : Step beforeTerm afterTerm) :
+    Step beforeTerm afterTerm' := by
+  cases targetEquality
+  exact singleStep
+
 end LeanFX.Syntax
