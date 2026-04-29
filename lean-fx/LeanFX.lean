@@ -4,6 +4,7 @@ import LeanFX.Mode.Composable
 import LeanFX.Mode.Collision
 import LeanFX.Syntax.Inductive
 import LeanFX.Syntax.Term
+import LeanFX.Syntax.DependentJ
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
 
@@ -32,6 +33,7 @@ The intrinsic kernel is split by dependency layer while preserving
   * `LeanFX.Mode.Composable` — decidable admissible modal composition.
   * `LeanFX.Mode.Collision` — concrete finite FX collision catalog.
   * `LeanFX.Syntax.Inductive` — generic inductive-family specs.
+  * `LeanFX.Syntax.DependentJ` — dependent-J motive signature shape.
 
 The split is still one sequential kernel architecture: `RawTerm` is
 declared before `Ty`, so `Ty.id` references raw endpoints without a
