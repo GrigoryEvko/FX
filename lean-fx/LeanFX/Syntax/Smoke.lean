@@ -31,6 +31,10 @@ namespace SmokeTest
 /-- The empty Software context at level 0. -/
 private abbrev EmptyCtx : Ctx Mode.software 0 0 := .nil Mode.software
 
+/-- Empty Software context at an arbitrary universe level. -/
+private abbrev EmptyCtxAt (ambientLevel : Nat) : Ctx Mode.software ambientLevel 0 :=
+  .nil Mode.software
+
 /-- `() : unit` in the empty context. -/
 example : Term EmptyCtx Ty.unit := Term.unit
 
@@ -40,6 +44,27 @@ example : Term EmptyCtx Ty.bool := Term.boolTrue
 /-- `λx:unit. x : unit → unit` — the identity on `unit`. -/
 example : Term EmptyCtx (Ty.arrow Ty.unit Ty.unit) :=
   Term.lam (Term.var ⟨0, Nat.zero_lt_succ _⟩)
+
+/-- The unit identity term exists uniformly at every universe level. -/
+def unitIdentityAtLevel (ambientLevel : Nat) :
+    Term (EmptyCtxAt ambientLevel) (Ty.arrow Ty.unit Ty.unit) :=
+  Term.lam (Term.var ⟨0, Nat.zero_lt_succ _⟩)
+
+/-- A universe-polymorphic compose type, specialized to unit arrows as
+a compact smoke test for repeated arrow formation at arbitrary level. -/
+def unitComposeTypeAtLevel (ambientLevel : Nat) : Ty ambientLevel 0 :=
+  Ty.arrow (Ty.arrow Ty.unit Ty.unit)
+    (Ty.arrow (Ty.arrow Ty.unit Ty.unit) (Ty.arrow Ty.unit Ty.unit))
+
+/-- Reflexivity over a reflexivity raw endpoint exercises the identity
+ladder one step above ordinary value equality. -/
+def reflOfRefl :
+    Term EmptyCtx
+      (Ty.id (Ty.id Ty.bool RawTerm.boolTrue RawTerm.boolTrue)
+        (RawTerm.refl RawTerm.boolTrue)
+        (RawTerm.refl RawTerm.boolTrue)) :=
+  Term.refl (carrier := Ty.id Ty.bool RawTerm.boolTrue RawTerm.boolTrue)
+    (RawTerm.refl RawTerm.boolTrue)
 
 /-- `(λx:unit. x) () ⟶ subst…` — β-reduction at the kernel level.
 The reduct type carries a `Ty.weaken_subst_singleton` cast; we don't
