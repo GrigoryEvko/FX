@@ -7,6 +7,7 @@ import LeanFX.Syntax.Term
 import LeanFX.Syntax.DependentJ
 import LeanFX.Frontend.Token
 import LeanFX.Frontend.Surface
+import LeanFX.Tools.AuditAll
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
 
@@ -36,6 +37,7 @@ The intrinsic kernel is split by dependency layer while preserving
   * `LeanFX.Mode.Collision` — concrete finite FX collision catalog.
   * `LeanFX.Syntax.Inductive` — generic inductive-family specs.
   * `LeanFX.Syntax.DependentJ` — dependent-J motive signature shape.
+  * `LeanFX.Tools.AuditAll` — build-time zero-axiom regression gate.
 
 The split is still one sequential kernel architecture: `RawTerm` is
 declared before `Ty`, so `Ty.id` references raw endpoints without a

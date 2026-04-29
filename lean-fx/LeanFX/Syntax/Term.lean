@@ -1,2 +1,14 @@
+import LeanFX.Syntax.RawTerm
+import LeanFX.Syntax.Ty
+import LeanFX.Syntax.RawSubst
+import LeanFX.Syntax.Subst
+import LeanFX.Syntax.Context
+import LeanFX.Syntax.TypedTerm
+import LeanFX.Syntax.TermSubst
+import LeanFX.Syntax.ToRaw
+import LeanFX.Syntax.Reduction
+import LeanFX.Syntax.Identity
+import LeanFX.Syntax.DependentJ
+import LeanFX.Syntax.Inductive
 import LeanFX.Syntax.Code
 import LeanFX.Syntax.Smoke
