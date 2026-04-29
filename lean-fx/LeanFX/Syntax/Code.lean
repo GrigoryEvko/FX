@@ -42,6 +42,11 @@ inductive Code : Nat → Nat → Type
   | codeList : {level scope : Nat} →
       (elementType : Code level scope) →
       Code level scope
+  /-- Code for length-indexed vectors. -/
+  | codeVec : {level scope : Nat} →
+      (elementType : Code level scope) →
+      (length : Nat) →
+      Code level scope
   /-- Code for optional values. -/
   | codeOption : {level scope : Nat} →
       (elementType : Code level scope) →
@@ -97,6 +102,10 @@ example : Code 1 0 :=
 example : Code 0 0 :=
   Code.codeList Code.codeNat
 
+/-- Code for a length-indexed vector. -/
+example : Code 0 0 :=
+  Code.codeVec Code.codeNat 3
+
 /-- Code for an option. -/
 example : Code 0 0 :=
   Code.codeOption Code.codeBool
@@ -137,6 +146,8 @@ def Code.rename {level source target : Nat} :
       .codeUniverse universeLevel levelEq
   | .codeList elementType, rawRenaming =>
       .codeList (elementType.rename rawRenaming)
+  | .codeVec elementType length, rawRenaming =>
+      .codeVec (elementType.rename rawRenaming) length
   | .codeOption elementType, rawRenaming =>
       .codeOption (elementType.rename rawRenaming)
   | .codeEither leftType rightType, rawRenaming =>
@@ -177,6 +188,9 @@ theorem Code.rename_congr {level source target : Nat}
   | .codeUniverse _ _ => rfl
   | .codeList elementType => by
       exact congrArg Code.codeList (Code.rename_congr renamingsAreEquivalent elementType)
+  | .codeVec elementType length => by
+      exact congrArg (fun renamedElement => Code.codeVec renamedElement length)
+        (Code.rename_congr renamingsAreEquivalent elementType)
   | .codeOption elementType => by
       exact congrArg Code.codeOption (Code.rename_congr renamingsAreEquivalent elementType)
   | .codeEither leftType rightType => by
@@ -224,6 +238,9 @@ theorem Code.rename_compose {level source middle target : Nat} :
   | .codeList elementType, firstRenaming, secondRenaming => by
       exact congrArg Code.codeList
         (Code.rename_compose elementType firstRenaming secondRenaming)
+  | .codeVec elementType length, firstRenaming, secondRenaming => by
+      exact congrArg (fun renamedElement => Code.codeVec renamedElement length)
+        (Code.rename_compose elementType firstRenaming secondRenaming)
   | .codeOption elementType, firstRenaming, secondRenaming => by
       exact congrArg Code.codeOption
         (Code.rename_compose elementType firstRenaming secondRenaming)
@@ -263,6 +280,9 @@ theorem Code.rename_identity {level scope : Nat} :
   | .codeUniverse _ _ => rfl
   | .codeList elementType => by
       exact congrArg Code.codeList (Code.rename_identity elementType)
+  | .codeVec elementType length => by
+      exact congrArg (fun renamedElement => Code.codeVec renamedElement length)
+        (Code.rename_identity elementType)
   | .codeOption elementType => by
       exact congrArg Code.codeOption (Code.rename_identity elementType)
   | .codeEither leftType rightType => by
@@ -379,6 +399,8 @@ def Code.subst {level source target : Nat} :
       .codeUniverse universeLevel levelEq
   | .codeList elementType, codeSubstitution =>
       .codeList (elementType.subst codeSubstitution)
+  | .codeVec elementType length, codeSubstitution =>
+      .codeVec (elementType.subst codeSubstitution) length
   | .codeOption elementType, codeSubstitution =>
       .codeOption (elementType.subst codeSubstitution)
   | .codeEither leftType rightType, codeSubstitution =>
@@ -415,6 +437,9 @@ theorem Code.subst_congr {level source target : Nat}
   | .codeUniverse _ _ => rfl
   | .codeList elementType => by
       exact congrArg Code.codeList (Code.subst_congr substitutionsAreEquivalent elementType)
+  | .codeVec elementType length => by
+      exact congrArg (fun substitutedElement => Code.codeVec substitutedElement length)
+        (Code.subst_congr substitutionsAreEquivalent elementType)
   | .codeOption elementType => by
       exact congrArg Code.codeOption (Code.subst_congr substitutionsAreEquivalent elementType)
   | .codeEither leftType rightType => by
@@ -468,6 +493,9 @@ theorem Code.subst_id {level scope : Nat} :
   | .codeUniverse _ _ => rfl
   | .codeList elementType => by
       exact congrArg Code.codeList (Code.subst_id elementType)
+  | .codeVec elementType length => by
+      exact congrArg (fun substitutedElement => Code.codeVec substitutedElement length)
+        (Code.subst_id elementType)
   | .codeOption elementType => by
       exact congrArg Code.codeOption (Code.subst_id elementType)
   | .codeEither leftType rightType => by
@@ -567,6 +595,9 @@ theorem Code.subst_rename_commute {level source middle target : Nat} :
   | .codeList elementType, codeSubstitution, rawRenaming => by
       exact congrArg Code.codeList
         (Code.subst_rename_commute elementType codeSubstitution rawRenaming)
+  | .codeVec elementType length, codeSubstitution, rawRenaming => by
+      exact congrArg (fun rewrittenElement => Code.codeVec rewrittenElement length)
+        (Code.subst_rename_commute elementType codeSubstitution rawRenaming)
   | .codeOption elementType, codeSubstitution, rawRenaming => by
       exact congrArg Code.codeOption
         (Code.subst_rename_commute elementType codeSubstitution rawRenaming)
@@ -618,6 +649,9 @@ theorem Code.rename_subst_commute {level source middle target : Nat} :
   | .codeUniverse _ _, _, _ => rfl
   | .codeList elementType, rawRenaming, codeSubstitution => by
       exact congrArg Code.codeList
+        (Code.rename_subst_commute elementType rawRenaming codeSubstitution)
+  | .codeVec elementType length, rawRenaming, codeSubstitution => by
+      exact congrArg (fun rewrittenElement => Code.codeVec rewrittenElement length)
         (Code.rename_subst_commute elementType rawRenaming codeSubstitution)
   | .codeOption elementType, rawRenaming, codeSubstitution => by
       exact congrArg Code.codeOption
@@ -725,6 +759,9 @@ theorem Code.subst_compose {level source middle target : Nat} :
   | .codeList elementType, firstSubstitution, secondSubstitution => by
       exact congrArg Code.codeList
         (Code.subst_compose elementType firstSubstitution secondSubstitution)
+  | .codeVec elementType length, firstSubstitution, secondSubstitution => by
+      exact congrArg (fun substitutedElement => Code.codeVec substitutedElement length)
+        (Code.subst_compose elementType firstSubstitution secondSubstitution)
   | .codeOption elementType, firstSubstitution, secondSubstitution => by
       exact congrArg Code.codeOption
         (Code.subst_compose elementType firstSubstitution secondSubstitution)
@@ -759,6 +796,8 @@ def Code.decode {level scope : Nat} : Code level scope → Ty level scope
       Ty.universe universeLevel levelEq
   | .codeList elementType =>
       Ty.list elementType.decode
+  | .codeVec elementType length =>
+      Ty.vec elementType.decode length
   | .codeOption elementType =>
       Ty.option elementType.decode
   | .codeEither leftType rightType =>
@@ -789,6 +828,9 @@ theorem Code.decode_rename {level source target : Nat} :
   | .codeUniverse _ _, _ => rfl
   | .codeList elementType, rawRenaming => by
       exact congrArg Ty.list (Code.decode_rename elementType rawRenaming)
+  | .codeVec elementType length, rawRenaming => by
+      exact congrArg (fun decodedElement => Ty.vec decodedElement length)
+        (Code.decode_rename elementType rawRenaming)
   | .codeOption elementType, rawRenaming => by
       exact congrArg Ty.option (Code.decode_rename elementType rawRenaming)
   | .codeEither leftType rightType, rawRenaming => by
@@ -861,6 +903,9 @@ theorem Code.decode_subst {level source target : Nat} :
   | .codeUniverse _ _, _ => rfl
   | .codeList elementType, codeSubstitution => by
       exact congrArg Ty.list (Code.decode_subst elementType codeSubstitution)
+  | .codeVec elementType length, codeSubstitution => by
+      exact congrArg (fun decodedElement => Ty.vec decodedElement length)
+        (Code.decode_subst elementType codeSubstitution)
   | .codeOption elementType, codeSubstitution => by
       exact congrArg Ty.option (Code.decode_subst elementType codeSubstitution)
   | .codeEither leftType rightType, codeSubstitution => by

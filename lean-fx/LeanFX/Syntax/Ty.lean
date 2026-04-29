@@ -74,6 +74,13 @@ inductive Ty : Nat → Nat → Type
   / `Term.listCons` / `Term.listElim` (and ι rules) in successor
   slices; this commit ships only the type. -/
   | list : {level scope : Nat} → (elementType : Ty level scope) → Ty level scope
+  /-- Length-indexed vectors over an arbitrary element type.  The
+  natural-number index is a closed kernel-level length, so rename and
+  substitution only act on the element type. -/
+  | vec : {level scope : Nat} →
+          (elementType : Ty level scope) →
+          (length : Nat) →
+          Ty level scope
   /-- Optional values over an arbitrary element type.  Second
   parametric type — same uniform-level discipline as `list`.  Comes
   with `Term.optionNone` / `Term.optionSome` (single arg) /
@@ -674,6 +681,7 @@ def Ty.rename {level source target : Nat} :
   | .universe u h, _  => .universe u h
   | .nat, _           => .nat
   | .list elemType, ρ => .list (elemType.rename ρ)
+  | .vec elemType length, ρ => .vec (elemType.rename ρ) length
   | .option elemType, ρ => .option (elemType.rename ρ)
   | .either leftType rightType, ρ =>
       .either (leftType.rename ρ) (rightType.rename ρ)
@@ -724,6 +732,10 @@ theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
   | .nat          => rfl
   | .list elemType => by
       show Ty.list (elemType.rename ρ₁) = Ty.list (elemType.rename ρ₂)
+      have hElem := Ty.rename_congr h elemType
+      exact hElem ▸ rfl
+  | .vec elemType length => by
+      show Ty.vec (elemType.rename ρ₁) length = Ty.vec (elemType.rename ρ₂) length
       have hElem := Ty.rename_congr h elemType
       exact hElem ▸ rfl
   | .option elemType => by
@@ -786,6 +798,11 @@ theorem Ty.rename_compose {level s m t : Nat} :
   | .list elemType, ρ₁, ρ₂ => by
       show Ty.list ((elemType.rename ρ₁).rename ρ₂)
          = Ty.list (elemType.rename (Renaming.compose ρ₁ ρ₂))
+      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
+      exact hElem ▸ rfl
+  | .vec elemType length, ρ₁, ρ₂ => by
+      show Ty.vec ((elemType.rename ρ₁).rename ρ₂) length
+         = Ty.vec (elemType.rename (Renaming.compose ρ₁ ρ₂)) length
       have hElem := Ty.rename_compose elemType ρ₁ ρ₂
       exact hElem ▸ rfl
   | .option elemType, ρ₁, ρ₂ => by

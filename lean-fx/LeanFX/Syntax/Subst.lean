@@ -112,6 +112,7 @@ def Ty.subst {level source target : Nat} :
   | .universe u h, _  => .universe u h
   | .nat, _           => .nat
   | .list elemType, σ => .list (Ty.subst elemType σ)
+  | .vec elemType length, σ => .vec (Ty.subst elemType σ) length
   | .option elemType, σ => .option (Ty.subst elemType σ)
   | .either leftType rightType, σ =>
       .either (Ty.subst leftType σ) (Ty.subst rightType σ)
@@ -236,6 +237,10 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
       show Ty.list (elemType.subst σ₁) = Ty.list (elemType.subst σ₂)
       have hElem := Ty.subst_congr h elemType
       exact hElem ▸ rfl
+  | .vec elemType length => by
+      show Ty.vec (elemType.subst σ₁) length = Ty.vec (elemType.subst σ₂) length
+      have hElem := Ty.subst_congr h elemType
+      exact hElem ▸ rfl
   | .option elemType => by
       show Ty.option (elemType.subst σ₁) = Ty.option (elemType.subst σ₂)
       have hElem := Ty.subst_congr h elemType
@@ -338,6 +343,11 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
   | .list elemType, σ, ρ => by
       show Ty.list ((elemType.subst σ).rename ρ)
          = Ty.list (elemType.subst (Subst.renameAfter σ ρ))
+      have hElem := Ty.subst_rename_commute elemType σ ρ
+      exact hElem ▸ rfl
+  | .vec elemType length, σ, ρ => by
+      show Ty.vec ((elemType.subst σ).rename ρ) length
+         = Ty.vec (elemType.subst (Subst.renameAfter σ ρ)) length
       have hElem := Ty.subst_rename_commute elemType σ ρ
       exact hElem ▸ rfl
   | .option elemType, σ, ρ => by
@@ -452,6 +462,11 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
   | .list elemType, ρ, σ => by
       show Ty.list ((elemType.rename ρ).subst σ)
          = Ty.list (elemType.subst (Subst.precompose ρ σ))
+      have hElem := Ty.rename_subst_commute elemType ρ σ
+      exact hElem ▸ rfl
+  | .vec elemType length, ρ, σ => by
+      show Ty.vec ((elemType.rename ρ).subst σ) length
+         = Ty.vec (elemType.subst (Subst.precompose ρ σ)) length
       have hElem := Ty.rename_subst_commute elemType ρ σ
       exact hElem ▸ rfl
   | .option elemType, ρ, σ => by
@@ -598,6 +613,11 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       show Ty.list (elemType.rename ρ) = Ty.list (elemType.subst (Renaming.toSubst ρ))
       have hElem := Ty.rename_eq_subst elemType ρ
       exact hElem ▸ rfl
+  | .vec elemType length, ρ => by
+      show Ty.vec (elemType.rename ρ) length =
+        Ty.vec (elemType.subst (Renaming.toSubst ρ)) length
+      have hElem := Ty.rename_eq_subst elemType ρ
+      exact hElem ▸ rfl
   | .option elemType, ρ => by
       show Ty.option (elemType.rename ρ) = Ty.option (elemType.subst (Renaming.toSubst ρ))
       have hElem := Ty.rename_eq_subst elemType ρ
@@ -701,6 +721,10 @@ theorem Ty.subst_id {level scope : Nat} :
   | .list elemType => by
       have hElem := Ty.subst_id elemType
       show (elemType.subst Subst.identity).list = elemType.list
+      exact hElem.symm ▸ rfl
+  | .vec elemType length => by
+      have hElem := Ty.subst_id elemType
+      show Ty.vec (elemType.subst Subst.identity) length = Ty.vec elemType length
       exact hElem.symm ▸ rfl
   | .option elemType => by
       have hElem := Ty.subst_id elemType
@@ -823,6 +847,11 @@ theorem Ty.subst_compose {level s m t : Nat} :
   | .list elemType, σ₁, σ₂ => by
       show Ty.list ((elemType.subst σ₁).subst σ₂)
          = Ty.list (elemType.subst (Subst.compose σ₁ σ₂))
+      have hElem := Ty.subst_compose elemType σ₁ σ₂
+      exact hElem ▸ rfl
+  | .vec elemType length, σ₁, σ₂ => by
+      show Ty.vec ((elemType.subst σ₁).subst σ₂) length
+         = Ty.vec (elemType.subst (Subst.compose σ₁ σ₂)) length
       have hElem := Ty.subst_compose elemType σ₁ σ₂
       exact hElem ▸ rfl
   | .option elemType, σ₁, σ₂ => by

@@ -227,6 +227,30 @@ example : Ty 0 0 := Ty.list Ty.bool
 example : Ty 0 0 := Ty.list (Ty.list Ty.nat)  -- nested: list of lists of nat
 example : Ty 0 0 := Ty.list (Ty.arrow Ty.nat Ty.bool)  -- list of nat→bool
 
+/-! ### Length-indexed vectors. -/
+
+/-- `Ty.vec` is indexed by a closed natural length. -/
+example : Ty 0 0 := Ty.vec Ty.nat 0
+example : Ty 0 0 := Ty.vec Ty.bool 4
+
+/-- Vector rename only affects the element type; the length is stable. -/
+example {level scope target : Nat}
+    (rawRenaming : Renaming scope target)
+    (elementType : Ty level scope)
+    (length : Nat) :
+    (Ty.vec elementType length).rename rawRenaming =
+      Ty.vec (elementType.rename rawRenaming) length :=
+  rfl
+
+/-- Vector substitution only affects the element type; the length is stable. -/
+example {level scope target : Nat}
+    (substitution : Subst level scope target)
+    (elementType : Ty level scope)
+    (length : Nat) :
+    (Ty.vec elementType length).subst substitution =
+      Ty.vec (elementType.subst substitution) length :=
+  rfl
+
 /-- The list type commutes with rawRenaming on its element type. -/
 example {level scope target : Nat}
     (ρ : Renaming scope target) (elemType : Ty level scope) :
