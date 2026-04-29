@@ -1,1 +1,1 @@
-import LeanFX.Syntax.Reduction.Rename
+import LeanFX.Syntax.Reduction.Subst
