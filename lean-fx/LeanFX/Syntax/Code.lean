@@ -1,4 +1,4 @@
-import LeanFX.Syntax.Ty
+import LeanFX.Syntax.Subst
 
 namespace LeanFX.Syntax
 
@@ -116,5 +116,629 @@ example : Code 0 1 :=
     (RawTerm.var ⟨0, Nat.zero_lt_succ 0⟩)
 
 end SmokeTestCode
+
+/-! ## Code renaming -/
+
+/-- Apply a renaming to a Tarski code. -/
+def Code.rename {level source target : Nat} :
+    Code level source → Renaming source target → Code level target
+  | .codeUnit, _ => .codeUnit
+  | .codeBool, _ => .codeBool
+  | .codeNat, _ => .codeNat
+  | .codeArrow domain codomain, rawRenaming =>
+      .codeArrow (domain.rename rawRenaming) (codomain.rename rawRenaming)
+  | .codePiTy domain codomain, rawRenaming =>
+      .codePiTy (domain.rename rawRenaming) (codomain.rename rawRenaming.lift)
+  | .codeTyVar position, rawRenaming =>
+      .codeTyVar (rawRenaming position)
+  | .codeSigma firstType secondType, rawRenaming =>
+      .codeSigma (firstType.rename rawRenaming) (secondType.rename rawRenaming.lift)
+  | .codeUniverse universeLevel levelEq, _ =>
+      .codeUniverse universeLevel levelEq
+  | .codeList elementType, rawRenaming =>
+      .codeList (elementType.rename rawRenaming)
+  | .codeOption elementType, rawRenaming =>
+      .codeOption (elementType.rename rawRenaming)
+  | .codeEither leftType rightType, rawRenaming =>
+      .codeEither (leftType.rename rawRenaming) (rightType.rename rawRenaming)
+  | .codeId carrier leftEndpoint rightEndpoint, rawRenaming =>
+      .codeId (carrier.rename rawRenaming)
+        (leftEndpoint.rename rawRenaming)
+        (rightEndpoint.rename rawRenaming)
+
+/-- Code weakening is renaming by successor. -/
+@[reducible]
+def Code.weaken {level scope : Nat} (code : Code level scope) : Code level (scope + 1) :=
+  code.rename Renaming.weaken
+
+/-- Pointwise-equivalent renamings produce equal renamed codes. -/
+theorem Code.rename_congr {level source target : Nat}
+    {firstRenaming secondRenaming : Renaming source target}
+    (renamingsAreEquivalent : Renaming.equiv firstRenaming secondRenaming) :
+    ∀ code : Code level source,
+      code.rename firstRenaming = code.rename secondRenaming
+  | .codeUnit => rfl
+  | .codeBool => rfl
+  | .codeNat => rfl
+  | .codeArrow domain codomain => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.rename_congr renamingsAreEquivalent domain)
+        (Code.rename_congr renamingsAreEquivalent codomain)
+  | .codePiTy domain codomain => by
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.rename_congr renamingsAreEquivalent domain)
+        (Code.rename_congr (Renaming.lift_equiv renamingsAreEquivalent) codomain)
+  | .codeTyVar position =>
+      congrArg Code.codeTyVar (renamingsAreEquivalent position)
+  | .codeSigma firstType secondType => by
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.rename_congr renamingsAreEquivalent firstType)
+        (Code.rename_congr (Renaming.lift_equiv renamingsAreEquivalent) secondType)
+  | .codeUniverse _ _ => rfl
+  | .codeList elementType => by
+      exact congrArg Code.codeList (Code.rename_congr renamingsAreEquivalent elementType)
+  | .codeOption elementType => by
+      exact congrArg Code.codeOption (Code.rename_congr renamingsAreEquivalent elementType)
+  | .codeEither leftType rightType => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.rename_congr renamingsAreEquivalent leftType)
+        (Code.rename_congr renamingsAreEquivalent rightType)
+  | .codeId carrier leftEndpoint rightEndpoint => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.rename_congr renamingsAreEquivalent carrier)
+        (RawTerm.rename_congr renamingsAreEquivalent leftEndpoint)
+        (RawTerm.rename_congr renamingsAreEquivalent rightEndpoint)
+
+/-- Code renaming composition law. -/
+theorem Code.rename_compose {level source middle target : Nat} :
+    ∀ (code : Code level source)
+      (firstRenaming : Renaming source middle)
+      (secondRenaming : Renaming middle target),
+      (code.rename firstRenaming).rename secondRenaming =
+        code.rename (Renaming.compose firstRenaming secondRenaming)
+  | .codeUnit, _, _ => rfl
+  | .codeBool, _, _ => rfl
+  | .codeNat, _, _ => rfl
+  | .codeArrow domain codomain, firstRenaming, secondRenaming => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.rename_compose domain firstRenaming secondRenaming)
+        (Code.rename_compose codomain firstRenaming secondRenaming)
+  | .codePiTy domain codomain, firstRenaming, secondRenaming => by
+      have codomainComposition :=
+        Code.rename_compose codomain firstRenaming.lift secondRenaming.lift
+      have liftComposition :=
+        Code.rename_congr (Renaming.lift_compose_equiv firstRenaming secondRenaming) codomain
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.rename_compose domain firstRenaming secondRenaming)
+        (codomainComposition.trans liftComposition)
+  | .codeTyVar _, _, _ => rfl
+  | .codeSigma firstType secondType, firstRenaming, secondRenaming => by
+      have secondComposition :=
+        Code.rename_compose secondType firstRenaming.lift secondRenaming.lift
+      have liftComposition :=
+        Code.rename_congr (Renaming.lift_compose_equiv firstRenaming secondRenaming) secondType
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.rename_compose firstType firstRenaming secondRenaming)
+        (secondComposition.trans liftComposition)
+  | .codeUniverse _ _, _, _ => rfl
+  | .codeList elementType, firstRenaming, secondRenaming => by
+      exact congrArg Code.codeList
+        (Code.rename_compose elementType firstRenaming secondRenaming)
+  | .codeOption elementType, firstRenaming, secondRenaming => by
+      exact congrArg Code.codeOption
+        (Code.rename_compose elementType firstRenaming secondRenaming)
+  | .codeEither leftType rightType, firstRenaming, secondRenaming => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.rename_compose leftType firstRenaming secondRenaming)
+        (Code.rename_compose rightType firstRenaming secondRenaming)
+  | .codeId carrier leftEndpoint rightEndpoint, firstRenaming, secondRenaming => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.rename_compose carrier firstRenaming secondRenaming)
+        (RawTerm.rename_compose leftEndpoint firstRenaming secondRenaming)
+        (RawTerm.rename_compose rightEndpoint firstRenaming secondRenaming)
+
+/-- Renaming by identity is neutral on codes. -/
+theorem Code.rename_identity {level scope : Nat} :
+    ∀ code : Code level scope, code.rename Renaming.identity = code
+  | .codeUnit => rfl
+  | .codeBool => rfl
+  | .codeNat => rfl
+  | .codeArrow domain codomain => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.rename_identity domain)
+        (Code.rename_identity codomain)
+  | .codePiTy domain codomain => by
+      have codomainRenaming :=
+        Code.rename_congr Renaming.lift_identity_equiv codomain
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.rename_identity domain)
+        (codomainRenaming.trans (Code.rename_identity codomain))
+  | .codeTyVar _ => rfl
+  | .codeSigma firstType secondType => by
+      have secondRenaming :=
+        Code.rename_congr Renaming.lift_identity_equiv secondType
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.rename_identity firstType)
+        (secondRenaming.trans (Code.rename_identity secondType))
+  | .codeUniverse _ _ => rfl
+  | .codeList elementType => by
+      exact congrArg Code.codeList (Code.rename_identity elementType)
+  | .codeOption elementType => by
+      exact congrArg Code.codeOption (Code.rename_identity elementType)
+  | .codeEither leftType rightType => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.rename_identity leftType)
+        (Code.rename_identity rightType)
+  | .codeId carrier leftEndpoint rightEndpoint => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.rename_identity carrier)
+        (RawTerm.rename_identity (level := level) leftEndpoint)
+        (RawTerm.rename_identity (level := level) rightEndpoint)
+
+/-- Code weakening commutes with renaming. -/
+theorem Code.rename_weaken_commute {level source target : Nat}
+    (code : Code level source) (rawRenaming : Renaming source target) :
+    (code.weaken).rename rawRenaming.lift = (code.rename rawRenaming).weaken := by
+  show (code.rename Renaming.weaken).rename rawRenaming.lift =
+    (code.rename rawRenaming).rename Renaming.weaken
+  have renamingsCommute :
+      Renaming.equiv
+        (Renaming.compose Renaming.weaken rawRenaming.lift)
+        (Renaming.compose rawRenaming Renaming.weaken) :=
+    fun _ => rfl
+  exact (Code.rename_compose code Renaming.weaken rawRenaming.lift).trans
+    ((Code.rename_congr renamingsCommute code).trans
+      (Code.rename_compose code rawRenaming Renaming.weaken).symm)
+
+/-! ## Code substitution -/
+
+/-- A code substitution maps type-code variables to codes and raw variables
+to raw terms. -/
+structure CodeSubst (level source target : Nat) where
+  forCode : Fin source → Code level target
+  forRaw : RawTermSubst source target
+
+/-- Identity code substitution. -/
+def CodeSubst.identity {level scope : Nat} : CodeSubst level scope scope where
+  forCode := Code.codeTyVar
+  forRaw := RawTermSubst.identity
+
+/-- Lift a code substitution under one binder. -/
+def CodeSubst.lift {level source target : Nat}
+    (codeSubstitution : CodeSubst level source target) :
+    CodeSubst level (source + 1) (target + 1) where
+  forCode
+    | ⟨0, _⟩ => Code.codeTyVar ⟨0, Nat.succ_pos target⟩
+    | ⟨position + 1, isWithinSource⟩ =>
+        (codeSubstitution.forCode
+          ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩).weaken
+  forRaw := codeSubstitution.forRaw.lift
+
+/-- Pointwise equivalence for code substitutions. -/
+def CodeSubst.equiv {level source target : Nat}
+    (firstSubstitution secondSubstitution : CodeSubst level source target) : Prop :=
+  (∀ position, firstSubstitution.forCode position = secondSubstitution.forCode position) ∧
+    RawTermSubst.equiv firstSubstitution.forRaw secondSubstitution.forRaw
+
+/-- Project the code component of code-substitution equivalence. -/
+theorem CodeSubst.equiv_forCode {level source target : Nat}
+    {firstSubstitution secondSubstitution : CodeSubst level source target}
+    (substitutionsAreEquivalent : CodeSubst.equiv firstSubstitution secondSubstitution) :
+    ∀ position, firstSubstitution.forCode position = secondSubstitution.forCode position :=
+  substitutionsAreEquivalent.left
+
+/-- Project the raw component of code-substitution equivalence. -/
+theorem CodeSubst.equiv_forRaw {level source target : Nat}
+    {firstSubstitution secondSubstitution : CodeSubst level source target}
+    (substitutionsAreEquivalent : CodeSubst.equiv firstSubstitution secondSubstitution) :
+    RawTermSubst.equiv firstSubstitution.forRaw secondSubstitution.forRaw :=
+  substitutionsAreEquivalent.right
+
+/-- Build a code-substitution equivalence from code and raw components. -/
+theorem CodeSubst.equiv_intro {level source target : Nat}
+    {firstSubstitution secondSubstitution : CodeSubst level source target}
+    (codesAreEquivalent :
+      ∀ position, firstSubstitution.forCode position = secondSubstitution.forCode position)
+    (rawTermsAreEquivalent :
+      RawTermSubst.equiv firstSubstitution.forRaw secondSubstitution.forRaw) :
+    CodeSubst.equiv firstSubstitution secondSubstitution :=
+  And.intro codesAreEquivalent rawTermsAreEquivalent
+
+/-- Lifting preserves code-substitution equivalence. -/
+theorem CodeSubst.lift_equiv {level source target : Nat}
+    {firstSubstitution secondSubstitution : CodeSubst level source target}
+    (substitutionsAreEquivalent :
+      CodeSubst.equiv firstSubstitution secondSubstitution) :
+    CodeSubst.equiv firstSubstitution.lift secondSubstitution.lift :=
+  CodeSubst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩ => rfl
+      | ⟨position + 1, isWithinSource⟩ =>
+          congrArg Code.weaken
+            (CodeSubst.equiv_forCode substitutionsAreEquivalent
+              ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩))
+    (RawTermSubst.lift_equiv
+      (CodeSubst.equiv_forRaw substitutionsAreEquivalent))
+
+/-- Apply a code substitution to a code. -/
+def Code.subst {level source target : Nat} :
+    Code level source → CodeSubst level source target → Code level target
+  | .codeUnit, _ => .codeUnit
+  | .codeBool, _ => .codeBool
+  | .codeNat, _ => .codeNat
+  | .codeArrow domain codomain, codeSubstitution =>
+      .codeArrow (domain.subst codeSubstitution) (codomain.subst codeSubstitution)
+  | .codePiTy domain codomain, codeSubstitution =>
+      .codePiTy (domain.subst codeSubstitution) (codomain.subst codeSubstitution.lift)
+  | .codeTyVar position, codeSubstitution =>
+      codeSubstitution.forCode position
+  | .codeSigma firstType secondType, codeSubstitution =>
+      .codeSigma (firstType.subst codeSubstitution) (secondType.subst codeSubstitution.lift)
+  | .codeUniverse universeLevel levelEq, _ =>
+      .codeUniverse universeLevel levelEq
+  | .codeList elementType, codeSubstitution =>
+      .codeList (elementType.subst codeSubstitution)
+  | .codeOption elementType, codeSubstitution =>
+      .codeOption (elementType.subst codeSubstitution)
+  | .codeEither leftType rightType, codeSubstitution =>
+      .codeEither (leftType.subst codeSubstitution) (rightType.subst codeSubstitution)
+  | .codeId carrier leftEndpoint rightEndpoint, codeSubstitution =>
+      .codeId (carrier.subst codeSubstitution)
+        (leftEndpoint.subst codeSubstitution.forRaw)
+        (rightEndpoint.subst codeSubstitution.forRaw)
+
+/-- Equivalent code substitutions produce equal substituted codes. -/
+theorem Code.subst_congr {level source target : Nat}
+    {firstSubstitution secondSubstitution : CodeSubst level source target}
+    (substitutionsAreEquivalent :
+      CodeSubst.equiv firstSubstitution secondSubstitution) :
+    ∀ code : Code level source,
+      code.subst firstSubstitution = code.subst secondSubstitution
+  | .codeUnit => rfl
+  | .codeBool => rfl
+  | .codeNat => rfl
+  | .codeArrow domain codomain => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.subst_congr substitutionsAreEquivalent domain)
+        (Code.subst_congr substitutionsAreEquivalent codomain)
+  | .codePiTy domain codomain => by
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.subst_congr substitutionsAreEquivalent domain)
+        (Code.subst_congr (CodeSubst.lift_equiv substitutionsAreEquivalent) codomain)
+  | .codeTyVar position =>
+      CodeSubst.equiv_forCode substitutionsAreEquivalent position
+  | .codeSigma firstType secondType => by
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.subst_congr substitutionsAreEquivalent firstType)
+        (Code.subst_congr (CodeSubst.lift_equiv substitutionsAreEquivalent) secondType)
+  | .codeUniverse _ _ => rfl
+  | .codeList elementType => by
+      exact congrArg Code.codeList (Code.subst_congr substitutionsAreEquivalent elementType)
+  | .codeOption elementType => by
+      exact congrArg Code.codeOption (Code.subst_congr substitutionsAreEquivalent elementType)
+  | .codeEither leftType rightType => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.subst_congr substitutionsAreEquivalent leftType)
+        (Code.subst_congr substitutionsAreEquivalent rightType)
+  | .codeId carrier leftEndpoint rightEndpoint => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.subst_congr substitutionsAreEquivalent carrier)
+        (RawTerm.subst_congr
+          (CodeSubst.equiv_forRaw substitutionsAreEquivalent) leftEndpoint)
+        (RawTerm.subst_congr
+          (CodeSubst.equiv_forRaw substitutionsAreEquivalent) rightEndpoint)
+
+/-- Lifting identity code substitution is pointwise identity. -/
+theorem CodeSubst.lift_identity_equiv {level scope : Nat} :
+    CodeSubst.equiv
+      (CodeSubst.lift (CodeSubst.identity (level := level) (scope := scope)))
+      (CodeSubst.identity (level := level) (scope := scope + 1)) :=
+  CodeSubst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩ => rfl
+      | ⟨_ + 1, _⟩ => rfl)
+    RawTermSubst.lift_identity_equiv
+
+/-- Substitution by identity is neutral on codes. -/
+theorem Code.subst_id {level scope : Nat} :
+    ∀ code : Code level scope,
+      code.subst CodeSubst.identity = code
+  | .codeUnit => rfl
+  | .codeBool => rfl
+  | .codeNat => rfl
+  | .codeArrow domain codomain => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.subst_id domain)
+        (Code.subst_id codomain)
+  | .codePiTy domain codomain => by
+      have codomainCongruence :=
+        Code.subst_congr CodeSubst.lift_identity_equiv codomain
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.subst_id domain)
+        (codomainCongruence.trans (Code.subst_id codomain))
+  | .codeTyVar _ => rfl
+  | .codeSigma firstType secondType => by
+      have secondCongruence :=
+        Code.subst_congr CodeSubst.lift_identity_equiv secondType
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.subst_id firstType)
+        (secondCongruence.trans (Code.subst_id secondType))
+  | .codeUniverse _ _ => rfl
+  | .codeList elementType => by
+      exact congrArg Code.codeList (Code.subst_id elementType)
+  | .codeOption elementType => by
+      exact congrArg Code.codeOption (Code.subst_id elementType)
+  | .codeEither leftType rightType => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.subst_id leftType)
+        (Code.subst_id rightType)
+  | .codeId carrier leftEndpoint rightEndpoint => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.subst_id carrier)
+        (RawTerm.subst_id leftEndpoint)
+        (RawTerm.subst_id rightEndpoint)
+
+/-- Rename every code and raw substituent after substitution. -/
+def CodeSubst.renameAfter {level source middle target : Nat}
+    (codeSubstitution : CodeSubst level source middle)
+    (rawRenaming : Renaming middle target) :
+    CodeSubst level source target where
+  forCode := fun position => (codeSubstitution.forCode position).rename rawRenaming
+  forRaw := RawTermSubst.beforeRenaming codeSubstitution.forRaw rawRenaming
+
+/-- Precompose a code substitution with a renaming. -/
+def CodeSubst.precompose {level source middle target : Nat}
+    (rawRenaming : Renaming source middle)
+    (codeSubstitution : CodeSubst level middle target) :
+    CodeSubst level source target where
+  forCode := fun position => codeSubstitution.forCode (rawRenaming position)
+  forRaw := RawTermSubst.afterRenaming rawRenaming codeSubstitution.forRaw
+
+/-- Lifting commutes with `renameAfter`. -/
+theorem CodeSubst.lift_renameAfter_equiv {level source middle target : Nat}
+    (codeSubstitution : CodeSubst level source middle)
+    (rawRenaming : Renaming middle target) :
+    CodeSubst.equiv
+      (CodeSubst.lift (CodeSubst.renameAfter codeSubstitution rawRenaming))
+      (CodeSubst.renameAfter codeSubstitution.lift rawRenaming.lift) :=
+  CodeSubst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩ => rfl
+      | ⟨position + 1, isWithinSource⟩ =>
+          (Code.rename_weaken_commute
+            (codeSubstitution.forCode
+              ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩)
+            rawRenaming).symm)
+    (RawTermSubst.lift_beforeRenaming_equiv codeSubstitution.forRaw rawRenaming)
+
+/-- Lifting commutes with precomposition. -/
+theorem CodeSubst.lift_precompose_equiv {level source middle target : Nat}
+    (rawRenaming : Renaming source middle)
+    (codeSubstitution : CodeSubst level middle target) :
+    CodeSubst.equiv
+      (CodeSubst.lift (CodeSubst.precompose rawRenaming codeSubstitution))
+      (CodeSubst.precompose rawRenaming.lift codeSubstitution.lift) :=
+  CodeSubst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩ => rfl
+      | ⟨_ + 1, _⟩ => rfl)
+    (RawTermSubst.lift_afterRenaming_equiv rawRenaming codeSubstitution.forRaw)
+
+/-- Substitution then renaming commutes with `renameAfter`. -/
+theorem Code.subst_rename_commute {level source middle target : Nat} :
+    ∀ (code : Code level source)
+      (codeSubstitution : CodeSubst level source middle)
+      (rawRenaming : Renaming middle target),
+      (code.subst codeSubstitution).rename rawRenaming =
+        code.subst (CodeSubst.renameAfter codeSubstitution rawRenaming)
+  | .codeUnit, _, _ => rfl
+  | .codeBool, _, _ => rfl
+  | .codeNat, _, _ => rfl
+  | .codeArrow domain codomain, codeSubstitution, rawRenaming => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.subst_rename_commute domain codeSubstitution rawRenaming)
+        (Code.subst_rename_commute codomain codeSubstitution rawRenaming)
+  | .codePiTy domain codomain, codeSubstitution, rawRenaming => by
+      have codomainCommute :=
+        Code.subst_rename_commute codomain codeSubstitution.lift rawRenaming.lift
+      have liftCommute :=
+        Code.subst_congr
+          (CodeSubst.lift_renameAfter_equiv codeSubstitution rawRenaming)
+          codomain
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.subst_rename_commute domain codeSubstitution rawRenaming)
+        (codomainCommute.trans liftCommute.symm)
+  | .codeTyVar _, _, _ => rfl
+  | .codeSigma firstType secondType, codeSubstitution, rawRenaming => by
+      have secondCommute :=
+        Code.subst_rename_commute secondType codeSubstitution.lift rawRenaming.lift
+      have liftCommute :=
+        Code.subst_congr
+          (CodeSubst.lift_renameAfter_equiv codeSubstitution rawRenaming)
+          secondType
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.subst_rename_commute firstType codeSubstitution rawRenaming)
+        (secondCommute.trans liftCommute.symm)
+  | .codeUniverse _ _, _, _ => rfl
+  | .codeList elementType, codeSubstitution, rawRenaming => by
+      exact congrArg Code.codeList
+        (Code.subst_rename_commute elementType codeSubstitution rawRenaming)
+  | .codeOption elementType, codeSubstitution, rawRenaming => by
+      exact congrArg Code.codeOption
+        (Code.subst_rename_commute elementType codeSubstitution rawRenaming)
+  | .codeEither leftType rightType, codeSubstitution, rawRenaming => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.subst_rename_commute leftType codeSubstitution rawRenaming)
+        (Code.subst_rename_commute rightType codeSubstitution rawRenaming)
+  | .codeId carrier leftEndpoint rightEndpoint, codeSubstitution, rawRenaming => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.subst_rename_commute carrier codeSubstitution rawRenaming)
+        (RawTerm.rename_subst_commute leftEndpoint codeSubstitution.forRaw rawRenaming)
+        (RawTerm.rename_subst_commute rightEndpoint codeSubstitution.forRaw rawRenaming)
+
+/-- Renaming then substitution commutes with precomposition. -/
+theorem Code.rename_subst_commute {level source middle target : Nat} :
+    ∀ (code : Code level source)
+      (rawRenaming : Renaming source middle)
+      (codeSubstitution : CodeSubst level middle target),
+      (code.rename rawRenaming).subst codeSubstitution =
+        code.subst (CodeSubst.precompose rawRenaming codeSubstitution)
+  | .codeUnit, _, _ => rfl
+  | .codeBool, _, _ => rfl
+  | .codeNat, _, _ => rfl
+  | .codeArrow domain codomain, rawRenaming, codeSubstitution => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.rename_subst_commute domain rawRenaming codeSubstitution)
+        (Code.rename_subst_commute codomain rawRenaming codeSubstitution)
+  | .codePiTy domain codomain, rawRenaming, codeSubstitution => by
+      have codomainCommute :=
+        Code.rename_subst_commute codomain rawRenaming.lift codeSubstitution.lift
+      have liftCommute :=
+        Code.subst_congr
+          (CodeSubst.lift_precompose_equiv rawRenaming codeSubstitution)
+          codomain
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.rename_subst_commute domain rawRenaming codeSubstitution)
+        (codomainCommute.trans liftCommute.symm)
+  | .codeTyVar _, _, _ => rfl
+  | .codeSigma firstType secondType, rawRenaming, codeSubstitution => by
+      have secondCommute :=
+        Code.rename_subst_commute secondType rawRenaming.lift codeSubstitution.lift
+      have liftCommute :=
+        Code.subst_congr
+          (CodeSubst.lift_precompose_equiv rawRenaming codeSubstitution)
+          secondType
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.rename_subst_commute firstType rawRenaming codeSubstitution)
+        (secondCommute.trans liftCommute.symm)
+  | .codeUniverse _ _, _, _ => rfl
+  | .codeList elementType, rawRenaming, codeSubstitution => by
+      exact congrArg Code.codeList
+        (Code.rename_subst_commute elementType rawRenaming codeSubstitution)
+  | .codeOption elementType, rawRenaming, codeSubstitution => by
+      exact congrArg Code.codeOption
+        (Code.rename_subst_commute elementType rawRenaming codeSubstitution)
+  | .codeEither leftType rightType, rawRenaming, codeSubstitution => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.rename_subst_commute leftType rawRenaming codeSubstitution)
+        (Code.rename_subst_commute rightType rawRenaming codeSubstitution)
+  | .codeId carrier leftEndpoint rightEndpoint, rawRenaming, codeSubstitution => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.rename_subst_commute carrier rawRenaming codeSubstitution)
+        (RawTerm.subst_rename_commute leftEndpoint rawRenaming codeSubstitution.forRaw)
+        (RawTerm.subst_rename_commute rightEndpoint rawRenaming codeSubstitution.forRaw)
+
+/-- Precomposing weakening with a lifted code substitution equals renaming
+substituents by weakening. -/
+theorem CodeSubst.precompose_weaken_lift_equiv_renameAfter_weaken
+    {level source target : Nat}
+    (codeSubstitution : CodeSubst level source target) :
+    CodeSubst.equiv
+      (CodeSubst.precompose Renaming.weaken codeSubstitution.lift)
+      (CodeSubst.renameAfter codeSubstitution Renaming.weaken) :=
+  CodeSubst.equiv_intro
+    (fun _ => rfl)
+    (RawTermSubst.equiv_refl _)
+
+/-- Code substitution commutes with weakening. -/
+theorem Code.subst_weaken_commute {level source target : Nat}
+    (code : Code level source)
+    (codeSubstitution : CodeSubst level source target) :
+    (code.weaken).subst codeSubstitution.lift =
+      (code.subst codeSubstitution).weaken := by
+  show (code.rename Renaming.weaken).subst codeSubstitution.lift =
+    (code.subst codeSubstitution).rename Renaming.weaken
+  exact (Code.rename_subst_commute code Renaming.weaken codeSubstitution.lift).trans
+    ((Code.subst_congr
+      (CodeSubst.precompose_weaken_lift_equiv_renameAfter_weaken codeSubstitution)
+      code).trans
+      (Code.subst_rename_commute code codeSubstitution Renaming.weaken).symm)
+
+/-- Compose code substitutions. -/
+def CodeSubst.compose {level source middle target : Nat}
+    (firstSubstitution : CodeSubst level source middle)
+    (secondSubstitution : CodeSubst level middle target) :
+    CodeSubst level source target where
+  forCode := fun position => (firstSubstitution.forCode position).subst secondSubstitution
+  forRaw := RawTermSubst.compose firstSubstitution.forRaw secondSubstitution.forRaw
+
+/-- Lifting commutes with code-substitution composition. -/
+theorem CodeSubst.lift_compose_equiv {level source middle target : Nat}
+    (firstSubstitution : CodeSubst level source middle)
+    (secondSubstitution : CodeSubst level middle target) :
+    CodeSubst.equiv
+      (CodeSubst.compose firstSubstitution.lift secondSubstitution.lift)
+      (CodeSubst.lift (CodeSubst.compose firstSubstitution secondSubstitution)) :=
+  CodeSubst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩ => rfl
+      | ⟨position + 1, isWithinSource⟩ =>
+          Code.subst_weaken_commute
+            (firstSubstitution.forCode
+              ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩)
+            secondSubstitution)
+    fun position =>
+      (RawTermSubst.lift_compose_equiv
+        firstSubstitution.forRaw secondSubstitution.forRaw position).symm
+
+/-- Code substitution composition law. -/
+theorem Code.subst_compose {level source middle target : Nat} :
+    ∀ (code : Code level source)
+      (firstSubstitution : CodeSubst level source middle)
+      (secondSubstitution : CodeSubst level middle target),
+      (code.subst firstSubstitution).subst secondSubstitution =
+        code.subst (CodeSubst.compose firstSubstitution secondSubstitution)
+  | .codeUnit, _, _ => rfl
+  | .codeBool, _, _ => rfl
+  | .codeNat, _, _ => rfl
+  | .codeArrow domain codomain, firstSubstitution, secondSubstitution => by
+      exact congrArgTwo (function := Code.codeArrow)
+        (Code.subst_compose domain firstSubstitution secondSubstitution)
+        (Code.subst_compose codomain firstSubstitution secondSubstitution)
+  | .codePiTy domain codomain, firstSubstitution, secondSubstitution => by
+      have codomainComposition :=
+        Code.subst_compose codomain firstSubstitution.lift secondSubstitution.lift
+      have liftComposition :=
+        Code.subst_congr
+          (CodeSubst.lift_compose_equiv firstSubstitution secondSubstitution)
+          codomain
+      exact congrArgTwo (function := Code.codePiTy)
+        (Code.subst_compose domain firstSubstitution secondSubstitution)
+        (codomainComposition.trans liftComposition)
+  | .codeTyVar _, _, _ => rfl
+  | .codeSigma firstType secondType, firstSubstitution, secondSubstitution => by
+      have secondComposition :=
+        Code.subst_compose secondType firstSubstitution.lift secondSubstitution.lift
+      have liftComposition :=
+        Code.subst_congr
+          (CodeSubst.lift_compose_equiv firstSubstitution secondSubstitution)
+          secondType
+      exact congrArgTwo (function := Code.codeSigma)
+        (Code.subst_compose firstType firstSubstitution secondSubstitution)
+        (secondComposition.trans liftComposition)
+  | .codeUniverse _ _, _, _ => rfl
+  | .codeList elementType, firstSubstitution, secondSubstitution => by
+      exact congrArg Code.codeList
+        (Code.subst_compose elementType firstSubstitution secondSubstitution)
+  | .codeOption elementType, firstSubstitution, secondSubstitution => by
+      exact congrArg Code.codeOption
+        (Code.subst_compose elementType firstSubstitution secondSubstitution)
+  | .codeEither leftType rightType, firstSubstitution, secondSubstitution => by
+      exact congrArgTwo (function := Code.codeEither)
+        (Code.subst_compose leftType firstSubstitution secondSubstitution)
+        (Code.subst_compose rightType firstSubstitution secondSubstitution)
+  | .codeId carrier leftEndpoint rightEndpoint, firstSubstitution, secondSubstitution => by
+      exact congrArgThree (function := Code.codeId)
+        (Code.subst_compose carrier firstSubstitution secondSubstitution)
+        (RawTerm.subst_compose
+          leftEndpoint firstSubstitution.forRaw secondSubstitution.forRaw)
+        (RawTerm.subst_compose
+          rightEndpoint firstSubstitution.forRaw secondSubstitution.forRaw)
+
 
 end LeanFX.Syntax
