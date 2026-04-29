@@ -46,6 +46,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Term.rename_compose_HEq
 #assert_no_axioms LeanFX.Syntax.Step.rename_compatible
 #assert_no_axioms LeanFX.Syntax.Step.subst_compatible
+#assert_no_axioms LeanFX.Syntax.Step.par.rename_compatible
+#assert_no_axioms LeanFX.Syntax.Step.par.subst_compatible
 #assert_no_axioms LeanFX.Syntax.Step.par.toStar
 #assert_no_axioms LeanFX.Syntax.IdProof.transport
 

@@ -505,5 +505,41 @@ theorem Step.toPar
   | .idJWitness _ s         => .idJ (.refl _) (Step.toPar s)
   | .iotaIdJRefl base       => .iotaIdJRefl (.refl base)
 
+/-- Transport a parallel reduction across the same type equality on
+both endpoints. -/
+theorem Step.par.castBoth
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    {beforeTerm afterTerm : Term ctx sourceType}
+    (parallelStep : Step.par beforeTerm afterTerm) :
+    Step.par (typeEquality ▸ beforeTerm) (typeEquality ▸ afterTerm) := by
+  cases typeEquality
+  exact parallelStep
+
+/-- Replace the source endpoint of a same-typed parallel reduction by
+propositionally equal syntax. -/
+theorem Step.par.castSource
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm beforeTerm' afterTerm : Term ctx termType}
+    (sourceEquality : beforeTerm = beforeTerm')
+    (parallelStep : Step.par beforeTerm afterTerm) :
+    Step.par beforeTerm' afterTerm := by
+  cases sourceEquality
+  exact parallelStep
+
+/-- Replace the target endpoint of a same-typed parallel reduction by
+propositionally equal syntax. -/
+theorem Step.par.castTarget
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm afterTerm afterTerm' : Term ctx termType}
+    (targetEquality : afterTerm = afterTerm')
+    (parallelStep : Step.par beforeTerm afterTerm) :
+    Step.par beforeTerm afterTerm' := by
+  cases targetEquality
+  exact parallelStep
+
 
 end LeanFX.Syntax
