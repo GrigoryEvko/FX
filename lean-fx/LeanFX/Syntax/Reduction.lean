@@ -1,1 +1,1 @@
-import LeanFX.Syntax.Reduction.ParToStar
+import LeanFX.Syntax.Reduction.Rename
