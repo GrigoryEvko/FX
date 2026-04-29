@@ -33,7 +33,7 @@ theorem Term.rename_HEq_pointwise
     -- Goal: HEq (Term.var (ρ₁ i)) (Term.var (ρ₂ i))
     -- Use h_ρ i to align the Fin positions.
     rw [h_ρ i]
-  | _, .unit => by cases h_ctx; exact HEq.refl _
+  | _, .unit => by term_context_refl
   | _, .app f a => by
     cases h_ctx
     show HEq
@@ -53,8 +53,8 @@ theorem Term.rename_HEq_pointwise
       (Ty.rename_congr h_ρ first)
       (Ty.rename_congr (Renaming.lift_equiv h_ρ) second)
     exact Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ p
-  | _, .boolTrue => by cases h_ctx; exact HEq.refl _
-  | _, .boolFalse => by cases h_ctx; exact HEq.refl _
+  | _, .boolTrue => by term_context_refl
+  | _, .boolFalse => by term_context_refl
   | _, .boolElim (resultType := result) s t e => by
     cases h_ctx
     show HEq
@@ -151,7 +151,7 @@ theorem Term.rename_HEq_pointwise
       (TermRenaming.lift ρt₂ dom)
       (Renaming.lift_equiv h_ρ)
       body
-  | _, .natZero => by cases h_ctx; exact HEq.refl _
+  | _, .natZero => by term_context_refl
   | _, .natSucc pred => by
     cases h_ctx
     show HEq (Term.natSucc (Term.rename ρt₁ pred))

@@ -22,6 +22,11 @@ add one proof line instead of another hand-written `cases` cascade. -/
 macro "term_heq_congr" : tactic =>
   `(tactic| (subst_vars; rfl))
 
+/-- Close a context-equality leaf case where both sides are the same
+constructor after substituting the context equality. -/
+macro "term_context_refl" : tactic =>
+  `(tactic| (subst_vars; exact HEq.refl _))
+
 /-- **HEq across context-shape change for `Term.var`**: if two
 contexts at the same scope are propositionally equal, then the
 `Term.var` constructor at the same Fin position produces HEq

@@ -75,7 +75,7 @@ theorem Term.subst_HEq_pointwise
     {T : Ty level scope} → (t : Term Γ T) →
       HEq (Term.subst σt₁ t) (Term.subst σt₂ t)
   | _, .var i => h_pointwise i
-  | _, .unit => by cases h_ctx; exact HEq.refl _
+  | _, .unit => by term_context_refl
   | _, .app (domainType := T₁) (codomainType := T₂) f a => by
     cases h_ctx
     show HEq (Term.app (Term.subst σt₁ f) (Term.subst σt₁ a))
@@ -170,8 +170,8 @@ theorem Term.subst_HEq_pointwise
         (Ty.subst_congr (Subst.lift_equiv h_subst) second)
         _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise p)
     · exact (eqRec_heq _ _).symm
-  | _, .boolTrue => by cases h_ctx; exact HEq.refl _
-  | _, .boolFalse => by cases h_ctx; exact HEq.refl _
+  | _, .boolTrue => by term_context_refl
+  | _, .boolFalse => by term_context_refl
   | _, .boolElim (resultType := result) s t e => by
     cases h_ctx
     show HEq
@@ -183,7 +183,7 @@ theorem Term.subst_HEq_pointwise
             (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise s))
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise t)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise e)
-  | _, .natZero => by cases h_ctx; exact HEq.refl _
+  | _, .natZero => by term_context_refl
   | _, .natSucc pred => by
     cases h_ctx
     show HEq (Term.natSucc (Term.subst σt₁ pred))
