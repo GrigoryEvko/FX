@@ -740,5 +740,135 @@ theorem Code.subst_compose {level source middle target : Nat} :
         (RawTerm.subst_compose
           rightEndpoint firstSubstitution.forRaw secondSubstitution.forRaw)
 
+/-! ## Decoding codes into types -/
+
+/-- Interpret a Tarski code as an intrinsic type. -/
+def Code.decode {level scope : Nat} : Code level scope → Ty level scope
+  | .codeUnit => Ty.unit
+  | .codeBool => Ty.bool
+  | .codeNat => Ty.nat
+  | .codeArrow domain codomain =>
+      Ty.arrow domain.decode codomain.decode
+  | .codePiTy domain codomain =>
+      Ty.piTy domain.decode codomain.decode
+  | .codeTyVar position =>
+      Ty.tyVar position
+  | .codeSigma firstType secondType =>
+      Ty.sigmaTy firstType.decode secondType.decode
+  | .codeUniverse universeLevel levelEq =>
+      Ty.universe universeLevel levelEq
+  | .codeList elementType =>
+      Ty.list elementType.decode
+  | .codeOption elementType =>
+      Ty.option elementType.decode
+  | .codeEither leftType rightType =>
+      Ty.either leftType.decode rightType.decode
+  | .codeId carrier leftEndpoint rightEndpoint =>
+      Ty.id carrier.decode leftEndpoint rightEndpoint
+
+/-- Decoding commutes with code renaming. -/
+theorem Code.decode_rename {level source target : Nat} :
+    ∀ (code : Code level source) (rawRenaming : Renaming source target),
+      (code.rename rawRenaming).decode = code.decode.rename rawRenaming
+  | .codeUnit, _ => rfl
+  | .codeBool, _ => rfl
+  | .codeNat, _ => rfl
+  | .codeArrow domain codomain, rawRenaming => by
+      exact congrArgTwo (function := Ty.arrow)
+        (Code.decode_rename domain rawRenaming)
+        (Code.decode_rename codomain rawRenaming)
+  | .codePiTy domain codomain, rawRenaming => by
+      exact congrArgTwo (function := Ty.piTy)
+        (Code.decode_rename domain rawRenaming)
+        (Code.decode_rename codomain rawRenaming.lift)
+  | .codeTyVar _, _ => rfl
+  | .codeSigma firstType secondType, rawRenaming => by
+      exact congrArgTwo (function := Ty.sigmaTy)
+        (Code.decode_rename firstType rawRenaming)
+        (Code.decode_rename secondType rawRenaming.lift)
+  | .codeUniverse _ _, _ => rfl
+  | .codeList elementType, rawRenaming => by
+      exact congrArg Ty.list (Code.decode_rename elementType rawRenaming)
+  | .codeOption elementType, rawRenaming => by
+      exact congrArg Ty.option (Code.decode_rename elementType rawRenaming)
+  | .codeEither leftType rightType, rawRenaming => by
+      exact congrArgTwo (function := Ty.either)
+        (Code.decode_rename leftType rawRenaming)
+        (Code.decode_rename rightType rawRenaming)
+  | .codeId carrier _ _, rawRenaming => by
+      exact congrArg (fun decodedCarrier => Ty.id decodedCarrier _ _)
+        (Code.decode_rename carrier rawRenaming)
+
+/-- Decoding commutes with weakening. -/
+theorem Code.decode_weaken {level scope : Nat} (code : Code level scope) :
+    code.weaken.decode = code.decode.weaken :=
+  Code.decode_rename code Renaming.weaken
+
+/-- Decode a code substitution into a type substitution. -/
+def CodeSubst.decode {level source target : Nat}
+    (codeSubstitution : CodeSubst level source target) :
+    Subst level source target where
+  forTy := fun position => (codeSubstitution.forCode position).decode
+  forRaw := codeSubstitution.forRaw
+
+/-- Decoding a lifted code substitution agrees with lifting its decoded
+type substitution. -/
+theorem CodeSubst.decode_lift_equiv {level source target : Nat}
+    (codeSubstitution : CodeSubst level source target) :
+    Subst.equiv
+      codeSubstitution.lift.decode
+      codeSubstitution.decode.lift :=
+  Subst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩ => rfl
+      | ⟨position + 1, isWithinSource⟩ =>
+          Code.decode_weaken
+            (codeSubstitution.forCode
+              ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩))
+    (RawTermSubst.equiv_refl _)
+
+/-- Decoding commutes with code substitution. -/
+theorem Code.decode_subst {level source target : Nat} :
+    ∀ (code : Code level source)
+      (codeSubstitution : CodeSubst level source target),
+      (code.subst codeSubstitution).decode =
+        code.decode.subst codeSubstitution.decode
+  | .codeUnit, _ => rfl
+  | .codeBool, _ => rfl
+  | .codeNat, _ => rfl
+  | .codeArrow domain codomain, codeSubstitution => by
+      exact congrArgTwo (function := Ty.arrow)
+        (Code.decode_subst domain codeSubstitution)
+        (Code.decode_subst codomain codeSubstitution)
+  | .codePiTy domain codomain, codeSubstitution => by
+      have codomainDecode :=
+        Code.decode_subst codomain codeSubstitution.lift
+      have liftDecode :=
+        Ty.subst_congr (CodeSubst.decode_lift_equiv codeSubstitution) codomain.decode
+      exact congrArgTwo (function := Ty.piTy)
+        (Code.decode_subst domain codeSubstitution)
+        (codomainDecode.trans liftDecode)
+  | .codeTyVar _, _ => rfl
+  | .codeSigma firstType secondType, codeSubstitution => by
+      have secondDecode :=
+        Code.decode_subst secondType codeSubstitution.lift
+      have liftDecode :=
+        Ty.subst_congr (CodeSubst.decode_lift_equiv codeSubstitution) secondType.decode
+      exact congrArgTwo (function := Ty.sigmaTy)
+        (Code.decode_subst firstType codeSubstitution)
+        (secondDecode.trans liftDecode)
+  | .codeUniverse _ _, _ => rfl
+  | .codeList elementType, codeSubstitution => by
+      exact congrArg Ty.list (Code.decode_subst elementType codeSubstitution)
+  | .codeOption elementType, codeSubstitution => by
+      exact congrArg Ty.option (Code.decode_subst elementType codeSubstitution)
+  | .codeEither leftType rightType, codeSubstitution => by
+      exact congrArgTwo (function := Ty.either)
+        (Code.decode_subst leftType codeSubstitution)
+        (Code.decode_subst rightType codeSubstitution)
+  | .codeId carrier _ _, codeSubstitution => by
+      exact congrArg (fun decodedCarrier => Ty.id decodedCarrier _ _)
+        (Code.decode_subst carrier codeSubstitution)
 
 end LeanFX.Syntax
