@@ -120,6 +120,15 @@ def TermOptionalRenaming {mode : Mode} {sourceScope targetScope : Nat}
 
 namespace TermOptionalRenaming
 
+/-- Identity optional renaming is compatible with any context. -/
+theorem identity {mode : Mode} {scope : Nat}
+    (context : Ctx mode level scope) :
+    TermOptionalRenaming context context OptionalRenaming.identity := by
+  intro sourcePosition targetPosition positionMaps
+  change some sourcePosition = some targetPosition at positionMaps
+  cases positionMaps
+  exact Ty.optRename_identity (varType context sourcePosition)
+
 /-- Dropping the newest context variable is compatible with the prefix
 context: variable 0 is unmapped, and every successor variable's type is
 itself a weakening of the corresponding prefix variable type. -/
