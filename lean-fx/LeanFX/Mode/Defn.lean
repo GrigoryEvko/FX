@@ -31,4 +31,55 @@ inductive Mode : Type
 /-- The default surface mode — used when source elision omits the prefix. -/
 @[inline] def Mode.surfaceDefault : Mode := .software
 
+/-- Concrete FX modality syntax between the four kernel modes.
+
+The abstract categorical laws live in `LeanFX.Mode.Modality`; this
+syntax is the concrete payload used by modal contexts.  Composition is
+kept as syntax so `Ctx.lock` can normalize identity and composed locks
+without postulating quotient laws. -/
+inductive Modality : Mode → Mode → Type
+  /-- Identity modality at a mode. -/
+  | identity : (mode : Mode) → Modality mode mode
+  /-- Erase proof-only ghost content into software computation. -/
+  | eraseGhost : Modality .ghost .software
+  /-- Reflect software specifications into ghost reasoning. -/
+  | reflectGhost : Modality .software .ghost
+  /-- Synthesize software descriptions into hardware mode. -/
+  | synthesize : Modality .software .hardware
+  /-- Reify hardware signals into software observations. -/
+  | observeHardware : Modality .hardware .software
+  /-- Serialize software values into wire mode. -/
+  | serialize : Modality .software .wire
+  /-- Deserialize wire values into software mode. -/
+  | deserialize : Modality .wire .software
+  /-- Embed wire expressions into hardware mode. -/
+  | wireToHardware : Modality .wire .hardware
+  /-- Project hardware combinational fragments into wire mode. -/
+  | hardwareToWire : Modality .hardware .wire
+  /-- Syntactic composition of modalities. -/
+  | compose :
+      {sourceMode middleMode targetMode : Mode} →
+      Modality sourceMode middleMode →
+      Modality middleMode targetMode →
+      Modality sourceMode targetMode
+
+deriving instance DecidableEq for Modality
+
+namespace Modality
+
+/-- Identity modality wrapper. -/
+@[inline]
+def idModality (mode : Mode) : Modality mode mode :=
+  Modality.identity mode
+
+/-- Modality composition wrapper. -/
+@[inline]
+def composeModality {sourceMode middleMode targetMode : Mode}
+    (firstModality : Modality sourceMode middleMode)
+    (secondModality : Modality middleMode targetMode) :
+    Modality sourceMode targetMode :=
+  Modality.compose firstModality secondModality
+
+end Modality
+
 end LeanFX.Mode
