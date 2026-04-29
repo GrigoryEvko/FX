@@ -55,6 +55,52 @@ def termAs {mode : Mode} {scope : Nat}
 
 end StrengthenedTerm
 
+/-! ## Generic typed optional-renaming results. -/
+
+/-- A successfully optional-renamed term packaged with its recovered
+type and the proof connecting that type to the source type's optional
+renaming. -/
+structure OptionalRenamedTerm {mode : Mode} {sourceScope targetScope : Nat}
+    (targetContext : Ctx mode level targetScope)
+    (optionalRenaming : OptionalRenaming sourceScope targetScope)
+    (sourceType : Ty level sourceScope) where
+  /-- The type after optional renaming succeeds. -/
+  renamedType : Ty level targetScope
+  /-- Optional-renaming the source type reconstructs `renamedType`. -/
+  typeEquality : sourceType.optRename optionalRenaming = some renamedType
+  /-- The recovered term at the recovered type. -/
+  term : Term targetContext renamedType
+
+namespace OptionalRenamedTerm
+
+/-- If the source type optional-renames to an expected type, the
+packaged recovered type is that expected type. -/
+theorem renamed_eq_of_optRename {mode : Mode} {sourceScope targetScope : Nat}
+    {targetContext : Ctx mode level targetScope}
+    {optionalRenaming : OptionalRenaming sourceScope targetScope}
+    {sourceType : Ty level sourceScope} {expectedType : Ty level targetScope}
+    (renamedTerm :
+      OptionalRenamedTerm targetContext optionalRenaming sourceType)
+    (expectedRenaming : sourceType.optRename optionalRenaming =
+      some expectedType) :
+    renamedTerm.renamedType = expectedType :=
+  Option.some.inj (renamedTerm.typeEquality.symm.trans expectedRenaming)
+
+/-- Cast the recovered term to an expected type when the source type
+optional-renames to that expected type. -/
+def termAs {mode : Mode} {sourceScope targetScope : Nat}
+    {targetContext : Ctx mode level targetScope}
+    {optionalRenaming : OptionalRenaming sourceScope targetScope}
+    {sourceType : Ty level sourceScope} {expectedType : Ty level targetScope}
+    (renamedTerm :
+      OptionalRenamedTerm targetContext optionalRenaming sourceType)
+    (expectedRenaming : sourceType.optRename optionalRenaming =
+      some expectedType) :
+    Term targetContext expectedType :=
+  (renamed_eq_of_optRename renamedTerm expectedRenaming) ▸ renamedTerm.term
+
+end OptionalRenamedTerm
+
 /-! ## Context compatibility for typed optional renaming. -/
 
 /-- A typed optional renaming is compatible with source and target

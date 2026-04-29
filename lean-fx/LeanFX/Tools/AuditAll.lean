@@ -80,6 +80,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_eq_some_iff_weaken
 #assert_no_axioms LeanFX.Syntax.StrengthenedTerm.original_eq_of_strengthen
 #assert_no_axioms LeanFX.Syntax.StrengthenedTerm.termAs
+#assert_no_axioms LeanFX.Syntax.OptionalRenamedTerm.renamed_eq_of_optRename
+#assert_no_axioms LeanFX.Syntax.OptionalRenamedTerm.termAs
 #assert_no_axioms LeanFX.Syntax.TermOptionalRenaming.unweaken
 #assert_no_axioms LeanFX.Syntax.TermOptionalRenaming.lift
 
