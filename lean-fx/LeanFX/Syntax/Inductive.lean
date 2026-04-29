@@ -84,7 +84,118 @@ theorem map_compose {firstElementType : Type firstUniverse}
       exact congrArg (LengthList.cons (secondMap (firstMap head)))
         (map_compose firstMap secondMap tail)
 
+/-- Append two length-indexed lists. -/
+def append {elementType : Type firstUniverse} :
+    {firstLength secondLength : Nat} →
+      LengthList elementType firstLength →
+      LengthList elementType secondLength →
+      LengthList elementType (secondLength + firstLength)
+  | _, _, .nil, secondElements => secondElements
+  | _, _, .cons head tail, secondElements =>
+      .cons head (append tail secondElements)
+
+/-- One-element length-indexed list. -/
+def singleton {elementType : Type firstUniverse}
+    (element : elementType) : LengthList elementType 1 :=
+  .cons element .nil
+
+/-- Mapping distributes over append. -/
+theorem map_append {firstElementType : Type firstUniverse}
+    {secondElementType : Type secondUniverse}
+    (mapElement : firstElementType → secondElementType) :
+    {firstLength secondLength : Nat} →
+      ∀ (firstElements : LengthList firstElementType firstLength)
+        (secondElements : LengthList firstElementType secondLength),
+        map mapElement (append firstElements secondElements) =
+          append (map mapElement firstElements) (map mapElement secondElements)
+  | _, _, .nil, _ => rfl
+  | _, _, .cons head tail, secondElements => by
+      exact congrArg (LengthList.cons (mapElement head))
+        (map_append mapElement tail secondElements)
+
+/-- A concrete vector append computation. -/
+example :
+    append
+      (LengthList.cons 1 (LengthList.cons 2 LengthList.nil))
+      (LengthList.cons 3 LengthList.nil) =
+      LengthList.cons 1
+        (LengthList.cons 2
+          (LengthList.cons 3 LengthList.nil)) := rfl
+
 end LengthList
+
+/-- Plain structural lists for executable inductive-family smoke tests
+that do not need an index. -/
+inductive StandardList (elementType : Type firstUniverse) where
+  | nil : StandardList elementType
+  | cons : elementType → StandardList elementType → StandardList elementType
+deriving DecidableEq
+
+namespace StandardList
+
+/-- Append two standard lists. -/
+def append {elementType : Type firstUniverse} :
+    StandardList elementType → StandardList elementType → StandardList elementType
+  | .nil, secondElements => secondElements
+  | .cons head tail, secondElements => .cons head (append tail secondElements)
+
+/-- Singleton standard list. -/
+def singleton {elementType : Type firstUniverse}
+    (element : elementType) : StandardList elementType :=
+  .cons element .nil
+
+/-- Reverse a standard list. -/
+def reverse {elementType : Type firstUniverse} :
+    StandardList elementType → StandardList elementType
+  | .nil => .nil
+  | .cons head tail => append (reverse tail) (singleton head)
+
+/-- Concrete list reverse computes. -/
+example :
+    reverse
+      (StandardList.cons 1
+        (StandardList.cons 2
+          (StandardList.cons 3 StandardList.nil))) =
+      StandardList.cons 3
+        (StandardList.cons 2
+          (StandardList.cons 1 StandardList.nil)) := rfl
+
+end StandardList
+
+/-- Natural numbers expressed through the generic inductive smoke layer. -/
+inductive StandardNat where
+  | zero : StandardNat
+  | succ : StandardNat → StandardNat
+deriving DecidableEq
+
+namespace StandardNat
+
+/-- Addition by recursion on the left operand. -/
+def add : StandardNat → StandardNat → StandardNat
+  | .zero, rightValue => rightValue
+  | .succ leftValue, rightValue => .succ (add leftValue rightValue)
+
+/-- Convert smoke natural numbers to Lean `Nat` for benchmark-sized examples. -/
+def toNat : StandardNat → Nat
+  | .zero => 0
+  | .succ predecessor => predecessor.toNat + 1
+
+/-- Small numeral helpers for computation smoke tests. -/
+def one : StandardNat := .succ .zero
+
+def two : StandardNat := .succ one
+
+def three : StandardNat := .succ two
+
+def five : StandardNat := .succ (.succ three)
+
+/-- Concrete Nat addition computes. -/
+example : add two three = five := rfl
+
+/-- Addition result decodes to the expected Lean natural. -/
+example : (add two three).toNat = 5 := rfl
+
+end StandardNat
 
 /-- Constructor argument shape for the generic inductive-family
 framework.
