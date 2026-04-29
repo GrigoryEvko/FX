@@ -275,11 +275,7 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       Term context resultType
   /-- **Reflexivity introduction for identity types** — `refl rawTerm`
   inhabits `Id carrier rawTerm rawTerm` for any FX type `carrier` and
-  any closed raw term `rawTerm`.
-
-  The closed-endpoint shape (`RawTerm 0`) matches `Ty.id`'s
-  closed-endpoint signature.  Open endpoints (`λ(x y : A). Id A x y`)
-  wait for the joint Subst refactor (v2.2d).
+  any raw term `rawTerm` in the surrounding scope.
 
   This layer does NOT enforce that `rawTerm` actually inhabits
   `carrier` at the FX level — endpoint type-correctness is a
@@ -291,14 +287,14 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {mode : Mode} → {level scope : Nat} →
       {context : Ctx mode level scope} →
       {carrier : Ty level scope} →
-      (rawTerm : RawTerm 0) →
+      (rawTerm : RawTerm scope) →
       Term context (Ty.id carrier rawTerm rawTerm)
-  /-- **J eliminator for identity types** (closed-endpoint, non-dependent
+  /-- **J eliminator for identity types** (open-endpoint, non-dependent
   motive form).  Given a base case `baseCase : resultType` and a
   witness `witness : Id carrier leftEnd rightEnd`, produces a term of
   `resultType`.
 
-  In the closed-endpoint regime, a `Term.refl` witness can only
+  In this non-dependent form, a `Term.refl` witness can only
   inhabit `Id A rt rt` (both endpoints equal), so the only canonical
   J reduction is the ι-rule `J base (refl rt) ⟶ base`.  The
   non-dependent motive (`resultType : Ty level scope` instead of a
@@ -315,7 +311,7 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {mode : Mode} → {level scope : Nat} →
       {context : Ctx mode level scope} →
       {carrier : Ty level scope} →
-      {leftEnd rightEnd : RawTerm 0} →
+      {leftEnd rightEnd : RawTerm scope} →
       {resultType : Ty level scope} →
       (baseCase : Term context resultType) →
       (witness : Term context (Ty.id carrier leftEnd rightEnd)) →
@@ -453,7 +449,7 @@ def Term.rename {m scope scope'}
       Term.eitherMatch (Term.rename ρt scrutinee)
                        (Term.rename ρt leftBranch)
                        (Term.rename ρt rightBranch)
-  | _, .refl rawTerm => Term.refl rawTerm
+  | _, .refl rawTerm => Term.refl (rawTerm.rename ρ)
   | _, .idJ baseCase witness =>
       Term.idJ (Term.rename ρt baseCase) (Term.rename ρt witness)
 

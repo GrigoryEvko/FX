@@ -385,7 +385,7 @@ example :
       = Term.unit (context := EmptyCtx) :=
   Term.rename_id (Term.unit (context := EmptyCtx))
 
-/-! ### Term.refl — closed-endpoint identity-type introduction. -/
+/-! ### Term.refl — identity-type introduction. -/
 
 /-- `Term.refl true_raw : Id Bool true_raw true_raw` — the simplest
 identity witness, with carrier `Ty.bool` and both endpoints the closed
@@ -403,6 +403,15 @@ example :
 example :
     Term EmptyCtx (Ty.id Ty.unit RawTerm.unit RawTerm.unit) :=
   Term.refl RawTerm.unit
+
+/-- Open endpoint identity under a binder: in `x : Unit`, `refl x`
+inhabits `Id Unit x x`. -/
+example :
+    Term (EmptyCtx.cons Ty.unit)
+      (Ty.id Ty.unit
+        (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)
+        (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)) :=
+  Term.refl (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)
 
 /-- Iterated identity at the term level — `refl(refl(true)) :
 Id (Id Bool true true) refl(true) refl(true)`.  Carrier is itself a
@@ -482,12 +491,17 @@ example :
 
 /-- `(refl true).toRaw = refl_raw true_raw` — the bridge erases the
 identity-type annotation but preserves the reflexivity content,
-weakening the closed endpoint into the empty scope (which is a no-op
-since `weakenToScope 0` is the identity). -/
+preserving the raw endpoint in its current scope. -/
 example :
     (Term.refl (context := EmptyCtx) (carrier := Ty.bool)
-       RawTerm.boolTrue).toRaw
+        RawTerm.boolTrue).toRaw
       = RawTerm.refl RawTerm.boolTrue := rfl
+
+/-- Open refl endpoints survive `toRaw` without closed-scope embedding. -/
+example :
+    (Term.refl (context := EmptyCtx.cons Ty.unit) (carrier := Ty.unit)
+        (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)).toRaw
+      = RawTerm.refl (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩) := rfl
 
 /-- `weakenToScope 0 rt = rt` — the base case is the identity. -/
 example (rt : RawTerm 0) : RawTerm.weakenToScope 0 rt = rt := rfl

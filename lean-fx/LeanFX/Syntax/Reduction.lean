@@ -533,7 +533,7 @@ inductive Step :
   /-- Step inside `Term.idJ`'s baseCase position. -/
   | idJBase :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
-        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
         {resultType : Ty level scope}
         {baseCase baseCase' : Term ctx resultType}
         {witness : Term ctx (Ty.id carrier leftEnd rightEnd)},
@@ -542,7 +542,7 @@ inductive Step :
   /-- Step inside `Term.idJ`'s witness position. -/
   | idJWitness :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
-        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
         {resultType : Ty level scope}
         (baseCase : Term ctx resultType)
         {witness witness' : Term ctx (Ty.id carrier leftEnd rightEnd)},
@@ -555,7 +555,7 @@ inductive Step :
   cast through the path's transport, deferred to v2.3+). -/
   | iotaIdJRefl :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
-        {carrier : Ty level scope} {endpoint : RawTerm 0}
+        {carrier : Ty level scope} {endpoint : RawTerm scope}
         {resultType : Ty level scope}
         (baseCase : Term ctx resultType),
       Step (Term.idJ (carrier := carrier) (leftEnd := endpoint)
@@ -1163,7 +1163,7 @@ inductive Step.par :
   /-- Parallel reduction inside both positions of `Term.idJ`. -/
   | idJ :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
-        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+        {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
         {resultType : Ty level scope}
         {baseCase baseCase' : Term ctx resultType}
         {witness witness' : Term ctx (Ty.id carrier leftEnd rightEnd)},
@@ -1175,7 +1175,7 @@ inductive Step.par :
   parallel reduction in baseCase. -/
   | iotaIdJRefl :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
-        {carrier : Ty level scope} {endpoint : RawTerm 0}
+        {carrier : Ty level scope} {endpoint : RawTerm scope}
         {resultType : Ty level scope}
         {baseCase baseCase' : Term ctx resultType},
       Step.par baseCase baseCase' →
@@ -2184,7 +2184,7 @@ theorem Conv.eitherMatch_cong
 
 /-- Definitional equivalence threads through `Term.idJ`'s baseCase. -/
 theorem Conv.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
-    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
     {baseCase₁ baseCase₂ : Term ctx resultType}
     (witness : Term ctx (Ty.id carrier leftEnd rightEnd))
@@ -2198,7 +2198,7 @@ theorem Conv.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
 
 /-- Definitional equivalence threads through `Term.idJ`'s witness. -/
 theorem Conv.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
-    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
     (baseCase : Term ctx resultType)
     {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}
@@ -2212,7 +2212,7 @@ theorem Conv.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
 
 /-- Definitional equivalence threads through both `Term.idJ` positions. -/
 theorem Conv.idJ_cong {mode level scope} {ctx : Ctx mode level scope}
-    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
     {baseCase₁ baseCase₂ : Term ctx resultType}
     {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}
@@ -2541,7 +2541,7 @@ which consumes them). -/
 
 /-- Multi-step reduction threads through `Term.idJ`'s baseCase. -/
 theorem StepStar.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
-    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
     {baseCase₁ baseCase₂ : Term ctx resultType}
     (witness : Term ctx (Ty.id carrier leftEnd rightEnd)) :
@@ -2554,7 +2554,7 @@ theorem StepStar.idJ_cong_base {mode level scope} {ctx : Ctx mode level scope}
 
 /-- Multi-step reduction threads through `Term.idJ`'s witness. -/
 theorem StepStar.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope}
-    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
     (baseCase : Term ctx resultType)
     {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)} :
@@ -2567,7 +2567,7 @@ theorem StepStar.idJ_cong_witness {mode level scope} {ctx : Ctx mode level scope
 
 /-- Multi-step reduction threads through both positions of `Term.idJ`. -/
 theorem StepStar.idJ_cong {mode level scope} {ctx : Ctx mode level scope}
-    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm 0}
+    {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
     {baseCase₁ baseCase₂ : Term ctx resultType}
     {witness₁ witness₂ : Term ctx (Ty.id carrier leftEnd rightEnd)}

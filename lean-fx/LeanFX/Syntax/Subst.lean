@@ -115,7 +115,8 @@ def Ty.subst {level source target : Nat} :
   | .option elemType, σ => .option (Ty.subst elemType σ)
   | .either leftType rightType, σ =>
       .either (Ty.subst leftType σ) (Ty.subst rightType σ)
-  | .id carrier lhs rhs, σ => .id (Ty.subst carrier σ) lhs rhs
+  | .id carrier lhs rhs, σ =>
+      .id (Ty.subst carrier σ) (lhs.subst σ.forRaw) (rhs.subst σ.forRaw)
 
 /-- Substitute the outermost variable of a type with a `Ty` value.
 Used by `Term.appPi` to compute the result type of dependent
@@ -246,10 +247,12 @@ theorem Ty.subst_congr {level s t : Nat} {σ₁ σ₂ : Subst level s t}
       have hRight := Ty.subst_congr h rightType
       exact hLeft ▸ hRight ▸ rfl
   | .id carrier lhs rhs => by
-      show Ty.id (carrier.subst σ₁) lhs rhs
-         = Ty.id (carrier.subst σ₂) lhs rhs
+      show Ty.id (carrier.subst σ₁) (lhs.subst σ₁.forRaw) (rhs.subst σ₁.forRaw)
+         = Ty.id (carrier.subst σ₂) (lhs.subst σ₂.forRaw) (rhs.subst σ₂.forRaw)
       have hCarrier := Ty.subst_congr h carrier
-      exact hCarrier ▸ rfl
+      have hLeft := RawTerm.subst_congr (Subst.equiv_forRaw h) lhs
+      have hRight := RawTerm.subst_congr (Subst.equiv_forRaw h) rhs
+      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
 
 /-- Substitution composed with rawRenaming: applies the substitution
 first, then renames each substituent.  The "after" naming follows
@@ -351,10 +354,16 @@ theorem Ty.subst_rename_commute {level s m t : Nat} :
       have hRight := Ty.subst_rename_commute rightType σ ρ
       exact hLeft ▸ hRight ▸ rfl
   | .id carrier lhs rhs, σ, ρ => by
-      show Ty.id ((carrier.subst σ).rename ρ) lhs rhs
-         = Ty.id (carrier.subst (Subst.renameAfter σ ρ)) lhs rhs
+      show Ty.id ((carrier.subst σ).rename ρ)
+                 ((lhs.subst σ.forRaw).rename ρ)
+                 ((rhs.subst σ.forRaw).rename ρ)
+         = Ty.id (carrier.subst (Subst.renameAfter σ ρ))
+                 (lhs.subst (Subst.renameAfter σ ρ).forRaw)
+                 (rhs.subst (Subst.renameAfter σ ρ).forRaw)
       have hCarrier := Ty.subst_rename_commute carrier σ ρ
-      exact hCarrier ▸ rfl
+      have hLeft := RawTerm.rename_subst_commute lhs σ.forRaw ρ
+      have hRight := RawTerm.rename_subst_commute rhs σ.forRaw ρ
+      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
 
 /-- Renaming followed by substitution: precompose the rawRenaming, then
 substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
@@ -459,10 +468,16 @@ theorem Ty.rename_subst_commute {level s m t : Nat} :
       have hRight := Ty.rename_subst_commute rightType ρ σ
       exact hLeft ▸ hRight ▸ rfl
   | .id carrier lhs rhs, ρ, σ => by
-      show Ty.id ((carrier.rename ρ).subst σ) lhs rhs
-         = Ty.id (carrier.subst (Subst.precompose ρ σ)) lhs rhs
+      show Ty.id ((carrier.rename ρ).subst σ)
+                 ((lhs.rename ρ).subst σ.forRaw)
+                 ((rhs.rename ρ).subst σ.forRaw)
+         = Ty.id (carrier.subst (Subst.precompose ρ σ))
+                 (lhs.subst (Subst.precompose ρ σ).forRaw)
+                 (rhs.subst (Subst.precompose ρ σ).forRaw)
       have hCarrier := Ty.rename_subst_commute carrier ρ σ
-      exact hCarrier ▸ rfl
+      have hLeft := RawTerm.subst_rename_commute lhs ρ σ.forRaw
+      have hRight := RawTerm.subst_rename_commute rhs ρ σ.forRaw
+      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
 
 /-! ## Renaming as a special case of substitution.
 
@@ -504,6 +519,43 @@ theorem Renaming.lift_toSubst_equiv {s t : Nat} (ρ : Renaming s t) :
       match position with
       | ⟨0, _⟩      => rfl
       | ⟨_ + 1, _⟩  => rfl
+
+/-- Raw renaming is raw substitution by variable terms. -/
+theorem RawTerm.rename_eq_subst {level source target : Nat} :
+    ∀ (rawTerm : RawTerm source) (rawRenaming : Renaming source target),
+      rawTerm.rename rawRenaming =
+        rawTerm.subst (Renaming.toSubst (level := level) rawRenaming).forRaw
+  | rawTerm, rawRenaming => by
+      have renamedThenIdentitySubstituted :
+          (rawTerm.rename rawRenaming).subst RawTermSubst.identity =
+            rawTerm.subst
+              (RawTermSubst.afterRenaming rawRenaming RawTermSubst.identity) :=
+        RawTerm.subst_rename_commute rawTerm rawRenaming RawTermSubst.identity
+      have identitySubstitutionIsNeutral :
+          (rawTerm.rename rawRenaming).subst RawTermSubst.identity =
+            rawTerm.rename rawRenaming :=
+        RawTerm.subst_id (rawTerm.rename rawRenaming)
+      have rawSubstitutionsAreEquivalent :
+          RawTermSubst.equiv
+            (RawTermSubst.afterRenaming rawRenaming RawTermSubst.identity)
+            (Renaming.toSubst (level := level) rawRenaming).forRaw :=
+        fun _ => rfl
+      have endpointsAreCongruent :=
+        RawTerm.subst_congr rawSubstitutionsAreEquivalent rawTerm
+      exact identitySubstitutionIsNeutral.symm.trans
+        (renamedThenIdentitySubstituted.trans endpointsAreCongruent)
+
+/-- Raw renaming by identity is neutral. -/
+theorem RawTerm.rename_identity {level scope : Nat} (rawTerm : RawTerm scope) :
+    rawTerm.rename Renaming.identity = rawTerm :=
+  let renamingIdEqSubstId :
+      RawTermSubst.equiv
+        (Renaming.toSubst (level := level) (@Renaming.identity scope)).forRaw
+        RawTermSubst.identity :=
+    fun _ => rfl
+  (RawTerm.rename_eq_subst (level := level) rawTerm Renaming.identity).trans
+    ((RawTerm.subst_congr renamingIdEqSubstId rawTerm).trans
+      (RawTerm.subst_id rawTerm))
 
 /-- **Renaming = Substitution** under the natural coercion.  This is
 the conceptual cap of the v1.7 substitution discipline: rawRenaming is
@@ -558,10 +610,14 @@ theorem Ty.rename_eq_subst {level s t : Nat} :
       have hRight := Ty.rename_eq_subst rightType ρ
       exact hLeft ▸ hRight ▸ rfl
   | .id carrier lhs rhs, ρ => by
-      show Ty.id (carrier.rename ρ) lhs rhs
-         = Ty.id (carrier.subst (Renaming.toSubst ρ)) lhs rhs
+      show Ty.id (carrier.rename ρ) (lhs.rename ρ) (rhs.rename ρ)
+         = Ty.id (carrier.subst (Renaming.toSubst ρ))
+                 (lhs.subst (Renaming.toSubst (level := level) ρ).forRaw)
+                 (rhs.subst (Renaming.toSubst (level := level) ρ).forRaw)
       have hCarrier := Ty.rename_eq_subst carrier ρ
-      exact hCarrier ▸ rfl
+      have hLeft := RawTerm.rename_eq_subst (level := level) lhs ρ
+      have hRight := RawTerm.rename_eq_subst (level := level) rhs ρ
+      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
 
 /-! ## Categorical structure: identity and composition.
 
@@ -659,9 +715,13 @@ theorem Ty.subst_id {level scope : Nat} :
       exact hLeft.symm ▸ hRight.symm ▸ rfl
   | .id carrier lhs rhs => by
       have hCarrier := Ty.subst_id carrier
-      show Ty.id (carrier.subst Subst.identity) lhs rhs
+      have hLeft := RawTerm.subst_id lhs
+      have hRight := RawTerm.subst_id rhs
+      show Ty.id (carrier.subst Subst.identity)
+                 (lhs.subst Subst.identity.forRaw)
+                 (rhs.subst Subst.identity.forRaw)
          = Ty.id carrier lhs rhs
-      exact hCarrier.symm ▸ rfl
+      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
@@ -779,10 +839,16 @@ theorem Ty.subst_compose {level s m t : Nat} :
       have hRight := Ty.subst_compose rightType σ₁ σ₂
       exact hLeft ▸ hRight ▸ rfl
   | .id carrier lhs rhs, σ₁, σ₂ => by
-      show Ty.id ((carrier.subst σ₁).subst σ₂) lhs rhs
-         = Ty.id (carrier.subst (Subst.compose σ₁ σ₂)) lhs rhs
+      show Ty.id ((carrier.subst σ₁).subst σ₂)
+                 ((lhs.subst σ₁.forRaw).subst σ₂.forRaw)
+                 ((rhs.subst σ₁.forRaw).subst σ₂.forRaw)
+         = Ty.id (carrier.subst (Subst.compose σ₁ σ₂))
+                 (lhs.subst (Subst.compose σ₁ σ₂).forRaw)
+                 (rhs.subst (Subst.compose σ₁ σ₂).forRaw)
       have hCarrier := Ty.subst_compose carrier σ₁ σ₂
-      exact hCarrier ▸ rfl
+      have hLeft := RawTerm.subst_compose lhs σ₁.forRaw σ₂.forRaw
+      have hRight := RawTerm.subst_compose rhs σ₁.forRaw σ₂.forRaw
+      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
 
 /-! ## Monoid laws for Renaming and Subst.
 

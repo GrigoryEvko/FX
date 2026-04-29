@@ -25,8 +25,8 @@ Each intrinsic constructor maps to the corresponding raw constructor:
   * `pair`/`fst`/`snd` — direct.
   * `boolElim`/`natElim`/`natRec`/`listElim`/`optionMatch`/
     `eitherMatch` — direct (the result-type annotation is erased).
-  * `refl rawTerm` — the rawTerm endpoint is closed (`RawTerm 0`),
-    embedded into the context's scope via `RawTerm.weakenToScope`.
+  * `refl rawTerm` — the open raw endpoint is already in the
+    surrounding context scope.
 
 Subterms recurse with the appropriate scope: lam-bodies recurse at
 `scope + 1`, all others at the same `scope`. -/
@@ -68,7 +68,7 @@ def Term.toRaw {mode : Mode} {level scope : Nat} {context : Ctx mode level scope
   | _, .eitherMatch scrutinee leftBranch rightBranch =>
       RawTerm.eitherMatch scrutinee.toRaw leftBranch.toRaw rightBranch.toRaw
   | _, .refl rawTerm     =>
-      RawTerm.refl (RawTerm.weakenToScope scope rawTerm)
+      RawTerm.refl rawTerm
   | _, .idJ baseCase witness =>
       RawTerm.idJ baseCase.toRaw witness.toRaw
 

@@ -214,7 +214,7 @@ def Term.subst {m scope scope'}
       Term.eitherMatch (Term.subst σt scrutinee)
                        (Term.subst σt leftBranch)
                        (Term.subst σt rightBranch)
-  | _, .refl rawTerm => Term.refl rawTerm
+  | _, .refl rawTerm => Term.refl (rawTerm.subst σ.forRaw)
   | _, .idJ baseCase witness =>
       Term.idJ (Term.subst σt baseCase) (Term.subst σt witness)
 
@@ -687,7 +687,7 @@ theorem Term.eitherMatch_HEq_congr
   rfl
 
 /-- HEq congruence for `Term.refl`.  Only the `carrier` Ty varies
-between sides; the closed-endpoint `rawTerm : RawTerm 0` is shared
+between sides; the open endpoint `rawTerm : RawTerm scope` is shared
 verbatim, so it does not need an HEq parameter.  Two
 propositionally-distinct carriers produce `Term`s at
 propositionally-distinct types `Ty.id carrier₁ rawTerm rawTerm` vs
@@ -696,10 +696,11 @@ h_carrier`. -/
 theorem Term.refl_HEq_congr
     {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     {carrier₁ carrier₂ : Ty level scope} (h_carrier : carrier₁ = carrier₂)
-    (rawTerm : RawTerm 0) :
-    HEq (Term.refl (context := Γ) (carrier := carrier₁) rawTerm)
-        (Term.refl (context := Γ) (carrier := carrier₂) rawTerm) := by
+    {rawTerm₁ rawTerm₂ : RawTerm scope} (h_rawTerm : rawTerm₁ = rawTerm₂) :
+    HEq (Term.refl (context := Γ) (carrier := carrier₁) rawTerm₁)
+        (Term.refl (context := Γ) (carrier := carrier₂) rawTerm₂) := by
   cases h_carrier
+  cases h_rawTerm
   rfl
 
 /-- HEq congruence for `Term.idJ`.  Four Ty-level equations (carrier,
@@ -710,8 +711,8 @@ three equations before HEq collapses to plain equality. -/
 theorem Term.idJ_HEq_congr
     {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     {carrier₁ carrier₂ : Ty level scope} (h_carrier : carrier₁ = carrier₂)
-    {leftEnd₁ leftEnd₂ : RawTerm 0} (h_leftEnd : leftEnd₁ = leftEnd₂)
-    {rightEnd₁ rightEnd₂ : RawTerm 0} (h_rightEnd : rightEnd₁ = rightEnd₂)
+    {leftEnd₁ leftEnd₂ : RawTerm scope} (h_leftEnd : leftEnd₁ = leftEnd₂)
+    {rightEnd₁ rightEnd₂ : RawTerm scope} (h_rightEnd : rightEnd₁ = rightEnd₂)
     {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
     (base₁ : Term Γ result₁) (base₂ : Term Γ result₂) (h_base : HEq base₁ base₂)
     (witness₁ : Term Γ (Ty.id carrier₁ leftEnd₁ rightEnd₁))
@@ -1164,12 +1165,17 @@ theorem Term.subst_HEq_pointwise
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise rightBranch)
   | _, .refl (carrier := carrier) rawTerm => by
     cases h_ctx
-    exact Term.refl_HEq_congr (Ty.subst_congr h_subst carrier) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    exact Term.refl_HEq_congr
+      (Ty.subst_congr h_subst carrier)
+      (RawTerm.subst_congr (Subst.equiv_forRaw h_subst) rawTerm)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness => by
     cases h_ctx
     exact Term.idJ_HEq_congr
-      (Ty.subst_congr h_subst carrier) rfl rfl
+      (Ty.subst_congr h_subst carrier)
+      (RawTerm.subst_congr (Subst.equiv_forRaw h_subst) leftEnd)
+      (RawTerm.subst_congr (Subst.equiv_forRaw h_subst) rightEnd)
       (Ty.subst_congr h_subst result)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise baseCase)
       _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise witness)
@@ -1299,11 +1305,12 @@ theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope
       _ _ (Term.subst_id_HEq leftBranch)
       _ _ (Term.subst_id_HEq rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
-    Term.refl_HEq_congr (Ty.subst_id carrier) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    Term.refl_HEq_congr (Ty.subst_id carrier) (RawTerm.subst_id rawTerm)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.subst_id carrier) rfl rfl
+      (Ty.subst_id carrier) (RawTerm.subst_id leftEnd) (RawTerm.subst_id rightEnd)
       (Ty.subst_id result)
       _ _ (Term.subst_id_HEq baseCase)
       _ _ (Term.subst_id_HEq witness)
@@ -1638,12 +1645,17 @@ theorem Term.rename_HEq_pointwise
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ rightBranch)
   | _, .refl (carrier := carrier) rawTerm => by
     cases h_ctx
-    exact Term.refl_HEq_congr (Ty.rename_congr h_ρ carrier) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    exact Term.refl_HEq_congr
+      (Ty.rename_congr h_ρ carrier)
+      (RawTerm.rename_congr h_ρ rawTerm)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness => by
     cases h_ctx
     exact Term.idJ_HEq_congr
-      (Ty.rename_congr h_ρ carrier) rfl rfl
+      (Ty.rename_congr h_ρ carrier)
+      (RawTerm.rename_congr h_ρ leftEnd)
+      (RawTerm.rename_congr h_ρ rightEnd)
       (Ty.rename_congr h_ρ result)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ baseCase)
       _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ witness)
@@ -1849,11 +1861,16 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       _ _ (Term.rename_id_HEq leftBranch)
       _ _ (Term.rename_id_HEq rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
-    Term.refl_HEq_congr (Ty.rename_identity carrier) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    Term.refl_HEq_congr
+      (Ty.rename_identity carrier)
+      (RawTerm.rename_identity (level := level) rawTerm)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.rename_identity carrier) rfl rfl
+      (Ty.rename_identity carrier)
+      (RawTerm.rename_identity (level := level) leftEnd)
+      (RawTerm.rename_identity (level := level) rightEnd)
       (Ty.rename_identity result)
       _ _ (Term.rename_id_HEq baseCase)
       _ _ (Term.rename_id_HEq witness)
@@ -2138,11 +2155,16 @@ theorem Term.rename_compose_HEq
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ leftBranch)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
-    Term.refl_HEq_congr (Ty.rename_compose carrier ρ₁ ρ₂) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    Term.refl_HEq_congr
+      (Ty.rename_compose carrier ρ₁ ρ₂)
+      (RawTerm.rename_compose rawTerm ρ₁ ρ₂)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.rename_compose carrier ρ₁ ρ₂) rfl rfl
+      (Ty.rename_compose carrier ρ₁ ρ₂)
+      (RawTerm.rename_compose leftEnd ρ₁ ρ₂)
+      (RawTerm.rename_compose rightEnd ρ₁ ρ₂)
       (Ty.rename_compose result ρ₁ ρ₂)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ baseCase)
       _ _ (Term.rename_compose_HEq ρt₁ ρt₂ witness)
@@ -2648,11 +2670,16 @@ theorem Term.subst_rename_commute_HEq
       _ _ (Term.subst_rename_commute_HEq σt ρt leftBranch)
       _ _ (Term.subst_rename_commute_HEq σt ρt rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
-    Term.refl_HEq_congr (Ty.subst_rename_commute carrier σ ρ) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    Term.refl_HEq_congr
+      (Ty.subst_rename_commute carrier σ ρ)
+      (RawTerm.rename_subst_commute rawTerm σ.forRaw ρ)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.subst_rename_commute carrier σ ρ) rfl rfl
+      (Ty.subst_rename_commute carrier σ ρ)
+      (RawTerm.rename_subst_commute leftEnd σ.forRaw ρ)
+      (RawTerm.rename_subst_commute rightEnd σ.forRaw ρ)
       (Ty.subst_rename_commute result σ ρ)
       _ _ (Term.subst_rename_commute_HEq σt ρt baseCase)
       _ _ (Term.subst_rename_commute_HEq σt ρt witness)
@@ -2901,11 +2928,16 @@ theorem Term.rename_subst_commute_HEq
       _ _ (Term.rename_subst_commute_HEq ρt σt' leftBranch)
       _ _ (Term.rename_subst_commute_HEq ρt σt' rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
-    Term.refl_HEq_congr (Ty.rename_subst_commute carrier ρ σ') rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    Term.refl_HEq_congr
+      (Ty.rename_subst_commute carrier ρ σ')
+      (RawTerm.subst_rename_commute rawTerm ρ σ'.forRaw)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.rename_subst_commute carrier ρ σ') rfl rfl
+      (Ty.rename_subst_commute carrier ρ σ')
+      (RawTerm.subst_rename_commute leftEnd ρ σ'.forRaw)
+      (RawTerm.subst_rename_commute rightEnd ρ σ'.forRaw)
       (Ty.rename_subst_commute result ρ σ')
       _ _ (Term.rename_subst_commute_HEq ρt σt' baseCase)
       _ _ (Term.rename_subst_commute_HEq ρt σt' witness)
@@ -3287,11 +3319,16 @@ theorem Term.subst_compose_HEq
       _ _ (Term.subst_compose_HEq σt₁ σt₂ leftBranch)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
-    Term.refl_HEq_congr (Ty.subst_compose carrier σ₁ σ₂) rawTerm
-  | _, .idJ (carrier := carrier) (resultType := result)
+    Term.refl_HEq_congr
+      (Ty.subst_compose carrier σ₁ σ₂)
+      (RawTerm.subst_compose rawTerm σ₁.forRaw σ₂.forRaw)
+  | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
+            (resultType := result)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.subst_compose carrier σ₁ σ₂) rfl rfl
+      (Ty.subst_compose carrier σ₁ σ₂)
+      (RawTerm.subst_compose leftEnd σ₁.forRaw σ₂.forRaw)
+      (RawTerm.subst_compose rightEnd σ₁.forRaw σ₂.forRaw)
       (Ty.subst_compose result σ₁ σ₂)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ baseCase)
       _ _ (Term.subst_compose_HEq σt₁ σt₂ witness)

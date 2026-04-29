@@ -90,15 +90,9 @@ inductive Ty : Nat → Nat → Type
              (rightType : Ty level scope) →
              Ty level scope
   /-- **Identity type** — propositional equality between two raw
-  terms.  The endpoints `lhs` and `rhs` are `RawTerm 0` (closed) in
-  this slice; the open-endpoint extension `(lhs rhs : RawTerm scope)`
-  requires the joint Subst refactor (v2.3+) since substitution must
-  thread through endpoint variable references.
-
-  Closed-endpoint identity types cover canonical examples
-  (`Id Bool true true`, `Id Nat (succ zero) (succ zero)`,
-  `Id (Bool → Bool) (λx.x) (λx.x)`).  Identity types over bound
-  variables (`λ(x y : A). Id A x y`) need the open extension.
+  terms in the same scope as the carrier.  Open endpoints allow
+  identity types under binders, e.g. `λ(x y : A). Id A x y`, without
+  making `Ty` mutually recursive with intrinsic `Term`.
 
   The constructor reuses RawTerm — the substrate landed in v2.2a —
   in argument position, sequentially after RawTerm's full
@@ -108,14 +102,14 @@ inductive Ty : Nat → Nat → Type
   type. -/
   | id : {level scope : Nat} →
          (carrier : Ty level scope) →
-         (lhs : RawTerm 0) →
-         (rhs : RawTerm 0) →
+         (lhs : RawTerm scope) →
+         (rhs : RawTerm scope) →
          Ty level scope
 
 /-! Decidable equality on `Ty` — auto-derives axiom-free because
-`Ty`'s indices are bare `Nat`s.  The new `Ty.id` constructor adds
-a `RawTerm 0` field which also has decidable equality (auto-derived
-below via `deriving instance DecidableEq for RawTerm`). -/
+`Ty`'s indices are bare `Nat`s.  The `Ty.id` constructor carries
+`RawTerm scope` endpoint fields, which also have decidable equality
+via the auto-derived `RawTerm` instance. -/
 deriving instance DecidableEq for RawTerm
 deriving instance DecidableEq for Ty
 
@@ -154,28 +148,6 @@ def Renaming.lift {source target : Nat}
   | ⟨0, _⟩      => ⟨0, Nat.zero_lt_succ _⟩
   | ⟨k + 1, h⟩  => Fin.succ (ρ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
 
-/-- Apply a rawRenaming to a type, structurally.  The `piTy` case lifts
-the rawRenaming under the new binder; the recursive call on the codomain
-receives a rawRenaming whose source scope is `source + 1` — definitionally
-matching the codomain's scope.  No axioms required.
-
-This is the more primitive operation; `Ty.weaken` is derived from it. -/
-def Ty.rename {level source target : Nat} :
-    Ty level source → Renaming source target → Ty level target
-  | .unit, _          => .unit
-  | .arrow A B, ρ     => .arrow (A.rename ρ) (B.rename ρ)
-  | .piTy A B, ρ      => .piTy (A.rename ρ) (B.rename ρ.lift)
-  | .tyVar i, ρ       => .tyVar (ρ i)
-  | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
-  | .bool, _          => .bool
-  | .universe u h, _  => .universe u h
-  | .nat, _           => .nat
-  | .list elemType, ρ => .list (elemType.rename ρ)
-  | .option elemType, ρ => .option (elemType.rename ρ)
-  | .either leftType rightType, ρ =>
-      .either (leftType.rename ρ) (rightType.rename ρ)
-  | .id carrier lhs rhs, ρ => .id (carrier.rename ρ) lhs rhs
-
 /-! ## Rename composition algebra.
 
 `Ty.rename_congr` and `Ty.rename_compose` proved by direct structural
@@ -195,55 +167,6 @@ theorem Renaming.lift_equiv {s t : Nat} {ρ₁ ρ₂ : Renaming s t}
   | ⟨0, _⟩      => rfl
   | ⟨k + 1, hk⟩ =>
       congrArg Fin.succ (h ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
-
-/-- Pointwise-equivalent renamings produce equal results on every
-type.  Direct structural induction on `Ty`, using `Renaming.lift_equiv`
-for the binder cases.  No subst infrastructure required. -/
-theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
-    (h : Renaming.equiv ρ₁ ρ₂) :
-    ∀ T : Ty level s, T.rename ρ₁ = T.rename ρ₂
-  | .unit         => rfl
-  | .arrow A B    => by
-      show Ty.arrow (A.rename ρ₁) (B.rename ρ₁)
-         = Ty.arrow (A.rename ρ₂) (B.rename ρ₂)
-      have hA := Ty.rename_congr h A
-      have hB := Ty.rename_congr h B
-      exact hA ▸ hB ▸ rfl
-  | .piTy A B     => by
-      show Ty.piTy (A.rename ρ₁) (B.rename ρ₁.lift)
-         = Ty.piTy (A.rename ρ₂) (B.rename ρ₂.lift)
-      have hA := Ty.rename_congr h A
-      have hB := Ty.rename_congr (Renaming.lift_equiv h) B
-      exact hA ▸ hB ▸ rfl
-  | .tyVar i      => congrArg Ty.tyVar (h i)
-  | .sigmaTy A B  => by
-      show Ty.sigmaTy (A.rename ρ₁) (B.rename ρ₁.lift)
-         = Ty.sigmaTy (A.rename ρ₂) (B.rename ρ₂.lift)
-      have hA := Ty.rename_congr h A
-      have hB := Ty.rename_congr (Renaming.lift_equiv h) B
-      exact hA ▸ hB ▸ rfl
-  | .bool         => rfl
-  | .universe _ _ => rfl
-  | .nat          => rfl
-  | .list elemType => by
-      show Ty.list (elemType.rename ρ₁) = Ty.list (elemType.rename ρ₂)
-      have hElem := Ty.rename_congr h elemType
-      exact hElem ▸ rfl
-  | .option elemType => by
-      show Ty.option (elemType.rename ρ₁) = Ty.option (elemType.rename ρ₂)
-      have hElem := Ty.rename_congr h elemType
-      exact hElem ▸ rfl
-  | .either leftType rightType => by
-      show Ty.either (leftType.rename ρ₁) (rightType.rename ρ₁)
-         = Ty.either (leftType.rename ρ₂) (rightType.rename ρ₂)
-      have hLeft  := Ty.rename_congr h leftType
-      have hRight := Ty.rename_congr h rightType
-      exact hLeft ▸ hRight ▸ rfl
-  | .id carrier lhs rhs => by
-      show Ty.id (carrier.rename ρ₁) lhs rhs
-         = Ty.id (carrier.rename ρ₂) lhs rhs
-      have hCarrier := Ty.rename_congr h carrier
-      exact hCarrier ▸ rfl
 
 /-- Compose two renamings: apply `ρ₁` first, then `ρ₂`. -/
 def Renaming.compose {s m t : Nat}
@@ -269,101 +192,6 @@ theorem Renaming.lift_identity_equiv {scope : Nat} :
     Renaming.equiv (@Renaming.identity scope).lift Renaming.identity
   | ⟨0, _⟩      => rfl
   | ⟨_ + 1, _⟩  => rfl
-
-/-- **Renaming composition** at the `Ty` level.  Direct structural
-induction on `T`; the binder cases use `Ty.rename_congr` plus
-`Renaming.lift_compose_equiv` to bridge the lifted-then-composed and
-composed-then-lifted forms. -/
-theorem Ty.rename_compose {level s m t : Nat} :
-    ∀ (T : Ty level s) (ρ₁ : Renaming s m) (ρ₂ : Renaming m t),
-    (T.rename ρ₁).rename ρ₂ = T.rename (Renaming.compose ρ₁ ρ₂)
-  | .unit, _, _ => rfl
-  | .arrow A B, ρ₁, ρ₂ => by
-      show Ty.arrow ((A.rename ρ₁).rename ρ₂) ((B.rename ρ₁).rename ρ₂)
-         = Ty.arrow (A.rename (Renaming.compose ρ₁ ρ₂))
-                    (B.rename (Renaming.compose ρ₁ ρ₂))
-      have hA := Ty.rename_compose A ρ₁ ρ₂
-      have hB := Ty.rename_compose B ρ₁ ρ₂
-      exact hA ▸ hB ▸ rfl
-  | .piTy A B, ρ₁, ρ₂ => by
-      show Ty.piTy ((A.rename ρ₁).rename ρ₂)
-                   ((B.rename ρ₁.lift).rename ρ₂.lift)
-         = Ty.piTy (A.rename (Renaming.compose ρ₁ ρ₂))
-                   (B.rename (Renaming.compose ρ₁ ρ₂).lift)
-      have hA := Ty.rename_compose A ρ₁ ρ₂
-      have hB := Ty.rename_compose B ρ₁.lift ρ₂.lift
-      have hLift :=
-        Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
-      exact hA ▸ (hB.trans hLift) ▸ rfl
-  | .tyVar _, _, _ => rfl
-  | .sigmaTy A B, ρ₁, ρ₂ => by
-      show Ty.sigmaTy ((A.rename ρ₁).rename ρ₂)
-                      ((B.rename ρ₁.lift).rename ρ₂.lift)
-         = Ty.sigmaTy (A.rename (Renaming.compose ρ₁ ρ₂))
-                      (B.rename (Renaming.compose ρ₁ ρ₂).lift)
-      have hA := Ty.rename_compose A ρ₁ ρ₂
-      have hB := Ty.rename_compose B ρ₁.lift ρ₂.lift
-      have hLift :=
-        Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
-      exact hA ▸ (hB.trans hLift) ▸ rfl
-  | .bool, _, _ => rfl
-  | .universe _ _, _, _ => rfl
-  | .nat, _, _ => rfl
-  | .list elemType, ρ₁, ρ₂ => by
-      show Ty.list ((elemType.rename ρ₁).rename ρ₂)
-         = Ty.list (elemType.rename (Renaming.compose ρ₁ ρ₂))
-      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
-      exact hElem ▸ rfl
-  | .option elemType, ρ₁, ρ₂ => by
-      show Ty.option ((elemType.rename ρ₁).rename ρ₂)
-         = Ty.option (elemType.rename (Renaming.compose ρ₁ ρ₂))
-      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
-      exact hElem ▸ rfl
-  | .either leftType rightType, ρ₁, ρ₂ => by
-      show Ty.either ((leftType.rename ρ₁).rename ρ₂)
-                     ((rightType.rename ρ₁).rename ρ₂)
-         = Ty.either (leftType.rename (Renaming.compose ρ₁ ρ₂))
-                     (rightType.rename (Renaming.compose ρ₁ ρ₂))
-      have hLeft  := Ty.rename_compose leftType ρ₁ ρ₂
-      have hRight := Ty.rename_compose rightType ρ₁ ρ₂
-      exact hLeft ▸ hRight ▸ rfl
-  | .id carrier lhs rhs, ρ₁, ρ₂ => by
-      show Ty.id ((carrier.rename ρ₁).rename ρ₂) lhs rhs
-         = Ty.id (carrier.rename (Renaming.compose ρ₁ ρ₂)) lhs rhs
-      have hCarrier := Ty.rename_compose carrier ρ₁ ρ₂
-      exact hCarrier ▸ rfl
-
-/-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
-Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
-stays fixed via `Renaming.weaken.lift` while outer references shift.
-Eliminates the v1.0 latent bug where `(piTy A B).weaken` shifted every
-variable in `B`, including the local binder.
-
-Marked `@[reducible]` so Lean's unifier and `rfl` unfold it eagerly. -/
-@[reducible]
-def Ty.weaken {level scope : Nat} (T : Ty level scope) : Ty level (scope + 1) :=
-  T.rename Renaming.weaken
-
-/-- The fundamental rename-weaken commutativity lemma.  Says that
-weakening (insert outer binder) commutes with rawRenaming when the
-rawRenaming is appropriately lifted.
-
-In v1.10, this is derived from `Ty.rename_compose` plus pointwise
-rawRenaming equivalence: both sides become `T.rename` applied to two
-renamings that agree pointwise (both equal `Fin.succ ∘ ρ` modulo Fin
-proof irrelevance). -/
-theorem Ty.rename_weaken_commute {level source target : Nat}
-    (T : Ty level source) (ρ : Renaming source target) :
-    (T.weaken).rename ρ.lift = (T.rename ρ).weaken := by
-  show (T.rename Renaming.weaken).rename ρ.lift
-     = (T.rename ρ).rename Renaming.weaken
-  have hSwap :
-      Renaming.equiv (Renaming.compose Renaming.weaken ρ.lift)
-                     (Renaming.compose ρ Renaming.weaken) := fun _ => rfl
-  exact (Ty.rename_compose T Renaming.weaken ρ.lift).trans
-          ((Ty.rename_congr hSwap T).trans
-            (Ty.rename_compose T ρ Renaming.weaken).symm)
-
 /-! ## RawTerm rawRenaming.
 
 `RawTerm` uses the same `Renaming` machinery as `Ty` — purely
@@ -812,5 +640,179 @@ times via structural recursion on `target` — zero axioms. -/
 def RawTerm.weakenToScope : (target : Nat) → RawTerm 0 → RawTerm target
   | 0,         rawTerm => rawTerm
   | step + 1,  rawTerm => (RawTerm.weakenToScope step rawTerm).weaken
+
+/-- Apply a rawRenaming to a type, structurally.  The `piTy` case lifts
+the rawRenaming under the new binder; the recursive call on the codomain
+receives a rawRenaming whose source scope is `source + 1` — definitionally
+matching the codomain's scope.  No axioms required.
+
+This is the more primitive operation; `Ty.weaken` is derived from it. -/
+def Ty.rename {level source target : Nat} :
+    Ty level source → Renaming source target → Ty level target
+  | .unit, _          => .unit
+  | .arrow A B, ρ     => .arrow (A.rename ρ) (B.rename ρ)
+  | .piTy A B, ρ      => .piTy (A.rename ρ) (B.rename ρ.lift)
+  | .tyVar i, ρ       => .tyVar (ρ i)
+  | .sigmaTy A B, ρ   => .sigmaTy (A.rename ρ) (B.rename ρ.lift)
+  | .bool, _          => .bool
+  | .universe u h, _  => .universe u h
+  | .nat, _           => .nat
+  | .list elemType, ρ => .list (elemType.rename ρ)
+  | .option elemType, ρ => .option (elemType.rename ρ)
+  | .either leftType rightType, ρ =>
+      .either (leftType.rename ρ) (rightType.rename ρ)
+  | .id carrier lhs rhs, ρ =>
+      .id (carrier.rename ρ) (lhs.rename ρ) (rhs.rename ρ)
+/-- Pointwise-equivalent renamings produce equal results on every
+type.  Direct structural induction on `Ty`, using `Renaming.lift_equiv`
+for the binder cases.  No subst infrastructure required. -/
+theorem Ty.rename_congr {level s t : Nat} {ρ₁ ρ₂ : Renaming s t}
+    (h : Renaming.equiv ρ₁ ρ₂) :
+    ∀ T : Ty level s, T.rename ρ₁ = T.rename ρ₂
+  | .unit         => rfl
+  | .arrow A B    => by
+      show Ty.arrow (A.rename ρ₁) (B.rename ρ₁)
+         = Ty.arrow (A.rename ρ₂) (B.rename ρ₂)
+      have hA := Ty.rename_congr h A
+      have hB := Ty.rename_congr h B
+      exact hA ▸ hB ▸ rfl
+  | .piTy A B     => by
+      show Ty.piTy (A.rename ρ₁) (B.rename ρ₁.lift)
+         = Ty.piTy (A.rename ρ₂) (B.rename ρ₂.lift)
+      have hA := Ty.rename_congr h A
+      have hB := Ty.rename_congr (Renaming.lift_equiv h) B
+      exact hA ▸ hB ▸ rfl
+  | .tyVar i      => congrArg Ty.tyVar (h i)
+  | .sigmaTy A B  => by
+      show Ty.sigmaTy (A.rename ρ₁) (B.rename ρ₁.lift)
+         = Ty.sigmaTy (A.rename ρ₂) (B.rename ρ₂.lift)
+      have hA := Ty.rename_congr h A
+      have hB := Ty.rename_congr (Renaming.lift_equiv h) B
+      exact hA ▸ hB ▸ rfl
+  | .bool         => rfl
+  | .universe _ _ => rfl
+  | .nat          => rfl
+  | .list elemType => by
+      show Ty.list (elemType.rename ρ₁) = Ty.list (elemType.rename ρ₂)
+      have hElem := Ty.rename_congr h elemType
+      exact hElem ▸ rfl
+  | .option elemType => by
+      show Ty.option (elemType.rename ρ₁) = Ty.option (elemType.rename ρ₂)
+      have hElem := Ty.rename_congr h elemType
+      exact hElem ▸ rfl
+  | .either leftType rightType => by
+      show Ty.either (leftType.rename ρ₁) (rightType.rename ρ₁)
+         = Ty.either (leftType.rename ρ₂) (rightType.rename ρ₂)
+      have hLeft  := Ty.rename_congr h leftType
+      have hRight := Ty.rename_congr h rightType
+      exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs => by
+      show Ty.id (carrier.rename ρ₁) (lhs.rename ρ₁) (rhs.rename ρ₁)
+         = Ty.id (carrier.rename ρ₂) (lhs.rename ρ₂) (rhs.rename ρ₂)
+      have hCarrier := Ty.rename_congr h carrier
+      have hLeft := RawTerm.rename_congr h lhs
+      have hRight := RawTerm.rename_congr h rhs
+      exact hCarrier ▸ hLeft ▸ hRight ▸ rfl
+
+/-- **Renaming composition** at the `Ty` level.  Direct structural
+induction on `T`; the binder cases use `Ty.rename_congr` plus
+`Renaming.lift_compose_equiv` to bridge the lifted-then-composed and
+composed-then-lifted forms. -/
+theorem Ty.rename_compose {level s m t : Nat} :
+    ∀ (T : Ty level s) (ρ₁ : Renaming s m) (ρ₂ : Renaming m t),
+    (T.rename ρ₁).rename ρ₂ = T.rename (Renaming.compose ρ₁ ρ₂)
+  | .unit, _, _ => rfl
+  | .arrow A B, ρ₁, ρ₂ => by
+      show Ty.arrow ((A.rename ρ₁).rename ρ₂) ((B.rename ρ₁).rename ρ₂)
+         = Ty.arrow (A.rename (Renaming.compose ρ₁ ρ₂))
+                    (B.rename (Renaming.compose ρ₁ ρ₂))
+      have hA := Ty.rename_compose A ρ₁ ρ₂
+      have hB := Ty.rename_compose B ρ₁ ρ₂
+      exact hA ▸ hB ▸ rfl
+  | .piTy A B, ρ₁, ρ₂ => by
+      show Ty.piTy ((A.rename ρ₁).rename ρ₂)
+                   ((B.rename ρ₁.lift).rename ρ₂.lift)
+         = Ty.piTy (A.rename (Renaming.compose ρ₁ ρ₂))
+                   (B.rename (Renaming.compose ρ₁ ρ₂).lift)
+      have hA := Ty.rename_compose A ρ₁ ρ₂
+      have hB := Ty.rename_compose B ρ₁.lift ρ₂.lift
+      have hLift :=
+        Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
+      exact hA ▸ (hB.trans hLift) ▸ rfl
+  | .tyVar _, _, _ => rfl
+  | .sigmaTy A B, ρ₁, ρ₂ => by
+      show Ty.sigmaTy ((A.rename ρ₁).rename ρ₂)
+                      ((B.rename ρ₁.lift).rename ρ₂.lift)
+         = Ty.sigmaTy (A.rename (Renaming.compose ρ₁ ρ₂))
+                      (B.rename (Renaming.compose ρ₁ ρ₂).lift)
+      have hA := Ty.rename_compose A ρ₁ ρ₂
+      have hB := Ty.rename_compose B ρ₁.lift ρ₂.lift
+      have hLift :=
+        Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) B
+      exact hA ▸ (hB.trans hLift) ▸ rfl
+  | .bool, _, _ => rfl
+  | .universe _ _, _, _ => rfl
+  | .nat, _, _ => rfl
+  | .list elemType, ρ₁, ρ₂ => by
+      show Ty.list ((elemType.rename ρ₁).rename ρ₂)
+         = Ty.list (elemType.rename (Renaming.compose ρ₁ ρ₂))
+      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
+      exact hElem ▸ rfl
+  | .option elemType, ρ₁, ρ₂ => by
+      show Ty.option ((elemType.rename ρ₁).rename ρ₂)
+         = Ty.option (elemType.rename (Renaming.compose ρ₁ ρ₂))
+      have hElem := Ty.rename_compose elemType ρ₁ ρ₂
+      exact hElem ▸ rfl
+  | .either leftType rightType, ρ₁, ρ₂ => by
+      show Ty.either ((leftType.rename ρ₁).rename ρ₂)
+                     ((rightType.rename ρ₁).rename ρ₂)
+         = Ty.either (leftType.rename (Renaming.compose ρ₁ ρ₂))
+                     (rightType.rename (Renaming.compose ρ₁ ρ₂))
+      have hLeft  := Ty.rename_compose leftType ρ₁ ρ₂
+      have hRight := Ty.rename_compose rightType ρ₁ ρ₂
+      exact hLeft ▸ hRight ▸ rfl
+  | .id carrier lhs rhs, ρ₁, ρ₂ => by
+      show Ty.id ((carrier.rename ρ₁).rename ρ₂)
+                 ((lhs.rename ρ₁).rename ρ₂)
+                 ((rhs.rename ρ₁).rename ρ₂)
+         = Ty.id (carrier.rename (Renaming.compose ρ₁ ρ₂))
+                 (lhs.rename (Renaming.compose ρ₁ ρ₂))
+                 (rhs.rename (Renaming.compose ρ₁ ρ₂))
+      have hCarrier := Ty.rename_compose carrier ρ₁ ρ₂
+      have hLeft := RawTerm.rename_compose lhs ρ₁ ρ₂
+      have hRight := RawTerm.rename_compose rhs ρ₁ ρ₂
+      exact hCarrier ▸ hLeft ▸ hRight ▸ rfl
+
+/-- v1.10 principled `Ty.weaken`: defined as `Ty.rename Renaming.weaken`.
+Binder-aware in the `piTy`/`sigmaTy` cases — the locally-bound `tyVar 0`
+stays fixed via `Renaming.weaken.lift` while outer references shift.
+Eliminates the v1.0 latent bug where `(piTy A B).weaken` shifted every
+variable in `B`, including the local binder.
+
+Marked `@[reducible]` so Lean's unifier and `rfl` unfold it eagerly. -/
+@[reducible]
+def Ty.weaken {level scope : Nat} (T : Ty level scope) : Ty level (scope + 1) :=
+  T.rename Renaming.weaken
+
+/-- The fundamental rename-weaken commutativity lemma.  Says that
+weakening (insert outer binder) commutes with rawRenaming when the
+rawRenaming is appropriately lifted.
+
+In v1.10, this is derived from `Ty.rename_compose` plus pointwise
+rawRenaming equivalence: both sides become `T.rename` applied to two
+renamings that agree pointwise (both equal `Fin.succ ∘ ρ` modulo Fin
+proof irrelevance). -/
+theorem Ty.rename_weaken_commute {level source target : Nat}
+    (T : Ty level source) (ρ : Renaming source target) :
+    (T.weaken).rename ρ.lift = (T.rename ρ).weaken := by
+  show (T.rename Renaming.weaken).rename ρ.lift
+     = (T.rename ρ).rename Renaming.weaken
+  have hSwap :
+      Renaming.equiv (Renaming.compose Renaming.weaken ρ.lift)
+                     (Renaming.compose ρ Renaming.weaken) := fun _ => rfl
+  exact (Ty.rename_compose T Renaming.weaken ρ.lift).trans
+          ((Ty.rename_congr hSwap T).trans
+            (Ty.rename_compose T ρ Renaming.weaken).symm)
+
 
 end LeanFX.Syntax
