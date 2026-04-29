@@ -97,6 +97,7 @@ domain would be negative. -/
 inductive InductiveArgumentShape where
   | parameter : InductiveArgumentShape
   | recursive : InductiveArgumentShape
+  | mutualRecursive : (familyIndex : Nat) → InductiveArgumentShape
   | function :
       (domain : InductiveArgumentShape) →
       (codomain : InductiveArgumentShape) →
@@ -109,6 +110,7 @@ namespace InductiveArgumentShape
 def hasRecursiveOccurrence : InductiveArgumentShape → Bool
   | .parameter => false
   | .recursive => true
+  | .mutualRecursive _ => true
   | .function domain codomain =>
       domain.hasRecursiveOccurrence || codomain.hasRecursiveOccurrence
 
@@ -116,6 +118,7 @@ def hasRecursiveOccurrence : InductiveArgumentShape → Bool
 def isStrictlyPositive : InductiveArgumentShape → Bool
   | .parameter => true
   | .recursive => true
+  | .mutualRecursive _ => true
   | .function domain codomain =>
       if domain.hasRecursiveOccurrence then
         false
@@ -126,6 +129,7 @@ def isStrictlyPositive : InductiveArgumentShape → Bool
 def countNonrecursiveLeaves : InductiveArgumentShape → Nat
   | .parameter => 1
   | .recursive => 0
+  | .mutualRecursive _ => 0
   | .function domain codomain =>
       domain.countNonrecursiveLeaves + codomain.countNonrecursiveLeaves
 
@@ -133,11 +137,36 @@ def countNonrecursiveLeaves : InductiveArgumentShape → Nat
 def countRecursiveLeaves : InductiveArgumentShape → Nat
   | .parameter => 0
   | .recursive => 1
+  | .mutualRecursive _ => 1
   | .function domain codomain =>
       domain.countRecursiveLeaves + codomain.countRecursiveLeaves
 
+/-- Decidable less-than as a standalone Boolean recursion.
+
+Using a local Boolean relation keeps the audit surface explicit and
+avoids importing any order-decision machinery for mutual-block checks. -/
+def isLessThan : Nat → Nat → Bool
+  | 0, _ + 1 => true
+  | _, 0 => false
+  | candidateIndex + 1, targetCount + 1 =>
+      isLessThan candidateIndex targetCount
+
+/-- Every mutual-family reference points into the current block. -/
+def hasValidMutualReferences
+    (familyCount : Nat) : InductiveArgumentShape → Bool
+  | .parameter => true
+  | .recursive => true
+  | .mutualRecursive familyIndex => isLessThan familyIndex familyCount
+  | .function domain codomain =>
+      domain.hasValidMutualReferences familyCount &&
+        codomain.hasValidMutualReferences familyCount
+
 /-- A direct recursive occurrence is strictly positive. -/
 example : InductiveArgumentShape.recursive.isStrictlyPositive = true := rfl
+
+/-- A mutual recursive occurrence is also positive when used directly. -/
+example :
+    (InductiveArgumentShape.mutualRecursive 1).isStrictlyPositive = true := rfl
 
 /-- Recursive occurrence in a function domain is rejected. -/
 example :
@@ -183,6 +212,14 @@ def allArgumentsAreStrictlyPositive : List InductiveArgumentShape → Bool
       argumentShape.isStrictlyPositive &&
         allArgumentsAreStrictlyPositive remainingShapes
 
+/-- Check mutual references in all argument shapes. -/
+def allArgumentsHaveValidMutualReferences
+    (familyCount : Nat) : List InductiveArgumentShape → Bool
+  | [] => true
+  | argumentShape :: remainingShapes =>
+      argumentShape.hasValidMutualReferences familyCount &&
+        allArgumentsHaveValidMutualReferences familyCount remainingShapes
+
 /-- Constructor arity counters agree with the declared argument shapes. -/
 def hasConsistentArity (constructorSpec : InductiveConstructorSpec) : Bool :=
   constructorSpec.nonrecursiveArgumentCount ==
@@ -194,6 +231,15 @@ def hasConsistentArity (constructorSpec : InductiveConstructorSpec) : Bool :=
 def isStrictlyPositive (constructorSpec : InductiveConstructorSpec) : Bool :=
   constructorSpec.hasConsistentArity &&
     allArgumentsAreStrictlyPositive constructorSpec.argumentShapes
+
+/-- Constructor is admissible inside a mutual block of `familyCount`
+families. -/
+def isValidInMutualBlock
+    (familyCount : Nat)
+    (constructorSpec : InductiveConstructorSpec) : Bool :=
+  constructorSpec.isStrictlyPositive &&
+    allArgumentsHaveValidMutualReferences familyCount
+      constructorSpec.argumentShapes
 
 end InductiveConstructorSpec
 
@@ -223,6 +269,21 @@ def allConstructorsAreStrictlyPositive :
 /-- The generic v1.38 strict-positivity and arity audit. -/
 def isStrictlyPositive (inductiveSpec : InductiveSpec) : Bool :=
   allConstructorsAreStrictlyPositive inductiveSpec.constructors
+
+/-- Check all constructors against mutual-block reference bounds. -/
+def allConstructorsAreValidInMutualBlock
+    (familyCount : Nat) : List InductiveConstructorSpec → Bool
+  | [] => true
+  | constructorSpec :: remainingConstructors =>
+      constructorSpec.isValidInMutualBlock familyCount &&
+        allConstructorsAreValidInMutualBlock familyCount remainingConstructors
+
+/-- Check one family inside a mutual block. -/
+def isValidInMutualBlock
+    (familyCount : Nat)
+    (inductiveSpec : InductiveSpec) : Bool :=
+  allConstructorsAreValidInMutualBlock familyCount
+    inductiveSpec.constructors
 
 /-- Boolean-like closed enum: two nullary constructors. -/
 def bool : InductiveSpec where
@@ -364,5 +425,78 @@ example : option.isStrictlyPositive = true := rfl
 example : either.isStrictlyPositive = true := rfl
 
 end InductiveSpec
+
+/-- A mutually-recursive inductive block.  Family positions are the
+indices referenced by `InductiveArgumentShape.mutualRecursive`. -/
+structure MutualInductiveSpec where
+  blockName : String
+  families : List InductiveSpec
+deriving DecidableEq
+
+namespace MutualInductiveSpec
+
+/-- Count families in a block without relying on list library helpers. -/
+def countFamilies : List InductiveSpec → Nat
+  | [] => 0
+  | _ :: remainingFamilies => countFamilies remainingFamilies + 1
+
+/-- Check every family against a known block size. -/
+def allFamiliesAreValid
+    (familyCount : Nat) : List InductiveSpec → Bool
+  | [] => true
+  | inductiveSpec :: remainingFamilies =>
+      inductiveSpec.isValidInMutualBlock familyCount &&
+        allFamiliesAreValid familyCount remainingFamilies
+
+/-- The block-level v1.39 mutual-family audit. -/
+def isWellFormed (mutualSpec : MutualInductiveSpec) : Bool :=
+  allFamiliesAreValid (countFamilies mutualSpec.families)
+    mutualSpec.families
+
+/-- Small mutually-recursive expression/branch shape. -/
+def exprBranch : MutualInductiveSpec where
+  blockName := "expr_branch"
+  families := [
+    {
+      familyName := "expr",
+      parameterCount := 0,
+      indexCount := 0,
+      constructors := [
+        {
+          constructorName := "Lit",
+          nonrecursiveArgumentCount := 1,
+          recursiveArgumentCount := 0,
+          argumentShapes := [InductiveArgumentShape.parameter]
+        },
+        {
+          constructorName := "If",
+          nonrecursiveArgumentCount := 0,
+          recursiveArgumentCount := 1,
+          argumentShapes := [InductiveArgumentShape.mutualRecursive 1]
+        }
+      ]
+    },
+    {
+      familyName := "branch",
+      parameterCount := 0,
+      indexCount := 0,
+      constructors := [
+        {
+          constructorName := "ThenElse",
+          nonrecursiveArgumentCount := 0,
+          recursiveArgumentCount := 2,
+          argumentShapes := [
+            InductiveArgumentShape.mutualRecursive 0,
+            InductiveArgumentShape.mutualRecursive 0
+          ]
+        }
+      ]
+    }
+  ]
+
+/-- The sample mutual block passes positivity and reference-bounds checks. -/
+example : exprBranch.isWellFormed = true := rfl
+
+end MutualInductiveSpec
 
 end LeanFX.Syntax
