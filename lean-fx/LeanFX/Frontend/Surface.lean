@@ -11,8 +11,26 @@ frontend AST. Scope correctness is already intrinsic: variable nodes
 carry `Fin scope`, so an out-of-scope surface variable cannot be
 constructed. -/
 
-/-- Core surface expression syntax. Later slices add declarations,
+/-- A source-spanned name. -/
+structure NameSpan (sourceLength : Nat) where
+  span : TokenSpan sourceLength
+  text : String
+deriving DecidableEq
+
+/-- Surface binding prefixes before elaboration into kernel modes and grades. -/
+inductive BindingPrefix where
+  | linear
+  | affine
+  | own
+  | ref
+  | refMut
+  | ghost
+deriving DecidableEq
+
+/- Core surface expression syntax. Later slices add declarations,
 patterns, refinements, and modal annotations. -/
+mutual
+
 inductive Surface : Nat → Mode → Nat → Type
   /-- Variable reference. -/
   | var : {scope sourceLength : Nat} → {mode : Mode} →
@@ -84,6 +102,56 @@ inductive Surface : Nat → Mode → Nat → Type
       (baseCase : Surface scope mode sourceLength) →
       (witness : Surface scope mode sourceLength) →
       Surface scope mode sourceLength
+  /-- Let binding. The body sees the newly-bound value. -/
+  | letBind : {scope sourceLength : Nat} → {mode : Mode} →
+      (span : TokenSpan sourceLength) →
+      (param : ParamData scope mode sourceLength) →
+      (rhs : Surface scope mode sourceLength) →
+      (body : Surface (scope + 1) mode sourceLength) →
+      Surface scope mode sourceLength
+  /-- Function declaration as a surface expression node for the bootstrap frontend. -/
+  | fnDecl : {scope sourceLength : Nat} → {mode : Mode} →
+      {paramCount : Nat} →
+      (span : TokenSpan sourceLength) →
+      (name : NameSpan sourceLength) →
+      (params : ParamList paramCount scope mode sourceLength) →
+      (returnType : Surface scope mode sourceLength) →
+      (body : Surface (scope + paramCount) mode sourceLength) →
+      Surface scope mode sourceLength
+  /-- Type ascription. -/
+  | ascribe : {scope sourceLength : Nat} → {mode : Mode} →
+      (span : TokenSpan sourceLength) →
+      (expression : Surface scope mode sourceLength) →
+      (annotation : Surface scope mode sourceLength) →
+      Surface scope mode sourceLength
+  /-- Multi-parameter lambda, elaborated later into nested lambdas. -/
+  | lamMulti : {scope sourceLength : Nat} → {mode : Mode} →
+      {paramCount : Nat} →
+      (span : TokenSpan sourceLength) →
+      (params : ParamList paramCount scope mode sourceLength) →
+      (body : Surface (scope + paramCount) mode sourceLength) →
+      Surface scope mode sourceLength
+
+/-- Surface parameter data. Type annotations are themselves surface
+syntax because FX has a unified type/expression grammar. -/
+inductive ParamData : Nat → Mode → Nat → Type
+  | mk : {scope sourceLength : Nat} → {mode : Mode} →
+      (name : NameSpan sourceLength) →
+      (bindingPrefix : BindingPrefix) →
+      (typeAnnotation : Surface scope mode sourceLength) →
+      ParamData scope mode sourceLength
+
+/-- Parameter lists indexed by length to avoid nested `List` inside the
+mutual frontend AST. -/
+inductive ParamList : Nat → Nat → Mode → Nat → Type
+  | nil : {scope sourceLength : Nat} → {mode : Mode} →
+      ParamList 0 scope mode sourceLength
+  | cons : {count scope sourceLength : Nat} → {mode : Mode} →
+      (head : ParamData scope mode sourceLength) →
+      (tail : ParamList count scope mode sourceLength) →
+      ParamList (count + 1) scope mode sourceLength
+
+end
 
 namespace Surface
 
@@ -104,6 +172,10 @@ def spanOf {scope sourceLength : Nat} {mode : Mode} :
   | .snd span _ => span
   | .refl span _ => span
   | .idJ span _ _ => span
+  | .letBind span _ _ _ => span
+  | .fnDecl span _ _ _ _ => span
+  | .ascribe span _ _ => span
+  | .lamMulti span _ _ => span
 
 end Surface
 
@@ -112,6 +184,19 @@ namespace SmokeTestSurface
 /-- One-byte span reused by constructor smoke tests. -/
 def span : TokenSpan 1 :=
   SmokeTestToken.singleByteSpan
+
+/-- A one-byte surface name. -/
+def name : NameSpan 1 where
+  span := span
+  text := "x"
+
+/-- A parameter with a unit type annotation. -/
+def unitParam : ParamData 0 Mode.software 1 :=
+  ParamData.mk name BindingPrefix.linear (Surface.unit span)
+
+/-- A one-parameter list. -/
+def oneUnitParam : ParamList 1 0 Mode.software 1 :=
+  ParamList.cons unitParam ParamList.nil
 
 /-- Surface variable at scope one. -/
 example : Surface 1 Mode.software 1 :=
@@ -159,6 +244,25 @@ example : Surface 0 Mode.software 1 :=
 
 example : Surface 0 Mode.software 1 :=
   Surface.idJ span (Surface.unit span) (Surface.refl span (Surface.boolTrue span))
+
+/-- Let binding with one additional body variable. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.letBind span unitParam (Surface.unit span)
+    (Surface.var span ⟨0, Nat.zero_lt_succ 0⟩)
+
+/-- Function declaration with one parameter. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.fnDecl span name oneUnitParam (Surface.unit span)
+    (Surface.var span ⟨0, Nat.zero_lt_succ 0⟩)
+
+/-- Type ascription. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.ascribe span (Surface.unit span) (Surface.unit span)
+
+/-- Multi-parameter lambda with one parameter. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.lamMulti span oneUnitParam
+    (Surface.var span ⟨0, Nat.zero_lt_succ 0⟩)
 
 /-- Span extraction returns the constructor span. -/
 example :
