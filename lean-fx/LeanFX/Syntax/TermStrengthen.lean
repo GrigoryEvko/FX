@@ -99,6 +99,19 @@ def termAs {mode : Mode} {sourceScope targetScope : Nat}
     Term targetContext expectedType :=
   (renamed_eq_of_optRename renamedTerm expectedRenaming) ▸ renamedTerm.term
 
+/-- Specialise an optional-renamed term along `OptionalRenaming.unweaken`
+to the strengthening package. -/
+def toStrengthened {mode : Mode} {scope : Nat}
+    {context : Ctx mode level scope} {extendedType : Ty level (scope + 1)}
+    (renamedTerm :
+      OptionalRenamedTerm context OptionalRenaming.unweaken extendedType) :
+    StrengthenedTerm context extendedType where
+  originalType := renamedTerm.renamedType
+  typeEquality :=
+    (Ty.strengthen_eq_some_iff_weaken
+      extendedType renamedTerm.renamedType).mp renamedTerm.typeEquality
+  term := renamedTerm.term
+
 end OptionalRenamedTerm
 
 /-! ## Context compatibility for typed optional renaming. -/
