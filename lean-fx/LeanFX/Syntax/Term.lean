@@ -8,4 +8,5 @@ import LeanFX.Syntax.TermSubst
 import LeanFX.Syntax.ToRaw
 import LeanFX.Syntax.Reduction
 import LeanFX.Syntax.Identity
+import LeanFX.Syntax.Strengthen
 import LeanFX.Syntax.Smoke
