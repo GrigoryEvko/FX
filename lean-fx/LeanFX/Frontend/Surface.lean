@@ -27,6 +27,16 @@ inductive BindingPrefix where
   | ghost
 deriving DecidableEq
 
+/-- Surface modal annotations before elaboration into the MTT kernel. -/
+inductive ModalAnnotation where
+  | withIO
+  | secret
+  | refRegion
+  | linear
+  | affine
+  | ghost
+deriving DecidableEq
+
 /- Core surface expression syntax. Later slices add declarations,
 patterns, refinements, and modal annotations. -/
 mutual
@@ -131,6 +141,26 @@ inductive Surface : Nat → Mode → Nat → Type
       (params : ParamList paramCount scope mode sourceLength) →
       (body : Surface (scope + paramCount) mode sourceLength) →
       Surface scope mode sourceLength
+  /-- Pattern match expression. -/
+  | matchExpr : {scope sourceLength : Nat} → {mode : Mode} →
+      {armCount : Nat} →
+      (span : TokenSpan sourceLength) →
+      (scrutinee : Surface scope mode sourceLength) →
+      (arms : MatchArmList armCount scope mode sourceLength) →
+      Surface scope mode sourceLength
+  /-- Refinement binder `name : baseType { refinement }`. -/
+  | refineBind : {scope sourceLength : Nat} → {mode : Mode} →
+      (span : TokenSpan sourceLength) →
+      (name : NameSpan sourceLength) →
+      (baseType : Surface scope mode sourceLength) →
+      (refinement : Surface (scope + 1) mode sourceLength) →
+      Surface scope mode sourceLength
+  /-- Modal annotation wrapper, such as `secret`, `linear`, or `with IO`. -/
+  | withMode : {scope sourceLength : Nat} → {mode : Mode} →
+      (span : TokenSpan sourceLength) →
+      (annotation : ModalAnnotation) →
+      (expression : Surface scope mode sourceLength) →
+      Surface scope mode sourceLength
 
 /-- Surface parameter data. Type annotations are themselves surface
 syntax because FX has a unified type/expression grammar. -/
@@ -150,6 +180,58 @@ inductive ParamList : Nat → Nat → Mode → Nat → Type
       (head : ParamData scope mode sourceLength) →
       (tail : ParamList count scope mode sourceLength) →
       ParamList (count + 1) scope mode sourceLength
+
+/-- Surface patterns indexed by the number of variables they bind. -/
+inductive Pattern : Nat → Nat → Type
+  | wildcard : {sourceLength : Nat} →
+      (span : TokenSpan sourceLength) →
+      Pattern 0 sourceLength
+  | bind : {sourceLength : Nat} →
+      (span : TokenSpan sourceLength) →
+      (name : NameSpan sourceLength) →
+      Pattern 1 sourceLength
+  | constructor : {patternCount boundCount sourceLength : Nat} →
+      (span : TokenSpan sourceLength) →
+      (name : NameSpan sourceLength) →
+      (args : PatternList patternCount sourceLength) →
+      Pattern boundCount sourceLength
+  | asPattern : {boundCount sourceLength : Nat} →
+      (span : TokenSpan sourceLength) →
+      (pattern : Pattern boundCount sourceLength) →
+      (name : NameSpan sourceLength) →
+      Pattern (boundCount + 1) sourceLength
+  | orPattern : {boundCount sourceLength : Nat} →
+      (span : TokenSpan sourceLength) →
+      (left : Pattern boundCount sourceLength) →
+      (right : Pattern boundCount sourceLength) →
+      Pattern boundCount sourceLength
+
+/-- Pattern lists indexed by element count. The enclosing pattern or
+match arm carries the total bound-name count. -/
+inductive PatternList : Nat → Nat → Type
+  | nil : {sourceLength : Nat} →
+      PatternList 0 sourceLength
+  | cons : {patternCount headBound sourceLength : Nat} →
+      (head : Pattern headBound sourceLength) →
+      (tail : PatternList patternCount sourceLength) →
+      PatternList (patternCount + 1) sourceLength
+
+/-- A match arm. The body scope is extended by the pattern's bound names. -/
+inductive MatchArm : Nat → Mode → Nat → Type
+  | mk : {scope boundCount sourceLength : Nat} → {mode : Mode} →
+      (span : TokenSpan sourceLength) →
+      (pattern : Pattern boundCount sourceLength) →
+      (body : Surface (scope + boundCount) mode sourceLength) →
+      MatchArm scope mode sourceLength
+
+/-- Match-arm lists indexed by element count. -/
+inductive MatchArmList : Nat → Nat → Mode → Nat → Type
+  | nil : {scope sourceLength : Nat} → {mode : Mode} →
+      MatchArmList 0 scope mode sourceLength
+  | cons : {armCount scope sourceLength : Nat} → {mode : Mode} →
+      (head : MatchArm scope mode sourceLength) →
+      (tail : MatchArmList armCount scope mode sourceLength) →
+      MatchArmList (armCount + 1) scope mode sourceLength
 
 end
 
@@ -176,6 +258,9 @@ def spanOf {scope sourceLength : Nat} {mode : Mode} :
   | .fnDecl span _ _ _ _ => span
   | .ascribe span _ _ => span
   | .lamMulti span _ _ => span
+  | .matchExpr span _ _ => span
+  | .refineBind span _ _ _ => span
+  | .withMode span _ _ => span
 
 end Surface
 
@@ -197,6 +282,25 @@ def unitParam : ParamData 0 Mode.software 1 :=
 /-- A one-parameter list. -/
 def oneUnitParam : ParamList 1 0 Mode.software 1 :=
   ParamList.cons unitParam ParamList.nil
+
+/-- A wildcard pattern. -/
+def wildcardPattern : Pattern 0 1 :=
+  Pattern.wildcard span
+
+/-- A single-binding pattern. -/
+def bindingPattern : Pattern 1 1 :=
+  Pattern.bind span name
+
+/-- A constructor pattern carrying one binding argument. -/
+def constructorPattern : Pattern 1 1 :=
+  Pattern.constructor span name (PatternList.cons bindingPattern PatternList.nil)
+
+/-- A one-arm match list whose body sees the pattern-bound variable. -/
+def oneMatchArm : MatchArmList 1 0 Mode.software 1 :=
+  MatchArmList.cons
+    (MatchArm.mk span bindingPattern
+      (Surface.var span ⟨0, Nat.zero_lt_succ 0⟩))
+    MatchArmList.nil
 
 /-- Surface variable at scope one. -/
 example : Surface 1 Mode.software 1 :=
@@ -263,6 +367,26 @@ example : Surface 0 Mode.software 1 :=
 example : Surface 0 Mode.software 1 :=
   Surface.lamMulti span oneUnitParam
     (Surface.var span ⟨0, Nat.zero_lt_succ 0⟩)
+
+/-- Match expression with one binding arm. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.matchExpr span (Surface.boolTrue span) oneMatchArm
+
+/-- Refinement binder whose refinement expression sees the refined value. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.refineBind span name (Surface.unit span)
+    (Surface.var span ⟨0, Nat.zero_lt_succ 0⟩)
+
+/-- Modal annotation wrapper. -/
+example : Surface 0 Mode.software 1 :=
+  Surface.withMode span ModalAnnotation.secret (Surface.boolTrue span)
+
+/-- Constructor, as-pattern, and or-pattern smoke. -/
+example : Pattern 2 1 :=
+  Pattern.asPattern span constructorPattern name
+
+example : Pattern 1 1 :=
+  Pattern.orPattern span bindingPattern bindingPattern
 
 /-- Span extraction returns the constructor span. -/
 example :
