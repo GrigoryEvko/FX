@@ -5,6 +5,7 @@ import LeanFX.Mode.Collision
 import LeanFX.Syntax.Inductive
 import LeanFX.Syntax.Term
 import LeanFX.Syntax.DependentJ
+import LeanFX.Frontend.Token
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
 
