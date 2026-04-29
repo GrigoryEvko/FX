@@ -1,1 +1,1 @@
-import LeanFX.Syntax.Reduction.ParCompatible
+import LeanFX.Syntax.Reduction.Compatible
