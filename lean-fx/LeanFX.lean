@@ -1,4 +1,3 @@
-import LeanFX.Mode.Defn
 import LeanFX.Syntax.Term
 
 /-! # LeanFX — ground-up formalisation of FX in Lean 4.
@@ -7,37 +6,27 @@ This is the public root of the package.  Every public-facing
 definition lives in `LeanFX/...` and is re-exported here in
 dependency order.
 
-## One kernel, one file
+## Kernel module spine
 
-A single intrinsic kernel that **bypasses Lean 4's mutual-index
-limitation by sequential composition** — declare `RawTerm : Nat →
-Type` BEFORE `Ty`, so `Ty.id`'s reference to `RawTerm` is a
-forward citation, not a mutual cross-reference.
+The intrinsic kernel is split by dependency layer while preserving
+`LeanFX.Syntax.Term` as the stable public import:
 
-Everything lives in `LeanFX.Syntax.Term`:
+  * `LeanFX.Syntax.RawTerm` — well-scoped raw syntax.
+  * `LeanFX.Syntax.Ty` — intrinsic types and renaming.
+  * `LeanFX.Syntax.RawSubst` — raw substitution and categorical laws.
+  * `LeanFX.Syntax.Subst` — joint type/raw substitution.
+  * `LeanFX.Syntax.Context` — contexts and `varType`.
+  * `LeanFX.Syntax.TypedTerm` — intrinsically-typed terms and renaming.
+  * `LeanFX.Syntax.TermSubst` — term substitution and HEq functoriality.
+  * `LeanFX.Syntax.ToRaw` — intrinsic-to-raw erasure bridge.
+  * `LeanFX.Syntax.Reduction` — `Step`, `StepStar`, `Step.par`, `Conv`.
+  * `LeanFX.Syntax.Identity` — external `IdProof` helpers.
+  * `LeanFX.Syntax.Smoke` — constructor/reduction smoke coverage.
 
-  * `RawTerm : Nat → Type` — well-scoped raw syntax (25
-    constructors including `refl` and `idJ`).  Substrate for
-    identity-type endpoints.
-
-  * `Ty : Nat → Nat → Type` — well-scoped intrinsic types,
-    indexed by universe level + scope.  `Ty.id carrier lhs rhs`
-    references RawTerm endpoints in argument position.
-
-  * `Ctx : Mode → Nat → Nat → Type` — typed contexts.
-
-  * `Term : Ctx → Ty → Type` — intrinsically-typed terms.
-    Constructor signatures *are* the typing rules.  Includes
-    `Term.refl` and `Term.idJ` for identity-type introduction
-    and elimination.
-
-  * `Term.toRaw : Term Γ T → RawTerm scope` — the bridge that
-    erases intrinsic typing back to raw syntax.
-
-  * Substitution, parallel reduction (`Step`, `Step.par`,
-    `StepStar`, `Conv`), and the J ι-rule.
-
-~9,400 lines, 100% zero-axiom across every declaration.
+The split is still one sequential kernel architecture: `RawTerm` is
+declared before `Ty`, so `Ty.id` references raw endpoints without a
+mutual `Ty`/`Term` block.  Every exported declaration remains available
+through `import LeanFX.Syntax.Term`.
 
 ## The unified architecture
 
@@ -56,7 +45,7 @@ intrinsic discipline.  `Raw.lean` was deleted in v2.2p.
 
   * Lean 4 kernel (~6 KLoC C++; accepted as TCB).
   * `LeanFX.Mode.Defn` — the four-mode enum.  Audited as input data.
-  * `LeanFX.Syntax.Term` — RawTerm + Ty + Ctx + Term + reductions.
+  * `LeanFX.Syntax.*` — RawTerm + Ty + Ctx + Term + reductions.
 
 Everything else — typing, conversion, subject reduction, the
 bidirectional checker, the elaborator — operates *on* the kernel
