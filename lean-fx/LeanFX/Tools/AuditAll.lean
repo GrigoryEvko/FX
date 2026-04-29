@@ -63,6 +63,7 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_weaken
 #assert_no_axioms LeanFX.Syntax.RawTerm.optRename_sound
 #assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_sound
+#assert_no_axioms LeanFX.Syntax.RawTerm.strengthen_eq_some_iff_weaken
 #assert_no_axioms LeanFX.Syntax.Ty.optRename
 #assert_no_axioms LeanFX.Syntax.Ty.optRename_congr
 #assert_no_axioms LeanFX.Syntax.Ty.optRename_identity
@@ -70,5 +71,6 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_weaken
 #assert_no_axioms LeanFX.Syntax.Ty.optRename_sound
 #assert_no_axioms LeanFX.Syntax.Ty.strengthen_sound
+#assert_no_axioms LeanFX.Syntax.Ty.strengthen_eq_some_iff_weaken
 
 end LeanFX.Tools.AuditAll

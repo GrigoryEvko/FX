@@ -1259,6 +1259,21 @@ theorem RawTerm.strengthen_sound {scope : Nat}
     OptionalRenaming.unweaken_rightInverse
     rawTerm strengthenedRawTerm strengtheningSucceeded
 
+/-- Symmetry of raw-term weakening and strengthening: strengthening
+returns `some strengthenedRawTerm` exactly when weakening
+`strengthenedRawTerm` reconstructs the input raw term. -/
+theorem RawTerm.strengthen_eq_some_iff_weaken {scope : Nat}
+    (rawTerm : RawTerm (scope + 1)) (strengthenedRawTerm : RawTerm scope) :
+    rawTerm.strengthen = some strengthenedRawTerm ↔
+      strengthenedRawTerm.weaken = rawTerm := by
+  constructor
+  · intro strengtheningSucceeded
+    exact RawTerm.strengthen_sound rawTerm strengthenedRawTerm
+      strengtheningSucceeded
+  · intro weakeningReconstructs
+    cases weakeningReconstructs
+    exact RawTerm.strengthen_weaken strengthenedRawTerm
+
 /-! ## Optional renaming on types. -/
 
 /-- Apply an optional renaming to a type, threading `Option`
@@ -1805,6 +1820,20 @@ theorem Ty.strengthen_sound {scope : Nat}
   Ty.optRename_sound OptionalRenaming.unweaken Renaming.weaken
     OptionalRenaming.unweaken_rightInverse
     resultType strengthenedType strengtheningSucceeded
+
+/-- Symmetry of type weakening and strengthening: strengthening returns
+`some strengthenedType` exactly when weakening `strengthenedType`
+reconstructs the input type. -/
+theorem Ty.strengthen_eq_some_iff_weaken {scope : Nat}
+    (resultType : Ty level (scope + 1)) (strengthenedType : Ty level scope) :
+    resultType.strengthen = some strengthenedType ↔
+      strengthenedType.weaken = resultType := by
+  constructor
+  · intro strengtheningSucceeded
+    exact Ty.strengthen_sound resultType strengthenedType strengtheningSucceeded
+  · intro weakeningReconstructs
+    cases weakeningReconstructs
+    exact Ty.strengthen_weaken strengthenedType
 
 /-! ## Strengthening smoke tests. -/
 
