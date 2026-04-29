@@ -180,6 +180,51 @@ theorem OptionalRenaming.lift_afterRenaming_equiv {source middle target : Nat}
   | ⟨0, _⟩ => rfl
   | ⟨_ + 1, _⟩ => rfl
 
+/-- A square relating total and optional renamings.
+
+`sourceRenaming` embeds a source scope into an extended source scope,
+`targetRenaming` embeds the target scope into an extended target scope,
+and the two optional renamings commute with those embeddings.  This is
+the reusable naturality condition behind weakening/optional-renaming
+commutation. -/
+def OptionalRenaming.IsRenamingSquare {source extendedSource target extendedTarget : Nat}
+    (sourceRenaming : Renaming source extendedSource)
+    (optionalSourceRenaming : OptionalRenaming source target)
+    (optionalExtendedRenaming : OptionalRenaming extendedSource extendedTarget)
+    (targetRenaming : Renaming target extendedTarget) : Prop :=
+  ∀ sourcePosition,
+    optionalExtendedRenaming (sourceRenaming sourcePosition) =
+      Option.map targetRenaming (optionalSourceRenaming sourcePosition)
+
+/-- Renaming-square evidence is stable under binders. -/
+theorem OptionalRenaming.lift_isRenamingSquare
+    {source extendedSource target extendedTarget : Nat}
+    {sourceRenaming : Renaming source extendedSource}
+    {optionalSourceRenaming : OptionalRenaming source target}
+    {optionalExtendedRenaming : OptionalRenaming extendedSource extendedTarget}
+    {targetRenaming : Renaming target extendedTarget}
+    (isRenamingSquare : OptionalRenaming.IsRenamingSquare sourceRenaming
+      optionalSourceRenaming optionalExtendedRenaming targetRenaming) :
+    OptionalRenaming.IsRenamingSquare sourceRenaming.lift
+      optionalSourceRenaming.lift optionalExtendedRenaming.lift targetRenaming.lift
+  | ⟨0, _⟩ => rfl
+  | ⟨sourcePosition + 1, isWithinSource⟩ => by
+      let sourcePredecessor : Fin source :=
+        ⟨sourcePosition, Nat.lt_of_succ_lt_succ isWithinSource⟩
+      change Option.map Fin.succ
+          (optionalExtendedRenaming (sourceRenaming sourcePredecessor)) =
+        Option.map targetRenaming.lift
+          (Option.map Fin.succ (optionalSourceRenaming sourcePredecessor))
+      rw [isRenamingSquare sourcePredecessor]
+      cases optionalSourceRenaming sourcePredecessor <;> rfl
+
+/-- Weakening and lifted optional renaming form a renaming square. -/
+theorem OptionalRenaming.weaken_lift_isRenamingSquare {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target) :
+    OptionalRenaming.IsRenamingSquare Renaming.weaken optionalRenaming
+      optionalRenaming.lift Renaming.weaken
+  | ⟨_, _⟩ => rfl
+
 /-- `OptionalRenaming.unweaken` is right-inverted by ordinary weakening:
 if dropping the newest variable succeeds, weakening the result points
 back to the original position. -/
@@ -720,6 +765,428 @@ theorem RawTerm.rename_optRename {source middle target : Nat}
         RawTerm.rename_optRename totalRenaming optionalRenaming witness
       simp only [RawTerm.rename, RawTerm.optRename]
       rw [baseComposition, witnessComposition]
+
+/-- Renaming before optional renaming commutes with renaming after a
+successful optional renaming whenever the two position-level maps form a
+renaming square. -/
+theorem RawTerm.rename_optRename_commute
+    {source extendedSource target extendedTarget : Nat}
+    (sourceRenaming : Renaming source extendedSource)
+    (optionalSourceRenaming : OptionalRenaming source target)
+    (optionalExtendedRenaming : OptionalRenaming extendedSource extendedTarget)
+    (targetRenaming : Renaming target extendedTarget)
+    (isRenamingSquare : OptionalRenaming.IsRenamingSquare sourceRenaming
+      optionalSourceRenaming optionalExtendedRenaming targetRenaming) :
+    ∀ rawTerm : RawTerm source,
+      (rawTerm.rename sourceRenaming).optRename optionalExtendedRenaming =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (rawTerm.optRename optionalSourceRenaming)
+  | .var position => by
+      change Option.map RawTerm.var
+          (optionalExtendedRenaming (sourceRenaming position)) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.var (optionalSourceRenaming position))
+      rw [isRenamingSquare position]
+      cases optionalSourceRenaming position <;> rfl
+  | .unit => rfl
+  | .boolTrue => rfl
+  | .boolFalse => rfl
+  | .natZero => rfl
+  | .natSucc predecessor => by
+      have predecessorEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare predecessor
+      change Option.map RawTerm.natSucc
+          ((predecessor.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.natSucc
+            (predecessor.optRename optionalSourceRenaming))
+      rw [predecessorEquality]
+      cases predecessor.optRename optionalSourceRenaming <;> rfl
+  | .lam body => by
+      have bodyEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming.lift
+          optionalSourceRenaming.lift optionalExtendedRenaming.lift
+          targetRenaming.lift
+          (OptionalRenaming.lift_isRenamingSquare isRenamingSquare) body
+      change Option.map RawTerm.lam
+          ((body.rename sourceRenaming.lift).optRename optionalExtendedRenaming.lift) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.lam
+            (body.optRename optionalSourceRenaming.lift))
+      rw [bodyEquality]
+      cases body.optRename optionalSourceRenaming.lift <;> rfl
+  | .app function argument => by
+      have functionEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare function
+      have argumentEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare argument
+      change Option.bind
+          ((function.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedFunction =>
+            Option.bind
+              ((argument.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedArgument =>
+                some (RawTerm.app renamedFunction renamedArgument))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (function.optRename optionalSourceRenaming)
+            (fun renamedFunction =>
+              Option.bind (argument.optRename optionalSourceRenaming)
+                (fun renamedArgument =>
+                  some (RawTerm.app renamedFunction renamedArgument))))
+      rw [functionEquality, argumentEquality]
+      cases function.optRename optionalSourceRenaming <;>
+        cases argument.optRename optionalSourceRenaming <;> rfl
+  | .pair first second => by
+      have firstEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare first
+      have secondEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare second
+      change Option.bind
+          ((first.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedFirst =>
+            Option.bind
+              ((second.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedSecond => some (RawTerm.pair renamedFirst renamedSecond))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (first.optRename optionalSourceRenaming)
+            (fun renamedFirst =>
+              Option.bind (second.optRename optionalSourceRenaming)
+                (fun renamedSecond => some (RawTerm.pair renamedFirst renamedSecond))))
+      rw [firstEquality, secondEquality]
+      cases first.optRename optionalSourceRenaming <;>
+        cases second.optRename optionalSourceRenaming <;> rfl
+  | .fst pairTerm => by
+      have pairEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare pairTerm
+      change Option.map RawTerm.fst
+          ((pairTerm.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.fst (pairTerm.optRename optionalSourceRenaming))
+      rw [pairEquality]
+      cases pairTerm.optRename optionalSourceRenaming <;> rfl
+  | .snd pairTerm => by
+      have pairEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare pairTerm
+      change Option.map RawTerm.snd
+          ((pairTerm.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.snd (pairTerm.optRename optionalSourceRenaming))
+      rw [pairEquality]
+      cases pairTerm.optRename optionalSourceRenaming <;> rfl
+  | .boolElim scrutinee thenBranch elseBranch => by
+      have scrutineeEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare scrutinee
+      have thenEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare thenBranch
+      have elseEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare elseBranch
+      change Option.bind
+          ((scrutinee.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedScrutinee =>
+            Option.bind
+              ((thenBranch.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedThen =>
+                Option.bind
+                  ((elseBranch.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedElse =>
+                    some (RawTerm.boolElim renamedScrutinee
+                      renamedThen renamedElse)))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (scrutinee.optRename optionalSourceRenaming)
+            (fun renamedScrutinee =>
+              Option.bind (thenBranch.optRename optionalSourceRenaming)
+                (fun renamedThen =>
+                  Option.bind (elseBranch.optRename optionalSourceRenaming)
+                    (fun renamedElse =>
+                      some (RawTerm.boolElim renamedScrutinee
+                        renamedThen renamedElse)))))
+      rw [scrutineeEquality, thenEquality, elseEquality]
+      cases scrutinee.optRename optionalSourceRenaming <;>
+        cases thenBranch.optRename optionalSourceRenaming <;>
+        cases elseBranch.optRename optionalSourceRenaming <;> rfl
+  | .natElim scrutinee zeroBranch succBranch => by
+      have scrutineeEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare scrutinee
+      have zeroEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare zeroBranch
+      have succEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare succBranch
+      change Option.bind
+          ((scrutinee.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedScrutinee =>
+            Option.bind
+              ((zeroBranch.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedZero =>
+                Option.bind
+                  ((succBranch.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedSucc =>
+                    some (RawTerm.natElim renamedScrutinee
+                      renamedZero renamedSucc)))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (scrutinee.optRename optionalSourceRenaming)
+            (fun renamedScrutinee =>
+              Option.bind (zeroBranch.optRename optionalSourceRenaming)
+                (fun renamedZero =>
+                  Option.bind (succBranch.optRename optionalSourceRenaming)
+                    (fun renamedSucc =>
+                      some (RawTerm.natElim renamedScrutinee
+                        renamedZero renamedSucc)))))
+      rw [scrutineeEquality, zeroEquality, succEquality]
+      cases scrutinee.optRename optionalSourceRenaming <;>
+        cases zeroBranch.optRename optionalSourceRenaming <;>
+        cases succBranch.optRename optionalSourceRenaming <;> rfl
+  | .natRec scrutinee zeroBranch succBranch => by
+      have scrutineeEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare scrutinee
+      have zeroEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare zeroBranch
+      have succEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare succBranch
+      change Option.bind
+          ((scrutinee.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedScrutinee =>
+            Option.bind
+              ((zeroBranch.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedZero =>
+                Option.bind
+                  ((succBranch.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedSucc =>
+                    some (RawTerm.natRec renamedScrutinee
+                      renamedZero renamedSucc)))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (scrutinee.optRename optionalSourceRenaming)
+            (fun renamedScrutinee =>
+              Option.bind (zeroBranch.optRename optionalSourceRenaming)
+                (fun renamedZero =>
+                  Option.bind (succBranch.optRename optionalSourceRenaming)
+                    (fun renamedSucc =>
+                      some (RawTerm.natRec renamedScrutinee
+                        renamedZero renamedSucc)))))
+      rw [scrutineeEquality, zeroEquality, succEquality]
+      cases scrutinee.optRename optionalSourceRenaming <;>
+        cases zeroBranch.optRename optionalSourceRenaming <;>
+        cases succBranch.optRename optionalSourceRenaming <;> rfl
+  | .listNil => rfl
+  | .listCons head tail => by
+      have headEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare head
+      have tailEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare tail
+      change Option.bind
+          ((head.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedHead =>
+            Option.bind ((tail.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedTail => some (RawTerm.listCons renamedHead renamedTail))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (head.optRename optionalSourceRenaming)
+            (fun renamedHead =>
+              Option.bind (tail.optRename optionalSourceRenaming)
+                (fun renamedTail => some (RawTerm.listCons renamedHead renamedTail))))
+      rw [headEquality, tailEquality]
+      cases head.optRename optionalSourceRenaming <;>
+        cases tail.optRename optionalSourceRenaming <;> rfl
+  | .listElim scrutinee nilBranch consBranch => by
+      have scrutineeEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare scrutinee
+      have nilEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare nilBranch
+      have consEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare consBranch
+      change Option.bind
+          ((scrutinee.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedScrutinee =>
+            Option.bind
+              ((nilBranch.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedNil =>
+                Option.bind
+                  ((consBranch.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedCons =>
+                    some (RawTerm.listElim renamedScrutinee
+                      renamedNil renamedCons)))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (scrutinee.optRename optionalSourceRenaming)
+            (fun renamedScrutinee =>
+              Option.bind (nilBranch.optRename optionalSourceRenaming)
+                (fun renamedNil =>
+                  Option.bind (consBranch.optRename optionalSourceRenaming)
+                    (fun renamedCons =>
+                      some (RawTerm.listElim renamedScrutinee
+                        renamedNil renamedCons)))))
+      rw [scrutineeEquality, nilEquality, consEquality]
+      cases scrutinee.optRename optionalSourceRenaming <;>
+        cases nilBranch.optRename optionalSourceRenaming <;>
+        cases consBranch.optRename optionalSourceRenaming <;> rfl
+  | .optionNone => rfl
+  | .optionSome value => by
+      have valueEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare value
+      change Option.map RawTerm.optionSome
+          ((value.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.optionSome
+            (value.optRename optionalSourceRenaming))
+      rw [valueEquality]
+      cases value.optRename optionalSourceRenaming <;> rfl
+  | .optionMatch scrutinee noneBranch someBranch => by
+      have scrutineeEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare scrutinee
+      have noneEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare noneBranch
+      have someEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare someBranch
+      change Option.bind
+          ((scrutinee.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedScrutinee =>
+            Option.bind
+              ((noneBranch.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedNone =>
+                Option.bind
+                  ((someBranch.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedSome =>
+                    some (RawTerm.optionMatch renamedScrutinee
+                      renamedNone renamedSome)))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (scrutinee.optRename optionalSourceRenaming)
+            (fun renamedScrutinee =>
+              Option.bind (noneBranch.optRename optionalSourceRenaming)
+                (fun renamedNone =>
+                  Option.bind (someBranch.optRename optionalSourceRenaming)
+                    (fun renamedSome =>
+                      some (RawTerm.optionMatch renamedScrutinee
+                        renamedNone renamedSome)))))
+      rw [scrutineeEquality, noneEquality, someEquality]
+      cases scrutinee.optRename optionalSourceRenaming <;>
+        cases noneBranch.optRename optionalSourceRenaming <;>
+        cases someBranch.optRename optionalSourceRenaming <;> rfl
+  | .eitherInl value => by
+      have valueEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare value
+      change Option.map RawTerm.eitherInl
+          ((value.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.eitherInl
+            (value.optRename optionalSourceRenaming))
+      rw [valueEquality]
+      cases value.optRename optionalSourceRenaming <;> rfl
+  | .eitherInr value => by
+      have valueEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare value
+      change Option.map RawTerm.eitherInr
+          ((value.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.eitherInr
+            (value.optRename optionalSourceRenaming))
+      rw [valueEquality]
+      cases value.optRename optionalSourceRenaming <;> rfl
+  | .eitherMatch scrutinee leftBranch rightBranch => by
+      have scrutineeEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare scrutinee
+      have leftEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare leftBranch
+      have rightEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare rightBranch
+      change Option.bind
+          ((scrutinee.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedScrutinee =>
+            Option.bind
+              ((leftBranch.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedLeft =>
+                Option.bind
+                  ((rightBranch.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedRight =>
+                    some (RawTerm.eitherMatch renamedScrutinee
+                      renamedLeft renamedRight)))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (scrutinee.optRename optionalSourceRenaming)
+            (fun renamedScrutinee =>
+              Option.bind (leftBranch.optRename optionalSourceRenaming)
+                (fun renamedLeft =>
+                  Option.bind (rightBranch.optRename optionalSourceRenaming)
+                    (fun renamedRight =>
+                      some (RawTerm.eitherMatch renamedScrutinee
+                        renamedLeft renamedRight)))))
+      rw [scrutineeEquality, leftEquality, rightEquality]
+      cases scrutinee.optRename optionalSourceRenaming <;>
+        cases leftBranch.optRename optionalSourceRenaming <;>
+        cases rightBranch.optRename optionalSourceRenaming <;> rfl
+  | .refl term => by
+      have termEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare term
+      change Option.map RawTerm.refl
+          ((term.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.map RawTerm.refl (term.optRename optionalSourceRenaming))
+      rw [termEquality]
+      cases term.optRename optionalSourceRenaming <;> rfl
+  | .idJ baseCase witness => by
+      have baseEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare baseCase
+      have witnessEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare witness
+      change Option.bind
+          ((baseCase.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedBase =>
+            Option.bind
+              ((witness.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedWitness => some (RawTerm.idJ renamedBase renamedWitness))) =
+        Option.map (fun renamedRawTerm => renamedRawTerm.rename targetRenaming)
+          (Option.bind (baseCase.optRename optionalSourceRenaming)
+            (fun renamedBase =>
+              Option.bind (witness.optRename optionalSourceRenaming)
+                (fun renamedWitness => some (RawTerm.idJ renamedBase renamedWitness))))
+      rw [baseEquality, witnessEquality]
+      cases baseCase.optRename optionalSourceRenaming <;>
+        cases witness.optRename optionalSourceRenaming <;> rfl
+
+/-- Weakening commutes with optional renaming under lifted optional
+renaming. -/
+theorem RawTerm.weaken_optRename_lift {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target) :
+    ∀ rawTerm : RawTerm source,
+      rawTerm.weaken.optRename optionalRenaming.lift =
+        Option.map RawTerm.weaken (rawTerm.optRename optionalRenaming) :=
+  RawTerm.rename_optRename_commute Renaming.weaken optionalRenaming
+    optionalRenaming.lift Renaming.weaken
+    (OptionalRenaming.weaken_lift_isRenamingSquare optionalRenaming)
 
 
 /-- The strengthening operation on raw terms — partial inverse of
@@ -1555,6 +2022,196 @@ theorem Ty.rename_optRename {source middle target : Nat}
         RawTerm.rename_optRename totalRenaming optionalRenaming rightEndpoint
       simp only [Ty.rename, Ty.optRename]
       rw [carrierComposition, leftComposition, rightComposition]
+
+/-- Renaming before optional renaming commutes with renaming after a
+successful optional renaming whenever the two position-level maps form a
+renaming square. -/
+theorem Ty.rename_optRename_commute
+    {source extendedSource target extendedTarget : Nat}
+    (sourceRenaming : Renaming source extendedSource)
+    (optionalSourceRenaming : OptionalRenaming source target)
+    (optionalExtendedRenaming : OptionalRenaming extendedSource extendedTarget)
+    (targetRenaming : Renaming target extendedTarget)
+    (isRenamingSquare : OptionalRenaming.IsRenamingSquare sourceRenaming
+      optionalSourceRenaming optionalExtendedRenaming targetRenaming) :
+    ∀ resultType : Ty level source,
+      (resultType.rename sourceRenaming).optRename optionalExtendedRenaming =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (resultType.optRename optionalSourceRenaming)
+  | .unit => rfl
+  | .arrow domain codomain => by
+      have domainEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare domain
+      have codomainEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare codomain
+      change Option.bind
+          ((domain.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedDomain =>
+            Option.bind
+              ((codomain.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedCodomain => some (Ty.arrow renamedDomain renamedCodomain))) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.bind (domain.optRename optionalSourceRenaming)
+            (fun renamedDomain =>
+              Option.bind (codomain.optRename optionalSourceRenaming)
+                (fun renamedCodomain => some (Ty.arrow renamedDomain renamedCodomain))))
+      rw [domainEquality, codomainEquality]
+      cases domain.optRename optionalSourceRenaming <;>
+        cases codomain.optRename optionalSourceRenaming <;> rfl
+  | .piTy domain codomain => by
+      have domainEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare domain
+      have codomainEquality :=
+        Ty.rename_optRename_commute sourceRenaming.lift optionalSourceRenaming.lift
+          optionalExtendedRenaming.lift targetRenaming.lift
+          (OptionalRenaming.lift_isRenamingSquare isRenamingSquare) codomain
+      change Option.bind
+          ((domain.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedDomain =>
+            Option.bind
+              ((codomain.rename sourceRenaming.lift).optRename
+                optionalExtendedRenaming.lift)
+              (fun renamedCodomain => some (Ty.piTy renamedDomain renamedCodomain))) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.bind (domain.optRename optionalSourceRenaming)
+            (fun renamedDomain =>
+              Option.bind (codomain.optRename optionalSourceRenaming.lift)
+                (fun renamedCodomain => some (Ty.piTy renamedDomain renamedCodomain))))
+      rw [domainEquality, codomainEquality]
+      cases domain.optRename optionalSourceRenaming <;>
+        cases codomain.optRename optionalSourceRenaming.lift <;> rfl
+  | .tyVar position => by
+      change Option.map Ty.tyVar
+          (optionalExtendedRenaming (sourceRenaming position)) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.map Ty.tyVar (optionalSourceRenaming position))
+      rw [isRenamingSquare position]
+      cases optionalSourceRenaming position <;> rfl
+  | .sigmaTy firstType secondType => by
+      have firstEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare firstType
+      have secondEquality :=
+        Ty.rename_optRename_commute sourceRenaming.lift optionalSourceRenaming.lift
+          optionalExtendedRenaming.lift targetRenaming.lift
+          (OptionalRenaming.lift_isRenamingSquare isRenamingSquare) secondType
+      change Option.bind
+          ((firstType.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedFirst =>
+            Option.bind
+              ((secondType.rename sourceRenaming.lift).optRename
+                optionalExtendedRenaming.lift)
+              (fun renamedSecond => some (Ty.sigmaTy renamedFirst renamedSecond))) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.bind (firstType.optRename optionalSourceRenaming)
+            (fun renamedFirst =>
+              Option.bind (secondType.optRename optionalSourceRenaming.lift)
+                (fun renamedSecond => some (Ty.sigmaTy renamedFirst renamedSecond))))
+      rw [firstEquality, secondEquality]
+      cases firstType.optRename optionalSourceRenaming <;>
+        cases secondType.optRename optionalSourceRenaming.lift <;> rfl
+  | .bool => rfl
+  | .universe _ _ => rfl
+  | .nat => rfl
+  | .list elementType => by
+      have elementEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare elementType
+      change Option.map Ty.list
+          ((elementType.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.map Ty.list (elementType.optRename optionalSourceRenaming))
+      rw [elementEquality]
+      cases elementType.optRename optionalSourceRenaming <;> rfl
+  | .vec elementType length => by
+      have elementEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare elementType
+      change Option.map (fun renamedElement => Ty.vec renamedElement length)
+          ((elementType.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.map (fun renamedElement => Ty.vec renamedElement length)
+            (elementType.optRename optionalSourceRenaming))
+      rw [elementEquality]
+      cases elementType.optRename optionalSourceRenaming <;> rfl
+  | .option elementType => by
+      have elementEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare elementType
+      change Option.map Ty.option
+          ((elementType.rename sourceRenaming).optRename optionalExtendedRenaming) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.map Ty.option (elementType.optRename optionalSourceRenaming))
+      rw [elementEquality]
+      cases elementType.optRename optionalSourceRenaming <;> rfl
+  | .either leftType rightType => by
+      have leftEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare leftType
+      have rightEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare rightType
+      change Option.bind
+          ((leftType.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedLeft =>
+            Option.bind
+              ((rightType.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedRight => some (Ty.either renamedLeft renamedRight))) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.bind (leftType.optRename optionalSourceRenaming)
+            (fun renamedLeft =>
+              Option.bind (rightType.optRename optionalSourceRenaming)
+                (fun renamedRight => some (Ty.either renamedLeft renamedRight))))
+      rw [leftEquality, rightEquality]
+      cases leftType.optRename optionalSourceRenaming <;>
+        cases rightType.optRename optionalSourceRenaming <;> rfl
+  | .id carrier leftEndpoint rightEndpoint => by
+      have carrierEquality :=
+        Ty.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare carrier
+      have leftEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare leftEndpoint
+      have rightEquality :=
+        RawTerm.rename_optRename_commute sourceRenaming optionalSourceRenaming
+          optionalExtendedRenaming targetRenaming isRenamingSquare rightEndpoint
+      change Option.bind
+          ((carrier.rename sourceRenaming).optRename optionalExtendedRenaming)
+          (fun renamedCarrier =>
+            Option.bind
+              ((leftEndpoint.rename sourceRenaming).optRename optionalExtendedRenaming)
+              (fun renamedLeft =>
+                Option.bind
+                  ((rightEndpoint.rename sourceRenaming).optRename
+                    optionalExtendedRenaming)
+                  (fun renamedRight =>
+                    some (Ty.id renamedCarrier renamedLeft renamedRight)))) =
+        Option.map (fun renamedType => renamedType.rename targetRenaming)
+          (Option.bind (carrier.optRename optionalSourceRenaming)
+            (fun renamedCarrier =>
+              Option.bind (leftEndpoint.optRename optionalSourceRenaming)
+                (fun renamedLeft =>
+                  Option.bind (rightEndpoint.optRename optionalSourceRenaming)
+                    (fun renamedRight =>
+                      some (Ty.id renamedCarrier renamedLeft renamedRight)))))
+      rw [carrierEquality, leftEquality, rightEquality]
+      cases carrier.optRename optionalSourceRenaming <;>
+        cases leftEndpoint.optRename optionalSourceRenaming <;>
+        cases rightEndpoint.optRename optionalSourceRenaming <;> rfl
+
+/-- Weakening commutes with optional renaming under lifted optional
+renaming. -/
+theorem Ty.weaken_optRename_lift {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target) :
+    ∀ resultType : Ty level source,
+      resultType.weaken.optRename optionalRenaming.lift =
+        Option.map Ty.weaken (resultType.optRename optionalRenaming) :=
+  Ty.rename_optRename_commute Renaming.weaken optionalRenaming
+    optionalRenaming.lift Renaming.weaken
+    (OptionalRenaming.weaken_lift_isRenamingSquare optionalRenaming)
 
 /-- Soundness for successful type optional renaming.  If an optional
 renaming succeeds and `totalRenaming` right-inverts every successful

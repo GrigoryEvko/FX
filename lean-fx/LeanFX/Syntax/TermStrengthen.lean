@@ -90,6 +90,51 @@ theorem unweaken {mode : Mode} {scope : Nat}
       exact Ty.strengthen_weaken
         (varType context ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩)
 
+/-- Typed optional-renaming compatibility is stable under binders when
+the binder type itself optional-renames successfully. -/
+theorem lift {mode : Mode} {sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {optionalRenaming : OptionalRenaming sourceScope targetScope}
+    {sourceType : Ty level sourceScope} {targetType : Ty level targetScope}
+    (renamingIsCompatible :
+      TermOptionalRenaming sourceContext targetContext optionalRenaming)
+    (sourceTypeMaps : sourceType.optRename optionalRenaming = some targetType) :
+    TermOptionalRenaming
+      (sourceContext.cons sourceType) (targetContext.cons targetType)
+      optionalRenaming.lift := by
+  intro sourcePosition targetPosition positionMaps
+  match sourcePosition with
+  | ⟨0, _⟩ =>
+      change some ⟨0, Nat.zero_lt_succ targetScope⟩ =
+        some targetPosition at positionMaps
+      cases positionMaps
+      change sourceType.weaken.optRename optionalRenaming.lift =
+        some targetType.weaken
+      rw [Ty.weaken_optRename_lift optionalRenaming sourceType, sourceTypeMaps]
+      rfl
+  | ⟨sourceIndex + 1, isWithinSource⟩ =>
+      let sourcePredecessor : Fin sourceScope :=
+        ⟨sourceIndex, Nat.lt_of_succ_lt_succ isWithinSource⟩
+      change Option.map Fin.succ (optionalRenaming sourcePredecessor) =
+        some targetPosition at positionMaps
+      cases predecessorMapping : optionalRenaming sourcePredecessor with
+      | none =>
+          rw [predecessorMapping] at positionMaps
+          cases positionMaps
+      | some targetPredecessor =>
+          rw [predecessorMapping] at positionMaps
+          cases positionMaps
+          change
+            (varType sourceContext sourcePredecessor).weaken.optRename
+                optionalRenaming.lift =
+              some (varType targetContext targetPredecessor).weaken
+          rw [Ty.weaken_optRename_lift optionalRenaming
+            (varType sourceContext sourcePredecessor)]
+          rw [renamingIsCompatible sourcePredecessor
+            targetPredecessor predecessorMapping]
+          rfl
+
 end TermOptionalRenaming
 
 end LeanFX.Syntax
