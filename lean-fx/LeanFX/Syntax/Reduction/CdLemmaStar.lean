@@ -887,4 +887,71 @@ theorem Step.par.cd_lemma_star_iotaBoolElimFalseDeep_case
   simp only [Term.cd, cdEq]
   exact elseIH
 
+/-- Discharge of the `Step.par.isBi.iotaNatElimZeroDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaNatElimZeroDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee : Term ctx Ty.nat}
+    {zeroBranch zeroBranch' : Term ctx resultType}
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
+    (scrutiIH : Step.parStar Term.natZero (Term.cd scrutinee))
+    (zeroIH : Step.parStar zeroBranch' (Term.cd zeroBranch)) :
+    Step.parStar zeroBranch'
+                 (Term.cd (Term.natElim scrutinee zeroBranch succBranch)) := by
+  have cdEq : Term.cd scrutinee = Term.natZero :=
+    Step.parStar.natZero_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact zeroIH
+
+/-- Discharge of the `Step.par.isBi.iotaNatRecZeroDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaNatRecZeroDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee : Term ctx Ty.nat}
+    {zeroBranch zeroBranch' : Term ctx resultType}
+    (succBranch : Term ctx
+        (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
+    (scrutiIH : Step.parStar Term.natZero (Term.cd scrutinee))
+    (zeroIH : Step.parStar zeroBranch' (Term.cd zeroBranch)) :
+    Step.parStar zeroBranch'
+                 (Term.cd (Term.natRec scrutinee zeroBranch succBranch)) := by
+  have cdEq : Term.cd scrutinee = Term.natZero :=
+    Step.parStar.natZero_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact zeroIH
+
+/-- Discharge of the `Step.par.isBi.iotaListElimNilDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaListElimNilDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee : Term ctx (Ty.list elementType)}
+    {nilBranch nilBranch' : Term ctx resultType}
+    (consBranch : Term ctx
+        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
+    (scrutiIH : Step.parStar Term.listNil (Term.cd scrutinee))
+    (nilIH : Step.parStar nilBranch' (Term.cd nilBranch)) :
+    Step.parStar nilBranch'
+                 (Term.cd (Term.listElim scrutinee nilBranch consBranch)) := by
+  have cdEq : Term.cd scrutinee = Term.listNil :=
+    Step.parStar.listNil_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact nilIH
+
+/-- Discharge of the `Step.par.isBi.iotaOptionMatchNoneDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaOptionMatchNoneDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee : Term ctx (Ty.option elementType)}
+    {noneBranch noneBranch' : Term ctx resultType}
+    (someBranch : Term ctx (Ty.arrow elementType resultType))
+    (scrutiIH : Step.parStar Term.optionNone (Term.cd scrutinee))
+    (noneIH : Step.parStar noneBranch' (Term.cd noneBranch)) :
+    Step.parStar noneBranch'
+                 (Term.cd
+                   (Term.optionMatch scrutinee noneBranch someBranch)) := by
+  have cdEq : Term.cd scrutinee = Term.optionNone :=
+    Step.parStar.optionNone_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact noneIH
+
 end LeanFX.Syntax

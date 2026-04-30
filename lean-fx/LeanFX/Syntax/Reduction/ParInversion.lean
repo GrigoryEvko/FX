@@ -71,153 +71,31 @@ theorem Step.par.boolTrue_source_inv_general
     HEq target (@Term.boolTrue mode level scope ctx) := by
   induction parStep with
   | refl term => intro sourceEq; exact sourceEq
-  -- Type-mismatch ctors.
-  | lam => intro _; cases typeEq
-  | lamPi => intro _; cases typeEq
-  | pair => intro _; cases typeEq
-  | natSucc => intro _; cases typeEq
-  | listCons => intro _; cases typeEq
-  | optionSome => intro _; cases typeEq
-  | eitherInl => intro _; cases typeEq
-  | eitherInr => intro _; cases typeEq
-  | etaArrow => intro _; cases typeEq
-  | etaSigma => intro _; cases typeEq
-  -- Free-source ctors.
-  | app =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | fst =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | boolElim =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | natElim =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | natRec =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | listElim =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | optionMatch =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | eitherMatch =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | idJ =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimTrue =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimFalse =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimZero =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimSucc =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecZero =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecSucc =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimNil =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimCons =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchNone =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchSome =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInl =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInr =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaIdJRefl =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaApp =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaFstPair =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaAppDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaFstPairDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimTrueDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimFalseDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimZeroDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimSuccDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecZeroDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecSuccDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimNilDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimConsDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchNoneDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchSomeDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInlDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInrDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaIdJReflDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  -- Subst-source ctors: refute via Term.toRaw.
-  | appPi functionStep argumentStep functionIH argumentIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a domain_a cod_a f f' a a'
-      apply refuteViaToRaw
-        (@Term.appPi mode level scope_a ctx_a domain_a cod_a f a)
-        Term.boolTrue
-        typeEq srcHEq
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolTrue typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | snd pairStep pairIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a first_a second_a p p'
-      apply refuteViaToRaw
-        (@Term.snd mode level scope_a ctx_a first_a second_a p)
-        Term.boolTrue
-        typeEq srcHEq
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolTrue typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaAppPi bodyStep argStep bodyIH argIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a domain_a cod_a body body' arg arg'
-      apply refuteViaToRaw
-        (@Term.appPi mode level scope_a ctx_a domain_a cod_a
-           (Term.lamPi body) arg)
-        Term.boolTrue
-        typeEq srcHEq
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolTrue typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaAppPiDeep functionStep argStep functionIH argIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a domain_a cod_a function body arg arg'
-      apply refuteViaToRaw
-        (@Term.appPi mode level scope_a ctx_a domain_a cod_a function arg)
-        Term.boolTrue
-        typeEq srcHEq
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolTrue typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaSndPair firstVal secondStep secondIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a first_a second_a secondVal secondVal'
-      apply refuteViaToRaw
-        (@Term.snd mode level scope_a ctx_a first_a second_a
-           (Term.pair firstVal secondVal))
-        Term.boolTrue
-        typeEq srcHEq
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolTrue typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaSndPairDeep pairStep pairIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a first_a second_a pairTerm firstVal secondVal
-      apply refuteViaToRaw
-        (@Term.snd mode level scope_a ctx_a first_a second_a pairTerm)
-        Term.boolTrue
-        typeEq srcHEq
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolTrue typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
 
 /-- Typed source-inversion for `Step.par` with `Term.boolTrue` source. -/
 theorem Step.par.boolTrue_source_inv
@@ -264,150 +142,31 @@ theorem Step.par.boolFalse_source_inv_general
     HEq target (@Term.boolFalse mode level scope ctx) := by
   induction parStep with
   | refl term => intro sourceEq; exact sourceEq
-  | lam => intro _; cases typeEq
-  | lamPi => intro _; cases typeEq
-  | pair => intro _; cases typeEq
-  | natSucc => intro _; cases typeEq
-  | listCons => intro _; cases typeEq
-  | optionSome => intro _; cases typeEq
-  | eitherInl => intro _; cases typeEq
-  | eitherInr => intro _; cases typeEq
-  | etaArrow => intro _; cases typeEq
-  | etaSigma => intro _; cases typeEq
-  | app =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | fst =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | boolElim =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | natElim =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | natRec =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | listElim =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | optionMatch =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | eitherMatch =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | idJ =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimTrue =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimFalse =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimZero =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimSucc =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecZero =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecSucc =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimNil =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimCons =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchNone =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchSome =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInl =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInr =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaIdJRefl =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaApp =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaFstPair =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaAppDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | betaFstPairDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimTrueDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaBoolElimFalseDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimZeroDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatElimSuccDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecZeroDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaNatRecSuccDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimNilDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaListElimConsDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchNoneDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaOptionMatchSomeDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInlDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaEitherMatchInrDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | iotaIdJReflDeep =>
-      intro srcHEq; cases typeEq; cases (eq_of_heq srcHEq)
-  | appPi functionStep argumentStep functionIH argumentIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a domain_a cod_a f f' a a'
-      apply refuteViaToRaw
-        (@Term.appPi mode level scope_a ctx_a domain_a cod_a f a)
-        Term.boolFalse
-        typeEq srcHEq
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolFalse typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | snd pairStep pairIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a first_a second_a p p'
-      apply refuteViaToRaw
-        (@Term.snd mode level scope_a ctx_a first_a second_a p)
-        Term.boolFalse
-        typeEq srcHEq
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolFalse typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaAppPi bodyStep argStep bodyIH argIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a domain_a cod_a body body' arg arg'
-      apply refuteViaToRaw
-        (@Term.appPi mode level scope_a ctx_a domain_a cod_a
-           (Term.lamPi body) arg)
-        Term.boolFalse
-        typeEq srcHEq
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolFalse typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaAppPiDeep functionStep argStep functionIH argIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a domain_a cod_a function body arg arg'
-      apply refuteViaToRaw
-        (@Term.appPi mode level scope_a ctx_a domain_a cod_a function arg)
-        Term.boolFalse
-        typeEq srcHEq
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolFalse typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaSndPair firstVal secondStep secondIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a first_a second_a secondVal secondVal'
-      apply refuteViaToRaw
-        (@Term.snd mode level scope_a ctx_a first_a second_a
-           (Term.pair firstVal secondVal))
-        Term.boolFalse
-        typeEq srcHEq
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolFalse typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
-  | betaSndPairDeep pairStep pairIH =>
-      intro srcHEq
-      exfalso
-      rename_i scope_a ctx_a first_a second_a pairTerm firstVal secondVal
-      apply refuteViaToRaw
-        (@Term.snd mode level scope_a ctx_a first_a second_a pairTerm)
-        Term.boolFalse
-        typeEq srcHEq
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.boolFalse typeEq srcHEq
       intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
 
 /-- Typed source-inversion for `Step.par` with `Term.boolFalse` source. -/
 theorem Step.par.boolFalse_source_inv
@@ -439,5 +198,234 @@ theorem Step.parStar.boolFalse_source_inv
     (chain : Step.parStar (@Term.boolFalse mode level scope ctx) target) :
     target = Term.boolFalse :=
   Step.parStar.boolFalse_source_inv_general rfl chain
+
+/-! ## natZero inversion
+
+Compact form using `case` for the 6 subst-source ctors and `all_goals`
+for the remaining 50 (refl handled explicitly to pass through the
+HEq).  The combined `cases typeEq; cases (eq_of_heq srcHEq)` discharges
+both type-mismatch (cases typeEq refutes via Ty ctor mismatch) and
+free-source (cases typeEq substitutes, cases sourceHEq refutes via
+Term ctor mismatch) ctors uniformly. -/
+
+/-- Generalized typed source-inversion for `Term.natZero`. -/
+theorem Step.par.natZero_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.nat)
+    (parStep : Step.par source target) :
+    HEq source (@Term.natZero mode level scope ctx) →
+    HEq target (@Term.natZero mode level scope ctx) := by
+  induction parStep with
+  | refl term => intro sourceEq; exact sourceEq
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.natZero typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.natZero typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.natZero typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.natZero typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.natZero typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.natZero typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.natZero` source. -/
+theorem Step.par.natZero_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {target : Term ctx Ty.nat}
+    (parStep : Step.par (@Term.natZero mode level scope ctx) target) :
+    target = Term.natZero :=
+  eq_of_heq (Step.par.natZero_source_inv_general rfl parStep HEq.rfl)
+
+/-- Generalized Step.parStar source-inversion for `Term.natZero`. -/
+theorem Step.parStar.natZero_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {source target : Term ctx Ty.nat}
+    (sourceEq : source = Term.natZero)
+    (chain : Step.parStar source target) :
+    target = Term.natZero := by
+  induction chain with
+  | refl _ => exact sourceEq
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      have stepEq := Step.par.natZero_source_inv firstStep
+      cases stepEq
+      exact restIH rfl
+
+/-- Step.parStar source-inversion for `Term.natZero`. -/
+theorem Step.parStar.natZero_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {target : Term ctx Ty.nat}
+    (chain : Step.parStar (@Term.natZero mode level scope ctx) target) :
+    target = Term.natZero :=
+  Step.parStar.natZero_source_inv_general rfl chain
+
+/-! ## listNil inversion -/
+
+/-- Generalized typed source-inversion for `Term.listNil`. -/
+theorem Step.par.listNil_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.list elementType)
+    (parStep : Step.par source target) :
+    HEq source (@Term.listNil mode level scope ctx elementType) →
+    HEq target (@Term.listNil mode level scope ctx elementType) := by
+  induction parStep with
+  | refl term => intro sourceEq; exact sourceEq
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.listNil typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.listNil typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.listNil typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.listNil typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.listNil typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.listNil typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.listNil` source. -/
+theorem Step.par.listNil_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {target : Term ctx (Ty.list elementType)}
+    (parStep : Step.par
+        (@Term.listNil mode level scope ctx elementType) target) :
+    target = Term.listNil :=
+  eq_of_heq (Step.par.listNil_source_inv_general rfl parStep HEq.rfl)
+
+/-- Generalized Step.parStar source-inversion for `Term.listNil`. -/
+theorem Step.parStar.listNil_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {source target : Term ctx (Ty.list elementType)}
+    (sourceEq : source = Term.listNil)
+    (chain : Step.parStar source target) :
+    target = Term.listNil := by
+  induction chain with
+  | refl _ => exact sourceEq
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      have stepEq := Step.par.listNil_source_inv firstStep
+      cases stepEq
+      exact restIH rfl
+
+/-- Step.parStar source-inversion for `Term.listNil`. -/
+theorem Step.parStar.listNil_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {target : Term ctx (Ty.list elementType)}
+    (chain : Step.parStar
+        (@Term.listNil mode level scope ctx elementType) target) :
+    target = Term.listNil :=
+  Step.parStar.listNil_source_inv_general rfl chain
+
+/-! ## optionNone inversion -/
+
+/-- Generalized typed source-inversion for `Term.optionNone`. -/
+theorem Step.par.optionNone_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.option elementType)
+    (parStep : Step.par source target) :
+    HEq source (@Term.optionNone mode level scope ctx elementType) →
+    HEq target (@Term.optionNone mode level scope ctx elementType) := by
+  induction parStep with
+  | refl term => intro sourceEq; exact sourceEq
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.optionNone typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.optionNone typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.optionNone typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.optionNone typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.optionNone typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ Term.optionNone typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.optionNone` source. -/
+theorem Step.par.optionNone_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {target : Term ctx (Ty.option elementType)}
+    (parStep : Step.par
+        (@Term.optionNone mode level scope ctx elementType) target) :
+    target = Term.optionNone :=
+  eq_of_heq (Step.par.optionNone_source_inv_general rfl parStep HEq.rfl)
+
+/-- Generalized Step.parStar source-inversion for `Term.optionNone`. -/
+theorem Step.parStar.optionNone_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {source target : Term ctx (Ty.option elementType)}
+    (sourceEq : source = Term.optionNone)
+    (chain : Step.parStar source target) :
+    target = Term.optionNone := by
+  induction chain with
+  | refl _ => exact sourceEq
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      have stepEq := Step.par.optionNone_source_inv firstStep
+      cases stepEq
+      exact restIH rfl
+
+/-- Step.parStar source-inversion for `Term.optionNone`. -/
+theorem Step.parStar.optionNone_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {target : Term ctx (Ty.option elementType)}
+    (chain : Step.parStar
+        (@Term.optionNone mode level scope ctx elementType) target) :
+    target = Term.optionNone :=
+  Step.parStar.optionNone_source_inv_general rfl chain
 
 end LeanFX.Syntax

@@ -443,6 +443,18 @@ for the strategy. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.boolFalse_source_inv
 #assert_no_axioms LeanFX.Syntax.Step.parStar.boolFalse_source_inv_general
 #assert_no_axioms LeanFX.Syntax.Step.parStar.boolFalse_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.natZero_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.natZero_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.natZero_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.natZero_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.listNil_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.listNil_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.listNil_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.listNil_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.optionNone_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.optionNone_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.optionNone_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.optionNone_source_inv
 
 /-! ## Wave 9-B1 Deep βι case helpers (post-W6.1).
 
@@ -452,5 +464,9 @@ forms. -/
 
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaBoolElimTrueDeep_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaBoolElimFalseDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatElimZeroDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatRecZeroDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaListElimNilDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaOptionMatchNoneDeep_case
 
 end LeanFX.Tools.AuditAll
