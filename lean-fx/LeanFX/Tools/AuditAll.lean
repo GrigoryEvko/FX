@@ -546,4 +546,6 @@ and discharges via `subst0_parStar` (β cases) or direct projection
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaFstPairDeep_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaSndPairDeep_case
 
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi.cast_target_eq
+
 end LeanFX.Tools.AuditAll

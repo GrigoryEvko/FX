@@ -688,4 +688,26 @@ private theorem Step.par.cd_lemma_star_refl_proto
   -- cd_dominates gives Step.par term (Term.cd term); lift to parStar.
   Step.par.toParStar (Step.par.cd_dominates term)
 
+/-! ## isBi-preserving target casts.
+
+When an eliminator's `cd_dominates` arm rewrites the IH target
+along an equation `Term.cd scrutinee = Term.<targetCtor> ...`,
+the resulting cast Step.par retains its isBi witness.  Both
+forms (Eq direction and HEq direction) are needed: the splitter
+in `cd_dominates` produces an `Eq` equation; an alternative
+formulation could produce HEq across dependent types.  We
+provide both for downstream flexibility. -/
+
+/-- Step.par.isBi survives target-direction `Eq` cast. -/
+theorem Step.par.isBi.cast_target_eq
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm rewrittenTarget : Term ctx termType}
+    {parallelStep : Step.par sourceTerm targetTerm}
+    (rewriteEq : targetTerm = rewrittenTarget)
+    (stepBi : Step.par.isBi parallelStep) :
+    Step.par.isBi (rewriteEq ▸ parallelStep) := by
+  cases rewriteEq
+  exact stepBi
+
 end LeanFX.Syntax
