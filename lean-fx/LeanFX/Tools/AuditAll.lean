@@ -6,6 +6,8 @@ import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Frontend.Surface
 import LeanFX.Frontend.Token
 import LeanFX.Syntax.Inductive
+import LeanFX.Mode.Collision
+import LeanFX.Mode.Modality
 import LeanFX.Tools.DependencyAudit
 
 /-! # Axiom regression gate.
@@ -384,6 +386,24 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.TermRenaming
 #assert_no_axioms LeanFX.Syntax.LengthList
 #assert_no_axioms LeanFX.Mode.Mode
+
+-- Modality + Context-lock equivalence.  Modality is the 1-cell
+-- between modes; LockEquiv is the propositional context-lock
+-- relation (kept relational, not Eq, to dodge propext from
+-- dependent matching on the Modality family).  IdProof is the
+-- propositional id-fragment witness.  StandardList / StandardNat
+-- are the universe-polymorphic standard data types used by
+-- LengthList and friends.  InductiveArgumentShape gates the
+-- shape predicate used in Inductive.lean's argument analysis.
+#assert_no_axioms LeanFX.Mode.Modality
+#assert_no_axioms LeanFX.Mode.FxCollisionAtom
+#assert_no_axioms LeanFX.Syntax.Ctx.LockEquiv
+#assert_no_axioms LeanFX.Syntax.IdProof
+#assert_no_axioms LeanFX.Syntax.StandardList
+#assert_no_axioms LeanFX.Syntax.StandardNat
+#assert_no_axioms LeanFX.Syntax.InductiveArgumentShape
+#assert_no_axioms LeanFX.Frontend.MatchArmList
+#assert_no_axioms LeanFX.Frontend.PatternList
 
 -- Frontend (Surface AST + Token AST).  These mirror the kernel's
 -- intrinsic indexing discipline and must stay axiom-free for the
