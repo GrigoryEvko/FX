@@ -512,14 +512,20 @@ automatically OMITS etaArrow / etaSigma constructors because
 `Step.par.isBi` has no such ctors.  This sidesteps the dep-elim
 wall on `cases (h : Step.par.isBi (Step.par.etaArrow _))`.
 
-Single-step versions land at zero axioms; chain (parStar) versions
-deferred — `cases chainBi` after `induction chain` hits a separate
-dep-elim where chainBi's type doesn't constrain to the trans
-branch. -/
+Both single-step and chain (parStar) versions land at zero axioms.
+The chain version was unblocked by inducting on `chainBi` directly
+(NOT on `chain`); chainBi's ctor pattern gives the right shape for
+the chain in each case, and the body is universally quantified
+inside the goal so the IH can be re-instantiated at each chain
+link with the intermediate body produced by single-step inversion. -/
 
 #assert_no_axioms LeanFX.Syntax.Step.par.lam_target_inv_isBi_general
 #assert_no_axioms LeanFX.Syntax.Step.par.lam_target_inv_isBi
 #assert_no_axioms LeanFX.Syntax.Step.par.pair_target_inv_isBi_general
 #assert_no_axioms LeanFX.Syntax.Step.par.pair_target_inv_isBi
+#assert_no_axioms LeanFX.Syntax.Step.parStar.lam_target_inv_isBi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.lam_target_inv_isBi
+#assert_no_axioms LeanFX.Syntax.Step.parStar.pair_target_inv_isBi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.pair_target_inv_isBi
 
 end LeanFX.Tools.AuditAll

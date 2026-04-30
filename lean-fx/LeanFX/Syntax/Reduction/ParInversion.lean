@@ -1076,12 +1076,61 @@ theorem Step.par.lam_target_inv_isBi
     Step.par.lam_target_inv_isBi_general rfl stepBi HEq.rfl
   exact ⟨body', eq_of_heq targetHEq, innerStep⟩
 
-/-! NOTE: Step.parStar.lam_target_inv_isBi (chain version) deferred —
-the `cases chainBi` after generalizing source hits an `Alternative
-refl has not been provided` dep-elim error because `induction chain`
-loses chainBi's type-index linkage to the trans branch.  See
-W9.B1.7 task notes for resolution paths.  The single-step version
-above is sufficient for the immediate cd_lemma_star helpers. -/
+/-! ## Lam target inversion (chain version under isBi gating). -/
+
+/-- Generalized chain lam target inversion under isBi.
+
+The breakthrough: induct on `chainBi` (the `Step.parStar.isBi` Prop
+witness) directly — NOT on the underlying chain.  Inducting on
+chainBi gives concrete chain shapes per case (refl / trans), and
+chainBi has no etaArrow/etaSigma ctors so η is automatically
+omitted — same technique as the single-step version.
+
+Keeping `body` universally quantified INSIDE the conclusion lets
+the IH be re-instantiated with the intermediate body produced by
+the single-step lam target inversion at each chain link. -/
+theorem Step.parStar.lam_target_inv_isBi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.arrow domainType codomainType)
+    {chain : Step.parStar sourceTerm targetTerm}
+    (chainBi : Step.parStar.isBi chain) :
+    ∀ (body : Term (ctx.cons domainType) codomainType.weaken),
+    HEq sourceTerm
+        (@Term.lam mode level scope ctx domainType codomainType body) →
+    ∃ (body' : Term (ctx.cons domainType) codomainType.weaken),
+        HEq targetTerm
+            (@Term.lam mode level scope ctx domainType codomainType body') ∧
+        Step.parStar body body' := by
+  induction chainBi with
+  | refl term =>
+      intro body sourceHEq
+      exact ⟨body, sourceHEq, Step.parStar.refl body⟩
+  | trans firstBi _restBi restIH =>
+      intro body sourceHEq
+      obtain ⟨bodyMid, secondHEq, midStep⟩ :=
+        Step.par.lam_target_inv_isBi_general typeEq firstBi sourceHEq
+      obtain ⟨body', targetHEq, restStep⟩ :=
+        restIH bodyMid secondHEq
+      exact ⟨body', targetHEq,
+             Step.parStar.trans midStep restStep⟩
+
+/-- Single-step chain lam target inversion under isBi gating. -/
+theorem Step.parStar.lam_target_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {target : Term ctx (Ty.arrow domainType codomainType)}
+    {chain : Step.parStar
+        (@Term.lam mode level scope ctx domainType codomainType body) target}
+    (chainBi : Step.parStar.isBi chain) :
+    ∃ (body' : Term (ctx.cons domainType) codomainType.weaken),
+        target = Term.lam body' ∧ Step.parStar body body' := by
+  obtain ⟨body', targetHEq, innerStep⟩ :=
+    Step.parStar.lam_target_inv_isBi_general (chain := chain) rfl chainBi body HEq.rfl
+  exact ⟨body', eq_of_heq targetHEq, innerStep⟩
 
 /-! ## Pair target inversion (under isBi-chain gating). -/
 
@@ -1148,7 +1197,68 @@ theorem Step.par.pair_target_inv_isBi
     Step.par.pair_target_inv_isBi_general rfl stepBi HEq.rfl
   exact ⟨firstVal', secondVal', eq_of_heq targetHEq, firstStep, secondStep⟩
 
-/-! NOTE: Step.parStar.pair_target_inv_isBi (chain version) deferred —
-same dep-elim issue as the lam parStar version. -/
+/-! ## Pair target inversion (chain version under isBi gating). -/
+
+/-- Generalized chain pair target inversion under isBi.  Same
+recipe as `Step.parStar.lam_target_inv_isBi_general`: induct on
+`chainBi` directly, keeping the components universally quantified
+inside the goal so the IH absorbs intermediate values produced by
+each chain link's single-step inversion. -/
+theorem Step.parStar.pair_target_inv_isBi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.sigmaTy firstType secondType)
+    {chain : Step.parStar sourceTerm targetTerm}
+    (chainBi : Step.parStar.isBi chain) :
+    ∀ (firstVal : Term ctx firstType)
+      (secondVal : Term ctx (secondType.subst0 firstType)),
+    HEq sourceTerm
+        (@Term.pair mode level scope ctx firstType secondType
+            firstVal secondVal) →
+    ∃ (firstVal' : Term ctx firstType)
+      (secondVal' : Term ctx (secondType.subst0 firstType)),
+        HEq targetTerm
+            (@Term.pair mode level scope ctx firstType secondType
+                firstVal' secondVal') ∧
+        Step.parStar firstVal firstVal' ∧
+        Step.parStar secondVal secondVal' := by
+  induction chainBi with
+  | refl term =>
+      intro firstVal secondVal sourceHEq
+      exact ⟨firstVal, secondVal, sourceHEq,
+             Step.parStar.refl firstVal,
+             Step.parStar.refl secondVal⟩
+  | trans firstBi _restBi restIH =>
+      intro firstVal secondVal sourceHEq
+      obtain ⟨firstMid, secondMid, secondHEq, firstStep, secondStep⟩ :=
+        Step.par.pair_target_inv_isBi_general typeEq firstBi sourceHEq
+      obtain ⟨firstVal', secondVal', targetHEq, firstStar, secondStar⟩ :=
+        restIH firstMid secondMid secondHEq
+      exact ⟨firstVal', secondVal', targetHEq,
+             Step.parStar.trans firstStep firstStar,
+             Step.parStar.trans secondStep secondStar⟩
+
+/-- Single-step chain pair target inversion under isBi gating. -/
+theorem Step.parStar.pair_target_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    {target : Term ctx (Ty.sigmaTy firstType secondType)}
+    {chain : Step.parStar
+        (@Term.pair mode level scope ctx firstType secondType
+            firstVal secondVal) target}
+    (chainBi : Step.parStar.isBi chain) :
+    ∃ (firstVal' : Term ctx firstType)
+      (secondVal' : Term ctx (secondType.subst0 firstType)),
+        target = Term.pair firstVal' secondVal' ∧
+        Step.parStar firstVal firstVal' ∧
+        Step.parStar secondVal secondVal' := by
+  obtain ⟨firstVal', secondVal', targetHEq, firstStar, secondStar⟩ :=
+    Step.parStar.pair_target_inv_isBi_general
+      (chain := chain) rfl chainBi firstVal secondVal HEq.rfl
+  exact ⟨firstVal', secondVal', eq_of_heq targetHEq, firstStar, secondStar⟩
 
 end LeanFX.Syntax
