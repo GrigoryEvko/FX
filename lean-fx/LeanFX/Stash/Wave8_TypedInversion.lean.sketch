@@ -1,0 +1,217 @@
+import LeanFX.Syntax.Reduction.ParBi
+
+/-! # Sketch: typed `Step.parStar` inversion lemmas (Wave 8 prep).
+
+This file is **not part of the active build** until promoted from
+`Sketch/` to `Reduction/`.  It hosts the foundational inversion
+infrastructure that the 17 missing Deep βι case helpers in
+`CdLemmaStar.lean` require for `Step.par.cd_lemma` (#883).
+
+## Problem statement
+
+The shallow βι case helpers in `CdLemmaStar.lean` operate on
+sources whose `Term.cd` definitionally fires β.  Example:
+`betaApp_case` has source `Term.app (Term.lam body) arg`, and
+`Term.cd` on this source fires the lam-arm of the `app` match,
+yielding `subst0 (Term.cd body) (Term.cd arg)` — an obvious
+β-redex contraction.
+
+Deep cases differ: `betaAppDeep` has source `Term.app functionTerm
+arg` where `functionTerm` is *not* a literal lam — it merely
+parallel-reduces to one.  `Term.cd` on `Term.app functionTerm arg`
+match-dispatches on `Term.cd functionTerm`'s shape:
+  * If `Term.cd functionTerm = Term.lam body'`: β-fire, yielding
+    `subst0 body' (Term.cd arg)`.
+  * Otherwise: app-cong, yielding
+    `Term.app (Term.cd functionTerm) (Term.cd arg)`.
+
+To complete a Deep case helper, we must rule out the second
+branch.  The IH from `Step.par.cd_lemma` applied to the
+`functionStep : Step.par functionTerm (Term.lam body)` premise
+gives `Step.parStar (Term.lam body) (Term.cd functionTerm)`.  If
+this parStar is built only of βι-steps (no η-contraction), then
+`Term.cd functionTerm` must be a literal lam — because every
+βι-step from `Term.lam X` produces another `Term.lam X'`.
+
+But the typed `Step.parStar` does *not* track per-step βι-ness.
+It is a Prop-valued inductive `refl | trans` over arbitrary
+`Step.par`.  η-contraction (`Step.par.etaArrow`) maps a *specific*
+`Term.lam (Term.app (Term.weaken _ f) (Term.var 0))` shape to `f`
+(non-lam target).  Without excluding η, parStar from a lam can
+escape lam shape.
+
+## Approach: `Step.parStar.isBi`
+
+A Prop-valued predicate over a parStar chain that asserts every
+step is βι.  Defined recursively over the chain's structure.
+Once we have this, `lam_inv_isBi` is straightforward by
+induction-on-chain.
+
+Once `lam_inv_isBi` (and 12 sibling shape inversions) lands,
+each Deep case helper in `CdLemmaStar.lean` follows the template:
+  1. Apply `cd_lemma` recursively to the inner step + isBi premise
+     to obtain a parStar IH plus (after refactoring) its isBi
+     witness.
+  2. Apply the corresponding shape inversion to extract the cd
+     target's structure.
+  3. Use `Step.parStar.subst0_parStar` (or similar) to chain the
+     conclusion.
+
+## Open questions
+
+1. **Refactor `Step.par.cd_lemma`'s output type to track isBi on
+   parStar.**  Currently `cd_lemma : par s t → isBi → parStar t (cd
+   s)`.  Proposed: `cd_lemma : par s t → isBi step → ∃ chain :
+   parStar t (cd s), chain.isBi`.  Slightly heavier signature.
+2. **Or:** prove a `Step.par.cd_lemma_outputIsBi` corollary —
+   the parStar output of cd_lemma is always isBi.  Lighter
+   signature, additional theorem.
+
+The second option is preferable: it keeps `cd_lemma`'s public API
+unchanged while exposing the βι-ness as an after-the-fact theorem
+when needed by Deep case proofs.
+
+## Dead-end discovered 2026-04-30
+
+Even for the simplest constant-ctor case (`Term.boolTrue → target`
+forces `target = Term.boolTrue`), `cases step` from the Lean
+tactic framework fails with:
+
+```
+Dependent elimination failed: Failed to solve equation
+  Ty.bool = codomainType.subst (Subst.singleton domainType)
+```
+
+**Why:** `Step.par`'s constructors include `betaApp` whose target
+type is `codomainType.subst (Subst.singleton domainType)` — a
+`Ty.subst` expression Lean's match compiler cannot eagerly refute
+against `Ty.bool` without explicit Ty constructor disjointness
+lemmas (`Ty.bool_ne_arrow_subst`, etc.).
+
+The raw layer's `RawStep.par` has only one Nat index and no Ty
+parameters, so `cases step` works there.  At the typed layer,
+the workable paths are:
+
+  * **Bridge approach (preferred).**  Convert typed parStar to raw
+    parStar via `Term.toRaw`, apply raw `RawStep.parStar.lam_inv`,
+    then come back through the bridge.  Bridge is currently
+    quarantined to `Stash/ParToRawBridge.lean.WIP` (24 sorrys).
+    Wave 6 β-surgery closes those sorrys.  Once bridge is restored,
+    typed inversions become 5-line corollaries.
+  * **Ty disjointness scaffold (alternative).**  Build
+    `Ty.bool_ne_arrow_subst_X` / `Ty.unit_ne_X` / etc. — a complete
+    library of negative pair refutations.  ~200-300 lines of
+    structural noConfusion-style lemmas.  Once those exist,
+    `cases step` would work at the typed layer.
+  * **Direct match-with-motive.**  Manually write each inversion's
+    proof using `match step with` and explicit
+    `Ty.noConfusion`-style refutation per non-matching constructor.
+    Tedious but each inversion is ~30-50 lines.
+
+**Recommendation:** wait for Wave 6 to land, then take the bridge
+approach.  This file's contents stay as design documentation
+until then.
+
+## What this sketch contains
+
+  * Definition of `Step.parStar.isBi` (Prop predicate over chain).
+  * Statement of `Step.parStar.lam_inv_isBi`.
+  * Statement of `Step.parStar.lam_inv` (no-isBi version, returns
+    a disjunction including the η-escape case).
+  * Statements (no proofs) of the 12 sibling inversions.
+
+When promoting to active build, write the proofs and add
+`#assert_no_axioms` gates to AuditAll. -/
+
+namespace LeanFX.Syntax
+open LeanFX.Mode
+
+/-- Every step in the parStar chain is βι.  Prop-valued
+recursive predicate matching the chain's `refl | trans`
+structure. -/
+inductive Step.parStar.isBi :
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {termType : Ty level scope} → {firstTerm secondTerm : Term ctx termType} →
+    Step.parStar firstTerm secondTerm → Prop
+  | refl : ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+        {termType : Ty level scope} (term : Term ctx termType),
+      Step.parStar.isBi (Step.parStar.refl term)
+  | trans : ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+        {termType : Ty level scope}
+        {firstTerm secondTerm thirdTerm : Term ctx termType}
+        {headStep : Step.par firstTerm secondTerm}
+        {tailChain : Step.parStar secondTerm thirdTerm},
+      Step.par.isBi headStep →
+      Step.parStar.isBi tailChain →
+      Step.parStar.isBi (Step.parStar.trans headStep tailChain)
+
+/-- **Sketch only — not yet proved.**  Every βι-only parStar from
+a literal lam preserves lam shape.  The body parStars correspondingly. -/
+theorem Step.parStar.lam_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {target : Term ctx (Ty.arrow domainType codomainType)}
+    (chain : Step.parStar
+      (Term.lam (codomainType := codomainType) body) target)
+    (chainIsBi : Step.parStar.isBi chain) :
+    ∃ body' : Term (ctx.cons domainType) codomainType.weaken,
+      target = Term.lam (codomainType := codomainType) body' ∧
+      Step.parStar body body' := by
+  sorry
+
+/-- **Sketch only — not yet proved.**  Same template for
+`Term.lamPi`. -/
+theorem Step.parStar.lamPi_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {body : Term (ctx.cons domainType) codomainType}
+    {target : Term ctx (Ty.piTy domainType codomainType)}
+    (chain : Step.parStar
+      (Term.lamPi (domainType := domainType) body) target)
+    (chainIsBi : Step.parStar.isBi chain) :
+    ∃ body' : Term (ctx.cons domainType) codomainType,
+      target = Term.lamPi (domainType := domainType) body' ∧
+      Step.parStar body body' := by
+  sorry
+
+/-- **Sketch only — not yet proved.**  Inversion for `Term.pair`.
+Both first and second components parStar correspondingly. -/
+theorem Step.parStar.pair_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    {target : Term ctx (Ty.sigmaTy firstType secondType)}
+    (chain : Step.parStar
+      (Term.pair (firstType := firstType) (secondType := secondType)
+        firstVal secondVal) target)
+    (chainIsBi : Step.parStar.isBi chain) :
+    ∃ (firstVal' : Term ctx firstType)
+      (secondVal' : Term ctx (secondType.subst0 firstType)),
+      target = Term.pair (firstType := firstType) (secondType := secondType)
+        firstVal' secondVal' ∧
+      Step.parStar firstVal firstVal' ∧
+      Step.parStar secondVal secondVal' := by
+  sorry
+
+/-- **Sketch only.**  All other shape-preserving parStar
+inversions follow the same recipe.  Statements deferred to
+implementation phase:
+
+  * `Step.parStar.refl_inv_isBi` — `Term.refl rt` parStars to `Term.refl rt'`.
+  * `Step.parStar.boolTrue_inv_isBi` — `Term.boolTrue` parStars to itself.
+  * `Step.parStar.boolFalse_inv_isBi` — likewise for `boolFalse`.
+  * `Step.parStar.natZero_inv_isBi` — likewise for `natZero`.
+  * `Step.parStar.natSucc_inv_isBi` — `natSucc n` parStars to `natSucc n'`.
+  * `Step.parStar.listNil_inv_isBi` — `listNil` parStars to itself.
+  * `Step.parStar.listCons_inv_isBi` — `listCons h t` parStars to `listCons h' t'`.
+  * `Step.parStar.optionNone_inv_isBi` — `optionNone` parStars to itself.
+  * `Step.parStar.optionSome_inv_isBi` — `optionSome v` parStars to `optionSome v'`.
+  * `Step.parStar.eitherInl_inv_isBi` — likewise for inl.
+  * `Step.parStar.eitherInr_inv_isBi` — likewise for inr.
+
+These 13 inversions, paired with `Step.par.cd_lemma_outputIsBi`,
+unblock the 17 Deep βι case helpers in `CdLemmaStar.lean`. -/
+
+end LeanFX.Syntax

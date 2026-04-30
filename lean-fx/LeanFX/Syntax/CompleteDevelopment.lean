@@ -64,7 +64,16 @@ def Term.isNewestVar {mode : Mode} {level scope : Nat}
 equal to `leftEnd`, `Term.refl _` is an admissible pattern for a
 witness of type `Ty.id carrier leftEnd leftEnd`, so the iota check
 reduces to a non-dependent two-arm match the simp/split tactics can
-decompose. -/
+decompose.
+
+The match below is dependent (scrutinee is a `Term` indexed by
+`Ty.id carrier leftEnd leftEnd`), and Lean 4's match compiler emits
+`propext` + `Quot.sound` while discharging the wildcard branch.
+This is a Lean implementation detail: the FX kernel never *uses*
+propext as a logical principle.  AuditAll's `isStdlibPlumbing`
+filter (`reference_audit_axiom_semantics.md`) is the policy gate —
+Init.* axioms are TCB-accepted, only project-local axioms count
+against `#assert_no_axioms`. -/
 def Term.cd_idJ_redex_aligned
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
