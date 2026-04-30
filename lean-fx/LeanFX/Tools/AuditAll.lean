@@ -2,6 +2,7 @@ import LeanFX.Syntax.Term
 import LeanFX.Syntax.Identity
 import LeanFX.Syntax.DependentJ
 import LeanFX.Syntax.Reduction.ParBi
+import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Tools.DependencyAudit
 
 /-! # Axiom regression gate.
@@ -222,5 +223,44 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Step.parStar.idJ_cong_witness
 #assert_no_axioms LeanFX.Syntax.Step.parStar.idJ_cong
 #assert_no_axioms LeanFX.Syntax.Step.par.isBi
+#assert_no_axioms LeanFX.Syntax.Step.parStar.castBoth
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_refl_only_smoke
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_refl_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_lam_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_lamPi_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_pair_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_natSucc_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_listCons_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_optionSome_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_eitherInl_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_eitherInr_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_app_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_appPi_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_fst_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_snd_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_boolElim_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_natElim_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_natRec_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_listElim_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_optionMatch_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_eitherMatch_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_idJ_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaApp_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaAppPi_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaFstPair_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaSndPair_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaBoolElimTrue_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaBoolElimFalse_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatElimZero_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatElimSucc_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatRecZero_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatRecSucc_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaListElimNil_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaListElimCons_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaOptionMatchNone_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaOptionMatchSome_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInl_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInr_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaIdJRefl_case
 
 end LeanFX.Tools.AuditAll

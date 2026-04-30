@@ -787,7 +787,11 @@ theorem Step.par.cd_lemma_star_iotaEitherMatchInr_case
 `Term.idJ baseCase (Term.refl endpoint)`; target `baseCase'`.  cd
 unfolds via `cd_idJ_redex` (decidable equality endpoint = endpoint
 trivially holds), then `cd_idJ_redex_aligned` matches the literal
-`Term.refl _` and yields `Term.cd baseCase`.  Closed by `baseIH`. -/
+`Term.refl _` and yields `Term.cd baseCase`.  Closed by `baseIH`.
+
+We avoid simp-reducing the decidable `if` (which pulls in
+`propext`) and instead use explicit `split` matching `cd_idJ_redex`'s
+two arms by hand. -/
 theorem Step.par.cd_lemma_star_iotaIdJRefl_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {carrier : Ty level scope} {endpoint : RawTerm scope}
@@ -798,10 +802,25 @@ theorem Step.par.cd_lemma_star_iotaIdJRefl_case
                  (Term.cd (Term.idJ (carrier := carrier) (leftEnd := endpoint)
                                     (rightEnd := endpoint) baseCase
                                     (Term.refl (carrier := carrier) endpoint))) := by
-  simp only [Term.cd, Term.cd_idJ_redex]
-  -- endpointsEqual : endpoint = endpoint always holds, decidable case `true`.
-  simp only [Term.cd_idJ_redex_aligned]
-  -- Term.refl endpoint matches the Term.refl _ pattern.
+  -- Same template as `idJ_case` for refl-witness with same endpoints.
+  -- We use the shape-preserving `split` on `cd_idJ_redex`'s if-then-else;
+  -- the endpoint=endpoint case fires deterministically at the
+  -- `cd_idJ_redex_aligned` stage and matches the `Term.refl _` pattern.
+  -- Establish the cd-equation as an auxiliary fact, then rewrite.
+  -- The unfolding chain: Term.cd of idJ → cd_idJ_redex (cd base) (cd witness)
+  --   → (cd witness = Term.refl endpoint) → cd_idJ_redex (cd base) (Term.refl endpoint)
+  --   → if endpoint = endpoint then cd_idJ_redex_aligned (cd base) (rfl ▸ refl) else ...
+  --   → (dif_pos with rfl) cd_idJ_redex_aligned (cd base) (refl endpoint)
+  --   → (refl pattern fires) cd base.
+  have cdEq : Term.cd (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                                (rightEnd := endpoint) baseCase
+                                (Term.refl (carrier := carrier) endpoint))
+            = Term.cd baseCase := by
+    simp only [Term.cd]
+    unfold Term.cd_idJ_redex
+    rw [dif_pos rfl]
+    rfl
+  rw [cdEq]
   exact baseIH
 
 end LeanFX.Syntax
