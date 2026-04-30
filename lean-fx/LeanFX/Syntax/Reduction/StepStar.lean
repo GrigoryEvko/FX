@@ -1,5 +1,30 @@
 import LeanFX.Syntax.Reduction.Step
 
+/-! # Multi-step reduction (`StepStar`).
+
+Reflexive-transitive closure of single-step `Step` plus the
+structural congruences threading multi-step reduction through
+each constructor of `Term`.
+
+Layout:
+
+  * `StepStar` — inductive with `refl` and `step`.  Same
+    `{ctx} {T}` indices as `Step`, so subject reduction is
+    structural (no separate theorem to state).
+  * `Step.toStar` — single steps lift to multi-step.
+  * `StepStar.trans` — transitivity, load-bearing for the
+    eventual conversion algorithm.
+  * Per-position congruences (`app_cong_left`,
+    `app_cong_right`, `pair_cong_first`, `pair_cong_second`,
+    `appPi_cong_left`, `appPi_cong_right`) and their combined
+    forms (`app_cong`, `pair_cong`, `appPi_cong`) plus
+    `lam_cong`, `lamPi_cong`, `fst_cong`, `snd_cong`.
+
+The parallel-reduction multi-step counterpart `Step.parStar`
+lives in `Reduction.ParSubst` (built on `Step.par` from
+`Reduction.Par`), where the analogous chain congruences are
+proved against `Step.par` instead. -/
+
 namespace LeanFX.Syntax
 open LeanFX.Mode
 
