@@ -612,4 +612,402 @@ theorem Step.parStar.natSucc_source_inv
       obtain ⟨pred', eq', restStar⟩ := restIH eq₁.symm
       exact ⟨pred', eq', Step.parStar.trans step₁ restStar⟩
 
+/-! ## listCons structural inversion (two subterms: head + tail) -/
+
+/-- Generalized typed source-inversion for `Term.listCons`. -/
+theorem Step.par.listCons_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headTerm : Term ctx elementType}
+    {tailTerm : Term ctx (Ty.list elementType)}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.list elementType)
+    (parStep : Step.par source target) :
+    HEq source
+        (@Term.listCons mode level scope ctx elementType headTerm tailTerm) →
+    ∃ (head' : Term ctx elementType)
+      (tail' : Term ctx (Ty.list elementType)),
+        HEq target
+            (@Term.listCons mode level scope ctx elementType head' tail') ∧
+        Step.par headTerm head' ∧ Step.par tailTerm tail' := by
+  induction parStep with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨headTerm, tailTerm, sourceHEq,
+             Step.par.refl headTerm, Step.par.refl tailTerm⟩
+  | listCons headStep tailStep _ _ =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      exact ⟨_, _, HEq.rfl, headStep, tailStep⟩
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.listCons` source. -/
+theorem Step.par.listCons_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headTerm : Term ctx elementType}
+    {tailTerm : Term ctx (Ty.list elementType)}
+    {target : Term ctx (Ty.list elementType)}
+    (parStep : Step.par
+        (@Term.listCons mode level scope ctx elementType headTerm tailTerm)
+        target) :
+    ∃ (head' : Term ctx elementType)
+      (tail' : Term ctx (Ty.list elementType)),
+        target = Term.listCons head' tail' ∧
+        Step.par headTerm head' ∧ Step.par tailTerm tail' := by
+  obtain ⟨head', tail', targetHEq, headStep, tailStep⟩ :=
+    Step.par.listCons_source_inv_general rfl parStep HEq.rfl
+  exact ⟨head', tail', eq_of_heq targetHEq, headStep, tailStep⟩
+
+/-- Step.parStar source-inversion for `Term.listCons`. -/
+theorem Step.parStar.listCons_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headTerm : Term ctx elementType}
+    {tailTerm : Term ctx (Ty.list elementType)}
+    {target : Term ctx (Ty.list elementType)}
+    (chain : Step.parStar
+        (@Term.listCons mode level scope ctx elementType headTerm tailTerm)
+        target) :
+    ∃ (head' : Term ctx elementType)
+      (tail' : Term ctx (Ty.list elementType)),
+        target = Term.listCons head' tail' ∧
+        Step.parStar headTerm head' ∧ Step.parStar tailTerm tail' := by
+  generalize sourceEq :
+      (@Term.listCons mode level scope ctx elementType headTerm tailTerm)
+      = sourceTerm at chain
+  induction chain generalizing headTerm tailTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨headTerm, tailTerm, rfl,
+             Step.parStar.refl headTerm, Step.parStar.refl tailTerm⟩
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      obtain ⟨head₁, tail₁, eq₁, headStep₁, tailStep₁⟩ :=
+        Step.par.listCons_source_inv firstStep
+      obtain ⟨head', tail', eq', headStar, tailStar⟩ := restIH eq₁.symm
+      exact ⟨head', tail', eq',
+             Step.parStar.trans headStep₁ headStar,
+             Step.parStar.trans tailStep₁ tailStar⟩
+
+/-! ## optionSome structural inversion (single subterm: value) -/
+
+/-- Generalized typed source-inversion for `Term.optionSome`. -/
+theorem Step.par.optionSome_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueTerm : Term ctx elementType}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.option elementType)
+    (parStep : Step.par source target) :
+    HEq source
+        (@Term.optionSome mode level scope ctx elementType valueTerm) →
+    ∃ (value' : Term ctx elementType),
+        HEq target
+            (@Term.optionSome mode level scope ctx elementType value') ∧
+        Step.par valueTerm value' := by
+  induction parStep with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨valueTerm, sourceHEq, Step.par.refl valueTerm⟩
+  | optionSome valueStep _ =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      exact ⟨_, HEq.rfl, valueStep⟩
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.optionSome` source. -/
+theorem Step.par.optionSome_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueTerm : Term ctx elementType}
+    {target : Term ctx (Ty.option elementType)}
+    (parStep : Step.par
+        (@Term.optionSome mode level scope ctx elementType valueTerm)
+        target) :
+    ∃ (value' : Term ctx elementType),
+        target = Term.optionSome value' ∧
+        Step.par valueTerm value' := by
+  obtain ⟨value', targetHEq, valueStep⟩ :=
+    Step.par.optionSome_source_inv_general rfl parStep HEq.rfl
+  exact ⟨value', eq_of_heq targetHEq, valueStep⟩
+
+/-- Step.parStar source-inversion for `Term.optionSome`. -/
+theorem Step.parStar.optionSome_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueTerm : Term ctx elementType}
+    {target : Term ctx (Ty.option elementType)}
+    (chain : Step.parStar
+        (@Term.optionSome mode level scope ctx elementType valueTerm)
+        target) :
+    ∃ (value' : Term ctx elementType),
+        target = Term.optionSome value' ∧
+        Step.parStar valueTerm value' := by
+  generalize sourceEq :
+      (@Term.optionSome mode level scope ctx elementType valueTerm)
+      = sourceTerm at chain
+  induction chain generalizing valueTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨valueTerm, rfl, Step.parStar.refl valueTerm⟩
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      obtain ⟨value₁, eq₁, valueStep₁⟩ :=
+        Step.par.optionSome_source_inv firstStep
+      obtain ⟨value', eq', valueStar⟩ := restIH eq₁.symm
+      exact ⟨value', eq', Step.parStar.trans valueStep₁ valueStar⟩
+
+/-! ## eitherInl / eitherInr structural inversions -/
+
+/-- Generalized typed source-inversion for `Term.eitherInl`. -/
+theorem Step.par.eitherInl_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx leftType}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.either leftType rightType)
+    (parStep : Step.par source target) :
+    HEq source
+        (@Term.eitherInl mode level scope ctx leftType rightType valueTerm) →
+    ∃ (value' : Term ctx leftType),
+        HEq target
+            (@Term.eitherInl mode level scope ctx leftType rightType
+                value') ∧
+        Step.par valueTerm value' := by
+  induction parStep with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨valueTerm, sourceHEq, Step.par.refl valueTerm⟩
+  | eitherInl valueStep _ =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      exact ⟨_, HEq.rfl, valueStep⟩
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInl (rightType := rightType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInl (rightType := rightType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInl (rightType := rightType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInl (rightType := rightType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInl (rightType := rightType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInl (rightType := rightType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.eitherInl` source. -/
+theorem Step.par.eitherInl_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx leftType}
+    {target : Term ctx (Ty.either leftType rightType)}
+    (parStep : Step.par
+        (@Term.eitherInl mode level scope ctx leftType rightType valueTerm)
+        target) :
+    ∃ (value' : Term ctx leftType),
+        target = Term.eitherInl (rightType := rightType) value' ∧
+        Step.par valueTerm value' := by
+  obtain ⟨value', targetHEq, valueStep⟩ :=
+    Step.par.eitherInl_source_inv_general rfl parStep HEq.rfl
+  exact ⟨value', eq_of_heq targetHEq, valueStep⟩
+
+/-- Step.parStar source-inversion for `Term.eitherInl`. -/
+theorem Step.parStar.eitherInl_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx leftType}
+    {target : Term ctx (Ty.either leftType rightType)}
+    (chain : Step.parStar
+        (@Term.eitherInl mode level scope ctx leftType rightType valueTerm)
+        target) :
+    ∃ (value' : Term ctx leftType),
+        target = Term.eitherInl (rightType := rightType) value' ∧
+        Step.parStar valueTerm value' := by
+  generalize sourceEq :
+      (@Term.eitherInl mode level scope ctx leftType rightType valueTerm)
+      = sourceTerm at chain
+  induction chain generalizing valueTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨valueTerm, rfl, Step.parStar.refl valueTerm⟩
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      obtain ⟨value₁, eq₁, valueStep₁⟩ :=
+        Step.par.eitherInl_source_inv firstStep
+      obtain ⟨value', eq', valueStar⟩ := restIH eq₁.symm
+      exact ⟨value', eq', Step.parStar.trans valueStep₁ valueStar⟩
+
+/-- Generalized typed source-inversion for `Term.eitherInr`. -/
+theorem Step.par.eitherInr_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx rightType}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.either leftType rightType)
+    (parStep : Step.par source target) :
+    HEq source
+        (@Term.eitherInr mode level scope ctx leftType rightType valueTerm) →
+    ∃ (value' : Term ctx rightType),
+        HEq target
+            (@Term.eitherInr mode level scope ctx leftType rightType
+                value') ∧
+        Step.par valueTerm value' := by
+  induction parStep with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨valueTerm, sourceHEq, Step.par.refl valueTerm⟩
+  | eitherInr valueStep _ =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      exact ⟨_, HEq.rfl, valueStep⟩
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInr (leftType := leftType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInr (leftType := leftType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInr (leftType := leftType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInr (leftType := leftType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInr (leftType := leftType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.eitherInr (leftType := leftType)
+        valueTerm) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.eitherInr` source. -/
+theorem Step.par.eitherInr_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx rightType}
+    {target : Term ctx (Ty.either leftType rightType)}
+    (parStep : Step.par
+        (@Term.eitherInr mode level scope ctx leftType rightType valueTerm)
+        target) :
+    ∃ (value' : Term ctx rightType),
+        target = Term.eitherInr (leftType := leftType) value' ∧
+        Step.par valueTerm value' := by
+  obtain ⟨value', targetHEq, valueStep⟩ :=
+    Step.par.eitherInr_source_inv_general rfl parStep HEq.rfl
+  exact ⟨value', eq_of_heq targetHEq, valueStep⟩
+
+/-- Step.parStar source-inversion for `Term.eitherInr`. -/
+theorem Step.parStar.eitherInr_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx rightType}
+    {target : Term ctx (Ty.either leftType rightType)}
+    (chain : Step.parStar
+        (@Term.eitherInr mode level scope ctx leftType rightType valueTerm)
+        target) :
+    ∃ (value' : Term ctx rightType),
+        target = Term.eitherInr (leftType := leftType) value' ∧
+        Step.parStar valueTerm value' := by
+  generalize sourceEq :
+      (@Term.eitherInr mode level scope ctx leftType rightType valueTerm)
+      = sourceTerm at chain
+  induction chain generalizing valueTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨valueTerm, rfl, Step.parStar.refl valueTerm⟩
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      obtain ⟨value₁, eq₁, valueStep₁⟩ :=
+        Step.par.eitherInr_source_inv firstStep
+      obtain ⟨value', eq', valueStar⟩ := restIH eq₁.symm
+      exact ⟨value', eq', Step.parStar.trans valueStep₁ valueStar⟩
+
 end LeanFX.Syntax

@@ -1044,4 +1044,87 @@ theorem Step.par.cd_lemma_star_iotaNatRecSuccDeep_case
     (Step.parStar.app_cong succIH predChain)
     (Step.parStar.natRec_cong predChain zeroIH succIH)
 
+/-- Discharge of the `Step.par.isBi.iotaListElimConsDeep` case.  The
+listCons inversion extracts both head and tail subterms with their
+respective parStar chains. -/
+theorem Step.par.cd_lemma_star_iotaListElimConsDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee : Term ctx (Ty.list elementType)}
+    {headTerm : Term ctx elementType}
+    {tailTerm : Term ctx (Ty.list elementType)}
+    (nilBranch : Term ctx resultType)
+    {consBranch consBranch' : Term ctx
+        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))}
+    (scrutiIH :
+        Step.parStar (Term.listCons headTerm tailTerm) (Term.cd scrutinee))
+    (consIH : Step.parStar consBranch' (Term.cd consBranch)) :
+    Step.parStar
+        (Term.app (Term.app consBranch' headTerm) tailTerm)
+        (Term.cd (Term.listElim scrutinee nilBranch consBranch)) := by
+  obtain ⟨head', tail', cdEq, headChain, tailChain⟩ :=
+    Step.parStar.listCons_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.app_cong
+    (Step.parStar.app_cong consIH headChain) tailChain
+
+/-- Discharge of the `Step.par.isBi.iotaOptionMatchSomeDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaOptionMatchSomeDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {scrutinee : Term ctx (Ty.option elementType)}
+    {valueTerm : Term ctx elementType}
+    (noneBranch : Term ctx resultType)
+    {someBranch someBranch' : Term ctx (Ty.arrow elementType resultType)}
+    (scrutiIH :
+        Step.parStar (Term.optionSome valueTerm) (Term.cd scrutinee))
+    (someIH : Step.parStar someBranch' (Term.cd someBranch)) :
+    Step.parStar
+        (Term.app someBranch' valueTerm)
+        (Term.cd (Term.optionMatch scrutinee noneBranch someBranch)) := by
+  obtain ⟨value', cdEq, valueChain⟩ :=
+    Step.parStar.optionSome_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.app_cong someIH valueChain
+
+/-- Discharge of the `Step.par.isBi.iotaEitherMatchInlDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaEitherMatchInlDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {scrutinee : Term ctx (Ty.either leftType rightType)}
+    {valueTerm : Term ctx leftType}
+    {leftBranch leftBranch' : Term ctx (Ty.arrow leftType resultType)}
+    (rightBranch : Term ctx (Ty.arrow rightType resultType))
+    (scrutiIH :
+        Step.parStar (Term.eitherInl (rightType := rightType) valueTerm)
+                     (Term.cd scrutinee))
+    (leftIH : Step.parStar leftBranch' (Term.cd leftBranch)) :
+    Step.parStar
+        (Term.app leftBranch' valueTerm)
+        (Term.cd (Term.eitherMatch scrutinee leftBranch rightBranch)) := by
+  obtain ⟨value', cdEq, valueChain⟩ :=
+    Step.parStar.eitherInl_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.app_cong leftIH valueChain
+
+/-- Discharge of the `Step.par.isBi.iotaEitherMatchInrDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaEitherMatchInrDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {scrutinee : Term ctx (Ty.either leftType rightType)}
+    {valueTerm : Term ctx rightType}
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    {rightBranch rightBranch' : Term ctx (Ty.arrow rightType resultType)}
+    (scrutiIH :
+        Step.parStar (Term.eitherInr (leftType := leftType) valueTerm)
+                     (Term.cd scrutinee))
+    (rightIH : Step.parStar rightBranch' (Term.cd rightBranch)) :
+    Step.parStar
+        (Term.app rightBranch' valueTerm)
+        (Term.cd (Term.eitherMatch scrutinee leftBranch rightBranch)) := by
+  obtain ⟨value', cdEq, valueChain⟩ :=
+    Step.parStar.eitherInr_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.app_cong rightIH valueChain
+
 end LeanFX.Syntax

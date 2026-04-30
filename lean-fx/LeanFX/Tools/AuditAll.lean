@@ -462,6 +462,18 @@ for the strategy. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.natSucc_source_inv_general
 #assert_no_axioms LeanFX.Syntax.Step.par.natSucc_source_inv
 #assert_no_axioms LeanFX.Syntax.Step.parStar.natSucc_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.listCons_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.listCons_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.listCons_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.optionSome_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.optionSome_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.optionSome_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.eitherInl_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.eitherInl_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.eitherInl_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.eitherInr_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.eitherInr_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.eitherInr_source_inv
 
 /-! ## Wave 9-B1 Deep βι case helpers (post-W6.1).
 
@@ -478,5 +490,9 @@ forms. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaIdJReflDeep_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatElimSuccDeep_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaNatRecSuccDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaListElimConsDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaOptionMatchSomeDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInlDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInrDeep_case
 
 end LeanFX.Tools.AuditAll
