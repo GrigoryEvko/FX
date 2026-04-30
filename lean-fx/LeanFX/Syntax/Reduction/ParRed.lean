@@ -437,6 +437,219 @@ inductive Step.par :
                          (rightEnd := endpoint) baseCase
                          (Term.refl (carrier := carrier) endpoint))
                baseCase'
+  /-- **Deep parallel β-reduction (non-dependent)**: if `f` parallel-
+  reduces to a literal lambda `λ. body`, the outer application
+  contracts.  Captures `Term.cd`'s aggressive β-app firing on
+  developed shapes.  Subsumes the shallow `betaApp` (recoverable by
+  passing `Step.par.refl (Term.lam body)` as the deep premise). -/
+  | betaAppDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType codomainType : Ty level scope}
+        {functionTerm : Term ctx (Ty.arrow domainType codomainType)}
+        {body : Term (ctx.cons domainType) codomainType.weaken}
+        {arg arg' : Term ctx domainType},
+      Step.par functionTerm
+        (Term.lam (codomainType := codomainType) body) →
+      Step.par arg arg' →
+      Step.par (Term.app functionTerm arg)
+               ((Ty.weaken_subst_singleton codomainType domainType) ▸
+                  Term.subst0 body arg')
+  /-- **Deep parallel β-reduction (dependent)**: if `f` parallel-
+  reduces to a literal Π-lambda `λ. body`, the outer application
+  contracts. -/
+  | betaAppPiDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+        {functionTerm : Term ctx (Ty.piTy domainType codomainType)}
+        {body : Term (ctx.cons domainType) codomainType}
+        {arg arg' : Term ctx domainType},
+      Step.par functionTerm
+        (Term.lamPi (domainType := domainType) body) →
+      Step.par arg arg' →
+      Step.par (Term.appPi functionTerm arg)
+               (Term.subst0 body arg')
+  /-- **Deep parallel Σ first projection**: if `pairTerm` parallel-
+  reduces to a literal pair, fst contracts. -/
+  | betaFstPairDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+        {pairTerm : Term ctx (Ty.sigmaTy firstType secondType)}
+        {firstVal : Term ctx firstType}
+        {secondVal : Term ctx (secondType.subst0 firstType)},
+      Step.par pairTerm
+        (Term.pair (firstType := firstType) (secondType := secondType)
+                   firstVal secondVal) →
+      Step.par (Term.fst pairTerm) firstVal
+  /-- **Deep parallel Σ second projection**. -/
+  | betaSndPairDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+        {pairTerm : Term ctx (Ty.sigmaTy firstType secondType)}
+        {firstVal : Term ctx firstType}
+        {secondVal : Term ctx (secondType.subst0 firstType)},
+      Step.par pairTerm
+        (Term.pair (firstType := firstType) (secondType := secondType)
+                   firstVal secondVal) →
+      Step.par (Term.snd pairTerm) secondVal
+  /-- **Deep parallel ι-reduction on `boolTrue`**. -/
+  | iotaBoolElimTrueDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.bool}
+        {thenBr thenBr' : Term ctx resultType}
+        (elseBr : Term ctx resultType),
+      Step.par scrutinee Term.boolTrue →
+      Step.par thenBr thenBr' →
+      Step.par (Term.boolElim scrutinee thenBr elseBr) thenBr'
+  /-- **Deep parallel ι-reduction on `boolFalse`**. -/
+  | iotaBoolElimFalseDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.bool}
+        (thenBr : Term ctx resultType)
+        {elseBr elseBr' : Term ctx resultType},
+      Step.par scrutinee Term.boolFalse →
+      Step.par elseBr elseBr' →
+      Step.par (Term.boolElim scrutinee thenBr elseBr) elseBr'
+  /-- **Deep parallel ι-reduction on `natZero`** (natElim). -/
+  | iotaNatElimZeroDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.nat}
+        {zeroBranch zeroBranch' : Term ctx resultType}
+        (succBranch : Term ctx (Ty.arrow Ty.nat resultType)),
+      Step.par scrutinee Term.natZero →
+      Step.par zeroBranch zeroBranch' →
+      Step.par (Term.natElim scrutinee zeroBranch succBranch) zeroBranch'
+  /-- **Deep parallel ι-reduction on `natSucc`** (natElim). -/
+  | iotaNatElimSuccDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.nat}
+        {predecessor : Term ctx Ty.nat}
+        (zeroBranch : Term ctx resultType)
+        {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)},
+      Step.par scrutinee (Term.natSucc predecessor) →
+      Step.par succBranch succBranch' →
+      Step.par (Term.natElim scrutinee zeroBranch succBranch)
+               (Term.app succBranch' predecessor)
+  /-- **Deep parallel ι-reduction on `natZero`** (natRec). -/
+  | iotaNatRecZeroDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.nat}
+        {zeroBranch zeroBranch' : Term ctx resultType}
+        (succBranch : Term ctx
+           (Ty.arrow Ty.nat (Ty.arrow resultType resultType))),
+      Step.par scrutinee Term.natZero →
+      Step.par zeroBranch zeroBranch' →
+      Step.par (Term.natRec scrutinee zeroBranch succBranch) zeroBranch'
+  /-- **Deep parallel ι-reduction on `natSucc`** (natRec). -/
+  | iotaNatRecSuccDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {resultType : Ty level scope}
+        {scrutinee : Term ctx Ty.nat}
+        {predecessor : Term ctx Ty.nat}
+        {zeroBranch zeroBranch' : Term ctx resultType}
+        {succBranch succBranch' : Term ctx
+           (Ty.arrow Ty.nat (Ty.arrow resultType resultType))},
+      Step.par scrutinee (Term.natSucc predecessor) →
+      Step.par zeroBranch zeroBranch' →
+      Step.par succBranch succBranch' →
+      Step.par (Term.natRec scrutinee zeroBranch succBranch)
+               (Term.app (Term.app succBranch' predecessor)
+                         (Term.natRec predecessor zeroBranch' succBranch'))
+  /-- **Deep parallel ι-reduction on `listNil`**. -/
+  | iotaListElimNilDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.list elementType)}
+        {nilBranch nilBranch' : Term ctx resultType}
+        (consBranch : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))),
+      Step.par scrutinee Term.listNil →
+      Step.par nilBranch nilBranch' →
+      Step.par (Term.listElim scrutinee nilBranch consBranch) nilBranch'
+  /-- **Deep parallel ι-reduction on `listCons`**. -/
+  | iotaListElimConsDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.list elementType)}
+        {head : Term ctx elementType}
+        {tail : Term ctx (Ty.list elementType)}
+        (nilBranch : Term ctx resultType)
+        {consBranch consBranch' : Term ctx
+           (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))},
+      Step.par scrutinee (Term.listCons head tail) →
+      Step.par consBranch consBranch' →
+      Step.par (Term.listElim scrutinee nilBranch consBranch)
+               (Term.app (Term.app consBranch' head) tail)
+  /-- **Deep parallel ι-reduction on `optionNone`**. -/
+  | iotaOptionMatchNoneDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.option elementType)}
+        {noneBranch noneBranch' : Term ctx resultType}
+        (someBranch : Term ctx (Ty.arrow elementType resultType)),
+      Step.par scrutinee Term.optionNone →
+      Step.par noneBranch noneBranch' →
+      Step.par (Term.optionMatch scrutinee noneBranch someBranch) noneBranch'
+  /-- **Deep parallel ι-reduction on `optionSome`**. -/
+  | iotaOptionMatchSomeDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {elementType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.option elementType)}
+        {value : Term ctx elementType}
+        (noneBranch : Term ctx resultType)
+        {someBranch someBranch' :
+            Term ctx (Ty.arrow elementType resultType)},
+      Step.par scrutinee (Term.optionSome value) →
+      Step.par someBranch someBranch' →
+      Step.par (Term.optionMatch scrutinee noneBranch someBranch)
+               (Term.app someBranch' value)
+  /-- **Deep parallel ι-reduction on `eitherInl`**. -/
+  | iotaEitherMatchInlDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.either leftType rightType)}
+        {value : Term ctx leftType}
+        {leftBranch leftBranch' :
+            Term ctx (Ty.arrow leftType resultType)}
+        (rightBranch : Term ctx (Ty.arrow rightType resultType)),
+      Step.par scrutinee (Term.eitherInl (rightType := rightType) value) →
+      Step.par leftBranch leftBranch' →
+      Step.par (Term.eitherMatch scrutinee leftBranch rightBranch)
+               (Term.app leftBranch' value)
+  /-- **Deep parallel ι-reduction on `eitherInr`**. -/
+  | iotaEitherMatchInrDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {leftType rightType resultType : Ty level scope}
+        {scrutinee : Term ctx (Ty.either leftType rightType)}
+        {value : Term ctx rightType}
+        (leftBranch : Term ctx (Ty.arrow leftType resultType))
+        {rightBranch rightBranch' :
+            Term ctx (Ty.arrow rightType resultType)},
+      Step.par scrutinee (Term.eitherInr (leftType := leftType) value) →
+      Step.par rightBranch rightBranch' →
+      Step.par (Term.eitherMatch scrutinee leftBranch rightBranch)
+               (Term.app rightBranch' value)
+  /-- **Deep parallel ι-reduction on `Term.refl`**: if `witness`
+  parallel-reduces to a refl, idJ contracts to its base case.  The
+  carrier's left and right endpoints must be the same `endpoint` for
+  the witness to typecheck against `Term.refl endpoint`. -/
+  | iotaIdJReflDeep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {carrier : Ty level scope} {endpoint : RawTerm scope}
+        {resultType : Ty level scope}
+        {baseCase baseCase' : Term ctx resultType}
+        {witness : Term ctx (Ty.id carrier endpoint endpoint)},
+      Step.par witness
+        (Term.refl (carrier := carrier) endpoint) →
+      Step.par baseCase baseCase' →
+      Step.par (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                          (rightEnd := endpoint)
+                          baseCase witness)
+               baseCase'
 
 /-- Single-step reduction lifts to parallel reduction.  Each `Step`
 constructor has a corresponding `Step.par` form where the non-changing

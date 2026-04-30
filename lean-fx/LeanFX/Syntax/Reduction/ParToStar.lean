@@ -208,6 +208,128 @@ theorem Step.par.toStar
       StepStar.append
         (StepStar.idJ_cong_base _ (Step.par.toStar par_base))
         (Step.iotaIdJRefl base')
+  -- Deep redex cases: parallel reduction of the inner term to a redex
+  -- shape, then the literal Step contraction at the redex.
+  | .betaAppDeep (body := body) (arg' := arg') par_f par_arg =>
+      StepStar.append
+        (StepStar.app_cong
+          (Step.par.toStar par_f) (Step.par.toStar par_arg))
+        (Step.betaApp body arg')
+  | .betaAppPiDeep (body := body) (arg' := arg') par_f par_arg =>
+      StepStar.append
+        (StepStar.appPi_cong
+          (Step.par.toStar par_f) (Step.par.toStar par_arg))
+        (Step.betaAppPi body arg')
+  | .betaFstPairDeep (firstVal := v) (secondVal := w) par_p =>
+      StepStar.append
+        (StepStar.fst_cong (Step.par.toStar par_p))
+        (Step.betaFstPair v w)
+  | .betaSndPairDeep (firstVal := v) (secondVal := w) par_p =>
+      StepStar.append
+        (StepStar.snd_cong (Step.par.toStar par_p))
+        (Step.betaSndPair v w)
+  | .iotaBoolElimTrueDeep (thenBr' := t') elseBr par_scrut par_t =>
+      StepStar.append
+        (StepStar.boolElim_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_t)
+          (StepStar.refl elseBr))
+        (Step.iotaBoolElimTrue t' elseBr)
+  | .iotaBoolElimFalseDeep (elseBr' := e') thenBr par_scrut par_e =>
+      StepStar.append
+        (StepStar.boolElim_cong
+          (Step.par.toStar par_scrut)
+          (StepStar.refl thenBr)
+          (Step.par.toStar par_e))
+        (Step.iotaBoolElimFalse thenBr e')
+  | .iotaNatElimZeroDeep (zeroBranch' := z') succBranch par_scrut par_z =>
+      StepStar.append
+        (StepStar.natElim_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_z)
+          (StepStar.refl succBranch))
+        (Step.iotaNatElimZero z' succBranch)
+  | .iotaNatElimSuccDeep
+        (predecessor := pred) (succBranch' := f')
+        zeroBranch par_scrut par_f =>
+      StepStar.trans
+        (StepStar.natElim_cong
+          (Step.par.toStar par_scrut)
+          (StepStar.refl zeroBranch)
+          (Step.par.toStar par_f))
+        (Step.toStar (Step.iotaNatElimSucc pred zeroBranch f'))
+  | .iotaNatRecZeroDeep (zeroBranch' := z') succBranch par_scrut par_z =>
+      StepStar.append
+        (StepStar.natRec_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_z)
+          (StepStar.refl succBranch))
+        (Step.iotaNatRecZero z' succBranch)
+  | .iotaNatRecSuccDeep
+        (predecessor := pred) (zeroBranch' := z') (succBranch' := s')
+        par_scrut par_z par_s =>
+      StepStar.trans
+        (StepStar.natRec_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_z)
+          (Step.par.toStar par_s))
+        (Step.toStar (Step.iotaNatRecSucc pred z' s'))
+  | .iotaListElimNilDeep (nilBranch' := n') consBranch par_scrut par_n =>
+      StepStar.append
+        (StepStar.listElim_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_n)
+          (StepStar.refl consBranch))
+        (Step.iotaListElimNil n' consBranch)
+  | .iotaListElimConsDeep
+        (head := h) (tail := t) (consBranch' := c')
+        nilBranch par_scrut par_c =>
+      StepStar.trans
+        (StepStar.listElim_cong
+          (Step.par.toStar par_scrut)
+          (StepStar.refl nilBranch)
+          (Step.par.toStar par_c))
+        (Step.toStar (Step.iotaListElimCons h t nilBranch c'))
+  | .iotaOptionMatchNoneDeep
+        (noneBranch' := n') someBranch par_scrut par_n =>
+      StepStar.append
+        (StepStar.optionMatch_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_n)
+          (StepStar.refl someBranch))
+        (Step.iotaOptionMatchNone n' someBranch)
+  | .iotaOptionMatchSomeDeep
+        (value := v) (someBranch' := sm')
+        noneBranch par_scrut par_some =>
+      StepStar.trans
+        (StepStar.optionMatch_cong
+          (Step.par.toStar par_scrut)
+          (StepStar.refl noneBranch)
+          (Step.par.toStar par_some))
+        (Step.toStar (Step.iotaOptionMatchSome v noneBranch sm'))
+  | .iotaEitherMatchInlDeep
+        (value := v) (leftBranch' := lb')
+        rightBranch par_scrut par_left =>
+      StepStar.trans
+        (StepStar.eitherMatch_cong
+          (Step.par.toStar par_scrut)
+          (Step.par.toStar par_left)
+          (StepStar.refl rightBranch))
+        (Step.toStar (Step.iotaEitherMatchInl v lb' rightBranch))
+  | .iotaEitherMatchInrDeep
+        (value := v) (rightBranch' := rb')
+        leftBranch par_scrut par_right =>
+      StepStar.trans
+        (StepStar.eitherMatch_cong
+          (Step.par.toStar par_scrut)
+          (StepStar.refl leftBranch)
+          (Step.par.toStar par_right))
+        (Step.toStar (Step.iotaEitherMatchInr v leftBranch rb'))
+  | .iotaIdJReflDeep (baseCase' := base') par_witness par_base =>
+      StepStar.append
+        (StepStar.idJ_cong
+          (Step.par.toStar par_base) (Step.par.toStar par_witness))
+        (Step.iotaIdJRefl base')
 
 
 end LeanFX.Syntax

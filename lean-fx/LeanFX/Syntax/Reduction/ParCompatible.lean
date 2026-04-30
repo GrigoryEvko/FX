@@ -279,6 +279,144 @@ theorem Step.par.rename_compatible
       exact Step.par.idJ (baseIH termRenaming) (witnessIH termRenaming)
   | iotaIdJRefl baseStep baseIH =>
       exact Step.par.iotaIdJRefl (baseIH termRenaming)
+  -- Deep redex cases.  IH on the deep premise gives the renamed
+  -- parallel reduction to the literal redex shape; apply the deep
+  -- ctor with the IH outputs.  Term.rename of a literal lam reduces
+  -- definitionally to Term.lam (cast ▸ rename body), so the deep
+  -- ctor's body-type-pattern lines up automatically.
+  | betaAppDeep functionStep argStep functionIH argIH =>
+      rename_i domainType codomainType functionTerm body argBefore argAfter
+      let renamedArgAfter : Term targetCtx (domainType.rename rawRenaming) :=
+        Term.rename termRenaming argAfter
+      let renamedBody :
+          Term (targetCtx.cons (domainType.rename rawRenaming))
+            (codomainType.weaken.rename rawRenaming.lift) :=
+        Term.rename (TermRenaming.lift termRenaming domainType) body
+      let renamedBetaStep :=
+        Step.par.betaAppDeep
+          (functionIH termRenaming) (argIH termRenaming)
+      let primitiveTarget : Term targetCtx (codomainType.rename rawRenaming) :=
+        (Ty.weaken_subst_singleton
+            (codomainType.rename rawRenaming)
+            (domainType.rename rawRenaming)) ▸
+          Term.subst0
+            ((Ty.rename_weaken_commute codomainType rawRenaming) ▸ renamedBody)
+            renamedArgAfter
+      let targetEquality :
+          primitiveTarget =
+          Term.rename termRenaming
+            ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 body argAfter) :=
+        eq_of_heq (HEq.symm (by
+          apply HEq.trans
+            (Term.rename_HEq_cast_input termRenaming
+              (Ty.weaken_subst_singleton codomainType domainType)
+              (Term.subst0 body argAfter))
+          apply HEq.trans
+            (Term.rename_subst0_HEq termRenaming body argAfter)
+          apply HEq.trans
+            (HEq.symm
+              (Term.subst0_HEq_cast_input
+                (Ty.rename_weaken_commute codomainType rawRenaming)
+                renamedBody
+                renamedArgAfter))
+          exact Term.castRight_HEq
+            (Ty.weaken_subst_singleton
+              (codomainType.rename rawRenaming)
+              (domainType.rename rawRenaming))
+            (Term.subst0
+              ((Ty.rename_weaken_commute codomainType rawRenaming) ▸ renamedBody)
+              renamedArgAfter)))
+      exact Step.par.castTarget targetEquality renamedBetaStep
+  | betaAppPiDeep functionStep argStep functionIH argIH =>
+      rename_i domainType codomainType functionTerm body argBefore argAfter
+      let resultTypeEquality :=
+        Ty.subst0_rename_commute codomainType domainType rawRenaming
+      let renamedBetaStep :=
+        Step.par.castBoth resultTypeEquality.symm
+          (Step.par.betaAppPiDeep
+            (functionIH termRenaming) (argIH termRenaming))
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              Term.subst0
+                (Term.rename (TermRenaming.lift termRenaming domainType) body)
+                (Term.rename termRenaming argAfter)
+            = Term.rename termRenaming (Term.subst0 body argAfter) :=
+        eq_of_heq
+          (HEq.trans (eqRec_heq _ _)
+            (HEq.symm (Term.rename_subst0_HEq termRenaming body argAfter)))
+      exact Step.par.castTarget targetEquality renamedBetaStep
+  | betaFstPairDeep pairStep pairIH =>
+      exact Step.par.betaFstPairDeep (pairIH termRenaming)
+  | betaSndPairDeep pairStep pairIH =>
+      rename_i firstType secondType pairTerm firstVal secondVal
+      let resultTypeEquality :=
+        Ty.subst0_rename_commute secondType firstType rawRenaming
+      let renamedBetaStep :=
+        Step.par.castBoth resultTypeEquality.symm
+          (Step.par.betaSndPairDeep (pairIH termRenaming))
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              ((Ty.subst0_rename_commute secondType firstType rawRenaming) ▸
+                Term.rename termRenaming secondVal)
+            = Term.rename termRenaming secondVal :=
+        eq_of_heq (HEq.trans (eqRec_heq _ _) (eqRec_heq _ _))
+      exact Step.par.castTarget targetEquality renamedBetaStep
+  | iotaBoolElimTrueDeep elseBranch scrutineeStep thenStep scrutineeIH thenIH =>
+      exact Step.par.iotaBoolElimTrueDeep
+        (Term.rename termRenaming elseBranch)
+        (scrutineeIH termRenaming) (thenIH termRenaming)
+  | iotaBoolElimFalseDeep thenBranch scrutineeStep elseStep scrutineeIH elseIH =>
+      exact Step.par.iotaBoolElimFalseDeep
+        (Term.rename termRenaming thenBranch)
+        (scrutineeIH termRenaming) (elseIH termRenaming)
+  | iotaNatElimZeroDeep succBranch scrutineeStep zeroStep scrutineeIH zeroIH =>
+      exact Step.par.iotaNatElimZeroDeep
+        (Term.rename termRenaming succBranch)
+        (scrutineeIH termRenaming) (zeroIH termRenaming)
+  | iotaNatElimSuccDeep zeroBranch scrutineeStep succStep scrutineeIH succIH =>
+      exact Step.par.iotaNatElimSuccDeep
+        (Term.rename termRenaming zeroBranch)
+        (scrutineeIH termRenaming) (succIH termRenaming)
+  | iotaNatRecZeroDeep succBranch scrutineeStep zeroStep scrutineeIH zeroIH =>
+      exact Step.par.iotaNatRecZeroDeep
+        (Term.rename termRenaming succBranch)
+        (scrutineeIH termRenaming) (zeroIH termRenaming)
+  | iotaNatRecSuccDeep scrutineeStep zeroStep succStep
+        scrutineeIH zeroIH succIH =>
+      exact Step.par.iotaNatRecSuccDeep
+        (scrutineeIH termRenaming) (zeroIH termRenaming) (succIH termRenaming)
+  | iotaListElimNilDeep consBranch scrutineeStep nilStep scrutineeIH nilIH =>
+      exact Step.par.iotaListElimNilDeep
+        (Term.rename termRenaming consBranch)
+        (scrutineeIH termRenaming) (nilIH termRenaming)
+  | iotaListElimConsDeep nilBranch scrutineeStep consStep scrutineeIH consIH =>
+      exact Step.par.iotaListElimConsDeep
+        (Term.rename termRenaming nilBranch)
+        (scrutineeIH termRenaming) (consIH termRenaming)
+  | iotaOptionMatchNoneDeep someBranch scrutineeStep noneStep
+        scrutineeIH noneIH =>
+      exact Step.par.iotaOptionMatchNoneDeep
+        (Term.rename termRenaming someBranch)
+        (scrutineeIH termRenaming) (noneIH termRenaming)
+  | iotaOptionMatchSomeDeep noneBranch scrutineeStep someStep
+        scrutineeIH someIH =>
+      exact Step.par.iotaOptionMatchSomeDeep
+        (Term.rename termRenaming noneBranch)
+        (scrutineeIH termRenaming) (someIH termRenaming)
+  | iotaEitherMatchInlDeep rightBranch scrutineeStep leftStep
+        scrutineeIH leftIH =>
+      exact Step.par.iotaEitherMatchInlDeep
+        (Term.rename termRenaming rightBranch)
+        (scrutineeIH termRenaming) (leftIH termRenaming)
+  | iotaEitherMatchInrDeep leftBranch scrutineeStep rightStep
+        scrutineeIH rightIH =>
+      exact Step.par.iotaEitherMatchInrDeep
+        (Term.rename termRenaming leftBranch)
+        (scrutineeIH termRenaming) (rightIH termRenaming)
+  | iotaIdJReflDeep witnessStep baseStep witnessIH baseIH =>
+      exact Step.par.iotaIdJReflDeep
+        (witnessIH termRenaming) (baseIH termRenaming)
 
 
 theorem Step.par.subst_compatible
@@ -555,6 +693,144 @@ theorem Step.par.subst_compatible
       exact Step.par.idJ (baseIH termSubstitution) (witnessIH termSubstitution)
   | iotaIdJRefl baseStep baseIH =>
       exact Step.par.iotaIdJRefl (baseIH termSubstitution)
+  -- Deep redex cases for substitution — same pattern as the rename
+  -- side, swapping Renaming machinery for Subst.  Term.subst on a
+  -- literal Term.lam reduces definitionally to Term.lam (cast ▸
+  -- subst_lift body); the deep ctor accepts that shape directly.
+  | betaAppDeep functionStep argStep functionIH argIH =>
+      rename_i domainType codomainType functionTerm body argBefore argAfter
+      let substitutedArgAfter : Term targetCtx (domainType.subst typeSubstitution) :=
+        Term.subst termSubstitution argAfter
+      let substitutedBody :
+          Term (targetCtx.cons (domainType.subst typeSubstitution))
+            (codomainType.weaken.subst typeSubstitution.lift) :=
+        Term.subst (TermSubst.lift termSubstitution domainType) body
+      let substitutedBetaStep :=
+        Step.par.betaAppDeep
+          (functionIH termSubstitution) (argIH termSubstitution)
+      let primitiveTarget : Term targetCtx (codomainType.subst typeSubstitution) :=
+        (Ty.weaken_subst_singleton
+            (codomainType.subst typeSubstitution)
+            (domainType.subst typeSubstitution)) ▸
+          Term.subst0
+            ((Ty.subst_weaken_commute codomainType typeSubstitution) ▸ substitutedBody)
+            substitutedArgAfter
+      let targetEquality :
+          primitiveTarget =
+          Term.subst termSubstitution
+            ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 body argAfter) :=
+        eq_of_heq (HEq.symm (by
+          apply HEq.trans
+            (Term.subst_HEq_cast_input termSubstitution
+              (Ty.weaken_subst_singleton codomainType domainType)
+              (Term.subst0 body argAfter))
+          apply HEq.trans
+            (Term.subst0_subst_HEq termSubstitution body argAfter)
+          apply HEq.trans
+            (HEq.symm
+              (Term.subst0_HEq_cast_input
+                (Ty.subst_weaken_commute codomainType typeSubstitution)
+                substitutedBody
+                substitutedArgAfter))
+          exact Term.castRight_HEq
+            (Ty.weaken_subst_singleton
+              (codomainType.subst typeSubstitution)
+              (domainType.subst typeSubstitution))
+            (Term.subst0
+              ((Ty.subst_weaken_commute codomainType typeSubstitution) ▸ substitutedBody)
+              substitutedArgAfter)))
+      exact Step.par.castTarget targetEquality substitutedBetaStep
+  | betaAppPiDeep functionStep argStep functionIH argIH =>
+      rename_i domainType codomainType functionTerm body argBefore argAfter
+      let resultTypeEquality :=
+        Ty.subst0_subst_commute codomainType domainType typeSubstitution
+      let substitutedBetaStep :=
+        Step.par.castBoth resultTypeEquality.symm
+          (Step.par.betaAppPiDeep
+            (functionIH termSubstitution) (argIH termSubstitution))
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              Term.subst0
+                (Term.subst (TermSubst.lift termSubstitution domainType) body)
+                (Term.subst termSubstitution argAfter)
+            = Term.subst termSubstitution (Term.subst0 body argAfter) :=
+        eq_of_heq
+          (HEq.trans (eqRec_heq _ _)
+            (HEq.symm (Term.subst0_subst_HEq termSubstitution body argAfter)))
+      exact Step.par.castTarget targetEquality substitutedBetaStep
+  | betaFstPairDeep pairStep pairIH =>
+      exact Step.par.betaFstPairDeep (pairIH termSubstitution)
+  | betaSndPairDeep pairStep pairIH =>
+      rename_i firstType secondType pairTerm firstVal secondVal
+      let resultTypeEquality :=
+        Ty.subst0_subst_commute secondType firstType typeSubstitution
+      let substitutedBetaStep :=
+        Step.par.castBoth resultTypeEquality.symm
+          (Step.par.betaSndPairDeep (pairIH termSubstitution))
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              ((Ty.subst0_subst_commute secondType firstType typeSubstitution) ▸
+                Term.subst termSubstitution secondVal)
+            = Term.subst termSubstitution secondVal :=
+        eq_of_heq (HEq.trans (eqRec_heq _ _) (eqRec_heq _ _))
+      exact Step.par.castTarget targetEquality substitutedBetaStep
+  | iotaBoolElimTrueDeep elseBranch scrutineeStep thenStep scrutineeIH thenIH =>
+      exact Step.par.iotaBoolElimTrueDeep
+        (Term.subst termSubstitution elseBranch)
+        (scrutineeIH termSubstitution) (thenIH termSubstitution)
+  | iotaBoolElimFalseDeep thenBranch scrutineeStep elseStep scrutineeIH elseIH =>
+      exact Step.par.iotaBoolElimFalseDeep
+        (Term.subst termSubstitution thenBranch)
+        (scrutineeIH termSubstitution) (elseIH termSubstitution)
+  | iotaNatElimZeroDeep succBranch scrutineeStep zeroStep scrutineeIH zeroIH =>
+      exact Step.par.iotaNatElimZeroDeep
+        (Term.subst termSubstitution succBranch)
+        (scrutineeIH termSubstitution) (zeroIH termSubstitution)
+  | iotaNatElimSuccDeep zeroBranch scrutineeStep succStep scrutineeIH succIH =>
+      exact Step.par.iotaNatElimSuccDeep
+        (Term.subst termSubstitution zeroBranch)
+        (scrutineeIH termSubstitution) (succIH termSubstitution)
+  | iotaNatRecZeroDeep succBranch scrutineeStep zeroStep scrutineeIH zeroIH =>
+      exact Step.par.iotaNatRecZeroDeep
+        (Term.subst termSubstitution succBranch)
+        (scrutineeIH termSubstitution) (zeroIH termSubstitution)
+  | iotaNatRecSuccDeep scrutineeStep zeroStep succStep
+        scrutineeIH zeroIH succIH =>
+      exact Step.par.iotaNatRecSuccDeep
+        (scrutineeIH termSubstitution) (zeroIH termSubstitution)
+        (succIH termSubstitution)
+  | iotaListElimNilDeep consBranch scrutineeStep nilStep scrutineeIH nilIH =>
+      exact Step.par.iotaListElimNilDeep
+        (Term.subst termSubstitution consBranch)
+        (scrutineeIH termSubstitution) (nilIH termSubstitution)
+  | iotaListElimConsDeep nilBranch scrutineeStep consStep scrutineeIH consIH =>
+      exact Step.par.iotaListElimConsDeep
+        (Term.subst termSubstitution nilBranch)
+        (scrutineeIH termSubstitution) (consIH termSubstitution)
+  | iotaOptionMatchNoneDeep someBranch scrutineeStep noneStep
+        scrutineeIH noneIH =>
+      exact Step.par.iotaOptionMatchNoneDeep
+        (Term.subst termSubstitution someBranch)
+        (scrutineeIH termSubstitution) (noneIH termSubstitution)
+  | iotaOptionMatchSomeDeep noneBranch scrutineeStep someStep
+        scrutineeIH someIH =>
+      exact Step.par.iotaOptionMatchSomeDeep
+        (Term.subst termSubstitution noneBranch)
+        (scrutineeIH termSubstitution) (someIH termSubstitution)
+  | iotaEitherMatchInlDeep rightBranch scrutineeStep leftStep
+        scrutineeIH leftIH =>
+      exact Step.par.iotaEitherMatchInlDeep
+        (Term.subst termSubstitution rightBranch)
+        (scrutineeIH termSubstitution) (leftIH termSubstitution)
+  | iotaEitherMatchInrDeep leftBranch scrutineeStep rightStep
+        scrutineeIH rightIH =>
+      exact Step.par.iotaEitherMatchInrDeep
+        (Term.subst termSubstitution leftBranch)
+        (scrutineeIH termSubstitution) (rightIH termSubstitution)
+  | iotaIdJReflDeep witnessStep baseStep witnessIH baseIH =>
+      exact Step.par.iotaIdJReflDeep
+        (witnessIH termSubstitution) (baseIH termSubstitution)
 
 
 end LeanFX.Syntax
