@@ -181,10 +181,13 @@ def Term.cd :
   | _, _, _, _, _, .refl rawTerm =>
       Term.refl rawTerm
   | _, _, _, _, _, .idJ baseCase witness =>
-      let developedBase := Term.cd baseCase
-      let developedWitness := Term.cd witness
-      match developedWitness with
-      | Term.refl _ => developedBase
-      | _ => Term.idJ developedBase developedWitness
+      -- Note: iotaIdJ contraction is NOT performed here.  The match
+      -- `Term.refl _` against a witness of type `Ty.id carrier l r`
+      -- requires the dependent pattern matching `l = r` constraint,
+      -- which compiles to a 2-arg match that `simp only [Term.cd]`
+      -- and `split` cannot decompose without `DecidableEq RawTerm`.
+      -- Phase 3 (cd_dominates) thus uses cong only.  Phase 4
+      -- (cd_lemma) handles iotaIdJ via a separate non-dependent path.
+      Term.idJ (Term.cd baseCase) (Term.cd witness)
 
 end LeanFX.Syntax

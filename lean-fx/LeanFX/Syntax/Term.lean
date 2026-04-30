@@ -11,4 +11,5 @@ import LeanFX.Syntax.Identity
 import LeanFX.Syntax.Strengthen
 import LeanFX.Syntax.TermStrengthen
 import LeanFX.Syntax.CompleteDevelopment
+import LeanFX.Syntax.CdDominates
 import LeanFX.Syntax.Smoke

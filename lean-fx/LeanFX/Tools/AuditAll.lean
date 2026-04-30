@@ -107,5 +107,6 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty.arrow_weaken_strengthen
 #assert_no_axioms LeanFX.Syntax.Term.isNewestVar
 #assert_no_axioms LeanFX.Syntax.Term.cd
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates
 
 end LeanFX.Tools.AuditAll
