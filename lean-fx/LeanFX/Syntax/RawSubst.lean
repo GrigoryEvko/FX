@@ -29,21 +29,6 @@ def RawTermSubst.lift {source target : Nat}
       (rawSubstitution
         ⟨position, Nat.lt_of_succ_lt_succ isWithinSource⟩).weaken
 
-/-- Lifted raw substitution maps the freshly-bound variable to itself. -/
-theorem RawTermSubst.lift_zero {source target : Nat}
-    (rawSubstitution : RawTermSubst source target) :
-    rawSubstitution.lift ⟨0, Nat.zero_lt_succ source⟩ =
-      RawTerm.var ⟨0, Nat.zero_lt_succ target⟩ :=
-  rfl
-
-/-- Lifted raw substitution maps older variables by substituting and weakening. -/
-theorem RawTermSubst.lift_succ {source target : Nat}
-    (rawSubstitution : RawTermSubst source target)
-    (position : Nat) (isWithinSource : position < source) :
-    rawSubstitution.lift ⟨position + 1, Nat.succ_lt_succ isWithinSource⟩ =
-      (rawSubstitution ⟨position, isWithinSource⟩).weaken :=
-  rfl
-
 /-- Apply a raw substitution to a raw term.  This is structurally
 parallel to `RawTerm.rename`, with `RawTermSubst.lift` under lambdas. -/
 def RawTerm.subst {source target : Nat} :
@@ -118,11 +103,6 @@ def RawTerm.subst {source target : Nat} :
 def RawTermSubst.identity {scope : Nat} : RawTermSubst scope scope :=
   RawTerm.var
 
-/-- Identity raw substitution returns the same variable. -/
-theorem RawTermSubst.identity_apply {scope : Nat} (position : Fin scope) :
-    RawTermSubst.identity position = RawTerm.var position :=
-  rfl
-
 /-- Drop the newest raw binder.  This is the raw component of
 `Subst.singleton`: variable 0 is the removed binder, and variables
 `k + 1` shift down to `k`. -/
@@ -130,19 +110,6 @@ def RawTermSubst.dropNewest {scope : Nat} : RawTermSubst (scope + 1) scope
   | ⟨0, _⟩ => RawTerm.unit
   | ⟨position + 1, isWithinScope⟩ =>
       RawTerm.var ⟨position, Nat.lt_of_succ_lt_succ isWithinScope⟩
-
-/-- Dropping the newest raw variable maps position 0 to a placeholder unit. -/
-theorem RawTermSubst.dropNewest_zero {scope : Nat} :
-    (@RawTermSubst.dropNewest scope) ⟨0, Nat.zero_lt_succ scope⟩ = RawTerm.unit :=
-  rfl
-
-/-- Dropping the newest raw variable shifts older variables down. -/
-theorem RawTermSubst.dropNewest_succ {scope : Nat}
-    (position : Nat) (isWithinScope : position < scope) :
-    (@RawTermSubst.dropNewest scope)
-      ⟨position + 1, Nat.succ_lt_succ isWithinScope⟩ =
-        RawTerm.var ⟨position, isWithinScope⟩ :=
-  rfl
 
 /-- Pointwise equivalence for raw substitutions. -/
 def RawTermSubst.equiv {source target : Nat}

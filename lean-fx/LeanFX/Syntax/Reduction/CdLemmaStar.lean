@@ -51,7 +51,8 @@ Term.lam body'`).  Lean's dependent-elimination check rejects direct
 have target types involving the non-injective `Ty.subst0`.
 
 The architecturally clean unblock is the **typed→raw bridge**
-(`Step.par.toRawBridge`, Phase 4c, task #994):
+(`Step.par.toRawBridge`, currently quarantined at
+`LeanFX/Stash/ParToRawBridge.lean.WIP` pending Wave 6 β-surgery):
 
   1. Lift `Step.par s t` to `RawStep.par s.toRaw t.toRaw` via
      a 56-case structural translation.

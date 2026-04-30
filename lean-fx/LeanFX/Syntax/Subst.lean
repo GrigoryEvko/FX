@@ -43,27 +43,6 @@ def Subst.lift {level source target : Nat} (σ : Subst level source target) :
     | ⟨k + 1, h⟩  => (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken
   forRaw := σ.forRaw.lift
 
-/-- Lifted substitution maps the freshly-bound type variable to itself. -/
-theorem Subst.lift_forTy_zero {level source target : Nat}
-    (substitution : Subst level source target) :
-    substitution.lift.forTy ⟨0, Nat.zero_lt_succ source⟩ =
-      Ty.tyVar ⟨0, Nat.zero_lt_succ target⟩ :=
-  rfl
-
-/-- Lifted substitution maps older type variables by substituting and weakening. -/
-theorem Subst.lift_forTy_succ {level source target : Nat}
-    (substitution : Subst level source target)
-    (position : Nat) (isWithinSource : position < source) :
-    substitution.lift.forTy ⟨position + 1, Nat.succ_lt_succ isWithinSource⟩ =
-      (substitution.forTy ⟨position, isWithinSource⟩).weaken :=
-  rfl
-
-/-- The raw component of a lifted joint substitution is raw-substitution lifting. -/
-theorem Subst.lift_forRaw {level source target : Nat}
-    (substitution : Subst level source target) :
-    substitution.lift.forRaw = substitution.forRaw.lift :=
-  rfl
-
 /-- Single-variable substitution at the outermost binder: substitute
 `substituent` for var 0, leave var `k + 1` as `tyVar k` — the
 "identity" mapping that decrements the de Bruijn index by one
@@ -75,27 +54,6 @@ def Subst.singleton {level scope : Nat} (substituent : Ty level scope) :
     | ⟨0, _⟩      => substituent
     | ⟨k + 1, h⟩  => .tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩
   forRaw := RawTermSubst.dropNewest
-
-/-- Singleton substitution maps the newest type variable to the substituent. -/
-theorem Subst.singleton_forTy_zero {level scope : Nat}
-    (substituent : Ty level scope) :
-    (Subst.singleton substituent).forTy ⟨0, Nat.zero_lt_succ scope⟩ = substituent :=
-  rfl
-
-/-- Singleton substitution shifts older type variables down. -/
-theorem Subst.singleton_forTy_succ {level scope : Nat}
-    (substituent : Ty level scope)
-    (position : Nat) (isWithinScope : position < scope) :
-    (Subst.singleton substituent).forTy
-      ⟨position + 1, Nat.succ_lt_succ isWithinScope⟩ =
-        Ty.tyVar ⟨position, isWithinScope⟩ :=
-  rfl
-
-/-- The raw component of singleton substitution drops the newest raw variable. -/
-theorem Subst.singleton_forRaw {level scope : Nat}
-    (substituent : Ty level scope) :
-    (Subst.singleton substituent).forRaw = RawTermSubst.dropNewest :=
-  rfl
 
 /-- Single-variable substitution that carries a raw term substituent
 for the eliminated binder.  Unlike `Subst.singleton`, whose `forRaw`
@@ -112,31 +70,6 @@ def Subst.termSingleton {level scope : Nat} (substituent : Ty level scope)
     | ⟨0, _⟩      => substituent
     | ⟨k + 1, h⟩  => .tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩
   forRaw := RawTermSubst.singleton rawArg
-
-/-- The term-singleton at the freshly-eliminated position returns the
-type substituent. -/
-theorem Subst.termSingleton_forTy_zero {level scope : Nat}
-    (substituent : Ty level scope) (rawArg : RawTerm scope) :
-    (Subst.termSingleton substituent rawArg).forTy ⟨0, Nat.zero_lt_succ scope⟩ =
-      substituent :=
-  rfl
-
-/-- The term-singleton at older positions decrements the de Bruijn index. -/
-theorem Subst.termSingleton_forTy_succ {level scope : Nat}
-    (substituent : Ty level scope) (rawArg : RawTerm scope)
-    (position : Nat) (isWithinScope : position < scope) :
-    (Subst.termSingleton substituent rawArg).forTy
-      ⟨position + 1, Nat.succ_lt_succ isWithinScope⟩ =
-        Ty.tyVar ⟨position, isWithinScope⟩ :=
-  rfl
-
-/-- The raw component of the term-singleton is the raw singleton on
-the supplied `rawArg`. -/
-theorem Subst.termSingleton_forRaw {level scope : Nat}
-    (substituent : Ty level scope) (rawArg : RawTerm scope) :
-    (Subst.termSingleton substituent rawArg).forRaw =
-      RawTermSubst.singleton rawArg :=
-  rfl
 
 /-- Apply a parallel substitution to a type, structurally.  The
 `piTy` case lifts the substitution under the new binder; just like
@@ -210,29 +143,6 @@ theorem Subst.equiv_forRaw {level source target : Nat}
 theorem Subst.equiv_refl {level source target : Nat}
     (substitution : Subst level source target) : Subst.equiv substitution substitution :=
   Subst.equiv_intro (fun _ => rfl) (RawTermSubst.equiv_refl substitution.forRaw)
-
-/-- Symmetry for joint-substitution equivalence. -/
-theorem Subst.equiv_symm {level source target : Nat}
-    {firstSubstitution secondSubstitution : Subst level source target}
-    (areEquivalent : Subst.equiv firstSubstitution secondSubstitution) :
-    Subst.equiv secondSubstitution firstSubstitution :=
-  Subst.equiv_intro
-    (fun position => (Subst.equiv_forTy areEquivalent position).symm)
-    (RawTermSubst.equiv_symm (Subst.equiv_forRaw areEquivalent))
-
-/-- Transitivity for joint-substitution equivalence. -/
-theorem Subst.equiv_trans {level source target : Nat}
-    {firstSubstitution secondSubstitution thirdSubstitution : Subst level source target}
-    (firstEquivalence : Subst.equiv firstSubstitution secondSubstitution)
-    (secondEquivalence : Subst.equiv secondSubstitution thirdSubstitution) :
-    Subst.equiv firstSubstitution thirdSubstitution :=
-  Subst.equiv_intro
-    (fun position =>
-      (Subst.equiv_forTy firstEquivalence position).trans
-        (Subst.equiv_forTy secondEquivalence position))
-    (RawTermSubst.equiv_trans
-      (Subst.equiv_forRaw firstEquivalence)
-      (Subst.equiv_forRaw secondEquivalence))
 
 /-- Lifting preserves substitution equivalence: if `σ₁ ≡ σ₂` pointwise
 then `σ₁.lift ≡ σ₂.lift` pointwise. -/
@@ -699,16 +609,6 @@ def Subst.identity {level scope : Nat} : Subst level scope scope where
   forTy := fun i => Ty.tyVar i
   forRaw := RawTermSubst.identity
 
-/-- Type component of identity substitution. -/
-theorem Subst.identity_forTy {level scope : Nat} (position : Fin scope) :
-    (@Subst.identity level scope).forTy position = Ty.tyVar position :=
-  rfl
-
-/-- Raw component of identity substitution. -/
-theorem Subst.identity_forRaw {level scope : Nat} :
-    (@Subst.identity level scope).forRaw = RawTermSubst.identity :=
-  rfl
-
 /-- Lifting the identity substitution gives the identity at the
 extended scope (pointwise).  Both Fin cases are `rfl`. -/
 theorem Subst.lift_identity_equiv {level scope : Nat} :
@@ -956,57 +856,6 @@ theorem Ty.subst_compose {level s m t : Nat} :
 
 Composition is associative and unital on both sides.  Stated as
 pointwise equivalences to stay funext-free. -/
-
-/-- Renaming composition is left-unital: composing the identity
-rawRenaming on the left leaves a rawRenaming pointwise unchanged.
-Renaming is just function composition, so this is `rfl` per
-position. -/
-theorem Renaming.compose_identity_left {s t : Nat} (ρ : Renaming s t) :
-    Renaming.equiv (Renaming.compose Renaming.identity ρ) ρ :=
-  fun _ => rfl
-
-/-- Renaming composition is right-unital: composing the identity
-rawRenaming on the right leaves a rawRenaming pointwise unchanged. -/
-theorem Renaming.compose_identity_right {s t : Nat} (ρ : Renaming s t) :
-    Renaming.equiv (Renaming.compose ρ Renaming.identity) ρ :=
-  fun _ => rfl
-
-/-- Renaming composition is associative.  Pointwise `rfl` because
-all three forms reduce to `ρ₃ (ρ₂ (ρ₁ i))` by definition. -/
-theorem Renaming.compose_assoc {s m₁ m₂ t : Nat}
-    (ρ₁ : Renaming s m₁) (ρ₂ : Renaming m₁ m₂) (ρ₃ : Renaming m₂ t) :
-    Renaming.equiv (Renaming.compose ρ₁ (Renaming.compose ρ₂ ρ₃))
-                   (Renaming.compose (Renaming.compose ρ₁ ρ₂) ρ₃) :=
-  fun _ => rfl
-
-/-- Substitution composition is left-unital: prepending the
-identity substitution leaves the substitution pointwise unchanged.
-Pointwise `rfl` because `Subst.identity i = Ty.tyVar i` and the
-`tyVar` arm of `Ty.subst` looks up the substituent directly. -/
-theorem Subst.compose_identity_left {level s t : Nat} (σ : Subst level s t) :
-    Subst.equiv (Subst.compose Subst.identity σ) σ :=
-  Subst.equiv_intro (fun _ => rfl) (RawTermSubst.equiv_refl _)
-
-/-- Substitution composition is right-unital: appending the
-identity substitution leaves the substitution pointwise unchanged.
-Pointwise via `Ty.subst_id`: each substituent's identity-
-substitution equals itself. -/
-theorem Subst.compose_identity_right {level s t : Nat} (σ : Subst level s t) :
-    Subst.equiv (Subst.compose σ Subst.identity) σ :=
-  Subst.equiv_intro
-    (fun position => Ty.subst_id (σ position))
-    fun position => RawTerm.subst_id (σ.forRaw position)
-
-/-- Substitution composition is associative.  Pointwise via
-`Ty.subst_compose`: at each position both sides reduce to
-`((σ₁ i).subst σ₂).subst σ₃`. -/
-theorem Subst.compose_assoc {level s m₁ m₂ t : Nat}
-    (σ₁ : Subst level s m₁) (σ₂ : Subst level m₁ m₂) (σ₃ : Subst level m₂ t) :
-    Subst.equiv (Subst.compose σ₁ (Subst.compose σ₂ σ₃))
-                (Subst.compose (Subst.compose σ₁ σ₂) σ₃) :=
-  Subst.equiv_intro
-    (fun position => (Ty.subst_compose (σ₁ position) σ₂ σ₃).symm)
-    fun position => (RawTerm.subst_compose (σ₁.forRaw position) σ₂.forRaw σ₃.forRaw).symm
 
 /-- Pointwise equivalence linking the two singleton-substitution
 formulations: substitution-then-rename equals lifted-rename-then-

@@ -3,7 +3,6 @@ import LeanFX.Mode.TwoCell
 import LeanFX.Mode.Composable
 import LeanFX.Mode.Collision
 import LeanFX.Syntax.Inductive
-import LeanFX.Syntax.Code
 import LeanFX.Syntax.Term
 import LeanFX.Syntax.DependentJ
 import LeanFX.Frontend.Token
@@ -37,8 +36,6 @@ The intrinsic kernel is split by dependency layer while preserving
   * `LeanFX.Mode.Composable` — decidable admissible modal composition.
   * `LeanFX.Mode.Collision` — concrete finite FX collision catalog.
   * `LeanFX.Syntax.Inductive` — generic inductive-family specs.
-  * `LeanFX.Syntax.Code` — Tarski-code substrate, imported explicitly
-    because it is not part of the stable `Syntax.Term` kernel spine.
   * `LeanFX.Syntax.DependentJ` — dependent-J motive signature shape,
     imported explicitly because it is not yet a kernel constructor.
   * `LeanFX.Tools.AuditAll` — build-time zero-axiom regression gate.
@@ -47,8 +44,10 @@ The split is still one sequential kernel architecture: `RawTerm` is
 declared before `Ty`, so `Ty.id` references raw endpoints without a
 mutual `Ty`/`Term` block.  The stable term kernel remains available
 through `import LeanFX.Syntax.Term`; future-facing substrates such as
-`Code`, `Inductive`, and `DependentJ` are imported explicitly at the
-package root until they have kernel consumers.
+`Inductive` and `DependentJ` are imported explicitly at the package
+root until they have kernel consumers.  The Tarski-code substrate
+(`Code.lean`) was quarantined to `LeanFX/Stash/Code.lean.disabled`
+in the v2.0 mega-refactor pending future `Term.codeIntro` work.
 
 ## The unified architecture
 
