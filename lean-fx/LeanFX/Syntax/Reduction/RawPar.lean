@@ -337,26 +337,26 @@ inductive RawStep.par : {scope : Nat} → RawTerm scope → RawTerm scope → Pr
   | betaAppDeep :
       ∀ {scope : Nat}
         {function : RawTerm scope}
-        {body body' : RawTerm (scope + 1)}
+        {body : RawTerm (scope + 1)}
         {argument argument' : RawTerm scope},
-      RawStep.par function (RawTerm.lam body') →
+      RawStep.par function (RawTerm.lam body) →
       RawStep.par argument argument' →
       RawStep.par (RawTerm.app function argument)
-                  (body'.subst0 argument')
+                  (body.subst0 argument')
   /-- Deep π₁: pair-target reduces to a literal pair. -/
   | betaFstPairDeep :
       ∀ {scope : Nat}
         {pairTerm : RawTerm scope}
-        {firstVal' secondVal' : RawTerm scope},
-      RawStep.par pairTerm (RawTerm.pair firstVal' secondVal') →
-      RawStep.par (RawTerm.fst pairTerm) firstVal'
+        {firstVal secondVal : RawTerm scope},
+      RawStep.par pairTerm (RawTerm.pair firstVal secondVal) →
+      RawStep.par (RawTerm.fst pairTerm) firstVal
   /-- Deep π₂: pair-target reduces to a literal pair. -/
   | betaSndPairDeep :
       ∀ {scope : Nat}
         {pairTerm : RawTerm scope}
-        {firstVal' secondVal' : RawTerm scope},
-      RawStep.par pairTerm (RawTerm.pair firstVal' secondVal') →
-      RawStep.par (RawTerm.snd pairTerm) secondVal'
+        {firstVal secondVal : RawTerm scope},
+      RawStep.par pairTerm (RawTerm.pair firstVal secondVal) →
+      RawStep.par (RawTerm.snd pairTerm) secondVal
   /-- Deep ι on `boolElim`/`true`: scrutinee reduces to literal `true`. -/
   | iotaBoolElimTrueDeep :
       ∀ {scope : Nat}
