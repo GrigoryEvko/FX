@@ -495,4 +495,14 @@ forms. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInlDeep_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInrDeep_case
 
+/-! ## Wave 9-B1.6: chain-level isBi predicate.
+
+`Step.parStar.isBi` is the chain-level analog of `Step.par.isBi`:
+a chain is βι iff every step in it is βι.  Required for the
+4 dep β Deep cases (betaAppDeep, betaAppPiDeep, betaFstPairDeep,
+betaSndPairDeep) of `cd_lemma_star`, which need lam/pair target
+inversions under chain-isBi gating to discharge η-blocked cases. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.toParStar_isBi
+
 end LeanFX.Tools.AuditAll

@@ -612,6 +612,44 @@ inductive Step.par.isBi :
       Step.par.isBi witnessStep → Step.par.isBi baseStep →
       Step.par.isBi (Step.par.iotaIdJReflDeep witnessStep baseStep)
 
+/-! ## `Step.parStar.isBi` — chain-level βι predicate.
+
+Mirrors `Step.par.isBi` at the `Step.parStar` level: a chain is βι
+iff every step in it is βι.  Required so target-direction
+inversions on lam/pair (which fail at plain `Step.parStar` because
+of η-rules) hold under isBi-gating.
+
+Inductive structure mirrors `Step.parStar`: `refl` is trivially βι,
+`trans` requires the head step's isBi-ness AND the rest chain's. -/
+inductive Step.parStar.isBi :
+    ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+      {termType : Ty level scope}
+      {sourceTerm targetTerm : Term ctx termType},
+    Step.parStar sourceTerm targetTerm → Prop
+  /-- The empty chain is βι. -/
+  | refl : ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+        {termType : Ty level scope} (term : Term ctx termType),
+      Step.parStar.isBi (Step.parStar.refl term)
+  /-- A cons chain is βι if its head step is βι and the rest is βι. -/
+  | trans : ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+        {termType : Ty level scope}
+        {firstTerm secondTerm thirdTerm : Term ctx termType}
+        {firstStep : Step.par firstTerm secondTerm}
+        {restChain : Step.parStar secondTerm thirdTerm},
+      Step.par.isBi firstStep →
+      Step.parStar.isBi restChain →
+      Step.parStar.isBi (Step.parStar.trans firstStep restChain)
+
+/-- Lift a single βι step to a βι chain. -/
+theorem Step.par.toParStar_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    {parallelStep : Step.par sourceTerm targetTerm}
+    (stepBi : Step.par.isBi parallelStep) :
+    Step.parStar.isBi (Step.par.toParStar parallelStep) :=
+  Step.parStar.isBi.trans stepBi (Step.parStar.isBi.refl targetTerm)
+
 /-! ## End-to-end validation: cd_lemma_star prototype.
 
 A miniature cd_lemma_star proven only for the `refl` and `lam`
