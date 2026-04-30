@@ -51,17 +51,24 @@ Term.lam body'`).  Lean's dependent-elimination check rejects direct
 have target types involving the non-injective `Ty.subst0`.
 
 The architecturally clean unblock is the **typed→raw bridge**
-(`Step.par.toRawBridge`, currently quarantined at
-`LeanFX/Stash/ParToRawBridge.lean.WIP` pending Wave 6 β-surgery):
+(`Step.par.toRawBridge`, active at
+`LeanFX/Syntax/Reduction/ParToRawBridge.lean`):
 
   1. Lift `Step.par s t` to `RawStep.par s.toRaw t.toRaw` via
-     a 56-case structural translation.
+     a 54-case structural translation, gated on `Step.par.isBi`
+     so the two η constructors are excluded vacuously.
   2. Apply the already-proven raw `RawStep.par.lam_inv` (and
      companions) to extract structural information from the IH.
   3. Use the structural information to discharge the typed goal.
 
-This file lands the smoke skeleton that confirms `induction isBi`'s
-IH structure is correct.  Full cd_lemma_star awaits the bridge. -/
+The bridge currently discharges 50 of 54 βι cases.  The four
+dependent β cases (`betaApp`, `betaAppPi`, `betaAppDeep`,
+`betaAppPiDeep`) carry `sorry` markers tagged for Wave 6
+β-surgery (`Subst.singleton` → `Subst.termSingleton` migration,
+tasks #1006-#1014).  Once Wave 6 lands, the bridge is fully
+zero-sorry and the 17 Deep βι cases of `cd_lemma_star` become
+direct corollaries of the typed parStar inversions derived
+from the bridge. -/
 
 /-- Smoke skeleton that proves cd_lemma_star for the refl case via
 the `cd_dominates → parStar` lift. -/
