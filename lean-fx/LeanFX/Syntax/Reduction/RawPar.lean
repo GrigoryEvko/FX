@@ -243,13 +243,14 @@ inductive RawStep.par : {scope : Nat} → RawTerm scope → RawTerm scope → Pr
   | iotaNatElimSucc :
       ∀ {scope : Nat}
         (zeroBranch : RawTerm scope)
-        {predecessor : RawTerm scope}
+        {predecessor predecessor' : RawTerm scope}
         {succBranch succBranch' : RawTerm scope},
+      RawStep.par predecessor predecessor' →
       RawStep.par succBranch succBranch' →
       RawStep.par
         (RawTerm.natElim (RawTerm.natSucc predecessor)
           zeroBranch succBranch)
-        (RawTerm.app succBranch' predecessor)
+        (RawTerm.app succBranch' predecessor')
   /-- ι-reduction on `natRec natZero`. -/
   | iotaNatRecZero :
       ∀ {scope : Nat}
@@ -262,16 +263,17 @@ inductive RawStep.par : {scope : Nat} → RawTerm scope → RawTerm scope → Pr
   /-- ι-reduction on `natRec (natSucc n)`. -/
   | iotaNatRecSucc :
       ∀ {scope : Nat}
-        {predecessor : RawTerm scope}
+        {predecessor predecessor' : RawTerm scope}
         {zeroBranch zeroBranch' : RawTerm scope}
         {succBranch succBranch' : RawTerm scope},
+      RawStep.par predecessor predecessor' →
       RawStep.par zeroBranch zeroBranch' →
       RawStep.par succBranch succBranch' →
       RawStep.par
         (RawTerm.natRec (RawTerm.natSucc predecessor)
           zeroBranch succBranch)
-        (RawTerm.app (RawTerm.app succBranch' predecessor)
-          (RawTerm.natRec predecessor zeroBranch' succBranch'))
+        (RawTerm.app (RawTerm.app succBranch' predecessor')
+          (RawTerm.natRec predecessor' zeroBranch' succBranch'))
   /-- ι-reduction on `listElim listNil`. -/
   | iotaListElimNil :
       ∀ {scope : Nat}
@@ -285,12 +287,14 @@ inductive RawStep.par : {scope : Nat} → RawTerm scope → RawTerm scope → Pr
   | iotaListElimCons :
       ∀ {scope : Nat}
         (nilBranch : RawTerm scope)
-        {head tail consBranch consBranch' : RawTerm scope},
+        {head head' tail tail' consBranch consBranch' : RawTerm scope},
+      RawStep.par head head' →
+      RawStep.par tail tail' →
       RawStep.par consBranch consBranch' →
       RawStep.par
         (RawTerm.listElim (RawTerm.listCons head tail)
           nilBranch consBranch)
-        (RawTerm.app (RawTerm.app consBranch' head) tail)
+        (RawTerm.app (RawTerm.app consBranch' head') tail')
   /-- ι-reduction on `optionMatch optionNone`. -/
   | iotaOptionMatchNone :
       ∀ {scope : Nat}
@@ -304,32 +308,35 @@ inductive RawStep.par : {scope : Nat} → RawTerm scope → RawTerm scope → Pr
   | iotaOptionMatchSome :
       ∀ {scope : Nat}
         (noneBranch : RawTerm scope)
-        {value someBranch someBranch' : RawTerm scope},
+        {value value' someBranch someBranch' : RawTerm scope},
+      RawStep.par value value' →
       RawStep.par someBranch someBranch' →
       RawStep.par
         (RawTerm.optionMatch (RawTerm.optionSome value)
           noneBranch someBranch)
-        (RawTerm.app someBranch' value)
+        (RawTerm.app someBranch' value')
   /-- ι-reduction on `eitherMatch (eitherInl value)`. -/
   | iotaEitherMatchInl :
       ∀ {scope : Nat}
-        {value leftBranch leftBranch' : RawTerm scope}
+        {value value' leftBranch leftBranch' : RawTerm scope}
         (rightBranch : RawTerm scope),
+      RawStep.par value value' →
       RawStep.par leftBranch leftBranch' →
       RawStep.par
         (RawTerm.eitherMatch (RawTerm.eitherInl value)
           leftBranch rightBranch)
-        (RawTerm.app leftBranch' value)
+        (RawTerm.app leftBranch' value')
   /-- ι-reduction on `eitherMatch (eitherInr value)`. -/
   | iotaEitherMatchInr :
       ∀ {scope : Nat}
         (leftBranch : RawTerm scope)
-        {value rightBranch rightBranch' : RawTerm scope},
+        {value value' rightBranch rightBranch' : RawTerm scope},
+      RawStep.par value value' →
       RawStep.par rightBranch rightBranch' →
       RawStep.par
         (RawTerm.eitherMatch (RawTerm.eitherInr value)
           leftBranch rightBranch)
-        (RawTerm.app rightBranch' value)
+        (RawTerm.app rightBranch' value')
   /-- ι-reduction on `idJ (refl rawTerm) baseCase`. -/
   | iotaIdJRefl :
       ∀ {scope : Nat}

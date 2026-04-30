@@ -109,41 +109,43 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       simp only [RawTerm.rename]
       exact RawStep.par.iotaNatElimZero
         (RawTerm.rename succBranch rawRenaming) (zeroIH _)
-  | iotaNatElimSucc zeroBranch succStep succIH =>
+  | iotaNatElimSucc zeroBranch predStep succStep predIH succIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaNatElimSucc
-        (RawTerm.rename zeroBranch rawRenaming) (succIH _)
+        (RawTerm.rename zeroBranch rawRenaming) (predIH _) (succIH _)
   | iotaNatRecZero succBranch zeroStep zeroIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaNatRecZero
         (RawTerm.rename succBranch rawRenaming) (zeroIH _)
-  | iotaNatRecSucc zeroStep succStep zeroIH succIH =>
+  | iotaNatRecSucc predStep zeroStep succStep predIH zeroIH succIH =>
       simp only [RawTerm.rename]
-      exact RawStep.par.iotaNatRecSucc (zeroIH _) (succIH _)
+      exact RawStep.par.iotaNatRecSucc (predIH _) (zeroIH _) (succIH _)
   | iotaListElimNil consBranch nilStep nilIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaListElimNil
         (RawTerm.rename consBranch rawRenaming) (nilIH _)
-  | iotaListElimCons nilBranch consStep consIH =>
+  | iotaListElimCons nilBranch headStep tailStep consStep
+        headIH tailIH consIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaListElimCons
-        (RawTerm.rename nilBranch rawRenaming) (consIH _)
+        (RawTerm.rename nilBranch rawRenaming)
+        (headIH _) (tailIH _) (consIH _)
   | iotaOptionMatchNone someBranch noneStep noneIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaOptionMatchNone
         (RawTerm.rename someBranch rawRenaming) (noneIH _)
-  | iotaOptionMatchSome noneBranch someStep someIH =>
+  | iotaOptionMatchSome noneBranch valueStep someStep valueIH someIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaOptionMatchSome
-        (RawTerm.rename noneBranch rawRenaming) (someIH _)
-  | iotaEitherMatchInl rightBranch leftStep leftIH =>
+        (RawTerm.rename noneBranch rawRenaming) (valueIH _) (someIH _)
+  | iotaEitherMatchInl rightBranch valueStep leftStep valueIH leftIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaEitherMatchInl
-        (RawTerm.rename rightBranch rawRenaming) (leftIH _)
-  | iotaEitherMatchInr leftBranch rightStep rightIH =>
+        (RawTerm.rename rightBranch rawRenaming) (valueIH _) (leftIH _)
+  | iotaEitherMatchInr leftBranch valueStep rightStep valueIH rightIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaEitherMatchInr
-        (RawTerm.rename leftBranch rawRenaming) (rightIH _)
+        (RawTerm.rename leftBranch rawRenaming) (valueIH _) (rightIH _)
   | iotaIdJRefl rawTerm baseStep baseIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJRefl
@@ -224,6 +226,56 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | iotaIdJReflDeep witnessStep baseStep witnessIH baseIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJReflDeep (witnessIH _) (baseIH _)
+
+/-! ### Helper commute lemmas. -/
+
+/-- A weakened raw term is unaffected by singleton substitution: any
+position k in the original becomes k+1 in the weakened term, and
+singleton's k+1 case rebuilds `var k`.  Composition of weaken and
+singleton is therefore the identity substitution. -/
+theorem RawTerm.weaken_subst_singleton {scope : Nat}
+    (rawTerm : RawTerm scope) (substituent : RawTerm scope) :
+    rawTerm.weaken.subst (RawTermSubst.singleton substituent) = rawTerm := by
+  unfold RawTerm.weaken
+  rw [RawTerm.subst_rename_commute rawTerm Renaming.weaken
+        (RawTermSubst.singleton substituent)]
+  have afterIsIdentity :
+      RawTermSubst.equiv
+        (RawTermSubst.afterRenaming Renaming.weaken
+          (RawTermSubst.singleton substituent))
+        RawTermSubst.identity := by
+    intro position
+    rfl
+  exact (RawTerm.subst_congr afterIsIdentity rawTerm).trans
+    (RawTerm.subst_id rawTerm)
+
+/-- Subst-of-subst0 commute lemma.  Substituting `σ` after `subst0
+arg` equals lifting `σ` over the body's binder, then substituting
+the σ-substituted argument. -/
+theorem RawTerm.subst0_subst_commute {source target : Nat}
+    (body : RawTerm (source + 1)) (argument : RawTerm source)
+    (rawSubstitution : RawTermSubst source target) :
+    (body.subst0 argument).subst rawSubstitution =
+      (body.subst rawSubstitution.lift).subst0
+        (argument.subst rawSubstitution) := by
+  unfold RawTerm.subst0
+  rw [RawTerm.subst_compose body (RawTermSubst.singleton argument)
+        rawSubstitution]
+  rw [RawTerm.subst_compose body rawSubstitution.lift
+        (RawTermSubst.singleton (argument.subst rawSubstitution))]
+  apply RawTerm.subst_congr
+  intro position
+  match position with
+  | ⟨0, _⟩ => rfl
+  | ⟨k + 1, isWithinBound⟩ =>
+      -- LHS: compose (singleton arg) σ ⟨k+1⟩ = (var k).subst σ = σ k
+      -- RHS: compose σ.lift (singleton (arg.subst σ)) ⟨k+1⟩
+      --      = (σ.lift ⟨k+1⟩).subst (singleton (arg.subst σ))
+      --      = ((σ k).rename weaken).subst (singleton (arg.subst σ))
+      --      = (σ k) by weaken_subst_singleton
+      simp only [RawTermSubst.compose, RawTermSubst.singleton,
+        RawTermSubst.lift]
+      exact (RawTerm.weaken_subst_singleton _ _).symm
 
 /-! ### Joint substitution lemma (the cd_lemma workhorse).
 
@@ -336,5 +388,278 @@ theorem RawTerm.subst_par_pointwise {source target : Nat} :
       RawStep.par.idJ
         (RawTerm.subst_par_pointwise baseCase substitutionsRelated)
         (RawTerm.subst_par_pointwise witness substitutionsRelated)
+
+/-- Joint substitution lemma: parallel reduction is preserved by
+substitution where both the substituted term and the substitution
+itself step in parallel.  This is the cd_lemma's β-case workhorse. -/
+theorem RawStep.par.subst_par {source target : Nat}
+    {firstSubstitution secondSubstitution : RawTermSubst source target}
+    (substitutionsRelated : ∀ position,
+      RawStep.par (firstSubstitution position) (secondSubstitution position))
+    {beforeTerm afterTerm : RawTerm source} :
+    RawStep.par beforeTerm afterTerm →
+    RawStep.par (beforeTerm.subst firstSubstitution)
+                (afterTerm.subst secondSubstitution) := by
+  intro parallelStep
+  induction parallelStep generalizing target with
+  | refl term =>
+      exact RawTerm.subst_par_pointwise term substitutionsRelated
+  | lam bodyStep bodyIH =>
+      exact RawStep.par.lam
+        (bodyIH (RawTermSubst.par_lift substitutionsRelated))
+  | app functionStep argumentStep functionIH argumentIH =>
+      exact RawStep.par.app (functionIH substitutionsRelated)
+        (argumentIH substitutionsRelated)
+  | pair firstStep secondStep firstIH secondIH =>
+      exact RawStep.par.pair (firstIH substitutionsRelated)
+        (secondIH substitutionsRelated)
+  | fst pairStep pairIH =>
+      exact RawStep.par.fst (pairIH substitutionsRelated)
+  | snd pairStep pairIH =>
+      exact RawStep.par.snd (pairIH substitutionsRelated)
+  | boolElim scrutineeStep thenStep elseStep
+        scrutineeIH thenIH elseIH =>
+      exact RawStep.par.boolElim
+        (scrutineeIH substitutionsRelated)
+        (thenIH substitutionsRelated)
+        (elseIH substitutionsRelated)
+  | natSucc predecessorStep predecessorIH =>
+      exact RawStep.par.natSucc (predecessorIH substitutionsRelated)
+  | natElim scrutineeStep zeroStep succStep
+        scrutineeIH zeroIH succIH =>
+      exact RawStep.par.natElim
+        (scrutineeIH substitutionsRelated)
+        (zeroIH substitutionsRelated)
+        (succIH substitutionsRelated)
+  | natRec scrutineeStep zeroStep succStep
+        scrutineeIH zeroIH succIH =>
+      exact RawStep.par.natRec
+        (scrutineeIH substitutionsRelated)
+        (zeroIH substitutionsRelated)
+        (succIH substitutionsRelated)
+  | listCons headStep tailStep headIH tailIH =>
+      exact RawStep.par.listCons
+        (headIH substitutionsRelated) (tailIH substitutionsRelated)
+  | listElim scrutineeStep nilStep consStep
+        scrutineeIH nilIH consIH =>
+      exact RawStep.par.listElim
+        (scrutineeIH substitutionsRelated)
+        (nilIH substitutionsRelated)
+        (consIH substitutionsRelated)
+  | optionSome valueStep valueIH =>
+      exact RawStep.par.optionSome (valueIH substitutionsRelated)
+  | optionMatch scrutineeStep noneStep someStep
+        scrutineeIH noneIH someIH =>
+      exact RawStep.par.optionMatch
+        (scrutineeIH substitutionsRelated)
+        (noneIH substitutionsRelated)
+        (someIH substitutionsRelated)
+  | eitherInl valueStep valueIH =>
+      exact RawStep.par.eitherInl (valueIH substitutionsRelated)
+  | eitherInr valueStep valueIH =>
+      exact RawStep.par.eitherInr (valueIH substitutionsRelated)
+  | eitherMatch scrutineeStep leftStep rightStep
+        scrutineeIH leftIH rightIH =>
+      exact RawStep.par.eitherMatch
+        (scrutineeIH substitutionsRelated)
+        (leftIH substitutionsRelated)
+        (rightIH substitutionsRelated)
+  | idJ baseStep witnessStep baseIH witnessIH =>
+      exact RawStep.par.idJ
+        (baseIH substitutionsRelated) (witnessIH substitutionsRelated)
+  | reflCong rawTermStep rawTermIH =>
+      exact RawStep.par.reflCong (rawTermIH substitutionsRelated)
+  -- Shallow β rules.
+  | betaApp bodyStep argumentStep bodyIH argumentIH =>
+      rename_i body body' argBefore argAfter
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst0_subst_commute body' argAfter secondSubstitution]
+      exact RawStep.par.betaApp
+        (bodyIH (RawTermSubst.par_lift substitutionsRelated))
+        (argumentIH substitutionsRelated)
+  | betaFstPair secondVal firstStep firstIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaFstPair
+        (RawTerm.subst secondVal firstSubstitution)
+        (firstIH substitutionsRelated)
+  | betaSndPair firstVal secondStep secondIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaSndPair
+        (RawTerm.subst firstVal firstSubstitution)
+        (secondIH substitutionsRelated)
+  -- Shallow ι rules.
+  | iotaBoolElimTrue elseBranch thenStep thenIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaBoolElimTrue
+        (RawTerm.subst elseBranch firstSubstitution)
+        (thenIH substitutionsRelated)
+  | iotaBoolElimFalse thenBranch elseStep elseIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaBoolElimFalse
+        (RawTerm.subst thenBranch firstSubstitution)
+        (elseIH substitutionsRelated)
+  | iotaNatElimZero succBranch zeroStep zeroIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatElimZero
+        (RawTerm.subst succBranch firstSubstitution)
+        (zeroIH substitutionsRelated)
+  | iotaNatElimSucc zeroBranch predStep succStep predIH succIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatElimSucc
+        (RawTerm.subst zeroBranch firstSubstitution)
+        (predIH substitutionsRelated) (succIH substitutionsRelated)
+  | iotaNatRecZero succBranch zeroStep zeroIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatRecZero
+        (RawTerm.subst succBranch firstSubstitution)
+        (zeroIH substitutionsRelated)
+  | iotaNatRecSucc predStep zeroStep succStep predIH zeroIH succIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatRecSucc
+        (predIH substitutionsRelated) (zeroIH substitutionsRelated)
+        (succIH substitutionsRelated)
+  | iotaListElimNil consBranch nilStep nilIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaListElimNil
+        (RawTerm.subst consBranch firstSubstitution)
+        (nilIH substitutionsRelated)
+  | iotaListElimCons nilBranch headStep tailStep consStep
+        headIH tailIH consIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaListElimCons
+        (RawTerm.subst nilBranch firstSubstitution)
+        (headIH substitutionsRelated) (tailIH substitutionsRelated)
+        (consIH substitutionsRelated)
+  | iotaOptionMatchNone someBranch noneStep noneIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaOptionMatchNone
+        (RawTerm.subst someBranch firstSubstitution)
+        (noneIH substitutionsRelated)
+  | iotaOptionMatchSome noneBranch valueStep someStep valueIH someIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaOptionMatchSome
+        (RawTerm.subst noneBranch firstSubstitution)
+        (valueIH substitutionsRelated) (someIH substitutionsRelated)
+  | iotaEitherMatchInl rightBranch valueStep leftStep valueIH leftIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaEitherMatchInl
+        (RawTerm.subst rightBranch firstSubstitution)
+        (valueIH substitutionsRelated) (leftIH substitutionsRelated)
+  | iotaEitherMatchInr leftBranch valueStep rightStep valueIH rightIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaEitherMatchInr
+        (RawTerm.subst leftBranch firstSubstitution)
+        (valueIH substitutionsRelated) (rightIH substitutionsRelated)
+  | iotaIdJRefl rawTerm baseStep baseIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaIdJRefl
+        (RawTerm.subst rawTerm firstSubstitution)
+        (baseIH substitutionsRelated)
+  -- Deep β rules.
+  | betaAppDeep functionStep argumentStep functionIH argumentIH =>
+      rename_i function body argBefore argAfter
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst0_subst_commute body argAfter secondSubstitution]
+      exact RawStep.par.betaAppDeep
+        (functionIH substitutionsRelated)
+        (argumentIH substitutionsRelated)
+  | betaFstPairDeep pairStep pairIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaFstPairDeep (pairIH substitutionsRelated)
+  | betaSndPairDeep pairStep pairIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaSndPairDeep (pairIH substitutionsRelated)
+  -- Deep ι rules.
+  | iotaBoolElimTrueDeep elseBranch scrutineeStep thenStep
+        scrutineeIH thenIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaBoolElimTrueDeep
+        (RawTerm.subst elseBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (thenIH substitutionsRelated)
+  | iotaBoolElimFalseDeep thenBranch scrutineeStep elseStep
+        scrutineeIH elseIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaBoolElimFalseDeep
+        (RawTerm.subst thenBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (elseIH substitutionsRelated)
+  | iotaNatElimZeroDeep succBranch scrutineeStep zeroStep
+        scrutineeIH zeroIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatElimZeroDeep
+        (RawTerm.subst succBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (zeroIH substitutionsRelated)
+  | iotaNatElimSuccDeep zeroBranch scrutineeStep succStep
+        scrutineeIH succIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatElimSuccDeep
+        (RawTerm.subst zeroBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (succIH substitutionsRelated)
+  | iotaNatRecZeroDeep succBranch scrutineeStep zeroStep
+        scrutineeIH zeroIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatRecZeroDeep
+        (RawTerm.subst succBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (zeroIH substitutionsRelated)
+  | iotaNatRecSuccDeep scrutineeStep zeroStep succStep
+        scrutineeIH zeroIH succIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaNatRecSuccDeep
+        (scrutineeIH substitutionsRelated)
+        (zeroIH substitutionsRelated)
+        (succIH substitutionsRelated)
+  | iotaListElimNilDeep consBranch scrutineeStep nilStep
+        scrutineeIH nilIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaListElimNilDeep
+        (RawTerm.subst consBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (nilIH substitutionsRelated)
+  | iotaListElimConsDeep nilBranch scrutineeStep consStep
+        scrutineeIH consIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaListElimConsDeep
+        (RawTerm.subst nilBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (consIH substitutionsRelated)
+  | iotaOptionMatchNoneDeep someBranch scrutineeStep noneStep
+        scrutineeIH noneIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaOptionMatchNoneDeep
+        (RawTerm.subst someBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (noneIH substitutionsRelated)
+  | iotaOptionMatchSomeDeep noneBranch scrutineeStep someStep
+        scrutineeIH someIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaOptionMatchSomeDeep
+        (RawTerm.subst noneBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (someIH substitutionsRelated)
+  | iotaEitherMatchInlDeep rightBranch scrutineeStep leftStep
+        scrutineeIH leftIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaEitherMatchInlDeep
+        (RawTerm.subst rightBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (leftIH substitutionsRelated)
+  | iotaEitherMatchInrDeep leftBranch scrutineeStep rightStep
+        scrutineeIH rightIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaEitherMatchInrDeep
+        (RawTerm.subst leftBranch firstSubstitution)
+        (scrutineeIH substitutionsRelated) (rightIH substitutionsRelated)
+  | iotaIdJReflDeep witnessStep baseStep witnessIH baseIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaIdJReflDeep
+        (witnessIH substitutionsRelated) (baseIH substitutionsRelated)
+
+/-- β-corollary: parallel substitution at position 0.  Specializes
+`subst_par` to a singleton substitution, where σ ≈p σ' iff
+par arg arg' (the only non-trivial position). -/
+theorem RawStep.par.subst0_par {scope : Nat}
+    {body body' : RawTerm (scope + 1)} {arg arg' : RawTerm scope}
+    (bodyStep : RawStep.par body body')
+    (argumentStep : RawStep.par arg arg') :
+    RawStep.par (body.subst0 arg) (body'.subst0 arg') := by
+  apply RawStep.par.subst_par _ bodyStep
+  intro position
+  match position with
+  | ⟨0, _⟩ => exact argumentStep
+  | ⟨_ + 1, _⟩ => exact RawStep.par.refl _
 
 end LeanFX.Syntax
