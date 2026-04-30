@@ -170,6 +170,15 @@ inductive RawStep.par : {scope : Nat} → RawTerm scope → RawTerm scope → Pr
       RawStep.par rightBranch rightBranch' →
       RawStep.par (RawTerm.eitherMatch scrutinee leftBranch rightBranch)
                   (RawTerm.eitherMatch scrutinee' leftBranch' rightBranch')
+  /-- Parallel reduction inside the rawTerm-argument of an identity-witness
+  refl.  Unlike typed `Step.par` (where `Term.refl`'s argument is frozen
+  open-endpoint data with no Term sub-structure), `RawTerm.refl`'s
+  argument is itself a `RawTerm`, and substitution propagates into it,
+  so the joint substitution lemma needs this cong rule. -/
+  | reflCong :
+      ∀ {scope : Nat} {rawTerm rawTerm' : RawTerm scope},
+      RawStep.par rawTerm rawTerm' →
+      RawStep.par (RawTerm.refl rawTerm) (RawTerm.refl rawTerm')
   /-- Parallel reduction inside both positions of `idJ`. -/
   | idJ :
       ∀ {scope : Nat} {baseCase baseCase' witness witness' : RawTerm scope},

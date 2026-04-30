@@ -41,9 +41,11 @@ theorem RawStep.par.pair_inv {scope : Nat}
 theorem RawStep.par.refl_inv {scope : Nat}
     {rawTerm : RawTerm scope} {target : RawTerm scope}
     (step : RawStep.par (RawTerm.refl rawTerm) target) :
-    target = RawTerm.refl rawTerm := by
-  cases step
-  case refl _ => rfl
+    ∃ rawTerm', target = RawTerm.refl rawTerm' ∧
+      RawStep.par rawTerm rawTerm' := by
+  cases step with
+  | refl _ => exact ⟨rawTerm, rfl, RawStep.par.refl _⟩
+  | reflCong pr => exact ⟨_, rfl, pr⟩
 
 theorem RawStep.par.boolTrue_inv {scope : Nat}
     {target : RawTerm scope}

@@ -80,6 +80,8 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.eitherMatch (scrutineeIH _) (leftIH _) (rightIH _)
   | idJ baseStep witnessStep baseIH witnessIH =>
       exact RawStep.par.idJ (baseIH _) (witnessIH _)
+  | reflCong rawTermStep rawTermIH =>
+      exact RawStep.par.reflCong (rawTermIH _)
   -- Shallow β rules.
   | betaApp bodyStep argumentStep bodyIH argumentIH =>
       rename_i body body' argBefore argAfter
@@ -222,5 +224,117 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | iotaIdJReflDeep witnessStep baseStep witnessIH baseIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJReflDeep (witnessIH _) (baseIH _)
+
+/-! ### Joint substitution lemma (the cd_lemma workhorse).
+
+`RawStep.par.subst_par` says that if `body` and `body'` are related
+by `par` and `σ` and `σ'` are pointwise related, then their
+substitutions are related.  Used for cd_lemma's β cases. -/
+
+/-- Lifting a substitution preserves the pointwise par relation. -/
+theorem RawTermSubst.par_lift {source target : Nat}
+    {firstSubstitution secondSubstitution : RawTermSubst source target}
+    (substitutionsRelated : ∀ position,
+      RawStep.par (firstSubstitution position) (secondSubstitution position)) :
+    ∀ position,
+      RawStep.par (firstSubstitution.lift position)
+                  (secondSubstitution.lift position) := by
+  intro position
+  match position with
+  | ⟨0, _⟩ => exact RawStep.par.refl _
+  | ⟨_ + 1, _⟩ =>
+      simp only [RawTermSubst.lift]
+      exact RawStep.par.rename Renaming.weaken (substitutionsRelated _)
+
+/-- Substitution of a fixed term varying with related substitutions:
+when σ ≈p σ' (pointwise par), then `t.subst σ ≈p t.subst σ'`.  Proof
+by structural induction on `t`.  This is the "refl" case of the joint
+substitution lemma. -/
+theorem RawTerm.subst_par_pointwise {source target : Nat} :
+    ∀ (rawTerm : RawTerm source)
+      {firstSubstitution secondSubstitution : RawTermSubst source target},
+      (∀ position,
+        RawStep.par (firstSubstitution position)
+                    (secondSubstitution position)) →
+      RawStep.par (rawTerm.subst firstSubstitution)
+                  (rawTerm.subst secondSubstitution)
+  | .var position, _, _, substitutionsRelated => substitutionsRelated _
+  | .unit, _, _, _ => RawStep.par.refl _
+  | .boolTrue, _, _, _ => RawStep.par.refl _
+  | .boolFalse, _, _, _ => RawStep.par.refl _
+  | .natZero, _, _, _ => RawStep.par.refl _
+  | .listNil, _, _, _ => RawStep.par.refl _
+  | .optionNone, _, _, _ => RawStep.par.refl _
+  | .lam body, _, _, substitutionsRelated =>
+      RawStep.par.lam
+        (RawTerm.subst_par_pointwise body
+          (RawTermSubst.par_lift substitutionsRelated))
+  | .app function argument, _, _, substitutionsRelated =>
+      RawStep.par.app
+        (RawTerm.subst_par_pointwise function substitutionsRelated)
+        (RawTerm.subst_par_pointwise argument substitutionsRelated)
+  | .pair firstVal secondVal, _, _, substitutionsRelated =>
+      RawStep.par.pair
+        (RawTerm.subst_par_pointwise firstVal substitutionsRelated)
+        (RawTerm.subst_par_pointwise secondVal substitutionsRelated)
+  | .fst pairTerm, _, _, substitutionsRelated =>
+      RawStep.par.fst
+        (RawTerm.subst_par_pointwise pairTerm substitutionsRelated)
+  | .snd pairTerm, _, _, substitutionsRelated =>
+      RawStep.par.snd
+        (RawTerm.subst_par_pointwise pairTerm substitutionsRelated)
+  | .boolElim scrutinee thenBranch elseBranch, _, _, substitutionsRelated =>
+      RawStep.par.boolElim
+        (RawTerm.subst_par_pointwise scrutinee substitutionsRelated)
+        (RawTerm.subst_par_pointwise thenBranch substitutionsRelated)
+        (RawTerm.subst_par_pointwise elseBranch substitutionsRelated)
+  | .natSucc predecessor, _, _, substitutionsRelated =>
+      RawStep.par.natSucc
+        (RawTerm.subst_par_pointwise predecessor substitutionsRelated)
+  | .natElim scrutinee zeroBranch succBranch, _, _, substitutionsRelated =>
+      RawStep.par.natElim
+        (RawTerm.subst_par_pointwise scrutinee substitutionsRelated)
+        (RawTerm.subst_par_pointwise zeroBranch substitutionsRelated)
+        (RawTerm.subst_par_pointwise succBranch substitutionsRelated)
+  | .natRec scrutinee zeroBranch succBranch, _, _, substitutionsRelated =>
+      RawStep.par.natRec
+        (RawTerm.subst_par_pointwise scrutinee substitutionsRelated)
+        (RawTerm.subst_par_pointwise zeroBranch substitutionsRelated)
+        (RawTerm.subst_par_pointwise succBranch substitutionsRelated)
+  | .listCons head tail, _, _, substitutionsRelated =>
+      RawStep.par.listCons
+        (RawTerm.subst_par_pointwise head substitutionsRelated)
+        (RawTerm.subst_par_pointwise tail substitutionsRelated)
+  | .listElim scrutinee nilBranch consBranch, _, _, substitutionsRelated =>
+      RawStep.par.listElim
+        (RawTerm.subst_par_pointwise scrutinee substitutionsRelated)
+        (RawTerm.subst_par_pointwise nilBranch substitutionsRelated)
+        (RawTerm.subst_par_pointwise consBranch substitutionsRelated)
+  | .optionSome value, _, _, substitutionsRelated =>
+      RawStep.par.optionSome
+        (RawTerm.subst_par_pointwise value substitutionsRelated)
+  | .optionMatch scrutinee noneBranch someBranch, _, _, substitutionsRelated =>
+      RawStep.par.optionMatch
+        (RawTerm.subst_par_pointwise scrutinee substitutionsRelated)
+        (RawTerm.subst_par_pointwise noneBranch substitutionsRelated)
+        (RawTerm.subst_par_pointwise someBranch substitutionsRelated)
+  | .eitherInl value, _, _, substitutionsRelated =>
+      RawStep.par.eitherInl
+        (RawTerm.subst_par_pointwise value substitutionsRelated)
+  | .eitherInr value, _, _, substitutionsRelated =>
+      RawStep.par.eitherInr
+        (RawTerm.subst_par_pointwise value substitutionsRelated)
+  | .eitherMatch scrutinee leftBranch rightBranch, _, _, substitutionsRelated =>
+      RawStep.par.eitherMatch
+        (RawTerm.subst_par_pointwise scrutinee substitutionsRelated)
+        (RawTerm.subst_par_pointwise leftBranch substitutionsRelated)
+        (RawTerm.subst_par_pointwise rightBranch substitutionsRelated)
+  | .refl rawTerm, _, _, substitutionsRelated =>
+      RawStep.par.reflCong
+        (RawTerm.subst_par_pointwise rawTerm substitutionsRelated)
+  | .idJ baseCase witness, _, _, substitutionsRelated =>
+      RawStep.par.idJ
+        (RawTerm.subst_par_pointwise baseCase substitutionsRelated)
+        (RawTerm.subst_par_pointwise witness substitutionsRelated)
 
 end LeanFX.Syntax

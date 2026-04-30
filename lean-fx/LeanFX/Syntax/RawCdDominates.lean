@@ -154,7 +154,9 @@ theorem RawStep.par.cd_dominates :
             (heq ▸ scrutineeParStep) rightParStep
       case _ =>
           exact RawStep.par.eitherMatch scrutineeParStep leftParStep rightParStep
-  | _, .refl _ => by unfold RawTerm.cd; exact RawStep.par.refl _
+  | _, .refl rawTerm => by
+      unfold RawTerm.cd
+      exact RawStep.par.refl _
   | _, .idJ baseCase witness => by
       let baseParStep := RawStep.par.cd_dominates baseCase
       let witnessParStep := RawStep.par.cd_dominates witness

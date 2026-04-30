@@ -130,5 +130,7 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.RawStep.par.cd_dominates
 #assert_no_axioms LeanFX.Syntax.RawTerm.subst0_rename_commute
 #assert_no_axioms LeanFX.Syntax.RawStep.par.rename
+#assert_no_axioms LeanFX.Syntax.RawTermSubst.par_lift
+#assert_no_axioms LeanFX.Syntax.RawTerm.subst_par_pointwise
 
 end LeanFX.Tools.AuditAll
