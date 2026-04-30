@@ -165,5 +165,13 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.TermSubst.par_lift
 #assert_no_axioms LeanFX.Syntax.Term.subst_par_pointwise
 #assert_no_axioms LeanFX.Syntax.TermSubst.singleton_par_pointwise
+#assert_no_axioms LeanFX.Syntax.Step.parStar
+#assert_no_axioms LeanFX.Syntax.Step.par.toParStar
+#assert_no_axioms LeanFX.Syntax.Step.parStar.snoc
+#assert_no_axioms LeanFX.Syntax.Step.parStar.append
+#assert_no_axioms LeanFX.Syntax.Step.parStar.subst_compatible
+#assert_no_axioms LeanFX.Syntax.Term.subst0_parStar_argument
+#assert_no_axioms LeanFX.Syntax.Term.subst0_parStar_body
+#assert_no_axioms LeanFX.Syntax.Step.parStar.subst0_parStar
 
 end LeanFX.Tools.AuditAll

@@ -208,4 +208,151 @@ theorem TermSubst.singleton_par_pointwise
           argType).symm
         (Step.par.refl _)
 
+/-! ## Reflexive-transitive closure of typed `Step.par`.
+
+Mirrors `RawStep.parStar`.  The relaxed Tait–Martin-Löf method
+phrases cd_lemma at the multi-step level: `Step.par t t' →
+Step.parStar t' (Term.cd t)`.  This avoids needing a single-step
+joint substitution lemma (which fails because `Step.par` is
+reflexive but not transitive); instead the β case chains two
+`Step.par` steps via `Step.parStar.append`. -/
+
+/-- Reflexive-transitive closure of typed `Step.par`.  The empty
+chain witnesses `t = t`; the cons case prepends a single
+`Step.par` to a chain of further parallel reductions. -/
+inductive Step.parStar :
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {termType : Ty level scope} → Term ctx termType → Term ctx termType → Prop
+  | refl :
+      ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+        {termType : Ty level scope} (term : Term ctx termType),
+      Step.parStar term term
+  | trans :
+      ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+        {termType : Ty level scope}
+        {firstTerm secondTerm thirdTerm : Term ctx termType},
+      Step.par firstTerm secondTerm →
+      Step.parStar secondTerm thirdTerm →
+      Step.parStar firstTerm thirdTerm
+
+/-- Lift a single parallel step to the reflexive-transitive
+closure. -/
+theorem Step.par.toParStar
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    Step.parStar sourceTerm targetTerm :=
+  Step.parStar.trans parallelStep (Step.parStar.refl _)
+
+/-- Append a single parallel step to the end of a `parStar` chain. -/
+theorem Step.parStar.snoc
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {firstTerm secondTerm thirdTerm : Term ctx termType}
+    (chain : Step.parStar firstTerm secondTerm)
+    (parallelStep : Step.par secondTerm thirdTerm) :
+    Step.parStar firstTerm thirdTerm := by
+  induction chain with
+  | refl _ => exact Step.par.toParStar parallelStep
+  | trans firstStep restChain restIH =>
+      exact Step.parStar.trans firstStep (restIH parallelStep)
+
+/-- Concatenate two `parStar` chains. -/
+theorem Step.parStar.append
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {firstTerm secondTerm thirdTerm : Term ctx termType}
+    (firstChain : Step.parStar firstTerm secondTerm)
+    (secondChain : Step.parStar secondTerm thirdTerm) :
+    Step.parStar firstTerm thirdTerm := by
+  induction firstChain with
+  | refl _ => exact secondChain
+  | trans firstStep restChain restIH =>
+      exact Step.parStar.trans firstStep (restIH secondChain)
+
+/-- Multi-step substitution-side compatibility: a `parStar` chain
+on the body lifts through any TermSubst.  Used by the β-case of
+the relaxed cd_lemma. -/
+theorem Step.parStar.subst_compatible
+    {mode : Mode} {scope scope' : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level scope'}
+    {typeSubstitution : Subst level scope scope'}
+    (termSubstitution : TermSubst sourceCtx targetCtx typeSubstitution)
+    {termType : Ty level scope}
+    {beforeTerm afterTerm : Term sourceCtx termType}
+    (parallelChain : Step.parStar beforeTerm afterTerm) :
+    Step.parStar
+      (Term.subst termSubstitution beforeTerm)
+      (Term.subst termSubstitution afterTerm) := by
+  induction parallelChain with
+  | refl _ => exact Step.parStar.refl _
+  | trans firstStep restChain restIH =>
+      exact Step.parStar.trans
+        (Step.par.subst_compatible termSubstitution firstStep)
+        restIH
+
+/-- **Multi-step argument-side parallel substitution at the
+singleton.**  A `parStar` chain on the singleton's substituent
+lifts to a `parStar` chain on `Term.subst0 body`.  Proof: induct
+on the chain at the substituent; each `Step.par` step lifts to a
+single `Step.par` step on `Term.subst0` via
+`Term.subst_par_pointwise` + `TermSubst.singleton_par_pointwise`,
+chained via `Step.parStar.trans`.  The β-case of the relaxed
+cd_lemma uses this to convert `Step.parStar arg' (cd arg)` (the
+argumentIH from the recursive cd_lemma) into a `parStar` chain on
+the substituted body. -/
+theorem Term.subst0_parStar_argument
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    (body : Term (sourceCtx.cons argType) bodyType)
+    {firstArgument secondArgument : Term sourceCtx argType}
+    (argumentChain : Step.parStar firstArgument secondArgument) :
+    Step.parStar
+      (Term.subst0 body firstArgument)
+      (Term.subst0 body secondArgument) := by
+  induction argumentChain with
+  | refl _ => exact Step.parStar.refl _
+  | trans firstStep restChain restIH =>
+      exact Step.parStar.trans
+        (Term.subst_par_pointwise
+          (TermSubst.singleton_par_pointwise firstStep) body)
+        restIH
+
+/-- **Body-side multi-step subst0**.  A `parStar` chain on the
+body lifts to a `parStar` chain on `Term.subst0 body arg` (with
+the argument fixed).  Specialisation of
+`Step.parStar.subst_compatible` to `TermSubst.singleton arg`. -/
+theorem Term.subst0_parStar_body
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    {firstBody secondBody : Term (sourceCtx.cons argType) bodyType}
+    (bodyChain : Step.parStar firstBody secondBody)
+    (argument : Term sourceCtx argType) :
+    Step.parStar
+      (Term.subst0 firstBody argument)
+      (Term.subst0 secondBody argument) :=
+  Step.parStar.subst_compatible (TermSubst.singleton argument) bodyChain
+
+/-- **The cd_lemma β-case workhorse, parStar form.**  Given
+multi-step chains on body and argument, the joint
+`Term.subst0` step lifts to a multi-step chain.  This is what the
+relaxed cd_lemma's β-cases use: we get a `parStar` (not single
+`Step.par`), but that's still strong enough for parStar
+confluence via the standard strip-lemma argument. -/
+theorem Step.parStar.subst0_parStar
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    {firstBody secondBody : Term (sourceCtx.cons argType) bodyType}
+    {firstArgument secondArgument : Term sourceCtx argType}
+    (bodyChain : Step.parStar firstBody secondBody)
+    (argumentChain : Step.parStar firstArgument secondArgument) :
+    Step.parStar
+      (Term.subst0 firstBody firstArgument)
+      (Term.subst0 secondBody secondArgument) :=
+  Step.parStar.append
+    (Term.subst0_parStar_body bodyChain firstArgument)
+    (Term.subst0_parStar_argument secondBody argumentChain)
+
 end LeanFX.Syntax
