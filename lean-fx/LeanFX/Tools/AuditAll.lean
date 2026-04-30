@@ -1,6 +1,7 @@
 import LeanFX.Syntax.Term
 import LeanFX.Syntax.Identity
 import LeanFX.Syntax.DependentJ
+import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Tools.DependencyAudit
 
 /-! # Axiom regression gate.
@@ -220,5 +221,6 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Step.parStar.idJ_cong_base
 #assert_no_axioms LeanFX.Syntax.Step.parStar.idJ_cong_witness
 #assert_no_axioms LeanFX.Syntax.Step.parStar.idJ_cong
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi
 
 end LeanFX.Tools.AuditAll
