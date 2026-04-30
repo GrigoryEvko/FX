@@ -665,6 +665,40 @@ theorem Subst.singleton_equiv_termSingleton_unit {level scope : Nat}
       | ⟨0, _⟩      => rfl
       | ⟨_ + 1, _⟩  => rfl)
 
+/-! ### Wave 5 strangle helpers
+
+`Subst.singleton` and `Subst.termSingleton _ RawTerm.unit` agree
+pointwise (`Subst.singleton_equiv_termSingleton_unit`).  The next
+two corollaries lift that equivalence to the most common consumer
+sites, `Ty.subst0` and bare `Ty.subst T (Subst.singleton _)`.  They
+let downstream callers move from `singleton` to `termSingleton`
+without touching their semantic core — the strangle pattern that
+unblocks Wave 5/6 β-surgery without taking the whole Subst.singleton
+deletion in one step. -/
+
+/-- `Ty.subst T (Subst.singleton X) = Ty.subst T (Subst.termSingleton X RawTerm.unit)`.
+A direct corollary of `Subst.singleton_equiv_termSingleton_unit` via
+`Ty.subst_congr`.  Use to migrate type-only callers from the
+`singleton` flavor to the `termSingleton` flavor without changing
+semantics. -/
+theorem Ty.subst_singleton_eq_termSingleton_unit
+    {level scope : Nat} (T : Ty level (scope + 1))
+    (substituent : Ty level scope) :
+    T.subst (Subst.singleton substituent) =
+      T.subst (Subst.termSingleton substituent RawTerm.unit) :=
+  Ty.subst_congr
+    (Subst.singleton_equiv_termSingleton_unit substituent) T
+
+/-- `Ty.subst0 codomain domain = Ty.subst codomain (Subst.termSingleton domain RawTerm.unit)`.
+The dependent-application-result-type form of the strangle; equal to
+`Ty.subst_singleton_eq_termSingleton_unit` after unfolding `Ty.subst0`. -/
+theorem Ty.subst0_eq_termSingleton_unit
+    {level scope : Nat} (codomain : Ty level (scope + 1))
+    (domain : Ty level scope) :
+    codomain.subst0 domain =
+      codomain.subst (Subst.termSingleton domain RawTerm.unit) :=
+  Ty.subst_singleton_eq_termSingleton_unit codomain domain
+
 /-- **Identity law for substitution**: `T.subst Subst.identity = T`.
 The substitution that maps every variable to itself is the identity
 operation on `Ty`.  Proven by structural induction on `T`, using

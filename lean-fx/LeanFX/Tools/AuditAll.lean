@@ -229,6 +229,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Subst.termSingleton
 #assert_no_axioms LeanFX.Syntax.Subst.precompose_weaken_termSingleton_equiv_identity
 #assert_no_axioms LeanFX.Syntax.Subst.singleton_equiv_termSingleton_unit
+#assert_no_axioms LeanFX.Syntax.Ty.subst_singleton_eq_termSingleton_unit
+#assert_no_axioms LeanFX.Syntax.Ty.subst0_eq_termSingleton_unit
 #assert_no_axioms LeanFX.Syntax.Ty.weaken_subst_termSingleton
 #assert_no_axioms LeanFX.Syntax.Subst.termSingleton_renameAfter_equiv_precompose
 #assert_no_axioms LeanFX.Syntax.TermSubst.termSingleton_renameAfter_pointwise
