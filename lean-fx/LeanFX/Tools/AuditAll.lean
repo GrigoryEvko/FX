@@ -3,6 +3,7 @@ import LeanFX.Syntax.Identity
 import LeanFX.Syntax.DependentJ
 import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
+import LeanFX.Syntax.Reduction.ParInversion
 import LeanFX.Frontend.Surface
 import LeanFX.Frontend.Token
 import LeanFX.Syntax.Inductive
@@ -427,5 +428,16 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Frontend.CommentKind
 #assert_no_axioms LeanFX.Frontend.SourcePos
 #assert_no_axioms LeanFX.Frontend.TokenSpan
+
+/-! ## Wave 9-B1 typed source-inversion lemmas (post-W6.1).
+
+Block at zero axioms via HEq-generalized induction + `Term.toRaw`
+projection refutation.  See `LeanFX/Syntax/Reduction/ParInversion.lean`
+for the strategy. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.boolTrue_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.boolTrue_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.boolTrue_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.boolTrue_source_inv
 
 end LeanFX.Tools.AuditAll
