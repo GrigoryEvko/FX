@@ -64,7 +64,7 @@ IH structure is correct.  Full cd_lemma_star awaits the bridge. -/
 
 /-- Smoke skeleton that proves cd_lemma_star for the refl case via
 the `cd_dominates → parStar` lift. -/
-private theorem Step.par.cd_lemma_star_refl_only_smoke
+theorem Step.par.cd_lemma_star_refl_only_smoke
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {termType : Ty level scope}
     (term : Term ctx termType) :
@@ -74,7 +74,7 @@ private theorem Step.par.cd_lemma_star_refl_only_smoke
 /-- Discharge of the `Step.par.isBi.refl` constructor case.  Pulled
 out as a standalone helper so the eventual full `cd_lemma_star`
 can reuse it without re-proving via `cd_dominates`. -/
-private theorem Step.par.cd_lemma_star_refl_case
+theorem Step.par.cd_lemma_star_refl_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {termType : Ty level scope}
     (term : Term ctx termType) :
@@ -85,7 +85,7 @@ private theorem Step.par.cd_lemma_star_refl_case
 the body-IH (Step.parStar on the body's reduct), `simp [Term.cd]`
 unfolds `Term.cd (Term.lam body)` to `Term.lam (Term.cd body)`,
 then `Step.parStar.lam_cong` lifts the IH through the binder. -/
-private theorem Step.par.cd_lemma_star_lam_case
+theorem Step.par.cd_lemma_star_lam_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType codomainType : Ty level scope}
     {body body' : Term (ctx.cons domainType) codomainType.weaken}
@@ -96,7 +96,7 @@ private theorem Step.par.cd_lemma_star_lam_case
   exact Step.parStar.lam_cong bodyIH
 
 /-- Discharge of the `Step.par.isBi.lamPi` constructor case. -/
-private theorem Step.par.cd_lemma_star_lamPi_case
+theorem Step.par.cd_lemma_star_lamPi_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {body body' : Term (ctx.cons domainType) codomainType}
@@ -114,7 +114,7 @@ without contracting any redex, the cd_lemma_star case is simply
 rule applied to the IHs. -/
 
 /-- Discharge of the `Step.par.isBi.pair` constructor case. -/
-private theorem Step.par.cd_lemma_star_pair_case
+theorem Step.par.cd_lemma_star_pair_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {firstVal firstVal' : Term ctx firstType}
@@ -127,7 +127,7 @@ private theorem Step.par.cd_lemma_star_pair_case
   exact Step.parStar.pair_cong firstIH secondIH
 
 /-- Discharge of the `Step.par.isBi.natSucc` constructor case. -/
-private theorem Step.par.cd_lemma_star_natSucc_case
+theorem Step.par.cd_lemma_star_natSucc_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {pred pred' : Term ctx Ty.nat}
     (predIH : Step.parStar pred' (Term.cd pred)) :
@@ -136,7 +136,7 @@ private theorem Step.par.cd_lemma_star_natSucc_case
   exact Step.parStar.natSucc_cong predIH
 
 /-- Discharge of the `Step.par.isBi.listCons` constructor case. -/
-private theorem Step.par.cd_lemma_star_listCons_case
+theorem Step.par.cd_lemma_star_listCons_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {elementType : Ty level scope}
     {head head' : Term ctx elementType}
@@ -149,7 +149,7 @@ private theorem Step.par.cd_lemma_star_listCons_case
   exact Step.parStar.listCons_cong headIH tailIH
 
 /-- Discharge of the `Step.par.isBi.optionSome` constructor case. -/
-private theorem Step.par.cd_lemma_star_optionSome_case
+theorem Step.par.cd_lemma_star_optionSome_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {elementType : Ty level scope}
     {value value' : Term ctx elementType}
@@ -160,7 +160,7 @@ private theorem Step.par.cd_lemma_star_optionSome_case
   exact Step.parStar.optionSome_cong valueIH
 
 /-- Discharge of the `Step.par.isBi.eitherInl` constructor case. -/
-private theorem Step.par.cd_lemma_star_eitherInl_case
+theorem Step.par.cd_lemma_star_eitherInl_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {leftType rightType : Ty level scope}
     {value value' : Term ctx leftType}
@@ -171,7 +171,7 @@ private theorem Step.par.cd_lemma_star_eitherInl_case
   exact Step.parStar.eitherInl_cong valueIH
 
 /-- Discharge of the `Step.par.isBi.eitherInr` constructor case. -/
-private theorem Step.par.cd_lemma_star_eitherInr_case
+theorem Step.par.cd_lemma_star_eitherInr_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {leftType rightType : Ty level scope}
     {value value' : Term ctx rightType}
@@ -192,7 +192,7 @@ matching congruence rule. -/
 /-- Discharge of the `Step.par.isBi.app` constructor case.  Handles
 the cd-split: when `Term.cd f` reduces to a literal `Term.lam`, an
 extra β-step appends; otherwise plain app congruence. -/
-private theorem Step.par.cd_lemma_star_app_case
+theorem Step.par.cd_lemma_star_app_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType codomainType : Ty level scope}
     {functionTerm functionTerm' : Term ctx (Ty.arrow domainType codomainType)}
@@ -213,7 +213,7 @@ private theorem Step.par.cd_lemma_star_app_case
       exact Step.parStar.app_cong functionIH argumentIH
 
 /-- Discharge of the `Step.par.isBi.appPi` constructor case. -/
-private theorem Step.par.cd_lemma_star_appPi_case
+theorem Step.par.cd_lemma_star_appPi_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {functionTerm functionTerm' : Term ctx (Ty.piTy domainType codomainType)}
@@ -234,7 +234,7 @@ private theorem Step.par.cd_lemma_star_appPi_case
       exact Step.parStar.appPi_cong functionIH argumentIH
 
 /-- Discharge of the `Step.par.isBi.fst` constructor case. -/
-private theorem Step.par.cd_lemma_star_fst_case
+theorem Step.par.cd_lemma_star_fst_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
@@ -254,7 +254,7 @@ private theorem Step.par.cd_lemma_star_fst_case
       exact Step.parStar.fst_cong pairIH
 
 /-- Discharge of the `Step.par.isBi.snd` constructor case. -/
-private theorem Step.par.cd_lemma_star_snd_case
+theorem Step.par.cd_lemma_star_snd_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
@@ -275,7 +275,7 @@ private theorem Step.par.cd_lemma_star_snd_case
 
 /-- Discharge of the `Step.par.isBi.boolElim` constructor case.
 Three-arm split: boolTrue / boolFalse / wildcard. -/
-private theorem Step.par.cd_lemma_star_boolElim_case
+theorem Step.par.cd_lemma_star_boolElim_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {resultType : Ty level scope}
     {scrutinee scrutinee' : Term ctx Ty.bool}
@@ -305,7 +305,7 @@ private theorem Step.par.cd_lemma_star_boolElim_case
 
 /-- Discharge of the `Step.par.isBi.natElim` constructor case.
 Three-arm split: natZero / natSucc / wildcard. -/
-private theorem Step.par.cd_lemma_star_natElim_case
+theorem Step.par.cd_lemma_star_natElim_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {resultType : Ty level scope}
     {scrutinee scrutinee' : Term ctx Ty.nat}
@@ -336,7 +336,7 @@ private theorem Step.par.cd_lemma_star_natElim_case
 
 /-- Discharge of the `Step.par.isBi.natRec` constructor case.
 Three-arm split: natZero / natSucc / wildcard. -/
-private theorem Step.par.cd_lemma_star_natRec_case
+theorem Step.par.cd_lemma_star_natRec_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {resultType : Ty level scope}
     {scrutinee scrutinee' : Term ctx Ty.nat}
@@ -369,7 +369,7 @@ private theorem Step.par.cd_lemma_star_natRec_case
 
 /-- Discharge of the `Step.par.isBi.listElim` constructor case.
 Three-arm split: listNil / listCons / wildcard. -/
-private theorem Step.par.cd_lemma_star_listElim_case
+theorem Step.par.cd_lemma_star_listElim_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {elementType resultType : Ty level scope}
     {scrutinee scrutinee' : Term ctx (Ty.list elementType)}
@@ -402,7 +402,7 @@ private theorem Step.par.cd_lemma_star_listElim_case
 
 /-- Discharge of the `Step.par.isBi.optionMatch` constructor case.
 Three-arm split: optionNone / optionSome / wildcard. -/
-private theorem Step.par.cd_lemma_star_optionMatch_case
+theorem Step.par.cd_lemma_star_optionMatch_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {elementType resultType : Ty level scope}
     {scrutinee scrutinee' : Term ctx (Ty.option elementType)}
@@ -433,7 +433,7 @@ private theorem Step.par.cd_lemma_star_optionMatch_case
 
 /-- Discharge of the `Step.par.isBi.eitherMatch` constructor case.
 Three-arm split: eitherInl / eitherInr / wildcard. -/
-private theorem Step.par.cd_lemma_star_eitherMatch_case
+theorem Step.par.cd_lemma_star_eitherMatch_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {leftType rightType resultType : Ty level scope}
     {scrutinee scrutinee' : Term ctx (Ty.either leftType rightType)}
@@ -470,7 +470,7 @@ endpoints), then on the witness shape (`Term.refl` triggers ι;
 otherwise idJ congruence).  Same-endpoint + refl-witness case
 appends an `iotaIdJRefl` step; all others fall through to
 `idJ_cong`. -/
-private theorem Step.par.cd_lemma_star_idJ_case
+theorem Step.par.cd_lemma_star_idJ_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {carrier : Ty level scope} {leftEnd rightEnd : RawTerm scope}
     {resultType : Ty level scope}
@@ -496,5 +496,312 @@ private theorem Step.par.cd_lemma_star_idJ_case
           exact Step.parStar.idJ_cong baseIH witnessIH
   case _ =>
       exact Step.parStar.idJ_cong baseIH witnessIH
+
+/-! ### Shallow β/ι cases (literal redex source).
+
+For these, `Term.cd` of the source contracts the same redex.  The
+goal after `simp only [Term.cd]` matches the target up to a
+developed-version substitution; either `Step.parStar.subst0_parStar`
+(β) or the appropriate IH alone (ι) closes. -/
+
+/-- Transport a `Step.parStar` chain across the same Ty equality on
+both endpoints — analogue of `Step.par.castBoth`.  Used by the
+shallow β cases where source and target carry matching
+`Ty.weaken_subst_singleton` casts. -/
+theorem Step.parStar.castBoth
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    {beforeTerm afterTerm : Term ctx sourceType}
+    (chain : Step.parStar beforeTerm afterTerm) :
+    Step.parStar (typeEquality ▸ beforeTerm) (typeEquality ▸ afterTerm) := by
+  cases typeEquality
+  exact chain
+
+/-- Discharge of the `Step.par.isBi.betaApp` constructor case.
+Source `Term.app (Term.lam body) arg`; target
+`Ty.weaken_subst_singleton ▸ Term.subst0 body' arg'`.  `Term.cd`
+of source: `Term.cd (Term.lam body)` = `Term.lam (Term.cd body)`,
+so the lam arm of cd's app match fires deterministically, yielding
+`Ty.weaken_subst_singleton ▸ Term.subst0 (Term.cd body) (Term.cd arg)`.
+Closed by `subst0_parStar bodyIH argIH`. -/
+theorem Step.par.cd_lemma_star_betaApp_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body body' : Term (ctx.cons domainType) codomainType.weaken}
+    {arg arg' : Term ctx domainType}
+    (bodyIH : Step.parStar body' (Term.cd body))
+    (argIH : Step.parStar arg' (Term.cd arg)) :
+    Step.parStar
+        ((Ty.weaken_subst_singleton codomainType domainType) ▸
+          Term.subst0 body' arg')
+        (Term.cd
+          (Term.app (Term.lam (codomainType := codomainType) body) arg)) := by
+  simp only [Term.cd]
+  exact Step.parStar.castBoth (Ty.weaken_subst_singleton codomainType domainType)
+    (Step.parStar.subst0_parStar bodyIH argIH)
+
+/-- Discharge of the `Step.par.isBi.betaAppPi` constructor case. -/
+theorem Step.par.cd_lemma_star_betaAppPi_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {body body' : Term (ctx.cons domainType) codomainType}
+    {arg arg' : Term ctx domainType}
+    (bodyIH : Step.parStar body' (Term.cd body))
+    (argIH : Step.parStar arg' (Term.cd arg)) :
+    Step.parStar
+        (Term.subst0 body' arg')
+        (Term.cd
+          (Term.appPi (Term.lamPi (domainType := domainType) body) arg)) := by
+  simp only [Term.cd]
+  exact Step.parStar.subst0_parStar bodyIH argIH
+
+/-- Discharge of the `Step.par.isBi.betaFstPair` constructor case. -/
+theorem Step.par.cd_lemma_star_betaFstPair_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {firstVal firstVal' : Term ctx firstType}
+    (secondVal : Term ctx (secondType.subst0 firstType))
+    (firstIH : Step.parStar firstVal' (Term.cd firstVal)) :
+    Step.parStar firstVal'
+                 (Term.cd
+                   (Term.fst (Term.pair (firstType := firstType)
+                                        (secondType := secondType)
+                                        firstVal secondVal))) := by
+  simp only [Term.cd]
+  exact firstIH
+
+/-- Discharge of the `Step.par.isBi.betaSndPair` constructor case. -/
+theorem Step.par.cd_lemma_star_betaSndPair_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    (firstVal : Term ctx firstType)
+    {secondVal secondVal' : Term ctx (secondType.subst0 firstType)}
+    (secondIH : Step.parStar secondVal' (Term.cd secondVal)) :
+    Step.parStar secondVal'
+                 (Term.cd
+                   (Term.snd (Term.pair (firstType := firstType)
+                                        (secondType := secondType)
+                                        firstVal secondVal))) := by
+  simp only [Term.cd]
+  exact secondIH
+
+/-! ### Shallow ι cases (literal pattern-match redex source). -/
+
+/-- Discharge of the `Step.par.isBi.iotaBoolElimTrue` case. -/
+theorem Step.par.cd_lemma_star_iotaBoolElimTrue_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {thenBranch thenBranch' : Term ctx resultType}
+    (elseBranch : Term ctx resultType)
+    (thenIH : Step.parStar thenBranch' (Term.cd thenBranch)) :
+    Step.parStar thenBranch'
+                 (Term.cd (Term.boolElim Term.boolTrue thenBranch elseBranch)) := by
+  simp only [Term.cd]
+  exact thenIH
+
+/-- Discharge of the `Step.par.isBi.iotaBoolElimFalse` case. -/
+theorem Step.par.cd_lemma_star_iotaBoolElimFalse_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (thenBranch : Term ctx resultType)
+    {elseBranch elseBranch' : Term ctx resultType}
+    (elseIH : Step.parStar elseBranch' (Term.cd elseBranch)) :
+    Step.parStar elseBranch'
+                 (Term.cd (Term.boolElim Term.boolFalse thenBranch elseBranch)) := by
+  simp only [Term.cd]
+  exact elseIH
+
+/-- Discharge of the `Step.par.isBi.iotaNatElimZero` case. -/
+theorem Step.par.cd_lemma_star_iotaNatElimZero_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {zeroBranch zeroBranch' : Term ctx resultType}
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
+    (zeroIH : Step.parStar zeroBranch' (Term.cd zeroBranch)) :
+    Step.parStar zeroBranch'
+                 (Term.cd (Term.natElim Term.natZero zeroBranch succBranch)) := by
+  simp only [Term.cd]
+  exact zeroIH
+
+/-- Discharge of the `Step.par.isBi.iotaNatElimSucc` case.  Source
+`Term.natElim (Term.natSucc pred) zero succ`; target `Term.app
+succ' pred'`.  cd of `natSucc pred` is `natSucc (cd pred)`, so the
+`natSucc` arm of cd's natElim match fires, yielding `app (cd succ)
+(cd pred)`.  Closed by `app_cong succIH predIH`. -/
+theorem Step.par.cd_lemma_star_iotaNatElimSucc_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {predecessor predecessor' : Term ctx Ty.nat}
+    (zeroBranch : Term ctx resultType)
+    {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)}
+    (predIH : Step.parStar predecessor' (Term.cd predecessor))
+    (succIH : Step.parStar succBranch' (Term.cd succBranch)) :
+    Step.parStar (Term.app succBranch' predecessor')
+                 (Term.cd
+                   (Term.natElim (Term.natSucc predecessor) zeroBranch succBranch)) := by
+  simp only [Term.cd]
+  exact Step.parStar.app_cong succIH predIH
+
+/-- Discharge of the `Step.par.isBi.iotaNatRecZero` case. -/
+theorem Step.par.cd_lemma_star_iotaNatRecZero_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {zeroBranch zeroBranch' : Term ctx resultType}
+    (succBranch : Term ctx
+        (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
+    (zeroIH : Step.parStar zeroBranch' (Term.cd zeroBranch)) :
+    Step.parStar zeroBranch'
+                 (Term.cd (Term.natRec Term.natZero zeroBranch succBranch)) := by
+  simp only [Term.cd]
+  exact zeroIH
+
+/-- Discharge of the `Step.par.isBi.iotaNatRecSucc` case.  Source
+`Term.natRec (Term.natSucc pred) zero succ`; target `Term.app
+(Term.app succ' pred') (Term.natRec pred' zero' succ')`.  cd of
+`natSucc pred` is `natSucc (cd pred)`, so the `natSucc` arm fires,
+yielding the developed-version of the same shape.  Closed by
+chained `app_cong` + `natRec_cong`. -/
+theorem Step.par.cd_lemma_star_iotaNatRecSucc_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {predecessor predecessor' : Term ctx Ty.nat}
+    {zeroBranch zeroBranch' : Term ctx resultType}
+    {succBranch succBranch' : Term ctx
+        (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
+    (predIH : Step.parStar predecessor' (Term.cd predecessor))
+    (zeroIH : Step.parStar zeroBranch' (Term.cd zeroBranch))
+    (succIH : Step.parStar succBranch' (Term.cd succBranch)) :
+    Step.parStar
+        (Term.app (Term.app succBranch' predecessor')
+                  (Term.natRec predecessor' zeroBranch' succBranch'))
+        (Term.cd
+          (Term.natRec (Term.natSucc predecessor) zeroBranch succBranch)) := by
+  simp only [Term.cd]
+  exact Step.parStar.app_cong
+    (Step.parStar.app_cong succIH predIH)
+    (Step.parStar.natRec_cong predIH zeroIH succIH)
+
+/-- Discharge of the `Step.par.isBi.iotaListElimNil` case. -/
+theorem Step.par.cd_lemma_star_iotaListElimNil_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {nilBranch nilBranch' : Term ctx resultType}
+    (consBranch : Term ctx
+        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
+    (nilIH : Step.parStar nilBranch' (Term.cd nilBranch)) :
+    Step.parStar nilBranch'
+                 (Term.cd
+                   (Term.listElim (elementType := elementType) Term.listNil
+                      nilBranch consBranch)) := by
+  simp only [Term.cd]
+  exact nilIH
+
+/-- Discharge of the `Step.par.isBi.iotaListElimCons` case.  Source
+`Term.listElim (Term.listCons head tail) nil cons`; target `Term.app
+(Term.app cons' head') tail'`.  cd of `listCons head tail` is
+`listCons (cd head) (cd tail)`, so the `listCons` arm fires. -/
+theorem Step.par.cd_lemma_star_iotaListElimCons_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {head head' : Term ctx elementType}
+    {tail tail' : Term ctx (Ty.list elementType)}
+    (nilBranch : Term ctx resultType)
+    {consBranch consBranch' : Term ctx
+        (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType))}
+    (headIH : Step.parStar head' (Term.cd head))
+    (tailIH : Step.parStar tail' (Term.cd tail))
+    (consIH : Step.parStar consBranch' (Term.cd consBranch)) :
+    Step.parStar
+        (Term.app (Term.app consBranch' head') tail')
+        (Term.cd
+          (Term.listElim (Term.listCons head tail) nilBranch consBranch)) := by
+  simp only [Term.cd]
+  exact Step.parStar.app_cong (Step.parStar.app_cong consIH headIH) tailIH
+
+/-- Discharge of the `Step.par.isBi.iotaOptionMatchNone` case. -/
+theorem Step.par.cd_lemma_star_iotaOptionMatchNone_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {noneBranch noneBranch' : Term ctx resultType}
+    (someBranch : Term ctx (Ty.arrow elementType resultType))
+    (noneIH : Step.parStar noneBranch' (Term.cd noneBranch)) :
+    Step.parStar noneBranch'
+                 (Term.cd
+                   (Term.optionMatch (elementType := elementType) Term.optionNone
+                      noneBranch someBranch)) := by
+  simp only [Term.cd]
+  exact noneIH
+
+/-- Discharge of the `Step.par.isBi.iotaOptionMatchSome` case. -/
+theorem Step.par.cd_lemma_star_iotaOptionMatchSome_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {value value' : Term ctx elementType}
+    (noneBranch : Term ctx resultType)
+    {someBranch someBranch' : Term ctx (Ty.arrow elementType resultType)}
+    (valueIH : Step.parStar value' (Term.cd value))
+    (someIH : Step.parStar someBranch' (Term.cd someBranch)) :
+    Step.parStar (Term.app someBranch' value')
+                 (Term.cd
+                   (Term.optionMatch (Term.optionSome value)
+                      noneBranch someBranch)) := by
+  simp only [Term.cd]
+  exact Step.parStar.app_cong someIH valueIH
+
+/-- Discharge of the `Step.par.isBi.iotaEitherMatchInl` case. -/
+theorem Step.par.cd_lemma_star_iotaEitherMatchInl_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {value value' : Term ctx leftType}
+    {leftBranch leftBranch' : Term ctx (Ty.arrow leftType resultType)}
+    (rightBranch : Term ctx (Ty.arrow rightType resultType))
+    (valueIH : Step.parStar value' (Term.cd value))
+    (leftIH : Step.parStar leftBranch' (Term.cd leftBranch)) :
+    Step.parStar (Term.app leftBranch' value')
+                 (Term.cd
+                   (Term.eitherMatch
+                      (Term.eitherInl (rightType := rightType) value)
+                      leftBranch rightBranch)) := by
+  simp only [Term.cd]
+  exact Step.parStar.app_cong leftIH valueIH
+
+/-- Discharge of the `Step.par.isBi.iotaEitherMatchInr` case. -/
+theorem Step.par.cd_lemma_star_iotaEitherMatchInr_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {value value' : Term ctx rightType}
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    {rightBranch rightBranch' : Term ctx (Ty.arrow rightType resultType)}
+    (valueIH : Step.parStar value' (Term.cd value))
+    (rightIH : Step.parStar rightBranch' (Term.cd rightBranch)) :
+    Step.parStar (Term.app rightBranch' value')
+                 (Term.cd
+                   (Term.eitherMatch
+                      (Term.eitherInr (leftType := leftType) value)
+                      leftBranch rightBranch)) := by
+  simp only [Term.cd]
+  exact Step.parStar.app_cong rightIH valueIH
+
+/-- Discharge of the `Step.par.isBi.iotaIdJRefl` case.  Source
+`Term.idJ baseCase (Term.refl endpoint)`; target `baseCase'`.  cd
+unfolds via `cd_idJ_redex` (decidable equality endpoint = endpoint
+trivially holds), then `cd_idJ_redex_aligned` matches the literal
+`Term.refl _` and yields `Term.cd baseCase`.  Closed by `baseIH`. -/
+theorem Step.par.cd_lemma_star_iotaIdJRefl_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {endpoint : RawTerm scope}
+    {resultType : Ty level scope}
+    {baseCase baseCase' : Term ctx resultType}
+    (baseIH : Step.parStar baseCase' (Term.cd baseCase)) :
+    Step.parStar baseCase'
+                 (Term.cd (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                                    (rightEnd := endpoint) baseCase
+                                    (Term.refl (carrier := carrier) endpoint))) := by
+  simp only [Term.cd, Term.cd_idJ_redex]
+  -- endpointsEqual : endpoint = endpoint always holds, decidable case `true`.
+  simp only [Term.cd_idJ_redex_aligned]
+  -- Term.refl endpoint matches the Term.refl _ pattern.
+  exact baseIH
 
 end LeanFX.Syntax
