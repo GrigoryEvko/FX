@@ -467,6 +467,7 @@ theorem TermRenaming.weaken {m : Mode} {level scope : Nat}
 The result type is the original type weakened in lockstep, mirroring
 the type-level `Ty.weaken`.  Implemented via `Term.rename` with the
 shift-by-one rawRenaming. -/
+@[reducible]
 def Term.weaken {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     (newType : Ty level scope) {T : Ty level scope} (term : Term Γ T) :
     Term (Γ.cons newType) T.weaken :=

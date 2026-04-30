@@ -36,6 +36,7 @@ instance {level source target : Nat} :
 the freshly-bound variable, represented as `Ty.tyVar 0`.  Var `k + 1`
 is the original substituent for `k` weakened to the extended target
 scope. -/
+@[reducible]
 def Subst.lift {level source target : Nat} (σ : Subst level source target) :
     Subst level (source + 1) (target + 1) where
   forTy
@@ -48,6 +49,7 @@ def Subst.lift {level source target : Nat} (σ : Subst level source target) :
 "identity" mapping that decrements the de Bruijn index by one
 (reflecting that the outer scope has one fewer binder than the
 input scope). -/
+@[reducible]
 def Subst.singleton {level scope : Nat} (substituent : Ty level scope) :
     Subst level (scope + 1) scope where
   forTy
@@ -64,6 +66,7 @@ This is the right joint substitution for term-level β-reduction:
 `(λ x. body) arg` reduces to `body[arg/0]`, and identity-type
 witnesses inside `body` should see `toRaw arg` at position 0,
 not the placeholder unit. -/
+@[reducible]
 def Subst.termSingleton {level scope : Nat} (substituent : Ty level scope)
     (rawArg : RawTerm scope) : Subst level (scope + 1) scope where
   forTy

@@ -24,6 +24,7 @@ abbrev TermSubst {m : Mode} {level scope scope' : Nat}
 extended source context maps to `Term.var ⟨0, _⟩` in the extended
 target (cast through `Ty.subst_weaken_commute`); positions `k + 1`
 weaken the predecessor's image into the extended target context. -/
+@[reducible]
 def TermSubst.lift {m : Mode} {level scope scope' : Nat}
     {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
     {σ : Subst level scope scope'}
@@ -266,6 +267,7 @@ in `body`.  Used by β-reduction.  Result type is computed via
 shape exactly.  For the term-bearing variant whose type captures
 `Term.toRaw arg` at position 0 (used by the typed→raw forward
 bridge), see `Term.subst0_term`. -/
+@[reducible]
 def Term.subst0 {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
     (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
@@ -277,6 +279,7 @@ for var 0 using `TermSubst.termSingleton`, whose underlying σ is
 `Subst.termSingleton T_arg (Term.toRaw arg)`.  The result type
 captures the argument's raw projection at position 0 — the right
 shape for the typed→raw forward bridge for β-reduction. -/
+@[reducible]
 def Term.subst0_term {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
     (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
