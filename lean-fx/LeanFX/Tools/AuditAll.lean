@@ -105,6 +105,9 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Conv.idJ_cong
 #assert_no_axioms LeanFX.Syntax.Term.eta_arrow_eq
 #assert_no_axioms LeanFX.Syntax.Term.eta_sigma_eq
+#assert_no_axioms LeanFX.Syntax.instDecidableEqRawTerm
+#assert_no_axioms LeanFX.Syntax.instDecidableEqTy
+#assert_no_axioms LeanFX.Mode.instDecidableEqModality
 #assert_no_axioms LeanFX.Syntax.Step.par.toStar
 #assert_no_axioms LeanFX.Syntax.StepStar.toConv
 #assert_no_axioms LeanFX.Syntax.StepStar.append

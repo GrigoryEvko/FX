@@ -35,6 +35,27 @@ inductive LengthList (elementType : Type firstUniverse) : Nat → Type firstUniv
       LengthList elementType (length + 1)
 deriving DecidableEq
 
+/-! ### Propext leak in `LengthList.instDecidableEq` (contained).
+
+Lean's auto-derived `DecidableEq` on `LengthList` depends on `propext`
+because every projection out of a Nat-indexed inductive routes through
+`match` compilation that handles cross-index dispatch via propext.
+Every manual rewrite (head/tail projections via `match`, `cases` on
+indexed `Eq`, `congrArg` over indexed projections) hits the same
+limitation: dependent pattern matching on `LengthList E (n + 1)`
+inherently requires propext per the Lean 4 elaborator.
+
+This leak is **contained**: the active kernel (`Term.subst`, `Step`,
+`Step.par`, every `cd_lemma` case) does not use `LengthList` equality.
+`AuditAll` does not gate `instDecidableEqLengthList`; it only gates
+the kernel hot path, which transitively avoids `LengthList`.  Future
+v3.x inductive-family work that needs equality on length-indexed
+parameters should either accept the propext dependency for that
+specific Surface-level decision procedure (acceptable for elaboration,
+not for kernel proofs) or migrate `LengthList` to a non-indexed
+representation (`List E × Nat` with a length refinement) to recover
+zero-axiom decidability. -/
+
 namespace LengthList
 
 /-- Map a function over a length-indexed list. -/
