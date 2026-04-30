@@ -1,5 +1,6 @@
 import LeanFX.Syntax.Reduction.ParSubst
 import LeanFX.Syntax.ToRaw
+import LeanFX.Syntax.Reduction.ParBi
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
@@ -1009,5 +1010,145 @@ theorem Step.parStar.eitherInr_source_inv
         Step.par.eitherInr_source_inv firstStep
       obtain ⟨value', eq', valueStar⟩ := restIH eq₁.symm
       exact ⟨value', eq', Step.parStar.trans valueStep₁ valueStar⟩
+
+/-! ## Lam target inversion under isBi gating.
+
+The key insight (per `Step.par.toRawBridge`): inducting on
+`Step.par.isBi parStep` automatically OMITS etaArrow / etaSigma
+because the isBi predicate has no constructors for them.  This
+sidesteps the dep-elim wall that blocks `cases (h : Step.par.isBi
+(Step.par.etaArrow _))` — we never reach those cases. -/
+
+/-- Generalized lam target inversion under isBi.  The HEq
+generalization sidesteps Lean 4's restriction that `induction`
+target type indices be variables. -/
+theorem Step.par.lam_target_inv_isBi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.arrow domainType codomainType)
+    {parStep : Step.par sourceTerm targetTerm}
+    (stepBi : Step.par.isBi parStep) :
+    HEq sourceTerm
+        (@Term.lam mode level scope ctx domainType codomainType body) →
+    ∃ (body' : Term (ctx.cons domainType) codomainType.weaken),
+        HEq targetTerm
+            (@Term.lam mode level scope ctx domainType codomainType body') ∧
+        Step.par body body' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨body, sourceHEq, Step.par.refl body⟩
+  | lam _bodyBi _bodyIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i bodyStep
+      exact ⟨_, HEq.rfl, bodyStep⟩
+  | lamPi _bodyBi _bodyIH =>
+      -- Source = Term.lamPi body, type = Ty.piTy domain codomain.
+      -- typeEq forces termType = Ty.arrow domain' codomain', so the
+      -- source type Ty.piTy ≠ Ty.arrow refutes via Ty ctor mismatch.
+      intro _
+      cases typeEq
+  | _ =>
+      intro sourceHEq
+      exfalso
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (apply refuteViaToRaw _ (Term.lam body) typeEq sourceHEq;
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Single-step lam target inversion under isBi gating. -/
+theorem Step.par.lam_target_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {target : Term ctx (Ty.arrow domainType codomainType)}
+    {parStep : Step.par
+        (@Term.lam mode level scope ctx domainType codomainType body) target}
+    (stepBi : Step.par.isBi parStep) :
+    ∃ (body' : Term (ctx.cons domainType) codomainType.weaken),
+        target = Term.lam body' ∧ Step.par body body' := by
+  obtain ⟨body', targetHEq, innerStep⟩ :=
+    Step.par.lam_target_inv_isBi_general rfl stepBi HEq.rfl
+  exact ⟨body', eq_of_heq targetHEq, innerStep⟩
+
+/-! NOTE: Step.parStar.lam_target_inv_isBi (chain version) deferred —
+the `cases chainBi` after generalizing source hits an `Alternative
+refl has not been provided` dep-elim error because `induction chain`
+loses chainBi's type-index linkage to the trans branch.  See
+W9.B1.7 task notes for resolution paths.  The single-step version
+above is sufficient for the immediate cd_lemma_star helpers. -/
+
+/-! ## Pair target inversion (under isBi-chain gating). -/
+
+/-- Generalized pair target inversion under isBi.  Same template
+as lam: induct on `stepBi`, using HEq generalization for the
+target type indices. -/
+theorem Step.par.pair_target_inv_isBi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.sigmaTy firstType secondType)
+    {parStep : Step.par sourceTerm targetTerm}
+    (stepBi : Step.par.isBi parStep) :
+    HEq sourceTerm
+        (@Term.pair mode level scope ctx firstType secondType
+            firstVal secondVal) →
+    ∃ (firstVal' : Term ctx firstType)
+      (secondVal' : Term ctx (secondType.subst0 firstType)),
+        HEq targetTerm
+            (@Term.pair mode level scope ctx firstType secondType
+                firstVal' secondVal') ∧
+        Step.par firstVal firstVal' ∧
+        Step.par secondVal secondVal' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨firstVal, secondVal, sourceHEq,
+             Step.par.refl firstVal, Step.par.refl secondVal⟩
+  | pair _firstBi _secondBi _firstIH _secondIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i firstStep secondStep
+      exact ⟨_, _, HEq.rfl, firstStep, secondStep⟩
+  | _ =>
+      intro sourceHEq
+      exfalso
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (apply refuteViaToRaw _ (Term.pair firstVal secondVal)
+              typeEq sourceHEq;
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Single-step pair target inversion under isBi gating. -/
+theorem Step.par.pair_target_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    {target : Term ctx (Ty.sigmaTy firstType secondType)}
+    {parStep : Step.par
+        (@Term.pair mode level scope ctx firstType secondType
+            firstVal secondVal) target}
+    (stepBi : Step.par.isBi parStep) :
+    ∃ (firstVal' : Term ctx firstType)
+      (secondVal' : Term ctx (secondType.subst0 firstType)),
+        target = Term.pair firstVal' secondVal' ∧
+        Step.par firstVal firstVal' ∧
+        Step.par secondVal secondVal' := by
+  obtain ⟨firstVal', secondVal', targetHEq, firstStep, secondStep⟩ :=
+    Step.par.pair_target_inv_isBi_general rfl stepBi HEq.rfl
+  exact ⟨firstVal', secondVal', eq_of_heq targetHEq, firstStep, secondStep⟩
+
+/-! NOTE: Step.parStar.pair_target_inv_isBi (chain version) deferred —
+same dep-elim issue as the lam parStar version. -/
 
 end LeanFX.Syntax

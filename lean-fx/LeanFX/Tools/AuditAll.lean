@@ -505,4 +505,21 @@ inversions under chain-isBi gating to discharge η-blocked cases. -/
 
 #assert_no_axioms LeanFX.Syntax.Step.par.toParStar_isBi
 
+/-! ## Wave 9-B1.7: single-step lam/pair target inversions under isBi.
+
+The breakthrough: `induction stepBi` (rather than `induction parStep`)
+automatically OMITS etaArrow / etaSigma constructors because
+`Step.par.isBi` has no such ctors.  This sidesteps the dep-elim
+wall on `cases (h : Step.par.isBi (Step.par.etaArrow _))`.
+
+Single-step versions land at zero axioms; chain (parStar) versions
+deferred — `cases chainBi` after `induction chain` hits a separate
+dep-elim where chainBi's type doesn't constrain to the trans
+branch. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.lam_target_inv_isBi_general
+#assert_no_axioms LeanFX.Syntax.Step.par.lam_target_inv_isBi
+#assert_no_axioms LeanFX.Syntax.Step.par.pair_target_inv_isBi_general
+#assert_no_axioms LeanFX.Syntax.Step.par.pair_target_inv_isBi
+
 end LeanFX.Tools.AuditAll
