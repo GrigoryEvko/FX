@@ -113,5 +113,18 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.RawTermSubst.singleton
 #assert_no_axioms LeanFX.Syntax.RawTerm.subst0
 #assert_no_axioms LeanFX.Syntax.RawStep.par
+#assert_no_axioms LeanFX.Syntax.RawStep.par.lam_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.pair_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.refl_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.boolTrue_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.boolFalse_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.natZero_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.natSucc_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.listNil_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.listCons_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.optionNone_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.optionSome_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.eitherInl_inv
+#assert_no_axioms LeanFX.Syntax.RawStep.par.eitherInr_inv
 
 end LeanFX.Tools.AuditAll
