@@ -3,6 +3,8 @@ import LeanFX.Syntax.Identity
 import LeanFX.Syntax.DependentJ
 import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
+import LeanFX.Frontend.Surface
+import LeanFX.Frontend.Token
 import LeanFX.Tools.DependencyAudit
 
 /-! # Axiom regression gate.
@@ -356,5 +358,28 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty
 #assert_no_axioms LeanFX.Syntax.Ctx
 #assert_no_axioms LeanFX.Syntax.RawTerm
+
+-- Frontend (Surface AST + Token AST).  These mirror the kernel's
+-- intrinsic indexing discipline and must stay axiom-free for the
+-- elaborator/lexer roadmap (#896, #897, #905, #906).
+#assert_no_axioms LeanFX.Frontend.Surface
+#assert_no_axioms LeanFX.Frontend.ParamData
+#assert_no_axioms LeanFX.Frontend.ParamList
+#assert_no_axioms LeanFX.Frontend.Pattern
+#assert_no_axioms LeanFX.Frontend.MatchArm
+#assert_no_axioms LeanFX.Frontend.NameSpan
+#assert_no_axioms LeanFX.Frontend.BindingPrefix
+#assert_no_axioms LeanFX.Frontend.ModalAnnotation
+#assert_no_axioms LeanFX.Frontend.Token
+#assert_no_axioms LeanFX.Frontend.Keyword
+#assert_no_axioms LeanFX.Frontend.ContextualKeyword
+#assert_no_axioms LeanFX.Frontend.IdentifierKind
+#assert_no_axioms LeanFX.Frontend.NumericKind
+#assert_no_axioms LeanFX.Frontend.StringKind
+#assert_no_axioms LeanFX.Frontend.Operator
+#assert_no_axioms LeanFX.Frontend.Punctuation
+#assert_no_axioms LeanFX.Frontend.CommentKind
+#assert_no_axioms LeanFX.Frontend.SourcePos
+#assert_no_axioms LeanFX.Frontend.TokenSpan
 
 end LeanFX.Tools.AuditAll
