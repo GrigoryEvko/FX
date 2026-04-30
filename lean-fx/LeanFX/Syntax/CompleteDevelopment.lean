@@ -60,6 +60,43 @@ def Term.isNewestVar {mode : Mode} {level scope : Nat}
       | ⟨_ + 1, _⟩ => none
   | _ => none
 
+/-- iotaIdJ redex check, aligned-endpoints case.  With both endpoints
+equal to `leftEnd`, `Term.refl _` is an admissible pattern for a
+witness of type `Ty.id carrier leftEnd leftEnd`, so the iota check
+reduces to a non-dependent two-arm match the simp/split tactics can
+decompose. -/
+def Term.cd_idJ_redex_aligned
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier resultType : Ty level scope}
+    {leftEnd : RawTerm scope}
+    (developedBase : Term context resultType)
+    (developedWitness :
+      Term context (Ty.id carrier leftEnd leftEnd)) :
+    Term context resultType :=
+  match developedWitness with
+  | Term.refl _ => developedBase
+  | _ => Term.idJ developedBase developedWitness
+
+/-- iotaIdJ redex check.  Splits on `leftEnd = rightEnd` (decidable
+via `RawTerm`'s `DecidableEq` instance); when the endpoints agree,
+casts the witness to the self-loop id type and delegates to
+`cd_idJ_redex_aligned`; otherwise falls through to cong. -/
+def Term.cd_idJ_redex
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier resultType : Ty level scope}
+    {leftEnd rightEnd : RawTerm scope}
+    (developedBase : Term context resultType)
+    (developedWitness :
+      Term context (Ty.id carrier leftEnd rightEnd)) :
+    Term context resultType :=
+  if endpointsEqual : leftEnd = rightEnd then
+    Term.cd_idJ_redex_aligned developedBase
+      (endpointsEqual ▸ developedWitness)
+  else
+    Term.idJ developedBase developedWitness
+
 /-- Complete development for intrinsically typed terms.
 
 Aggressive β/ι firing on developed shapes; no η firing. -/
@@ -181,13 +218,6 @@ def Term.cd :
   | _, _, _, _, _, .refl rawTerm =>
       Term.refl rawTerm
   | _, _, _, _, _, .idJ baseCase witness =>
-      -- Note: iotaIdJ contraction is NOT performed here.  The match
-      -- `Term.refl _` against a witness of type `Ty.id carrier l r`
-      -- requires the dependent pattern matching `l = r` constraint,
-      -- which compiles to a 2-arg match that `simp only [Term.cd]`
-      -- and `split` cannot decompose without `DecidableEq RawTerm`.
-      -- Phase 3 (cd_dominates) thus uses cong only.  Phase 4
-      -- (cd_lemma) handles iotaIdJ via a separate non-dependent path.
-      Term.idJ (Term.cd baseCase) (Term.cd witness)
+      Term.cd_idJ_redex (Term.cd baseCase) (Term.cd witness)
 
 end LeanFX.Syntax

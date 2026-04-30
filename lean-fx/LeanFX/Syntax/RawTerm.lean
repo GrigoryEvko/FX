@@ -166,6 +166,7 @@ inductive RawTerm : Nat → Type
           (baseCase : RawTerm scope) →
           (witness : RawTerm scope) →
           RawTerm scope
+  deriving DecidableEq
 
 /-! ### RawTerm smoke tests — every constructor instantiable at scope 0
 or scope 1 (for `lam` / `varRef`).  No theorems yet; just constructor
