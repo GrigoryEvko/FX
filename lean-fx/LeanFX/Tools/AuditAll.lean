@@ -334,4 +334,27 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaEitherMatchInr_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaIdJRefl_case
 
+-- Dependent-J motive scaffold (forward-looking design, see #875).
+#assert_no_axioms LeanFX.Syntax.DependentJMotive
+#assert_no_axioms LeanFX.Syntax.DependentJ.baseCaseType
+#assert_no_axioms LeanFX.Syntax.DependentJ.resultType
+#assert_no_axioms LeanFX.Syntax.DependentJ.Input
+#assert_no_axioms LeanFX.Syntax.DependentJ.Input.resultType
+
+-- Identity-fragment foundations (constructors + Ty.id formation).
+#assert_no_axioms LeanFX.Syntax.Term.refl
+#assert_no_axioms LeanFX.Syntax.Term.idJ
+#assert_no_axioms LeanFX.Syntax.Ty.id
+
+-- Strengthen (option-returning inverse of weaken).
+#assert_no_axioms LeanFX.Syntax.Ty.strengthen
+
+-- Core inductive substrate.  Gating the inductives directly catches
+-- any future refactor that introduces an axiom into the type theory
+-- without requiring per-constructor sweeps.
+#assert_no_axioms LeanFX.Syntax.Term
+#assert_no_axioms LeanFX.Syntax.Ty
+#assert_no_axioms LeanFX.Syntax.Ctx
+#assert_no_axioms LeanFX.Syntax.RawTerm
+
 end LeanFX.Tools.AuditAll
