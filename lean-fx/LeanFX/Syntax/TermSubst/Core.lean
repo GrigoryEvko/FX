@@ -61,6 +61,25 @@ theorem Ty.weaken_subst_singleton {level scope : Nat}
   have hId := Ty.subst_id T
   exact hRSC.trans (hCong.trans hId)
 
+/-- Weakening then substituting with a term-singleton substitution is
+the identity on `Ty`.  Same proof template as
+`Ty.weaken_subst_singleton`; the supplied `rawArg` is irrelevant
+because position 0 is no longer referenced after weakening. -/
+theorem Ty.weaken_subst_termSingleton {level scope : Nat}
+    (T : Ty level scope) (X : Ty level scope) (rawArg : RawTerm scope) :
+    T.weaken.subst (Subst.termSingleton X rawArg) = T := by
+  show (T.rename Renaming.weaken).subst (Subst.termSingleton X rawArg) = T
+  have hRSC :=
+    Ty.rename_subst_commute T Renaming.weaken (Subst.termSingleton X rawArg)
+  have hPointwise :
+      Subst.equiv
+        (Subst.precompose Renaming.weaken (Subst.termSingleton X rawArg))
+        Subst.identity :=
+    Subst.precompose_weaken_termSingleton_equiv_identity X rawArg
+  have hCong := Ty.subst_congr hPointwise T
+  have hId := Ty.subst_id T
+  exact hRSC.trans (hCong.trans hId)
+
 /-- The single-substituent term substitution: position 0 maps to
 `arg`, positions `k + 1` map to `Term.var ⟨k, _⟩` in the original
 context (variable shifts down by one because the outer scope has one

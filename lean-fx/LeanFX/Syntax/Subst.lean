@@ -97,6 +97,47 @@ theorem Subst.singleton_forRaw {level scope : Nat}
     (Subst.singleton substituent).forRaw = RawTermSubst.dropNewest :=
   rfl
 
+/-- Single-variable substitution that carries a raw term substituent
+for the eliminated binder.  Unlike `Subst.singleton`, whose `forRaw`
+is `dropNewest` (treating the binder as a type-only binder), this
+variant uses `RawTermSubst.singleton rawArg` so that raw terms in
+identity types reference the actual term being substituted in.
+This is the right joint substitution for term-level β-reduction:
+`(λ x. body) arg` reduces to `body[arg/0]`, and identity-type
+witnesses inside `body` should see `toRaw arg` at position 0,
+not the placeholder unit. -/
+def Subst.termSingleton {level scope : Nat} (substituent : Ty level scope)
+    (rawArg : RawTerm scope) : Subst level (scope + 1) scope where
+  forTy
+    | ⟨0, _⟩      => substituent
+    | ⟨k + 1, h⟩  => .tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩
+  forRaw := RawTermSubst.singleton rawArg
+
+/-- The term-singleton at the freshly-eliminated position returns the
+type substituent. -/
+theorem Subst.termSingleton_forTy_zero {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    (Subst.termSingleton substituent rawArg).forTy ⟨0, Nat.zero_lt_succ scope⟩ =
+      substituent :=
+  rfl
+
+/-- The term-singleton at older positions decrements the de Bruijn index. -/
+theorem Subst.termSingleton_forTy_succ {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope)
+    (position : Nat) (isWithinScope : position < scope) :
+    (Subst.termSingleton substituent rawArg).forTy
+      ⟨position + 1, Nat.succ_lt_succ isWithinScope⟩ =
+        Ty.tyVar ⟨position, isWithinScope⟩ :=
+  rfl
+
+/-- The raw component of the term-singleton is the raw singleton on
+the supplied `rawArg`. -/
+theorem Subst.termSingleton_forRaw {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    (Subst.termSingleton substituent rawArg).forRaw =
+      RawTermSubst.singleton rawArg :=
+  rfl
+
 /-- Apply a parallel substitution to a type, structurally.  The
 `piTy` case lifts the substitution under the new binder; just like
 `Ty.rename`, the recursive call's indices are supplied definitionally
@@ -688,6 +729,38 @@ theorem Subst.precompose_weaken_singleton_equiv_identity {level scope : Nat}
       (Subst.precompose Renaming.weaken (Subst.singleton substituent))
       Subst.identity :=
   Subst.equiv_intro (fun _ => rfl) (RawTermSubst.equiv_refl _)
+
+/-- Weakening then substituting with a term-singleton substitution is
+the identity substitution.  The supplied `rawArg` is irrelevant after
+weakening because position 0 (where it would land) is no longer
+referenced. -/
+theorem Subst.precompose_weaken_termSingleton_equiv_identity {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    Subst.equiv
+      (Subst.precompose Renaming.weaken (Subst.termSingleton substituent rawArg))
+      Subst.identity :=
+  Subst.equiv_intro (fun _ => rfl) (RawTermSubst.equiv_refl _)
+
+/-- The classical singleton is pointwise equivalent to the
+term-singleton with `unit` as the raw substituent.  Both produce
+`RawTerm.unit` at position 0 and `RawTerm.var k` at position `k+1`,
+which is exactly `RawTermSubst.dropNewest` and
+`RawTermSubst.singleton RawTerm.unit` respectively.  Stated via
+pointwise `Subst.equiv` to remain `propext`/`funext`-free. -/
+theorem Subst.singleton_equiv_termSingleton_unit {level scope : Nat}
+    (substituent : Ty level scope) :
+    Subst.equiv
+      (Subst.singleton substituent)
+      (Subst.termSingleton substituent RawTerm.unit) :=
+  Subst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩      => rfl
+      | ⟨_ + 1, _⟩  => rfl)
+    (fun position =>
+      match position with
+      | ⟨0, _⟩      => rfl
+      | ⟨_ + 1, _⟩  => rfl)
 
 /-- **Identity law for substitution**: `T.subst Subst.identity = T`.
 The substitution that maps every variable to itself is the identity
