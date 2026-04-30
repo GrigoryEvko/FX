@@ -104,5 +104,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Option.bindSome
 #assert_no_axioms LeanFX.Syntax.Term.optRename
 #assert_no_axioms LeanFX.Syntax.Term.strengthen
+#assert_no_axioms LeanFX.Syntax.Ty.arrow_weaken_strengthen
+#assert_no_axioms LeanFX.Syntax.Term.isNewestVar
+#assert_no_axioms LeanFX.Syntax.Term.cd
 
 end LeanFX.Tools.AuditAll
