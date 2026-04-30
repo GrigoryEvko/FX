@@ -112,7 +112,7 @@ def RawTerm.cd : {scope : Nat} → RawTerm scope → RawTerm scope
       | RawTerm.eitherInr value => RawTerm.app developedRight value
       | _ =>
           RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-  | _, .refl rawTerm => RawTerm.refl rawTerm
+  | _, .refl rawTerm => RawTerm.refl (RawTerm.cd rawTerm)
   | _, .idJ baseCase witness =>
       let developedBase := RawTerm.cd baseCase
       let developedWitness := RawTerm.cd witness

@@ -155,8 +155,8 @@ theorem RawStep.par.cd_dominates :
       case _ =>
           exact RawStep.par.eitherMatch scrutineeParStep leftParStep rightParStep
   | _, .refl rawTerm => by
-      unfold RawTerm.cd
-      exact RawStep.par.refl _
+      simp only [RawTerm.cd]
+      exact RawStep.par.reflCong (RawStep.par.cd_dominates rawTerm)
   | _, .idJ baseCase witness => by
       let baseParStep := RawStep.par.cd_dominates baseCase
       let witnessParStep := RawStep.par.cd_dominates witness

@@ -136,5 +136,6 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.RawTerm.subst0_subst_commute
 #assert_no_axioms LeanFX.Syntax.RawStep.par.subst_par
 #assert_no_axioms LeanFX.Syntax.RawStep.par.subst0_par
+#assert_no_axioms LeanFX.Syntax.RawStep.par.cd_lemma
 
 end LeanFX.Tools.AuditAll
