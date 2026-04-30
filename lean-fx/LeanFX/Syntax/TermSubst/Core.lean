@@ -100,6 +100,29 @@ def TermSubst.singleton {m : Mode} {level scope : Nat}
             (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) T_arg).symm ▸
           Term.var ⟨k, Nat.lt_of_succ_lt_succ h⟩
 
+/-- **Term-bearing single substitution.**  Like `TermSubst.singleton`,
+but uses the term-bearing joint substitution `Subst.termSingleton
+T_arg (Term.toRaw arg)` so that identity-type witnesses see the
+actual substituted argument's raw projection at position 0.  This
+variant is the one referenced by the typed→raw forward bridge for
+β-reduction: with this σ, `RawConsistent` holds by construction at
+position 0 (`Term.toRaw arg = (Subst.termSingleton T_arg
+(Term.toRaw arg)).forRaw ⟨0, _⟩` definitionally). -/
+def TermSubst.termSingleton {m : Mode} {level scope : Nat}
+    {Γ : Ctx m level scope} {T_arg : Ty level scope}
+    (arg : Term Γ T_arg) :
+    TermSubst (Γ.cons T_arg) Γ
+        (Subst.termSingleton T_arg (Term.toRaw arg)) :=
+  fun i =>
+    match i with
+    | ⟨0, _⟩ =>
+        (Ty.weaken_subst_termSingleton T_arg T_arg (Term.toRaw arg)).symm ▸ arg
+    | ⟨k + 1, h⟩ =>
+        (Ty.weaken_subst_termSingleton
+            (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) T_arg
+            (Term.toRaw arg)).symm ▸
+          Term.var ⟨k, Nat.lt_of_succ_lt_succ h⟩
+
 /-! ## Substitution-substitution commutativity.
 
 `subst0` distributes through an outer subst by lifting the codomain's
@@ -240,12 +263,25 @@ def Term.subst {m scope scope'}
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
 `Ty.subst0` at the type level, matching `Term.appPi`'s result-type
-shape exactly. -/
+shape exactly.  For the term-bearing variant whose type captures
+`Term.toRaw arg` at position 0 (used by the typed→raw forward
+bridge), see `Term.subst0_term`. -/
 def Term.subst0 {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
     (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
     Term Γ (T_body.subst0 T_arg) :=
   Term.subst (TermSubst.singleton arg) body
+
+/-- **Term-bearing single-variable substitution.**  Substitute `arg`
+for var 0 using `TermSubst.termSingleton`, whose underlying σ is
+`Subst.termSingleton T_arg (Term.toRaw arg)`.  The result type
+captures the argument's raw projection at position 0 — the right
+shape for the typed→raw forward bridge for β-reduction. -/
+def Term.subst0_term {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
+    (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
+    Term Γ (T_body.subst (Subst.termSingleton T_arg (Term.toRaw arg))) :=
+  Term.subst (TermSubst.termSingleton arg) body
 
 /-! ## Categorical structure on TermSubst.
 

@@ -150,5 +150,14 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.TermSubst.lift_RawConsistent
 #assert_no_axioms LeanFX.Syntax.Term.toRaw_subst
 #assert_no_axioms LeanFX.Syntax.Term.toRaw_subst0_of_consistent
+#assert_no_axioms LeanFX.Syntax.TermSubst.termSingleton
+#assert_no_axioms LeanFX.Syntax.Term.subst0_term
+#assert_no_axioms LeanFX.Syntax.TermSubst.termSingleton_RawConsistent
+#assert_no_axioms LeanFX.Syntax.Term.toRaw_subst0_term
+#assert_no_axioms LeanFX.Syntax.Term.toRaw_subst0_term_raw
+#assert_no_axioms LeanFX.Syntax.Subst.termSingleton
+#assert_no_axioms LeanFX.Syntax.Subst.precompose_weaken_termSingleton_equiv_identity
+#assert_no_axioms LeanFX.Syntax.Subst.singleton_equiv_termSingleton_unit
+#assert_no_axioms LeanFX.Syntax.Ty.weaken_subst_termSingleton
 
 end LeanFX.Tools.AuditAll

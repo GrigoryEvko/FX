@@ -472,4 +472,58 @@ def Term.weaken {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
     Term (Γ.cons newType) T.weaken :=
   Term.rename (TermRenaming.weaken Γ newType) term
 
+/-! ## `Term.toRaw` — the intrinsic-to-raw bridge.
+
+Every well-typed intrinsic `Term context T` has a corresponding raw
+`RawTerm scope` obtained by erasing all Ty-level annotations.  This
+bridge witnesses that the intrinsic kernel embeds into the raw
+syntax — half of the v2.2 architectural commitment that intrinsic
+discipline and Term-mentioning identity types coexist in one kernel.
+
+Defined here (rather than in the dedicated `ToRaw.lean`) so that
+later modules — notably `TermSubst.singleton` — can reference
+`Term.toRaw arg` in their type signatures, enabling the term-bearing
+joint substitution `Subst.termSingleton T_arg (Term.toRaw arg)`. -/
+def Term.toRaw {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    {T : Ty level scope} → Term context T → RawTerm scope
+  | _, .var position    => RawTerm.var position
+  | _, .unit            => RawTerm.unit
+  | _, .lam body        => RawTerm.lam body.toRaw
+  | _, .app function argument =>
+      RawTerm.app function.toRaw argument.toRaw
+  | _, .lamPi body      => RawTerm.lam body.toRaw
+  | _, .appPi function argument =>
+      RawTerm.app function.toRaw argument.toRaw
+  | _, .pair firstVal secondVal =>
+      RawTerm.pair firstVal.toRaw secondVal.toRaw
+  | _, .fst pairTerm    => RawTerm.fst pairTerm.toRaw
+  | _, .snd pairTerm    => RawTerm.snd pairTerm.toRaw
+  | _, .boolTrue        => RawTerm.boolTrue
+  | _, .boolFalse       => RawTerm.boolFalse
+  | _, .boolElim scrutinee thenBranch elseBranch =>
+      RawTerm.boolElim scrutinee.toRaw thenBranch.toRaw elseBranch.toRaw
+  | _, .natZero         => RawTerm.natZero
+  | _, .natSucc predecessor => RawTerm.natSucc predecessor.toRaw
+  | _, .natElim scrutinee zeroBranch succBranch =>
+      RawTerm.natElim scrutinee.toRaw zeroBranch.toRaw succBranch.toRaw
+  | _, .natRec scrutinee zeroBranch succBranch =>
+      RawTerm.natRec scrutinee.toRaw zeroBranch.toRaw succBranch.toRaw
+  | _, .listNil         => RawTerm.listNil
+  | _, .listCons head tail =>
+      RawTerm.listCons head.toRaw tail.toRaw
+  | _, .listElim scrutinee nilBranch consBranch =>
+      RawTerm.listElim scrutinee.toRaw nilBranch.toRaw consBranch.toRaw
+  | _, .optionNone      => RawTerm.optionNone
+  | _, .optionSome value => RawTerm.optionSome value.toRaw
+  | _, .optionMatch scrutinee noneBranch someBranch =>
+      RawTerm.optionMatch scrutinee.toRaw noneBranch.toRaw someBranch.toRaw
+  | _, .eitherInl value  => RawTerm.eitherInl value.toRaw
+  | _, .eitherInr value  => RawTerm.eitherInr value.toRaw
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
+      RawTerm.eitherMatch scrutinee.toRaw leftBranch.toRaw rightBranch.toRaw
+  | _, .refl rawTerm     =>
+      RawTerm.refl rawTerm
+  | _, .idJ baseCase witness =>
+      RawTerm.idJ baseCase.toRaw witness.toRaw
+
 end LeanFX.Syntax

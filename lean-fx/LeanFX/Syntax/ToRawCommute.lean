@@ -345,4 +345,80 @@ theorem Term.toRaw_subst0_of_consistent {mode : Mode} {level scope : Nat}
   unfold Term.subst0
   exact Term.toRaw_subst consistency body
 
+/-! ### `TermSubst.termSingleton` is raw-consistent by construction.
+
+The term-bearing single substitution `TermSubst.termSingleton arg`
+uses the joint substitution `Subst.termSingleton T_arg (Term.toRaw
+arg)`, whose `forRaw` is `RawTermSubst.singleton (Term.toRaw arg)`.
+At position 0 the raw image is `Term.toRaw arg` (definitionally);
+at successor positions both sides are `RawTerm.var ⟨k, _⟩`.  Hence
+raw-consistency holds without hypothesis, and the bridge for
+`Term.subst0_term` is unconditional.
+
+This is the key payoff of introducing `Subst.termSingleton`: the
+typed→raw forward bridge for β-reduction (where the substituted
+argument's raw projection must reach identity-type witnesses inside
+the body) holds by definition. -/
+
+/-- The term-bearing single substitution is automatically
+raw-consistent.  At position 0, `Term.toRaw arg` matches
+`(Subst.termSingleton T_arg (Term.toRaw arg)).forRaw ⟨0, _⟩` which
+unfolds to `RawTermSubst.singleton (Term.toRaw arg) ⟨0, _⟩ =
+Term.toRaw arg`.  At successor positions, both sides decrement to
+`RawTerm.var ⟨k, _⟩`.  All four matches are `rfl` modulo the
+`Term.toRaw_cast` rewrite that strips the `Ty.weaken_subst_termSingleton`
+alignment cast. -/
+theorem TermSubst.termSingleton_RawConsistent {mode : Mode}
+    {level scope : Nat} {context : Ctx mode level scope}
+    {T_arg : Ty level scope} (argument : Term context T_arg) :
+    TermSubst.RawConsistent (TermSubst.termSingleton argument) := by
+  intro position
+  match position with
+  | ⟨0, _⟩ =>
+      simp only [TermSubst.termSingleton]
+      rw [Term.toRaw_cast]
+      rfl
+  | ⟨k + 1, h⟩ =>
+      simp only [TermSubst.termSingleton]
+      rw [Term.toRaw_cast]
+      rfl
+
+/-- **Unconditional β-bridge.**  `Term.subst0_term body arg` —
+the term-bearing single substitution variant — commutes with
+`Term.toRaw` *without* a `RawConsistent` hypothesis: the consistency
+is inhabited by `TermSubst.termSingleton_RawConsistent`.
+
+The result equals `RawTerm.subst (Term.toRaw body)
+(RawTermSubst.singleton (Term.toRaw arg))`, which is exactly
+`RawTerm.subst0 (Term.toRaw body) (Term.toRaw arg)` — i.e., the raw
+β-reduct.  This is the lemma that closes the typed→raw forward
+bridge for `Step.par.betaApp` / `Step.par.betaAppPi`. -/
+theorem Term.toRaw_subst0_term {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
+    (body : Term (context.cons T_arg) T_body) (argument : Term context T_arg) :
+    Term.toRaw (Term.subst0_term body argument) =
+      RawTerm.subst (Term.toRaw body)
+        (RawTermSubst.singleton (Term.toRaw argument)) := by
+  unfold Term.subst0_term
+  show Term.toRaw (Term.subst (TermSubst.termSingleton argument) body) =
+       RawTerm.subst (Term.toRaw body)
+         (RawTermSubst.singleton (Term.toRaw argument))
+  have hConsistent := TermSubst.termSingleton_RawConsistent argument
+  have hBridge := Term.toRaw_subst hConsistent body
+  show Term.toRaw (Term.subst (TermSubst.termSingleton argument) body) =
+       RawTerm.subst (Term.toRaw body)
+         (RawTermSubst.singleton (Term.toRaw argument))
+  exact hBridge
+
+/-- Specialization of `Term.toRaw_subst0_term` to the raw `subst0`
+form, useful for the bridge proofs of β-reduction rules. -/
+theorem Term.toRaw_subst0_term_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
+    (body : Term (context.cons T_arg) T_body) (argument : Term context T_arg) :
+    Term.toRaw (Term.subst0_term body argument) =
+      RawTerm.subst0 (Term.toRaw body) (Term.toRaw argument) :=
+  Term.toRaw_subst0_term body argument
+
 end LeanFX.Syntax
