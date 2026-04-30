@@ -60,7 +60,7 @@ private theorem Step.par.cd_dominates_idJ
   case _ =>
       exact Step.par.idJ baseParStep witnessParStep
 
-theorem Step.par.cd_dominates :
+def Step.par.cd_dominates :
     {mode : Mode} → {level scope : Nat} →
     {context : Ctx mode level scope} → {termType : Ty level scope} →
     (term : Term context termType) →
