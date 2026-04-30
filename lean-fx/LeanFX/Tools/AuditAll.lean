@@ -439,5 +439,18 @@ for the strategy. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.boolTrue_source_inv
 #assert_no_axioms LeanFX.Syntax.Step.parStar.boolTrue_source_inv_general
 #assert_no_axioms LeanFX.Syntax.Step.parStar.boolTrue_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.boolFalse_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.par.boolFalse_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStar.boolFalse_source_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.boolFalse_source_inv
+
+/-! ## Wave 9-B1 Deep βι case helpers (post-W6.1).
+
+These use the typed source-inversions above to collapse `Term.cd` of
+elimination forms whose scrutinees parallel-reduce to head normal
+forms. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaBoolElimTrueDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_iotaBoolElimFalseDeep_case
 
 end LeanFX.Tools.AuditAll

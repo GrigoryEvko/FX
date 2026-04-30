@@ -1,4 +1,5 @@
 import LeanFX.Syntax.Reduction.ParBi
+import LeanFX.Syntax.Reduction.ParInversion
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
@@ -830,5 +831,60 @@ theorem Step.par.cd_lemma_star_iotaIdJRefl_case
     rfl
   rw [cdEq]
   exact baseIH
+
+/-! ### Deep β/ι cases — typed source-inversion driven.
+
+For ι constructors of `Step.par.isBi` whose scrutinee parallel-reduces
+to a head normal form (e.g. `iotaBoolElimTrueDeep` reduces a `boolElim`
+whose scrutinee parallel-steps to `Term.boolTrue`), `Term.cd` of the
+elimination form must collapse to the matched branch.  The collapse
+proof is exactly:
+
+  1. `Step.parStar.<C>_source_inv` applied to the scrutinee IH proves
+     `Term.cd scrutinee = Term.<C>` (the head NF the scrutinee
+     parallel-reduces to).
+  2. `simp only [Term.cd]` unfolds the elimination form's cd-arm,
+     exposing a match on `Term.cd scrutinee`.
+  3. `rw` with the source-inversion equation rewrites the match
+     scrutinee to the head NF; the match then reduces to the matched
+     branch's `Term.cd` arm.
+  4. The matched branch's IH closes the goal. -/
+
+/-- Discharge of the `Step.par.isBi.iotaBoolElimTrueDeep` case.  The
+scrutinee parallel-steps to `Term.boolTrue`; the recursive
+`cd_lemma_star` IH lifts that step to `Step.parStar Term.boolTrue
+(Term.cd scrutinee)`.  `Step.parStar.boolTrue_source_inv` then forces
+`Term.cd scrutinee = Term.boolTrue`, collapsing the cd-match's outer
+scrutinee. -/
+theorem Step.par.cd_lemma_star_iotaBoolElimTrueDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee : Term ctx Ty.bool}
+    {thenBranch thenBranch' : Term ctx resultType}
+    (elseBranch : Term ctx resultType)
+    (scrutiIH : Step.parStar Term.boolTrue (Term.cd scrutinee))
+    (thenIH : Step.parStar thenBranch' (Term.cd thenBranch)) :
+    Step.parStar thenBranch'
+                 (Term.cd (Term.boolElim scrutinee thenBranch elseBranch)) := by
+  have cdEq : Term.cd scrutinee = Term.boolTrue :=
+    Step.parStar.boolTrue_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact thenIH
+
+/-- Discharge of the `Step.par.isBi.iotaBoolElimFalseDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaBoolElimFalseDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee : Term ctx Ty.bool}
+    (thenBranch : Term ctx resultType)
+    {elseBranch elseBranch' : Term ctx resultType}
+    (scrutiIH : Step.parStar Term.boolFalse (Term.cd scrutinee))
+    (elseIH : Step.parStar elseBranch' (Term.cd elseBranch)) :
+    Step.parStar elseBranch'
+                 (Term.cd (Term.boolElim scrutinee thenBranch elseBranch)) := by
+  have cdEq : Term.cd scrutinee = Term.boolFalse :=
+    Step.parStar.boolFalse_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact elseIH
 
 end LeanFX.Syntax
