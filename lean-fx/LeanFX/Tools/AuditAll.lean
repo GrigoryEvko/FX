@@ -5,6 +5,7 @@ import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Frontend.Surface
 import LeanFX.Frontend.Token
+import LeanFX.Syntax.Inductive
 import LeanFX.Tools.DependencyAudit
 
 /-! # Axiom regression gate.
@@ -358,6 +359,31 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Ty
 #assert_no_axioms LeanFX.Syntax.Ctx
 #assert_no_axioms LeanFX.Syntax.RawTerm
+
+-- Reduction relations: typed and raw layers, single-step and
+-- transitive-closure flavours.  Each is an inductive carrying the
+-- reduction-step taxonomy; gating them protects against any new
+-- ctor that would silently smuggle an axiom in via target-type subst.
+#assert_no_axioms LeanFX.Syntax.Step
+#assert_no_axioms LeanFX.Syntax.Step.par
+#assert_no_axioms LeanFX.Syntax.Step.parStar
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi
+#assert_no_axioms LeanFX.Syntax.StepStar
+#assert_no_axioms LeanFX.Syntax.Conv
+#assert_no_axioms LeanFX.Syntax.RawStep.par
+#assert_no_axioms LeanFX.Syntax.RawStep.parStar
+
+-- Substitution / renaming carriers.  Structure types holding the
+-- joint Ty + RawTerm substitution functions (`Subst`) and the term-
+-- level analogues (`TermSubst`, `TermRenaming`).  Plus the bare
+-- raw-only carriers (`RawTermSubst`, `Renaming`).
+#assert_no_axioms LeanFX.Syntax.Subst
+#assert_no_axioms LeanFX.Syntax.RawTermSubst
+#assert_no_axioms LeanFX.Syntax.Renaming
+#assert_no_axioms LeanFX.Syntax.TermSubst
+#assert_no_axioms LeanFX.Syntax.TermRenaming
+#assert_no_axioms LeanFX.Syntax.LengthList
+#assert_no_axioms LeanFX.Mode.Mode
 
 -- Frontend (Surface AST + Token AST).  These mirror the kernel's
 -- intrinsic indexing discipline and must stay axiom-free for the
