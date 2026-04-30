@@ -1,4 +1,5 @@
 import LeanFX.Syntax.Reduction.Compatible
+import LeanFX.Syntax.Reduction.ParSubst
 import LeanFX.Syntax.Reduction.RawPar
 import LeanFX.Syntax.Reduction.RawParInversion
 import LeanFX.Syntax.Reduction.RawParCompatible

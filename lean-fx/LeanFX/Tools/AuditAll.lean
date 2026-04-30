@@ -162,5 +162,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Subst.termSingleton_renameAfter_equiv_precompose
 #assert_no_axioms LeanFX.Syntax.TermSubst.termSingleton_renameAfter_pointwise
 #assert_no_axioms LeanFX.Syntax.Term.rename_subst0_term_HEq
+#assert_no_axioms LeanFX.Syntax.TermSubst.par_lift
+#assert_no_axioms LeanFX.Syntax.Term.subst_par_pointwise
+#assert_no_axioms LeanFX.Syntax.TermSubst.singleton_par_pointwise
 
 end LeanFX.Tools.AuditAll
