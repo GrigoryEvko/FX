@@ -954,4 +954,94 @@ theorem Step.par.cd_lemma_star_iotaOptionMatchNoneDeep_case
   simp only [Term.cd, cdEq]
   exact noneIH
 
+/-- Discharge of the `Step.par.isBi.iotaIdJReflDeep` case.  The witness
+parallel-reduces to `Term.refl endpoint`; the recursive cd_lemma_star
+IH lifts that to `Step.parStar Term.refl (Term.cd witness)`.
+`Step.parStar.refl_source_inv` then forces `Term.cd witness =
+Term.refl endpoint`, and `Term.cd_idJ_redex`'s same-endpoints arm
+fires.  Note: in this non-dependent J, the only ι rule is when
+`leftEnd = rightEnd`, so cd_idJ_redex's `dif_pos rfl` discharges. -/
+theorem Step.par.cd_lemma_star_iotaIdJReflDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {endpoint : RawTerm scope}
+    {resultType : Ty level scope}
+    {baseCase baseCase' : Term ctx resultType}
+    {witness : Term ctx (Ty.id carrier endpoint endpoint)}
+    (witnessIH : Step.parStar (Term.refl endpoint) (Term.cd witness))
+    (baseIH : Step.parStar baseCase' (Term.cd baseCase)) :
+    Step.parStar baseCase'
+                 (Term.cd
+                   (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                             (rightEnd := endpoint) baseCase witness)) := by
+  have cdEq : Term.cd witness = Term.refl endpoint :=
+    Step.parStar.refl_source_inv witnessIH
+  have cdIdJEq : Term.cd
+        (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+                  (rightEnd := endpoint) baseCase witness)
+      = Term.cd baseCase := by
+    simp only [Term.cd, cdEq]
+    unfold Term.cd_idJ_redex
+    rw [dif_pos rfl]
+    rfl
+  rw [cdIdJEq]
+  exact baseIH
+
+/-! ### Deep ι cases with structural-extraction inversion.
+
+For `iotaNatElimSuccDeep` etc., the scrutinee parallel-reduces to a
+non-constant head (e.g. `Term.natSucc predecessor`).  The
+corresponding source-inversion (`Step.parStar.natSucc_source_inv`)
+gives:
+  - `Term.cd scrutinee = Term.natSucc predecessor'` for some
+    `predecessor'`,
+  - `Step.parStar predecessor predecessor'`.
+
+After rewriting `Term.cd (eliminator scrutinee ...)` via the cd-match,
+the goal unfolds to the matched branch's app form.  The
+`Step.parStar.app_cong` rule chains the IHs together. -/
+
+/-- Discharge of the `Step.par.isBi.iotaNatElimSuccDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaNatElimSuccDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee : Term ctx Ty.nat}
+    {predecessor : Term ctx Ty.nat}
+    (zeroBranch : Term ctx resultType)
+    {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)}
+    (scrutiIH :
+        Step.parStar (Term.natSucc predecessor) (Term.cd scrutinee))
+    (succIH : Step.parStar succBranch' (Term.cd succBranch)) :
+    Step.parStar (Term.app succBranch' predecessor)
+                 (Term.cd
+                   (Term.natElim scrutinee zeroBranch succBranch)) := by
+  obtain ⟨predecessor', cdEq, predChain⟩ :=
+    Step.parStar.natSucc_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.app_cong succIH predChain
+
+/-- Discharge of the `Step.par.isBi.iotaNatRecSuccDeep` case. -/
+theorem Step.par.cd_lemma_star_iotaNatRecSuccDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {scrutinee : Term ctx Ty.nat}
+    {predecessor : Term ctx Ty.nat}
+    {zeroBranch zeroBranch' : Term ctx resultType}
+    {succBranch succBranch' : Term ctx
+        (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
+    (scrutiIH :
+        Step.parStar (Term.natSucc predecessor) (Term.cd scrutinee))
+    (zeroIH : Step.parStar zeroBranch' (Term.cd zeroBranch))
+    (succIH : Step.parStar succBranch' (Term.cd succBranch)) :
+    Step.parStar
+        (Term.app (Term.app succBranch' predecessor)
+                  (Term.natRec predecessor zeroBranch' succBranch'))
+        (Term.cd
+          (Term.natRec scrutinee zeroBranch succBranch)) := by
+  obtain ⟨predecessor', cdEq, predChain⟩ :=
+    Step.parStar.natSucc_source_inv scrutiIH
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.app_cong
+    (Step.parStar.app_cong succIH predChain)
+    (Step.parStar.natRec_cong predChain zeroIH succIH)
+
 end LeanFX.Syntax

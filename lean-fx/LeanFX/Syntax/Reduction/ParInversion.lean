@@ -428,4 +428,188 @@ theorem Step.parStar.optionNone_source_inv
     target = Term.optionNone :=
   Step.parStar.optionNone_source_inv_general rfl chain
 
+/-! ## refl inversion (constant-style — `rawTerm` endpoint is fixed)
+
+`Term.refl rawTerm` has type `Ty.id carrier rawTerm rawTerm`, where
+the endpoint is a `RawTerm` (not a typed Term).  The constructor has
+no Term subterms, so the inversion is constant-style: target = refl
+(same endpoint). -/
+
+/-- Generalized typed source-inversion for `Term.refl`. -/
+theorem Step.par.refl_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {endpoint : RawTerm scope}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.id carrier endpoint endpoint)
+    (parStep : Step.par source target) :
+    HEq source (@Term.refl mode level scope ctx carrier endpoint) →
+    HEq target (@Term.refl mode level scope ctx carrier endpoint) := by
+  induction parStep with
+  | refl term => intro sourceEq; exact sourceEq
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.refl endpoint) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.refl endpoint) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.refl endpoint) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.refl endpoint) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.refl endpoint) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.refl endpoint) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.refl` source. -/
+theorem Step.par.refl_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {endpoint : RawTerm scope}
+    {target : Term ctx (Ty.id carrier endpoint endpoint)}
+    (parStep : Step.par
+        (@Term.refl mode level scope ctx carrier endpoint) target) :
+    target = Term.refl endpoint :=
+  eq_of_heq (Step.par.refl_source_inv_general rfl parStep HEq.rfl)
+
+/-- Generalized Step.parStar source-inversion for `Term.refl`. -/
+theorem Step.parStar.refl_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {endpoint : RawTerm scope}
+    {source target : Term ctx (Ty.id carrier endpoint endpoint)}
+    (sourceEq : source = Term.refl endpoint)
+    (chain : Step.parStar source target) :
+    target = Term.refl endpoint := by
+  induction chain with
+  | refl _ => exact sourceEq
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      have stepEq := Step.par.refl_source_inv firstStep
+      cases stepEq
+      exact restIH rfl
+
+/-- Step.parStar source-inversion for `Term.refl`. -/
+theorem Step.parStar.refl_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {endpoint : RawTerm scope}
+    {target : Term ctx (Ty.id carrier endpoint endpoint)}
+    (chain : Step.parStar
+        (@Term.refl mode level scope ctx carrier endpoint) target) :
+    target = Term.refl endpoint :=
+  Step.parStar.refl_source_inv_general rfl chain
+
+/-! ## natSucc structural inversion
+
+For non-constant heads (natSucc, listCons, optionSome, eitherInl,
+eitherInr), the inversion is structural: target preserves the head and
+the inner step is extracted as an existential.
+
+η-rules don't reduce these heads (η is for arrow/sigma), so the
+inversion holds at plain `Step.parStar` level without `isBi` gating.
+
+The natSucc constructor case extracts the inner step directly; refl
+gives `Step.par.refl predecessor` for the inner. -/
+
+/-- Generalized typed source-inversion for `Term.natSucc`. -/
+theorem Step.par.natSucc_source_inv_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {predecessor : Term ctx Ty.nat}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.nat)
+    (parStep : Step.par source target) :
+    HEq source (@Term.natSucc mode level scope ctx predecessor) →
+    ∃ (predecessor' : Term ctx Ty.nat),
+        HEq target (@Term.natSucc mode level scope ctx predecessor') ∧
+        Step.par predecessor predecessor' := by
+  induction parStep with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨predecessor, sourceHEq, Step.par.refl predecessor⟩
+  | natSucc innerStep _ =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      exact ⟨_, HEq.rfl, innerStep⟩
+  | appPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | snd =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPi =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaAppPiDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPair =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | betaSndPairDeep =>
+      intro srcHEq; exfalso
+      apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq srcHEq
+      intro h; simp only [Term.toRaw] at h; cases h
+  | _ => intro srcHEq; cases typeEq <;> cases (eq_of_heq srcHEq)
+
+/-- Typed source-inversion for `Step.par` with `Term.natSucc` source. -/
+theorem Step.par.natSucc_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {predecessor : Term ctx Ty.nat}
+    {target : Term ctx Ty.nat}
+    (parStep : Step.par
+        (@Term.natSucc mode level scope ctx predecessor) target) :
+    ∃ (predecessor' : Term ctx Ty.nat),
+        target = Term.natSucc predecessor' ∧
+        Step.par predecessor predecessor' := by
+  obtain ⟨predecessor', targetHEq, innerStep⟩ :=
+    Step.par.natSucc_source_inv_general rfl parStep HEq.rfl
+  exact ⟨predecessor', eq_of_heq targetHEq, innerStep⟩
+
+/-- Step.parStar source-inversion for `Term.natSucc`.  Iterates
+single-step inversion through the chain. -/
+theorem Step.parStar.natSucc_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {predecessor : Term ctx Ty.nat}
+    {target : Term ctx Ty.nat}
+    (chain : Step.parStar
+        (@Term.natSucc mode level scope ctx predecessor) target) :
+    ∃ (predecessor' : Term ctx Ty.nat),
+        target = Term.natSucc predecessor' ∧
+        Step.parStar predecessor predecessor' := by
+  -- Generalize over the source so `induction chain` lands without
+  -- dependent-elimination conflicts.
+  generalize sourceEq :
+      (@Term.natSucc mode level scope ctx predecessor) = sourceTerm
+      at chain
+  induction chain generalizing predecessor with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨predecessor, rfl, Step.parStar.refl predecessor⟩
+  | trans firstStep restChain restIH =>
+      cases sourceEq
+      obtain ⟨pred₁, eq₁, step₁⟩ := Step.par.natSucc_source_inv firstStep
+      obtain ⟨pred', eq', restStar⟩ := restIH eq₁.symm
+      exact ⟨pred', eq', Step.parStar.trans step₁ restStar⟩
+
 end LeanFX.Syntax
