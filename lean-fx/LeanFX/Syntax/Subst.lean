@@ -1026,6 +1026,28 @@ theorem Subst.singleton_renameAfter_equiv_precompose {level scope target : Nat}
       | ⟨0, _⟩      => rfl
       | ⟨_ + 1, _⟩  => rfl
 
+/-- Term-bearing analog of `singleton_renameAfter_equiv_precompose`:
+substitution-then-rename equals lifted-rename-then-substitution-with-
+renamed-substituent, where both the type substituent and the raw
+substituent get renamed by `ρ`.  The forTy side is identical to the
+classical singleton case; the forRaw side uses
+`RawTermSubst.singleton (rawArg.rename ρ)` after renaming. -/
+theorem Subst.termSingleton_renameAfter_equiv_precompose {level scope target : Nat}
+    (A : Ty level scope) (rawArg : RawTerm scope) (ρ : Renaming scope target) :
+    Subst.equiv
+      (Subst.renameAfter (Subst.termSingleton A rawArg) ρ)
+      (Subst.precompose ρ.lift
+        (Subst.termSingleton (A.rename ρ) (rawArg.rename ρ))) :=
+  Subst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩      => rfl
+      | ⟨_ + 1, _⟩  => rfl)
+    fun position =>
+      match position with
+      | ⟨0, _⟩      => rfl
+      | ⟨_ + 1, _⟩  => rfl
+
 /-- **Single-variable substitution-rename commute** — the practical
 specialisation that unblocks `Term.rename`'s `appPi`/`pair`/`snd`
 cases.  Substituting the outermost variable then rawRenaming equals
