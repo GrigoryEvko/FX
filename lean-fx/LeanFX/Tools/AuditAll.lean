@@ -146,5 +146,9 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.RawStep.parStar.confluence
 #assert_no_axioms LeanFX.Syntax.Term.toRaw_cast
 #assert_no_axioms LeanFX.Syntax.Term.toRaw_rename
+#assert_no_axioms LeanFX.Syntax.TermSubst.RawConsistent
+#assert_no_axioms LeanFX.Syntax.TermSubst.lift_RawConsistent
+#assert_no_axioms LeanFX.Syntax.Term.toRaw_subst
+#assert_no_axioms LeanFX.Syntax.Term.toRaw_subst0_of_consistent
 
 end LeanFX.Tools.AuditAll
