@@ -14,4 +14,5 @@ import LeanFX.Syntax.CompleteDevelopment
 import LeanFX.Syntax.CdDominates
 import LeanFX.Syntax.RawCompleteDevelopment
 import LeanFX.Syntax.RawCdDominates
+import LeanFX.Syntax.ToRawCommute
 import LeanFX.Syntax.Smoke
