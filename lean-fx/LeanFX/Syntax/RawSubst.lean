@@ -761,6 +761,25 @@ theorem RawTerm.weaken_subst_dropNewest {scope : Nat} (rawTerm : RawTerm scope) 
   exact renamedThenSubstituted.trans
     (congruentSubstitution.trans (RawTerm.subst_id rawTerm))
 
+/-- Singleton raw substitution: replace position 0 with `substituent`,
+shift all higher positions down by one.  Used by raw β-reduction
+(`RawTerm.subst0`).  Mirrors the typed `Subst.singleton` whose raw
+component is `dropNewest`; the two coincide when `substituent` is
+unit, which is exactly the typed-singleton-on-Ty case (Ty has no raw
+substituent dependency, so the raw side just discards position 0). -/
+def RawTermSubst.singleton {scope : Nat} (substituent : RawTerm scope) :
+    RawTermSubst (scope + 1) scope
+  | ⟨0, _⟩ => substituent
+  | ⟨position + 1, isWithinScope⟩ =>
+      RawTerm.var ⟨position, Nat.lt_of_succ_lt_succ isWithinScope⟩
+
+/-- The raw counterpart of typed `Term.subst0`: substitute `argument`
+for de Bruijn 0 in `body`. -/
+def RawTerm.subst0 {scope : Nat}
+    (body : RawTerm (scope + 1)) (argument : RawTerm scope) :
+    RawTerm scope :=
+  body.subst (RawTermSubst.singleton argument)
+
 namespace SmokeTestRaw
 
 /-- Substituting the only variable in a one-variable raw term. -/

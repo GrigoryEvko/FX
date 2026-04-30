@@ -110,5 +110,8 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Term.cd_idJ_redex
 #assert_no_axioms LeanFX.Syntax.Term.cd
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates
+#assert_no_axioms LeanFX.Syntax.RawTermSubst.singleton
+#assert_no_axioms LeanFX.Syntax.RawTerm.subst0
+#assert_no_axioms LeanFX.Syntax.RawStep.par
 
 end LeanFX.Tools.AuditAll
