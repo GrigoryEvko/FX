@@ -595,6 +595,118 @@ theorem Step.par.cd_lemma_star_betaSndPair_case
   simp only [Term.cd]
   exact secondIH
 
+/-! ### Deep β cases (function/pair parallel-reduces to a redex shape).
+
+These four cases were previously gated on either Wave 6 β-surgery
+(raw bridge route) or the Wave 9 Term refactor.  W9.B1.7 unblocked
+them without either prereq via the chain inversions
+`Step.parStar.lam_target_inv_isBi` and `Step.parStar.pair_target_inv_isBi`,
+which extract the contracted shape from an isBi-witnessed chain.
+
+The case helpers take an additional `functionStarBi` (resp.
+`pairStarBi`) hypothesis: the chain from the IH is itself
+isBi-witnessed (it must be — the cd_lemma_star aggregator's
+induction on isBi at the outer Step.par produces sub-chains whose
+βι-only nature carries through, so the strengthened cd_lemma_star
+will produce these witnesses for free).  Compare with the shallow
+βι cases above, where the function/pair reduces to the redex via
+`Step.par.refl`, so no inversion is needed. -/
+
+/-- Discharge of the `Step.par.isBi.betaAppDeep` constructor case.
+Source: `Term.app f arg`, where `Step.par f (Term.lam body)` —
+i.e., `f` parallel-reduces to a literal lambda.  Target:
+`Ty.weaken_subst_singleton ▸ Term.subst0 body arg'`.  The IH chain
+`Step.parStar (Term.lam body) (Term.cd f)` together with its isBi
+witness yields, via `lam_target_inv_isBi`, a body' s.t.
+`Term.cd f = Term.lam body'` and `Step.parStar body body'`.
+The lam arm of cd's app match then fires, and `subst0_parStar`
+closes via `bodyStar` and `argIH`. -/
+theorem Step.par.cd_lemma_star_betaAppDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionTerm : Term ctx (Ty.arrow domainType codomainType)}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {arg arg' : Term ctx domainType}
+    {functionStar : Step.parStar
+        (Term.lam (codomainType := codomainType) body) (Term.cd functionTerm)}
+    (functionStarBi : Step.parStar.isBi functionStar)
+    (argIH : Step.parStar arg' (Term.cd arg)) :
+    Step.parStar
+        ((Ty.weaken_subst_singleton codomainType domainType) ▸
+            Term.subst0 body arg')
+        (Term.cd (Term.app functionTerm arg)) := by
+  obtain ⟨body', cdEq, bodyStar⟩ :=
+    Step.parStar.lam_target_inv_isBi functionStarBi
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.castBoth (Ty.weaken_subst_singleton codomainType domainType)
+    (Step.parStar.subst0_parStar bodyStar argIH)
+
+/-- Discharge of the `Step.par.isBi.betaAppPiDeep` constructor case.
+Π-flavoured analogue of `betaAppDeep`: source `Term.appPi f arg`
+with `Step.par f (Term.lamPi body)`; target `Term.subst0 body arg'`.
+The IH chain `Step.parStar (Term.lamPi body) (Term.cd f)` together
+with its isBi witness yields, via `lamPi_target_inv_isBi`, a body'
+s.t. `Term.cd f = Term.lamPi body'` and `Step.parStar body body'`.
+The lamPi arm of cd's appPi match then fires, and `subst0_parStar`
+closes via `bodyStar` and `argIH`.  Note: no cast needed here
+(unlike `betaAppDeep`) — Π-binder codomainType already has the
+right scope. -/
+theorem Step.par.cd_lemma_star_betaAppPiDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {functionTerm : Term ctx (Ty.piTy domainType codomainType)}
+    {body : Term (ctx.cons domainType) codomainType}
+    {arg arg' : Term ctx domainType}
+    {functionStar : Step.parStar
+        (Term.lamPi (domainType := domainType) body) (Term.cd functionTerm)}
+    (functionStarBi : Step.parStar.isBi functionStar)
+    (argIH : Step.parStar arg' (Term.cd arg)) :
+    Step.parStar
+        (Term.subst0 body arg')
+        (Term.cd (Term.appPi functionTerm arg)) := by
+  obtain ⟨body', cdEq, bodyStar⟩ :=
+    Step.parStar.lamPi_target_inv_isBi functionStarBi
+  simp only [Term.cd, cdEq]
+  exact Step.parStar.subst0_parStar bodyStar argIH
+
+/-- Discharge of the `Step.par.isBi.betaFstPairDeep` constructor case.
+Source: `Term.fst pairTerm`, where `Step.par pairTerm (Term.pair fv sv)`.
+Target: `fv`.  Pair chain inversion gives `firstVal'`, `secondVal'`
+s.t. `Term.cd pairTerm = Term.pair firstVal' secondVal'`; the pair
+arm of cd's fst match returns `firstVal'`.  Closed by `firstStar`. -/
+theorem Step.par.cd_lemma_star_betaFstPairDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairTerm : Term ctx (Ty.sigmaTy firstType secondType)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    {pairStar : Step.parStar
+        (Term.pair (firstType := firstType) (secondType := secondType)
+                   firstVal secondVal) (Term.cd pairTerm)}
+    (pairStarBi : Step.parStar.isBi pairStar) :
+    Step.parStar firstVal (Term.cd (Term.fst pairTerm)) := by
+  obtain ⟨firstVal', _secondVal', cdEq, firstStar, _secondStar⟩ :=
+    Step.parStar.pair_target_inv_isBi pairStarBi
+  simp only [Term.cd, cdEq]
+  exact firstStar
+
+/-- Discharge of the `Step.par.isBi.betaSndPairDeep` constructor case. -/
+theorem Step.par.cd_lemma_star_betaSndPairDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairTerm : Term ctx (Ty.sigmaTy firstType secondType)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    {pairStar : Step.parStar
+        (Term.pair (firstType := firstType) (secondType := secondType)
+                   firstVal secondVal) (Term.cd pairTerm)}
+    (pairStarBi : Step.parStar.isBi pairStar) :
+    Step.parStar secondVal (Term.cd (Term.snd pairTerm)) := by
+  obtain ⟨_firstVal', _secondVal', cdEq, _firstStar, secondStar⟩ :=
+    Step.parStar.pair_target_inv_isBi pairStarBi
+  simp only [Term.cd, cdEq]
+  exact secondStar
+
 /-! ### Shallow ι cases (literal pattern-match redex source). -/
 
 /-- Discharge of the `Step.par.isBi.iotaBoolElimTrue` case. -/

@@ -1132,6 +1132,116 @@ theorem Step.parStar.lam_target_inv_isBi
     Step.parStar.lam_target_inv_isBi_general (chain := chain) rfl chainBi body HEq.rfl
   exact ⟨body', eq_of_heq targetHEq, innerStep⟩
 
+/-! ## LamPi target inversion (Π-binder analogue of lam).
+
+Π-binder (Term.lamPi : Term ctx (Ty.piTy domain codomain)) where
+codomainType depends on the bound variable.  Body type is
+codomainType (NOT codomainType.weaken).  Same recipe as lam: HEq
+generalization sidesteps the dep-elim wall, refuteViaToRaw handles
+the 5 subst-target ctors, induction on isBi omits η. -/
+
+/-- Generalized Π-binder target inversion under isBi. -/
+theorem Step.par.lamPi_target_inv_isBi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {body : Term (ctx.cons domainType) codomainType}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.piTy domainType codomainType)
+    {parStep : Step.par sourceTerm targetTerm}
+    (stepBi : Step.par.isBi parStep) :
+    HEq sourceTerm
+        (@Term.lamPi mode level scope ctx domainType codomainType body) →
+    ∃ (body' : Term (ctx.cons domainType) codomainType),
+        HEq targetTerm
+            (@Term.lamPi mode level scope ctx domainType codomainType body') ∧
+        Step.par body body' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨body, sourceHEq, Step.par.refl body⟩
+  | lamPi _bodyBi _bodyIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i bodyStep
+      exact ⟨_, HEq.rfl, bodyStep⟩
+  | lam _bodyBi _bodyIH =>
+      -- Source = Term.lam body, type = Ty.arrow domain codomain.
+      -- typeEq forces termType = Ty.piTy ... — Ty ctor mismatch.
+      intro _
+      cases typeEq
+  | _ =>
+      intro sourceHEq
+      exfalso
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (apply refuteViaToRaw _ (Term.lamPi body) typeEq sourceHEq;
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Single-step Π-binder target inversion under isBi gating. -/
+theorem Step.par.lamPi_target_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {body : Term (ctx.cons domainType) codomainType}
+    {target : Term ctx (Ty.piTy domainType codomainType)}
+    {parStep : Step.par
+        (@Term.lamPi mode level scope ctx domainType codomainType body) target}
+    (stepBi : Step.par.isBi parStep) :
+    ∃ (body' : Term (ctx.cons domainType) codomainType),
+        target = Term.lamPi body' ∧ Step.par body body' := by
+  obtain ⟨body', targetHEq, innerStep⟩ :=
+    Step.par.lamPi_target_inv_isBi_general rfl stepBi HEq.rfl
+  exact ⟨body', eq_of_heq targetHEq, innerStep⟩
+
+/-! ## LamPi target inversion (chain version). -/
+
+/-- Generalized chain Π-binder target inversion under isBi.  Same
+recipe as `Step.parStar.lam_target_inv_isBi_general`. -/
+theorem Step.parStar.lamPi_target_inv_isBi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.piTy domainType codomainType)
+    {chain : Step.parStar sourceTerm targetTerm}
+    (chainBi : Step.parStar.isBi chain) :
+    ∀ (body : Term (ctx.cons domainType) codomainType),
+    HEq sourceTerm
+        (@Term.lamPi mode level scope ctx domainType codomainType body) →
+    ∃ (body' : Term (ctx.cons domainType) codomainType),
+        HEq targetTerm
+            (@Term.lamPi mode level scope ctx domainType codomainType body') ∧
+        Step.parStar body body' := by
+  induction chainBi with
+  | refl term =>
+      intro body sourceHEq
+      exact ⟨body, sourceHEq, Step.parStar.refl body⟩
+  | trans firstBi _restBi restIH =>
+      intro body sourceHEq
+      obtain ⟨bodyMid, secondHEq, midStep⟩ :=
+        Step.par.lamPi_target_inv_isBi_general typeEq firstBi sourceHEq
+      obtain ⟨body', targetHEq, restStep⟩ :=
+        restIH bodyMid secondHEq
+      exact ⟨body', targetHEq,
+             Step.parStar.trans midStep restStep⟩
+
+/-- Single-step chain Π-binder target inversion under isBi gating. -/
+theorem Step.parStar.lamPi_target_inv_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {body : Term (ctx.cons domainType) codomainType}
+    {target : Term ctx (Ty.piTy domainType codomainType)}
+    {chain : Step.parStar
+        (@Term.lamPi mode level scope ctx domainType codomainType body) target}
+    (chainBi : Step.parStar.isBi chain) :
+    ∃ (body' : Term (ctx.cons domainType) codomainType),
+        target = Term.lamPi body' ∧ Step.parStar body body' := by
+  obtain ⟨body', targetHEq, innerStep⟩ :=
+    Step.parStar.lamPi_target_inv_isBi_general
+      (chain := chain) rfl chainBi body HEq.rfl
+  exact ⟨body', eq_of_heq targetHEq, innerStep⟩
+
 /-! ## Pair target inversion (under isBi-chain gating). -/
 
 /-- Generalized pair target inversion under isBi.  Same template

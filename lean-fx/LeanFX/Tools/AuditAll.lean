@@ -527,5 +527,23 @@ link with the intermediate body produced by single-step inversion. -/
 #assert_no_axioms LeanFX.Syntax.Step.parStar.lam_target_inv_isBi
 #assert_no_axioms LeanFX.Syntax.Step.parStar.pair_target_inv_isBi_general
 #assert_no_axioms LeanFX.Syntax.Step.parStar.pair_target_inv_isBi
+#assert_no_axioms LeanFX.Syntax.Step.par.lamPi_target_inv_isBi_general
+#assert_no_axioms LeanFX.Syntax.Step.par.lamPi_target_inv_isBi
+#assert_no_axioms LeanFX.Syntax.Step.parStar.lamPi_target_inv_isBi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStar.lamPi_target_inv_isBi
+
+/-! ## Wave 9-B1.5 dep β Deep case helpers.
+
+The four dep β Deep cases of `cd_lemma_star` were previously gated
+on either Wave 6 β-surgery or the Wave 9 Term refactor.  W9.B1.7
+unblocked them via the chain inversions above.  Each case applies
+`Step.parStar.{lam,lamPi,pair}_target_inv_isBi` to the IH chain
+and discharges via `subst0_parStar` (β cases) or direct projection
+(Σ cases). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaAppDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaAppPiDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaFstPairDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_betaSndPairDeep_case
 
 end LeanFX.Tools.AuditAll
