@@ -1,5 +1,17 @@
 import LeanFX.Syntax.Reduction.ParCompatible
 
+/-! # Multi-step reduction rename / subst compatibility.
+
+`StepStar.rename_compatible` and `StepStar.subst_compatible`:
+multi-step reduction is preserved by both renaming and full
+substitution.  Proofs are induction on `StepStar` with `refl` /
+`step` arms; each step arm calls the corresponding single-step
+compat lemma from `Reduction.Rename` / `Reduction.Subst`.
+
+Stacks atop `Reduction.ParCompatible` (parallel-reduction
+versions) so that all four compat lemmas share one transitive
+import path. -/
+
 namespace LeanFX.Syntax
 open LeanFX.Mode
 

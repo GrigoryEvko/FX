@@ -1,5 +1,18 @@
 import LeanFX.Syntax.Reduction.Rename
 
+/-! # Single-step `Step` substitution compatibility.
+
+`Step.subst_compatible`: substitution preserves a single-step
+reduction.  Structural induction on `Step` with one arm per
+constructor, mirroring `Step.rename_compatible` (see
+`Reduction/Rename.lean`) but with full term-level substitution
+rather than mere index renaming.
+
+β / ι arms invoke the corresponding `TermSubst.Commute.*` law
+to push the outer substitution past the contractum's `subst0` /
+`subst0_term`.  Cong arms apply the matching `Step` constructor
+recursively. -/
+
 namespace LeanFX.Syntax
 open LeanFX.Mode
 

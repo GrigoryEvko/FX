@@ -1,5 +1,21 @@
 import LeanFX.Syntax.Reduction.ParToStar
 
+/-! # Single-step `Step` rename compatibility.
+
+`Step.rename_compatible`: if `t₁` reduces to `t₂` in one step,
+then `rename termRenaming t₁` reduces to `rename termRenaming t₂`
+in one step under any term renaming.
+
+The proof is structural induction on the `Step` derivation.
+β / ι arms call the relevant commute lemma from
+`TermSubst.Commute.*` to push the renaming past the substitution
+introduced by the redex contractum.  Most cong arms are direct
+constructor applications.
+
+WQ.3 (#1121) plans to refactor the β-arms here into structured
+named lemmas to remove the boilerplate scaffolding around the
+commute applications. -/
+
 namespace LeanFX.Syntax
 open LeanFX.Mode
 

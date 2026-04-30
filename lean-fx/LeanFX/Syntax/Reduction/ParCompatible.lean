@@ -1,5 +1,31 @@
 import LeanFX.Syntax.Reduction.Subst
 
+/-! # Parallel reduction rename / subst compatibility.
+
+`Step.par.rename_compatible` and `Step.par.subst_compatible`:
+parallel reduction is preserved by renaming and substitution.
+Each is structural induction on `Step.par` with a per-ctor arm.
+β-arms (`betaApp`, `betaAppPi`, `betaFstPair`, `betaSndPair`,
+`betaAppDeep`, `betaAppPiDeep`) require the substitution /
+renaming commute laws from `TermSubst.Commute.*` to push the
+rename / subst past the redex's contractum-side `subst0` /
+`subst0_term`.
+
+ι-arms (`iotaBoolElim`, `iotaNatRec`, `iotaListElim`,
+`iotaOptionMatch`, `iotaEitherMatch`, `iotaIdJRefl`) similarly
+push the rename / subst through the eliminator's contractum.
+
+η-arms (`etaArrow`, `etaSigma`) — these constructors do NOT
+satisfy `isBi` (parallel-reduction-with-extensional-η is not
+confluent without additional structure); their compat proofs
+are present but the constructors are excluded from `isBi`-gated
+contexts (see `Reduction/ParBi.lean`).
+
+This is the deepest non-trivial leaf in the typed compat
+chain — `Reduction/Compatible.lean` (StepStar) builds on top.
+Wave 5 (#1069) plans to migrate β-arms here from
+`Subst.singleton` to `Subst.termSingleton` for cleaner commutes. -/
+
 namespace LeanFX.Syntax
 open LeanFX.Mode
 
