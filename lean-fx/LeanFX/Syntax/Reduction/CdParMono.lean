@@ -1768,4 +1768,155 @@ theorem Step.par.cd_monotone_iotaIdJReflDeep_case
     (Step.par.cd_monotone_iotaIdJRefl_case
       (Step.parStarWithBi.refl _))
 
+/-! ## §6 — Aggregator: `Step.par.cd_monotone`.
+
+The Tait-Martin-Löf workhorse: complete development is monotone wrt
+`Step.par` for βι-witnessed steps.
+
+Proof: induction on `Step.par.isBi`, dispatching to the case helper
+for each constructor. -/
+
+/-- **`Term.cd` is monotone wrt βι-witnessed `Step.par`.**
+
+For every isBi-witnessed parallel step `parStep : Step.par a b`,
+the complete developments of `a` and `b` are related by a chain of
+βι-witnessed parallel steps.
+
+This is the core lemma for typed Church-Rosser (W8.3 / #885) via the
+iterated complete-development construction. -/
+theorem Step.par.cd_monotone
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    {parStep : Step.par sourceTerm targetTerm}
+    (stepBi : Step.par.isBi parStep) :
+    Step.parStarWithBi (Term.cd sourceTerm) (Term.cd targetTerm) := by
+  induction stepBi with
+  | refl term =>
+      exact Step.par.cd_monotone_refl_case term
+  | app _funBi _argBi funIH argIH =>
+      exact Step.par.cd_monotone_app_case funIH argIH
+  | lam _bodyBi bodyIH =>
+      exact Step.par.cd_monotone_lam_case bodyIH
+  | lamPi _bodyBi bodyIH =>
+      exact Step.par.cd_monotone_lamPi_case bodyIH
+  | appPi _funBi _argBi funIH argIH =>
+      exact Step.par.cd_monotone_appPi_case funIH argIH
+  | pair _firstBi _secondBi firstIH secondIH =>
+      exact Step.par.cd_monotone_pair_case firstIH secondIH
+  | fst _pairBi pairIH =>
+      exact Step.par.cd_monotone_fst_case pairIH
+  | snd _pairBi pairIH =>
+      exact Step.par.cd_monotone_snd_case pairIH
+  | boolElim _scrutBi _thenBi _elseBi scrutIH thenIH elseIH =>
+      exact Step.par.cd_monotone_boolElim_case scrutIH thenIH elseIH
+  | natSucc _predBi predIH =>
+      exact Step.par.cd_monotone_natSucc_case predIH
+  | natElim _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      exact Step.par.cd_monotone_natElim_case scrutIH zeroIH succIH
+  | natRec _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      exact Step.par.cd_monotone_natRec_case scrutIH zeroIH succIH
+  | listCons _headBi _tailBi headIH tailIH =>
+      exact Step.par.cd_monotone_listCons_case headIH tailIH
+  | listElim _scrutBi _nilBi _consBi scrutIH nilIH consIH =>
+      exact Step.par.cd_monotone_listElim_case scrutIH nilIH consIH
+  | optionSome _valueBi valueIH =>
+      exact Step.par.cd_monotone_optionSome_case valueIH
+  | optionMatch _scrutBi _noneBi _someBi scrutIH noneIH someIH =>
+      exact Step.par.cd_monotone_optionMatch_case scrutIH noneIH someIH
+  | eitherInl _valueBi valueIH =>
+      exact Step.par.cd_monotone_eitherInl_case valueIH
+  | eitherInr _valueBi valueIH =>
+      exact Step.par.cd_monotone_eitherInr_case valueIH
+  | eitherMatch _scrutBi _leftBi _rightBi scrutIH leftIH rightIH =>
+      exact Step.par.cd_monotone_eitherMatch_case scrutIH leftIH rightIH
+  | idJ _baseBi _witnessBi baseIH witnessIH =>
+      exact Step.par.cd_monotone_idJ_case baseIH witnessIH
+  | betaApp _bodyBi _argBi bodyIH argIH =>
+      exact Step.par.cd_monotone_betaApp_case bodyIH argIH
+  | betaAppPi _bodyBi _argBi bodyIH argIH =>
+      exact Step.par.cd_monotone_betaAppPi_case bodyIH argIH
+  | betaFstPair _firstBi firstIH =>
+      rename_i _ _ _ _ secondVal _
+      exact Step.par.cd_monotone_betaFstPair_case secondVal firstIH
+  | betaSndPair _secondBi secondIH =>
+      rename_i _ _ firstVal _ _ _
+      exact Step.par.cd_monotone_betaSndPair_case firstVal secondIH
+  | iotaBoolElimTrue elseBranch _thenBi thenIH =>
+      exact Step.par.cd_monotone_iotaBoolElimTrue_case elseBranch thenIH
+  | iotaBoolElimFalse thenBranch _elseBi elseIH =>
+      exact Step.par.cd_monotone_iotaBoolElimFalse_case thenBranch elseIH
+  | iotaNatElimZero succBranch _zeroBi zeroIH =>
+      exact Step.par.cd_monotone_iotaNatElimZero_case succBranch zeroIH
+  | iotaNatElimSucc zeroBranch _predBi _succBi predIH succIH =>
+      exact Step.par.cd_monotone_iotaNatElimSucc_case zeroBranch
+        predIH succIH
+  | iotaNatRecZero succBranch _zeroBi zeroIH =>
+      exact Step.par.cd_monotone_iotaNatRecZero_case succBranch zeroIH
+  | iotaNatRecSucc _predBi _zeroBi _succBi predIH zeroIH succIH =>
+      exact Step.par.cd_monotone_iotaNatRecSucc_case predIH zeroIH succIH
+  | iotaListElimNil consBranch _nilBi nilIH =>
+      exact Step.par.cd_monotone_iotaListElimNil_case consBranch nilIH
+  | iotaListElimCons nilBranch _headBi _tailBi _consBi headIH tailIH consIH =>
+      exact Step.par.cd_monotone_iotaListElimCons_case nilBranch
+        headIH tailIH consIH
+  | iotaOptionMatchNone someBranch _noneBi noneIH =>
+      exact Step.par.cd_monotone_iotaOptionMatchNone_case someBranch noneIH
+  | iotaOptionMatchSome noneBranch _valueBi _someBi valueIH someIH =>
+      exact Step.par.cd_monotone_iotaOptionMatchSome_case noneBranch
+        valueIH someIH
+  | iotaEitherMatchInl rightBranch _valueBi _leftBi valueIH leftIH =>
+      exact Step.par.cd_monotone_iotaEitherMatchInl_case rightBranch
+        valueIH leftIH
+  | iotaEitherMatchInr leftBranch _valueBi _rightBi valueIH rightIH =>
+      exact Step.par.cd_monotone_iotaEitherMatchInr_case leftBranch
+        valueIH rightIH
+  | iotaIdJRefl _baseBi baseIH =>
+      exact Step.par.cd_monotone_iotaIdJRefl_case baseIH
+  | betaAppDeep _funBi _argBi funIH argIH =>
+      exact Step.par.cd_monotone_betaAppDeep_case funIH argIH
+  | betaAppPiDeep _funBi _argBi funIH argIH =>
+      exact Step.par.cd_monotone_betaAppPiDeep_case funIH argIH
+  | betaFstPairDeep _pairBi pairIH =>
+      exact Step.par.cd_monotone_betaFstPairDeep_case pairIH
+  | betaSndPairDeep _pairBi pairIH =>
+      exact Step.par.cd_monotone_betaSndPairDeep_case pairIH
+  | iotaBoolElimTrueDeep elseBranch _scrutBi _thenBi scrutIH thenIH =>
+      exact Step.par.cd_monotone_iotaBoolElimTrueDeep_case elseBranch
+        scrutIH thenIH
+  | iotaBoolElimFalseDeep thenBranch _scrutBi _elseBi scrutIH elseIH =>
+      exact Step.par.cd_monotone_iotaBoolElimFalseDeep_case thenBranch
+        scrutIH elseIH
+  | iotaNatElimZeroDeep succBranch _scrutBi _zeroBi scrutIH zeroIH =>
+      exact Step.par.cd_monotone_iotaNatElimZeroDeep_case succBranch
+        scrutIH zeroIH
+  | iotaNatElimSuccDeep zeroBranch _scrutBi _succBi scrutIH succIH =>
+      exact Step.par.cd_monotone_iotaNatElimSuccDeep_case zeroBranch
+        scrutIH succIH
+  | iotaNatRecZeroDeep succBranch _scrutBi _zeroBi scrutIH zeroIH =>
+      exact Step.par.cd_monotone_iotaNatRecZeroDeep_case succBranch
+        scrutIH zeroIH
+  | iotaNatRecSuccDeep _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      exact Step.par.cd_monotone_iotaNatRecSuccDeep_case scrutIH zeroIH succIH
+  | iotaListElimNilDeep consBranch _scrutBi _nilBi scrutIH nilIH =>
+      exact Step.par.cd_monotone_iotaListElimNilDeep_case consBranch
+        scrutIH nilIH
+  | iotaListElimConsDeep nilBranch _scrutBi _consBi scrutIH consIH =>
+      exact Step.par.cd_monotone_iotaListElimConsDeep_case nilBranch
+        scrutIH consIH
+  | iotaOptionMatchNoneDeep someBranch _scrutBi _noneBi scrutIH noneIH =>
+      exact Step.par.cd_monotone_iotaOptionMatchNoneDeep_case someBranch
+        scrutIH noneIH
+  | iotaOptionMatchSomeDeep noneBranch _scrutBi _someBi scrutIH someIH =>
+      exact Step.par.cd_monotone_iotaOptionMatchSomeDeep_case noneBranch
+        scrutIH someIH
+  | iotaEitherMatchInlDeep rightBranch _scrutBi _leftBi scrutIH leftIH =>
+      exact Step.par.cd_monotone_iotaEitherMatchInlDeep_case rightBranch
+        scrutIH leftIH
+  | iotaEitherMatchInrDeep leftBranch _scrutBi _rightBi scrutIH rightIH =>
+      exact Step.par.cd_monotone_iotaEitherMatchInrDeep_case leftBranch
+        scrutIH rightIH
+  | iotaIdJReflDeep _witnessBi _baseBi witnessIH baseIH =>
+      exact Step.par.cd_monotone_iotaIdJReflDeep_case witnessIH baseIH
+
 end LeanFX.Syntax
