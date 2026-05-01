@@ -27,8 +27,7 @@ theorem RawStep.par.cd_dominates :
       case _ body heq =>
           exact RawStep.par.betaAppDeep
             (heq ▸ functionParStep) argumentParStep
-      case _ =>
-          exact RawStep.par.app functionParStep argumentParStep
+      all_goals exact RawStep.par.app functionParStep argumentParStep
   | _, .pair firstVal secondVal => by
       simp only [RawTerm.cd]
       exact RawStep.par.pair (RawStep.par.cd_dominates firstVal)
@@ -39,16 +38,14 @@ theorem RawStep.par.cd_dominates :
       split
       case _ firstVal secondVal heq =>
           exact RawStep.par.betaFstPairDeep (heq ▸ pairParStep)
-      case _ =>
-          exact RawStep.par.fst pairParStep
+      all_goals exact RawStep.par.fst pairParStep
   | _, .snd pairTerm => by
       let pairParStep := RawStep.par.cd_dominates pairTerm
       simp only [RawTerm.cd]
       split
       case _ firstVal secondVal heq =>
           exact RawStep.par.betaSndPairDeep (heq ▸ pairParStep)
-      case _ =>
-          exact RawStep.par.snd pairParStep
+      all_goals exact RawStep.par.snd pairParStep
   | _, .boolTrue => by unfold RawTerm.cd; exact RawStep.par.refl _
   | _, .boolFalse => by unfold RawTerm.cd; exact RawStep.par.refl _
   | _, .boolElim scrutinee thenBranch elseBranch => by
@@ -63,8 +60,7 @@ theorem RawStep.par.cd_dominates :
       case _ heq =>
           exact RawStep.par.iotaBoolElimFalseDeep thenBranch
             (heq ▸ scrutineeParStep) elseParStep
-      case _ =>
-          exact RawStep.par.boolElim scrutineeParStep thenParStep elseParStep
+      all_goals exact RawStep.par.boolElim scrutineeParStep thenParStep elseParStep
   | _, .natZero => by unfold RawTerm.cd; exact RawStep.par.refl _
   | _, .natSucc predecessor => by
       simp only [RawTerm.cd]
@@ -81,8 +77,7 @@ theorem RawStep.par.cd_dominates :
       case _ predecessor heq =>
           exact RawStep.par.iotaNatElimSuccDeep zeroBranch
             (heq ▸ scrutineeParStep) succParStep
-      case _ =>
-          exact RawStep.par.natElim scrutineeParStep zeroParStep succParStep
+      all_goals exact RawStep.par.natElim scrutineeParStep zeroParStep succParStep
   | _, .natRec scrutinee zeroBranch succBranch => by
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let zeroParStep := RawStep.par.cd_dominates zeroBranch
@@ -95,8 +90,7 @@ theorem RawStep.par.cd_dominates :
       case _ predecessor heq =>
           exact RawStep.par.iotaNatRecSuccDeep
             (heq ▸ scrutineeParStep) zeroParStep succParStep
-      case _ =>
-          exact RawStep.par.natRec scrutineeParStep zeroParStep succParStep
+      all_goals exact RawStep.par.natRec scrutineeParStep zeroParStep succParStep
   | _, .listNil => by unfold RawTerm.cd; exact RawStep.par.refl _
   | _, .listCons head tail => by
       simp only [RawTerm.cd]
@@ -114,8 +108,7 @@ theorem RawStep.par.cd_dominates :
       case _ head tail heq =>
           exact RawStep.par.iotaListElimConsDeep nilBranch
             (heq ▸ scrutineeParStep) consParStep
-      case _ =>
-          exact RawStep.par.listElim scrutineeParStep nilParStep consParStep
+      all_goals exact RawStep.par.listElim scrutineeParStep nilParStep consParStep
   | _, .optionNone => by unfold RawTerm.cd; exact RawStep.par.refl _
   | _, .optionSome value => by
       simp only [RawTerm.cd]
@@ -132,8 +125,7 @@ theorem RawStep.par.cd_dominates :
       case _ value heq =>
           exact RawStep.par.iotaOptionMatchSomeDeep noneBranch
             (heq ▸ scrutineeParStep) someParStep
-      case _ =>
-          exact RawStep.par.optionMatch scrutineeParStep noneParStep someParStep
+      all_goals exact RawStep.par.optionMatch scrutineeParStep noneParStep someParStep
   | _, .eitherInl value => by
       simp only [RawTerm.cd]
       exact RawStep.par.eitherInl (RawStep.par.cd_dominates value)
@@ -152,8 +144,7 @@ theorem RawStep.par.cd_dominates :
       case _ value heq =>
           exact RawStep.par.iotaEitherMatchInrDeep leftBranch
             (heq ▸ scrutineeParStep) rightParStep
-      case _ =>
-          exact RawStep.par.eitherMatch scrutineeParStep leftParStep rightParStep
+      all_goals exact RawStep.par.eitherMatch scrutineeParStep leftParStep rightParStep
   | _, .refl rawTerm => by
       simp only [RawTerm.cd]
       exact RawStep.par.reflCong (RawStep.par.cd_dominates rawTerm)
@@ -165,7 +156,6 @@ theorem RawStep.par.cd_dominates :
       case _ rawTerm heq =>
           exact RawStep.par.iotaIdJReflDeep
             (heq ▸ witnessParStep) baseParStep
-      case _ =>
-          exact RawStep.par.idJ baseParStep witnessParStep
+      all_goals exact RawStep.par.idJ baseParStep witnessParStep
 
 end LeanFX.Syntax

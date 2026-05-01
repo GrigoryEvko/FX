@@ -42,8 +42,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
           -- so par function' (lam body)
           exact RawStep.par.betaAppDeep
             (heq ▸ functionIH) argumentIH
-      case _ =>
-          exact RawStep.par.app functionIH argumentIH
+      all_goals exact RawStep.par.app functionIH argumentIH
   | pair firstStep secondStep firstIH secondIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.pair firstIH secondIH
@@ -52,15 +51,13 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       split
       case _ firstVal secondVal heq =>
           exact RawStep.par.betaFstPairDeep (heq ▸ pairIH)
-      case _ =>
-          exact RawStep.par.fst pairIH
+      all_goals exact RawStep.par.fst pairIH
   | snd pairStep pairIH =>
       simp only [RawTerm.cd]
       split
       case _ firstVal secondVal heq =>
           exact RawStep.par.betaSndPairDeep (heq ▸ pairIH)
-      case _ =>
-          exact RawStep.par.snd pairIH
+      all_goals exact RawStep.par.snd pairIH
   | boolElim scrutineeStep thenStep elseStep
         scrutineeIH thenIH elseIH =>
       simp only [RawTerm.cd]
@@ -71,8 +68,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       case _ heq =>
           exact RawStep.par.iotaBoolElimFalseDeep _
             (heq ▸ scrutineeIH) elseIH
-      case _ =>
-          exact RawStep.par.boolElim scrutineeIH thenIH elseIH
+      all_goals exact RawStep.par.boolElim scrutineeIH thenIH elseIH
   | natSucc predStep predIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.natSucc predIH
@@ -86,8 +82,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       case _ pred heq =>
           exact RawStep.par.iotaNatElimSuccDeep _
             (heq ▸ scrutineeIH) succIH
-      case _ =>
-          exact RawStep.par.natElim scrutineeIH zeroIH succIH
+      all_goals exact RawStep.par.natElim scrutineeIH zeroIH succIH
   | natRec scrutineeStep zeroStep succStep
         scrutineeIH zeroIH succIH =>
       simp only [RawTerm.cd]
@@ -98,8 +93,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       case _ pred heq =>
           exact RawStep.par.iotaNatRecSuccDeep
             (heq ▸ scrutineeIH) zeroIH succIH
-      case _ =>
-          exact RawStep.par.natRec scrutineeIH zeroIH succIH
+      all_goals exact RawStep.par.natRec scrutineeIH zeroIH succIH
   | listCons headStep tailStep headIH tailIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.listCons headIH tailIH
@@ -113,8 +107,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       case _ head tail heq =>
           exact RawStep.par.iotaListElimConsDeep _
             (heq ▸ scrutineeIH) consIH
-      case _ =>
-          exact RawStep.par.listElim scrutineeIH nilIH consIH
+      all_goals exact RawStep.par.listElim scrutineeIH nilIH consIH
   | optionSome valueStep valueIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.optionSome valueIH
@@ -128,8 +121,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       case _ value heq =>
           exact RawStep.par.iotaOptionMatchSomeDeep _
             (heq ▸ scrutineeIH) someIH
-      case _ =>
-          exact RawStep.par.optionMatch scrutineeIH noneIH someIH
+      all_goals exact RawStep.par.optionMatch scrutineeIH noneIH someIH
   | eitherInl valueStep valueIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.eitherInl valueIH
@@ -146,16 +138,14 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       case _ value heq =>
           exact RawStep.par.iotaEitherMatchInrDeep _
             (heq ▸ scrutineeIH) rightIH
-      case _ =>
-          exact RawStep.par.eitherMatch scrutineeIH leftIH rightIH
+      all_goals exact RawStep.par.eitherMatch scrutineeIH leftIH rightIH
   | idJ baseStep witnessStep baseIH witnessIH =>
       simp only [RawTerm.cd]
       split
       case _ rawTerm heq =>
           exact RawStep.par.iotaIdJReflDeep
             (heq ▸ witnessIH) baseIH
-      case _ =>
-          exact RawStep.par.idJ baseIH witnessIH
+      all_goals exact RawStep.par.idJ baseIH witnessIH
   | reflCong rawTermStep rawTermIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.reflCong rawTermIH
