@@ -2398,11 +2398,227 @@ theorem Term.subst0_parStarWithBi_body
       (Term.subst0 secondBody argument) :=
   Step.parStarWithBi.subst_compatible (TermSubst.singleton argument) bodyChain
 
+/-! ## Paired pointwise substitution.
+
+Paired analogues of `TermSubst.par_lift`, `Term.subst_par_pointwise`,
+and `TermSubst.singleton_par_pointwise` from `ParSubst.lean`.  Each
+mirrors its plain (`Step.par`) counterpart, but constructs *paired*
+witnesses (`Step.parWithBi`) so isBi propagates uniformly.
+
+The lift case at non-zero positions uses `Step.parWithBi.rename_
+compatible` (just landed) to push the user-supplied paired step
+through `Term.weaken`.
+
+Used by `Term.subst0_parStarWithBi_argument` to discharge the
+single-link case of the argument-side workhorse.  -/
+
+/-- Paired binder lift: two pointwise-paired `TermSubst`s remain
+paired after lifting under a binder.  Position 0 produces
+`Term.var 0` on both sides (refl); position `k+1` lifts the
+original paired step via `Step.parWithBi.rename_compatible` on the
+weakening renaming. -/
+theorem TermSubst.parWithBi_lift
+    {mode : Mode} {scope scope' : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level scope'}
+    {typeSubstitution : Subst level scope scope'}
+    {firstSubstitution secondSubstitution :
+      TermSubst sourceCtx targetCtx typeSubstitution}
+    (related : ∀ position,
+      Step.parWithBi (firstSubstitution position) (secondSubstitution position))
+    (newType : Ty level scope) :
+    ∀ position,
+      Step.parWithBi
+        ((firstSubstitution.lift newType) position)
+        ((secondSubstitution.lift newType) position) := by
+  intro position
+  match position with
+  | ⟨0, _⟩ =>
+      simp only [TermSubst.lift]
+      exact Step.parWithBi.castBoth
+        (Ty.subst_weaken_commute newType typeSubstitution).symm
+        ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | ⟨index + 1, isWithinBound⟩ =>
+      simp only [TermSubst.lift]
+      exact Step.parWithBi.castBoth
+        (Ty.subst_weaken_commute
+          (varType sourceCtx ⟨index, Nat.lt_of_succ_lt_succ isWithinBound⟩)
+          typeSubstitution).symm
+        (Step.parWithBi.rename_compatible
+          (TermRenaming.weaken targetCtx (newType.subst typeSubstitution))
+          (related ⟨index, Nat.lt_of_succ_lt_succ isWithinBound⟩))
+
+/-- **Paired pointwise substitution.**  When two TermSubsts are
+pointwise-paired (Step.parWithBi at every position), substituting
+the same term through them yields a paired Step.parWithBi result.
+
+Structural induction on the term, mirroring
+`Term.subst_par_pointwise`.  Each constructor's recursive arm
+applies the corresponding paired cong rule (`Step.par.<ctor>` +
+`Step.par.isBi.<ctor>`) to the paired IHs; binder cases use
+`TermSubst.parWithBi_lift`. -/
+theorem Term.subst_parWithBi_pointwise
+    {mode : Mode} {scope scope' : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level scope'}
+    {typeSubstitution : Subst level scope scope'}
+    {firstSubstitution secondSubstitution :
+      TermSubst sourceCtx targetCtx typeSubstitution}
+    (related : ∀ position,
+      Step.parWithBi (firstSubstitution position) (secondSubstitution position)) :
+    {T : Ty level scope} → (term : Term sourceCtx T) →
+      Step.parWithBi
+        (Term.subst firstSubstitution term)
+        (Term.subst secondSubstitution term)
+  | _, .var position => by
+      simp only [Term.subst]
+      exact related position
+  | _, .unit => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .lam (codomainType := codomainType) body => by
+      simp only [Term.subst]
+      obtain ⟨bStep, bBi⟩ :=
+        Term.subst_parWithBi_pointwise
+          (TermSubst.parWithBi_lift related _) body
+      let castedStep := Step.par.castBoth
+        (Ty.subst_weaken_commute codomainType typeSubstitution) bStep
+      let castedBi := Step.par.isBi.castBoth
+        (Ty.subst_weaken_commute codomainType typeSubstitution) bBi
+      exact ⟨Step.par.lam castedStep, Step.par.isBi.lam castedBi⟩
+  | _, .app function argument => by
+      obtain ⟨fStep, fBi⟩ := Term.subst_parWithBi_pointwise related function
+      obtain ⟨aStep, aBi⟩ := Term.subst_parWithBi_pointwise related argument
+      exact ⟨Step.par.app fStep aStep, Step.par.isBi.app fBi aBi⟩
+  | _, .lamPi body => by
+      simp only [Term.subst]
+      obtain ⟨bStep, bBi⟩ :=
+        Term.subst_parWithBi_pointwise
+          (TermSubst.parWithBi_lift related _) body
+      exact ⟨Step.par.lamPi bStep, Step.par.isBi.lamPi bBi⟩
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+        function argument => by
+      simp only [Term.subst]
+      obtain ⟨fStep, fBi⟩ := Term.subst_parWithBi_pointwise related function
+      obtain ⟨aStep, aBi⟩ := Term.subst_parWithBi_pointwise related argument
+      let typeEq :=
+        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+      exact ⟨Step.par.castBoth typeEq (Step.par.appPi fStep aStep),
+             Step.par.isBi.castBoth typeEq (Step.par.isBi.appPi fBi aBi)⟩
+  | _, .pair (firstType := firstType) (secondType := secondType)
+        firstVal secondVal => by
+      simp only [Term.subst]
+      obtain ⟨fStep, fBi⟩ := Term.subst_parWithBi_pointwise related firstVal
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related secondVal
+      let typeEq :=
+        Ty.subst0_subst_commute secondType firstType typeSubstitution
+      exact ⟨Step.par.pair fStep (Step.par.castBoth typeEq sStep),
+             Step.par.isBi.pair fBi (Step.par.isBi.castBoth typeEq sBi)⟩
+  | _, .fst pairTerm => by
+      obtain ⟨pStep, pBi⟩ := Term.subst_parWithBi_pointwise related pairTerm
+      exact ⟨Step.par.fst pStep, Step.par.isBi.fst pBi⟩
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+      simp only [Term.subst]
+      obtain ⟨pStep, pBi⟩ := Term.subst_parWithBi_pointwise related pairTerm
+      let typeEq :=
+        (Ty.subst0_subst_commute secondType firstType typeSubstitution).symm
+      exact ⟨Step.par.castBoth typeEq (Step.par.snd pStep),
+             Step.par.isBi.castBoth typeEq (Step.par.isBi.snd pBi)⟩
+  | _, .boolTrue => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .boolFalse => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .boolElim scrutinee thenBranch elseBranch => by
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related scrutinee
+      obtain ⟨tStep, tBi⟩ := Term.subst_parWithBi_pointwise related thenBranch
+      obtain ⟨eStep, eBi⟩ := Term.subst_parWithBi_pointwise related elseBranch
+      exact ⟨Step.par.boolElim sStep tStep eStep,
+             Step.par.isBi.boolElim sBi tBi eBi⟩
+  | _, .natZero => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .natSucc predecessor => by
+      obtain ⟨pStep, pBi⟩ := Term.subst_parWithBi_pointwise related predecessor
+      exact ⟨Step.par.natSucc pStep, Step.par.isBi.natSucc pBi⟩
+  | _, .natElim scrutinee zeroBranch succBranch => by
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related scrutinee
+      obtain ⟨zStep, zBi⟩ := Term.subst_parWithBi_pointwise related zeroBranch
+      obtain ⟨ssStep, ssBi⟩ := Term.subst_parWithBi_pointwise related succBranch
+      exact ⟨Step.par.natElim sStep zStep ssStep,
+             Step.par.isBi.natElim sBi zBi ssBi⟩
+  | _, .natRec scrutinee zeroBranch succBranch => by
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related scrutinee
+      obtain ⟨zStep, zBi⟩ := Term.subst_parWithBi_pointwise related zeroBranch
+      obtain ⟨ssStep, ssBi⟩ := Term.subst_parWithBi_pointwise related succBranch
+      exact ⟨Step.par.natRec sStep zStep ssStep,
+             Step.par.isBi.natRec sBi zBi ssBi⟩
+  | _, .listNil => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .listCons head tail => by
+      obtain ⟨hStep, hBi⟩ := Term.subst_parWithBi_pointwise related head
+      obtain ⟨tStep, tBi⟩ := Term.subst_parWithBi_pointwise related tail
+      exact ⟨Step.par.listCons hStep tStep, Step.par.isBi.listCons hBi tBi⟩
+  | _, .listElim scrutinee nilBranch consBranch => by
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related scrutinee
+      obtain ⟨nStep, nBi⟩ := Term.subst_parWithBi_pointwise related nilBranch
+      obtain ⟨cStep, cBi⟩ := Term.subst_parWithBi_pointwise related consBranch
+      exact ⟨Step.par.listElim sStep nStep cStep,
+             Step.par.isBi.listElim sBi nBi cBi⟩
+  | _, .optionNone => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .optionSome value => by
+      obtain ⟨vStep, vBi⟩ := Term.subst_parWithBi_pointwise related value
+      exact ⟨Step.par.optionSome vStep, Step.par.isBi.optionSome vBi⟩
+  | _, .optionMatch scrutinee noneBranch someBranch => by
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related scrutinee
+      obtain ⟨nStep, nBi⟩ := Term.subst_parWithBi_pointwise related noneBranch
+      obtain ⟨smStep, smBi⟩ := Term.subst_parWithBi_pointwise related someBranch
+      exact ⟨Step.par.optionMatch sStep nStep smStep,
+             Step.par.isBi.optionMatch sBi nBi smBi⟩
+  | _, .eitherInl value => by
+      obtain ⟨vStep, vBi⟩ := Term.subst_parWithBi_pointwise related value
+      exact ⟨Step.par.eitherInl vStep, Step.par.isBi.eitherInl vBi⟩
+  | _, .eitherInr value => by
+      obtain ⟨vStep, vBi⟩ := Term.subst_parWithBi_pointwise related value
+      exact ⟨Step.par.eitherInr vStep, Step.par.isBi.eitherInr vBi⟩
+  | _, .eitherMatch scrutinee leftBranch rightBranch => by
+      obtain ⟨sStep, sBi⟩ := Term.subst_parWithBi_pointwise related scrutinee
+      obtain ⟨lStep, lBi⟩ := Term.subst_parWithBi_pointwise related leftBranch
+      obtain ⟨rStep, rBi⟩ := Term.subst_parWithBi_pointwise related rightBranch
+      exact ⟨Step.par.eitherMatch sStep lStep rStep,
+             Step.par.isBi.eitherMatch sBi lBi rBi⟩
+  | _, .refl _ => ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+  | _, .idJ baseCase witness => by
+      obtain ⟨bStep, bBi⟩ := Term.subst_parWithBi_pointwise related baseCase
+      obtain ⟨wStep, wBi⟩ := Term.subst_parWithBi_pointwise related witness
+      exact ⟨Step.par.idJ bStep wStep, Step.par.isBi.idJ bBi wBi⟩
+
+/-- **Paired pointwise singleton.**  A paired Step.parWithBi on the
+substituent lifts to a paired pointwise relation on
+`TermSubst.singleton`s.  Position 0 carries the user-supplied
+paired step (modulo a `Ty.weaken_subst_singleton` cast); positions
+`k+1` are paired-refl on `Term.var ⟨k, _⟩`. -/
+theorem TermSubst.singleton_parWithBi_pointwise
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope}
+    {firstArgument secondArgument : Term sourceCtx argType}
+    (argumentPaired : Step.parWithBi firstArgument secondArgument) :
+    ∀ position,
+      Step.parWithBi
+        ((TermSubst.singleton firstArgument) position)
+        ((TermSubst.singleton secondArgument) position) := by
+  intro position
+  match position with
+  | ⟨0, _⟩ =>
+      simp only [TermSubst.singleton]
+      exact Step.parWithBi.castBoth
+        (Ty.weaken_subst_singleton argType argType).symm
+        argumentPaired
+  | ⟨index + 1, isWithinBound⟩ =>
+      simp only [TermSubst.singleton]
+      exact Step.parWithBi.castBoth
+        (Ty.weaken_subst_singleton
+          (varType sourceCtx ⟨index, Nat.lt_of_succ_lt_succ isWithinBound⟩)
+          argType).symm
+        ⟨Step.par.refl _, Step.par.isBi.refl _⟩
+
 /-- **Argument-side multi-step subst0 (paired)**.  A
 `parStarWithBi` chain on the argument lifts through
 `Term.subst0 body _` (with the body fixed).  Proof: induct on the
-argument chain; each link lifts via `Term.subst_par_pointwise` +
-isBi reconstruction. -/
+chain; each link lifts via `Term.subst_parWithBi_pointwise` +
+`TermSubst.singleton_parWithBi_pointwise`. -/
 theorem Term.subst0_parStarWithBi_argument
     {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
     {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
@@ -2415,15 +2631,10 @@ theorem Term.subst0_parStarWithBi_argument
   induction argumentChain with
   | refl _ => exact Step.parStarWithBi.refl _
   | trans firstBi _restChain restIH =>
-      -- `firstBi` witnesses isBi for a Step.par firstArgument midArgument.
-      -- Lift to a Step.par on Term.subst0 body via subst_par_pointwise +
-      -- TermSubst.singleton_par_pointwise; isBi rides along by replaying
-      -- the constructor structure.  Each substitution position either is
-      -- the singleton (where the par-step lives, isBi by hypothesis) or
-      -- is refl (which is isBi trivially).  The construction goes
-      -- through `Step.parWithBi.subst_compatible` on the term-singleton
-      -- substitution wrapped to track isBi.
-      sorry
+      let linkPaired := Term.subst_parWithBi_pointwise
+        (TermSubst.singleton_parWithBi_pointwise
+          (Step.parWithBi.mk _ firstBi)) body
+      exact Step.parStarWithBi.trans linkPaired.toIsBi restIH
 
 /-- **The β-workhorse, paired form.**  Joint chain on body and
 argument lifts to a chain on `Term.subst0`.  Used by the β cases
