@@ -5,6 +5,7 @@ import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Syntax.Reduction.CdLemmaStarWithBi
 import LeanFX.Syntax.Reduction.Diamond
+import LeanFX.Syntax.Reduction.CdParMono
 import LeanFX.Syntax.Reduction.Confluence
 import LeanFX.Syntax.Reduction.ParInversion
 import LeanFX.Frontend.Surface
@@ -805,5 +806,22 @@ proof. -/
 #assert_no_axioms LeanFX.Syntax.Term.cdIter_zero
 #assert_no_axioms LeanFX.Syntax.Term.cdIter_succ
 #assert_no_axioms LeanFX.Syntax.Term.cdIter_one
+
+/-! ## W8.3b: cd_monotone trivial cong cases (10).
+
+Cases of the cd-monotonicity workhorse where `Term.cd` performs
+no contraction.  Each helper takes parStarWithBi IH(s) on cd's
+of the recursive premises and lifts through the matching
+`parStarWithBi.<C>_cong` rule.  Zero-axiom across all 10. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_refl_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_lam_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_lamPi_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_pair_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_natSucc_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_listCons_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_optionSome_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_eitherInl_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_eitherInr_case
 
 end LeanFX.Tools.AuditAll
