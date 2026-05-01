@@ -2,6 +2,7 @@ import LeanFX.Syntax.CdDominates
 import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Syntax.Reduction.CdLemmaStarWithBi
 import LeanFX.Syntax.Reduction.Diamond
+import LeanFX.Syntax.TermExtraction
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
@@ -233,6 +234,48 @@ example :
         (Term.listCons (context := EmptyCtx) (elementType := Ty.bool)
           Term.boolTrue Term.listNil)) :=
   Step.par.cd_lemma_star (Step.par.isBi.refl _)
+
+/-! ### W8.7 typed-inversion exercises.
+
+`Term.eq_<ctor>_of_toRaw_<ctor>` lemmas recover typed
+constructor identity from a `Term.toRaw t = RawTerm.<ctor> ...`
+witness.  These smoke tests confirm the inversions discharge the
+boolean, nat, list, option, and either ground-constructor
+cases. -/
+
+/-- toRaw boolTrue = RawTerm.boolTrue (definitionally). -/
+example :
+    Term.toRaw (Term.boolTrue (context := EmptyCtx)) = RawTerm.boolTrue :=
+  rfl
+
+/-- A typed bool whose toRaw is RawTerm.boolTrue is provably boolTrue. -/
+example
+    (witness : Term EmptyCtx Ty.bool)
+    (rawEq : Term.toRaw witness = RawTerm.boolTrue) :
+    witness = Term.boolTrue :=
+  Term.eq_boolTrue_of_toRaw_boolTrue witness rawEq
+
+/-- A typed nat whose toRaw is RawTerm.natZero is provably natZero. -/
+example
+    (witness : Term EmptyCtx Ty.nat)
+    (rawEq : Term.toRaw witness = RawTerm.natZero) :
+    witness = Term.natZero :=
+  Term.eq_natZero_of_toRaw_natZero witness rawEq
+
+/-- A typed list-of-bool whose toRaw is RawTerm.listNil is provably listNil. -/
+example
+    (witness : Term EmptyCtx (Ty.list Ty.bool))
+    (rawEq : Term.toRaw witness = RawTerm.listNil) :
+    witness = Term.listNil :=
+  Term.eq_listNil_of_toRaw_listNil witness rawEq
+
+/-- A typed option-of-bool whose toRaw is RawTerm.optionNone is
+provably optionNone. -/
+example
+    (witness : Term EmptyCtx (Ty.option Ty.bool))
+    (rawEq : Term.toRaw witness = RawTerm.optionNone) :
+    witness = Term.optionNone :=
+  Term.eq_optionNone_of_toRaw_optionNone witness rawEq
 
 end CdSmokeTest
 
