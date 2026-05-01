@@ -859,6 +859,66 @@ theorem Step.par.cd_monotone_eitherMatch_case
     all_goals
       exact Step.parStarWithBi.eitherMatch_cong scrutineeIH leftIH rightIH
 
+/-- Discharge the `Step.par.isBi.idJ` constructor case.  Two
+levels of branching:
+
+* Outer: `if endpointsEqual : leftEnd = rightEnd`.  Both sides
+  use the same Decidable instance and resolve in lockstep.  In
+  the not-equal branch both fall through to `Term.idJ`; close
+  with `idJ_cong`.
+* Inner (endpoints-equal): split on `cd_idJ_redex_aligned`'s
+  witness raw shape.  refl-on-both → return `developedBase`,
+  close with `baseIH`.  refl-on-source-only → impossible (forced
+  via refl_source_inv).  refl-on-target-only → snoc with
+  `iotaIdJRefl`.  Neither refl → `idJ_cong`. -/
+theorem Step.par.cd_monotone_idJ_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEnd rightEnd : RawTerm scope}
+    {resultType : Ty level scope}
+    {sourceBase targetBase : Term ctx resultType}
+    {sourceWitness targetWitness :
+      Term ctx (Ty.id carrier leftEnd rightEnd)}
+    (baseIH : Step.parStarWithBi
+      (Term.cd sourceBase) (Term.cd targetBase))
+    (witnessIH : Step.parStarWithBi
+      (Term.cd sourceWitness) (Term.cd targetWitness)) :
+    Step.parStarWithBi
+      (Term.cd (Term.idJ sourceBase sourceWitness))
+      (Term.cd (Term.idJ targetBase targetWitness)) := by
+  simp only [Term.cd, Term.cd_idJ_redex]
+  split
+  case _ endpointsEqual =>
+    subst endpointsEqual
+    simp only [Term.cd_idJ_redex_aligned]
+    split
+    case _ rawSourceTerm developedSourceWitnessEq =>
+      have sourceCdEq : Term.cd sourceWitness = Term.refl leftEnd :=
+        Term.eq_refl_of_toRaw_refl (Term.cd sourceWitness)
+          developedSourceWitnessEq
+      have witnessIHcast :
+          Step.parStarWithBi (Term.refl leftEnd) (Term.cd targetWitness) :=
+        sourceCdEq ▸ witnessIH
+      have targetCdEq : Term.cd targetWitness = Term.refl leftEnd :=
+        Step.parStar.refl_source_inv witnessIHcast.toParStar
+      rw [targetCdEq]
+      simp only [Term.toRaw]
+      exact baseIH
+    all_goals
+      split
+      case _ rawTargetTerm developedTargetWitnessEq =>
+        have targetCdEq : Term.cd targetWitness = Term.refl leftEnd :=
+          Term.eq_refl_of_toRaw_refl (Term.cd targetWitness)
+            developedTargetWitnessEq
+        rw [targetCdEq] at witnessIH
+        exact Step.parStarWithBi.snoc
+          (Step.parStarWithBi.idJ_cong baseIH witnessIH)
+          (Step.par.isBi.iotaIdJRefl (Step.par.isBi.refl _))
+      all_goals
+        exact Step.parStarWithBi.idJ_cong baseIH witnessIH
+  case _ =>
+    exact Step.parStarWithBi.idJ_cong baseIH witnessIH
+
 /-- Discharge the `Step.par.isBi.snd` constructor case.  Same as
 `cd_monotone_fst_case` but extracting the secondVal.  Note: the
 β-fired form `Term.snd (Term.pair a b) → b` carries a
