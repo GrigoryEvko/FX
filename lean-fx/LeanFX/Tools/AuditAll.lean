@@ -5,6 +5,7 @@ import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Syntax.Reduction.CdLemmaStarWithBi
 import LeanFX.Syntax.Reduction.Diamond
+import LeanFX.Syntax.Reduction.Confluence
 import LeanFX.Syntax.Reduction.ParInversion
 import LeanFX.Frontend.Surface
 import LeanFX.Frontend.Token
@@ -791,5 +792,18 @@ chain-isBi witness simultaneously.  `cd_lemma_star` and
 
 #assert_no_axioms LeanFX.Syntax.Step.par.diamond
 #assert_no_axioms LeanFX.Syntax.Step.par.diamond_isBi
+
+/-! ## W8.3a: iterated complete development.
+
+`Term.cdIter` iterates `Term.cd` `count` times.  Pure structural
+recursion; `cdIter_zero`, `cdIter_succ`, and `cdIter_one` are
+defining `rfl`s.  All four constructions are zero-axiom; this
+file provides the join-point definition for the W8.3 confluence
+proof. -/
+
+#assert_no_axioms LeanFX.Syntax.Term.cdIter
+#assert_no_axioms LeanFX.Syntax.Term.cdIter_zero
+#assert_no_axioms LeanFX.Syntax.Term.cdIter_succ
+#assert_no_axioms LeanFX.Syntax.Term.cdIter_one
 
 end LeanFX.Tools.AuditAll
