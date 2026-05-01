@@ -25,8 +25,10 @@ Deep-ι cases use the paired source inversions
 
 /-- Transport a `Step.parStarWithBi` chain across a Ty equality on
 both endpoints.  Used by β-cases where source and target carry
-matching Ty.weaken_subst_singleton casts. -/
-private theorem Step.parStarWithBi.castBoth_chain
+matching Ty.weaken_subst_singleton casts.  Also used by
+`Step.par.cd_monotone_<elim>_case` (CdParMono.lean) to align
+`subst0` outputs through the same cast. -/
+theorem Step.parStarWithBi.castBoth_chain
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {sourceType targetType : Ty level scope}
     (typeEquality : sourceType = targetType)

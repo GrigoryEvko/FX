@@ -824,4 +824,15 @@ of the recursive premises and lifts through the matching
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_eitherInl_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_eitherInr_case
 
+/-! ## W8.3c: cd_monotone eliminator-cong cases.
+
+When the elaborator's complete development contracts a redex
+(e.g., `cd (Term.app (Term.lam body) arg) = body.subst0 (cd arg)`)
+the case helper has to handle four IH configurations:
+both fire / source-only / target-only / neither.  Each helper
+splits on source-side and target-side cd-redex helper, with the
+case-D fallback (neither fires) closed by `<C>_cong`. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_app_case
+
 end LeanFX.Tools.AuditAll

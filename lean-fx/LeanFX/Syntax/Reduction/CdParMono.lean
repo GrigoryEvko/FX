@@ -165,4 +165,109 @@ theorem Step.par.cd_monotone_eitherInr_case
   simp only [Term.cd]
   exact Step.parStarWithBi.eitherInr_cong valueIH
 
+/-! ## §2 — eliminator-cong cases (10).
+
+Constructors whose `Term.cd` arm contracts a redex when the
+function/scrutinee is in canonical form.  We have three relevant
+shape configurations on the IH `parStarWithBi (cd source) (cd target)`:
+
+* **A. Source-fires AND target-fires.**  E.g. `cd source_f =
+  Term.lam body`, `cd target_f = Term.lam body'`.  By
+  `lam_target_inv` on the IH, the body is itself
+  parStarWithBi-related; close with `subst0_parStarWithBi`
+  (β-fired form on both sides).
+
+* **B. Source-fires AND target-doesn't-fire.**  Impossible:
+  `lam_target_inv` on the IH would derive cd target = lam X,
+  contradicting the assumed non-lam `toRaw` shape.
+
+* **C. Source-doesn't-fire AND target-fires.**  Real case.
+  E.g., source is a higher-order app whose β-development
+  happens at typed-cd-target time but not source time.
+  Close with `app_cong` on the IH followed by snoc with
+  `betaApp` (β-fire at the chain end).
+
+* **D. Source-doesn't-fire AND target-doesn't-fire.**  Both
+  sides are plain `Term.app`; `app_cong` directly on the IHs.
+
+The proof structure for each helper is `simp only [Term.cd,
+Term.cd_<elim>_redex]` then `split` on the source-side match
+(26 raw-shape arms).  In the canonical-form arm: extract the
+typed canonical-form via `Term.eq_<C>_of_toRaw_<C>`; cast IHs;
+apply `lam_target_inv` (or `pair_target_inv`) and close per
+case A (with case B contradicted by toRaw incompatibility).
+In the non-canonical 25 arms: split RHS; canonical arm uses
+case C, non-canonical arm uses case D. -/
+
+/-- Discharge the `Step.par.isBi.app` constructor case.  The
+non-dependent application's complete development fires β when
+the developed function is a `Term.lam`.  Combines case A
+(source/target both fire) via `subst0_parStarWithBi`, case C
+(only target fires) via `app_cong` + snoc with `betaApp`, and
+case D (neither fires) via `app_cong`. -/
+theorem Step.par.cd_monotone_app_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {sourceFunction targetFunction :
+      Term ctx (Ty.arrow domainType codomainType)}
+    {sourceArgument targetArgument : Term ctx domainType}
+    (functionIH : Step.parStarWithBi
+      (Term.cd sourceFunction) (Term.cd targetFunction))
+    (argumentIH : Step.parStarWithBi
+      (Term.cd sourceArgument) (Term.cd targetArgument)) :
+    Step.parStarWithBi
+      (Term.cd (Term.app sourceFunction sourceArgument))
+      (Term.cd (Term.app targetFunction targetArgument)) := by
+  simp only [Term.cd, Term.cd_app_redex]
+  split
+  -- LHS-fires arm: source's developed function is a lam.
+  case _ rawSourceBody developedSourceFunctionEq =>
+    have sourceCdEq :
+        Term.cd sourceFunction =
+          Term.lam (Term.body_of_lam_general
+            (Term.cd sourceFunction) rfl developedSourceFunctionEq) :=
+      Term.eq_lam_of_toRaw_lam (Term.cd sourceFunction)
+        developedSourceFunctionEq
+    have functionIHcast :
+        Step.parStarWithBi
+          (Term.lam (Term.body_of_lam_general
+            (Term.cd sourceFunction) rfl developedSourceFunctionEq))
+          (Term.cd targetFunction) :=
+      sourceCdEq ▸ functionIH
+    obtain ⟨targetBody, targetCdEq, bodyPair⟩ :=
+      Step.parStarWithBi.lam_target_inv functionIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    -- Goal after simp: parStarWithBi
+    --   (cast ▸ (extracted source body).subst0 (cd source_a))
+    --   (cast ▸ targetBody.subst0 (cd target_a))
+    exact Step.parStarWithBi.castBoth_chain
+      (Ty.weaken_subst_singleton codomainType domainType)
+      (Step.parStarWithBi.subst0_parStarWithBi bodyPair argumentIH)
+  -- LHS-doesn't-fire (25 arms, all reachable depending on cd source's
+  -- raw shape).  Split the target-side match.
+  all_goals
+    split
+    -- RHS-fires arm: target's developed function is a lam.  Real case
+    -- when source-f β-develops only after the cd-target reduction
+    -- finishes.  Close via app_cong + snoc with betaApp at chain end —
+    -- the betaApp step's target already carries the
+    -- Ty.weaken_subst_singleton cast, matching the goal's RHS shape.
+    case _ rawTargetBody developedTargetFunctionEq =>
+      have targetCdEq :
+          Term.cd targetFunction =
+            Term.lam (Term.body_of_lam_general
+              (Term.cd targetFunction) rfl developedTargetFunctionEq) :=
+        Term.eq_lam_of_toRaw_lam (Term.cd targetFunction)
+          developedTargetFunctionEq
+      rw [targetCdEq] at functionIH
+      -- functionIH : parStarWithBi (cd source_f) (Term.lam (extracted target body))
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.app_cong functionIH argumentIH)
+        (Step.par.isBi.betaApp (Step.par.isBi.refl _)
+                               (Step.par.isBi.refl _))
+    -- RHS-doesn't-fire: both sides are plain Term.app.  app_cong.
+    all_goals
+      exact Step.parStarWithBi.app_cong functionIH argumentIH
+
 end LeanFX.Syntax
