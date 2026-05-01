@@ -838,5 +838,10 @@ case-D fallback (neither fires) closed by `<C>_cong`. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_fst_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_snd_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_boolElim_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_natElim_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_natRec_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_listElim_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_optionMatch_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_eitherMatch_case
 
 end LeanFX.Tools.AuditAll

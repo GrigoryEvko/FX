@@ -472,6 +472,393 @@ theorem Step.par.cd_monotone_boolElim_case
     all_goals
       exact Step.parStarWithBi.boolElim_cong scrutineeIH thenIH elseIH
 
+/-- Discharge the `Step.par.isBi.natElim` constructor case.
+Same template as `boolElim` with three split arms (natZero,
+natSucc, wildcard).  The natSucc arm fires `Term.app
+developedSucc predecessor`; both-fire case extracts predecessors
+via `natSucc_source_inv` and closes with `app_cong` on succIH
+and the predecessor pair. -/
+theorem Step.par.cd_monotone_natElim_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee targetScrutinee : Term ctx Ty.nat}
+    {sourceZero targetZero : Term ctx resultType}
+    {sourceSucc targetSucc : Term ctx (Ty.arrow Ty.nat resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd targetScrutinee))
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero))
+    (succIH : Step.parStarWithBi
+      (Term.cd sourceSucc) (Term.cd targetSucc)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natElim sourceScrutinee sourceZero sourceSucc))
+      (Term.cd (Term.natElim targetScrutinee targetZero targetSucc)) := by
+  simp only [Term.cd, Term.cd_natElim_redex]
+  split
+  case _ developedSourceScrutEq =>
+    have sourceCdEq : Term.cd sourceScrutinee = Term.natZero :=
+      Term.eq_natZero_of_toRaw_natZero _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi Term.natZero (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    have targetCdEq : Term.cd targetScrutinee = Term.natZero :=
+      Step.parStar.natZero_source_inv scrutineeIHcast.toParStar
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact zeroIH
+  case _ rawSourcePred developedSourceScrutEq =>
+    have sourceCdEq :
+        Term.cd sourceScrutinee =
+          Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq) :=
+      Term.eq_natSucc_of_toRaw_natSucc _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi
+          (Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq))
+          (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    obtain ⟨targetPred, targetCdEq, predPair⟩ :=
+      Step.parStarWithBi.natSucc_source_inv scrutineeIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.app_cong succIH predPair
+  all_goals
+    split
+    case _ developedTargetScrutEq =>
+      have targetCdEq : Term.cd targetScrutinee = Term.natZero :=
+        Term.eq_natZero_of_toRaw_natZero _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.natElim_cong scrutineeIH zeroIH succIH)
+        (Step.par.isBi.iotaNatElimZero _ (Step.par.isBi.refl _))
+    case _ rawTargetPred developedTargetScrutEq =>
+      have targetCdEq :
+          Term.cd targetScrutinee =
+            Term.natSucc (Term.predecessor_of_natSucc_general
+              (Term.cd targetScrutinee) rfl developedTargetScrutEq) :=
+        Term.eq_natSucc_of_toRaw_natSucc _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.natElim_cong scrutineeIH zeroIH succIH)
+        (Step.par.isBi.iotaNatElimSucc _ (Step.par.isBi.refl _)
+                                        (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.natElim_cong scrutineeIH zeroIH succIH
+
+/-- Discharge the `Step.par.isBi.natRec` constructor case.
+Similar to `natElim` but with the recursive-call structure in
+the natSucc arm: `app (app developedSucc pred) (natRec pred
+developedZero developedSucc)`. -/
+theorem Step.par.cd_monotone_natRec_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee targetScrutinee : Term ctx Ty.nat}
+    {sourceZero targetZero : Term ctx resultType}
+    {sourceSucc targetSucc : Term ctx
+      (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd targetScrutinee))
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero))
+    (succIH : Step.parStarWithBi
+      (Term.cd sourceSucc) (Term.cd targetSucc)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natRec sourceScrutinee sourceZero sourceSucc))
+      (Term.cd (Term.natRec targetScrutinee targetZero targetSucc)) := by
+  simp only [Term.cd, Term.cd_natRec_redex]
+  split
+  case _ developedSourceScrutEq =>
+    have sourceCdEq : Term.cd sourceScrutinee = Term.natZero :=
+      Term.eq_natZero_of_toRaw_natZero _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi Term.natZero (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    have targetCdEq : Term.cd targetScrutinee = Term.natZero :=
+      Step.parStar.natZero_source_inv scrutineeIHcast.toParStar
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact zeroIH
+  case _ rawSourcePred developedSourceScrutEq =>
+    have sourceCdEq :
+        Term.cd sourceScrutinee =
+          Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq) :=
+      Term.eq_natSucc_of_toRaw_natSucc _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi
+          (Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq))
+          (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    obtain ⟨targetPred, targetCdEq, predPair⟩ :=
+      Step.parStarWithBi.natSucc_source_inv scrutineeIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.app_cong
+      (Step.parStarWithBi.app_cong succIH predPair)
+      (Step.parStarWithBi.natRec_cong predPair zeroIH succIH)
+  all_goals
+    split
+    case _ developedTargetScrutEq =>
+      have targetCdEq : Term.cd targetScrutinee = Term.natZero :=
+        Term.eq_natZero_of_toRaw_natZero _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.natRec_cong scrutineeIH zeroIH succIH)
+        (Step.par.isBi.iotaNatRecZero _ (Step.par.isBi.refl _))
+    case _ rawTargetPred developedTargetScrutEq =>
+      have targetCdEq :
+          Term.cd targetScrutinee =
+            Term.natSucc (Term.predecessor_of_natSucc_general
+              (Term.cd targetScrutinee) rfl developedTargetScrutEq) :=
+        Term.eq_natSucc_of_toRaw_natSucc _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.natRec_cong scrutineeIH zeroIH succIH)
+        (Step.par.isBi.iotaNatRecSucc (Step.par.isBi.refl _)
+          (Step.par.isBi.refl _) (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.natRec_cong scrutineeIH zeroIH succIH
+
+/-- Discharge the `Step.par.isBi.listElim` constructor case.
+listNil/listCons/wildcard split.  listCons fires
+`app (app developedCons head) tail`. -/
+theorem Step.par.cd_monotone_listElim_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope} {resultType : Ty level scope}
+    {sourceScrutinee targetScrutinee : Term ctx (Ty.list elementType)}
+    {sourceNil targetNil : Term ctx resultType}
+    {sourceCons targetCons :
+      Term ctx (Ty.arrow elementType
+        (Ty.arrow (Ty.list elementType) resultType))}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd targetScrutinee))
+    (nilIH : Step.parStarWithBi
+      (Term.cd sourceNil) (Term.cd targetNil))
+    (consIH : Step.parStarWithBi
+      (Term.cd sourceCons) (Term.cd targetCons)) :
+    Step.parStarWithBi
+      (Term.cd (Term.listElim sourceScrutinee sourceNil sourceCons))
+      (Term.cd (Term.listElim targetScrutinee targetNil targetCons)) := by
+  simp only [Term.cd, Term.cd_listElim_redex]
+  split
+  case _ developedSourceScrutEq =>
+    have sourceCdEq : Term.cd sourceScrutinee = Term.listNil :=
+      Term.eq_listNil_of_toRaw_listNil _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi Term.listNil (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    have targetCdEq : Term.cd targetScrutinee = Term.listNil :=
+      Step.parStar.listNil_source_inv scrutineeIHcast.toParStar
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact nilIH
+  case _ rawSourceHead rawSourceTail developedSourceScrutEq =>
+    have sourceCdEq :
+        Term.cd sourceScrutinee =
+          Term.listCons
+            (Term.head_of_listCons_general
+              (Term.cd sourceScrutinee) rfl developedSourceScrutEq)
+            (Term.tail_of_listCons_general
+              (Term.cd sourceScrutinee) rfl developedSourceScrutEq) :=
+      Term.eq_listCons_of_toRaw_listCons _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi
+          (Term.listCons
+            (Term.head_of_listCons_general
+              (Term.cd sourceScrutinee) rfl developedSourceScrutEq)
+            (Term.tail_of_listCons_general
+              (Term.cd sourceScrutinee) rfl developedSourceScrutEq))
+          (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    obtain ⟨targetHead, targetTail, targetCdEq, headPair, tailPair⟩ :=
+      Step.parStarWithBi.listCons_source_inv scrutineeIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.app_cong
+      (Step.parStarWithBi.app_cong consIH headPair)
+      tailPair
+  all_goals
+    split
+    case _ developedTargetScrutEq =>
+      have targetCdEq : Term.cd targetScrutinee = Term.listNil :=
+        Term.eq_listNil_of_toRaw_listNil _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.listElim_cong scrutineeIH nilIH consIH)
+        (Step.par.isBi.iotaListElimNil _ (Step.par.isBi.refl _))
+    case _ rawTargetHead rawTargetTail developedTargetScrutEq =>
+      have targetCdEq :
+          Term.cd targetScrutinee =
+            Term.listCons
+              (Term.head_of_listCons_general
+                (Term.cd targetScrutinee) rfl developedTargetScrutEq)
+              (Term.tail_of_listCons_general
+                (Term.cd targetScrutinee) rfl developedTargetScrutEq) :=
+        Term.eq_listCons_of_toRaw_listCons _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.listElim_cong scrutineeIH nilIH consIH)
+        (Step.par.isBi.iotaListElimCons _ (Step.par.isBi.refl _)
+          (Step.par.isBi.refl _) (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.listElim_cong scrutineeIH nilIH consIH
+
+/-- Discharge the `Step.par.isBi.optionMatch` constructor case.
+optionNone/optionSome/wildcard split.  optionSome fires
+`app developedSome value`. -/
+theorem Step.par.cd_monotone_optionMatch_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope} {resultType : Ty level scope}
+    {sourceScrutinee targetScrutinee :
+      Term ctx (Ty.option elementType)}
+    {sourceNone targetNone : Term ctx resultType}
+    {sourceSome targetSome : Term ctx (Ty.arrow elementType resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd targetScrutinee))
+    (noneIH : Step.parStarWithBi
+      (Term.cd sourceNone) (Term.cd targetNone))
+    (someIH : Step.parStarWithBi
+      (Term.cd sourceSome) (Term.cd targetSome)) :
+    Step.parStarWithBi
+      (Term.cd (Term.optionMatch sourceScrutinee sourceNone sourceSome))
+      (Term.cd (Term.optionMatch targetScrutinee targetNone targetSome)) := by
+  simp only [Term.cd, Term.cd_optionMatch_redex]
+  split
+  case _ developedSourceScrutEq =>
+    have sourceCdEq : Term.cd sourceScrutinee = Term.optionNone :=
+      Term.eq_optionNone_of_toRaw_optionNone _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi Term.optionNone (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    have targetCdEq : Term.cd targetScrutinee = Term.optionNone :=
+      Step.parStar.optionNone_source_inv scrutineeIHcast.toParStar
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact noneIH
+  case _ rawSourceValue developedSourceScrutEq =>
+    have sourceCdEq :
+        Term.cd sourceScrutinee =
+          Term.optionSome (Term.value_of_optionSome_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq) :=
+      Term.eq_optionSome_of_toRaw_optionSome _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi
+          (Term.optionSome (Term.value_of_optionSome_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq))
+          (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    obtain ⟨targetValue, targetCdEq, valuePair⟩ :=
+      Step.parStarWithBi.optionSome_source_inv scrutineeIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.app_cong someIH valuePair
+  all_goals
+    split
+    case _ developedTargetScrutEq =>
+      have targetCdEq : Term.cd targetScrutinee = Term.optionNone :=
+        Term.eq_optionNone_of_toRaw_optionNone _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.optionMatch_cong scrutineeIH noneIH someIH)
+        (Step.par.isBi.iotaOptionMatchNone _ (Step.par.isBi.refl _))
+    case _ rawTargetValue developedTargetScrutEq =>
+      have targetCdEq :
+          Term.cd targetScrutinee =
+            Term.optionSome (Term.value_of_optionSome_general
+              (Term.cd targetScrutinee) rfl developedTargetScrutEq) :=
+        Term.eq_optionSome_of_toRaw_optionSome _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.optionMatch_cong scrutineeIH noneIH someIH)
+        (Step.par.isBi.iotaOptionMatchSome _ (Step.par.isBi.refl _)
+          (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.optionMatch_cong scrutineeIH noneIH someIH
+
+/-- Discharge the `Step.par.isBi.eitherMatch` constructor case.
+eitherInl/eitherInr/wildcard split.  Each fires
+`app developed<L/R>Branch value`. -/
+theorem Step.par.cd_monotone_eitherMatch_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope} {resultType : Ty level scope}
+    {sourceScrutinee targetScrutinee :
+      Term ctx (Ty.either leftType rightType)}
+    {sourceLeft targetLeft : Term ctx (Ty.arrow leftType resultType)}
+    {sourceRight targetRight : Term ctx (Ty.arrow rightType resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd targetScrutinee))
+    (leftIH : Step.parStarWithBi
+      (Term.cd sourceLeft) (Term.cd targetLeft))
+    (rightIH : Step.parStarWithBi
+      (Term.cd sourceRight) (Term.cd targetRight)) :
+    Step.parStarWithBi
+      (Term.cd (Term.eitherMatch sourceScrutinee sourceLeft sourceRight))
+      (Term.cd (Term.eitherMatch targetScrutinee targetLeft targetRight)) := by
+  simp only [Term.cd, Term.cd_eitherMatch_redex]
+  split
+  case _ rawSourceValue developedSourceScrutEq =>
+    have sourceCdEq :
+        Term.cd sourceScrutinee =
+          Term.eitherInl (Term.value_of_eitherInl_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq) :=
+      Term.eq_eitherInl_of_toRaw_eitherInl _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi
+          (Term.eitherInl (Term.value_of_eitherInl_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq))
+          (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    obtain ⟨targetValue, targetCdEq, valuePair⟩ :=
+      Step.parStarWithBi.eitherInl_source_inv scrutineeIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.app_cong leftIH valuePair
+  case _ rawSourceValue developedSourceScrutEq =>
+    have sourceCdEq :
+        Term.cd sourceScrutinee =
+          Term.eitherInr (Term.value_of_eitherInr_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq) :=
+      Term.eq_eitherInr_of_toRaw_eitherInr _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi
+          (Term.eitherInr (Term.value_of_eitherInr_general
+            (Term.cd sourceScrutinee) rfl developedSourceScrutEq))
+          (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    obtain ⟨targetValue, targetCdEq, valuePair⟩ :=
+      Step.parStarWithBi.eitherInr_source_inv scrutineeIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.app_cong rightIH valuePair
+  all_goals
+    split
+    case _ rawTargetValue developedTargetScrutEq =>
+      have targetCdEq :
+          Term.cd targetScrutinee =
+            Term.eitherInl (Term.value_of_eitherInl_general
+              (Term.cd targetScrutinee) rfl developedTargetScrutEq) :=
+        Term.eq_eitherInl_of_toRaw_eitherInl _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.eitherMatch_cong scrutineeIH leftIH rightIH)
+        (Step.par.isBi.iotaEitherMatchInl _ (Step.par.isBi.refl _)
+          (Step.par.isBi.refl _))
+    case _ rawTargetValue developedTargetScrutEq =>
+      have targetCdEq :
+          Term.cd targetScrutinee =
+            Term.eitherInr (Term.value_of_eitherInr_general
+              (Term.cd targetScrutinee) rfl developedTargetScrutEq) :=
+        Term.eq_eitherInr_of_toRaw_eitherInr _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.eitherMatch_cong scrutineeIH leftIH rightIH)
+        (Step.par.isBi.iotaEitherMatchInr _ (Step.par.isBi.refl _)
+          (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.eitherMatch_cong scrutineeIH leftIH rightIH
+
 /-- Discharge the `Step.par.isBi.snd` constructor case.  Same as
 `cd_monotone_fst_case` but extracting the secondVal.  Note: the
 β-fired form `Term.snd (Term.pair a b) → b` carries a
