@@ -7,122 +7,147 @@ variable {level : Nat}
 
 /-! ## Term-level substitution.
 
-`TermSubst Γ Δ σ` supplies for each `i : Fin scope` a term in `Δ`
-whose type is `(varType Γ i).subst σ`.  `TermSubst.lift` extends
-under a binder by `Term.weaken`-ing predecessor terms into the
-extended target. -/
+`TermSubst sourceContext targetContext typeSubstitution` supplies
+for each `position : Fin scope` a term in `targetContext` whose type
+is `(varType sourceContext position).subst typeSubstitution`.
+`TermSubst.lift` extends under a binder by `Term.weaken`-ing
+predecessor terms into the extended target. -/
 
-/-- A term-level substitution maps each position of `Γ` to a term in
-`Δ` whose type is `varType Γ` substituted by the underlying type-level
-σ.  The type-equality is computed via `Ty.subst`. -/
-abbrev TermSubst {m : Mode} {level scope scope' : Nat}
-    (Γ : Ctx m level scope) (Δ : Ctx m level scope')
-    (σ : Subst level scope scope') : Type :=
-  ∀ (i : Fin scope), Term Δ ((varType Γ i).subst σ)
+/-- A term-level substitution maps each position of `sourceContext` to
+a term in `targetContext` whose type is `varType sourceContext`
+substituted by the underlying type-level substitution.  The
+type-equality is computed via `Ty.subst`. -/
+abbrev TermSubst {mode : Mode} {level sourceScope targetScope : Nat}
+    (sourceContext : Ctx mode level sourceScope)
+    (targetContext : Ctx mode level targetScope)
+    (typeSubstitution : Subst level sourceScope targetScope) : Type :=
+  ∀ (position : Fin sourceScope),
+    Term targetContext ((varType sourceContext position).subst typeSubstitution)
 
 /-- Lift a term-level substitution under a binder.  Position 0 in the
 extended source context maps to `Term.var ⟨0, _⟩` in the extended
-target (cast through `Ty.subst_weaken_commute`); positions `k + 1`
-weaken the predecessor's image into the extended target context. -/
+target (cast through `Ty.subst_weaken_commute`); positions
+`predecessor + 1` weaken the predecessor's image into the extended
+target context. -/
 @[reducible]
-def TermSubst.lift {m : Mode} {level scope scope' : Nat}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
-    {σ : Subst level scope scope'}
-    (σt : TermSubst Γ Δ σ) (newType : Ty level scope) :
-    TermSubst (Γ.cons newType) (Δ.cons (newType.subst σ)) σ.lift :=
-  fun i =>
-    match i with
+def TermSubst.lift {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    (termSubstitution : TermSubst sourceContext targetContext typeSubstitution)
+    (newType : Ty level sourceScope) :
+    TermSubst (sourceContext.cons newType)
+      (targetContext.cons (newType.subst typeSubstitution))
+      typeSubstitution.lift :=
+  fun position =>
+    match position with
     | ⟨0, _⟩ =>
-        (Ty.subst_weaken_commute newType σ).symm ▸
+        (Ty.subst_weaken_commute newType typeSubstitution).symm ▸
           (Term.var ⟨0, Nat.zero_lt_succ _⟩ :
-            Term (Δ.cons (newType.subst σ)) (newType.subst σ).weaken)
-    | ⟨k + 1, h⟩ =>
+            Term (targetContext.cons (newType.subst typeSubstitution))
+              (newType.subst typeSubstitution).weaken)
+    | ⟨predecessor + 1, succBound⟩ =>
         (Ty.subst_weaken_commute
-            (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) σ).symm ▸
-          Term.weaken (newType.subst σ)
-            (σt ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+            (varType sourceContext
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+            typeSubstitution).symm ▸
+          Term.weaken (newType.subst typeSubstitution)
+            (termSubstitution
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
 
 /-- Weakening then substituting with the singleton substitution is
 the identity on `Ty`.  The shift renames every original variable up
-by one, then `Subst.singleton X` at position `k + 1` returns the
-`Ty.tyVar k` corresponding to the original position — i.e., the
-substitution acts as the identity. -/
+by one, then `Subst.singleton substituent` at position
+`predecessor + 1` returns the `Ty.tyVar predecessor` corresponding to
+the original position — i.e., the substitution acts as the identity. -/
 theorem Ty.weaken_subst_singleton {level scope : Nat}
-    (T : Ty level scope) (X : Ty level scope) :
-    T.weaken.subst (Subst.singleton X) = T := by
-  show (T.rename Renaming.weaken).subst (Subst.singleton X) = T
-  have hRSC :=
-    Ty.rename_subst_commute T Renaming.weaken (Subst.singleton X)
-  have hPointwise :
+    (tyValue : Ty level scope) (substituent : Ty level scope) :
+    tyValue.weaken.subst (Subst.singleton substituent) = tyValue := by
+  show (tyValue.rename Renaming.weaken).subst (Subst.singleton substituent)
+     = tyValue
+  have renameSubstCommute :=
+    Ty.rename_subst_commute tyValue Renaming.weaken (Subst.singleton substituent)
+  have substitutionsAgreePointwise :
       Subst.equiv
-        (Subst.precompose Renaming.weaken (Subst.singleton X))
+        (Subst.precompose Renaming.weaken (Subst.singleton substituent))
         Subst.identity :=
-    Subst.precompose_weaken_singleton_equiv_identity X
-  have hCong := Ty.subst_congr hPointwise T
-  have hId := Ty.subst_id T
-  exact hRSC.trans (hCong.trans hId)
+    Subst.precompose_weaken_singleton_equiv_identity substituent
+  have congCast := Ty.subst_congr substitutionsAgreePointwise tyValue
+  have identitySubstIsNeutral := Ty.subst_id tyValue
+  exact renameSubstCommute.trans (congCast.trans identitySubstIsNeutral)
 
 /-- Weakening then substituting with a term-singleton substitution is
 the identity on `Ty`.  Same proof template as
 `Ty.weaken_subst_singleton`; the supplied `rawArg` is irrelevant
 because position 0 is no longer referenced after weakening. -/
 theorem Ty.weaken_subst_termSingleton {level scope : Nat}
-    (T : Ty level scope) (X : Ty level scope) (rawArg : RawTerm scope) :
-    T.weaken.subst (Subst.termSingleton X rawArg) = T := by
-  show (T.rename Renaming.weaken).subst (Subst.termSingleton X rawArg) = T
-  have hRSC :=
-    Ty.rename_subst_commute T Renaming.weaken (Subst.termSingleton X rawArg)
-  have hPointwise :
+    (tyValue : Ty level scope) (substituent : Ty level scope)
+    (rawArg : RawTerm scope) :
+    tyValue.weaken.subst (Subst.termSingleton substituent rawArg) = tyValue := by
+  show (tyValue.rename Renaming.weaken).subst
+        (Subst.termSingleton substituent rawArg)
+     = tyValue
+  have renameSubstCommute :=
+    Ty.rename_subst_commute tyValue Renaming.weaken
+      (Subst.termSingleton substituent rawArg)
+  have substitutionsAgreePointwise :
       Subst.equiv
-        (Subst.precompose Renaming.weaken (Subst.termSingleton X rawArg))
+        (Subst.precompose Renaming.weaken
+          (Subst.termSingleton substituent rawArg))
         Subst.identity :=
-    Subst.precompose_weaken_termSingleton_equiv_identity X rawArg
-  have hCong := Ty.subst_congr hPointwise T
-  have hId := Ty.subst_id T
-  exact hRSC.trans (hCong.trans hId)
+    Subst.precompose_weaken_termSingleton_equiv_identity substituent rawArg
+  have congCast := Ty.subst_congr substitutionsAgreePointwise tyValue
+  have identitySubstIsNeutral := Ty.subst_id tyValue
+  exact renameSubstCommute.trans (congCast.trans identitySubstIsNeutral)
 
 /-- The single-substituent term substitution: position 0 maps to
-`arg`, positions `k + 1` map to `Term.var ⟨k, _⟩` in the original
-context (variable shifts down by one because the outer scope has one
-fewer binder than the input).  The underlying type-level σ is
-`Subst.singleton T_arg` for the argument's type `T_arg`.  Both Fin
-cases require a cast through `Ty.weaken_subst_singleton` to align the
-substituted-varType form. -/
-def TermSubst.singleton {m : Mode} {level scope : Nat}
-    {Γ : Ctx m level scope} {T_arg : Ty level scope}
-    (arg : Term Γ T_arg) :
-    TermSubst (Γ.cons T_arg) Γ (Subst.singleton T_arg) :=
-  fun i =>
-    match i with
+`arg`, positions `predecessor + 1` map to `Term.var ⟨predecessor, _⟩`
+in the original context (variable shifts down by one because the
+outer scope has one fewer binder than the input).  The underlying
+type-level substitution is `Subst.singleton argType` for the
+argument's type `argType`.  Both Fin cases require a cast through
+`Ty.weaken_subst_singleton` to align the substituted-varType form. -/
+def TermSubst.singleton {mode : Mode} {level scope : Nat}
+    {sourceContext : Ctx mode level scope} {argType : Ty level scope}
+    (arg : Term sourceContext argType) :
+    TermSubst (sourceContext.cons argType) sourceContext (Subst.singleton argType) :=
+  fun position =>
+    match position with
     | ⟨0, _⟩ =>
-        (Ty.weaken_subst_singleton T_arg T_arg).symm ▸ arg
-    | ⟨k + 1, h⟩ =>
+        (Ty.weaken_subst_singleton argType argType).symm ▸ arg
+    | ⟨predecessor + 1, succBound⟩ =>
         (Ty.weaken_subst_singleton
-            (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) T_arg).symm ▸
-          Term.var ⟨k, Nat.lt_of_succ_lt_succ h⟩
+            (varType sourceContext
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+            argType).symm ▸
+          Term.var ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩
 
 /-- **Term-bearing single substitution.**  Like `TermSubst.singleton`,
-but uses the term-bearing joint substitution `Subst.termSingleton
-T_arg (Term.toRaw arg)` so that identity-type witnesses see the
-actual substituted argument's raw projection at position 0.  This
-variant is the one referenced by the typed→raw forward bridge for
-β-reduction: with this σ, `RawConsistent` holds by construction at
-position 0 (`Term.toRaw arg = (Subst.termSingleton T_arg
+but uses the term-bearing joint substitution
+`Subst.termSingleton argType (Term.toRaw arg)` so that identity-type
+witnesses see the actual substituted argument's raw projection at
+position 0.  This variant is the one referenced by the typed→raw
+forward bridge for β-reduction: with this substitution,
+`RawConsistent` holds by construction at position 0
+(`Term.toRaw arg = (Subst.termSingleton argType
 (Term.toRaw arg)).forRaw ⟨0, _⟩` definitionally). -/
-def TermSubst.termSingleton {m : Mode} {level scope : Nat}
-    {Γ : Ctx m level scope} {T_arg : Ty level scope}
-    (arg : Term Γ T_arg) :
-    TermSubst (Γ.cons T_arg) Γ
-        (Subst.termSingleton T_arg (Term.toRaw arg)) :=
-  fun i =>
-    match i with
+def TermSubst.termSingleton {mode : Mode} {level scope : Nat}
+    {sourceContext : Ctx mode level scope} {argType : Ty level scope}
+    (arg : Term sourceContext argType) :
+    TermSubst (sourceContext.cons argType) sourceContext
+        (Subst.termSingleton argType (Term.toRaw arg)) :=
+  fun position =>
+    match position with
     | ⟨0, _⟩ =>
-        (Ty.weaken_subst_termSingleton T_arg T_arg (Term.toRaw arg)).symm ▸ arg
-    | ⟨k + 1, h⟩ =>
+        (Ty.weaken_subst_termSingleton argType argType
+          (Term.toRaw arg)).symm ▸ arg
+    | ⟨predecessor + 1, succBound⟩ =>
         (Ty.weaken_subst_termSingleton
-            (varType Γ ⟨k, Nat.lt_of_succ_lt_succ h⟩) T_arg
+            (varType sourceContext
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+            argType
             (Term.toRaw arg)).symm ▸
-          Term.var ⟨k, Nat.lt_of_succ_lt_succ h⟩
+          Term.var ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩
 
 /-! ## Substitution-substitution commutativity.
 
@@ -131,135 +156,176 @@ substitution and substituting the substituted substituent.  Used by
 `Term.subst`'s `appPi` / `pair` / `snd` cases to align result types. -/
 
 /-- The pointwise equivalence underpinning `Ty.subst0_subst_commute`:
-substituting then composing with σ equals lifting σ under the binder
-then composing with the singleton-substituent (already substituted by
-σ).  Both sides at position 0 evaluate to `(substituent).subst σ`;
-at positions `k + 1`, both evaluate to `σ ⟨k, _⟩`. -/
+substituting then composing with the outer substitution equals lifting
+the outer substitution under the binder then composing with the
+singleton-substituent (already substituted by the outer substitution).
+Both sides at position 0 evaluate to `(substituent).subst
+typeSubstitution`; at positions `predecessor + 1`, both evaluate to
+`typeSubstitution ⟨predecessor, _⟩`. -/
 theorem Subst.singleton_compose_equiv_lift_compose_singleton
     {level scope target : Nat}
-    (substituent : Ty level scope) (σ : Subst level scope target) :
+    (substituent : Ty level scope)
+    (typeSubstitution : Subst level scope target) :
     Subst.equiv
-      (Subst.compose (Subst.singleton substituent) σ)
-      (Subst.compose σ.lift (Subst.singleton (substituent.subst σ))) :=
+      (Subst.compose (Subst.singleton substituent) typeSubstitution)
+      (Subst.compose typeSubstitution.lift
+        (Subst.singleton (substituent.subst typeSubstitution))) :=
   Subst.equiv_intro
     (fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨k + 1, h⟩  => by
-          show (Ty.tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩).subst σ
-             = ((σ ⟨k, Nat.lt_of_succ_lt_succ h⟩).rename Renaming.weaken).subst
-                 (Subst.singleton (substituent.subst σ))
-          have hRSC :=
-            Ty.rename_subst_commute (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
-              Renaming.weaken (Subst.singleton (substituent.subst σ))
-          have hPointwise :
+      | ⟨0, _⟩                            => rfl
+      | ⟨predecessor + 1, succBound⟩      => by
+          show (Ty.tyVar
+                  ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩).subst
+                  typeSubstitution
+             = ((typeSubstitution
+                   ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩).rename
+                   Renaming.weaken).subst
+                 (Subst.singleton (substituent.subst typeSubstitution))
+          have renameSubstCommute :=
+            Ty.rename_subst_commute
+              (typeSubstitution
+                ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+              Renaming.weaken
+              (Subst.singleton (substituent.subst typeSubstitution))
+          have substitutionsAgreePointwise :
               Subst.equiv
                 (Subst.precompose Renaming.weaken
-                  (Subst.singleton (substituent.subst σ)))
+                  (Subst.singleton (substituent.subst typeSubstitution)))
                 Subst.identity :=
             Subst.precompose_weaken_singleton_equiv_identity
-              (substituent.subst σ)
-          have hCong := Ty.subst_congr hPointwise
-                          (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
-          have hId := Ty.subst_id (σ ⟨k, Nat.lt_of_succ_lt_succ h⟩)
-          exact (hRSC.trans (hCong.trans hId)).symm)
+              (substituent.subst typeSubstitution)
+          have congCast := Ty.subst_congr substitutionsAgreePointwise
+                          (typeSubstitution
+                            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+          have identitySubstIsNeutral :=
+            Ty.subst_id
+              (typeSubstitution
+                ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+          exact (renameSubstCommute.trans
+                  (congCast.trans identitySubstIsNeutral)).symm)
     fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨k + 1, h⟩  =>
+      | ⟨0, _⟩                            => rfl
+      | ⟨predecessor + 1, succBound⟩      =>
           (RawTerm.weaken_subst_dropNewest
-            (σ.forRaw ⟨k, Nat.lt_of_succ_lt_succ h⟩)).symm
+            (typeSubstitution.forRaw
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)).symm
 
 /-- The practical specialisation: substituting the outermost variable
 then applying an outer substitution equals lifting the outer
 substitution under the binder then substituting the substituted
 substituent. -/
 theorem Ty.subst0_subst_commute {level scope target : Nat}
-    (T : Ty level (scope + 1)) (X : Ty level scope) (σ : Subst level scope target) :
-    (T.subst0 X).subst σ
-      = (T.subst σ.lift).subst0 (X.subst σ) := by
-  show (T.subst (Subst.singleton X)).subst σ
-     = (T.subst σ.lift).subst (Subst.singleton (X.subst σ))
-  have hLeft := Ty.subst_compose T (Subst.singleton X) σ
-  have hRight := Ty.subst_compose T σ.lift (Subst.singleton (X.subst σ))
-  have hCong := Ty.subst_congr
-    (Subst.singleton_compose_equiv_lift_compose_singleton X σ) T
-  exact hLeft.trans (hCong.trans hRight.symm)
+    (codomain : Ty level (scope + 1))
+    (substituent : Ty level scope)
+    (typeSubstitution : Subst level scope target) :
+    (codomain.subst0 substituent).subst typeSubstitution
+      = (codomain.subst typeSubstitution.lift).subst0
+          (substituent.subst typeSubstitution) := by
+  show (codomain.subst (Subst.singleton substituent)).subst typeSubstitution
+     = (codomain.subst typeSubstitution.lift).subst
+         (Subst.singleton (substituent.subst typeSubstitution))
+  have leftCompose :=
+    Ty.subst_compose codomain (Subst.singleton substituent) typeSubstitution
+  have rightCompose :=
+    Ty.subst_compose codomain typeSubstitution.lift
+      (Subst.singleton (substituent.subst typeSubstitution))
+  have congCast := Ty.subst_congr
+    (Subst.singleton_compose_equiv_lift_compose_singleton
+      substituent typeSubstitution) codomain
+  exact leftCompose.trans (congCast.trans rightCompose.symm)
 
-/-- **Term-level substitution** — apply a term-level substitution `σt`
-(and the underlying type-level σ) to a `Term`, producing a `Term` in
-the target context with the substituted type.
+/-- **Term-level substitution** — apply a term-level substitution
+`termSubstitution` (and the underlying type-level substitution
+`typeSubstitution`) to a `Term`, producing a `Term` in the target
+context with the substituted type.
 
-The variable case looks up the substituent term via `σt`; the binder
-cases (`lam`, `lamPi`) use `TermSubst.lift` to extend σt under the new
-binder and align body types via `Ty.subst_weaken_commute`; the
+The variable case looks up the substituent term via
+`termSubstitution`; the binder cases (`lam`, `lamPi`) use
+`TermSubst.lift` to extend `termSubstitution` under the new binder
+and align body types via `Ty.subst_weaken_commute`; the
 projection-laden cases (`appPi`, `pair`, `snd`) use
 `Ty.subst0_subst_commute` to align `subst0`-shaped result types. -/
-def Term.subst {m scope scope'}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
-    {σ : Subst level scope scope'}
-    (σt : TermSubst Γ Δ σ) :
-    {T : Ty level scope} → Term Γ T → Term Δ (T.subst σ)
-  | _, .var i      => σt i
-  | _, .unit       => Term.unit
+def Term.subst {mode sourceScope targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    (termSubstitution : TermSubst sourceContext targetContext typeSubstitution) :
+    {tyValue : Ty level sourceScope} →
+      Term sourceContext tyValue →
+      Term targetContext (tyValue.subst typeSubstitution)
+  | _, .var position  => termSubstitution position
+  | _, .unit          => Term.unit
   | _, .lam (codomainType := codomainType) body =>
-      Term.lam (codomainType := codomainType.subst σ)
-        ((Ty.subst_weaken_commute codomainType σ) ▸
-          (Term.subst (TermSubst.lift σt _) body))
-  | _, .app f a    =>
-      Term.app (Term.subst σt f) (Term.subst σt a)
+      Term.lam (codomainType := codomainType.subst typeSubstitution)
+        ((Ty.subst_weaken_commute codomainType typeSubstitution) ▸
+          (Term.subst (TermSubst.lift termSubstitution _) body))
+  | _, .app functionTerm argumentTerm  =>
+      Term.app (Term.subst termSubstitution functionTerm)
+               (Term.subst termSubstitution argumentTerm)
   | _, .lamPi (domainType := domainType) body =>
-      Term.lamPi (Term.subst (TermSubst.lift σt domainType) body)
-  | _, .appPi (domainType := domainType) (codomainType := codomainType) f a =>
-      (Ty.subst0_subst_commute codomainType domainType σ).symm ▸
-        Term.appPi (Term.subst σt f) (Term.subst σt a)
+      Term.lamPi
+        (Term.subst (TermSubst.lift termSubstitution domainType) body)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+              functionTerm argumentTerm =>
+      (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm ▸
+        Term.appPi (Term.subst termSubstitution functionTerm)
+                   (Term.subst termSubstitution argumentTerm)
   | _, .pair (firstType := firstType) (secondType := secondType)
              firstVal secondVal =>
-      Term.pair (Term.subst σt firstVal)
-        ((Ty.subst0_subst_commute secondType firstType σ) ▸
-          (Term.subst σt secondVal))
-  | _, .fst p      => Term.fst (Term.subst σt p)
-  | _, .snd (firstType := firstType) (secondType := secondType) p =>
-      (Ty.subst0_subst_commute secondType firstType σ).symm ▸
-        Term.snd (Term.subst σt p)
-  | _, .boolTrue   => Term.boolTrue
-  | _, .boolFalse  => Term.boolFalse
-  | _, .boolElim scrutinee thenBr elseBr =>
-      Term.boolElim (Term.subst σt scrutinee)
-                    (Term.subst σt thenBr)
-                    (Term.subst σt elseBr)
-  | _, .natZero      => Term.natZero
-  | _, .natSucc pred => Term.natSucc (Term.subst σt pred)
+      Term.pair (Term.subst termSubstitution firstVal)
+        ((Ty.subst0_subst_commute secondType firstType typeSubstitution) ▸
+          (Term.subst termSubstitution secondVal))
+  | _, .fst pairTerm  => Term.fst (Term.subst termSubstitution pairTerm)
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm =>
+      (Ty.subst0_subst_commute secondType firstType typeSubstitution).symm ▸
+        Term.snd (Term.subst termSubstitution pairTerm)
+  | _, .boolTrue      => Term.boolTrue
+  | _, .boolFalse     => Term.boolFalse
+  | _, .boolElim scrutinee thenBranch elseBranch =>
+      Term.boolElim (Term.subst termSubstitution scrutinee)
+                    (Term.subst termSubstitution thenBranch)
+                    (Term.subst termSubstitution elseBranch)
+  | _, .natZero       => Term.natZero
+  | _, .natSucc predecessor =>
+      Term.natSucc (Term.subst termSubstitution predecessor)
   | _, .natRec scrutinee zeroBranch succBranch =>
-      Term.natRec (Term.subst σt scrutinee)
-                  (Term.subst σt zeroBranch)
-                  (Term.subst σt succBranch)
+      Term.natRec (Term.subst termSubstitution scrutinee)
+                  (Term.subst termSubstitution zeroBranch)
+                  (Term.subst termSubstitution succBranch)
   | _, .natElim scrutinee zeroBranch succBranch =>
-      Term.natElim (Term.subst σt scrutinee)
-                   (Term.subst σt zeroBranch)
-                   (Term.subst σt succBranch)
+      Term.natElim (Term.subst termSubstitution scrutinee)
+                   (Term.subst termSubstitution zeroBranch)
+                   (Term.subst termSubstitution succBranch)
   | _, .listNil       => Term.listNil
-  | _, .listCons hd tl =>
-      Term.listCons (Term.subst σt hd) (Term.subst σt tl)
+  | _, .listCons headValue tailValue =>
+      Term.listCons (Term.subst termSubstitution headValue)
+                    (Term.subst termSubstitution tailValue)
   | _, .listElim scrutinee nilBranch consBranch =>
-      Term.listElim (Term.subst σt scrutinee)
-                    (Term.subst σt nilBranch)
-                    (Term.subst σt consBranch)
-  | _, .optionNone     => Term.optionNone
-  | _, .optionSome v   => Term.optionSome (Term.subst σt v)
+      Term.listElim (Term.subst termSubstitution scrutinee)
+                    (Term.subst termSubstitution nilBranch)
+                    (Term.subst termSubstitution consBranch)
+  | _, .optionNone    => Term.optionNone
+  | _, .optionSome value =>
+      Term.optionSome (Term.subst termSubstitution value)
   | _, .optionMatch scrutinee noneBranch someBranch =>
-      Term.optionMatch (Term.subst σt scrutinee)
-                       (Term.subst σt noneBranch)
-                       (Term.subst σt someBranch)
-  | _, .eitherInl v    => Term.eitherInl (Term.subst σt v)
-  | _, .eitherInr v    => Term.eitherInr (Term.subst σt v)
+      Term.optionMatch (Term.subst termSubstitution scrutinee)
+                       (Term.subst termSubstitution noneBranch)
+                       (Term.subst termSubstitution someBranch)
+  | _, .eitherInl value =>
+      Term.eitherInl (Term.subst termSubstitution value)
+  | _, .eitherInr value =>
+      Term.eitherInr (Term.subst termSubstitution value)
   | _, .eitherMatch scrutinee leftBranch rightBranch =>
-      Term.eitherMatch (Term.subst σt scrutinee)
-                       (Term.subst σt leftBranch)
-                       (Term.subst σt rightBranch)
-  | _, .refl rawTerm => Term.refl (rawTerm.subst σ.forRaw)
+      Term.eitherMatch (Term.subst termSubstitution scrutinee)
+                       (Term.subst termSubstitution leftBranch)
+                       (Term.subst termSubstitution rightBranch)
+  | _, .refl rawTerm =>
+      Term.refl (rawTerm.subst typeSubstitution.forRaw)
   | _, .idJ baseCase witness =>
-      Term.idJ (Term.subst σt baseCase) (Term.subst σt witness)
+      Term.idJ (Term.subst termSubstitution baseCase)
+               (Term.subst termSubstitution witness)
 
 /-- **Single-variable term substitution** — substitute `arg` for var 0
 in `body`.  Used by β-reduction.  Result type is computed via
@@ -268,22 +334,28 @@ shape exactly.  For the term-bearing variant whose type captures
 `Term.toRaw arg` at position 0 (used by the typed→raw forward
 bridge), see `Term.subst0_term`. -/
 @[reducible]
-def Term.subst0 {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
-    (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
-    Term Γ (T_body.subst0 T_arg) :=
+def Term.subst0 {mode : Mode} {level scope : Nat}
+    {sourceContext : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    (body : Term (sourceContext.cons argType) bodyType)
+    (arg : Term sourceContext argType) :
+    Term sourceContext (bodyType.subst0 argType) :=
   Term.subst (TermSubst.singleton arg) body
 
 /-- **Term-bearing single-variable substitution.**  Substitute `arg`
-for var 0 using `TermSubst.termSingleton`, whose underlying σ is
-`Subst.termSingleton T_arg (Term.toRaw arg)`.  The result type
-captures the argument's raw projection at position 0 — the right
-shape for the typed→raw forward bridge for β-reduction. -/
+for var 0 using `TermSubst.termSingleton`, whose underlying
+type substitution is `Subst.termSingleton argType (Term.toRaw arg)`.
+The result type captures the argument's raw projection at position 0
+— the right shape for the typed→raw forward bridge for
+β-reduction. -/
 @[reducible]
-def Term.subst0_term {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {T_arg : Ty level scope} {T_body : Ty level (scope + 1)}
-    (body : Term (Γ.cons T_arg) T_body) (arg : Term Γ T_arg) :
-    Term Γ (T_body.subst (Subst.termSingleton T_arg (Term.toRaw arg))) :=
+def Term.subst0_term {mode : Mode} {level scope : Nat}
+    {sourceContext : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    (body : Term (sourceContext.cons argType) bodyType)
+    (arg : Term sourceContext argType) :
+    Term sourceContext
+      (bodyType.subst (Subst.termSingleton argType (Term.toRaw arg))) :=
   Term.subst (TermSubst.termSingleton arg) body
 
 /-! ## Categorical structure on TermSubst.
@@ -291,23 +363,42 @@ def Term.subst0_term {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
 The term-level analogues of `Subst.identity` and `Subst.compose`,
 witnessing the same enriched-category structure at the term level.
 Functoriality theorems (`Term.subst_id`, `Term.subst_compose`) need
-dependent-cast wrangling because `Term.subst σt t : Term Δ (T.subst
-σ)` is not definitionally `Term Δ T` even when `σ = Subst.identity`. -/
+dependent-cast wrangling because `Term.subst termSubstitution term :
+Term targetContext (tyValue.subst typeSubstitution)` is not
+definitionally `Term targetContext tyValue` even when
+`typeSubstitution = Subst.identity`. -/
 
-/-- Identity term-substitution: each position `i` maps to `Term.var i`,
-cast through `Ty.subst_id` to live at `(varType Γ i).subst Subst.identity`. -/
-def TermSubst.identity {m : Mode} {level scope : Nat} (Γ : Ctx m level scope) :
-    TermSubst Γ Γ Subst.identity := fun i =>
-  (Ty.subst_id (varType Γ i)).symm ▸ Term.var i
+/-- Identity term-substitution: each position maps to its own
+`Term.var`, cast through `Ty.subst_id` to live at
+`(varType sourceContext position).subst Subst.identity`. -/
+def TermSubst.identity {mode : Mode} {level scope : Nat}
+    (sourceContext : Ctx mode level scope) :
+    TermSubst sourceContext sourceContext Subst.identity :=
+  fun position =>
+    (Ty.subst_id (varType sourceContext position)).symm ▸ Term.var position
 
-/-- Compose two term-substitutions: apply `σt₁` then substitute the
-result by `σt₂`, casting through `Ty.subst_compose`. -/
-def TermSubst.compose {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
-    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
-    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂) :
-    TermSubst Γ₁ Γ₃ (Subst.compose σ₁ σ₂) := fun i =>
-  Ty.subst_compose (varType Γ₁ i) σ₁ σ₂ ▸ Term.subst σt₂ (σt₁ i)
+/-- Compose two term-substitutions: apply `firstTermSubstitution`
+then substitute the result by `secondTermSubstitution`, casting
+through `Ty.subst_compose`. -/
+def TermSubst.compose {mode : Mode}
+    {level firstScope middleScope finalScope : Nat}
+    {firstContext : Ctx mode level firstScope}
+    {middleContext : Ctx mode level middleScope}
+    {finalContext : Ctx mode level finalScope}
+    {firstTypeSubstitution : Subst level firstScope middleScope}
+    {secondTypeSubstitution : Subst level middleScope finalScope}
+    (firstTermSubstitution :
+      TermSubst firstContext middleContext firstTypeSubstitution)
+    (secondTermSubstitution :
+      TermSubst middleContext finalContext secondTypeSubstitution) :
+    TermSubst firstContext finalContext
+      (Subst.compose firstTypeSubstitution secondTypeSubstitution) :=
+  fun position =>
+    Ty.subst_compose
+      (varType firstContext position)
+      firstTypeSubstitution secondTypeSubstitution
+      ▸ Term.subst secondTermSubstitution
+          (firstTermSubstitution position)
 
 
 end LeanFX.Syntax
