@@ -1286,6 +1286,49 @@ theorem Step.parStarWithBi.pair_target_inv
   exact ⟨firstVal', secondVal', eq_of_heq targetHEq,
          firstWithBi, secondWithBi⟩
 
+/-! ## `Step.parWithBi` cast helpers — paired versions of
+`Step.par.castBoth` / `castTarget` / `castSource` that thread
+the cast through both Step.par and isBi simultaneously. -/
+
+/-- `Step.parWithBi` survives a Ty-equality cast on both endpoints. -/
+theorem Step.parWithBi.castBoth
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    {beforeTerm afterTerm : Term ctx sourceType}
+    (paired : Step.parWithBi beforeTerm afterTerm) :
+    Step.parWithBi (typeEquality ▸ beforeTerm) (typeEquality ▸ afterTerm) := by
+  obtain ⟨step, bi⟩ := paired
+  exact Step.parWithBi.mk
+    (Step.par.castBoth typeEquality step)
+    (Step.par.isBi.castBoth typeEquality bi)
+
+/-- `Step.parWithBi` survives a target-direction Eq cast. -/
+theorem Step.parWithBi.castTarget
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm afterTerm afterTerm' : Term ctx termType}
+    (targetEquality : afterTerm = afterTerm')
+    (paired : Step.parWithBi beforeTerm afterTerm) :
+    Step.parWithBi beforeTerm afterTerm' := by
+  obtain ⟨step, bi⟩ := paired
+  exact Step.parWithBi.mk
+    (Step.par.castTarget targetEquality step)
+    (Step.par.isBi.castTarget targetEquality bi)
+
+/-- `Step.parWithBi` survives a source-direction Eq cast. -/
+theorem Step.parWithBi.castSource
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm beforeTerm' afterTerm : Term ctx termType}
+    (sourceEquality : beforeTerm = beforeTerm')
+    (paired : Step.parWithBi beforeTerm afterTerm) :
+    Step.parWithBi beforeTerm' afterTerm := by
+  obtain ⟨step, bi⟩ := paired
+  exact Step.parWithBi.mk
+    (Step.par.castSource sourceEquality step)
+    (Step.par.isBi.castSource sourceEquality bi)
+
 /-! ## β-workhorse smoke: subst_compatible preserves isBi (refl case only).
 
 Sanity-check the proof-irrelevance route to `subst_compatible_isBi`:
@@ -1391,15 +1434,75 @@ theorem Step.parWithBi.subst_compatible
         (Step.par.boolElim sStep tStep eStep)
         (Step.par.isBi.boolElim sBi tBi eBi)
   | betaApp _bodyBi _argBi bodyIH argIH =>
-      -- Endpoints match what subst_compatible.betaApp returns; reuse
-      -- the existing typed-step output for both Step.par and isBi via
-      -- subst_compatible (gives the same Prop as the goal here, by
-      -- proof irrelevance) and `subst_compatible_isBi`'s sibling: for
-      -- now, defer to the existing subst_compatible to get the step,
-      -- then re-prove isBi by inducting on the step's structure.
-      sorry
+      -- Implicits in declaration order (least-recent first under
+      -- rename_i): ctx, domainType, codomainType, body, body', arg,
+      -- arg', bodyStep, argStep — 9 implicits.
+      rename_i _ domainType codomainType _ bodyAfter _ argumentAfter _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermSubst.lift termSubstitution domainType)
+      obtain ⟨aStep, aBi⟩ := argIH termSubstitution
+      let substitutedArgumentAfter : Term targetCtx (domainType.subst typeSubstitution) :=
+        Term.subst termSubstitution argumentAfter
+      let substitutedBodyAfter :
+          Term (targetCtx.cons (domainType.subst typeSubstitution))
+            (codomainType.weaken.subst typeSubstitution.lift) :=
+        Term.subst (TermSubst.lift termSubstitution domainType) bodyAfter
+      let bodyCastEq := Ty.subst_weaken_commute codomainType typeSubstitution
+      let primitiveTarget : Term targetCtx (codomainType.subst typeSubstitution) :=
+        (Ty.weaken_subst_singleton
+            (codomainType.subst typeSubstitution)
+            (domainType.subst typeSubstitution)) ▸
+          Term.subst0 (bodyCastEq ▸ substitutedBodyAfter)
+                      substitutedArgumentAfter
+      let targetEquality :
+          primitiveTarget =
+          Term.subst termSubstitution
+            ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 bodyAfter argumentAfter) :=
+        eq_of_heq (HEq.symm (by
+          apply HEq.trans
+            (Term.subst_HEq_cast_input termSubstitution
+              (Ty.weaken_subst_singleton codomainType domainType)
+              (Term.subst0 bodyAfter argumentAfter))
+          apply HEq.trans
+            (Term.subst0_subst_HEq termSubstitution bodyAfter argumentAfter)
+          apply HEq.trans
+            (HEq.symm
+              (Term.subst0_HEq_cast_input bodyCastEq
+                substitutedBodyAfter substitutedArgumentAfter))
+          exact Term.castRight_HEq
+            (Ty.weaken_subst_singleton
+              (codomainType.subst typeSubstitution)
+              (domainType.subst typeSubstitution))
+            (Term.subst0 (bodyCastEq ▸ substitutedBodyAfter)
+                          substitutedArgumentAfter)))
+      exact Step.parWithBi.mk
+        (Step.par.castTarget targetEquality
+          (Step.par.betaApp (Step.par.castBoth bodyCastEq bStep) aStep))
+        (Step.par.isBi.castTarget targetEquality
+          (Step.par.isBi.betaApp
+            (Step.par.isBi.castBoth bodyCastEq bBi) aBi))
   | betaAppPi _bodyBi _argBi bodyIH argIH =>
-      sorry
+      rename_i _ domainType codomainType _ bodyAfter _ argumentAfter _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermSubst.lift termSubstitution domainType)
+      obtain ⟨aStep, aBi⟩ := argIH termSubstitution
+      let resultTypeEquality :=
+        Ty.subst0_subst_commute codomainType domainType typeSubstitution
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              Term.subst0
+                (Term.subst (TermSubst.lift termSubstitution domainType) bodyAfter)
+                (Term.subst termSubstitution argumentAfter)
+            = Term.subst termSubstitution (Term.subst0 bodyAfter argumentAfter) :=
+        eq_of_heq
+          (HEq.trans (eqRec_heq _ _)
+            (HEq.symm (Term.subst0_subst_HEq termSubstitution bodyAfter argumentAfter)))
+      exact Step.parWithBi.mk
+        (Step.par.castTarget targetEquality
+          (Step.par.castBoth resultTypeEquality.symm
+            (Step.par.betaAppPi bStep aStep)))
+        (Step.par.isBi.castTarget targetEquality
+          (Step.par.isBi.castBoth resultTypeEquality.symm
+            (Step.par.isBi.betaAppPi bBi aBi)))
   | betaFstPair _firstBi firstIH =>
       -- `rename_i` orders LEAST RECENT first (declaration order):
       -- ctx, firstType, secondType, firstVal, firstVal', secondVal,
@@ -1415,7 +1518,24 @@ theorem Step.parWithBi.subst_compatible
         (Step.par.betaFstPair secondValSubst fStep)
         (Step.par.isBi.betaFstPair fBi)
   | betaSndPair _secondBi secondIH =>
-      sorry
+      -- Implicits: ctx, firstType, secondType, firstVal, secondVal,
+      -- secondVal', secondStep — 7.
+      rename_i _ firstType secondType firstVal _ secondAfter _
+      obtain ⟨sStep, sBi⟩ := secondIH termSubstitution
+      let resultTypeEquality :=
+        Ty.subst0_subst_commute secondType firstType typeSubstitution
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              (resultTypeEquality ▸ Term.subst termSubstitution secondAfter)
+            = Term.subst termSubstitution secondAfter :=
+        eq_of_heq (HEq.trans (eqRec_heq _ _) (eqRec_heq _ _))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.castBoth resultTypeEquality.symm
+          (Step.parWithBi.mk
+            (Step.par.betaSndPair (Term.subst termSubstitution firstVal)
+              (Step.par.castBoth resultTypeEquality sStep))
+            (Step.par.isBi.betaSndPair
+              (Step.par.isBi.castBoth resultTypeEquality sBi))))
   | iotaBoolElimTrue elseBranch _thenBi thenIH =>
       obtain ⟨tStep, tBi⟩ := thenIH termSubstitution
       let elseSubst := Term.subst termSubstitution elseBranch
@@ -1563,14 +1683,92 @@ theorem Step.parWithBi.subst_compatible
         (Step.par.iotaIdJRefl bStep)
         (Step.par.isBi.iotaIdJRefl bBi)
   -- Deep cases — same approach + cast bookkeeping for binder/Σ.
-  | betaAppDeep _functionBi _argBi functionIH argIH => sorry
-  | betaAppPiDeep _functionBi _argBi functionIH argIH => sorry
+  | betaAppDeep _functionBi _argBi functionIH argIH =>
+      -- Implicits in declaration order: ctx, domainType, codomainType,
+      -- functionTerm, body, arg, arg', functionStep, argStep — 9.
+      rename_i _ domainType codomainType _ body _ argAfter _ _
+      obtain ⟨fStep, fBi⟩ := functionIH termSubstitution
+      obtain ⟨aStep, aBi⟩ := argIH termSubstitution
+      let substitutedArgAfter : Term targetCtx (domainType.subst typeSubstitution) :=
+        Term.subst termSubstitution argAfter
+      let substitutedBody :
+          Term (targetCtx.cons (domainType.subst typeSubstitution))
+            (codomainType.weaken.subst typeSubstitution.lift) :=
+        Term.subst (TermSubst.lift termSubstitution domainType) body
+      let bodyCastEq := Ty.subst_weaken_commute codomainType typeSubstitution
+      let primitiveTarget : Term targetCtx (codomainType.subst typeSubstitution) :=
+        (Ty.weaken_subst_singleton
+            (codomainType.subst typeSubstitution)
+            (domainType.subst typeSubstitution)) ▸
+          Term.subst0 (bodyCastEq ▸ substitutedBody) substitutedArgAfter
+      let targetEquality :
+          primitiveTarget =
+          Term.subst termSubstitution
+            ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 body argAfter) :=
+        eq_of_heq (HEq.symm (by
+          apply HEq.trans
+            (Term.subst_HEq_cast_input termSubstitution
+              (Ty.weaken_subst_singleton codomainType domainType)
+              (Term.subst0 body argAfter))
+          apply HEq.trans
+            (Term.subst0_subst_HEq termSubstitution body argAfter)
+          apply HEq.trans
+            (HEq.symm
+              (Term.subst0_HEq_cast_input bodyCastEq
+                substitutedBody substitutedArgAfter))
+          exact Term.castRight_HEq
+            (Ty.weaken_subst_singleton
+              (codomainType.subst typeSubstitution)
+              (domainType.subst typeSubstitution))
+            (Term.subst0 (bodyCastEq ▸ substitutedBody) substitutedArgAfter)))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.mk
+          (Step.par.betaAppDeep fStep aStep)
+          (Step.par.isBi.betaAppDeep fBi aBi))
+  | betaAppPiDeep _functionBi _argBi functionIH argIH =>
+      rename_i _ domainType codomainType _ body _ argAfter _ _
+      obtain ⟨fStep, fBi⟩ := functionIH termSubstitution
+      obtain ⟨aStep, aBi⟩ := argIH termSubstitution
+      let resultTypeEquality :=
+        Ty.subst0_subst_commute codomainType domainType typeSubstitution
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              Term.subst0
+                (Term.subst (TermSubst.lift termSubstitution domainType) body)
+                (Term.subst termSubstitution argAfter)
+            = Term.subst termSubstitution (Term.subst0 body argAfter) :=
+        eq_of_heq
+          (HEq.trans (eqRec_heq _ _)
+            (HEq.symm (Term.subst0_subst_HEq termSubstitution body argAfter)))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.castBoth resultTypeEquality.symm
+          (Step.parWithBi.mk
+            (Step.par.betaAppPiDeep fStep aStep)
+            (Step.par.isBi.betaAppPiDeep fBi aBi)))
   | betaFstPairDeep _pairBi pairIH =>
       obtain ⟨pStep, pBi⟩ := pairIH termSubstitution
       exact Step.parWithBi.mk
         (Step.par.betaFstPairDeep pStep)
         (Step.par.isBi.betaFstPairDeep pBi)
-  | betaSndPairDeep _pairBi pairIH => sorry
+  | betaSndPairDeep _pairBi pairIH =>
+      -- Implicits: ctx, firstType, secondType, pairTerm, firstVal,
+      -- secondVal, pairStep — 7.
+      rename_i _ firstType secondType _ _ secondVal _
+      obtain ⟨pStep, pBi⟩ := pairIH termSubstitution
+      let resultTypeEquality :=
+        Ty.subst0_subst_commute secondType firstType typeSubstitution
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              ((Ty.subst0_subst_commute secondType firstType typeSubstitution) ▸
+                Term.subst termSubstitution secondVal)
+            = Term.subst termSubstitution secondVal :=
+        eq_of_heq (HEq.trans (eqRec_heq _ _) (eqRec_heq _ _))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.castBoth resultTypeEquality.symm
+          (Step.parWithBi.mk
+            (Step.par.betaSndPairDeep pStep)
+            (Step.par.isBi.betaSndPairDeep pBi)))
   | iotaBoolElimTrueDeep elseBranch _scrutBi _thenBi scrutIH thenIH =>
       obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
       obtain ⟨tStep, tBi⟩ := thenIH termSubstitution
