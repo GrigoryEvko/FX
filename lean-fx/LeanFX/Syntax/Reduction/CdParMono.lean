@@ -1400,4 +1400,372 @@ theorem Step.par.cd_monotone_iotaIdJRefl_case
   rw [cdEq]
   exact baseIH
 
+/-! ## §5 — Deep βι cases (17).
+
+Each Deep case has a non-canonical scrutinee/function that par-reduces
+to canonical form.  Strategy: chain
+* cong-eliminator helper (functionIH varying source to canonical-form
+  target, others varying as their own IHs) →
+* shallow-firing helper (refl on already-canonical args).
+
+This decomposes a Deep case into a cong step (source → canonical-form
+intermediate) followed by a shallow firing (intermediate → target).
+The cong helper handles all internal cd-firing logic; the shallow
+helper handles the literal redex contraction. -/
+
+/-- Discharge `Step.par.isBi.betaAppDeep`. -/
+theorem Step.par.cd_monotone_betaAppDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionTerm : Term ctx (Ty.arrow domainType codomainType)}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {argumentBefore argumentAfter : Term ctx domainType}
+    (functionIH : Step.parStarWithBi
+      (Term.cd functionTerm) (Term.cd (Term.lam body)))
+    (argumentIH : Step.parStarWithBi
+      (Term.cd argumentBefore) (Term.cd argumentAfter)) :
+    Step.parStarWithBi
+      (Term.cd (Term.app functionTerm argumentBefore))
+      (Term.cd ((Ty.weaken_subst_singleton codomainType domainType) ▸
+        Term.subst0 body argumentAfter)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_app_case functionIH argumentIH)
+    (Step.par.cd_monotone_betaApp_case
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.betaAppPiDeep`. -/
+theorem Step.par.cd_monotone_betaAppPiDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {functionTerm : Term ctx (Ty.piTy domainType codomainType)}
+    {body : Term (ctx.cons domainType) codomainType}
+    {argumentBefore argumentAfter : Term ctx domainType}
+    (functionIH : Step.parStarWithBi
+      (Term.cd functionTerm) (Term.cd (Term.lamPi body)))
+    (argumentIH : Step.parStarWithBi
+      (Term.cd argumentBefore) (Term.cd argumentAfter)) :
+    Step.parStarWithBi
+      (Term.cd (Term.appPi functionTerm argumentBefore))
+      (Term.cd (Term.subst0 body argumentAfter)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_appPi_case functionIH argumentIH)
+    (Step.par.cd_monotone_betaAppPi_case
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.betaFstPairDeep`. -/
+theorem Step.par.cd_monotone_betaFstPairDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairTerm : Term ctx (Ty.sigmaTy firstType secondType)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    (pairIH : Step.parStarWithBi
+      (Term.cd pairTerm) (Term.cd (Term.pair firstVal secondVal))) :
+    Step.parStarWithBi
+      (Term.cd (Term.fst pairTerm)) (Term.cd firstVal) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_fst_case pairIH)
+    (Step.par.cd_monotone_betaFstPair_case secondVal
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.betaSndPairDeep`. -/
+theorem Step.par.cd_monotone_betaSndPairDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairTerm : Term ctx (Ty.sigmaTy firstType secondType)}
+    {firstVal : Term ctx firstType}
+    {secondVal : Term ctx (secondType.subst0 firstType)}
+    (pairIH : Step.parStarWithBi
+      (Term.cd pairTerm) (Term.cd (Term.pair firstVal secondVal))) :
+    Step.parStarWithBi
+      (Term.cd (Term.snd pairTerm)) (Term.cd secondVal) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_snd_case pairIH)
+    (Step.par.cd_monotone_betaSndPair_case firstVal
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaBoolElimTrueDeep`. -/
+theorem Step.par.cd_monotone_iotaBoolElimTrueDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee : Term ctx Ty.bool}
+    (elseBranch : Term ctx resultType)
+    {sourceThen targetThen : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd Term.boolTrue))
+    (thenIH : Step.parStarWithBi
+      (Term.cd sourceThen) (Term.cd targetThen)) :
+    Step.parStarWithBi
+      (Term.cd (Term.boolElim sourceScrutinee sourceThen elseBranch))
+      (Term.cd targetThen) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_boolElim_case scrutineeIH thenIH
+      (Step.parStarWithBi.refl _))
+    (Step.par.cd_monotone_iotaBoolElimTrue_case elseBranch
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaBoolElimFalseDeep`. -/
+theorem Step.par.cd_monotone_iotaBoolElimFalseDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee : Term ctx Ty.bool}
+    (thenBranch : Term ctx resultType)
+    {sourceElse targetElse : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd Term.boolFalse))
+    (elseIH : Step.parStarWithBi
+      (Term.cd sourceElse) (Term.cd targetElse)) :
+    Step.parStarWithBi
+      (Term.cd (Term.boolElim sourceScrutinee thenBranch sourceElse))
+      (Term.cd targetElse) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_boolElim_case scrutineeIH
+      (Step.parStarWithBi.refl _) elseIH)
+    (Step.par.cd_monotone_iotaBoolElimFalse_case thenBranch
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaNatElimZeroDeep`. -/
+theorem Step.par.cd_monotone_iotaNatElimZeroDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee : Term ctx Ty.nat}
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
+    {sourceZero targetZero : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd Term.natZero))
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natElim sourceScrutinee sourceZero succBranch))
+      (Term.cd targetZero) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_natElim_case scrutineeIH zeroIH
+      (Step.parStarWithBi.refl _))
+    (Step.par.cd_monotone_iotaNatElimZero_case succBranch
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaNatElimSuccDeep`. -/
+theorem Step.par.cd_monotone_iotaNatElimSuccDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee : Term ctx Ty.nat}
+    {predecessor : Term ctx Ty.nat}
+    (zeroBranch : Term ctx resultType)
+    {sourceSucc targetSucc : Term ctx (Ty.arrow Ty.nat resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd (Term.natSucc predecessor)))
+    (succIH : Step.parStarWithBi
+      (Term.cd sourceSucc) (Term.cd targetSucc)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natElim sourceScrutinee zeroBranch sourceSucc))
+      (Term.cd (Term.app targetSucc predecessor)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_natElim_case scrutineeIH
+      (Step.parStarWithBi.refl _) succIH)
+    (Step.par.cd_monotone_iotaNatElimSucc_case zeroBranch
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaNatRecZeroDeep`. -/
+theorem Step.par.cd_monotone_iotaNatRecZeroDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee : Term ctx Ty.nat}
+    (succBranch : Term ctx
+      (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
+    {sourceZero targetZero : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd Term.natZero))
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natRec sourceScrutinee sourceZero succBranch))
+      (Term.cd targetZero) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_natRec_case scrutineeIH zeroIH
+      (Step.parStarWithBi.refl _))
+    (Step.par.cd_monotone_iotaNatRecZero_case succBranch
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaNatRecSuccDeep`. -/
+theorem Step.par.cd_monotone_iotaNatRecSuccDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee : Term ctx Ty.nat}
+    {predecessor : Term ctx Ty.nat}
+    {sourceZero targetZero : Term ctx resultType}
+    {sourceSucc targetSucc : Term ctx
+      (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd (Term.natSucc predecessor)))
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero))
+    (succIH : Step.parStarWithBi
+      (Term.cd sourceSucc) (Term.cd targetSucc)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natRec sourceScrutinee sourceZero sourceSucc))
+      (Term.cd (Term.app (Term.app targetSucc predecessor)
+        (Term.natRec predecessor targetZero targetSucc))) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_natRec_case scrutineeIH zeroIH succIH)
+    (Step.par.cd_monotone_iotaNatRecSucc_case
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _)
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaListElimNilDeep`. -/
+theorem Step.par.cd_monotone_iotaListElimNilDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {sourceScrutinee : Term ctx (Ty.list elementType)}
+    (consBranch : Term ctx
+      (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
+    {sourceNil targetNil : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee)
+      (Term.cd (Term.listNil (elementType := elementType))))
+    (nilIH : Step.parStarWithBi
+      (Term.cd sourceNil) (Term.cd targetNil)) :
+    Step.parStarWithBi
+      (Term.cd (Term.listElim sourceScrutinee sourceNil consBranch))
+      (Term.cd targetNil) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_listElim_case scrutineeIH nilIH
+      (Step.parStarWithBi.refl _))
+    (Step.par.cd_monotone_iotaListElimNil_case consBranch
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaListElimConsDeep`. -/
+theorem Step.par.cd_monotone_iotaListElimConsDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {sourceScrutinee : Term ctx (Ty.list elementType)}
+    {head : Term ctx elementType}
+    {tail : Term ctx (Ty.list elementType)}
+    (nilBranch : Term ctx resultType)
+    {sourceCons targetCons :
+      Term ctx (Ty.arrow elementType
+        (Ty.arrow (Ty.list elementType) resultType))}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd (Term.listCons head tail)))
+    (consIH : Step.parStarWithBi
+      (Term.cd sourceCons) (Term.cd targetCons)) :
+    Step.parStarWithBi
+      (Term.cd (Term.listElim sourceScrutinee nilBranch sourceCons))
+      (Term.cd (Term.app (Term.app targetCons head) tail)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_listElim_case scrutineeIH
+      (Step.parStarWithBi.refl _) consIH)
+    (Step.par.cd_monotone_iotaListElimCons_case nilBranch
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _)
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaOptionMatchNoneDeep`. -/
+theorem Step.par.cd_monotone_iotaOptionMatchNoneDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {sourceScrutinee : Term ctx (Ty.option elementType)}
+    (someBranch : Term ctx (Ty.arrow elementType resultType))
+    {sourceNone targetNone : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee)
+      (Term.cd (Term.optionNone (elementType := elementType))))
+    (noneIH : Step.parStarWithBi
+      (Term.cd sourceNone) (Term.cd targetNone)) :
+    Step.parStarWithBi
+      (Term.cd (Term.optionMatch sourceScrutinee sourceNone someBranch))
+      (Term.cd targetNone) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_optionMatch_case scrutineeIH noneIH
+      (Step.parStarWithBi.refl _))
+    (Step.par.cd_monotone_iotaOptionMatchNone_case someBranch
+      (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaOptionMatchSomeDeep`. -/
+theorem Step.par.cd_monotone_iotaOptionMatchSomeDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    {sourceScrutinee : Term ctx (Ty.option elementType)}
+    {value : Term ctx elementType}
+    (noneBranch : Term ctx resultType)
+    {sourceSome targetSome : Term ctx (Ty.arrow elementType resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd (Term.optionSome value)))
+    (someIH : Step.parStarWithBi
+      (Term.cd sourceSome) (Term.cd targetSome)) :
+    Step.parStarWithBi
+      (Term.cd (Term.optionMatch sourceScrutinee noneBranch sourceSome))
+      (Term.cd (Term.app targetSome value)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_optionMatch_case scrutineeIH
+      (Step.parStarWithBi.refl _) someIH)
+    (Step.par.cd_monotone_iotaOptionMatchSome_case noneBranch
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaEitherMatchInlDeep`. -/
+theorem Step.par.cd_monotone_iotaEitherMatchInlDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {sourceScrutinee : Term ctx (Ty.either leftType rightType)}
+    {value : Term ctx leftType}
+    (rightBranch : Term ctx (Ty.arrow rightType resultType))
+    {sourceLeft targetLeft : Term ctx (Ty.arrow leftType resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee)
+      (Term.cd (Term.eitherInl (rightType := rightType) value)))
+    (leftIH : Step.parStarWithBi
+      (Term.cd sourceLeft) (Term.cd targetLeft)) :
+    Step.parStarWithBi
+      (Term.cd (Term.eitherMatch sourceScrutinee sourceLeft rightBranch))
+      (Term.cd (Term.app targetLeft value)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_eitherMatch_case scrutineeIH leftIH
+      (Step.parStarWithBi.refl _))
+    (Step.par.cd_monotone_iotaEitherMatchInl_case rightBranch
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaEitherMatchInrDeep`. -/
+theorem Step.par.cd_monotone_iotaEitherMatchInrDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    {sourceScrutinee : Term ctx (Ty.either leftType rightType)}
+    {value : Term ctx rightType}
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    {sourceRight targetRight : Term ctx (Ty.arrow rightType resultType)}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee)
+      (Term.cd (Term.eitherInr (leftType := leftType) value)))
+    (rightIH : Step.parStarWithBi
+      (Term.cd sourceRight) (Term.cd targetRight)) :
+    Step.parStarWithBi
+      (Term.cd (Term.eitherMatch sourceScrutinee leftBranch sourceRight))
+      (Term.cd (Term.app targetRight value)) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_eitherMatch_case scrutineeIH
+      (Step.parStarWithBi.refl _) rightIH)
+    (Step.par.cd_monotone_iotaEitherMatchInr_case leftBranch
+      (Step.parStarWithBi.refl _) (Step.parStarWithBi.refl _))
+
+/-- Discharge `Step.par.isBi.iotaIdJReflDeep`.  Source =
+`Term.idJ baseCase witness` where witness par-reduces to refl;
+target = `baseCase'`. -/
+theorem Step.par.cd_monotone_iotaIdJReflDeep_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {endpoint : RawTerm scope}
+    {resultType : Ty level scope}
+    {sourceBase targetBase : Term ctx resultType}
+    {sourceWitness :
+      Term ctx (Ty.id carrier endpoint endpoint)}
+    (witnessIH : Step.parStarWithBi
+      (Term.cd sourceWitness)
+      (Term.cd (Term.refl (carrier := carrier) endpoint)))
+    (baseIH : Step.parStarWithBi
+      (Term.cd sourceBase) (Term.cd targetBase)) :
+    Step.parStarWithBi
+      (Term.cd (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+        (rightEnd := endpoint) sourceBase sourceWitness))
+      (Term.cd targetBase) :=
+  Step.parStarWithBi.append
+    (Step.par.cd_monotone_idJ_case baseIH witnessIH)
+    (Step.par.cd_monotone_iotaIdJRefl_case
+      (Step.parStarWithBi.refl _))
+
 end LeanFX.Syntax
