@@ -317,4 +317,18 @@ def Term.cd {mode : Mode} {level scope : Nat}
   | _, .idJ baseCase witness =>
       Term.cd_idJ_redex (Term.cd baseCase) (Term.cd witness)
 
+/-- Pushing `Term.cd` through a same-context type-equality cast.
+`Term.cd` commutes with `▸` because the cast preserves the term's
+underlying syntactic structure.  Used by `Step.par.cd_monotone`'s
+β cases to align `cd` of a cast-bearing target with the cast-
+bearing source.  Proof: `cases typeEquality; rfl`. -/
+theorem Term.cd_cast {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    (term : Term context sourceType) :
+    Term.cd (typeEquality ▸ term) = typeEquality ▸ Term.cd term := by
+  cases typeEquality
+  rfl
+
 end LeanFX.Syntax

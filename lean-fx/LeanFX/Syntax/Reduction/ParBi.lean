@@ -710,4 +710,32 @@ theorem Step.par.isBi.cast_target_eq
   cases rewriteEq
   exact stepBi
 
+/-- Step.par.isBi survives source-direction `Eq` cast.  Companion
+to `cast_target_eq`. -/
+theorem Step.par.isBi.cast_source_eq
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm rewrittenSource targetTerm : Term ctx termType}
+    {parallelStep : Step.par sourceTerm targetTerm}
+    (rewriteEq : sourceTerm = rewrittenSource)
+    (stepBi : Step.par.isBi parallelStep) :
+    Step.par.isBi (rewriteEq ▸ parallelStep) := by
+  cases rewriteEq
+  exact stepBi
+
+/-- Step.par.isBi survives a same-equation `castBoth` on both
+endpoints.  Companion to `Step.par.castBoth`.  Used by the
+witnessed joint substitution lemma to push isBi through the
+Ty-level commute casts. -/
+theorem Step.par.isBi.castBoth_eq
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    (typeEquality : sourceType = targetType)
+    {beforeTerm afterTerm : Term ctx sourceType}
+    {parallelStep : Step.par beforeTerm afterTerm}
+    (stepBi : Step.par.isBi parallelStep) :
+    Step.par.isBi (Step.par.castBoth typeEquality parallelStep) := by
+  cases typeEquality
+  exact stepBi
+
 end LeanFX.Syntax
