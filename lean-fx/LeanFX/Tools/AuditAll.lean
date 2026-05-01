@@ -845,4 +845,81 @@ case-D fallback (neither fires) closed by `<C>_cong`. -/
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_eitherMatch_case
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_idJ_case
 
+/-! ## W8.3d: cd_monotone β shallow cases (4). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaApp_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaAppPi_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaFstPair_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaSndPair_case
+
+/-! ## W8.3d-prereq: witnessed substitution chain. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.subst_par_witnessed
+#assert_no_axioms LeanFX.Syntax.Step.par.subst0_par_witnessed
+#assert_no_axioms LeanFX.Syntax.Step.par.rename_compatible_witnessed
+#assert_no_axioms LeanFX.Syntax.Step.par.subst_compatible_witnessed
+#assert_no_axioms LeanFX.Syntax.Term.subst_par_pointwise_witnessed
+#assert_no_axioms LeanFX.Syntax.TermSubst.par_lift_witnessed
+#assert_no_axioms LeanFX.Syntax.TermSubst.singleton_par_witnessed
+#assert_no_axioms LeanFX.Syntax.Term.cd_cast
+
+/-! ## W8.3e: cd_monotone shallow ι cases (13). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaBoolElimTrue_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaBoolElimFalse_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatElimZero_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatElimSucc_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatRecZero_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatRecSucc_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaListElimNil_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaListElimCons_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaOptionMatchNone_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaOptionMatchSome_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaEitherMatchInl_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaEitherMatchInr_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaIdJRefl_case
+
+/-! ## W8.3f: cd_monotone Deep βι cases (17). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaAppDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaAppPiDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaFstPairDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_betaSndPairDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaBoolElimTrueDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaBoolElimFalseDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatElimZeroDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatElimSuccDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatRecZeroDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaNatRecSuccDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaListElimNilDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaListElimConsDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaOptionMatchNoneDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaOptionMatchSomeDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaEitherMatchInlDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaEitherMatchInrDeep_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_iotaIdJReflDeep_case
+
+/-! ## W8.3g: cd_monotone aggregator. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone
+
+/-! ## W8.3h: cdIter scaffold + chain extension. -/
+
+#assert_no_axioms LeanFX.Syntax.Term.cdIter_pull_cd_inside
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.cd_monotone
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.cdIter_monotone
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.cdIter_increasing
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.cdIter_le
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.cdIter_completion
+
+/-! ## W8.3i: typed Church-Rosser (closes #885).
+
+Two formulations of typed confluence, both zero axiom:
+* `Step.parStarWithBi.confluence` — parWithBi version
+* `Step.parStar.confluence` — parStar+isBi-witness version -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parStar.isBi.toParStarWithBi
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.confluence
+#assert_no_axioms LeanFX.Syntax.Step.parStar.confluence
+
 end LeanFX.Tools.AuditAll
