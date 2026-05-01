@@ -7,116 +7,130 @@ variable {level : Nat}
 
 /-! ## Term-level `renameAfter` and its lift commute.
 
-`TermSubst.renameAfter σt ρt` composes a subst with a downstream
-rename, producing a subst along `Subst.renameAfter σ ρ`.  The
+`TermSubst.renameAfter termSubstitution termRenaming` composes a subst
+with a downstream rename, producing a subst along
+`Subst.renameAfter typeSubstitution rawRenaming`.  The
 companion lemma `lift_renameAfter_pointwise` says lifting then
 composing agrees with composing then lifting (pointwise HEq) —
 the term-level analogue of `Subst.lift_renameAfter_commute`. -/
 
-/-- Term-level `renameAfter`: subst σt then rename ρt to a downstream
-context.  At each position, applies σt then renames the result via
-ρt; the result type is bridged via `Ty.subst_rename_commute`. -/
+/-- Term-level `renameAfter`: subst termSubstitution then rename
+termRenaming to a downstream context.  At each position, applies
+termSubstitution then renames the result via termRenaming; the result
+type is bridged via `Ty.subst_rename_commute`. -/
 def TermSubst.renameAfter
-    {m : Mode} {level scope scope_m scope' : Nat}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope_m} {Δ' : Ctx m level scope'}
-    {σ : Subst level scope scope_m} {ρ : Renaming scope_m scope'}
-    (σt : TermSubst Γ Δ σ) (ρt : TermRenaming Δ Δ' ρ) :
-    TermSubst Γ Δ' (Subst.renameAfter σ ρ) := fun i =>
-  Ty.subst_rename_commute (varType Γ i) σ ρ ▸ Term.rename ρt (σt i)
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {middleContext : Ctx mode level middleScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope middleScope}
+    {rawRenaming : Renaming middleScope targetScope}
+    (termSubstitution :
+      TermSubst sourceContext middleContext typeSubstitution)
+    (termRenaming : TermRenaming middleContext targetContext rawRenaming) :
+    TermSubst sourceContext targetContext
+      (Subst.renameAfter typeSubstitution rawRenaming) := fun position =>
+  Ty.subst_rename_commute (varType sourceContext position)
+    typeSubstitution rawRenaming ▸
+    Term.rename termRenaming (termSubstitution position)
 
 /-- Lifting commutes with `renameAfter` pointwise (HEq).  Position 0
 reduces both sides to a casted `Term.var ⟨0, _⟩` in propositionally-
 distinct cons-extended targets, bridged by `heq_var_across_ctx_eq`
-over `Ty.subst_rename_commute newType σ ρ`.  Position `k + 1`
-reduces both sides to a `Term.weaken` of `Term.rename ρt (σt k)`
-with propositionally-distinct `newType` and inner type — the v1.38
+over `Ty.subst_rename_commute newType typeSubstitution rawRenaming`.
+Position `predecessor + 1` reduces both sides to a `Term.weaken` of
+`Term.rename termRenaming (termSubstitution predecessor)` with
+propositionally-distinct `newType` and inner type — the v1.38
 `rename_weaken_commute_HEq` collapses LHS to weaken-of-rename, then
 `Term.weaken_HEq_congr` bridges the two `Term.weaken` shapes. -/
 theorem TermSubst.lift_renameAfter_pointwise
-    {m : Mode} {level scope scope_m scope' : Nat}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope_m} {Δ' : Ctx m level scope'}
-    {σ : Subst level scope scope_m} {ρ : Renaming scope_m scope'}
-    (σt : TermSubst Γ Δ σ) (ρt : TermRenaming Δ Δ' ρ)
-    (newType : Ty level scope) :
-    ∀ (i : Fin (scope + 1)),
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {middleContext : Ctx mode level middleScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope middleScope}
+    {rawRenaming : Renaming middleScope targetScope}
+    (termSubstitution :
+      TermSubst sourceContext middleContext typeSubstitution)
+    (termRenaming : TermRenaming middleContext targetContext rawRenaming)
+    (newType : Ty level sourceScope) :
+    ∀ (position : Fin (sourceScope + 1)),
       HEq
-        (TermSubst.renameAfter (σt.lift newType)
-          (ρt.lift (newType.subst σ)) i)
-        ((TermSubst.renameAfter σt ρt).lift newType i) := by
+        (TermSubst.renameAfter (termSubstitution.lift newType)
+          (termRenaming.lift (newType.subst typeSubstitution)) position)
+        ((TermSubst.renameAfter termSubstitution termRenaming).lift
+          newType position) := by
   -- Bridge the cons-extended target contexts at the type level.
-  have h_subst_rename :
-      (newType.subst σ).rename ρ = newType.subst (Subst.renameAfter σ ρ) :=
-    Ty.subst_rename_commute newType σ ρ
-  have h_ctx :
-      Δ'.cons ((newType.subst σ).rename ρ)
-        = Δ'.cons (newType.subst (Subst.renameAfter σ ρ)) :=
-    congrArg Δ'.cons h_subst_rename
-  intro i
-  match i with
-  | ⟨0, h0⟩ =>
-    -- LHS reduces to: outer_cast ▸ rename (ρt.lift (newType.subst σ))
-    --                              (inner_cast.symm ▸ Term.var ⟨0, _⟩)
+  have substRenameEq :
+      (newType.subst typeSubstitution).rename rawRenaming
+        = newType.subst (Subst.renameAfter typeSubstitution rawRenaming) :=
+    Ty.subst_rename_commute newType typeSubstitution rawRenaming
+  have targetContextEq :
+      targetContext.cons ((newType.subst typeSubstitution).rename rawRenaming)
+        = targetContext.cons
+            (newType.subst (Subst.renameAfter typeSubstitution rawRenaming)) :=
+    congrArg targetContext.cons substRenameEq
+  intro position
+  match position with
+  | ⟨0, _zeroBound⟩ =>
+    -- LHS reduces to: outer_cast ▸ rename (termRenaming.lift
+    --   (newType.subst typeSubstitution))
+    --   (inner_cast.symm ▸ Term.var ⟨0, _⟩)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
       (Term.rename_HEq_cast_input
-        (ρt.lift (newType.subst σ))
-        (Ty.subst_weaken_commute newType σ).symm
-        (Term.var (context := Δ.cons (newType.subst σ))
+        (termRenaming.lift (newType.subst typeSubstitution))
+        (Ty.subst_weaken_commute newType typeSubstitution).symm
+        (Term.var (context := middleContext.cons (newType.subst typeSubstitution))
           ⟨0, Nat.zero_lt_succ _⟩))
-    -- Now: rename (ρt.lift (newType.subst σ)) (Term.var ⟨0, _⟩)
-    --    = ((ρt.lift (newType.subst σ)) ⟨0, _⟩) ▸ Term.var (ρ.lift ⟨0, _⟩)
-    --    where ρ.lift ⟨0, _⟩ = ⟨0, _⟩ definitionally.
+    -- Now: rename (termRenaming.lift X) (Term.var ⟨0, _⟩)
+    --    = ((termRenaming.lift X) ⟨0, _⟩) ▸ Term.var (rawRenaming.lift ⟨0, _⟩)
     apply HEq.trans (eqRec_heq _ _)
-    -- Naked LHS: Term.var ⟨0, _⟩ in Δ'.cons ((newType.subst σ).rename ρ)
-    -- Naked RHS: Term.var ⟨0, _⟩ in Δ'.cons (newType.subst (Subst.renameAfter σ ρ))
     apply HEq.trans
-      (heq_var_across_ctx_eq h_ctx ⟨0, Nat.zero_lt_succ _⟩)
-    -- RHS = (Ty.subst_weaken_commute newType (Subst.renameAfter σ ρ)).symm
-    --        ▸ Term.var ⟨0, _⟩
+      (heq_var_across_ctx_eq targetContextEq ⟨0, Nat.zero_lt_succ _⟩)
+    -- RHS = (Ty.subst_weaken_commute newType
+    --   (Subst.renameAfter typeSubstitution rawRenaming)).symm ▸ Term.var ⟨0, _⟩
     exact (eqRec_heq _ _).symm
-  | ⟨k + 1, hk⟩ =>
-    -- LHS = outer_cast ▸ rename (ρt.lift X)
-    --                        (inner_cast.symm ▸ Term.weaken X (σt k'))
-    -- where X = newType.subst σ, k' = ⟨k, Nat.lt_of_succ_lt_succ hk⟩.
+  | ⟨predecessor + 1, succBound⟩ =>
+    -- LHS = outer_cast ▸ rename (termRenaming.lift X)
+    --   (inner_cast.symm ▸ Term.weaken X (termSubstitution k')).
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
       (Term.rename_HEq_cast_input
-        (ρt.lift (newType.subst σ))
+        (termRenaming.lift (newType.subst typeSubstitution))
         (Ty.subst_weaken_commute
-          (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ).symm
-        (Term.weaken (newType.subst σ)
-          (σt ⟨k, Nat.lt_of_succ_lt_succ hk⟩)))
-    -- Now: rename (ρt.lift X) (Term.weaken X (σt k'))
-    --    ≃HEq≃ Term.weaken (X.rename ρ) (Term.rename ρt (σt k'))    [by v1.38]
+          (varType sourceContext
+            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+          typeSubstitution).symm
+        (Term.weaken (newType.subst typeSubstitution)
+          (termSubstitution
+            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)))
+    -- Now: rename (termRenaming.lift X) (Term.weaken X (termSubstitution k'))
+    --    ≃HEq≃ Term.weaken (X.rename rawRenaming)
+    --             (Term.rename termRenaming (termSubstitution k'))   [by v1.38]
     apply HEq.trans
-      (Term.rename_weaken_commute_HEq ρt (newType.subst σ)
-        (σt ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
-    -- Now LHS = Term.weaken ((newType.subst σ).rename ρ)
-    --             (Term.rename ρt (σt ⟨k, _⟩))
-    -- in target context Δ'.cons ((newType.subst σ).rename ρ).
-    --
-    -- RHS at k+1 = outer_cast ▸ Term.weaken (newType.subst (renameAfter σ ρ))
-    --                              ((renameAfter σt ρt) ⟨k, _⟩)
-    --             where (renameAfter σt ρt) ⟨k, _⟩
-    --                   = inner_cast ▸ Term.rename ρt (σt ⟨k, _⟩).
+      (Term.rename_weaken_commute_HEq termRenaming
+        (newType.subst typeSubstitution)
+        (termSubstitution ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩))
+    -- RHS at k+1 = outer_cast ▸ Term.weaken
+    --   (newType.subst (renameAfter typeSubstitution rawRenaming))
+    --   ((renameAfter termSubstitution termRenaming) ⟨k, _⟩).
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
-    -- Now: HEq RHS_naked LHS_naked, where
-    --   RHS_naked = Term.weaken (newType.subst (renameAfter σ ρ))
-    --                 (inner_cast ▸ Term.rename ρt (σt ⟨k, _⟩))
-    --   LHS_naked = Term.weaken ((newType.subst σ).rename ρ)
-    --                 (Term.rename ρt (σt ⟨k, _⟩))
     -- Bridge via Term.weaken_HEq_congr.
     apply HEq.symm
     -- Use the cast-input helper to push the inner cast on RHS through
-    -- Term.weaken — but actually Term.weaken_HEq_congr handles both
-    -- newType differences AND a per-side type-cast difference, so we
-    -- just supply the HEq.
+    -- Term.weaken — Term.weaken_HEq_congr handles both newType
+    -- differences AND a per-side type-cast difference, so we just supply
+    -- the HEq.
     exact Term.weaken_HEq_congr
-      h_subst_rename
+      substRenameEq
       (Ty.subst_rename_commute
-        (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ ρ)
-      (Term.rename ρt (σt ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
+        (varType sourceContext
+          ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+        typeSubstitution rawRenaming)
+      (Term.rename termRenaming
+        (termSubstitution ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩))
       (_)
       (eqRec_heq _ _).symm
 
