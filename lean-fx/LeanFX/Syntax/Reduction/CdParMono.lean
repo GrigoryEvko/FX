@@ -1,4 +1,5 @@
 import LeanFX.Syntax.Reduction.CdLemmaStarWithBi
+import LeanFX.Syntax.Reduction.ParSubstWitnessed
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
@@ -978,5 +979,127 @@ theorem Step.par.cd_monotone_snd_case
         (Step.par.isBi.betaSndPair (Step.par.isBi.refl _))
     all_goals
       exact Step.parStarWithBi.snd_cong pairIH
+
+/-! ## §3 — β shallow cases (4).
+
+The β cases of `Step.par.cd_monotone` use the two-step strategy from
+the project memory:
+
+* Step A: `subst0_parStarWithBi bodyIH argIH` produces a chain
+  `parStarWithBi (subst0 (cd bb) (cd ab)) (subst0 (cd ba) (cd aa))`.
+* Step B: `cd_lemma_star_with_bi` applied to a single par+isBi step
+  `par (subst0 ba aa) (subst0 (cd ba) (cd aa))` (built via
+  `subst0_par_witnessed` of `cd_dominates_with_isBi`) produces
+  `parStarWithBi (subst0 (cd ba) (cd aa)) (cd (subst0 ba aa))`.
+
+Append step A and step B to get
+`parStarWithBi (subst0 (cd bb) (cd ab)) (cd (subst0 ba aa))`.
+
+The cd_cast helper pushes `cd` through the target's outer cast for
+`betaApp` and `betaSndPair` (where the target has a Ty cast), so that
+castBoth_chain can strip the matching outer cast on both sides. -/
+
+/-- Discharge the `Step.par.isBi.betaApp` constructor case.  The
+non-dependent application's β-rule produces a target with a
+`Ty.weaken_subst_singleton` cast. -/
+theorem Step.par.cd_monotone_betaApp_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {sourceBody targetBody :
+      Term (ctx.cons domainType) codomainType.weaken}
+    {sourceArgument targetArgument : Term ctx domainType}
+    (bodyIH : Step.parStarWithBi
+      (Term.cd sourceBody) (Term.cd targetBody))
+    (argumentIH : Step.parStarWithBi
+      (Term.cd sourceArgument) (Term.cd targetArgument)) :
+    Step.parStarWithBi
+      (Term.cd (Term.app (Term.lam sourceBody) sourceArgument))
+      (Term.cd ((Ty.weaken_subst_singleton codomainType domainType) ▸
+        Term.subst0 targetBody targetArgument)) := by
+  -- LHS: cd (app (lam sb) sa) β-fires, gives cast ▸ subst0 (cd sb) (cd sa).
+  -- RHS: cd (cast ▸ subst0 tb ta) — push cd through cast via cd_cast.
+  rw [Term.cd_cast]
+  simp only [Term.cd, Term.cd_app_redex]
+  -- Outer LHS: cast ▸ subst0 (cd sb) (cd sa) (after cd_app_redex's lam-arm fires).
+  -- Outer RHS: cast ▸ cd (subst0 tb ta).
+  -- Strip matching outer cast via castBoth_chain:
+  apply Step.parStarWithBi.castBoth_chain
+  -- Goal: parStarWithBi (subst0 (cd sb) (cd sa)) (cd (subst0 tb ta)).
+  -- Step A: parStarWithBi (subst0 (cd sb) (cd sa)) (subst0 (cd tb) (cd ta))
+  --         via subst0_parStarWithBi bodyIH argumentIH.
+  -- Step B: parStarWithBi (subst0 (cd tb) (cd ta)) (cd (subst0 tb ta))
+  --         via cd_lemma_star_with_bi (subst0_par_witnessed cd_dominates).
+  let stepA := Step.parStarWithBi.subst0_parStarWithBi bodyIH argumentIH
+  let bodyDom := Step.par.cd_dominates_with_isBi targetBody
+  let argDom := Step.par.cd_dominates_with_isBi targetArgument
+  let parB := Step.par.subst0_par_witnessed bodyDom argDom
+  let stepB :
+      Step.parStarWithBi
+        (Term.subst0 (Term.cd targetBody) (Term.cd targetArgument))
+        (Term.cd (Term.subst0 targetBody targetArgument)) :=
+    Step.par.cd_lemma_star_with_bi parB.toIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge the `Step.par.isBi.betaAppPi` constructor case.  The
+dependent application's β-rule has no outer cast (`subst0` of a
+dep body matches the target type directly). -/
+theorem Step.par.cd_monotone_betaAppPi_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {sourceBody targetBody :
+      Term (ctx.cons domainType) codomainType}
+    {sourceArgument targetArgument : Term ctx domainType}
+    (bodyIH : Step.parStarWithBi
+      (Term.cd sourceBody) (Term.cd targetBody))
+    (argumentIH : Step.parStarWithBi
+      (Term.cd sourceArgument) (Term.cd targetArgument)) :
+    Step.parStarWithBi
+      (Term.cd (Term.appPi (Term.lamPi sourceBody) sourceArgument))
+      (Term.cd (Term.subst0 targetBody targetArgument)) := by
+  -- LHS: cd (appPi (lamPi sb) sa) β-fires, gives subst0 (cd sb) (cd sa).
+  -- RHS: cd (subst0 tb ta) — no outer cast.
+  simp only [Term.cd, Term.cd_appPi_redex]
+  -- Goal: parStarWithBi (subst0 (cd sb) (cd sa)) (cd (subst0 tb ta)).
+  let stepA := Step.parStarWithBi.subst0_parStarWithBi bodyIH argumentIH
+  let bodyDom := Step.par.cd_dominates_with_isBi targetBody
+  let argDom := Step.par.cd_dominates_with_isBi targetArgument
+  let parB := Step.par.subst0_par_witnessed bodyDom argDom
+  let stepB :
+      Step.parStarWithBi
+        (Term.subst0 (Term.cd targetBody) (Term.cd targetArgument))
+        (Term.cd (Term.subst0 targetBody targetArgument)) :=
+    Step.par.cd_lemma_star_with_bi parB.toIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge the `Step.par.isBi.betaFstPair` constructor case.  The
+β-rule on `fst (pair f s)` returns `f`; no joint substitution needed. -/
+theorem Step.par.cd_monotone_betaFstPair_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {sourceFirst targetFirst : Term ctx firstType}
+    (sourceSecond : Term ctx (secondType.subst0 firstType))
+    (firstIH : Step.parStarWithBi
+      (Term.cd sourceFirst) (Term.cd targetFirst)) :
+    Step.parStarWithBi
+      (Term.cd (Term.fst (Term.pair sourceFirst sourceSecond)))
+      (Term.cd targetFirst) := by
+  simp only [Term.cd, Term.cd_fst_redex]
+  exact firstIH
+
+/-- Discharge the `Step.par.isBi.betaSndPair` constructor case.  The
+β-rule on `snd (pair f s)` returns `s`; no joint substitution needed. -/
+theorem Step.par.cd_monotone_betaSndPair_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    (sourceFirst : Term ctx firstType)
+    {sourceSecond targetSecond :
+      Term ctx (secondType.subst0 firstType)}
+    (secondIH : Step.parStarWithBi
+      (Term.cd sourceSecond) (Term.cd targetSecond)) :
+    Step.parStarWithBi
+      (Term.cd (Term.snd (Term.pair sourceFirst sourceSecond)))
+      (Term.cd targetSecond) := by
+  simp only [Term.cd, Term.cd_snd_redex]
+  exact secondIH
 
 end LeanFX.Syntax
