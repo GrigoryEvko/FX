@@ -55,7 +55,7 @@ theorem Step.par.rename_compatible_witnessed
       (Term.rename termRenaming afterTerm) := by
   induction stepBi generalizing targetScope targetCtx with
   | refl _ =>
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | app _funBi _argBi funIH argIH =>
       let funWB := funIH termRenaming
       let argWB := argIH termRenaming
@@ -615,7 +615,7 @@ theorem Step.par.subst_compatible_witnessed
       (Term.subst termSubstitution afterTerm) := by
   induction stepBi generalizing targetScope targetCtx with
   | refl _ =>
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | app _funBi _argBi funIH argIH =>
       let funWB := funIH termSubstitution
       let argWB := argIH termSubstitution

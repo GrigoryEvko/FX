@@ -755,6 +755,7 @@ idJ. -/
 
 /-! ## W8.1: parWithBi singleton + cast helpers + compatibility. -/
 
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.refl
 #assert_no_axioms LeanFX.Syntax.Step.parWithBi.castBoth
 #assert_no_axioms LeanFX.Syntax.Step.parWithBi.castTarget
 #assert_no_axioms LeanFX.Syntax.Step.parWithBi.castSource

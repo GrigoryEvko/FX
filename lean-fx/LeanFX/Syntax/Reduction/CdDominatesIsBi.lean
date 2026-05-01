@@ -64,6 +64,17 @@ theorem Step.parWithBi.toIsBi
       Step.par.isBi parWithBiProof.toStep
   | .mk _ parallelIsBi => parallelIsBi
 
+/-- Reflexive `parWithBi`: the empty paired step on a term, bundling
+`Step.par.refl` with `Step.par.isBi.refl`.  Compresses the common
+boilerplate `Step.parWithBi.refl _`
+into a single named helper. -/
+theorem Step.parWithBi.refl
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {termType : Ty level scope}
+    (term : Term context termType) :
+    Step.parWithBi term term :=
+  Step.parWithBi.mk (Step.par.refl term) (Step.par.isBi.refl term)
+
 /-! ## Eliminator helpers — paired versions of `cd_dominates_<ctor>`.
 
 Each helper mirrors its `cd_dominates_<ctor>` companion exactly
@@ -477,10 +488,10 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
       Step.parWithBi term (Term.cd term)
   | _, .var _ => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .unit => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .lam body => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
@@ -520,10 +531,10 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
       Step.par.cd_dominates_snd_pair pairTerm pairPair.toStep pairPair.toIsBi
   | _, .boolTrue => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .boolFalse => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .boolElim scrutinee thenBranch elseBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let thenPair := Step.par.cd_dominates_with_isBi thenBranch
@@ -533,7 +544,7 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
         scrutineePair.toIsBi thenPair.toIsBi elsePair.toIsBi
   | _, .natZero => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .natSucc predecessor => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
@@ -556,7 +567,7 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
         scrutineePair.toIsBi zeroPair.toIsBi succPair.toIsBi
   | _, .listNil => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .listCons head tail => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
@@ -575,7 +586,7 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
         scrutineePair.toIsBi nilPair.toIsBi consPair.toIsBi
   | _, .optionNone => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .optionSome value => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
@@ -610,7 +621,7 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
         scrutineePair.toIsBi leftPair.toIsBi rightPair.toIsBi
   | _, .refl _ => by
       unfold Term.cd
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | _, .idJ baseCase witness =>
       let basePair := Step.par.cd_dominates_with_isBi baseCase
       let witnessPair := Step.par.cd_dominates_with_isBi witness

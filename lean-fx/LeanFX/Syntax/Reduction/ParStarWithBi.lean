@@ -1330,7 +1330,7 @@ theorem Step.par.natSucc_source_inv_with_bi_general
   | refl term =>
       intro sourceHEq
       exact ⟨predecessor, sourceHEq,
-             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+             Step.parWithBi.refl _⟩
   | natSucc innerBi _innerIH =>
       intro sourceHEq
       cases typeEq
@@ -1393,8 +1393,8 @@ theorem Step.par.listCons_source_inv_with_bi_general
   | refl term =>
       intro sourceHEq
       exact ⟨headTerm, tailTerm, sourceHEq,
-             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _),
-             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+             Step.parWithBi.refl _,
+             Step.parWithBi.refl _⟩
   | listCons headBi tailBi _headIH _tailIH =>
       intro sourceHEq
       cases typeEq
@@ -1465,7 +1465,7 @@ theorem Step.par.optionSome_source_inv_with_bi_general
   | refl term =>
       intro sourceHEq
       exact ⟨valueTerm, sourceHEq,
-             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+             Step.parWithBi.refl _⟩
   | optionSome valueBi _valueIH =>
       intro sourceHEq
       cases typeEq
@@ -1527,7 +1527,7 @@ theorem Step.par.eitherInl_source_inv_with_bi_general
   | refl term =>
       intro sourceHEq
       exact ⟨valueTerm, sourceHEq,
-             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+             Step.parWithBi.refl _⟩
   | eitherInl valueBi _valueIH =>
       intro sourceHEq
       cases typeEq
@@ -1591,7 +1591,7 @@ theorem Step.par.eitherInr_source_inv_with_bi_general
   | refl term =>
       intro sourceHEq
       exact ⟨valueTerm, sourceHEq,
-             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+             Step.parWithBi.refl _⟩
   | eitherInr valueBi _valueIH =>
       intro sourceHEq
       cases typeEq
@@ -1714,7 +1714,7 @@ theorem Step.parWithBi.rename_compatible
   obtain ⟨parallelStep, biWitness⟩ := parPaired
   induction biWitness generalizing targetScope targetCtx with
   | refl term =>
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | app _functionBi _argumentBi functionIH argumentIH =>
       obtain ⟨fStep, fBi⟩ := functionIH termRenaming
       obtain ⟨aStep, aBi⟩ := argumentIH termRenaming
@@ -2220,7 +2220,7 @@ theorem Step.parWithBi.subst_compatible
   obtain ⟨parallelStep, biWitness⟩ := parPaired
   induction biWitness generalizing targetScope targetCtx with
   | refl term =>
-      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+      exact Step.parWithBi.refl _
   | app _functionBi _argumentBi functionIH argumentIH =>
       obtain ⟨fStep, fBi⟩ := functionIH termSubstitution
       obtain ⟨aStep, aBi⟩ := argumentIH termSubstitution
