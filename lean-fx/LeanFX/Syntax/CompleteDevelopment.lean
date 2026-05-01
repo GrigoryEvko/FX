@@ -1,5 +1,6 @@
 import LeanFX.Syntax.TermSubst
 import LeanFX.Syntax.TermStrengthen
+import LeanFX.Syntax.CompleteDevelopmentRedex
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
@@ -247,125 +248,73 @@ def Term.cd_idJ_redex
 
 /-- Complete development for intrinsically typed terms.
 
-Aggressive β/ι firing on developed shapes; no η firing. -/
-def Term.cd :
-    {mode : Mode} → {level scope : Nat} →
-    {context : Ctx mode level scope} → {termType : Ty level scope} →
+Aggressive β/ι firing on developed shapes; no η firing.
+
+Each elimination form delegates its redex contraction to the
+corresponding `Term.cd_<head>_redex` helper in
+`CompleteDevelopmentRedex.lean`.  That helper dispatches on
+`Term.toRaw <developed>` with full 25-RawTerm-ctor enumeration
+(propext-free per Rule 5 of the zero-axiom match recipe) and
+extracts typed payload via the `Term.<payload>_of_<C>_general`
+defs from `TermExtraction.lean`.  Term.cd's outer match runs at
+universal index (Rule 3 — clean) with no inner matches, keeping
+the whole definition propext-free. -/
+def Term.cd {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    {termType : Ty level scope} →
       Term context termType → Term context termType
-  | _, _, _, _, _, .var position => Term.var position
-  | _, _, _, _, _, .unit => Term.unit
-  | _, _, _, _, _, .lam (codomainType := codomainType) body =>
+  | _, .var position => Term.var position
+  | _, .unit => Term.unit
+  | _, .lam (codomainType := codomainType) body =>
       Term.lam (codomainType := codomainType) (Term.cd body)
-  | _, _, _, _, _, .app (domainType := domainType)
-        (codomainType := codomainType) functionTerm argumentTerm =>
-      let developedFunction := Term.cd functionTerm
-      let developedArgument := Term.cd argumentTerm
-      match developedFunction with
-      | Term.lam body =>
-          (Ty.weaken_subst_singleton codomainType domainType) ▸
-            Term.subst0 body developedArgument
-      | _ =>
-          Term.app developedFunction developedArgument
-  | _, _, _, _, _, .lamPi body =>
+  | _, .app functionTerm argumentTerm =>
+      Term.cd_app_redex (Term.cd functionTerm) (Term.cd argumentTerm)
+  | _, .lamPi body =>
       Term.lamPi (Term.cd body)
-  | _, _, _, _, _, .appPi functionTerm argumentTerm =>
-      let developedFunction := Term.cd functionTerm
-      let developedArgument := Term.cd argumentTerm
-      match developedFunction with
-      | Term.lamPi body =>
-          Term.subst0 body developedArgument
-      | _ =>
-          Term.appPi developedFunction developedArgument
-  | _, _, _, _, _, .pair firstVal secondVal =>
+  | _, .appPi functionTerm argumentTerm =>
+      Term.cd_appPi_redex (Term.cd functionTerm) (Term.cd argumentTerm)
+  | _, .pair firstVal secondVal =>
       Term.pair (Term.cd firstVal) (Term.cd secondVal)
-  | _, _, _, _, _, .fst pairTerm =>
-      let developedPair := Term.cd pairTerm
-      match developedPair with
-      | Term.pair firstVal _ => firstVal
-      | _ => Term.fst developedPair
-  | _, _, _, _, _, .snd pairTerm =>
-      let developedPair := Term.cd pairTerm
-      match developedPair with
-      | Term.pair _ secondVal => secondVal
-      | _ => Term.snd developedPair
-  | _, _, _, _, _, .boolTrue => Term.boolTrue
-  | _, _, _, _, _, .boolFalse => Term.boolFalse
-  | _, _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>
-      let developedScrutinee := Term.cd scrutinee
-      let developedThen := Term.cd thenBranch
-      let developedElse := Term.cd elseBranch
-      match developedScrutinee with
-      | Term.boolTrue => developedThen
-      | Term.boolFalse => developedElse
-      | _ => Term.boolElim developedScrutinee developedThen developedElse
-  | _, _, _, _, _, .natZero => Term.natZero
-  | _, _, _, _, _, .natSucc predecessor =>
+  | _, .fst pairTerm =>
+      Term.cd_fst_redex (Term.cd pairTerm)
+  | _, .snd pairTerm =>
+      Term.cd_snd_redex (Term.cd pairTerm)
+  | _, .boolTrue => Term.boolTrue
+  | _, .boolFalse => Term.boolFalse
+  | _, .boolElim scrutinee thenBranch elseBranch =>
+      Term.cd_boolElim_redex (Term.cd scrutinee)
+        (Term.cd thenBranch) (Term.cd elseBranch)
+  | _, .natZero => Term.natZero
+  | _, .natSucc predecessor =>
       Term.natSucc (Term.cd predecessor)
-  | _, _, _, _, _, .natElim scrutinee zeroBranch succBranch =>
-      let developedScrutinee := Term.cd scrutinee
-      let developedZero := Term.cd zeroBranch
-      let developedSucc := Term.cd succBranch
-      match developedScrutinee with
-      | Term.natZero => developedZero
-      | Term.natSucc predecessor =>
-          Term.app developedSucc predecessor
-      | _ =>
-          Term.natElim developedScrutinee developedZero developedSucc
-  | _, _, _, _, _, .natRec scrutinee zeroBranch succBranch =>
-      let developedScrutinee := Term.cd scrutinee
-      let developedZero := Term.cd zeroBranch
-      let developedSucc := Term.cd succBranch
-      match developedScrutinee with
-      | Term.natZero => developedZero
-      | Term.natSucc predecessor =>
-          Term.app (Term.app developedSucc predecessor)
-            (Term.natRec predecessor developedZero developedSucc)
-      | _ =>
-          Term.natRec developedScrutinee developedZero developedSucc
-  | _, _, _, _, _, .listNil => Term.listNil
-  | _, _, _, _, _, .listCons head tail =>
+  | _, .natElim scrutinee zeroBranch succBranch =>
+      Term.cd_natElim_redex (Term.cd scrutinee)
+        (Term.cd zeroBranch) (Term.cd succBranch)
+  | _, .natRec scrutinee zeroBranch succBranch =>
+      Term.cd_natRec_redex (Term.cd scrutinee)
+        (Term.cd zeroBranch) (Term.cd succBranch)
+  | _, .listNil => Term.listNil
+  | _, .listCons head tail =>
       Term.listCons (Term.cd head) (Term.cd tail)
-  | _, _, _, _, _, .listElim scrutinee nilBranch consBranch =>
-      let developedScrutinee := Term.cd scrutinee
-      let developedNil := Term.cd nilBranch
-      let developedCons := Term.cd consBranch
-      match developedScrutinee with
-      | Term.listNil => developedNil
-      | Term.listCons head tail =>
-          Term.app (Term.app developedCons head) tail
-      | _ =>
-          Term.listElim developedScrutinee developedNil developedCons
-  | _, _, _, _, _, .optionNone => Term.optionNone
-  | _, _, _, _, _, .optionSome value =>
+  | _, .listElim scrutinee nilBranch consBranch =>
+      Term.cd_listElim_redex (Term.cd scrutinee)
+        (Term.cd nilBranch) (Term.cd consBranch)
+  | _, .optionNone => Term.optionNone
+  | _, .optionSome value =>
       Term.optionSome (Term.cd value)
-  | _, _, _, _, _, .optionMatch scrutinee noneBranch someBranch =>
-      let developedScrutinee := Term.cd scrutinee
-      let developedNone := Term.cd noneBranch
-      let developedSome := Term.cd someBranch
-      match developedScrutinee with
-      | Term.optionNone => developedNone
-      | Term.optionSome value =>
-          Term.app developedSome value
-      | _ =>
-          Term.optionMatch developedScrutinee developedNone developedSome
-  | _, _, _, _, _, .eitherInl value =>
+  | _, .optionMatch scrutinee noneBranch someBranch =>
+      Term.cd_optionMatch_redex (Term.cd scrutinee)
+        (Term.cd noneBranch) (Term.cd someBranch)
+  | _, .eitherInl value =>
       Term.eitherInl (Term.cd value)
-  | _, _, _, _, _, .eitherInr value =>
+  | _, .eitherInr value =>
       Term.eitherInr (Term.cd value)
-  | _, _, _, _, _, .eitherMatch scrutinee leftBranch rightBranch =>
-      let developedScrutinee := Term.cd scrutinee
-      let developedLeft := Term.cd leftBranch
-      let developedRight := Term.cd rightBranch
-      match developedScrutinee with
-      | Term.eitherInl value =>
-          Term.app developedLeft value
-      | Term.eitherInr value =>
-          Term.app developedRight value
-      | _ =>
-          Term.eitherMatch developedScrutinee developedLeft developedRight
-  | _, _, _, _, _, .refl rawTerm =>
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
+      Term.cd_eitherMatch_redex (Term.cd scrutinee)
+        (Term.cd leftBranch) (Term.cd rightBranch)
+  | _, .refl rawTerm =>
       Term.refl rawTerm
-  | _, _, _, _, _, .idJ baseCase witness =>
+  | _, .idJ baseCase witness =>
       Term.cd_idJ_redex (Term.cd baseCase) (Term.cd witness)
 
 end LeanFX.Syntax
