@@ -16,14 +16,14 @@ commutation theorems plus the singleton pointwise bridge. -/
 /-- Renaming commutes with one-hole substitution, up to HEq. -/
 theorem Term.rename_subst0_HEq
     {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
     {rawRenaming : Renaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (termRenaming : TermRenaming sourceContext targetContext rawRenaming)
     {argumentType : Ty level sourceScope}
     {bodyType : Ty level (sourceScope + 1)}
-    (bodyTerm : Term (sourceCtx.cons argumentType) bodyType)
-    (argumentTerm : Term sourceCtx argumentType) :
+    (bodyTerm : Term (sourceContext.cons argumentType) bodyType)
+    (argumentTerm : Term sourceContext argumentType) :
     HEq
       (Term.rename termRenaming (Term.subst0 bodyTerm argumentTerm))
       (Term.subst0
@@ -56,14 +56,14 @@ through the `termSingleton` flavors of the bridge lemmas.  Uses
 argument with the renamed raw projection. -/
 theorem Term.rename_subst0_term_HEq
     {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
     {rawRenaming : Renaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (termRenaming : TermRenaming sourceContext targetContext rawRenaming)
     {argumentType : Ty level sourceScope}
     {bodyType : Ty level (sourceScope + 1)}
-    (bodyTerm : Term (sourceCtx.cons argumentType) bodyType)
-    (argumentTerm : Term sourceCtx argumentType) :
+    (bodyTerm : Term (sourceContext.cons argumentType) bodyType)
+    (argumentTerm : Term sourceContext argumentType) :
     HEq
       (Term.rename termRenaming (Term.subst0_term bodyTerm argumentTerm))
       (Term.subst0_term

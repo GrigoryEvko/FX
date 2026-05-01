@@ -67,12 +67,12 @@ theorem Term.subst_weaken_singleton_HEq
 
 theorem TermSubst.singleton_compose_pointwise
     {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
     {typeSubstitution : Subst level sourceScope targetScope}
-    (termSubstitution : TermSubst sourceCtx targetCtx typeSubstitution)
+    (termSubstitution : TermSubst sourceContext targetContext typeSubstitution)
     {argumentType : Ty level sourceScope}
-    (argumentTerm : Term sourceCtx argumentType) :
+    (argumentTerm : Term sourceContext argumentType) :
     ∀ (position : Fin (sourceScope + 1)),
       HEq
         (TermSubst.compose (TermSubst.singleton argumentTerm) termSubstitution position)
@@ -101,7 +101,7 @@ theorem TermSubst.singleton_compose_pointwise
       apply HEq.trans
         (Term.subst_HEq_cast_input termSubstitution
           (Ty.weaken_subst_singleton
-            (varType sourceCtx ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
+            (varType sourceContext ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
             argumentType).symm
           (Term.var ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩))
       apply HEq.symm
@@ -110,7 +110,7 @@ theorem TermSubst.singleton_compose_pointwise
         (Term.subst_HEq_cast_input
           (TermSubst.singleton (Term.subst termSubstitution argumentTerm))
           (Ty.subst_weaken_commute
-            (varType sourceCtx ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
+            (varType sourceContext ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
             typeSubstitution).symm
           (Term.weaken (argumentType.subst typeSubstitution)
             (termSubstitution ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)))
@@ -120,14 +120,14 @@ theorem TermSubst.singleton_compose_pointwise
 
 theorem Term.subst0_subst_HEq
     {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
     {typeSubstitution : Subst level sourceScope targetScope}
-    (termSubstitution : TermSubst sourceCtx targetCtx typeSubstitution)
+    (termSubstitution : TermSubst sourceContext targetContext typeSubstitution)
     {argumentType : Ty level sourceScope}
     {bodyType : Ty level (sourceScope + 1)}
-    (bodyTerm : Term (sourceCtx.cons argumentType) bodyType)
-    (argumentTerm : Term sourceCtx argumentType) :
+    (bodyTerm : Term (sourceContext.cons argumentType) bodyType)
+    (argumentTerm : Term sourceContext argumentType) :
     HEq
       (Term.subst termSubstitution (Term.subst0 bodyTerm argumentTerm))
       (Term.subst0

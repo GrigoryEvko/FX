@@ -18,12 +18,12 @@ the renamed β-reduct with the β-reduct of the renamed redex. -/
 pointwise up to HEq. -/
 theorem TermSubst.singleton_renameAfter_pointwise
     {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
     {rawRenaming : Renaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (termRenaming : TermRenaming sourceContext targetContext rawRenaming)
     {argumentType : Ty level sourceScope}
-    (argumentTerm : Term sourceCtx argumentType) :
+    (argumentTerm : Term sourceContext argumentType) :
     ∀ (position : Fin (sourceScope + 1)),
       HEq
         (TermSubst.renameAfter (TermSubst.singleton argumentTerm) termRenaming position)
@@ -46,7 +46,7 @@ theorem TermSubst.singleton_renameAfter_pointwise
       apply HEq.trans
         (Term.rename_HEq_cast_input termRenaming
           (Ty.weaken_subst_singleton
-            (varType sourceCtx ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
+            (varType sourceContext ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
             argumentType).symm
           (Term.var ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩))
       apply HEq.trans (eqRec_heq _ _)
@@ -62,12 +62,12 @@ replaced by `Ty.weaken_subst_termSingleton` (which carries an extra
 rawArg parameter, irrelevant after weakening). -/
 theorem TermSubst.termSingleton_renameAfter_pointwise
     {mode : Mode} {level sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
     {rawRenaming : Renaming sourceScope targetScope}
-    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    (termRenaming : TermRenaming sourceContext targetContext rawRenaming)
     {argumentType : Ty level sourceScope}
-    (argumentTerm : Term sourceCtx argumentType) :
+    (argumentTerm : Term sourceContext argumentType) :
     ∀ (position : Fin (sourceScope + 1)),
       HEq
         (TermSubst.renameAfter
@@ -93,7 +93,7 @@ theorem TermSubst.termSingleton_renameAfter_pointwise
       apply HEq.trans
         (Term.rename_HEq_cast_input termRenaming
           (Ty.weaken_subst_termSingleton
-            (varType sourceCtx ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
+            (varType sourceContext ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩)
             argumentType (Term.toRaw argumentTerm)).symm
           (Term.var ⟨index, Nat.lt_of_succ_lt_succ isWithinScope⟩))
       apply HEq.trans (eqRec_heq _ _)
