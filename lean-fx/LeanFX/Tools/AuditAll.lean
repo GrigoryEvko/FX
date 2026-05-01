@@ -307,6 +307,10 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Subst.termSingleton_renameAfter_equiv_precompose
 #assert_no_axioms LeanFX.Syntax.TermSubst.termSingleton_renameAfter_pointwise
 #assert_no_axioms LeanFX.Syntax.Subst.termSingleton_compose_equiv_lift_compose_termSingleton
+#assert_no_axioms LeanFX.Syntax.TermSubst.precompose_weaken_termSingleton_pointwise
+#assert_no_axioms LeanFX.Syntax.Term.subst_weaken_termSingleton_HEq
+#assert_no_axioms LeanFX.Syntax.TermSubst.termSingleton_compose_pointwise
+#assert_no_axioms LeanFX.Syntax.Term.subst0_term_subst_HEq
 #assert_no_axioms LeanFX.Syntax.Term.rename_subst0_term_HEq
 #assert_no_axioms LeanFX.Syntax.TermSubst.par_lift
 #assert_no_axioms LeanFX.Syntax.Term.subst_par_pointwise

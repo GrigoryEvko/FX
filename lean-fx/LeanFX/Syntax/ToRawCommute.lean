@@ -291,4 +291,89 @@ theorem Term.toRaw_subst0_term_raw {mode : Mode} {level scope : Nat}
       RawTerm.subst0 (Term.toRaw body) (Term.toRaw argument) :=
   Term.toRaw_subst0_term body argument
 
+/-! ## Phase C `subst0_term`-substitution interaction.
+
+Same as `Term.subst0_subst_HEq` (in `TermSubst/Commute/Subst0Subst.lean`)
+but for `Term.subst0_term`.  The headline lemma `Term.subst0_term_subst_HEq`
+needs `Term.toRaw_subst` to align the inner `Subst.termSingleton`'s
+rawArg field — that's why it lives here rather than next to its sister,
+which sits below `ToRawCommute` in the dependency DAG. -/
+
+/-- Subst.equiv between the LHS-shape and RHS-shape outer Substs of
+`Term.subst0_term_subst_HEq`.  Threads `Term.toRaw_subst` to align the
+inner `Subst.termSingleton`'s rawArg field — this is where the
+`RawConsistent` hypothesis is consumed. -/
+private theorem Subst.termSingleton_compose_equiv_lift_compose_termSingleton_subst
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    {termSubstitution : TermSubst sourceContext targetContext typeSubstitution}
+    (consistency : TermSubst.RawConsistent termSubstitution)
+    (argumentType : Ty level sourceScope)
+    (argumentTerm : Term sourceContext argumentType) :
+    Subst.equiv
+      (Subst.compose
+        (Subst.termSingleton argumentType (Term.toRaw argumentTerm))
+        typeSubstitution)
+      (Subst.compose typeSubstitution.lift
+        (Subst.termSingleton (argumentType.subst typeSubstitution)
+          (Term.toRaw (Term.subst termSubstitution argumentTerm)))) := by
+  have rawArgEq :
+      Term.toRaw (Term.subst termSubstitution argumentTerm)
+        = (Term.toRaw argumentTerm).subst typeSubstitution.forRaw :=
+    Term.toRaw_subst consistency argumentTerm
+  rw [rawArgEq]
+  exact Subst.termSingleton_compose_equiv_lift_compose_termSingleton
+    argumentType (Term.toRaw argumentTerm) typeSubstitution
+
+/-- The Phase C headline: substituting after a `subst0_term` agrees, up
+to HEq, with substituting under the lifted outer substitution then
+applying `subst0_term` with the substituted argument.
+
+This is the term-bearing analog of `Term.subst0_subst_HEq`.  Required
+hypothesis: the outer term substitution is `RawConsistent` — i.e., its
+forRaw projection matches `Term.toRaw` on the underlying terms.  Every
+Phase C call site (`Step.par.subst_compatible.betaApp` and downstream)
+satisfies this. -/
+theorem Term.subst0_term_subst_HEq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    {termSubstitution : TermSubst sourceContext targetContext typeSubstitution}
+    (consistency : TermSubst.RawConsistent termSubstitution)
+    {argumentType : Ty level sourceScope}
+    {bodyType : Ty level (sourceScope + 1)}
+    (bodyTerm : Term (sourceContext.cons argumentType) bodyType)
+    (argumentTerm : Term sourceContext argumentType) :
+    HEq
+      (Term.subst termSubstitution (Term.subst0_term bodyTerm argumentTerm))
+      (Term.subst0_term
+        (Term.subst (TermSubst.lift termSubstitution argumentType) bodyTerm)
+        (Term.subst termSubstitution argumentTerm)) := by
+  show HEq
+      (Term.subst termSubstitution
+        (Term.subst (TermSubst.termSingleton argumentTerm) bodyTerm))
+      (Term.subst (TermSubst.termSingleton (Term.subst termSubstitution argumentTerm))
+        (Term.subst (TermSubst.lift termSubstitution argumentType) bodyTerm))
+  apply HEq.trans
+    (Term.subst_compose_HEq (TermSubst.termSingleton argumentTerm)
+      termSubstitution bodyTerm)
+  apply HEq.trans
+    (Term.subst_HEq_pointwise rfl
+      (TermSubst.compose (TermSubst.termSingleton argumentTerm) termSubstitution)
+      (TermSubst.compose
+        (TermSubst.lift termSubstitution argumentType)
+        (TermSubst.termSingleton (Term.subst termSubstitution argumentTerm)))
+      (Subst.termSingleton_compose_equiv_lift_compose_termSingleton_subst
+        consistency argumentType argumentTerm)
+      (TermSubst.termSingleton_compose_pointwise termSubstitution argumentTerm)
+      bodyTerm)
+  exact HEq.symm
+    (Term.subst_compose_HEq
+      (TermSubst.lift termSubstitution argumentType)
+      (TermSubst.termSingleton (Term.subst termSubstitution argumentTerm))
+      bodyTerm)
+
 end LeanFX.Syntax
