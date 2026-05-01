@@ -227,27 +227,11 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJReflDeep (witnessIH _) (baseIH _)
 
-/-! ### Helper commute lemmas. -/
+/-! ### Helper commute lemmas.
 
-/-- A weakened raw term is unaffected by singleton substitution: any
-position k in the original becomes k+1 in the weakened term, and
-singleton's k+1 case rebuilds `var k`.  Composition of weaken and
-singleton is therefore the identity substitution. -/
-theorem RawTerm.weaken_subst_singleton {scope : Nat}
-    (rawTerm : RawTerm scope) (substituent : RawTerm scope) :
-    rawTerm.weaken.subst (RawTermSubst.singleton substituent) = rawTerm := by
-  unfold RawTerm.weaken
-  rw [RawTerm.subst_rename_commute rawTerm Renaming.weaken
-        (RawTermSubst.singleton substituent)]
-  have afterIsIdentity :
-      RawTermSubst.equiv
-        (RawTermSubst.afterRenaming Renaming.weaken
-          (RawTermSubst.singleton substituent))
-        RawTermSubst.identity := by
-    intro position
-    rfl
-  exact (RawTerm.subst_congr afterIsIdentity rawTerm).trans
-    (RawTerm.subst_id rawTerm)
+`RawTerm.weaken_subst_singleton` lives in `RawSubst.lean` so that
+typed-substitution lemmas in `TermSubst/Core.lean` (which sits below
+this file in the dependency DAG) can use it. -/
 
 /-- Subst-of-subst0 commute lemma.  Substituting `σ` after `subst0
 arg` equals lifting `σ` over the body's binder, then substituting

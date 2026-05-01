@@ -747,6 +747,26 @@ def RawTerm.subst0 {scope : Nat}
     RawTerm scope :=
   body.subst (RawTermSubst.singleton argument)
 
+/-- A weakened raw term is unaffected by singleton substitution: any
+position k in the original becomes k+1 in the weakened term, and
+singleton's k+1 case rebuilds `var k`.  Composition of weaken and
+singleton is therefore the identity substitution. -/
+theorem RawTerm.weaken_subst_singleton {scope : Nat}
+    (rawTerm : RawTerm scope) (substituent : RawTerm scope) :
+    rawTerm.weaken.subst (RawTermSubst.singleton substituent) = rawTerm := by
+  unfold RawTerm.weaken
+  rw [RawTerm.subst_rename_commute rawTerm Renaming.weaken
+        (RawTermSubst.singleton substituent)]
+  have afterIsIdentity :
+      RawTermSubst.equiv
+        (RawTermSubst.afterRenaming Renaming.weaken
+          (RawTermSubst.singleton substituent))
+        RawTermSubst.identity := by
+    intro position
+    rfl
+  exact (RawTerm.subst_congr afterIsIdentity rawTerm).trans
+    (RawTerm.subst_id rawTerm)
+
 namespace SmokeTestRaw
 
 /-- Substituting the only variable in a one-variable raw term. -/

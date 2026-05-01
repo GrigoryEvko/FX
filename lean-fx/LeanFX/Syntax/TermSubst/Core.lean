@@ -212,6 +212,80 @@ theorem Subst.singleton_compose_equiv_lift_compose_singleton
             (typeSubstitution.forRaw
               ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)).symm
 
+/-- Phase C1 termSingleton analog of
+`Subst.singleton_compose_equiv_lift_compose_singleton`.  Composing
+`Subst.termSingleton sub rawArg` with `typeSubst` agrees pointwise with
+composing `typeSubst.lift` after `Subst.termSingleton (sub.subst
+typeSubst) (rawArg.subst typeSubst.forRaw)`.  Both forTy sides at
+position 0 evaluate to `sub.subst typeSubst`; both forRaw sides at
+position 0 evaluate to `rawArg.subst typeSubst.forRaw`.  At positions
+`predecessor + 1`, both forTy sides reduce to
+`typeSubst ⟨predecessor, _⟩` (via `weaken_subst_termSingleton`), and
+both forRaw sides reduce to `typeSubst.forRaw ⟨predecessor, _⟩` (via
+`RawTerm.weaken_subst_singleton`).  Used by the C1
+`Term.subst0_term_subst_HEq` workhorse, which closes the typed→raw
+β-bridge sorrys after Phase C3 migrates `Step.par.betaApp` to
+`subst0_term`. -/
+theorem Subst.termSingleton_compose_equiv_lift_compose_termSingleton
+    {level scope target : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope)
+    (typeSubstitution : Subst level scope target) :
+    Subst.equiv
+      (Subst.compose
+        (Subst.termSingleton substituent rawArg) typeSubstitution)
+      (Subst.compose typeSubstitution.lift
+        (Subst.termSingleton (substituent.subst typeSubstitution)
+          (rawArg.subst typeSubstitution.forRaw))) :=
+  Subst.equiv_intro
+    (fun position =>
+      match position with
+      | ⟨0, _⟩                            => rfl
+      | ⟨predecessor + 1, succBound⟩      => by
+          show (Ty.tyVar
+                  ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩).subst
+                  typeSubstitution
+             = ((typeSubstitution
+                   ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩).rename
+                   Renaming.weaken).subst
+                 (Subst.termSingleton
+                   (substituent.subst typeSubstitution)
+                   (rawArg.subst typeSubstitution.forRaw))
+          have renameSubstCommute :=
+            Ty.rename_subst_commute
+              (typeSubstitution
+                ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+              Renaming.weaken
+              (Subst.termSingleton
+                (substituent.subst typeSubstitution)
+                (rawArg.subst typeSubstitution.forRaw))
+          have substitutionsAgreePointwise :
+              Subst.equiv
+                (Subst.precompose Renaming.weaken
+                  (Subst.termSingleton
+                    (substituent.subst typeSubstitution)
+                    (rawArg.subst typeSubstitution.forRaw)))
+                Subst.identity :=
+            Subst.precompose_weaken_termSingleton_equiv_identity
+              (substituent.subst typeSubstitution)
+              (rawArg.subst typeSubstitution.forRaw)
+          have congCast := Ty.subst_congr substitutionsAgreePointwise
+                          (typeSubstitution
+                            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+          have identitySubstIsNeutral :=
+            Ty.subst_id
+              (typeSubstitution
+                ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+          exact (renameSubstCommute.trans
+                  (congCast.trans identitySubstIsNeutral)).symm)
+    fun position =>
+      match position with
+      | ⟨0, _⟩                            => rfl
+      | ⟨predecessor + 1, succBound⟩      =>
+          (RawTerm.weaken_subst_singleton
+            (typeSubstitution.forRaw
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+            (rawArg.subst typeSubstitution.forRaw)).symm
+
 /-- The practical specialisation: substituting the outermost variable
 then applying an outer substitution equals lifting the outer
 substitution under the binder then substituting the substituted
