@@ -922,4 +922,13 @@ Two formulations of typed confluence, both zero axiom:
 #assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.confluence
 #assert_no_axioms LeanFX.Syntax.Step.parStar.confluence
 
+/-! ## W8.4: Conv canonical form (closes #886).
+
+Convertible terms (in βι-restricted regime) have a common reduct.
+`Conv.isBi` excludes etaArrow and etaSigma. -/
+
+#assert_no_axioms LeanFX.Syntax.Conv.isBi
+#assert_no_axioms LeanFX.Syntax.Conv.canonical_form_isBi
+#assert_no_axioms LeanFX.Syntax.Conv.canonical_form
+
 end LeanFX.Tools.AuditAll

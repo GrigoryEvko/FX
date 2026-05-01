@@ -277,4 +277,111 @@ theorem Step.parStar.confluence
     firstCommonChain.toParStar, secondCommonChain.toParStar,
     firstCommonChain.toIsBi, secondCommonChain.toIsBi⟩
 
+/-! ## §2 — Conv canonical form (#886 / W8.4).
+
+Convertible terms have a common reduct, in the βι-restricted regime.
+
+`Conv.isBi` tracks whether each underlying `Step` (lifted via `toPar`)
+satisfies `Step.par.isBi`.  This excludes the η-rules `etaArrow` and
+`etaSigma` — η-reductions break Church-Rosser at the parallel-reduction
+level (parallel reduction with extensional η is not confluent without
+additional structure).
+
+For βι-Conv, every chain through Conv lifts to two parStarWithBi paths
+that meet at a common reduct (via the confluence theorem). -/
+
+/-- A `Conv` proof is βι if every underlying `Step` (lifted via `toPar`)
+satisfies `Step.par.isBi`.  Excludes `etaArrow` and `etaSigma`. -/
+inductive Conv.isBi :
+    {mode : Mode} → {level scope : Nat} → {ctx : Ctx mode level scope} →
+    {termType : Ty level scope} →
+    {sourceTerm targetTerm : Term ctx termType} →
+    Conv sourceTerm targetTerm → Prop
+  | refl :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {termType : Ty level scope} (term : Term ctx termType),
+      Conv.isBi (Conv.refl term)
+  | sym :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {termType : Ty level scope}
+        {firstTerm secondTerm : Term ctx termType}
+        {parentConv : Conv firstTerm secondTerm},
+      Conv.isBi parentConv → Conv.isBi (Conv.sym parentConv)
+  | trans :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {termType : Ty level scope}
+        {firstTerm midTerm thirdTerm : Term ctx termType}
+        {firstConv : Conv firstTerm midTerm}
+        {secondConv : Conv midTerm thirdTerm},
+      Conv.isBi firstConv → Conv.isBi secondConv →
+      Conv.isBi (Conv.trans firstConv secondConv)
+  | fromStep :
+      ∀ {mode level scope} {ctx : Ctx mode level scope}
+        {termType : Ty level scope}
+        {sourceTerm targetTerm : Term ctx termType}
+        {step : Step sourceTerm targetTerm},
+      Step.par.isBi (Step.toPar step) →
+      Conv.isBi (Conv.fromStep step)
+
+/-- Lift a `Conv.isBi`-witnessed proof to a `Step.parStarWithBi`-pair
+with a common reduct.
+
+Proof: induction on the `Conv` (and matching `Conv.isBi`).
+* `refl t`: common reduct is `t`.
+* `sym h`: swap the two chains in the IH.
+* `trans h1 h2`: take IH1's common reduct `c1` and IH2's `c2`.  Both
+  are reachable from the midterm — apply confluence on `parStarWithBi`
+  to find a common reduct of `c1` and `c2`.  Combine.
+* `fromStep s`: common reduct is target; lift via `Step.toPar.toParStar`. -/
+theorem Conv.canonical_form_isBi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    {convProof : Conv sourceTerm targetTerm}
+    (convIsBi : Conv.isBi convProof) :
+    ∃ commonReduct : Term ctx termType,
+      Step.parStarWithBi sourceTerm commonReduct ∧
+      Step.parStarWithBi targetTerm commonReduct := by
+  induction convIsBi with
+  | refl term =>
+      exact ⟨term, Step.parStarWithBi.refl term,
+        Step.parStarWithBi.refl term⟩
+  | sym _parentBi parentIH =>
+      obtain ⟨commonReduct, sourceChain, targetChain⟩ := parentIH
+      exact ⟨commonReduct, targetChain, sourceChain⟩
+  | trans _firstBi _secondBi firstIH secondIH =>
+      obtain ⟨firstCommon, sourceToFirst, midToFirst⟩ := firstIH
+      obtain ⟨secondCommon, midToSecond, targetToSecond⟩ := secondIH
+      -- Confluence on midTerm: midToFirst and midToSecond converge.
+      obtain ⟨jointReduct, firstToJoint, secondToJoint⟩ :=
+        Step.parStarWithBi.confluence midToFirst midToSecond
+      exact ⟨jointReduct,
+        Step.parStarWithBi.append sourceToFirst firstToJoint,
+        Step.parStarWithBi.append targetToSecond secondToJoint⟩
+  | fromStep stepIsBi =>
+      rename_i targetTerm _
+      exact ⟨targetTerm,
+        stepIsBi.toParStarWithBi,
+        Step.parStarWithBi.refl targetTerm⟩
+
+/-- Canonical form theorem: convertible terms (in the βι-restricted
+regime) have a common reduct via `Step.parStar`.
+
+Closes **#886** (W8.4 / Conv.canonical_form): convertible terms have a
+common reduct.  The `Conv.isBi` hypothesis restricts to η-free
+convertibility — η-rules are excluded by the `Step.par.isBi`
+predicate underlying typed Church-Rosser. -/
+theorem Conv.canonical_form
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    {convProof : Conv sourceTerm targetTerm}
+    (convIsBi : Conv.isBi convProof) :
+    ∃ commonReduct : Term ctx termType,
+      Step.parStar sourceTerm commonReduct ∧
+      Step.parStar targetTerm commonReduct := by
+  obtain ⟨commonReduct, sourceWithBi, targetWithBi⟩ :=
+    Conv.canonical_form_isBi convIsBi
+  exact ⟨commonReduct, sourceWithBi.toParStar, targetWithBi.toParStar⟩
+
 end LeanFX.Syntax
