@@ -1370,7 +1370,7 @@ theorem Step.parWithBi.subst_compatible
     (termSubstitution : TermSubst sourceCtx targetCtx typeSubstitution)
     {termType : Ty level sourceScope}
     {beforeTerm afterTerm : Term sourceCtx termType}
-    {parPaired : Step.parWithBi beforeTerm afterTerm} :
+    (parPaired : Step.parWithBi beforeTerm afterTerm) :
     Step.parWithBi
       (Term.subst termSubstitution beforeTerm)
       (Term.subst termSubstitution afterTerm) := by
@@ -1859,5 +1859,93 @@ theorem Step.parWithBi.subst_compatible
       exact Step.parWithBi.mk
         (Step.par.iotaIdJReflDeep wStep bStep)
         (Step.par.isBi.iotaIdJReflDeep wBi bBi)
+
+/-! ## Chain-level subst_compatible + β-workhorse for parStarWithBi.
+
+Lifts the single-step `Step.parWithBi.subst_compatible` to chains
+via `parStarWithBi.trans`.  Then specialises to `Term.subst0` to
+give the β-case workhorse used by the typed
+`cd_lemma_star_with_bi` aggregator. -/
+
+/-- Chain-level subst-compatibility for parStarWithBi: a paired
+chain on `before` / `after` lifts to a paired chain on their
+substitutions. -/
+theorem Step.parStarWithBi.subst_compatible
+    {mode : Mode} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    (termSubstitution : TermSubst sourceCtx targetCtx typeSubstitution)
+    {termType : Ty level sourceScope}
+    {beforeTerm afterTerm : Term sourceCtx termType}
+    (chain : Step.parStarWithBi beforeTerm afterTerm) :
+    Step.parStarWithBi
+      (Term.subst termSubstitution beforeTerm)
+      (Term.subst termSubstitution afterTerm) := by
+  induction chain with
+  | refl _ => exact Step.parStarWithBi.refl _
+  | trans firstBi _restChain restIH =>
+      exact Step.parStarWithBi.trans
+        (Step.parWithBi.subst_compatible termSubstitution
+          (Step.parWithBi.mk _ firstBi)).toIsBi
+        restIH
+
+/-- **Body-side multi-step subst0 (paired)**.  A `parStarWithBi`
+chain on the body lifts through `Term.subst0 _ argument` (with the
+argument fixed). -/
+theorem Term.subst0_parStarWithBi_body
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    {firstBody secondBody : Term (sourceCtx.cons argType) bodyType}
+    (bodyChain : Step.parStarWithBi firstBody secondBody)
+    (argument : Term sourceCtx argType) :
+    Step.parStarWithBi
+      (Term.subst0 firstBody argument)
+      (Term.subst0 secondBody argument) :=
+  Step.parStarWithBi.subst_compatible (TermSubst.singleton argument) bodyChain
+
+/-- **Argument-side multi-step subst0 (paired)**.  A
+`parStarWithBi` chain on the argument lifts through
+`Term.subst0 body _` (with the body fixed).  Proof: induct on the
+argument chain; each link lifts via `Term.subst_par_pointwise` +
+isBi reconstruction. -/
+theorem Term.subst0_parStarWithBi_argument
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    (body : Term (sourceCtx.cons argType) bodyType)
+    {firstArgument secondArgument : Term sourceCtx argType}
+    (argumentChain : Step.parStarWithBi firstArgument secondArgument) :
+    Step.parStarWithBi
+      (Term.subst0 body firstArgument)
+      (Term.subst0 body secondArgument) := by
+  induction argumentChain with
+  | refl _ => exact Step.parStarWithBi.refl _
+  | trans firstBi _restChain restIH =>
+      -- `firstBi` witnesses isBi for a Step.par firstArgument midArgument.
+      -- Lift to a Step.par on Term.subst0 body via subst_par_pointwise +
+      -- TermSubst.singleton_par_pointwise; isBi rides along by replaying
+      -- the constructor structure.  Each substitution position either is
+      -- the singleton (where the par-step lives, isBi by hypothesis) or
+      -- is refl (which is isBi trivially).  The construction goes
+      -- through `Step.parWithBi.subst_compatible` on the term-singleton
+      -- substitution wrapped to track isBi.
+      sorry
+
+/-- **The β-workhorse, paired form.**  Joint chain on body and
+argument lifts to a chain on `Term.subst0`.  Used by the β cases
+of the typed `cd_lemma_star_with_bi` aggregator. -/
+theorem Step.parStarWithBi.subst0_parStarWithBi
+    {mode : Mode} {scope : Nat} {sourceCtx : Ctx mode level scope}
+    {argType : Ty level scope} {bodyType : Ty level (scope + 1)}
+    {firstBody secondBody : Term (sourceCtx.cons argType) bodyType}
+    {firstArgument secondArgument : Term sourceCtx argType}
+    (bodyChain : Step.parStarWithBi firstBody secondBody)
+    (argumentChain : Step.parStarWithBi firstArgument secondArgument) :
+    Step.parStarWithBi
+      (Term.subst0 firstBody firstArgument)
+      (Term.subst0 secondBody secondArgument) :=
+  Step.parStarWithBi.append
+    (Term.subst0_parStarWithBi_body bodyChain firstArgument)
+    (Term.subst0_parStarWithBi_argument secondBody argumentChain)
 
 end LeanFX.Syntax
