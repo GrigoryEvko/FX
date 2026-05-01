@@ -4,6 +4,7 @@ import LeanFX.Syntax.DependentJ
 import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
 import LeanFX.Syntax.Reduction.CdLemmaStarWithBi
+import LeanFX.Syntax.Reduction.Diamond
 import LeanFX.Syntax.Reduction.ParInversion
 import LeanFX.Frontend.Surface
 import LeanFX.Frontend.Token
@@ -711,5 +712,15 @@ chain-isBi witness simultaneously.  `cd_lemma_star` and
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_with_bi
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_isBi
+
+/-! ## W8.2: typed diamond property.
+
+`Term.cd source` is the universal common reduct of every
+βι-witnessed parallel step from `source`.  Both legs are
+`cd_lemma_star` applied to the input βι-witness — closes
+**#884** (W8.2 typed diamond). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.diamond
+#assert_no_axioms LeanFX.Syntax.Step.par.diamond_isBi
 
 end LeanFX.Tools.AuditAll
