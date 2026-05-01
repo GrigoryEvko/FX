@@ -738,4 +738,28 @@ theorem Step.par.isBi.castBoth_eq
   cases typeEquality
   exact stepBi
 
+/-- Step.par.isBi survives `Step.par.castSource`. -/
+theorem Step.par.isBi.castSource_eq
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm beforeTerm' afterTerm : Term ctx termType}
+    (sourceEquality : beforeTerm = beforeTerm')
+    {parallelStep : Step.par beforeTerm afterTerm}
+    (stepBi : Step.par.isBi parallelStep) :
+    Step.par.isBi (Step.par.castSource sourceEquality parallelStep) := by
+  cases sourceEquality
+  exact stepBi
+
+/-- Step.par.isBi survives `Step.par.castTarget`. -/
+theorem Step.par.isBi.castTarget_eq
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {termType : Ty level scope}
+    {beforeTerm afterTerm afterTerm' : Term ctx termType}
+    (targetEquality : afterTerm = afterTerm')
+    {parallelStep : Step.par beforeTerm afterTerm}
+    (stepBi : Step.par.isBi parallelStep) :
+    Step.par.isBi (Step.par.castTarget targetEquality parallelStep) := by
+  cases targetEquality
+  exact stepBi
+
 end LeanFX.Syntax
