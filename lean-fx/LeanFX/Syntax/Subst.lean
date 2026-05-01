@@ -16,7 +16,7 @@ recursive call's indices.
 For v1.0+ `Ty` (no `Ty.tyVar` constructor), `Subst` is never *queried*
 by `Ty.subst` — it threads through the recursion as a token.  When
 v1.5+ adds `Ty.tyVar`, the `var` case will look up the substituent
-via `σ`. -/
+via `substitution`. -/
 
 /-- Joint substitution environment for all syntax indexed by the same scope.
 
@@ -81,7 +81,8 @@ def Subst.termSingleton {level scope : Nat} (substituent : Ty level scope)
 /-- Apply a parallel substitution to a type, structurally.  The
 `piTy` case lifts the substitution under the new binder; just like
 `Ty.rename`, the recursive call's indices are supplied definitionally
-by `σ.lift`, no Nat arithmetic identities required.  Axiom-free. -/
+by `substitution.lift`, no Nat arithmetic identities required.
+Axiom-free. -/
 def Ty.subst {level source target : Nat} :
     Ty level source → Subst level source target → Ty level target
   | .unit, _                                         => .unit
@@ -414,11 +415,14 @@ theorem Ty.subst_rename_commute {level source middle target : Nat} :
       exact congrArgThree (function := Ty.id) carrierEq leftEq rightEq
 
 /-- Renaming followed by substitution: precompose the rawRenaming, then
-substitute.  `Subst.precompose ρ σ i = σ (ρ i)`. -/
-def Subst.precompose {level s m t : Nat} (ρ : Renaming s m) (σ : Subst level m t) :
-    Subst level s t where
-  forTy := fun i => σ (ρ i)
-  forRaw := RawTermSubst.afterRenaming ρ σ.forRaw
+substitute.  `Subst.precompose rawRenaming substitution position
+= substitution (rawRenaming position)`. -/
+def Subst.precompose {level source middle target : Nat}
+    (rawRenaming : Renaming source middle)
+    (substitution : Subst level middle target) :
+    Subst level source target where
+  forTy := fun position => substitution (rawRenaming position)
+  forRaw := RawTermSubst.afterRenaming rawRenaming substitution.forRaw
 
 /-- Type component of `precompose`. -/
 theorem Subst.precompose_forTy {level source middle target : Nat}
@@ -437,19 +441,22 @@ theorem Subst.precompose_forRaw {level source middle target : Nat}
       RawTermSubst.afterRenaming rawRenaming substitution.forRaw :=
   rfl
 
-/-- Lifting commutes with precompose (pointwise).  Both `k = 0` and
-`k+1` cases reduce to `rfl` thanks to Fin proof irrelevance. -/
-theorem Subst.lift_precompose_commute {level s m t : Nat}
-    (ρ : Renaming s m) (σ : Subst level m t) :
-    Subst.equiv (Subst.precompose ρ.lift σ.lift)
-                ((Subst.precompose ρ σ).lift) :=
+/-- Lifting commutes with precompose (pointwise).  Both
+`position = ⟨0, _⟩` and `⟨predecessor + 1, _⟩` cases reduce to `rfl`
+thanks to Fin proof irrelevance. -/
+theorem Subst.lift_precompose_commute {level source middle target : Nat}
+    (rawRenaming : Renaming source middle)
+    (substitution : Subst level middle target) :
+    Subst.equiv (Subst.precompose rawRenaming.lift substitution.lift)
+                ((Subst.precompose rawRenaming substitution).lift) :=
   Subst.equiv_intro
     (fun position =>
       match position with
-      | ⟨0, _⟩       => rfl
-      | ⟨_ + 1, _⟩   => rfl)
+      | ⟨0, _⟩         => rfl
+      | ⟨_ + 1, _⟩     => rfl)
     fun position =>
-      (RawTermSubst.lift_afterRenaming_equiv ρ σ.forRaw position).symm
+      (RawTermSubst.lift_afterRenaming_equiv
+        rawRenaming substitution.forRaw position).symm
 
 /-- Precomposing a lifted substitution with weakening agrees with
 rawRenaming each substituent by weakening. -/
@@ -461,76 +468,106 @@ theorem Subst.precompose_weaken_lift_equiv_renameAfter_weaken {level source targ
   Subst.equiv_intro (fun _ => rfl) (RawTermSubst.equiv_refl _)
 
 /-- **The rename-subst commute lemma** — the symmetric counterpart to
-`Ty.subst_rename_commute`.  Renaming then substituting equals substituting
-with a precomposed substitution.  This is the OTHER direction of the
-substitution-rename interaction; together with `subst_rename_commute`
-they let us derive `subst0_rename_commute` and the full β-reduction
-soundness chain. -/
-theorem Ty.rename_subst_commute {level s m t : Nat} :
-    ∀ (T : Ty level s) (ρ : Renaming s m) (σ : Subst level m t),
-    (T.rename ρ).subst σ = T.subst (Subst.precompose ρ σ)
+`Ty.subst_rename_commute`.  Renaming then substituting equals
+substituting with a precomposed substitution.  This is the OTHER
+direction of the substitution-rename interaction; together with
+`subst_rename_commute` they let us derive `subst0_rename_commute`
+and the full β-reduction soundness chain. -/
+theorem Ty.rename_subst_commute {level source middle target : Nat} :
+    ∀ (tyValue : Ty level source)
+      (rawRenaming : Renaming source middle)
+      (substitution : Subst level middle target),
+    (tyValue.rename rawRenaming).subst substitution
+      = tyValue.subst (Subst.precompose rawRenaming substitution)
   | .unit, _, _ => rfl
-  | .arrow X Y, ρ, σ => by
-      show Ty.arrow ((X.rename ρ).subst σ) ((Y.rename ρ).subst σ)
-         = Ty.arrow (X.subst (Subst.precompose ρ σ))
-                    (Y.subst (Subst.precompose ρ σ))
-      have hX := Ty.rename_subst_commute X ρ σ
-      have hY := Ty.rename_subst_commute Y ρ σ
-      exact hX ▸ hY ▸ rfl
-  | .piTy X Y, ρ, σ => by
-      show Ty.piTy ((X.rename ρ).subst σ) ((Y.rename ρ.lift).subst σ.lift)
-         = Ty.piTy (X.subst (Subst.precompose ρ σ))
-                   (Y.subst (Subst.precompose ρ σ).lift)
-      have hX := Ty.rename_subst_commute X ρ σ
-      have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
-      have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
-      exact hX ▸ hY ▸ hCong ▸ rfl
+  | .arrow domainType codomainType, rawRenaming, substitution => by
+      show Ty.arrow ((domainType.rename rawRenaming).subst substitution)
+                    ((codomainType.rename rawRenaming).subst substitution)
+         = Ty.arrow
+             (domainType.subst (Subst.precompose rawRenaming substitution))
+             (codomainType.subst (Subst.precompose rawRenaming substitution))
+      have domainEq :=
+        Ty.rename_subst_commute domainType rawRenaming substitution
+      have codomainEq :=
+        Ty.rename_subst_commute codomainType rawRenaming substitution
+      exact domainEq ▸ codomainEq ▸ rfl
+  | .piTy domainType codomainType, rawRenaming, substitution => by
+      show Ty.piTy ((domainType.rename rawRenaming).subst substitution)
+                   ((codomainType.rename rawRenaming.lift).subst substitution.lift)
+         = Ty.piTy
+             (domainType.subst (Subst.precompose rawRenaming substitution))
+             (codomainType.subst (Subst.precompose rawRenaming substitution).lift)
+      have domainEq :=
+        Ty.rename_subst_commute domainType rawRenaming substitution
+      have codomainEq :=
+        Ty.rename_subst_commute codomainType rawRenaming.lift substitution.lift
+      have liftCong :=
+        Ty.subst_congr
+          (Subst.lift_precompose_commute rawRenaming substitution) codomainType
+      exact domainEq ▸ codomainEq ▸ liftCong ▸ rfl
   | .tyVar _, _, _ => rfl
-  | .sigmaTy X Y, ρ, σ => by
-      show Ty.sigmaTy ((X.rename ρ).subst σ) ((Y.rename ρ.lift).subst σ.lift)
-         = Ty.sigmaTy (X.subst (Subst.precompose ρ σ))
-                      (Y.subst (Subst.precompose ρ σ).lift)
-      have hX := Ty.rename_subst_commute X ρ σ
-      have hY := Ty.rename_subst_commute Y ρ.lift σ.lift
-      have hCong := Ty.subst_congr (Subst.lift_precompose_commute ρ σ) Y
-      exact hX ▸ hY ▸ hCong ▸ rfl
+  | .sigmaTy firstType secondType, rawRenaming, substitution => by
+      show Ty.sigmaTy ((firstType.rename rawRenaming).subst substitution)
+                       ((secondType.rename rawRenaming.lift).subst substitution.lift)
+         = Ty.sigmaTy
+             (firstType.subst (Subst.precompose rawRenaming substitution))
+             (secondType.subst (Subst.precompose rawRenaming substitution).lift)
+      have firstEq :=
+        Ty.rename_subst_commute firstType rawRenaming substitution
+      have secondEq :=
+        Ty.rename_subst_commute secondType rawRenaming.lift substitution.lift
+      have liftCong :=
+        Ty.subst_congr
+          (Subst.lift_precompose_commute rawRenaming substitution) secondType
+      exact firstEq ▸ secondEq ▸ liftCong ▸ rfl
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
   | .nat, _, _ => rfl
-  | .list elemType, ρ, σ => by
-      show Ty.list ((elemType.rename ρ).subst σ)
-         = Ty.list (elemType.subst (Subst.precompose ρ σ))
-      have hElem := Ty.rename_subst_commute elemType ρ σ
-      exact hElem ▸ rfl
-  | .vec elemType length, ρ, σ => by
-      show Ty.vec ((elemType.rename ρ).subst σ) length
-         = Ty.vec (elemType.subst (Subst.precompose ρ σ)) length
-      have hElem := Ty.rename_subst_commute elemType ρ σ
-      exact hElem ▸ rfl
-  | .option elemType, ρ, σ => by
-      show Ty.option ((elemType.rename ρ).subst σ)
-         = Ty.option (elemType.subst (Subst.precompose ρ σ))
-      have hElem := Ty.rename_subst_commute elemType ρ σ
-      exact hElem ▸ rfl
-  | .either leftType rightType, ρ, σ => by
-      show Ty.either ((leftType.rename ρ).subst σ)
-                     ((rightType.rename ρ).subst σ)
-         = Ty.either (leftType.subst (Subst.precompose ρ σ))
-                     (rightType.subst (Subst.precompose ρ σ))
-      have hLeft  := Ty.rename_subst_commute leftType ρ σ
-      have hRight := Ty.rename_subst_commute rightType ρ σ
-      exact hLeft ▸ hRight ▸ rfl
-  | .id carrier lhs rhs, ρ, σ => by
-      show Ty.id ((carrier.rename ρ).subst σ)
-                 ((lhs.rename ρ).subst σ.forRaw)
-                 ((rhs.rename ρ).subst σ.forRaw)
-         = Ty.id (carrier.subst (Subst.precompose ρ σ))
-                 (lhs.subst (Subst.precompose ρ σ).forRaw)
-                 (rhs.subst (Subst.precompose ρ σ).forRaw)
-      have hCarrier := Ty.rename_subst_commute carrier ρ σ
-      have hLeft := RawTerm.subst_rename_commute lhs ρ σ.forRaw
-      have hRight := RawTerm.subst_rename_commute rhs ρ σ.forRaw
-      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
+  | .list elemType, rawRenaming, substitution => by
+      show Ty.list ((elemType.rename rawRenaming).subst substitution)
+         = Ty.list (elemType.subst (Subst.precompose rawRenaming substitution))
+      have elemEq :=
+        Ty.rename_subst_commute elemType rawRenaming substitution
+      exact elemEq ▸ rfl
+  | .vec elemType length, rawRenaming, substitution => by
+      show Ty.vec ((elemType.rename rawRenaming).subst substitution) length
+         = Ty.vec (elemType.subst (Subst.precompose rawRenaming substitution))
+                  length
+      have elemEq :=
+        Ty.rename_subst_commute elemType rawRenaming substitution
+      exact elemEq ▸ rfl
+  | .option elemType, rawRenaming, substitution => by
+      show Ty.option ((elemType.rename rawRenaming).subst substitution)
+         = Ty.option (elemType.subst (Subst.precompose rawRenaming substitution))
+      have elemEq :=
+        Ty.rename_subst_commute elemType rawRenaming substitution
+      exact elemEq ▸ rfl
+  | .either leftType rightType, rawRenaming, substitution => by
+      show Ty.either ((leftType.rename rawRenaming).subst substitution)
+                     ((rightType.rename rawRenaming).subst substitution)
+         = Ty.either
+             (leftType.subst (Subst.precompose rawRenaming substitution))
+             (rightType.subst (Subst.precompose rawRenaming substitution))
+      have leftEq :=
+        Ty.rename_subst_commute leftType rawRenaming substitution
+      have rightEq :=
+        Ty.rename_subst_commute rightType rawRenaming substitution
+      exact leftEq ▸ rightEq ▸ rfl
+  | .id carrier leftEnd rightEnd, rawRenaming, substitution => by
+      show Ty.id ((carrier.rename rawRenaming).subst substitution)
+                 ((leftEnd.rename rawRenaming).subst substitution.forRaw)
+                 ((rightEnd.rename rawRenaming).subst substitution.forRaw)
+         = Ty.id
+             (carrier.subst (Subst.precompose rawRenaming substitution))
+             (leftEnd.subst (Subst.precompose rawRenaming substitution).forRaw)
+             (rightEnd.subst (Subst.precompose rawRenaming substitution).forRaw)
+      have carrierEq :=
+        Ty.rename_subst_commute carrier rawRenaming substitution
+      have leftEq :=
+        RawTerm.subst_rename_commute leftEnd rawRenaming substitution.forRaw
+      have rightEq :=
+        RawTerm.subst_rename_commute rightEnd rawRenaming substitution.forRaw
+      exact congrArgThree (function := Ty.id) carrierEq leftEq rightEq
 
 /-! ## Renaming as a special case of substitution.
 
@@ -538,11 +575,14 @@ A rawRenaming is a substitution whose substituent at each position is a
 `tyVar` reference.  All rawRenaming lemmas are derivable from the
 corresponding substitution lemmas via this coercion. -/
 
-/-- Coerce a rawRenaming into a substitution: each variable index `ρ i`
-becomes the type-variable reference `Ty.tyVar (ρ i)`. -/
-def Renaming.toSubst {s t : Nat} (ρ : Renaming s t) : Subst level s t where
-  forTy := fun i => Ty.tyVar (ρ i)
-  forRaw := fun i => RawTerm.var (ρ i)
+/-- Coerce a rawRenaming into a substitution: each variable index
+`rawRenaming position` becomes the type-variable reference
+`Ty.tyVar (rawRenaming position)`. -/
+def Renaming.toSubst {source target : Nat}
+    (rawRenaming : Renaming source target) :
+    Subst level source target where
+  forTy := fun position => Ty.tyVar (rawRenaming position)
+  forRaw := fun position => RawTerm.var (rawRenaming position)
 
 /-- Type component of coercing a rawRenaming to a substitution. -/
 theorem Renaming.toSubst_forTy {level source target : Nat}
@@ -560,18 +600,19 @@ theorem Renaming.toSubst_forRaw {level source target : Nat}
 
 /-- Lifting commutes with the rawRenaming-to-substitution coercion
 (pointwise).  Both cases reduce to `rfl`. -/
-theorem Renaming.lift_toSubst_equiv {s t : Nat} (ρ : Renaming s t) :
-    Subst.equiv (Renaming.toSubst (level := level) ρ.lift)
-                (Renaming.toSubst (level := level) ρ).lift :=
+theorem Renaming.lift_toSubst_equiv {source target : Nat}
+    (rawRenaming : Renaming source target) :
+    Subst.equiv (Renaming.toSubst (level := level) rawRenaming.lift)
+                (Renaming.toSubst (level := level) rawRenaming).lift :=
   Subst.equiv_intro
     (fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨_ + 1, _⟩  => rfl)
+      | ⟨0, _⟩          => rfl
+      | ⟨_ + 1, _⟩      => rfl)
     fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨_ + 1, _⟩  => rfl
+      | ⟨0, _⟩          => rfl
+      | ⟨_ + 1, _⟩      => rfl
 
 /-- Raw renaming is raw substitution by variable terms. -/
 theorem RawTerm.rename_eq_subst {level source target : Nat} :
@@ -611,71 +652,81 @@ theorem RawTerm.rename_identity {level scope : Nat} (rawTerm : RawTerm scope) :
       (RawTerm.subst_id rawTerm))
 
 /-- **Renaming = Substitution** under the natural coercion.  This is
-the conceptual cap of the v1.7 substitution discipline: rawRenaming is
+the conceptual cap of the v1.7 substitution discipline: renaming is
 not a separate primitive operation but a special case of substitution
-where the substituent for each variable is a `tyVar`.  All rawRenaming
+where the substituent for each variable is a `tyVar`.  All renaming
 lemmas are derivable from the corresponding substitution lemmas via
 this isomorphism. -/
-theorem Ty.rename_eq_subst {level s t : Nat} :
-    ∀ (T : Ty level s) (ρ : Renaming s t),
-    T.rename ρ = T.subst (Renaming.toSubst ρ)
+theorem Ty.rename_eq_subst {level source target : Nat} :
+    ∀ (tyValue : Ty level source) (rawRenaming : Renaming source target),
+      tyValue.rename rawRenaming = tyValue.subst (Renaming.toSubst rawRenaming)
   | .unit, _ => rfl
-  | .arrow X Y, ρ => by
-      show Ty.arrow (X.rename ρ) (Y.rename ρ)
-         = Ty.arrow (X.subst (Renaming.toSubst ρ))
-                    (Y.subst (Renaming.toSubst ρ))
-      have hX := Ty.rename_eq_subst X ρ
-      have hY := Ty.rename_eq_subst Y ρ
-      exact hX ▸ hY ▸ rfl
-  | .piTy X Y, ρ => by
-      show Ty.piTy (X.rename ρ) (Y.rename ρ.lift)
-         = Ty.piTy (X.subst (Renaming.toSubst ρ))
-                   (Y.subst (Renaming.toSubst ρ).lift)
-      have hX := Ty.rename_eq_subst X ρ
-      have hY := Ty.rename_eq_subst Y ρ.lift
-      have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
-      exact hX ▸ hY ▸ hCong ▸ rfl
+  | .arrow domainType codomainType, rawRenaming => by
+      show Ty.arrow (domainType.rename rawRenaming)
+                    (codomainType.rename rawRenaming)
+         = Ty.arrow (domainType.subst (Renaming.toSubst rawRenaming))
+                    (codomainType.subst (Renaming.toSubst rawRenaming))
+      have domainEq := Ty.rename_eq_subst domainType rawRenaming
+      have codomainEq := Ty.rename_eq_subst codomainType rawRenaming
+      exact domainEq ▸ codomainEq ▸ rfl
+  | .piTy domainType codomainType, rawRenaming => by
+      show Ty.piTy (domainType.rename rawRenaming)
+                   (codomainType.rename rawRenaming.lift)
+         = Ty.piTy (domainType.subst (Renaming.toSubst rawRenaming))
+                   (codomainType.subst (Renaming.toSubst rawRenaming).lift)
+      have domainEq := Ty.rename_eq_subst domainType rawRenaming
+      have codomainEq := Ty.rename_eq_subst codomainType rawRenaming.lift
+      have liftCong :=
+        Ty.subst_congr (Renaming.lift_toSubst_equiv rawRenaming) codomainType
+      exact domainEq ▸ codomainEq ▸ liftCong ▸ rfl
   | .tyVar _, _ => rfl
-  | .sigmaTy X Y, ρ => by
-      show Ty.sigmaTy (X.rename ρ) (Y.rename ρ.lift)
-         = Ty.sigmaTy (X.subst (Renaming.toSubst ρ))
-                      (Y.subst (Renaming.toSubst ρ).lift)
-      have hX := Ty.rename_eq_subst X ρ
-      have hY := Ty.rename_eq_subst Y ρ.lift
-      have hCong := Ty.subst_congr (Renaming.lift_toSubst_equiv ρ) Y
-      exact hX ▸ hY ▸ hCong ▸ rfl
+  | .sigmaTy firstType secondType, rawRenaming => by
+      show Ty.sigmaTy (firstType.rename rawRenaming)
+                       (secondType.rename rawRenaming.lift)
+         = Ty.sigmaTy (firstType.subst (Renaming.toSubst rawRenaming))
+                       (secondType.subst (Renaming.toSubst rawRenaming).lift)
+      have firstEq := Ty.rename_eq_subst firstType rawRenaming
+      have secondEq := Ty.rename_eq_subst secondType rawRenaming.lift
+      have liftCong :=
+        Ty.subst_congr (Renaming.lift_toSubst_equiv rawRenaming) secondType
+      exact firstEq ▸ secondEq ▸ liftCong ▸ rfl
   | .bool, _ => rfl
   | .universe _ _, _ => rfl
   | .nat, _ => rfl
-  | .list elemType, ρ => by
-      show Ty.list (elemType.rename ρ) = Ty.list (elemType.subst (Renaming.toSubst ρ))
-      have hElem := Ty.rename_eq_subst elemType ρ
-      exact hElem ▸ rfl
-  | .vec elemType length, ρ => by
-      show Ty.vec (elemType.rename ρ) length =
-        Ty.vec (elemType.subst (Renaming.toSubst ρ)) length
-      have hElem := Ty.rename_eq_subst elemType ρ
-      exact hElem ▸ rfl
-  | .option elemType, ρ => by
-      show Ty.option (elemType.rename ρ) = Ty.option (elemType.subst (Renaming.toSubst ρ))
-      have hElem := Ty.rename_eq_subst elemType ρ
-      exact hElem ▸ rfl
-  | .either leftType rightType, ρ => by
-      show Ty.either (leftType.rename ρ) (rightType.rename ρ)
-         = Ty.either (leftType.subst (Renaming.toSubst ρ))
-                     (rightType.subst (Renaming.toSubst ρ))
-      have hLeft  := Ty.rename_eq_subst leftType ρ
-      have hRight := Ty.rename_eq_subst rightType ρ
-      exact hLeft ▸ hRight ▸ rfl
-  | .id carrier lhs rhs, ρ => by
-      show Ty.id (carrier.rename ρ) (lhs.rename ρ) (rhs.rename ρ)
-         = Ty.id (carrier.subst (Renaming.toSubst ρ))
-                 (lhs.subst (Renaming.toSubst (level := level) ρ).forRaw)
-                 (rhs.subst (Renaming.toSubst (level := level) ρ).forRaw)
-      have hCarrier := Ty.rename_eq_subst carrier ρ
-      have hLeft := RawTerm.rename_eq_subst (level := level) lhs ρ
-      have hRight := RawTerm.rename_eq_subst (level := level) rhs ρ
-      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
+  | .list elemType, rawRenaming => by
+      show Ty.list (elemType.rename rawRenaming)
+         = Ty.list (elemType.subst (Renaming.toSubst rawRenaming))
+      have elemEq := Ty.rename_eq_subst elemType rawRenaming
+      exact elemEq ▸ rfl
+  | .vec elemType length, rawRenaming => by
+      show Ty.vec (elemType.rename rawRenaming) length
+         = Ty.vec (elemType.subst (Renaming.toSubst rawRenaming)) length
+      have elemEq := Ty.rename_eq_subst elemType rawRenaming
+      exact elemEq ▸ rfl
+  | .option elemType, rawRenaming => by
+      show Ty.option (elemType.rename rawRenaming)
+         = Ty.option (elemType.subst (Renaming.toSubst rawRenaming))
+      have elemEq := Ty.rename_eq_subst elemType rawRenaming
+      exact elemEq ▸ rfl
+  | .either leftType rightType, rawRenaming => by
+      show Ty.either (leftType.rename rawRenaming)
+                     (rightType.rename rawRenaming)
+         = Ty.either (leftType.subst (Renaming.toSubst rawRenaming))
+                     (rightType.subst (Renaming.toSubst rawRenaming))
+      have leftEq := Ty.rename_eq_subst leftType rawRenaming
+      have rightEq := Ty.rename_eq_subst rightType rawRenaming
+      exact leftEq ▸ rightEq ▸ rfl
+  | .id carrier leftEnd rightEnd, rawRenaming => by
+      show Ty.id (carrier.rename rawRenaming)
+                 (leftEnd.rename rawRenaming)
+                 (rightEnd.rename rawRenaming)
+         = Ty.id (carrier.subst (Renaming.toSubst rawRenaming))
+                 (leftEnd.subst (Renaming.toSubst (level := level) rawRenaming).forRaw)
+                 (rightEnd.subst (Renaming.toSubst (level := level) rawRenaming).forRaw)
+      have carrierEq := Ty.rename_eq_subst carrier rawRenaming
+      have leftEq := RawTerm.rename_eq_subst (level := level) leftEnd rawRenaming
+      have rightEq := RawTerm.rename_eq_subst (level := level) rightEnd rawRenaming
+      exact congrArgThree (function := Ty.id) carrierEq leftEq rightEq
 
 /-! ## Categorical structure: identity and composition.
 
@@ -693,7 +744,7 @@ Together these say: substitution behaves algebraically. -/
 /-- The identity substitution maps each variable to its own tyVar
 reference.  Identity element of substitution composition. -/
 def Subst.identity {level scope : Nat} : Subst level scope scope where
-  forTy := fun i => Ty.tyVar i
+  forTy := fun position => Ty.tyVar position
   forRaw := RawTermSubst.identity
 
 /-- Lifting the identity substitution gives the identity at the
@@ -783,92 +834,111 @@ theorem Ty.subst0_eq_termSingleton_unit
       codomain.subst (Subst.termSingleton domain RawTerm.unit) :=
   Ty.subst_singleton_eq_termSingleton_unit codomain domain
 
-/-- **Identity law for substitution**: `T.subst Subst.identity = T`.
+/-- **Identity law for substitution**: `tyValue.subst Subst.identity = tyValue`.
 The substitution that maps every variable to itself is the identity
-operation on `Ty`.  Proven by structural induction on `T`, using
+operation on `Ty`.  Proven by structural induction on the type, using
 `.symm ▸` to rewrite the goal toward `rfl`. -/
 theorem Ty.subst_id {level scope : Nat} :
-    ∀ (T : Ty level scope), T.subst Subst.identity = T
+    ∀ (tyValue : Ty level scope), tyValue.subst Subst.identity = tyValue
   | .unit => rfl
-  | .arrow X Y => by
-      have hX := Ty.subst_id X
-      have hY := Ty.subst_id Y
-      show (X.subst Subst.identity).arrow (Y.subst Subst.identity) = X.arrow Y
-      exact hX.symm ▸ hY.symm ▸ rfl
-  | .piTy X Y => by
-      have hX := Ty.subst_id X
-      have hCong := Ty.subst_congr Subst.lift_identity_equiv Y
-      have hY := Ty.subst_id Y
-      show (X.subst Subst.identity).piTy (Y.subst Subst.identity.lift) = X.piTy Y
-      exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
+  | .arrow domainType codomainType => by
+      have domainEq := Ty.subst_id domainType
+      have codomainEq := Ty.subst_id codomainType
+      show (domainType.subst Subst.identity).arrow
+            (codomainType.subst Subst.identity)
+         = domainType.arrow codomainType
+      exact domainEq.symm ▸ codomainEq.symm ▸ rfl
+  | .piTy domainType codomainType => by
+      have domainEq := Ty.subst_id domainType
+      have liftCong :=
+        Ty.subst_congr Subst.lift_identity_equiv codomainType
+      have codomainEq := Ty.subst_id codomainType
+      show (domainType.subst Subst.identity).piTy
+            (codomainType.subst Subst.identity.lift)
+         = domainType.piTy codomainType
+      exact domainEq.symm ▸ liftCong.symm ▸ codomainEq.symm ▸ rfl
   | .tyVar _ => rfl
-  | .sigmaTy X Y => by
-      have hX := Ty.subst_id X
-      have hCong := Ty.subst_congr Subst.lift_identity_equiv Y
-      have hY := Ty.subst_id Y
-      show (X.subst Subst.identity).sigmaTy (Y.subst Subst.identity.lift)
-         = X.sigmaTy Y
-      exact hX.symm ▸ hCong.symm ▸ hY.symm ▸ rfl
+  | .sigmaTy firstType secondType => by
+      have firstEq := Ty.subst_id firstType
+      have liftCong :=
+        Ty.subst_congr Subst.lift_identity_equiv secondType
+      have secondEq := Ty.subst_id secondType
+      show (firstType.subst Subst.identity).sigmaTy
+            (secondType.subst Subst.identity.lift)
+         = firstType.sigmaTy secondType
+      exact firstEq.symm ▸ liftCong.symm ▸ secondEq.symm ▸ rfl
   | .bool => rfl
   | .universe _ _ => rfl
   | .nat => rfl
   | .list elemType => by
-      have hElem := Ty.subst_id elemType
+      have elemEq := Ty.subst_id elemType
       show (elemType.subst Subst.identity).list = elemType.list
-      exact hElem.symm ▸ rfl
+      exact elemEq.symm ▸ rfl
   | .vec elemType length => by
-      have hElem := Ty.subst_id elemType
-      show Ty.vec (elemType.subst Subst.identity) length = Ty.vec elemType length
-      exact hElem.symm ▸ rfl
+      have elemEq := Ty.subst_id elemType
+      show Ty.vec (elemType.subst Subst.identity) length
+         = Ty.vec elemType length
+      exact elemEq.symm ▸ rfl
   | .option elemType => by
-      have hElem := Ty.subst_id elemType
+      have elemEq := Ty.subst_id elemType
       show (elemType.subst Subst.identity).option = elemType.option
-      exact hElem.symm ▸ rfl
+      exact elemEq.symm ▸ rfl
   | .either leftType rightType => by
-      have hLeft  := Ty.subst_id leftType
-      have hRight := Ty.subst_id rightType
+      have leftEq  := Ty.subst_id leftType
+      have rightEq := Ty.subst_id rightType
       show (leftType.subst Subst.identity).either
              (rightType.subst Subst.identity)
            = leftType.either rightType
-      exact hLeft.symm ▸ hRight.symm ▸ rfl
-  | .id carrier lhs rhs => by
-      have hCarrier := Ty.subst_id carrier
-      have hLeft := RawTerm.subst_id lhs
-      have hRight := RawTerm.subst_id rhs
+      exact leftEq.symm ▸ rightEq.symm ▸ rfl
+  | .id carrier leftEnd rightEnd => by
+      have carrierEq := Ty.subst_id carrier
+      have leftEq := RawTerm.subst_id leftEnd
+      have rightEq := RawTerm.subst_id rightEnd
       show Ty.id (carrier.subst Subst.identity)
-                 (lhs.subst Subst.identity.forRaw)
-                 (rhs.subst Subst.identity.forRaw)
-         = Ty.id carrier lhs rhs
-      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
+                 (leftEnd.subst Subst.identity.forRaw)
+                 (rightEnd.subst Subst.identity.forRaw)
+         = Ty.id carrier leftEnd rightEnd
+      exact congrArgThree (function := Ty.id) carrierEq leftEq rightEq
 
 /-- Substitution commutes with weakening: substituting after
 weakening = weakening after substituting (with appropriately lifted
-substitution).  Stepping stone for the composition law `Ty.subst_compose`.
+substitution).  Stepping stone for the composition law
+`Ty.subst_compose`.
 
-In v1.10, with `Ty.weaken := T.rename Renaming.weaken`, this is derived
-from `Ty.rename_subst_commute` and `Ty.subst_rename_commute` plus the
-pointwise equivalence `Subst.precompose Renaming.weaken σ.lift ≡
-Subst.renameAfter σ Renaming.weaken`.  The pointwise equivalence is
-trivial (both forms reduce to `(σ i).rename Renaming.weaken` by
-`Subst.lift`'s defn at successor positions). -/
-theorem Ty.subst_weaken_commute {level s t : Nat} (T : Ty level s) (σ : Subst level s t) :
-    (T.weaken).subst σ.lift = (T.subst σ).weaken := by
-  show (T.rename Renaming.weaken).subst σ.lift
-     = (T.subst σ).rename Renaming.weaken
-  have hPointwise :
-      Subst.equiv (Subst.precompose Renaming.weaken σ.lift)
-                  (Subst.renameAfter σ Renaming.weaken) :=
-    Subst.precompose_weaken_lift_equiv_renameAfter_weaken σ
-  exact (Ty.rename_subst_commute T Renaming.weaken σ.lift).trans
-          ((Ty.subst_congr hPointwise T).trans
-            (Ty.subst_rename_commute T σ Renaming.weaken).symm)
+In v1.10, with `Ty.weaken := tyValue.rename Renaming.weaken`, this is
+derived from `Ty.rename_subst_commute` and `Ty.subst_rename_commute`
+plus the pointwise equivalence
+`Subst.precompose Renaming.weaken substitution.lift ≡
+ Subst.renameAfter substitution Renaming.weaken`.
+The pointwise equivalence is trivial (both forms reduce to
+`(substitution position).rename Renaming.weaken` by `Subst.lift`'s
+defn at successor positions). -/
+theorem Ty.subst_weaken_commute {level source target : Nat}
+    (tyValue : Ty level source)
+    (substitution : Subst level source target) :
+    (tyValue.weaken).subst substitution.lift
+      = (tyValue.subst substitution).weaken := by
+  show (tyValue.rename Renaming.weaken).subst substitution.lift
+     = (tyValue.subst substitution).rename Renaming.weaken
+  have substitutionsAgreePointwise :
+      Subst.equiv (Subst.precompose Renaming.weaken substitution.lift)
+                  (Subst.renameAfter substitution Renaming.weaken) :=
+    Subst.precompose_weaken_lift_equiv_renameAfter_weaken substitution
+  exact (Ty.rename_subst_commute tyValue Renaming.weaken substitution.lift).trans
+          ((Ty.subst_congr substitutionsAgreePointwise tyValue).trans
+            (Ty.subst_rename_commute tyValue substitution Renaming.weaken).symm)
 
-/-- Composition of substitutions: apply `σ₁` first, then `σ₂` to each
-substituent.  The category-theoretic composition. -/
-def Subst.compose {level s m t : Nat} (σ₁ : Subst level s m) (σ₂ : Subst level m t) :
-    Subst level s t where
-  forTy := fun i => (σ₁ i).subst σ₂
-  forRaw := RawTermSubst.compose σ₁.forRaw σ₂.forRaw
+/-- Composition of substitutions: apply `firstSubstitution` first, then
+`secondSubstitution` to each substituent.  The category-theoretic
+composition. -/
+def Subst.compose {level source middle target : Nat}
+    (firstSubstitution : Subst level source middle)
+    (secondSubstitution : Subst level middle target) :
+    Subst level source target where
+  forTy := fun position =>
+    (firstSubstitution position).subst secondSubstitution
+  forRaw :=
+    RawTermSubst.compose firstSubstitution.forRaw secondSubstitution.forRaw
 
 /-- Type component of substitution composition. -/
 theorem Subst.compose_forTy {level source middle target : Nat}
@@ -888,90 +958,129 @@ theorem Subst.compose_forRaw {level source middle target : Nat}
   rfl
 
 /-- Lifting commutes with substitution composition (pointwise).  The
-non-trivial `k+1` case reduces to `Ty.subst_weaken_commute`. -/
-theorem Subst.lift_compose_equiv {level s m t : Nat}
-    (σ₁ : Subst level s m) (σ₂ : Subst level m t) :
-    Subst.equiv (Subst.compose σ₁.lift σ₂.lift)
-                ((Subst.compose σ₁ σ₂).lift) :=
+non-trivial `predecessor + 1` case reduces to `Ty.subst_weaken_commute`. -/
+theorem Subst.lift_compose_equiv {level source middle target : Nat}
+    (firstSubstitution : Subst level source middle)
+    (secondSubstitution : Subst level middle target) :
+    Subst.equiv (Subst.compose firstSubstitution.lift secondSubstitution.lift)
+                ((Subst.compose firstSubstitution secondSubstitution).lift) :=
   Subst.equiv_intro
     (fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨k + 1, hk⟩ =>
-          Ty.subst_weaken_commute (σ₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩) σ₂)
+      | ⟨0, _⟩                            => rfl
+      | ⟨predecessor + 1, succBound⟩      =>
+          Ty.subst_weaken_commute
+            (firstSubstitution
+              ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+            secondSubstitution)
     fun position =>
-      (RawTermSubst.lift_compose_equiv σ₁.forRaw σ₂.forRaw position).symm
+      (RawTermSubst.lift_compose_equiv
+        firstSubstitution.forRaw secondSubstitution.forRaw position).symm
 
-/-- **Composition law for substitution**: `(T.subst σ₁).subst σ₂ =
-T.subst (Subst.compose σ₁ σ₂)`.  Together with `Ty.subst_id`, this
-makes `Subst` a category enriched over `Ty` and `Ty.subst` its
-functorial action.  Proven by structural induction on `T`, using
-`Subst.lift_compose_equiv` + `Ty.subst_congr` for the binder cases. -/
-theorem Ty.subst_compose {level s m t : Nat} :
-    ∀ (T : Ty level s) (σ₁ : Subst level s m) (σ₂ : Subst level m t),
-    (T.subst σ₁).subst σ₂ = T.subst (Subst.compose σ₁ σ₂)
+/-- **Composition law for substitution**:
+`(tyValue.subst firstSubstitution).subst secondSubstitution
+ = tyValue.subst (Subst.compose firstSubstitution secondSubstitution)`.
+Together with `Ty.subst_id`, this makes `Subst` a category enriched
+over `Ty` and `Ty.subst` its functorial action.  Proven by structural
+induction on the type, using `Subst.lift_compose_equiv` +
+`Ty.subst_congr` for the binder cases. -/
+theorem Ty.subst_compose {level source middle target : Nat} :
+    ∀ (tyValue : Ty level source)
+      (firstSubstitution : Subst level source middle)
+      (secondSubstitution : Subst level middle target),
+    (tyValue.subst firstSubstitution).subst secondSubstitution
+      = tyValue.subst (Subst.compose firstSubstitution secondSubstitution)
   | .unit, _, _ => rfl
-  | .arrow X Y, σ₁, σ₂ => by
-      show ((X.subst σ₁).subst σ₂).arrow ((Y.subst σ₁).subst σ₂)
-         = (X.subst (Subst.compose σ₁ σ₂)).arrow
-           (Y.subst (Subst.compose σ₁ σ₂))
-      have hX := Ty.subst_compose X σ₁ σ₂
-      have hY := Ty.subst_compose Y σ₁ σ₂
-      exact hX ▸ hY ▸ rfl
-  | .piTy X Y, σ₁, σ₂ => by
-      show ((X.subst σ₁).subst σ₂).piTy ((Y.subst σ₁.lift).subst σ₂.lift)
-         = (X.subst (Subst.compose σ₁ σ₂)).piTy
-           (Y.subst (Subst.compose σ₁ σ₂).lift)
-      have hX := Ty.subst_compose X σ₁ σ₂
-      have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
-      have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
-      exact hX ▸ hY ▸ hCong ▸ rfl
+  | .arrow domainType codomainType, firstSubstitution, secondSubstitution => by
+      show ((domainType.subst firstSubstitution).subst secondSubstitution).arrow
+            ((codomainType.subst firstSubstitution).subst secondSubstitution)
+         = (domainType.subst (Subst.compose firstSubstitution secondSubstitution)).arrow
+            (codomainType.subst (Subst.compose firstSubstitution secondSubstitution))
+      have domainEq :=
+        Ty.subst_compose domainType firstSubstitution secondSubstitution
+      have codomainEq :=
+        Ty.subst_compose codomainType firstSubstitution secondSubstitution
+      exact domainEq ▸ codomainEq ▸ rfl
+  | .piTy domainType codomainType, firstSubstitution, secondSubstitution => by
+      show ((domainType.subst firstSubstitution).subst secondSubstitution).piTy
+            ((codomainType.subst firstSubstitution.lift).subst secondSubstitution.lift)
+         = (domainType.subst (Subst.compose firstSubstitution secondSubstitution)).piTy
+            (codomainType.subst (Subst.compose firstSubstitution secondSubstitution).lift)
+      have domainEq :=
+        Ty.subst_compose domainType firstSubstitution secondSubstitution
+      have codomainEq :=
+        Ty.subst_compose codomainType firstSubstitution.lift secondSubstitution.lift
+      have liftCong :=
+        Ty.subst_congr
+          (Subst.lift_compose_equiv firstSubstitution secondSubstitution)
+          codomainType
+      exact domainEq ▸ codomainEq ▸ liftCong ▸ rfl
   | .tyVar _, _, _ => rfl
-  | .sigmaTy X Y, σ₁, σ₂ => by
-      show ((X.subst σ₁).subst σ₂).sigmaTy ((Y.subst σ₁.lift).subst σ₂.lift)
-         = (X.subst (Subst.compose σ₁ σ₂)).sigmaTy
-           (Y.subst (Subst.compose σ₁ σ₂).lift)
-      have hX := Ty.subst_compose X σ₁ σ₂
-      have hY := Ty.subst_compose Y σ₁.lift σ₂.lift
-      have hCong := Ty.subst_congr (Subst.lift_compose_equiv σ₁ σ₂) Y
-      exact hX ▸ hY ▸ hCong ▸ rfl
+  | .sigmaTy firstType secondType, firstSubstitution, secondSubstitution => by
+      show ((firstType.subst firstSubstitution).subst secondSubstitution).sigmaTy
+            ((secondType.subst firstSubstitution.lift).subst secondSubstitution.lift)
+         = (firstType.subst (Subst.compose firstSubstitution secondSubstitution)).sigmaTy
+            (secondType.subst (Subst.compose firstSubstitution secondSubstitution).lift)
+      have firstEq :=
+        Ty.subst_compose firstType firstSubstitution secondSubstitution
+      have secondEq :=
+        Ty.subst_compose secondType firstSubstitution.lift secondSubstitution.lift
+      have liftCong :=
+        Ty.subst_congr
+          (Subst.lift_compose_equiv firstSubstitution secondSubstitution)
+          secondType
+      exact firstEq ▸ secondEq ▸ liftCong ▸ rfl
   | .bool, _, _ => rfl
   | .universe _ _, _, _ => rfl
   | .nat, _, _ => rfl
-  | .list elemType, σ₁, σ₂ => by
-      show Ty.list ((elemType.subst σ₁).subst σ₂)
-         = Ty.list (elemType.subst (Subst.compose σ₁ σ₂))
-      have hElem := Ty.subst_compose elemType σ₁ σ₂
-      exact hElem ▸ rfl
-  | .vec elemType length, σ₁, σ₂ => by
-      show Ty.vec ((elemType.subst σ₁).subst σ₂) length
-         = Ty.vec (elemType.subst (Subst.compose σ₁ σ₂)) length
-      have hElem := Ty.subst_compose elemType σ₁ σ₂
-      exact hElem ▸ rfl
-  | .option elemType, σ₁, σ₂ => by
-      show Ty.option ((elemType.subst σ₁).subst σ₂)
-         = Ty.option (elemType.subst (Subst.compose σ₁ σ₂))
-      have hElem := Ty.subst_compose elemType σ₁ σ₂
-      exact hElem ▸ rfl
-  | .either leftType rightType, σ₁, σ₂ => by
-      show Ty.either ((leftType.subst σ₁).subst σ₂)
-                     ((rightType.subst σ₁).subst σ₂)
-         = Ty.either (leftType.subst (Subst.compose σ₁ σ₂))
-                     (rightType.subst (Subst.compose σ₁ σ₂))
-      have hLeft  := Ty.subst_compose leftType σ₁ σ₂
-      have hRight := Ty.subst_compose rightType σ₁ σ₂
-      exact hLeft ▸ hRight ▸ rfl
-  | .id carrier lhs rhs, σ₁, σ₂ => by
-      show Ty.id ((carrier.subst σ₁).subst σ₂)
-                 ((lhs.subst σ₁.forRaw).subst σ₂.forRaw)
-                 ((rhs.subst σ₁.forRaw).subst σ₂.forRaw)
-         = Ty.id (carrier.subst (Subst.compose σ₁ σ₂))
-                 (lhs.subst (Subst.compose σ₁ σ₂).forRaw)
-                 (rhs.subst (Subst.compose σ₁ σ₂).forRaw)
-      have hCarrier := Ty.subst_compose carrier σ₁ σ₂
-      have hLeft := RawTerm.subst_compose lhs σ₁.forRaw σ₂.forRaw
-      have hRight := RawTerm.subst_compose rhs σ₁.forRaw σ₂.forRaw
-      exact congrArgThree (function := Ty.id) hCarrier hLeft hRight
+  | .list elemType, firstSubstitution, secondSubstitution => by
+      show Ty.list ((elemType.subst firstSubstitution).subst secondSubstitution)
+         = Ty.list (elemType.subst (Subst.compose firstSubstitution secondSubstitution))
+      have elemEq :=
+        Ty.subst_compose elemType firstSubstitution secondSubstitution
+      exact elemEq ▸ rfl
+  | .vec elemType length, firstSubstitution, secondSubstitution => by
+      show Ty.vec ((elemType.subst firstSubstitution).subst secondSubstitution) length
+         = Ty.vec
+             (elemType.subst (Subst.compose firstSubstitution secondSubstitution))
+             length
+      have elemEq :=
+        Ty.subst_compose elemType firstSubstitution secondSubstitution
+      exact elemEq ▸ rfl
+  | .option elemType, firstSubstitution, secondSubstitution => by
+      show Ty.option ((elemType.subst firstSubstitution).subst secondSubstitution)
+         = Ty.option (elemType.subst (Subst.compose firstSubstitution secondSubstitution))
+      have elemEq :=
+        Ty.subst_compose elemType firstSubstitution secondSubstitution
+      exact elemEq ▸ rfl
+  | .either leftType rightType, firstSubstitution, secondSubstitution => by
+      show Ty.either ((leftType.subst firstSubstitution).subst secondSubstitution)
+                     ((rightType.subst firstSubstitution).subst secondSubstitution)
+         = Ty.either
+             (leftType.subst (Subst.compose firstSubstitution secondSubstitution))
+             (rightType.subst (Subst.compose firstSubstitution secondSubstitution))
+      have leftEq :=
+        Ty.subst_compose leftType firstSubstitution secondSubstitution
+      have rightEq :=
+        Ty.subst_compose rightType firstSubstitution secondSubstitution
+      exact leftEq ▸ rightEq ▸ rfl
+  | .id carrier leftEnd rightEnd, firstSubstitution, secondSubstitution => by
+      show Ty.id ((carrier.subst firstSubstitution).subst secondSubstitution)
+                 ((leftEnd.subst firstSubstitution.forRaw).subst secondSubstitution.forRaw)
+                 ((rightEnd.subst firstSubstitution.forRaw).subst secondSubstitution.forRaw)
+         = Ty.id
+             (carrier.subst (Subst.compose firstSubstitution secondSubstitution))
+             (leftEnd.subst (Subst.compose firstSubstitution secondSubstitution).forRaw)
+             (rightEnd.subst (Subst.compose firstSubstitution secondSubstitution).forRaw)
+      have carrierEq :=
+        Ty.subst_compose carrier firstSubstitution secondSubstitution
+      have leftEq :=
+        RawTerm.subst_compose leftEnd
+          firstSubstitution.forRaw secondSubstitution.forRaw
+      have rightEq :=
+        RawTerm.subst_compose rightEnd
+          firstSubstitution.forRaw secondSubstitution.forRaw
+      exact congrArgThree (function := Ty.id) carrierEq leftEq rightEq
 
 /-! ## Monoid laws for Renaming and Subst.
 
@@ -982,46 +1091,54 @@ pointwise equivalences to stay funext-free. -/
 formulations: substitution-then-rename equals lifted-rename-then-
 substitution-with-renamed-substituent.  The auxiliary lemma needed for
 the `Ty.subst0_rename_commute` derivation. -/
-theorem Subst.singleton_renameAfter_equiv_precompose {level scope target : Nat}
-    (A : Ty level scope) (ρ : Renaming scope target) :
-    Subst.equiv (Subst.renameAfter (Subst.singleton A) ρ)
-                (Subst.precompose ρ.lift (Subst.singleton (A.rename ρ))) :=
+theorem Subst.singleton_renameAfter_equiv_precompose
+    {level scope target : Nat}
+    (substituent : Ty level scope)
+    (rawRenaming : Renaming scope target) :
+    Subst.equiv
+      (Subst.renameAfter (Subst.singleton substituent) rawRenaming)
+      (Subst.precompose rawRenaming.lift
+        (Subst.singleton (substituent.rename rawRenaming))) :=
   Subst.equiv_intro
     (fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨_ + 1, _⟩  => rfl)
+      | ⟨0, _⟩          => rfl
+      | ⟨_ + 1, _⟩      => rfl)
     fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨_ + 1, _⟩  => rfl
+      | ⟨0, _⟩          => rfl
+      | ⟨_ + 1, _⟩      => rfl
 
 /-- Term-bearing analog of `singleton_renameAfter_equiv_precompose`:
 substitution-then-rename equals lifted-rename-then-substitution-with-
 renamed-substituent, where both the type substituent and the raw
-substituent get renamed by `ρ`.  The forTy side is identical to the
-classical singleton case; the forRaw side uses
-`RawTermSubst.singleton (rawArg.rename ρ)` after renaming. -/
-theorem Subst.termSingleton_renameAfter_equiv_precompose {level scope target : Nat}
-    (A : Ty level scope) (rawArg : RawTerm scope) (ρ : Renaming scope target) :
+substituent get renamed by `rawRenaming`.  The forTy side is identical
+to the classical singleton case; the forRaw side uses
+`RawTermSubst.singleton (rawArg.rename rawRenaming)` after renaming. -/
+theorem Subst.termSingleton_renameAfter_equiv_precompose
+    {level scope target : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope)
+    (rawRenaming : Renaming scope target) :
     Subst.equiv
-      (Subst.renameAfter (Subst.termSingleton A rawArg) ρ)
-      (Subst.precompose ρ.lift
-        (Subst.termSingleton (A.rename ρ) (rawArg.rename ρ))) :=
+      (Subst.renameAfter (Subst.termSingleton substituent rawArg) rawRenaming)
+      (Subst.precompose rawRenaming.lift
+        (Subst.termSingleton
+          (substituent.rename rawRenaming)
+          (rawArg.rename rawRenaming))) :=
   Subst.equiv_intro
     (fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨_ + 1, _⟩  => rfl)
+      | ⟨0, _⟩          => rfl
+      | ⟨_ + 1, _⟩      => rfl)
     fun position =>
       match position with
-      | ⟨0, _⟩      => rfl
-      | ⟨_ + 1, _⟩  => rfl
+      | ⟨0, _⟩          => rfl
+      | ⟨_ + 1, _⟩      => rfl
 
 /-- **Single-variable substitution-rename commute** — the practical
-specialisation that unblocks `Term.rename`'s `appPi`/`pair`/`snd`
-cases.  Substituting the outermost variable then rawRenaming equals
-lifted-rawRenaming the codomain then substituting with the renamed
+specialisation that unblocks `Term.rename`'s `appPi` / `pair` / `snd`
+cases.  Substituting the outermost variable then renaming equals
+lifted-renaming the codomain then substituting with the renamed
 substituent.
 
 Proven by chaining the general lemmas (`subst_rename_commute`,
@@ -1029,13 +1146,23 @@ Proven by chaining the general lemmas (`subst_rename_commute`,
 equivalence — no fresh structural induction needed.  Showcases how
 the v1.7 algebraic structure subsumes ad-hoc lemmas. -/
 theorem Ty.subst0_rename_commute {level scope target : Nat}
-    (T : Ty level (scope + 1)) (A : Ty level scope) (ρ : Renaming scope target) :
-    (T.subst0 A).rename ρ = (T.rename ρ.lift).subst0 (A.rename ρ) := by
-  have h1 := Ty.subst_rename_commute T (Subst.singleton A) ρ
-  have h2 := Ty.subst_congr
-    (Subst.singleton_renameAfter_equiv_precompose A ρ) T
-  have h3 := Ty.rename_subst_commute T ρ.lift (Subst.singleton (A.rename ρ))
-  exact h1.trans (h2.trans h3.symm)
+    (codomain : Ty level (scope + 1))
+    (substituent : Ty level scope)
+    (rawRenaming : Renaming scope target) :
+    (codomain.subst0 substituent).rename rawRenaming
+      = (codomain.rename rawRenaming.lift).subst0
+          (substituent.rename rawRenaming) := by
+  have substThenRename :=
+    Ty.subst_rename_commute codomain (Subst.singleton substituent) rawRenaming
+  have substitutionsAgreePointwise :=
+    Ty.subst_congr
+      (Subst.singleton_renameAfter_equiv_precompose substituent rawRenaming)
+      codomain
+  have renameThenSubst :=
+    Ty.rename_subst_commute codomain rawRenaming.lift
+      (Subst.singleton (substituent.rename rawRenaming))
+  exact substThenRename.trans
+          (substitutionsAgreePointwise.trans renameThenSubst.symm)
 
 
 end LeanFX.Syntax
