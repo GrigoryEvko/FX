@@ -211,16 +211,21 @@ theorem Step.par.cd_lemma_star_app_case
     (argumentIH : Step.parStar argumentTerm' (Term.cd argumentTerm)) :
     Step.parStar (Term.app functionTerm' argumentTerm')
                  (Term.cd (Term.app functionTerm argumentTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_app_redex]
   split
-  case _ developedBody developedFunctionEq =>
-      have functionIHcast : Step.parStar functionTerm' (Term.lam developedBody) :=
-        developedFunctionEq ▸ functionIH
+  case _ rawBody developedFunctionEq =>
+      have cdEq : Term.cd functionTerm =
+          Term.lam (Term.body_of_lam_general
+            (Term.cd functionTerm) rfl developedFunctionEq) :=
+        Term.eq_lam_of_toRaw_lam (Term.cd functionTerm) developedFunctionEq
+      have functionIHcast : Step.parStar functionTerm'
+          (Term.lam (Term.body_of_lam_general
+            (Term.cd functionTerm) rfl developedFunctionEq)) :=
+        cdEq ▸ functionIH
       exact Step.parStar.snoc
         (Step.parStar.app_cong functionIHcast argumentIH)
         (Step.par.betaApp (Step.par.refl _) (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.app_cong functionIH argumentIH
+  all_goals exact Step.parStar.app_cong functionIH argumentIH
 
 /-- Discharge of the `Step.par.isBi.appPi` constructor case. -/
 theorem Step.par.cd_lemma_star_appPi_case
@@ -232,16 +237,21 @@ theorem Step.par.cd_lemma_star_appPi_case
     (argumentIH : Step.parStar argumentTerm' (Term.cd argumentTerm)) :
     Step.parStar (Term.appPi functionTerm' argumentTerm')
                  (Term.cd (Term.appPi functionTerm argumentTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_appPi_redex]
   split
-  case _ developedBody developedFunctionEq =>
-      have functionIHcast : Step.parStar functionTerm' (Term.lamPi developedBody) :=
-        developedFunctionEq ▸ functionIH
+  case _ rawBody developedFunctionEq =>
+      have cdEq : Term.cd functionTerm =
+          Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd functionTerm) rfl developedFunctionEq) :=
+        Term.eq_lamPi_of_toRaw_lam (Term.cd functionTerm) developedFunctionEq
+      have functionIHcast : Step.parStar functionTerm'
+          (Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd functionTerm) rfl developedFunctionEq)) :=
+        cdEq ▸ functionIH
       exact Step.parStar.snoc
         (Step.parStar.appPi_cong functionIHcast argumentIH)
         (Step.par.betaAppPi (Step.par.refl _) (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.appPi_cong functionIH argumentIH
+  all_goals exact Step.parStar.appPi_cong functionIH argumentIH
 
 /-- Discharge of the `Step.par.isBi.fst` constructor case. -/
 theorem Step.par.cd_lemma_star_fst_case
@@ -250,18 +260,23 @@ theorem Step.par.cd_lemma_star_fst_case
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairIH : Step.parStar pairTerm' (Term.cd pairTerm)) :
     Step.parStar (Term.fst pairTerm') (Term.cd (Term.fst pairTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_fst_redex]
   split
-  case _ developedFirst developedSecond developedPairEq =>
+  case _ rawFirst rawSecond developedPairEq =>
+      have cdEq : Term.cd pairTerm =
+          Term.pair
+            (Term.firstVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq)
+            (Term.secondVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq) :=
+        Term.eq_pair_of_toRaw_pair (Term.cd pairTerm) developedPairEq
       have pairIHcast : Step.parStar pairTerm'
-          (Term.pair (firstType := firstType) (secondType := secondType)
-                     developedFirst developedSecond) :=
-        developedPairEq ▸ pairIH
+          (Term.pair
+            (Term.firstVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq)
+            (Term.secondVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq)) :=
+        cdEq ▸ pairIH
       exact Step.parStar.snoc
         (Step.parStar.fst_cong pairIHcast)
         (Step.par.betaFstPair _ (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.fst_cong pairIH
+  all_goals exact Step.parStar.fst_cong pairIH
 
 /-- Discharge of the `Step.par.isBi.snd` constructor case. -/
 theorem Step.par.cd_lemma_star_snd_case
@@ -270,18 +285,23 @@ theorem Step.par.cd_lemma_star_snd_case
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairIH : Step.parStar pairTerm' (Term.cd pairTerm)) :
     Step.parStar (Term.snd pairTerm') (Term.cd (Term.snd pairTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_snd_redex]
   split
-  case _ developedFirst developedSecond developedPairEq =>
+  case _ rawFirst rawSecond developedPairEq =>
+      have cdEq : Term.cd pairTerm =
+          Term.pair
+            (Term.firstVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq)
+            (Term.secondVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq) :=
+        Term.eq_pair_of_toRaw_pair (Term.cd pairTerm) developedPairEq
       have pairIHcast : Step.parStar pairTerm'
-          (Term.pair (firstType := firstType) (secondType := secondType)
-                     developedFirst developedSecond) :=
-        developedPairEq ▸ pairIH
+          (Term.pair
+            (Term.firstVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq)
+            (Term.secondVal_of_pair_general (Term.cd pairTerm) rfl developedPairEq)) :=
+        cdEq ▸ pairIH
       exact Step.parStar.snoc
         (Step.parStar.snd_cong pairIHcast)
         (Step.par.betaSndPair _ (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.snd_cong pairIH
+  all_goals exact Step.parStar.snd_cong pairIH
 
 /-- Discharge of the `Step.par.isBi.boolElim` constructor case.
 Three-arm split: boolTrue / boolFalse / wildcard. -/
@@ -296,22 +316,25 @@ theorem Step.par.cd_lemma_star_boolElim_case
     (elseIH : Step.parStar elseBranch' (Term.cd elseBranch)) :
     Step.parStar (Term.boolElim scrutinee' thenBranch' elseBranch')
                  (Term.cd (Term.boolElim scrutinee thenBranch elseBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_boolElim_redex]
   split
   case _ developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee = Term.boolTrue :=
+        Term.eq_boolTrue_of_toRaw_boolTrue (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee' Term.boolTrue :=
-        developedScrutineeEq ▸ scrutineeIH
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.boolElim_cong scrutineeIHcast thenIH elseIH)
         (Step.par.iotaBoolElimTrue _ (Step.par.refl _))
   case _ developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee = Term.boolFalse :=
+        Term.eq_boolFalse_of_toRaw_boolFalse (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee' Term.boolFalse :=
-        developedScrutineeEq ▸ scrutineeIH
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.boolElim_cong scrutineeIHcast thenIH elseIH)
         (Step.par.iotaBoolElimFalse _ (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.boolElim_cong scrutineeIH thenIH elseIH
+  all_goals exact Step.parStar.boolElim_cong scrutineeIH thenIH elseIH
 
 /-- Discharge of the `Step.par.isBi.natElim` constructor case.
 Three-arm split: natZero / natSucc / wildcard. -/
@@ -326,23 +349,29 @@ theorem Step.par.cd_lemma_star_natElim_case
     (succIH : Step.parStar succBranch' (Term.cd succBranch)) :
     Step.parStar (Term.natElim scrutinee' zeroBranch' succBranch')
                  (Term.cd (Term.natElim scrutinee zeroBranch succBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_natElim_redex]
   split
   case _ developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee = Term.natZero :=
+        Term.eq_natZero_of_toRaw_natZero (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee' Term.natZero :=
-        developedScrutineeEq ▸ scrutineeIH
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.natElim_cong scrutineeIHcast zeroIH succIH)
         (Step.par.iotaNatElimZero _ (Step.par.refl _))
-  case _ developedPredecessor developedScrutineeEq =>
+  case _ rawPred developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee =
+          Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd scrutinee) rfl developedScrutineeEq) :=
+        Term.eq_natSucc_of_toRaw_natSucc (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee'
-          (Term.natSucc developedPredecessor) :=
-        developedScrutineeEq ▸ scrutineeIH
+          (Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd scrutinee) rfl developedScrutineeEq)) :=
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.natElim_cong scrutineeIHcast zeroIH succIH)
         (Step.par.iotaNatElimSucc _ (Step.par.refl _) (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.natElim_cong scrutineeIH zeroIH succIH
+  all_goals exact Step.parStar.natElim_cong scrutineeIH zeroIH succIH
 
 /-- Discharge of the `Step.par.isBi.natRec` constructor case.
 Three-arm split: natZero / natSucc / wildcard. -/
@@ -358,24 +387,30 @@ theorem Step.par.cd_lemma_star_natRec_case
     (succIH : Step.parStar succBranch' (Term.cd succBranch)) :
     Step.parStar (Term.natRec scrutinee' zeroBranch' succBranch')
                  (Term.cd (Term.natRec scrutinee zeroBranch succBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_natRec_redex]
   split
   case _ developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee = Term.natZero :=
+        Term.eq_natZero_of_toRaw_natZero (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee' Term.natZero :=
-        developedScrutineeEq ▸ scrutineeIH
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.natRec_cong scrutineeIHcast zeroIH succIH)
         (Step.par.iotaNatRecZero _ (Step.par.refl _))
-  case _ developedPredecessor developedScrutineeEq =>
+  case _ rawPred developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee =
+          Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd scrutinee) rfl developedScrutineeEq) :=
+        Term.eq_natSucc_of_toRaw_natSucc (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee'
-          (Term.natSucc developedPredecessor) :=
-        developedScrutineeEq ▸ scrutineeIH
+          (Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd scrutinee) rfl developedScrutineeEq)) :=
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.natRec_cong scrutineeIHcast zeroIH succIH)
         (Step.par.iotaNatRecSucc (Step.par.refl _) (Step.par.refl _)
                                   (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.natRec_cong scrutineeIH zeroIH succIH
+  all_goals exact Step.parStar.natRec_cong scrutineeIH zeroIH succIH
 
 /-- Discharge of the `Step.par.isBi.listElim` constructor case.
 Three-arm split: listNil / listCons / wildcard. -/
@@ -391,24 +426,32 @@ theorem Step.par.cd_lemma_star_listElim_case
     (consIH : Step.parStar consBranch' (Term.cd consBranch)) :
     Step.parStar (Term.listElim scrutinee' nilBranch' consBranch')
                  (Term.cd (Term.listElim scrutinee nilBranch consBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_listElim_redex]
   split
   case _ developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee = Term.listNil :=
+        Term.eq_listNil_of_toRaw_listNil (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee' Term.listNil :=
-        developedScrutineeEq ▸ scrutineeIH
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.listElim_cong scrutineeIHcast nilIH consIH)
         (Step.par.iotaListElimNil _ (Step.par.refl _))
-  case _ developedHead developedTail developedScrutineeEq =>
+  case _ rawHead rawTail developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee =
+          Term.listCons
+            (Term.head_of_listCons_general (Term.cd scrutinee) rfl developedScrutineeEq)
+            (Term.tail_of_listCons_general (Term.cd scrutinee) rfl developedScrutineeEq) :=
+        Term.eq_listCons_of_toRaw_listCons (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee'
-          (Term.listCons developedHead developedTail) :=
-        developedScrutineeEq ▸ scrutineeIH
+          (Term.listCons
+            (Term.head_of_listCons_general (Term.cd scrutinee) rfl developedScrutineeEq)
+            (Term.tail_of_listCons_general (Term.cd scrutinee) rfl developedScrutineeEq)) :=
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.listElim_cong scrutineeIHcast nilIH consIH)
         (Step.par.iotaListElimCons _ (Step.par.refl _)
                                     (Step.par.refl _) (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.listElim_cong scrutineeIH nilIH consIH
+  all_goals exact Step.parStar.listElim_cong scrutineeIH nilIH consIH
 
 /-- Discharge of the `Step.par.isBi.optionMatch` constructor case.
 Three-arm split: optionNone / optionSome / wildcard. -/
@@ -423,23 +466,29 @@ theorem Step.par.cd_lemma_star_optionMatch_case
     (someIH : Step.parStar someBranch' (Term.cd someBranch)) :
     Step.parStar (Term.optionMatch scrutinee' noneBranch' someBranch')
                  (Term.cd (Term.optionMatch scrutinee noneBranch someBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_optionMatch_redex]
   split
   case _ developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee = Term.optionNone :=
+        Term.eq_optionNone_of_toRaw_optionNone (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee' Term.optionNone :=
-        developedScrutineeEq ▸ scrutineeIH
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.optionMatch_cong scrutineeIHcast noneIH someIH)
         (Step.par.iotaOptionMatchNone _ (Step.par.refl _))
-  case _ developedValue developedScrutineeEq =>
+  case _ rawValue developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee =
+          Term.optionSome
+            (Term.value_of_optionSome_general (Term.cd scrutinee) rfl developedScrutineeEq) :=
+        Term.eq_optionSome_of_toRaw_optionSome (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee'
-          (Term.optionSome developedValue) :=
-        developedScrutineeEq ▸ scrutineeIH
+          (Term.optionSome
+            (Term.value_of_optionSome_general (Term.cd scrutinee) rfl developedScrutineeEq)) :=
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.optionMatch_cong scrutineeIHcast noneIH someIH)
         (Step.par.iotaOptionMatchSome _ (Step.par.refl _) (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.optionMatch_cong scrutineeIH noneIH someIH
+  all_goals exact Step.parStar.optionMatch_cong scrutineeIH noneIH someIH
 
 /-- Discharge of the `Step.par.isBi.eitherMatch` constructor case.
 Three-arm split: eitherInl / eitherInr / wildcard. -/
@@ -454,24 +503,33 @@ theorem Step.par.cd_lemma_star_eitherMatch_case
     (rightIH : Step.parStar rightBranch' (Term.cd rightBranch)) :
     Step.parStar (Term.eitherMatch scrutinee' leftBranch' rightBranch')
                  (Term.cd (Term.eitherMatch scrutinee leftBranch rightBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_eitherMatch_redex]
   split
-  case _ developedValue developedScrutineeEq =>
+  case _ rawValue developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee =
+          Term.eitherInl
+            (Term.value_of_eitherInl_general (Term.cd scrutinee) rfl developedScrutineeEq) :=
+        Term.eq_eitherInl_of_toRaw_eitherInl (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee'
-          (Term.eitherInl (rightType := rightType) developedValue) :=
-        developedScrutineeEq ▸ scrutineeIH
+          (Term.eitherInl (rightType := rightType)
+            (Term.value_of_eitherInl_general (Term.cd scrutinee) rfl developedScrutineeEq)) :=
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.eitherMatch_cong scrutineeIHcast leftIH rightIH)
         (Step.par.iotaEitherMatchInl _ (Step.par.refl _) (Step.par.refl _))
-  case _ developedValue developedScrutineeEq =>
+  case _ rawValue developedScrutineeEq =>
+      have cdEq : Term.cd scrutinee =
+          Term.eitherInr
+            (Term.value_of_eitherInr_general (Term.cd scrutinee) rfl developedScrutineeEq) :=
+        Term.eq_eitherInr_of_toRaw_eitherInr (Term.cd scrutinee) developedScrutineeEq
       have scrutineeIHcast : Step.parStar scrutinee'
-          (Term.eitherInr (leftType := leftType) developedValue) :=
-        developedScrutineeEq ▸ scrutineeIH
+          (Term.eitherInr (leftType := leftType)
+            (Term.value_of_eitherInr_general (Term.cd scrutinee) rfl developedScrutineeEq)) :=
+        cdEq ▸ scrutineeIH
       exact Step.parStar.snoc
         (Step.parStar.eitherMatch_cong scrutineeIHcast leftIH rightIH)
         (Step.par.iotaEitherMatchInr _ (Step.par.refl _) (Step.par.refl _))
-  case _ =>
-      exact Step.parStar.eitherMatch_cong scrutineeIH leftIH rightIH
+  all_goals exact Step.parStar.eitherMatch_cong scrutineeIH leftIH rightIH
 
 /-- Discharge of the `Step.par.isBi.idJ` constructor case.  The
 `Term.cd` arm goes through `Term.cd_idJ_redex`, which first splits on
@@ -496,14 +554,15 @@ theorem Step.par.cd_lemma_star_idJ_case
       subst endpointsEqual
       simp only [Term.cd_idJ_redex_aligned]
       split
-      next developedWitnessEq =>
+      case _ rawTerm developedWitnessEq =>
+          have cdEq : Term.cd witness = Term.refl leftEnd :=
+            Term.eq_refl_of_toRaw_refl (Term.cd witness) developedWitnessEq
           have witnessIHcast : Step.parStar witness' (Term.refl leftEnd) :=
-            developedWitnessEq ▸ witnessIH
+            cdEq ▸ witnessIH
           exact Step.parStar.snoc
             (Step.parStar.idJ_cong baseIH witnessIHcast)
             (Step.par.iotaIdJRefl (Step.par.refl _))
-      next =>
-          exact Step.parStar.idJ_cong baseIH witnessIH
+      all_goals exact Step.parStar.idJ_cong baseIH witnessIH
   case _ =>
       exact Step.parStar.idJ_cong baseIH witnessIH
 

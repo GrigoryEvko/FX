@@ -95,14 +95,15 @@ theorem Step.par.cd_dominates_idJ_pair
       simp only [Term.cd_idJ_redex_aligned]
       split
       case _ rawTerm heq =>
+          have cdEq : Term.cd witness = Term.refl leftEnd :=
+            Term.eq_refl_of_toRaw_refl (Term.cd witness) heq
           exact Step.parWithBi.mk
-            (Step.par.iotaIdJReflDeep (heq ▸ witnessParStep) baseParStep)
+            (Step.par.iotaIdJReflDeep (cdEq ▸ witnessParStep) baseParStep)
             (Step.par.isBi.iotaIdJReflDeep
-              (Step.par.isBi.cast_target_eq heq witnessIsBi) baseIsBi)
-      case _ =>
-          exact Step.parWithBi.mk
-            (Step.par.idJ baseParStep witnessParStep)
-            (Step.par.isBi.idJ baseIsBi witnessIsBi)
+              (Step.par.isBi.cast_target_eq cdEq witnessIsBi) baseIsBi)
+      all_goals exact (Step.parWithBi.mk
+        (Step.par.idJ baseParStep witnessParStep)
+        (Step.par.isBi.idJ baseIsBi witnessIsBi))
   case _ =>
       exact Step.parWithBi.mk
         (Step.par.idJ baseParStep witnessParStep)
@@ -122,17 +123,20 @@ theorem Step.par.cd_dominates_app_pair
     (argumentIsBi : Step.par.isBi argumentParStep) :
     Step.parWithBi (Term.app functionTerm argumentTerm)
       (Term.cd (Term.app functionTerm argumentTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_app_redex]
   split
-  case _ body heq =>
+  case _ rawBody heq =>
+      have cdEq : Term.cd functionTerm =
+          Term.lam (Term.body_of_lam_general
+            (Term.cd functionTerm) rfl heq) :=
+        Term.eq_lam_of_toRaw_lam (Term.cd functionTerm) heq
       exact Step.parWithBi.mk
-        (Step.par.betaAppDeep (heq ▸ functionParStep) argumentParStep)
+        (Step.par.betaAppDeep (cdEq ▸ functionParStep) argumentParStep)
         (Step.par.isBi.betaAppDeep
-          (Step.par.isBi.cast_target_eq heq functionIsBi) argumentIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.app functionParStep argumentParStep)
-        (Step.par.isBi.app functionIsBi argumentIsBi)
+          (Step.par.isBi.cast_target_eq cdEq functionIsBi) argumentIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.app functionParStep argumentParStep)
+    (Step.par.isBi.app functionIsBi argumentIsBi))
 
 /-- Dependent application pair helper. -/
 theorem Step.par.cd_dominates_appPi_pair
@@ -148,17 +152,20 @@ theorem Step.par.cd_dominates_appPi_pair
     (argumentIsBi : Step.par.isBi argumentParStep) :
     Step.parWithBi (Term.appPi functionTerm argumentTerm)
       (Term.cd (Term.appPi functionTerm argumentTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_appPi_redex]
   split
-  case _ body heq =>
+  case _ rawBody heq =>
+      have cdEq : Term.cd functionTerm =
+          Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd functionTerm) rfl heq) :=
+        Term.eq_lamPi_of_toRaw_lam (Term.cd functionTerm) heq
       exact Step.parWithBi.mk
-        (Step.par.betaAppPiDeep (heq ▸ functionParStep) argumentParStep)
+        (Step.par.betaAppPiDeep (cdEq ▸ functionParStep) argumentParStep)
         (Step.par.isBi.betaAppPiDeep
-          (Step.par.isBi.cast_target_eq heq functionIsBi) argumentIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.appPi functionParStep argumentParStep)
-        (Step.par.isBi.appPi functionIsBi argumentIsBi)
+          (Step.par.isBi.cast_target_eq cdEq functionIsBi) argumentIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.appPi functionParStep argumentParStep)
+    (Step.par.isBi.appPi functionIsBi argumentIsBi))
 
 /-- Σ first-projection pair helper. -/
 theorem Step.par.cd_dominates_fst_pair
@@ -170,17 +177,21 @@ theorem Step.par.cd_dominates_fst_pair
     (pairParStep : Step.par pairTerm (Term.cd pairTerm))
     (pairIsBi : Step.par.isBi pairParStep) :
     Step.parWithBi (Term.fst pairTerm) (Term.cd (Term.fst pairTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_fst_redex]
   split
-  case _ firstVal secondVal heq =>
+  case _ rawFirst rawSecond heq =>
+      have cdEq : Term.cd pairTerm =
+          Term.pair
+            (Term.firstVal_of_pair_general (Term.cd pairTerm) rfl heq)
+            (Term.secondVal_of_pair_general (Term.cd pairTerm) rfl heq) :=
+        Term.eq_pair_of_toRaw_pair (Term.cd pairTerm) heq
       exact Step.parWithBi.mk
-        (Step.par.betaFstPairDeep (heq ▸ pairParStep))
+        (Step.par.betaFstPairDeep (cdEq ▸ pairParStep))
         (Step.par.isBi.betaFstPairDeep
-          (Step.par.isBi.cast_target_eq heq pairIsBi))
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.fst pairParStep)
-        (Step.par.isBi.fst pairIsBi)
+          (Step.par.isBi.cast_target_eq cdEq pairIsBi))
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.fst pairParStep)
+    (Step.par.isBi.fst pairIsBi))
 
 /-- Σ second-projection pair helper. -/
 theorem Step.par.cd_dominates_snd_pair
@@ -192,17 +203,21 @@ theorem Step.par.cd_dominates_snd_pair
     (pairParStep : Step.par pairTerm (Term.cd pairTerm))
     (pairIsBi : Step.par.isBi pairParStep) :
     Step.parWithBi (Term.snd pairTerm) (Term.cd (Term.snd pairTerm)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_snd_redex]
   split
-  case _ firstVal secondVal heq =>
+  case _ rawFirst rawSecond heq =>
+      have cdEq : Term.cd pairTerm =
+          Term.pair
+            (Term.firstVal_of_pair_general (Term.cd pairTerm) rfl heq)
+            (Term.secondVal_of_pair_general (Term.cd pairTerm) rfl heq) :=
+        Term.eq_pair_of_toRaw_pair (Term.cd pairTerm) heq
       exact Step.parWithBi.mk
-        (Step.par.betaSndPairDeep (heq ▸ pairParStep))
+        (Step.par.betaSndPairDeep (cdEq ▸ pairParStep))
         (Step.par.isBi.betaSndPairDeep
-          (Step.par.isBi.cast_target_eq heq pairIsBi))
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.snd pairParStep)
-        (Step.par.isBi.snd pairIsBi)
+          (Step.par.isBi.cast_target_eq cdEq pairIsBi))
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.snd pairParStep)
+    (Step.par.isBi.snd pairIsBi))
 
 /-- `boolElim` pair helper. -/
 theorem Step.par.cd_dominates_boolElim_pair
@@ -220,24 +235,27 @@ theorem Step.par.cd_dominates_boolElim_pair
     (elseIsBi : Step.par.isBi elseParStep) :
     Step.parWithBi (Term.boolElim scrutinee thenBranch elseBranch)
       (Term.cd (Term.boolElim scrutinee thenBranch elseBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_boolElim_redex]
   split
   case _ heq =>
+      have cdEq : Term.cd scrutinee = Term.boolTrue :=
+        Term.eq_boolTrue_of_toRaw_boolTrue (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaBoolElimTrueDeep elseBranch
-          (heq ▸ scrutineeParStep) thenParStep)
+          (cdEq ▸ scrutineeParStep) thenParStep)
         (Step.par.isBi.iotaBoolElimTrueDeep elseBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) thenIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) thenIsBi)
   case _ heq =>
+      have cdEq : Term.cd scrutinee = Term.boolFalse :=
+        Term.eq_boolFalse_of_toRaw_boolFalse (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaBoolElimFalseDeep thenBranch
-          (heq ▸ scrutineeParStep) elseParStep)
+          (cdEq ▸ scrutineeParStep) elseParStep)
         (Step.par.isBi.iotaBoolElimFalseDeep thenBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) elseIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.boolElim scrutineeParStep thenParStep elseParStep)
-        (Step.par.isBi.boolElim scrutineeIsBi thenIsBi elseIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) elseIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.boolElim scrutineeParStep thenParStep elseParStep)
+    (Step.par.isBi.boolElim scrutineeIsBi thenIsBi elseIsBi))
 
 /-- `natElim` pair helper. -/
 theorem Step.par.cd_dominates_natElim_pair
@@ -255,24 +273,29 @@ theorem Step.par.cd_dominates_natElim_pair
     (succIsBi : Step.par.isBi succParStep) :
     Step.parWithBi (Term.natElim scrutinee zeroBranch succBranch)
       (Term.cd (Term.natElim scrutinee zeroBranch succBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_natElim_redex]
   split
   case _ heq =>
+      have cdEq : Term.cd scrutinee = Term.natZero :=
+        Term.eq_natZero_of_toRaw_natZero (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaNatElimZeroDeep succBranch
-          (heq ▸ scrutineeParStep) zeroParStep)
+          (cdEq ▸ scrutineeParStep) zeroParStep)
         (Step.par.isBi.iotaNatElimZeroDeep succBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) zeroIsBi)
-  case _ predecessor heq =>
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) zeroIsBi)
+  case _ rawPred heq =>
+      have cdEq : Term.cd scrutinee =
+          Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd scrutinee) rfl heq) :=
+        Term.eq_natSucc_of_toRaw_natSucc (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaNatElimSuccDeep zeroBranch
-          (heq ▸ scrutineeParStep) succParStep)
+          (cdEq ▸ scrutineeParStep) succParStep)
         (Step.par.isBi.iotaNatElimSuccDeep zeroBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) succIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.natElim scrutineeParStep zeroParStep succParStep)
-        (Step.par.isBi.natElim scrutineeIsBi zeroIsBi succIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) succIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.natElim scrutineeParStep zeroParStep succParStep)
+    (Step.par.isBi.natElim scrutineeIsBi zeroIsBi succIsBi))
 
 /-- `natRec` pair helper. -/
 theorem Step.par.cd_dominates_natRec_pair
@@ -291,24 +314,29 @@ theorem Step.par.cd_dominates_natRec_pair
     (succIsBi : Step.par.isBi succParStep) :
     Step.parWithBi (Term.natRec scrutinee zeroBranch succBranch)
       (Term.cd (Term.natRec scrutinee zeroBranch succBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_natRec_redex]
   split
   case _ heq =>
+      have cdEq : Term.cd scrutinee = Term.natZero :=
+        Term.eq_natZero_of_toRaw_natZero (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaNatRecZeroDeep succBranch
-          (heq ▸ scrutineeParStep) zeroParStep)
+          (cdEq ▸ scrutineeParStep) zeroParStep)
         (Step.par.isBi.iotaNatRecZeroDeep succBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) zeroIsBi)
-  case _ predecessor heq =>
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) zeroIsBi)
+  case _ rawPred heq =>
+      have cdEq : Term.cd scrutinee =
+          Term.natSucc (Term.predecessor_of_natSucc_general
+            (Term.cd scrutinee) rfl heq) :=
+        Term.eq_natSucc_of_toRaw_natSucc (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaNatRecSuccDeep
-          (heq ▸ scrutineeParStep) zeroParStep succParStep)
+          (cdEq ▸ scrutineeParStep) zeroParStep succParStep)
         (Step.par.isBi.iotaNatRecSuccDeep
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) zeroIsBi succIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.natRec scrutineeParStep zeroParStep succParStep)
-        (Step.par.isBi.natRec scrutineeIsBi zeroIsBi succIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) zeroIsBi succIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.natRec scrutineeParStep zeroParStep succParStep)
+    (Step.par.isBi.natRec scrutineeIsBi zeroIsBi succIsBi))
 
 /-- `listElim` pair helper. -/
 theorem Step.par.cd_dominates_listElim_pair
@@ -327,24 +355,30 @@ theorem Step.par.cd_dominates_listElim_pair
     (consIsBi : Step.par.isBi consParStep) :
     Step.parWithBi (Term.listElim scrutinee nilBranch consBranch)
       (Term.cd (Term.listElim scrutinee nilBranch consBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_listElim_redex]
   split
   case _ heq =>
+      have cdEq : Term.cd scrutinee = Term.listNil :=
+        Term.eq_listNil_of_toRaw_listNil (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaListElimNilDeep consBranch
-          (heq ▸ scrutineeParStep) nilParStep)
+          (cdEq ▸ scrutineeParStep) nilParStep)
         (Step.par.isBi.iotaListElimNilDeep consBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) nilIsBi)
-  case _ head tail heq =>
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) nilIsBi)
+  case _ rawHead rawTail heq =>
+      have cdEq : Term.cd scrutinee =
+          Term.listCons
+            (Term.head_of_listCons_general (Term.cd scrutinee) rfl heq)
+            (Term.tail_of_listCons_general (Term.cd scrutinee) rfl heq) :=
+        Term.eq_listCons_of_toRaw_listCons (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaListElimConsDeep nilBranch
-          (heq ▸ scrutineeParStep) consParStep)
+          (cdEq ▸ scrutineeParStep) consParStep)
         (Step.par.isBi.iotaListElimConsDeep nilBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) consIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.listElim scrutineeParStep nilParStep consParStep)
-        (Step.par.isBi.listElim scrutineeIsBi nilIsBi consIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) consIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.listElim scrutineeParStep nilParStep consParStep)
+    (Step.par.isBi.listElim scrutineeIsBi nilIsBi consIsBi))
 
 /-- `optionMatch` pair helper. -/
 theorem Step.par.cd_dominates_optionMatch_pair
@@ -362,24 +396,29 @@ theorem Step.par.cd_dominates_optionMatch_pair
     (someIsBi : Step.par.isBi someParStep) :
     Step.parWithBi (Term.optionMatch scrutinee noneBranch someBranch)
       (Term.cd (Term.optionMatch scrutinee noneBranch someBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_optionMatch_redex]
   split
   case _ heq =>
+      have cdEq : Term.cd scrutinee = Term.optionNone :=
+        Term.eq_optionNone_of_toRaw_optionNone (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaOptionMatchNoneDeep someBranch
-          (heq ▸ scrutineeParStep) noneParStep)
+          (cdEq ▸ scrutineeParStep) noneParStep)
         (Step.par.isBi.iotaOptionMatchNoneDeep someBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) noneIsBi)
-  case _ value heq =>
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) noneIsBi)
+  case _ rawValue heq =>
+      have cdEq : Term.cd scrutinee =
+          Term.optionSome
+            (Term.value_of_optionSome_general (Term.cd scrutinee) rfl heq) :=
+        Term.eq_optionSome_of_toRaw_optionSome (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaOptionMatchSomeDeep noneBranch
-          (heq ▸ scrutineeParStep) someParStep)
+          (cdEq ▸ scrutineeParStep) someParStep)
         (Step.par.isBi.iotaOptionMatchSomeDeep noneBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) someIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.optionMatch scrutineeParStep noneParStep someParStep)
-        (Step.par.isBi.optionMatch scrutineeIsBi noneIsBi someIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) someIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.optionMatch scrutineeParStep noneParStep someParStep)
+    (Step.par.isBi.optionMatch scrutineeIsBi noneIsBi someIsBi))
 
 /-- `eitherMatch` pair helper. -/
 theorem Step.par.cd_dominates_eitherMatch_pair
@@ -397,24 +436,31 @@ theorem Step.par.cd_dominates_eitherMatch_pair
     (rightIsBi : Step.par.isBi rightParStep) :
     Step.parWithBi (Term.eitherMatch scrutinee leftBranch rightBranch)
       (Term.cd (Term.eitherMatch scrutinee leftBranch rightBranch)) := by
-  simp only [Term.cd]
+  simp only [Term.cd, Term.cd_eitherMatch_redex]
   split
-  case _ value heq =>
+  case _ rawValue heq =>
+      have cdEq : Term.cd scrutinee =
+          Term.eitherInl
+            (Term.value_of_eitherInl_general (Term.cd scrutinee) rfl heq) :=
+        Term.eq_eitherInl_of_toRaw_eitherInl (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaEitherMatchInlDeep rightBranch
-          (heq ▸ scrutineeParStep) leftParStep)
+          (cdEq ▸ scrutineeParStep) leftParStep)
         (Step.par.isBi.iotaEitherMatchInlDeep rightBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) leftIsBi)
-  case _ value heq =>
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) leftIsBi)
+  case _ rawValue heq =>
+      have cdEq : Term.cd scrutinee =
+          Term.eitherInr
+            (Term.value_of_eitherInr_general (Term.cd scrutinee) rfl heq) :=
+        Term.eq_eitherInr_of_toRaw_eitherInr (Term.cd scrutinee) heq
       exact Step.parWithBi.mk
         (Step.par.iotaEitherMatchInrDeep leftBranch
-          (heq ▸ scrutineeParStep) rightParStep)
+          (cdEq ▸ scrutineeParStep) rightParStep)
         (Step.par.isBi.iotaEitherMatchInrDeep leftBranch
-          (Step.par.isBi.cast_target_eq heq scrutineeIsBi) rightIsBi)
-  case _ =>
-      exact Step.parWithBi.mk
-        (Step.par.eitherMatch scrutineeParStep leftParStep rightParStep)
-        (Step.par.isBi.eitherMatch scrutineeIsBi leftIsBi rightIsBi)
+          (Step.par.isBi.cast_target_eq cdEq scrutineeIsBi) rightIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.eitherMatch scrutineeParStep leftParStep rightParStep)
+    (Step.par.isBi.eitherMatch scrutineeIsBi leftIsBi rightIsBi))
 
 /-! ## Main theorem: cd_dominates lifts to parWithBi.
 
@@ -425,40 +471,39 @@ the Step.par and isBi pieces (extracted via `.toStep` / `.toIsBi`). -/
 
 /-- Every term parallel-reduces to its complete development with
 an isBi-witnessed step.  Companion to `Step.par.cd_dominates`. -/
-def Step.par.cd_dominates_with_isBi :
-    {mode : Mode} → {level scope : Nat} →
-    {context : Ctx mode level scope} → {termType : Ty level scope} →
-    (term : Term context termType) →
-    Step.parWithBi term (Term.cd term)
-  | _, _, _, _, _, .var _ => by
+def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    {termType : Ty level scope} → (term : Term context termType) →
+      Step.parWithBi term (Term.cd term)
+  | _, .var _ => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .unit => by
+  | _, .unit => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .lam body => by
+  | _, .lam body => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.lam (Step.par.cd_dominates_with_isBi body).toStep)
         (Step.par.isBi.lam (Step.par.cd_dominates_with_isBi body).toIsBi)
-  | _, _, _, _, _, .app functionTerm argumentTerm =>
+  | _, .app functionTerm argumentTerm =>
       let functionPair := Step.par.cd_dominates_with_isBi functionTerm
       let argumentPair := Step.par.cd_dominates_with_isBi argumentTerm
       Step.par.cd_dominates_app_pair functionTerm argumentTerm
         functionPair.toStep argumentPair.toStep
         functionPair.toIsBi argumentPair.toIsBi
-  | _, _, _, _, _, .lamPi body => by
+  | _, .lamPi body => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.lamPi (Step.par.cd_dominates_with_isBi body).toStep)
         (Step.par.isBi.lamPi (Step.par.cd_dominates_with_isBi body).toIsBi)
-  | _, _, _, _, _, .appPi functionTerm argumentTerm =>
+  | _, .appPi functionTerm argumentTerm =>
       let functionPair := Step.par.cd_dominates_with_isBi functionTerm
       let argumentPair := Step.par.cd_dominates_with_isBi argumentTerm
       Step.par.cd_dominates_appPi_pair functionTerm argumentTerm
         functionPair.toStep argumentPair.toStep
         functionPair.toIsBi argumentPair.toIsBi
-  | _, _, _, _, _, .pair firstVal secondVal => by
+  | _, .pair firstVal secondVal => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.pair
@@ -467,52 +512,52 @@ def Step.par.cd_dominates_with_isBi :
         (Step.par.isBi.pair
           (Step.par.cd_dominates_with_isBi firstVal).toIsBi
           (Step.par.cd_dominates_with_isBi secondVal).toIsBi)
-  | _, _, _, _, _, .fst pairTerm =>
+  | _, .fst pairTerm =>
       let pairPair := Step.par.cd_dominates_with_isBi pairTerm
       Step.par.cd_dominates_fst_pair pairTerm pairPair.toStep pairPair.toIsBi
-  | _, _, _, _, _, .snd pairTerm =>
+  | _, .snd pairTerm =>
       let pairPair := Step.par.cd_dominates_with_isBi pairTerm
       Step.par.cd_dominates_snd_pair pairTerm pairPair.toStep pairPair.toIsBi
-  | _, _, _, _, _, .boolTrue => by
+  | _, .boolTrue => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .boolFalse => by
+  | _, .boolFalse => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>
+  | _, .boolElim scrutinee thenBranch elseBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let thenPair := Step.par.cd_dominates_with_isBi thenBranch
       let elsePair := Step.par.cd_dominates_with_isBi elseBranch
       Step.par.cd_dominates_boolElim_pair scrutinee thenBranch elseBranch
         scrutineePair.toStep thenPair.toStep elsePair.toStep
         scrutineePair.toIsBi thenPair.toIsBi elsePair.toIsBi
-  | _, _, _, _, _, .natZero => by
+  | _, .natZero => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .natSucc predecessor => by
+  | _, .natSucc predecessor => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.natSucc (Step.par.cd_dominates_with_isBi predecessor).toStep)
         (Step.par.isBi.natSucc
           (Step.par.cd_dominates_with_isBi predecessor).toIsBi)
-  | _, _, _, _, _, .natElim scrutinee zeroBranch succBranch =>
+  | _, .natElim scrutinee zeroBranch succBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let zeroPair := Step.par.cd_dominates_with_isBi zeroBranch
       let succPair := Step.par.cd_dominates_with_isBi succBranch
       Step.par.cd_dominates_natElim_pair scrutinee zeroBranch succBranch
         scrutineePair.toStep zeroPair.toStep succPair.toStep
         scrutineePair.toIsBi zeroPair.toIsBi succPair.toIsBi
-  | _, _, _, _, _, .natRec scrutinee zeroBranch succBranch =>
+  | _, .natRec scrutinee zeroBranch succBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let zeroPair := Step.par.cd_dominates_with_isBi zeroBranch
       let succPair := Step.par.cd_dominates_with_isBi succBranch
       Step.par.cd_dominates_natRec_pair scrutinee zeroBranch succBranch
         scrutineePair.toStep zeroPair.toStep succPair.toStep
         scrutineePair.toIsBi zeroPair.toIsBi succPair.toIsBi
-  | _, _, _, _, _, .listNil => by
+  | _, .listNil => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .listCons head tail => by
+  | _, .listCons head tail => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.listCons
@@ -521,52 +566,52 @@ def Step.par.cd_dominates_with_isBi :
         (Step.par.isBi.listCons
           (Step.par.cd_dominates_with_isBi head).toIsBi
           (Step.par.cd_dominates_with_isBi tail).toIsBi)
-  | _, _, _, _, _, .listElim scrutinee nilBranch consBranch =>
+  | _, .listElim scrutinee nilBranch consBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let nilPair := Step.par.cd_dominates_with_isBi nilBranch
       let consPair := Step.par.cd_dominates_with_isBi consBranch
       Step.par.cd_dominates_listElim_pair scrutinee nilBranch consBranch
         scrutineePair.toStep nilPair.toStep consPair.toStep
         scrutineePair.toIsBi nilPair.toIsBi consPair.toIsBi
-  | _, _, _, _, _, .optionNone => by
+  | _, .optionNone => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .optionSome value => by
+  | _, .optionSome value => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.optionSome (Step.par.cd_dominates_with_isBi value).toStep)
         (Step.par.isBi.optionSome
           (Step.par.cd_dominates_with_isBi value).toIsBi)
-  | _, _, _, _, _, .optionMatch scrutinee noneBranch someBranch =>
+  | _, .optionMatch scrutinee noneBranch someBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let nonePair := Step.par.cd_dominates_with_isBi noneBranch
       let somePair := Step.par.cd_dominates_with_isBi someBranch
       Step.par.cd_dominates_optionMatch_pair scrutinee noneBranch someBranch
         scrutineePair.toStep nonePair.toStep somePair.toStep
         scrutineePair.toIsBi nonePair.toIsBi somePair.toIsBi
-  | _, _, _, _, _, .eitherInl value => by
+  | _, .eitherInl value => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.eitherInl (Step.par.cd_dominates_with_isBi value).toStep)
         (Step.par.isBi.eitherInl
           (Step.par.cd_dominates_with_isBi value).toIsBi)
-  | _, _, _, _, _, .eitherInr value => by
+  | _, .eitherInr value => by
       simp only [Term.cd]
       exact Step.parWithBi.mk
         (Step.par.eitherInr (Step.par.cd_dominates_with_isBi value).toStep)
         (Step.par.isBi.eitherInr
           (Step.par.cd_dominates_with_isBi value).toIsBi)
-  | _, _, _, _, _, .eitherMatch scrutinee leftBranch rightBranch =>
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
       let scrutineePair := Step.par.cd_dominates_with_isBi scrutinee
       let leftPair := Step.par.cd_dominates_with_isBi leftBranch
       let rightPair := Step.par.cd_dominates_with_isBi rightBranch
       Step.par.cd_dominates_eitherMatch_pair scrutinee leftBranch rightBranch
         scrutineePair.toStep leftPair.toStep rightPair.toStep
         scrutineePair.toIsBi leftPair.toIsBi rightPair.toIsBi
-  | _, _, _, _, _, .refl _ => by
+  | _, .refl _ => by
       unfold Term.cd
       exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
-  | _, _, _, _, _, .idJ baseCase witness =>
+  | _, .idJ baseCase witness =>
       let basePair := Step.par.cd_dominates_with_isBi baseCase
       let witnessPair := Step.par.cd_dominates_with_isBi witness
       Step.par.cd_dominates_idJ_pair baseCase witness

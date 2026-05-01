@@ -76,160 +76,143 @@ theorem Step.par.cd_lemma_star_with_bi
       exact Step.parStarWithBi.eitherInr_cong valueIH
   -- Eliminator-cong cases: cd may contract a redex on one branch.
   | app _functionBi _argumentBi functionIH argumentIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_app_redex]
       split
-      case _ developedBody developedFunctionEq =>
-          have functionIHcast :
-              Step.parStarWithBi _ (Term.lam developedBody) :=
-            developedFunctionEq ▸ functionIH
+      case _ rawBody developedFunctionEq =>
+          have cdEq := Term.eq_lam_of_toRaw_lam _ developedFunctionEq
+          have functionIHcast := cdEq ▸ functionIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.app_cong functionIHcast argumentIH)
             (Step.par.isBi.betaApp (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.app_cong functionIH argumentIH
+      all_goals exact Step.parStarWithBi.app_cong functionIH argumentIH
   | appPi _functionBi _argumentBi functionIH argumentIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_appPi_redex]
       split
-      case _ developedBody developedFunctionEq =>
-          have functionIHcast :
-              Step.parStarWithBi _ (Term.lamPi developedBody) :=
-            developedFunctionEq ▸ functionIH
+      case _ rawBody developedFunctionEq =>
+          have cdEq := Term.eq_lamPi_of_toRaw_lam _ developedFunctionEq
+          have functionIHcast := cdEq ▸ functionIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.appPi_cong functionIHcast argumentIH)
             (Step.par.isBi.betaAppPi (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.appPi_cong functionIH argumentIH
+      all_goals exact Step.parStarWithBi.appPi_cong functionIH argumentIH
   | fst _pairBi pairIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_fst_redex]
       split
-      case _ developedFirst developedSecond developedPairEq =>
-          have pairIHcast :
-              Step.parStarWithBi _ (Term.pair developedFirst developedSecond) :=
-            developedPairEq ▸ pairIH
+      case _ rawFirst rawSecond developedPairEq =>
+          have cdEq := Term.eq_pair_of_toRaw_pair _ developedPairEq
+          have pairIHcast := cdEq ▸ pairIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.fst_cong pairIHcast)
             (Step.par.isBi.betaFstPair (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.fst_cong pairIH
+      all_goals exact Step.parStarWithBi.fst_cong pairIH
   | snd _pairBi pairIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_snd_redex]
       split
-      case _ developedFirst developedSecond developedPairEq =>
-          have pairIHcast :
-              Step.parStarWithBi _ (Term.pair developedFirst developedSecond) :=
-            developedPairEq ▸ pairIH
+      case _ rawFirst rawSecond developedPairEq =>
+          have cdEq := Term.eq_pair_of_toRaw_pair _ developedPairEq
+          have pairIHcast := cdEq ▸ pairIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.snd_cong pairIHcast)
             (Step.par.isBi.betaSndPair (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.snd_cong pairIH
+      all_goals exact Step.parStarWithBi.snd_cong pairIH
   | boolElim _scrutBi _thenBi _elseBi scrutIH thenIH elseIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_boolElim_redex]
       split
       case _ developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ Term.boolTrue :=
-            developedScrutEq ▸ scrutIH
+          have cdEq := Term.eq_boolTrue_of_toRaw_boolTrue _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.boolElim_cong scrutIHcast thenIH elseIH)
             (Step.par.isBi.iotaBoolElimTrue _ (Step.par.isBi.refl _))
       case _ developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ Term.boolFalse :=
-            developedScrutEq ▸ scrutIH
+          have cdEq := Term.eq_boolFalse_of_toRaw_boolFalse _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.boolElim_cong scrutIHcast thenIH elseIH)
             (Step.par.isBi.iotaBoolElimFalse _ (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.boolElim_cong scrutIH thenIH elseIH
+      all_goals exact Step.parStarWithBi.boolElim_cong scrutIH thenIH elseIH
   | natElim _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_natElim_redex]
       split
       case _ developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ Term.natZero :=
-            developedScrutEq ▸ scrutIH
+          have cdEq := Term.eq_natZero_of_toRaw_natZero _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.natElim_cong scrutIHcast zeroIH succIH)
             (Step.par.isBi.iotaNatElimZero _ (Step.par.isBi.refl _))
-      case _ developedPredecessor developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ (Term.natSucc developedPredecessor) :=
-            developedScrutEq ▸ scrutIH
+      case _ rawPred developedScrutEq =>
+          have cdEq := Term.eq_natSucc_of_toRaw_natSucc _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.natElim_cong scrutIHcast zeroIH succIH)
             (Step.par.isBi.iotaNatElimSucc _ (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.natElim_cong scrutIH zeroIH succIH
+      all_goals exact Step.parStarWithBi.natElim_cong scrutIH zeroIH succIH
   | natRec _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_natRec_redex]
       split
       case _ developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ Term.natZero :=
-            developedScrutEq ▸ scrutIH
+          have cdEq := Term.eq_natZero_of_toRaw_natZero _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.natRec_cong scrutIHcast zeroIH succIH)
             (Step.par.isBi.iotaNatRecZero _ (Step.par.isBi.refl _))
-      case _ developedPredecessor developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ (Term.natSucc developedPredecessor) :=
-            developedScrutEq ▸ scrutIH
+      case _ rawPred developedScrutEq =>
+          have cdEq := Term.eq_natSucc_of_toRaw_natSucc _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.natRec_cong scrutIHcast zeroIH succIH)
             (Step.par.isBi.iotaNatRecSucc (Step.par.isBi.refl _)
                (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.natRec_cong scrutIH zeroIH succIH
+      all_goals exact Step.parStarWithBi.natRec_cong scrutIH zeroIH succIH
   | listElim _scrutBi _nilBi _consBi scrutIH nilIH consIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_listElim_redex]
       split
       case _ developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ Term.listNil :=
-            developedScrutEq ▸ scrutIH
+          have cdEq := Term.eq_listNil_of_toRaw_listNil _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.listElim_cong scrutIHcast nilIH consIH)
             (Step.par.isBi.iotaListElimNil _ (Step.par.isBi.refl _))
-      case _ developedHead developedTail developedScrutEq =>
-          have scrutIHcast :
-              Step.parStarWithBi _ (Term.listCons developedHead developedTail) :=
-            developedScrutEq ▸ scrutIH
+      case _ rawHead rawTail developedScrutEq =>
+          have cdEq := Term.eq_listCons_of_toRaw_listCons _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.listElim_cong scrutIHcast nilIH consIH)
             (Step.par.isBi.iotaListElimCons _
               (Step.par.isBi.refl _) (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.listElim_cong scrutIH nilIH consIH
+      all_goals exact Step.parStarWithBi.listElim_cong scrutIH nilIH consIH
   | optionMatch _scrutBi _noneBi _someBi scrutIH noneIH someIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_optionMatch_redex]
       split
       case _ developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ Term.optionNone :=
-            developedScrutEq ▸ scrutIH
+          have cdEq := Term.eq_optionNone_of_toRaw_optionNone _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.optionMatch_cong scrutIHcast noneIH someIH)
             (Step.par.isBi.iotaOptionMatchNone _ (Step.par.isBi.refl _))
-      case _ developedValue developedScrutEq =>
-          have scrutIHcast : Step.parStarWithBi _ (Term.optionSome developedValue) :=
-            developedScrutEq ▸ scrutIH
+      case _ rawValue developedScrutEq =>
+          have cdEq := Term.eq_optionSome_of_toRaw_optionSome _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.optionMatch_cong scrutIHcast noneIH someIH)
             (Step.par.isBi.iotaOptionMatchSome _ (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.optionMatch_cong scrutIH noneIH someIH
+      all_goals exact Step.parStarWithBi.optionMatch_cong scrutIH noneIH someIH
   | eitherMatch _scrutBi _leftBi _rightBi scrutIH leftIH rightIH =>
-      simp only [Term.cd]
+      simp only [Term.cd, Term.cd_eitherMatch_redex]
       split
-      case _ developedValue developedScrutEq =>
-          have scrutIHcast :
-              Step.parStarWithBi _ (Term.eitherInl developedValue) :=
-            developedScrutEq ▸ scrutIH
+      case _ rawValue developedScrutEq =>
+          have cdEq := Term.eq_eitherInl_of_toRaw_eitherInl _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.eitherMatch_cong scrutIHcast leftIH rightIH)
             (Step.par.isBi.iotaEitherMatchInl _ (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ developedValue developedScrutEq =>
-          have scrutIHcast :
-              Step.parStarWithBi _ (Term.eitherInr developedValue) :=
-            developedScrutEq ▸ scrutIH
+      case _ rawValue developedScrutEq =>
+          have cdEq := Term.eq_eitherInr_of_toRaw_eitherInr _ developedScrutEq
+          have scrutIHcast := cdEq ▸ scrutIH
           exact Step.parStarWithBi.snoc
             (Step.parStarWithBi.eitherMatch_cong scrutIHcast leftIH rightIH)
             (Step.par.isBi.iotaEitherMatchInr _ (Step.par.isBi.refl _) (Step.par.isBi.refl _))
-      case _ =>
-          exact Step.parStarWithBi.eitherMatch_cong scrutIH leftIH rightIH
+      all_goals exact Step.parStarWithBi.eitherMatch_cong scrutIH leftIH rightIH
   | idJ _baseBi _witnessBi baseIH witnessIH =>
       simp only [Term.cd, Term.cd_idJ_redex]
       split
@@ -237,14 +220,13 @@ theorem Step.par.cd_lemma_star_with_bi
           subst endpointsEqual
           simp only [Term.cd_idJ_redex_aligned]
           split
-          next _ developedWitnessEq =>
-              have witnessIHcast : Step.parStarWithBi _ (Term.refl _) :=
-                developedWitnessEq ▸ witnessIH
+          case _ rawTerm developedWitnessEq =>
+              have cdEq := Term.eq_refl_of_toRaw_refl _ developedWitnessEq
+              have witnessIHcast := cdEq ▸ witnessIH
               exact Step.parStarWithBi.snoc
                 (Step.parStarWithBi.idJ_cong baseIH witnessIHcast)
                 (Step.par.isBi.iotaIdJRefl (Step.par.isBi.refl _))
-          next =>
-              exact Step.parStarWithBi.idJ_cong baseIH witnessIH
+          all_goals exact Step.parStarWithBi.idJ_cong baseIH witnessIH
       case _ =>
           exact Step.parStarWithBi.idJ_cong baseIH witnessIH
   -- Shallow β cases: source is a literal redex; cd contracts the same redex.
