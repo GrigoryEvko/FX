@@ -391,6 +391,87 @@ theorem Step.par.cd_monotone_fst_case
     all_goals
       exact Step.parStarWithBi.fst_cong pairIH
 
+/-- Discharge the `Step.par.isBi.boolElim` constructor case.
+The boolean ι-rule fires when the developed scrutinee is
+`boolTrue` (yields `thenBranch`) or `boolFalse` (yields
+`elseBranch`).  Three IH configurations on the scrutinee:
+
+* Scrutinee canonical-on-both: source preservation
+  (`parStar.boolTrue_source_inv` / `boolFalse_source_inv`)
+  forces target to match; close with `thenIH` / `elseIH`.
+* Source not canonical, target canonical: snoc with
+  `iotaBoolElim<True/False>` redex contraction.
+* Source canonical, target not: impossible (would contradict
+  the source-preservation conclusion).
+* Neither canonical: `boolElim_cong` directly.
+
+The "source canonical, target not" case is auto-discharged by
+the `rw [targetCdEq]` that aligns the RHS match with the
+canonical form. -/
+theorem Step.par.cd_monotone_boolElim_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourceScrutinee targetScrutinee : Term ctx Ty.bool}
+    {sourceThen targetThen : Term ctx resultType}
+    {sourceElse targetElse : Term ctx resultType}
+    (scrutineeIH : Step.parStarWithBi
+      (Term.cd sourceScrutinee) (Term.cd targetScrutinee))
+    (thenIH : Step.parStarWithBi
+      (Term.cd sourceThen) (Term.cd targetThen))
+    (elseIH : Step.parStarWithBi
+      (Term.cd sourceElse) (Term.cd targetElse)) :
+    Step.parStarWithBi
+      (Term.cd (Term.boolElim sourceScrutinee sourceThen sourceElse))
+      (Term.cd (Term.boolElim targetScrutinee targetThen targetElse)) := by
+  simp only [Term.cd, Term.cd_boolElim_redex]
+  split
+  -- LHS-boolTrue.
+  case _ developedSourceScrutEq =>
+    have sourceCdEq : Term.cd sourceScrutinee = Term.boolTrue :=
+      Term.eq_boolTrue_of_toRaw_boolTrue _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi Term.boolTrue (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    have targetCdEq : Term.cd targetScrutinee = Term.boolTrue :=
+      Step.parStar.boolTrue_source_inv scrutineeIHcast.toParStar
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact thenIH
+  -- LHS-boolFalse.
+  case _ developedSourceScrutEq =>
+    have sourceCdEq : Term.cd sourceScrutinee = Term.boolFalse :=
+      Term.eq_boolFalse_of_toRaw_boolFalse _ developedSourceScrutEq
+    have scrutineeIHcast :
+        Step.parStarWithBi Term.boolFalse (Term.cd targetScrutinee) :=
+      sourceCdEq ▸ scrutineeIH
+    have targetCdEq : Term.cd targetScrutinee = Term.boolFalse :=
+      Step.parStar.boolFalse_source_inv scrutineeIHcast.toParStar
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact elseIH
+  -- LHS-wildcard (24 arms).
+  all_goals
+    split
+    -- RHS-boolTrue.
+    case _ developedTargetScrutEq =>
+      have targetCdEq : Term.cd targetScrutinee = Term.boolTrue :=
+        Term.eq_boolTrue_of_toRaw_boolTrue _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.boolElim_cong scrutineeIH thenIH elseIH)
+        (Step.par.isBi.iotaBoolElimTrue _ (Step.par.isBi.refl _))
+    -- RHS-boolFalse.
+    case _ developedTargetScrutEq =>
+      have targetCdEq : Term.cd targetScrutinee = Term.boolFalse :=
+        Term.eq_boolFalse_of_toRaw_boolFalse _ developedTargetScrutEq
+      rw [targetCdEq] at scrutineeIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.boolElim_cong scrutineeIH thenIH elseIH)
+        (Step.par.isBi.iotaBoolElimFalse _ (Step.par.isBi.refl _))
+    -- RHS-wildcard.
+    all_goals
+      exact Step.parStarWithBi.boolElim_cong scrutineeIH thenIH elseIH
+
 /-- Discharge the `Step.par.isBi.snd` constructor case.  Same as
 `cd_monotone_fst_case` but extracting the secondVal.  Note: the
 β-fired form `Term.snd (Term.pair a b) → b` carries a
