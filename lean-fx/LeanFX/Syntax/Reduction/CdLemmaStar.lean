@@ -1,5 +1,6 @@
 import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.ParInversion
+import LeanFX.Syntax.Reduction.ParStarWithBi
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
