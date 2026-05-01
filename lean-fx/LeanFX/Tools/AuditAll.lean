@@ -3,6 +3,7 @@ import LeanFX.Syntax.Identity
 import LeanFX.Syntax.DependentJ
 import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.CdLemmaStar
+import LeanFX.Syntax.Reduction.CdLemmaStarWithBi
 import LeanFX.Syntax.Reduction.ParInversion
 import LeanFX.Frontend.Surface
 import LeanFX.Frontend.Token
@@ -571,5 +572,144 @@ Closes #1137 and unblocks W8.x (cd_lemma → diamond → Church-Rosser
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_eitherMatch_pair
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_with_isBi
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_isBi
+
+/-! ## Wave 8.1: paired parStarWithBi infrastructure.
+
+`Step.parStarWithBi` bundles a `Step.parStar` chain with the
+isBi witness on every link.  The paired-predicate trick (per
+the project's feedback memory) sidesteps the opacity of
+tactic-mode theorems by constructing fresh witnesses at each
+case.  Used to discharge `cd_lemma_star_with_bi` (the typed
+complete-development aggregator) and its plain projections. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.toParStar
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.toIsBi
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi.toParStarWithBi
+
+/-! ## W8.1b: paired core ops (snoc, append, cast). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.snoc
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.append
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.castBoth
+
+/-! ## W8.1c: paired cong rules — binders, app/appPi, pair/fst/snd,
+idJ. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.lam_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.lamPi_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.app_cong_function
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.app_cong_argument
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.app_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.appPi_cong_function
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.appPi_cong_argument
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.appPi_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.pair_cong_first
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.pair_cong_second
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.pair_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.fst_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.snd_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.idJ_cong_base
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.idJ_cong_witness
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.idJ_cong
+
+/-! ## W8.1d: paired cong rules — eliminators + cell ctors. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.boolElim_cong_scrutinee
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.boolElim_cong_then
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.boolElim_cong_else
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.boolElim_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natSucc_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natElim_cong_scrutinee
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natElim_cong_zero
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natElim_cong_succ
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natElim_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natRec_cong_scrutinee
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natRec_cong_zero
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natRec_cong_succ
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natRec_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listCons_cong_head
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listCons_cong_tail
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listCons_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listElim_cong_scrutinee
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listElim_cong_nil
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listElim_cong_cons
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listElim_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.optionSome_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.optionMatch_cong_scrutinee
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.optionMatch_cong_none
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.optionMatch_cong_some
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.optionMatch_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherInl_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherInr_cong
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherMatch_cong_scrutinee
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherMatch_cong_left
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherMatch_cong_right
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherMatch_cong
+
+/-! ## W8.1: isBi cast helpers. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi.castBoth
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi.castTarget
+#assert_no_axioms LeanFX.Syntax.Step.par.isBi.castSource
+
+/-! ## W8.1f: paired target inversions (lam, lamPi, pair). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.lam_target_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.par.lam_target_inv_with_bi
+#assert_no_axioms LeanFX.Syntax.Step.par.lamPi_target_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.par.lamPi_target_inv_with_bi
+#assert_no_axioms LeanFX.Syntax.Step.par.pair_target_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.par.pair_target_inv_with_bi
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.lam_target_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.lam_target_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.lamPi_target_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.lamPi_target_inv
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.pair_target_inv_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.pair_target_inv
+
+/-! ## W8.1g: paired source inversions (deep ι cell ctors). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.natSucc_source_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.natSucc_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.listCons_source_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.listCons_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.optionSome_source_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.optionSome_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.eitherInl_source_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherInl_source_inv
+#assert_no_axioms LeanFX.Syntax.Step.par.eitherInr_source_inv_with_bi_general
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.eitherInr_source_inv
+
+/-! ## W8.1: parWithBi singleton + cast helpers + compatibility. -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.castBoth
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.castTarget
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.castSource
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.rename_compatible
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.subst_compatible
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.subst_compatible
+
+/-! ## W8.1e: paired β-workhorse — subst0_parStar arg & body. -/
+
+#assert_no_axioms LeanFX.Syntax.Term.subst0_parStarWithBi_body
+#assert_no_axioms LeanFX.Syntax.TermSubst.parWithBi_lift
+#assert_no_axioms LeanFX.Syntax.Term.subst_parWithBi_pointwise
+#assert_no_axioms LeanFX.Syntax.TermSubst.singleton_parWithBi_pointwise
+#assert_no_axioms LeanFX.Syntax.Term.subst0_parStarWithBi_argument
+#assert_no_axioms LeanFX.Syntax.Step.parStarWithBi.subst0_parStarWithBi
+
+/-! ## W8.1g: typed complete-development aggregator + projections.
+
+`cd_lemma_star_with_bi` is the paired aggregator — induction on
+the isBi witness over 54 cases produces both the chain and the
+chain-isBi witness simultaneously.  `cd_lemma_star` and
+`cd_lemma_star_isBi` are one-line projections that close
+**#883** (typed cd-lemma) and unblock #884/#885/#886
+(diamond → confluence → canonical-form). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_with_bi
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_lemma_star_isBi
 
 end LeanFX.Tools.AuditAll
