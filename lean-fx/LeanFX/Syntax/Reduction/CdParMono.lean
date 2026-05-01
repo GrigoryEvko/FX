@@ -1102,4 +1102,302 @@ theorem Step.par.cd_monotone_betaSndPair_case
   simp only [Term.cd, Term.cd_snd_redex]
   exact secondIH
 
+/-! ## §4 — shallow ι cases (13).
+
+Each ι case has a literal canonical scrutinee in the source; cd reduces
+the elim_redex on that scrutinee to the appropriate branch.
+
+Simple branches (6): the result is a single sub-term — IH closes
+directly.
+
+Multi-arg branches (6+1 = 7): result involves `Term.app` of branches.
+Strategy: app_cong on IHs to reach `Term.app (cd ...) (cd ...)`, then
+bridge to `cd (Term.app ...)` via cd_lemma_star_with_bi applied to
+`par.app cd_dominates cd_dominates`. -/
+
+/-- Discharge `Step.par.isBi.iotaBoolElimTrue`.  Source =
+`boolElim boolTrue thenBr elseBr`, target = `thenBr'`. -/
+theorem Step.par.cd_monotone_iotaBoolElimTrue_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (elseBranch : Term ctx resultType)
+    {sourceThen targetThen : Term ctx resultType}
+    (thenIH : Step.parStarWithBi
+      (Term.cd sourceThen) (Term.cd targetThen)) :
+    Step.parStarWithBi
+      (Term.cd (Term.boolElim Term.boolTrue sourceThen elseBranch))
+      (Term.cd targetThen) := by
+  simp only [Term.cd, Term.cd_boolElim_redex]
+  exact thenIH
+
+/-- Discharge `Step.par.isBi.iotaBoolElimFalse`.  Source =
+`boolElim boolFalse thenBr elseBr`, target = `elseBr'`. -/
+theorem Step.par.cd_monotone_iotaBoolElimFalse_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (thenBranch : Term ctx resultType)
+    {sourceElse targetElse : Term ctx resultType}
+    (elseIH : Step.parStarWithBi
+      (Term.cd sourceElse) (Term.cd targetElse)) :
+    Step.parStarWithBi
+      (Term.cd (Term.boolElim Term.boolFalse thenBranch sourceElse))
+      (Term.cd targetElse) := by
+  simp only [Term.cd, Term.cd_boolElim_redex]
+  exact elseIH
+
+/-- Discharge `Step.par.isBi.iotaNatElimZero`.  Source =
+`natElim natZero zeroBr succBr`, target = `zeroBr'`. -/
+theorem Step.par.cd_monotone_iotaNatElimZero_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
+    {sourceZero targetZero : Term ctx resultType}
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natElim Term.natZero sourceZero succBranch))
+      (Term.cd targetZero) := by
+  simp only [Term.cd, Term.cd_natElim_redex]
+  exact zeroIH
+
+/-- Discharge `Step.par.isBi.iotaNatElimSucc`.  Source =
+`natElim (natSucc pred) zeroBr succBr`, target =
+`Term.app succBr' pred'`.  Bridges `Term.app (cd succBr) (cd pred)`
+(after cd_natElim_redex β-fires) to `cd (Term.app succBr' pred')`
+via app_cong + cd_lemma_star_with_bi-on-app-step. -/
+theorem Step.par.cd_monotone_iotaNatElimSucc_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (zeroBranch : Term ctx resultType)
+    {sourcePred targetPred : Term ctx Ty.nat}
+    {sourceSucc targetSucc : Term ctx (Ty.arrow Ty.nat resultType)}
+    (predIH : Step.parStarWithBi
+      (Term.cd sourcePred) (Term.cd targetPred))
+    (succIH : Step.parStarWithBi
+      (Term.cd sourceSucc) (Term.cd targetSucc)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natElim (Term.natSucc sourcePred) zeroBranch sourceSucc))
+      (Term.cd (Term.app targetSucc targetPred)) := by
+  simp only [Term.cd, Term.cd_natElim_redex]
+  let stepA := Step.parStarWithBi.app_cong succIH predIH
+  let succDom := Step.par.cd_dominates_with_isBi targetSucc
+  let predDom := Step.par.cd_dominates_with_isBi targetPred
+  let parStepIsBi := Step.par.isBi.app succDom.toIsBi predDom.toIsBi
+  let stepB := Step.par.cd_lemma_star_with_bi parStepIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge `Step.par.isBi.iotaNatRecZero`. -/
+theorem Step.par.cd_monotone_iotaNatRecZero_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (succBranch : Term ctx
+      (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
+    {sourceZero targetZero : Term ctx resultType}
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natRec Term.natZero sourceZero succBranch))
+      (Term.cd targetZero) := by
+  simp only [Term.cd, Term.cd_natRec_redex]
+  exact zeroIH
+
+/-- Discharge `Step.par.isBi.iotaNatRecSucc`.  Source =
+`natRec (natSucc pred) zeroBr succBr`, target =
+`Term.app (Term.app succBr' pred') (Term.natRec pred' zeroBr' succBr')`. -/
+theorem Step.par.cd_monotone_iotaNatRecSucc_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {resultType : Ty level scope}
+    {sourcePred targetPred : Term ctx Ty.nat}
+    {sourceZero targetZero : Term ctx resultType}
+    {sourceSucc targetSucc : Term ctx
+      (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
+    (predIH : Step.parStarWithBi
+      (Term.cd sourcePred) (Term.cd targetPred))
+    (zeroIH : Step.parStarWithBi
+      (Term.cd sourceZero) (Term.cd targetZero))
+    (succIH : Step.parStarWithBi
+      (Term.cd sourceSucc) (Term.cd targetSucc)) :
+    Step.parStarWithBi
+      (Term.cd (Term.natRec (Term.natSucc sourcePred) sourceZero sourceSucc))
+      (Term.cd (Term.app (Term.app targetSucc targetPred)
+        (Term.natRec targetPred targetZero targetSucc))) := by
+  simp only [Term.cd, Term.cd_natRec_redex]
+  -- Step A: app_cong on the recursive call structure.
+  let innerApp := Step.parStarWithBi.app_cong succIH predIH
+  let recCall := Step.parStarWithBi.natRec_cong predIH zeroIH succIH
+  let stepA := Step.parStarWithBi.app_cong innerApp recCall
+  -- Step B: cd_lemma_star_with_bi on the app of cd_dominates.
+  let succDom := Step.par.cd_dominates_with_isBi targetSucc
+  let predDom := Step.par.cd_dominates_with_isBi targetPred
+  let zeroDom := Step.par.cd_dominates_with_isBi targetZero
+  let innerAppPar :=
+    Step.par.isBi.app succDom.toIsBi predDom.toIsBi
+  let recCallPar :=
+    Step.par.isBi.natRec predDom.toIsBi zeroDom.toIsBi succDom.toIsBi
+  let outerAppPar := Step.par.isBi.app innerAppPar recCallPar
+  let stepB := Step.par.cd_lemma_star_with_bi outerAppPar
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge `Step.par.isBi.iotaListElimNil`. -/
+theorem Step.par.cd_monotone_iotaListElimNil_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (consBranch : Term ctx
+      (Ty.arrow elementType (Ty.arrow (Ty.list elementType) resultType)))
+    {sourceNil targetNil : Term ctx resultType}
+    (nilIH : Step.parStarWithBi
+      (Term.cd sourceNil) (Term.cd targetNil)) :
+    Step.parStarWithBi
+      (Term.cd (Term.listElim
+        (Term.listNil (elementType := elementType)) sourceNil consBranch))
+      (Term.cd targetNil) := by
+  simp only [Term.cd, Term.cd_listElim_redex]
+  exact nilIH
+
+/-- Discharge `Step.par.isBi.iotaListElimCons`. -/
+theorem Step.par.cd_monotone_iotaListElimCons_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (nilBranch : Term ctx resultType)
+    {sourceHead targetHead : Term ctx elementType}
+    {sourceTail targetTail : Term ctx (Ty.list elementType)}
+    {sourceCons targetCons :
+      Term ctx (Ty.arrow elementType
+        (Ty.arrow (Ty.list elementType) resultType))}
+    (headIH : Step.parStarWithBi
+      (Term.cd sourceHead) (Term.cd targetHead))
+    (tailIH : Step.parStarWithBi
+      (Term.cd sourceTail) (Term.cd targetTail))
+    (consIH : Step.parStarWithBi
+      (Term.cd sourceCons) (Term.cd targetCons)) :
+    Step.parStarWithBi
+      (Term.cd (Term.listElim
+        (Term.listCons sourceHead sourceTail) nilBranch sourceCons))
+      (Term.cd
+        (Term.app (Term.app targetCons targetHead) targetTail)) := by
+  simp only [Term.cd, Term.cd_listElim_redex]
+  let stepA := Step.parStarWithBi.app_cong
+    (Step.parStarWithBi.app_cong consIH headIH) tailIH
+  let consDom := Step.par.cd_dominates_with_isBi targetCons
+  let headDom := Step.par.cd_dominates_with_isBi targetHead
+  let tailDom := Step.par.cd_dominates_with_isBi targetTail
+  let parStepIsBi := Step.par.isBi.app
+    (Step.par.isBi.app consDom.toIsBi headDom.toIsBi) tailDom.toIsBi
+  let stepB := Step.par.cd_lemma_star_with_bi parStepIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge `Step.par.isBi.iotaOptionMatchNone`. -/
+theorem Step.par.cd_monotone_iotaOptionMatchNone_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (someBranch : Term ctx (Ty.arrow elementType resultType))
+    {sourceNone targetNone : Term ctx resultType}
+    (noneIH : Step.parStarWithBi
+      (Term.cd sourceNone) (Term.cd targetNone)) :
+    Step.parStarWithBi
+      (Term.cd (Term.optionMatch
+        (Term.optionNone (elementType := elementType)) sourceNone someBranch))
+      (Term.cd targetNone) := by
+  simp only [Term.cd, Term.cd_optionMatch_redex]
+  exact noneIH
+
+/-- Discharge `Step.par.isBi.iotaOptionMatchSome`. -/
+theorem Step.par.cd_monotone_iotaOptionMatchSome_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType resultType : Ty level scope}
+    (noneBranch : Term ctx resultType)
+    {sourceValue targetValue : Term ctx elementType}
+    {sourceSome targetSome : Term ctx (Ty.arrow elementType resultType)}
+    (valueIH : Step.parStarWithBi
+      (Term.cd sourceValue) (Term.cd targetValue))
+    (someIH : Step.parStarWithBi
+      (Term.cd sourceSome) (Term.cd targetSome)) :
+    Step.parStarWithBi
+      (Term.cd (Term.optionMatch
+        (Term.optionSome sourceValue) noneBranch sourceSome))
+      (Term.cd (Term.app targetSome targetValue)) := by
+  simp only [Term.cd, Term.cd_optionMatch_redex]
+  let stepA := Step.parStarWithBi.app_cong someIH valueIH
+  let someDom := Step.par.cd_dominates_with_isBi targetSome
+  let valueDom := Step.par.cd_dominates_with_isBi targetValue
+  let parStepIsBi := Step.par.isBi.app someDom.toIsBi valueDom.toIsBi
+  let stepB := Step.par.cd_lemma_star_with_bi parStepIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge `Step.par.isBi.iotaEitherMatchInl`. -/
+theorem Step.par.cd_monotone_iotaEitherMatchInl_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    (rightBranch : Term ctx (Ty.arrow rightType resultType))
+    {sourceValue targetValue : Term ctx leftType}
+    {sourceLeft targetLeft : Term ctx (Ty.arrow leftType resultType)}
+    (valueIH : Step.parStarWithBi
+      (Term.cd sourceValue) (Term.cd targetValue))
+    (leftIH : Step.parStarWithBi
+      (Term.cd sourceLeft) (Term.cd targetLeft)) :
+    Step.parStarWithBi
+      (Term.cd (Term.eitherMatch
+        (Term.eitherInl (rightType := rightType) sourceValue)
+        sourceLeft rightBranch))
+      (Term.cd (Term.app targetLeft targetValue)) := by
+  simp only [Term.cd, Term.cd_eitherMatch_redex]
+  let stepA := Step.parStarWithBi.app_cong leftIH valueIH
+  let leftDom := Step.par.cd_dominates_with_isBi targetLeft
+  let valueDom := Step.par.cd_dominates_with_isBi targetValue
+  let parStepIsBi := Step.par.isBi.app leftDom.toIsBi valueDom.toIsBi
+  let stepB := Step.par.cd_lemma_star_with_bi parStepIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge `Step.par.isBi.iotaEitherMatchInr`. -/
+theorem Step.par.cd_monotone_iotaEitherMatchInr_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType resultType : Ty level scope}
+    (leftBranch : Term ctx (Ty.arrow leftType resultType))
+    {sourceValue targetValue : Term ctx rightType}
+    {sourceRight targetRight : Term ctx (Ty.arrow rightType resultType)}
+    (valueIH : Step.parStarWithBi
+      (Term.cd sourceValue) (Term.cd targetValue))
+    (rightIH : Step.parStarWithBi
+      (Term.cd sourceRight) (Term.cd targetRight)) :
+    Step.parStarWithBi
+      (Term.cd (Term.eitherMatch
+        (Term.eitherInr (leftType := leftType) sourceValue)
+        leftBranch sourceRight))
+      (Term.cd (Term.app targetRight targetValue)) := by
+  simp only [Term.cd, Term.cd_eitherMatch_redex]
+  let stepA := Step.parStarWithBi.app_cong rightIH valueIH
+  let rightDom := Step.par.cd_dominates_with_isBi targetRight
+  let valueDom := Step.par.cd_dominates_with_isBi targetValue
+  let parStepIsBi := Step.par.isBi.app rightDom.toIsBi valueDom.toIsBi
+  let stepB := Step.par.cd_lemma_star_with_bi parStepIsBi
+  exact Step.parStarWithBi.append stepA stepB
+
+/-- Discharge `Step.par.isBi.iotaIdJRefl`.  Source =
+`Term.idJ baseCase (Term.refl endpoint)` (with leftEnd = rightEnd =
+endpoint), target = `baseCase'`.  cd_idJ_redex on the refl-shape
+witness fires immediately when endpoints align. -/
+theorem Step.par.cd_monotone_iotaIdJRefl_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {endpoint : RawTerm scope}
+    {resultType : Ty level scope}
+    {sourceBase targetBase : Term ctx resultType}
+    (baseIH : Step.parStarWithBi
+      (Term.cd sourceBase) (Term.cd targetBase)) :
+    Step.parStarWithBi
+      (Term.cd (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+        (rightEnd := endpoint) sourceBase
+        (Term.refl (carrier := carrier) endpoint)))
+      (Term.cd targetBase) := by
+  have cdEq :
+      Term.cd (Term.idJ (carrier := carrier) (leftEnd := endpoint)
+        (rightEnd := endpoint) sourceBase
+        (Term.refl (carrier := carrier) endpoint))
+        = Term.cd sourceBase := by
+    simp only [Term.cd]
+    unfold Term.cd_idJ_redex
+    rw [dif_pos rfl]
+    rfl
+  rw [cdEq]
+  exact baseIH
+
 end LeanFX.Syntax
