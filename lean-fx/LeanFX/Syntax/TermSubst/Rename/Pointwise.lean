@@ -9,265 +9,325 @@ variable {level : Nat}
 
 Two TermRenamings whose underlying Renamings agree pointwise produce
 HEq results when applied to the same term.  The rawRenaming-side analogue
-of `Term.subst_HEq_pointwise`.  The `h_ctx : Δ₁ = Δ₂` parameter
-accommodates the binder cases, where `TermRenaming.lift ρt_i dom`
-lands in `Δ_i.cons (dom.rename ρ_i)` — different cons-extensions
-across i = 1, 2. -/
+of `Term.subst_HEq_pointwise`.  The `targetContextEq : firstTargetContext
+= secondTargetContext` parameter accommodates the binder cases, where
+`TermRenaming.lift termRenaming_i domainType` lands in
+`targetContext_i.cons (domainType.rename rawRenaming_i)` — different
+cons-extensions across i = 1, 2. -/
 theorem Term.rename_HEq_pointwise
-    {m : Mode} {level scope scope' : Nat}
-    {Γ : Ctx m level scope} {Δ₁ Δ₂ : Ctx m level scope'}
-    (h_ctx : Δ₁ = Δ₂)
-    {ρ₁ ρ₂ : Renaming scope scope'}
-    (ρt₁ : TermRenaming Γ Δ₁ ρ₁) (ρt₂ : TermRenaming Γ Δ₂ ρ₂)
-    (h_ρ : Renaming.equiv ρ₁ ρ₂) :
-    {T : Ty level scope} → (t : Term Γ T) →
-      HEq (Term.rename ρt₁ t) (Term.rename ρt₂ t)
-  | _, .var i => by
-    cases h_ctx
-    -- Term.rename ρt₁ (Term.var i) = (ρt₁ i) ▸ Term.var (ρ₁ i)
-    -- Term.rename ρt₂ (Term.var i) = (ρt₂ i) ▸ Term.var (ρ₂ i)
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {firstTargetContext secondTargetContext : Ctx mode level targetScope}
+    (targetContextEq : firstTargetContext = secondTargetContext)
+    {firstRawRenaming secondRawRenaming : Renaming sourceScope targetScope}
+    (firstTermRenaming :
+      TermRenaming sourceContext firstTargetContext firstRawRenaming)
+    (secondTermRenaming :
+      TermRenaming sourceContext secondTargetContext secondRawRenaming)
+    (rawRenamingsAgreePointwise :
+      Renaming.equiv firstRawRenaming secondRawRenaming) :
+    {tyValue : Ty level sourceScope} → (term : Term sourceContext tyValue) →
+      HEq (Term.rename firstTermRenaming term)
+          (Term.rename secondTermRenaming term)
+  | _, .var position => by
+    cases targetContextEq
+    -- Term.rename firstTermRenaming (Term.var i) =
+    --   (firstTermRenaming i) ▸ Term.var (firstRawRenaming i)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
-    -- Goal: HEq (Term.var (ρ₁ i)) (Term.var (ρ₂ i))
-    -- Use h_ρ i to align the Fin positions.
-    rw [h_ρ i]
+    -- Goal: HEq (Term.var (firstRawRenaming i)) (Term.var (secondRawRenaming i))
+    -- Use rawRenamingsAgreePointwise i to align the Fin positions.
+    rw [rawRenamingsAgreePointwise position]
   | _, .unit => by term_context_refl
-  | _, .app f a => by
-    cases h_ctx
+  | _, .app functionTerm argumentTerm => by
+    cases targetContextEq
     show HEq
-      (Term.app (Term.rename ρt₁ f) (Term.rename ρt₁ a))
-      (Term.app (Term.rename ρt₂ f) (Term.rename ρt₂ a))
+      (Term.app (Term.rename firstTermRenaming functionTerm)
+                (Term.rename firstTermRenaming argumentTerm))
+      (Term.app (Term.rename secondTermRenaming functionTerm)
+                (Term.rename secondTermRenaming argumentTerm))
     exact Term.app_HEq_congr
-      (Ty.rename_congr h_ρ _)
-      (Ty.rename_congr h_ρ _)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ f)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ a)
-  | _, .fst (firstType := first) (secondType := second) p => by
-    cases h_ctx
+      (Ty.rename_congr rawRenamingsAgreePointwise _)
+      (Ty.rename_congr rawRenamingsAgreePointwise _)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise functionTerm)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise argumentTerm)
+  | _, .fst (firstType := firstType) (secondType := secondType) pairTerm => by
+    cases targetContextEq
     show HEq
-      (Term.fst (Term.rename ρt₁ p))
-      (Term.fst (Term.rename ρt₂ p))
+      (Term.fst (Term.rename firstTermRenaming pairTerm))
+      (Term.fst (Term.rename secondTermRenaming pairTerm))
     apply Term.fst_HEq_congr
-      (Ty.rename_congr h_ρ first)
-      (Ty.rename_congr (Renaming.lift_equiv h_ρ) second)
-    exact Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ p
+      (Ty.rename_congr rawRenamingsAgreePointwise firstType)
+      (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) secondType)
+    exact Term.rename_HEq_pointwise rfl firstTermRenaming
+      secondTermRenaming rawRenamingsAgreePointwise pairTerm
   | _, .boolTrue => by term_context_refl
   | _, .boolFalse => by term_context_refl
-  | _, .boolElim (resultType := result) s t e => by
-    cases h_ctx
+  | _, .boolElim (resultType := resultType) scrutinee thenBranch elseBranch => by
+    cases targetContextEq
     show HEq
-      (Term.boolElim (Term.rename ρt₁ s)
-                     (Term.rename ρt₁ t)
-                     (Term.rename ρt₁ e))
-      (Term.boolElim (Term.rename ρt₂ s)
-                     (Term.rename ρt₂ t)
-                     (Term.rename ρt₂ e))
+      (Term.boolElim (Term.rename firstTermRenaming scrutinee)
+                     (Term.rename firstTermRenaming thenBranch)
+                     (Term.rename firstTermRenaming elseBranch))
+      (Term.boolElim (Term.rename secondTermRenaming scrutinee)
+                     (Term.rename secondTermRenaming thenBranch)
+                     (Term.rename secondTermRenaming elseBranch))
     exact Term.boolElim_HEq_congr
-      (Ty.rename_congr h_ρ result)
-      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ s))
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ t)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ e)
-  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
-    cases h_ctx
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise scrutinee))
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise thenBranch)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise elseBranch)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm => by
+    cases targetContextEq
     show HEq
-      ((Ty.subst0_rename_commute cod dom ρ₁).symm ▸
-        Term.appPi (Term.rename ρt₁ f) (Term.rename ρt₁ a))
-      ((Ty.subst0_rename_commute cod dom ρ₂).symm ▸
-        Term.appPi (Term.rename ρt₂ f) (Term.rename ρt₂ a))
+      ((Ty.subst0_rename_commute codomainType domainType firstRawRenaming).symm ▸
+        Term.appPi (Term.rename firstTermRenaming functionTerm)
+                   (Term.rename firstTermRenaming argumentTerm))
+      ((Ty.subst0_rename_commute codomainType domainType secondRawRenaming).symm ▸
+        Term.appPi (Term.rename secondTermRenaming functionTerm)
+                   (Term.rename secondTermRenaming argumentTerm))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (b :=
-      Term.appPi (Term.rename ρt₂ f) (Term.rename ρt₂ a))
+      Term.appPi (Term.rename secondTermRenaming functionTerm)
+                 (Term.rename secondTermRenaming argumentTerm))
     · exact Term.appPi_HEq_congr
-        (Ty.rename_congr h_ρ dom)
-        (Ty.rename_congr (Renaming.lift_equiv h_ρ) cod)
-        _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ f)
-        _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ a)
+        (Ty.rename_congr rawRenamingsAgreePointwise domainType)
+        (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) codomainType)
+        _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+              secondTermRenaming rawRenamingsAgreePointwise functionTerm)
+        _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+              secondTermRenaming rawRenamingsAgreePointwise argumentTerm)
     · exact (eqRec_heq _ _).symm
-  | _, .pair (firstType := first) (secondType := second) v w => by
-    cases h_ctx
+  | _, .pair (firstType := firstType) (secondType := secondType) firstVal secondVal => by
+    cases targetContextEq
     show HEq
-      (Term.pair (Term.rename ρt₁ v)
-        ((Ty.subst0_rename_commute second first ρ₁) ▸
-          (Term.rename ρt₁ w)))
-      (Term.pair (Term.rename ρt₂ v)
-        ((Ty.subst0_rename_commute second first ρ₂) ▸
-          (Term.rename ρt₂ w)))
+      (Term.pair (Term.rename firstTermRenaming firstVal)
+        ((Ty.subst0_rename_commute secondType firstType firstRawRenaming) ▸
+          (Term.rename firstTermRenaming secondVal)))
+      (Term.pair (Term.rename secondTermRenaming firstVal)
+        ((Ty.subst0_rename_commute secondType firstType secondRawRenaming) ▸
+          (Term.rename secondTermRenaming secondVal)))
     apply Term.pair_HEq_congr
-      (Ty.rename_congr h_ρ first)
-      (Ty.rename_congr (Renaming.lift_equiv h_ρ) second)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
+      (Ty.rename_congr rawRenamingsAgreePointwise firstType)
+      (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) secondType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise firstVal)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
-      (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ w)
+      (Term.rename_HEq_pointwise rfl firstTermRenaming
+        secondTermRenaming rawRenamingsAgreePointwise secondVal)
     exact (eqRec_heq _ _).symm
-  | _, .snd (firstType := first) (secondType := second) p => by
-    cases h_ctx
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+    cases targetContextEq
     show HEq
-      ((Ty.subst0_rename_commute second first ρ₁).symm ▸
-        Term.snd (Term.rename ρt₁ p))
-      ((Ty.subst0_rename_commute second first ρ₂).symm ▸
-        Term.snd (Term.rename ρt₂ p))
+      ((Ty.subst0_rename_commute secondType firstType firstRawRenaming).symm ▸
+        Term.snd (Term.rename firstTermRenaming pairTerm))
+      ((Ty.subst0_rename_commute secondType firstType secondRawRenaming).symm ▸
+        Term.snd (Term.rename secondTermRenaming pairTerm))
     apply HEq.trans (eqRec_heq _ _)
-    apply HEq.trans (b := Term.snd (Term.rename ρt₂ p))
+    apply HEq.trans (b := Term.snd (Term.rename secondTermRenaming pairTerm))
     · exact Term.snd_HEq_congr
-        (Ty.rename_congr h_ρ first)
-        (Ty.rename_congr (Renaming.lift_equiv h_ρ) second)
-        _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ p)
+        (Ty.rename_congr rawRenamingsAgreePointwise firstType)
+        (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) secondType)
+        _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+              secondTermRenaming rawRenamingsAgreePointwise pairTerm)
     · exact (eqRec_heq _ _).symm
-  | _, .lam (domainType := dom) (codomainType := cod) body => by
-    cases h_ctx
+  | _, .lam (domainType := domainType) (codomainType := codomainType) lambdaBody => by
+    cases targetContextEq
     show HEq
-      (Term.lam (codomainType := cod.rename ρ₁)
-        ((Ty.rename_weaken_commute cod ρ₁) ▸
-          (Term.rename (TermRenaming.lift ρt₁ dom) body)))
-      (Term.lam (codomainType := cod.rename ρ₂)
-        ((Ty.rename_weaken_commute cod ρ₂) ▸
-          (Term.rename (TermRenaming.lift ρt₂ dom) body)))
+      (Term.lam (codomainType := codomainType.rename firstRawRenaming)
+        ((Ty.rename_weaken_commute codomainType firstRawRenaming) ▸
+          (Term.rename (TermRenaming.lift firstTermRenaming domainType) lambdaBody)))
+      (Term.lam (codomainType := codomainType.rename secondRawRenaming)
+        ((Ty.rename_weaken_commute codomainType secondRawRenaming) ▸
+          (Term.rename (TermRenaming.lift secondTermRenaming domainType) lambdaBody)))
     apply Term.lam_HEq_congr
-      (Ty.rename_congr h_ρ dom) (Ty.rename_congr h_ρ cod)
+      (Ty.rename_congr rawRenamingsAgreePointwise domainType)
+      (Ty.rename_congr rawRenamingsAgreePointwise codomainType)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
       (Term.rename_HEq_pointwise
-        (congrArg (·.cons (dom.rename ρ₁)) (rfl : Δ₁ = Δ₁) |>.trans
-          (congrArg Δ₁.cons (Ty.rename_congr h_ρ dom)))
-        (TermRenaming.lift ρt₁ dom)
-        (TermRenaming.lift ρt₂ dom)
-        (Renaming.lift_equiv h_ρ)
-        body)
+        (congrArg (·.cons (domainType.rename firstRawRenaming))
+            (rfl : firstTargetContext = firstTargetContext) |>.trans
+          (congrArg firstTargetContext.cons
+            (Ty.rename_congr rawRenamingsAgreePointwise domainType)))
+        (TermRenaming.lift firstTermRenaming domainType)
+        (TermRenaming.lift secondTermRenaming domainType)
+        (Renaming.lift_equiv rawRenamingsAgreePointwise)
+        lambdaBody)
     exact (eqRec_heq _ _).symm
-  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
-    cases h_ctx
+  | _, .lamPi (domainType := domainType) (codomainType := codomainType) lambdaBody => by
+    cases targetContextEq
     show HEq
-      (Term.lamPi (Term.rename (TermRenaming.lift ρt₁ dom) body))
-      (Term.lamPi (Term.rename (TermRenaming.lift ρt₂ dom) body))
+      (Term.lamPi (Term.rename
+        (TermRenaming.lift firstTermRenaming domainType) lambdaBody))
+      (Term.lamPi (Term.rename
+        (TermRenaming.lift secondTermRenaming domainType) lambdaBody))
     apply Term.lamPi_HEq_congr
-      (Ty.rename_congr h_ρ dom)
-      (Ty.rename_congr (Renaming.lift_equiv h_ρ) cod)
+      (Ty.rename_congr rawRenamingsAgreePointwise domainType)
+      (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) codomainType)
     exact Term.rename_HEq_pointwise
-      (congrArg Δ₁.cons (Ty.rename_congr h_ρ dom))
-      (TermRenaming.lift ρt₁ dom)
-      (TermRenaming.lift ρt₂ dom)
-      (Renaming.lift_equiv h_ρ)
-      body
+      (congrArg firstTargetContext.cons
+        (Ty.rename_congr rawRenamingsAgreePointwise domainType))
+      (TermRenaming.lift firstTermRenaming domainType)
+      (TermRenaming.lift secondTermRenaming domainType)
+      (Renaming.lift_equiv rawRenamingsAgreePointwise)
+      lambdaBody
   | _, .natZero => by term_context_refl
-  | _, .natSucc pred => by
-    cases h_ctx
-    show HEq (Term.natSucc (Term.rename ρt₁ pred))
-             (Term.natSucc (Term.rename ρt₂ pred))
+  | _, .natSucc predecessor => by
+    cases targetContextEq
+    show HEq (Term.natSucc (Term.rename firstTermRenaming predecessor))
+             (Term.natSucc (Term.rename secondTermRenaming predecessor))
     exact Term.natSucc_HEq_congr _ _
-      (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ pred)
-  | _, .natElim (resultType := result) scrutinee zeroBranch succBranch => by
-    cases h_ctx
+      (Term.rename_HEq_pointwise rfl firstTermRenaming
+        secondTermRenaming rawRenamingsAgreePointwise predecessor)
+  | _, .natElim (resultType := resultType) scrutinee zeroBranch succBranch => by
+    cases targetContextEq
     show HEq
-      (Term.natElim (Term.rename ρt₁ scrutinee)
-                    (Term.rename ρt₁ zeroBranch)
-                    (Term.rename ρt₁ succBranch))
-      (Term.natElim (Term.rename ρt₂ scrutinee)
-                    (Term.rename ρt₂ zeroBranch)
-                    (Term.rename ρt₂ succBranch))
+      (Term.natElim (Term.rename firstTermRenaming scrutinee)
+                    (Term.rename firstTermRenaming zeroBranch)
+                    (Term.rename firstTermRenaming succBranch))
+      (Term.natElim (Term.rename secondTermRenaming scrutinee)
+                    (Term.rename secondTermRenaming zeroBranch)
+                    (Term.rename secondTermRenaming succBranch))
     exact Term.natElim_HEq_congr
-      (Ty.rename_congr h_ρ result)
-      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee))
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ zeroBranch)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ succBranch)
-  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch => by
-    cases h_ctx
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise scrutinee))
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise zeroBranch)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise succBranch)
+  | _, .natRec (resultType := resultType) scrutinee zeroBranch succBranch => by
+    cases targetContextEq
     exact Term.natRec_HEq_congr
-      (Ty.rename_congr h_ρ result)
-      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee))
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ zeroBranch)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ succBranch)
-  | _, .listNil (elementType := elem) => by
-    cases h_ctx
-    exact Term.listNil_HEq_congr (Ty.rename_congr h_ρ elem)
-  | _, .listCons (elementType := elem) hd tl => by
-    cases h_ctx
-    show HEq (Term.listCons (Term.rename ρt₁ hd) (Term.rename ρt₁ tl))
-             (Term.listCons (Term.rename ρt₂ hd) (Term.rename ρt₂ tl))
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (eq_of_heq (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise scrutinee))
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise zeroBranch)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise succBranch)
+  | _, .listNil (elementType := elementType) => by
+    cases targetContextEq
+    exact Term.listNil_HEq_congr (Ty.rename_congr rawRenamingsAgreePointwise elementType)
+  | _, .listCons (elementType := elementType) head tail => by
+    cases targetContextEq
+    show HEq
+      (Term.listCons (Term.rename firstTermRenaming head)
+                     (Term.rename firstTermRenaming tail))
+      (Term.listCons (Term.rename secondTermRenaming head)
+                     (Term.rename secondTermRenaming tail))
     exact Term.listCons_HEq_congr
-      (Ty.rename_congr h_ρ elem)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ hd)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ tl)
-  | _, .listElim (elementType := elem) (resultType := result)
+      (Ty.rename_congr rawRenamingsAgreePointwise elementType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise head)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise tail)
+  | _, .listElim (elementType := elementType) (resultType := resultType)
         scrutinee nilBranch consBranch => by
-    cases h_ctx
+    cases targetContextEq
     show HEq
-      (Term.listElim (Term.rename ρt₁ scrutinee)
-                     (Term.rename ρt₁ nilBranch)
-                     (Term.rename ρt₁ consBranch))
-      (Term.listElim (Term.rename ρt₂ scrutinee)
-                     (Term.rename ρt₂ nilBranch)
-                     (Term.rename ρt₂ consBranch))
+      (Term.listElim (Term.rename firstTermRenaming scrutinee)
+                     (Term.rename firstTermRenaming nilBranch)
+                     (Term.rename firstTermRenaming consBranch))
+      (Term.listElim (Term.rename secondTermRenaming scrutinee)
+                     (Term.rename secondTermRenaming nilBranch)
+                     (Term.rename secondTermRenaming consBranch))
     exact Term.listElim_HEq_congr
-      (Ty.rename_congr h_ρ elem) (Ty.rename_congr h_ρ result)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ nilBranch)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ consBranch)
-  | _, .optionNone (elementType := elem) => by
-    cases h_ctx
-    exact Term.optionNone_HEq_congr (Ty.rename_congr h_ρ elem)
-  | _, .optionSome (elementType := elem) v => by
-    cases h_ctx
-    show HEq (Term.optionSome (Term.rename ρt₁ v))
-             (Term.optionSome (Term.rename ρt₂ v))
+      (Ty.rename_congr rawRenamingsAgreePointwise elementType)
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise scrutinee)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise nilBranch)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise consBranch)
+  | _, .optionNone (elementType := elementType) => by
+    cases targetContextEq
+    exact Term.optionNone_HEq_congr
+      (Ty.rename_congr rawRenamingsAgreePointwise elementType)
+  | _, .optionSome (elementType := elementType) value => by
+    cases targetContextEq
+    show HEq (Term.optionSome (Term.rename firstTermRenaming value))
+             (Term.optionSome (Term.rename secondTermRenaming value))
     exact Term.optionSome_HEq_congr
-      (Ty.rename_congr h_ρ elem)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
-  | _, .optionMatch (elementType := elem) (resultType := result)
+      (Ty.rename_congr rawRenamingsAgreePointwise elementType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise value)
+  | _, .optionMatch (elementType := elementType) (resultType := resultType)
         scrutinee noneBranch someBranch => by
-    cases h_ctx
+    cases targetContextEq
     show HEq
-      (Term.optionMatch (Term.rename ρt₁ scrutinee)
-                        (Term.rename ρt₁ noneBranch)
-                        (Term.rename ρt₁ someBranch))
-      (Term.optionMatch (Term.rename ρt₂ scrutinee)
-                        (Term.rename ρt₂ noneBranch)
-                        (Term.rename ρt₂ someBranch))
+      (Term.optionMatch (Term.rename firstTermRenaming scrutinee)
+                        (Term.rename firstTermRenaming noneBranch)
+                        (Term.rename firstTermRenaming someBranch))
+      (Term.optionMatch (Term.rename secondTermRenaming scrutinee)
+                        (Term.rename secondTermRenaming noneBranch)
+                        (Term.rename secondTermRenaming someBranch))
     exact Term.optionMatch_HEq_congr
-      (Ty.rename_congr h_ρ elem) (Ty.rename_congr h_ρ result)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ noneBranch)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ someBranch)
-  | _, .eitherInl (leftType := lefT) (rightType := righT) v => by
-    cases h_ctx
+      (Ty.rename_congr rawRenamingsAgreePointwise elementType)
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise scrutinee)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise noneBranch)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise someBranch)
+  | _, .eitherInl (leftType := leftType) (rightType := rightType) value => by
+    cases targetContextEq
     exact Term.eitherInl_HEq_congr
-      (Ty.rename_congr h_ρ lefT)
-      (Ty.rename_congr h_ρ righT)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
-  | _, .eitherInr (leftType := lefT) (rightType := righT) v => by
-    cases h_ctx
+      (Ty.rename_congr rawRenamingsAgreePointwise leftType)
+      (Ty.rename_congr rawRenamingsAgreePointwise rightType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise value)
+  | _, .eitherInr (leftType := leftType) (rightType := rightType) value => by
+    cases targetContextEq
     exact Term.eitherInr_HEq_congr
-      (Ty.rename_congr h_ρ lefT)
-      (Ty.rename_congr h_ρ righT)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ v)
-  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+      (Ty.rename_congr rawRenamingsAgreePointwise leftType)
+      (Ty.rename_congr rawRenamingsAgreePointwise rightType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise value)
+  | _, .eitherMatch (leftType := leftType) (rightType := rightType)
+        (resultType := resultType)
         scrutinee leftBranch rightBranch => by
-    cases h_ctx
+    cases targetContextEq
     exact Term.eitherMatch_HEq_congr
-      (Ty.rename_congr h_ρ lefT)
-      (Ty.rename_congr h_ρ righT)
-      (Ty.rename_congr h_ρ result)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ scrutinee)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ leftBranch)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ rightBranch)
+      (Ty.rename_congr rawRenamingsAgreePointwise leftType)
+      (Ty.rename_congr rawRenamingsAgreePointwise rightType)
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise scrutinee)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise leftBranch)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise rightBranch)
   | _, .refl (carrier := carrier) rawTerm => by
-    cases h_ctx
+    cases targetContextEq
     exact Term.refl_HEq_congr
-      (Ty.rename_congr h_ρ carrier)
-      (RawTerm.rename_congr h_ρ rawTerm)
+      (Ty.rename_congr rawRenamingsAgreePointwise carrier)
+      (RawTerm.rename_congr rawRenamingsAgreePointwise rawTerm)
   | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
-            (resultType := result)
+            (resultType := resultType)
             baseCase witness => by
-    cases h_ctx
+    cases targetContextEq
     exact Term.idJ_HEq_congr
-      (Ty.rename_congr h_ρ carrier)
-      (RawTerm.rename_congr h_ρ leftEnd)
-      (RawTerm.rename_congr h_ρ rightEnd)
-      (Ty.rename_congr h_ρ result)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ baseCase)
-      _ _ (Term.rename_HEq_pointwise rfl ρt₁ ρt₂ h_ρ witness)
+      (Ty.rename_congr rawRenamingsAgreePointwise carrier)
+      (RawTerm.rename_congr rawRenamingsAgreePointwise leftEnd)
+      (RawTerm.rename_congr rawRenamingsAgreePointwise rightEnd)
+      (Ty.rename_congr rawRenamingsAgreePointwise resultType)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise baseCase)
+      _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
+            secondTermRenaming rawRenamingsAgreePointwise witness)
 
 
 end LeanFX.Syntax

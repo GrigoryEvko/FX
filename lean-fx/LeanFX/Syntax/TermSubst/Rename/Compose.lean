@@ -10,27 +10,40 @@ variable {level : Nat}
 /-- Composition of term-level renamings.  Position-equality witness
 chains the two `TermRenaming`s through `Ty.rename_compose`. -/
 theorem TermRenaming.compose
-    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
-    {ρ₁ : Renaming scope₁ scope₂} {ρ₂ : Renaming scope₂ scope₃}
-    (ρt₁ : TermRenaming Γ₁ Γ₂ ρ₁) (ρt₂ : TermRenaming Γ₂ Γ₃ ρ₂) :
-    TermRenaming Γ₁ Γ₃ (Renaming.compose ρ₁ ρ₂) := fun i => by
-  show varType Γ₃ (ρ₂ (ρ₁ i))
-     = (varType Γ₁ i).rename (Renaming.compose ρ₁ ρ₂)
-  rw [ρt₂ (ρ₁ i)]
-  rw [ρt₁ i]
-  exact Ty.rename_compose (varType Γ₁ i) ρ₁ ρ₂
+    {mode : Mode} {level firstScope middleScope finalScope : Nat}
+    {firstContext : Ctx mode level firstScope}
+    {middleContext : Ctx mode level middleScope}
+    {finalContext : Ctx mode level finalScope}
+    {firstRawRenaming : Renaming firstScope middleScope}
+    {secondRawRenaming : Renaming middleScope finalScope}
+    (firstTermRenaming :
+      TermRenaming firstContext middleContext firstRawRenaming)
+    (secondTermRenaming :
+      TermRenaming middleContext finalContext secondRawRenaming) :
+    TermRenaming firstContext finalContext
+      (Renaming.compose firstRawRenaming secondRawRenaming) := fun position => by
+  show varType finalContext (secondRawRenaming (firstRawRenaming position))
+     = (varType firstContext position).rename
+         (Renaming.compose firstRawRenaming secondRawRenaming)
+  rw [secondTermRenaming (firstRawRenaming position)]
+  rw [firstTermRenaming position]
+  exact Ty.rename_compose (varType firstContext position)
+    firstRawRenaming secondRawRenaming
 
-/-- Push a propositional type-cast on the input of `Term.rename ρt`
+/-- Push a propositional type-cast on the input of `Term.rename termRenaming`
 out to an HEq.  Mirror of `Term.subst_HEq_cast_input` and
 `Term.weaken_HEq_cast_input`. -/
 theorem Term.rename_HEq_cast_input
-    {m : Mode} {level scope scope' : Nat}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
-    {ρ : Renaming scope scope'} (ρt : TermRenaming Γ Δ ρ)
-    {T₁ T₂ : Ty level scope} (h : T₁ = T₂) (t : Term Γ T₁) :
-    HEq (Term.rename ρt (h ▸ t)) (Term.rename ρt t) := by
-  cases h
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {rawRenaming : Renaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceContext targetContext rawRenaming)
+    {sourceTy targetTy : Ty level sourceScope} (typeEq : sourceTy = targetTy)
+    (term : Term sourceContext sourceTy) :
+    HEq (Term.rename termRenaming (typeEq ▸ term))
+        (Term.rename termRenaming term) := by
+  cases typeEq
   rfl
 
 /-! ## `Term.rename_compose_HEq`.
@@ -41,73 +54,107 @@ The two sides have types `Term Γ₃ ((T.rename ρ₁).rename ρ₂)` and
 propositionally by `Ty.rename_compose`.  Pattern-matched structural
 induction on the term.
 
-Binder cases bridge `TermRenaming.lift (compose ρt₁ ρt₂) dom` against
-`compose (lift ρt₁ dom) (lift ρt₂ (dom.rename ρ₁))` via
+Binder cases bridge `TermRenaming.lift (compose firstTermRenaming
+secondTermRenaming) dom` against `compose (lift firstTermRenaming dom)
+(lift secondTermRenaming (dom.rename firstRawRenaming))` via
 `Term.rename_HEq_pointwise` over `Renaming.lift_compose_equiv`. -/
 theorem Term.rename_compose_HEq
-    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
-    {ρ₁ : Renaming scope₁ scope₂} {ρ₂ : Renaming scope₂ scope₃}
-    (ρt₁ : TermRenaming Γ₁ Γ₂ ρ₁) (ρt₂ : TermRenaming Γ₂ Γ₃ ρ₂) :
-    {T : Ty level scope₁} → (t : Term Γ₁ T) →
-      HEq (Term.rename ρt₂ (Term.rename ρt₁ t))
-          (Term.rename (TermRenaming.compose ρt₁ ρt₂) t)
-  | _, .var i => by
-    -- LHS: Term.rename ρt₂ ((ρt₁ i) ▸ Term.var (ρ₁ i))
-    -- Push the inner cast through Term.rename ρt₂.
+    {mode : Mode} {level firstScope middleScope finalScope : Nat}
+    {firstContext : Ctx mode level firstScope}
+    {middleContext : Ctx mode level middleScope}
+    {finalContext : Ctx mode level finalScope}
+    {firstRawRenaming : Renaming firstScope middleScope}
+    {secondRawRenaming : Renaming middleScope finalScope}
+    (firstTermRenaming :
+      TermRenaming firstContext middleContext firstRawRenaming)
+    (secondTermRenaming :
+      TermRenaming middleContext finalContext secondRawRenaming) :
+    {tyValue : Ty level firstScope} → (term : Term firstContext tyValue) →
+      HEq (Term.rename secondTermRenaming (Term.rename firstTermRenaming term))
+          (Term.rename
+            (TermRenaming.compose firstTermRenaming secondTermRenaming) term)
+  | _, .var position => by
+    -- LHS: Term.rename secondTermRenaming
+    --        ((firstTermRenaming i) ▸ Term.var (firstRawRenaming i))
+    -- Push the inner cast through Term.rename secondTermRenaming.
     apply HEq.trans
-      (Term.rename_HEq_cast_input ρt₂ (ρt₁ i) (Term.var (ρ₁ i)))
-    -- Now: Term.rename ρt₂ (Term.var (ρ₁ i))
-    --    = (ρt₂ (ρ₁ i)) ▸ Term.var (ρ₂ (ρ₁ i))
-    -- RHS: ((compose ρt₁ ρt₂) i) ▸ Term.var ((Renaming.compose ρ₁ ρ₂) i)
-    --    where (Renaming.compose ρ₁ ρ₂) i ≡ ρ₂ (ρ₁ i) definitionally.
+      (Term.rename_HEq_cast_input secondTermRenaming
+        (firstTermRenaming position) (Term.var (firstRawRenaming position)))
+    -- Now: Term.rename secondTermRenaming (Term.var (firstRawRenaming i))
+    --    = (secondTermRenaming (firstRawRenaming i))
+    --        ▸ Term.var (secondRawRenaming (firstRawRenaming i))
+    -- RHS: ((compose firstTermRenaming secondTermRenaming) i)
+    --        ▸ Term.var ((Renaming.compose firstRawRenaming secondRawRenaming) i)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     exact eqRec_heq _ _
   | _, .unit => HEq.refl _
   | _, .boolTrue => HEq.refl _
   | _, .boolFalse => HEq.refl _
-  | _, .app (domainType := dom) (codomainType := cod) f a => by
+  | _, .app (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm => by
     show HEq
-      (Term.app (Term.rename ρt₂ (Term.rename ρt₁ f))
-                (Term.rename ρt₂ (Term.rename ρt₁ a)))
-      (Term.app (Term.rename (TermRenaming.compose ρt₁ ρt₂) f)
-                (Term.rename (TermRenaming.compose ρt₁ ρt₂) a))
+      (Term.app (Term.rename secondTermRenaming
+                  (Term.rename firstTermRenaming functionTerm))
+                (Term.rename secondTermRenaming
+                  (Term.rename firstTermRenaming argumentTerm)))
+      (Term.app (Term.rename
+                  (TermRenaming.compose firstTermRenaming secondTermRenaming)
+                  functionTerm)
+                (Term.rename
+                  (TermRenaming.compose firstTermRenaming secondTermRenaming)
+                  argumentTerm))
     exact Term.app_HEq_congr
-      (Ty.rename_compose dom ρ₁ ρ₂)
-      (Ty.rename_compose cod ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ f)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ a)
-  | _, .fst (firstType := first) (secondType := second) p => by
+      (Ty.rename_compose domainType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose codomainType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming functionTerm)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming argumentTerm)
+  | _, .fst (firstType := firstType) (secondType := secondType) pairTerm => by
     show HEq
-      (Term.fst (Term.rename ρt₂ (Term.rename ρt₁ p)))
-      (Term.fst (Term.rename (TermRenaming.compose ρt₁ ρt₂) p))
+      (Term.fst (Term.rename secondTermRenaming
+                  (Term.rename firstTermRenaming pairTerm)))
+      (Term.fst (Term.rename
+                  (TermRenaming.compose firstTermRenaming secondTermRenaming)
+                  pairTerm))
     apply Term.fst_HEq_congr
-      (Ty.rename_compose first ρ₁ ρ₂)
-      ((Ty.rename_compose second ρ₁.lift ρ₂.lift).trans
-        (Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) second))
-    exact Term.rename_compose_HEq ρt₁ ρt₂ p
-  | _, .boolElim (resultType := result) s t e => by
+      (Ty.rename_compose firstType firstRawRenaming secondRawRenaming)
+      ((Ty.rename_compose secondType firstRawRenaming.lift
+          secondRawRenaming.lift).trans
+        (Ty.rename_congr
+          (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+          secondType))
+    exact Term.rename_compose_HEq firstTermRenaming secondTermRenaming pairTerm
+  | _, .boolElim (resultType := resultType) scrutinee thenBranch elseBranch => by
     show HEq
-      (Term.boolElim (Term.rename ρt₂ (Term.rename ρt₁ s))
-                     (Term.rename ρt₂ (Term.rename ρt₁ t))
-                     (Term.rename ρt₂ (Term.rename ρt₁ e)))
-      (Term.boolElim (Term.rename (TermRenaming.compose ρt₁ ρt₂) s)
-                     (Term.rename (TermRenaming.compose ρt₁ ρt₂) t)
-                     (Term.rename (TermRenaming.compose ρt₁ ρt₂) e))
+      (Term.boolElim (Term.rename secondTermRenaming
+                       (Term.rename firstTermRenaming scrutinee))
+                     (Term.rename secondTermRenaming
+                       (Term.rename firstTermRenaming thenBranch))
+                     (Term.rename secondTermRenaming
+                       (Term.rename firstTermRenaming elseBranch)))
+      (Term.boolElim (Term.rename
+                       (TermRenaming.compose firstTermRenaming secondTermRenaming)
+                       scrutinee)
+                     (Term.rename
+                       (TermRenaming.compose firstTermRenaming secondTermRenaming)
+                       thenBranch)
+                     (Term.rename
+                       (TermRenaming.compose firstTermRenaming secondTermRenaming)
+                       elseBranch))
     exact Term.boolElim_HEq_congr
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (eq_of_heq (Term.rename_compose_HEq ρt₁ ρt₂ s))
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ t)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ e)
-  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (eq_of_heq
+        (Term.rename_compose_HEq firstTermRenaming secondTermRenaming scrutinee))
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming thenBranch)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming elseBranch)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm => by
     -- Outer-cast peeling on each side, then constructor congruence.
-    -- LHS: Term.rename ρt₂ ((cast₁).symm ▸ Term.appPi (Term.rename ρt₁ f) (Term.rename ρt₁ a))
     apply HEq.trans
-      (Term.rename_HEq_cast_input ρt₂
-        (Ty.subst0_rename_commute cod dom ρ₁).symm
-        (Term.appPi (Term.rename ρt₁ f) (Term.rename ρt₁ a)))
-    -- Now: Term.rename ρt₂ (Term.appPi (...) (...))
+      (Term.rename_HEq_cast_input secondTermRenaming
+        (Ty.subst0_rename_commute codomainType domainType firstRawRenaming).symm
+        (Term.appPi (Term.rename firstTermRenaming functionTerm)
+                    (Term.rename firstTermRenaming argumentTerm)))
     -- Strip outer cast from Term.rename's appPi clause.
     apply HEq.trans (eqRec_heq _ _)
     -- Flip and process RHS.
@@ -116,180 +163,210 @@ theorem Term.rename_compose_HEq
     apply HEq.symm
     -- Apply Term.appPi_HEq_congr.
     exact Term.appPi_HEq_congr
-      (Ty.rename_compose dom ρ₁ ρ₂)
-      ((Ty.rename_compose cod ρ₁.lift ρ₂.lift).trans
-        (Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) cod))
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ f)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ a)
-  | _, .pair (firstType := first) (secondType := second) v w => by
+      (Ty.rename_compose domainType firstRawRenaming secondRawRenaming)
+      ((Ty.rename_compose codomainType firstRawRenaming.lift
+          secondRawRenaming.lift).trans
+        (Ty.rename_congr
+          (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+          codomainType))
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming functionTerm)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming argumentTerm)
+  | _, .pair (firstType := firstType) (secondType := secondType)
+        firstVal secondVal => by
     -- Outer Term.pair has no cast; secondVal carries nested casts on both sides.
     apply Term.pair_HEq_congr
-      (Ty.rename_compose first ρ₁ ρ₂)
-      ((Ty.rename_compose second ρ₁.lift ρ₂.lift).trans
-        (Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) second))
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
-    -- LHS secondVal: cast_outer ▸ Term.rename ρt₂ (cast_inner ▸ Term.rename ρt₁ w)
-    -- RHS secondVal: cast_compose ▸ Term.rename (compose ρt₁ ρt₂) w
+      (Ty.rename_compose firstType firstRawRenaming secondRawRenaming)
+      ((Ty.rename_compose secondType firstRawRenaming.lift
+          secondRawRenaming.lift).trans
+        (Ty.rename_congr
+          (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+          secondType))
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming firstVal)
     -- Strip outer cast on LHS.
     apply HEq.trans (eqRec_heq _ _)
-    -- Push inner cast through Term.rename ρt₂.
+    -- Push inner cast through Term.rename secondTermRenaming.
     apply HEq.trans
-      (Term.rename_HEq_cast_input ρt₂
-        (Ty.subst0_rename_commute second first ρ₁)
-        (Term.rename ρt₁ w))
-    -- Use IH on w.
-    apply HEq.trans (Term.rename_compose_HEq ρt₁ ρt₂ w)
+      (Term.rename_HEq_cast_input secondTermRenaming
+        (Ty.subst0_rename_commute secondType firstType firstRawRenaming)
+        (Term.rename firstTermRenaming secondVal))
+    -- Use IH on secondVal.
+    apply HEq.trans
+      (Term.rename_compose_HEq firstTermRenaming secondTermRenaming secondVal)
     -- Strip outer cast on RHS.
     exact (eqRec_heq _ _).symm
-  | _, .snd (firstType := first) (secondType := second) p => by
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
     -- Mirror of fst plus outer cast strips on each side.
     apply HEq.trans
-      (Term.rename_HEq_cast_input ρt₂
-        (Ty.subst0_rename_commute second first ρ₁).symm
-        (Term.snd (Term.rename ρt₁ p)))
+      (Term.rename_HEq_cast_input secondTermRenaming
+        (Ty.subst0_rename_commute secondType firstType firstRawRenaming).symm
+        (Term.snd (Term.rename firstTermRenaming pairTerm)))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     exact Term.snd_HEq_congr
-      (Ty.rename_compose first ρ₁ ρ₂)
-      ((Ty.rename_compose second ρ₁.lift ρ₂.lift).trans
-        (Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) second))
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ p)
-  | _, .lam (domainType := dom) (codomainType := cod) body => by
-    -- LHS body: cast₂ ▸ rename (lift ρt₂ (dom.rename ρ₁)) (cast₁ ▸ rename (lift ρt₁ dom) body)
-    -- RHS body: cast_compose ▸ rename (lift (compose ρt₁ ρt₂) dom) body
+      (Ty.rename_compose firstType firstRawRenaming secondRawRenaming)
+      ((Ty.rename_compose secondType firstRawRenaming.lift
+          secondRawRenaming.lift).trans
+        (Ty.rename_congr
+          (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+          secondType))
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming pairTerm)
+  | _, .lam (domainType := domainType) (codomainType := codomainType)
+        lambdaBody => by
     apply Term.lam_HEq_congr
-      (Ty.rename_compose dom ρ₁ ρ₂)
-      (Ty.rename_compose cod ρ₁ ρ₂)
+      (Ty.rename_compose domainType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose codomainType firstRawRenaming secondRawRenaming)
     -- Strip outer cast on LHS.
     apply HEq.trans (eqRec_heq _ _)
-    -- Push inner cast through rename (lift ρt₂ (dom.rename ρ₁)).
+    -- Push inner cast through rename (lift secondTermRenaming
+    --                                     (domainType.rename firstRawRenaming)).
     apply HEq.trans
       (Term.rename_HEq_cast_input
-        (TermRenaming.lift ρt₂ (dom.rename ρ₁))
-        (Ty.rename_weaken_commute cod ρ₁)
-        (Term.rename (TermRenaming.lift ρt₁ dom) body))
+        (TermRenaming.lift secondTermRenaming
+          (domainType.rename firstRawRenaming))
+        (Ty.rename_weaken_commute codomainType firstRawRenaming)
+        (Term.rename (TermRenaming.lift firstTermRenaming domainType) lambdaBody))
     -- Use IH on body with the lifts.
     apply HEq.trans
       (Term.rename_compose_HEq
-        (TermRenaming.lift ρt₁ dom) (TermRenaming.lift ρt₂ (dom.rename ρ₁)) body)
+        (TermRenaming.lift firstTermRenaming domainType)
+        (TermRenaming.lift secondTermRenaming (domainType.rename firstRawRenaming))
+        lambdaBody)
     -- Bridge compose-of-lifts to lift-of-compose via rename_HEq_pointwise.
     apply HEq.symm
-    -- Strip outer cast on RHS (now in symm orientation, so it's the LHS goal).
+    -- Strip outer cast on RHS (now in symm orientation).
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     exact Term.rename_HEq_pointwise
-      (congrArg Γ₃.cons (Ty.rename_compose dom ρ₁ ρ₂))
+      (congrArg finalContext.cons
+        (Ty.rename_compose domainType firstRawRenaming secondRawRenaming))
       (TermRenaming.compose
-        (TermRenaming.lift ρt₁ dom) (TermRenaming.lift ρt₂ (dom.rename ρ₁)))
-      (TermRenaming.lift (TermRenaming.compose ρt₁ ρt₂) dom)
-      (Renaming.lift_compose_equiv ρ₁ ρ₂)
-      body
-  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
-    -- LHS body: rename (lift ρt₂ (dom.rename ρ₁)) (rename (lift ρt₁ dom) body)
-    --          (no outer casts because Term.rename's lamPi clause has no cast)
-    -- RHS body: rename (lift (compose ρt₁ ρt₂) dom) body
+        (TermRenaming.lift firstTermRenaming domainType)
+        (TermRenaming.lift secondTermRenaming (domainType.rename firstRawRenaming)))
+      (TermRenaming.lift
+        (TermRenaming.compose firstTermRenaming secondTermRenaming) domainType)
+      (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+      lambdaBody
+  | _, .lamPi (domainType := domainType) (codomainType := codomainType)
+        lambdaBody => by
     apply Term.lamPi_HEq_congr
-      (Ty.rename_compose dom ρ₁ ρ₂)
-      ((Ty.rename_compose cod ρ₁.lift ρ₂.lift).trans
-        (Ty.rename_congr (Renaming.lift_compose_equiv ρ₁ ρ₂) cod))
+      (Ty.rename_compose domainType firstRawRenaming secondRawRenaming)
+      ((Ty.rename_compose codomainType firstRawRenaming.lift
+          secondRawRenaming.lift).trans
+        (Ty.rename_congr
+          (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+          codomainType))
     apply HEq.trans
       (Term.rename_compose_HEq
-        (TermRenaming.lift ρt₁ dom) (TermRenaming.lift ρt₂ (dom.rename ρ₁)) body)
+        (TermRenaming.lift firstTermRenaming domainType)
+        (TermRenaming.lift secondTermRenaming (domainType.rename firstRawRenaming))
+        lambdaBody)
     exact Term.rename_HEq_pointwise
-      (congrArg Γ₃.cons (Ty.rename_compose dom ρ₁ ρ₂))
+      (congrArg finalContext.cons
+        (Ty.rename_compose domainType firstRawRenaming secondRawRenaming))
       (TermRenaming.compose
-        (TermRenaming.lift ρt₁ dom) (TermRenaming.lift ρt₂ (dom.rename ρ₁)))
-      (TermRenaming.lift (TermRenaming.compose ρt₁ ρt₂) dom)
-      (Renaming.lift_compose_equiv ρ₁ ρ₂)
-      body
+        (TermRenaming.lift firstTermRenaming domainType)
+        (TermRenaming.lift secondTermRenaming (domainType.rename firstRawRenaming)))
+      (TermRenaming.lift
+        (TermRenaming.compose firstTermRenaming secondTermRenaming) domainType)
+      (Renaming.lift_compose_equiv firstRawRenaming secondRawRenaming)
+      lambdaBody
   | _, .natZero => HEq.refl _
-  | _, .natSucc pred =>
-    Term.natSucc_HEq_congr _ _ (Term.rename_compose_HEq ρt₁ ρt₂ pred)
-  | _, .natElim (resultType := result) scrutinee zeroBranch succBranch => by
+  | _, .natSucc predecessor =>
+    Term.natSucc_HEq_congr _ _
+      (Term.rename_compose_HEq firstTermRenaming secondTermRenaming predecessor)
+  | _, .natElim (resultType := resultType) scrutinee zeroBranch succBranch => by
     show HEq
       (Term.natElim
-        (Term.rename ρt₂ (Term.rename ρt₁ scrutinee))
-        (Term.rename ρt₂ (Term.rename ρt₁ zeroBranch))
-        (Term.rename ρt₂ (Term.rename ρt₁ succBranch)))
+        (Term.rename secondTermRenaming (Term.rename firstTermRenaming scrutinee))
+        (Term.rename secondTermRenaming (Term.rename firstTermRenaming zeroBranch))
+        (Term.rename secondTermRenaming (Term.rename firstTermRenaming succBranch)))
       (Term.natElim
-        (Term.rename (TermRenaming.compose ρt₁ ρt₂) scrutinee)
-        (Term.rename (TermRenaming.compose ρt₁ ρt₂) zeroBranch)
-        (Term.rename (TermRenaming.compose ρt₁ ρt₂) succBranch))
+        (Term.rename
+          (TermRenaming.compose firstTermRenaming secondTermRenaming) scrutinee)
+        (Term.rename
+          (TermRenaming.compose firstTermRenaming secondTermRenaming) zeroBranch)
+        (Term.rename
+          (TermRenaming.compose firstTermRenaming secondTermRenaming) succBranch))
     exact Term.natElim_HEq_congr
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (eq_of_heq (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee))
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ zeroBranch)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ succBranch)
-  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (eq_of_heq
+        (Term.rename_compose_HEq firstTermRenaming secondTermRenaming scrutinee))
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming zeroBranch)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming succBranch)
+  | _, .natRec (resultType := resultType) scrutinee zeroBranch succBranch =>
     Term.natRec_HEq_congr
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (eq_of_heq (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee))
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ zeroBranch)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ succBranch)
-  | _, .listNil (elementType := elem) =>
-    Term.listNil_HEq_congr (Ty.rename_compose elem ρ₁ ρ₂)
-  | _, .listCons (elementType := elem) hd tl =>
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (eq_of_heq
+        (Term.rename_compose_HEq firstTermRenaming secondTermRenaming scrutinee))
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming zeroBranch)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming succBranch)
+  | _, .listNil (elementType := elementType) =>
+    Term.listNil_HEq_congr
+      (Ty.rename_compose elementType firstRawRenaming secondRawRenaming)
+  | _, .listCons (elementType := elementType) head tail =>
     Term.listCons_HEq_congr
-      (Ty.rename_compose elem ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ hd)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ tl)
-  | _, .listElim (elementType := elem) (resultType := result)
+      (Ty.rename_compose elementType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming head)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming tail)
+  | _, .listElim (elementType := elementType) (resultType := resultType)
         scrutinee nilBranch consBranch =>
     Term.listElim_HEq_congr
-      (Ty.rename_compose elem ρ₁ ρ₂)
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ nilBranch)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ consBranch)
-  | _, .optionNone (elementType := elem) =>
-    Term.optionNone_HEq_congr (Ty.rename_compose elem ρ₁ ρ₂)
-  | _, .optionSome (elementType := elem) v =>
+      (Ty.rename_compose elementType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming scrutinee)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming nilBranch)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming consBranch)
+  | _, .optionNone (elementType := elementType) =>
+    Term.optionNone_HEq_congr
+      (Ty.rename_compose elementType firstRawRenaming secondRawRenaming)
+  | _, .optionSome (elementType := elementType) value =>
     Term.optionSome_HEq_congr
-      (Ty.rename_compose elem ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
-  | _, .optionMatch (elementType := elem) (resultType := result)
+      (Ty.rename_compose elementType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming value)
+  | _, .optionMatch (elementType := elementType) (resultType := resultType)
         scrutinee noneBranch someBranch =>
     Term.optionMatch_HEq_congr
-      (Ty.rename_compose elem ρ₁ ρ₂)
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ noneBranch)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ someBranch)
-  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+      (Ty.rename_compose elementType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming scrutinee)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming noneBranch)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming someBranch)
+  | _, .eitherInl (leftType := leftType) (rightType := rightType) value =>
     Term.eitherInl_HEq_congr
-      (Ty.rename_compose lefT ρ₁ ρ₂)
-      (Ty.rename_compose righT ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
-  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+      (Ty.rename_compose leftType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose rightType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming value)
+  | _, .eitherInr (leftType := leftType) (rightType := rightType) value =>
     Term.eitherInr_HEq_congr
-      (Ty.rename_compose lefT ρ₁ ρ₂)
-      (Ty.rename_compose righT ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ v)
-  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+      (Ty.rename_compose leftType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose rightType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming value)
+  | _, .eitherMatch (leftType := leftType) (rightType := rightType)
+        (resultType := resultType)
         scrutinee leftBranch rightBranch =>
     Term.eitherMatch_HEq_congr
-      (Ty.rename_compose lefT ρ₁ ρ₂)
-      (Ty.rename_compose righT ρ₁ ρ₂)
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ scrutinee)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ leftBranch)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ rightBranch)
+      (Ty.rename_compose leftType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose rightType firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming scrutinee)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming leftBranch)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr
-      (Ty.rename_compose carrier ρ₁ ρ₂)
-      (RawTerm.rename_compose rawTerm ρ₁ ρ₂)
+      (Ty.rename_compose carrier firstRawRenaming secondRawRenaming)
+      (RawTerm.rename_compose rawTerm firstRawRenaming secondRawRenaming)
   | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
-            (resultType := result)
+            (resultType := resultType)
             baseCase witness =>
     Term.idJ_HEq_congr
-      (Ty.rename_compose carrier ρ₁ ρ₂)
-      (RawTerm.rename_compose leftEnd ρ₁ ρ₂)
-      (RawTerm.rename_compose rightEnd ρ₁ ρ₂)
-      (Ty.rename_compose result ρ₁ ρ₂)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ baseCase)
-      _ _ (Term.rename_compose_HEq ρt₁ ρt₂ witness)
+      (Ty.rename_compose carrier firstRawRenaming secondRawRenaming)
+      (RawTerm.rename_compose leftEnd firstRawRenaming secondRawRenaming)
+      (RawTerm.rename_compose rightEnd firstRawRenaming secondRawRenaming)
+      (Ty.rename_compose resultType firstRawRenaming secondRawRenaming)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming baseCase)
+      _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming witness)
 
 
 end LeanFX.Syntax

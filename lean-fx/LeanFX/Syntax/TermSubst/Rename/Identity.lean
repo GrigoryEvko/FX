@@ -23,94 +23,103 @@ HEq on the witness is non-trivial).
 Closed-context cases use the constructor HEq congruences plus
 `Ty.rename_identity` at each Ty level index.  Cast-bearing cases
 (appPi/pair/snd) strip outer casts via `eqRec_heq`. -/
-theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
-    {T : Ty level scope} → (t : Term Γ T) →
-      HEq (Term.rename (TermRenaming.identity Γ) t) t
-  | _, .var i => by
+theorem Term.rename_id_HEq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    {tyValue : Ty level scope} → (term : Term context tyValue) →
+      HEq (Term.rename (TermRenaming.identity context) term) term
+  | _, .var position => by
     -- LHS: (TermRenaming.identity Γ i) ▸ Term.var (Renaming.identity i)
     --    = (Ty.rename_identity (varType Γ i)).symm ▸ Term.var i
-    show HEq ((Ty.rename_identity (varType Γ i)).symm ▸ Term.var i) (Term.var i)
+    show HEq ((Ty.rename_identity (varType context position)).symm ▸
+                Term.var position)
+             (Term.var position)
     exact eqRec_heq _ _
   | _, .unit => HEq.refl _
   | _, .boolTrue => HEq.refl _
   | _, .boolFalse => HEq.refl _
-  | _, .app (domainType := dom) (codomainType := cod) f a => by
+  | _, .app (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm => by
     show HEq
-      (Term.app (Term.rename (TermRenaming.identity Γ) f)
-                (Term.rename (TermRenaming.identity Γ) a))
-      (Term.app f a)
+      (Term.app (Term.rename (TermRenaming.identity context) functionTerm)
+                (Term.rename (TermRenaming.identity context) argumentTerm))
+      (Term.app functionTerm argumentTerm)
     exact Term.app_HEq_congr
-      (Ty.rename_identity dom) (Ty.rename_identity cod)
-      _ _ (Term.rename_id_HEq f)
-      _ _ (Term.rename_id_HEq a)
-  | _, .fst (firstType := first) (secondType := second) p => by
+      (Ty.rename_identity domainType) (Ty.rename_identity codomainType)
+      _ _ (Term.rename_id_HEq functionTerm)
+      _ _ (Term.rename_id_HEq argumentTerm)
+  | _, .fst (firstType := firstType) (secondType := secondType) pairTerm => by
     show HEq
-      (Term.fst (Term.rename (TermRenaming.identity Γ) p))
-      (Term.fst p)
+      (Term.fst (Term.rename (TermRenaming.identity context) pairTerm))
+      (Term.fst pairTerm)
     apply Term.fst_HEq_congr
-      (Ty.rename_identity first)
-      ((Ty.rename_congr Renaming.lift_identity_equiv second).trans
-        (Ty.rename_identity second))
-    exact Term.rename_id_HEq p
-  | _, .boolElim (resultType := result) s t e => by
+      (Ty.rename_identity firstType)
+      ((Ty.rename_congr Renaming.lift_identity_equiv secondType).trans
+        (Ty.rename_identity secondType))
+    exact Term.rename_id_HEq pairTerm
+  | _, .boolElim (resultType := resultType) scrutinee thenBranch elseBranch => by
     show HEq
-      (Term.boolElim (Term.rename (TermRenaming.identity Γ) s)
-                     (Term.rename (TermRenaming.identity Γ) t)
-                     (Term.rename (TermRenaming.identity Γ) e))
-      (Term.boolElim s t e)
+      (Term.boolElim (Term.rename (TermRenaming.identity context) scrutinee)
+                     (Term.rename (TermRenaming.identity context) thenBranch)
+                     (Term.rename (TermRenaming.identity context) elseBranch))
+      (Term.boolElim scrutinee thenBranch elseBranch)
     exact Term.boolElim_HEq_congr
-      (Ty.rename_identity result)
-      _ _ (eq_of_heq (Term.rename_id_HEq s))
-      _ _ (Term.rename_id_HEq t)
-      _ _ (Term.rename_id_HEq e)
-  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
+      (Ty.rename_identity resultType)
+      _ _ (eq_of_heq (Term.rename_id_HEq scrutinee))
+      _ _ (Term.rename_id_HEq thenBranch)
+      _ _ (Term.rename_id_HEq elseBranch)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+        functionTerm argumentTerm => by
     -- LHS: (Ty.subst0_rename_commute cod dom Renaming.identity).symm ▸
     --        Term.appPi (Term.rename (identity Γ) f)
     --                   (Term.rename (identity Γ) a)
     show HEq
-      ((Ty.subst0_rename_commute cod dom Renaming.identity).symm ▸
-        Term.appPi (Term.rename (TermRenaming.identity Γ) f)
-                   (Term.rename (TermRenaming.identity Γ) a))
-      (Term.appPi f a)
+      ((Ty.subst0_rename_commute codomainType domainType
+          Renaming.identity).symm ▸
+        Term.appPi (Term.rename (TermRenaming.identity context) functionTerm)
+                   (Term.rename (TermRenaming.identity context) argumentTerm))
+      (Term.appPi functionTerm argumentTerm)
     apply HEq.trans (eqRec_heq _ _)
     exact Term.appPi_HEq_congr
-      (Ty.rename_identity dom)
-      ((Ty.rename_congr Renaming.lift_identity_equiv cod).trans
-        (Ty.rename_identity cod))
-      _ _ (Term.rename_id_HEq f)
-      _ _ (Term.rename_id_HEq a)
-  | _, .pair (firstType := first) (secondType := second) v w => by
+      (Ty.rename_identity domainType)
+      ((Ty.rename_congr Renaming.lift_identity_equiv codomainType).trans
+        (Ty.rename_identity codomainType))
+      _ _ (Term.rename_id_HEq functionTerm)
+      _ _ (Term.rename_id_HEq argumentTerm)
+  | _, .pair (firstType := firstType) (secondType := secondType)
+        firstVal secondVal => by
     show HEq
-      (Term.pair (Term.rename (TermRenaming.identity Γ) v)
-        ((Ty.subst0_rename_commute second first Renaming.identity) ▸
-          (Term.rename (TermRenaming.identity Γ) w)))
-      (Term.pair v w)
+      (Term.pair (Term.rename (TermRenaming.identity context) firstVal)
+        ((Ty.subst0_rename_commute secondType firstType Renaming.identity) ▸
+          (Term.rename (TermRenaming.identity context) secondVal)))
+      (Term.pair firstVal secondVal)
     apply Term.pair_HEq_congr
-      (Ty.rename_identity first)
-      ((Ty.rename_congr Renaming.lift_identity_equiv second).trans
-        (Ty.rename_identity second))
-      _ _ (Term.rename_id_HEq v)
+      (Ty.rename_identity firstType)
+      ((Ty.rename_congr Renaming.lift_identity_equiv secondType).trans
+        (Ty.rename_identity secondType))
+      _ _ (Term.rename_id_HEq firstVal)
     apply HEq.trans (eqRec_heq _ _)
-    exact Term.rename_id_HEq w
-  | _, .snd (firstType := first) (secondType := second) p => by
+    exact Term.rename_id_HEq secondVal
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
     show HEq
-      ((Ty.subst0_rename_commute second first Renaming.identity).symm ▸
-        Term.snd (Term.rename (TermRenaming.identity Γ) p))
-      (Term.snd p)
+      ((Ty.subst0_rename_commute secondType firstType Renaming.identity).symm ▸
+        Term.snd (Term.rename (TermRenaming.identity context) pairTerm))
+      (Term.snd pairTerm)
     apply HEq.trans (eqRec_heq _ _)
     apply Term.snd_HEq_congr
-      (Ty.rename_identity first)
-      ((Ty.rename_congr Renaming.lift_identity_equiv second).trans
-        (Ty.rename_identity second))
-    exact Term.rename_id_HEq p
-  | _, .lam (domainType := dom) (codomainType := cod) body => by
+      (Ty.rename_identity firstType)
+      ((Ty.rename_congr Renaming.lift_identity_equiv secondType).trans
+        (Ty.rename_identity secondType))
+    exact Term.rename_id_HEq pairTerm
+  | _, .lam (domainType := domainType) (codomainType := codomainType)
+        lambdaBody => by
     show HEq
-      (Term.lam (codomainType := cod.rename Renaming.identity)
-        ((Ty.rename_weaken_commute cod Renaming.identity) ▸
-          (Term.rename (TermRenaming.lift (TermRenaming.identity Γ) dom) body)))
-      (Term.lam body)
+      (Term.lam (codomainType := codomainType.rename Renaming.identity)
+        ((Ty.rename_weaken_commute codomainType Renaming.identity) ▸
+          (Term.rename (TermRenaming.lift (TermRenaming.identity context) domainType)
+            lambdaBody)))
+      (Term.lam lambdaBody)
     apply Term.lam_HEq_congr
-      (Ty.rename_identity dom) (Ty.rename_identity cod)
+      (Ty.rename_identity domainType) (Ty.rename_identity codomainType)
     -- Strip outer cast.
     apply HEq.trans (eqRec_heq _ _)
     -- Bridge `TermRenaming.lift (identity Γ) dom` to
@@ -118,90 +127,93 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
     -- + Renaming.lift_identity_equiv, then recurse.
     apply HEq.trans
       (Term.rename_HEq_pointwise
-        (congrArg Γ.cons (Ty.rename_identity dom))
-        (TermRenaming.lift (TermRenaming.identity Γ) dom)
-        (TermRenaming.identity (Γ.cons dom))
+        (congrArg context.cons (Ty.rename_identity domainType))
+        (TermRenaming.lift (TermRenaming.identity context) domainType)
+        (TermRenaming.identity (context.cons domainType))
         Renaming.lift_identity_equiv
-        body)
-    exact Term.rename_id_HEq body
-  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
+        lambdaBody)
+    exact Term.rename_id_HEq lambdaBody
+  | _, .lamPi (domainType := domainType) (codomainType := codomainType)
+        lambdaBody => by
     show HEq
       (Term.lamPi
-        (Term.rename (TermRenaming.lift (TermRenaming.identity Γ) dom) body))
-      (Term.lamPi body)
+        (Term.rename (TermRenaming.lift (TermRenaming.identity context) domainType)
+          lambdaBody))
+      (Term.lamPi lambdaBody)
     apply Term.lamPi_HEq_congr
-      (Ty.rename_identity dom)
-      ((Ty.rename_congr Renaming.lift_identity_equiv cod).trans
-        (Ty.rename_identity cod))
+      (Ty.rename_identity domainType)
+      ((Ty.rename_congr Renaming.lift_identity_equiv codomainType).trans
+        (Ty.rename_identity codomainType))
     apply HEq.trans
       (Term.rename_HEq_pointwise
-        (congrArg Γ.cons (Ty.rename_identity dom))
-        (TermRenaming.lift (TermRenaming.identity Γ) dom)
-        (TermRenaming.identity (Γ.cons dom))
+        (congrArg context.cons (Ty.rename_identity domainType))
+        (TermRenaming.lift (TermRenaming.identity context) domainType)
+        (TermRenaming.identity (context.cons domainType))
         Renaming.lift_identity_equiv
-        body)
-    exact Term.rename_id_HEq body
+        lambdaBody)
+    exact Term.rename_id_HEq lambdaBody
   | _, .natZero => HEq.refl _
-  | _, .natSucc pred =>
-    Term.natSucc_HEq_congr _ _ (Term.rename_id_HEq pred)
-  | _, .natElim (resultType := result) scrutinee zeroBranch succBranch => by
+  | _, .natSucc predecessor =>
+    Term.natSucc_HEq_congr _ _ (Term.rename_id_HEq predecessor)
+  | _, .natElim (resultType := resultType) scrutinee zeroBranch succBranch => by
     show HEq
       (Term.natElim
-        (Term.rename (TermRenaming.identity Γ) scrutinee)
-        (Term.rename (TermRenaming.identity Γ) zeroBranch)
-        (Term.rename (TermRenaming.identity Γ) succBranch))
+        (Term.rename (TermRenaming.identity context) scrutinee)
+        (Term.rename (TermRenaming.identity context) zeroBranch)
+        (Term.rename (TermRenaming.identity context) succBranch))
       (Term.natElim scrutinee zeroBranch succBranch)
     exact Term.natElim_HEq_congr
-      (Ty.rename_identity result)
+      (Ty.rename_identity resultType)
       _ _ (eq_of_heq (Term.rename_id_HEq scrutinee))
       _ _ (Term.rename_id_HEq zeroBranch)
       _ _ (Term.rename_id_HEq succBranch)
-  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+  | _, .natRec (resultType := resultType) scrutinee zeroBranch succBranch =>
     Term.natRec_HEq_congr
-      (Ty.rename_identity result)
+      (Ty.rename_identity resultType)
       _ _ (eq_of_heq (Term.rename_id_HEq scrutinee))
       _ _ (Term.rename_id_HEq zeroBranch)
       _ _ (Term.rename_id_HEq succBranch)
-  | _, .listNil (elementType := elem) =>
-    Term.listNil_HEq_congr (Ty.rename_identity elem)
-  | _, .listCons (elementType := elem) hd tl =>
+  | _, .listNil (elementType := elementType) =>
+    Term.listNil_HEq_congr (Ty.rename_identity elementType)
+  | _, .listCons (elementType := elementType) head tail =>
     Term.listCons_HEq_congr
-      (Ty.rename_identity elem)
-      _ _ (Term.rename_id_HEq hd)
-      _ _ (Term.rename_id_HEq tl)
-  | _, .listElim (elementType := elem) (resultType := result)
+      (Ty.rename_identity elementType)
+      _ _ (Term.rename_id_HEq head)
+      _ _ (Term.rename_id_HEq tail)
+  | _, .listElim (elementType := elementType) (resultType := resultType)
         scrutinee nilBranch consBranch =>
     Term.listElim_HEq_congr
-      (Ty.rename_identity elem) (Ty.rename_identity result)
+      (Ty.rename_identity elementType) (Ty.rename_identity resultType)
       _ _ (Term.rename_id_HEq scrutinee)
       _ _ (Term.rename_id_HEq nilBranch)
       _ _ (Term.rename_id_HEq consBranch)
-  | _, .optionNone (elementType := elem) =>
-    Term.optionNone_HEq_congr (Ty.rename_identity elem)
-  | _, .optionSome (elementType := elem) v =>
+  | _, .optionNone (elementType := elementType) =>
+    Term.optionNone_HEq_congr (Ty.rename_identity elementType)
+  | _, .optionSome (elementType := elementType) value =>
     Term.optionSome_HEq_congr
-      (Ty.rename_identity elem)
-      _ _ (Term.rename_id_HEq v)
-  | _, .optionMatch (elementType := elem) (resultType := result)
+      (Ty.rename_identity elementType)
+      _ _ (Term.rename_id_HEq value)
+  | _, .optionMatch (elementType := elementType) (resultType := resultType)
         scrutinee noneBranch someBranch =>
     Term.optionMatch_HEq_congr
-      (Ty.rename_identity elem) (Ty.rename_identity result)
+      (Ty.rename_identity elementType) (Ty.rename_identity resultType)
       _ _ (Term.rename_id_HEq scrutinee)
       _ _ (Term.rename_id_HEq noneBranch)
       _ _ (Term.rename_id_HEq someBranch)
-  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+  | _, .eitherInl (leftType := leftType) (rightType := rightType) value =>
     Term.eitherInl_HEq_congr
-      (Ty.rename_identity lefT) (Ty.rename_identity righT)
-      _ _ (Term.rename_id_HEq v)
-  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+      (Ty.rename_identity leftType) (Ty.rename_identity rightType)
+      _ _ (Term.rename_id_HEq value)
+  | _, .eitherInr (leftType := leftType) (rightType := rightType) value =>
     Term.eitherInr_HEq_congr
-      (Ty.rename_identity lefT) (Ty.rename_identity righT)
-      _ _ (Term.rename_id_HEq v)
-  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+      (Ty.rename_identity leftType) (Ty.rename_identity rightType)
+      _ _ (Term.rename_id_HEq value)
+  | _, .eitherMatch (leftType := leftType) (rightType := rightType)
+        (resultType := resultType)
         scrutinee leftBranch rightBranch =>
     Term.eitherMatch_HEq_congr
-      (Ty.rename_identity lefT) (Ty.rename_identity righT)
-      (Ty.rename_identity result)
+      (Ty.rename_identity leftType) (Ty.rename_identity rightType)
+      (Ty.rename_identity resultType)
       _ _ (Term.rename_id_HEq scrutinee)
       _ _ (Term.rename_id_HEq leftBranch)
       _ _ (Term.rename_id_HEq rightBranch)
@@ -210,23 +222,25 @@ theorem Term.rename_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scop
       (Ty.rename_identity carrier)
       (RawTerm.rename_identity (level := level) rawTerm)
   | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
-            (resultType := result)
+            (resultType := resultType)
             baseCase witness =>
     Term.idJ_HEq_congr
       (Ty.rename_identity carrier)
       (RawTerm.rename_identity (level := level) leftEnd)
       (RawTerm.rename_identity (level := level) rightEnd)
-      (Ty.rename_identity result)
+      (Ty.rename_identity resultType)
       _ _ (Term.rename_id_HEq baseCase)
       _ _ (Term.rename_id_HEq witness)
 
 /-- The explicit-`▸` form of `Term.rename_id`: `eq_of_heq` plus an
 outer cast strip.  Mirrors v1.25's `Term.subst_id` derivation from
 `Term.subst_id_HEq`. -/
-theorem Term.rename_id {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {T : Ty level scope} (t : Term Γ T) :
-    (Ty.rename_identity T) ▸ Term.rename (TermRenaming.identity Γ) t = t :=
-  eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.rename_id_HEq t))
+theorem Term.rename_id
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {tyValue : Ty level scope} (term : Term context tyValue) :
+    (Ty.rename_identity tyValue) ▸
+      Term.rename (TermRenaming.identity context) term = term :=
+  eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.rename_id_HEq term))
 
 
 end LeanFX.Syntax
