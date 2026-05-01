@@ -223,8 +223,9 @@ theorem Step.rename_compatible
               (Term.fst pairTerm) (Term.snd pairTerm)) :=
         eq_of_heq
           (Term.pair_HEq_congr
-            (m := mode) (level := level) (scope := targetScope) (Γ := targetCtx)
-            (h_first := rfl) (h_second := rfl)
+            (mode := mode) (level := level) (scope := targetScope)
+            (context := targetCtx)
+            (sigmaFirstEq := rfl) (sigmaSecondEq := rfl)
             (Term.fst (Term.rename termRenaming pairTerm))
             (Term.rename termRenaming (Term.fst pairTerm))
             firstProjectionEquality

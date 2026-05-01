@@ -218,8 +218,9 @@ theorem Step.subst_compatible
               (Term.fst pairTerm) (Term.snd pairTerm)) :=
         eq_of_heq
           (Term.pair_HEq_congr
-            (m := mode) (level := level) (scope := targetScope) (Γ := targetCtx)
-            (h_first := rfl) (h_second := rfl)
+            (mode := mode) (level := level) (scope := targetScope)
+            (context := targetCtx)
+            (sigmaFirstEq := rfl) (sigmaSecondEq := rfl)
             (Term.fst (Term.subst termSubstitution pairTerm))
             (Term.subst termSubstitution (Term.fst pairTerm))
             firstProjectionEquality

@@ -32,23 +32,27 @@ contexts at the same scope are propositionally equal, then the
 `Term.var` constructor at the same Fin position produces HEq
 values across them.  Proven by `cases` on the context equality —
 both sides become identical, and HEq reduces to Eq.refl. -/
-theorem heq_var_across_ctx_eq {m : Mode} {level scope : Nat}
-    {Γ Δ : Ctx m level scope} (h_ctx : Γ = Δ) (i : Fin scope) :
-    HEq (Term.var (context := Γ) i) (Term.var (context := Δ) i) := by
-  cases h_ctx
+theorem heq_var_across_ctx_eq {mode : Mode} {level scope : Nat}
+    {sourceContext targetContext : Ctx mode level scope}
+    (contextEq : sourceContext = targetContext) (position : Fin scope) :
+    HEq (Term.var (context := sourceContext) position)
+        (Term.var (context := targetContext) position) := by
+  cases contextEq
   rfl
 
 /-- **Strip an inner type-cast through `Term.weaken`.**  The
 generic helper: weakening a term commutes with a propositional
 type cast on the input.  Proven by `cases` on the equation —
-both T₁ and T₂ are local variables, so the substitution succeeds
-and the cast vanishes. -/
+both sourceTy and targetTy are local variables, so the substitution
+succeeds and the cast vanishes. -/
 theorem Term.heq_weaken_strip_cast
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    (newType : Ty level scope) {T₁ T₂ : Ty level scope} (h : T₁ = T₂)
-    (t : Term Γ T₁) :
-    HEq (Term.weaken newType (h ▸ t)) (Term.weaken newType t) := by
-  cases h
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {sourceTy targetTy : Ty level scope} (typeEq : sourceTy = targetTy)
+    (term : Term context sourceTy) :
+    HEq (Term.weaken newType (typeEq ▸ term))
+        (Term.weaken newType term) := by
+  cases typeEq
   rfl
 
 /-- **HEq across context-shape change for `Term.weaken (... ▸
@@ -60,27 +64,32 @@ context-shape and the inner cast.  Uses
 `Term.weaken X (Term.var ⟨k, _⟩) = Term.var ⟨k+1, _⟩` by `rfl`
 (through `Term.rename`'s var arm + `TermRenaming.weaken`'s
 rfl-pointwise + `Renaming.weaken = Fin.succ`). -/
-theorem heq_weaken_var_across_ctx_eq {m : Mode} {level scope : Nat}
-    {Γ Δ : Ctx m level scope} (h_ctx : Γ = Δ)
-    (newTypeΓ : Ty level scope) (newTypeΔ : Ty level scope)
-    (h_new : newTypeΓ = newTypeΔ)
-    (k : Nat) (hk : k + 1 < scope + 1) :
+theorem heq_weaken_var_across_ctx_eq {mode : Mode} {level scope : Nat}
+    {sourceContext targetContext : Ctx mode level scope}
+    (contextEq : sourceContext = targetContext)
+    (sourceNewType : Ty level scope) (targetNewType : Ty level scope)
+    (newTypeEq : sourceNewType = targetNewType)
+    (predecessor : Nat) (succBound : predecessor + 1 < scope + 1) :
     HEq
-      (Term.weaken newTypeΓ
-        ((Ty.subst_id (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)).symm ▸
-          Term.var (context := Γ) ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
-      (Term.var (context := Δ.cons newTypeΔ) ⟨k + 1, hk⟩) := by
+      (Term.weaken sourceNewType
+        ((Ty.subst_id (varType sourceContext
+            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)).symm ▸
+          Term.var (context := sourceContext)
+            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩))
+      (Term.var (context := targetContext.cons targetNewType)
+        ⟨predecessor + 1, succBound⟩) := by
   -- Reduce both sides simultaneously by `cases`-ing the context
-  -- and newType equalities — this aligns Γ = Δ and newTypeΓ =
-  -- newTypeΔ pointwise.
-  cases h_ctx
-  cases h_new
+  -- and newType equalities — this aligns sourceContext = targetContext
+  -- and sourceNewType = targetNewType pointwise.
+  cases contextEq
+  cases newTypeEq
   -- Strip the inner cast via the helper.
-  apply HEq.trans (Term.heq_weaken_strip_cast newTypeΓ
-    (Ty.subst_id (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)).symm
-    (Term.var ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
-  -- Goal: HEq (Term.weaken newTypeΓ (Term.var ⟨k, _⟩))
-  --           (Term.var (context := Γ.cons newTypeΓ) ⟨k+1, hk⟩)
+  apply HEq.trans (Term.heq_weaken_strip_cast sourceNewType
+    (Ty.subst_id (varType sourceContext
+      ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)).symm
+    (Term.var ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩))
+  -- Goal: HEq (Term.weaken sourceNewType (Term.var ⟨k, _⟩))
+  --           (Term.var (context := sourceContext.cons sourceNewType) ⟨k+1, hk⟩)
   -- Term.weaken X (Term.var ⟨k, _⟩) reduces (rfl) to
   --   Term.var (Renaming.weaken ⟨k, _⟩) = Term.var ⟨k+1, _⟩
   rfl
@@ -94,33 +103,33 @@ propositionally (via `Ty.subst_id newType` and
 because both differences manifest at the type level of the
 substituent terms. -/
 theorem TermSubst.lift_identity_pointwise
-    {m : Mode} {level scope : Nat}
-    (Γ : Ctx m level scope) (newType : Ty level scope) :
-    ∀ (i : Fin (scope + 1)),
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope) (newType : Ty level scope) :
+    ∀ (position : Fin (scope + 1)),
       HEq
-        (TermSubst.lift (TermSubst.identity Γ) newType i)
-        (TermSubst.identity (Γ.cons newType) i) := by
-  intro i
+        (TermSubst.lift (TermSubst.identity context) newType position)
+        (TermSubst.identity (context.cons newType) position) := by
+  intro position
   -- The bridging Ty-level fact, used in both Fin cases.
-  have h_subst_id : newType.subst Subst.identity = newType :=
+  have substIdEq : newType.subst Subst.identity = newType :=
     Ty.subst_id newType
   -- Lift to context-level equality.
-  have h_ctx :
-      Γ.cons (newType.subst Subst.identity) = Γ.cons newType := by
-    rw [h_subst_id]
-  match i with
-  | ⟨0, h0⟩ =>
+  have contextEq :
+      context.cons (newType.subst Subst.identity) = context.cons newType := by
+    rw [substIdEq]
+  match position with
+  | ⟨0, zeroBound⟩ =>
     -- LHS = (Ty.subst_weaken_commute newType Subst.identity).symm ▸
-    --        Term.var (context := Γ.cons (newType.subst Subst.identity)) ⟨0, h0⟩
+    --        Term.var (context := Γ.cons (newType.subst Subst.identity)) ⟨0, _⟩
     -- RHS = (Ty.subst_id newType.weaken).symm ▸
-    --        Term.var (context := Γ.cons newType) ⟨0, h0⟩
+    --        Term.var (context := Γ.cons newType) ⟨0, _⟩
     --
     -- Strip both outer casts via eqRec_heq, then bridge the two
-    -- naked Term.var values via heq_var_across_ctx_eq + h_ctx.
+    -- naked Term.var values via heq_var_across_ctx_eq + contextEq.
     apply HEq.trans (eqRec_heq _ _)
-    apply HEq.trans (heq_var_across_ctx_eq h_ctx ⟨0, h0⟩)
+    apply HEq.trans (heq_var_across_ctx_eq contextEq ⟨0, zeroBound⟩)
     exact (eqRec_heq _ _).symm
-  | ⟨k + 1, hk⟩ =>
+  | ⟨predecessor + 1, succBound⟩ =>
     -- LHS = (Ty.subst_weaken_commute (varType Γ ⟨k,_⟩) Subst.identity).symm ▸
     --        Term.weaken (newType.subst Subst.identity)
     --          (TermSubst.identity Γ ⟨k, _⟩)
@@ -135,9 +144,9 @@ theorem TermSubst.lift_identity_pointwise
     -- equality (Γ = Γ) plus the newType equality.
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
-      (heq_weaken_var_across_ctx_eq (rfl : Γ = Γ)
+      (heq_weaken_var_across_ctx_eq (rfl : context = context)
         (newType.subst Subst.identity) newType
-        h_subst_id k hk)
+        substIdEq predecessor succBound)
     exact (eqRec_heq _ _).symm
 
 /-! ## HEq congruence helpers per `Term` constructor.
@@ -150,78 +159,105 @@ descends through `Term.subst` / `Term.rename` and needs to bridge
 
 /-- HEq congruence for `Term.app`. -/
 theorem Term.app_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {T₁_a T₁_b T₂_a T₂_b : Ty level scope}
-    (h_T₁ : T₁_a = T₁_b) (h_T₂ : T₂_a = T₂_b)
-    (f₁ : Term Γ (T₁_a.arrow T₂_a)) (f₂ : Term Γ (T₁_b.arrow T₂_b))
-    (h_f : HEq f₁ f₂)
-    (a₁ : Term Γ T₁_a) (a₂ : Term Γ T₁_b) (h_a : HEq a₁ a₂) :
-    HEq (Term.app f₁ a₁) (Term.app f₂ a₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstArgType firstResultType
+     secondArgType secondResultType : Ty level scope}
+    (argTypeEq : firstArgType = secondArgType)
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstFunction : Term context (firstArgType.arrow firstResultType))
+    (secondFunction : Term context (secondArgType.arrow secondResultType))
+    (functionHEq : HEq firstFunction secondFunction)
+    (firstArgument : Term context firstArgType)
+    (secondArgument : Term context secondArgType)
+    (argumentHEq : HEq firstArgument secondArgument) :
+    HEq (Term.app firstFunction firstArgument)
+        (Term.app secondFunction secondArgument) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.lam`. -/
 theorem Term.lam_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {dom₁ dom₂ : Ty level scope} (h_dom : dom₁ = dom₂)
-    {cod₁ cod₂ : Ty level scope} (h_cod : cod₁ = cod₂)
-    (body₁ : Term (Γ.cons dom₁) cod₁.weaken)
-    (body₂ : Term (Γ.cons dom₂) cod₂.weaken)
-    (h_body : HEq body₁ body₂) :
-    HEq (Term.lam body₁) (Term.lam body₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstDomain secondDomain : Ty level scope}
+    (domainEq : firstDomain = secondDomain)
+    {firstCodomain secondCodomain : Ty level scope}
+    (codomainEq : firstCodomain = secondCodomain)
+    (firstBody : Term (context.cons firstDomain) firstCodomain.weaken)
+    (secondBody : Term (context.cons secondDomain) secondCodomain.weaken)
+    (bodyHEq : HEq firstBody secondBody) :
+    HEq (Term.lam firstBody) (Term.lam secondBody) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.lamPi`. -/
 theorem Term.lamPi_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {dom₁ dom₂ : Ty level scope} (h_dom : dom₁ = dom₂)
-    {cod₁ cod₂ : Ty level (scope + 1)} (h_cod : cod₁ = cod₂)
-    (body₁ : Term (Γ.cons dom₁) cod₁)
-    (body₂ : Term (Γ.cons dom₂) cod₂)
-    (h_body : HEq body₁ body₂) :
-    HEq (Term.lamPi body₁) (Term.lamPi body₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstDomain secondDomain : Ty level scope}
+    (domainEq : firstDomain = secondDomain)
+    {firstCodomain secondCodomain : Ty level (scope + 1)}
+    (codomainEq : firstCodomain = secondCodomain)
+    (firstBody : Term (context.cons firstDomain) firstCodomain)
+    (secondBody : Term (context.cons secondDomain) secondCodomain)
+    (bodyHEq : HEq firstBody secondBody) :
+    HEq (Term.lamPi firstBody) (Term.lamPi secondBody) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.appPi`. -/
 theorem Term.appPi_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {dom₁ dom₂ : Ty level scope} (h_dom : dom₁ = dom₂)
-    {cod₁ cod₂ : Ty level (scope + 1)} (h_cod : cod₁ = cod₂)
-    (f₁ : Term Γ (Ty.piTy dom₁ cod₁))
-    (f₂ : Term Γ (Ty.piTy dom₂ cod₂))
-    (h_f : HEq f₁ f₂)
-    (a₁ : Term Γ dom₁) (a₂ : Term Γ dom₂) (h_a : HEq a₁ a₂) :
-    HEq (Term.appPi f₁ a₁) (Term.appPi f₂ a₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstDomain secondDomain : Ty level scope}
+    (domainEq : firstDomain = secondDomain)
+    {firstCodomain secondCodomain : Ty level (scope + 1)}
+    (codomainEq : firstCodomain = secondCodomain)
+    (firstFunction : Term context (Ty.piTy firstDomain firstCodomain))
+    (secondFunction : Term context (Ty.piTy secondDomain secondCodomain))
+    (functionHEq : HEq firstFunction secondFunction)
+    (firstArgument : Term context firstDomain)
+    (secondArgument : Term context secondDomain)
+    (argumentHEq : HEq firstArgument secondArgument) :
+    HEq (Term.appPi firstFunction firstArgument)
+        (Term.appPi secondFunction secondArgument) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.pair`. -/
 theorem Term.pair_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {first₁ first₂ : Ty level scope} (h_first : first₁ = first₂)
-    {second₁ second₂ : Ty level (scope + 1)} (h_second : second₁ = second₂)
-    (v₁ : Term Γ first₁) (v₂ : Term Γ first₂) (h_v : HEq v₁ v₂)
-    (w₁ : Term Γ (second₁.subst0 first₁))
-    (w₂ : Term Γ (second₂.subst0 first₂)) (h_w : HEq w₁ w₂) :
-    HEq (Term.pair v₁ w₁) (Term.pair v₂ w₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstSigmaFirst secondSigmaFirst : Ty level scope}
+    (sigmaFirstEq : firstSigmaFirst = secondSigmaFirst)
+    {firstSigmaSecond secondSigmaSecond : Ty level (scope + 1)}
+    (sigmaSecondEq : firstSigmaSecond = secondSigmaSecond)
+    (firstFirstVal : Term context firstSigmaFirst)
+    (secondFirstVal : Term context secondSigmaFirst)
+    (firstValHEq : HEq firstFirstVal secondFirstVal)
+    (firstSecondVal : Term context (firstSigmaSecond.subst0 firstSigmaFirst))
+    (secondSecondVal : Term context (secondSigmaSecond.subst0 secondSigmaFirst))
+    (secondValHEq : HEq firstSecondVal secondSecondVal) :
+    HEq (Term.pair firstFirstVal firstSecondVal)
+        (Term.pair secondFirstVal secondSecondVal) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.fst`. -/
 theorem Term.fst_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {first₁ first₂ : Ty level scope} (h_first : first₁ = first₂)
-    {second₁ second₂ : Ty level (scope + 1)} (h_second : second₁ = second₂)
-    (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
-    (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
-    HEq (Term.fst p₁) (Term.fst p₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstSigmaFirst secondSigmaFirst : Ty level scope}
+    (sigmaFirstEq : firstSigmaFirst = secondSigmaFirst)
+    {firstSigmaSecond secondSigmaSecond : Ty level (scope + 1)}
+    (sigmaSecondEq : firstSigmaSecond = secondSigmaSecond)
+    (firstPair : Term context (Ty.sigmaTy firstSigmaFirst firstSigmaSecond))
+    (secondPair : Term context (Ty.sigmaTy secondSigmaFirst secondSigmaSecond))
+    (pairHEq : HEq firstPair secondPair) :
+    HEq (Term.fst firstPair) (Term.fst secondPair) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.snd`. -/
 theorem Term.snd_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {first₁ first₂ : Ty level scope} (h_first : first₁ = first₂)
-    {second₁ second₂ : Ty level (scope + 1)} (h_second : second₁ = second₂)
-    (p₁ : Term Γ (Ty.sigmaTy first₁ second₁))
-    (p₂ : Term Γ (Ty.sigmaTy first₂ second₂)) (h_p : HEq p₁ p₂) :
-    HEq (Term.snd p₁) (Term.snd p₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstSigmaFirst secondSigmaFirst : Ty level scope}
+    (sigmaFirstEq : firstSigmaFirst = secondSigmaFirst)
+    {firstSigmaSecond secondSigmaSecond : Ty level (scope + 1)}
+    (sigmaSecondEq : firstSigmaSecond = secondSigmaSecond)
+    (firstPair : Term context (Ty.sigmaTy firstSigmaFirst firstSigmaSecond))
+    (secondPair : Term context (Ty.sigmaTy secondSigmaFirst secondSigmaSecond))
+    (pairHEq : HEq firstPair secondPair) :
+    HEq (Term.snd firstPair) (Term.snd secondPair) := by
   term_heq_congr
 
 /-- **General HEq congruence for `Term.weaken`.**  Stronger than
@@ -230,19 +266,22 @@ this allows the newType parameter AND the input term to differ
 across the HEq.  Three `cases` discharge the three propositional
 equalities; once unified, `rfl`. -/
 theorem Term.weaken_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {newType₁ newType₂ : Ty level scope} (h_new : newType₁ = newType₂)
-    {T₁ T₂ : Ty level scope} (h_T : T₁ = T₂)
-    (t₁ : Term Γ T₁) (t₂ : Term Γ T₂) (h_t : HEq t₁ t₂) :
-    HEq (Term.weaken newType₁ t₁) (Term.weaken newType₂ t₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstNewType secondNewType : Ty level scope}
+    (newTypeEq : firstNewType = secondNewType)
+    {firstTy secondTy : Ty level scope} (typeEq : firstTy = secondTy)
+    (firstTerm : Term context firstTy) (secondTerm : Term context secondTy)
+    (termHEq : HEq firstTerm secondTerm) :
+    HEq (Term.weaken firstNewType firstTerm)
+        (Term.weaken secondNewType secondTerm) := by
   term_heq_congr
 
 /-- Apply the same type cast to both sides of a same-source HEq. -/
 theorem Term.castSame_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {sourceType targetType : Ty level scope}
     (typeEquality : sourceType = targetType)
-    {firstTerm secondTerm : Term Γ sourceType}
+    {firstTerm secondTerm : Term context sourceType}
     (termEquality : HEq firstTerm secondTerm) :
     HEq (typeEquality ▸ firstTerm) (typeEquality ▸ secondTerm) := by
   cases typeEquality
@@ -250,22 +289,29 @@ theorem Term.castSame_HEq_congr
 
 /-- Relate a term to the same term cast along a type equality. -/
 theorem Term.castRight_HEq
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {sourceType targetType : Ty level scope}
     (typeEquality : sourceType = targetType)
-    (sourceTerm : Term Γ sourceType) :
+    (sourceTerm : Term context sourceType) :
     HEq sourceTerm (typeEquality ▸ sourceTerm) := by
   cases typeEquality
   rfl
 
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (s₁ s₂ : Term Γ Ty.bool) (h_s : s₁ = s₂)
-    (t₁ : Term Γ result₁) (t₂ : Term Γ result₂) (h_t : HEq t₁ t₂)
-    (e₁ : Term Γ result₁) (e₂ : Term Γ result₂) (h_e : HEq e₁ e₂) :
-    HEq (Term.boolElim s₁ t₁ e₁) (Term.boolElim s₂ t₂ e₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstScrutinee secondScrutinee : Term context Ty.bool)
+    (scrutineeEq : firstScrutinee = secondScrutinee)
+    (firstThenBranch : Term context firstResultType)
+    (secondThenBranch : Term context secondResultType)
+    (thenBranchHEq : HEq firstThenBranch secondThenBranch)
+    (firstElseBranch : Term context firstResultType)
+    (secondElseBranch : Term context secondResultType)
+    (elseBranchHEq : HEq firstElseBranch secondElseBranch) :
+    HEq (Term.boolElim firstScrutinee firstThenBranch firstElseBranch)
+        (Term.boolElim secondScrutinee secondThenBranch secondElseBranch) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.natSucc`.  natSucc has no type-level
@@ -273,138 +319,190 @@ indices that vary, so this collapses to plain equality of the
 predecessor-term — we accept HEq for symmetry with the other
 constructor congruences. -/
 theorem Term.natSucc_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    (p₁ p₂ : Term Γ Ty.nat) (h_p : HEq p₁ p₂) :
-    HEq (Term.natSucc p₁) (Term.natSucc p₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (firstPredecessor secondPredecessor : Term context Ty.nat)
+    (predecessorHEq : HEq firstPredecessor secondPredecessor) :
+    HEq (Term.natSucc firstPredecessor) (Term.natSucc secondPredecessor) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.natElim`. -/
 theorem Term.natElim_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (s₁ s₂ : Term Γ Ty.nat) (h_s : s₁ = s₂)
-    (z₁ : Term Γ result₁) (z₂ : Term Γ result₂) (h_z : HEq z₁ z₂)
-    (f₁ : Term Γ (Ty.arrow Ty.nat result₁))
-    (f₂ : Term Γ (Ty.arrow Ty.nat result₂))
-    (h_f : HEq f₁ f₂) :
-    HEq (Term.natElim s₁ z₁ f₁) (Term.natElim s₂ z₂ f₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstScrutinee secondScrutinee : Term context Ty.nat)
+    (scrutineeEq : firstScrutinee = secondScrutinee)
+    (firstZeroBranch : Term context firstResultType)
+    (secondZeroBranch : Term context secondResultType)
+    (zeroBranchHEq : HEq firstZeroBranch secondZeroBranch)
+    (firstSuccBranch : Term context (Ty.arrow Ty.nat firstResultType))
+    (secondSuccBranch : Term context (Ty.arrow Ty.nat secondResultType))
+    (succBranchHEq : HEq firstSuccBranch secondSuccBranch) :
+    HEq (Term.natElim firstScrutinee firstZeroBranch firstSuccBranch)
+        (Term.natElim secondScrutinee secondZeroBranch secondSuccBranch) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.natRec`.  Same shape as `natElim_HEq_congr`
 but with succBranch typed `Ty.arrow Ty.nat (Ty.arrow result result)` —
 the predecessor + IH curried form for primitive recursion. -/
 theorem Term.natRec_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (s₁ s₂ : Term Γ Ty.nat) (h_s : s₁ = s₂)
-    (z₁ : Term Γ result₁) (z₂ : Term Γ result₂) (h_z : HEq z₁ z₂)
-    (f₁ : Term Γ (Ty.arrow Ty.nat (Ty.arrow result₁ result₁)))
-    (f₂ : Term Γ (Ty.arrow Ty.nat (Ty.arrow result₂ result₂)))
-    (h_f : HEq f₁ f₂) :
-    HEq (Term.natRec s₁ z₁ f₁) (Term.natRec s₂ z₂ f₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstScrutinee secondScrutinee : Term context Ty.nat)
+    (scrutineeEq : firstScrutinee = secondScrutinee)
+    (firstZeroBranch : Term context firstResultType)
+    (secondZeroBranch : Term context secondResultType)
+    (zeroBranchHEq : HEq firstZeroBranch secondZeroBranch)
+    (firstSuccBranch : Term context
+      (Ty.arrow Ty.nat (Ty.arrow firstResultType firstResultType)))
+    (secondSuccBranch : Term context
+      (Ty.arrow Ty.nat (Ty.arrow secondResultType secondResultType)))
+    (succBranchHEq : HEq firstSuccBranch secondSuccBranch) :
+    HEq (Term.natRec firstScrutinee firstZeroBranch firstSuccBranch)
+        (Term.natRec secondScrutinee secondZeroBranch secondSuccBranch) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.listNil`.  Only the elementType varies
 between sides; no value arguments. -/
 theorem Term.listNil_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂) :
-    HEq (Term.listNil (context := Γ) (elementType := elem₁))
-        (Term.listNil (context := Γ) (elementType := elem₂)) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstElemType secondElemType : Ty level scope}
+    (elemTypeEq : firstElemType = secondElemType) :
+    HEq (Term.listNil (context := context) (elementType := firstElemType))
+        (Term.listNil (context := context) (elementType := secondElemType)) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.listCons`. -/
 theorem Term.listCons_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
-    (h₁ : Term Γ elem₁) (h₂ : Term Γ elem₂) (h_h : HEq h₁ h₂)
-    (t₁ : Term Γ (Ty.list elem₁)) (t₂ : Term Γ (Ty.list elem₂))
-    (h_t : HEq t₁ t₂) :
-    HEq (Term.listCons h₁ t₁) (Term.listCons h₂ t₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstElemType secondElemType : Ty level scope}
+    (elemTypeEq : firstElemType = secondElemType)
+    (firstHead : Term context firstElemType)
+    (secondHead : Term context secondElemType)
+    (headHEq : HEq firstHead secondHead)
+    (firstTail : Term context (Ty.list firstElemType))
+    (secondTail : Term context (Ty.list secondElemType))
+    (tailHEq : HEq firstTail secondTail) :
+    HEq (Term.listCons firstHead firstTail)
+        (Term.listCons secondHead secondTail) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.listElim`.  Both `elementType` and
 `resultType` may vary; the consBranch type
 `elem → list elem → result` mentions `elementType` twice. -/
 theorem Term.listElim_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (s₁ : Term Γ (Ty.list elem₁)) (s₂ : Term Γ (Ty.list elem₂))
-    (h_s : HEq s₁ s₂)
-    (n₁ : Term Γ result₁) (n₂ : Term Γ result₂) (h_n : HEq n₁ n₂)
-    (c₁ : Term Γ (Ty.arrow elem₁ (Ty.arrow (Ty.list elem₁) result₁)))
-    (c₂ : Term Γ (Ty.arrow elem₂ (Ty.arrow (Ty.list elem₂) result₂)))
-    (h_c : HEq c₁ c₂) :
-    HEq (Term.listElim s₁ n₁ c₁) (Term.listElim s₂ n₂ c₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstElemType secondElemType : Ty level scope}
+    (elemTypeEq : firstElemType = secondElemType)
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstScrutinee : Term context (Ty.list firstElemType))
+    (secondScrutinee : Term context (Ty.list secondElemType))
+    (scrutineeHEq : HEq firstScrutinee secondScrutinee)
+    (firstNilBranch : Term context firstResultType)
+    (secondNilBranch : Term context secondResultType)
+    (nilBranchHEq : HEq firstNilBranch secondNilBranch)
+    (firstConsBranch : Term context
+      (Ty.arrow firstElemType (Ty.arrow (Ty.list firstElemType) firstResultType)))
+    (secondConsBranch : Term context
+      (Ty.arrow secondElemType (Ty.arrow (Ty.list secondElemType) secondResultType)))
+    (consBranchHEq : HEq firstConsBranch secondConsBranch) :
+    HEq (Term.listElim firstScrutinee firstNilBranch firstConsBranch)
+        (Term.listElim secondScrutinee secondNilBranch secondConsBranch) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.optionNone` — only elementType varies. -/
 theorem Term.optionNone_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂) :
-    HEq (Term.optionNone (context := Γ) (elementType := elem₁))
-        (Term.optionNone (context := Γ) (elementType := elem₂)) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstElemType secondElemType : Ty level scope}
+    (elemTypeEq : firstElemType = secondElemType) :
+    HEq (Term.optionNone (context := context) (elementType := firstElemType))
+        (Term.optionNone (context := context) (elementType := secondElemType)) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.optionSome`. -/
 theorem Term.optionSome_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
-    (v₁ : Term Γ elem₁) (v₂ : Term Γ elem₂) (h_v : HEq v₁ v₂) :
-    HEq (Term.optionSome v₁) (Term.optionSome v₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstElemType secondElemType : Ty level scope}
+    (elemTypeEq : firstElemType = secondElemType)
+    (firstValue : Term context firstElemType)
+    (secondValue : Term context secondElemType)
+    (valueHEq : HEq firstValue secondValue) :
+    HEq (Term.optionSome firstValue) (Term.optionSome secondValue) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.optionMatch`. -/
 theorem Term.optionMatch_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {elem₁ elem₂ : Ty level scope} (h_elem : elem₁ = elem₂)
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (s₁ : Term Γ (Ty.option elem₁)) (s₂ : Term Γ (Ty.option elem₂))
-    (h_s : HEq s₁ s₂)
-    (n₁ : Term Γ result₁) (n₂ : Term Γ result₂) (h_n : HEq n₁ n₂)
-    (sm₁ : Term Γ (Ty.arrow elem₁ result₁))
-    (sm₂ : Term Γ (Ty.arrow elem₂ result₂))
-    (h_sm : HEq sm₁ sm₂) :
-    HEq (Term.optionMatch s₁ n₁ sm₁) (Term.optionMatch s₂ n₂ sm₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstElemType secondElemType : Ty level scope}
+    (elemTypeEq : firstElemType = secondElemType)
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstScrutinee : Term context (Ty.option firstElemType))
+    (secondScrutinee : Term context (Ty.option secondElemType))
+    (scrutineeHEq : HEq firstScrutinee secondScrutinee)
+    (firstNoneBranch : Term context firstResultType)
+    (secondNoneBranch : Term context secondResultType)
+    (noneBranchHEq : HEq firstNoneBranch secondNoneBranch)
+    (firstSomeBranch : Term context (Ty.arrow firstElemType firstResultType))
+    (secondSomeBranch : Term context (Ty.arrow secondElemType secondResultType))
+    (someBranchHEq : HEq firstSomeBranch secondSomeBranch) :
+    HEq (Term.optionMatch firstScrutinee firstNoneBranch firstSomeBranch)
+        (Term.optionMatch secondScrutinee secondNoneBranch secondSomeBranch) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.eitherInl`.  Both `leftType` and
 `rightType` may vary; only the `leftType` value is supplied. -/
 theorem Term.eitherInl_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {left₁ left₂ : Ty level scope} (h_left : left₁ = left₂)
-    {right₁ right₂ : Ty level scope} (h_right : right₁ = right₂)
-    (v₁ : Term Γ left₁) (v₂ : Term Γ left₂) (h_v : HEq v₁ v₂) :
-    HEq (Term.eitherInl (rightType := right₁) v₁)
-        (Term.eitherInl (rightType := right₂) v₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstLeftType secondLeftType : Ty level scope}
+    (leftTypeEq : firstLeftType = secondLeftType)
+    {firstRightType secondRightType : Ty level scope}
+    (rightTypeEq : firstRightType = secondRightType)
+    (firstValue : Term context firstLeftType)
+    (secondValue : Term context secondLeftType)
+    (valueHEq : HEq firstValue secondValue) :
+    HEq (Term.eitherInl (rightType := firstRightType) firstValue)
+        (Term.eitherInl (rightType := secondRightType) secondValue) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.eitherInr`.  Symmetric to `eitherInl_HEq_congr`. -/
 theorem Term.eitherInr_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {left₁ left₂ : Ty level scope} (h_left : left₁ = left₂)
-    {right₁ right₂ : Ty level scope} (h_right : right₁ = right₂)
-    (v₁ : Term Γ right₁) (v₂ : Term Γ right₂) (h_v : HEq v₁ v₂) :
-    HEq (Term.eitherInr (leftType := left₁) v₁)
-        (Term.eitherInr (leftType := left₂) v₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstLeftType secondLeftType : Ty level scope}
+    (leftTypeEq : firstLeftType = secondLeftType)
+    {firstRightType secondRightType : Ty level scope}
+    (rightTypeEq : firstRightType = secondRightType)
+    (firstValue : Term context firstRightType)
+    (secondValue : Term context secondRightType)
+    (valueHEq : HEq firstValue secondValue) :
+    HEq (Term.eitherInr (leftType := firstLeftType) firstValue)
+        (Term.eitherInr (leftType := secondLeftType) secondValue) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.eitherMatch`.  Three Ty-index equalities
 (left, right, result) and three sub-term HEqs (scrutinee, leftBranch,
 rightBranch). -/
 theorem Term.eitherMatch_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {left₁ left₂ : Ty level scope} (h_left : left₁ = left₂)
-    {right₁ right₂ : Ty level scope} (h_right : right₁ = right₂)
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (s₁ : Term Γ (Ty.either left₁ right₁))
-    (s₂ : Term Γ (Ty.either left₂ right₂)) (h_s : HEq s₁ s₂)
-    (lb₁ : Term Γ (Ty.arrow left₁ result₁))
-    (lb₂ : Term Γ (Ty.arrow left₂ result₂)) (h_lb : HEq lb₁ lb₂)
-    (rb₁ : Term Γ (Ty.arrow right₁ result₁))
-    (rb₂ : Term Γ (Ty.arrow right₂ result₂)) (h_rb : HEq rb₁ rb₂) :
-    HEq (Term.eitherMatch s₁ lb₁ rb₁) (Term.eitherMatch s₂ lb₂ rb₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstLeftType secondLeftType : Ty level scope}
+    (leftTypeEq : firstLeftType = secondLeftType)
+    {firstRightType secondRightType : Ty level scope}
+    (rightTypeEq : firstRightType = secondRightType)
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstScrutinee : Term context (Ty.either firstLeftType firstRightType))
+    (secondScrutinee : Term context (Ty.either secondLeftType secondRightType))
+    (scrutineeHEq : HEq firstScrutinee secondScrutinee)
+    (firstLeftBranch : Term context (Ty.arrow firstLeftType firstResultType))
+    (secondLeftBranch : Term context (Ty.arrow secondLeftType secondResultType))
+    (leftBranchHEq : HEq firstLeftBranch secondLeftBranch)
+    (firstRightBranch : Term context (Ty.arrow firstRightType firstResultType))
+    (secondRightBranch : Term context (Ty.arrow secondRightType secondResultType))
+    (rightBranchHEq : HEq firstRightBranch secondRightBranch) :
+    HEq (Term.eitherMatch firstScrutinee firstLeftBranch firstRightBranch)
+        (Term.eitherMatch secondScrutinee secondLeftBranch secondRightBranch) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.refl`.  Only the `carrier` Ty varies
@@ -413,13 +511,15 @@ verbatim, so it does not need an HEq parameter.  Two
 propositionally-distinct carriers produce `Term`s at
 propositionally-distinct types `Ty.id carrier₁ rawTerm rawTerm` vs
 `Ty.id carrier₂ rawTerm rawTerm`; HEq collapses them via `cases
-h_carrier`. -/
+carrierEq`. -/
 theorem Term.refl_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {carrier₁ carrier₂ : Ty level scope} (h_carrier : carrier₁ = carrier₂)
-    {rawTerm₁ rawTerm₂ : RawTerm scope} (h_rawTerm : rawTerm₁ = rawTerm₂) :
-    HEq (Term.refl (context := Γ) (carrier := carrier₁) rawTerm₁)
-        (Term.refl (context := Γ) (carrier := carrier₂) rawTerm₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstCarrier secondCarrier : Ty level scope}
+    (carrierEq : firstCarrier = secondCarrier)
+    {firstRawTerm secondRawTerm : RawTerm scope}
+    (rawTermEq : firstRawTerm = secondRawTerm) :
+    HEq (Term.refl (context := context) (carrier := firstCarrier) firstRawTerm)
+        (Term.refl (context := context) (carrier := secondCarrier) secondRawTerm) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.idJ`.  Four Ty-level equations (carrier,
@@ -428,16 +528,23 @@ leftEnd, rightEnd, resultType) and two HEq sub-term arguments
 `leftEnd`, `rightEnd`, so its HEq must travel via `cases` on those
 three equations before HEq collapses to plain equality. -/
 theorem Term.idJ_HEq_congr
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {carrier₁ carrier₂ : Ty level scope} (h_carrier : carrier₁ = carrier₂)
-    {leftEnd₁ leftEnd₂ : RawTerm scope} (h_leftEnd : leftEnd₁ = leftEnd₂)
-    {rightEnd₁ rightEnd₂ : RawTerm scope} (h_rightEnd : rightEnd₁ = rightEnd₂)
-    {result₁ result₂ : Ty level scope} (h_result : result₁ = result₂)
-    (base₁ : Term Γ result₁) (base₂ : Term Γ result₂) (h_base : HEq base₁ base₂)
-    (witness₁ : Term Γ (Ty.id carrier₁ leftEnd₁ rightEnd₁))
-    (witness₂ : Term Γ (Ty.id carrier₂ leftEnd₂ rightEnd₂))
-    (h_witness : HEq witness₁ witness₂) :
-    HEq (Term.idJ base₁ witness₁) (Term.idJ base₂ witness₂) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstCarrier secondCarrier : Ty level scope}
+    (carrierEq : firstCarrier = secondCarrier)
+    {firstLeftEnd secondLeftEnd : RawTerm scope}
+    (leftEndEq : firstLeftEnd = secondLeftEnd)
+    {firstRightEnd secondRightEnd : RawTerm scope}
+    (rightEndEq : firstRightEnd = secondRightEnd)
+    {firstResultType secondResultType : Ty level scope}
+    (resultTypeEq : firstResultType = secondResultType)
+    (firstBaseCase : Term context firstResultType)
+    (secondBaseCase : Term context secondResultType)
+    (baseCaseHEq : HEq firstBaseCase secondBaseCase)
+    (firstWitness : Term context (Ty.id firstCarrier firstLeftEnd firstRightEnd))
+    (secondWitness : Term context (Ty.id secondCarrier secondLeftEnd secondRightEnd))
+    (witnessHEq : HEq firstWitness secondWitness) :
+    HEq (Term.idJ firstBaseCase firstWitness)
+        (Term.idJ secondBaseCase secondWitness) := by
   term_heq_congr
 
 /-! ## `Term.subst_id_HEq` leaf cases.
@@ -448,31 +555,33 @@ have substitution-independent types so reduce to `HEq.refl`. -/
 
 /-- Leaf HEq case of `Term.subst_id` for `var`. -/
 theorem Term.subst_id_HEq_var
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} (i : Fin scope) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.var i))
-        (Term.var (context := Γ) i) := by
-  show HEq ((Ty.subst_id (varType Γ i)).symm ▸ Term.var i) (Term.var i)
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (position : Fin scope) :
+    HEq (Term.subst (TermSubst.identity context) (Term.var position))
+        (Term.var (context := context) position) := by
+  show HEq ((Ty.subst_id (varType context position)).symm ▸ Term.var position)
+           (Term.var position)
   exact eqRec_heq _ _
 
 /-- Leaf HEq case of `Term.subst_id` for `unit`. -/
 theorem Term.subst_id_HEq_unit
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.unit (context := Γ)))
-        (Term.unit (context := Γ)) :=
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    HEq (Term.subst (TermSubst.identity context) (Term.unit (context := context)))
+        (Term.unit (context := context)) :=
   HEq.refl _
 
 /-- Leaf HEq case of `Term.subst_id` for `boolTrue`. -/
 theorem Term.subst_id_HEq_boolTrue
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.boolTrue (context := Γ)))
-        (Term.boolTrue (context := Γ)) :=
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    HEq (Term.subst (TermSubst.identity context) (Term.boolTrue (context := context)))
+        (Term.boolTrue (context := context)) :=
   HEq.refl _
 
 /-- Leaf HEq case of `Term.subst_id` for `boolFalse`. -/
 theorem Term.subst_id_HEq_boolFalse
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.boolFalse (context := Γ)))
-        (Term.boolFalse (context := Γ)) :=
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    HEq (Term.subst (TermSubst.identity context) (Term.boolFalse (context := context)))
+        (Term.boolFalse (context := context)) :=
   HEq.refl _
 
 /-! ## `Term.subst_id_HEq` closed-context cases.
@@ -485,113 +594,132 @@ The cast-bearing cases (`appPi`, `pair`, `snd`) strip the outer
 
 /-- Recursive HEq case of `Term.subst_id` for `app`. -/
 theorem Term.subst_id_HEq_app
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {T₁ T₂ : Ty level scope}
-    (f : Term Γ (T₁.arrow T₂)) (a : Term Γ T₁)
-    (ih_f : HEq (Term.subst (TermSubst.identity Γ) f) f)
-    (ih_a : HEq (Term.subst (TermSubst.identity Γ) a) a) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.app f a))
-        (Term.app (context := Γ) f a) := by
-  show HEq (Term.app (Term.subst (TermSubst.identity Γ) f)
-                     (Term.subst (TermSubst.identity Γ) a))
-           (Term.app f a)
-  exact Term.app_HEq_congr (Ty.subst_id T₁) (Ty.subst_id T₂)
-    _ _ ih_f _ _ ih_a
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {argType resultType : Ty level scope}
+    (functionTerm : Term context (argType.arrow resultType))
+    (argumentTerm : Term context argType)
+    (functionRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) functionTerm) functionTerm)
+    (argumentRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) argumentTerm) argumentTerm) :
+    HEq (Term.subst (TermSubst.identity context) (Term.app functionTerm argumentTerm))
+        (Term.app (context := context) functionTerm argumentTerm) := by
+  show HEq (Term.app (Term.subst (TermSubst.identity context) functionTerm)
+                     (Term.subst (TermSubst.identity context) argumentTerm))
+           (Term.app functionTerm argumentTerm)
+  exact Term.app_HEq_congr (Ty.subst_id argType) (Ty.subst_id resultType)
+    _ _ functionRecursiveHEq _ _ argumentRecursiveHEq
 
 /-- Recursive HEq case of `Term.subst_id` for `fst`. -/
 theorem Term.subst_id_HEq_fst
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {first : Ty level scope} {second : Ty level (scope + 1)}
-    (p : Term Γ (Ty.sigmaTy first second))
-    (ih_p : HEq (Term.subst (TermSubst.identity Γ) p) p) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.fst p))
-        (Term.fst (context := Γ) p) := by
-  show HEq (Term.fst (Term.subst (TermSubst.identity Γ) p))
-           (Term.fst p)
-  apply Term.fst_HEq_congr (Ty.subst_id first)
-    ((Ty.subst_congr Subst.lift_identity_equiv second).trans
-     (Ty.subst_id second))
-  exact ih_p
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sigmaFirst : Ty level scope} {sigmaSecond : Ty level (scope + 1)}
+    (pairTerm : Term context (Ty.sigmaTy sigmaFirst sigmaSecond))
+    (pairRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) pairTerm) pairTerm) :
+    HEq (Term.subst (TermSubst.identity context) (Term.fst pairTerm))
+        (Term.fst (context := context) pairTerm) := by
+  show HEq (Term.fst (Term.subst (TermSubst.identity context) pairTerm))
+           (Term.fst pairTerm)
+  apply Term.fst_HEq_congr (Ty.subst_id sigmaFirst)
+    ((Ty.subst_congr Subst.lift_identity_equiv sigmaSecond).trans
+     (Ty.subst_id sigmaSecond))
+  exact pairRecursiveHEq
 
 /-- Recursive HEq case of `Term.subst_id` for `boolElim`. -/
 theorem Term.subst_id_HEq_boolElim
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} {result : Ty level scope}
-    (s : Term Γ Ty.bool) (t : Term Γ result) (e : Term Γ result)
-    (ih_s : HEq (Term.subst (TermSubst.identity Γ) s) s)
-    (ih_t : HEq (Term.subst (TermSubst.identity Γ) t) t)
-    (ih_e : HEq (Term.subst (TermSubst.identity Γ) e) e) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.boolElim s t e))
-        (Term.boolElim (context := Γ) s t e) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {resultType : Ty level scope}
+    (scrutinee : Term context Ty.bool)
+    (thenBranch : Term context resultType)
+    (elseBranch : Term context resultType)
+    (scrutineeRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee) scrutinee)
+    (thenBranchRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) thenBranch) thenBranch)
+    (elseBranchRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) elseBranch) elseBranch) :
+    HEq (Term.subst (TermSubst.identity context)
+          (Term.boolElim scrutinee thenBranch elseBranch))
+        (Term.boolElim (context := context) scrutinee thenBranch elseBranch) := by
   show HEq (Term.boolElim
-            (Term.subst (TermSubst.identity Γ) s)
-            (Term.subst (TermSubst.identity Γ) t)
-            (Term.subst (TermSubst.identity Γ) e))
-           (Term.boolElim s t e)
-  apply Term.boolElim_HEq_congr (Ty.subst_id result)
-    _ _ (eq_of_heq ih_s)
-    _ _ ih_t
-    _ _ ih_e
+            (Term.subst (TermSubst.identity context) scrutinee)
+            (Term.subst (TermSubst.identity context) thenBranch)
+            (Term.subst (TermSubst.identity context) elseBranch))
+           (Term.boolElim scrutinee thenBranch elseBranch)
+  apply Term.boolElim_HEq_congr (Ty.subst_id resultType)
+    _ _ (eq_of_heq scrutineeRecursiveHEq)
+    _ _ thenBranchRecursiveHEq
+    _ _ elseBranchRecursiveHEq
 
 /-- Recursive HEq case of `Term.subst_id` for `appPi`.  The
 substituted result carries a `Ty.subst0_subst_commute` cast on
 the outside; `eqRec_heq` strips it before constructor congruence. -/
 theorem Term.subst_id_HEq_appPi
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {dom : Ty level scope} {cod : Ty level (scope + 1)}
-    (f : Term Γ (Ty.piTy dom cod)) (a : Term Γ dom)
-    (ih_f : HEq (Term.subst (TermSubst.identity Γ) f) f)
-    (ih_a : HEq (Term.subst (TermSubst.identity Γ) a) a) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.appPi f a))
-        (Term.appPi (context := Γ) f a) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domain : Ty level scope} {codomain : Ty level (scope + 1)}
+    (functionTerm : Term context (Ty.piTy domain codomain))
+    (argumentTerm : Term context domain)
+    (functionRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) functionTerm) functionTerm)
+    (argumentRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) argumentTerm) argumentTerm) :
+    HEq (Term.subst (TermSubst.identity context)
+          (Term.appPi functionTerm argumentTerm))
+        (Term.appPi (context := context) functionTerm argumentTerm) := by
   show HEq
-    ((Ty.subst0_subst_commute cod dom Subst.identity).symm ▸
-      Term.appPi (Term.subst (TermSubst.identity Γ) f)
-                 (Term.subst (TermSubst.identity Γ) a))
-    (Term.appPi f a)
+    ((Ty.subst0_subst_commute codomain domain Subst.identity).symm ▸
+      Term.appPi (Term.subst (TermSubst.identity context) functionTerm)
+                 (Term.subst (TermSubst.identity context) argumentTerm))
+    (Term.appPi functionTerm argumentTerm)
   apply HEq.trans (eqRec_heq _ _)
-  exact Term.appPi_HEq_congr (Ty.subst_id dom)
-    ((Ty.subst_congr Subst.lift_identity_equiv cod).trans
-     (Ty.subst_id cod))
-    _ _ ih_f _ _ ih_a
+  exact Term.appPi_HEq_congr (Ty.subst_id domain)
+    ((Ty.subst_congr Subst.lift_identity_equiv codomain).trans
+     (Ty.subst_id codomain))
+    _ _ functionRecursiveHEq _ _ argumentRecursiveHEq
 
 /-- Recursive HEq case of `Term.subst_id` for `pair`. -/
 theorem Term.subst_id_HEq_pair
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {first : Ty level scope} {second : Ty level (scope + 1)}
-    (v : Term Γ first) (w : Term Γ (second.subst0 first))
-    (ih_v : HEq (Term.subst (TermSubst.identity Γ) v) v)
-    (ih_w : HEq (Term.subst (TermSubst.identity Γ) w) w) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.pair v w))
-        (Term.pair (context := Γ) v w) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sigmaFirst : Ty level scope} {sigmaSecond : Ty level (scope + 1)}
+    (firstVal : Term context sigmaFirst)
+    (secondVal : Term context (sigmaSecond.subst0 sigmaFirst))
+    (firstValRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) firstVal) firstVal)
+    (secondValRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) secondVal) secondVal) :
+    HEq (Term.subst (TermSubst.identity context) (Term.pair firstVal secondVal))
+        (Term.pair (context := context) firstVal secondVal) := by
   show HEq
-    (Term.pair (Term.subst (TermSubst.identity Γ) v)
-      ((Ty.subst0_subst_commute second first Subst.identity) ▸
-        (Term.subst (TermSubst.identity Γ) w)))
-    (Term.pair v w)
-  apply Term.pair_HEq_congr (Ty.subst_id first)
-    ((Ty.subst_congr Subst.lift_identity_equiv second).trans
-     (Ty.subst_id second))
-    _ _ ih_v
+    (Term.pair (Term.subst (TermSubst.identity context) firstVal)
+      ((Ty.subst0_subst_commute sigmaSecond sigmaFirst Subst.identity) ▸
+        (Term.subst (TermSubst.identity context) secondVal)))
+    (Term.pair firstVal secondVal)
+  apply Term.pair_HEq_congr (Ty.subst_id sigmaFirst)
+    ((Ty.subst_congr Subst.lift_identity_equiv sigmaSecond).trans
+     (Ty.subst_id sigmaSecond))
+    _ _ firstValRecursiveHEq
   apply HEq.trans (eqRec_heq _ _)
-  exact ih_w
+  exact secondValRecursiveHEq
 
 /-- Recursive HEq case of `Term.subst_id` for `snd`. -/
 theorem Term.subst_id_HEq_snd
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {first : Ty level scope} {second : Ty level (scope + 1)}
-    (p : Term Γ (Ty.sigmaTy first second))
-    (ih_p : HEq (Term.subst (TermSubst.identity Γ) p) p) :
-    HEq (Term.subst (TermSubst.identity Γ) (Term.snd p))
-        (Term.snd (context := Γ) p) := by
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sigmaFirst : Ty level scope} {sigmaSecond : Ty level (scope + 1)}
+    (pairTerm : Term context (Ty.sigmaTy sigmaFirst sigmaSecond))
+    (pairRecursiveHEq :
+      HEq (Term.subst (TermSubst.identity context) pairTerm) pairTerm) :
+    HEq (Term.subst (TermSubst.identity context) (Term.snd pairTerm))
+        (Term.snd (context := context) pairTerm) := by
   show HEq
-    ((Ty.subst0_subst_commute second first Subst.identity).symm ▸
-      Term.snd (Term.subst (TermSubst.identity Γ) p))
-    (Term.snd p)
+    ((Ty.subst0_subst_commute sigmaSecond sigmaFirst Subst.identity).symm ▸
+      Term.snd (Term.subst (TermSubst.identity context) pairTerm))
+    (Term.snd pairTerm)
   apply HEq.trans (eqRec_heq _ _)
-  apply Term.snd_HEq_congr (Ty.subst_id first)
-    ((Ty.subst_congr Subst.lift_identity_equiv second).trans
-     (Ty.subst_id second))
-  exact ih_p
+  apply Term.snd_HEq_congr (Ty.subst_id sigmaFirst)
+    ((Ty.subst_congr Subst.lift_identity_equiv sigmaSecond).trans
+     (Ty.subst_id sigmaSecond))
+  exact pairRecursiveHEq
 
 
 end LeanFX.Syntax
