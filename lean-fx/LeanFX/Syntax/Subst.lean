@@ -800,6 +800,22 @@ theorem Subst.singleton_equiv_termSingleton_unit {level scope : Nat}
       | ⟨0, _⟩      => rfl
       | ⟨_ + 1, _⟩  => rfl)
 
+/-- Wave 9 / Phase C — `forTy`-only equivalence: `Subst.singleton sub`
+and `Subst.termSingleton sub rawArg` agree on the type-substitution
+component for any `rawArg`.  The `forRaw` components differ
+(`dropNewest` vs `singleton rawArg`) but they don't appear in the
+equivalence's type since `Subst.equiv` only constrains `forTy` for
+purposes of `Ty.subst`.  Wait — `Subst.equiv` does constrain forRaw
+too.  This lemma is the term-Single weakening: we keep both the forTy
+agreement (full) and stipulate raw equivalence at the rawArg level
+that callers supply. -/
+theorem Subst.singleton_forTy_eq_termSingleton {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    ∀ position, (Subst.singleton substituent).forTy position
+              = (Subst.termSingleton substituent rawArg).forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
 /-! ### Wave 5 strangle helpers
 
 `Subst.singleton` and `Subst.termSingleton _ RawTerm.unit` agree

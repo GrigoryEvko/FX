@@ -650,6 +650,24 @@ theorem Term.subst0_HEq_cast_input
   exact Term.subst_HEq_cast_input
     (TermSubst.singleton argumentTerm) bodyTypeEquality bodyTerm
 
+/-- Push a type-cast on a one-hole-substitution body out through
+`Term.subst0_term` (Wave 9 / Phase C — termSingleton-flavor). -/
+theorem Term.subst0_term_HEq_cast_input
+    {mode : Mode} {level scope : Nat} {sourceContext : Ctx mode level scope}
+    {argumentType : Ty level scope}
+    {sourceBodyType targetBodyType : Ty level (scope + 1)}
+    (bodyTypeEquality : sourceBodyType = targetBodyType)
+    (bodyTerm : Term (sourceContext.cons argumentType) sourceBodyType)
+    (argumentTerm : Term sourceContext argumentType) :
+    HEq (Term.subst0_term (bodyTypeEquality ▸ bodyTerm) argumentTerm)
+      (Term.subst0_term bodyTerm argumentTerm) := by
+  show HEq
+    (Term.subst (TermSubst.termSingleton argumentTerm)
+      (bodyTypeEquality ▸ bodyTerm))
+    (Term.subst (TermSubst.termSingleton argumentTerm) bodyTerm)
+  exact Term.subst_HEq_cast_input
+    (TermSubst.termSingleton argumentTerm) bodyTypeEquality bodyTerm
+
 /-! ## `TermSubst.lift_compose_pointwise` at position 0.
 
 Lifting a composed term-substitution under a binder agrees HEq with
