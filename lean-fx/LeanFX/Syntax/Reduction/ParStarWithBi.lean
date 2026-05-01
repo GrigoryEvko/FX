@@ -1286,4 +1286,369 @@ theorem Step.parStarWithBi.pair_target_inv
   exact ⟨firstVal', secondVal', eq_of_heq targetHEq,
          firstWithBi, secondWithBi⟩
 
+/-! ## β-workhorse smoke: subst_compatible preserves isBi (refl case only).
+
+Sanity-check the proof-irrelevance route to `subst_compatible_isBi`:
+since `Step.par` lives in `Prop` and Lean 4 has definitional proof
+irrelevance, `Step.par.isBi (Step.par.subst_compatible σ parStep)`
+and `Step.par.isBi (any-other-Step.par-proof)` are the same type
+whenever the underlying `Step.par a b` proposition matches.  This
+means the 54-case proof can construct a *fresh* isBi witness at
+each case via the corresponding constructor, and Lean will defEq-
+align it with whatever opaque `subst_compatible` returned. -/
+
+/-- **β-workhorse for the typed `cd_lemma_star_with_bi` aggregator.**
+A `Step.parWithBi` (paired Step.par + isBi witness) commutes with
+`Term.subst`.  Given an isBi-witnessed parallel step on `before`
+and `after`, produces an isBi-witnessed parallel step on their
+substitutions.
+
+Implementation: induct on the underlying `isBi` witness.  At each
+case, construct a *fresh* `Step.parWithBi` on the substituted
+endpoints — by choosing both the underlying Step.par step and its
+isBi witness ourselves, we sidestep the opaqueness of
+`Step.par.subst_compatible` entirely.  The result type
+`Step.parWithBi (subst σ a) (subst σ b)` only constrains the
+endpoint Terms, not the inner step structure, so Lean only
+needs to verify each constructor's *types* match, which the same
+`Step.par.castBoth` / `Step.par.castSource` / `Step.par.castTarget`
+casts as the original `subst_compatible` proof discharge.  The
+isBi side rides along via the matching `Step.par.isBi.cast*` and
+constructor witnesses.
+
+Used by the parStarWithBi-valued chain workhorse
+`subst_compatible_parStarWithBi` and downstream
+`cd_lemma_star_with_bi` aggregator. -/
+theorem Step.parWithBi.subst_compatible
+    {mode : Mode} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    (termSubstitution : TermSubst sourceCtx targetCtx typeSubstitution)
+    {termType : Ty level sourceScope}
+    {beforeTerm afterTerm : Term sourceCtx termType}
+    {parPaired : Step.parWithBi beforeTerm afterTerm} :
+    Step.parWithBi
+      (Term.subst termSubstitution beforeTerm)
+      (Term.subst termSubstitution afterTerm) := by
+  obtain ⟨parallelStep, biWitness⟩ := parPaired
+  induction biWitness generalizing targetScope targetCtx with
+  | refl term =>
+      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+  | app _functionBi _argumentBi functionIH argumentIH =>
+      obtain ⟨fStep, fBi⟩ := functionIH termSubstitution
+      obtain ⟨aStep, aBi⟩ := argumentIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.app fStep aStep)
+                              (Step.par.isBi.app fBi aBi)
+  | lam _bodyBi bodyIH =>
+      rename_i domainType codomainType _ _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermSubst.lift termSubstitution domainType)
+      let castedStep := Step.par.castBoth
+        (Ty.subst_weaken_commute codomainType typeSubstitution) bStep
+      let castedBi := Step.par.isBi.castBoth
+        (Ty.subst_weaken_commute codomainType typeSubstitution) bBi
+      exact Step.parWithBi.mk
+        (Step.par.lam castedStep) (Step.par.isBi.lam castedBi)
+  | lamPi _bodyBi bodyIH =>
+      rename_i domainType _ _ _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermSubst.lift termSubstitution domainType)
+      exact Step.parWithBi.mk
+        (Step.par.lamPi bStep) (Step.par.isBi.lamPi bBi)
+  | appPi _functionBi _argumentBi functionIH argumentIH =>
+      rename_i domainType codomainType _ _ _ _ _ _
+      obtain ⟨fStep, fBi⟩ := functionIH termSubstitution
+      obtain ⟨aStep, aBi⟩ := argumentIH termSubstitution
+      let typeEq :=
+        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+      exact Step.parWithBi.mk
+        (Step.par.castBoth typeEq (Step.par.appPi fStep aStep))
+        (Step.par.isBi.castBoth typeEq (Step.par.isBi.appPi fBi aBi))
+  | pair _firstBi _secondBi firstIH secondIH =>
+      rename_i firstType secondType _ _ _ _ _ _
+      obtain ⟨fStep, fBi⟩ := firstIH termSubstitution
+      obtain ⟨sStep, sBi⟩ := secondIH termSubstitution
+      let typeEq :=
+        Ty.subst0_subst_commute secondType firstType typeSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.pair fStep (Step.par.castBoth typeEq sStep))
+        (Step.par.isBi.pair fBi (Step.par.isBi.castBoth typeEq sBi))
+  | fst _pairBi pairIH =>
+      obtain ⟨pStep, pBi⟩ := pairIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.fst pStep) (Step.par.isBi.fst pBi)
+  | snd _pairBi pairIH =>
+      rename_i firstType secondType _ _ _
+      obtain ⟨pStep, pBi⟩ := pairIH termSubstitution
+      let typeEq :=
+        (Ty.subst0_subst_commute secondType firstType typeSubstitution).symm
+      exact Step.parWithBi.mk
+        (Step.par.castBoth typeEq (Step.par.snd pStep))
+        (Step.par.isBi.castBoth typeEq (Step.par.isBi.snd pBi))
+  | boolElim _scrutBi _thenBi _elseBi scrutIH thenIH elseIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨tStep, tBi⟩ := thenIH termSubstitution
+      obtain ⟨eStep, eBi⟩ := elseIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.boolElim sStep tStep eStep)
+        (Step.par.isBi.boolElim sBi tBi eBi)
+  | betaApp _bodyBi _argBi bodyIH argIH =>
+      -- Endpoints match what subst_compatible.betaApp returns; reuse
+      -- the existing typed-step output for both Step.par and isBi via
+      -- subst_compatible (gives the same Prop as the goal here, by
+      -- proof irrelevance) and `subst_compatible_isBi`'s sibling: for
+      -- now, defer to the existing subst_compatible to get the step,
+      -- then re-prove isBi by inducting on the step's structure.
+      sorry
+  | betaAppPi _bodyBi _argBi bodyIH argIH =>
+      sorry
+  | betaFstPair _firstBi firstIH =>
+      -- TODO: rename_i ordering; same shape as subst_compatible.betaFstPair
+      sorry
+  | betaSndPair _secondBi secondIH =>
+      sorry
+  | iotaBoolElimTrue elseBranch _thenBi thenIH =>
+      obtain ⟨tStep, tBi⟩ := thenIH termSubstitution
+      let elseSubst := Term.subst termSubstitution elseBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimTrue elseSubst tStep)
+        (Step.par.isBi.iotaBoolElimTrue elseSubst tBi)
+  | iotaBoolElimFalse thenBranch _elseBi elseIH =>
+      obtain ⟨eStep, eBi⟩ := elseIH termSubstitution
+      let thenSubst := Term.subst termSubstitution thenBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimFalse thenSubst eStep)
+        (Step.par.isBi.iotaBoolElimFalse thenSubst eBi)
+  | natSucc _predBi predIH =>
+      obtain ⟨pStep, pBi⟩ := predIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.natSucc pStep)
+                              (Step.par.isBi.natSucc pBi)
+  | natElim _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      obtain ⟨ssStep, ssBi⟩ := succIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.natElim sStep zStep ssStep)
+        (Step.par.isBi.natElim sBi zBi ssBi)
+  | iotaNatElimZero succBranch _zeroBi zeroIH =>
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      let succSubst := Term.subst termSubstitution succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimZero succSubst zStep)
+        (Step.par.isBi.iotaNatElimZero succSubst zBi)
+  | natRec _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      obtain ⟨ssStep, ssBi⟩ := succIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.natRec sStep zStep ssStep)
+        (Step.par.isBi.natRec sBi zBi ssBi)
+  | iotaNatRecZero succBranch _zeroBi zeroIH =>
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      let succSubst := Term.subst termSubstitution succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecZero succSubst zStep)
+        (Step.par.isBi.iotaNatRecZero succSubst zBi)
+  | iotaNatRecSucc _predBi _zeroBi _succBi predIH zeroIH succIH =>
+      obtain ⟨pStep, pBi⟩ := predIH termSubstitution
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      obtain ⟨ssStep, ssBi⟩ := succIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecSucc pStep zStep ssStep)
+        (Step.par.isBi.iotaNatRecSucc pBi zBi ssBi)
+  | iotaNatElimSucc zeroBranch _predBi _succBi predIH succIH =>
+      obtain ⟨pStep, pBi⟩ := predIH termSubstitution
+      obtain ⟨ssStep, ssBi⟩ := succIH termSubstitution
+      let zeroSubst := Term.subst termSubstitution zeroBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimSucc zeroSubst pStep ssStep)
+        (Step.par.isBi.iotaNatElimSucc zeroSubst pBi ssBi)
+  | listCons _headBi _tailBi headIH tailIH =>
+      obtain ⟨hStep, hBi⟩ := headIH termSubstitution
+      obtain ⟨tStep, tBi⟩ := tailIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.listCons hStep tStep)
+                              (Step.par.isBi.listCons hBi tBi)
+  | listElim _scrutBi _nilBi _consBi scrutIH nilIH consIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨nStep, nBi⟩ := nilIH termSubstitution
+      obtain ⟨cStep, cBi⟩ := consIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.listElim sStep nStep cStep)
+        (Step.par.isBi.listElim sBi nBi cBi)
+  | iotaListElimNil consBranch _nilBi nilIH =>
+      obtain ⟨nStep, nBi⟩ := nilIH termSubstitution
+      let consSubst := Term.subst termSubstitution consBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimNil consSubst nStep)
+        (Step.par.isBi.iotaListElimNil consSubst nBi)
+  | iotaListElimCons nilBranch _headBi _tailBi _consBi headIH tailIH consIH =>
+      obtain ⟨hStep, hBi⟩ := headIH termSubstitution
+      obtain ⟨tStep, tBi⟩ := tailIH termSubstitution
+      obtain ⟨cStep, cBi⟩ := consIH termSubstitution
+      let nilSubst := Term.subst termSubstitution nilBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimCons nilSubst hStep tStep cStep)
+        (Step.par.isBi.iotaListElimCons nilSubst hBi tBi cBi)
+  | optionSome _valueBi valueIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.optionSome vStep)
+                              (Step.par.isBi.optionSome vBi)
+  | optionMatch _scrutBi _noneBi _someBi scrutIH noneIH someIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨nStep, nBi⟩ := noneIH termSubstitution
+      obtain ⟨smStep, smBi⟩ := someIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.optionMatch sStep nStep smStep)
+        (Step.par.isBi.optionMatch sBi nBi smBi)
+  | iotaOptionMatchNone someBranch _noneBi noneIH =>
+      obtain ⟨nStep, nBi⟩ := noneIH termSubstitution
+      let someSubst := Term.subst termSubstitution someBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchNone someSubst nStep)
+        (Step.par.isBi.iotaOptionMatchNone someSubst nBi)
+  | iotaOptionMatchSome noneBranch _valueBi _someBi valueIH someIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termSubstitution
+      obtain ⟨smStep, smBi⟩ := someIH termSubstitution
+      let noneSubst := Term.subst termSubstitution noneBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchSome noneSubst vStep smStep)
+        (Step.par.isBi.iotaOptionMatchSome noneSubst vBi smBi)
+  | eitherInl _valueBi valueIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.eitherInl vStep)
+                              (Step.par.isBi.eitherInl vBi)
+  | eitherInr _valueBi valueIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termSubstitution
+      exact Step.parWithBi.mk (Step.par.eitherInr vStep)
+                              (Step.par.isBi.eitherInr vBi)
+  | eitherMatch _scrutBi _leftBi _rightBi scrutIH leftIH rightIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨lStep, lBi⟩ := leftIH termSubstitution
+      obtain ⟨rStep, rBi⟩ := rightIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.eitherMatch sStep lStep rStep)
+        (Step.par.isBi.eitherMatch sBi lBi rBi)
+  | iotaEitherMatchInl rightBranch _valueBi _leftBi valueIH leftIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termSubstitution
+      obtain ⟨lStep, lBi⟩ := leftIH termSubstitution
+      let rightSubst := Term.subst termSubstitution rightBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInl rightSubst vStep lStep)
+        (Step.par.isBi.iotaEitherMatchInl rightSubst vBi lBi)
+  | iotaEitherMatchInr leftBranch _valueBi _rightBi valueIH rightIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termSubstitution
+      obtain ⟨rStep, rBi⟩ := rightIH termSubstitution
+      let leftSubst := Term.subst termSubstitution leftBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInr leftSubst vStep rStep)
+        (Step.par.isBi.iotaEitherMatchInr leftSubst vBi rBi)
+  | idJ _baseBi _witnessBi baseIH witnessIH =>
+      obtain ⟨bStep, bBi⟩ := baseIH termSubstitution
+      obtain ⟨wStep, wBi⟩ := witnessIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.idJ bStep wStep)
+        (Step.par.isBi.idJ bBi wBi)
+  | iotaIdJRefl _baseBi baseIH =>
+      obtain ⟨bStep, bBi⟩ := baseIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.iotaIdJRefl bStep)
+        (Step.par.isBi.iotaIdJRefl bBi)
+  -- Deep cases — same approach + cast bookkeeping for binder/Σ.
+  | betaAppDeep _functionBi _argBi functionIH argIH => sorry
+  | betaAppPiDeep _functionBi _argBi functionIH argIH => sorry
+  | betaFstPairDeep _pairBi pairIH =>
+      obtain ⟨pStep, pBi⟩ := pairIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.betaFstPairDeep pStep)
+        (Step.par.isBi.betaFstPairDeep pBi)
+  | betaSndPairDeep _pairBi pairIH => sorry
+  | iotaBoolElimTrueDeep elseBranch _scrutBi _thenBi scrutIH thenIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨tStep, tBi⟩ := thenIH termSubstitution
+      let elseSubst := Term.subst termSubstitution elseBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimTrueDeep elseSubst sStep tStep)
+        (Step.par.isBi.iotaBoolElimTrueDeep elseSubst sBi tBi)
+  | iotaBoolElimFalseDeep thenBranch _scrutBi _elseBi scrutIH elseIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨eStep, eBi⟩ := elseIH termSubstitution
+      let thenSubst := Term.subst termSubstitution thenBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimFalseDeep thenSubst sStep eStep)
+        (Step.par.isBi.iotaBoolElimFalseDeep thenSubst sBi eBi)
+  | iotaNatElimZeroDeep succBranch _scrutBi _zeroBi scrutIH zeroIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      let succSubst := Term.subst termSubstitution succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimZeroDeep succSubst sStep zStep)
+        (Step.par.isBi.iotaNatElimZeroDeep succSubst sBi zBi)
+  | iotaNatElimSuccDeep zeroBranch _scrutBi _succBi scrutIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨ssStep, ssBi⟩ := succIH termSubstitution
+      let zeroSubst := Term.subst termSubstitution zeroBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimSuccDeep zeroSubst sStep ssStep)
+        (Step.par.isBi.iotaNatElimSuccDeep zeroSubst sBi ssBi)
+  | iotaNatRecZeroDeep succBranch _scrutBi _zeroBi scrutIH zeroIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      let succSubst := Term.subst termSubstitution succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecZeroDeep succSubst sStep zStep)
+        (Step.par.isBi.iotaNatRecZeroDeep succSubst sBi zBi)
+  | iotaNatRecSuccDeep _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨zStep, zBi⟩ := zeroIH termSubstitution
+      obtain ⟨ssStep, ssBi⟩ := succIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecSuccDeep sStep zStep ssStep)
+        (Step.par.isBi.iotaNatRecSuccDeep sBi zBi ssBi)
+  | iotaListElimNilDeep consBranch _scrutBi _nilBi scrutIH nilIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨nStep, nBi⟩ := nilIH termSubstitution
+      let consSubst := Term.subst termSubstitution consBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimNilDeep consSubst sStep nStep)
+        (Step.par.isBi.iotaListElimNilDeep consSubst sBi nBi)
+  | iotaListElimConsDeep nilBranch _scrutBi _consBi scrutIH consIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨cStep, cBi⟩ := consIH termSubstitution
+      let nilSubst := Term.subst termSubstitution nilBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimConsDeep nilSubst sStep cStep)
+        (Step.par.isBi.iotaListElimConsDeep nilSubst sBi cBi)
+  | iotaOptionMatchNoneDeep someBranch _scrutBi _noneBi scrutIH noneIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨nStep, nBi⟩ := noneIH termSubstitution
+      let someSubst := Term.subst termSubstitution someBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchNoneDeep someSubst sStep nStep)
+        (Step.par.isBi.iotaOptionMatchNoneDeep someSubst sBi nBi)
+  | iotaOptionMatchSomeDeep noneBranch _scrutBi _someBi scrutIH someIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨smStep, smBi⟩ := someIH termSubstitution
+      let noneSubst := Term.subst termSubstitution noneBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchSomeDeep noneSubst sStep smStep)
+        (Step.par.isBi.iotaOptionMatchSomeDeep noneSubst sBi smBi)
+  | iotaEitherMatchInlDeep rightBranch _scrutBi _leftBi scrutIH leftIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨lStep, lBi⟩ := leftIH termSubstitution
+      let rightSubst := Term.subst termSubstitution rightBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInlDeep rightSubst sStep lStep)
+        (Step.par.isBi.iotaEitherMatchInlDeep rightSubst sBi lBi)
+  | iotaEitherMatchInrDeep leftBranch _scrutBi _rightBi scrutIH rightIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termSubstitution
+      obtain ⟨rStep, rBi⟩ := rightIH termSubstitution
+      let leftSubst := Term.subst termSubstitution leftBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInrDeep leftSubst sStep rStep)
+        (Step.par.isBi.iotaEitherMatchInrDeep leftSubst sBi rBi)
+  | iotaIdJReflDeep _witnessBi _baseBi witnessIH baseIH =>
+      obtain ⟨wStep, wBi⟩ := witnessIH termSubstitution
+      obtain ⟨bStep, bBi⟩ := baseIH termSubstitution
+      exact Step.parWithBi.mk
+        (Step.par.iotaIdJReflDeep wStep bStep)
+        (Step.par.isBi.iotaIdJReflDeep wBi bBi)
+
 end LeanFX.Syntax
