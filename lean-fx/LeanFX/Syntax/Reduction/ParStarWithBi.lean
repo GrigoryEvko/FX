@@ -1401,8 +1401,19 @@ theorem Step.parWithBi.subst_compatible
   | betaAppPi _bodyBi _argBi bodyIH argIH =>
       sorry
   | betaFstPair _firstBi firstIH =>
-      -- TODO: rename_i ordering; same shape as subst_compatible.betaFstPair
-      sorry
+      -- `rename_i` orders LEAST RECENT first (declaration order):
+      -- ctx, firstType, secondType, firstVal, firstVal', secondVal,
+      -- firstStep.  Skip ctx; capture firstType, secondType; skip
+      -- firstVal/firstVal'; capture secondVal; skip firstStep.
+      rename_i _ firstType secondType _ _ secondValOrig _
+      obtain ⟨fStep, fBi⟩ := firstIH termSubstitution
+      let typeEq :=
+        Ty.subst0_subst_commute secondType firstType typeSubstitution
+      let secondValSubst : Term targetCtx _ :=
+        typeEq ▸ Term.subst termSubstitution secondValOrig
+      exact Step.parWithBi.mk
+        (Step.par.betaFstPair secondValSubst fStep)
+        (Step.par.isBi.betaFstPair fBi)
   | betaSndPair _secondBi secondIH =>
       sorry
   | iotaBoolElimTrue elseBranch _thenBi thenIH =>
