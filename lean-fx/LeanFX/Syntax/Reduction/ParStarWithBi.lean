@@ -1,5 +1,6 @@
 import LeanFX.Syntax.Reduction.ParBi
 import LeanFX.Syntax.Reduction.ParInversion
+import LeanFX.Syntax.Reduction.CdDominatesIsBi
 
 namespace LeanFX.Syntax
 open LeanFX.Mode
@@ -947,5 +948,69 @@ theorem Step.par.isBi.castSource
     Step.par.isBi (Step.par.castSource sourceEquality parallelStep) := by
   cases sourceEquality
   exact stepBi
+
+/-! ## Single-step paired target inversions.
+
+Strengthened versions of `Step.par.lam_target_inv_isBi`,
+`Step.par.lamPi_target_inv_isBi`, and
+`Step.par.pair_target_inv_isBi` that pair the inner Step.par with
+its isBi witness as a single-step `Step.parWithBi`.  Built by
+copying the existing inductions on `Step.par.isBi` but retaining
+the `_bodyBi` / `_pairFirstBi` / `_pairSecondBi` hypotheses
+instead of discarding them. -/
+
+/-- Generalized single-step lam target inversion that retains the
+sub-step's isBi witness. -/
+theorem Step.par.lam_target_inv_with_bi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {termType : Ty level scope}
+    {sourceTerm targetTerm : Term ctx termType}
+    (typeEq : termType = Ty.arrow domainType codomainType)
+    {parStep : Step.par sourceTerm targetTerm}
+    (stepBi : Step.par.isBi parStep) :
+    HEq sourceTerm
+        (@Term.lam mode level scope ctx domainType codomainType body) →
+    ∃ (body' : Term (ctx.cons domainType) codomainType.weaken),
+        HEq targetTerm
+            (@Term.lam mode level scope ctx domainType codomainType body') ∧
+        Step.parWithBi body body' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨body, sourceHEq,
+             Step.parWithBi.mk (Step.par.refl body) (Step.par.isBi.refl body)⟩
+  | lam bodyBi _bodyIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i bodyStep
+      exact ⟨_, HEq.rfl, Step.parWithBi.mk bodyStep bodyBi⟩
+  | lamPi _bodyBi _bodyIH =>
+      intro _
+      cases typeEq
+  | _ =>
+      intro sourceHEq
+      exfalso
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (apply refuteViaToRaw _ (Term.lam body) typeEq sourceHEq;
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Single-step lam target inversion with isBi witness. -/
+theorem Step.par.lam_target_inv_with_bi
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {body : Term (ctx.cons domainType) codomainType.weaken}
+    {target : Term ctx (Ty.arrow domainType codomainType)}
+    {parStep : Step.par
+        (@Term.lam mode level scope ctx domainType codomainType body) target}
+    (stepBi : Step.par.isBi parStep) :
+    ∃ (body' : Term (ctx.cons domainType) codomainType.weaken),
+        target = Term.lam body' ∧ Step.parWithBi body body' := by
+  obtain ⟨body', targetHEq, innerWithBi⟩ :=
+    Step.par.lam_target_inv_with_bi_general rfl stepBi HEq.rfl
+  exact ⟨body', eq_of_heq targetHEq, innerWithBi⟩
 
 end LeanFX.Syntax

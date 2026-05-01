@@ -42,7 +42,7 @@ strip cast via `Term.toRaw_cast`) is the SAME for every Term
 constant — the parameter `targetTerm` carries the only variation.
 This is what factors the 13 individual inversions into one shared
 helper. -/
-private theorem refuteViaToRaw
+theorem refuteViaToRaw
     {mode : Mode} {level scope_a : Nat} {ctx_a : Ctx mode level scope_a}
     {sourceType targetType : Ty level scope_a}
     (sourceTerm : Term ctx_a sourceType)
