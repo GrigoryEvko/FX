@@ -271,6 +271,31 @@ theorem Step.parStar.append
   | trans firstStep restChain restIH =>
       exact Step.parStar.trans firstStep (restIH secondChain)
 
+/-- **Generic `parStar` lifter**: lift a parallel reduction chain
+through any term-context-changing function `mapTerm` whose single-
+step parallel reduction has a matching lifter `mapPar`.  Source and
+target may live in different contexts and at different scopes —
+needed by binder cong rules whose source body is in `ctx.cons _`.
+Reduces every single-position parStar cong to a 1-line application. -/
+theorem Step.parStar.mapStep
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sourceType : Ty level sourceScope}
+    {targetType : Ty level targetScope}
+    (mapTerm : Term sourceCtx sourceType → Term targetCtx targetType)
+    (mapPar : ∀ {beforeTerm afterTerm : Term sourceCtx sourceType},
+      Step.par beforeTerm afterTerm →
+      Step.par (mapTerm beforeTerm) (mapTerm afterTerm)) :
+    ∀ {beforeTerm afterTerm : Term sourceCtx sourceType},
+      Step.parStar beforeTerm afterTerm →
+      Step.parStar (mapTerm beforeTerm) (mapTerm afterTerm)
+  | _, _, .refl _ => Step.parStar.refl _
+  | _, _, .trans firstStep restChain =>
+      Step.parStar.trans (mapPar firstStep)
+        (Step.parStar.mapStep mapTerm mapPar restChain)
+
 /-- Multi-step substitution-side compatibility: a `parStar` chain
 on the body lifts through any TermSubst.  Used by the β-case of
 the relaxed cd_lemma. -/
@@ -375,11 +400,9 @@ theorem Step.parStar.lam_cong
     (bodyChain : Step.parStar body body') :
     Step.parStar
       (Term.lam (codomainType := codomainType) body)
-      (Term.lam (codomainType := codomainType) body') := by
-  induction bodyChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.lam firstStep) restIH
+      (Term.lam (codomainType := codomainType) body') :=
+  Step.parStar.mapStep (Term.lam (codomainType := codomainType))
+    Step.par.lam bodyChain
 
 /-- Π-λ-body congruence at the `parStar` level. -/
 theorem Step.parStar.lamPi_cong
@@ -389,11 +412,9 @@ theorem Step.parStar.lamPi_cong
     (bodyChain : Step.parStar body body') :
     Step.parStar
       (Term.lamPi (domainType := domainType) body)
-      (Term.lamPi (domainType := domainType) body') := by
-  induction bodyChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.lamPi firstStep) restIH
+      (Term.lamPi (domainType := domainType) body') :=
+  Step.parStar.mapStep (Term.lamPi (domainType := domainType))
+    Step.par.lamPi bodyChain
 
 /-- One-position `app` congruence: function chain with argument held
 fixed.  Standalone helper so the induction motive doesn't drag
@@ -405,12 +426,11 @@ theorem Step.parStar.app_cong_function
     (argumentTerm : Term ctx domainType)
     (functionChain : Step.parStar functionTerm functionTerm') :
     Step.parStar (Term.app functionTerm argumentTerm)
-                 (Term.app functionTerm' argumentTerm) := by
-  induction functionChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.app firstStep (Step.par.refl _)) restIH
+                 (Term.app functionTerm' argumentTerm) :=
+  Step.parStar.mapStep
+    (fun fnTerm => Term.app fnTerm argumentTerm)
+    (fun fnPar => Step.par.app fnPar (Step.par.refl argumentTerm))
+    functionChain
 
 /-- One-position `app` congruence: argument chain with function held
 fixed. -/
@@ -421,12 +441,11 @@ theorem Step.parStar.app_cong_argument
     {argumentTerm argumentTerm' : Term ctx domainType}
     (argumentChain : Step.parStar argumentTerm argumentTerm') :
     Step.parStar (Term.app functionTerm argumentTerm)
-                 (Term.app functionTerm argumentTerm') := by
-  induction argumentChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.app (Step.par.refl _) firstStep) restIH
+                 (Term.app functionTerm argumentTerm') :=
+  Step.parStar.mapStep
+    (fun argTerm => Term.app functionTerm argTerm)
+    (fun argPar => Step.par.app (Step.par.refl functionTerm) argPar)
+    argumentChain
 
 /-- Non-dependent application congruence at the `parStar` level.
 Combines independent function and argument chains via sequential
@@ -452,12 +471,11 @@ theorem Step.parStar.appPi_cong_function
     (argumentTerm : Term ctx domainType)
     (functionChain : Step.parStar functionTerm functionTerm') :
     Step.parStar (Term.appPi functionTerm argumentTerm)
-                 (Term.appPi functionTerm' argumentTerm) := by
-  induction functionChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.appPi firstStep (Step.par.refl _)) restIH
+                 (Term.appPi functionTerm' argumentTerm) :=
+  Step.parStar.mapStep
+    (fun fnTerm => Term.appPi fnTerm argumentTerm)
+    (fun fnPar => Step.par.appPi fnPar (Step.par.refl argumentTerm))
+    functionChain
 
 /-- Single-position `appPi` congruence on argument. -/
 theorem Step.parStar.appPi_cong_argument
@@ -467,12 +485,11 @@ theorem Step.parStar.appPi_cong_argument
     {argumentTerm argumentTerm' : Term ctx domainType}
     (argumentChain : Step.parStar argumentTerm argumentTerm') :
     Step.parStar (Term.appPi functionTerm argumentTerm)
-                 (Term.appPi functionTerm argumentTerm') := by
-  induction argumentChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.appPi (Step.par.refl _) firstStep) restIH
+                 (Term.appPi functionTerm argumentTerm') :=
+  Step.parStar.mapStep
+    (fun argTerm => Term.appPi functionTerm argTerm)
+    (fun argPar => Step.par.appPi (Step.par.refl functionTerm) argPar)
+    argumentChain
 
 /-- Dependent application congruence at the `parStar` level. -/
 theorem Step.parStar.appPi_cong
@@ -496,12 +513,11 @@ theorem Step.parStar.pair_cong_first
     (secondVal : Term ctx (secondType.subst0 firstType))
     (firstChain : Step.parStar firstVal firstVal') :
     Step.parStar (Term.pair (secondType := secondType) firstVal secondVal)
-                 (Term.pair (secondType := secondType) firstVal' secondVal) := by
-  induction firstChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.pair firstStep (Step.par.refl _)) restIH
+                 (Term.pair (secondType := secondType) firstVal' secondVal) :=
+  Step.parStar.mapStep
+    (fun firstTerm => Term.pair (secondType := secondType) firstTerm secondVal)
+    (fun firstPar => Step.par.pair firstPar (Step.par.refl secondVal))
+    firstChain
 
 /-- Single-position `pair` congruence on second component. -/
 theorem Step.parStar.pair_cong_second
@@ -511,12 +527,11 @@ theorem Step.parStar.pair_cong_second
     {secondVal secondVal' : Term ctx (secondType.subst0 firstType)}
     (secondChain : Step.parStar secondVal secondVal') :
     Step.parStar (Term.pair (secondType := secondType) firstVal secondVal)
-                 (Term.pair (secondType := secondType) firstVal secondVal') := by
-  induction secondChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.pair (Step.par.refl _) firstStep) restIH
+                 (Term.pair (secondType := secondType) firstVal secondVal') :=
+  Step.parStar.mapStep
+    (fun secondTerm => Term.pair (secondType := secondType) firstVal secondTerm)
+    (fun secondPar => Step.par.pair (Step.par.refl firstVal) secondPar)
+    secondChain
 
 /-- Σ-pair congruence at the `parStar` level. -/
 theorem Step.parStar.pair_cong
@@ -538,11 +553,10 @@ theorem Step.parStar.fst_cong
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairChain : Step.parStar pairTerm pairTerm') :
-    Step.parStar (Term.fst pairTerm) (Term.fst pairTerm') := by
-  induction pairChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.fst firstStep) restIH
+    Step.parStar (Term.fst pairTerm) (Term.fst pairTerm') :=
+  Step.parStar.mapStep
+    (Term.fst (firstType := firstType) (secondType := secondType))
+    Step.par.fst pairChain
 
 /-- Second-projection congruence at the `parStar` level. -/
 theorem Step.parStar.snd_cong
@@ -550,11 +564,10 @@ theorem Step.parStar.snd_cong
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairChain : Step.parStar pairTerm pairTerm') :
-    Step.parStar (Term.snd pairTerm) (Term.snd pairTerm') := by
-  induction pairChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.snd firstStep) restIH
+    Step.parStar (Term.snd pairTerm) (Term.snd pairTerm') :=
+  Step.parStar.mapStep
+    (Term.snd (firstType := firstType) (secondType := secondType))
+    Step.par.snd pairChain
 
 /-- Single-position `boolElim` congruence on scrutinee. -/
 theorem Step.parStar.boolElim_cong_scrutinee
@@ -564,13 +577,12 @@ theorem Step.parStar.boolElim_cong_scrutinee
     (thenBranch elseBranch : Term ctx resultType)
     (scrutineeChain : Step.parStar scrutinee scrutinee') :
     Step.parStar (Term.boolElim scrutinee thenBranch elseBranch)
-                 (Term.boolElim scrutinee' thenBranch elseBranch) := by
-  induction scrutineeChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.boolElim firstStep (Step.par.refl _) (Step.par.refl _))
-        restIH
+                 (Term.boolElim scrutinee' thenBranch elseBranch) :=
+  Step.parStar.mapStep
+    (fun scrutTerm => Term.boolElim scrutTerm thenBranch elseBranch)
+    (fun scrutPar => Step.par.boolElim scrutPar
+      (Step.par.refl thenBranch) (Step.par.refl elseBranch))
+    scrutineeChain
 
 /-- Single-position `boolElim` congruence on then-branch. -/
 theorem Step.parStar.boolElim_cong_then
@@ -581,13 +593,12 @@ theorem Step.parStar.boolElim_cong_then
     (elseBranch : Term ctx resultType)
     (thenChain : Step.parStar thenBranch thenBranch') :
     Step.parStar (Term.boolElim scrutinee thenBranch elseBranch)
-                 (Term.boolElim scrutinee thenBranch' elseBranch) := by
-  induction thenChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.boolElim (Step.par.refl _) firstStep (Step.par.refl _))
-        restIH
+                 (Term.boolElim scrutinee thenBranch' elseBranch) :=
+  Step.parStar.mapStep
+    (fun thenTerm => Term.boolElim scrutinee thenTerm elseBranch)
+    (fun thenPar => Step.par.boolElim
+      (Step.par.refl scrutinee) thenPar (Step.par.refl elseBranch))
+    thenChain
 
 /-- Single-position `boolElim` congruence on else-branch. -/
 theorem Step.parStar.boolElim_cong_else
@@ -598,13 +609,12 @@ theorem Step.parStar.boolElim_cong_else
     {elseBranch elseBranch' : Term ctx resultType}
     (elseChain : Step.parStar elseBranch elseBranch') :
     Step.parStar (Term.boolElim scrutinee thenBranch elseBranch)
-                 (Term.boolElim scrutinee thenBranch elseBranch') := by
-  induction elseChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.boolElim (Step.par.refl _) (Step.par.refl _) firstStep)
-        restIH
+                 (Term.boolElim scrutinee thenBranch elseBranch') :=
+  Step.parStar.mapStep
+    (fun elseTerm => Term.boolElim scrutinee thenBranch elseTerm)
+    (fun elsePar => Step.par.boolElim
+      (Step.par.refl scrutinee) (Step.par.refl thenBranch) elsePar)
+    elseChain
 
 /-- Boolean eliminator congruence at the `parStar` level.  Three
 chained legs (scrutinee, then-branch, else-branch). -/
@@ -630,11 +640,8 @@ theorem Step.parStar.natSucc_cong
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {predecessor predecessor' : Term ctx Ty.nat}
     (predChain : Step.parStar predecessor predecessor') :
-    Step.parStar (Term.natSucc predecessor) (Term.natSucc predecessor') := by
-  induction predChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.natSucc firstStep) restIH
+    Step.parStar (Term.natSucc predecessor) (Term.natSucc predecessor') :=
+  Step.parStar.mapStep Term.natSucc Step.par.natSucc predChain
 
 /-- Single-position `natElim` congruence on scrutinee. -/
 theorem Step.parStar.natElim_cong_scrutinee
@@ -645,13 +652,12 @@ theorem Step.parStar.natElim_cong_scrutinee
     (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
     (scrutineeChain : Step.parStar scrutinee scrutinee') :
     Step.parStar (Term.natElim scrutinee zeroBranch succBranch)
-                 (Term.natElim scrutinee' zeroBranch succBranch) := by
-  induction scrutineeChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.natElim firstStep (Step.par.refl _) (Step.par.refl _))
-        restIH
+                 (Term.natElim scrutinee' zeroBranch succBranch) :=
+  Step.parStar.mapStep
+    (fun scrutTerm => Term.natElim scrutTerm zeroBranch succBranch)
+    (fun scrutPar => Step.par.natElim scrutPar
+      (Step.par.refl zeroBranch) (Step.par.refl succBranch))
+    scrutineeChain
 
 /-- Single-position `natElim` congruence on zero-branch. -/
 theorem Step.parStar.natElim_cong_zero
@@ -662,13 +668,12 @@ theorem Step.parStar.natElim_cong_zero
     (succBranch : Term ctx (Ty.arrow Ty.nat resultType))
     (zeroChain : Step.parStar zeroBranch zeroBranch') :
     Step.parStar (Term.natElim scrutinee zeroBranch succBranch)
-                 (Term.natElim scrutinee zeroBranch' succBranch) := by
-  induction zeroChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.natElim (Step.par.refl _) firstStep (Step.par.refl _))
-        restIH
+                 (Term.natElim scrutinee zeroBranch' succBranch) :=
+  Step.parStar.mapStep
+    (fun zeroTerm => Term.natElim scrutinee zeroTerm succBranch)
+    (fun zeroPar => Step.par.natElim
+      (Step.par.refl scrutinee) zeroPar (Step.par.refl succBranch))
+    zeroChain
 
 /-- Single-position `natElim` congruence on succ-branch. -/
 theorem Step.parStar.natElim_cong_succ
@@ -679,13 +684,12 @@ theorem Step.parStar.natElim_cong_succ
     {succBranch succBranch' : Term ctx (Ty.arrow Ty.nat resultType)}
     (succChain : Step.parStar succBranch succBranch') :
     Step.parStar (Term.natElim scrutinee zeroBranch succBranch)
-                 (Term.natElim scrutinee zeroBranch succBranch') := by
-  induction succChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.natElim (Step.par.refl _) (Step.par.refl _) firstStep)
-        restIH
+                 (Term.natElim scrutinee zeroBranch succBranch') :=
+  Step.parStar.mapStep
+    (fun succTerm => Term.natElim scrutinee zeroBranch succTerm)
+    (fun succPar => Step.par.natElim
+      (Step.par.refl scrutinee) (Step.par.refl zeroBranch) succPar)
+    succChain
 
 /-- `natElim` congruence at the `parStar` level. -/
 theorem Step.parStar.natElim_cong
@@ -715,13 +719,12 @@ theorem Step.parStar.natRec_cong_scrutinee
         Term ctx (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
     (scrutineeChain : Step.parStar scrutinee scrutinee') :
     Step.parStar (Term.natRec scrutinee zeroBranch succBranch)
-                 (Term.natRec scrutinee' zeroBranch succBranch) := by
-  induction scrutineeChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.natRec firstStep (Step.par.refl _) (Step.par.refl _))
-        restIH
+                 (Term.natRec scrutinee' zeroBranch succBranch) :=
+  Step.parStar.mapStep
+    (fun scrutTerm => Term.natRec scrutTerm zeroBranch succBranch)
+    (fun scrutPar => Step.par.natRec scrutPar
+      (Step.par.refl zeroBranch) (Step.par.refl succBranch))
+    scrutineeChain
 
 /-- Single-position `natRec` congruence on zero-branch. -/
 theorem Step.parStar.natRec_cong_zero
@@ -733,13 +736,12 @@ theorem Step.parStar.natRec_cong_zero
         Term ctx (Ty.arrow Ty.nat (Ty.arrow resultType resultType)))
     (zeroChain : Step.parStar zeroBranch zeroBranch') :
     Step.parStar (Term.natRec scrutinee zeroBranch succBranch)
-                 (Term.natRec scrutinee zeroBranch' succBranch) := by
-  induction zeroChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.natRec (Step.par.refl _) firstStep (Step.par.refl _))
-        restIH
+                 (Term.natRec scrutinee zeroBranch' succBranch) :=
+  Step.parStar.mapStep
+    (fun zeroTerm => Term.natRec scrutinee zeroTerm succBranch)
+    (fun zeroPar => Step.par.natRec
+      (Step.par.refl scrutinee) zeroPar (Step.par.refl succBranch))
+    zeroChain
 
 /-- Single-position `natRec` congruence on succ-branch. -/
 theorem Step.parStar.natRec_cong_succ
@@ -751,13 +753,12 @@ theorem Step.parStar.natRec_cong_succ
         Term ctx (Ty.arrow Ty.nat (Ty.arrow resultType resultType))}
     (succChain : Step.parStar succBranch succBranch') :
     Step.parStar (Term.natRec scrutinee zeroBranch succBranch)
-                 (Term.natRec scrutinee zeroBranch succBranch') := by
-  induction succChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.natRec (Step.par.refl _) (Step.par.refl _) firstStep)
-        restIH
+                 (Term.natRec scrutinee zeroBranch succBranch') :=
+  Step.parStar.mapStep
+    (fun succTerm => Term.natRec scrutinee zeroBranch succTerm)
+    (fun succPar => Step.par.natRec
+      (Step.par.refl scrutinee) (Step.par.refl zeroBranch) succPar)
+    succChain
 
 /-- `natRec` congruence at the `parStar` level. -/
 theorem Step.parStar.natRec_cong
@@ -785,12 +786,11 @@ theorem Step.parStar.listCons_cong_head
     {head head' : Term ctx elementType}
     (tail : Term ctx (Ty.list elementType))
     (headChain : Step.parStar head head') :
-    Step.parStar (Term.listCons head tail) (Term.listCons head' tail) := by
-  induction headChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.listCons firstStep (Step.par.refl _)) restIH
+    Step.parStar (Term.listCons head tail) (Term.listCons head' tail) :=
+  Step.parStar.mapStep
+    (fun headTerm => Term.listCons headTerm tail)
+    (fun headPar => Step.par.listCons headPar (Step.par.refl tail))
+    headChain
 
 /-- Single-position `listCons` congruence on tail. -/
 theorem Step.parStar.listCons_cong_tail
@@ -799,12 +799,11 @@ theorem Step.parStar.listCons_cong_tail
     (head : Term ctx elementType)
     {tail tail' : Term ctx (Ty.list elementType)}
     (tailChain : Step.parStar tail tail') :
-    Step.parStar (Term.listCons head tail) (Term.listCons head tail') := by
-  induction tailChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.listCons (Step.par.refl _) firstStep) restIH
+    Step.parStar (Term.listCons head tail) (Term.listCons head tail') :=
+  Step.parStar.mapStep
+    (fun tailTerm => Term.listCons head tailTerm)
+    (fun tailPar => Step.par.listCons (Step.par.refl head) tailPar)
+    tailChain
 
 /-- `listCons` congruence at the `parStar` level. -/
 theorem Step.parStar.listCons_cong
@@ -830,13 +829,12 @@ theorem Step.parStar.listElim_cong_scrutinee
                           (Ty.arrow (Ty.list elementType) resultType)))
     (scrutineeChain : Step.parStar scrutinee scrutinee') :
     Step.parStar (Term.listElim scrutinee nilBranch consBranch)
-                 (Term.listElim scrutinee' nilBranch consBranch) := by
-  induction scrutineeChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.listElim firstStep (Step.par.refl _) (Step.par.refl _))
-        restIH
+                 (Term.listElim scrutinee' nilBranch consBranch) :=
+  Step.parStar.mapStep
+    (fun scrutTerm => Term.listElim scrutTerm nilBranch consBranch)
+    (fun scrutPar => Step.par.listElim scrutPar
+      (Step.par.refl nilBranch) (Step.par.refl consBranch))
+    scrutineeChain
 
 /-- Single-position `listElim` congruence on nil-branch. -/
 theorem Step.parStar.listElim_cong_nil
@@ -849,13 +847,12 @@ theorem Step.parStar.listElim_cong_nil
                           (Ty.arrow (Ty.list elementType) resultType)))
     (nilChain : Step.parStar nilBranch nilBranch') :
     Step.parStar (Term.listElim scrutinee nilBranch consBranch)
-                 (Term.listElim scrutinee nilBranch' consBranch) := by
-  induction nilChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.listElim (Step.par.refl _) firstStep (Step.par.refl _))
-        restIH
+                 (Term.listElim scrutinee nilBranch' consBranch) :=
+  Step.parStar.mapStep
+    (fun nilTerm => Term.listElim scrutinee nilTerm consBranch)
+    (fun nilPar => Step.par.listElim
+      (Step.par.refl scrutinee) nilPar (Step.par.refl consBranch))
+    nilChain
 
 /-- Single-position `listElim` congruence on cons-branch. -/
 theorem Step.parStar.listElim_cong_cons
@@ -868,13 +865,12 @@ theorem Step.parStar.listElim_cong_cons
                           (Ty.arrow (Ty.list elementType) resultType))}
     (consChain : Step.parStar consBranch consBranch') :
     Step.parStar (Term.listElim scrutinee nilBranch consBranch)
-                 (Term.listElim scrutinee nilBranch consBranch') := by
-  induction consChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.listElim (Step.par.refl _) (Step.par.refl _) firstStep)
-        restIH
+                 (Term.listElim scrutinee nilBranch consBranch') :=
+  Step.parStar.mapStep
+    (fun consTerm => Term.listElim scrutinee nilBranch consTerm)
+    (fun consPar => Step.par.listElim
+      (Step.par.refl scrutinee) (Step.par.refl nilBranch) consPar)
+    consChain
 
 /-- `listElim` congruence at the `parStar` level. -/
 theorem Step.parStar.listElim_cong
@@ -902,11 +898,8 @@ theorem Step.parStar.optionSome_cong
     {elementType : Ty level scope}
     {value value' : Term ctx elementType}
     (valueChain : Step.parStar value value') :
-    Step.parStar (Term.optionSome value) (Term.optionSome value') := by
-  induction valueChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.optionSome firstStep) restIH
+    Step.parStar (Term.optionSome value) (Term.optionSome value') :=
+  Step.parStar.mapStep Term.optionSome Step.par.optionSome valueChain
 
 /-- Single-position `optionMatch` congruence on scrutinee. -/
 theorem Step.parStar.optionMatch_cong_scrutinee
@@ -917,13 +910,12 @@ theorem Step.parStar.optionMatch_cong_scrutinee
     (someBranch : Term ctx (Ty.arrow elementType resultType))
     (scrutineeChain : Step.parStar scrutinee scrutinee') :
     Step.parStar (Term.optionMatch scrutinee noneBranch someBranch)
-                 (Term.optionMatch scrutinee' noneBranch someBranch) := by
-  induction scrutineeChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.optionMatch firstStep (Step.par.refl _) (Step.par.refl _))
-        restIH
+                 (Term.optionMatch scrutinee' noneBranch someBranch) :=
+  Step.parStar.mapStep
+    (fun scrutTerm => Term.optionMatch scrutTerm noneBranch someBranch)
+    (fun scrutPar => Step.par.optionMatch scrutPar
+      (Step.par.refl noneBranch) (Step.par.refl someBranch))
+    scrutineeChain
 
 /-- Single-position `optionMatch` congruence on none-branch. -/
 theorem Step.parStar.optionMatch_cong_none
@@ -934,13 +926,12 @@ theorem Step.parStar.optionMatch_cong_none
     (someBranch : Term ctx (Ty.arrow elementType resultType))
     (noneChain : Step.parStar noneBranch noneBranch') :
     Step.parStar (Term.optionMatch scrutinee noneBranch someBranch)
-                 (Term.optionMatch scrutinee noneBranch' someBranch) := by
-  induction noneChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.optionMatch (Step.par.refl _) firstStep (Step.par.refl _))
-        restIH
+                 (Term.optionMatch scrutinee noneBranch' someBranch) :=
+  Step.parStar.mapStep
+    (fun noneTerm => Term.optionMatch scrutinee noneTerm someBranch)
+    (fun nonePar => Step.par.optionMatch
+      (Step.par.refl scrutinee) nonePar (Step.par.refl someBranch))
+    noneChain
 
 /-- Single-position `optionMatch` congruence on some-branch. -/
 theorem Step.parStar.optionMatch_cong_some
@@ -951,13 +942,12 @@ theorem Step.parStar.optionMatch_cong_some
     {someBranch someBranch' : Term ctx (Ty.arrow elementType resultType)}
     (someChain : Step.parStar someBranch someBranch') :
     Step.parStar (Term.optionMatch scrutinee noneBranch someBranch)
-                 (Term.optionMatch scrutinee noneBranch someBranch') := by
-  induction someChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.optionMatch (Step.par.refl _) (Step.par.refl _) firstStep)
-        restIH
+                 (Term.optionMatch scrutinee noneBranch someBranch') :=
+  Step.parStar.mapStep
+    (fun someTerm => Term.optionMatch scrutinee noneBranch someTerm)
+    (fun somePar => Step.par.optionMatch
+      (Step.par.refl scrutinee) (Step.par.refl noneBranch) somePar)
+    someChain
 
 /-- `optionMatch` congruence at the `parStar` level. -/
 theorem Step.parStar.optionMatch_cong
@@ -984,11 +974,9 @@ theorem Step.parStar.eitherInl_cong
     {value value' : Term ctx leftType}
     (valueChain : Step.parStar value value') :
     Step.parStar (Term.eitherInl (rightType := rightType) value)
-                 (Term.eitherInl (rightType := rightType) value') := by
-  induction valueChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.eitherInl firstStep) restIH
+                 (Term.eitherInl (rightType := rightType) value') :=
+  Step.parStar.mapStep (Term.eitherInl (rightType := rightType))
+    Step.par.eitherInl valueChain
 
 /-- `eitherInr` congruence at the `parStar` level. -/
 theorem Step.parStar.eitherInr_cong
@@ -997,11 +985,9 @@ theorem Step.parStar.eitherInr_cong
     {value value' : Term ctx rightType}
     (valueChain : Step.parStar value value') :
     Step.parStar (Term.eitherInr (leftType := leftType) value)
-                 (Term.eitherInr (leftType := leftType) value') := by
-  induction valueChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans (Step.par.eitherInr firstStep) restIH
+                 (Term.eitherInr (leftType := leftType) value') :=
+  Step.parStar.mapStep (Term.eitherInr (leftType := leftType))
+    Step.par.eitherInr valueChain
 
 /-- Single-position `eitherMatch` congruence on scrutinee. -/
 theorem Step.parStar.eitherMatch_cong_scrutinee
@@ -1012,13 +998,12 @@ theorem Step.parStar.eitherMatch_cong_scrutinee
     (rightBranch : Term ctx (Ty.arrow rightType resultType))
     (scrutineeChain : Step.parStar scrutinee scrutinee') :
     Step.parStar (Term.eitherMatch scrutinee leftBranch rightBranch)
-                 (Term.eitherMatch scrutinee' leftBranch rightBranch) := by
-  induction scrutineeChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.eitherMatch firstStep (Step.par.refl _) (Step.par.refl _))
-        restIH
+                 (Term.eitherMatch scrutinee' leftBranch rightBranch) :=
+  Step.parStar.mapStep
+    (fun scrutTerm => Term.eitherMatch scrutTerm leftBranch rightBranch)
+    (fun scrutPar => Step.par.eitherMatch scrutPar
+      (Step.par.refl leftBranch) (Step.par.refl rightBranch))
+    scrutineeChain
 
 /-- Single-position `eitherMatch` congruence on left-branch. -/
 theorem Step.parStar.eitherMatch_cong_left
@@ -1029,13 +1014,12 @@ theorem Step.parStar.eitherMatch_cong_left
     (rightBranch : Term ctx (Ty.arrow rightType resultType))
     (leftChain : Step.parStar leftBranch leftBranch') :
     Step.parStar (Term.eitherMatch scrutinee leftBranch rightBranch)
-                 (Term.eitherMatch scrutinee leftBranch' rightBranch) := by
-  induction leftChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.eitherMatch (Step.par.refl _) firstStep (Step.par.refl _))
-        restIH
+                 (Term.eitherMatch scrutinee leftBranch' rightBranch) :=
+  Step.parStar.mapStep
+    (fun leftTerm => Term.eitherMatch scrutinee leftTerm rightBranch)
+    (fun leftPar => Step.par.eitherMatch
+      (Step.par.refl scrutinee) leftPar (Step.par.refl rightBranch))
+    leftChain
 
 /-- Single-position `eitherMatch` congruence on right-branch. -/
 theorem Step.parStar.eitherMatch_cong_right
@@ -1046,13 +1030,12 @@ theorem Step.parStar.eitherMatch_cong_right
     {rightBranch rightBranch' : Term ctx (Ty.arrow rightType resultType)}
     (rightChain : Step.parStar rightBranch rightBranch') :
     Step.parStar (Term.eitherMatch scrutinee leftBranch rightBranch)
-                 (Term.eitherMatch scrutinee leftBranch rightBranch') := by
-  induction rightChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.eitherMatch (Step.par.refl _) (Step.par.refl _) firstStep)
-        restIH
+                 (Term.eitherMatch scrutinee leftBranch rightBranch') :=
+  Step.parStar.mapStep
+    (fun rightTerm => Term.eitherMatch scrutinee leftBranch rightTerm)
+    (fun rightPar => Step.par.eitherMatch
+      (Step.par.refl scrutinee) (Step.par.refl leftBranch) rightPar)
+    rightChain
 
 /-- `eitherMatch` congruence at the `parStar` level. -/
 theorem Step.parStar.eitherMatch_cong
@@ -1081,12 +1064,11 @@ theorem Step.parStar.idJ_cong_base
     (witness : Term ctx (Ty.id carrier leftEnd rightEnd))
     (baseChain : Step.parStar baseCase baseCase') :
     Step.parStar (Term.idJ baseCase witness)
-                 (Term.idJ baseCase' witness) := by
-  induction baseChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.idJ firstStep (Step.par.refl _)) restIH
+                 (Term.idJ baseCase' witness) :=
+  Step.parStar.mapStep
+    (fun baseTerm => Term.idJ baseTerm witness)
+    (fun basePar => Step.par.idJ basePar (Step.par.refl witness))
+    baseChain
 
 /-- Single-position `idJ` congruence on witness. -/
 theorem Step.parStar.idJ_cong_witness
@@ -1097,12 +1079,11 @@ theorem Step.parStar.idJ_cong_witness
     {witness witness' : Term ctx (Ty.id carrier leftEnd rightEnd)}
     (witnessChain : Step.parStar witness witness') :
     Step.parStar (Term.idJ baseCase witness)
-                 (Term.idJ baseCase witness') := by
-  induction witnessChain with
-  | refl _ => exact Step.parStar.refl _
-  | trans firstStep restChain restIH =>
-      exact Step.parStar.trans
-        (Step.par.idJ (Step.par.refl _) firstStep) restIH
+                 (Term.idJ baseCase witness') :=
+  Step.parStar.mapStep
+    (fun witTerm => Term.idJ baseCase witTerm)
+    (fun witPar => Step.par.idJ (Step.par.refl baseCase) witPar)
+    witnessChain
 
 /-- `idJ` congruence at the `parStar` level. -/
 theorem Step.parStar.idJ_cong
