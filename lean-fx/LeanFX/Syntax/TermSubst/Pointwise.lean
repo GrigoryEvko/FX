@@ -12,441 +12,605 @@ themselves (and whose underlying Substs are pointwise equal).  Used
 by the binder cases of `Term.subst_HEq_pointwise` to extend the
 hypothesis under each new binder. -/
 theorem TermSubst.lift_HEq_pointwise
-    {m : Mode} {level scope scope' : Nat}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
-    {σ₁ σ₂ : Subst level scope scope'}
-    (σt₁ : TermSubst Γ Δ σ₁) (σt₂ : TermSubst Γ Δ σ₂)
-    (h_subst : Subst.equiv σ₁ σ₂)
-    (h_pointwise : ∀ i, HEq (σt₁ i) (σt₂ i))
-    (newType : Ty level scope) :
-    ∀ i, HEq (TermSubst.lift σt₁ newType i)
-             (TermSubst.lift σt₂ newType i) := by
-  -- Bridging fact: newType.subst σ₁ = newType.subst σ₂.
-  have h_new : newType.subst σ₁ = newType.subst σ₂ :=
-    Ty.subst_congr h_subst newType
-  intro i
-  match i with
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {firstTypeSubstitution secondTypeSubstitution :
+      Subst level sourceScope targetScope}
+    (firstTermSubstitution :
+      TermSubst sourceContext targetContext firstTypeSubstitution)
+    (secondTermSubstitution :
+      TermSubst sourceContext targetContext secondTypeSubstitution)
+    (substitutionsAgreePointwise :
+      Subst.equiv firstTypeSubstitution secondTypeSubstitution)
+    (termSubstitutionsAgreePointwise :
+      ∀ position, HEq (firstTermSubstitution position)
+                      (secondTermSubstitution position))
+    (newType : Ty level sourceScope) :
+    ∀ position,
+      HEq (TermSubst.lift firstTermSubstitution newType position)
+          (TermSubst.lift secondTermSubstitution newType position) := by
+  -- Bridging fact: newType.subst firstTypeSubstitution =
+  --                  newType.subst secondTypeSubstitution.
+  have newTypeSubstEq :
+      newType.subst firstTypeSubstitution
+        = newType.subst secondTypeSubstitution :=
+    Ty.subst_congr substitutionsAgreePointwise newType
+  intro position
+  match position with
   | ⟨0, _⟩ =>
-    -- LHS = (Ty.subst_weaken_commute newType σ₁).symm ▸
-    --        Term.var (context := Δ.cons (newType.subst σ₁)) ⟨0, _⟩
-    -- RHS = (Ty.subst_weaken_commute newType σ₂).symm ▸
-    --        Term.var (context := Δ.cons (newType.subst σ₂)) ⟨0, _⟩
-    -- Strip outer casts on both sides via eqRec_heq, bridge naked
-    -- Term.var values via heq_var_across_ctx_eq + congrArg-cons.
-    -- Note: Term.var lives at scope' + 1, so the Fin uses
-    -- Nat.zero_lt_succ scope' (NOT the Fin destructure's h0 which
-    -- is at scope + 1).
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
-      (heq_var_across_ctx_eq (congrArg (Δ.cons) h_new)
-        ⟨0, Nat.zero_lt_succ scope'⟩)
+      (heq_var_across_ctx_eq (congrArg (targetContext.cons) newTypeSubstEq)
+        ⟨0, Nat.zero_lt_succ targetScope⟩)
     exact (eqRec_heq _ _).symm
-  | ⟨k + 1, hk⟩ =>
-    -- LHS = (Ty.subst_weaken_commute (varType Γ ⟨k,_⟩) σ₁).symm ▸
-    --        Term.weaken (newType.subst σ₁) (σt₁ ⟨k, _⟩)
-    -- RHS = (Ty.subst_weaken_commute (varType Γ ⟨k,_⟩) σ₂).symm ▸
-    --        Term.weaken (newType.subst σ₂) (σt₂ ⟨k, _⟩)
+  | ⟨predecessor + 1, succBound⟩ =>
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (b :=
-      Term.weaken (newType.subst σ₂)
-        (σt₂ ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
-    · exact Term.weaken_HEq_congr h_new
-        (Ty.subst_congr h_subst
-          (varType Γ ⟨k, Nat.lt_of_succ_lt_succ hk⟩))
-        (σt₁ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
-        (σt₂ ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
-        (h_pointwise ⟨k, Nat.lt_of_succ_lt_succ hk⟩)
+      Term.weaken (newType.subst secondTypeSubstitution)
+        (secondTermSubstitution
+          ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩))
+    · exact Term.weaken_HEq_congr newTypeSubstEq
+        (Ty.subst_congr substitutionsAgreePointwise
+          (varType sourceContext
+            ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩))
+        (firstTermSubstitution
+          ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+        (secondTermSubstitution
+          ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
+        (termSubstitutionsAgreePointwise
+          ⟨predecessor, Nat.lt_of_succ_lt_succ succBound⟩)
     · exact (eqRec_heq _ _).symm
 
 /-! ## `Term.subst_HEq_pointwise`.
 
-Substitution respects pointwise HEq of TermSubsts.  The `h_ctx :
-Δ₁ = Δ₂` parameter accommodates binder-case recursive calls where
-`TermSubst.lift σt_i dom` lands in `Δ.cons (dom.subst σ_i)` —
+Substitution respects pointwise HEq of TermSubsts.  The
+`targetContextEq : firstTargetContext = secondTargetContext`
+parameter accommodates binder-case recursive calls where
+`TermSubst.lift termSubstitution_i domainType` lands in
+`targetContext.cons (domainType.subst typeSubstitution_i)` —
 same scope, different concrete contexts. -/
 theorem Term.subst_HEq_pointwise
-    {m : Mode} {level scope scope' : Nat}
-    {Γ : Ctx m level scope} {Δ₁ Δ₂ : Ctx m level scope'}
-    (h_ctx : Δ₁ = Δ₂)
-    {σ₁ σ₂ : Subst level scope scope'}
-    (σt₁ : TermSubst Γ Δ₁ σ₁) (σt₂ : TermSubst Γ Δ₂ σ₂)
-    (h_subst : Subst.equiv σ₁ σ₂)
-    (h_pointwise : ∀ i, HEq (σt₁ i) (σt₂ i)) :
-    {T : Ty level scope} → (t : Term Γ T) →
-      HEq (Term.subst σt₁ t) (Term.subst σt₂ t)
-  | _, .var i => h_pointwise i
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {firstTargetContext secondTargetContext : Ctx mode level targetScope}
+    (targetContextEq : firstTargetContext = secondTargetContext)
+    {firstTypeSubstitution secondTypeSubstitution :
+      Subst level sourceScope targetScope}
+    (firstTermSubstitution :
+      TermSubst sourceContext firstTargetContext firstTypeSubstitution)
+    (secondTermSubstitution :
+      TermSubst sourceContext secondTargetContext secondTypeSubstitution)
+    (substitutionsAgreePointwise :
+      Subst.equiv firstTypeSubstitution secondTypeSubstitution)
+    (termSubstitutionsAgreePointwise :
+      ∀ position, HEq (firstTermSubstitution position)
+                      (secondTermSubstitution position)) :
+    {tyValue : Ty level sourceScope} → (term : Term sourceContext tyValue) →
+      HEq (Term.subst firstTermSubstitution term)
+          (Term.subst secondTermSubstitution term)
+  | _, .var position => termSubstitutionsAgreePointwise position
   | _, .unit => by term_context_refl
-  | _, .app (domainType := T₁) (codomainType := T₂) f a => by
-    cases h_ctx
-    show HEq (Term.app (Term.subst σt₁ f) (Term.subst σt₁ a))
-             (Term.app (Term.subst σt₂ f) (Term.subst σt₂ a))
+  | _, .app (domainType := domainType) (codomainType := codomainType)
+            functionTerm argumentTerm => by
+    cases targetContextEq
+    show HEq (Term.app (Term.subst firstTermSubstitution functionTerm)
+                       (Term.subst firstTermSubstitution argumentTerm))
+             (Term.app (Term.subst secondTermSubstitution functionTerm)
+                       (Term.subst secondTermSubstitution argumentTerm))
     exact Term.app_HEq_congr
-      (Ty.subst_congr h_subst T₁) (Ty.subst_congr h_subst T₂)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise f)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise a)
-  | _, .lam (domainType := dom) (codomainType := cod) body => by
-    cases h_ctx
+      (Ty.subst_congr substitutionsAgreePointwise domainType)
+      (Ty.subst_congr substitutionsAgreePointwise codomainType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise functionTerm)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise argumentTerm)
+  | _, .lam (domainType := domainType) (codomainType := codomainType) body => by
+    cases targetContextEq
     show HEq
-      (Term.lam (codomainType := cod.subst σ₁)
-        ((Ty.subst_weaken_commute cod σ₁) ▸
-          (Term.subst (TermSubst.lift σt₁ dom) body)))
-      (Term.lam (codomainType := cod.subst σ₂)
-        ((Ty.subst_weaken_commute cod σ₂) ▸
-          (Term.subst (TermSubst.lift σt₂ dom) body)))
+      (Term.lam (codomainType := codomainType.subst firstTypeSubstitution)
+        ((Ty.subst_weaken_commute codomainType firstTypeSubstitution) ▸
+          (Term.subst (TermSubst.lift firstTermSubstitution domainType) body)))
+      (Term.lam (codomainType := codomainType.subst secondTypeSubstitution)
+        ((Ty.subst_weaken_commute codomainType secondTypeSubstitution) ▸
+          (Term.subst (TermSubst.lift secondTermSubstitution domainType) body)))
     apply Term.lam_HEq_congr
-      (Ty.subst_congr h_subst dom) (Ty.subst_congr h_subst cod)
+      (Ty.subst_congr substitutionsAgreePointwise domainType)
+      (Ty.subst_congr substitutionsAgreePointwise codomainType)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
       (Term.subst_HEq_pointwise
-        (congrArg Δ₁.cons (Ty.subst_congr h_subst dom))
-        (TermSubst.lift σt₁ dom) (TermSubst.lift σt₂ dom)
-        (Subst.lift_equiv h_subst)
-        (TermSubst.lift_HEq_pointwise σt₁ σt₂ h_subst h_pointwise dom)
+        (congrArg firstTargetContext.cons
+          (Ty.subst_congr substitutionsAgreePointwise domainType))
+        (TermSubst.lift firstTermSubstitution domainType)
+        (TermSubst.lift secondTermSubstitution domainType)
+        (Subst.lift_equiv substitutionsAgreePointwise)
+        (TermSubst.lift_HEq_pointwise
+          firstTermSubstitution secondTermSubstitution
+          substitutionsAgreePointwise
+          termSubstitutionsAgreePointwise domainType)
         body)
     exact (eqRec_heq _ _).symm
-  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
-    cases h_ctx
+  | _, .lamPi (domainType := domainType) (codomainType := codomainType) body => by
+    cases targetContextEq
     show HEq
-      (Term.lamPi (Term.subst (TermSubst.lift σt₁ dom) body))
-      (Term.lamPi (Term.subst (TermSubst.lift σt₂ dom) body))
+      (Term.lamPi (Term.subst (TermSubst.lift firstTermSubstitution domainType) body))
+      (Term.lamPi (Term.subst (TermSubst.lift secondTermSubstitution domainType) body))
     apply Term.lamPi_HEq_congr
-      (Ty.subst_congr h_subst dom)
-      (Ty.subst_congr (Subst.lift_equiv h_subst) cod)
+      (Ty.subst_congr substitutionsAgreePointwise domainType)
+      (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise)
+        codomainType)
     exact Term.subst_HEq_pointwise
-      (congrArg Δ₁.cons (Ty.subst_congr h_subst dom))
-      (TermSubst.lift σt₁ dom) (TermSubst.lift σt₂ dom)
-      (Subst.lift_equiv h_subst)
-      (TermSubst.lift_HEq_pointwise σt₁ σt₂ h_subst h_pointwise dom)
+      (congrArg firstTargetContext.cons
+        (Ty.subst_congr substitutionsAgreePointwise domainType))
+      (TermSubst.lift firstTermSubstitution domainType)
+      (TermSubst.lift secondTermSubstitution domainType)
+      (Subst.lift_equiv substitutionsAgreePointwise)
+      (TermSubst.lift_HEq_pointwise
+        firstTermSubstitution secondTermSubstitution
+        substitutionsAgreePointwise
+        termSubstitutionsAgreePointwise domainType)
       body
-  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
-    cases h_ctx
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+              functionTerm argumentTerm => by
+    cases targetContextEq
     show HEq
-      ((Ty.subst0_subst_commute cod dom σ₁).symm ▸
-        Term.appPi (Term.subst σt₁ f) (Term.subst σt₁ a))
-      ((Ty.subst0_subst_commute cod dom σ₂).symm ▸
-        Term.appPi (Term.subst σt₂ f) (Term.subst σt₂ a))
+      ((Ty.subst0_subst_commute codomainType domainType firstTypeSubstitution).symm ▸
+        Term.appPi (Term.subst firstTermSubstitution functionTerm)
+                    (Term.subst firstTermSubstitution argumentTerm))
+      ((Ty.subst0_subst_commute codomainType domainType secondTypeSubstitution).symm ▸
+        Term.appPi (Term.subst secondTermSubstitution functionTerm)
+                    (Term.subst secondTermSubstitution argumentTerm))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (b :=
-      Term.appPi (Term.subst σt₂ f) (Term.subst σt₂ a))
+      Term.appPi (Term.subst secondTermSubstitution functionTerm)
+                 (Term.subst secondTermSubstitution argumentTerm))
     · exact Term.appPi_HEq_congr
-        (Ty.subst_congr h_subst dom)
-        (Ty.subst_congr (Subst.lift_equiv h_subst) cod)
-        _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise f)
-        _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise a)
+        (Ty.subst_congr substitutionsAgreePointwise domainType)
+        (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise)
+          codomainType)
+        _ _ (Term.subst_HEq_pointwise rfl
+              firstTermSubstitution secondTermSubstitution
+              substitutionsAgreePointwise
+              termSubstitutionsAgreePointwise functionTerm)
+        _ _ (Term.subst_HEq_pointwise rfl
+              firstTermSubstitution secondTermSubstitution
+              substitutionsAgreePointwise
+              termSubstitutionsAgreePointwise argumentTerm)
     · exact (eqRec_heq _ _).symm
-  | _, .pair (firstType := first) (secondType := second) v w => by
-    cases h_ctx
+  | _, .pair (firstType := firstType) (secondType := secondType)
+              firstVal secondVal => by
+    cases targetContextEq
     show HEq
-      (Term.pair (Term.subst σt₁ v)
-        ((Ty.subst0_subst_commute second first σ₁) ▸ (Term.subst σt₁ w)))
-      (Term.pair (Term.subst σt₂ v)
-        ((Ty.subst0_subst_commute second first σ₂) ▸ (Term.subst σt₂ w)))
+      (Term.pair (Term.subst firstTermSubstitution firstVal)
+        ((Ty.subst0_subst_commute secondType firstType firstTypeSubstitution) ▸
+          (Term.subst firstTermSubstitution secondVal)))
+      (Term.pair (Term.subst secondTermSubstitution firstVal)
+        ((Ty.subst0_subst_commute secondType firstType secondTypeSubstitution) ▸
+          (Term.subst secondTermSubstitution secondVal)))
     apply Term.pair_HEq_congr
-      (Ty.subst_congr h_subst first)
-      (Ty.subst_congr (Subst.lift_equiv h_subst) second)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
+      (Ty.subst_congr substitutionsAgreePointwise firstType)
+      (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise) secondType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise firstVal)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
-      (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise w)
+      (Term.subst_HEq_pointwise rfl
+        firstTermSubstitution secondTermSubstitution
+        substitutionsAgreePointwise
+        termSubstitutionsAgreePointwise secondVal)
     exact (eqRec_heq _ _).symm
-  | _, .fst (firstType := first) (secondType := second) p => by
-    cases h_ctx
-    show HEq (Term.fst (Term.subst σt₁ p)) (Term.fst (Term.subst σt₂ p))
+  | _, .fst (firstType := firstType) (secondType := secondType) pairTerm => by
+    cases targetContextEq
+    show HEq (Term.fst (Term.subst firstTermSubstitution pairTerm))
+             (Term.fst (Term.subst secondTermSubstitution pairTerm))
     exact Term.fst_HEq_congr
-      (Ty.subst_congr h_subst first)
-      (Ty.subst_congr (Subst.lift_equiv h_subst) second)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise p)
-  | _, .snd (firstType := first) (secondType := second) p => by
-    cases h_ctx
+      (Ty.subst_congr substitutionsAgreePointwise firstType)
+      (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise) secondType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise pairTerm)
+  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+    cases targetContextEq
     show HEq
-      ((Ty.subst0_subst_commute second first σ₁).symm ▸
-        Term.snd (Term.subst σt₁ p))
-      ((Ty.subst0_subst_commute second first σ₂).symm ▸
-        Term.snd (Term.subst σt₂ p))
+      ((Ty.subst0_subst_commute secondType firstType firstTypeSubstitution).symm ▸
+        Term.snd (Term.subst firstTermSubstitution pairTerm))
+      ((Ty.subst0_subst_commute secondType firstType secondTypeSubstitution).symm ▸
+        Term.snd (Term.subst secondTermSubstitution pairTerm))
     apply HEq.trans (eqRec_heq _ _)
-    apply HEq.trans (b := Term.snd (Term.subst σt₂ p))
+    apply HEq.trans (b := Term.snd (Term.subst secondTermSubstitution pairTerm))
     · exact Term.snd_HEq_congr
-        (Ty.subst_congr h_subst first)
-        (Ty.subst_congr (Subst.lift_equiv h_subst) second)
-        _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise p)
+        (Ty.subst_congr substitutionsAgreePointwise firstType)
+        (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise) secondType)
+        _ _ (Term.subst_HEq_pointwise rfl
+              firstTermSubstitution secondTermSubstitution
+              substitutionsAgreePointwise
+              termSubstitutionsAgreePointwise pairTerm)
     · exact (eqRec_heq _ _).symm
   | _, .boolTrue => by term_context_refl
   | _, .boolFalse => by term_context_refl
-  | _, .boolElim (resultType := result) s t e => by
-    cases h_ctx
+  | _, .boolElim (resultType := resultType) scrutinee thenBranch elseBranch => by
+    cases targetContextEq
     show HEq
-      (Term.boolElim (Term.subst σt₁ s) (Term.subst σt₁ t) (Term.subst σt₁ e))
-      (Term.boolElim (Term.subst σt₂ s) (Term.subst σt₂ t) (Term.subst σt₂ e))
+      (Term.boolElim (Term.subst firstTermSubstitution scrutinee)
+                     (Term.subst firstTermSubstitution thenBranch)
+                     (Term.subst firstTermSubstitution elseBranch))
+      (Term.boolElim (Term.subst secondTermSubstitution scrutinee)
+                     (Term.subst secondTermSubstitution thenBranch)
+                     (Term.subst secondTermSubstitution elseBranch))
     exact Term.boolElim_HEq_congr
-      (Ty.subst_congr h_subst result)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
       _ _ (eq_of_heq
-            (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise s))
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise t)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise e)
+            (Term.subst_HEq_pointwise rfl
+              firstTermSubstitution secondTermSubstitution
+              substitutionsAgreePointwise
+              termSubstitutionsAgreePointwise scrutinee))
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise thenBranch)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise elseBranch)
   | _, .natZero => by term_context_refl
-  | _, .natSucc pred => by
-    cases h_ctx
-    show HEq (Term.natSucc (Term.subst σt₁ pred))
-             (Term.natSucc (Term.subst σt₂ pred))
+  | _, .natSucc predecessor => by
+    cases targetContextEq
+    show HEq (Term.natSucc (Term.subst firstTermSubstitution predecessor))
+             (Term.natSucc (Term.subst secondTermSubstitution predecessor))
     exact Term.natSucc_HEq_congr _ _
-      (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise pred)
-  | _, .natElim (resultType := result) scrutinee zeroBranch succBranch => by
-    cases h_ctx
+      (Term.subst_HEq_pointwise rfl
+        firstTermSubstitution secondTermSubstitution
+        substitutionsAgreePointwise
+        termSubstitutionsAgreePointwise predecessor)
+  | _, .natElim (resultType := resultType) scrutinee zeroBranch succBranch => by
+    cases targetContextEq
     show HEq
-      (Term.natElim (Term.subst σt₁ scrutinee)
-                    (Term.subst σt₁ zeroBranch)
-                    (Term.subst σt₁ succBranch))
-      (Term.natElim (Term.subst σt₂ scrutinee)
-                    (Term.subst σt₂ zeroBranch)
-                    (Term.subst σt₂ succBranch))
+      (Term.natElim (Term.subst firstTermSubstitution scrutinee)
+                    (Term.subst firstTermSubstitution zeroBranch)
+                    (Term.subst firstTermSubstitution succBranch))
+      (Term.natElim (Term.subst secondTermSubstitution scrutinee)
+                    (Term.subst secondTermSubstitution zeroBranch)
+                    (Term.subst secondTermSubstitution succBranch))
     exact Term.natElim_HEq_congr
-      (Ty.subst_congr h_subst result)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
       _ _ (eq_of_heq
-            (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee))
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise zeroBranch)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise succBranch)
-  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch => by
-    cases h_ctx
+            (Term.subst_HEq_pointwise rfl
+              firstTermSubstitution secondTermSubstitution
+              substitutionsAgreePointwise
+              termSubstitutionsAgreePointwise scrutinee))
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise zeroBranch)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise succBranch)
+  | _, .natRec (resultType := resultType) scrutinee zeroBranch succBranch => by
+    cases targetContextEq
     exact Term.natRec_HEq_congr
-      (Ty.subst_congr h_subst result)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
       _ _ (eq_of_heq
-            (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee))
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise zeroBranch)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise succBranch)
-  | _, .listNil (elementType := elem) => by
-    cases h_ctx
-    exact Term.listNil_HEq_congr (Ty.subst_congr h_subst elem)
-  | _, .listCons (elementType := elem) hd tl => by
-    cases h_ctx
-    show HEq (Term.listCons (Term.subst σt₁ hd) (Term.subst σt₁ tl))
-             (Term.listCons (Term.subst σt₂ hd) (Term.subst σt₂ tl))
+            (Term.subst_HEq_pointwise rfl
+              firstTermSubstitution secondTermSubstitution
+              substitutionsAgreePointwise
+              termSubstitutionsAgreePointwise scrutinee))
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise zeroBranch)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise succBranch)
+  | _, .listNil (elementType := elementType) => by
+    cases targetContextEq
+    exact Term.listNil_HEq_congr
+      (Ty.subst_congr substitutionsAgreePointwise elementType)
+  | _, .listCons (elementType := elementType) headValue tailValue => by
+    cases targetContextEq
+    show HEq (Term.listCons (Term.subst firstTermSubstitution headValue)
+                            (Term.subst firstTermSubstitution tailValue))
+             (Term.listCons (Term.subst secondTermSubstitution headValue)
+                            (Term.subst secondTermSubstitution tailValue))
     exact Term.listCons_HEq_congr
-      (Ty.subst_congr h_subst elem)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise hd)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise tl)
-  | _, .listElim (elementType := elem) (resultType := result)
+      (Ty.subst_congr substitutionsAgreePointwise elementType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise headValue)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise tailValue)
+  | _, .listElim (elementType := elementType) (resultType := resultType)
         scrutinee nilBranch consBranch => by
-    cases h_ctx
+    cases targetContextEq
     show HEq
-      (Term.listElim (Term.subst σt₁ scrutinee)
-                     (Term.subst σt₁ nilBranch)
-                     (Term.subst σt₁ consBranch))
-      (Term.listElim (Term.subst σt₂ scrutinee)
-                     (Term.subst σt₂ nilBranch)
-                     (Term.subst σt₂ consBranch))
+      (Term.listElim (Term.subst firstTermSubstitution scrutinee)
+                     (Term.subst firstTermSubstitution nilBranch)
+                     (Term.subst firstTermSubstitution consBranch))
+      (Term.listElim (Term.subst secondTermSubstitution scrutinee)
+                     (Term.subst secondTermSubstitution nilBranch)
+                     (Term.subst secondTermSubstitution consBranch))
     exact Term.listElim_HEq_congr
-      (Ty.subst_congr h_subst elem)
-      (Ty.subst_congr h_subst result)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise nilBranch)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise consBranch)
-  | _, .optionNone (elementType := elem) => by
-    cases h_ctx
-    exact Term.optionNone_HEq_congr (Ty.subst_congr h_subst elem)
-  | _, .optionSome (elementType := elem) v => by
-    cases h_ctx
-    show HEq (Term.optionSome (Term.subst σt₁ v))
-             (Term.optionSome (Term.subst σt₂ v))
+      (Ty.subst_congr substitutionsAgreePointwise elementType)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise scrutinee)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise nilBranch)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise consBranch)
+  | _, .optionNone (elementType := elementType) => by
+    cases targetContextEq
+    exact Term.optionNone_HEq_congr
+      (Ty.subst_congr substitutionsAgreePointwise elementType)
+  | _, .optionSome (elementType := elementType) value => by
+    cases targetContextEq
+    show HEq (Term.optionSome (Term.subst firstTermSubstitution value))
+             (Term.optionSome (Term.subst secondTermSubstitution value))
     exact Term.optionSome_HEq_congr
-      (Ty.subst_congr h_subst elem)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
-  | _, .optionMatch (elementType := elem) (resultType := result)
+      (Ty.subst_congr substitutionsAgreePointwise elementType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise value)
+  | _, .optionMatch (elementType := elementType) (resultType := resultType)
         scrutinee noneBranch someBranch => by
-    cases h_ctx
+    cases targetContextEq
     show HEq
-      (Term.optionMatch (Term.subst σt₁ scrutinee)
-                        (Term.subst σt₁ noneBranch)
-                        (Term.subst σt₁ someBranch))
-      (Term.optionMatch (Term.subst σt₂ scrutinee)
-                        (Term.subst σt₂ noneBranch)
-                        (Term.subst σt₂ someBranch))
+      (Term.optionMatch (Term.subst firstTermSubstitution scrutinee)
+                        (Term.subst firstTermSubstitution noneBranch)
+                        (Term.subst firstTermSubstitution someBranch))
+      (Term.optionMatch (Term.subst secondTermSubstitution scrutinee)
+                        (Term.subst secondTermSubstitution noneBranch)
+                        (Term.subst secondTermSubstitution someBranch))
     exact Term.optionMatch_HEq_congr
-      (Ty.subst_congr h_subst elem)
-      (Ty.subst_congr h_subst result)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise noneBranch)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise someBranch)
-  | _, .eitherInl (leftType := lefT) (rightType := righT) v => by
-    cases h_ctx
+      (Ty.subst_congr substitutionsAgreePointwise elementType)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise scrutinee)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise noneBranch)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise someBranch)
+  | _, .eitherInl (leftType := leftType) (rightType := rightType) value => by
+    cases targetContextEq
     exact Term.eitherInl_HEq_congr
-      (Ty.subst_congr h_subst lefT)
-      (Ty.subst_congr h_subst righT)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
-  | _, .eitherInr (leftType := lefT) (rightType := righT) v => by
-    cases h_ctx
+      (Ty.subst_congr substitutionsAgreePointwise leftType)
+      (Ty.subst_congr substitutionsAgreePointwise rightType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise value)
+  | _, .eitherInr (leftType := leftType) (rightType := rightType) value => by
+    cases targetContextEq
     exact Term.eitherInr_HEq_congr
-      (Ty.subst_congr h_subst lefT)
-      (Ty.subst_congr h_subst righT)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise v)
-  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+      (Ty.subst_congr substitutionsAgreePointwise leftType)
+      (Ty.subst_congr substitutionsAgreePointwise rightType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise value)
+  | _, .eitherMatch (leftType := leftType) (rightType := rightType)
+                    (resultType := resultType)
         scrutinee leftBranch rightBranch => by
-    cases h_ctx
+    cases targetContextEq
     exact Term.eitherMatch_HEq_congr
-      (Ty.subst_congr h_subst lefT)
-      (Ty.subst_congr h_subst righT)
-      (Ty.subst_congr h_subst result)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise scrutinee)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise leftBranch)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise rightBranch)
+      (Ty.subst_congr substitutionsAgreePointwise leftType)
+      (Ty.subst_congr substitutionsAgreePointwise rightType)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise scrutinee)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise leftBranch)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise rightBranch)
   | _, .refl (carrier := carrier) rawTerm => by
-    cases h_ctx
+    cases targetContextEq
     exact Term.refl_HEq_congr
-      (Ty.subst_congr h_subst carrier)
-      (RawTerm.subst_congr (Subst.equiv_forRaw h_subst) rawTerm)
+      (Ty.subst_congr substitutionsAgreePointwise carrier)
+      (RawTerm.subst_congr (Subst.equiv_forRaw substitutionsAgreePointwise)
+        rawTerm)
   | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
-            (resultType := result)
+            (resultType := resultType)
             baseCase witness => by
-    cases h_ctx
+    cases targetContextEq
     exact Term.idJ_HEq_congr
-      (Ty.subst_congr h_subst carrier)
-      (RawTerm.subst_congr (Subst.equiv_forRaw h_subst) leftEnd)
-      (RawTerm.subst_congr (Subst.equiv_forRaw h_subst) rightEnd)
-      (Ty.subst_congr h_subst result)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise baseCase)
-      _ _ (Term.subst_HEq_pointwise rfl σt₁ σt₂ h_subst h_pointwise witness)
+      (Ty.subst_congr substitutionsAgreePointwise carrier)
+      (RawTerm.subst_congr (Subst.equiv_forRaw substitutionsAgreePointwise)
+        leftEnd)
+      (RawTerm.subst_congr (Subst.equiv_forRaw substitutionsAgreePointwise)
+        rightEnd)
+      (Ty.subst_congr substitutionsAgreePointwise resultType)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise baseCase)
+      _ _ (Term.subst_HEq_pointwise rfl
+            firstTermSubstitution secondTermSubstitution
+            substitutionsAgreePointwise
+            termSubstitutionsAgreePointwise witness)
 
 /-! ## `Term.subst_id_HEq`.
 
 Full HEq form of subst-by-identity.  Structural induction; binder
 cases use `Term.subst_HEq_pointwise` to bridge
-`TermSubst.lift (TermSubst.identity Γ)` to
-`TermSubst.identity (Γ.cons _)` via `lift_identity_pointwise`. -/
-theorem Term.subst_id_HEq {m : Mode} {level scope : Nat} {Γ : Ctx m level scope} :
-    {T : Ty level scope} → (t : Term Γ T) →
-      HEq (Term.subst (TermSubst.identity Γ) t) t
-  | _, .var i => Term.subst_id_HEq_var i
+`TermSubst.lift (TermSubst.identity sourceContext)` to
+`TermSubst.identity (sourceContext.cons _)` via
+`lift_identity_pointwise`. -/
+theorem Term.subst_id_HEq
+    {mode : Mode} {level scope : Nat} {sourceContext : Ctx mode level scope} :
+    {tyValue : Ty level scope} → (term : Term sourceContext tyValue) →
+      HEq (Term.subst (TermSubst.identity sourceContext) term) term
+  | _, .var position => Term.subst_id_HEq_var position
   | _, .unit => Term.subst_id_HEq_unit
-  | _, .app f a =>
-    Term.subst_id_HEq_app f a
-      (Term.subst_id_HEq f) (Term.subst_id_HEq a)
-  | _, .lam (domainType := dom) (codomainType := cod) body => by
+  | _, .app functionTerm argumentTerm =>
+    Term.subst_id_HEq_app functionTerm argumentTerm
+      (Term.subst_id_HEq functionTerm) (Term.subst_id_HEq argumentTerm)
+  | _, .lam (domainType := domainType) (codomainType := codomainType) body => by
     show HEq
-      (Term.lam (codomainType := cod.subst Subst.identity)
-        ((Ty.subst_weaken_commute cod Subst.identity) ▸
-          (Term.subst (TermSubst.lift (TermSubst.identity Γ) dom) body)))
+      (Term.lam (codomainType := codomainType.subst Subst.identity)
+        ((Ty.subst_weaken_commute codomainType Subst.identity) ▸
+          (Term.subst (TermSubst.lift
+              (TermSubst.identity sourceContext) domainType) body)))
       (Term.lam body)
-    apply Term.lam_HEq_congr (Ty.subst_id dom) (Ty.subst_id cod)
+    apply Term.lam_HEq_congr (Ty.subst_id domainType) (Ty.subst_id codomainType)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans
       (Term.subst_HEq_pointwise
-        (congrArg Γ.cons (Ty.subst_id dom))
-        (TermSubst.lift (TermSubst.identity Γ) dom)
-        (TermSubst.identity (Γ.cons dom))
+        (congrArg sourceContext.cons (Ty.subst_id domainType))
+        (TermSubst.lift (TermSubst.identity sourceContext) domainType)
+        (TermSubst.identity (sourceContext.cons domainType))
         Subst.lift_identity_equiv
-        (TermSubst.lift_identity_pointwise Γ dom)
+        (TermSubst.lift_identity_pointwise sourceContext domainType)
         body)
     exact Term.subst_id_HEq body
-  | _, .lamPi (domainType := dom) (codomainType := cod) body => by
+  | _, .lamPi (domainType := domainType) (codomainType := codomainType) body => by
     show HEq
-      (Term.lamPi (Term.subst (TermSubst.lift (TermSubst.identity Γ) dom) body))
+      (Term.lamPi (Term.subst (TermSubst.lift
+        (TermSubst.identity sourceContext) domainType) body))
       (Term.lamPi body)
-    apply Term.lamPi_HEq_congr (Ty.subst_id dom)
-      ((Ty.subst_congr Subst.lift_identity_equiv cod).trans
-       (Ty.subst_id cod))
+    apply Term.lamPi_HEq_congr (Ty.subst_id domainType)
+      ((Ty.subst_congr Subst.lift_identity_equiv codomainType).trans
+       (Ty.subst_id codomainType))
     apply HEq.trans
       (Term.subst_HEq_pointwise
-        (congrArg Γ.cons (Ty.subst_id dom))
-        (TermSubst.lift (TermSubst.identity Γ) dom)
-        (TermSubst.identity (Γ.cons dom))
+        (congrArg sourceContext.cons (Ty.subst_id domainType))
+        (TermSubst.lift (TermSubst.identity sourceContext) domainType)
+        (TermSubst.identity (sourceContext.cons domainType))
         Subst.lift_identity_equiv
-        (TermSubst.lift_identity_pointwise Γ dom)
+        (TermSubst.lift_identity_pointwise sourceContext domainType)
         body)
     exact Term.subst_id_HEq body
-  | _, .appPi f a =>
-    Term.subst_id_HEq_appPi f a
-      (Term.subst_id_HEq f) (Term.subst_id_HEq a)
-  | _, .pair v w =>
-    Term.subst_id_HEq_pair v w
-      (Term.subst_id_HEq v) (Term.subst_id_HEq w)
-  | _, .fst p =>
-    Term.subst_id_HEq_fst p (Term.subst_id_HEq p)
-  | _, .snd p =>
-    Term.subst_id_HEq_snd p (Term.subst_id_HEq p)
+  | _, .appPi functionTerm argumentTerm =>
+    Term.subst_id_HEq_appPi functionTerm argumentTerm
+      (Term.subst_id_HEq functionTerm) (Term.subst_id_HEq argumentTerm)
+  | _, .pair firstVal secondVal =>
+    Term.subst_id_HEq_pair firstVal secondVal
+      (Term.subst_id_HEq firstVal) (Term.subst_id_HEq secondVal)
+  | _, .fst pairTerm =>
+    Term.subst_id_HEq_fst pairTerm (Term.subst_id_HEq pairTerm)
+  | _, .snd pairTerm =>
+    Term.subst_id_HEq_snd pairTerm (Term.subst_id_HEq pairTerm)
   | _, .boolTrue => Term.subst_id_HEq_boolTrue
   | _, .boolFalse => Term.subst_id_HEq_boolFalse
-  | _, .boolElim s t e =>
-    Term.subst_id_HEq_boolElim s t e
-      (Term.subst_id_HEq s) (Term.subst_id_HEq t) (Term.subst_id_HEq e)
+  | _, .boolElim scrutinee thenBranch elseBranch =>
+    Term.subst_id_HEq_boolElim scrutinee thenBranch elseBranch
+      (Term.subst_id_HEq scrutinee)
+      (Term.subst_id_HEq thenBranch)
+      (Term.subst_id_HEq elseBranch)
   | _, .natZero => HEq.refl _
-  | _, .natSucc pred =>
-    Term.natSucc_HEq_congr _ _ (Term.subst_id_HEq pred)
-  | _, .natElim (resultType := result) scrutinee zeroBranch succBranch => by
+  | _, .natSucc predecessor =>
+    Term.natSucc_HEq_congr _ _ (Term.subst_id_HEq predecessor)
+  | _, .natElim (resultType := resultType) scrutinee zeroBranch succBranch => by
     show HEq
-      (Term.natElim (Term.subst (TermSubst.identity Γ) scrutinee)
-                    (Term.subst (TermSubst.identity Γ) zeroBranch)
-                    (Term.subst (TermSubst.identity Γ) succBranch))
+      (Term.natElim
+        (Term.subst (TermSubst.identity sourceContext) scrutinee)
+        (Term.subst (TermSubst.identity sourceContext) zeroBranch)
+        (Term.subst (TermSubst.identity sourceContext) succBranch))
       (Term.natElim scrutinee zeroBranch succBranch)
     exact Term.natElim_HEq_congr
-      (Ty.subst_id result)
+      (Ty.subst_id resultType)
       _ _ (eq_of_heq (Term.subst_id_HEq scrutinee))
       _ _ (Term.subst_id_HEq zeroBranch)
       _ _ (Term.subst_id_HEq succBranch)
-  | _, .natRec (resultType := result) scrutinee zeroBranch succBranch =>
+  | _, .natRec (resultType := resultType) scrutinee zeroBranch succBranch =>
     Term.natRec_HEq_congr
-      (Ty.subst_id result)
+      (Ty.subst_id resultType)
       _ _ (eq_of_heq (Term.subst_id_HEq scrutinee))
       _ _ (Term.subst_id_HEq zeroBranch)
       _ _ (Term.subst_id_HEq succBranch)
-  | _, .listNil (elementType := elem) =>
-    Term.listNil_HEq_congr (Ty.subst_id elem)
-  | _, .listCons (elementType := elem) hd tl =>
+  | _, .listNil (elementType := elementType) =>
+    Term.listNil_HEq_congr (Ty.subst_id elementType)
+  | _, .listCons (elementType := elementType) headValue tailValue =>
     Term.listCons_HEq_congr
-      (Ty.subst_id elem)
-      _ _ (Term.subst_id_HEq hd)
-      _ _ (Term.subst_id_HEq tl)
-  | _, .listElim (elementType := elem) (resultType := result)
+      (Ty.subst_id elementType)
+      _ _ (Term.subst_id_HEq headValue)
+      _ _ (Term.subst_id_HEq tailValue)
+  | _, .listElim (elementType := elementType) (resultType := resultType)
         scrutinee nilBranch consBranch =>
     Term.listElim_HEq_congr
-      (Ty.subst_id elem) (Ty.subst_id result)
+      (Ty.subst_id elementType) (Ty.subst_id resultType)
       _ _ (Term.subst_id_HEq scrutinee)
       _ _ (Term.subst_id_HEq nilBranch)
       _ _ (Term.subst_id_HEq consBranch)
-  | _, .optionNone (elementType := elem) =>
-    Term.optionNone_HEq_congr (Ty.subst_id elem)
-  | _, .optionSome (elementType := elem) v =>
+  | _, .optionNone (elementType := elementType) =>
+    Term.optionNone_HEq_congr (Ty.subst_id elementType)
+  | _, .optionSome (elementType := elementType) value =>
     Term.optionSome_HEq_congr
-      (Ty.subst_id elem)
-      _ _ (Term.subst_id_HEq v)
-  | _, .optionMatch (elementType := elem) (resultType := result)
+      (Ty.subst_id elementType)
+      _ _ (Term.subst_id_HEq value)
+  | _, .optionMatch (elementType := elementType) (resultType := resultType)
         scrutinee noneBranch someBranch =>
     Term.optionMatch_HEq_congr
-      (Ty.subst_id elem) (Ty.subst_id result)
+      (Ty.subst_id elementType) (Ty.subst_id resultType)
       _ _ (Term.subst_id_HEq scrutinee)
       _ _ (Term.subst_id_HEq noneBranch)
       _ _ (Term.subst_id_HEq someBranch)
-  | _, .eitherInl (leftType := lefT) (rightType := righT) v =>
+  | _, .eitherInl (leftType := leftType) (rightType := rightType) value =>
     Term.eitherInl_HEq_congr
-      (Ty.subst_id lefT) (Ty.subst_id righT)
-      _ _ (Term.subst_id_HEq v)
-  | _, .eitherInr (leftType := lefT) (rightType := righT) v =>
+      (Ty.subst_id leftType) (Ty.subst_id rightType)
+      _ _ (Term.subst_id_HEq value)
+  | _, .eitherInr (leftType := leftType) (rightType := rightType) value =>
     Term.eitherInr_HEq_congr
-      (Ty.subst_id lefT) (Ty.subst_id righT)
-      _ _ (Term.subst_id_HEq v)
-  | _, .eitherMatch (leftType := lefT) (rightType := righT) (resultType := result)
+      (Ty.subst_id leftType) (Ty.subst_id rightType)
+      _ _ (Term.subst_id_HEq value)
+  | _, .eitherMatch (leftType := leftType) (rightType := rightType)
+                    (resultType := resultType)
         scrutinee leftBranch rightBranch =>
     Term.eitherMatch_HEq_congr
-      (Ty.subst_id lefT) (Ty.subst_id righT) (Ty.subst_id result)
+      (Ty.subst_id leftType) (Ty.subst_id rightType) (Ty.subst_id resultType)
       _ _ (Term.subst_id_HEq scrutinee)
       _ _ (Term.subst_id_HEq leftBranch)
       _ _ (Term.subst_id_HEq rightBranch)
   | _, .refl (carrier := carrier) rawTerm =>
     Term.refl_HEq_congr (Ty.subst_id carrier) (RawTerm.subst_id rawTerm)
   | _, .idJ (carrier := carrier) (leftEnd := leftEnd) (rightEnd := rightEnd)
-            (resultType := result)
+            (resultType := resultType)
             baseCase witness =>
     Term.idJ_HEq_congr
       (Ty.subst_id carrier) (RawTerm.subst_id leftEnd) (RawTerm.subst_id rightEnd)
-      (Ty.subst_id result)
+      (Ty.subst_id resultType)
       _ _ (Term.subst_id_HEq baseCase)
       _ _ (Term.subst_id_HEq witness)
 
 /-! ## `Term.subst_id` (explicit-`▸` form).
 
 Corollary of `Term.subst_id_HEq` + `eqRec_heq`. -/
-theorem Term.subst_id {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
-    {T : Ty level scope} (t : Term Γ T) :
-    (Ty.subst_id T) ▸ Term.subst (TermSubst.identity Γ) t = t :=
-  eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.subst_id_HEq t))
+theorem Term.subst_id {mode : Mode} {level scope : Nat}
+    {sourceContext : Ctx mode level scope}
+    {tyValue : Ty level scope} (term : Term sourceContext tyValue) :
+    (Ty.subst_id tyValue) ▸ Term.subst (TermSubst.identity sourceContext) term
+      = term :=
+  eq_of_heq (HEq.trans (eqRec_heq _ _) (Term.subst_id_HEq term))
 
 /-! ## Cast-through-Term.subst HEq helper.
 
@@ -455,23 +619,28 @@ substitution's structural recursion can fire on the bare
 constructor.  Bridge for `lift_compose_pointwise_zero` and the
 cast-bearing closed-context commute cases. -/
 theorem Term.subst_HEq_cast_input
-    {m : Mode} {level scope scope' : Nat}
-    {Γ : Ctx m level scope} {Δ : Ctx m level scope'}
-    {σ : Subst level scope scope'} (σt : TermSubst Γ Δ σ)
-    {T₁ T₂ : Ty level scope} (h : T₁ = T₂) (t : Term Γ T₁) :
-    HEq (Term.subst σt (h ▸ t)) (Term.subst σt t) := by
-  cases h
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceContext : Ctx mode level sourceScope}
+    {targetContext : Ctx mode level targetScope}
+    {typeSubstitution : Subst level sourceScope targetScope}
+    (termSubstitution : TermSubst sourceContext targetContext typeSubstitution)
+    {sourceTy targetTy : Ty level sourceScope}
+    (typeEq : sourceTy = targetTy)
+    (term : Term sourceContext sourceTy) :
+    HEq (Term.subst termSubstitution (typeEq ▸ term))
+        (Term.subst termSubstitution term) := by
+  cases typeEq
   rfl
 
 /-- Push a type-cast on a one-hole-substitution body out through
 `Term.subst0`. -/
 theorem Term.subst0_HEq_cast_input
-    {m : Mode} {level scope : Nat} {Γ : Ctx m level scope}
+    {mode : Mode} {level scope : Nat} {sourceContext : Ctx mode level scope}
     {argumentType : Ty level scope}
     {sourceBodyType targetBodyType : Ty level (scope + 1)}
     (bodyTypeEquality : sourceBodyType = targetBodyType)
-    (bodyTerm : Term (Γ.cons argumentType) sourceBodyType)
-    (argumentTerm : Term Γ argumentType) :
+    (bodyTerm : Term (sourceContext.cons argumentType) sourceBodyType)
+    (argumentTerm : Term sourceContext argumentType) :
     HEq (Term.subst0 (bodyTypeEquality ▸ bodyTerm) argumentTerm)
       (Term.subst0 bodyTerm argumentTerm) := by
   show HEq
@@ -485,58 +654,43 @@ theorem Term.subst0_HEq_cast_input
 
 Lifting a composed term-substitution under a binder agrees HEq with
 composing the two lifts on the freshly-bound variable.  The position-
-`k+1` case requires `Term.subst_weaken_commute_HEq` (binder cases
-deferred) and is shipped as a separate companion. -/
+`predecessor + 1` case requires `Term.subst_weaken_commute_HEq`
+(binder cases deferred) and is shipped as a separate companion. -/
 theorem TermSubst.lift_compose_pointwise_zero
-    {m : Mode} {level scope₁ scope₂ scope₃ : Nat}
-    {Γ₁ : Ctx m level scope₁} {Γ₂ : Ctx m level scope₂} {Γ₃ : Ctx m level scope₃}
-    {σ₁ : Subst level scope₁ scope₂} {σ₂ : Subst level scope₂ scope₃}
-    (σt₁ : TermSubst Γ₁ Γ₂ σ₁) (σt₂ : TermSubst Γ₂ Γ₃ σ₂)
-    (newType : Ty level scope₁) :
+    {mode : Mode} {level firstScope middleScope finalScope : Nat}
+    {firstContext : Ctx mode level firstScope}
+    {middleContext : Ctx mode level middleScope}
+    {finalContext : Ctx mode level finalScope}
+    {firstTypeSubstitution : Subst level firstScope middleScope}
+    {secondTypeSubstitution : Subst level middleScope finalScope}
+    (firstTermSubstitution :
+      TermSubst firstContext middleContext firstTypeSubstitution)
+    (secondTermSubstitution :
+      TermSubst middleContext finalContext secondTypeSubstitution)
+    (newType : Ty level firstScope) :
     HEq
-      (TermSubst.lift (TermSubst.compose σt₁ σt₂) newType
-        ⟨0, Nat.zero_lt_succ _⟩)
-      (TermSubst.compose (σt₁.lift newType)
-                          (σt₂.lift (newType.subst σ₁))
+      (TermSubst.lift
+        (TermSubst.compose firstTermSubstitution secondTermSubstitution)
+        newType ⟨0, Nat.zero_lt_succ _⟩)
+      (TermSubst.compose
+        (firstTermSubstitution.lift newType)
+        (secondTermSubstitution.lift (newType.subst firstTypeSubstitution))
         ⟨0, Nat.zero_lt_succ _⟩) := by
-  -- LHS = (Ty.subst_weaken_commute newType (Subst.compose σ₁ σ₂)).symm ▸
-  --        Term.var (context := Γ₃.cons (newType.subst (Subst.compose σ₁ σ₂))) ⟨0, _⟩
-  --
-  -- RHS = Ty.subst_compose newType.weaken σ₁.lift σ₂.lift ▸
-  --        Term.subst (σt₂.lift (newType.subst σ₁))
-  --          ((Ty.subst_weaken_commute newType σ₁).symm ▸
-  --            Term.var (context := Γ₂.cons (newType.subst σ₁)) ⟨0, _⟩)
-  --
-  -- Strip outer cast on LHS via eqRec_heq.
   apply HEq.trans (eqRec_heq _ _)
-  -- Goal: HEq (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩) RHS
-  --
-  -- Flip and strip outer cast on RHS too.
   apply HEq.symm
   apply HEq.trans (eqRec_heq _ _)
-  -- Goal: HEq (Term.subst (σt₂.lift _) (cast ▸ Term.var ⟨0, _⟩))
-  --           (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩)
-  --
-  -- Push the inner cast out through Term.subst via v1.26 helper.
   apply HEq.trans
     (Term.subst_HEq_cast_input
-      (σt₂.lift (newType.subst σ₁))
-      (Ty.subst_weaken_commute newType σ₁).symm
-      (Term.var (context := Γ₂.cons (newType.subst σ₁))
+      (secondTermSubstitution.lift (newType.subst firstTypeSubstitution))
+      (Ty.subst_weaken_commute newType firstTypeSubstitution).symm
+      (Term.var (context := middleContext.cons (newType.subst firstTypeSubstitution))
         ⟨0, Nat.zero_lt_succ _⟩))
-  -- Goal: HEq (Term.subst (σt₂.lift _) (Term.var ⟨0, _⟩))
-  --           (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩)
-  --
-  -- Term.subst σt (Term.var i) ≡ σt i (Term.subst's var arm).
-  show HEq ((σt₂.lift (newType.subst σ₁)) ⟨0, Nat.zero_lt_succ _⟩) _
-  -- (σt₂.lift X) ⟨0, _⟩ = (Ty.subst_weaken_commute X σ₂).symm ▸ Term.var ⟨0, _⟩
+  show HEq ((secondTermSubstitution.lift (newType.subst firstTypeSubstitution))
+              ⟨0, Nat.zero_lt_succ _⟩) _
   apply HEq.trans (eqRec_heq _ _)
-  -- Goal: HEq (Term.var (context := Γ₃.cons ((newType.subst σ₁).subst σ₂)) ⟨0, _⟩)
-  --           (Term.var (context := Γ₃.cons (newType.subst (compose σ₁ σ₂))) ⟨0, _⟩)
-  --
-  -- Bridge via Ty.subst_compose newType σ₁ σ₂ at the context level.
   exact heq_var_across_ctx_eq
-    (congrArg Γ₃.cons (Ty.subst_compose newType σ₁ σ₂))
+    (congrArg finalContext.cons
+      (Ty.subst_compose newType firstTypeSubstitution secondTypeSubstitution))
     ⟨0, Nat.zero_lt_succ _⟩
 
 
