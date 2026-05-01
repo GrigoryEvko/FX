@@ -1340,6 +1340,500 @@ means the 54-case proof can construct a *fresh* isBi witness at
 each case via the corresponding constructor, and Lean will defEq-
 align it with whatever opaque `subst_compatible` returned. -/
 
+/-- **rename-compatibility for the paired predicate.**  A
+`Step.parWithBi` (paired Step.par + isBi witness) commutes with
+`Term.rename`.  Mirrors `Step.parWithBi.subst_compatible` exactly,
+substituting `rename` for `subst` and the `Renaming` flavour of
+each commute lemma.
+
+Used by `TermSubst.parWithBi_lift` (the binder-position lift in the
+paired analogue of `Term.subst_par_pointwise`); this in turn is
+used by `Term.subst_parWithBi_pointwise` and
+`Term.subst0_parStarWithBi_argument`. -/
+theorem Step.parWithBi.rename_compatible
+    {mode : Mode} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : Renaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    {termType : Ty level sourceScope}
+    {beforeTerm afterTerm : Term sourceCtx termType}
+    (parPaired : Step.parWithBi beforeTerm afterTerm) :
+    Step.parWithBi
+      (Term.rename termRenaming beforeTerm)
+      (Term.rename termRenaming afterTerm) := by
+  obtain ⟨parallelStep, biWitness⟩ := parPaired
+  induction biWitness generalizing targetScope targetCtx with
+  | refl term =>
+      exact Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)
+  | app _functionBi _argumentBi functionIH argumentIH =>
+      obtain ⟨fStep, fBi⟩ := functionIH termRenaming
+      obtain ⟨aStep, aBi⟩ := argumentIH termRenaming
+      exact Step.parWithBi.mk (Step.par.app fStep aStep)
+                              (Step.par.isBi.app fBi aBi)
+  | lam _bodyBi bodyIH =>
+      rename_i domainType codomainType _ _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermRenaming.lift termRenaming domainType)
+      let castedStep := Step.par.castBoth
+        (Ty.rename_weaken_commute codomainType rawRenaming) bStep
+      let castedBi := Step.par.isBi.castBoth
+        (Ty.rename_weaken_commute codomainType rawRenaming) bBi
+      exact Step.parWithBi.mk
+        (Step.par.lam castedStep) (Step.par.isBi.lam castedBi)
+  | lamPi _bodyBi bodyIH =>
+      rename_i domainType _ _ _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermRenaming.lift termRenaming domainType)
+      exact Step.parWithBi.mk
+        (Step.par.lamPi bStep) (Step.par.isBi.lamPi bBi)
+  | appPi _functionBi _argumentBi functionIH argumentIH =>
+      rename_i domainType codomainType _ _ _ _ _ _
+      obtain ⟨fStep, fBi⟩ := functionIH termRenaming
+      obtain ⟨aStep, aBi⟩ := argumentIH termRenaming
+      let typeEq :=
+        (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
+      exact Step.parWithBi.mk
+        (Step.par.castBoth typeEq (Step.par.appPi fStep aStep))
+        (Step.par.isBi.castBoth typeEq (Step.par.isBi.appPi fBi aBi))
+  | pair _firstBi _secondBi firstIH secondIH =>
+      rename_i firstType secondType _ _ _ _ _ _
+      obtain ⟨fStep, fBi⟩ := firstIH termRenaming
+      obtain ⟨sStep, sBi⟩ := secondIH termRenaming
+      let typeEq :=
+        Ty.subst0_rename_commute secondType firstType rawRenaming
+      exact Step.parWithBi.mk
+        (Step.par.pair fStep (Step.par.castBoth typeEq sStep))
+        (Step.par.isBi.pair fBi (Step.par.isBi.castBoth typeEq sBi))
+  | fst _pairBi pairIH =>
+      obtain ⟨pStep, pBi⟩ := pairIH termRenaming
+      exact Step.parWithBi.mk (Step.par.fst pStep) (Step.par.isBi.fst pBi)
+  | snd _pairBi pairIH =>
+      rename_i firstType secondType _ _ _
+      obtain ⟨pStep, pBi⟩ := pairIH termRenaming
+      let typeEq :=
+        (Ty.subst0_rename_commute secondType firstType rawRenaming).symm
+      exact Step.parWithBi.mk
+        (Step.par.castBoth typeEq (Step.par.snd pStep))
+        (Step.par.isBi.castBoth typeEq (Step.par.isBi.snd pBi))
+  | boolElim _scrutBi _thenBi _elseBi scrutIH thenIH elseIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨tStep, tBi⟩ := thenIH termRenaming
+      obtain ⟨eStep, eBi⟩ := elseIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.boolElim sStep tStep eStep)
+        (Step.par.isBi.boolElim sBi tBi eBi)
+  | betaApp _bodyBi _argBi bodyIH argIH =>
+      rename_i _ domainType codomainType _ bodyAfter _ argumentAfter _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermRenaming.lift termRenaming domainType)
+      obtain ⟨aStep, aBi⟩ := argIH termRenaming
+      let renamedArgumentAfter : Term targetCtx (domainType.rename rawRenaming) :=
+        Term.rename termRenaming argumentAfter
+      let renamedBodyAfter :
+          Term (targetCtx.cons (domainType.rename rawRenaming))
+            (codomainType.weaken.rename rawRenaming.lift) :=
+        Term.rename (TermRenaming.lift termRenaming domainType) bodyAfter
+      let bodyCastEq := Ty.rename_weaken_commute codomainType rawRenaming
+      let primitiveTarget : Term targetCtx (codomainType.rename rawRenaming) :=
+        (Ty.weaken_subst_singleton
+            (codomainType.rename rawRenaming)
+            (domainType.rename rawRenaming)) ▸
+          Term.subst0 (bodyCastEq ▸ renamedBodyAfter)
+                      renamedArgumentAfter
+      let targetEquality :
+          primitiveTarget =
+          Term.rename termRenaming
+            ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 bodyAfter argumentAfter) :=
+        eq_of_heq (HEq.symm (by
+          apply HEq.trans
+            (Term.rename_HEq_cast_input termRenaming
+              (Ty.weaken_subst_singleton codomainType domainType)
+              (Term.subst0 bodyAfter argumentAfter))
+          apply HEq.trans
+            (Term.rename_subst0_HEq termRenaming bodyAfter argumentAfter)
+          apply HEq.trans
+            (HEq.symm
+              (Term.subst0_HEq_cast_input bodyCastEq
+                renamedBodyAfter renamedArgumentAfter))
+          exact Term.castRight_HEq
+            (Ty.weaken_subst_singleton
+              (codomainType.rename rawRenaming)
+              (domainType.rename rawRenaming))
+            (Term.subst0 (bodyCastEq ▸ renamedBodyAfter)
+                          renamedArgumentAfter)))
+      exact Step.parWithBi.mk
+        (Step.par.castTarget targetEquality
+          (Step.par.betaApp (Step.par.castBoth bodyCastEq bStep) aStep))
+        (Step.par.isBi.castTarget targetEquality
+          (Step.par.isBi.betaApp
+            (Step.par.isBi.castBoth bodyCastEq bBi) aBi))
+  | betaAppPi _bodyBi _argBi bodyIH argIH =>
+      rename_i _ domainType codomainType _ bodyAfter _ argumentAfter _ _
+      obtain ⟨bStep, bBi⟩ := bodyIH (TermRenaming.lift termRenaming domainType)
+      obtain ⟨aStep, aBi⟩ := argIH termRenaming
+      let resultTypeEquality :=
+        Ty.subst0_rename_commute codomainType domainType rawRenaming
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              Term.subst0
+                (Term.rename (TermRenaming.lift termRenaming domainType) bodyAfter)
+                (Term.rename termRenaming argumentAfter)
+            = Term.rename termRenaming (Term.subst0 bodyAfter argumentAfter) :=
+        eq_of_heq
+          (HEq.trans (eqRec_heq _ _)
+            (HEq.symm (Term.rename_subst0_HEq termRenaming bodyAfter argumentAfter)))
+      exact Step.parWithBi.mk
+        (Step.par.castTarget targetEquality
+          (Step.par.castBoth resultTypeEquality.symm
+            (Step.par.betaAppPi bStep aStep)))
+        (Step.par.isBi.castTarget targetEquality
+          (Step.par.isBi.castBoth resultTypeEquality.symm
+            (Step.par.isBi.betaAppPi bBi aBi)))
+  | betaFstPair _firstBi firstIH =>
+      rename_i _ firstType secondType _ _ secondValOrig _
+      obtain ⟨fStep, fBi⟩ := firstIH termRenaming
+      let typeEq :=
+        Ty.subst0_rename_commute secondType firstType rawRenaming
+      let secondValRenamed : Term targetCtx _ :=
+        typeEq ▸ Term.rename termRenaming secondValOrig
+      exact Step.parWithBi.mk
+        (Step.par.betaFstPair secondValRenamed fStep)
+        (Step.par.isBi.betaFstPair fBi)
+  | betaSndPair _secondBi secondIH =>
+      rename_i _ firstType secondType firstVal _ secondAfter _
+      obtain ⟨sStep, sBi⟩ := secondIH termRenaming
+      let resultTypeEquality :=
+        Ty.subst0_rename_commute secondType firstType rawRenaming
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              (resultTypeEquality ▸ Term.rename termRenaming secondAfter)
+            = Term.rename termRenaming secondAfter :=
+        eq_of_heq (HEq.trans (eqRec_heq _ _) (eqRec_heq _ _))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.castBoth resultTypeEquality.symm
+          (Step.parWithBi.mk
+            (Step.par.betaSndPair (Term.rename termRenaming firstVal)
+              (Step.par.castBoth resultTypeEquality sStep))
+            (Step.par.isBi.betaSndPair
+              (Step.par.isBi.castBoth resultTypeEquality sBi))))
+  | iotaBoolElimTrue elseBranch _thenBi thenIH =>
+      obtain ⟨tStep, tBi⟩ := thenIH termRenaming
+      let elseRenamed := Term.rename termRenaming elseBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimTrue elseRenamed tStep)
+        (Step.par.isBi.iotaBoolElimTrue elseRenamed tBi)
+  | iotaBoolElimFalse thenBranch _elseBi elseIH =>
+      obtain ⟨eStep, eBi⟩ := elseIH termRenaming
+      let thenRenamed := Term.rename termRenaming thenBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimFalse thenRenamed eStep)
+        (Step.par.isBi.iotaBoolElimFalse thenRenamed eBi)
+  | natSucc _predBi predIH =>
+      obtain ⟨pStep, pBi⟩ := predIH termRenaming
+      exact Step.parWithBi.mk (Step.par.natSucc pStep)
+                              (Step.par.isBi.natSucc pBi)
+  | natElim _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      obtain ⟨ssStep, ssBi⟩ := succIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.natElim sStep zStep ssStep)
+        (Step.par.isBi.natElim sBi zBi ssBi)
+  | iotaNatElimZero succBranch _zeroBi zeroIH =>
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      let succRenamed := Term.rename termRenaming succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimZero succRenamed zStep)
+        (Step.par.isBi.iotaNatElimZero succRenamed zBi)
+  | natRec _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      obtain ⟨ssStep, ssBi⟩ := succIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.natRec sStep zStep ssStep)
+        (Step.par.isBi.natRec sBi zBi ssBi)
+  | iotaNatRecZero succBranch _zeroBi zeroIH =>
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      let succRenamed := Term.rename termRenaming succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecZero succRenamed zStep)
+        (Step.par.isBi.iotaNatRecZero succRenamed zBi)
+  | iotaNatRecSucc _predBi _zeroBi _succBi predIH zeroIH succIH =>
+      obtain ⟨pStep, pBi⟩ := predIH termRenaming
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      obtain ⟨ssStep, ssBi⟩ := succIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecSucc pStep zStep ssStep)
+        (Step.par.isBi.iotaNatRecSucc pBi zBi ssBi)
+  | iotaNatElimSucc zeroBranch _predBi _succBi predIH succIH =>
+      obtain ⟨pStep, pBi⟩ := predIH termRenaming
+      obtain ⟨ssStep, ssBi⟩ := succIH termRenaming
+      let zeroRenamed := Term.rename termRenaming zeroBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimSucc zeroRenamed pStep ssStep)
+        (Step.par.isBi.iotaNatElimSucc zeroRenamed pBi ssBi)
+  | listCons _headBi _tailBi headIH tailIH =>
+      obtain ⟨hStep, hBi⟩ := headIH termRenaming
+      obtain ⟨tStep, tBi⟩ := tailIH termRenaming
+      exact Step.parWithBi.mk (Step.par.listCons hStep tStep)
+                              (Step.par.isBi.listCons hBi tBi)
+  | listElim _scrutBi _nilBi _consBi scrutIH nilIH consIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨nStep, nBi⟩ := nilIH termRenaming
+      obtain ⟨cStep, cBi⟩ := consIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.listElim sStep nStep cStep)
+        (Step.par.isBi.listElim sBi nBi cBi)
+  | iotaListElimNil consBranch _nilBi nilIH =>
+      obtain ⟨nStep, nBi⟩ := nilIH termRenaming
+      let consRenamed := Term.rename termRenaming consBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimNil consRenamed nStep)
+        (Step.par.isBi.iotaListElimNil consRenamed nBi)
+  | iotaListElimCons nilBranch _headBi _tailBi _consBi headIH tailIH consIH =>
+      obtain ⟨hStep, hBi⟩ := headIH termRenaming
+      obtain ⟨tStep, tBi⟩ := tailIH termRenaming
+      obtain ⟨cStep, cBi⟩ := consIH termRenaming
+      let nilRenamed := Term.rename termRenaming nilBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimCons nilRenamed hStep tStep cStep)
+        (Step.par.isBi.iotaListElimCons nilRenamed hBi tBi cBi)
+  | optionSome _valueBi valueIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termRenaming
+      exact Step.parWithBi.mk (Step.par.optionSome vStep)
+                              (Step.par.isBi.optionSome vBi)
+  | optionMatch _scrutBi _noneBi _someBi scrutIH noneIH someIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨nStep, nBi⟩ := noneIH termRenaming
+      obtain ⟨smStep, smBi⟩ := someIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.optionMatch sStep nStep smStep)
+        (Step.par.isBi.optionMatch sBi nBi smBi)
+  | iotaOptionMatchNone someBranch _noneBi noneIH =>
+      obtain ⟨nStep, nBi⟩ := noneIH termRenaming
+      let someRenamed := Term.rename termRenaming someBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchNone someRenamed nStep)
+        (Step.par.isBi.iotaOptionMatchNone someRenamed nBi)
+  | iotaOptionMatchSome noneBranch _valueBi _someBi valueIH someIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termRenaming
+      obtain ⟨smStep, smBi⟩ := someIH termRenaming
+      let noneRenamed := Term.rename termRenaming noneBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchSome noneRenamed vStep smStep)
+        (Step.par.isBi.iotaOptionMatchSome noneRenamed vBi smBi)
+  | eitherInl _valueBi valueIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termRenaming
+      exact Step.parWithBi.mk (Step.par.eitherInl vStep)
+                              (Step.par.isBi.eitherInl vBi)
+  | eitherInr _valueBi valueIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termRenaming
+      exact Step.parWithBi.mk (Step.par.eitherInr vStep)
+                              (Step.par.isBi.eitherInr vBi)
+  | eitherMatch _scrutBi _leftBi _rightBi scrutIH leftIH rightIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨lStep, lBi⟩ := leftIH termRenaming
+      obtain ⟨rStep, rBi⟩ := rightIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.eitherMatch sStep lStep rStep)
+        (Step.par.isBi.eitherMatch sBi lBi rBi)
+  | iotaEitherMatchInl rightBranch _valueBi _leftBi valueIH leftIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termRenaming
+      obtain ⟨lStep, lBi⟩ := leftIH termRenaming
+      let rightRenamed := Term.rename termRenaming rightBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInl rightRenamed vStep lStep)
+        (Step.par.isBi.iotaEitherMatchInl rightRenamed vBi lBi)
+  | iotaEitherMatchInr leftBranch _valueBi _rightBi valueIH rightIH =>
+      obtain ⟨vStep, vBi⟩ := valueIH termRenaming
+      obtain ⟨rStep, rBi⟩ := rightIH termRenaming
+      let leftRenamed := Term.rename termRenaming leftBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInr leftRenamed vStep rStep)
+        (Step.par.isBi.iotaEitherMatchInr leftRenamed vBi rBi)
+  | idJ _baseBi _witnessBi baseIH witnessIH =>
+      obtain ⟨bStep, bBi⟩ := baseIH termRenaming
+      obtain ⟨wStep, wBi⟩ := witnessIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.idJ bStep wStep)
+        (Step.par.isBi.idJ bBi wBi)
+  | iotaIdJRefl _baseBi baseIH =>
+      obtain ⟨bStep, bBi⟩ := baseIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.iotaIdJRefl bStep)
+        (Step.par.isBi.iotaIdJRefl bBi)
+  -- Deep cases — same approach + cast bookkeeping.
+  | betaAppDeep _functionBi _argBi functionIH argIH =>
+      rename_i _ domainType codomainType _ body _ argAfter _ _
+      obtain ⟨fStep, fBi⟩ := functionIH termRenaming
+      obtain ⟨aStep, aBi⟩ := argIH termRenaming
+      let renamedArgAfter : Term targetCtx (domainType.rename rawRenaming) :=
+        Term.rename termRenaming argAfter
+      let renamedBody :
+          Term (targetCtx.cons (domainType.rename rawRenaming))
+            (codomainType.weaken.rename rawRenaming.lift) :=
+        Term.rename (TermRenaming.lift termRenaming domainType) body
+      let bodyCastEq := Ty.rename_weaken_commute codomainType rawRenaming
+      let primitiveTarget : Term targetCtx (codomainType.rename rawRenaming) :=
+        (Ty.weaken_subst_singleton
+            (codomainType.rename rawRenaming)
+            (domainType.rename rawRenaming)) ▸
+          Term.subst0 (bodyCastEq ▸ renamedBody) renamedArgAfter
+      let targetEquality :
+          primitiveTarget =
+          Term.rename termRenaming
+            ((Ty.weaken_subst_singleton codomainType domainType) ▸
+              Term.subst0 body argAfter) :=
+        eq_of_heq (HEq.symm (by
+          apply HEq.trans
+            (Term.rename_HEq_cast_input termRenaming
+              (Ty.weaken_subst_singleton codomainType domainType)
+              (Term.subst0 body argAfter))
+          apply HEq.trans
+            (Term.rename_subst0_HEq termRenaming body argAfter)
+          apply HEq.trans
+            (HEq.symm
+              (Term.subst0_HEq_cast_input bodyCastEq renamedBody renamedArgAfter))
+          exact Term.castRight_HEq
+            (Ty.weaken_subst_singleton
+              (codomainType.rename rawRenaming)
+              (domainType.rename rawRenaming))
+            (Term.subst0 (bodyCastEq ▸ renamedBody) renamedArgAfter)))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.mk
+          (Step.par.betaAppDeep fStep aStep)
+          (Step.par.isBi.betaAppDeep fBi aBi))
+  | betaAppPiDeep _functionBi _argBi functionIH argIH =>
+      rename_i _ domainType codomainType _ body _ argAfter _ _
+      obtain ⟨fStep, fBi⟩ := functionIH termRenaming
+      obtain ⟨aStep, aBi⟩ := argIH termRenaming
+      let resultTypeEquality :=
+        Ty.subst0_rename_commute codomainType domainType rawRenaming
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              Term.subst0
+                (Term.rename (TermRenaming.lift termRenaming domainType) body)
+                (Term.rename termRenaming argAfter)
+            = Term.rename termRenaming (Term.subst0 body argAfter) :=
+        eq_of_heq
+          (HEq.trans (eqRec_heq _ _)
+            (HEq.symm (Term.rename_subst0_HEq termRenaming body argAfter)))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.castBoth resultTypeEquality.symm
+          (Step.parWithBi.mk
+            (Step.par.betaAppPiDeep fStep aStep)
+            (Step.par.isBi.betaAppPiDeep fBi aBi)))
+  | betaFstPairDeep _pairBi pairIH =>
+      obtain ⟨pStep, pBi⟩ := pairIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.betaFstPairDeep pStep)
+        (Step.par.isBi.betaFstPairDeep pBi)
+  | betaSndPairDeep _pairBi pairIH =>
+      rename_i _ firstType secondType _ _ secondVal _
+      obtain ⟨pStep, pBi⟩ := pairIH termRenaming
+      let resultTypeEquality :=
+        Ty.subst0_rename_commute secondType firstType rawRenaming
+      let targetEquality :
+          resultTypeEquality.symm ▸
+              ((Ty.subst0_rename_commute secondType firstType rawRenaming) ▸
+                Term.rename termRenaming secondVal)
+            = Term.rename termRenaming secondVal :=
+        eq_of_heq (HEq.trans (eqRec_heq _ _) (eqRec_heq _ _))
+      exact Step.parWithBi.castTarget targetEquality
+        (Step.parWithBi.castBoth resultTypeEquality.symm
+          (Step.parWithBi.mk
+            (Step.par.betaSndPairDeep pStep)
+            (Step.par.isBi.betaSndPairDeep pBi)))
+  | iotaBoolElimTrueDeep elseBranch _scrutBi _thenBi scrutIH thenIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨tStep, tBi⟩ := thenIH termRenaming
+      let elseRenamed := Term.rename termRenaming elseBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimTrueDeep elseRenamed sStep tStep)
+        (Step.par.isBi.iotaBoolElimTrueDeep elseRenamed sBi tBi)
+  | iotaBoolElimFalseDeep thenBranch _scrutBi _elseBi scrutIH elseIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨eStep, eBi⟩ := elseIH termRenaming
+      let thenRenamed := Term.rename termRenaming thenBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaBoolElimFalseDeep thenRenamed sStep eStep)
+        (Step.par.isBi.iotaBoolElimFalseDeep thenRenamed sBi eBi)
+  | iotaNatElimZeroDeep succBranch _scrutBi _zeroBi scrutIH zeroIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      let succRenamed := Term.rename termRenaming succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimZeroDeep succRenamed sStep zStep)
+        (Step.par.isBi.iotaNatElimZeroDeep succRenamed sBi zBi)
+  | iotaNatElimSuccDeep zeroBranch _scrutBi _succBi scrutIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨ssStep, ssBi⟩ := succIH termRenaming
+      let zeroRenamed := Term.rename termRenaming zeroBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatElimSuccDeep zeroRenamed sStep ssStep)
+        (Step.par.isBi.iotaNatElimSuccDeep zeroRenamed sBi ssBi)
+  | iotaNatRecZeroDeep succBranch _scrutBi _zeroBi scrutIH zeroIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      let succRenamed := Term.rename termRenaming succBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecZeroDeep succRenamed sStep zStep)
+        (Step.par.isBi.iotaNatRecZeroDeep succRenamed sBi zBi)
+  | iotaNatRecSuccDeep _scrutBi _zeroBi _succBi scrutIH zeroIH succIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨zStep, zBi⟩ := zeroIH termRenaming
+      obtain ⟨ssStep, ssBi⟩ := succIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.iotaNatRecSuccDeep sStep zStep ssStep)
+        (Step.par.isBi.iotaNatRecSuccDeep sBi zBi ssBi)
+  | iotaListElimNilDeep consBranch _scrutBi _nilBi scrutIH nilIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨nStep, nBi⟩ := nilIH termRenaming
+      let consRenamed := Term.rename termRenaming consBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimNilDeep consRenamed sStep nStep)
+        (Step.par.isBi.iotaListElimNilDeep consRenamed sBi nBi)
+  | iotaListElimConsDeep nilBranch _scrutBi _consBi scrutIH consIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨cStep, cBi⟩ := consIH termRenaming
+      let nilRenamed := Term.rename termRenaming nilBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaListElimConsDeep nilRenamed sStep cStep)
+        (Step.par.isBi.iotaListElimConsDeep nilRenamed sBi cBi)
+  | iotaOptionMatchNoneDeep someBranch _scrutBi _noneBi scrutIH noneIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨nStep, nBi⟩ := noneIH termRenaming
+      let someRenamed := Term.rename termRenaming someBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchNoneDeep someRenamed sStep nStep)
+        (Step.par.isBi.iotaOptionMatchNoneDeep someRenamed sBi nBi)
+  | iotaOptionMatchSomeDeep noneBranch _scrutBi _someBi scrutIH someIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨smStep, smBi⟩ := someIH termRenaming
+      let noneRenamed := Term.rename termRenaming noneBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaOptionMatchSomeDeep noneRenamed sStep smStep)
+        (Step.par.isBi.iotaOptionMatchSomeDeep noneRenamed sBi smBi)
+  | iotaEitherMatchInlDeep rightBranch _scrutBi _leftBi scrutIH leftIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨lStep, lBi⟩ := leftIH termRenaming
+      let rightRenamed := Term.rename termRenaming rightBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInlDeep rightRenamed sStep lStep)
+        (Step.par.isBi.iotaEitherMatchInlDeep rightRenamed sBi lBi)
+  | iotaEitherMatchInrDeep leftBranch _scrutBi _rightBi scrutIH rightIH =>
+      obtain ⟨sStep, sBi⟩ := scrutIH termRenaming
+      obtain ⟨rStep, rBi⟩ := rightIH termRenaming
+      let leftRenamed := Term.rename termRenaming leftBranch
+      exact Step.parWithBi.mk
+        (Step.par.iotaEitherMatchInrDeep leftRenamed sStep rStep)
+        (Step.par.isBi.iotaEitherMatchInrDeep leftRenamed sBi rBi)
+  | iotaIdJReflDeep _witnessBi _baseBi witnessIH baseIH =>
+      obtain ⟨wStep, wBi⟩ := witnessIH termRenaming
+      obtain ⟨bStep, bBi⟩ := baseIH termRenaming
+      exact Step.parWithBi.mk
+        (Step.par.iotaIdJReflDeep wStep bStep)
+        (Step.par.isBi.iotaIdJReflDeep wBi bBi)
+
 /-- **β-workhorse for the typed `cd_lemma_star_with_bi` aggregator.**
 A `Step.parWithBi` (paired Step.par + isBi witness) commutes with
 `Term.subst`.  Given an isBi-witnessed parallel step on `before`
