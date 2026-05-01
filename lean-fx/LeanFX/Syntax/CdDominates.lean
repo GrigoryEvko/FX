@@ -49,10 +49,11 @@ theorem Step.par.cd_dominates_idJ
       simp only [Term.cd_idJ_redex_aligned]
       split
       case _ rawTerm heq =>
+          have cdEq : Term.cd witness = Term.refl leftEnd :=
+            Term.eq_refl_of_toRaw_refl (Term.cd witness) heq
           exact Step.par.iotaIdJReflDeep
-            (heq ▸ witnessParStep) baseParStep
-      case _ =>
-          exact Step.par.idJ baseParStep witnessParStep
+            (cdEq ▸ witnessParStep) baseParStep
+      all_goals exact Step.par.idJ baseParStep witnessParStep
   case _ =>
       exact Step.par.idJ baseParStep witnessParStep
 

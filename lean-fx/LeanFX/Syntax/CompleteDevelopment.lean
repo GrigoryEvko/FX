@@ -91,23 +91,105 @@ def Term.isNewestVar {mode : Mode} {level scope : Nat}
   | Term.refl _ => none
   | Term.idJ _ _ => none
 
-/-- iotaIdJ redex check, aligned-endpoints case.  With both endpoints
-equal to `leftEnd`, `Term.refl _` is an admissible pattern for a
-witness of type `Ty.id carrier leftEnd leftEnd`, so the iota check
-reduces to a binary decision: contract to `developedBase` if the
-witness is structurally `Term.refl`; otherwise rebuild as `Term.idJ`.
+/-- Typed inversion: a Term whose `toRaw` is `RawTerm.refl _` and
+whose type is the self-loop identity `Ty.id carrier endpoint endpoint`
+must structurally be `Term.refl endpoint`.
 
-KNOWN AXIOM LEAK (Layer M policy violation per AXIOMS.md, tracked
-in W8.7): the wildcard `_ => Term.idJ ...` triggers Lean 4's match
-compiler to emit `propext` while discharging the catch-all on a
-dependent inductive at a restricted type index (`Ty.id _ _ _`).
-Full Term-ctor enumeration fails because ctors like `Term.var`
-cannot have type `Ty.id _ _ _` (varType is opaque).  toRaw-shape
-dispatch avoids the leak but breaks downstream `simp + split`
-proofs in `CdDominates.lean` that expect the original Term-ctor
-match shape.  Resolution path: refactor `cd_dominates_idJ` and the
-parStarWithBi cong proofs to consume a toRaw-shape variant of this
-helper; that's W8.7 in the v2.0 mega-refactor. -/
+The proof generalizes the type to a free `ty`, then `cases witness`
+runs at universal index (Rule 3 of the zero-axiom match recipe).
+Each non-`refl` branch contradicts `rawEq` via `RawTerm` constructor
+disagreement; the `refl` branch closes by `cases typeEq` injecting
+`Ty.id` constructor.  Zero-axiom verified by smoke. -/
+theorem Term.eq_refl_of_toRaw_refl_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {ty : Ty level scope}
+    (witness : Term ctx ty)
+    {carrier : Ty level scope} {endpoint : RawTerm scope}
+    (typeEq : ty = Ty.id carrier endpoint endpoint)
+    {rawEnd : RawTerm scope}
+    (rawEq : Term.toRaw witness = RawTerm.refl rawEnd) :
+    HEq witness (@Term.refl mode level scope ctx carrier endpoint) := by
+  cases witness with
+  | var pos => simp only [Term.toRaw] at rawEq; cases rawEq
+  | unit => simp only [Term.toRaw] at rawEq; cases rawEq
+  | lam body => simp only [Term.toRaw] at rawEq; cases rawEq
+  | app function argument =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | lamPi body => simp only [Term.toRaw] at rawEq; cases rawEq
+  | appPi function argument =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | pair firstVal secondVal =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | fst pairTerm => simp only [Term.toRaw] at rawEq; cases rawEq
+  | snd pairTerm => simp only [Term.toRaw] at rawEq; cases rawEq
+  | boolTrue => simp only [Term.toRaw] at rawEq; cases rawEq
+  | boolFalse => simp only [Term.toRaw] at rawEq; cases rawEq
+  | boolElim scrutinee thenBranch elseBranch =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | natZero => simp only [Term.toRaw] at rawEq; cases rawEq
+  | natSucc predecessor =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | natElim scrutinee zeroBranch succBranch =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | natRec scrutinee zeroBranch succBranch =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | listNil => simp only [Term.toRaw] at rawEq; cases rawEq
+  | listCons head tail =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | listElim scrutinee nilBranch consBranch =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | optionNone => simp only [Term.toRaw] at rawEq; cases rawEq
+  | optionSome value =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | optionMatch scrutinee noneBranch someBranch =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | eitherInl value =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | eitherInr value =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | eitherMatch scrutinee leftBranch rightBranch =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+  | refl rawTerm =>
+      simp only [Term.toRaw] at rawEq
+      cases rawEq
+      cases typeEq
+      rfl
+  | idJ baseCase witness =>
+      simp only [Term.toRaw] at rawEq; cases rawEq
+
+/-- Specialization of `eq_refl_of_toRaw_refl_general` to the
+self-loop identity type — the form consumed by `cd_dominates_idJ`. -/
+theorem Term.eq_refl_of_toRaw_refl
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {carrier : Ty level scope} {endpoint : RawTerm scope}
+    (witness : Term ctx (Ty.id carrier endpoint endpoint))
+    {rawEnd : RawTerm scope}
+    (rawEq : Term.toRaw witness = RawTerm.refl rawEnd) :
+    witness = Term.refl endpoint :=
+  eq_of_heq (Term.eq_refl_of_toRaw_refl_general
+    witness rfl rawEq)
+
+/-- iotaIdJ redex check, aligned-endpoints case.
+
+With both endpoints equal to `leftEnd`, `Term.refl _` is an
+admissible pattern for a witness of type
+`Ty.id carrier leftEnd leftEnd`, so the iota check reduces to a
+binary decision: contract to `developedBase` if the witness is
+structurally `Term.refl`; otherwise rebuild as `Term.idJ`.
+
+The dispatch goes via `Term.toRaw` rather than directly on the
+typed witness.  A direct typed match
+`| Term.refl _ => ... | _ => ...` LEAKS `propext` because Lean 4's
+match compiler emits the axiom while discharging the wildcard's
+redundancy on a dependent inductive at a restricted type index
+(Rule 1 + Rule 4 of the zero-axiom match recipe).  Full Term-ctor
+enumeration fails because ctors like `Term.var` cannot have type
+`Ty.id _ _ _` (varType is opaque).  toRaw-shape dispatch with full
+RawTerm-ctor enumeration is propext-free (Rule 5).  Downstream
+`simp + split` proofs see 25 cases instead of 2; the `cd_dominates_idJ`
+proof in `CdDominates.lean` handles this with `all_goals exact ...`
+after the named `RawTerm.refl` case, mirroring the pattern proven
+zero-axiom on the raw side (`RawCdDominates.lean`). -/
 def Term.cd_idJ_redex_aligned
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -117,9 +199,32 @@ def Term.cd_idJ_redex_aligned
     (developedWitness :
       Term context (Ty.id carrier leftEnd leftEnd)) :
     Term context resultType :=
-  match developedWitness with
-  | Term.refl _ => developedBase
-  | _ => Term.idJ developedBase developedWitness
+  match Term.toRaw developedWitness with
+  | RawTerm.refl _ => developedBase
+  | RawTerm.var _ => Term.idJ developedBase developedWitness
+  | RawTerm.unit => Term.idJ developedBase developedWitness
+  | RawTerm.lam _ => Term.idJ developedBase developedWitness
+  | RawTerm.app _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.pair _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.fst _ => Term.idJ developedBase developedWitness
+  | RawTerm.snd _ => Term.idJ developedBase developedWitness
+  | RawTerm.boolTrue => Term.idJ developedBase developedWitness
+  | RawTerm.boolFalse => Term.idJ developedBase developedWitness
+  | RawTerm.boolElim _ _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.natZero => Term.idJ developedBase developedWitness
+  | RawTerm.natSucc _ => Term.idJ developedBase developedWitness
+  | RawTerm.natElim _ _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.natRec _ _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.listNil => Term.idJ developedBase developedWitness
+  | RawTerm.listCons _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.listElim _ _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.optionNone => Term.idJ developedBase developedWitness
+  | RawTerm.optionSome _ => Term.idJ developedBase developedWitness
+  | RawTerm.optionMatch _ _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.eitherInl _ => Term.idJ developedBase developedWitness
+  | RawTerm.eitherInr _ => Term.idJ developedBase developedWitness
+  | RawTerm.eitherMatch _ _ _ => Term.idJ developedBase developedWitness
+  | RawTerm.idJ _ _ => Term.idJ developedBase developedWitness
 
 /-- iotaIdJ redex check.  Splits on `leftEnd = rightEnd` (decidable
 via `RawTerm`'s `DecidableEq` instance); when the endpoints agree,
