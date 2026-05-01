@@ -184,6 +184,69 @@ elab "#assert_no_axioms" targetSyntax:ident : command => do
 #assert_no_axioms LeanFX.Syntax.Term.strengthen
 #assert_no_axioms LeanFX.Syntax.Ty.arrow_weaken_strengthen
 #assert_no_axioms LeanFX.Syntax.Term.isNewestVar
+
+-- W8.7 Term.cd typed-cascade infrastructure (zero-axiom).
+-- Layer 1: Generic typed extractors keyed by `Term.toRaw` shape
+-- (TermExtraction.lean).  Each `_general` form takes a HEq witness
+-- and returns the typed payload of the matched constructor; the
+-- match is at universal index per Rule 3, propext-free.
+#assert_no_axioms LeanFX.Syntax.Term.body_of_lam_general
+#assert_no_axioms LeanFX.Syntax.Term.body_of_lamPi_general
+#assert_no_axioms LeanFX.Syntax.Term.firstVal_of_pair_general
+#assert_no_axioms LeanFX.Syntax.Term.secondVal_of_pair_general
+#assert_no_axioms LeanFX.Syntax.Term.predecessor_of_natSucc_general
+#assert_no_axioms LeanFX.Syntax.Term.head_of_listCons_general
+#assert_no_axioms LeanFX.Syntax.Term.tail_of_listCons_general
+#assert_no_axioms LeanFX.Syntax.Term.value_of_optionSome_general
+#assert_no_axioms LeanFX.Syntax.Term.value_of_eitherInl_general
+#assert_no_axioms LeanFX.Syntax.Term.value_of_eitherInr_general
+
+-- Layer 2: Typed-inversion equations (eq_<ctor>_of_toRaw_<ctor>).
+-- Each base form discharges `Term.toRaw t = RawTerm.<ctor> ...` →
+-- `t = Term.<ctor> ...`; the `_general` form is the universal-
+-- index variant used by `Term.cd_<head>_redex` helpers.
+#assert_no_axioms LeanFX.Syntax.Term.eq_lam_of_toRaw_lam_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_lam_of_toRaw_lam
+#assert_no_axioms LeanFX.Syntax.Term.eq_lamPi_of_toRaw_lam_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_lamPi_of_toRaw_lam
+#assert_no_axioms LeanFX.Syntax.Term.eq_pair_of_toRaw_pair_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_pair_of_toRaw_pair
+#assert_no_axioms LeanFX.Syntax.Term.eq_boolTrue_of_toRaw_boolTrue_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_boolTrue_of_toRaw_boolTrue
+#assert_no_axioms LeanFX.Syntax.Term.eq_boolFalse_of_toRaw_boolFalse_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_boolFalse_of_toRaw_boolFalse
+#assert_no_axioms LeanFX.Syntax.Term.eq_natZero_of_toRaw_natZero_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_natZero_of_toRaw_natZero
+#assert_no_axioms LeanFX.Syntax.Term.eq_natSucc_of_toRaw_natSucc_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_natSucc_of_toRaw_natSucc
+#assert_no_axioms LeanFX.Syntax.Term.eq_listNil_of_toRaw_listNil_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_listNil_of_toRaw_listNil
+#assert_no_axioms LeanFX.Syntax.Term.eq_listCons_of_toRaw_listCons_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_listCons_of_toRaw_listCons
+#assert_no_axioms LeanFX.Syntax.Term.eq_optionNone_of_toRaw_optionNone_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_optionNone_of_toRaw_optionNone
+#assert_no_axioms LeanFX.Syntax.Term.eq_optionSome_of_toRaw_optionSome_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_optionSome_of_toRaw_optionSome
+#assert_no_axioms LeanFX.Syntax.Term.eq_eitherInl_of_toRaw_eitherInl_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_eitherInl_of_toRaw_eitherInl
+#assert_no_axioms LeanFX.Syntax.Term.eq_eitherInr_of_toRaw_eitherInr_general
+#assert_no_axioms LeanFX.Syntax.Term.eq_eitherInr_of_toRaw_eitherInr
+
+-- Layer 3: Per-redex `cd_<head>_redex` helpers in
+-- CompleteDevelopmentRedex.lean.  Each peels the `Term.toRaw`
+-- shape of the developed function/scrutinee and either fires
+-- the redex contractum (β/ι) or rebuilds the constructor.
+#assert_no_axioms LeanFX.Syntax.Term.cd_app_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_appPi_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_fst_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_snd_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_boolElim_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_natElim_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_natRec_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_listElim_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_optionMatch_redex
+#assert_no_axioms LeanFX.Syntax.Term.cd_eitherMatch_redex
+
 #assert_no_axioms LeanFX.Syntax.Term.cd_idJ_redex_aligned
 #assert_no_axioms LeanFX.Syntax.Term.cd_idJ_redex
 #assert_no_axioms LeanFX.Syntax.Term.cd
