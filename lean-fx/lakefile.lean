@@ -6,7 +6,10 @@ lean-fx — ground-up Lean 4 formalisation of FX's type theory.
 
 Hard rules:
 
-  * No `axiom` beyond Lean core (propext, Quot.sound, Classical.choice).
+  * No `axiom` ever — including Lean core's propext, Quot.sound,
+    Classical.choice.  AuditAll runs `#assert_no_axioms` with
+    `includeStdlib := true`; any axiom in the dependency tree fails
+    the gate.  Constructive proof is the only currency.
   * No `sorry` anywhere.  Build script greps for it; CI fails on sight.
   * No external dependencies.  No Mathlib, no Std4, no `lean-smt`.
     Everything we need we prove ourselves on top of Lean's prelude.

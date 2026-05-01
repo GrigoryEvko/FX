@@ -33,7 +33,8 @@ trust base.
 ## Current state
 
 ```
-Layer 2 (Lean core axioms)              : 3 inherited, 0 used by any kernel theorem
+Layer 2 (Lean core axioms)              : 3 inherited, target = 0 used by any
+                                          lean-fx theorem at any layer
 Layer 3 (lean-fx-specific axioms)       : 0 declared, 0 used
 Layer 4 (definitions, transitive count)  : ~120-280 per kernel theorem
                                           (varies with theorem complexity)
@@ -42,6 +43,15 @@ Layer 4 (definitions, transitive count)  : ~120-280 per kernel theorem
 The kernel theorems through v2.2 are **strictly axiom-free** in the
 sense that `#print axioms theorem_name` reports no dependency on any
 axiom.  This is the strongest claim available short of forking Lean.
+
+Beyond the kernel: the project's standing goal is to extend the
+zero-axiom property as far up the layer stack as possible.  Layer M
+(metatheory — confluence, SR, normalization), Layer E (evaluator,
+codegen), and even most Layer S (user `verify` proofs) are targeted
+to be axiom-free.  The Ralph-loop work directive ("zero axiom, zero
+sorry") is exactly this push.  Each layer below states the
+discipline; the discipline is identical except where genuine
+foundational obstructions force a documented exception.
 
 ## Why this document exists
 
@@ -613,28 +623,42 @@ manually per-theorem.
 Theorems *about* the kernel — confluence, normalization, subject
 reduction.
 
-**Rule: `propext` and `Quot.sound` allowed; `Classical.choice`
-discouraged and audited.**
+**Rule: zero axiom dependencies, same as Layer K.**
 
-Reasoning: confluence and SR proofs commonly use proof-irrelevance
-reasoning that propext underwrites.  Choice can leak in via
-`Decidable` instances; flag and review.
+  * No use of any of the three Lean core axioms, transitively.
+  * No `partial def`.
+  * No `sorry`, `unsafe`, `nativeReduce`, `nativeDecide`, `opaque def`.
+  * Every theorem passes `#assert_no_axioms` (`includeStdlib := true`).
 
-Each metatheory theorem must pass `#print axioms` and have its
-output explicitly justified in the theorem's docstring.
+Reasoning: confluence, SR, and normalization proofs *can* be done
+without `propext` / `Quot.sound` — every kernel-level reasoning step
+that looks like it needs proof-irrelevance can be rebuilt via paired-
+predicate patterns, full constructor enumeration, structural
+induction with explicit equation-bearing constructors, and HEq
+projection refutation (see `feedback_lean_paired_predicate_pattern`,
+`feedback_lean_match_arity_axioms`,
+`feedback_typed_inversion_breakthrough`).  The one-time cost of the
+refactor is paid once; the resulting metatheory has no hidden
+soundness dependency on Lean's stdlib axioms.
+
+The push is to maximize *how much* metatheory can be done axiom-free.
+A theorem may only fall back to declared axioms once a credible
+zero-axiom encoding has been attempted and shown impossible at the
+current state of lean-fx — and even then the fallback is a
+documented design exception, not a default.
 
 ### Layer E — Evaluator and code-generators
 
 Future Phase 6 onward: the evaluator, normalizer, IR passes, codegen.
 
-**Rule: zero `Classical.choice` use, period.**
+**Rule: zero axiom dependencies, same as Layer K and Layer M.**
 
-Reasoning: Choice produces noncomputable values.  Any function
-transitively using Choice cannot be extracted to a runnable form.
-For FX's bootstrap goal (eventually self-host the compiler in FX),
-the evaluator must be fully computable.
-
-`propext` and `Quot.sound` allowed if needed but discouraged.
+`Classical.choice` is forbidden absolutely (noncomputable cascade
+breaks extraction).  `propext` and `Quot.sound` are also forbidden
+because every Layer E construction is computational and every kernel
+fact it relies on is provable axiom-free under the Layer M
+discipline.  Layer E uses Layer M lemmas; Layer M has no axioms;
+therefore Layer E inherits zero-axiom transitively.
 
 ### Layer S — Surface-level user reasoning (FX program proofs)
 

@@ -31,15 +31,16 @@ open LeanFX.Tools.DependencyAudit
 def formatAxiomNameList (axiomNames : Array Name) : String :=
   String.join (axiomNames.toList.map toString |>.intersperse ", ")
 
-/-- Assert that a named constant has zero lean-fx-scope axiom
-dependencies.  Stdlib plumbing is intentionally excluded here: the
-project policy audits the lean-fx layer separately from Lean's TCB. -/
+/-- Assert that a named constant has zero axiom dependencies.
+Includes Lean core: propext, Quot.sound, Classical.choice all count.
+Project policy is strict zero — any axiom in the dependency tree
+fails the gate.  Constructive proofs only. -/
 elab "#assert_no_axioms" targetSyntax:ident : command => do
   let environment ← getEnv
   let targetName := targetSyntax.getId
   if !environment.contains targetName then
     throwError s!"unknown constant in axiom audit: {targetName}"
-  let dependencyStats := computeStats environment targetName (includeStdlib := false)
+  let dependencyStats := computeStats environment targetName (includeStdlib := true)
   if dependencyStats.axioms == 0 then
     logInfo s!"axiom audit ok: {targetName}"
   else
