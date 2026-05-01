@@ -35,28 +35,4 @@ theorem StepStar.mapStep
       StepStar.step (mapSingleStep singleStep)
         (StepStar.mapStep mapTerm mapSingleStep remainingSteps)
 
-/-- Lift definitional conversion through a term context that preserves
-single-step reduction.  This packages the repeated Conv-induction
-boilerplate used by constructor-specific congruence lemmas. -/
-theorem Conv.mapStep
-    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
-    {sourceType targetType : Ty level scope}
-    (mapTerm : Term ctx sourceType → Term ctx targetType)
-    (mapSingleStep :
-      ∀ {beforeTerm afterTerm : Term ctx sourceType},
-        Step beforeTerm afterTerm →
-        Step (mapTerm beforeTerm) (mapTerm afterTerm)) :
-    ∀ {beforeTerm afterTerm : Term ctx sourceType},
-      Conv beforeTerm afterTerm →
-      Conv (mapTerm beforeTerm) (mapTerm afterTerm)
-  | _, _, .refl _ => Conv.refl _
-  | _, _, .sym equivalence =>
-      Conv.sym (Conv.mapStep mapTerm mapSingleStep equivalence)
-  | _, _, .trans leftEquivalence rightEquivalence =>
-      Conv.trans
-        (Conv.mapStep mapTerm mapSingleStep leftEquivalence)
-        (Conv.mapStep mapTerm mapSingleStep rightEquivalence)
-  | _, _, .fromStep singleStep =>
-      Conv.fromStep (mapSingleStep singleStep)
-
 end LeanFX.Syntax

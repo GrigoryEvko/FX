@@ -57,6 +57,38 @@ theorem Step.toConv
     {t₁ t₂ : Term ctx T} (h : Step t₁ t₂) : Conv t₁ t₂ :=
   Conv.fromStep h
 
+/-- **Generic Conv lifter**: lift a definitional conversion through any
+term-context-changing function that preserves single-step reduction.
+Packages the 4-line refl/sym/trans/fromStep induction shared by every
+constructor-specific Conv cong theorem — making each cong a 1-line
+corollary.  Source and target may live in different contexts and at
+different scopes, since binder cong rules (lam, lamPi) reduce a Conv
+under `ctx.cons _` to a Conv at `ctx`. -/
+theorem Conv.mapStep
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sourceType : Ty level sourceScope}
+    {targetType : Ty level targetScope}
+    (mapTerm : Term sourceCtx sourceType → Term targetCtx targetType)
+    (mapSingleStep :
+      ∀ {beforeTerm afterTerm : Term sourceCtx sourceType},
+        Step beforeTerm afterTerm →
+        Step (mapTerm beforeTerm) (mapTerm afterTerm)) :
+    ∀ {beforeTerm afterTerm : Term sourceCtx sourceType},
+      Conv beforeTerm afterTerm →
+      Conv (mapTerm beforeTerm) (mapTerm afterTerm)
+  | _, _, .refl _ => Conv.refl _
+  | _, _, .sym equivalence =>
+      Conv.sym (Conv.mapStep mapTerm mapSingleStep equivalence)
+  | _, _, .trans leftEquivalence rightEquivalence =>
+      Conv.trans
+        (Conv.mapStep mapTerm mapSingleStep leftEquivalence)
+        (Conv.mapStep mapTerm mapSingleStep rightEquivalence)
+  | _, _, .fromStep singleStep =>
+      Conv.fromStep (mapSingleStep singleStep)
+
 /-! ## Conv structural congruences.
 
 Make `Conv` a full congruence relation over the term constructors. -/
@@ -66,24 +98,16 @@ theorem Conv.app_cong_left {mode level scope} {ctx : Ctx mode level scope}
     {domainType codomainType : Ty level scope}
     {f₁ f₂ : Term ctx (Ty.arrow domainType codomainType)}
     (a : Term ctx domainType) (h : Conv f₁ f₂) :
-    Conv (Term.app f₁ a) (Term.app f₂ a) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.appLeft s)
+    Conv (Term.app f₁ a) (Term.app f₂ a) :=
+  Conv.mapStep (fun functionTerm => Term.app functionTerm a) Step.appLeft h
 
 /-- Convertibility threads through the argument position of `Term.app`. -/
 theorem Conv.app_cong_right {mode level scope} {ctx : Ctx mode level scope}
     {domainType codomainType : Ty level scope}
     (f : Term ctx (Ty.arrow domainType codomainType))
     {a₁ a₂ : Term ctx domainType} (h : Conv a₁ a₂) :
-    Conv (Term.app f a₁) (Term.app f a₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.appRight s)
+    Conv (Term.app f a₁) (Term.app f a₂) :=
+  Conv.mapStep (fun argumentTerm => Term.app f argumentTerm) Step.appRight h
 
 /-- Convertibility threads through both positions of `Term.app`. -/
 theorem Conv.app_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -100,12 +124,8 @@ theorem Conv.lam_cong {mode level scope} {ctx : Ctx mode level scope}
     {body₁ body₂ : Term (ctx.cons domainType) codomainType.weaken}
     (h : Conv body₁ body₂) :
     Conv (Term.lam (codomainType := codomainType) body₁)
-         (Term.lam (codomainType := codomainType) body₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.lamBody s)
+         (Term.lam (codomainType := codomainType) body₂) :=
+  Conv.mapStep (Term.lam (codomainType := codomainType)) Step.lamBody h
 
 /-- Convertibility threads through the body of `Term.lamPi`. -/
 theorem Conv.lamPi_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -113,36 +133,24 @@ theorem Conv.lamPi_cong {mode level scope} {ctx : Ctx mode level scope}
     {body₁ body₂ : Term (ctx.cons domainType) codomainType}
     (h : Conv body₁ body₂) :
     Conv (Term.lamPi (domainType := domainType) body₁)
-         (Term.lamPi (domainType := domainType) body₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.lamPiBody s)
+         (Term.lamPi (domainType := domainType) body₂) :=
+  Conv.mapStep (Term.lamPi (domainType := domainType)) Step.lamPiBody h
 
 /-- Convertibility threads through the function position of `Term.appPi`. -/
 theorem Conv.appPi_cong_left {mode level scope} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     (a : Term ctx domainType) (h : Conv f₁ f₂) :
-    Conv (Term.appPi f₁ a) (Term.appPi f₂ a) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.appPiLeft s)
+    Conv (Term.appPi f₁ a) (Term.appPi f₂ a) :=
+  Conv.mapStep (fun functionTerm => Term.appPi functionTerm a) Step.appPiLeft h
 
 /-- Convertibility threads through the argument position of `Term.appPi`. -/
 theorem Conv.appPi_cong_right {mode level scope} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     (f : Term ctx (Ty.piTy domainType codomainType))
     {a₁ a₂ : Term ctx domainType} (h : Conv a₁ a₂) :
-    Conv (Term.appPi f a₁) (Term.appPi f a₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.appPiRight s)
+    Conv (Term.appPi f a₁) (Term.appPi f a₂) :=
+  Conv.mapStep (fun argumentTerm => Term.appPi f argumentTerm) Step.appPiRight h
 
 /-- Convertibility threads through both positions of `Term.appPi`. -/
 theorem Conv.appPi_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -162,12 +170,11 @@ theorem Conv.pair_cong_first {mode level scope} {ctx : Ctx mode level scope}
     Conv (Term.pair (firstType := firstType) (secondType := secondType)
                     firstVal₁ secondVal)
          (Term.pair (firstType := firstType) (secondType := secondType)
-                    firstVal₂ secondVal) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.pairLeft s)
+                    firstVal₂ secondVal) :=
+  Conv.mapStep
+    (fun firstTerm => Term.pair (firstType := firstType)
+                                (secondType := secondType) firstTerm secondVal)
+    Step.pairLeft h
 
 /-- Convertibility threads through the second component of `Term.pair`. -/
 theorem Conv.pair_cong_second {mode level scope} {ctx : Ctx mode level scope}
@@ -176,12 +183,11 @@ theorem Conv.pair_cong_second {mode level scope} {ctx : Ctx mode level scope}
     {secondVal₁ secondVal₂ : Term ctx (secondType.subst0 firstType)}
     (h : Conv secondVal₁ secondVal₂) :
     Conv (Term.pair firstVal secondVal₁)
-         (Term.pair firstVal secondVal₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.pairRight s)
+         (Term.pair firstVal secondVal₂) :=
+  Conv.mapStep
+    (fun secondTerm => Term.pair (firstType := firstType)
+                                 (secondType := secondType) firstVal secondTerm)
+    Step.pairRight h
 
 /-- Convertibility threads through both components of `Term.pair`. -/
 theorem Conv.pair_cong {mode level scope} {ctx : Ctx mode level scope}
@@ -200,24 +206,18 @@ theorem Conv.fst_cong {mode level scope} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
     (h : Conv p₁ p₂) :
-    Conv (Term.fst p₁) (Term.fst p₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.fstCong s)
+    Conv (Term.fst p₁) (Term.fst p₂) :=
+  Conv.mapStep (Term.fst (firstType := firstType) (secondType := secondType))
+    Step.fstCong h
 
 /-- Convertibility threads through `Term.snd`. -/
 theorem Conv.snd_cong {mode level scope} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
     (h : Conv p₁ p₂) :
-    Conv (Term.snd p₁) (Term.snd p₂) := by
-  induction h with
-  | refl _              => exact Conv.refl _
-  | sym _ ih            => exact Conv.sym ih
-  | trans _ _ ih₁ ih₂   => exact Conv.trans ih₁ ih₂
-  | fromStep s          => exact Conv.fromStep (Step.sndCong s)
+    Conv (Term.snd p₁) (Term.snd p₂) :=
+  Conv.mapStep (Term.snd (firstType := firstType) (secondType := secondType))
+    Step.sndCong h
 
 /-! ## η-equivalence in natural direction.
 
