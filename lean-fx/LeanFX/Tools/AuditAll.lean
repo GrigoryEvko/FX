@@ -548,4 +548,28 @@ and discharges via `subst0_parStar` (β cases) or direct projection
 
 #assert_no_axioms LeanFX.Syntax.Step.par.isBi.cast_target_eq
 
+/-! ## #1137: cd_dominates_isBi — every cd_dominates step is βι.
+
+Single inductive predicate `Step.parWithBi` packages Step.par
+with its isBi proof; helpers + main theorem produce both at once.
+Closes #1137 and unblocks W8.x (cd_lemma → diamond → Church-Rosser
+→ canonical_form, blocking #883/884/885/886). -/
+
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.toStep
+#assert_no_axioms LeanFX.Syntax.Step.parWithBi.toIsBi
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_idJ_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_app_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_appPi_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_fst_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_snd_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_boolElim_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_natElim_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_natRec_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_listElim_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_optionMatch_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_eitherMatch_pair
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_with_isBi
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_dominates_isBi
+
 end LeanFX.Tools.AuditAll

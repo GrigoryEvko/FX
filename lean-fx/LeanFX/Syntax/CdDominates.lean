@@ -31,7 +31,7 @@ remains in pure term mode that calls the helper. -/
 machinery handling `Term.cd_idJ_redex`'s decidable-equality split
 plus the inner refl-pattern match doesn't interfere with Lean's
 structural-recursion check on `cd_dominates` itself. -/
-private theorem Step.par.cd_dominates_idJ
+theorem Step.par.cd_dominates_idJ
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {carrier resultType : Ty level scope}
@@ -58,7 +58,7 @@ private theorem Step.par.cd_dominates_idJ
 
 /-- Non-dependent application: cong by default, deep β when developed
 function reduces to a `lam`. -/
-private theorem Step.par.cd_dominates_app
+theorem Step.par.cd_dominates_app
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {domainType codomainType : Ty level scope}
@@ -78,7 +78,7 @@ private theorem Step.par.cd_dominates_app
 
 /-- Dependent application: cong by default, deep β when developed
 function reduces to a `lamPi`. -/
-private theorem Step.par.cd_dominates_appPi
+theorem Step.par.cd_dominates_appPi
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {domainType : Ty level scope}
@@ -99,7 +99,7 @@ private theorem Step.par.cd_dominates_appPi
 
 /-- Σ first-projection: cong by default, deep β when developed pair
 reduces to a `pair`. -/
-private theorem Step.par.cd_dominates_fst
+theorem Step.par.cd_dominates_fst
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {firstType : Ty level scope}
@@ -116,7 +116,7 @@ private theorem Step.par.cd_dominates_fst
 
 /-- Σ second-projection: cong by default, deep β when developed pair
 reduces to a `pair`. -/
-private theorem Step.par.cd_dominates_snd
+theorem Step.par.cd_dominates_snd
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {firstType : Ty level scope}
@@ -133,7 +133,7 @@ private theorem Step.par.cd_dominates_snd
 
 /-- `boolElim`: cong by default, deep ι when developed scrutinee
 reduces to `boolTrue` or `boolFalse`. -/
-private theorem Step.par.cd_dominates_boolElim
+theorem Step.par.cd_dominates_boolElim
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {resultType : Ty level scope}
@@ -158,7 +158,7 @@ private theorem Step.par.cd_dominates_boolElim
 
 /-- `natElim`: cong by default, deep ι when developed scrutinee
 reduces to `natZero` or `natSucc`. -/
-private theorem Step.par.cd_dominates_natElim
+theorem Step.par.cd_dominates_natElim
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {resultType : Ty level scope}
@@ -183,7 +183,7 @@ private theorem Step.par.cd_dominates_natElim
 
 /-- `natRec`: cong by default, deep ι when developed scrutinee
 reduces to `natZero` or `natSucc`. -/
-private theorem Step.par.cd_dominates_natRec
+theorem Step.par.cd_dominates_natRec
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {resultType : Ty level scope}
@@ -209,7 +209,7 @@ private theorem Step.par.cd_dominates_natRec
 
 /-- `listElim`: cong by default, deep ι when developed scrutinee
 reduces to `listNil` or `listCons`. -/
-private theorem Step.par.cd_dominates_listElim
+theorem Step.par.cd_dominates_listElim
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {elementType resultType : Ty level scope}
@@ -235,7 +235,7 @@ private theorem Step.par.cd_dominates_listElim
 
 /-- `optionMatch`: cong by default, deep ι when developed scrutinee
 reduces to `optionNone` or `optionSome`. -/
-private theorem Step.par.cd_dominates_optionMatch
+theorem Step.par.cd_dominates_optionMatch
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {elementType resultType : Ty level scope}
@@ -260,7 +260,7 @@ private theorem Step.par.cd_dominates_optionMatch
 
 /-- `eitherMatch`: cong by default, deep ι when developed scrutinee
 reduces to `eitherInl` or `eitherInr`. -/
-private theorem Step.par.cd_dominates_eitherMatch
+theorem Step.par.cd_dominates_eitherMatch
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {leftType rightType resultType : Ty level scope}
