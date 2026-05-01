@@ -270,4 +270,185 @@ theorem Step.par.cd_monotone_app_case
     all_goals
       exact Step.parStarWithBi.app_cong functionIH argumentIH
 
+/-- Discharge the `Step.par.isBi.appPi` constructor case.  Same
+template as `cd_monotone_app_case` but for the Π-binder; uses
+`lamPi_target_inv`, `appPi_cong`, and `Step.par.isBi.betaAppPi`.
+The `Ty.weaken_subst_singleton` cast does not appear here since
+`cd_appPi_redex`'s lam-arm output type is already
+`codomainType.subst0 domainType`. -/
+theorem Step.par.cd_monotone_appPi_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {sourceFunction targetFunction :
+      Term ctx (Ty.piTy domainType codomainType)}
+    {sourceArgument targetArgument : Term ctx domainType}
+    (functionIH : Step.parStarWithBi
+      (Term.cd sourceFunction) (Term.cd targetFunction))
+    (argumentIH : Step.parStarWithBi
+      (Term.cd sourceArgument) (Term.cd targetArgument)) :
+    Step.parStarWithBi
+      (Term.cd (Term.appPi sourceFunction sourceArgument))
+      (Term.cd (Term.appPi targetFunction targetArgument)) := by
+  simp only [Term.cd, Term.cd_appPi_redex]
+  split
+  case _ rawSourceBody developedSourceFunctionEq =>
+    have sourceCdEq :
+        Term.cd sourceFunction =
+          Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd sourceFunction) rfl developedSourceFunctionEq) :=
+      Term.eq_lamPi_of_toRaw_lam (Term.cd sourceFunction)
+        developedSourceFunctionEq
+    have functionIHcast :
+        Step.parStarWithBi
+          (Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd sourceFunction) rfl developedSourceFunctionEq))
+          (Term.cd targetFunction) :=
+      sourceCdEq ▸ functionIH
+    obtain ⟨targetBody, targetCdEq, bodyPair⟩ :=
+      Step.parStarWithBi.lamPi_target_inv functionIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact Step.parStarWithBi.subst0_parStarWithBi bodyPair argumentIH
+  all_goals
+    split
+    case _ rawTargetBody developedTargetFunctionEq =>
+      have targetCdEq :
+          Term.cd targetFunction =
+            Term.lamPi (Term.body_of_lamPi_general
+              (Term.cd targetFunction) rfl developedTargetFunctionEq) :=
+        Term.eq_lamPi_of_toRaw_lam (Term.cd targetFunction)
+          developedTargetFunctionEq
+      rw [targetCdEq] at functionIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.appPi_cong functionIH argumentIH)
+        (Step.par.isBi.betaAppPi (Step.par.isBi.refl _)
+                                  (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.appPi_cong functionIH argumentIH
+
+/-- Discharge the `Step.par.isBi.fst` constructor case.  The
+Σ first-projection `Term.fst (Term.pair a b)` β-reduces to `a`.
+`cd_fst_redex` matches the pair-shape on the developed pair via
+`toRaw`.  Three IH configurations:
+
+* Pair-on-both: extract first components via `pair_target_inv`,
+  return the firstIH.
+* Source-pair, target-not-pair: impossible (pair_target_inv).
+* Source-not-pair, target-pair: snoc with `betaFstPair` redex
+  contraction.
+* Neither pair: `fst_cong` directly. -/
+theorem Step.par.cd_monotone_fst_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {sourcePair targetPair :
+      Term ctx (Ty.sigmaTy firstType secondType)}
+    (pairIH : Step.parStarWithBi
+      (Term.cd sourcePair) (Term.cd targetPair)) :
+    Step.parStarWithBi
+      (Term.cd (Term.fst sourcePair)) (Term.cd (Term.fst targetPair)) := by
+  simp only [Term.cd, Term.cd_fst_redex]
+  split
+  case _ rawSourceFirst rawSourceSecond developedSourcePairEq =>
+    have sourceCdEq :
+        Term.cd sourcePair =
+          Term.pair
+            (Term.firstVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq)
+            (Term.secondVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq) :=
+      Term.eq_pair_of_toRaw_pair (Term.cd sourcePair)
+        developedSourcePairEq
+    have pairIHcast :
+        Step.parStarWithBi
+          (Term.pair
+            (Term.firstVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq)
+            (Term.secondVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq))
+          (Term.cd targetPair) :=
+      sourceCdEq ▸ pairIH
+    obtain ⟨targetFirst, targetSecond, targetCdEq, firstPair, _secondPair⟩ :=
+      Step.parStarWithBi.pair_target_inv pairIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact firstPair
+  all_goals
+    split
+    case _ rawTargetFirst rawTargetSecond developedTargetPairEq =>
+      have targetCdEq :
+          Term.cd targetPair =
+            Term.pair
+              (Term.firstVal_of_pair_general
+                (Term.cd targetPair) rfl developedTargetPairEq)
+              (Term.secondVal_of_pair_general
+                (Term.cd targetPair) rfl developedTargetPairEq) :=
+        Term.eq_pair_of_toRaw_pair (Term.cd targetPair)
+          developedTargetPairEq
+      rw [targetCdEq] at pairIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.fst_cong pairIH)
+        (Step.par.isBi.betaFstPair (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.fst_cong pairIH
+
+/-- Discharge the `Step.par.isBi.snd` constructor case.  Same as
+`cd_monotone_fst_case` but extracting the secondVal.  Note: the
+β-fired form `Term.snd (Term.pair a b) → b` carries a
+`Ty.weaken_subst_singleton`-flavour cast on `secondType.subst0
+firstType` because the second element's type depends on the
+first via `secondType`. -/
+theorem Step.par.cd_monotone_snd_case
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {sourcePair targetPair :
+      Term ctx (Ty.sigmaTy firstType secondType)}
+    (pairIH : Step.parStarWithBi
+      (Term.cd sourcePair) (Term.cd targetPair)) :
+    Step.parStarWithBi
+      (Term.cd (Term.snd sourcePair)) (Term.cd (Term.snd targetPair)) := by
+  simp only [Term.cd, Term.cd_snd_redex]
+  split
+  case _ rawSourceFirst rawSourceSecond developedSourcePairEq =>
+    have sourceCdEq :
+        Term.cd sourcePair =
+          Term.pair
+            (Term.firstVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq)
+            (Term.secondVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq) :=
+      Term.eq_pair_of_toRaw_pair (Term.cd sourcePair)
+        developedSourcePairEq
+    have pairIHcast :
+        Step.parStarWithBi
+          (Term.pair
+            (Term.firstVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq)
+            (Term.secondVal_of_pair_general
+              (Term.cd sourcePair) rfl developedSourcePairEq))
+          (Term.cd targetPair) :=
+      sourceCdEq ▸ pairIH
+    obtain ⟨targetFirst, targetSecond, targetCdEq, _firstPair, secondPair⟩ :=
+      Step.parStarWithBi.pair_target_inv pairIHcast
+    rw [targetCdEq]
+    simp only [Term.toRaw]
+    exact secondPair
+  all_goals
+    split
+    case _ rawTargetFirst rawTargetSecond developedTargetPairEq =>
+      have targetCdEq :
+          Term.cd targetPair =
+            Term.pair
+              (Term.firstVal_of_pair_general
+                (Term.cd targetPair) rfl developedTargetPairEq)
+              (Term.secondVal_of_pair_general
+                (Term.cd targetPair) rfl developedTargetPairEq) :=
+        Term.eq_pair_of_toRaw_pair (Term.cd targetPair)
+          developedTargetPairEq
+      rw [targetCdEq] at pairIH
+      exact Step.parStarWithBi.snoc
+        (Step.parStarWithBi.snd_cong pairIH)
+        (Step.par.isBi.betaSndPair (Step.par.isBi.refl _))
+    all_goals
+      exact Step.parStarWithBi.snd_cong pairIH
+
 end LeanFX.Syntax

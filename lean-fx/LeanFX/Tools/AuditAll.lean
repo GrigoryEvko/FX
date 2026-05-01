@@ -834,5 +834,8 @@ splits on source-side and target-side cd-redex helper, with the
 case-D fallback (neither fires) closed by `<C>_cong`. -/
 
 #assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_app_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_appPi_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_fst_case
+#assert_no_axioms LeanFX.Syntax.Step.par.cd_monotone_snd_case
 
 end LeanFX.Tools.AuditAll
