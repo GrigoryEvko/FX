@@ -1286,6 +1286,342 @@ theorem Step.parStarWithBi.pair_target_inv
   exact ⟨firstVal', secondVal', eq_of_heq targetHEq,
          firstWithBi, secondWithBi⟩
 
+/-! ## Paired source-inversions for typed-constructor sources.
+
+For each constructor `C` whose source position is fixed (natSucc,
+listCons, optionSome, eitherInl, eitherInr), provide:
+
+  * `Step.par.<C>_source_inv_with_bi_general` — single-step paired
+    source-inversion that extracts inner paired sub-steps.
+  * `Step.parStarWithBi.<C>_source_inv` — chain version that
+    extracts inner paired sub-chains.
+
+Used by the deep-ι cases of `Step.par.cd_lemma_star_with_bi`
+where the IH `parStarWithBi (Term.<C> args) (Term.cd scrutinee)`
+must be decomposed into paired sub-chains on `args`. -/
+
+/-- Single-step paired source-inversion for `Term.natSucc`. -/
+theorem Step.par.natSucc_source_inv_with_bi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {predecessor : Term ctx Ty.nat}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.nat)
+    {parStep : Step.par source target}
+    (stepBi : Step.par.isBi parStep) :
+    HEq source (@Term.natSucc mode level scope ctx predecessor) →
+    ∃ (predecessor' : Term ctx Ty.nat),
+        HEq target (@Term.natSucc mode level scope ctx predecessor') ∧
+        Step.parWithBi predecessor predecessor' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨predecessor, sourceHEq,
+             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+  | natSucc innerBi _innerIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i innerStep
+      exact ⟨_, HEq.rfl, Step.parWithBi.mk innerStep innerBi⟩
+  | _ =>
+      intro sourceHEq
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (exfalso
+           apply refuteViaToRaw _ (Term.natSucc predecessor) typeEq sourceHEq
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Chain paired source-inversion for `Term.natSucc`. -/
+theorem Step.parStarWithBi.natSucc_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {predecessor : Term ctx Ty.nat}
+    {target : Term ctx Ty.nat}
+    (chainPair : Step.parStarWithBi
+        (@Term.natSucc mode level scope ctx predecessor) target) :
+    ∃ (predecessor' : Term ctx Ty.nat),
+        target = Term.natSucc predecessor' ∧
+        Step.parStarWithBi predecessor predecessor' := by
+  generalize sourceEq :
+      (@Term.natSucc mode level scope ctx predecessor) = sourceTerm
+      at chainPair
+  induction chainPair generalizing predecessor with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨predecessor, rfl, Step.parStarWithBi.refl predecessor⟩
+  | trans firstBi _restChain restIH =>
+      cases sourceEq
+      obtain ⟨pred₁, eq₁, pred₁Pair⟩ :=
+        Step.par.natSucc_source_inv_with_bi_general rfl firstBi HEq.rfl
+      obtain ⟨pred', eq', restPair⟩ := restIH (eq_of_heq eq₁).symm
+      exact ⟨pred', eq',
+             Step.parStarWithBi.trans pred₁Pair.toIsBi restPair⟩
+
+/-- Single-step paired source-inversion for `Term.listCons`. -/
+theorem Step.par.listCons_source_inv_with_bi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headTerm : Term ctx elementType}
+    {tailTerm : Term ctx (Ty.list elementType)}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.list elementType)
+    {parStep : Step.par source target}
+    (stepBi : Step.par.isBi parStep) :
+    HEq source
+        (@Term.listCons mode level scope ctx elementType headTerm tailTerm) →
+    ∃ (head' : Term ctx elementType)
+      (tail' : Term ctx (Ty.list elementType)),
+        HEq target
+            (@Term.listCons mode level scope ctx elementType head' tail') ∧
+        Step.parWithBi headTerm head' ∧
+        Step.parWithBi tailTerm tail' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨headTerm, tailTerm, sourceHEq,
+             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _),
+             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+  | listCons headBi tailBi _headIH _tailIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i headStep tailStep
+      exact ⟨_, _, HEq.rfl,
+             Step.parWithBi.mk headStep headBi,
+             Step.parWithBi.mk tailStep tailBi⟩
+  | _ =>
+      intro sourceHEq
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (exfalso
+           apply refuteViaToRaw _ (Term.listCons headTerm tailTerm) typeEq sourceHEq
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Chain paired source-inversion for `Term.listCons`. -/
+theorem Step.parStarWithBi.listCons_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headTerm : Term ctx elementType}
+    {tailTerm : Term ctx (Ty.list elementType)}
+    {target : Term ctx (Ty.list elementType)}
+    (chainPair : Step.parStarWithBi
+        (@Term.listCons mode level scope ctx elementType headTerm tailTerm)
+        target) :
+    ∃ (head' : Term ctx elementType)
+      (tail' : Term ctx (Ty.list elementType)),
+        target = Term.listCons head' tail' ∧
+        Step.parStarWithBi headTerm head' ∧
+        Step.parStarWithBi tailTerm tail' := by
+  generalize sourceEq :
+      (@Term.listCons mode level scope ctx elementType headTerm tailTerm)
+        = sourceTerm at chainPair
+  induction chainPair generalizing headTerm tailTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨headTerm, tailTerm, rfl,
+             Step.parStarWithBi.refl headTerm,
+             Step.parStarWithBi.refl tailTerm⟩
+  | trans firstBi _restChain restIH =>
+      cases sourceEq
+      obtain ⟨head₁, tail₁, eq₁, headPair, tailPair⟩ :=
+        Step.par.listCons_source_inv_with_bi_general rfl firstBi HEq.rfl
+      obtain ⟨head', tail', eq', headRest, tailRest⟩ :=
+        restIH (eq_of_heq eq₁).symm
+      exact ⟨head', tail', eq',
+             Step.parStarWithBi.trans headPair.toIsBi headRest,
+             Step.parStarWithBi.trans tailPair.toIsBi tailRest⟩
+
+/-- Single-step paired source-inversion for `Term.optionSome`. -/
+theorem Step.par.optionSome_source_inv_with_bi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueTerm : Term ctx elementType}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.option elementType)
+    {parStep : Step.par source target}
+    (stepBi : Step.par.isBi parStep) :
+    HEq source
+        (@Term.optionSome mode level scope ctx elementType valueTerm) →
+    ∃ (value' : Term ctx elementType),
+        HEq target
+            (@Term.optionSome mode level scope ctx elementType value') ∧
+        Step.parWithBi valueTerm value' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨valueTerm, sourceHEq,
+             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+  | optionSome valueBi _valueIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i valueStep
+      exact ⟨_, HEq.rfl, Step.parWithBi.mk valueStep valueBi⟩
+  | _ =>
+      intro sourceHEq
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (exfalso
+           apply refuteViaToRaw _ (Term.optionSome valueTerm) typeEq sourceHEq
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Chain paired source-inversion for `Term.optionSome`. -/
+theorem Step.parStarWithBi.optionSome_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueTerm : Term ctx elementType}
+    {target : Term ctx (Ty.option elementType)}
+    (chainPair : Step.parStarWithBi
+        (@Term.optionSome mode level scope ctx elementType valueTerm)
+        target) :
+    ∃ (value' : Term ctx elementType),
+        target = Term.optionSome value' ∧
+        Step.parStarWithBi valueTerm value' := by
+  generalize sourceEq :
+      (@Term.optionSome mode level scope ctx elementType valueTerm)
+        = sourceTerm at chainPair
+  induction chainPair generalizing valueTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨valueTerm, rfl, Step.parStarWithBi.refl valueTerm⟩
+  | trans firstBi _restChain restIH =>
+      cases sourceEq
+      obtain ⟨value₁, eq₁, valuePair⟩ :=
+        Step.par.optionSome_source_inv_with_bi_general rfl firstBi HEq.rfl
+      obtain ⟨value', eq', valueRest⟩ := restIH (eq_of_heq eq₁).symm
+      exact ⟨value', eq',
+             Step.parStarWithBi.trans valuePair.toIsBi valueRest⟩
+
+/-- Single-step paired source-inversion for `Term.eitherInl`. -/
+theorem Step.par.eitherInl_source_inv_with_bi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx leftType}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.either leftType rightType)
+    {parStep : Step.par source target}
+    (stepBi : Step.par.isBi parStep) :
+    HEq source
+        (@Term.eitherInl mode level scope ctx leftType rightType valueTerm) →
+    ∃ (value' : Term ctx leftType),
+        HEq target
+            (@Term.eitherInl mode level scope ctx leftType rightType value') ∧
+        Step.parWithBi valueTerm value' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨valueTerm, sourceHEq,
+             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+  | eitherInl valueBi _valueIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i valueStep
+      exact ⟨_, HEq.rfl, Step.parWithBi.mk valueStep valueBi⟩
+  | _ =>
+      intro sourceHEq
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (exfalso
+           apply refuteViaToRaw _
+             (Term.eitherInl (rightType := rightType) valueTerm)
+             typeEq sourceHEq
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Chain paired source-inversion for `Term.eitherInl`. -/
+theorem Step.parStarWithBi.eitherInl_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx leftType}
+    {target : Term ctx (Ty.either leftType rightType)}
+    (chainPair : Step.parStarWithBi
+        (@Term.eitherInl mode level scope ctx leftType rightType valueTerm)
+        target) :
+    ∃ (value' : Term ctx leftType),
+        target = Term.eitherInl value' ∧
+        Step.parStarWithBi valueTerm value' := by
+  generalize sourceEq :
+      (@Term.eitherInl mode level scope ctx leftType rightType valueTerm)
+        = sourceTerm at chainPair
+  induction chainPair generalizing valueTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨valueTerm, rfl, Step.parStarWithBi.refl valueTerm⟩
+  | trans firstBi _restChain restIH =>
+      cases sourceEq
+      obtain ⟨value₁, eq₁, valuePair⟩ :=
+        Step.par.eitherInl_source_inv_with_bi_general rfl firstBi HEq.rfl
+      obtain ⟨value', eq', valueRest⟩ := restIH (eq_of_heq eq₁).symm
+      exact ⟨value', eq',
+             Step.parStarWithBi.trans valuePair.toIsBi valueRest⟩
+
+/-- Single-step paired source-inversion for `Term.eitherInr`. -/
+theorem Step.par.eitherInr_source_inv_with_bi_general
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx rightType}
+    {termType : Ty level scope}
+    {source target : Term ctx termType}
+    (typeEq : termType = Ty.either leftType rightType)
+    {parStep : Step.par source target}
+    (stepBi : Step.par.isBi parStep) :
+    HEq source
+        (@Term.eitherInr mode level scope ctx leftType rightType valueTerm) →
+    ∃ (value' : Term ctx rightType),
+        HEq target
+            (@Term.eitherInr mode level scope ctx leftType rightType value') ∧
+        Step.parWithBi valueTerm value' := by
+  induction stepBi with
+  | refl term =>
+      intro sourceHEq
+      exact ⟨valueTerm, sourceHEq,
+             Step.parWithBi.mk (Step.par.refl _) (Step.par.isBi.refl _)⟩
+  | eitherInr valueBi _valueIH =>
+      intro sourceHEq
+      cases typeEq
+      cases (eq_of_heq sourceHEq)
+      rename_i valueStep
+      exact ⟨_, HEq.rfl, Step.parWithBi.mk valueStep valueBi⟩
+  | _ =>
+      intro sourceHEq
+      first
+        | (cases typeEq; cases (eq_of_heq sourceHEq))
+        | (exfalso
+           apply refuteViaToRaw _
+             (Term.eitherInr (leftType := leftType) valueTerm)
+             typeEq sourceHEq
+           intro h; simp only [Term.toRaw] at h; cases h)
+
+/-- Chain paired source-inversion for `Term.eitherInr`. -/
+theorem Step.parStarWithBi.eitherInr_source_inv
+    {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueTerm : Term ctx rightType}
+    {target : Term ctx (Ty.either leftType rightType)}
+    (chainPair : Step.parStarWithBi
+        (@Term.eitherInr mode level scope ctx leftType rightType valueTerm)
+        target) :
+    ∃ (value' : Term ctx rightType),
+        target = Term.eitherInr value' ∧
+        Step.parStarWithBi valueTerm value' := by
+  generalize sourceEq :
+      (@Term.eitherInr mode level scope ctx leftType rightType valueTerm)
+        = sourceTerm at chainPair
+  induction chainPair generalizing valueTerm with
+  | refl _ =>
+      cases sourceEq
+      exact ⟨valueTerm, rfl, Step.parStarWithBi.refl valueTerm⟩
+  | trans firstBi _restChain restIH =>
+      cases sourceEq
+      obtain ⟨value₁, eq₁, valuePair⟩ :=
+        Step.par.eitherInr_source_inv_with_bi_general rfl firstBi HEq.rfl
+      obtain ⟨value', eq', valueRest⟩ := restIH (eq_of_heq eq₁).symm
+      exact ⟨value', eq',
+             Step.parStarWithBi.trans valuePair.toIsBi valueRest⟩
+
 /-! ## `Step.parWithBi` cast helpers — paired versions of
 `Step.par.castBoth` / `castTarget` / `castSource` that thread
 the cast through both Step.par and isBi simultaneously. -/
