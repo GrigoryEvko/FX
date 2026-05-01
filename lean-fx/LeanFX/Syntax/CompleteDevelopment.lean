@@ -47,7 +47,13 @@ theorem Ty.arrow_weaken_strengthen {level scope : Nat}
 
 The returned equality identifies the term's type with the weakened
 newest-binder type.  Reserved for the η-postponement pass; not used
-by the β/ι-only `Term.cd` below. -/
+by the β/ι-only `Term.cd` below.
+
+Every `Term` constructor is enumerated explicitly — no wildcard.
+The wildcard form (`| _ => none`) leaks `propext` because Lean 4's
+match compiler emits propext while justifying the catch-all on a
+dependent inductive.  Full enumeration with universal `candidateType`
+keeps the function strictly axiom-free per `AXIOMS.md`. -/
 def Term.isNewestVar {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope} {newType : Ty level scope}
     {candidateType : Ty level (scope + 1)}
@@ -58,22 +64,50 @@ def Term.isNewestVar {mode : Mode} {level scope : Nat}
       match position with
       | ⟨0, _⟩ => some ⟨rfl⟩
       | ⟨_ + 1, _⟩ => none
-  | _ => none
+  | Term.unit => none
+  | Term.lam _ => none
+  | Term.app _ _ => none
+  | Term.lamPi _ => none
+  | Term.appPi _ _ => none
+  | Term.pair _ _ => none
+  | Term.fst _ => none
+  | Term.snd _ => none
+  | Term.boolTrue => none
+  | Term.boolFalse => none
+  | Term.boolElim _ _ _ => none
+  | Term.natZero => none
+  | Term.natSucc _ => none
+  | Term.natElim _ _ _ => none
+  | Term.natRec _ _ _ => none
+  | Term.listNil => none
+  | Term.listCons _ _ => none
+  | Term.listElim _ _ _ => none
+  | Term.optionNone => none
+  | Term.optionSome _ => none
+  | Term.optionMatch _ _ _ => none
+  | Term.eitherInl _ => none
+  | Term.eitherInr _ => none
+  | Term.eitherMatch _ _ _ => none
+  | Term.refl _ => none
+  | Term.idJ _ _ => none
 
 /-- iotaIdJ redex check, aligned-endpoints case.  With both endpoints
 equal to `leftEnd`, `Term.refl _` is an admissible pattern for a
 witness of type `Ty.id carrier leftEnd leftEnd`, so the iota check
-reduces to a non-dependent two-arm match the simp/split tactics can
-decompose.
+reduces to a binary decision: contract to `developedBase` if the
+witness is structurally `Term.refl`; otherwise rebuild as `Term.idJ`.
 
-The match below is dependent (scrutinee is a `Term` indexed by
-`Ty.id carrier leftEnd leftEnd`), and Lean 4's match compiler emits
-`propext` + `Quot.sound` while discharging the wildcard branch.
-This is a Lean implementation detail: the FX kernel never *uses*
-propext as a logical principle.  AuditAll's `isStdlibPlumbing`
-filter (`reference_audit_axiom_semantics.md`) is the policy gate —
-Init.* axioms are TCB-accepted, only project-local axioms count
-against `#assert_no_axioms`. -/
+KNOWN AXIOM LEAK (Layer M policy violation per AXIOMS.md, tracked
+in W8.7): the wildcard `_ => Term.idJ ...` triggers Lean 4's match
+compiler to emit `propext` while discharging the catch-all on a
+dependent inductive at a restricted type index (`Ty.id _ _ _`).
+Full Term-ctor enumeration fails because ctors like `Term.var`
+cannot have type `Ty.id _ _ _` (varType is opaque).  toRaw-shape
+dispatch avoids the leak but breaks downstream `simp + split`
+proofs in `CdDominates.lean` that expect the original Term-ctor
+match shape.  Resolution path: refactor `cd_dominates_idJ` and the
+parStarWithBi cong proofs to consume a toRaw-shape variant of this
+helper; that's W8.7 in the v2.0 mega-refactor. -/
 def Term.cd_idJ_redex_aligned
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
