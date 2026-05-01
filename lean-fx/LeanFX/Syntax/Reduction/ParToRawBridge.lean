@@ -155,9 +155,50 @@ theorem Step.par.toRawBridge
     exact RawStep.par.iotaEitherMatchInrDeep _ scrutineeIH rightIH
   case iotaIdJReflDeep witnessIH baseIH =>
     exact RawStep.par.iotaIdJReflDeep witnessIH baseIH
-  -- Dependent β cases blocked on Wave 6 (`Subst.singleton` →
-  -- `Subst.termSingleton` migration).  Phase C in #1006-#1014.
-  -- TODO(Wave 6): close after `Term.toRaw_subst0_term` lands.
+  -- The four β cases below are architecturally blocked.  The blocker:
+  -- typed `Step.par.betaApp` produces a target of shape
+  --   `(Ty.weaken_subst_singleton ...) ▸ Term.subst0 body' arg'`
+  -- whose raw projection is `(toRaw body').subst RawTermSubst.dropNewest`
+  -- (because `Subst.singleton`'s `forRaw` field is `dropNewest`, which
+  -- maps position 0 to `RawTerm.unit`).  The raw rule
+  -- `RawStep.par.betaApp` instead produces `(toRaw body').subst0 (toRaw
+  -- arg') = (toRaw body').subst (RawTermSubst.singleton (toRaw arg'))`
+  -- (which maps position 0 to `toRaw arg'`).  When `body'` contains a
+  -- `Term.refl r` referencing position 0 in `r`, the two raw projections
+  -- DIFFER — and there is no chain of raw cong rules between them, since
+  -- `toRaw arg' ⟶par* unit` doesn't hold for non-unit arguments.
+  --
+  -- This is NOT a soundness concern (both typed and raw reductions are
+  -- sound on their own); it's a bridge concern.  The fix requires
+  -- migrating the typed `betaApp` ctor to use `Term.subst0_term`
+  -- instead of `Term.subst0` so the toRaw projection puts `toRaw arg'`
+  -- (not `unit`) at position 0.
+  --
+  -- The required infrastructure is mostly landed: `Term.subst0_term`
+  -- exists, `Term.toRaw_subst0_term` proves the unconditional bridge
+  -- (`ToRawCommute.lean:266`), and `Term.subst0_term_subst_HEq`
+  -- (Phase C1, `ToRawCommute.lean`) handles substitution-commute.
+  -- What remains:
+  --   * Phase C3 (#1008): change `Step.par.betaApp` ctor to produce
+  --     `Term.subst0_term body' arg'` with cast through
+  --     `Ty.weaken_subst_termSingleton`.
+  --   * Phase C5 (#1010): update `Step.par.subst_compatible` β-arm
+  --     to use `subst0_term_subst_HEq`.  Requires adding a
+  --     `RawConsistent termSubstitution` hypothesis (or proving the
+  --     β-arm's specific substitution is RawConsistent at the call
+  --     site).
+  --   * Phase C7-C8 (#1012-#1013): mechanical propagation through cd
+  --     cascade and the parStarWithBi family.
+  --   * Phase C9 (#1014): the 4 sorries below close trivially via
+  --     `Term.toRaw_subst0_term` once the ctor change lands.
+  --
+  -- An alternative path (without kernel migration): restrict the
+  -- bridge to terms whose `body'` has no `refl(var 0)` subterm — but
+  -- this severely limits the bridge's usefulness for general
+  -- dependent-type confluence work.
+  --
+  -- TODO(Phase C): close after `Step.par.betaApp` ctor migration to
+  -- `subst0_term` form.  See WS.1-#1156 / WS.4-#1159 for details.
   case betaApp _ _ => sorry
   case betaAppPi _ _ => sorry
   case betaAppDeep _ _ => sorry
