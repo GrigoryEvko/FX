@@ -109,18 +109,23 @@ structure Env where
 /-- The empty environment — every lookup returns `none`. -/
 def Env.empty : Env := { lookup := fun _ => none }
 
-/-- Lifting placeholder: given a `RawTerm 0` and a target scope,
-return the term weakened to that scope.  Currently a stub —
-implementation requires `Foundation/RawSubst.lean`'s `shift` /
-`weaken` primitives.
+/-- Iterated weakening: `RawTerm sourceScope` lifted to
+`RawTerm (sourceScope + n)` by applying `RawTerm.weaken` n
+times.  Structural recursion on the iteration count. -/
+def RawTerm.weakenIter {sourceScope : Nat}
+    (term : RawTerm sourceScope) : ∀ (n : Nat), RawTerm (sourceScope + n)
+  | 0 => term
+  | n + 1 => (RawTerm.weakenIter term n).weaken
 
-In the meantime, this returns `none` for non-zero target scope.
-For scope = 0, it's the identity. -/
+/-- Lift a module-scope (`RawTerm 0`) definition to the caller's
+scope.  Implementation: iterate kernel `RawTerm.weaken`
+(`Foundation/RawSubst.lean`) `scope` times.
+
+`Nat.zero_add` reconciles the result type — `RawTerm (0 + scope)`
+is definitionally `RawTerm scope`. -/
 def ResolvedDef.liftToScope {scope : Nat} (rd : ResolvedDef) :
     Option (RawTerm scope) :=
-  match scope with
-  | 0 => some rd.rawTerm
-  | _ + 1 => none  -- TODO: invoke RawTermSubst.shift
+  some (Nat.zero_add scope ▸ RawTerm.weakenIter rd.rawTerm scope)
 
 /-- Sketch: resolve an `RawExpr` to a kernel `RawTerm` using an
 environment.  Currently calls `RawExpr.toRawTerm?` (env-free)

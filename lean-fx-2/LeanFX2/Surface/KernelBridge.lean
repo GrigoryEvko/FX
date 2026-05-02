@@ -99,7 +99,7 @@ def RawExpr.toRawTerm? {scope : Nat} :
   | .rawBlock stmts final =>
       match RawExpr.toRawTerm? final with
       | none => none
-      | some finalRaw => RawStmtList.foldBlock? stmts finalRaw
+      | some finalRaw => RawStmtList.foldBlock? stmts finalRaw  -- handles exprCons via RawTerm.weaken
   | .rawIf cond thenBr elseBr =>
       match RawExpr.toRawTerm? cond with
       | none => none
@@ -139,7 +139,16 @@ def OptRawExpr.toRawTermOrUnit? {scope : Nat} :
 
 /-- Fold a RawStmtList + already-desugared final into the
 let-as-application chain.  Recurses structurally on the
-RawStmtList. -/
+RawStmtList.
+
+`exprCons` (a discarded statement `expr;`) desugars to
+`(fun _ => rest.weaken) value` — wrap `rest` in a lambda that
+ignores its argument.  Uses kernel `RawTerm.weaken`
+(`Foundation/RawSubst.lean`) to lift `rest` from scope to
+scope+1.
+
+`letCons` desugars to `(fun bound => rest) value` directly —
+`rest` is already at scope+1 (the let extends scope by 1). -/
 def RawStmtList.foldBlock? {scope outScope : Nat} :
     RawStmtList scope outScope → RawTerm outScope →
     Option (RawTerm scope)
@@ -151,7 +160,15 @@ def RawStmtList.foldBlock? {scope outScope : Nat} :
         match RawStmtList.foldBlock? rest finalRaw with
         | none => none
         | some restRaw => some (RawTerm.app (RawTerm.lam restRaw) valueRaw)
-  | .rawExprCons _ _, _ => none
+  | .rawExprCons value rest, finalRaw =>
+      match RawExpr.toRawTerm? value with
+      | none => none
+      | some valueRaw =>
+        match RawStmtList.foldBlock? rest finalRaw with
+        | none => none
+        | some restRaw =>
+          -- exprCons: (fun _ => rest.weaken) value
+          some (RawTerm.app (RawTerm.lam restRaw.weaken) valueRaw)
 
 end -- mutual
 
