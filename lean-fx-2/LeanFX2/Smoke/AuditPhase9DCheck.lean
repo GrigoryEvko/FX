@@ -121,4 +121,14 @@ example :
         (RawTerm.boolElim RawTerm.unit RawTerm.unit RawTerm.unit) =
       none := rfl
 
+/-- listElim where scrutinee can't be inferred: bare `.lam` defaults
+to none from infer.  Compare with a synthesizable scrutinee form. -/
+example :
+    Term.check context (Ty.unit (level := level) (scope := scope))
+        (RawTerm.listElim
+          (RawTerm.lam (RawTerm.unit (scope := scope + 1)))
+          RawTerm.unit
+          (RawTerm.lam (RawTerm.lam RawTerm.unit))) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DCheck

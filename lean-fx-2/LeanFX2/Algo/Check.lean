@@ -262,9 +262,59 @@ def Term.check : ∀ {scope : Nat}
       | none, _, _ => none
       | _, none, _ => none
       | _, _, none => none
-  | .listElim _ _ _     => none
-  | .optionMatch _ _ _  => none
-  | .eitherMatch _ _ _  => none
+  -- List eliminator: scrutinee must infer to `Ty.listType elementType`,
+  -- which determines the cons branch's parameter type.  Motive is
+  -- the expected type.
+  | .listElim scrutineeRaw nilRaw consRaw =>
+      match Term.infer context scrutineeRaw with
+      | some ⟨.listType elementType, scrutineeTerm⟩ =>
+          match Term.check context expectedType nilRaw,
+                Term.check context
+                  (Ty.arrow elementType
+                    (Ty.arrow (Ty.listType elementType) expectedType)) consRaw with
+          | some nilTerm, some consTerm =>
+              some (Term.listElim scrutineeTerm nilTerm consTerm)
+          | none, _ => none
+          | _, none => none
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
+      | some ⟨.id _ _ _, _⟩ | some ⟨.optionType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
+  -- Option matcher: scrutinee must infer to `Ty.optionType elementType`.
+  | .optionMatch scrutineeRaw noneRaw someRaw =>
+      match Term.infer context scrutineeRaw with
+      | some ⟨.optionType elementType, scrutineeTerm⟩ =>
+          match Term.check context expectedType noneRaw,
+                Term.check context (Ty.arrow elementType expectedType) someRaw with
+          | some noneTerm, some someTerm =>
+              some (Term.optionMatch scrutineeTerm noneTerm someTerm)
+          | none, _ => none
+          | _, none => none
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
+      | some ⟨.id _ _ _, _⟩ | some ⟨.listType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
+  -- Either matcher: scrutinee must infer to `Ty.eitherType left right`,
+  -- which determines both branch parameter types.
+  | .eitherMatch scrutineeRaw leftRaw rightRaw =>
+      match Term.infer context scrutineeRaw with
+      | some ⟨.eitherType leftType rightType, scrutineeTerm⟩ =>
+          match Term.check context (Ty.arrow leftType expectedType) leftRaw,
+                Term.check context (Ty.arrow rightType expectedType) rightRaw with
+          | some leftTerm, some rightTerm =>
+              some (Term.eitherMatch scrutineeTerm leftTerm rightTerm)
+          | none, _ => none
+          | _, none => none
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
+      | some ⟨.id _ _ _, _⟩ | some ⟨.listType _, _⟩
+      | some ⟨.optionType _, _⟩ => none
+      | none => none
   | .refl _             => none
   | .idJ _ _            => none
   | .modIntro _         => none
