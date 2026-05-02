@@ -496,4 +496,135 @@ theorem Ty.weaken_subst_commute {level : Nat} {sourceScope targetScope : Nat}
   · exact Subst.weaken_lift_forTy_pointwise sigma
   · exact Subst.weaken_lift_forRaw_pointwise sigma
 
+/-! ### Subst-Subst composition + Ty.subst0_subst_commute. -/
+
+/-- Compose two Substs: forTy-output substituted by the second, forRaw
+composed via RawTermSubst.compose. -/
+@[reducible] def Subst.compose {level sourceScope middleScope targetScope : Nat}
+    (sigma1 : Subst level sourceScope middleScope)
+    (sigma2 : Subst level middleScope targetScope) :
+    Subst level sourceScope targetScope where
+  forTy  := fun position => (sigma1.forTy position).subst sigma2
+  forRaw := RawTermSubst.compose sigma1.forRaw sigma2.forRaw
+
+/-- Lift commutes with composition on forTy (pointwise). -/
+theorem Subst.lift_compose_forTy_pointwise {level sourceScope middleScope targetScope : Nat}
+    (sigma1 : Subst level sourceScope middleScope)
+    (sigma2 : Subst level middleScope targetScope) :
+    ∀ position,
+      (Subst.compose sigma1 sigma2).lift.forTy position =
+        (Subst.compose sigma1.lift sigma2.lift).forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show ((sigma1.forTy ⟨k, _⟩).subst sigma2).weaken =
+           ((sigma1.forTy ⟨k, _⟩).weaken).subst sigma2.lift
+      exact (Ty.weaken_subst_commute sigma2 (sigma1.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩)).symm
+
+/-- Lift commutes with composition on forRaw (defers to RawTermSubst). -/
+theorem Subst.lift_compose_forRaw_pointwise
+    {level sourceScope middleScope targetScope : Nat}
+    (sigma1 : Subst level sourceScope middleScope)
+    (sigma2 : Subst level middleScope targetScope) :
+    ∀ position,
+      (Subst.compose sigma1 sigma2).lift.forRaw position =
+        (Subst.compose sigma1.lift sigma2.lift).forRaw position :=
+  fun position => RawTermSubst.lift_compose_pointwise sigma1.forRaw sigma2.forRaw position
+
+/-- subst-then-subst factors through Subst.compose.  Mirror of
+Ty.subst_rename_commute for the substitution-substitution case. -/
+theorem Ty.subst_compose {level : Nat}
+    {scope middleScope targetScope : Nat}
+    (sigma1 : Subst level scope middleScope)
+    (sigma2 : Subst level middleScope targetScope)
+    (someType : Ty level scope) :
+    (someType.subst sigma1).subst sigma2 =
+      someType.subst (Subst.compose sigma1 sigma2) := by
+  induction someType generalizing middleScope targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.subst]; rw [dIH sigma1 sigma2, cIH sigma1 sigma2]
+  | piTy d c dIH cIH =>
+      simp only [Ty.subst]
+      rw [dIH sigma1 sigma2, cIH sigma1.lift sigma2.lift]
+      congr 1
+      apply Ty.subst_pointwise
+      · exact fun p => (Subst.lift_compose_forTy_pointwise sigma1 sigma2 p).symm
+      · exact fun p => (Subst.lift_compose_forRaw_pointwise sigma1 sigma2 p).symm
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.subst]
+      rw [fIH sigma1 sigma2, sIH sigma1.lift sigma2.lift]
+      congr 1
+      apply Ty.subst_pointwise
+      · exact fun p => (Subst.lift_compose_forTy_pointwise sigma1 sigma2 p).symm
+      · exact fun p => (Subst.lift_compose_forRaw_pointwise sigma1 sigma2 p).symm
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw left,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw right]
+  | listType e eIH => simp only [Ty.subst]; rw [eIH sigma1 sigma2]
+  | optionType e eIH => simp only [Ty.subst]; rw [eIH sigma1 sigma2]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+
+/-- Pointwise: composing singleton with sigma agrees with composing
+sigma.lift with renamed singleton on forTy. -/
+theorem Subst.singleton_compose_swap_forTy_pointwise {level sourceScope targetScope : Nat}
+    (substituent : Ty level sourceScope) (rawArg : RawTerm sourceScope)
+    (sigma : Subst level sourceScope targetScope) :
+    ∀ position,
+      (Subst.compose (Subst.singleton substituent rawArg) sigma).forTy position =
+        (Subst.compose sigma.lift
+          (Subst.singleton (substituent.subst sigma) (rawArg.subst sigma.forRaw))).forTy
+          position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩ =
+           (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken.subst
+             (Subst.singleton (substituent.subst sigma) (rawArg.subst sigma.forRaw))
+      exact (Ty.weaken_subst_singleton (sigma.forTy ⟨k, _⟩)
+              (substituent.subst sigma) (rawArg.subst sigma.forRaw)).symm
+
+/-- Pointwise: composing singleton with sigma agrees with composing
+sigma.lift with renamed singleton on forRaw. -/
+theorem Subst.singleton_compose_swap_forRaw_pointwise {level sourceScope targetScope : Nat}
+    (substituent : Ty level sourceScope) (rawArg : RawTerm sourceScope)
+    (sigma : Subst level sourceScope targetScope) :
+    ∀ position,
+      (Subst.compose (Subst.singleton substituent rawArg) sigma).forRaw position =
+        (Subst.compose sigma.lift
+          (Subst.singleton (substituent.subst sigma) (rawArg.subst sigma.forRaw))).forRaw
+          position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show sigma.forRaw ⟨k, Nat.lt_of_succ_lt_succ h⟩ =
+           (sigma.forRaw ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken.subst
+             (RawTermSubst.singleton (rawArg.subst sigma.forRaw))
+      exact (RawTerm.weaken_subst_singleton (sigma.forRaw ⟨k, _⟩)
+              (rawArg.subst sigma.forRaw)).symm
+
+/-- Substituting a single-variable substitution result equals single-variable
+substitution after lifting the substitution.  Load-bearing for typed
+`Term.subst` on β-redex result types: `(cod.subst0 dom argRaw).subst sigma`
+matches `(cod.subst sigma.lift).subst0 (dom.subst sigma) (argRaw.subst sigma.forRaw)`. -/
+theorem Ty.subst0_subst_commute {level scope targetScope : Nat}
+    (codomainType : Ty level (scope + 1))
+    (argType : Ty level scope) (argRaw : RawTerm scope)
+    (sigma : Subst level scope targetScope) :
+    (codomainType.subst0 argType argRaw).subst sigma =
+      (codomainType.subst sigma.lift).subst0
+        (argType.subst sigma) (argRaw.subst sigma.forRaw) := by
+  show (codomainType.subst (Subst.singleton argType argRaw)).subst sigma =
+       (codomainType.subst sigma.lift).subst
+         (Subst.singleton (argType.subst sigma) (argRaw.subst sigma.forRaw))
+  rw [Ty.subst_compose (Subst.singleton argType argRaw) sigma codomainType,
+      Ty.subst_compose sigma.lift
+        (Subst.singleton (argType.subst sigma) (argRaw.subst sigma.forRaw)) codomainType]
+  apply Ty.subst_pointwise
+  · exact Subst.singleton_compose_swap_forTy_pointwise argType argRaw sigma
+  · exact Subst.singleton_compose_swap_forRaw_pointwise argType argRaw sigma
+
 end LeanFX2
