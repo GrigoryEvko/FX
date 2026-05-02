@@ -200,24 +200,33 @@ theorem Term.lamPi_HEq_congr
     HEq (Term.lamPi firstBody) (Term.lamPi secondBody) := by
   term_heq_congr
 
-/-- HEq congruence for `Term.appPi`.  Both sides use `rfl` for
-the resultEq parameter (canonical β-result form), under W9.B1.1
-the equation-bearing constructor.  Callers needing other
-resultEq's go through `Term.appPi_HEq_eqIrrel`. -/
+/-- HEq congruence for `Term.appPi` (W9.B1.3a — polymorphic over
+`argumentRaw`).  Both sides use the same `argumentRaw` and a
+`(by rfl)`-flavored `resultEq` (canonical β-result form via
+termSingleton).  Callers with different argumentRaws or resultEqs
+should compose with `Term.appPi_HEq_eqIrrel`. -/
 theorem Term.appPi_HEq_congr
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {firstDomain secondDomain : Ty level scope}
     (domainEq : firstDomain = secondDomain)
     {firstCodomain secondCodomain : Ty level (scope + 1)}
     (codomainEq : firstCodomain = secondCodomain)
+    {firstArgumentRaw secondArgumentRaw : RawTerm scope}
+    (argumentRawEq : firstArgumentRaw = secondArgumentRaw)
     (firstFunction : Term context (Ty.piTy firstDomain firstCodomain))
     (secondFunction : Term context (Ty.piTy secondDomain secondCodomain))
     (functionHEq : HEq firstFunction secondFunction)
     (firstArgument : Term context firstDomain)
     (secondArgument : Term context secondDomain)
     (argumentHEq : HEq firstArgument secondArgument) :
-    HEq (Term.appPi rfl firstFunction firstArgument)
-        (Term.appPi rfl secondFunction secondArgument) := by
+    HEq (Term.appPi (argumentRaw := firstArgumentRaw)
+          (rfl : firstCodomain.subst (Subst.termSingleton firstDomain firstArgumentRaw)
+                  = firstCodomain.subst (Subst.termSingleton firstDomain firstArgumentRaw))
+          firstFunction firstArgument)
+        (Term.appPi (argumentRaw := secondArgumentRaw)
+          (rfl : secondCodomain.subst (Subst.termSingleton secondDomain secondArgumentRaw)
+                  = secondCodomain.subst (Subst.termSingleton secondDomain secondArgumentRaw))
+          secondFunction secondArgument) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.pair`. -/
@@ -659,14 +668,15 @@ theorem Term.subst_id_HEq_boolElim
     _ _ elseBranchRecursiveHEq
 
 /-- HEq irrelevance of the `resultEq` proof field of `Term.appPi`
-(W9.B1.1).  Two `appPi`'s with the same indices but different
-`resultEq` proofs are heterogeneously equal — the equation field
-is propositional. -/
+(W9.B1.3a — termSingleton-flavored).  Two `appPi`'s with the same
+indices (including `argumentRaw`) but different `resultEq` proofs are
+heterogeneously equal — the equation field is propositional. -/
 theorem Term.appPi_HEq_eqIrrel
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {domain : Ty level scope} {codomain : Ty level (scope + 1)}
-    {resultType : Ty level scope}
-    (firstEq secondEq : resultType = codomain.subst0 domain)
+    {resultType : Ty level scope} {argumentRaw : RawTerm scope}
+    (firstEq secondEq :
+      resultType = codomain.subst (Subst.termSingleton domain argumentRaw))
     (functionTerm : Term context (Ty.piTy domain codomain))
     (argumentTerm : Term context domain) :
     HEq (Term.appPi (context := context) firstEq functionTerm argumentTerm)
@@ -678,15 +688,15 @@ theorem Term.appPi_HEq_eqIrrel
   rfl
 
 /-- Recursive HEq case of `Term.subst_id` for `appPi`.  The
-substituted result carries `Ty.subst0_subst_commute` and the
-equation-bearing cast on the outside; `eqRec_heq` strips them
-before constructor congruence.  Polymorphic over `resultEq`
-under W9.B1.1 (equation-bearing appPi). -/
+substituted result carries `Ty.subst_termSingleton_subst_commute` and
+the equation-bearing cast on the outside; `eqRec_heq` strips them
+before constructor congruence.  Polymorphic over `resultEq` and
+`argumentRaw` under W9.B1.3a (termSingleton-flavored appPi). -/
 theorem Term.subst_id_HEq_appPi
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {domain : Ty level scope} {codomain : Ty level (scope + 1)}
-    {resultType : Ty level scope}
-    (resultEq : resultType = codomain.subst0 domain)
+    {resultType : Ty level scope} {argumentRaw : RawTerm scope}
+    (resultEq : resultType = codomain.subst (Subst.termSingleton domain argumentRaw))
     (functionTerm : Term context (Ty.piTy domain codomain))
     (argumentTerm : Term context domain)
     (functionRecursiveHEq :
@@ -698,20 +708,21 @@ theorem Term.subst_id_HEq_appPi
         (Term.appPi (context := context) resultEq functionTerm argumentTerm) := by
   show HEq
     ((congrArg (Ty.subst · Subst.identity) resultEq).symm ▸
-      ((Ty.subst0_subst_commute codomain domain Subst.identity).symm ▸
-        Term.appPi rfl (Term.subst (TermSubst.identity context) functionTerm)
-                       (Term.subst (TermSubst.identity context) argumentTerm)))
+      ((Ty.subst_termSingleton_subst_commute codomain domain argumentRaw
+          Subst.identity).symm ▸
+        Term.appPi (argumentRaw := argumentRaw.subst Subst.identity.forRaw) rfl
+          (Term.subst (TermSubst.identity context) functionTerm)
+          (Term.subst (TermSubst.identity context) argumentTerm)))
     (Term.appPi resultEq functionTerm argumentTerm)
   apply HEq.trans (eqRec_heq _ _)
   apply HEq.trans (eqRec_heq _ _)
-  -- Inner appPi HEq congruence; resultEq is irrelevant to constructor congruence.
-  -- Need: appPi rfl substed substed ≍ appPi resultEq function argument.
-  -- The first cases-rfl reduces resultType := codomain.subst0 domain so we can
-  -- reuse plain appPi_HEq_congr.
+  -- After eqRec_heq strips, sides align modulo argumentRaw.subst id ↔ argumentRaw.
+  -- cases resultEq makes both sides have rfl resultEq; then appPi_HEq_congr applies.
   cases resultEq
   exact Term.appPi_HEq_congr (Ty.subst_id domain)
     ((Ty.subst_congr Subst.lift_identity_equiv codomain).trans
      (Ty.subst_id codomain))
+    (RawTerm.subst_id argumentRaw)
     _ _ functionRecursiveHEq _ _ argumentRecursiveHEq
 
 /-- Recursive HEq case of `Term.subst_id` for `pair`. -/

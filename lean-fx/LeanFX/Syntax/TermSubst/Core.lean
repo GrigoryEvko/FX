@@ -310,6 +310,33 @@ theorem Ty.subst0_subst_commute {level scope target : Nat}
       substituent typeSubstitution) codomain
   exact leftCompose.trans (congCast.trans rightCompose.symm)
 
+/-- W9.B1.3a — `termSingleton`-flavored sibling of `Ty.subst0_subst_commute`.
+Substituting via `termSingleton substituent rawArg` and then applying an
+outer substitution equals lifting the outer substitution under the binder
+and then substituting via `termSingleton (substituent.subst _) (rawArg.subst _)`.
+The load-bearing subst-commute lemma for `Term.subst`'s `appPi` arm under
+the W9.B1.3a equation form. -/
+theorem Ty.subst_termSingleton_subst_commute {level scope target : Nat}
+    (codomain : Ty level (scope + 1))
+    (substituent : Ty level scope) (rawArg : RawTerm scope)
+    (typeSubstitution : Subst level scope target) :
+    (codomain.subst (Subst.termSingleton substituent rawArg)).subst
+        typeSubstitution
+      = (codomain.subst typeSubstitution.lift).subst
+          (Subst.termSingleton (substituent.subst typeSubstitution)
+            (rawArg.subst typeSubstitution.forRaw)) := by
+  have leftCompose :=
+    Ty.subst_compose codomain (Subst.termSingleton substituent rawArg)
+      typeSubstitution
+  have rightCompose :=
+    Ty.subst_compose codomain typeSubstitution.lift
+      (Subst.termSingleton (substituent.subst typeSubstitution)
+        (rawArg.subst typeSubstitution.forRaw))
+  have congCast := Ty.subst_congr
+    (Subst.termSingleton_compose_equiv_lift_compose_termSingleton
+      substituent rawArg typeSubstitution) codomain
+  exact leftCompose.trans (congCast.trans rightCompose.symm)
+
 /-- **Term-level substitution** — apply a term-level substitution
 `termSubstitution` (and the underlying type-level substitution
 `typeSubstitution`) to a `Term`, producing a `Term` in the target
@@ -342,15 +369,19 @@ def Term.subst {mode sourceScope targetScope}
       Term.lamPi
         (Term.subst (TermSubst.lift termSubstitution domainType) body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              resultEq functionTerm argumentTerm =>
-      -- W9.B1.1 — equation-bearing appPi.  resultEq : resultType =
-      -- codomainType.subst0 domainType.  We build the substituted
-      -- appPi at canonical (codomainSubst.subst0 domainSubst), then
-      -- cast through resultEq's substituted form and subst0_subst_commute.
+              (argumentRaw := argumentRaw) resultEq functionTerm argumentTerm =>
+      -- W9.B1.3a — termSingleton-flavored appPi.  resultEq : resultType =
+      -- codomainType.subst (Subst.termSingleton domainType argumentRaw).
+      -- Build the substituted appPi at the canonical post-subst termSingleton
+      -- shape (with rawArg substituted via the underlying RawTermSubst), then
+      -- cast through resultEq's substituted form and subst-termSingleton-subst-
+      -- commute.
       (congrArg (Ty.subst · typeSubstitution) resultEq).symm ▸
-        ((Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm ▸
-          Term.appPi rfl (Term.subst termSubstitution functionTerm)
-                         (Term.subst termSubstitution argumentTerm))
+        ((Ty.subst_termSingleton_subst_commute codomainType domainType
+            argumentRaw typeSubstitution).symm ▸
+          Term.appPi (argumentRaw := argumentRaw.subst typeSubstitution.forRaw)
+            rfl (Term.subst termSubstitution functionTerm)
+                (Term.subst termSubstitution argumentTerm))
   | _, .pair (firstType := firstType) (secondType := secondType)
              firstVal secondVal =>
       Term.pair (Term.subst termSubstitution firstVal)
