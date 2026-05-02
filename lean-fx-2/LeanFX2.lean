@@ -45,6 +45,7 @@ import LeanFX2.Term.Pointwise
 import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Bridge
 import LeanFX2.Term.ProofIrrel
+import LeanFX2.Term.Inversion
 
 -- Layer 2 — Reduction
 import LeanFX2.Reduction.Step
@@ -178,6 +179,7 @@ import LeanFX2.Smoke.AuditPhase9ARawWHNFInversions
 import LeanFX2.Smoke.AuditPhase9CDecConv
 import LeanFX2.Smoke.AuditPhase9CDecConvTyped
 import LeanFX2.Smoke.AuditPhase9DSynth
+import LeanFX2.Smoke.AuditPhase7ATypeInversions
 
 namespace LeanFX2
 
