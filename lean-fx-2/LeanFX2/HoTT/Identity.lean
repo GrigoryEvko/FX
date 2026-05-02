@@ -92,9 +92,8 @@ type back to `motiveType`. -/
 
 /-- Generalized lift: any `StepStar` chain whose source and
 target are at any closed motiveType lifts to a `StepStar` chain
-on the `idJ` outer (with shared witness term).  The src/tgt
-types are kept as variables to enable induction; equality
-hypotheses thread through. -/
+on the `idJ` outer (with shared witness term).  1-step
+parameterization of `StepStar.lift_at_isClosedTy`. -/
 theorem StepStar.idJ_baseCase_lift_isClosedTy_general
     {motiveType : Ty level scope}
     (closedMotive : IsClosedTy motiveType)
@@ -111,18 +110,16 @@ theorem StepStar.idJ_baseCase_lift_isClosedTy_general
     (srcIsMotive : srcTy = motiveType)
     (tgtIsMotive : tgtTy = motiveType) :
     StepStar (Term.idJ (srcIsMotive ▸ srcTerm) witnessTerm)
-             (Term.idJ (tgtIsMotive ▸ tgtTerm) witnessTerm) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsMotive
-      cases tgtIsMotive
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsMotive : _ = motiveType :=
-        Step.preserves_isClosedTy closedMotive head srcIsMotive
-      cases srcIsMotive
-      cases midIsMotive
-      exact StepStar.step (Step.idJBase head) (tailIH rfl tgtIsMotive)
+             (Term.idJ (tgtIsMotive ▸ tgtTerm) witnessTerm) :=
+  StepStar.lift_at_isClosedTy
+    (resultTy := motiveType) closedMotive
+    (wrapRaw := fun raw => RawTerm.idJ raw witnessRaw)
+    (fun term => Term.idJ (carrier := carrier)
+                          (leftEndpoint := leftEndpoint)
+                          (rightEndpoint := rightEndpoint)
+                          term witnessTerm)
+    (fun step => Step.idJBase step)
+    someChain srcIsMotive tgtIsMotive
 
 /-- Lift a `StepStar` between baseCases at a closed motive type
 to a `StepStar` between their `idJ` wrappers.  Closed motiveType

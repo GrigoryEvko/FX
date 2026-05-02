@@ -1,28 +1,26 @@
 import LeanFX2.Term.SubjectReductionGeneral
 import LeanFX2.Reduction.Conv
 
-/-! # Reduction/ConvCongIsClosedTy — generic cong-rule lifter at closed types
+/-! # Reduction/ConvCongIsClosedTy — generic Conv cong-rule lifter
 
-When a cong rule applies a Step inside a sub-position whose type is
-closed (`IsClosedTy`), the closed-type SR theorem
-(`Step.preserves_isClosedTy`) constrains every intermediate type in
-a `StepStar` chain to be the same closed type.  This makes lifting a
-chain on the sub-position to a chain on the wrapped term a uniform
-8-line proof — independent of which Step cong rule is involved.
+The companion to `Term.SubjectReductionGeneral.lean`'s
+`StepStar.lift_at_isClosedTy`.  Where the StepStar helper lifts a
+chain on a sub-position, this file's `Conv.cong_at_isClosedTy`
+lifts a *convertibility* on the sub-position via existential
+extraction + SR + re-wrap on both reduction chains.
+
+Together they collapse every "Conv on a sub-term at a closed type
+lifts to Conv on the wrapper" rule into a 1-step parameterization.
 
 This file ships:
 
-* `StepStar.lift_at_isClosedTy` — generic lifter parameterized by
-  the wrapper (a Term → Term function) and a Step cong rule that
-  lifts Step on the sub-position to Step on the wrapped term.
-
 * `Conv.cong_at_isClosedTy` — Conv-level lifter via existential
-  extraction + SR + re-wrap.
+  extraction + SR + re-wrap.  Built on top of
+  `StepStar.lift_at_isClosedTy` (which lives in
+  `SubjectReductionGeneral.lean` since it does not depend on Conv).
 
-These subsume the per-ctor cong rules
-(`StepStar.natSucc_lift`, `StepStar.idJ_baseCase_lift_isClosedTy`,
-etc.).  The per-ctor rules become 1-line corollaries
-parameterizing this helper at the matching wrapper + Step ctor.
+* Five worked corollaries: optionSome, eitherInl, eitherInr,
+  listCons head/tail.
 
 ## The pattern
 
@@ -44,50 +42,6 @@ existing per-ctor rule).
 namespace LeanFX2
 
 variable {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-
-/-- Generic StepStar lifter at a closed sub-position.
-
-Given:
-* `closedTyIsClosed : IsClosedTy closedTy` — closed sub-position type
-* `wrap` — the Term-level wrapper (e.g., `fun t => Term.natSucc t`)
-* `stepWrap` — the Step cong rule (e.g., `Step.natSuccPred`)
-* a chain on the sub-position (typed at `closedTy` via
-  `srcIsClosed`/`tgtIsClosed`)
-
-Produces a chain on the wrapped terms.  Discharged by induction
-on the chain; the `step` case bridges the intermediate type back
-to `closedTy` via `Step.preserves_isClosedTy`. -/
-theorem StepStar.lift_at_isClosedTy
-    {closedTy resultTy : Ty level scope}
-    (closedTyIsClosed : IsClosedTy closedTy)
-    {wrapRaw : RawTerm scope → RawTerm scope}
-    (wrap : ∀ {raw : RawTerm scope}, Term context closedTy raw →
-            Term context resultTy (wrapRaw raw))
-    (stepWrap : ∀ {sourceRaw targetRaw : RawTerm scope}
-                 {sourceTerm : Term context closedTy sourceRaw}
-                 {targetTerm : Term context closedTy targetRaw},
-                 Step sourceTerm targetTerm →
-                 Step (wrap sourceTerm) (wrap targetTerm))
-    {srcTy tgtTy : Ty level scope}
-    {srcRaw tgtRaw : RawTerm scope}
-    {srcTerm : Term context srcTy srcRaw}
-    {tgtTerm : Term context tgtTy tgtRaw}
-    (someChain : StepStar srcTerm tgtTerm)
-    (srcIsClosed : srcTy = closedTy)
-    (tgtIsClosed : tgtTy = closedTy) :
-    StepStar (wrap (srcIsClosed ▸ srcTerm))
-             (wrap (tgtIsClosed ▸ tgtTerm)) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsClosed
-      cases tgtIsClosed
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsClosed : _ = closedTy :=
-        Step.preserves_isClosedTy closedTyIsClosed head srcIsClosed
-      cases srcIsClosed
-      cases midIsClosed
-      exact StepStar.step (stepWrap head) (tailIH rfl tgtIsClosed)
 
 /-- Generic Conv-level cong rule at a closed sub-position.  Extracts
 the convertibility's existential common reduct, applies SR to

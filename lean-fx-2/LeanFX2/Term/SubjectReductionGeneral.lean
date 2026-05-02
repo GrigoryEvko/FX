@@ -321,6 +321,60 @@ theorem StepStar.preserves_isClosedTy
   | step head _ tailIH =>
       exact tailIH (Step.preserves_isClosedTy sourceClosed head sourceIsClosed)
 
+/-! ## Generic chain lifter at closed sub-position
+
+`StepStar.lift_at_isClosedTy` is the workhorse for cong rules
+that lift a `StepStar` chain on a sub-position (typed at a
+closed `closedTy`) to a `StepStar` chain on the wrapped term.
+The proof template is identical for every cong ctor: induct on
+the chain, dispatch refl + step cases, use
+`Step.preserves_isClosedTy` in the step case.  Variable parts
+are exactly the wrapper Term function and the Step cong ctor.
+
+Used by: `StepStar.{natSucc, boolElimScrutinee, natElimScrutinee,
+natRecScrutinee, idJ_baseCase, optionSomeValue, listConsHead,
+listConsTail, eitherInlValue, eitherInrValue}_lift_*`.
+
+Per-ctor lifters specialize this helper at their wrapper +
+Step cong ctor — each becomes a 1-step parameterization. -/
+
+/-- Lift a `StepStar` chain at a closed sub-position to a
+`StepStar` chain on the wrapped term, given the wrapper Term
+function and its Step cong rule.  Proof is by induction on the
+chain; the step case bridges the existential intermediate type
+back to `closedTy` via `Step.preserves_isClosedTy`. -/
+theorem StepStar.lift_at_isClosedTy
+    {closedTy resultTy : Ty level scope}
+    (closedTyIsClosed : IsClosedTy closedTy)
+    {wrapRaw : RawTerm scope → RawTerm scope}
+    (wrap : ∀ {raw : RawTerm scope}, Term context closedTy raw →
+            Term context resultTy (wrapRaw raw))
+    (stepWrap : ∀ {sourceRaw targetRaw : RawTerm scope}
+                 {sourceTerm : Term context closedTy sourceRaw}
+                 {targetTerm : Term context closedTy targetRaw},
+                 Step sourceTerm targetTerm →
+                 Step (wrap sourceTerm) (wrap targetTerm))
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsClosed : srcTy = closedTy)
+    (tgtIsClosed : tgtTy = closedTy) :
+    StepStar (wrap (srcIsClosed ▸ srcTerm))
+             (wrap (tgtIsClosed ▸ tgtTerm)) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsClosed
+      cases tgtIsClosed
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsClosed : _ = closedTy :=
+        Step.preserves_isClosedTy closedTyIsClosed head srcIsClosed
+      cases srcIsClosed
+      cases midIsClosed
+      exact StepStar.step (stepWrap head) (tailIH rfl tgtIsClosed)
+
 /-! ## Specialized SR for closed-type families
 
 Closes kernel-sprint M06 (#1275 — SR at arrow types) and M07
