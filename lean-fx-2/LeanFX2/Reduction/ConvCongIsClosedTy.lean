@@ -182,4 +182,77 @@ theorem Conv.listCons_tail_cong_isClosedTy
     (fun step => Step.listConsTail step)
     tailConv
 
+/-! ## Eliminator scrutinee cong rules
+
+For each list/option/either eliminator, when the element/component
+types are closed, Conv on the scrutinee lifts to Conv on the
+eliminator wrapper.  Same parameterization template; the
+eliminator's branches and motive are fixed. -/
+
+/-- Conv cong on `Term.listElim`'s scrutinee position when element
+type is closed. -/
+theorem Conv.listElim_scrutinee_cong_isClosedTy
+    {elementType motiveType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    {scrutRawA scrutRawB nilRaw consRaw : RawTerm scope}
+    {scrutA : Term context (Ty.listType elementType) scrutRawA}
+    {scrutB : Term context (Ty.listType elementType) scrutRawB}
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType) motiveType))
+                                consRaw)
+    (scrutConv : Conv scrutA scrutB) :
+    Conv (Term.listElim scrutA nilBranch consBranch)
+         (Term.listElim scrutB nilBranch consBranch) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.listType closedElement)
+    (wrapRaw := fun raw => RawTerm.listElim raw nilRaw consRaw)
+    (fun term => Term.listElim term nilBranch consBranch)
+    (fun step => Step.listElimScrutinee step)
+    scrutConv
+
+/-- Conv cong on `Term.optionMatch`'s scrutinee position when
+element type is closed. -/
+theorem Conv.optionMatch_scrutinee_cong_isClosedTy
+    {elementType motiveType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    {scrutRawA scrutRawB noneRaw someRaw : RawTerm scope}
+    {scrutA : Term context (Ty.optionType elementType) scrutRawA}
+    {scrutB : Term context (Ty.optionType elementType) scrutRawB}
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw)
+    (scrutConv : Conv scrutA scrutB) :
+    Conv (Term.optionMatch scrutA noneBranch someBranch)
+         (Term.optionMatch scrutB noneBranch someBranch) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.optionType closedElement)
+    (wrapRaw := fun raw => RawTerm.optionMatch raw noneRaw someRaw)
+    (fun term => Term.optionMatch term noneBranch someBranch)
+    (fun step => Step.optionMatchScrutinee step)
+    scrutConv
+
+/-- Conv cong on `Term.eitherMatch`'s scrutinee position when both
+component types are closed. -/
+theorem Conv.eitherMatch_scrutinee_cong_isClosedTy
+    {leftType rightType motiveType : Ty level scope}
+    (closedLeft : IsClosedTy leftType)
+    (closedRight : IsClosedTy rightType)
+    {scrutRawA scrutRawB leftRaw rightRaw : RawTerm scope}
+    {scrutA : Term context (Ty.eitherType leftType rightType) scrutRawA}
+    {scrutB : Term context (Ty.eitherType leftType rightType) scrutRawB}
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw)
+    (scrutConv : Conv scrutA scrutB) :
+    Conv (Term.eitherMatch scrutA leftBranch rightBranch)
+         (Term.eitherMatch scrutB leftBranch rightBranch) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.eitherType closedLeft closedRight)
+    (wrapRaw := fun raw => RawTerm.eitherMatch raw leftRaw rightRaw)
+    (fun term => Term.eitherMatch term leftBranch rightBranch)
+    (fun step => Step.eitherMatchScrutinee step)
+    scrutConv
+
 end LeanFX2
