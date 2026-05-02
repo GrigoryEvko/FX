@@ -1,0 +1,32 @@
+import LeanFX2.Surface.KernelBridgeReduction
+
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawBound
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawFree
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawLit
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawUnit
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawParen
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawDot
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawApp
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawBinop
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawUnop
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawLam
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawBlock
+#print axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawIf
+#print axioms LeanFX2.Surface.RawArgList.foldApps?_rawNilArg
+#print axioms LeanFX2.Surface.RawArgList.foldApps?_rawConsArg
+#print axioms LeanFX2.Surface.RawCallArg.toRawTerm?_rawPositional
+#print axioms LeanFX2.Surface.RawCallArg.toRawTerm?_rawNamed
+#print axioms LeanFX2.Surface.RawCallArg.toRawTerm?_rawImplicit
+#print axioms LeanFX2.Surface.OptRawExpr.toRawTermOrUnit?_rawNone
+#print axioms LeanFX2.Surface.OptRawExpr.toRawTermOrUnit?_rawSome
+#print axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawNilStmt
+#print axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawLetCons
+#print axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawExprCons
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_unitLit
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_boolLit_true
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_boolLit_false
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_intLit_zero
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_intLit_neg
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_decLit
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_floatLit
+#print axioms LeanFX2.Surface.Literal.toRawTerm?_strLit
