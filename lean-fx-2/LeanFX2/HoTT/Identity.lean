@@ -2,6 +2,7 @@ import LeanFX2.Term
 import LeanFX2.Reduction.Step
 import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
+import LeanFX2.Term.SubjectReductionGeneral
 
 /-! # HoTT/Identity — identity-type metatheorems
 
@@ -76,50 +77,215 @@ theorem Conv.idJ_refl_baseCase
          baseCase :=
   Conv.fromStep (Step.iotaIdJRefl carrier endpoint baseCase)
 
-/-! ## Cong rules — DEFERRED to Phase 12 sprint (Day 2)
+/-! ## Cong rules — landed via general SR (`Step.preserves_isClosedTy`)
 
-`StepStar.idJ_baseCase_lift` and `StepStar.idJ_witness_lift`
-would lift a StepStar chain on baseCase / witness to a chain on
-the whole `idJ` term.  They block on Lean 4's `induction` tactic
-not generalizing duplicate index occurrences (motiveType + the
-Ty.id endpoints appear in source AND target term-types, and
-`induction chain` cannot generalize over both).
+Both `StepStar.idJ_baseCase_lift_isClosedTy` and the Conv
+analog `Conv.idJ_baseCase_cong_isClosedTy` are now shippable
+because closed-motive subject reduction landed in
+`Term/SubjectReductionGeneral.lean`.
 
-Workaround: free the indices via `srcTy/tgtTy` variables +
-equality hypotheses + subject reduction (Step.preserves_isClosedTy
-analog for motiveType).  Generic SR is the Phase-12 Day-2 AM
-deliverable; once shipped, these lifters become 8-line proofs
-following the `StepStar.natSucc_lift_general` template in
-Term/SubjectReduction.lean.
+The proof follows the `StepStar.natSucc_lift_general` template:
+free the source/target Ty index via variables + equality
+hypothesis, then thread `Step.preserves_isClosedTy closedMotive`
+through every `step`-case to bridge the existential intermediate
+type back to `motiveType`. -/
 
-For now: ship single-step `Step.idJ_refl` + `Conv.idJ_refl_baseCase`
-(above).  The lifters arrive with general SR.
+/-- Generalized lift: any `StepStar` chain whose source and
+target are at any closed motiveType lifts to a `StepStar` chain
+on the `idJ` outer (with shared witness term).  The src/tgt
+types are kept as variables to enable induction; equality
+hypotheses thread through. -/
+theorem StepStar.idJ_baseCase_lift_isClosedTy_general
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsMotive : srcTy = motiveType)
+    (tgtIsMotive : tgtTy = motiveType) :
+    StepStar (Term.idJ (srcIsMotive ▸ srcTerm) witnessTerm)
+             (Term.idJ (tgtIsMotive ▸ tgtTerm) witnessTerm) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsMotive
+      cases tgtIsMotive
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsMotive : _ = motiveType :=
+        Step.preserves_isClosedTy closedMotive head srcIsMotive
+      cases srcIsMotive
+      cases midIsMotive
+      exact StepStar.step (Step.idJBase head) (tailIH rfl tgtIsMotive)
 
-## Convertibility congruence (BLOCKED on Subject Reduction)
+/-- Lift a `StepStar` between baseCases at a closed motive type
+to a `StepStar` between their `idJ` wrappers.  Closed motiveType
+makes `Step.preserves_isClosedTy` applicable. -/
+theorem StepStar.idJ_baseCase_lift_isClosedTy
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context motiveType baseRawA}
+    {baseTermB : Term context motiveType baseRawB}
+    (chain : StepStar baseTermA baseTermB) :
+    StepStar (Term.idJ baseTermA witnessTerm)
+             (Term.idJ baseTermB witnessTerm) :=
+  StepStar.idJ_baseCase_lift_isClosedTy_general
+    closedMotive carrier leftEndpoint rightEndpoint witnessTerm
+    chain rfl rfl
 
-`Conv.idJ_baseCase_cong` and `Conv.idJ_witness_cong` would say
-that convertibility of base/witness lifts to convertibility of
-the whole `idJ` term.
+/-- Convertibility of baseCases at a closed motive type lifts to
+convertibility of the `idJ` wrappers.  Discharged by extracting
+the existential common reduct, applying SR to constrain its
+type, and re-wrapping with `idJ_baseCase_lift_isClosedTy`. -/
+theorem Conv.idJ_baseCase_cong_isClosedTy
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context motiveType baseRawA}
+    {baseTermB : Term context motiveType baseRawB}
+    (baseConv : Conv baseTermA baseTermB) :
+    Conv (Term.idJ baseTermA witnessTerm)
+         (Term.idJ baseTermB witnessTerm) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := baseConv
+  have midIsMotive : midType = motiveType :=
+    StepStar.preserves_isClosedTy closedMotive chainA rfl
+  cases midIsMotive
+  refine ⟨motiveType, _, Term.idJ midTerm witnessTerm, ?_, ?_⟩
+  · exact StepStar.idJ_baseCase_lift_isClosedTy
+            closedMotive carrier leftEndpoint rightEndpoint
+            witnessTerm chainA
+  · exact StepStar.idJ_baseCase_lift_isClosedTy
+            closedMotive carrier leftEndpoint rightEndpoint
+            witnessTerm chainB
 
-These DO NOT GENERALIZE to arbitrary `motiveType` /
-`Ty.id carrier ...` types because `Conv`'s definitional shape
-allows the common-reduct's type to differ from the source type:
+/-! ## Specialized cong rules at closed leaves
 
-```lean
-def Conv source target : Prop :=
-  ∃ midType midRaw midTerm, StepStar source midTerm ∧ StepStar target midTerm
-```
+One-line specializations at the three concrete closed leaves
+(`Ty.unit`, `Ty.bool`, `Ty.nat`).  Each just instantiates the
+`isClosedTy` version with the matching `IsClosedTy` ctor. -/
 
-To rebuild `Term.idJ midTerm witnessTerm` we need `midTerm` at
-`motiveType`, but `Conv`'s `midType` is existentially bound
-without that constraint.  The constraint is exactly subject
-reduction at `motiveType` — see M06/M07 (subject reduction at
-arrow / parametric types).
+/-- Cong rule: `idJ`'s baseCase position when motive is `Ty.unit`. -/
+theorem StepStar.idJ_baseCase_lift_unit
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context Ty.unit baseRawA}
+    {baseTermB : Term context Ty.unit baseRawB}
+    (chain : StepStar baseTermA baseTermB) :
+    StepStar (Term.idJ baseTermA witnessTerm)
+             (Term.idJ baseTermB witnessTerm) :=
+  StepStar.idJ_baseCase_lift_isClosedTy
+    IsClosedTy.unit carrier leftEndpoint rightEndpoint witnessTerm chain
 
-For closed motiveTypes (`Ty.unit`, `Ty.bool`, `Ty.nat`)
-SR is already shipped via `Step.preserves_ty_*` lemmas in
-`Term/SubjectReduction.lean`; specialized cong rules for those
-cases can be added without further infrastructure.  General
-cong rules wait on M06+M07. -/
+/-- Cong rule: `idJ`'s baseCase position when motive is `Ty.bool`. -/
+theorem StepStar.idJ_baseCase_lift_bool
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context Ty.bool baseRawA}
+    {baseTermB : Term context Ty.bool baseRawB}
+    (chain : StepStar baseTermA baseTermB) :
+    StepStar (Term.idJ baseTermA witnessTerm)
+             (Term.idJ baseTermB witnessTerm) :=
+  StepStar.idJ_baseCase_lift_isClosedTy
+    IsClosedTy.bool carrier leftEndpoint rightEndpoint witnessTerm chain
+
+/-- Cong rule: `idJ`'s baseCase position when motive is `Ty.nat`. -/
+theorem StepStar.idJ_baseCase_lift_nat
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context Ty.nat baseRawA}
+    {baseTermB : Term context Ty.nat baseRawB}
+    (chain : StepStar baseTermA baseTermB) :
+    StepStar (Term.idJ baseTermA witnessTerm)
+             (Term.idJ baseTermB witnessTerm) :=
+  StepStar.idJ_baseCase_lift_isClosedTy
+    IsClosedTy.nat carrier leftEndpoint rightEndpoint witnessTerm chain
+
+/-! ## Convertibility congruence (`Conv`) — closed leaves -/
+
+/-- Convertibility cong on `idJ`'s baseCase at `Ty.unit`. -/
+theorem Conv.idJ_baseCase_cong_unit
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context Ty.unit baseRawA}
+    {baseTermB : Term context Ty.unit baseRawB}
+    (baseConv : Conv baseTermA baseTermB) :
+    Conv (Term.idJ baseTermA witnessTerm)
+         (Term.idJ baseTermB witnessTerm) :=
+  Conv.idJ_baseCase_cong_isClosedTy
+    IsClosedTy.unit carrier leftEndpoint rightEndpoint witnessTerm baseConv
+
+/-- Convertibility cong on `idJ`'s baseCase at `Ty.bool`. -/
+theorem Conv.idJ_baseCase_cong_bool
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context Ty.bool baseRawA}
+    {baseTermB : Term context Ty.bool baseRawB}
+    (baseConv : Conv baseTermA baseTermB) :
+    Conv (Term.idJ baseTermA witnessTerm)
+         (Term.idJ baseTermB witnessTerm) :=
+  Conv.idJ_baseCase_cong_isClosedTy
+    IsClosedTy.bool carrier leftEndpoint rightEndpoint witnessTerm baseConv
+
+/-- Convertibility cong on `idJ`'s baseCase at `Ty.nat`. -/
+theorem Conv.idJ_baseCase_cong_nat
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {witnessRaw : RawTerm scope}
+    (witnessTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    {baseRawA baseRawB : RawTerm scope}
+    {baseTermA : Term context Ty.nat baseRawA}
+    {baseTermB : Term context Ty.nat baseRawB}
+    (baseConv : Conv baseTermA baseTermB) :
+    Conv (Term.idJ baseTermA witnessTerm)
+         (Term.idJ baseTermB witnessTerm) :=
+  Conv.idJ_baseCase_cong_isClosedTy
+    IsClosedTy.nat carrier leftEndpoint rightEndpoint witnessTerm baseConv
+
+/-! ## What still defers
+
+`StepStar.idJ_witness_lift` (cong on the witness position) needs
+SR for `Ty.id`-typed terms.  `Ty.id` is NOT in `IsClosedTy`
+because its `RawTerm` endpoints depend on substitution.  A
+witness-position cong rule needs a separate "Step preserves
+Ty.id with fixed args" lemma — modest work, deferred to a later
+phase. -/
 
 end LeanFX2
