@@ -26,6 +26,7 @@ namespace LeanFX2.SmokePhase9AInversions
 #print axioms LeanFX2.RawTerm.whnf_agreement_join
 #print axioms LeanFX2.RawTerm.checkConv
 #print axioms LeanFX2.RawTerm.checkConv_sound
+#print axioms LeanFX2.RawTerm.checkConv_refl
 
 /-! ## Concrete checkConv smoke
 

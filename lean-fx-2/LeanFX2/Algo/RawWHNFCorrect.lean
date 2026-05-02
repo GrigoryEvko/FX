@@ -904,4 +904,13 @@ theorem RawTerm.checkConv_sound
     of_decide_eq_true checkSucceeded
   exact RawTerm.whnf_agreement_join fuel leftTerm rightTerm whnfsEqual
 
+/-- Reflexivity: a term is convertible to itself at any fuel.
+`checkConv` always succeeds when both sides are syntactically equal,
+since `whnf fuel term = whnf fuel term` is `rfl`. -/
+theorem RawTerm.checkConv_refl
+    {scope : Nat} (fuel : Nat) (term : RawTerm scope) :
+    RawTerm.checkConv fuel term term = true := by
+  unfold RawTerm.checkConv
+  exact decide_eq_true rfl
+
 end LeanFX2
