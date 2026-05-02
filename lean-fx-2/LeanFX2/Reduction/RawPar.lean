@@ -1,59 +1,498 @@
 import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawSubst
 
-/-! # Reduction/RawPar — raw parallel reduction
+/-! # Reduction/RawPar — raw-side parallel reduction.
 
-The raw (untyped) counterpart of `Step.par` (in `ParRed.lean`).
-Operates on `RawTerm` directly — no typing, no Ctx, no Ty.
+The untyped counterpart of `Step.par`.  Operates on `RawTerm`
+directly with single-Nat-indexed signature — pattern matching and
+inversion are mechanical because there are no dep-typed
+constructors.
 
 Used by:
-* `Bridge.lean` — typed Step.par lifts to raw Step.par via the
-  bridge theorem
+* `Bridge.lean` — `Step.par.toRawBridge : Step.par sourceTerm targetTerm
+  → RawStep.par sourceRaw targetRaw` (forward direction)
+* Future raw-side confluence as a sanity check against typed
 * Decidability of conversion (Layer 9) when running on raw side
-* Confluence of raw reduction (used as a sanity bench against typed)
 
-## Contents
+## Why a separate raw layer
 
-* `inductive RawStep` — single-step raw reduction (cong + β + ι)
-* `inductive RawStep.par` — parallel raw reduction
-* `inductive RawStepStar` — RT closure
-* `RawStep.par.cd_lemma` — raw side of cd_lemma
-* Raw inversion lemmas (`RawStep.par.lam_inv`, `pair_inv`,
-  `boolTrue_inv`, etc.) — clean Lean-elaborable inversions because
-  raw constructors aren't dep-typed
+Typed `Step.par`'s β/ι constructors carry conclusion types involving
+Term values of dep-typed shape (`Term.subst0 body argument`,
+`Term.pair`, etc.).  At the raw level there's no such typing so the
+inversion principle for `RawStep.par (RawTerm.lam body) target`
+gives a clean case split.  This makes raw the cleaner setting for
+prototyping confluence proofs and bridging back to typed.
 
-## Why raw side has clean inversions
+## Constructors (53 total)
 
-Raw `Term.par` is a `Prop`-valued inductive on `RawTerm`.  Its
-constructors don't carry dep-typed targets like `Subst.singleton`-
-flavored Term values, so Lean's inversion tactic produces clean
-case splits.  Typed `Step.par` inversion is harder (requires
-`Term.toRaw` refutation tricks documented in lean-fx's
-`feedback_typed_inversion_breakthrough.md`).
+Mirrors `Step.par`: refl + 21 cong + 4 shallow β + 13 shallow ι +
+4 deep β + 12 deep ι.  η deliberately omitted.
 
-In lean-fx-2, typed inversions are *also* clean (raw indices give
-the kernel enough structure), but raw side stays as the simpler
-specification reference.
+## modIntro / modElim / subsume
 
-## Dependencies
-
-* `Foundation/RawTerm.lean`
-* `Foundation/RawSubst.lean`
-
-## Downstream consumers
-
-* `Bridge.lean` — `Step.par.toRawBridge : Step.par t1 t2 →
-  RawStep.par t1.toRaw t2.toRaw`
-* `Confluence/*` — raw confluence parallels typed; sanity check
-
-## Diff from lean-fx
-
-Mostly identical.  Port from `lean-fx/LeanFX/Syntax/Reduction/RawPar.lean`
-(~526 lines) verbatim.  Drop η rules (consistent with isolating η).
-
-Target: ~480 lines.
+Lean-fx-2's RawTerm includes the three modal ctors from day 1
+(per architectural commitment).  RawStep.par adds cong rules for
+each.
 -/
 
 namespace LeanFX2
+
+/-- Untyped parallel reduction.  Single-Nat-indexed scope; no
+typing.  Pattern matching is mechanical. -/
+inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → Prop
+  /-- Reflexivity: zero parallel reductions. -/
+  | refl {scope : Nat} (rawTerm : RawTerm scope) :
+      RawStep.par rawTerm rawTerm
+  /-- Cong: lam reduces in body. -/
+  | lam {scope : Nat} {bodyRawSource bodyRawTarget : RawTerm (scope + 1)} :
+      RawStep.par bodyRawSource bodyRawTarget →
+      RawStep.par (RawTerm.lam bodyRawSource) (RawTerm.lam bodyRawTarget)
+  /-- Cong: app reduces in both positions. -/
+  | app {scope : Nat}
+      {functionRawSource functionRawTarget
+       argumentRawSource argumentRawTarget : RawTerm scope} :
+      RawStep.par functionRawSource functionRawTarget →
+      RawStep.par argumentRawSource argumentRawTarget →
+      RawStep.par (RawTerm.app functionRawSource argumentRawSource)
+                  (RawTerm.app functionRawTarget argumentRawTarget)
+  /-- Cong: pair reduces in both components. -/
+  | pair {scope : Nat}
+      {firstRawSource firstRawTarget
+       secondRawSource secondRawTarget : RawTerm scope} :
+      RawStep.par firstRawSource firstRawTarget →
+      RawStep.par secondRawSource secondRawTarget →
+      RawStep.par (RawTerm.pair firstRawSource secondRawSource)
+                  (RawTerm.pair firstRawTarget secondRawTarget)
+  /-- Cong: fst reduces in argument. -/
+  | fst {scope : Nat} {pairRawSource pairRawTarget : RawTerm scope} :
+      RawStep.par pairRawSource pairRawTarget →
+      RawStep.par (RawTerm.fst pairRawSource) (RawTerm.fst pairRawTarget)
+  /-- Cong: snd reduces in argument. -/
+  | snd {scope : Nat} {pairRawSource pairRawTarget : RawTerm scope} :
+      RawStep.par pairRawSource pairRawTarget →
+      RawStep.par (RawTerm.snd pairRawSource) (RawTerm.snd pairRawTarget)
+  /-- Cong: boolElim reduces in all three positions. -/
+  | boolElim {scope : Nat}
+      {scrutineeRawSource scrutineeRawTarget
+       thenRawSource thenRawTarget
+       elseRawSource elseRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRawSource scrutineeRawTarget →
+      RawStep.par thenRawSource thenRawTarget →
+      RawStep.par elseRawSource elseRawTarget →
+      RawStep.par (RawTerm.boolElim scrutineeRawSource thenRawSource elseRawSource)
+                  (RawTerm.boolElim scrutineeRawTarget thenRawTarget elseRawTarget)
+  /-- Cong: natSucc reduces in predecessor. -/
+  | natSucc {scope : Nat}
+      {predecessorRawSource predecessorRawTarget : RawTerm scope} :
+      RawStep.par predecessorRawSource predecessorRawTarget →
+      RawStep.par (RawTerm.natSucc predecessorRawSource)
+                  (RawTerm.natSucc predecessorRawTarget)
+  /-- Cong: natElim reduces in all three positions. -/
+  | natElim {scope : Nat}
+      {scrutineeRawSource scrutineeRawTarget
+       zeroRawSource zeroRawTarget
+       succRawSource succRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRawSource scrutineeRawTarget →
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par succRawSource succRawTarget →
+      RawStep.par (RawTerm.natElim scrutineeRawSource zeroRawSource succRawSource)
+                  (RawTerm.natElim scrutineeRawTarget zeroRawTarget succRawTarget)
+  /-- Cong: natRec reduces in all three positions. -/
+  | natRec {scope : Nat}
+      {scrutineeRawSource scrutineeRawTarget
+       zeroRawSource zeroRawTarget
+       succRawSource succRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRawSource scrutineeRawTarget →
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par succRawSource succRawTarget →
+      RawStep.par (RawTerm.natRec scrutineeRawSource zeroRawSource succRawSource)
+                  (RawTerm.natRec scrutineeRawTarget zeroRawTarget succRawTarget)
+  /-- Cong: listCons reduces in head and tail. -/
+  | listCons {scope : Nat}
+      {headRawSource headRawTarget
+       tailRawSource tailRawTarget : RawTerm scope} :
+      RawStep.par headRawSource headRawTarget →
+      RawStep.par tailRawSource tailRawTarget →
+      RawStep.par (RawTerm.listCons headRawSource tailRawSource)
+                  (RawTerm.listCons headRawTarget tailRawTarget)
+  /-- Cong: listElim reduces in all three positions. -/
+  | listElim {scope : Nat}
+      {scrutineeRawSource scrutineeRawTarget
+       nilRawSource nilRawTarget
+       consRawSource consRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRawSource scrutineeRawTarget →
+      RawStep.par nilRawSource nilRawTarget →
+      RawStep.par consRawSource consRawTarget →
+      RawStep.par (RawTerm.listElim scrutineeRawSource nilRawSource consRawSource)
+                  (RawTerm.listElim scrutineeRawTarget nilRawTarget consRawTarget)
+  /-- Cong: optionSome reduces in value. -/
+  | optionSome {scope : Nat}
+      {valueRawSource valueRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par (RawTerm.optionSome valueRawSource)
+                  (RawTerm.optionSome valueRawTarget)
+  /-- Cong: optionMatch reduces in all three positions. -/
+  | optionMatch {scope : Nat}
+      {scrutineeRawSource scrutineeRawTarget
+       noneRawSource noneRawTarget
+       someRawSource someRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRawSource scrutineeRawTarget →
+      RawStep.par noneRawSource noneRawTarget →
+      RawStep.par someRawSource someRawTarget →
+      RawStep.par
+        (RawTerm.optionMatch scrutineeRawSource noneRawSource someRawSource)
+        (RawTerm.optionMatch scrutineeRawTarget noneRawTarget someRawTarget)
+  /-- Cong: eitherInl reduces in value. -/
+  | eitherInl {scope : Nat}
+      {valueRawSource valueRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par (RawTerm.eitherInl valueRawSource)
+                  (RawTerm.eitherInl valueRawTarget)
+  /-- Cong: eitherInr reduces in value. -/
+  | eitherInr {scope : Nat}
+      {valueRawSource valueRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par (RawTerm.eitherInr valueRawSource)
+                  (RawTerm.eitherInr valueRawTarget)
+  /-- Cong: eitherMatch reduces in all three positions. -/
+  | eitherMatch {scope : Nat}
+      {scrutineeRawSource scrutineeRawTarget
+       leftRawSource leftRawTarget
+       rightRawSource rightRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRawSource scrutineeRawTarget →
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par rightRawSource rightRawTarget →
+      RawStep.par
+        (RawTerm.eitherMatch scrutineeRawSource leftRawSource rightRawSource)
+        (RawTerm.eitherMatch scrutineeRawTarget leftRawTarget rightRawTarget)
+  /-- Cong: refl reduces in its rawWitness argument.  Unlike typed
+  Term.refl (frozen open-endpoint data), RawTerm.refl carries a
+  RawTerm payload that substitution propagates into; this cong
+  handles that. -/
+  | reflCong {scope : Nat}
+      {witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource witnessRawTarget →
+      RawStep.par (RawTerm.refl witnessRawSource)
+                  (RawTerm.refl witnessRawTarget)
+  /-- Cong: idJ reduces in baseCase and witness. -/
+  | idJ {scope : Nat}
+      {baseRawSource baseRawTarget
+       witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par witnessRawSource witnessRawTarget →
+      RawStep.par (RawTerm.idJ baseRawSource witnessRawSource)
+                  (RawTerm.idJ baseRawTarget witnessRawTarget)
+  /-- Cong: modIntro reduces in inner. -/
+  | modIntro {scope : Nat}
+      {innerRawSource innerRawTarget : RawTerm scope} :
+      RawStep.par innerRawSource innerRawTarget →
+      RawStep.par (RawTerm.modIntro innerRawSource)
+                  (RawTerm.modIntro innerRawTarget)
+  /-- Cong: modElim reduces in inner. -/
+  | modElim {scope : Nat}
+      {innerRawSource innerRawTarget : RawTerm scope} :
+      RawStep.par innerRawSource innerRawTarget →
+      RawStep.par (RawTerm.modElim innerRawSource)
+                  (RawTerm.modElim innerRawTarget)
+  /-- Cong: subsume reduces in inner. -/
+  | subsume {scope : Nat}
+      {innerRawSource innerRawTarget : RawTerm scope} :
+      RawStep.par innerRawSource innerRawTarget →
+      RawStep.par (RawTerm.subsume innerRawSource)
+                  (RawTerm.subsume innerRawTarget)
+  /-- Shallow β: `(λ. body) arg ⟶ body[arg/x]` with parallel in body+arg. -/
+  | betaApp {scope : Nat}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+      {argumentRawSource argumentRawTarget : RawTerm scope} :
+      RawStep.par bodyRawSource bodyRawTarget →
+      RawStep.par argumentRawSource argumentRawTarget →
+      RawStep.par (RawTerm.app (RawTerm.lam bodyRawSource) argumentRawSource)
+                  (bodyRawTarget.subst0 argumentRawTarget)
+  /-- Shallow β-fst: `fst (pair a b) ⟶ a'`. -/
+  | betaFstPair {scope : Nat}
+      {firstRawSource firstRawTarget : RawTerm scope}
+      (secondRaw : RawTerm scope) :
+      RawStep.par firstRawSource firstRawTarget →
+      RawStep.par (RawTerm.fst (RawTerm.pair firstRawSource secondRaw))
+                  firstRawTarget
+  /-- Shallow β-snd: `snd (pair a b) ⟶ b'`. -/
+  | betaSndPair {scope : Nat}
+      (firstRaw : RawTerm scope)
+      {secondRawSource secondRawTarget : RawTerm scope} :
+      RawStep.par secondRawSource secondRawTarget →
+      RawStep.par (RawTerm.snd (RawTerm.pair firstRaw secondRawSource))
+                  secondRawTarget
+  /-- Shallow ι: `boolElim true t e ⟶ t'`. -/
+  | iotaBoolElimTrue {scope : Nat}
+      {thenRawSource thenRawTarget : RawTerm scope}
+      (elseRaw : RawTerm scope) :
+      RawStep.par thenRawSource thenRawTarget →
+      RawStep.par
+        (RawTerm.boolElim RawTerm.boolTrue thenRawSource elseRaw)
+        thenRawTarget
+  /-- Shallow ι: `boolElim false t e ⟶ e'`. -/
+  | iotaBoolElimFalse {scope : Nat}
+      (thenRaw : RawTerm scope)
+      {elseRawSource elseRawTarget : RawTerm scope} :
+      RawStep.par elseRawSource elseRawTarget →
+      RawStep.par
+        (RawTerm.boolElim RawTerm.boolFalse thenRaw elseRawSource)
+        elseRawTarget
+  /-- Shallow ι: `natElim 0 z s ⟶ z'`. -/
+  | iotaNatElimZero {scope : Nat}
+      {zeroRawSource zeroRawTarget : RawTerm scope}
+      (succRaw : RawTerm scope) :
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par
+        (RawTerm.natElim RawTerm.natZero zeroRawSource succRaw)
+        zeroRawTarget
+  /-- Shallow ι: `natElim (succ n) z s ⟶ s' n'`. -/
+  | iotaNatElimSucc {scope : Nat}
+      (zeroRaw : RawTerm scope)
+      {predecessorRawSource predecessorRawTarget : RawTerm scope}
+      {succRawSource succRawTarget : RawTerm scope} :
+      RawStep.par predecessorRawSource predecessorRawTarget →
+      RawStep.par succRawSource succRawTarget →
+      RawStep.par
+        (RawTerm.natElim (RawTerm.natSucc predecessorRawSource)
+                          zeroRaw succRawSource)
+        (RawTerm.app succRawTarget predecessorRawTarget)
+  /-- Shallow ι: `natRec 0 z s ⟶ z'`. -/
+  | iotaNatRecZero {scope : Nat}
+      {zeroRawSource zeroRawTarget : RawTerm scope}
+      (succRaw : RawTerm scope) :
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par
+        (RawTerm.natRec RawTerm.natZero zeroRawSource succRaw)
+        zeroRawTarget
+  /-- Shallow ι: `natRec (succ n) z s ⟶ s' n' (natRec n' z' s')`. -/
+  | iotaNatRecSucc {scope : Nat}
+      {predecessorRawSource predecessorRawTarget
+       zeroRawSource zeroRawTarget
+       succRawSource succRawTarget : RawTerm scope} :
+      RawStep.par predecessorRawSource predecessorRawTarget →
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par succRawSource succRawTarget →
+      RawStep.par
+        (RawTerm.natRec (RawTerm.natSucc predecessorRawSource)
+                         zeroRawSource succRawSource)
+        (RawTerm.app (RawTerm.app succRawTarget predecessorRawTarget)
+                     (RawTerm.natRec predecessorRawTarget
+                                      zeroRawTarget succRawTarget))
+  /-- Shallow ι: `listElim [] n c ⟶ n'`. -/
+  | iotaListElimNil {scope : Nat}
+      {nilRawSource nilRawTarget : RawTerm scope}
+      (consRaw : RawTerm scope) :
+      RawStep.par nilRawSource nilRawTarget →
+      RawStep.par
+        (RawTerm.listElim RawTerm.listNil nilRawSource consRaw)
+        nilRawTarget
+  /-- Shallow ι: `listElim (cons h t) n c ⟶ c' h' t'`. -/
+  | iotaListElimCons {scope : Nat}
+      (nilRaw : RawTerm scope)
+      {headRawSource headRawTarget
+       tailRawSource tailRawTarget
+       consRawSource consRawTarget : RawTerm scope} :
+      RawStep.par headRawSource headRawTarget →
+      RawStep.par tailRawSource tailRawTarget →
+      RawStep.par consRawSource consRawTarget →
+      RawStep.par
+        (RawTerm.listElim (RawTerm.listCons headRawSource tailRawSource)
+                           nilRaw consRawSource)
+        (RawTerm.app (RawTerm.app consRawTarget headRawTarget) tailRawTarget)
+  /-- Shallow ι: `optionMatch none n s ⟶ n'`. -/
+  | iotaOptionMatchNone {scope : Nat}
+      {noneRawSource noneRawTarget : RawTerm scope}
+      (someRaw : RawTerm scope) :
+      RawStep.par noneRawSource noneRawTarget →
+      RawStep.par
+        (RawTerm.optionMatch RawTerm.optionNone noneRawSource someRaw)
+        noneRawTarget
+  /-- Shallow ι: `optionMatch (some v) n s ⟶ s' v'`. -/
+  | iotaOptionMatchSome {scope : Nat}
+      (noneRaw : RawTerm scope)
+      {valueRawSource valueRawTarget
+       someRawSource someRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par someRawSource someRawTarget →
+      RawStep.par
+        (RawTerm.optionMatch (RawTerm.optionSome valueRawSource)
+                              noneRaw someRawSource)
+        (RawTerm.app someRawTarget valueRawTarget)
+  /-- Shallow ι: `eitherMatch (inl v) lb rb ⟶ lb' v'`. -/
+  | iotaEitherMatchInl {scope : Nat}
+      {valueRawSource valueRawTarget
+       leftRawSource leftRawTarget : RawTerm scope}
+      (rightRaw : RawTerm scope) :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par
+        (RawTerm.eitherMatch (RawTerm.eitherInl valueRawSource)
+                              leftRawSource rightRaw)
+        (RawTerm.app leftRawTarget valueRawTarget)
+  /-- Shallow ι: `eitherMatch (inr v) lb rb ⟶ rb' v'`. -/
+  | iotaEitherMatchInr {scope : Nat}
+      (leftRaw : RawTerm scope)
+      {valueRawSource valueRawTarget
+       rightRawSource rightRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par rightRawSource rightRawTarget →
+      RawStep.par
+        (RawTerm.eitherMatch (RawTerm.eitherInr valueRawSource)
+                              leftRaw rightRawSource)
+        (RawTerm.app rightRawTarget valueRawTarget)
+  /-- Shallow ι: `idJ base (refl rt) ⟶ base'`. -/
+  | iotaIdJRefl {scope : Nat}
+      {baseRawSource baseRawTarget : RawTerm scope}
+      (witnessRaw : RawTerm scope) :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par
+        (RawTerm.idJ baseRawSource (RawTerm.refl witnessRaw))
+        baseRawTarget
+  /-- Deep β: `function ⟶ λ. body` then app fires. -/
+  | betaAppDeep {scope : Nat}
+      {functionRawSource : RawTerm scope}
+      {bodyRawTarget : RawTerm (scope + 1)}
+      {argumentRawSource argumentRawTarget : RawTerm scope} :
+      RawStep.par functionRawSource (RawTerm.lam bodyRawTarget) →
+      RawStep.par argumentRawSource argumentRawTarget →
+      RawStep.par (RawTerm.app functionRawSource argumentRawSource)
+                  (bodyRawTarget.subst0 argumentRawTarget)
+  /-- Deep β: `pairTerm ⟶ pair fr sr` then fst fires. -/
+  | betaFstPairDeep {scope : Nat}
+      {pairRawSource firstRawTarget secondRawTarget : RawTerm scope} :
+      RawStep.par pairRawSource (RawTerm.pair firstRawTarget secondRawTarget) →
+      RawStep.par (RawTerm.fst pairRawSource) firstRawTarget
+  /-- Deep β: `pairTerm ⟶ pair fr sr` then snd fires. -/
+  | betaSndPairDeep {scope : Nat}
+      {pairRawSource firstRawTarget secondRawTarget : RawTerm scope} :
+      RawStep.par pairRawSource (RawTerm.pair firstRawTarget secondRawTarget) →
+      RawStep.par (RawTerm.snd pairRawSource) secondRawTarget
+  /-- Deep ι: `scrutinee ⟶ true` then boolElim fires. -/
+  | iotaBoolElimTrueDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {thenRawSource thenRawTarget : RawTerm scope}
+      (elseRaw : RawTerm scope) :
+      RawStep.par scrutineeRaw RawTerm.boolTrue →
+      RawStep.par thenRawSource thenRawTarget →
+      RawStep.par (RawTerm.boolElim scrutineeRaw thenRawSource elseRaw)
+                  thenRawTarget
+  /-- Deep ι: `scrutinee ⟶ false` then boolElim fires. -/
+  | iotaBoolElimFalseDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      (thenRaw : RawTerm scope)
+      {elseRawSource elseRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRaw RawTerm.boolFalse →
+      RawStep.par elseRawSource elseRawTarget →
+      RawStep.par (RawTerm.boolElim scrutineeRaw thenRaw elseRawSource)
+                  elseRawTarget
+  /-- Deep ι: `scrutinee ⟶ 0` then natElim fires. -/
+  | iotaNatElimZeroDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {zeroRawSource zeroRawTarget : RawTerm scope}
+      (succRaw : RawTerm scope) :
+      RawStep.par scrutineeRaw RawTerm.natZero →
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par (RawTerm.natElim scrutineeRaw zeroRawSource succRaw)
+                  zeroRawTarget
+  /-- Deep ι: `scrutinee ⟶ succ n` then natElim fires. -/
+  | iotaNatElimSuccDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      (zeroRaw : RawTerm scope)
+      {predecessorRaw : RawTerm scope}
+      {succRawSource succRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRaw (RawTerm.natSucc predecessorRaw) →
+      RawStep.par succRawSource succRawTarget →
+      RawStep.par (RawTerm.natElim scrutineeRaw zeroRaw succRawSource)
+                  (RawTerm.app succRawTarget predecessorRaw)
+  /-- Deep ι: `scrutinee ⟶ 0` then natRec fires. -/
+  | iotaNatRecZeroDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {zeroRawSource zeroRawTarget : RawTerm scope}
+      (succRaw : RawTerm scope) :
+      RawStep.par scrutineeRaw RawTerm.natZero →
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par (RawTerm.natRec scrutineeRaw zeroRawSource succRaw)
+                  zeroRawTarget
+  /-- Deep ι: `scrutinee ⟶ succ n` then natRec fires. -/
+  | iotaNatRecSuccDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {predecessorRaw : RawTerm scope}
+      {zeroRawSource zeroRawTarget : RawTerm scope}
+      {succRawSource succRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRaw (RawTerm.natSucc predecessorRaw) →
+      RawStep.par zeroRawSource zeroRawTarget →
+      RawStep.par succRawSource succRawTarget →
+      RawStep.par (RawTerm.natRec scrutineeRaw zeroRawSource succRawSource)
+                  (RawTerm.app (RawTerm.app succRawTarget predecessorRaw)
+                                (RawTerm.natRec predecessorRaw
+                                                 zeroRawTarget succRawTarget))
+  /-- Deep ι: `scrutinee ⟶ []` then listElim fires. -/
+  | iotaListElimNilDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {nilRawSource nilRawTarget : RawTerm scope}
+      (consRaw : RawTerm scope) :
+      RawStep.par scrutineeRaw RawTerm.listNil →
+      RawStep.par nilRawSource nilRawTarget →
+      RawStep.par (RawTerm.listElim scrutineeRaw nilRawSource consRaw)
+                  nilRawTarget
+  /-- Deep ι: `scrutinee ⟶ cons h t` then listElim fires. -/
+  | iotaListElimConsDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      (nilRaw : RawTerm scope)
+      {headRaw tailRaw : RawTerm scope}
+      {consRawSource consRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRaw (RawTerm.listCons headRaw tailRaw) →
+      RawStep.par consRawSource consRawTarget →
+      RawStep.par (RawTerm.listElim scrutineeRaw nilRaw consRawSource)
+                  (RawTerm.app (RawTerm.app consRawTarget headRaw) tailRaw)
+  /-- Deep ι: `scrutinee ⟶ none` then optionMatch fires. -/
+  | iotaOptionMatchNoneDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {noneRawSource noneRawTarget : RawTerm scope}
+      (someRaw : RawTerm scope) :
+      RawStep.par scrutineeRaw RawTerm.optionNone →
+      RawStep.par noneRawSource noneRawTarget →
+      RawStep.par (RawTerm.optionMatch scrutineeRaw noneRawSource someRaw)
+                  noneRawTarget
+  /-- Deep ι: `scrutinee ⟶ some v` then optionMatch fires. -/
+  | iotaOptionMatchSomeDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      (noneRaw : RawTerm scope)
+      {valueRaw : RawTerm scope}
+      {someRawSource someRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRaw (RawTerm.optionSome valueRaw) →
+      RawStep.par someRawSource someRawTarget →
+      RawStep.par (RawTerm.optionMatch scrutineeRaw noneRaw someRawSource)
+                  (RawTerm.app someRawTarget valueRaw)
+  /-- Deep ι: `scrutinee ⟶ inl v` then eitherMatch fires. -/
+  | iotaEitherMatchInlDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      {valueRaw : RawTerm scope}
+      {leftRawSource leftRawTarget : RawTerm scope}
+      (rightRaw : RawTerm scope) :
+      RawStep.par scrutineeRaw (RawTerm.eitherInl valueRaw) →
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par (RawTerm.eitherMatch scrutineeRaw leftRawSource rightRaw)
+                  (RawTerm.app leftRawTarget valueRaw)
+  /-- Deep ι: `scrutinee ⟶ inr v` then eitherMatch fires. -/
+  | iotaEitherMatchInrDeep {scope : Nat}
+      {scrutineeRaw : RawTerm scope}
+      (leftRaw : RawTerm scope)
+      {valueRaw : RawTerm scope}
+      {rightRawSource rightRawTarget : RawTerm scope} :
+      RawStep.par scrutineeRaw (RawTerm.eitherInr valueRaw) →
+      RawStep.par rightRawSource rightRawTarget →
+      RawStep.par (RawTerm.eitherMatch scrutineeRaw leftRaw rightRawSource)
+                  (RawTerm.app rightRawTarget valueRaw)
+  /-- Deep ι: `witness ⟶ refl rt` then idJ fires. -/
+  | iotaIdJReflDeep {scope : Nat}
+      {witnessRawSource : RawTerm scope}
+      {reflRawArgument : RawTerm scope}
+      {baseRawSource baseRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource (RawTerm.refl reflRawArgument) →
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par (RawTerm.idJ baseRawSource witnessRawSource)
+                  baseRawTarget
 
 end LeanFX2
