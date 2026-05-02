@@ -180,36 +180,51 @@ def QualifiedName.stdPath (mod : UpperIdent) (final : LowerIdent) :
 
 /-! ## Operator → QualifiedName mapping -/
 
-/-- Canonical stdlib qualified name for each binary operator.
-This is the SOURCE OF TRUTH that the env-aware bridge consults
-when resolving `rawBinop op lhs rhs`. -/
-def BinaryOp.toQualifiedName : BinaryOp → QualifiedName
-  | .plus => QualifiedName.stdPath UpperIdent.intMod LowerIdent.add
-  | .minus => QualifiedName.stdPath UpperIdent.intMod LowerIdent.sub
-  | .star => QualifiedName.stdPath UpperIdent.intMod LowerIdent.mul
-  | .slash => QualifiedName.stdPath UpperIdent.intMod LowerIdent.divName
-  | .percent => QualifiedName.stdPath UpperIdent.intMod LowerIdent.modName
-  | .eqEq => QualifiedName.stdPath UpperIdent.ordMod LowerIdent.eq
-  | .notEq => QualifiedName.stdPath UpperIdent.ordMod LowerIdent.ne
-  | .lt => QualifiedName.stdPath UpperIdent.ordMod LowerIdent.lt
-  | .gt => QualifiedName.stdPath UpperIdent.ordMod LowerIdent.gt
-  | .le => QualifiedName.stdPath UpperIdent.ordMod LowerIdent.le
-  | .ge => QualifiedName.stdPath UpperIdent.ordMod LowerIdent.ge
-  | .logicalAnd => QualifiedName.stdPath UpperIdent.boolMod LowerIdent.andOp
-  | .logicalOr => QualifiedName.stdPath UpperIdent.boolMod LowerIdent.orOp
-  | .bitAnd => QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitAndOp
-  | .bitOr => QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitOrOp
-  | .bitXor => QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitXorOp
-  | .shiftLeft => QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.shl
-  | .shiftRight => QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.shr
-  | .rangeExcl => QualifiedName.stdPath UpperIdent.rangeMod LowerIdent.exclusive
-  | .rangeIncl => QualifiedName.stdPath UpperIdent.rangeMod LowerIdent.inclusive
-  | .arrow => QualifiedName.stdPath UpperIdent.intMod LowerIdent.arrowName
-                -- arrow is type-level; this name is a placeholder
-  | .pipe => QualifiedName.stdPath UpperIdent.pipeMod LowerIdent.apply
-  | .iff => QualifiedName.stdPath UpperIdent.propMod LowerIdent.iffName
-  | .implies => QualifiedName.stdPath UpperIdent.propMod LowerIdent.impliesName
-  | .isCtor => QualifiedName.stdPath UpperIdent.patMod LowerIdent.isCtor
+/-- Canonical stdlib qualified name for each binary operator
+that desugars to a STDLIB FUNCTION CALL.
+
+Returns `none` for operators that DON'T desugar to a function:
+* `arrow` (`->`) — type-level only, never appears in value
+  position; bridge should produce a kernel arrow type directly
+* `pipe` (`|>`) — `x |> f` desugars structurally to `f x`
+  (function application with arg-fn swap), no stdlib def needed
+* `isCtor` (`is`) — pattern-matching primitive, not a function;
+  desugars to a `match` arm at the kernel
+
+This catches an earlier soundness bug where these three were
+mapped to placeholder stdlib names — the env-aware bridge would
+have looked them up and produced semantically-wrong applications.
+
+Per fx_grammar.md §3 + §6.2: arrow / pipe / `is` have distinct
+syntactic roles; treating them as functions would misinterpret
+type expressions, pipe-chains, and constructor tests. -/
+def BinaryOp.toQualifiedName : BinaryOp → Option QualifiedName
+  | .plus => some <| QualifiedName.stdPath UpperIdent.intMod LowerIdent.add
+  | .minus => some <| QualifiedName.stdPath UpperIdent.intMod LowerIdent.sub
+  | .star => some <| QualifiedName.stdPath UpperIdent.intMod LowerIdent.mul
+  | .slash => some <| QualifiedName.stdPath UpperIdent.intMod LowerIdent.divName
+  | .percent => some <| QualifiedName.stdPath UpperIdent.intMod LowerIdent.modName
+  | .eqEq => some <| QualifiedName.stdPath UpperIdent.ordMod LowerIdent.eq
+  | .notEq => some <| QualifiedName.stdPath UpperIdent.ordMod LowerIdent.ne
+  | .lt => some <| QualifiedName.stdPath UpperIdent.ordMod LowerIdent.lt
+  | .gt => some <| QualifiedName.stdPath UpperIdent.ordMod LowerIdent.gt
+  | .le => some <| QualifiedName.stdPath UpperIdent.ordMod LowerIdent.le
+  | .ge => some <| QualifiedName.stdPath UpperIdent.ordMod LowerIdent.ge
+  | .logicalAnd => some <| QualifiedName.stdPath UpperIdent.boolMod LowerIdent.andOp
+  | .logicalOr => some <| QualifiedName.stdPath UpperIdent.boolMod LowerIdent.orOp
+  | .bitAnd => some <| QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitAndOp
+  | .bitOr => some <| QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitOrOp
+  | .bitXor => some <| QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitXorOp
+  | .shiftLeft => some <| QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.shl
+  | .shiftRight => some <| QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.shr
+  | .rangeExcl => some <| QualifiedName.stdPath UpperIdent.rangeMod LowerIdent.exclusive
+  | .rangeIncl => some <| QualifiedName.stdPath UpperIdent.rangeMod LowerIdent.inclusive
+  | .iff => some <| QualifiedName.stdPath UpperIdent.propMod LowerIdent.iffName
+  | .implies => some <| QualifiedName.stdPath UpperIdent.propMod LowerIdent.impliesName
+  -- Distinct syntactic roles — NOT stdlib functions:
+  | .arrow => none      -- type-level
+  | .pipe => none       -- `x |> f` structural-desugar to `f x`
+  | .isCtor => none     -- pattern match, kernel special
 
 /-- Canonical stdlib qualified name for each unary operator. -/
 def UnaryOp.toQualifiedName : UnaryOp → QualifiedName

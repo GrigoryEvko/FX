@@ -139,22 +139,52 @@ def RawExpr.toRawTermWithEnv? {scope : Nat} (env : Env) :
       | none => none
       | some fnRaw => RawArgList.foldAppsEnv? env fnRaw args
   | .rawBinop op lhs rhs =>
-      -- Desugar binop via env lookup of op.toQualifiedName.
-      -- Nested single-match (rather than tuple-with-wildcard)
-      -- to avoid propext leak from multi-arg wildcard.
-      match env.lookup op.toQualifiedName with
-      | none => none
-      | some opDef =>
-        match opDef.liftToScope (scope := scope) with
-        | none => none
-        | some opRaw =>
+      -- Three syntactic roles get distinct treatment:
+      -- * `pipe` (x |> f) is structural application: f x
+      --   (no env lookup needed)
+      -- * `arrow` is type-level — bridge can't produce a value
+      --   RawTerm; returns none
+      -- * `isCtor` (x is Foo) is pattern-matching, kernel special;
+      --   returns none
+      -- * Everything else: env lookup of stdlib name + nested app
+      -- Look up the canonical name (returns none for arrow / pipe
+      -- / isCtor — those have distinct syntactic roles).
+      match op.toQualifiedName with
+      | none =>
+        -- Distinct-role operators: handle each explicitly.
+        match op with
+        | .pipe =>
+          -- `x |> f` desugars to `f x` (no env lookup needed).
           match RawExpr.toRawTermWithEnv? env lhs with
           | none => none
           | some lhsRaw =>
             match RawExpr.toRawTermWithEnv? env rhs with
             | none => none
-            | some rhsRaw =>
-              some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)
+            | some rhsRaw => some (RawTerm.app rhsRaw lhsRaw)
+        | .arrow => none      -- type-level
+        | .isCtor => none     -- pattern match
+        -- All other ops have a Some name (full enum to avoid
+        -- wildcard propext leak):
+        | .logicalAnd | .logicalOr
+        | .eqEq | .notEq | .lt | .gt | .le | .ge
+        | .bitAnd | .bitOr | .bitXor | .shiftLeft | .shiftRight
+        | .plus | .minus | .star | .slash | .percent
+        | .rangeExcl | .rangeIncl
+        | .iff | .implies => none  -- unreachable per toQualifiedName
+      | some qname =>
+        match env.lookup qname with
+        | none => none
+        | some opDef =>
+          match opDef.liftToScope (scope := scope) with
+          | none => none
+          | some opRaw =>
+            match RawExpr.toRawTermWithEnv? env lhs with
+            | none => none
+            | some lhsRaw =>
+              match RawExpr.toRawTermWithEnv? env rhs with
+              | none => none
+              | some rhsRaw =>
+                some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)
   | .rawUnop op operand =>
       match env.lookup op.toQualifiedName with
       | none => none
