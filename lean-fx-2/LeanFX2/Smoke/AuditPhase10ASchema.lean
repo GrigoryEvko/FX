@@ -165,7 +165,37 @@ place.  We use `runFromString` (which leaks 3 axioms via
 #eval Lex.runFromString "type quotient_thing = int;"
 #eval Lex.runFromString "with secret tainted ref mut"
 
-/-! ## Section 9 — Reserved-non-tokens audit -/
+/-! ## Section 9 — Cross-schema consistency
+
+Lemmas connecting `KeywordKind` ↔ `Token.category` and
+`BracketKind` ↔ `Token.category`.  These caught a real bug
+during initial schema design: `Token.dotdot` and `Token.dotdotEq`
+were misclassified as `punctuation`, but the OperatorKind
+mapping requires them to be `operator` (per fx_grammar.md §3
+range precedence level 14).  The
+`OperatorKind.toToken_category_symbolOps` lemma failed to
+typecheck until `Token.category` was corrected. -/
+
+example : KeywordKind.fnK.toToken.category = TokenCategory.keyword :=
+  KeywordKind.toToken_category KeywordKind.fnK
+
+example : BracketKind.paren.opener.category = TokenCategory.delimiterOpen :=
+  BracketKind.opener_category BracketKind.paren
+
+example : BracketKind.brace.closer.category = TokenCategory.delimiterClose :=
+  BracketKind.closer_category BracketKind.brace
+
+/-- Range operators are in `operator` category — was a bug
+caught by the consistency lemma. -/
+example : Token.dotdot.category = TokenCategory.operator := by rfl
+example : Token.dotdotEq.category = TokenCategory.operator := by rfl
+
+/-- Universal bound on operator precedence. -/
+example (op : OperatorKind) :
+    1 ≤ op.precedenceLevel ∧ op.precedenceLevel ≤ 17 :=
+  OperatorKind.precedenceLevel_bounded op
+
+/-! ## Section 10 — Reserved-non-tokens audit -/
 
 /-- The 9 token-spellings explicitly excluded from the FX alphabet
 per fx_grammar.md §2.4: `:=`, `::`, `!`, `?`, `?.`, `&&`, `||`,
