@@ -96,15 +96,18 @@ def Token.category : Token → TokenCategory
   -- Delimiters
   | .lparen | .lbrace | .lbracket => .delimiterOpen
   | .rparen | .rbrace | .rbracket => .delimiterClose
-  -- Punctuation
+  -- Punctuation (separators, attribute prefixes, scoping)
   | .comma | .semicolon | .colon
-  | .dot | .dotProj | .dotdot | .dotdotEq | .spread
+  | .dot | .dotProj | .spread
   | .underscore | .backtick | .atSign | .atBracket | .hash => .punctuation
   -- Operators (arithmetic, comparison, logical, bitwise, arrow,
-  -- pipe, fat-arrow, equals).  `equals` is operator (used as
-  -- `=` in `let x = e`); the parser disambiguates from
-  -- comparison via context.
+  -- pipe, fat-arrow, equals, range).
+  -- Range operators `..` and `..=` are at precedence level 14
+  -- per fx_grammar.md §3 — operators not punctuation.
+  -- `equals` is operator (used as `=` in `let x = e`); the parser
+  -- disambiguates from comparison via context.
   | .equals | .arrow | .fatArrow | .pipe => .operator
+  | .dotdot | .dotdotEq => .operator
   | .eqEq | .notEq | .lt | .gt | .le | .ge => .operator
   | .plus | .minus | .star | .slash | .percent => .operator
   | .amp | .bar | .caret | .tilde | .shiftLeft | .shiftRight => .operator
@@ -498,5 +501,79 @@ of strings rather than a per-ctor function keeps the audit
 zero-axiom and avoids enumerating the full Token ctor set. -/
 def Token.spellingsOfReservedNonTokens : List String :=
   [":=", "::", "!", "?", "?.", "&&", "||", "<|", "'"]
+
+/-! ## Cross-schema consistency
+
+Lemmas connecting `KeywordKind` (TokenSchema.lean) and
+`TokenCategory` / `BracketKind` (this file).  These are
+load-bearing — they ensure the schema's two viewpoints
+(bijection-to-Token vs categorical dispatch) agree.
+
+Drift between the schemas would break these `cases <;> rfl`
+lemmas at build time. -/
+
+/-- Every keyword's `Token` representative is in the keyword
+category.  Bridges `KeywordKind.toToken` (TokenSchema) with
+`Token.category` (this file). -/
+theorem KeywordKind.toToken_category (kind : KeywordKind) :
+    kind.toToken.category = TokenCategory.keyword := by
+  cases kind <;> rfl
+
+/-- Every bracket-opener `Token` is in the `delimiterOpen`
+category.  Bridges `BracketKind.opener` with `Token.category`. -/
+theorem BracketKind.opener_category (kind : BracketKind) :
+    kind.opener.category = TokenCategory.delimiterOpen := by
+  cases kind <;> rfl
+
+/-- Every bracket-closer `Token` is in the `delimiterClose`
+category. -/
+theorem BracketKind.closer_category (kind : BracketKind) :
+    kind.closer.category = TokenCategory.delimiterClose := by
+  cases kind <;> rfl
+
+/-- Every operator `Token` (image of `OperatorKind.toToken`)
+is in the `operator` category, EXCEPT the propositional-
+language `logicalOr`, `logicalAnd`, `logicalNot`, `isCtor`
+which use keyword tokens (`kwOr`/`kwAnd`/`kwNot`/`kwIs`) and
+classify as keyword.
+
+This nuance reflects fx_grammar.md §3 + §2.6: logical
+connectives are KEYWORDS in FX (`not`, `and`, `or`), not symbol
+operators (`!`, `&&`, `||`).  The parser still treats them as
+operators with explicit precedence levels, but at the lexical
+level they're keywords. -/
+theorem OperatorKind.toToken_category_keywordOps :
+    OperatorKind.logicalOr.toToken.category = TokenCategory.keyword ∧
+    OperatorKind.logicalAnd.toToken.category = TokenCategory.keyword ∧
+    OperatorKind.logicalNot.toToken.category = TokenCategory.keyword ∧
+    OperatorKind.isCtor.toToken.category = TokenCategory.keyword := by
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> rfl
+
+/-- Symbol operators: arithmetic, comparison, bitwise, range,
+arrow, pipe, iff, implies — all classify as `operator`. -/
+theorem OperatorKind.toToken_category_symbolOps :
+    OperatorKind.arrow.toToken.category = TokenCategory.operator ∧
+    OperatorKind.pipe.toToken.category = TokenCategory.operator ∧
+    OperatorKind.plus.toToken.category = TokenCategory.operator ∧
+    OperatorKind.star.toToken.category = TokenCategory.operator ∧
+    OperatorKind.eqEq.toToken.category = TokenCategory.operator ∧
+    OperatorKind.bitOr.toToken.category = TokenCategory.operator ∧
+    OperatorKind.shiftLeft.toToken.category = TokenCategory.operator ∧
+    OperatorKind.rangeExcl.toToken.category = TokenCategory.operator := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> rfl
+
+/-- Operator precedence is BOUNDED: every operator's level is
+between 1 and 17 inclusive (§3 has 16 infix levels + 1 for
+prefix unary).  Useful for the precedence-climbing parser. -/
+theorem OperatorKind.precedenceLevel_bounded (op : OperatorKind) :
+    1 ≤ op.precedenceLevel ∧ op.precedenceLevel ≤ 17 := by
+  cases op <;> exact ⟨by decide, by decide⟩
+
+/-- Prefix operators are AT level 17 (above all 16 infix levels). -/
+theorem OperatorKind.prefix_precedence_max :
+    OperatorKind.negate.precedenceLevel = 17 ∧
+    OperatorKind.bitNot.precedenceLevel = 17 ∧
+    OperatorKind.logicalNot.precedenceLevel = 7 := by
+  refine ⟨?_, ?_, ?_⟩ <;> rfl
 
 end LeanFX2.Surface
