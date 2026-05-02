@@ -61,14 +61,15 @@ inductive Step.par :
       Step.par body body' →
       Step.par (Term.lamPi (domainType := domainType) body)
                (Term.lamPi (domainType := domainType) body')
-  /-- Parallel reduction inside a dependent application. -/
+  /-- Parallel reduction inside a dependent application.
+  W9.B1.1 — uses `rfl` for equation-bearing appPi's resultEq. -/
   | appPi :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {f f' : Term ctx (.piTy domainType codomainType)}
         {a a' : Term ctx domainType},
       Step.par f f' → Step.par a a' →
-      Step.par (Term.appPi f a) (Term.appPi f' a')
+      Step.par (Term.appPi rfl f a) (Term.appPi rfl f' a')
   /-- Parallel reduction inside a Σ-pair's two components. -/
   | pair :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
@@ -116,16 +117,16 @@ inductive Step.par :
                ((Ty.weaken_subst_singleton codomainType domainType) ▸
                   Term.subst0 body' arg')
   /-- **Parallel β-reduction (dependent)**: `(λ. body) arg ⟶
-  body[arg/x]` with parallel reductions in body and arg.  No cast
-  needed because `body.subst0 arg : Term ctx (codomainType.subst0
-  domainType)` matches `Term.appPi`'s declared result type exactly. -/
+  body[arg/x]` with parallel reductions in body and arg.  W9.B1.1:
+  appPi takes `rfl` for resultEq; result is `Term.subst0 body' arg'`
+  matching the canonical β-result type. -/
   | betaAppPi :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         {body body' : Term (ctx.cons domainType) codomainType}
         {arg arg' : Term ctx domainType},
       Step.par body body' → Step.par arg arg' →
-      Step.par (Term.appPi (Term.lamPi (domainType := domainType) body) arg)
+      Step.par (Term.appPi rfl (Term.lamPi (domainType := domainType) body) arg)
                (Term.subst0 body' arg')
   /-- **Parallel Σ first projection**: `fst (pair a b) → a'` with
   `Step.par a a'`. -/
@@ -456,7 +457,7 @@ inductive Step.par :
                   Term.subst0 body arg')
   /-- **Deep parallel β-reduction (dependent)**: if `f` parallel-
   reduces to a literal Π-lambda `λ. body`, the outer application
-  contracts. -/
+  contracts.  W9.B1.1 — uses `rfl` for resultEq. -/
   | betaAppPiDeep :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
@@ -466,7 +467,7 @@ inductive Step.par :
       Step.par functionTerm
         (Term.lamPi (domainType := domainType) body) →
       Step.par arg arg' →
-      Step.par (Term.appPi functionTerm arg)
+      Step.par (Term.appPi rfl functionTerm arg)
                (Term.subst0 body arg')
   /-- **Deep parallel Σ first projection**: if `pairTerm` parallel-
   reduces to a literal pair, fst contracts. -/
