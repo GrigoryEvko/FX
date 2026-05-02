@@ -54,10 +54,139 @@ the "check fallthrough" pattern (lean-fx task #912).
 Target: ~300 lines.
 -/
 
+namespace LeanFX2
+
+variable {mode : Mode} {level scope : Nat}
+
+/-- Bidirectional type check.  Given a context, an expected
+type, and a raw term, returns `some t : Term ctx expectedType raw`
+when the raw term is well-typed at `expectedType`, or `none`
+otherwise.
+
+## Coverage
+
+* Atomic leaves (`var`, `unit`, `boolTrue/False`, `natZero`):
+  expectedType must match the unique typing.
+* Recursive nat (`natSucc`): expectedType = `Ty.nat`, check
+  predecessor recursively.
+* Parametric leaves (`listNil`, `optionNone`): expectedType must
+  be the right type former with any element type.
+* Recursive parametric (`listCons`, `optionSome`, `eitherInl`,
+  `eitherInr`): expectedType determines the element type, then
+  recurse.
+* Binders + eliminators + dep forms: deferred to richer Check
+  algorithm with motive synthesis.
+
+## Zero-axiom
+
+Uses DecidableEq on `Ty` for type matching.  The propositional
+`▸` cast routes through `Eq.rec` (no `propext`).
+-/
+def Term.check (context : Ctx mode level scope) (expectedType : Ty level scope) :
+    (raw : RawTerm scope) →
+    Option (Term context expectedType raw)
+  | .var position =>
+      if h : expectedType = varType context position then
+        some (h ▸ Term.var position)
+      else
+        none
+  | .unit =>
+      if h : expectedType = Ty.unit then
+        some (h ▸ Term.unit)
+      else
+        none
+  | .boolTrue =>
+      if h : expectedType = Ty.bool then
+        some (h ▸ Term.boolTrue)
+      else
+        none
+  | .boolFalse =>
+      if h : expectedType = Ty.bool then
+        some (h ▸ Term.boolFalse)
+      else
+        none
+  | .natZero =>
+      if h : expectedType = Ty.nat then
+        some (h ▸ Term.natZero)
+      else
+        none
+  | .natSucc predRaw =>
+      if h : expectedType = Ty.nat then
+        match Term.check context Ty.nat predRaw with
+        | some predTerm => some (h ▸ Term.natSucc predTerm)
+        | none => none
+      else
+        none
+  -- Parametric leaves: dispatch via Ty.headCtor projection
+  -- (full-enum on Ty with wildcards leaks propext per Discipline #2)
+  | .listNil =>
+      match expectedType with
+      | .listType _ => some Term.listNil
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .id _ _ _ | .optionType _ | .eitherType _ _ => none
+  | .optionNone =>
+      match expectedType with
+      | .optionType _ => some Term.optionNone
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .id _ _ _ | .listType _ | .eitherType _ _ => none
+  | .listCons headRaw tailRaw =>
+      match expectedType with
+      | .listType elementType =>
+          match Term.check context elementType headRaw,
+                Term.check context (.listType elementType) tailRaw with
+          | some headTerm, some tailTerm =>
+              some (Term.listCons headTerm tailTerm)
+          | none, _ => none
+          | _, none => none
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .id _ _ _ | .optionType _ | .eitherType _ _ => none
+  | .optionSome valueRaw =>
+      match expectedType with
+      | .optionType elementType =>
+          match Term.check context elementType valueRaw with
+          | some valueTerm => some (Term.optionSome valueTerm)
+          | none => none
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .id _ _ _ | .listType _ | .eitherType _ _ => none
+  | .eitherInl valueRaw =>
+      match expectedType with
+      | .eitherType leftType _ =>
+          match Term.check context leftType valueRaw with
+          | some valueTerm => some (Term.eitherInl valueTerm)
+          | none => none
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .id _ _ _ | .listType _ | .optionType _ => none
+  | .eitherInr valueRaw =>
+      match expectedType with
+      | .eitherType _ rightType =>
+          match Term.check context rightType valueRaw with
+          | some valueTerm => some (Term.eitherInr valueTerm)
+          | none => none
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .id _ _ _ | .listType _ | .optionType _ => none
+  -- Forms requiring richer disambiguation: deferred
+  | .lam _              => none
+  | .app _ _            => none
+  | .pair _ _           => none
+  | .fst _              => none
+  | .snd _              => none
+  | .boolElim _ _ _     => none
+  | .natElim _ _ _      => none
+  | .natRec _ _ _       => none
+  | .listElim _ _ _     => none
+  | .optionMatch _ _ _  => none
+  | .eitherMatch _ _ _  => none
+  | .refl _             => none
+  | .idJ _ _            => none
+  | .modIntro _         => none
+  | .modElim _          => none
+  | .subsume _          => none
+
+end LeanFX2
+
 namespace LeanFX2.Algo
 
--- TODO Layer 9: Term.check per RawTerm ctor
+-- TODO Layer 9: Term.check for binders + eliminators
 -- TODO Layer 9: synth-then-Conv-check fallthrough
--- TODO Layer 9: smoke tests for well-typed / ill-typed
 
 end LeanFX2.Algo
