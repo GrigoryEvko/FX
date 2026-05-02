@@ -56,6 +56,7 @@ import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.ParStar
+import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.Cumul
 
@@ -166,6 +167,7 @@ import LeanFX2.Smoke.AuditPhase6BCompatible
 import LeanFX2.Smoke.AuditPhase6BCdLemma
 import LeanFX2.Smoke.AuditPhase6CDiamond
 import LeanFX2.Smoke.AuditPhase6DTypedConfluence
+import LeanFX2.Smoke.AuditPhase6EStepStarToPar
 
 namespace LeanFX2
 
