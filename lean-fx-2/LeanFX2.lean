@@ -52,6 +52,7 @@ import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.Cumul
 
@@ -62,6 +63,7 @@ import LeanFX2.Confluence.Diamond
 import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Confluence.RawCd
+import LeanFX2.Confluence.RawCdDominates
 
 -- Layer 4 — Bridge
 import LeanFX2.Bridge
@@ -152,6 +154,8 @@ import LeanFX2.Smoke.Modal
 import LeanFX2.Smoke.Graded
 import LeanFX2.Smoke.AuditPhase5Bridge
 import LeanFX2.Smoke.AuditPhase6ARawCd
+import LeanFX2.Smoke.AuditPhase6BInversion
+import LeanFX2.Smoke.AuditPhase6BCdDominates
 
 namespace LeanFX2
 
