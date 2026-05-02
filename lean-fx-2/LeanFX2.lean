@@ -55,6 +55,7 @@ import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.Cumul
 
@@ -68,6 +69,7 @@ import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
+import LeanFX2.Confluence.ParStarBridge
 
 -- Layer 4 — Bridge
 import LeanFX2.Bridge
@@ -163,6 +165,7 @@ import LeanFX2.Smoke.AuditPhase6BCdDominates
 import LeanFX2.Smoke.AuditPhase6BCompatible
 import LeanFX2.Smoke.AuditPhase6BCdLemma
 import LeanFX2.Smoke.AuditPhase6CDiamond
+import LeanFX2.Smoke.AuditPhase6DTypedConfluence
 
 namespace LeanFX2
 
