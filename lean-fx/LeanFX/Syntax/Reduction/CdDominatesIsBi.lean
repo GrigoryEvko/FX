@@ -161,8 +161,8 @@ theorem Step.par.cd_dominates_appPi_pair
     (argumentParStep : Step.par argumentTerm (Term.cd argumentTerm))
     (functionIsBi : Step.par.isBi functionParStep)
     (argumentIsBi : Step.par.isBi argumentParStep) :
-    Step.parWithBi (Term.appPi functionTerm argumentTerm)
-      (Term.cd (Term.appPi functionTerm argumentTerm)) := by
+    Step.parWithBi (Term.appPi rfl functionTerm argumentTerm)
+      (Term.cd (Term.appPi rfl functionTerm argumentTerm)) := by
   simp only [Term.cd, Term.cd_appPi_redex]
   split
   case _ rawBody heq =>
@@ -508,10 +508,12 @@ def Step.par.cd_dominates_with_isBi {mode : Mode} {level scope : Nat}
       exact Step.parWithBi.mk
         (Step.par.lamPi (Step.par.cd_dominates_with_isBi body).toStep)
         (Step.par.isBi.lamPi (Step.par.cd_dominates_with_isBi body).toIsBi)
-  | _, .appPi functionTerm argumentTerm =>
+  | _, .appPi resultEq functionTerm argumentTerm => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+      cases resultEq
       let functionPair := Step.par.cd_dominates_with_isBi functionTerm
       let argumentPair := Step.par.cd_dominates_with_isBi argumentTerm
-      Step.par.cd_dominates_appPi_pair functionTerm argumentTerm
+      exact Step.par.cd_dominates_appPi_pair functionTerm argumentTerm
         functionPair.toStep argumentPair.toStep
         functionPair.toIsBi argumentPair.toIsBi
   | _, .pair firstVal secondVal => by

@@ -238,10 +238,10 @@ theorem Step.parStarWithBi.appPi_cong_function
     {functionTerm functionTerm' : Term ctx (Ty.piTy domainType codomainType)}
     (argumentTerm : Term ctx domainType)
     (functionWithBi : Step.parStarWithBi functionTerm functionTerm') :
-    Step.parStarWithBi (Term.appPi functionTerm argumentTerm)
-                       (Term.appPi functionTerm' argumentTerm) :=
+    Step.parStarWithBi (Term.appPi rfl functionTerm argumentTerm)
+                       (Term.appPi rfl functionTerm' argumentTerm) :=
   Step.parStarWithBi.mapStep
-    (fun fnTerm => Term.appPi fnTerm argumentTerm)
+    (fun fnTerm => Term.appPi rfl fnTerm argumentTerm)
     (fun fnPar => Step.par.appPi fnPar (Step.par.refl argumentTerm))
     (fun fnBi => Step.par.isBi.appPi fnBi (Step.par.isBi.refl argumentTerm))
     functionWithBi
@@ -253,10 +253,10 @@ theorem Step.parStarWithBi.appPi_cong_argument
     (functionTerm : Term ctx (Ty.piTy domainType codomainType))
     {argumentTerm argumentTerm' : Term ctx domainType}
     (argumentWithBi : Step.parStarWithBi argumentTerm argumentTerm') :
-    Step.parStarWithBi (Term.appPi functionTerm argumentTerm)
-                       (Term.appPi functionTerm argumentTerm') :=
+    Step.parStarWithBi (Term.appPi rfl functionTerm argumentTerm)
+                       (Term.appPi rfl functionTerm argumentTerm') :=
   Step.parStarWithBi.mapStep
-    (fun argTerm => Term.appPi functionTerm argTerm)
+    (fun argTerm => Term.appPi rfl functionTerm argTerm)
     (fun argPar => Step.par.appPi (Step.par.refl functionTerm) argPar)
     (fun argBi => Step.par.isBi.appPi (Step.par.isBi.refl functionTerm) argBi)
     argumentWithBi
@@ -269,8 +269,8 @@ theorem Step.parStarWithBi.appPi_cong
     {argumentTerm argumentTerm' : Term ctx domainType}
     (functionWithBi : Step.parStarWithBi functionTerm functionTerm')
     (argumentWithBi : Step.parStarWithBi argumentTerm argumentTerm') :
-    Step.parStarWithBi (Term.appPi functionTerm argumentTerm)
-                       (Term.appPi functionTerm' argumentTerm') :=
+    Step.parStarWithBi (Term.appPi rfl functionTerm argumentTerm)
+                       (Term.appPi rfl functionTerm' argumentTerm') :=
   Step.parStarWithBi.append
     (Step.parStarWithBi.appPi_cong_function argumentTerm functionWithBi)
     (Step.parStarWithBi.appPi_cong_argument functionTerm' argumentWithBi)
@@ -2844,7 +2844,9 @@ theorem Term.subst_parWithBi_pointwise
           (TermSubst.parWithBi_lift related _) body
       exact ⟨Step.par.lamPi bStep, Step.par.isBi.lamPi bBi⟩
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        function argument => by
+        resultEq function argument => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+      cases resultEq
       simp only [Term.subst]
       obtain ⟨fStep, fBi⟩ := Term.subst_parWithBi_pointwise related function
       obtain ⟨aStep, aBi⟩ := Term.subst_parWithBi_pointwise related argument
