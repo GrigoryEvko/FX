@@ -89,4 +89,40 @@ theorem Conv.canonical_natZero
   cases targetTerm
   exact Conv.refl _
 
+/-! ## Parameterized canonical heads
+
+For ctors whose type carries a parameter (listNil's element type,
+optionNone's element type), the Conv theorem requires the stated
+types to match — the term value depends on the parameter.
+
+Pattern: cases both terms first (which specializes both types),
+then cases on the type equality (giving structural equality of
+the parameters), then `Conv.refl` works on the now-identical
+terms.
+-/
+
+/-- Two `.listNil`-raw terms at equal types are convertible. -/
+theorem Conv.canonical_listNil
+    {sourceType targetType : Ty level scope}
+    (sourceTerm : Term context sourceType (RawTerm.listNil (scope := scope)))
+    (targetTerm : Term context targetType (RawTerm.listNil (scope := scope)))
+    (sameType : sourceType = targetType) :
+    Conv sourceTerm targetTerm := by
+  cases sourceTerm
+  cases targetTerm
+  cases sameType
+  exact Conv.refl _
+
+/-- Two `.optionNone`-raw terms at equal types are convertible. -/
+theorem Conv.canonical_optionNone
+    {sourceType targetType : Ty level scope}
+    (sourceTerm : Term context sourceType (RawTerm.optionNone (scope := scope)))
+    (targetTerm : Term context targetType (RawTerm.optionNone (scope := scope)))
+    (sameType : sourceType = targetType) :
+    Conv sourceTerm targetTerm := by
+  cases sourceTerm
+  cases targetTerm
+  cases sameType
+  exact Conv.refl _
+
 end LeanFX2
