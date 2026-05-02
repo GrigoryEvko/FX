@@ -108,51 +108,51 @@ def Term.cd_appPi_redex
         Term.body_of_lamPi_general developedFunction rfl h_raw
       Term.subst0 body developedArgument
   | RawTerm.var _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.unit =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.app _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.pair _ _ =>
-      Term.appPi rfl developedFunction developedArgument
-  | RawTerm.fst _ => Term.appPi rfl developedFunction developedArgument
-  | RawTerm.snd _ => Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
+  | RawTerm.fst _ => Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
+  | RawTerm.snd _ => Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.boolTrue =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.boolFalse =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.boolElim _ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.natZero =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.natSucc _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.natElim _ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.natRec _ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.listNil =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.listCons _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.listElim _ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.optionNone =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.optionSome _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.optionMatch _ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.eitherInl _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.eitherInr _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.eitherMatch _ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.refl _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
   | RawTerm.idJ _ _ =>
-      Term.appPi rfl developedFunction developedArgument
+      Term.appPi (argumentRaw := RawTerm.unit) (Ty.subst0_eq_termSingleton_unit codomainType domainType) developedFunction developedArgument
 
 /-! ### β-fst, β-snd: pair projections. -/
 
