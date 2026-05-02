@@ -157,4 +157,17 @@ example :
         (RawTerm.refl RawTerm.boolTrue) =
       none := rfl
 
+/-- Modal markers preserve the inner type (per Layer-1 raw-side
+scaffolding).  `check Ty.unit (modIntro unit)` succeeds. -/
+example :
+    Term.check context (Ty.unit (level := level) (scope := scope))
+        (RawTerm.modIntro RawTerm.unit) =
+      some (Term.modIntro Term.unit) := rfl
+
+/-- Subsume marker also preserves inner type. -/
+example :
+    Term.check context (Ty.bool (level := level) (scope := scope))
+        (RawTerm.subsume RawTerm.boolTrue) =
+      some (Term.subsume Term.boolTrue) := rfl
+
 end LeanFX2.SmokePhase9DCheck

@@ -367,9 +367,21 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
       | some ⟨.eitherType _ _, _⟩ => none
       | none => none
-  | .modIntro _         => none
-  | .modElim _          => none
-  | .subsume _          => none
+  -- Modal — Layer 1 ships RAW-SIDE SCAFFOLDING ONLY (per Term.lean
+  -- comment).  Inner type is preserved across modal markers; checking
+  -- delegates to checking the inner raw at the same expected type.
+  | .modIntro innerRaw =>
+      match Term.check context expectedType innerRaw with
+      | some innerTerm => some (Term.modIntro innerTerm)
+      | none => none
+  | .modElim innerRaw =>
+      match Term.check context expectedType innerRaw with
+      | some innerTerm => some (Term.modElim innerTerm)
+      | none => none
+  | .subsume innerRaw =>
+      match Term.check context expectedType innerRaw with
+      | some innerTerm => some (Term.subsume innerTerm)
+      | none => none
 
 end LeanFX2
 
