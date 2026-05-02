@@ -61,6 +61,7 @@ import LeanFX2.Confluence.CdLemma
 import LeanFX2.Confluence.Diamond
 import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Confluence.CanonicalForm
+import LeanFX2.Confluence.RawCd
 
 -- Layer 4 — Bridge
 import LeanFX2.Bridge
@@ -150,6 +151,7 @@ import LeanFX2.Smoke.HoTT
 import LeanFX2.Smoke.Modal
 import LeanFX2.Smoke.Graded
 import LeanFX2.Smoke.AuditPhase5Bridge
+import LeanFX2.Smoke.AuditPhase6ARawCd
 
 namespace LeanFX2
 
