@@ -71,4 +71,10 @@ example :
         (RawTerm.fst (RawTerm.unit (scope := scope))) =
       none := rfl
 
+/-- `snd` of a non-pair raw form: similarly returns `none`. -/
+example :
+    Term.infer context
+        (RawTerm.snd (RawTerm.unit (scope := scope))) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DInfer

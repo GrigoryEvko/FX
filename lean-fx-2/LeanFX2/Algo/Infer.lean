@@ -138,10 +138,9 @@ def Term.infer (context : Ctx mode level scope) :
       | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
       | some ⟨.eitherType _ _, _⟩ => none
       | none => none
-  | .pair _ _     => none
+  | .pair _ _     => none  -- pair needs sigmaTy ctor — defer to check
   -- Σ first projection: synth pair (must be `Ty.sigmaTy first second`),
-  -- return `first`.  (Second projection needs argument's raw for the
-  -- result type — defer to check mode.)
+  -- return `first`.
   | .fst pairRaw =>
       match Term.infer context pairRaw with
       | some ⟨.sigmaTy firstType _, pairTerm⟩ =>
@@ -152,7 +151,22 @@ def Term.infer (context : Ctx mode level scope) :
       | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
       | some ⟨.eitherType _ _, _⟩ => none
       | none => none
-  | .snd _        => none
+  -- Σ second projection: synth pair (must be `Ty.sigmaTy first second`),
+  -- return `second.subst0 first (RawTerm.fst pairRaw)` — the well-typed
+  -- result type carries the un-fired raw fst-of-pair (the type is
+  -- propositionally equal to `second.subst0 first firstRaw` after a
+  -- β-step at the type level; bidirectional check handles equating).
+  | .snd pairRaw =>
+      match Term.infer context pairRaw with
+      | some ⟨.sigmaTy firstType secondType, pairTerm⟩ =>
+          some ⟨secondType.subst0 firstType (RawTerm.fst pairRaw),
+                Term.snd pairTerm⟩
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.tyVar _, _⟩ | some ⟨.id _ _ _, _⟩
+      | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
   | .boolElim _ _ _   => none
   | .natElim _ _ _    => none
   | .natRec _ _ _     => none

@@ -81,4 +81,21 @@ example :
                      (RawTerm.unit (scope := scope))) =
       none := rfl
 
+/-- Σ pair check at sigma type: `check (Ty.sigmaTy Ty.nat Ty.bool)
+(.pair .natZero .boolTrue)` works — `secondType.subst0 firstType
+firstRaw = Ty.bool` (the second type doesn't depend on the bound var,
+so subst is identity). -/
+example :
+    Term.check context
+        (Ty.sigmaTy (Ty.nat (level := level) (scope := scope)) Ty.bool.weaken)
+        (RawTerm.pair (RawTerm.natZero (scope := scope)) RawTerm.boolTrue) =
+      some (Term.pair Term.natZero Term.boolTrue) := rfl
+
+/-- Σ pair check at non-sigma fails. -/
+example :
+    Term.check context
+        (Ty.unit (level := level) (scope := scope))
+        (RawTerm.pair (RawTerm.natZero (scope := scope)) RawTerm.boolTrue) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DCheck

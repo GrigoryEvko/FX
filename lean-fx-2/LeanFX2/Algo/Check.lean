@@ -192,7 +192,23 @@ def Term.check : ∀ {scope : Nat}
           else
             none
       | none => none
-  | .pair _ _           => none
+  -- Σ pair construction: expected type must be `Ty.sigmaTy first second`.
+  -- Check first component against `first`, infer the type of the second
+  -- component (must equal `second.subst0 first firstRaw`).  This is
+  -- check-mode for first (since inferring requires the sigma type),
+  -- and synth-mode for second to recover its type.
+  | .pair firstRaw secondRaw =>
+      match expectedType with
+      | .sigmaTy firstType secondType =>
+          match Term.check context firstType firstRaw with
+          | some firstTerm =>
+              match Term.check context (secondType.subst0 firstType firstRaw)
+                                       secondRaw with
+              | some secondTerm => some (Term.pair firstTerm secondTerm)
+              | none => none
+          | none => none
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .tyVar _
+      | .id _ _ _ | .listType _ | .optionType _ | .eitherType _ _ => none
   -- Σ first projection: synth-then-check fallthrough via Term.infer.
   | .fst pairRaw =>
       match Term.infer context (RawTerm.fst pairRaw) with
@@ -202,7 +218,15 @@ def Term.check : ∀ {scope : Nat}
           else
             none
       | none => none
-  | .snd _              => none
+  -- Σ second projection: synth-then-check fallthrough.
+  | .snd pairRaw =>
+      match Term.infer context (RawTerm.snd pairRaw) with
+      | some ⟨inferredType, inferredTerm⟩ =>
+          if typeEq : expectedType = inferredType then
+            some (typeEq ▸ inferredTerm)
+          else
+            none
+      | none => none
   | .boolElim _ _ _     => none
   | .natElim _ _ _      => none
   | .natRec _ _ _       => none
