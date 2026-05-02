@@ -70,6 +70,7 @@ import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
+import LeanFX2.Confluence.RawParStarCong
 import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.ConvBridge
 
