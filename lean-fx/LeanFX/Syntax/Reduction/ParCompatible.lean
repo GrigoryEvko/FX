@@ -273,22 +273,23 @@ theorem Step.par.rename_compatible
             (Term.fst (Term.rename termRenaming pairTerm))
             (Term.rename termRenaming (Term.fst pairTerm)) :=
         HEq.refl _
+      -- W9.B1.2: Term.snd takes rfl for resultEq.  rfl-resultEq cast collapses.
       let secondProjectionEquality :
           HEq
-            (Term.snd (Term.rename termRenaming pairTerm))
+            (Term.snd (Term.rename termRenaming pairTerm) rfl)
             (resultTypeEquality ▸
-              Term.rename termRenaming (Term.snd pairTerm)) := by
+              Term.rename termRenaming (Term.snd pairTerm rfl)) := by
         apply HEq.symm
         apply HEq.trans (eqRec_heq _ _)
         exact eqRec_heq _ _
       let sourceEquality :
           Term.pair
               (Term.fst (Term.rename termRenaming pairTerm))
-              (Term.snd (Term.rename termRenaming pairTerm))
+              (Term.snd (Term.rename termRenaming pairTerm) rfl)
             =
           Term.rename termRenaming
             (Term.pair (firstType := firstType) (secondType := secondType)
-              (Term.fst pairTerm) (Term.snd pairTerm)) :=
+              (Term.fst pairTerm) (Term.snd pairTerm rfl)) :=
         eq_of_heq
           (Term.pair_HEq_congr
             (mode := mode) (level := level) (scope := targetScope)
@@ -297,8 +298,8 @@ theorem Step.par.rename_compatible
             (Term.fst (Term.rename termRenaming pairTerm))
             (Term.rename termRenaming (Term.fst pairTerm))
             firstProjectionEquality
-            (Term.snd (Term.rename termRenaming pairTerm))
-            (resultTypeEquality ▸ Term.rename termRenaming (Term.snd pairTerm))
+            (Term.snd (Term.rename termRenaming pairTerm) rfl)
+            (resultTypeEquality ▸ Term.rename termRenaming (Term.snd pairTerm rfl))
             secondProjectionEquality)
       exact Step.par.castSource sourceEquality
         (Step.par.etaSigma (Term.rename termRenaming pairTerm))
@@ -688,22 +689,23 @@ theorem Step.par.subst_compatible
             (Term.fst (Term.subst termSubstitution pairTerm))
             (Term.subst termSubstitution (Term.fst pairTerm)) :=
         HEq.refl _
+      -- W9.B1.2: Term.snd takes rfl for resultEq.  rfl-resultEq cast collapses.
       let secondProjectionEquality :
           HEq
-            (Term.snd (Term.subst termSubstitution pairTerm))
+            (Term.snd (Term.subst termSubstitution pairTerm) rfl)
             (resultTypeEquality ▸
-              Term.subst termSubstitution (Term.snd pairTerm)) := by
+              Term.subst termSubstitution (Term.snd pairTerm rfl)) := by
         apply HEq.symm
         apply HEq.trans (eqRec_heq _ _)
         exact eqRec_heq _ _
       let sourceEquality :
           Term.pair
               (Term.fst (Term.subst termSubstitution pairTerm))
-              (Term.snd (Term.subst termSubstitution pairTerm))
+              (Term.snd (Term.subst termSubstitution pairTerm) rfl)
             =
           Term.subst termSubstitution
             (Term.pair (firstType := firstType) (secondType := secondType)
-              (Term.fst pairTerm) (Term.snd pairTerm)) :=
+              (Term.fst pairTerm) (Term.snd pairTerm rfl)) :=
         eq_of_heq
           (Term.pair_HEq_congr
             (mode := mode) (level := level) (scope := targetScope)
@@ -712,8 +714,8 @@ theorem Step.par.subst_compatible
             (Term.fst (Term.subst termSubstitution pairTerm))
             (Term.subst termSubstitution (Term.fst pairTerm))
             firstProjectionEquality
-            (Term.snd (Term.subst termSubstitution pairTerm))
-            (resultTypeEquality ▸ Term.subst termSubstitution (Term.snd pairTerm))
+            (Term.snd (Term.subst termSubstitution pairTerm) rfl)
+            (resultTypeEquality ▸ Term.subst termSubstitution (Term.snd pairTerm rfl))
             secondProjectionEquality)
       exact Step.par.castSource sourceEquality
         (Step.par.etaSigma (Term.subst termSubstitution pairTerm))

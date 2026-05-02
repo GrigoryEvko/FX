@@ -126,7 +126,8 @@ theorem Step.par.cd_dominates_fst
   all_goals exact Step.par.fst pairParStep
 
 /-- Σ second-projection: cong by default, deep β when developed pair
-reduces to a `pair`. -/
+reduces to a `pair`.  W9.B1.2: `Term.snd` requires `rfl` for resultEq;
+`Term.cd` snd arm preserves `rfl`. -/
 theorem Step.par.cd_dominates_snd
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -134,7 +135,7 @@ theorem Step.par.cd_dominates_snd
     {secondType : Ty level (scope + 1)}
     (pairTerm : Term context (Ty.sigmaTy firstType secondType))
     (pairParStep : Step.par pairTerm (Term.cd pairTerm)) :
-    Step.par (Term.snd pairTerm) (Term.cd (Term.snd pairTerm)) := by
+    Step.par (Term.snd pairTerm rfl) (Term.cd (Term.snd pairTerm rfl)) := by
   simp only [Term.cd, Term.cd_snd_redex]
   split
   case _ rawFirst rawSecond heq =>
@@ -370,8 +371,10 @@ def Step.par.cd_dominates {mode : Mode} {level scope : Nat}
   | _, .fst pairTerm =>
       Step.par.cd_dominates_fst pairTerm
         (Step.par.cd_dominates pairTerm)
-  | _, .snd pairTerm =>
-      Step.par.cd_dominates_snd pairTerm
+  | _, .snd pairTerm resultEq => by
+      -- W9.B1.2 — equation-bearing snd.  Cases on resultEq normalises shape.
+      cases resultEq
+      exact Step.par.cd_dominates_snd pairTerm
         (Step.par.cd_dominates pairTerm)
   | _, .boolTrue => by
       unfold Term.cd
