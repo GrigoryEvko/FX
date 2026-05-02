@@ -1,0 +1,14 @@
+import Lake
+open Lake DSL
+
+package «lean-fx-2» where
+  version := v!"0.1.0-skeleton"
+  leanOptions := #[
+    ⟨`autoImplicit, false⟩,
+    ⟨`relaxedAutoImplicit, false⟩,
+    ⟨`pp.unicode.fun, true⟩
+  ]
+
+@[default_target]
+lean_lib LeanFX2 where
+  globs := #[.submodules `LeanFX2]
