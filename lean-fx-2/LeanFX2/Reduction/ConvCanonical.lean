@@ -125,4 +125,19 @@ theorem Conv.canonical_optionNone
   cases sameType
   exact Conv.refl _
 
+/-- Two `.refl rawWitness`-raw terms at equal types are
+convertible.  The identity-type structure is forced: both sides
+are at `Ty.id carrier rawWitness rawWitness` (HoTT reflexivity-as-types). -/
+theorem Conv.canonical_refl
+    {sourceType targetType : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (sourceTerm : Term context sourceType (RawTerm.refl rawWitness))
+    (targetTerm : Term context targetType (RawTerm.refl rawWitness))
+    (sameType : sourceType = targetType) :
+    Conv sourceTerm targetTerm := by
+  cases sourceTerm
+  cases targetTerm
+  cases sameType
+  exact Conv.refl _
+
 end LeanFX2
