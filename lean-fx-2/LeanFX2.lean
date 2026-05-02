@@ -117,6 +117,7 @@ import LeanFX2.Refine.SMTCert
 import LeanFX2.Refine.SMTRecheck
 
 -- Layer 9 — Algo
+import LeanFX2.Algo.RawWHNF
 import LeanFX2.Algo.WHNF
 import LeanFX2.Algo.DecConv
 import LeanFX2.Algo.Infer
@@ -170,6 +171,7 @@ import LeanFX2.Smoke.AuditPhase6CDiamond
 import LeanFX2.Smoke.AuditPhase6DTypedConfluence
 import LeanFX2.Smoke.AuditPhase6EStepStarToPar
 import LeanFX2.Smoke.AuditPhase6FConvBridge
+import LeanFX2.Smoke.AuditPhase9ARawWHNF
 
 namespace LeanFX2
 
