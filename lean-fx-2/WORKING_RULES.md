@@ -138,6 +138,65 @@ Every recursive-descent loop must check EOF before recursing into a sub-parser t
 
 `rm` is aliased to `rm -i` on root shell.  Silently prompts under non-interactive Bash and does NOT delete.  Use `/bin/rm -f` or `\rm -f` for scripted deletions.
 
+## Discipline #19: Implicit-type metavariables unblock typed `cases` (Phase 7.A discovery)
+
+When proving `Term ctx ty (.<ctor> ...) → ty = <expected>`, leave `ty` as an implicit metavariable rather than fixing it concretely.  The Lean 4 dep-pattern matcher needs the type as a metavar to unify with the matched ctor's specific type.  With concrete types like `Ty.unit`, the matcher gets stuck on the `var` case because `varType context position` is opaque to definitional unification, but with implicit type the matcher uses the raw axis (where `RawTerm.var ≠ RawTerm.unit` is decidable by ctor mismatch).
+
+**Wrong** (matcher fails on var case):
+```lean
+theorem Conv.canonical_unit
+    (sourceTerm : Term ctx Ty.unit (RawTerm.unit (scope := scope))) :
+    ... := by cases sourceTerm  -- fails
+```
+
+**Right** (matcher uses raw axis):
+```lean
+theorem Conv.canonical_unit
+    {sourceType : Ty level scope}
+    (sourceTerm : Term ctx sourceType (RawTerm.unit (scope := scope))) :
+    ... := by cases sourceTerm  -- works
+```
+
+## Discipline #20: cases-cases-cases ordering for parameterized canonical heads (Phase 7.B discovery)
+
+For typed Conv between two parameterized canonical-head terms at potentially different stated types, do all term-level `cases` BEFORE substituting type equalities:
+
+**Right**:
+```lean
+cases sourceTerm   -- specializes sourceType to Ty.<ctor> e1
+cases targetTerm   -- specializes targetType to Ty.<ctor> e2 (still implicit at second cases)
+cases sameType     -- Ty.<ctor> e1 = Ty.<ctor> e2 → e1 = e2 by ctor decomposition
+exact Conv.refl _
+```
+
+**Wrong** (subst prematurely concretizes the type, blocking second cases):
+```lean
+subst sameType
+cases sourceTerm
+cases targetTerm  -- fails: targetTerm has concrete type now
+```
+
+## Discipline #21: Outer Nat / inner dep-inductive matches must nest (Phase 9.A discovery)
+
+When defining a function with a Nat fuel parameter and a dependent-inductive scrutinee, DO NOT combine into a single multi-discriminator match — the cross-product of cases triggers propext.  Always nest:
+
+**Wrong** (combined match leaks propext):
+```lean
+def RawTerm.whnf : Nat → RawTerm scope → RawTerm scope
+  | 0, term => term
+  | _ + 1, .var pos => .var pos
+  ...
+```
+
+**Right** (outer Nat, inner RawTerm):
+```lean
+def RawTerm.whnf (fuel : Nat) (term : RawTerm scope) : RawTerm scope :=
+  match fuel with
+  | 0 => term
+  | fuel + 1 =>
+    match term with | .var pos => ... | .app fn arg => ...
+```
+
 ## Audit incantation
 
 After any new function or theorem, run:
