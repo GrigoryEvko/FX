@@ -511,7 +511,8 @@ def Term.optRename {mode : Mode} {sourceScope targetScope : Nat}
                         (Ty.sigmaTy_optRename_success optionalRenaming
                           firstMaps secondMaps))
                 }
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm =>
+  | _, .snd (firstType := firstType) (secondType := secondType)
+            pairTerm resultEq =>
       Option.bindSome (firstType.optRename optionalRenaming)
         fun renamedFirst firstMaps =>
         Option.bindSome (secondType.optRename optionalRenaming.lift)
@@ -521,13 +522,18 @@ def Term.optRename {mode : Mode} {sourceScope targetScope : Nat}
                 some {
                   renamedType := renamedSecond.subst0 renamedFirst
                   typeEquality :=
-                    Ty.subst0_optRename_success optionalRenaming secondType
-                      firstType renamedFirst renamedSecond secondMaps firstMaps
+                    -- W9.B1.2 — chain resultEq (resultType =
+                    -- secondType.subst0 firstType) with the canonical
+                    -- subst0-rename success.
+                    resultEq ▸
+                      Ty.subst0_optRename_success optionalRenaming secondType
+                        firstType renamedFirst renamedSecond secondMaps firstMaps
                   term :=
                     Term.snd
                       (OptionalRenamedTerm.termAs renamedPair
                         (Ty.sigmaTy_optRename_success optionalRenaming
                           firstMaps secondMaps))
+                      rfl
                 }
   | _, .boolTrue =>
       some {

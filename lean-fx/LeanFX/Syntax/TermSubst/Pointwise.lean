@@ -226,15 +226,24 @@ theorem Term.subst_HEq_pointwise
             firstTermSubstitution secondTermSubstitution
             substitutionsAgreePointwise
             termSubstitutionsAgreePointwise pairTerm)
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+  | _, .snd (firstType := firstType) (secondType := secondType)
+            pairTerm resultEq => by
     cases targetContextEq
+    -- Term.subst on Term.snd produces a double-cast term:
+    -- (congrArg (Ty.subst · σ) resultEq).symm ▸ (subst0_subst_commute ▸ Term.snd _ rfl).
+    -- Strip both casts via eqRec_heq, then HEq congr the inner snd.
     show HEq
-      ((Ty.subst0_subst_commute secondType firstType firstTypeSubstitution).symm ▸
-        Term.snd (Term.subst firstTermSubstitution pairTerm))
-      ((Ty.subst0_subst_commute secondType firstType secondTypeSubstitution).symm ▸
-        Term.snd (Term.subst secondTermSubstitution pairTerm))
+      ((congrArg (Ty.subst · firstTypeSubstitution) resultEq).symm ▸
+        ((Ty.subst0_subst_commute secondType firstType firstTypeSubstitution).symm ▸
+          Term.snd (Term.subst firstTermSubstitution pairTerm) rfl))
+      ((congrArg (Ty.subst · secondTypeSubstitution) resultEq).symm ▸
+        ((Ty.subst0_subst_commute secondType firstType secondTypeSubstitution).symm ▸
+          Term.snd (Term.subst secondTermSubstitution pairTerm) rfl))
     apply HEq.trans (eqRec_heq _ _)
-    apply HEq.trans (b := Term.snd (Term.subst secondTermSubstitution pairTerm))
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans (b :=
+      Term.snd (context := firstTargetContext)
+        (Term.subst secondTermSubstitution pairTerm) rfl)
     · exact Term.snd_HEq_congr
         (Ty.subst_congr substitutionsAgreePointwise firstType)
         (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise) secondType)
@@ -242,7 +251,9 @@ theorem Term.subst_HEq_pointwise
               firstTermSubstitution secondTermSubstitution
               substitutionsAgreePointwise
               termSubstitutionsAgreePointwise pairTerm)
-    · exact (eqRec_heq _ _).symm
+    · apply HEq.symm
+      apply HEq.trans (eqRec_heq _ _)
+      exact (eqRec_heq _ _)
   | _, .boolTrue => by term_context_refl
   | _, .boolFalse => by term_context_refl
   | _, .boolElim (resultType := resultType) scrutinee thenBranch elseBranch => by
@@ -527,8 +538,8 @@ theorem Term.subst_id_HEq
       (Term.subst_id_HEq firstVal) (Term.subst_id_HEq secondVal)
   | _, .fst pairTerm =>
     Term.subst_id_HEq_fst pairTerm (Term.subst_id_HEq pairTerm)
-  | _, .snd pairTerm =>
-    Term.subst_id_HEq_snd pairTerm (Term.subst_id_HEq pairTerm)
+  | _, .snd pairTerm resultEq =>
+    Term.subst_id_HEq_snd resultEq pairTerm (Term.subst_id_HEq pairTerm)
   | _, .boolTrue => Term.subst_id_HEq_boolTrue
   | _, .boolFalse => Term.subst_id_HEq_boolFalse
   | _, .boolElim scrutinee thenBranch elseBranch =>

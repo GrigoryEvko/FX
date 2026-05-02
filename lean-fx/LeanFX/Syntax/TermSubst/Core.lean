@@ -357,9 +357,15 @@ def Term.subst {mode sourceScope targetScope}
         ((Ty.subst0_subst_commute secondType firstType typeSubstitution) ▸
           (Term.subst termSubstitution secondVal))
   | _, .fst pairTerm  => Term.fst (Term.subst termSubstitution pairTerm)
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm =>
-      (Ty.subst0_subst_commute secondType firstType typeSubstitution).symm ▸
-        Term.snd (Term.subst termSubstitution pairTerm)
+  | _, .snd (firstType := firstType) (secondType := secondType)
+            pairTerm resultEq =>
+      -- W9.B1.2 — equation-bearing snd.  resultEq : resultType =
+      -- secondType.subst0 firstType.  We build the substituted snd
+      -- at canonical (secondSubst.subst0 firstSubst), then cast
+      -- through resultEq's substituted form and subst0_subst_commute.
+      (congrArg (Ty.subst · typeSubstitution) resultEq).symm ▸
+        ((Ty.subst0_subst_commute secondType firstType typeSubstitution).symm ▸
+          Term.snd (Term.subst termSubstitution pairTerm) rfl)
   | _, .boolTrue      => Term.boolTrue
   | _, .boolFalse     => Term.boolFalse
   | _, .boolElim scrutinee thenBranch elseBranch =>

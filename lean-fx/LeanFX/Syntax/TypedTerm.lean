@@ -110,15 +110,31 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {secondType : Ty level (scope + 1)} →
       (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
       Term context firstType
-  /-- Second projection.  Result type uses the same `subst0`
-  placeholder substitution as `pair`. -/
+  /-- Second projection (W9.B1.2 — equation-bearing form).  Result
+  type is a free index `resultType` constrained by the equation
+  parameter `resultEq` to equal `secondType.subst0 firstType` (legacy
+  `Ty.subst0` shape preserved).
+
+  The equation form (W9.B1.2) decouples `snd`'s result type from the
+  literal `subst0` shape, mirroring W9.B1.1's `appPi` reshape.  This
+  enables pattern-matching consumers to see `snd` produce ANY type
+  provably equal to the canonical second-projection form, and is the
+  architectural prerequisite for the later termSingleton migration
+  which closes the dependent ι bridge sorries documented at
+  `ParToRawBridge.lean:202-205`.
+
+  Construction: at every call site, pass `(by rfl)` (or `rfl`) for
+  `resultEq` and let Lean unify `resultType := secondType.subst0
+  firstType`.  Existing `Term.snd p` becomes `Term.snd p rfl`. -/
   | snd :
       {mode : Mode} → {level scope : Nat} →
       {context : Ctx mode level scope} →
       {firstType : Ty level scope} →
       {secondType : Ty level (scope + 1)} →
+      {resultType : Ty level scope} →
       (pairTerm : Term context (Ty.sigmaTy firstType secondType)) →
-      Term context (secondType.subst0 firstType)
+      (resultEq : resultType = secondType.subst0 firstType) →
+      Term context resultType
   /-- Boolean introduction — `true` literal at every context.  v1.13+. -/
   | boolTrue :
       {mode : Mode} → {level scope : Nat} →
@@ -433,9 +449,15 @@ def Term.rename {m scope scope'}
         ((Ty.subst0_rename_commute secondType firstType ρ) ▸
           (Term.rename ρt secondVal))
   | _, .fst p => Term.fst (Term.rename ρt p)
-  | _, .snd (firstType := firstType) (secondType := secondType) p =>
-      (Ty.subst0_rename_commute secondType firstType ρ).symm ▸
-        Term.snd (Term.rename ρt p)
+  | _, .snd (firstType := firstType) (secondType := secondType)
+            p resultEq =>
+      -- Reduct's expected type: resultType.rename ρ.
+      -- We have resultEq : resultType = secondType.subst0 firstType.
+      -- Build the renamed snd at canonical (renamedSecond.subst0 renamedFirst),
+      -- then cast through resultEq's renamed form and subst0_rename_commute.
+      (congrArg (Ty.rename · ρ) resultEq).symm ▸
+        ((Ty.subst0_rename_commute secondType firstType ρ).symm ▸
+          Term.snd (Term.rename ρt p) rfl)
   | _, .boolTrue  => Term.boolTrue
   | _, .boolFalse => Term.boolFalse
   | _, .boolElim scrutinee thenBr elseBr =>
@@ -520,7 +542,7 @@ def Term.toRaw {mode : Mode} {level scope : Nat} {context : Ctx mode level scope
   | _, .pair firstVal secondVal =>
       RawTerm.pair firstVal.toRaw secondVal.toRaw
   | _, .fst pairTerm    => RawTerm.fst pairTerm.toRaw
-  | _, .snd pairTerm    => RawTerm.snd pairTerm.toRaw
+  | _, .snd pairTerm _  => RawTerm.snd pairTerm.toRaw
   | _, .boolTrue        => RawTerm.boolTrue
   | _, .boolFalse       => RawTerm.boolFalse
   | _, .boolElim scrutinee thenBranch elseBranch =>
@@ -619,9 +641,9 @@ theorem Term.toRaw_rename {mode : Mode} {sourceScope targetScope : Nat}
       simp only [Term.rename, Term.toRaw, RawTerm.rename]
       exact congrArg RawTerm.fst
         (Term.toRaw_rename termRenaming pairTerm)
-  | _, .snd pairTerm => by
+  | _, .snd pairTerm _ => by
       simp only [Term.rename, Term.toRaw, RawTerm.rename]
-      rw [Term.toRaw_cast]
+      rw [Term.toRaw_cast, Term.toRaw_cast]
       exact congrArg RawTerm.snd
         (Term.toRaw_rename termRenaming pairTerm)
   | _, .boolTrue => rfl

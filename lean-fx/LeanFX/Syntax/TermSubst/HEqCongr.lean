@@ -250,7 +250,10 @@ theorem Term.fst_HEq_congr
     HEq (Term.fst firstPair) (Term.fst secondPair) := by
   term_heq_congr
 
-/-- HEq congruence for `Term.snd`. -/
+/-- HEq congruence for `Term.snd`.  Both sides use `rfl` for the
+resultEq parameter (canonical second-projection result form), under
+W9.B1.2 the equation-bearing constructor.  Callers needing other
+resultEq's go through `Term.snd_HEq_eqIrrel`. -/
 theorem Term.snd_HEq_congr
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {firstSigmaFirst secondSigmaFirst : Ty level scope}
@@ -260,7 +263,7 @@ theorem Term.snd_HEq_congr
     (firstPair : Term context (Ty.sigmaTy firstSigmaFirst firstSigmaSecond))
     (secondPair : Term context (Ty.sigmaTy secondSigmaFirst secondSigmaSecond))
     (pairHEq : HEq firstPair secondPair) :
-    HEq (Term.snd firstPair) (Term.snd secondPair) := by
+    HEq (Term.snd firstPair rfl) (Term.snd secondPair rfl) := by
   term_heq_congr
 
 /-- **General HEq congruence for `Term.weaken`.**  Stronger than
@@ -735,20 +738,45 @@ theorem Term.subst_id_HEq_pair
   apply HEq.trans (eqRec_heq _ _)
   exact secondValRecursiveHEq
 
-/-- Recursive HEq case of `Term.subst_id` for `snd`. -/
+/-- HEq irrelevance of the `resultEq` proof field of `Term.snd`
+(W9.B1.2).  Two `snd`'s with the same indices but different
+`resultEq` proofs are heterogeneously equal — the equation field
+is propositional. -/
+theorem Term.snd_HEq_eqIrrel
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {resultType : Ty level scope}
+    (firstEq secondEq : resultType = secondType.subst0 firstType)
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType)) :
+    HEq (Term.snd (context := context) pairTerm firstEq)
+        (Term.snd (context := context) pairTerm secondEq) := by
+  cases firstEq
+  cases secondEq
+  rfl
+
+/-- Recursive HEq case of `Term.subst_id` for `snd`.  The
+substituted result carries `Ty.subst0_subst_commute` and the
+equation-bearing cast on the outside; `eqRec_heq` strips them
+before constructor congruence.  Polymorphic over `resultEq`
+under W9.B1.2 (equation-bearing snd). -/
 theorem Term.subst_id_HEq_snd
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {sigmaFirst : Ty level scope} {sigmaSecond : Ty level (scope + 1)}
+    {resultType : Ty level scope}
+    (resultEq : resultType = sigmaSecond.subst0 sigmaFirst)
     (pairTerm : Term context (Ty.sigmaTy sigmaFirst sigmaSecond))
     (pairRecursiveHEq :
       HEq (Term.subst (TermSubst.identity context) pairTerm) pairTerm) :
-    HEq (Term.subst (TermSubst.identity context) (Term.snd pairTerm))
-        (Term.snd (context := context) pairTerm) := by
+    HEq (Term.subst (TermSubst.identity context) (Term.snd pairTerm resultEq))
+        (Term.snd (context := context) pairTerm resultEq) := by
   show HEq
-    ((Ty.subst0_subst_commute sigmaSecond sigmaFirst Subst.identity).symm ▸
-      Term.snd (Term.subst (TermSubst.identity context) pairTerm))
-    (Term.snd pairTerm)
+    ((congrArg (Ty.subst · Subst.identity) resultEq).symm ▸
+      ((Ty.subst0_subst_commute sigmaSecond sigmaFirst Subst.identity).symm ▸
+        Term.snd (Term.subst (TermSubst.identity context) pairTerm) rfl))
+    (Term.snd pairTerm resultEq)
   apply HEq.trans (eqRec_heq _ _)
+  apply HEq.trans (eqRec_heq _ _)
+  cases resultEq
   apply Term.snd_HEq_congr (Ty.subst_id sigmaFirst)
     ((Ty.subst_congr Subst.lift_identity_equiv sigmaSecond).trans
      (Ty.subst_id sigmaSecond))
