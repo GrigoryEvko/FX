@@ -71,6 +71,7 @@ import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.ParStarBridge
+import LeanFX2.Confluence.ConvBridge
 
 -- Layer 4 — Bridge
 import LeanFX2.Bridge
@@ -168,6 +169,7 @@ import LeanFX2.Smoke.AuditPhase6BCdLemma
 import LeanFX2.Smoke.AuditPhase6CDiamond
 import LeanFX2.Smoke.AuditPhase6DTypedConfluence
 import LeanFX2.Smoke.AuditPhase6EStepStarToPar
+import LeanFX2.Smoke.AuditPhase6FConvBridge
 
 namespace LeanFX2
 
