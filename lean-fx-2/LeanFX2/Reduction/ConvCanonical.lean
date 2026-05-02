@@ -1,4 +1,5 @@
 import LeanFX2.Term.Inversion
+import LeanFX2.Term.SubjectReduction
 import LeanFX2.Reduction.Conv
 
 /-! # Reduction/ConvCanonical — Conv between canonical-head terms
@@ -139,5 +140,29 @@ theorem Conv.canonical_refl
   cases targetTerm
   cases sameType
   exact Conv.refl _
+
+/-! ## Unary canonical heads at `Ty.nat`
+
+Subject reduction (`StepStar.preserves_ty_nat`) constrains the
+existentially-quantified middle type in `Conv` for `Ty.nat`-typed
+predecessors.  The resulting cong rule lifts `Conv` between
+`Ty.nat`-typed predecessors to `Conv` between their `natSucc`-
+wrappers.
+-/
+
+/-- Cong rule: `Conv` on nat-typed predecessors lifts to `Conv` on
+their `Term.natSucc` wrappers. -/
+theorem Conv.natSucc_cong
+    {predRawA predRawB : RawTerm scope}
+    {predTermA : Term context Ty.nat predRawA}
+    {predTermB : Term context Ty.nat predRawB}
+    (predConv : Conv predTermA predTermB) :
+    Conv (Term.natSucc predTermA) (Term.natSucc predTermB) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := predConv
+  have midIsNat : midType = Ty.nat := StepStar.preserves_ty_nat chainA rfl
+  refine ⟨Ty.nat, RawTerm.natSucc midRaw, Term.natSucc (midIsNat ▸ midTerm),
+          ?_, ?_⟩
+  · exact StepStar.natSucc_lift_general chainA rfl midIsNat
+  · exact StepStar.natSucc_lift_general chainB rfl midIsNat
 
 end LeanFX2
