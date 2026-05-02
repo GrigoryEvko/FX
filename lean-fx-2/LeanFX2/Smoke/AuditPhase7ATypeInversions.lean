@@ -29,4 +29,11 @@ namespace LeanFX2.SmokePhase7ATypeInversions
 #print axioms LeanFX2.Term.refl_ty_inv
 #print axioms LeanFX2.Term.pair_ty_inv
 
+#print axioms LeanFX2.Term.unit_unique
+#print axioms LeanFX2.Term.boolTrue_unique
+#print axioms LeanFX2.Term.boolFalse_unique
+#print axioms LeanFX2.Term.natZero_unique
+#print axioms LeanFX2.Term.listNil_unique
+#print axioms LeanFX2.Term.optionNone_unique
+
 end LeanFX2.SmokePhase7ATypeInversions

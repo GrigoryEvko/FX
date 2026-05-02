@@ -169,4 +169,71 @@ theorem Term.pair_ty_inv
   cases someTerm
   exact ⟨_, _, rfl⟩
 
+/-! ## Uniqueness theorems for nullary canonical heads
+
+Each nullary canonical-head Term ctor (`unit`, `boolTrue`,
+`boolFalse`, `natZero`, `listNil`, `optionNone`) is uniquely
+determined by its raw projection — given the context and the
+raw form, there's exactly one Term value.  Proven via
+`cases; cases; rfl`: each `cases` collapses both terms to the
+matching ctor, then they're definitionally equal.
+
+These theorems compose with the type inversions to give
+"typed Conv between canonical heads is trivial" corollaries.
+-/
+
+/-- Two `Term ctx _ .unit` values are HEq. -/
+theorem Term.unit_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.unit (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.unit (scope := scope))) :
+    HEq term1 term2 := by
+  cases term1; cases term2; rfl
+
+/-- Two `Term ctx _ .boolTrue` values are HEq. -/
+theorem Term.boolTrue_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.boolTrue (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.boolTrue (scope := scope))) :
+    HEq term1 term2 := by
+  cases term1; cases term2; rfl
+
+/-- Two `Term ctx _ .boolFalse` values are HEq. -/
+theorem Term.boolFalse_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.boolFalse (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.boolFalse (scope := scope))) :
+    HEq term1 term2 := by
+  cases term1; cases term2; rfl
+
+/-- Two `Term ctx _ .natZero` values are HEq. -/
+theorem Term.natZero_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.natZero (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.natZero (scope := scope))) :
+    HEq term1 term2 := by
+  cases term1; cases term2; rfl
+
+/-- Two `Term ctx _ .listNil` values are HEq (forced equal element types). -/
+theorem Term.listNil_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.listNil (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.listNil (scope := scope))) :
+    HEq term1 term2 ∨ ∃ elt1 elt2,
+      ty1 = Ty.listType elt1 ∧ ty2 = Ty.listType elt2 := by
+  -- listNil is parameterized by elementType; if the elementTypes
+  -- differ between term1 and term2, they're at different types.
+  cases term1; cases term2
+  exact Or.inr ⟨_, _, rfl, rfl⟩
+
+/-- Two `Term ctx _ .optionNone` values: parameterized by elementType. -/
+theorem Term.optionNone_unique
+    {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.optionNone (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.optionNone (scope := scope))) :
+    HEq term1 term2 ∨ ∃ elt1 elt2,
+      ty1 = Ty.optionType elt1 ∧ ty2 = Ty.optionType elt2 := by
+  cases term1; cases term2
+  exact Or.inr ⟨_, _, rfl, rfl⟩
+
 end LeanFX2
