@@ -91,8 +91,8 @@ theorem Step.par.cd_dominates_appPi
     (argumentTerm : Term context domainType)
     (functionParStep : Step.par functionTerm (Term.cd functionTerm))
     (argumentParStep : Step.par argumentTerm (Term.cd argumentTerm)) :
-    Step.par (Term.appPi functionTerm argumentTerm)
-      (Term.cd (Term.appPi functionTerm argumentTerm)) := by
+    Step.par (Term.appPi rfl functionTerm argumentTerm)
+      (Term.cd (Term.appPi rfl functionTerm argumentTerm)) := by
   simp only [Term.cd, Term.cd_appPi_redex]
   split
   case _ rawBody heq =>
@@ -357,8 +357,10 @@ def Step.par.cd_dominates {mode : Mode} {level scope : Nat}
   | _, .lamPi body => by
       simp only [Term.cd]
       exact Step.par.lamPi (Step.par.cd_dominates body)
-  | _, .appPi functionTerm argumentTerm =>
-      Step.par.cd_dominates_appPi functionTerm argumentTerm
+  | _, .appPi resultEq functionTerm argumentTerm => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+      cases resultEq
+      exact Step.par.cd_dominates_appPi functionTerm argumentTerm
         (Step.par.cd_dominates functionTerm)
         (Step.par.cd_dominates argumentTerm)
   | _, .pair firstVal secondVal => by
