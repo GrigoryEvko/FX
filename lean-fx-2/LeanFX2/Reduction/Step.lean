@@ -164,21 +164,6 @@ inductive Step :
       Step bodySource bodyTarget →
       Step (Term.lamPi (domainType := domainType) bodySource)
            (Term.lamPi (domainType := domainType) bodyTarget)
-  /-- Step inside the first component of a Σ-pair.  Stepping the
-  first changes the second's required Ty — two-Ty signature
-  accommodates the secondValue's outdated Ty implicitly. -/
-  | pairLeft {mode level scope} {context : Ctx mode level scope}
-      {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
-      {firstRawSource firstRawTarget secondRaw : RawTerm scope}
-      {firstValueSource : Term context firstType firstRawSource}
-      {firstValueTarget : Term context firstType firstRawTarget}
-      {secondValueSource :
-        Term context (secondType.subst0 firstType firstRawSource) secondRaw}
-      {secondValueTarget :
-        Term context (secondType.subst0 firstType firstRawTarget) secondRaw} :
-      Step firstValueSource firstValueTarget →
-      Step (Term.pair (secondType := secondType) firstValueSource secondValueSource)
-           (Term.pair (secondType := secondType) firstValueTarget secondValueTarget)
   /-- Step inside the second component of a Σ-pair.  First's raw
   is fixed, so secondValueSource and secondValueTarget share Ty. -/
   | pairRight {mode level scope} {context : Ctx mode level scope}
