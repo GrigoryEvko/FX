@@ -75,16 +75,18 @@ theorem Term.subst_rename_commute_HEq
       _ _ (eq_of_heq (Term.subst_rename_commute_HEq termSubstitution termRenaming s))
       _ _ (Term.subst_rename_commute_HEq termSubstitution termRenaming t)
       _ _ (Term.subst_rename_commute_HEq termSubstitution termRenaming e)
-  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
-    -- LHS: Term.rename termRenaming (cast_subst.symm ▸ Term.appPi (subst f) (subst a))
+  | _, .appPi (domainType := dom) (codomainType := cod) resultEq f a => by
+    -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+    cases resultEq
+    -- LHS: Term.rename termRenaming (rfl-cast.symm ▸ subst-cast.symm ▸ Term.appPi rfl (subst f) (subst a))
     apply HEq.trans
       (Term.rename_HEq_cast_input termRenaming
         (Ty.subst0_subst_commute cod dom typeSubstitution).symm
-        (Term.appPi (Term.subst termSubstitution f) (Term.subst termSubstitution a)))
-    -- After helper: rename termRenaming (Term.appPi ...)
-    -- Strip outer cast from rename's appPi clause.
+        (Term.appPi rfl (Term.subst termSubstitution f) (Term.subst termSubstitution a)))
+    -- After helper: rename termRenaming (Term.appPi rfl ...) emits 1 outer cast (subst0_rename_commute).
+    -- The vacuous rfl-resultEq cast on the inner construction is actually NO-OP via congrArg of rfl.
     apply HEq.trans (eqRec_heq _ _)
-    -- RHS side: (renameAfter termSubstitution termRenaming) on Term.appPi emits cast.
+    -- RHS: subst (renameAfter ...) (Term.appPi rfl) — emits 1 outer cast.
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
