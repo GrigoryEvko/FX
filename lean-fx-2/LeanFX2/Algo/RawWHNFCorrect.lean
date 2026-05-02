@@ -876,4 +876,32 @@ theorem RawTerm.whnf_agreement_join
    RawTerm.whnf_reaches fuel leftTerm,
    whnfsEqual ▸ RawTerm.whnf_reaches fuel rightTerm⟩
 
+/-! ## Fuel-bounded conversion checker
+
+`RawTerm.checkConv fuel left right` returns `true` iff the WHNFs
+of `left` and `right` (at the given fuel) are structurally equal.
+Sound (positive answers witness a common parStar-reduct) but not
+complete (negative answers may be due to insufficient fuel or
+deeper redexes that WHNF doesn't reach). -/
+
+/-- Fuel-bounded structural-equality conversion check on raw
+terms.  Returns `true` iff `whnf fuel left` equals `whnf fuel
+right` as raw terms.  Decidable via `RawTerm`'s `DecidableEq`. -/
+def RawTerm.checkConv (fuel : Nat) {scope : Nat}
+    (leftTerm rightTerm : RawTerm scope) : Bool :=
+  decide (RawTerm.whnf fuel leftTerm = RawTerm.whnf fuel rightTerm)
+
+/-- Soundness: a positive `checkConv` answer witnesses a common
+parStar-reduct.  Composes `decide ... = true ↔ ...` with
+`whnf_agreement_join`. -/
+theorem RawTerm.checkConv_sound
+    {scope : Nat} (fuel : Nat) (leftTerm rightTerm : RawTerm scope)
+    (checkSucceeded : RawTerm.checkConv fuel leftTerm rightTerm = true) :
+    ∃ commonReduct,
+      RawStep.parStar leftTerm commonReduct ∧
+      RawStep.parStar rightTerm commonReduct := by
+  have whnfsEqual : RawTerm.whnf fuel leftTerm = RawTerm.whnf fuel rightTerm :=
+    of_decide_eq_true checkSucceeded
+  exact RawTerm.whnf_agreement_join fuel leftTerm rightTerm whnfsEqual
+
 end LeanFX2

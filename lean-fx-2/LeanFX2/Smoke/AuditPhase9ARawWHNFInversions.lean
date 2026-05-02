@@ -24,5 +24,27 @@ namespace LeanFX2.SmokePhase9AInversions
 
 #print axioms LeanFX2.RawTerm.whnf_reaches
 #print axioms LeanFX2.RawTerm.whnf_agreement_join
+#print axioms LeanFX2.RawTerm.checkConv
+#print axioms LeanFX2.RawTerm.checkConv_sound
+
+/-! ## Concrete checkConv smoke
+
+`(λ x. x) unit` and `unit` agree under WHNF (both reduce to
+`unit`); `checkConv` returns `true`. -/
+
+example :
+    RawTerm.checkConv 5
+      (.app (.lam (.var ⟨0, by decide⟩)) (.unit (scope := 0)))
+      .unit
+    = true := rfl
+
+/-- WHNF-based check witnesses a common reduct. -/
+example :
+    ∃ commonReduct,
+      RawStep.parStar
+        (.app (.lam (.var ⟨0, by decide⟩)) (.unit (scope := 0)))
+        commonReduct ∧
+      RawStep.parStar (.unit (scope := 0)) commonReduct :=
+  RawTerm.checkConv_sound 5 _ _ rfl
 
 end LeanFX2.SmokePhase9AInversions
