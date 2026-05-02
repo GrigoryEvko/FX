@@ -234,13 +234,16 @@ theorem StepStar.fst_cong {mode level scope} {ctx : Ctx mode level scope}
   StepStar.mapStep (Term.fst (firstType := firstType) (secondType := secondType))
     Step.fstCong h
 
-/-- Multi-step reduction threads through `Term.snd`. -/
+/-- Multi-step reduction threads through `Term.snd`.  W9.B1.2:
+`Term.snd` requires `rfl` for resultEq. -/
 theorem StepStar.snd_cong {mode level scope} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
     (h : StepStar p₁ p₂) :
-    StepStar (Term.snd p₁) (Term.snd p₂) :=
-  StepStar.mapStep (Term.snd (firstType := firstType) (secondType := secondType))
+    StepStar (Term.snd p₁ rfl) (Term.snd p₂ rfl) :=
+  StepStar.mapStep
+    (fun pairTerm => Term.snd (firstType := firstType)
+      (secondType := secondType) pairTerm rfl)
     Step.sndCong h
 
 

@@ -118,9 +118,9 @@ theorem Term.toRaw_subst {mode : Mode} {level sourceScope targetScope : Nat}
       simp only [Term.subst, Term.toRaw, RawTerm.subst]
       exact congrArg RawTerm.fst
         (Term.toRaw_subst consistency pairTerm)
-  | _, .snd pairTerm => by
+  | _, .snd pairTerm _ => by
       simp only [Term.subst, Term.toRaw, RawTerm.subst]
-      rw [Term.toRaw_cast]
+      rw [Term.toRaw_cast, Term.toRaw_cast]
       exact congrArg RawTerm.snd
         (Term.toRaw_subst consistency pairTerm)
   | _, .boolTrue => rfl

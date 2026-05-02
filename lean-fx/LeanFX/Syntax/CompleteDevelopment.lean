@@ -72,7 +72,7 @@ def Term.isNewestVar {mode : Mode} {level scope : Nat}
   | Term.appPi _ _ _ => none
   | Term.pair _ _ => none
   | Term.fst _ => none
-  | Term.snd _ => none
+  | Term.snd _ _ => none
   | Term.boolTrue => none
   | Term.boolFalse => none
   | Term.boolElim _ _ _ => none
@@ -279,8 +279,10 @@ def Term.cd {mode : Mode} {level scope : Nat}
       Term.pair (Term.cd firstVal) (Term.cd secondVal)
   | _, .fst pairTerm =>
       Term.cd_fst_redex (Term.cd pairTerm)
-  | _, .snd pairTerm =>
-      Term.cd_snd_redex (Term.cd pairTerm)
+  | _, .snd pairTerm resultEq =>
+      -- W9.B1.2 — preserve resultEq across cd; cast result to match input.
+      resultEq.symm ▸
+        Term.cd_snd_redex (Term.cd pairTerm)
   | _, .boolTrue => Term.boolTrue
   | _, .boolFalse => Term.boolFalse
   | _, .boolElim scrutinee thenBranch elseBranch =>

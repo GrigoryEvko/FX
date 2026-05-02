@@ -85,12 +85,13 @@ inductive Step.par :
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {p p' : Term ctx (.sigmaTy firstType secondType)},
       Step.par p p' → Step.par (Term.fst p) (Term.fst p')
-  /-- Parallel reduction inside a second projection. -/
+  /-- Parallel reduction inside a second projection.  W9.B1.2:
+  `Term.snd` requires `rfl` for resultEq. -/
   | snd :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {p p' : Term ctx (.sigmaTy firstType secondType)},
-      Step.par p p' → Step.par (Term.snd p) (Term.snd p')
+      Step.par p p' → Step.par (Term.snd p rfl) (Term.snd p' rfl)
   /-- Parallel reduction inside all three positions of a `boolElim`. -/
   | boolElim :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
@@ -141,7 +142,7 @@ inductive Step.par :
                             (secondType := secondType) firstVal secondVal))
                firstVal'
   /-- **Parallel Σ second projection**: `snd (pair a b) → b'` with
-  `Step.par b b'`. -/
+  `Step.par b b'`.  W9.B1.2: `Term.snd` requires `rfl` for resultEq. -/
   | betaSndPair :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -150,7 +151,8 @@ inductive Step.par :
       Step.par secondVal secondVal' →
       Step.par (Term.snd
                  (Term.pair (firstType := firstType)
-                            (secondType := secondType) firstVal secondVal))
+                            (secondType := secondType) firstVal secondVal)
+                 rfl)
                secondVal'
   /-- **Parallel ι-reduction on `boolTrue`**: `boolElim true t e → t'`
   with `Step.par t t'`. -/
@@ -406,14 +408,15 @@ inductive Step.par :
                   (Term.app (Term.weaken domainType f)
                             (Term.var ⟨0, Nat.zero_lt_succ _⟩)))
                f
-  /-- **η-contraction for Σ-pair** at the parallel level. -/
+  /-- **η-contraction for Σ-pair** at the parallel level.  W9.B1.2:
+  `Term.snd p` requires `rfl` for resultEq. -/
   | etaSigma :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (p : Term ctx (Ty.sigmaTy firstType secondType)),
       Step.par (Term.pair (firstType := firstType)
                            (secondType := secondType)
-                  (Term.fst p) (Term.snd p))
+                  (Term.fst p) (Term.snd p rfl))
                p
   /-- Parallel reduction inside both positions of `Term.idJ`. -/
   | idJ :
@@ -481,7 +484,8 @@ inductive Step.par :
         (Term.pair (firstType := firstType) (secondType := secondType)
                    firstVal secondVal) →
       Step.par (Term.fst pairTerm) firstVal
-  /-- **Deep parallel Σ second projection**. -/
+  /-- **Deep parallel Σ second projection**.  W9.B1.2: `Term.snd`
+  requires `rfl` for resultEq. -/
   | betaSndPairDeep :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -491,7 +495,7 @@ inductive Step.par :
       Step.par pairTerm
         (Term.pair (firstType := firstType) (secondType := secondType)
                    firstVal secondVal) →
-      Step.par (Term.snd pairTerm) secondVal
+      Step.par (Term.snd pairTerm rfl) secondVal
   /-- **Deep parallel ι-reduction on `boolTrue`**. -/
   | iotaBoolElimTrueDeep :
       ∀ {mode level scope} {ctx : Ctx mode level scope}

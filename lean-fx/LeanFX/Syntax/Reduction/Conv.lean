@@ -211,13 +211,16 @@ theorem Conv.fst_cong {mode level scope} {ctx : Ctx mode level scope}
   Conv.mapStep (Term.fst (firstType := firstType) (secondType := secondType))
     Step.fstCong h
 
-/-- Convertibility threads through `Term.snd`. -/
+/-- Convertibility threads through `Term.snd`.  W9.B1.2: `Term.snd`
+requires `rfl` for resultEq. -/
 theorem Conv.snd_cong {mode level scope} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {p₁ p₂ : Term ctx (Ty.sigmaTy firstType secondType)}
     (h : Conv p₁ p₂) :
-    Conv (Term.snd p₁) (Term.snd p₂) :=
-  Conv.mapStep (Term.snd (firstType := firstType) (secondType := secondType))
+    Conv (Term.snd p₁ rfl) (Term.snd p₂ rfl) :=
+  Conv.mapStep
+    (fun pairTerm => Term.snd (firstType := firstType)
+      (secondType := secondType) pairTerm rfl)
     Step.sndCong h
 
 /-! ## η-equivalence in natural direction.
@@ -236,14 +239,15 @@ theorem Term.eta_arrow_eq {mode level scope} {ctx : Ctx mode level scope}
                       (Term.var ⟨0, Nat.zero_lt_succ _⟩))) :=
   Conv.sym (Step.etaArrow f).toConv
 
-/-- **η-equivalence for Σ**: `p ≡ pair (fst p) (snd p)`. -/
+/-- **η-equivalence for Σ**: `p ≡ pair (fst p) (snd p)`.  W9.B1.2:
+`Term.snd p` requires `rfl` for resultEq. -/
 theorem Term.eta_sigma_eq {mode level scope} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     (p : Term ctx (Ty.sigmaTy firstType secondType)) :
     Conv p
          (Term.pair (firstType := firstType)
                      (secondType := secondType)
-            (Term.fst p) (Term.snd p)) :=
+            (Term.fst p) (Term.snd p rfl)) :=
   Conv.sym (Step.etaSigma p).toConv
 
 end LeanFX.Syntax
