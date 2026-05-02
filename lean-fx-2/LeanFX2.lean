@@ -33,6 +33,7 @@ import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.Context
+import LeanFX2.Foundation.Universe
 
 -- Layer 1 — Term
 import LeanFX2.Term
@@ -40,6 +41,8 @@ import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
 import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
+import LeanFX2.Term.HEqCongr
+import LeanFX2.Term.Bridge
 
 -- Layer 2 — Reduction
 import LeanFX2.Reduction.Step
@@ -48,6 +51,7 @@ import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.Compat
+import LeanFX2.Reduction.Cumul
 
 -- Layer 3 — Confluence
 import LeanFX2.Confluence.Cd
