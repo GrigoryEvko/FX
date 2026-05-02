@@ -330,15 +330,17 @@ theorem Step.parStarWithBi.fst_cong
     (Term.fst (firstType := firstType) (secondType := secondType))
     Step.par.fst Step.par.isBi.fst pairWithBi
 
-/-- Paired second-projection congruence. -/
+/-- Paired second-projection congruence.  W9.B1.2: `Term.snd` requires
+`rfl` for resultEq. -/
 theorem Step.parStarWithBi.snd_cong
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairWithBi : Step.parStarWithBi pairTerm pairTerm') :
-    Step.parStarWithBi (Term.snd pairTerm) (Term.snd pairTerm') :=
+    Step.parStarWithBi (Term.snd pairTerm rfl) (Term.snd pairTerm' rfl) :=
   Step.parStarWithBi.mapStep
-    (Term.snd (firstType := firstType) (secondType := secondType))
+    (fun pTerm => Term.snd (firstType := firstType)
+      (secondType := secondType) pTerm rfl)
     Step.par.snd Step.par.isBi.snd pairWithBi
 
 /-! ### Eliminator congruence rules (paired). -/
@@ -2866,7 +2868,10 @@ theorem Term.subst_parWithBi_pointwise
   | _, .fst pairTerm => by
       obtain ⟨pStep, pBi⟩ := Term.subst_parWithBi_pointwise related pairTerm
       exact ⟨Step.par.fst pStep, Step.par.isBi.fst pBi⟩
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+  | _, .snd (firstType := firstType) (secondType := secondType)
+        pairTerm resultEq => by
+      -- W9.B1.2 — equation-bearing snd.  Cases on resultEq normalises shape.
+      cases resultEq
       simp only [Term.subst]
       obtain ⟨pStep, pBi⟩ := Term.subst_parWithBi_pointwise related pairTerm
       let typeEq :=

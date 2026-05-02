@@ -278,13 +278,14 @@ theorem Step.par.cd_lemma_star_fst_case
         (Step.par.betaFstPair _ (Step.par.refl _))
   all_goals exact Step.parStar.fst_cong pairIH
 
-/-- Discharge of the `Step.par.isBi.snd` constructor case. -/
+/-- Discharge of the `Step.par.isBi.snd` constructor case.  W9.B1.2:
+`Term.snd` requires `rfl` for resultEq. -/
 theorem Step.par.cd_lemma_star_snd_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairIH : Step.parStar pairTerm' (Term.cd pairTerm)) :
-    Step.parStar (Term.snd pairTerm') (Term.cd (Term.snd pairTerm)) := by
+    Step.parStar (Term.snd pairTerm' rfl) (Term.cd (Term.snd pairTerm rfl)) := by
   simp only [Term.cd, Term.cd_snd_redex]
   split
   case _ rawFirst rawSecond developedPairEq =>
@@ -651,7 +652,8 @@ theorem Step.par.cd_lemma_star_betaSndPair_case
                  (Term.cd
                    (Term.snd (Term.pair (firstType := firstType)
                                         (secondType := secondType)
-                                        firstVal secondVal))) := by
+                                        firstVal secondVal)
+                             rfl)) := by
   simp only [Term.cd]
   exact secondIH
 
@@ -750,7 +752,8 @@ theorem Step.par.cd_lemma_star_betaFstPairDeep_case
   simp only [Term.cd, cdEq]
   exact firstStar
 
-/-- Discharge of the `Step.par.isBi.betaSndPairDeep` constructor case. -/
+/-- Discharge of the `Step.par.isBi.betaSndPairDeep` constructor case.
+W9.B1.2: `Term.snd` requires `rfl` for resultEq. -/
 theorem Step.par.cd_lemma_star_betaSndPairDeep_case
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -761,7 +764,7 @@ theorem Step.par.cd_lemma_star_betaSndPairDeep_case
         (Term.pair (firstType := firstType) (secondType := secondType)
                    firstVal secondVal) (Term.cd pairTerm)}
     (pairStarBi : Step.parStar.isBi pairStar) :
-    Step.parStar secondVal (Term.cd (Term.snd pairTerm)) := by
+    Step.parStar secondVal (Term.cd (Term.snd pairTerm rfl)) := by
   obtain ⟨_firstVal', _secondVal', cdEq, _firstStar, secondStar⟩ :=
     Step.parStar.pair_target_inv_isBi pairStarBi
   simp only [Term.cd, cdEq]

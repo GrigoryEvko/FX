@@ -123,8 +123,12 @@ theorem Term.subst_par_pointwise_isBi_witness
   | _, .fst pairTerm =>
       Step.par.isBi.fst
         (Term.subst_par_pointwise_isBi_witness related relatedBi pairTerm)
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm =>
-      Step.par.isBi.castBoth_eq
+  | _, .snd (firstType := firstType) (secondType := secondType)
+        pairTerm resultEq => by
+      -- W9.B1.2 — equation-bearing snd.  Cases on resultEq normalises shape.
+      cases resultEq
+      simp only [Term.subst]
+      exact Step.par.isBi.castBoth_eq
         (Ty.subst0_subst_commute secondType firstType typeSubstitution).symm
         (Step.par.isBi.snd
           (Term.subst_par_pointwise_isBi_witness related relatedBi pairTerm))
