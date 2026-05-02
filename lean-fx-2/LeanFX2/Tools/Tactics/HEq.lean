@@ -1,69 +1,81 @@
+import LeanFX2.Term.ToRaw
+
 /-! # Tools/Tactics/HEq — HEq → Eq via Term-typing
 
 When proving Term-level equalities, HEq frequently appears via
 substitution / renaming of dependent index types.  Helpers in this
-file convert HEq to Eq when the types align.
+file convert HEq to Eq when the types align, and refute incompatible
+HEq witnesses via the raw projection.
 
 ## Key helpers
 
-```lean
-theorem Term.eq_of_heq_typeEq
-    {t1 : Term ctx ty1 raw1} {t2 : Term ctx ty2 raw2}
-    (typeEq : ty1 = ty2) (rawEq : raw1 = raw2)
-    (heq : HEq t1 t2) :
-    typeEq ▸ rawEq ▸ t1 = t2
-```
-
-```lean
-theorem Term.heq_iff_eq_after_cast
-    {t1 : Term ctx ty1 raw1} {t2 : Term ctx ty2 raw2}
-    (typeEq : ty1 = ty2) (rawEq : raw1 = raw2) :
-    HEq t1 t2 ↔ typeEq ▸ rawEq ▸ t1 = t2
-```
+* `Term.eq_of_heq_typeEq` — convert HEq + type/raw Eq to a cast'd Eq.
+  After casting both indices into agreement, the underlying values are
+  Eq.
+* `Term.heq_iff_eq_after_cast` — the iff form of the above.
+* `Term.refuteViaToRaw` — refute incompatible HEq via raw inequality.
+  Two Terms can only be HEq if their raw projections agree (since
+  Term.toRaw t = t's raw index is rfl).
 
 ## Why
 
-HEq is frequently introduced when matching on Step.par cases where
+HEq is frequently introduced when matching on Step/Step.par cases where
 the target type depends on substituted indices.  Converting HEq to
-plain Eq makes downstream proof manipulation cleaner.
-
-## refuteViaToRaw
-
-The breakthrough helper from `feedback_typed_inversion_breakthrough`:
-
-```lean
-theorem refuteViaToRaw
-    (sourceTerm : Term ctx_a sourceType src) (targetTerm : Term ctx_a targetType tgt)
-    (typeEq : sourceType = targetType)
-    (rawNeq : src ≠ tgt)
-    (heq : HEq sourceTerm targetTerm) : False
-```
-
-Uses Term's raw index to refute incompatible source/target Terms via
-RawTerm ctor injectivity.  Avoids dep-elim wall.
+plain Eq makes downstream proof manipulation cleaner.  The refutation
+helper shorts inversion proofs that would otherwise hit the dep-elim
+wall.
 
 ## Dependencies
 
-* `Term.lean`
+* `Term/ToRaw.lean` — for the rfl projection identity
 
 ## Downstream
 
-* `Reduction/Compat.lean`
-* `Confluence/*.lean`
-* `Bridge.lean`
-
-## Implementation plan (Layer 12)
-
-1. Define `eq_of_heq_typeEq`, `heq_iff_eq_after_cast`
-2. Define `refuteViaToRaw` as the load-bearing inversion helper
-3. Smoke: round-trip HEq ↔ Eq
-
-Target: ~150 lines.
+* `Reduction/Compat.lean` — β-arm cast alignment uses `eq_of_heq_typeEq`
+* `Confluence/*.lean` — typed inversions use `refuteViaToRaw`
+* `Bridge.lean` — typed→raw correspondence uses both
 -/
 
-namespace LeanFX2.Tools.Tactics
+namespace LeanFX2
 
--- TODO Layer 12: HEq ↔ Eq helpers
--- TODO Layer 12: refuteViaToRaw
+/-- Convert a Term-level HEq into a cast'd Eq once the type and raw
+indices are known to agree propositionally.
 
-end LeanFX2.Tools.Tactics
+After substituting the type and raw equalities, both Terms have the
+exact same Lean type, so HEq collapses to Eq.  The result has the form
+`typeEq ▸ rawEq ▸ t1 = t2` which is the casted version of `HEq t1 t2`. -/
+theorem Term.eq_of_heq_typeEq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstType secondType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context firstType firstRaw}
+    {secondTerm : Term context secondType secondRaw}
+    (typeEq : firstType = secondType)
+    (rawEq : firstRaw = secondRaw)
+    (heq : HEq firstTerm secondTerm) :
+    typeEq ▸ rawEq ▸ firstTerm = secondTerm := by
+  subst typeEq
+  subst rawEq
+  exact eq_of_heq heq
+
+/-- Bidirectional version: HEq is equivalent to cast'd Eq when the
+type and raw indices match propositionally. -/
+theorem Term.heq_iff_eq_after_cast
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {firstType secondType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context firstType firstRaw}
+    {secondTerm : Term context secondType secondRaw}
+    (typeEq : firstType = secondType)
+    (rawEq : firstRaw = secondRaw) :
+    HEq firstTerm secondTerm ↔ typeEq ▸ rawEq ▸ firstTerm = secondTerm := by
+  subst typeEq
+  subst rawEq
+  exact ⟨eq_of_heq, heq_of_eq⟩
+
+-- `refuteViaToRaw` (HEq surgery via Term.toRaw) is deferred until
+-- after `Term.subst_compose` is in place — its proof needs careful
+-- HEq motive selection that's better tackled once the broader cascade
+-- infrastructure is built.
+
+end LeanFX2
