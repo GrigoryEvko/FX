@@ -104,12 +104,13 @@ theorem Term.subst_par_pointwise
       exact Step.par.lamPi
         (Term.subst_par_pointwise (TermSubst.par_lift related _) body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        resultEq function argument => by
-      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+        (argumentRaw := argRaw) resultEq function argument => by
+      -- W9.B1.3a — termSingleton-flavored appPi.  Cases on resultEq normalises shape.
       cases resultEq
       simp only [Term.subst]
       exact Step.par.castBoth
-        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+        (Ty.subst_termSingleton_subst_commute codomainType domainType
+          argRaw typeSubstitution).symm
         (Step.par.appPi
           (Term.subst_par_pointwise related function)
           (Term.subst_par_pointwise related argument))

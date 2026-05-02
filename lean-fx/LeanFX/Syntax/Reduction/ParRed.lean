@@ -62,14 +62,18 @@ inductive Step.par :
       Step.par (Term.lamPi (domainType := domainType) body)
                (Term.lamPi (domainType := domainType) body')
   /-- Parallel reduction inside a dependent application.
-  W9.B1.1 — uses `rfl` for equation-bearing appPi's resultEq. -/
+  W9.B1.3a — polymorphic over `argumentRaw`; both sides share the same
+  argumentRaw and use rfl for resultEq. -/
   | appPi :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+        {argumentRaw : RawTerm scope}
         {f f' : Term ctx (.piTy domainType codomainType)}
         {a a' : Term ctx domainType},
       Step.par f f' → Step.par a a' →
-      Step.par (Term.appPi rfl f a) (Term.appPi rfl f' a')
+      Step.par
+        (Term.appPi (argumentRaw := argumentRaw) rfl f a)
+        (Term.appPi (argumentRaw := argumentRaw) rfl f' a')
   /-- Parallel reduction inside a Σ-pair's two components. -/
   | pair :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
@@ -127,8 +131,11 @@ inductive Step.par :
         {body body' : Term (ctx.cons domainType) codomainType}
         {arg arg' : Term ctx domainType},
       Step.par body body' → Step.par arg arg' →
-      Step.par (Term.appPi rfl (Term.lamPi (domainType := domainType) body) arg)
-               (Term.subst0 body' arg')
+      Step.par
+        (Term.appPi (argumentRaw := RawTerm.unit)
+          (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+          (Term.lamPi (domainType := domainType) body) arg)
+        (Term.subst0 body' arg')
   /-- **Parallel Σ first projection**: `fst (pair a b) → a'` with
   `Step.par a a'`. -/
   | betaFstPair :
@@ -460,7 +467,7 @@ inductive Step.par :
                   Term.subst0 body arg')
   /-- **Deep parallel β-reduction (dependent)**: if `f` parallel-
   reduces to a literal Π-lambda `λ. body`, the outer application
-  contracts.  W9.B1.1 — uses `rfl` for resultEq. -/
+  contracts.  W9.B1.3a — termSingleton-flavored canonical discharge. -/
   | betaAppPiDeep :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
@@ -470,8 +477,14 @@ inductive Step.par :
       Step.par functionTerm
         (Term.lamPi (domainType := domainType) body) →
       Step.par arg arg' →
-      Step.par (Term.appPi rfl functionTerm arg)
-               (Term.subst0 body arg')
+      Step.par
+        (Term.appPi (argumentRaw := RawTerm.unit)
+          (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+          functionTerm arg)
+        (Term.subst0 body arg')
+  -- W9.B1.3a TODO — extend `betaAppPi`/`betaAppPiDeep` argumentRaw
+  -- once `Term.subst0_term` migration lands so target type aligns
+  -- with non-trivial argumentRaw values.
   /-- **Deep parallel Σ first projection**: if `pairTerm` parallel-
   reduces to a literal pair, fst contracts. -/
   | betaFstPairDeep :

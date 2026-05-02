@@ -41,12 +41,18 @@ theorem Step.subst_compatible
         (Step.castBoth (Ty.subst_weaken_commute codomainType typeSubstitution)
           (innerIH (TermSubst.lift termSubstitution domainType)))
   | appPiLeft innerStep innerIH =>
-      rename_i domainType codomainType functionBefore functionAfter argumentTerm
-      exact Step.castBoth (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+      rename_i domainType codomainType argumentRaw functionBefore functionAfter
+                argumentTerm
+      exact Step.castBoth
+        (Ty.subst_termSingleton_subst_commute codomainType domainType
+          argumentRaw typeSubstitution).symm
         (Step.appPiLeft (innerIH termSubstitution))
   | appPiRight innerStep innerIH =>
-      rename_i domainType codomainType functionTerm argumentBefore argumentAfter
-      exact Step.castBoth (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+      rename_i domainType codomainType argumentRaw functionTerm argumentBefore
+                argumentAfter
+      exact Step.castBoth
+        (Ty.subst_termSingleton_subst_commute codomainType domainType
+          argumentRaw typeSubstitution).symm
         (Step.appPiRight (innerIH termSubstitution))
   | lamPiBody innerStep innerIH =>
       rename_i domainType codomainType bodyBefore bodyAfter

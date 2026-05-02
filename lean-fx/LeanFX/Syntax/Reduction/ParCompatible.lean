@@ -56,8 +56,11 @@ theorem Step.par.rename_compatible
       rename_i domainType codomainType bodyBefore bodyAfter
       exact Step.par.lamPi (bodyIH (TermRenaming.lift termRenaming domainType))
   | appPi functionStep argumentStep functionIH argumentIH =>
-      rename_i domainType codomainType functionBefore functionAfter argumentBefore argumentAfter
-      exact Step.par.castBoth (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
+      rename_i domainType codomainType argumentRaw functionBefore functionAfter
+                argumentBefore argumentAfter
+      exact Step.par.castBoth
+        (Ty.subst_termSingleton_rename_commute codomainType domainType
+          argumentRaw rawRenaming).symm
         (Step.par.appPi (functionIH termRenaming) (argumentIH termRenaming))
   | pair firstStep secondStep firstIH secondIH =>
       rename_i firstType secondType firstBefore firstAfter secondBefore secondAfter
@@ -472,8 +475,11 @@ theorem Step.par.subst_compatible
       rename_i domainType codomainType bodyBefore bodyAfter
       exact Step.par.lamPi (bodyIH (TermSubst.lift termSubstitution domainType))
   | appPi functionStep argumentStep functionIH argumentIH =>
-      rename_i domainType codomainType functionBefore functionAfter argumentBefore argumentAfter
-      exact Step.par.castBoth (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+      rename_i domainType codomainType argumentRaw functionBefore functionAfter
+                argumentBefore argumentAfter
+      exact Step.par.castBoth
+        (Ty.subst_termSingleton_subst_commute codomainType domainType
+          argumentRaw typeSubstitution).symm
         (Step.par.appPi (functionIH termSubstitution) (argumentIH termSubstitution))
   | pair firstStep secondStep firstIH secondIH =>
       rename_i firstType secondType firstBefore firstAfter secondBefore secondAfter

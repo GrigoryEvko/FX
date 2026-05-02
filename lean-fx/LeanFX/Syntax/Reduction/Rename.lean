@@ -44,12 +44,18 @@ theorem Step.rename_compatible
         (Step.castBoth (Ty.rename_weaken_commute codomainType rawRenaming)
           (innerIH (TermRenaming.lift termRenaming domainType)))
   | appPiLeft innerStep innerIH =>
-      rename_i domainType codomainType functionBefore functionAfter argumentTerm
-      exact Step.castBoth (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
+      rename_i domainType codomainType argumentRaw functionBefore functionAfter
+                argumentTerm
+      exact Step.castBoth
+        (Ty.subst_termSingleton_rename_commute codomainType domainType
+          argumentRaw rawRenaming).symm
         (Step.appPiLeft (innerIH termRenaming))
   | appPiRight innerStep innerIH =>
-      rename_i domainType codomainType functionTerm argumentBefore argumentAfter
-      exact Step.castBoth (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
+      rename_i domainType codomainType argumentRaw functionTerm argumentBefore
+                argumentAfter
+      exact Step.castBoth
+        (Ty.subst_termSingleton_rename_commute codomainType domainType
+          argumentRaw rawRenaming).symm
         (Step.appPiRight (innerIH termRenaming))
   | lamPiBody innerStep innerIH =>
       rename_i domainType codomainType bodyBefore bodyAfter
