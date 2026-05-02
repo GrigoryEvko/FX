@@ -288,8 +288,8 @@ theorem Step.par.cd_monotone_appPi_case
     (argumentIH : Step.parStarWithBi
       (Term.cd sourceArgument) (Term.cd targetArgument)) :
     Step.parStarWithBi
-      (Term.cd (Term.appPi sourceFunction sourceArgument))
-      (Term.cd (Term.appPi targetFunction targetArgument)) := by
+      (Term.cd (Term.appPi rfl sourceFunction sourceArgument))
+      (Term.cd (Term.appPi rfl targetFunction targetArgument)) := by
   simp only [Term.cd, Term.cd_appPi_redex]
   split
   case _ rawSourceBody developedSourceFunctionEq =>
@@ -1054,7 +1054,7 @@ theorem Step.par.cd_monotone_betaAppPi_case
     (argumentIH : Step.parStarWithBi
       (Term.cd sourceArgument) (Term.cd targetArgument)) :
     Step.parStarWithBi
-      (Term.cd (Term.appPi (Term.lamPi sourceBody) sourceArgument))
+      (Term.cd (Term.appPi rfl (Term.lamPi sourceBody) sourceArgument))
       (Term.cd (Term.subst0 targetBody targetArgument)) := by
   -- LHS: cd (appPi (lamPi sb) sa) β-fires, gives subst0 (cd sb) (cd sa).
   -- RHS: cd (subst0 tb ta) — no outer cast.
@@ -1445,7 +1445,7 @@ theorem Step.par.cd_monotone_betaAppPiDeep_case
     (argumentIH : Step.parStarWithBi
       (Term.cd argumentBefore) (Term.cd argumentAfter)) :
     Step.parStarWithBi
-      (Term.cd (Term.appPi functionTerm argumentBefore))
+      (Term.cd (Term.appPi rfl functionTerm argumentBefore))
       (Term.cd (Term.subst0 body argumentAfter)) :=
   Step.parStarWithBi.append
     (Step.par.cd_monotone_appPi_case functionIH argumentIH)
