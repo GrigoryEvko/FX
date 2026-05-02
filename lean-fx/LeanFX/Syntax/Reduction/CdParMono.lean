@@ -934,7 +934,8 @@ theorem Step.par.cd_monotone_snd_case
     (pairIH : Step.parStarWithBi
       (Term.cd sourcePair) (Term.cd targetPair)) :
     Step.parStarWithBi
-      (Term.cd (Term.snd sourcePair)) (Term.cd (Term.snd targetPair)) := by
+      (Term.cd (Term.snd sourcePair rfl))
+      (Term.cd (Term.snd targetPair rfl)) := by
   simp only [Term.cd, Term.cd_snd_redex]
   split
   case _ rawSourceFirst rawSourceSecond developedSourcePairEq =>
@@ -1097,7 +1098,7 @@ theorem Step.par.cd_monotone_betaSndPair_case
     (secondIH : Step.parStarWithBi
       (Term.cd sourceSecond) (Term.cd targetSecond)) :
     Step.parStarWithBi
-      (Term.cd (Term.snd (Term.pair sourceFirst sourceSecond)))
+      (Term.cd (Term.snd (Term.pair sourceFirst sourceSecond) rfl))
       (Term.cd targetSecond) := by
   simp only [Term.cd, Term.cd_snd_redex]
   exact secondIH
@@ -1478,7 +1479,7 @@ theorem Step.par.cd_monotone_betaSndPairDeep_case
     (pairIH : Step.parStarWithBi
       (Term.cd pairTerm) (Term.cd (Term.pair firstVal secondVal))) :
     Step.parStarWithBi
-      (Term.cd (Term.snd pairTerm)) (Term.cd secondVal) :=
+      (Term.cd (Term.snd pairTerm rfl)) (Term.cd secondVal) :=
   Step.parStarWithBi.append
     (Step.par.cd_monotone_snd_case pairIH)
     (Step.par.cd_monotone_betaSndPair_case firstVal
