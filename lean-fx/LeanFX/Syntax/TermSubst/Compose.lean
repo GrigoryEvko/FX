@@ -228,13 +228,15 @@ theorem Term.subst_compose_HEq
       _ _ (Term.subst_compose_HEq
             firstTermSubstitution secondTermSubstitution elseBranch)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              functionTerm argumentTerm => by
+              resultEq functionTerm argumentTerm => by
+    -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+    cases resultEq
     apply HEq.trans
       (Term.subst_HEq_cast_input secondTermSubstitution
         (Ty.subst0_subst_commute codomainType domainType
           firstTypeSubstitution).symm
-        (Term.appPi (Term.subst firstTermSubstitution functionTerm)
-                    (Term.subst firstTermSubstitution argumentTerm)))
+        (Term.appPi rfl (Term.subst firstTermSubstitution functionTerm)
+                        (Term.subst firstTermSubstitution argumentTerm)))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)

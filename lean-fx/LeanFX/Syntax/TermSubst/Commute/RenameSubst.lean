@@ -84,12 +84,14 @@ theorem Term.rename_subst_commute_HEq
       _ _ (eq_of_heq (Term.rename_subst_commute_HEq termRenaming termSubstitution' s))
       _ _ (Term.rename_subst_commute_HEq termRenaming termSubstitution' t)
       _ _ (Term.rename_subst_commute_HEq termRenaming termSubstitution' e)
-  | _, .appPi (domainType := dom) (codomainType := cod) f a => by
-    -- LHS: Term.subst termSubstitution' (cast_rename.symm ▸ Term.appPi (rename f) (rename a))
+  | _, .appPi (domainType := dom) (codomainType := cod) resultEq f a => by
+    -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+    cases resultEq
+    -- LHS: Term.subst termSubstitution' (rfl-cast.symm ▸ rename-cast.symm ▸ Term.appPi rfl (rename f) (rename a))
     apply HEq.trans
       (Term.subst_HEq_cast_input termSubstitution'
         (Ty.subst0_rename_commute cod dom rawRenaming).symm
-        (Term.appPi (Term.rename termRenaming f) (Term.rename termRenaming a)))
+        (Term.appPi rfl (Term.rename termRenaming f) (Term.rename termRenaming a)))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
