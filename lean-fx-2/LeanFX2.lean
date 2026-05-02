@@ -34,6 +34,7 @@ import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Universe
+import LeanFX2.Foundation.RenameIdentity
 
 -- Layer 1 — Term
 import LeanFX2.Term
