@@ -255,4 +255,146 @@ theorem Conv.eitherMatch_scrutinee_cong_isClosedTy
     (fun step => Step.eitherMatchScrutinee step)
     scrutConv
 
+/-! ## Eliminator branch cong rules at closed motive types
+
+For the no-payload branches (`nil`, `none`) at closed motive:
+direct cong via Conv.cong_at_isClosedTy.
+
+For the arrow-typed branches (`cons`, `some`, `left`, `right`):
+combine `IsClosedTy.arrow` to express that the closed-component
++ closed-motive arrow is itself closed. -/
+
+/-- Conv cong on `listElim`'s nil-branch position at closed motive. -/
+theorem Conv.listElim_nil_cong_isClosedTy
+    {elementType motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw nilRawA nilRawB consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutRaw)
+    {nilA : Term context motiveType nilRawA}
+    {nilB : Term context motiveType nilRawB}
+    (consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType) motiveType))
+                                consRaw)
+    (nilConv : Conv nilA nilB) :
+    Conv (Term.listElim scrutinee nilA consBranch)
+         (Term.listElim scrutinee nilB consBranch) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType) closedMotive
+    (wrapRaw := fun raw => RawTerm.listElim scrutRaw raw consRaw)
+    (fun term => Term.listElim scrutinee term consBranch)
+    (fun step => Step.listElimNil step)
+    nilConv
+
+/-- Conv cong on `listElim`'s cons-branch position at closed
+elementType + closed motive (so the arrow type is closed). -/
+theorem Conv.listElim_cons_cong_isClosedTy
+    {elementType motiveType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw nilRaw consRawA consRawB : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    {consA : Term context (Ty.arrow elementType
+                            (Ty.arrow (Ty.listType elementType) motiveType))
+                          consRawA}
+    {consB : Term context (Ty.arrow elementType
+                            (Ty.arrow (Ty.listType elementType) motiveType))
+                          consRawB}
+    (consConv : Conv consA consB) :
+    Conv (Term.listElim scrutinee nilBranch consA)
+         (Term.listElim scrutinee nilBranch consB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.arrow closedElement
+       (IsClosedTy.arrow (IsClosedTy.listType closedElement) closedMotive))
+    (wrapRaw := fun raw => RawTerm.listElim scrutRaw nilRaw raw)
+    (fun term => Term.listElim scrutinee nilBranch term)
+    (fun step => Step.listElimCons step)
+    consConv
+
+/-- Conv cong on `optionMatch`'s none-branch position at closed motive. -/
+theorem Conv.optionMatch_none_cong_isClosedTy
+    {elementType motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw noneRawA noneRawB someRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.optionType elementType) scrutRaw)
+    {noneA : Term context motiveType noneRawA}
+    {noneB : Term context motiveType noneRawB}
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw)
+    (noneConv : Conv noneA noneB) :
+    Conv (Term.optionMatch scrutinee noneA someBranch)
+         (Term.optionMatch scrutinee noneB someBranch) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType) closedMotive
+    (wrapRaw := fun raw => RawTerm.optionMatch scrutRaw raw someRaw)
+    (fun term => Term.optionMatch scrutinee term someBranch)
+    (fun step => Step.optionMatchNone step)
+    noneConv
+
+/-- Conv cong on `optionMatch`'s some-branch position at closed
+elementType + closed motive. -/
+theorem Conv.optionMatch_some_cong_isClosedTy
+    {elementType motiveType : Ty level scope}
+    (closedElement : IsClosedTy elementType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw noneRaw someRawA someRawB : RawTerm scope}
+    (scrutinee : Term context (Ty.optionType elementType) scrutRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    {someA : Term context (Ty.arrow elementType motiveType) someRawA}
+    {someB : Term context (Ty.arrow elementType motiveType) someRawB}
+    (someConv : Conv someA someB) :
+    Conv (Term.optionMatch scrutinee noneBranch someA)
+         (Term.optionMatch scrutinee noneBranch someB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.arrow closedElement closedMotive)
+    (wrapRaw := fun raw => RawTerm.optionMatch scrutRaw noneRaw raw)
+    (fun term => Term.optionMatch scrutinee noneBranch term)
+    (fun step => Step.optionMatchSome step)
+    someConv
+
+/-- Conv cong on `eitherMatch`'s left-branch position at closed
+leftType + closed motive. -/
+theorem Conv.eitherMatch_left_cong_isClosedTy
+    {leftType rightType motiveType : Ty level scope}
+    (closedLeft : IsClosedTy leftType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw leftRawA leftRawB rightRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.eitherType leftType rightType) scrutRaw)
+    {leftA : Term context (Ty.arrow leftType motiveType) leftRawA}
+    {leftB : Term context (Ty.arrow leftType motiveType) leftRawB}
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw)
+    (leftConv : Conv leftA leftB) :
+    Conv (Term.eitherMatch scrutinee leftA rightBranch)
+         (Term.eitherMatch scrutinee leftB rightBranch) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.arrow closedLeft closedMotive)
+    (wrapRaw := fun raw => RawTerm.eitherMatch scrutRaw raw rightRaw)
+    (fun term => Term.eitherMatch scrutinee term rightBranch)
+    (fun step => Step.eitherMatchLeft step)
+    leftConv
+
+/-- Conv cong on `eitherMatch`'s right-branch position at closed
+rightType + closed motive. -/
+theorem Conv.eitherMatch_right_cong_isClosedTy
+    {leftType rightType motiveType : Ty level scope}
+    (closedRight : IsClosedTy rightType)
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw leftRaw rightRawA rightRawB : RawTerm scope}
+    (scrutinee : Term context (Ty.eitherType leftType rightType) scrutRaw)
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    {rightA : Term context (Ty.arrow rightType motiveType) rightRawA}
+    {rightB : Term context (Ty.arrow rightType motiveType) rightRawB}
+    (rightConv : Conv rightA rightB) :
+    Conv (Term.eitherMatch scrutinee leftBranch rightA)
+         (Term.eitherMatch scrutinee leftBranch rightB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.arrow closedRight closedMotive)
+    (wrapRaw := fun raw => RawTerm.eitherMatch scrutRaw leftRaw raw)
+    (fun term => Term.eitherMatch scrutinee leftBranch term)
+    (fun step => Step.eitherMatchRight step)
+    rightConv
+
 end LeanFX2

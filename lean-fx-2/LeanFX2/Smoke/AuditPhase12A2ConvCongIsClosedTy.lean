@@ -10,3 +10,9 @@ import LeanFX2.Reduction.ConvCongIsClosedTy
 #print axioms LeanFX2.Conv.listElim_scrutinee_cong_isClosedTy
 #print axioms LeanFX2.Conv.optionMatch_scrutinee_cong_isClosedTy
 #print axioms LeanFX2.Conv.eitherMatch_scrutinee_cong_isClosedTy
+#print axioms LeanFX2.Conv.listElim_nil_cong_isClosedTy
+#print axioms LeanFX2.Conv.listElim_cons_cong_isClosedTy
+#print axioms LeanFX2.Conv.optionMatch_none_cong_isClosedTy
+#print axioms LeanFX2.Conv.optionMatch_some_cong_isClosedTy
+#print axioms LeanFX2.Conv.eitherMatch_left_cong_isClosedTy
+#print axioms LeanFX2.Conv.eitherMatch_right_cong_isClosedTy
