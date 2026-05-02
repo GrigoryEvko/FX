@@ -44,6 +44,7 @@ import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
 import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Bridge
+import LeanFX2.Term.ProofIrrel
 
 -- Layer 2 — Reduction
 import LeanFX2.Reduction.Step
