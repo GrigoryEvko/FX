@@ -177,6 +177,7 @@ import LeanFX2.Smoke.AuditPhase9ARawWHNF
 import LeanFX2.Smoke.AuditPhase9ARawWHNFInversions
 import LeanFX2.Smoke.AuditPhase9CDecConv
 import LeanFX2.Smoke.AuditPhase9CDecConvTyped
+import LeanFX2.Smoke.AuditPhase9DSynth
 
 namespace LeanFX2
 

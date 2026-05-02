@@ -145,4 +145,94 @@ argument's raw into the codomain type. -/
       (RawTerm.eitherInr valueRaw) :=
   Term.eitherInr valueTerm
 
+/-! ## Eliminator synthesis (n-ary)
+
+Eliminator helpers package the scrutinee + each branch.  The
+motive type is propagated explicitly so the result type is
+visible at the call site. -/
+
+/-- Boolean elim synthesis. -/
+@[reducible] def Term.synthBoolElim
+    {motiveType : Ty level scope}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch : Term context motiveType thenRaw)
+    (elseBranch : Term context motiveType elseRaw) :
+    Term context motiveType
+      (RawTerm.boolElim scrutineeRaw thenRaw elseRaw) :=
+  Term.boolElim scrutinee thenBranch elseBranch
+
+/-- Nat elim synthesis (case analysis on `nat`). -/
+@[reducible] def Term.synthNatElim
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    Term context motiveType
+      (RawTerm.natElim scrutineeRaw zeroRaw succRaw) :=
+  Term.natElim scrutinee zeroBranch succBranch
+
+/-- Nat recursion synthesis (recursive case analysis). -/
+@[reducible] def Term.synthNatRec
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context
+                    (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+                    succRaw) :
+    Term context motiveType
+      (RawTerm.natRec scrutineeRaw zeroRaw succRaw) :=
+  Term.natRec scrutinee zeroBranch succBranch
+
+/-- List elim synthesis. -/
+@[reducible] def Term.synthListElim
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch : Term context
+                    (Ty.arrow elementType
+                      (Ty.arrow (Ty.listType elementType) motiveType))
+                    consRaw) :
+    Term context motiveType
+      (RawTerm.listElim scrutineeRaw nilRaw consRaw) :=
+  Term.listElim scrutinee nilBranch consBranch
+
+/-- Option match synthesis. -/
+@[reducible] def Term.synthOptionMatch
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw) :
+    Term context motiveType
+      (RawTerm.optionMatch scrutineeRaw noneRaw someRaw) :=
+  Term.optionMatch scrutinee noneBranch someBranch
+
+/-- Either match synthesis. -/
+@[reducible] def Term.synthEitherMatch
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    (scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw) :
+    Term context motiveType
+      (RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw) :=
+  Term.eitherMatch scrutinee leftBranch rightBranch
+
+/-- Identity J synthesis (non-dep motive). -/
+@[reducible] def Term.synthIdJ
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw) :
+    Term context motiveType (RawTerm.idJ baseRaw witnessRaw) :=
+  Term.idJ baseCase witness
+
 end LeanFX2.Algo
