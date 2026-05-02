@@ -149,6 +149,7 @@ import LeanFX2.Smoke.Bridge
 import LeanFX2.Smoke.HoTT
 import LeanFX2.Smoke.Modal
 import LeanFX2.Smoke.Graded
+import LeanFX2.Smoke.AuditPhase5Bridge
 
 namespace LeanFX2
 

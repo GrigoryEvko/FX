@@ -1,104 +1,190 @@
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
+import LeanFX2.Term.Bridge
+import LeanFX2.Term.ToRaw
 
-/-! # Bridge — typed↔raw correspondence
+/-! # Bridge — typed↔raw correspondence (Phase 5).
 
-The architectural payoff of raw-aware Term: the bridge becomes
-**definitional**.  Each typed reduction has its raw counterpart by
-type-index alignment.
+The architectural payoff of raw-aware Term: bridging a typed
+parallel-reduction step to its raw-side counterpart is a one-line
+case split per ctor.
 
-## Forward bridge
+## Headline theorem
 
 ```lean
 theorem Step.par.toRawBridge
-    {t1 t2 : Term ctx ty rawSrc rawTgt}
-    (parallelStep : Step.par t1 t2)
-    (biWitness : Step.par.isBi parallelStep) :
-    RawStep.par t1.toRaw t2.toRaw
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    RawStep.par sourceRaw targetRaw
 ```
 
-Proof: induction on `biWitness`.  Each case is **one line**:
+Each case is a single `exact RawStep.par.<ctor> <ihs>` — the raw
+indices align by construction because `Term.toRaw t = raw` is rfl
+in lean-fx-2.  No `Step.par.isBi` filter is required since
+`Step.par` carries no η rules (η lives in opt-in
+`Reduction/Eta.lean` per the architectural commitment).
 
-```lean
-case betaApp body_witness arg_witness =>
-  exact RawStep.par.betaApp body_witness arg_witness
+## Why this works in lean-fx-2 but not in lean-fx
 
-case betaAppPi body_witness arg_witness =>
-  exact RawStep.par.betaApp body_witness arg_witness
+* lean-fx had `Term.toRaw : Term ctx ty → RawTerm scope` as a
+  recursive function, so projecting through a β-redex required
+  proving `Term.toRaw_subst0` as an HEq cascade.  The non-dep vs
+  dep β-cases needed two separate flavours (`subst0_term` /
+  `subst0`) because `Subst.singleton` substituted unit at the
+  raw position — the `dropNewest` family.
+* lean-fx-2 makes `RawTerm scope` a type-level index of `Term`,
+  so `Term.subst0 bodyTerm argTerm` has its raw target literally
+  pinned to `bodyRaw.subst0 argRaw`.  Both `Term.toRaw_subst0`
+  and `Term.toRaw_rename` are therefore `rfl`.
 
-case betaAppDeep functionTerm body arg arg' fn_witness arg_witness =>
-  exact RawStep.par.betaAppDeep fn_witness arg_witness
+The forward bridge collapses to a one-liner per ctor.
 
-case betaAppPiDeep ... =>
-  exact RawStep.par.betaAppDeep ...
+## Constructors covered
 
-case lam body_witness => exact RawStep.par.lam body_witness
-case app fn_witness arg_witness => exact RawStep.par.app fn_witness arg_witness
-... (all cong cases — one-line each)
+54 total: refl + 21 cong + 4 shallow β + 13 shallow ι + 4 deep β
++ 12 deep ι.  Modal cong cases (`modIntro`, `modElim`, `subsume`)
+included for forward compatibility with Layer 6.
 
-case iotaBoolElimTrue thenBr_witness =>
-  exact RawStep.par.iotaBoolElimTrue _ thenBr_witness
-... (all ι cases — one-line each)
-```
+## Future work
 
-Total proof body: ~50 lines (vs lean-fx's bridge with 4 sorries +
-~150 lines of attempted discharges).
-
-## Backward extraction (where decidable)
-
-```lean
-def Bridge.backward (rawStep : RawStep.par r1 r2) (h : Term ctx ty r1) :
-    Option (Σ t', Step.par h t' ∧ t'.toRaw = r2)
-```
-
-Used by Algo for decidable conversion.
-
-## Source / target inversion
-
-* `Step.par.lam_source_inv` — typed inversion: if Step.par t1 t2 has
-  source `Term.lam body`, extract structure
-* `Step.par.app_source_inv`, etc.
-
-In lean-fx these used HEq-refutation tricks (per
-`feedback_typed_inversion_breakthrough.md`).  In lean-fx-2 they're
-direct because the type indices give Lean enough structure.
-
-## Dependencies
-
-* `Reduction/ParRed.lean` — typed Step.par + isBi
-* `Reduction/RawPar.lean` — raw Step.par target
-
-## Downstream consumers
-
-* `Algo/DecConv.lean` — decidable conversion runs raw side, uses
-  bridge to lift
-* `Algo/Eval.lean` — fuel-bounded eval can run on raw with bridge
-  back to typed
-
-## Diff from lean-fx
-
-* lean-fx had **4 unprovable sorries** for the dep β cases
-  (betaAppPi, betaAppPiDeep) plus structural blockers on non-dep β
-  (betaApp, betaAppDeep) — these were the W9.B1.x targets that
-  ultimately motivated the lean-fx-2 rewrite
-* lean-fx-2: zero sorries.  Every case is `RawStep.par.<ctor>
-  witnesses` directly.
-* Source/target inversion lemmas are direct (no HEq refutation
-  detour)
-
-Target: ~150 lines (vs lean-fx's ~600 lines across `ParToRawBridge.lean`,
-`ParInversion.lean`, scaffolding helpers).
-
-## Implementation plan (Phase 5)
-
-1. State `Step.par.toRawBridge`
-2. Induction on `Step.par.isBi`, one case per ctor — each case a
-   one-liner via `exact RawStep.par.<ctor> witnesses`
-3. Verify zero sorries, verify zero axioms
-4. Add backward extraction (deferred — needed only by Algo)
-5. Add source/target inversion lemmas
+* `Bridge.backward` — partial inversion from raw to typed
+  (decidable on canonical forms, used by Algo).  Needs typing
+  judgment infrastructure first.
+* Source/target inversion lemmas — direct from typed Step.par
+  ctors using HEq+toRaw refutation (commit later when consumed).
 -/
 
 namespace LeanFX2
+
+/-- Forward bridge: every typed parallel-reduction step lifts to a
+raw-side parallel-reduction step on the projected raw indices.
+54 cases, one line each. -/
+theorem Step.par.toRawBridge
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    RawStep.par sourceRaw targetRaw := by
+  induction parallelStep with
+  -- Reflexivity
+  | refl someTerm => exact RawStep.par.refl _
+  -- Cong: non-dep app + lam
+  | app _ _ ihFunction ihArgument =>
+      exact RawStep.par.app ihFunction ihArgument
+  | lam _ ihBody => exact RawStep.par.lam ihBody
+  -- Cong: dep Π app + lam (collapse to RawStep.par.app / .lam)
+  | lamPi _ ihBody => exact RawStep.par.lam ihBody
+  | appPi _ _ ihFunction ihArgument =>
+      exact RawStep.par.app ihFunction ihArgument
+  -- Cong: pair + projections
+  | pair _ _ ihFirst ihSecond =>
+      exact RawStep.par.pair ihFirst ihSecond
+  | fst _ ihPair => exact RawStep.par.fst ihPair
+  | snd _ ihPair => exact RawStep.par.snd ihPair
+  -- Cong: bool eliminator
+  | boolElim _ _ _ ihScrutinee ihThen ihElse =>
+      exact RawStep.par.boolElim ihScrutinee ihThen ihElse
+  -- Cong: nat
+  | natSucc _ ihPredecessor => exact RawStep.par.natSucc ihPredecessor
+  | natElim _ _ _ ihScrutinee ihZero ihSucc =>
+      exact RawStep.par.natElim ihScrutinee ihZero ihSucc
+  | natRec _ _ _ ihScrutinee ihZero ihSucc =>
+      exact RawStep.par.natRec ihScrutinee ihZero ihSucc
+  -- Cong: list
+  | listCons _ _ ihHead ihTail =>
+      exact RawStep.par.listCons ihHead ihTail
+  | listElim _ _ _ ihScrutinee ihNil ihCons =>
+      exact RawStep.par.listElim ihScrutinee ihNil ihCons
+  -- Cong: option
+  | optionSome _ ihValue => exact RawStep.par.optionSome ihValue
+  | optionMatch _ _ _ ihScrutinee ihNone ihSome =>
+      exact RawStep.par.optionMatch ihScrutinee ihNone ihSome
+  -- Cong: either
+  | eitherInl _ ihValue => exact RawStep.par.eitherInl ihValue
+  | eitherInr _ ihValue => exact RawStep.par.eitherInr ihValue
+  | eitherMatch _ _ _ ihScrutinee ihLeft ihRight =>
+      exact RawStep.par.eitherMatch ihScrutinee ihLeft ihRight
+  -- Cong: identity (Term.refl is frozen, so no reflCong; idJ has cong)
+  | idJ _ _ ihBase ihWitness =>
+      exact RawStep.par.idJ ihBase ihWitness
+  -- Cong: modal
+  | modIntro _ ihInner => exact RawStep.par.modIntro ihInner
+  | modElim _ ihInner => exact RawStep.par.modElim ihInner
+  | subsume _ ihInner => exact RawStep.par.subsume ihInner
+  -- β shallow (4)
+  | betaApp _ _ ihBody ihArgument =>
+      exact RawStep.par.betaApp ihBody ihArgument
+  | betaAppPi _ _ ihBody ihArgument =>
+      exact RawStep.par.betaApp ihBody ihArgument
+  | betaFstPair secondValue _ ihFirst =>
+      exact RawStep.par.betaFstPair _ ihFirst
+  | betaSndPair firstValue _ ihSecond =>
+      exact RawStep.par.betaSndPair _ ihSecond
+  -- ι shallow (13)
+  | iotaBoolElimTrue elseBranch _ ihThen =>
+      exact RawStep.par.iotaBoolElimTrue _ ihThen
+  | iotaBoolElimFalse thenBranch _ ihElse =>
+      exact RawStep.par.iotaBoolElimFalse _ ihElse
+  | iotaNatElimZero succBranch _ ihZero =>
+      exact RawStep.par.iotaNatElimZero _ ihZero
+  | iotaNatElimSucc zeroBranch _ _ ihPredecessor ihSucc =>
+      exact RawStep.par.iotaNatElimSucc _ ihPredecessor ihSucc
+  | iotaNatRecZero succBranch _ ihZero =>
+      exact RawStep.par.iotaNatRecZero _ ihZero
+  | iotaNatRecSucc _ _ _ ihPredecessor ihZero ihSucc =>
+      exact RawStep.par.iotaNatRecSucc ihPredecessor ihZero ihSucc
+  | iotaListElimNil consBranch _ ihNil =>
+      exact RawStep.par.iotaListElimNil _ ihNil
+  | iotaListElimCons nilBranch _ _ _ ihHead ihTail ihCons =>
+      exact RawStep.par.iotaListElimCons _ ihHead ihTail ihCons
+  | iotaOptionMatchNone someBranch _ ihNone =>
+      exact RawStep.par.iotaOptionMatchNone _ ihNone
+  | iotaOptionMatchSome noneBranch _ _ ihValue ihSome =>
+      exact RawStep.par.iotaOptionMatchSome _ ihValue ihSome
+  | iotaEitherMatchInl rightBranch _ _ ihValue ihLeft =>
+      exact RawStep.par.iotaEitherMatchInl _ ihValue ihLeft
+  | iotaEitherMatchInr leftBranch _ _ ihValue ihRight =>
+      exact RawStep.par.iotaEitherMatchInr _ ihValue ihRight
+  | iotaIdJRefl carrier endpoint _ ihBase =>
+      exact RawStep.par.iotaIdJRefl _ ihBase
+  -- β deep (4)
+  | betaAppDeep _ _ ihFunction ihArgument =>
+      exact RawStep.par.betaAppDeep ihFunction ihArgument
+  | betaAppPiDeep _ _ ihFunction ihArgument =>
+      exact RawStep.par.betaAppDeep ihFunction ihArgument
+  | betaFstPairDeep _ ihPair =>
+      exact RawStep.par.betaFstPairDeep ihPair
+  | betaSndPairDeep _ ihPair =>
+      exact RawStep.par.betaSndPairDeep ihPair
+  -- ι deep (12)
+  | iotaBoolElimTrueDeep elseBranch _ _ ihScrutinee ihThen =>
+      exact RawStep.par.iotaBoolElimTrueDeep _ ihScrutinee ihThen
+  | iotaBoolElimFalseDeep thenBranch _ _ ihScrutinee ihElse =>
+      exact RawStep.par.iotaBoolElimFalseDeep _ ihScrutinee ihElse
+  | iotaNatElimZeroDeep succBranch _ _ ihScrutinee ihZero =>
+      exact RawStep.par.iotaNatElimZeroDeep _ ihScrutinee ihZero
+  | iotaNatElimSuccDeep zeroBranch _ _ ihScrutinee ihSucc =>
+      exact RawStep.par.iotaNatElimSuccDeep _ ihScrutinee ihSucc
+  | iotaNatRecZeroDeep succBranch _ _ ihScrutinee ihZero =>
+      exact RawStep.par.iotaNatRecZeroDeep _ ihScrutinee ihZero
+  | iotaNatRecSuccDeep _ _ _ ihScrutinee ihZero ihSucc =>
+      exact RawStep.par.iotaNatRecSuccDeep ihScrutinee ihZero ihSucc
+  | iotaListElimNilDeep consBranch _ _ ihScrutinee ihNil =>
+      exact RawStep.par.iotaListElimNilDeep _ ihScrutinee ihNil
+  | iotaListElimConsDeep nilBranch _ _ ihScrutinee ihCons =>
+      exact RawStep.par.iotaListElimConsDeep _ ihScrutinee ihCons
+  | iotaOptionMatchNoneDeep someBranch _ _ ihScrutinee ihNone =>
+      exact RawStep.par.iotaOptionMatchNoneDeep _ ihScrutinee ihNone
+  | iotaOptionMatchSomeDeep noneBranch _ _ ihScrutinee ihSome =>
+      exact RawStep.par.iotaOptionMatchSomeDeep _ ihScrutinee ihSome
+  | iotaEitherMatchInlDeep rightBranch _ _ ihScrutinee ihLeft =>
+      exact RawStep.par.iotaEitherMatchInlDeep _ ihScrutinee ihLeft
+  | iotaEitherMatchInrDeep leftBranch _ _ ihScrutinee ihRight =>
+      exact RawStep.par.iotaEitherMatchInrDeep _ ihScrutinee ihRight
+  | iotaIdJReflDeep _ _ ihWitness ihBase =>
+      exact RawStep.par.iotaIdJReflDeep ihWitness ihBase
 
 end LeanFX2
