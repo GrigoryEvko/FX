@@ -57,9 +57,90 @@ form is `raw`.  Returns `Option` because:
 Target: ~400 lines.
 -/
 
+namespace LeanFX2
+
+variable {mode : Mode} {level scope : Nat}
+
+/-- Type inference for atomic + unambiguous-recursive raw forms.
+Returns `some ⟨ty, term⟩` when the raw form has a unique typed
+witness; returns `none` for forms that need an expected type to
+disambiguate (lam vs lamPi, app vs appPi, pair, refl, idJ,
+eliminators).
+
+## Coverage
+
+* `RawTerm.var pos` — type from `varType context pos`
+* Nullary canonical heads (`unit`, `boolTrue/False`, `natZero`)
+* `RawTerm.natSucc inner` — recursively infer + verify nat-typed
+* All other forms — `none` (defer to `Term.check` with expected type)
+
+## Why partial
+
+Several `RawTerm` forms have ambiguous typings:
+* `lam bodyRaw` — could be `Term.lam` (non-dep arrow) or
+  `Term.lamPi` (dep Π); same for `app`
+* `pair`, `fst`, `snd` — depend on the σ-type structure
+* `refl` — depends on identity-type carrier
+* Eliminators — depend on motive type
+
+These are check-mode constructors handled by `Algo/Check.lean`.
+
+## Zero-axiom
+
+Recursive cases use propositional `▸` casting via DecidableEq Ty,
+which routes through `Eq.rec` (not `propext`).  Verified
+zero-axiom for the inferable subset. -/
+def Term.infer (context : Ctx mode level scope) :
+    (raw : RawTerm scope) →
+    Option (Σ (someType : Ty level scope), Term context someType raw)
+  | .var position =>
+      some ⟨varType context position, Term.var position⟩
+  | .unit =>
+      some ⟨Ty.unit, Term.unit⟩
+  | .boolTrue =>
+      some ⟨Ty.bool, Term.boolTrue⟩
+  | .boolFalse =>
+      some ⟨Ty.bool, Term.boolFalse⟩
+  | .natZero =>
+      some ⟨Ty.nat, Term.natZero⟩
+  | .natSucc predRaw =>
+      match Term.infer context predRaw with
+      | some ⟨innerTy, innerTerm⟩ =>
+          if natEq : innerTy = Ty.nat then
+            some ⟨Ty.nat, Term.natSucc (natEq ▸ innerTerm)⟩
+          else
+            none
+      | none => none
+  -- Ambiguous forms: defer to check mode
+  | .lam _        => none
+  | .app _ _      => none
+  | .pair _ _     => none
+  | .fst _        => none
+  | .snd _        => none
+  | .boolElim _ _ _   => none
+  | .natElim _ _ _    => none
+  | .natRec _ _ _     => none
+  | .listNil          => none
+  | .listCons _ _     => none
+  | .listElim _ _ _   => none
+  | .optionNone       => none
+  | .optionSome _     => none
+  | .optionMatch _ _ _ => none
+  | .eitherInl _      => none
+  | .eitherInr _      => none
+  | .eitherMatch _ _ _ => none
+  | .refl _           => none
+  | .idJ _ _          => none
+  | .modIntro _       => none
+  | .modElim _        => none
+  | .subsume _        => none
+
+end LeanFX2
+
 namespace LeanFX2.Algo
 
--- TODO Layer 9: Term.infer per RawTerm ctor
--- TODO Layer 9: handle synth-only forms cleanly
+-- TODO Layer 9: Term.check (expected-type bidirectional check)
+-- TODO Layer 9: extend Term.infer to listNil/optionNone/etc.
+--   (parametric but inferable with elementType erasure)
 
 end LeanFX2.Algo
