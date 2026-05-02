@@ -235,4 +235,73 @@ visible at the call site. -/
     Term context motiveType (RawTerm.idJ baseRaw witnessRaw) :=
   Term.idJ baseCase witness
 
+/-! ## Binders + Σ pair + identity refl synthesis
+
+Round out the Synth API so every Term constructor has a synth
+helper.  These wrap the constructor with named arguments to make
+the typing rule visible at the call site. -/
+
+/-- Lambda synthesis (non-dep arrow). -/
+@[reducible] def Term.synthLam
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons domainType) codomainType.weaken bodyRaw) :
+    Term context (Ty.arrow domainType codomainType) (RawTerm.lam bodyRaw) :=
+  Term.lam body
+
+/-- Π lambda synthesis (dependent). -/
+@[reducible] def Term.synthLamPi
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons domainType) codomainType bodyRaw) :
+    Term context (Ty.piTy domainType codomainType) (RawTerm.lam bodyRaw) :=
+  Term.lamPi body
+
+/-- Σ pair synthesis. -/
+@[reducible] def Term.synthPair
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (firstValue : Term context firstType firstRaw)
+    (secondValue : Term context (secondType.subst0 firstType firstRaw) secondRaw) :
+    Term context (Ty.sigmaTy firstType secondType)
+                 (RawTerm.pair firstRaw secondRaw) :=
+  Term.pair firstValue secondValue
+
+/-- Σ second projection synthesis. -/
+@[reducible] def Term.synthSnd
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw) :
+    Term context (secondType.subst0 firstType (RawTerm.fst pairRaw))
+                 (RawTerm.snd pairRaw) :=
+  Term.snd pairTerm
+
+/-- Identity refl synthesis. -/
+@[reducible] def Term.synthRefl
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    Term context (Ty.id carrier rawWitness rawWitness)
+                 (RawTerm.refl rawWitness) :=
+  Term.refl carrier rawWitness
+
+/-- Modal intro synthesis (Layer 1 raw scaffolding — preserves inner type). -/
+@[reducible] def Term.synthModIntro
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Term context innerType (RawTerm.modIntro innerRaw) :=
+  Term.modIntro innerTerm
+
+/-- Modal elim synthesis (Layer 1 raw scaffolding). -/
+@[reducible] def Term.synthModElim
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Term context innerType (RawTerm.modElim innerRaw) :=
+  Term.modElim innerTerm
+
+/-- Subsume synthesis (Layer 1 raw scaffolding). -/
+@[reducible] def Term.synthSubsume
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Term context innerType (RawTerm.subsume innerRaw) :=
+  Term.subsume innerTerm
+
 end LeanFX2.Algo

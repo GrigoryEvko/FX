@@ -190,4 +190,243 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .modElim innerTerm =>
       !(innerTerm.headCtor == .modIntro)
 
+/-! ## headCtor inversion bridges
+
+If `term.headCtor = X`, then term's raw form is uniquely determined
+by `X` for nullary canonical heads (boolTrue/False, natZero, listNil,
+optionNone).  These bridge lemmas convert the Bool-level dispatch
+in `Term.headStep?` back into typed-level facts about the term's
+raw projection — useful for deriving Step witnesses from headStep?
+behavior (Algo/Soundness, Phase 9.G). -/
+
+/-- If a term's `headCtor` is `boolTrue`, its raw projection
+is `RawTerm.boolTrue`.  Zero-axiom via full Term enumeration with
+`nomatch` for the contradictory cases. -/
+theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.boolTrue) :
+    raw = RawTerm.boolTrue := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => rfl
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If a term's `headCtor` is `boolFalse`, its raw is `RawTerm.boolFalse`. -/
+theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.boolFalse) :
+    raw = RawTerm.boolFalse := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => rfl
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If a term's `headCtor` is `natZero`, its raw is `RawTerm.natZero`. -/
+theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.natZero) :
+    raw = RawTerm.natZero := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => rfl
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If a term's `headCtor` is `listNil`, its raw is `RawTerm.listNil`. -/
+theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.listNil) :
+    raw = RawTerm.listNil := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => rfl
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If a term's `headCtor` is `optionNone`, its raw is `RawTerm.optionNone`. -/
+theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.optionNone) :
+    raw = RawTerm.optionNone := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => rfl
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If a term's `headCtor` is `unit`, its raw is `RawTerm.unit`. -/
+theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.unit) :
+    raw = RawTerm.unit := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => rfl
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
 end LeanFX2
