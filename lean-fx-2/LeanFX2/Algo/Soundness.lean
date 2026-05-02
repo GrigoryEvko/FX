@@ -220,11 +220,195 @@ theorem Term.headStep?_sound_optionMatchNone
   rw [scrutEq]
   exact Step.iotaOptionMatchNone noneBranch someBranch
 
+/-! ## Closure soundness
+
+`Term.headStep?_sound` combines the 6 per-case theorems above
+into a single closed-over statement: whenever `headStep?` fires
+(returns `some _`), the result is reachable via `Step` from the
+source term.
+
+This is the load-bearing soundness contract for `Algo/Eval`:
+the typed evaluator never produces a result that disagrees with
+the kernel's reduction relation.
+
+The proof case-analyses on the source term's outer constructor:
+* 24 ctors have `headStep? = none` definitionally; the
+  `firedEq : none = some _` hypothesis is closed by `simp` /
+  `nomatch`.
+* 5 eliminator ctors (boolElim, natElim, natRec, listElim,
+  optionMatch) require splitting on the scrutinee's `headCtor`
+  to identify which ι-rule fired, then applying the corresponding
+  per-case theorem.
+
+Zero-axiom under strict policy. -/
+
+theorem Term.headStep?_sound
+    {scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context someType raw)
+    {result : Σ (resultRaw : RawTerm scope), Term context someType resultRaw}
+    (firedEq : someTerm.headStep? = some result) :
+    Step someTerm result.snd := by
+  cases someTerm with
+  | var _ => nomatch firedEq
+  | unit => nomatch firedEq
+  | lam _ => nomatch firedEq
+  | lamPi _ => nomatch firedEq
+  | pair _ _ => nomatch firedEq
+  | boolTrue => nomatch firedEq
+  | boolFalse => nomatch firedEq
+  | natZero => nomatch firedEq
+  | natSucc _ => nomatch firedEq
+  | listNil => nomatch firedEq
+  | listCons _ _ => nomatch firedEq
+  | optionNone => nomatch firedEq
+  | optionSome _ => nomatch firedEq
+  | eitherInl _ => nomatch firedEq
+  | eitherInr _ => nomatch firedEq
+  | refl _ _ => nomatch firedEq
+  | modIntro _ => nomatch firedEq
+  | subsume _ => nomatch firedEq
+  -- Eliminators not yet handled by headStep? (return none)
+  | app _ _ => nomatch firedEq
+  | appPi _ _ => nomatch firedEq
+  | fst _ => nomatch firedEq
+  | snd _ => nomatch firedEq
+  | eitherMatch _ _ _ => nomatch firedEq
+  | idJ _ _ => nomatch firedEq
+  | modElim _ => nomatch firedEq
+  -- Firing eliminators.  Each dispatches on the scrutinee's
+  -- `headCtor` value; the firing ι-rule depends on which canonical
+  -- ctor the scrutinee has reduced to.
+  --
+  -- Pattern (from feedback_lean_match_propext_recipe.md): use
+  -- `match headEq : scrutinee.headCtor with`, then `rw [show ...
+  -- from rfl, headEq]` to definitionally unfold `headStep?` and
+  -- substitute the headCtor value.  Avoids `simp` and `by_cases`
+  -- which both leak propext on this large dep-typed match.
+  | boolElim scrutinee thenBranch elseBranch =>
+    match headEq : scrutinee.headCtor with
+    | .boolTrue =>
+      rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
+               else if scrutineeHead == .boolFalse then some ⟨_, elseBranch⟩
+               else none) from rfl, headEq] at firedEq
+      cases firedEq
+      exact Term.headStep?_sound_boolElimTrue scrutinee thenBranch elseBranch headEq
+    | .boolFalse =>
+      rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
+               else if scrutineeHead == .boolFalse then some ⟨_, elseBranch⟩
+               else none) from rfl, headEq] at firedEq
+      cases firedEq
+      exact Term.headStep?_sound_boolElimFalse scrutinee thenBranch elseBranch headEq
+    -- Other head values: headStep? returns none, contradiction
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .pair | .fst | .snd
+    | .boolElim
+    | .natZero | .natSucc | .natElim | .natRec
+    | .listNil | .listCons | .listElim
+    | .optionNone | .optionSome | .optionMatch
+    | .eitherInl | .eitherInr | .eitherMatch
+    | .refl | .idJ | .modIntro | .modElim | .subsume =>
+      rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
+               else if scrutineeHead == .boolFalse then some ⟨_, elseBranch⟩
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
+  | natElim scrutinee zeroBranch succBranch =>
+    match headEq : scrutinee.headCtor with
+    | .natZero =>
+      rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else none) from rfl, headEq] at firedEq
+      cases firedEq
+      exact Term.headStep?_sound_natElimZero scrutinee zeroBranch succBranch headEq
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .pair | .fst | .snd
+    | .boolTrue | .boolFalse | .boolElim
+    | .natSucc | .natElim | .natRec
+    | .listNil | .listCons | .listElim
+    | .optionNone | .optionSome | .optionMatch
+    | .eitherInl | .eitherInr | .eitherMatch
+    | .refl | .idJ | .modIntro | .modElim | .subsume =>
+      rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
+  | natRec scrutinee zeroBranch succBranch =>
+    match headEq : scrutinee.headCtor with
+    | .natZero =>
+      rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else none) from rfl, headEq] at firedEq
+      cases firedEq
+      exact Term.headStep?_sound_natRecZero scrutinee zeroBranch succBranch headEq
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .pair | .fst | .snd
+    | .boolTrue | .boolFalse | .boolElim
+    | .natSucc | .natElim | .natRec
+    | .listNil | .listCons | .listElim
+    | .optionNone | .optionSome | .optionMatch
+    | .eitherInl | .eitherInr | .eitherMatch
+    | .refl | .idJ | .modIntro | .modElim | .subsume =>
+      rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
+  | listElim scrutinee nilBranch consBranch =>
+    match headEq : scrutinee.headCtor with
+    | .listNil =>
+      rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .listNil then some ⟨_, nilBranch⟩
+               else none) from rfl, headEq] at firedEq
+      cases firedEq
+      exact Term.headStep?_sound_listElimNil scrutinee nilBranch consBranch headEq
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .pair | .fst | .snd
+    | .boolTrue | .boolFalse | .boolElim
+    | .natZero | .natSucc | .natElim | .natRec
+    | .listCons | .listElim
+    | .optionNone | .optionSome | .optionMatch
+    | .eitherInl | .eitherInr | .eitherMatch
+    | .refl | .idJ | .modIntro | .modElim | .subsume =>
+      rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .listNil then some ⟨_, nilBranch⟩
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
+  | optionMatch scrutinee noneBranch someBranch =>
+    match headEq : scrutinee.headCtor with
+    | .optionNone =>
+      rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .optionNone then some ⟨_, noneBranch⟩
+               else none) from rfl, headEq] at firedEq
+      cases firedEq
+      exact Term.headStep?_sound_optionMatchNone scrutinee noneBranch someBranch headEq
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .pair | .fst | .snd
+    | .boolTrue | .boolFalse | .boolElim
+    | .natZero | .natSucc | .natElim | .natRec
+    | .listNil | .listCons | .listElim
+    | .optionSome | .optionMatch
+    | .eitherInl | .eitherInr | .eitherMatch
+    | .refl | .idJ | .modIntro | .modElim | .subsume =>
+      rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .optionNone then some ⟨_, noneBranch⟩
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
+
 end LeanFX2
 
 namespace LeanFX2.Algo
-
--- TODO Phase 9.G: closure theorem `Term.headStep?_sound` combining
--- all 6 per-case theorems via case analysis on the function output
 
 end LeanFX2.Algo
