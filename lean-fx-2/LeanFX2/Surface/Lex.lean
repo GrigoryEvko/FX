@@ -1,4 +1,5 @@
 import LeanFX2.Surface.Token
+import LeanFX2.Surface.TokenSchema
 
 /-! # Surface/Lex — `List Char` → token stream (zero-axiom internals)
 
@@ -231,32 +232,37 @@ uident, or ident.  Operates directly on the char list to avoid
 `String.length` / `String.front` / `String.toList` which all leak
 axioms in Lean 4 v4.29.1.
 
+Keyword recognition delegates to `KeywordKind.fromCharsExact`
+(in `Surface/TokenSchema.lean`) — that function is the single
+source of truth for the 92-keyword catalog.  Adding a keyword
+to the language requires updating ONE table (in TokenSchema);
+the lexer picks it up automatically.
+
+`true`/`false` are special-cased back into `boolLit` ctors after
+keyword lookup — the spec lists them as keywords (`kwTrue`/
+`kwFalse`) AND as boolean literals; the lexer chooses the
+literal form for downstream parser convenience.
+
 The lexeme is passed in REVERSED order (head = last char read);
 we reverse once here, the only allocation point.  Empty lexemes
 cannot reach this — `lexOne` only calls when `isIdentStart` fired. -/
 def classifyIdent (revLexeme : List Char) : Token :=
   let lexemeChars := revLexeme.reverse
   let lexemeStr := String.ofList lexemeChars
-  -- Match on the keyword set first (lexemeStr equality is fine —
-  -- `String.ofList` produces a structurally-built `String`, and
-  -- `==` on String is defined via `BEq` which delegates to
-  -- propositional equality but does not require the leaky readers).
-  match lexemeStr with
-  | "fn"     => Token.kwFn
-  | "let"    => Token.kwLet
-  | "if"     => Token.kwIf
-  | "else"   => Token.kwElse
-  | "match"  => Token.kwMatch
-  | "end"    => Token.kwEnd
-  | "return" => Token.kwReturn
-  | "with"   => Token.kwWith
-  | "pub"    => Token.kwPub
-  | "type"   => Token.kwType
-  | "true"   => Token.boolLit true
-  | "false"  => Token.boolLit false
-  | _ =>
-    -- Decide uident vs ident from the FIRST char of the
-    -- (already-reversed) lexeme list — zero-axiom.
+  match KeywordKind.fromCharsExact lexemeChars with
+  | some kind =>
+    -- `true` / `false` are listed as keywords in fx_grammar.md §2.2
+    -- AND as boolean literals in §2.3.  The lexer prefers the
+    -- literal form so the parser sees a uniform `boolLit`.  Use
+    -- `decide` on the DecidableEq KeywordKind to avoid a `match`
+    -- on `Option KeywordKind` with partial-ctor patterns (which
+    -- triggers Lean's propext-leaking match path).
+    if decide (kind = KeywordKind.trueK) then Token.boolLit true
+    else if decide (kind = KeywordKind.falseK) then Token.boolLit false
+    else kind.toToken
+  | none =>
+    -- Not a keyword.  Decide uident vs ident from the FIRST char
+    -- of the (already-reversed) lexeme list — zero-axiom.
     match lexemeChars with
     | c :: _ => if isAsciiUpper c then Token.uident lexemeStr
                 else Token.ident lexemeStr

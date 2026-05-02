@@ -1,14 +1,45 @@
 /-! # Surface/Token — token alphabet for the FX surface lexer
 
-Per `fx_lexer.md` §2-§3.  All keywords are common English words; punctuation
-is ASCII; literals cover integers, decimals, booleans, strings, bit/trit,
-identifiers.
+Per `fx_lexer.md` §2-§3 + `fx_grammar.md` §2 (keywords, literals,
+operators, delimiters).  Coverage here is exhaustive of the spec —
+every token the lexer can produce is represented as a Token ctor.
 
 ## Structure
 
 * `Trit` — balanced ternary digit (`-1`, `0`, `+1`)
 * `StrKind` — regular / format / raw / bytes
-* `Token` — flat enum over all token forms
+* `Token` — flat enum over every token form
+
+## Load-bearing relationships
+
+This file is the SYNTACTIC alphabet.  The semantic relationships
+that the parser, elaborator, and downstream layers depend on live
+in three companion files:
+
+* `Surface/TokenSchema.lean` — `KeywordKind` enum aligned 1:1 with
+  the 92 spec keywords + `Token` bijection + typed-closer
+  (`BlockOpener → List KeywordKind`) per fx_grammar.md §14.
+* `Surface/TokenInvariants.lean` — decidable identifier-shape
+  predicates per fx_lexer.md §3.1; refines `Token.ident`/`uident`
+  payloads to provably valid lexemes.
+* `Surface/GrammarToken.lean` — `TokenCategory` (parser dispatch)
+  + operator-precedence table per fx_grammar.md §3 + delimiter
+  balance predicate.
+
+When this file changes (new/renamed/removed ctor), ALL THREE schema
+files break.  That is the load-bearing signal — they encode the
+invariants that downstream layers rely on.
+
+## Coverage audit
+
+* Identifiers: 2 (lower, upper)
+* Literals: 11 (int, typedInt, decimal, typedDecimal, typedFloat,
+  ternary, typedTernary, string, fstring, rstring, bstring, bool)
+* Keywords: 92 (matches fx_grammar.md §2.2 exactly)
+* Operators: 32 (matches fx_grammar.md §2.4 + fx_lexer.md §6)
+* Delimiters: 6 (parens, brackets, braces — matches §15)
+* Punctuation: 8 (`, ; : . # @ _` + backtick)
+* Special: 4 (eof, doc_comment, attribute-open `@[`, range/spread)
 
 All zero-axiom (the inductive definitions and DecidableEq derivations
 only reach core Lean elimination, no propext / Quot.sound).
@@ -16,8 +47,8 @@ only reach core Lean elimination, no propext / Quot.sound).
 
 namespace LeanFX2.Surface
 
-/-- Balanced-ternary digit.  Used in trit literals like `0t10T` (digits
-1, 0, -1).  Per `fx_lexer.md` §3.4. -/
+/-- Balanced-ternary digit.  Used in trit literals like `0t10T`
+(digits 1, 0, -1).  Per `fx_lexer.md` §3.4 / fx_grammar.md §2.3. -/
 inductive Trit : Type
   | negOne
   | zero
@@ -25,7 +56,7 @@ inductive Trit : Type
   deriving DecidableEq, Repr
 
 /-- String literal flavor: regular / format-string / raw / bytes.
-Per `fx_lexer.md` §3.5. -/
+Per `fx_lexer.md` §5 / fx_grammar.md §2.3. -/
 inductive StrKind : Type
   | regular   -- "..."
   | fstring   -- f"..."  (interpolation)
@@ -33,24 +64,13 @@ inductive StrKind : Type
   | bytes     -- b"..."  (UTF-8 byte literal)
   deriving DecidableEq, Repr
 
-/-- Surface token alphabet.  Per `fx_lexer.md` §2-§3 + `fx_design.md`
-§2.3 keyword list (92 global keywords).
-
-Categories:
-* Identifiers & literals
-* Keywords (92 global per fx_design.md Appendix A)
-* Punctuation, operators, brackets
-
-Notes:
-* `ident`/`uident` distinction matches FX's casing rule (snake_case
-  vs PascalCase) — the LEXER classifies based on the first character.
-* Literal payloads carry the parsed value plus optional type-suffix
-  (e.g. `42u8` → `intLit 42 (some "u8")`).
-* Bit literal: `Nb<digits>` (explicit width prefix) or unsuffixed
-  binary like `0b1010` (width = digit count).
-* Backtick-escape (``` `let` ```) becomes `ident "let"` directly
-  without keyword classification — handled in lexer post-pass. -/
+/-- Surface token alphabet.  Ordered by category for readability;
+ordering is not load-bearing.  When new tokens are added, also
+add a corresponding `KeywordKind`/`OperatorKind` entry in
+`TokenSchema.lean` so the bijection / category dispatch stays
+total. -/
 inductive Token : Type
+
   -- Identifiers
   | ident (name : String)         -- snake_case identifier
   | uident (name : String)        -- PascalCase (types/ctors/modules)
@@ -64,75 +84,68 @@ inductive Token : Type
   | tritLit (digits : List Trit)
   | boolLit (value : Bool)
 
-  -- Keywords (92 global, per fx_design.md §2.3 / Appendix A)
-  -- Block 1: declaration and binding
-  | kwFn | kwLet | kwConst | kwVal | kwType | kwEffect | kwClass | kwInstance
-  | kwImpl | kwModule | kwOpen | kwInclude | kwExtern | kwImport
-  | kwAxiom | kwLemma | kwTheorem | kwDefn
+  -- 92 global keywords (spec-aligned with fx_grammar.md §2.2)
+  -- Listed alphabetically.  When this list changes, update:
+  --   * KeywordKind in TokenSchema.lean
+  --   * Token.asKeyword / KeywordKind.toToken
+  --   * classifyIdent in Lex.lean
+  | kwAffine | kwAnd | kwAs | kwAssert | kwAwait
+  | kwAxiom | kwBegin | kwBench | kwBisimulation | kwBreak
+  | kwBy | kwCalc | kwCatch | kwClass | kwCode
+  | kwCodata | kwComptime | kwConst | kwContinue | kwContract
+  | kwDecreases | kwDecorator | kwDeclassify | kwDefer | kwDimension
+  | kwDrop | kwDual | kwEffect | kwElse | kwEnd
+  | kwErrdefer | kwException | kwExists | kwExports | kwExtern
+  | kwFalse | kwFn | kwFor | kwForall | kwGhost
+  | kwHandle | kwHint | kwIf | kwImpl | kwIn
+  | kwInclude | kwInstance | kwIs | kwLabel | kwLayout
+  | kwLemma | kwLet | kwLinear | kwMachine | kwMatch
+  | kwModule | kwMut | kwNot | kwOpen | kwOr
+  | kwOwn | kwPost | kwPre | kwProof | kwPub
+  | kwQuotient | kwReceive | kwRec | kwRef | kwRefinement
+  | kwReturn | kwSanitize | kwSecret | kwSelect | kwSelf
+  | kwSend | kwSession | kwSorry | kwSpawn | kwTaintClass
+  | kwTainted | kwTest | kwTrue | kwTry | kwType
+  | kwUnfold | kwVal | kwVerify | kwWhile | kwWith
+  | kwWhere | kwYield
 
-  -- Block 2: control flow
-  | kwIf | kwElse | kwFor | kwWhile | kwBreak | kwContinue
-  | kwReturn | kwYield | kwAwait | kwSpawn
-  | kwMatch | kwDo | kwBegin | kwEnd | kwIn
-
-  -- Block 3: structural / specification
-  | kwPub | kwRec | kwHandle | kwSelect | kwSession | kwReceive | kwSend
-  | kwTry | kwCatch | kwAssert | kwHint | kwBy | kwCalc
-  | kwPre | kwPost | kwDecreases | kwExports | kwSelf
-  | kwExists | kwForall | kwLabel | kwIs | kwAs | kwWhere | kwWith
-
-  -- Block 4: ownership / mode
-  | kwOwn | kwRef | kwMut | kwAffine | kwLinear | kwGhost | kwDrop
-
-  -- Block 5: security / verification / refinement
-  | kwSorry | kwProof | kwTainted | kwSanitize | kwSecret | kwDeclassify
-  | kwVerify | kwTest | kwBench
-
-  -- Block 6: meta / dimension / contract / decorator
-  | kwMachine | kwContract | kwDimension | kwDecorator
-  | kwComptime | kwCode | kwDual | kwCodata
-  | kwException | kwException2  -- placeholder split for future
-  | kwDefer
-
-  -- Block 7: polymorphism / closing
-  | kwAnd | kwOr | kwNot
-
-  -- Boolean literal keyword (also classified as boolLit)
-  | kwTrue | kwFalse
-
-  -- Punctuation
+  -- Delimiters (fx_grammar.md §15)
   | lparen | rparen
   | lbrace | rbrace
   | lbracket | rbracket
 
-  -- Operators (single)
+  -- Punctuation (fx_grammar.md §2.4)
   | comma | semicolon | colon
-  | dot | dotdot | dotdotdotdot       -- `.`, `..`, `...`
-  | dotdotEq                            -- `..=`
-  | equals                              -- `=`
-  | arrow                               -- `->`
-  | fatArrow                            -- `=>`
-  | pipe                                -- `|>`
-  | atSign                              -- `@`
-  | atBracket                           -- `@[`
-  | hash                                -- `#`
-  | underscore                          -- `_`
-  | backtick                            -- `` ` ``
+  | dot                                  -- `.` (raw, before transformer)
+  | dotProj                              -- `.` (after transformer §8.2)
+  | dotdot                               -- `..` range exclusive
+  | dotdotEq                             -- `..=` range inclusive
+  | spread                               -- `...` rest pattern / spread
+  | equals                               -- `=`
+  | arrow                                -- `->`
+  | fatArrow                             -- `=>`
+  | pipe                                 -- `|>`
+  | atSign                               -- `@`
+  | atBracket                            -- `@[`
+  | hash                                 -- `#`
+  | underscore                           -- `_`
+  | backtick                             -- `` ` ``
 
-  -- Comparison
+  -- Comparison (fx_grammar.md §2.4)
   | eqEq | notEq | lt | gt | le | ge
 
-  -- Arithmetic
+  -- Arithmetic (fx_grammar.md §2.4)
   | plus | minus | star | slash | percent
 
-  -- Bitwise
+  -- Bitwise (fx_grammar.md §2.4)
   | amp | bar | caret | tilde | shiftLeft | shiftRight
 
-  -- Logical (propositional)
+  -- Logical-propositional (fx_grammar.md §2.4)
   | implies   -- ==>
   | iff       -- <==>
 
-  -- Sentinel
+  -- Special / sentinel
+  | docComment (body : String)
   | eof
   deriving DecidableEq, Repr
 
