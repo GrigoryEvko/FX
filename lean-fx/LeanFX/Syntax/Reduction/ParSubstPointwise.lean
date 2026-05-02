@@ -59,9 +59,10 @@ theorem Step.par.subst_par_isBi
       exact Step.par.lamPi
         (bodyIH (TermSubst.par_lift pointwise domainType))
   | appPi _functionBi _argumentBi functionIH argumentIH =>
-      rename_i domainType codomainType _ _ _ _ _ _
+      rename_i domainType codomainType argumentRaw _ _ _ _ _ _
       exact Step.par.castBoth
-        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
+        (Ty.subst_termSingleton_subst_commute codomainType domainType
+          argumentRaw typeSubstitution).symm
         (Step.par.appPi (functionIH pointwise) (argumentIH pointwise))
   | pair _firstBi _secondBi firstIH secondIH =>
       rename_i firstType secondType _ _ _ _ _ _
