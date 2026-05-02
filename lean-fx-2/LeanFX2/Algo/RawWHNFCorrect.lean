@@ -856,4 +856,24 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
     | modElim _ => exact RawStep.parStar.refl _
     | subsume _ => exact RawStep.parStar.refl _
 
+/-! ## Corollary: WHNF agreement ⇒ common reduct
+
+Two raw terms whose WHNF outputs are equal share a common reduct
+(both reach the shared WHNF via parStar).  Combined with
+confluence (Phase 6.C), this provides the foundation for a
+fuel-bounded conversion check: if WHNFs agree, terms are
+parStar-convertible. -/
+
+/-- If two terms have the same WHNF (at the same fuel), they have
+a common parStar-reduct. -/
+theorem RawTerm.whnf_agreement_join
+    {scope : Nat} (fuel : Nat) (leftTerm rightTerm : RawTerm scope)
+    (whnfsEqual : RawTerm.whnf fuel leftTerm = RawTerm.whnf fuel rightTerm) :
+    ∃ commonReduct,
+      RawStep.parStar leftTerm commonReduct ∧
+      RawStep.parStar rightTerm commonReduct :=
+  ⟨RawTerm.whnf fuel leftTerm,
+   RawTerm.whnf_reaches fuel leftTerm,
+   whnfsEqual ▸ RawTerm.whnf_reaches fuel rightTerm⟩
+
 end LeanFX2

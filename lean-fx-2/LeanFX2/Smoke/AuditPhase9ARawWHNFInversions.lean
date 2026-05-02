@@ -23,5 +23,6 @@ namespace LeanFX2.SmokePhase9AInversions
 #print axioms LeanFX2.RawTerm.eq_eitherInr_of_eitherInrValue?_eq_some
 
 #print axioms LeanFX2.RawTerm.whnf_reaches
+#print axioms LeanFX2.RawTerm.whnf_agreement_join
 
 end LeanFX2.SmokePhase9AInversions
