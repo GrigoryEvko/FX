@@ -156,19 +156,26 @@ theorem Term.subst_HEq_pointwise
         termSubstitutionsAgreePointwise domainType)
       body
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              functionTerm argumentTerm => by
+              resultEq functionTerm argumentTerm => by
     cases targetContextEq
+    -- Term.subst on Term.appPi produces a double-cast term:
+    -- (congrArg (Ty.subst · σ) resultEq).symm ▸ (subst0_subst_commute ▸ Term.appPi rfl _ _).
+    -- Strip both casts via eqRec_heq, then HEq congr the inner appPi.
     show HEq
-      ((Ty.subst0_subst_commute codomainType domainType firstTypeSubstitution).symm ▸
-        Term.appPi (Term.subst firstTermSubstitution functionTerm)
-                    (Term.subst firstTermSubstitution argumentTerm))
-      ((Ty.subst0_subst_commute codomainType domainType secondTypeSubstitution).symm ▸
-        Term.appPi (Term.subst secondTermSubstitution functionTerm)
-                    (Term.subst secondTermSubstitution argumentTerm))
+      ((congrArg (Ty.subst · firstTypeSubstitution) resultEq).symm ▸
+        ((Ty.subst0_subst_commute codomainType domainType firstTypeSubstitution).symm ▸
+          Term.appPi rfl (Term.subst firstTermSubstitution functionTerm)
+                         (Term.subst firstTermSubstitution argumentTerm)))
+      ((congrArg (Ty.subst · secondTypeSubstitution) resultEq).symm ▸
+        ((Ty.subst0_subst_commute codomainType domainType secondTypeSubstitution).symm ▸
+          Term.appPi rfl (Term.subst secondTermSubstitution functionTerm)
+                         (Term.subst secondTermSubstitution argumentTerm)))
+    apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (b :=
-      Term.appPi (Term.subst secondTermSubstitution functionTerm)
-                 (Term.subst secondTermSubstitution argumentTerm))
+      Term.appPi (context := firstTargetContext) rfl
+        (Term.subst secondTermSubstitution functionTerm)
+        (Term.subst secondTermSubstitution argumentTerm))
     · exact Term.appPi_HEq_congr
         (Ty.subst_congr substitutionsAgreePointwise domainType)
         (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise)
@@ -181,7 +188,9 @@ theorem Term.subst_HEq_pointwise
               firstTermSubstitution secondTermSubstitution
               substitutionsAgreePointwise
               termSubstitutionsAgreePointwise argumentTerm)
-    · exact (eqRec_heq _ _).symm
+    · apply HEq.symm
+      apply HEq.trans (eqRec_heq _ _)
+      exact (eqRec_heq _ _)
   | _, .pair (firstType := firstType) (secondType := secondType)
               firstVal secondVal => by
     cases targetContextEq
@@ -510,8 +519,8 @@ theorem Term.subst_id_HEq
         (TermSubst.lift_identity_pointwise sourceContext domainType)
         body)
     exact Term.subst_id_HEq body
-  | _, .appPi functionTerm argumentTerm =>
-    Term.subst_id_HEq_appPi functionTerm argumentTerm
+  | _, .appPi resultEq functionTerm argumentTerm =>
+    Term.subst_id_HEq_appPi resultEq functionTerm argumentTerm
       (Term.subst_id_HEq functionTerm) (Term.subst_id_HEq argumentTerm)
   | _, .pair firstVal secondVal =>
     Term.subst_id_HEq_pair firstVal secondVal

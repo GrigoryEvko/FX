@@ -1180,5 +1180,39 @@ theorem Ty.subst0_rename_commute {level scope target : Nat}
   exact substThenRename.trans
           (substitutionsAgreePointwise.trans renameThenSubst.symm)
 
+/-- W9.B1.1 / Wave 9 — term-bearing analog of `Ty.subst0_rename_commute`.
+Substituting via `Subst.termSingleton substituent rawArg` then renaming
+equals lifted-renaming the codomain then substituting via
+`Subst.termSingleton (substituent.rename _) (rawArg.rename _)`.
+
+This is the load-bearing rename-commute lemma for `Term.rename`'s
+`appPi` arm under the equation-bearing `Term.appPi` (W9.B1.1):
+`appPi`'s result type is `codomain.subst (Subst.termSingleton domain
+argRaw)`, and Term.rename produces a term at the renamed type, which
+this lemma identifies with `(codomain.rename _).subst (Subst.termSingleton
+(domain.rename _) (argRaw.rename _))` — the canonical post-rename shape. -/
+theorem Ty.subst_termSingleton_rename_commute {level scope target : Nat}
+    (codomain : Ty level (scope + 1))
+    (substituent : Ty level scope) (rawArg : RawTerm scope)
+    (rawRenaming : Renaming scope target) :
+    (codomain.subst (Subst.termSingleton substituent rawArg)).rename rawRenaming
+      = (codomain.rename rawRenaming.lift).subst
+          (Subst.termSingleton (substituent.rename rawRenaming)
+                               (rawArg.rename rawRenaming)) := by
+  have substThenRename :=
+    Ty.subst_rename_commute codomain
+      (Subst.termSingleton substituent rawArg) rawRenaming
+  have substitutionsAgreePointwise :=
+    Ty.subst_congr
+      (Subst.termSingleton_renameAfter_equiv_precompose
+        substituent rawArg rawRenaming)
+      codomain
+  have renameThenSubst :=
+    Ty.rename_subst_commute codomain rawRenaming.lift
+      (Subst.termSingleton (substituent.rename rawRenaming)
+                           (rawArg.rename rawRenaming))
+  exact substThenRename.trans
+          (substitutionsAgreePointwise.trans renameThenSubst.symm)
+
 
 end LeanFX.Syntax

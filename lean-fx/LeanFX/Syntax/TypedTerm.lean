@@ -58,10 +58,24 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {codomainType : Ty level (scope + 1)} →
       (body : Term (Ctx.cons context domainType) codomainType) →
       Term context (Ty.piTy domainType codomainType)
-  /-- Application for dependent `piTy`.  Result type is the codomain
-  with var 0 substituted by the argument's domain type — using
-  `Ty.subst0` which is axiom-free thanks to the function-typed `Subst`
-  threading scope information without Nat arithmetic.
+  /-- Application for dependent `piTy` (W9.B1.1 — equation-bearing
+  form).  Result type is a free index `resultType` constrained by the
+  equation parameter `resultEq` to equal the codomain substituted by
+  `domainType` at var 0 (legacy `Ty.subst0` shape preserved).
+
+  The equation form (W9.B1.1) decouples `appPi`'s result type from
+  the literal `subst0` shape, enabling pattern-matching consumers to
+  see `appPi` produce ANY type provably equal to the canonical
+  β-result form.  This is the architectural prerequisite for the
+  later termSingleton migration (W9.B1.3+) which replaces `subst0`
+  in the equation with `Subst.termSingleton domainType
+  argumentTerm.toRaw`, closing the dependent β bridge sorries
+  documented at `ParToRawBridge.lean:202-205`.
+
+  Construction: at every call site, pass `(by rfl)` (or `rfl`) for
+  `resultEq` and let Lean unify `resultType := codomainType.subst0
+  domainType`.  Existing `Term.appPi f a` becomes
+  `Term.appPi rfl f a`.
 
   For v1.0+ `Ty` (no `Ty.tyVar`), `B.subst0 A` reduces to `B`'s
   structural shape at scope (the substituent is unused since `B` has
@@ -72,9 +86,11 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {context : Ctx mode level scope} →
       {domainType : Ty level scope} →
       {codomainType : Ty level (scope + 1)} →
+      {resultType : Ty level scope} →
+      (resultEq : resultType = codomainType.subst0 domainType) →
       (functionTerm : Term context (Ty.piTy domainType codomainType)) →
       (argumentTerm : Term context domainType) →
-      Term context (codomainType.subst0 domainType)
+      Term context resultType
   /-- Pair introduction for dependent `sigmaTy`.  The second
   component's type is `secondType` with var 0 substituted by
   `firstType` — same `Ty.subst0` mechanism `appPi` uses. -/
@@ -402,9 +418,15 @@ def Term.rename {m scope scope'}
       Term.app (Term.rename ρt f) (Term.rename ρt a)
   | _, .lamPi (domainType := domainType) body =>
       Term.lamPi (Term.rename (TermRenaming.lift ρt domainType) body)
-  | _, .appPi (domainType := domainType) (codomainType := codomainType) f a =>
-      (Ty.subst0_rename_commute codomainType domainType ρ).symm ▸
-        Term.appPi (Term.rename ρt f) (Term.rename ρt a)
+  | _, .appPi (domainType := domainType) (codomainType := codomainType)
+              resultEq f a =>
+      -- Reduct's expected type: resultType.rename ρ.
+      -- We have resultEq : resultType = codomainType.subst0 domainType.
+      -- Build the renamed appPi at canonical (renamedCodomain.subst0 renamedDomain),
+      -- then cast through resultEq's renamed form and subst0_rename_commute.
+      (congrArg (Ty.rename · ρ) resultEq).symm ▸
+        ((Ty.subst0_rename_commute codomainType domainType ρ).symm ▸
+          Term.appPi rfl (Term.rename ρt f) (Term.rename ρt a))
   | _, .pair (firstType := firstType) (secondType := secondType)
              firstVal secondVal =>
       Term.pair (Term.rename ρt firstVal)
@@ -493,7 +515,7 @@ def Term.toRaw {mode : Mode} {level scope : Nat} {context : Ctx mode level scope
   | _, .app function argument =>
       RawTerm.app function.toRaw argument.toRaw
   | _, .lamPi body      => RawTerm.lam body.toRaw
-  | _, .appPi function argument =>
+  | _, .appPi _ function argument =>
       RawTerm.app function.toRaw argument.toRaw
   | _, .pair firstVal secondVal =>
       RawTerm.pair firstVal.toRaw secondVal.toRaw
@@ -581,9 +603,9 @@ theorem Term.toRaw_rename {mode : Mode} {sourceScope targetScope : Nat}
       simp only [Term.rename, Term.toRaw, RawTerm.rename]
       exact congrArg RawTerm.lam
         (Term.toRaw_rename (TermRenaming.lift termRenaming _) body)
-  | _, .appPi function argument => by
+  | _, .appPi _ function argument => by
       simp only [Term.rename, Term.toRaw, RawTerm.rename]
-      rw [Term.toRaw_cast]
+      rw [Term.toRaw_cast, Term.toRaw_cast]
       exact congrArgTwo (function := RawTerm.app)
         (Term.toRaw_rename termRenaming function)
         (Term.toRaw_rename termRenaming argument)

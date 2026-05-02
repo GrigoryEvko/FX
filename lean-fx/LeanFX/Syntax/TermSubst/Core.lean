@@ -342,10 +342,15 @@ def Term.subst {mode sourceScope targetScope}
       Term.lamPi
         (Term.subst (TermSubst.lift termSubstitution domainType) body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              functionTerm argumentTerm =>
-      (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm ▸
-        Term.appPi (Term.subst termSubstitution functionTerm)
-                   (Term.subst termSubstitution argumentTerm)
+              resultEq functionTerm argumentTerm =>
+      -- W9.B1.1 — equation-bearing appPi.  resultEq : resultType =
+      -- codomainType.subst0 domainType.  We build the substituted
+      -- appPi at canonical (codomainSubst.subst0 domainSubst), then
+      -- cast through resultEq's substituted form and subst0_subst_commute.
+      (congrArg (Ty.subst · typeSubstitution) resultEq).symm ▸
+        ((Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm ▸
+          Term.appPi rfl (Term.subst termSubstitution functionTerm)
+                         (Term.subst termSubstitution argumentTerm))
   | _, .pair (firstType := firstType) (secondType := secondType)
              firstVal secondVal =>
       Term.pair (Term.subst termSubstitution firstVal)

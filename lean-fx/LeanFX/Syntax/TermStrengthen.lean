@@ -446,7 +446,7 @@ def Term.optRename {mode : Mode} {sourceScope targetScope : Nat}
                       (OptionalRenamedTerm.termAs renamedBody codomainMaps)
                 }
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        functionTerm argumentTerm =>
+        resultEq functionTerm argumentTerm =>
       Option.bindSome (domainType.optRename optionalRenaming)
         fun renamedDomain domainMaps =>
         Option.bindSome (codomainType.optRename optionalRenaming.lift)
@@ -458,11 +458,15 @@ def Term.optRename {mode : Mode} {sourceScope targetScope : Nat}
                     some {
                       renamedType := renamedCodomain.subst0 renamedDomain
                       typeEquality :=
-                        Ty.subst0_optRename_success optionalRenaming codomainType
-                          domainType renamedDomain renamedCodomain codomainMaps
-                          domainMaps
+                        -- W9.B1.1 — chain resultEq (resultType =
+                        -- codomainType.subst0 domainType) with the
+                        -- canonical subst0-rename success.
+                        resultEq ▸
+                          Ty.subst0_optRename_success optionalRenaming codomainType
+                            domainType renamedDomain renamedCodomain codomainMaps
+                            domainMaps
                       term :=
-                        Term.appPi
+                        Term.appPi rfl
                           (OptionalRenamedTerm.termAs renamedFunction
                             (Ty.piTy_optRename_success optionalRenaming
                               domainMaps codomainMaps))

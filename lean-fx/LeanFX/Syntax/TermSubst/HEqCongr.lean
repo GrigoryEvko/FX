@@ -200,7 +200,10 @@ theorem Term.lamPi_HEq_congr
     HEq (Term.lamPi firstBody) (Term.lamPi secondBody) := by
   term_heq_congr
 
-/-- HEq congruence for `Term.appPi`. -/
+/-- HEq congruence for `Term.appPi`.  Both sides use `rfl` for
+the resultEq parameter (canonical β-result form), under W9.B1.1
+the equation-bearing constructor.  Callers needing other
+resultEq's go through `Term.appPi_HEq_eqIrrel`. -/
 theorem Term.appPi_HEq_congr
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {firstDomain secondDomain : Ty level scope}
@@ -213,8 +216,8 @@ theorem Term.appPi_HEq_congr
     (firstArgument : Term context firstDomain)
     (secondArgument : Term context secondDomain)
     (argumentHEq : HEq firstArgument secondArgument) :
-    HEq (Term.appPi firstFunction firstArgument)
-        (Term.appPi secondFunction secondArgument) := by
+    HEq (Term.appPi rfl firstFunction firstArgument)
+        (Term.appPi rfl secondFunction secondArgument) := by
   term_heq_congr
 
 /-- HEq congruence for `Term.pair`. -/
@@ -652,12 +655,35 @@ theorem Term.subst_id_HEq_boolElim
     _ _ thenBranchRecursiveHEq
     _ _ elseBranchRecursiveHEq
 
+/-- HEq irrelevance of the `resultEq` proof field of `Term.appPi`
+(W9.B1.1).  Two `appPi`'s with the same indices but different
+`resultEq` proofs are heterogeneously equal — the equation field
+is propositional. -/
+theorem Term.appPi_HEq_eqIrrel
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domain : Ty level scope} {codomain : Ty level (scope + 1)}
+    {resultType : Ty level scope}
+    (firstEq secondEq : resultType = codomain.subst0 domain)
+    (functionTerm : Term context (Ty.piTy domain codomain))
+    (argumentTerm : Term context domain) :
+    HEq (Term.appPi (context := context) firstEq functionTerm argumentTerm)
+        (Term.appPi (context := context) secondEq functionTerm argumentTerm) := by
+  -- Eq fields are propositional; cases on first eliminates one,
+  -- subsumption on the other gives rfl.
+  cases firstEq
+  cases secondEq
+  rfl
+
 /-- Recursive HEq case of `Term.subst_id` for `appPi`.  The
-substituted result carries a `Ty.subst0_subst_commute` cast on
-the outside; `eqRec_heq` strips it before constructor congruence. -/
+substituted result carries `Ty.subst0_subst_commute` and the
+equation-bearing cast on the outside; `eqRec_heq` strips them
+before constructor congruence.  Polymorphic over `resultEq`
+under W9.B1.1 (equation-bearing appPi). -/
 theorem Term.subst_id_HEq_appPi
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {domain : Ty level scope} {codomain : Ty level (scope + 1)}
+    {resultType : Ty level scope}
+    (resultEq : resultType = codomain.subst0 domain)
     (functionTerm : Term context (Ty.piTy domain codomain))
     (argumentTerm : Term context domain)
     (functionRecursiveHEq :
@@ -665,14 +691,21 @@ theorem Term.subst_id_HEq_appPi
     (argumentRecursiveHEq :
       HEq (Term.subst (TermSubst.identity context) argumentTerm) argumentTerm) :
     HEq (Term.subst (TermSubst.identity context)
-          (Term.appPi functionTerm argumentTerm))
-        (Term.appPi (context := context) functionTerm argumentTerm) := by
+          (Term.appPi resultEq functionTerm argumentTerm))
+        (Term.appPi (context := context) resultEq functionTerm argumentTerm) := by
   show HEq
-    ((Ty.subst0_subst_commute codomain domain Subst.identity).symm ▸
-      Term.appPi (Term.subst (TermSubst.identity context) functionTerm)
-                 (Term.subst (TermSubst.identity context) argumentTerm))
-    (Term.appPi functionTerm argumentTerm)
+    ((congrArg (Ty.subst · Subst.identity) resultEq).symm ▸
+      ((Ty.subst0_subst_commute codomain domain Subst.identity).symm ▸
+        Term.appPi rfl (Term.subst (TermSubst.identity context) functionTerm)
+                       (Term.subst (TermSubst.identity context) argumentTerm)))
+    (Term.appPi resultEq functionTerm argumentTerm)
   apply HEq.trans (eqRec_heq _ _)
+  apply HEq.trans (eqRec_heq _ _)
+  -- Inner appPi HEq congruence; resultEq is irrelevant to constructor congruence.
+  -- Need: appPi rfl substed substed ≍ appPi resultEq function argument.
+  -- The first cases-rfl reduces resultType := codomain.subst0 domain so we can
+  -- reuse plain appPi_HEq_congr.
+  cases resultEq
   exact Term.appPi_HEq_congr (Ty.subst_id domain)
     ((Ty.subst_congr Subst.lift_identity_equiv codomain).trans
      (Ty.subst_id codomain))
