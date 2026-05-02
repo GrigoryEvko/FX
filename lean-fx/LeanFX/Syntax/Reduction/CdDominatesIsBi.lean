@@ -149,26 +149,34 @@ theorem Step.par.cd_dominates_app_pair
     (Step.par.app functionParStep argumentParStep)
     (Step.par.isBi.app functionIsBi argumentIsBi))
 
-/-- Dependent application pair helper.  W9.B1.3a: Term.cd's appPi arm
-rebuilds appPi structurally (no redex check), so the proof is a single
-`Step.parWithBi.mk` of the cong via `Step.par.appPi`. -/
+/-- Dependent application pair helper. -/
 theorem Step.par.cd_dominates_appPi_pair
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {domainType : Ty level scope}
     {codomainType : Ty level (scope + 1)}
-    {argumentRaw : RawTerm scope}
     (functionTerm : Term context (Ty.piTy domainType codomainType))
     (argumentTerm : Term context domainType)
     (functionParStep : Step.par functionTerm (Term.cd functionTerm))
     (argumentParStep : Step.par argumentTerm (Term.cd argumentTerm))
     (functionIsBi : Step.par.isBi functionParStep)
     (argumentIsBi : Step.par.isBi argumentParStep) :
-    Step.parWithBi (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)
-      (Term.cd (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)) :=
-  Step.parWithBi.mk
-    (Step.par.appPi (argumentRaw := argumentRaw) functionParStep argumentParStep)
-    (Step.par.isBi.appPi functionIsBi argumentIsBi)
+    Step.parWithBi (Term.appPi rfl functionTerm argumentTerm)
+      (Term.cd (Term.appPi rfl functionTerm argumentTerm)) := by
+  simp only [Term.cd, Term.cd_appPi_redex]
+  split
+  case _ rawBody heq =>
+      have cdEq : Term.cd functionTerm =
+          Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd functionTerm) rfl heq) :=
+        Term.eq_lamPi_of_toRaw_lam (Term.cd functionTerm) heq
+      exact Step.parWithBi.mk
+        (Step.par.betaAppPiDeep (cdEq ▸ functionParStep) argumentParStep)
+        (Step.par.isBi.betaAppPiDeep
+          (Step.par.isBi.cast_target_eq cdEq functionIsBi) argumentIsBi)
+  all_goals exact (Step.parWithBi.mk
+    (Step.par.appPi functionParStep argumentParStep)
+    (Step.par.isBi.appPi functionIsBi argumentIsBi))
 
 /-- Σ first-projection pair helper. -/
 theorem Step.par.cd_dominates_fst_pair

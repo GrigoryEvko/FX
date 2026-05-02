@@ -104,13 +104,12 @@ theorem Term.subst_par_pointwise_isBi_witness
           (TermSubst.par_lift_isBi_witness related relatedBi _)
           body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        (argumentRaw := argumentRaw) resultEq function argument => by
-      -- W9.B1.3a — termSingleton-flavored appPi.  Cases on resultEq normalises shape.
+        resultEq function argument => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
       cases resultEq
       simp only [Term.subst]
       exact Step.par.isBi.castBoth_eq
-        (Ty.subst_termSingleton_subst_commute codomainType domainType
-          argumentRaw typeSubstitution).symm
+        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
         (Step.par.isBi.appPi
           (Term.subst_par_pointwise_isBi_witness related relatedBi function)
           (Term.subst_par_pointwise_isBi_witness related relatedBi argument))
@@ -328,17 +327,15 @@ theorem Step.par.subst_par_witnessed
         (Step.par.lamPi bodyWB.toStep)
         (Step.par.isBi.lamPi bodyWB.toIsBi)
   | appPi _funBi _argBi funIH argIH =>
-      rename_i domainType codomainType argumentRaw _ _ _ _ _ _
+      rename_i domainType codomainType _ _ _ _ _ _
       let funWB := funIH pointwiseWitness
       let argWB := argIH pointwiseWitness
       exact Step.parWithBi.mk
         (Step.par.castBoth
-          (Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw typeSubstitution).symm
+          (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
           (Step.par.appPi funWB.toStep argWB.toStep))
         (Step.par.isBi.castBoth_eq
-          (Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw typeSubstitution).symm
+          (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
           (Step.par.isBi.appPi funWB.toIsBi argWB.toIsBi))
   | pair _firstBi _secondBi firstIH secondIH =>
       rename_i firstType secondType _ _ _ _ _ _

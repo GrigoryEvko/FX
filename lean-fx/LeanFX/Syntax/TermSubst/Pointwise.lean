@@ -156,38 +156,30 @@ theorem Term.subst_HEq_pointwise
         termSubstitutionsAgreePointwise domainType)
       body
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              (argumentRaw := argumentRaw) resultEq functionTerm argumentTerm => by
+              resultEq functionTerm argumentTerm => by
     cases targetContextEq
-    -- W9.B1.3a — Term.subst on Term.appPi produces a double-cast term:
-    -- (congrArg (Ty.subst · σ) resultEq).symm ▸
-    --   (subst_termSingleton_subst_commute ▸ Term.appPi (argRaw.subst _) rfl _ _).
+    -- Term.subst on Term.appPi produces a double-cast term:
+    -- (congrArg (Ty.subst · σ) resultEq).symm ▸ (subst0_subst_commute ▸ Term.appPi rfl _ _).
     -- Strip both casts via eqRec_heq, then HEq congr the inner appPi.
     show HEq
       ((congrArg (Ty.subst · firstTypeSubstitution) resultEq).symm ▸
-        ((Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw firstTypeSubstitution).symm ▸
-          Term.appPi (argumentRaw := argumentRaw.subst firstTypeSubstitution.forRaw)
-            rfl (Term.subst firstTermSubstitution functionTerm)
-                (Term.subst firstTermSubstitution argumentTerm)))
+        ((Ty.subst0_subst_commute codomainType domainType firstTypeSubstitution).symm ▸
+          Term.appPi rfl (Term.subst firstTermSubstitution functionTerm)
+                         (Term.subst firstTermSubstitution argumentTerm)))
       ((congrArg (Ty.subst · secondTypeSubstitution) resultEq).symm ▸
-        ((Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw secondTypeSubstitution).symm ▸
-          Term.appPi (argumentRaw := argumentRaw.subst secondTypeSubstitution.forRaw)
-            rfl (Term.subst secondTermSubstitution functionTerm)
-                (Term.subst secondTermSubstitution argumentTerm)))
+        ((Ty.subst0_subst_commute codomainType domainType secondTypeSubstitution).symm ▸
+          Term.appPi rfl (Term.subst secondTermSubstitution functionTerm)
+                         (Term.subst secondTermSubstitution argumentTerm)))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (b :=
-      Term.appPi (context := firstTargetContext)
-        (argumentRaw := argumentRaw.subst secondTypeSubstitution.forRaw) rfl
+      Term.appPi (context := firstTargetContext) rfl
         (Term.subst secondTermSubstitution functionTerm)
         (Term.subst secondTermSubstitution argumentTerm))
     · exact Term.appPi_HEq_congr
         (Ty.subst_congr substitutionsAgreePointwise domainType)
         (Ty.subst_congr (Subst.lift_equiv substitutionsAgreePointwise)
           codomainType)
-        (RawTerm.subst_congr (Subst.equiv_forRaw substitutionsAgreePointwise)
-          argumentRaw)
         _ _ (Term.subst_HEq_pointwise rfl
               firstTermSubstitution secondTermSubstitution
               substitutionsAgreePointwise

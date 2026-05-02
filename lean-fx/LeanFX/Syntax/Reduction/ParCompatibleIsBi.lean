@@ -80,17 +80,15 @@ theorem Step.par.rename_compatible_witnessed
         (Step.par.lamPi bodyWB.toStep)
         (Step.par.isBi.lamPi bodyWB.toIsBi)
   | appPi _funBi _argBi funIH argIH =>
-      rename_i domainType codomainType argumentRaw _ _ _ _ _ _
+      rename_i domainType codomainType _ _ _ _ _ _
       let funWB := funIH termRenaming
       let argWB := argIH termRenaming
       exact Step.parWithBi.mk
         (Step.par.castBoth
-          (Ty.subst_termSingleton_rename_commute codomainType domainType
-            argumentRaw rawRenaming).symm
+          (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
           (Step.par.appPi funWB.toStep argWB.toStep))
         (Step.par.isBi.castBoth_eq
-          (Ty.subst_termSingleton_rename_commute codomainType domainType
-            argumentRaw rawRenaming).symm
+          (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
           (Step.par.isBi.appPi funWB.toIsBi argWB.toIsBi))
   | pair _firstBi _secondBi firstIH secondIH =>
       rename_i firstType secondType _ _ _ _ _ _
@@ -642,17 +640,15 @@ theorem Step.par.subst_compatible_witnessed
         (Step.par.lamPi bodyWB.toStep)
         (Step.par.isBi.lamPi bodyWB.toIsBi)
   | appPi _funBi _argBi funIH argIH =>
-      rename_i domainType codomainType argumentRaw _ _ _ _ _ _
+      rename_i domainType codomainType _ _ _ _ _ _
       let funWB := funIH termSubstitution
       let argWB := argIH termSubstitution
       exact Step.parWithBi.mk
         (Step.par.castBoth
-          (Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw typeSubstitution).symm
+          (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
           (Step.par.appPi funWB.toStep argWB.toStep))
         (Step.par.isBi.castBoth_eq
-          (Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw typeSubstitution).symm
+          (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
           (Step.par.isBi.appPi funWB.toIsBi argWB.toIsBi))
   | pair _firstBi _secondBi firstIH secondIH =>
       rename_i firstType secondType _ _ _ _ _ _

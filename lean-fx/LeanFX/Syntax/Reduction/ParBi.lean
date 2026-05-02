@@ -57,19 +57,18 @@ inductive Step.par.isBi :
         {bodyStep : Step.par body body'},
       Step.par.isBi bodyStep →
       Step.par.isBi (Step.par.lamPi (domainType := domainType) bodyStep)
-  /-- Dependent application congruence is βι. -/
+  /-- Dependent application congruence is βι.
+  W9.B1.3a — argumentRaw pinned to RawTerm.unit at consumer sites. -/
   | appPi : ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
         {domainType : Ty level scope}
         {codomainType : Ty level (scope + 1)}
-        {argumentRaw : RawTerm scope}
         {functionTerm functionTerm' :
             Term ctx (Ty.piTy domainType codomainType)}
         {argumentTerm argumentTerm' : Term ctx domainType}
         {functionStep : Step.par functionTerm functionTerm'}
         {argumentStep : Step.par argumentTerm argumentTerm'},
       Step.par.isBi functionStep → Step.par.isBi argumentStep →
-      Step.par.isBi (Step.par.appPi (argumentRaw := argumentRaw)
-        functionStep argumentStep)
+      Step.par.isBi (Step.par.appPi functionStep argumentStep)
   /-- Σ-pair congruence is βι. -/
   | pair : ∀ {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
         {firstType : Ty level scope}

@@ -271,17 +271,10 @@ def Term.cd {mode : Mode} {level scope : Nat}
       Term.cd_app_redex (Term.cd functionTerm) (Term.cd argumentTerm)
   | _, .lamPi body =>
       Term.lamPi (Term.cd body)
-  | _, .appPi (argumentRaw := argumentRaw) resultEq functionTerm argumentTerm =>
-      -- W9.B1.3a — preserve argumentRaw + resultEq across cd.  We do NOT
-      -- run the β-redex check on dep appPi: doing so would require casting
-      -- the redex helper's `subst0`-shaped result back to `termSingleton
-      -- argumentRaw`, which is unsound for non-unit argumentRaw and codomains
-      -- carrying `Ty.id` endpoints.  Instead we just rebuild the appPi
-      -- structurally with recursive cd on f and a.
-      -- TODO W9.B1.3b/c — restore the β-redex check after Phase C subst0_term
-      -- migration aligns target type with non-trivial argumentRaw values.
-      Term.appPi (argumentRaw := argumentRaw) resultEq
-        (Term.cd functionTerm) (Term.cd argumentTerm)
+  | _, .appPi resultEq functionTerm argumentTerm =>
+      -- W9.B1.1 — preserve resultEq across cd; cast result to match input.
+      resultEq.symm ▸
+        Term.cd_appPi_redex (Term.cd functionTerm) (Term.cd argumentTerm)
   | _, .pair firstVal secondVal =>
       Term.pair (Term.cd firstVal) (Term.cd secondVal)
   | _, .fst pairTerm =>

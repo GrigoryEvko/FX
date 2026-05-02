@@ -80,27 +80,29 @@ theorem Step.par.cd_dominates_app
         (cdEq ▸ functionParStep) argumentParStep
   all_goals exact Step.par.app functionParStep argumentParStep
 
-/-- Dependent application — W9.B1.3a: `Term.cd` for appPi now
-structurally rebuilds the appPi (no β-redex check; deferred to Phase C
-subst0_term migration).  As a result, `cd_dominates_appPi` simplifies
-to a pure cong via `Step.par.appPi`. -/
+/-- Dependent application: cong by default, deep β when developed
+function reduces to a `lamPi`. -/
 theorem Step.par.cd_dominates_appPi
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {domainType : Ty level scope}
     {codomainType : Ty level (scope + 1)}
-    {argumentRaw : RawTerm scope}
     (functionTerm : Term context (Ty.piTy domainType codomainType))
     (argumentTerm : Term context domainType)
     (functionParStep : Step.par functionTerm (Term.cd functionTerm))
     (argumentParStep : Step.par argumentTerm (Term.cd argumentTerm)) :
-    Step.par (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)
-      (Term.cd (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)) := by
-  -- cd's appPi arm rebuilds appPi structurally; the result is exactly
-  -- `Term.appPi (argumentRaw := argumentRaw) rfl (cd f) (cd a)`.  This
-  -- matches `Step.par.appPi`'s output type, so the proof is a single ctor
-  -- application with the recursive ParSteps.
-  exact Step.par.appPi functionParStep argumentParStep
+    Step.par (Term.appPi rfl functionTerm argumentTerm)
+      (Term.cd (Term.appPi rfl functionTerm argumentTerm)) := by
+  simp only [Term.cd, Term.cd_appPi_redex]
+  split
+  case _ rawBody heq =>
+      have cdEq : Term.cd functionTerm =
+          Term.lamPi (Term.body_of_lamPi_general
+            (Term.cd functionTerm) rfl heq) :=
+        Term.eq_lamPi_of_toRaw_lam (Term.cd functionTerm) heq
+      exact Step.par.betaAppPiDeep
+        (cdEq ▸ functionParStep) argumentParStep
+  all_goals exact Step.par.appPi functionParStep argumentParStep
 
 /-- Σ first-projection: cong by default, deep β when developed pair
 reduces to a `pair`. -/

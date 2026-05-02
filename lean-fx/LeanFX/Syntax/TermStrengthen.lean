@@ -446,31 +446,27 @@ def Term.optRename {mode : Mode} {sourceScope targetScope : Nat}
                       (OptionalRenamedTerm.termAs renamedBody codomainMaps)
                 }
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        (argumentRaw := argumentRaw) resultEq functionTerm argumentTerm =>
+        resultEq functionTerm argumentTerm =>
       Option.bindSome (domainType.optRename optionalRenaming)
         fun renamedDomain domainMaps =>
         Option.bindSome (codomainType.optRename optionalRenaming.lift)
           fun renamedCodomain codomainMaps =>
-          Option.bindSome (argumentRaw.optRename optionalRenaming)
-            fun renamedArgumentRaw rawArgMaps =>
             Option.bind (Term.optRename renamingIsCompatible functionTerm)
               fun renamedFunction =>
                 Option.bind (Term.optRename renamingIsCompatible argumentTerm)
                   fun renamedArgument =>
                     some {
-                      renamedType :=
-                        renamedCodomain.subst (Subst.termSingleton
-                          renamedDomain renamedArgumentRaw)
+                      renamedType := renamedCodomain.subst0 renamedDomain
                       typeEquality :=
-                        -- W9.B1.3a — `resultEq` is in termSingleton form;
-                        -- chain it with `subst_termSingleton_optRename_success`.
+                        -- W9.B1.1 — chain resultEq (resultType =
+                        -- codomainType.subst0 domainType) with the
+                        -- canonical subst0-rename success.
                         resultEq ▸
-                          Ty.subst_termSingleton_optRename_success
-                            optionalRenaming codomainType domainType
-                            renamedDomain argumentRaw renamedArgumentRaw
-                            renamedCodomain codomainMaps domainMaps rawArgMaps
+                          Ty.subst0_optRename_success optionalRenaming codomainType
+                            domainType renamedDomain renamedCodomain codomainMaps
+                            domainMaps
                       term :=
-                        Term.appPi (argumentRaw := renamedArgumentRaw) rfl
+                        Term.appPi rfl
                           (OptionalRenamedTerm.termAs renamedFunction
                             (Ty.piTy_optRename_success optionalRenaming
                               domainMaps codomainMaps))

@@ -369,19 +369,15 @@ def Term.subst {mode sourceScope targetScope}
       Term.lamPi
         (Term.subst (TermSubst.lift termSubstitution domainType) body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              (argumentRaw := argumentRaw) resultEq functionTerm argumentTerm =>
-      -- W9.B1.3a — termSingleton-flavored appPi.  resultEq : resultType =
-      -- codomainType.subst (Subst.termSingleton domainType argumentRaw).
-      -- Build the substituted appPi at the canonical post-subst termSingleton
-      -- shape (with rawArg substituted via the underlying RawTermSubst), then
-      -- cast through resultEq's substituted form and subst-termSingleton-subst-
-      -- commute.
+              resultEq functionTerm argumentTerm =>
+      -- W9.B1.1 — equation-bearing appPi.  resultEq : resultType =
+      -- codomainType.subst0 domainType.  We build the substituted
+      -- appPi at canonical (codomainSubst.subst0 domainSubst), then
+      -- cast through resultEq's substituted form and subst0_subst_commute.
       (congrArg (Ty.subst · typeSubstitution) resultEq).symm ▸
-        ((Ty.subst_termSingleton_subst_commute codomainType domainType
-            argumentRaw typeSubstitution).symm ▸
-          Term.appPi (argumentRaw := argumentRaw.subst typeSubstitution.forRaw)
-            rfl (Term.subst termSubstitution functionTerm)
-                (Term.subst termSubstitution argumentTerm))
+        ((Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm ▸
+          Term.appPi rfl (Term.subst termSubstitution functionTerm)
+                         (Term.subst termSubstitution argumentTerm))
   | _, .pair (firstType := firstType) (secondType := secondType)
              firstVal secondVal =>
       Term.pair (Term.subst termSubstitution firstVal)

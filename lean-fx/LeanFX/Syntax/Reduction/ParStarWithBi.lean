@@ -235,15 +235,13 @@ theorem Step.parStarWithBi.app_cong
 theorem Step.parStarWithBi.appPi_cong_function
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
-    {argumentRaw : RawTerm scope}
     {functionTerm functionTerm' : Term ctx (Ty.piTy domainType codomainType)}
     (argumentTerm : Term ctx domainType)
     (functionWithBi : Step.parStarWithBi functionTerm functionTerm') :
-    Step.parStarWithBi
-      (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)
-      (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm' argumentTerm) :=
+    Step.parStarWithBi (Term.appPi rfl functionTerm argumentTerm)
+                       (Term.appPi rfl functionTerm' argumentTerm) :=
   Step.parStarWithBi.mapStep
-    (fun fnTerm => Term.appPi (argumentRaw := argumentRaw) rfl fnTerm argumentTerm)
+    (fun fnTerm => Term.appPi rfl fnTerm argumentTerm)
     (fun fnPar => Step.par.appPi fnPar (Step.par.refl argumentTerm))
     (fun fnBi => Step.par.isBi.appPi fnBi (Step.par.isBi.refl argumentTerm))
     functionWithBi
@@ -252,15 +250,13 @@ theorem Step.parStarWithBi.appPi_cong_function
 theorem Step.parStarWithBi.appPi_cong_argument
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
-    {argumentRaw : RawTerm scope}
     (functionTerm : Term ctx (Ty.piTy domainType codomainType))
     {argumentTerm argumentTerm' : Term ctx domainType}
     (argumentWithBi : Step.parStarWithBi argumentTerm argumentTerm') :
-    Step.parStarWithBi
-      (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)
-      (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm') :=
+    Step.parStarWithBi (Term.appPi rfl functionTerm argumentTerm)
+                       (Term.appPi rfl functionTerm argumentTerm') :=
   Step.parStarWithBi.mapStep
-    (fun argTerm => Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argTerm)
+    (fun argTerm => Term.appPi rfl functionTerm argTerm)
     (fun argPar => Step.par.appPi (Step.par.refl functionTerm) argPar)
     (fun argBi => Step.par.isBi.appPi (Step.par.isBi.refl functionTerm) argBi)
     argumentWithBi
@@ -269,14 +265,12 @@ theorem Step.parStarWithBi.appPi_cong_argument
 theorem Step.parStarWithBi.appPi_cong
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
-    {argumentRaw : RawTerm scope}
     {functionTerm functionTerm' : Term ctx (Ty.piTy domainType codomainType)}
     {argumentTerm argumentTerm' : Term ctx domainType}
     (functionWithBi : Step.parStarWithBi functionTerm functionTerm')
     (argumentWithBi : Step.parStarWithBi argumentTerm argumentTerm') :
-    Step.parStarWithBi
-      (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm argumentTerm)
-      (Term.appPi (argumentRaw := argumentRaw) rfl functionTerm' argumentTerm') :=
+    Step.parStarWithBi (Term.appPi rfl functionTerm argumentTerm)
+                       (Term.appPi rfl functionTerm' argumentTerm') :=
   Step.parStarWithBi.append
     (Step.parStarWithBi.appPi_cong_function argumentTerm functionWithBi)
     (Step.parStarWithBi.appPi_cong_argument functionTerm' argumentWithBi)
@@ -1743,12 +1737,11 @@ theorem Step.parWithBi.rename_compatible
       exact Step.parWithBi.mk
         (Step.par.lamPi bStep) (Step.par.isBi.lamPi bBi)
   | appPi _functionBi _argumentBi functionIH argumentIH =>
-      rename_i domainType codomainType argumentRaw _ _ _ _ _ _
+      rename_i domainType codomainType _ _ _ _ _ _
       obtain ⟨fStep, fBi⟩ := functionIH termRenaming
       obtain ⟨aStep, aBi⟩ := argumentIH termRenaming
       let typeEq :=
-        (Ty.subst_termSingleton_rename_commute codomainType domainType
-          argumentRaw rawRenaming).symm
+        (Ty.subst0_rename_commute codomainType domainType rawRenaming).symm
       exact Step.parWithBi.mk
         (Step.par.castBoth typeEq (Step.par.appPi fStep aStep))
         (Step.par.isBi.castBoth typeEq (Step.par.isBi.appPi fBi aBi))
@@ -2250,12 +2243,11 @@ theorem Step.parWithBi.subst_compatible
       exact Step.parWithBi.mk
         (Step.par.lamPi bStep) (Step.par.isBi.lamPi bBi)
   | appPi _functionBi _argumentBi functionIH argumentIH =>
-      rename_i domainType codomainType argumentRaw _ _ _ _ _ _
+      rename_i domainType codomainType _ _ _ _ _ _
       obtain ⟨fStep, fBi⟩ := functionIH termSubstitution
       obtain ⟨aStep, aBi⟩ := argumentIH termSubstitution
       let typeEq :=
-        (Ty.subst_termSingleton_subst_commute codomainType domainType
-          argumentRaw typeSubstitution).symm
+        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
       exact Step.parWithBi.mk
         (Step.par.castBoth typeEq (Step.par.appPi fStep aStep))
         (Step.par.isBi.castBoth typeEq (Step.par.isBi.appPi fBi aBi))
@@ -2854,15 +2846,14 @@ theorem Term.subst_parWithBi_pointwise
           (TermSubst.parWithBi_lift related _) body
       exact ⟨Step.par.lamPi bStep, Step.par.isBi.lamPi bBi⟩
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        (argumentRaw := argumentRaw) resultEq function argument => by
-      -- W9.B1.3a — termSingleton-flavored appPi.  Cases on resultEq normalises shape.
+        resultEq function argument => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
       cases resultEq
       simp only [Term.subst]
       obtain ⟨fStep, fBi⟩ := Term.subst_parWithBi_pointwise related function
       obtain ⟨aStep, aBi⟩ := Term.subst_parWithBi_pointwise related argument
       let typeEq :=
-        (Ty.subst_termSingleton_subst_commute codomainType domainType
-          argumentRaw typeSubstitution).symm
+        (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
       exact ⟨Step.par.castBoth typeEq (Step.par.appPi fStep aStep),
              Step.par.isBi.castBoth typeEq (Step.par.isBi.appPi fBi aBi)⟩
   | _, .pair (firstType := firstType) (secondType := secondType)
