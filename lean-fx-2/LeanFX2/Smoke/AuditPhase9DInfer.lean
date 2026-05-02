@@ -55,4 +55,20 @@ example :
     Term.infer context (RawTerm.lam (RawTerm.unit (scope := scope + 1))) =
       none := rfl
 
+/-- App synthesis: ambiguous when function has unknown form (a bare
+`.lam` returns `none` from `infer`, so the surrounding `app` is
+also `none`). -/
+example :
+    Term.infer context
+        (RawTerm.app (RawTerm.lam (RawTerm.unit (scope := scope + 1)))
+                     (RawTerm.unit (scope := scope))) =
+      none := rfl
+
+/-- `fst` of a non-pair raw form: `.fst .unit` returns `none` because
+`Term.infer` synthesizes `Ty.unit` for `unit`, which is not a sigma. -/
+example :
+    Term.infer context
+        (RawTerm.fst (RawTerm.unit (scope := scope))) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DInfer

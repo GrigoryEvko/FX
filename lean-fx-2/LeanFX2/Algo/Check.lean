@@ -181,10 +181,27 @@ def Term.check : ∀ {scope : Nat}
           | none => none
       | .unit | .bool | .nat | .sigmaTy _ _ | .tyVar _ | .id _ _ _
       | .listType _ | .optionType _ | .eitherType _ _ => none
-  -- App: deferred (requires inference of function's arrow domain)
-  | .app _ _            => none
+  -- App: synth-then-check fallthrough.  `Term.infer` handles
+  -- `RawTerm.app` for non-dep arrows; we then verify the inferred
+  -- result type matches the expected type via DecidableEq.
+  | .app fnRaw argRaw =>
+      match Term.infer context (RawTerm.app fnRaw argRaw) with
+      | some ⟨inferredType, inferredTerm⟩ =>
+          if typeEq : expectedType = inferredType then
+            some (typeEq ▸ inferredTerm)
+          else
+            none
+      | none => none
   | .pair _ _           => none
-  | .fst _              => none
+  -- Σ first projection: synth-then-check fallthrough via Term.infer.
+  | .fst pairRaw =>
+      match Term.infer context (RawTerm.fst pairRaw) with
+      | some ⟨inferredType, inferredTerm⟩ =>
+          if typeEq : expectedType = inferredType then
+            some (typeEq ▸ inferredTerm)
+          else
+            none
+      | none => none
   | .snd _              => none
   | .boolElim _ _ _     => none
   | .natElim _ _ _      => none

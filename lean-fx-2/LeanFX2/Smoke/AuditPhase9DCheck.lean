@@ -61,4 +61,24 @@ example :
         (RawTerm.eitherInl (RawTerm.natZero (scope := scope))) =
       some (Term.eitherInl Term.natZero) := rfl
 
+/-- App synth-then-check: a bare `.lam` returns `none` from infer, so
+the wrapping `app` returns `none` too — even when the expected type
+matches what the result *would* be. -/
+example :
+    Term.check context (Ty.unit (level := level) (scope := scope))
+        (RawTerm.app (RawTerm.lam (RawTerm.unit (scope := scope + 1)))
+                     (RawTerm.unit (scope := scope))) =
+      none := rfl
+
+/-- App synth-then-check fails on type mismatch: a variable applied to
+itself (raw form `app (var 0) (var 0)`) — the inner `infer` on the
+function position returns the variable's type, which won't be an
+arrow without explicit context lookup.  Without an arrow function
+shape, the outer `app` returns `none`. -/
+example :
+    Term.check context (Ty.bool (level := level) (scope := scope))
+        (RawTerm.app (RawTerm.unit (scope := scope))
+                     (RawTerm.unit (scope := scope))) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DCheck

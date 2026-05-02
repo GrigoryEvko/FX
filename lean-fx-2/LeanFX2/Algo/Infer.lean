@@ -113,9 +113,45 @@ def Term.infer (context : Ctx mode level scope) :
       | none => none
   -- Ambiguous forms: defer to check mode
   | .lam _        => none
-  | .app _ _      => none
+  -- Function application: synth function (must be `Ty.arrow d c`),
+  -- synth argument (must equal `d`), return `c`.
+  --
+  -- Why non-dep arrow only: dependent Π apps (`appPi`) need the
+  -- argument's raw form for the result type (`codomainType.subst0
+  -- domainType argRaw`), and our `RawTerm.app` constructor is shared
+  -- between non-dep `app` and dep `appPi`.  Without an expected type
+  -- to disambiguate, we default to `app`.  The check-mode counterpart
+  -- in `Algo/Check.lean` can disambiguate via expected type.
+  | .app fnRaw argRaw =>
+      match Term.infer context fnRaw with
+      | some ⟨.arrow domainType codomainType, fnTerm⟩ =>
+          match Term.infer context argRaw with
+          | some ⟨argTy, argTerm⟩ =>
+              if domainEq : argTy = domainType then
+                some ⟨codomainType, Term.app fnTerm (domainEq ▸ argTerm)⟩
+              else
+                none
+          | none => none
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.piTy _ _, _⟩ | some ⟨.sigmaTy _ _, _⟩
+      | some ⟨.tyVar _, _⟩ | some ⟨.id _ _ _, _⟩
+      | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
   | .pair _ _     => none
-  | .fst _        => none
+  -- Σ first projection: synth pair (must be `Ty.sigmaTy first second`),
+  -- return `first`.  (Second projection needs argument's raw for the
+  -- result type — defer to check mode.)
+  | .fst pairRaw =>
+      match Term.infer context pairRaw with
+      | some ⟨.sigmaTy firstType _, pairTerm⟩ =>
+          some ⟨firstType, Term.fst pairTerm⟩
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.tyVar _, _⟩ | some ⟨.id _ _ _, _⟩
+      | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
   | .snd _        => none
   | .boolElim _ _ _   => none
   | .natElim _ _ _    => none
