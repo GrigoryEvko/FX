@@ -53,6 +53,8 @@ import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.RawParRename
+import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.Cumul
 
@@ -156,6 +158,7 @@ import LeanFX2.Smoke.AuditPhase5Bridge
 import LeanFX2.Smoke.AuditPhase6ARawCd
 import LeanFX2.Smoke.AuditPhase6BInversion
 import LeanFX2.Smoke.AuditPhase6BCdDominates
+import LeanFX2.Smoke.AuditPhase6BCompatible
 
 namespace LeanFX2
 
