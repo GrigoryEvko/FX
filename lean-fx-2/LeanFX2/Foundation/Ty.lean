@@ -127,4 +127,101 @@ by one to make room for a new binder at position 0. -/
     Ty level (scope + 1) :=
   someType.rename RawRenaming.weaken
 
+/-! ## Pointwise + commute lemmas for Ty.rename.
+
+Mirror of `RawTerm.rename_pointwise` / `rename_compose` /
+`weaken_rename_commute`.  The `Ty.id` ctor's raw endpoints invoke
+the corresponding RawTerm lemmas. -/
+
+/-- Ty.rename respects pointwise renaming equality. -/
+theorem Ty.rename_pointwise {level : Nat}
+    {scope targetScope : Nat}
+    {rho1 rho2 : RawRenaming scope targetScope}
+    (renamingEq : ∀ position, rho1 position = rho2 position) :
+    ∀ (someType : Ty level scope), someType.rename rho1 = someType.rename rho2 := by
+  intro someType
+  induction someType generalizing targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.rename]; rw [dIH renamingEq, cIH renamingEq]
+  | piTy d c dIH cIH =>
+      simp only [Ty.rename]
+      rw [dIH renamingEq, cIH (RawRenaming.lift_pointwise renamingEq)]
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.rename]
+      rw [fIH renamingEq, sIH (RawRenaming.lift_pointwise renamingEq)]
+  | tyVar position =>
+      simp only [Ty.rename]; rw [renamingEq position]
+  | id carrier left right carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH renamingEq,
+          RawTerm.rename_pointwise renamingEq left,
+          RawTerm.rename_pointwise renamingEq right]
+  | listType e eIH =>
+      simp only [Ty.rename]; rw [eIH renamingEq]
+  | optionType e eIH =>
+      simp only [Ty.rename]; rw [eIH renamingEq]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.rename]; rw [lIH renamingEq, rIH renamingEq]
+
+/-- Compose two renamings on a Ty.  Mirrors `RawTerm.rename_compose`. -/
+theorem Ty.rename_compose {level : Nat}
+    {scope middleScope targetScope : Nat}
+    (rho1 : RawRenaming scope middleScope)
+    (rho2 : RawRenaming middleScope targetScope)
+    (someType : Ty level scope) :
+    (someType.rename rho1).rename rho2 =
+      someType.rename (fun position => rho2 (rho1 position)) := by
+  induction someType generalizing middleScope targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.rename]; rw [dIH rho1 rho2, cIH rho1 rho2]
+  | piTy d c dIH cIH =>
+      simp only [Ty.rename]
+      rw [dIH rho1 rho2, cIH rho1.lift rho2.lift]
+      congr 1
+      apply Ty.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.rename]
+      rw [fIH rho1 rho2, sIH rho1.lift rho2.lift]
+      congr 1
+      apply Ty.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH rho1 rho2,
+          RawTerm.rename_compose rho1 rho2 left,
+          RawTerm.rename_compose rho1 rho2 right]
+  | listType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
+  | optionType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
+
+/-- weaken-after-rename equals rename-after-weaken on Ty.  Load-bearing
+for the lam case of typed Term.rename. -/
+theorem Ty.weaken_rename_commute {level : Nat} {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope) (someType : Ty level scope) :
+    someType.weaken.rename rho.lift = (someType.rename rho).weaken := by
+  show (someType.rename RawRenaming.weaken).rename rho.lift =
+       (someType.rename rho).rename RawRenaming.weaken
+  rw [Ty.rename_compose RawRenaming.weaken rho.lift someType,
+      Ty.rename_compose rho RawRenaming.weaken someType]
+  exact Ty.rename_pointwise (RawRenaming.weaken_lift_commute rho) someType
+
 end LeanFX2

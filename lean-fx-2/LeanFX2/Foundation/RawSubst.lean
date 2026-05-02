@@ -120,6 +120,156 @@ def RawTerm.rename : ∀ {source target : Nat},
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
   term.rename RawRenaming.weaken
 
+/-! ## Pointwise + composition lemmas for raw renaming.
+
+These are needed to prove the `weaken/lift` commute laws that
+downstream Term.rename / Ty.subst use.  Proofs use `induction` tactic
+(propext-free per `feedback_lean_zero_axiom_match.md` Rule 6) and
+chain rewrites via `rw`. -/
+
+/-- Lift respects pointwise equality. -/
+theorem RawRenaming.lift_pointwise {sourceScope targetScope : Nat}
+    {rho1 rho2 : RawRenaming sourceScope targetScope}
+    (renamingEq : ∀ position, rho1 position = rho2 position) :
+    ∀ position, rho1.lift position = rho2.lift position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      simp only [RawRenaming.lift]
+      exact congrArg Fin.succ (renamingEq ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+
+/-- RawTerm.rename respects pointwise renaming equality. -/
+theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
+    {rho1 rho2 : RawRenaming sourceScope targetScope}
+    (renamingEq : ∀ position, rho1 position = rho2 position) :
+    ∀ (term : RawTerm sourceScope), term.rename rho1 = term.rename rho2 := by
+  intro term
+  induction term generalizing targetScope with
+  | var position =>
+      simp only [RawTerm.rename]; rw [renamingEq position]
+  | unit => rfl
+  | lam body bodyIH =>
+      simp only [RawTerm.rename]; rw [bodyIH (RawRenaming.lift_pointwise renamingEq)]
+  | app fn arg fnIH argIH =>
+      simp only [RawTerm.rename]; rw [fnIH renamingEq, argIH renamingEq]
+  | pair fv sv fvIH svIH =>
+      simp only [RawTerm.rename]; rw [fvIH renamingEq, svIH renamingEq]
+  | fst pairTerm pairIH =>
+      simp only [RawTerm.rename]; rw [pairIH renamingEq]
+  | snd pairTerm pairIH =>
+      simp only [RawTerm.rename]; rw [pairIH renamingEq]
+  | boolTrue => rfl
+  | boolFalse => rfl
+  | boolElim s t e sIH tIH eIH =>
+      simp only [RawTerm.rename]; rw [sIH renamingEq, tIH renamingEq, eIH renamingEq]
+  | natZero => rfl
+  | natSucc p pIH =>
+      simp only [RawTerm.rename]; rw [pIH renamingEq]
+  | natElim s z c sIH zIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH renamingEq, zIH renamingEq, cIH renamingEq]
+  | natRec s z c sIH zIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH renamingEq, zIH renamingEq, cIH renamingEq]
+  | listNil => rfl
+  | listCons h t hIH tIH =>
+      simp only [RawTerm.rename]; rw [hIH renamingEq, tIH renamingEq]
+  | listElim s n c sIH nIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH renamingEq, nIH renamingEq, cIH renamingEq]
+  | optionNone => rfl
+  | optionSome v vIH =>
+      simp only [RawTerm.rename]; rw [vIH renamingEq]
+  | optionMatch s n c sIH nIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH renamingEq, nIH renamingEq, cIH renamingEq]
+  | eitherInl v vIH =>
+      simp only [RawTerm.rename]; rw [vIH renamingEq]
+  | eitherInr v vIH =>
+      simp only [RawTerm.rename]; rw [vIH renamingEq]
+  | eitherMatch s l r sIH lIH rIH =>
+      simp only [RawTerm.rename]; rw [sIH renamingEq, lIH renamingEq, rIH renamingEq]
+  | refl witness witnessIH =>
+      simp only [RawTerm.rename]; rw [witnessIH renamingEq]
+  | idJ base witness baseIH witnessIH =>
+      simp only [RawTerm.rename]; rw [baseIH renamingEq, witnessIH renamingEq]
+  | modIntro inner innerIH =>
+      simp only [RawTerm.rename]; rw [innerIH renamingEq]
+  | modElim inner innerIH =>
+      simp only [RawTerm.rename]; rw [innerIH renamingEq]
+  | subsume inner innerIH =>
+      simp only [RawTerm.rename]; rw [innerIH renamingEq]
+
+/-- Compose two raw renamings into a single rename. -/
+theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
+    (rho1 : RawRenaming sourceScope middleScope)
+    (rho2 : RawRenaming middleScope targetScope)
+    (term : RawTerm sourceScope) :
+    (term.rename rho1).rename rho2 =
+      term.rename (fun position => rho2 (rho1 position)) := by
+  induction term generalizing middleScope targetScope with
+  | var position => rfl
+  | unit => rfl
+  | lam body bodyIH =>
+      simp only [RawTerm.rename]
+      rw [bodyIH rho1.lift rho2.lift]
+      congr 1
+      apply RawTerm.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | app fn arg fnIH argIH =>
+      simp only [RawTerm.rename]; rw [fnIH rho1 rho2, argIH rho1 rho2]
+  | pair fv sv fvIH svIH =>
+      simp only [RawTerm.rename]; rw [fvIH rho1 rho2, svIH rho1 rho2]
+  | fst pairTerm pairIH => simp only [RawTerm.rename]; rw [pairIH rho1 rho2]
+  | snd pairTerm pairIH => simp only [RawTerm.rename]; rw [pairIH rho1 rho2]
+  | boolTrue => rfl
+  | boolFalse => rfl
+  | boolElim s t e sIH tIH eIH =>
+      simp only [RawTerm.rename]; rw [sIH rho1 rho2, tIH rho1 rho2, eIH rho1 rho2]
+  | natZero => rfl
+  | natSucc p pIH => simp only [RawTerm.rename]; rw [pIH rho1 rho2]
+  | natElim s z c sIH zIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH rho1 rho2, zIH rho1 rho2, cIH rho1 rho2]
+  | natRec s z c sIH zIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH rho1 rho2, zIH rho1 rho2, cIH rho1 rho2]
+  | listNil => rfl
+  | listCons h t hIH tIH =>
+      simp only [RawTerm.rename]; rw [hIH rho1 rho2, tIH rho1 rho2]
+  | listElim s n c sIH nIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH rho1 rho2, nIH rho1 rho2, cIH rho1 rho2]
+  | optionNone => rfl
+  | optionSome v vIH => simp only [RawTerm.rename]; rw [vIH rho1 rho2]
+  | optionMatch s n c sIH nIH cIH =>
+      simp only [RawTerm.rename]; rw [sIH rho1 rho2, nIH rho1 rho2, cIH rho1 rho2]
+  | eitherInl v vIH => simp only [RawTerm.rename]; rw [vIH rho1 rho2]
+  | eitherInr v vIH => simp only [RawTerm.rename]; rw [vIH rho1 rho2]
+  | eitherMatch s l r sIH lIH rIH =>
+      simp only [RawTerm.rename]; rw [sIH rho1 rho2, lIH rho1 rho2, rIH rho1 rho2]
+  | refl witness witnessIH => simp only [RawTerm.rename]; rw [witnessIH rho1 rho2]
+  | idJ base witness baseIH witnessIH =>
+      simp only [RawTerm.rename]; rw [baseIH rho1 rho2, witnessIH rho1 rho2]
+  | modIntro inner innerIH => simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
+  | modElim inner innerIH => simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
+  | subsume inner innerIH => simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
+
+/-- The load-bearing weaken/lift commute identity (pointwise).
+    `weaken.compose rho.lift = rho.compose weaken` per position. -/
+theorem RawRenaming.weaken_lift_commute {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) :
+    ∀ position, rho.lift (RawRenaming.weaken position) =
+                RawRenaming.weaken (rho position) :=
+  fun _ => rfl
+
+/-- weaken-after-rename equals rename-after-weaken on raw terms. -/
+theorem RawTerm.weaken_rename_commute {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) (term : RawTerm sourceScope) :
+    term.weaken.rename rho.lift = (term.rename rho).weaken := by
+  show (term.rename RawRenaming.weaken).rename rho.lift =
+       (term.rename rho).rename RawRenaming.weaken
+  rw [RawTerm.rename_compose RawRenaming.weaken rho.lift term,
+      RawTerm.rename_compose rho RawRenaming.weaken term]
+  exact RawTerm.rename_pointwise (RawRenaming.weaken_lift_commute rho) term
+
 /-! ## Substitutions -/
 
 /-- A raw term substitution: `Fin source → RawTerm target`. -/

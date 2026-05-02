@@ -131,4 +131,136 @@ theorem Term.toRaw_idJ {mode : Mode} {level scope : Nat}
     (Term.idJ baseCase witness).toRaw =
       RawTerm.idJ baseCase.toRaw witness.toRaw := rfl
 
+/-! ## Booleans, Naturals, Lists, Options, Eithers, Modal -/
+
+theorem Term.toRaw_boolTrue {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    (Term.boolTrue (context := context)).toRaw = RawTerm.boolTrue := rfl
+
+theorem Term.toRaw_boolFalse {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    (Term.boolFalse (context := context)).toRaw = RawTerm.boolFalse := rfl
+
+theorem Term.toRaw_boolElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {motiveType : Ty level scope}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch : Term context motiveType thenRaw)
+    (elseBranch : Term context motiveType elseRaw) :
+    (Term.boolElim scrutinee thenBranch elseBranch).toRaw =
+      RawTerm.boolElim scrutinee.toRaw thenBranch.toRaw elseBranch.toRaw := rfl
+
+theorem Term.toRaw_natZero {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    (Term.natZero (context := context)).toRaw = RawTerm.natZero := rfl
+
+theorem Term.toRaw_natSucc {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {predecessorRaw : RawTerm scope}
+    (predecessor : Term context Ty.nat predecessorRaw) :
+    (Term.natSucc predecessor).toRaw = RawTerm.natSucc predecessor.toRaw := rfl
+
+theorem Term.toRaw_natElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    (Term.natElim scrutinee zeroBranch succBranch).toRaw =
+      RawTerm.natElim scrutinee.toRaw zeroBranch.toRaw succBranch.toRaw := rfl
+
+theorem Term.toRaw_natRec {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+    (Term.natRec scrutinee zeroBranch succBranch).toRaw =
+      RawTerm.natRec scrutinee.toRaw zeroBranch.toRaw succBranch.toRaw := rfl
+
+theorem Term.toRaw_listNil {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {elementType : Ty level scope} :
+    (Term.listNil (context := context) (elementType := elementType)).toRaw =
+      RawTerm.listNil := rfl
+
+theorem Term.toRaw_listCons {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (headTerm : Term context elementType headRaw)
+    (tailTerm : Term context (Ty.listType elementType) tailRaw) :
+    (Term.listCons headTerm tailTerm).toRaw =
+      RawTerm.listCons headTerm.toRaw tailTerm.toRaw := rfl
+
+theorem Term.toRaw_listElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType) motiveType)) consRaw) :
+    (Term.listElim scrutinee nilBranch consBranch).toRaw =
+      RawTerm.listElim scrutinee.toRaw nilBranch.toRaw consBranch.toRaw := rfl
+
+theorem Term.toRaw_optionNone {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {elementType : Ty level scope} :
+    (Term.optionNone (context := context) (elementType := elementType)).toRaw =
+      RawTerm.optionNone := rfl
+
+theorem Term.toRaw_optionSome {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {elementType : Ty level scope}
+    {valueRaw : RawTerm scope} (valueTerm : Term context elementType valueRaw) :
+    (Term.optionSome valueTerm).toRaw = RawTerm.optionSome valueTerm.toRaw := rfl
+
+theorem Term.toRaw_optionMatch {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw) :
+    (Term.optionMatch scrutinee noneBranch someBranch).toRaw =
+      RawTerm.optionMatch scrutinee.toRaw noneBranch.toRaw someBranch.toRaw := rfl
+
+theorem Term.toRaw_eitherInl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope} {valueRaw : RawTerm scope}
+    (valueTerm : Term context leftType valueRaw) :
+    (Term.eitherInl (rightType := rightType) valueTerm).toRaw =
+      RawTerm.eitherInl valueTerm.toRaw := rfl
+
+theorem Term.toRaw_eitherInr {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope} {valueRaw : RawTerm scope}
+    (valueTerm : Term context rightType valueRaw) :
+    (Term.eitherInr (leftType := leftType) valueTerm).toRaw =
+      RawTerm.eitherInr valueTerm.toRaw := rfl
+
+theorem Term.toRaw_eitherMatch {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw) :
+    (Term.eitherMatch scrutinee leftBranch rightBranch).toRaw =
+      RawTerm.eitherMatch scrutinee.toRaw leftBranch.toRaw rightBranch.toRaw := rfl
+
+theorem Term.toRaw_modIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    (Term.modIntro innerTerm).toRaw = RawTerm.modIntro innerTerm.toRaw := rfl
+
+theorem Term.toRaw_modElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    (Term.modElim innerTerm).toRaw = RawTerm.modElim innerTerm.toRaw := rfl
+
+theorem Term.toRaw_subsume {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope} {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    (Term.subsume innerTerm).toRaw = RawTerm.subsume innerTerm.toRaw := rfl
+
 end LeanFX2

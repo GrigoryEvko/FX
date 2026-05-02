@@ -1,5 +1,3 @@
-import LeanFX2.Foundation.Mode
-
 /-! # RawTerm — Layer 0 untyped well-scoped terms.
 
 `RawTerm scope` is the de Bruijn-indexed term family with `Fin scope`

@@ -211,7 +211,12 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (baseCase : Term context motiveType baseRaw)
       (witness : Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw) :
       Term context motiveType (RawTerm.idJ baseRaw witnessRaw)
-  -- Modal (Layer 6 references; raw-side ships from day 1)
+  -- Modal — Layer 1 ships RAW-SIDE SCAFFOLDING ONLY.  In Phase 1,
+  -- innerType is preserved (no Ty.modal applied) because Ty.modal +
+  -- Modality 1-cells are Layer 6 work.  When Layer 6 lands, these
+  -- three ctor signatures will be refactored to take a Modality and
+  -- produce `Ty.modal modality innerType`.  Localized backward-incompat
+  -- change (3 ctor signatures); other Term ctors unaffected.
   | modIntro {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
       {innerType : Ty level scope} {innerRaw : RawTerm scope}
       (innerTerm : Term context innerType innerRaw) :

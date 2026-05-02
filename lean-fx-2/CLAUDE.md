@@ -28,8 +28,13 @@ in addition to global `/root/iprit/FX/CLAUDE.md`.
 
 * **Cumulativity is a Conv rule** (Layer 3+), not a Ty constructor.
 
-* **Mode is at Ctx level only** (NOT a parameter on every Term ctor).
-  Modal types are introduced via `Ty.modal modality inner` constructor at Layer 6.
+* **Mode lives at Ctx level.**  `Ctx : Mode → Nat → Nat → Type`.  Term
+  ctors carry `{mode : Mode}` as implicit (forward-compat with mode-
+  changing modal ctors at Layer 6 — `modIntro`/`subsume` may produce
+  a Term in a different mode than its input).  User code never
+  explicitly names mode; Lean infers it from context's type.  Modal
+  types proper introduced via `Ty.modal modality inner` constructor
+  at Layer 6.
 
 * **Identity-type endpoints are RawTerm**, not typed Term.
   Sidesteps Lean 4's mutual-index rule.
