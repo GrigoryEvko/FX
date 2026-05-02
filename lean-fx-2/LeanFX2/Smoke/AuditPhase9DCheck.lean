@@ -98,4 +98,27 @@ example :
         (RawTerm.pair (RawTerm.natZero (scope := scope)) RawTerm.boolTrue) =
       none := rfl
 
+/-- Boolean eliminator at motive `Ty.unit`: scrutinee bool, both
+branches unit. -/
+example :
+    Term.check context (Ty.unit (level := level) (scope := scope))
+        (RawTerm.boolElim RawTerm.boolTrue RawTerm.unit RawTerm.unit) =
+      some (Term.boolElim Term.boolTrue Term.unit Term.unit) := rfl
+
+/-- Nat eliminator at motive `Ty.unit`: scrutinee nat, zero branch
+unit, succ branch `λ_:nat. unit`. -/
+example :
+    Term.check context (Ty.unit (level := level) (scope := scope))
+        (RawTerm.natElim RawTerm.natZero RawTerm.unit
+          (RawTerm.lam RawTerm.unit)) =
+      some (Term.natElim Term.natZero Term.unit
+        (Term.lam (codomainType := Ty.unit) Term.unit)) := rfl
+
+/-- Bad scrutinee: boolElim with `unit` scrutinee — fails because
+unit isn't bool. -/
+example :
+    Term.check context (Ty.unit (level := level) (scope := scope))
+        (RawTerm.boolElim RawTerm.unit RawTerm.unit RawTerm.unit) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DCheck

@@ -227,9 +227,41 @@ def Term.check : ∀ {scope : Nat}
           else
             none
       | none => none
-  | .boolElim _ _ _     => none
-  | .natElim _ _ _      => none
-  | .natRec _ _ _       => none
+  -- Boolean eliminator: motive is the expected type (no separate
+  -- elementType to infer).  Check scrutinee at Ty.bool, both branches
+  -- at expectedType.
+  | .boolElim scrutineeRaw thenRaw elseRaw =>
+      match Term.check context Ty.bool scrutineeRaw,
+            Term.check context expectedType thenRaw,
+            Term.check context expectedType elseRaw with
+      | some scrutineeTerm, some thenTerm, some elseTerm =>
+          some (Term.boolElim scrutineeTerm thenTerm elseTerm)
+      | none, _, _ => none
+      | _, none, _ => none
+      | _, _, none => none
+  -- Nat eliminator (non-dep): motive is the expected type, succBranch
+  -- is at `Ty.arrow Ty.nat expectedType`.
+  | .natElim scrutineeRaw zeroRaw succRaw =>
+      match Term.check context Ty.nat scrutineeRaw,
+            Term.check context expectedType zeroRaw,
+            Term.check context (Ty.arrow Ty.nat expectedType) succRaw with
+      | some scrutineeTerm, some zeroTerm, some succTerm =>
+          some (Term.natElim scrutineeTerm zeroTerm succTerm)
+      | none, _, _ => none
+      | _, none, _ => none
+      | _, _, none => none
+  -- Nat recursor (non-dep): motive is expected, succBranch at
+  -- `Ty.arrow Ty.nat (Ty.arrow expectedType expectedType)`.
+  | .natRec scrutineeRaw zeroRaw succRaw =>
+      match Term.check context Ty.nat scrutineeRaw,
+            Term.check context expectedType zeroRaw,
+            Term.check context
+              (Ty.arrow Ty.nat (Ty.arrow expectedType expectedType)) succRaw with
+      | some scrutineeTerm, some zeroTerm, some succTerm =>
+          some (Term.natRec scrutineeTerm zeroTerm succTerm)
+      | none, _, _ => none
+      | _, none, _ => none
+      | _, _, none => none
   | .listElim _ _ _     => none
   | .optionMatch _ _ _  => none
   | .eitherMatch _ _ _  => none
