@@ -89,6 +89,33 @@ def ResolvedDef.liftToScope {scope : Nat} (rd : ResolvedDef) :
     Option (RawTerm scope) :=
   some (Nat.zero_add scope ▸ RawTerm.weakenIter rd.rawTerm scope)
 
+/-- Env-aware literal desugaring.  Extends `Literal.toRawTerm?`
+to handle negative integer literals via `Std.Int.neg` lookup
+in the env. -/
+def Literal.toRawTermWithEnv? {scope : Nat} (env : Env) :
+    Literal → Option (RawTerm scope)
+  | .unitLit => some RawTerm.unit
+  | .boolLit true => some RawTerm.boolTrue
+  | .boolLit false => some RawTerm.boolFalse
+  | .intLit n _ =>
+    if 0 ≤ n then
+      some (RawTerm.natOfNat n.toNat)
+    else
+      -- Negative: encode as Std.Int.neg applied to abs (positive).
+      -- Note: `Int.toNat` returns 0 for negative; use `Int.natAbs`.
+      let posRaw : RawTerm scope := RawTerm.natOfNat n.natAbs
+      match env.lookup UnaryOp.negate.toQualifiedName with
+      | none => none
+      | some negDef =>
+        match negDef.liftToScope (scope := scope) with
+        | none => none
+        | some negRaw => some (RawTerm.app negRaw posRaw)
+  | .decLit _ _ => none
+  | .floatLit _ _ => none
+  | .strLit _ => none
+  | .bitLit _ _ _ => none
+  | .tritLit _ _ _ => none
+
 mutual
 
 /-- Env-aware bridge: desugars `RawExpr scope` to kernel
@@ -103,7 +130,7 @@ def RawExpr.toRawTermWithEnv? {scope : Nat} (env : Env) :
     match env.lookup qname with
     | none => none
     | some rd => rd.liftToScope
-  | .rawLit lit => Literal.toRawTerm? lit
+  | .rawLit lit => Literal.toRawTermWithEnv? env lit
   | .rawUnit => some RawTerm.unit
   | .rawParen inner => RawExpr.toRawTermWithEnv? env inner
   | .rawDot _ _ => none  -- gap #3: needs record schema

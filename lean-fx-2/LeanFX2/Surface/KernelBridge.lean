@@ -55,18 +55,30 @@ reduction lemmas explicitly for ergonomic downstream use.
 
 namespace LeanFX2.Surface
 
-/-- Desugar a literal to its kernel canonical form.  Only
-direct correspondences handled (unit, bool, nat-zero); other
-literals need the elaborator.
+/-- Encode a `Nat` as a kernel `RawTerm` via succ-chain.
+`0 ↦ natZero`, `n+1 ↦ natSucc (natOfNat n)`.  Closes gap #4
+for non-negative integer literals. -/
+def RawTerm.natOfNat {scope : Nat} : Nat → RawTerm scope
+  | 0 => RawTerm.natZero
+  | n + 1 => RawTerm.natSucc (RawTerm.natOfNat n)
 
-The `intLit n _` case uses `if n = 0` (Decidable on Int)
-rather than the nested pattern `.intLit (.ofNat 0) _` which
-would leak propext via Lean 4 v4.29.1's match compiler. -/
+/-- Desugar a literal to its kernel canonical form.  Closes
+gap #4 for non-negative integers via `RawTerm.natOfNat`
+succ-chain encoding.
+
+The `intLit n _` case extracts `.ofNat k` for `n ≥ 0` via
+`Int.toNat` (clamps to 0 for negatives + checks sign first
+to detect those).  Negative integers return `none` — they
+need `Std.Int.neg` wrapping via the env-aware bridge. -/
 def Literal.toRawTerm? {scope : Nat} : Literal → Option (RawTerm scope)
   | .unitLit => some RawTerm.unit
   | .boolLit true => some RawTerm.boolTrue
   | .boolLit false => some RawTerm.boolFalse
-  | .intLit n _ => if n = 0 then some RawTerm.natZero else none
+  | .intLit n _ =>
+    if 0 ≤ n then
+      some (RawTerm.natOfNat n.toNat)
+    else
+      none  -- negatives need Std.Int.neg via env-aware bridge
   | .decLit _ _ => none
   | .floatLit _ _ => none
   | .strLit _ => none
