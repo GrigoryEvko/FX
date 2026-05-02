@@ -290,4 +290,141 @@ theorem StepStar.natSucc_lift
     StepStar (Term.natSucc predSource) (Term.natSucc predTarget) :=
   StepStar.natSucc_lift_general chain rfl rfl
 
+/-! ## Scrutinee lifters at closed types
+
+For each eliminator with a closed-type scrutinee
+(`boolElim`/`natElim`/`natRec` at `Ty.bool`/`Ty.nat`),
+subject reduction enables a cong rule that lifts a `StepStar`
+on the scrutinee to a `StepStar` on the eliminator outer. -/
+
+/-- Generalized lift for `boolElim` scrutinee cong: any
+`StepStar` between bool-typed terms lifts to a `StepStar`
+between `boolElim`-wrappers (with shared motive + branches). -/
+theorem StepStar.boolElimScrutinee_lift_general
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsBool : srcTy = Ty.bool)
+    (tgtIsBool : tgtTy = Ty.bool)
+    {motiveType : Ty level scope}
+    {thenRaw elseRaw : RawTerm scope}
+    (thenBranch : Term context motiveType thenRaw)
+    (elseBranch : Term context motiveType elseRaw) :
+    StepStar (Term.boolElim (srcIsBool ▸ srcTerm) thenBranch elseBranch)
+             (Term.boolElim (tgtIsBool ▸ tgtTerm) thenBranch elseBranch) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsBool
+      cases tgtIsBool
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsBool : _ = Ty.bool := Step.preserves_ty_bool head srcIsBool
+      cases srcIsBool
+      cases midIsBool
+      exact StepStar.step (Step.boolElimScrutinee head)
+                          (tailIH rfl tgtIsBool)
+
+/-- Lift a `StepStar` between bool-typed terms to a `StepStar`
+between `boolElim`-wrappers. -/
+theorem StepStar.boolElimScrutinee_lift
+    {scrutRawA scrutRawB : RawTerm scope}
+    {scrutA : Term context Ty.bool scrutRawA}
+    {scrutB : Term context Ty.bool scrutRawB}
+    (chain : StepStar scrutA scrutB)
+    {motiveType : Ty level scope}
+    {thenRaw elseRaw : RawTerm scope}
+    (thenBranch : Term context motiveType thenRaw)
+    (elseBranch : Term context motiveType elseRaw) :
+    StepStar (Term.boolElim scrutA thenBranch elseBranch)
+             (Term.boolElim scrutB thenBranch elseBranch) :=
+  StepStar.boolElimScrutinee_lift_general chain rfl rfl thenBranch elseBranch
+
+/-- Generalized lift for `natElim` scrutinee cong. -/
+theorem StepStar.natElimScrutinee_lift_general
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsNat : srcTy = Ty.nat)
+    (tgtIsNat : tgtTy = Ty.nat)
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    StepStar (Term.natElim (srcIsNat ▸ srcTerm) zeroBranch succBranch)
+             (Term.natElim (tgtIsNat ▸ tgtTerm) zeroBranch succBranch) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsNat
+      cases tgtIsNat
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsNat : _ = Ty.nat := Step.preserves_ty_nat head srcIsNat
+      cases srcIsNat
+      cases midIsNat
+      exact StepStar.step (Step.natElimScrutinee head)
+                          (tailIH rfl tgtIsNat)
+
+/-- Lift a `StepStar` between nat-typed terms to a `StepStar`
+between `natElim`-wrappers. -/
+theorem StepStar.natElimScrutinee_lift
+    {scrutRawA scrutRawB : RawTerm scope}
+    {scrutA : Term context Ty.nat scrutRawA}
+    {scrutB : Term context Ty.nat scrutRawB}
+    (chain : StepStar scrutA scrutB)
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    StepStar (Term.natElim scrutA zeroBranch succBranch)
+             (Term.natElim scrutB zeroBranch succBranch) :=
+  StepStar.natElimScrutinee_lift_general chain rfl rfl zeroBranch succBranch
+
+/-- Generalized lift for `natRec` scrutinee cong. -/
+theorem StepStar.natRecScrutinee_lift_general
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsNat : srcTy = Ty.nat)
+    (tgtIsNat : tgtTy = Ty.nat)
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context
+                    (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+    StepStar (Term.natRec (srcIsNat ▸ srcTerm) zeroBranch succBranch)
+             (Term.natRec (tgtIsNat ▸ tgtTerm) zeroBranch succBranch) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsNat
+      cases tgtIsNat
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsNat : _ = Ty.nat := Step.preserves_ty_nat head srcIsNat
+      cases srcIsNat
+      cases midIsNat
+      exact StepStar.step (Step.natRecScrutinee head)
+                          (tailIH rfl tgtIsNat)
+
+/-- Lift a `StepStar` between nat-typed terms to a `StepStar`
+between `natRec`-wrappers. -/
+theorem StepStar.natRecScrutinee_lift
+    {scrutRawA scrutRawB : RawTerm scope}
+    {scrutA : Term context Ty.nat scrutRawA}
+    {scrutB : Term context Ty.nat scrutRawB}
+    (chain : StepStar scrutA scrutB)
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context
+                    (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+    StepStar (Term.natRec scrutA zeroBranch succBranch)
+             (Term.natRec scrutB zeroBranch succBranch) :=
+  StepStar.natRecScrutinee_lift_general chain rfl rfl zeroBranch succBranch
+
 end LeanFX2

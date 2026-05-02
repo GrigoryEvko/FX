@@ -24,5 +24,11 @@ namespace LeanFX2.SmokePhase7CSubjectReduction
 #print axioms LeanFX2.StepStar.preserves_ty_bool
 #print axioms LeanFX2.StepStar.natSucc_lift
 #print axioms LeanFX2.StepStar.natSucc_lift_general
+#print axioms LeanFX2.StepStar.boolElimScrutinee_lift
+#print axioms LeanFX2.StepStar.boolElimScrutinee_lift_general
+#print axioms LeanFX2.StepStar.natElimScrutinee_lift
+#print axioms LeanFX2.StepStar.natElimScrutinee_lift_general
+#print axioms LeanFX2.StepStar.natRecScrutinee_lift
+#print axioms LeanFX2.StepStar.natRecScrutinee_lift_general
 
 end LeanFX2.SmokePhase7CSubjectReduction

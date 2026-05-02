@@ -165,4 +165,71 @@ theorem Conv.natSucc_cong
   · exact StepStar.natSucc_lift_general chainA rfl midIsNat
   · exact StepStar.natSucc_lift_general chainB rfl midIsNat
 
+/-- Scrutinee cong rule: `Conv` on bool-typed scrutinees lifts to
+`Conv` on `boolElim`-wrappers (with shared motive + branches). -/
+theorem Conv.boolElimScrutinee_cong
+    {motiveType : Ty level scope}
+    {scrutRawA scrutRawB thenRaw elseRaw : RawTerm scope}
+    {scrutA : Term context Ty.bool scrutRawA}
+    {scrutB : Term context Ty.bool scrutRawB}
+    (thenBranch : Term context motiveType thenRaw)
+    (elseBranch : Term context motiveType elseRaw)
+    (scrutConv : Conv scrutA scrutB) :
+    Conv (Term.boolElim scrutA thenBranch elseBranch)
+         (Term.boolElim scrutB thenBranch elseBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := scrutConv
+  have midIsBool : midType = Ty.bool := StepStar.preserves_ty_bool chainA rfl
+  refine ⟨motiveType, RawTerm.boolElim midRaw thenRaw elseRaw,
+          Term.boolElim (midIsBool ▸ midTerm) thenBranch elseBranch,
+          ?_, ?_⟩
+  · exact StepStar.boolElimScrutinee_lift_general
+            chainA rfl midIsBool thenBranch elseBranch
+  · exact StepStar.boolElimScrutinee_lift_general
+            chainB rfl midIsBool thenBranch elseBranch
+
+/-- Scrutinee cong rule: `Conv` on nat-typed scrutinees lifts to
+`Conv` on `natElim`-wrappers. -/
+theorem Conv.natElimScrutinee_cong
+    {motiveType : Ty level scope}
+    {scrutRawA scrutRawB zeroRaw succRaw : RawTerm scope}
+    {scrutA : Term context Ty.nat scrutRawA}
+    {scrutB : Term context Ty.nat scrutRawB}
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutConv : Conv scrutA scrutB) :
+    Conv (Term.natElim scrutA zeroBranch succBranch)
+         (Term.natElim scrutB zeroBranch succBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := scrutConv
+  have midIsNat : midType = Ty.nat := StepStar.preserves_ty_nat chainA rfl
+  refine ⟨motiveType, RawTerm.natElim midRaw zeroRaw succRaw,
+          Term.natElim (midIsNat ▸ midTerm) zeroBranch succBranch,
+          ?_, ?_⟩
+  · exact StepStar.natElimScrutinee_lift_general
+            chainA rfl midIsNat zeroBranch succBranch
+  · exact StepStar.natElimScrutinee_lift_general
+            chainB rfl midIsNat zeroBranch succBranch
+
+/-- Scrutinee cong rule: `Conv` on nat-typed scrutinees lifts to
+`Conv` on `natRec`-wrappers. -/
+theorem Conv.natRecScrutinee_cong
+    {motiveType : Ty level scope}
+    {scrutRawA scrutRawB zeroRaw succRaw : RawTerm scope}
+    {scrutA : Term context Ty.nat scrutRawA}
+    {scrutB : Term context Ty.nat scrutRawB}
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context
+                    (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (scrutConv : Conv scrutA scrutB) :
+    Conv (Term.natRec scrutA zeroBranch succBranch)
+         (Term.natRec scrutB zeroBranch succBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := scrutConv
+  have midIsNat : midType = Ty.nat := StepStar.preserves_ty_nat chainA rfl
+  refine ⟨motiveType, RawTerm.natRec midRaw zeroRaw succRaw,
+          Term.natRec (midIsNat ▸ midTerm) zeroBranch succBranch,
+          ?_, ?_⟩
+  · exact StepStar.natRecScrutinee_lift_general
+            chainA rfl midIsNat zeroBranch succBranch
+  · exact StepStar.natRecScrutinee_lift_general
+            chainB rfl midIsNat zeroBranch succBranch
+
 end LeanFX2
