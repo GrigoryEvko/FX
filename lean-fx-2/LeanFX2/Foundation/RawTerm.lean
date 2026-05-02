@@ -1,82 +1,82 @@
 import LeanFX2.Foundation.Mode
 
-/-! # RawTerm — untyped well-scoped terms.
+/-! # RawTerm — Layer 0 untyped well-scoped terms.
 
-`RawTerm scope` is a de Bruijn–indexed term family with `Fin scope`
-positions.  No type annotations, no scope-shifting helpers — just the
+`RawTerm scope` is the de Bruijn-indexed term family with `Fin scope`
+positions for variables.  No types, no Ctx, no Ty references — pure
 syntactic skeleton.
 
 ## Architectural role
 
 RawTerm is the **type-level index** that makes lean-fx-2's Term
-`Term : Ctx → Ty → RawTerm scope → Type` raw-aware.  In lean-fx, RawTerm
-existed as a separate inductive with `Term.toRaw : Term Γ T → RawTerm`
-as a function — leading to ~30 bridge lemmas needed to commute toRaw
-through every operation.  In lean-fx-2, raw form IS the type index,
-so `Term.toRaw t` is `t`'s third index — recovered by `rfl`.
+raw-aware.  Every Term ctor's signature pins the corresponding
+RawTerm structure, so `Term.toRaw t = raw` is `rfl` (the projection
+IS the type index).
 
-## Constructor list
+## Constructors (28 total)
 
-Mirrors the typed `Term`'s constructors (sans type annotations):
-
-* `var (i : Fin scope)`
-* `unit`
-* `lam (body : RawTerm (scope+1))`
-* `app (fn arg : RawTerm scope)`  (covers both arrow and Π apps)
-* `pair (first second : RawTerm scope)`
-* `fst (pair : RawTerm scope)`
-* `snd (pair : RawTerm scope)`
-* `boolTrue`, `boolFalse`
-* `boolElim (scrut then else : RawTerm scope)`
-* `natZero`
-* `natSucc (predecessor : RawTerm scope)`
-* `natElim (scrut zero succ : RawTerm scope)`
-* `natRec (scrut zero succ : RawTerm scope)`
-* `listNil`, `listCons (head tail : RawTerm scope)`
-* `listElim (scrut nil cons : RawTerm scope)`
-* `optionNone`, `optionSome (value : RawTerm scope)`
-* `optionMatch (scrut none some : RawTerm scope)`
-* `eitherInl (value : RawTerm scope)`, `eitherInr (value : RawTerm scope)`
-* `eitherMatch (scrut left right : RawTerm scope)`
-* `refl (rawWitness : RawTerm scope)` — Identity-type intro
-* `idJ (base witness : RawTerm scope)` — J eliminator
-* `modIntro (raw : RawTerm scope)`, `modElim (raw : RawTerm scope)`,
-  `subsume (raw : RawTerm scope)` — Modal (Layer 6 references)
+Mirrors lean-fx-2's typed Term constructor list (sans type
+annotations).  Modal ctors (`modIntro`, `modElim`, `subsume`)
+included from day 1 even though Layer 6 isn't implemented yet —
+this avoids backward-incompatible additions later.
 
 ## Decidable equality
 
-`deriving DecidableEq` — the recursors-based decision procedure is
-propext-free (Lean 4 v4.29.1's auto-derivation works for `Inductive`
-families with a single Nat index, per `feedback_lean_zero_axiom_match.md`).
-
-## Dependencies
-
-* `Foundation/Mode.lean` — for `modIntro`/`modElim`/`subsume` to refer
-  to a `Modality` (via `Mode` reference; the actual modality is at the
-  `Ty` layer, RawTerm just records that this is a modal-flavored ctor).
-
-Note: lean-fx had RawTerm depend ONLY on Mode.Defn.  lean-fx-2 keeps
-that minimal-dependency story.
-
-## Downstream
-
-* `Foundation/RawSubst.lean` — substitution algebra on RawTerm
-* `Foundation/Subst.lean` — joint substitution carries a `forRaw : RawTermSubst src tgt`
-* `Term.lean` — RawTerm is the third type index
-* `Reduction/RawPar.lean` — raw parallel reduction (porting from lean-fx)
-
-## Diff from lean-fx
-
-* No changes to constructor list.
-* Same `deriving DecidableEq` strategy.
-* Same `Fin scope` discipline for variables.
-
-This is one of the few files that ports nearly verbatim from lean-fx.
+Auto-derived via `deriving DecidableEq`.  Per
+`feedback_lean_zero_axiom_match.md` Rule 3 (full enumeration on
+dependent inductive with universal Nat index), this is propext-free
+in Lean 4 v4.29.1.
 -/
 
 namespace LeanFX2
 
--- TODO: RawTerm inductive (per constructor list above)
--- TODO: deriving DecidableEq
+/-- Untyped well-scoped terms.  De Bruijn variables via `Fin scope`. -/
+inductive RawTerm : Nat → Type
+  -- Variable
+  | var {scope : Nat} (position : Fin scope) : RawTerm scope
+  -- Unit
+  | unit {scope : Nat} : RawTerm scope
+  -- Function intro/elim (covers both arrow and Π applications)
+  | lam {scope : Nat} (body : RawTerm (scope + 1)) : RawTerm scope
+  | app {scope : Nat} (functionTerm argumentTerm : RawTerm scope) : RawTerm scope
+  -- Pair intro/elim (covers both non-dep and Σ)
+  | pair {scope : Nat} (firstValue secondValue : RawTerm scope) : RawTerm scope
+  | fst {scope : Nat} (pairTerm : RawTerm scope) : RawTerm scope
+  | snd {scope : Nat} (pairTerm : RawTerm scope) : RawTerm scope
+  -- Booleans
+  | boolTrue {scope : Nat} : RawTerm scope
+  | boolFalse {scope : Nat} : RawTerm scope
+  | boolElim {scope : Nat}
+      (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope
+  -- Naturals
+  | natZero {scope : Nat} : RawTerm scope
+  | natSucc {scope : Nat} (predecessor : RawTerm scope) : RawTerm scope
+  | natElim {scope : Nat}
+      (scrutinee zeroBranch succBranch : RawTerm scope) : RawTerm scope
+  | natRec {scope : Nat}
+      (scrutinee zeroBranch succBranch : RawTerm scope) : RawTerm scope
+  -- Lists
+  | listNil {scope : Nat} : RawTerm scope
+  | listCons {scope : Nat} (headTerm tailTerm : RawTerm scope) : RawTerm scope
+  | listElim {scope : Nat}
+      (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope
+  -- Options
+  | optionNone {scope : Nat} : RawTerm scope
+  | optionSome {scope : Nat} (valueTerm : RawTerm scope) : RawTerm scope
+  | optionMatch {scope : Nat}
+      (scrutinee noneBranch someBranch : RawTerm scope) : RawTerm scope
+  -- Eithers
+  | eitherInl {scope : Nat} (valueTerm : RawTerm scope) : RawTerm scope
+  | eitherInr {scope : Nat} (valueTerm : RawTerm scope) : RawTerm scope
+  | eitherMatch {scope : Nat}
+      (scrutinee leftBranch rightBranch : RawTerm scope) : RawTerm scope
+  -- Identity types
+  | refl {scope : Nat} (rawWitness : RawTerm scope) : RawTerm scope
+  | idJ {scope : Nat} (baseCase witness : RawTerm scope) : RawTerm scope
+  -- Modal (Layer 6 references; raw-side ctors land from day 1)
+  | modIntro {scope : Nat} (raw : RawTerm scope) : RawTerm scope
+  | modElim {scope : Nat} (raw : RawTerm scope) : RawTerm scope
+  | subsume {scope : Nat} (raw : RawTerm scope) : RawTerm scope
+  deriving DecidableEq
 
 end LeanFX2
