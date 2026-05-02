@@ -104,8 +104,11 @@ theorem Term.subst_par_pointwise_isBi_witness
           (TermSubst.par_lift_isBi_witness related relatedBi _)
           body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        function argument =>
-      Step.par.isBi.castBoth_eq
+        resultEq function argument => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+      cases resultEq
+      simp only [Term.subst]
+      exact Step.par.isBi.castBoth_eq
         (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
         (Step.par.isBi.appPi
           (Term.subst_par_pointwise_isBi_witness related relatedBi function)

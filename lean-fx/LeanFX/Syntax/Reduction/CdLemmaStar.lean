@@ -235,8 +235,8 @@ theorem Step.par.cd_lemma_star_appPi_case
     {argumentTerm argumentTerm' : Term ctx domainType}
     (functionIH : Step.parStar functionTerm' (Term.cd functionTerm))
     (argumentIH : Step.parStar argumentTerm' (Term.cd argumentTerm)) :
-    Step.parStar (Term.appPi functionTerm' argumentTerm')
-                 (Term.cd (Term.appPi functionTerm argumentTerm)) := by
+    Step.parStar (Term.appPi rfl functionTerm' argumentTerm')
+                 (Term.cd (Term.appPi rfl functionTerm argumentTerm)) := by
   simp only [Term.cd, Term.cd_appPi_redex]
   split
   case _ rawBody developedFunctionEq =>
@@ -621,7 +621,7 @@ theorem Step.par.cd_lemma_star_betaAppPi_case
     Step.parStar
         (Term.subst0 body' arg')
         (Term.cd
-          (Term.appPi (Term.lamPi (domainType := domainType) body) arg)) := by
+          (Term.appPi rfl (Term.lamPi (domainType := domainType) body) arg)) := by
   simp only [Term.cd]
   exact Step.parStar.subst0_parStar bodyIH argIH
 
@@ -723,7 +723,7 @@ theorem Step.par.cd_lemma_star_betaAppPiDeep_case
     (argIH : Step.parStar arg' (Term.cd arg)) :
     Step.parStar
         (Term.subst0 body arg')
-        (Term.cd (Term.appPi functionTerm arg)) := by
+        (Term.cd (Term.appPi rfl functionTerm arg)) := by
   obtain ⟨body', cdEq, bodyStar⟩ :=
     Step.parStar.lamPi_target_inv_isBi functionStarBi
   simp only [Term.cd, cdEq]
