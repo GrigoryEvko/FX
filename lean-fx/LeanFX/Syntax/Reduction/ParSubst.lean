@@ -104,7 +104,9 @@ theorem Term.subst_par_pointwise
       exact Step.par.lamPi
         (Term.subst_par_pointwise (TermSubst.par_lift related _) body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        function argument => by
+        resultEq function argument => by
+      -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+      cases resultEq
       simp only [Term.subst]
       exact Step.par.castBoth
         (Ty.subst0_subst_commute codomainType domainType typeSubstitution).symm
@@ -463,17 +465,18 @@ theorem Step.parStar.app_cong
     (Step.parStar.app_cong_function argumentTerm functionChain)
     (Step.parStar.app_cong_argument functionTerm' argumentChain)
 
-/-- Single-position `appPi` congruence on function. -/
+/-- Single-position `appPi` congruence on function.
+W9.B1.1 — uses `rfl` for resultEq. -/
 theorem Step.parStar.appPi_cong_function
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {functionTerm functionTerm' : Term ctx (Ty.piTy domainType codomainType)}
     (argumentTerm : Term ctx domainType)
     (functionChain : Step.parStar functionTerm functionTerm') :
-    Step.parStar (Term.appPi functionTerm argumentTerm)
-                 (Term.appPi functionTerm' argumentTerm) :=
+    Step.parStar (Term.appPi rfl functionTerm argumentTerm)
+                 (Term.appPi rfl functionTerm' argumentTerm) :=
   Step.parStar.mapStep
-    (fun fnTerm => Term.appPi fnTerm argumentTerm)
+    (fun fnTerm => Term.appPi rfl fnTerm argumentTerm)
     (fun fnPar => Step.par.appPi fnPar (Step.par.refl argumentTerm))
     functionChain
 
@@ -484,10 +487,10 @@ theorem Step.parStar.appPi_cong_argument
     (functionTerm : Term ctx (Ty.piTy domainType codomainType))
     {argumentTerm argumentTerm' : Term ctx domainType}
     (argumentChain : Step.parStar argumentTerm argumentTerm') :
-    Step.parStar (Term.appPi functionTerm argumentTerm)
-                 (Term.appPi functionTerm argumentTerm') :=
+    Step.parStar (Term.appPi rfl functionTerm argumentTerm)
+                 (Term.appPi rfl functionTerm argumentTerm') :=
   Step.parStar.mapStep
-    (fun argTerm => Term.appPi functionTerm argTerm)
+    (fun argTerm => Term.appPi rfl functionTerm argTerm)
     (fun argPar => Step.par.appPi (Step.par.refl functionTerm) argPar)
     argumentChain
 
@@ -499,8 +502,8 @@ theorem Step.parStar.appPi_cong
     {argumentTerm argumentTerm' : Term ctx domainType}
     (functionChain : Step.parStar functionTerm functionTerm')
     (argumentChain : Step.parStar argumentTerm argumentTerm') :
-    Step.parStar (Term.appPi functionTerm argumentTerm)
-                 (Term.appPi functionTerm' argumentTerm') :=
+    Step.parStar (Term.appPi rfl functionTerm argumentTerm)
+                 (Term.appPi rfl functionTerm' argumentTerm') :=
   Step.parStar.append
     (Step.parStar.appPi_cong_function argumentTerm functionChain)
     (Step.parStar.appPi_cong_argument functionTerm' argumentChain)

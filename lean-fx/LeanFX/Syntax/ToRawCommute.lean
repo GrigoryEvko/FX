@@ -100,9 +100,9 @@ theorem Term.toRaw_subst {mode : Mode} {level sourceScope targetScope : Nat}
       simp only [Term.subst, Term.toRaw, RawTerm.subst]
       exact congrArg RawTerm.lam
         (Term.toRaw_subst (TermSubst.lift_RawConsistent consistency _) body)
-  | _, .appPi function argument => by
+  | _, .appPi _ function argument => by
       simp only [Term.subst, Term.toRaw, RawTerm.subst]
-      rw [Term.toRaw_cast]
+      rw [Term.toRaw_cast, Term.toRaw_cast]
       exact congrArgTwo (function := RawTerm.app)
         (Term.toRaw_subst consistency function)
         (Term.toRaw_subst consistency argument)

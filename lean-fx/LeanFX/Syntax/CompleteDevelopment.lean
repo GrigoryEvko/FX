@@ -69,7 +69,7 @@ def Term.isNewestVar {mode : Mode} {level scope : Nat}
   | Term.lam _ => none
   | Term.app _ _ => none
   | Term.lamPi _ => none
-  | Term.appPi _ _ => none
+  | Term.appPi _ _ _ => none
   | Term.pair _ _ => none
   | Term.fst _ => none
   | Term.snd _ => none
@@ -271,8 +271,10 @@ def Term.cd {mode : Mode} {level scope : Nat}
       Term.cd_app_redex (Term.cd functionTerm) (Term.cd argumentTerm)
   | _, .lamPi body =>
       Term.lamPi (Term.cd body)
-  | _, .appPi functionTerm argumentTerm =>
-      Term.cd_appPi_redex (Term.cd functionTerm) (Term.cd argumentTerm)
+  | _, .appPi resultEq functionTerm argumentTerm =>
+      -- W9.B1.1 — preserve resultEq across cd; cast result to match input.
+      resultEq.symm ▸
+        Term.cd_appPi_redex (Term.cd functionTerm) (Term.cd argumentTerm)
   | _, .pair firstVal secondVal =>
       Term.pair (Term.cd firstVal) (Term.cd secondVal)
   | _, .fst pairTerm =>
