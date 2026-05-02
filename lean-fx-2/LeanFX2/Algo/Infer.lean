@@ -179,11 +179,38 @@ def Term.infer (context : Ctx mode level scope) :
   | .eitherInl _      => none
   | .eitherInr _      => none
   | .eitherMatch _ _ _ => none
-  | .refl _           => none
-  | .idJ _ _          => none
-  | .modIntro _       => none
-  | .modElim _        => none
-  | .subsume _        => none
+  | .refl _           => none  -- needs expected Ty.id carrier endpts
+  -- J eliminator: synth witness (must be Ty.id _ _ _), synth base
+  -- (gives motive), build idJ.
+  | .idJ baseRaw witnessRaw =>
+      match Term.infer context witnessRaw with
+      | some ⟨.id _ _ _, witnessTerm⟩ =>
+          match Term.infer context baseRaw with
+          | some ⟨motiveType, baseTerm⟩ =>
+              some ⟨motiveType, Term.idJ baseTerm witnessTerm⟩
+          | none => none
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
+      | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
+  -- Modal markers preserve inner type — synth the inner.
+  | .modIntro innerRaw =>
+      match Term.infer context innerRaw with
+      | some ⟨innerType, innerTerm⟩ =>
+          some ⟨innerType, Term.modIntro innerTerm⟩
+      | none => none
+  | .modElim innerRaw =>
+      match Term.infer context innerRaw with
+      | some ⟨innerType, innerTerm⟩ =>
+          some ⟨innerType, Term.modElim innerTerm⟩
+      | none => none
+  | .subsume innerRaw =>
+      match Term.infer context innerRaw with
+      | some ⟨innerType, innerTerm⟩ =>
+          some ⟨innerType, Term.subsume innerTerm⟩
+      | none => none
 
 end LeanFX2
 
