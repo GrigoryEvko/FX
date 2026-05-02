@@ -1,80 +1,156 @@
-/-! # Graded/Semiring — generic semiring framework
+/-! # Graded/Semiring — generic semiring framework for graded type system
 
-A `GradeSemiring` is a semiring `(R, +, *, 0, 1, ≤)` plus a preorder
+A `GradeSemiring` is a semiring `(R, +, *, 0, 1, ≤)` with a preorder
 compatible with `+` and `*`.  Each of FX's 19 graded dimensions
 instantiates this typeclass.
 
-## Algebra (per `fx_design.md` §6.1)
+Per `fx_design.md` §6.1.
 
-```lean
-class GradeSemiring (R : Type) where
-  zero : R
-  one  : R
-  add  : R → R → R
-  mul  : R → R → R
-  le   : R → R → Prop
-  -- laws:
-  add_assoc      : ∀ a b c, add (add a b) c = add a (add b c)
-  add_comm       : ∀ a b,   add a b = add b a
-  add_zero_left  : ∀ a,     add zero a = a
-  mul_assoc      : ∀ a b c, mul (mul a b) c = mul a (mul b c)
-  mul_one_left   : ∀ a,     mul one a = a
-  mul_one_right  : ∀ a,     mul a one = a
-  mul_distrib_left  : ∀ a b c, mul a (add b c) = add (mul a b) (mul a c)
-  mul_distrib_right : ∀ a b c, mul (add a b) c = add (mul a c) (mul b c)
-  mul_zero_left  : ∀ a, mul zero a = zero
-  mul_zero_right : ∀ a, mul a zero = zero
-  -- preorder:
-  le_refl        : ∀ a,     le a a
-  le_trans       : ∀ a b c, le a b → le b c → le a c
-  add_mono       : ∀ a b c d, le a b → le c d → le (add a c) (add b d)
-  mul_mono       : ∀ a b c d, le a b → le c d → le (mul a c) (mul b d)
-```
+## Algebra
+
+* `(R, +, 0)` is a commutative monoid (parallel use)
+* `(R, *, 1)` is a monoid (sequential use)
+* `*` distributes over `+`
+* `0 * r = r * 0 = 0` (annihilation)
+* `≤` preorder compatible with `+` and `*` (monotonicity)
+
+## Concrete instances (downstream `Graded/Instances/*`)
+
+* `UsageGrade` = `{0, 1, ω}` — linearity tracking
+* `EffectGrade` = set of effect labels — capability tracking
+* `SecurityGrade` = `{unclassified < classified}` — info flow
+* ... 19 total per `fx_design.md` §6.3
 
 ## Why typeclass
 
-* Every dimension provides one — `instance Usage.semiring : GradeSemiring UsageGrade`,
-  `instance Effect.semiring : GradeSemiring EffectGrade`, etc.
-* Generic `GradeVector` (`Graded/GradeVector.lean`) is parameterized
-  by the registered list of semirings; pointwise ops use the typeclass.
-* Wood/Atkey context division `pi/p` (per `fx_design.md` §6.2) is
-  defined generically: `pi/p = max { d : mul d p ≤ pi }`.  Each
-  semiring provides the order; division is computable when the
-  semiring is decidable.
+* Each dimension is a separate instance
+* Generic `GradeVector` (next file) is parameterized by the registered
+  list of semirings; pointwise ops use the typeclass
+* Wood/Atkey context division `pi/p` (per §6.2) is defined generically:
+  `pi/p = max { d : d * p ≤ pi }` — needs `Decidable` extension to
+  compute in elaboration
 
-## Laws as Prop, computation as data
+## Layer
 
-The data fields (`zero, one, add, mul, le`) are the *operational*
-content.  The `_assoc, _comm, ...` fields are *propositions* that
-must be discharged when constructing an instance.
-
-For decidable semirings, `Decidable (le a b)` enables typechecker-
-internal grade comparisons.
-
-## Dependencies
-
-Layer 7 of Layer 7 — depends only on Lean core (no FX-specific code).
-
-## Downstream
-
-* `Graded/GradeVector.lean` — dependent product over registered dims
-* `Graded/Rules.lean` — Wood-Atkey lambda rule via context division
-* `Graded/Instances/*.lean` — concrete dim semirings
-
-## Implementation plan (Phase 8)
-
-1. Define `class GradeSemiring (R : Type)` with data + laws fields
-2. Provide proof-helper API: `mul_zero_iff_zero_or_zero` etc.
-3. Add `Decidable` constraint for runtime grade comparison
-4. Smoke: trivial 1-element semiring (`Unit`) instances all laws
-
-Target: ~150 lines.
+Pure Lean — no FX-specific dependencies.  Foundation for Graded layer.
 -/
 
 namespace LeanFX2.Graded
 
--- TODO Phase 8: GradeSemiring typeclass with data + laws
--- TODO Phase 8: Decidable extension for runtime grade comparisons
--- TODO Phase 8: context-division operator on top of semiring
+/-- Semiring with preorder for tracking graded resource usage along
+one of FX's 19 type-system dimensions.  All algebra laws are bundled
+to ensure each instance is verified. -/
+class GradeSemiring (Carrier : Type) where
+  /-- Additive identity (representing "no resource"). -/
+  zero : Carrier
+  /-- Multiplicative identity (representing "one use"). -/
+  one  : Carrier
+  /-- Parallel composition (resource union). -/
+  add  : Carrier → Carrier → Carrier
+  /-- Sequential composition (resource scaling). -/
+  mul  : Carrier → Carrier → Carrier
+  /-- Subsumption preorder (smaller = more restrictive). -/
+  le   : Carrier → Carrier → Prop
+
+  -- Additive monoid laws
+  add_assoc      : ∀ first second third,
+                     add (add first second) third = add first (add second third)
+  add_comm       : ∀ first second, add first second = add second first
+  add_zero_left  : ∀ value, add zero value = value
+  add_zero_right : ∀ value, add value zero = value
+
+  -- Multiplicative monoid laws
+  mul_assoc      : ∀ first second third,
+                     mul (mul first second) third = mul first (mul second third)
+  mul_one_left   : ∀ value, mul one value = value
+  mul_one_right  : ∀ value, mul value one = value
+
+  -- Distribution laws
+  mul_distrib_left  : ∀ scalar leftAddend rightAddend,
+                        mul scalar (add leftAddend rightAddend) =
+                        add (mul scalar leftAddend) (mul scalar rightAddend)
+  mul_distrib_right : ∀ leftAddend rightAddend scalar,
+                        mul (add leftAddend rightAddend) scalar =
+                        add (mul leftAddend scalar) (mul rightAddend scalar)
+
+  -- Annihilation
+  mul_zero_left  : ∀ value, mul zero value = zero
+  mul_zero_right : ∀ value, mul value zero = zero
+
+  -- Preorder laws
+  le_refl        : ∀ value, le value value
+  le_trans       : ∀ first second third, le first second → le second third → le first third
+
+  -- Monotonicity (preorder compatible with operations)
+  add_mono : ∀ leftLow leftHigh rightLow rightHigh,
+               le leftLow leftHigh → le rightLow rightHigh →
+               le (add leftLow rightLow) (add leftHigh rightHigh)
+  mul_mono : ∀ leftLow leftHigh rightLow rightHigh,
+               le leftLow leftHigh → le rightLow rightHigh →
+               le (mul leftLow rightLow) (mul leftHigh rightHigh)
+
+namespace GradeSemiring
+
+variable {Carrier : Type} [GradeSemiring Carrier]
+
+/-- Sum-of-many-additions helper: `addAll [a, b, c] = a + b + c` (with
+zero for the empty list).  Useful for grade-vector composition. -/
+def addAll : List Carrier → Carrier
+  | [] => zero
+  | head :: rest => add head (addAll rest)
+
+/-- Product-of-many helper: `mulAll [a, b, c] = a * b * c` (with one
+for the empty list). -/
+def mulAll : List Carrier → Carrier
+  | [] => one
+  | head :: rest => mul head (mulAll rest)
+
+end GradeSemiring
+
+/-- A `DecidableGradeSemiring` extends `GradeSemiring` with a decidable
+preorder, enabling computation of subsumption checks at elaboration
+time.  Required for any dimension whose grade comparisons appear in
+typing rules. -/
+class DecidableGradeSemiring (Carrier : Type) extends GradeSemiring Carrier where
+  decideLe : ∀ first second, Decidable (le first second)
+  decideEq : DecidableEq Carrier
+
+namespace DecidableGradeSemiring
+
+variable {Carrier : Type} [DecidableGradeSemiring Carrier]
+
+/-- Re-export `decideLe` as a `Decidable` instance for use in `if
+... then ... else ...` over the preorder. -/
+instance : ∀ (first second : Carrier), Decidable (GradeSemiring.le first second) :=
+  decideLe
+
+end DecidableGradeSemiring
+
+/-! ## Smoke: trivial 1-element semiring (Unit)
+
+The unit semiring has a single element; all laws hold trivially.
+Verifies the typeclass shape compiles and zero axioms are used. -/
+
+instance : GradeSemiring Unit where
+  zero := ()
+  one  := ()
+  add  := fun _ _ => ()
+  mul  := fun _ _ => ()
+  le   := fun _ _ => True
+  add_assoc := fun _ _ _ => rfl
+  add_comm  := fun _ _ => rfl
+  add_zero_left  := fun _ => rfl
+  add_zero_right := fun _ => rfl
+  mul_assoc := fun _ _ _ => rfl
+  mul_one_left  := fun _ => rfl
+  mul_one_right := fun _ => rfl
+  mul_distrib_left  := fun _ _ _ => rfl
+  mul_distrib_right := fun _ _ _ => rfl
+  mul_zero_left  := fun _ => rfl
+  mul_zero_right := fun _ => rfl
+  le_refl  := fun _ => True.intro
+  le_trans := fun _ _ _ _ _ => True.intro
+  add_mono := fun _ _ _ _ _ _ => True.intro
+  mul_mono := fun _ _ _ _ _ _ => True.intro
 
 end LeanFX2.Graded
