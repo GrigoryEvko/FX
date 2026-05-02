@@ -148,16 +148,28 @@ theorem Term.rename_compose_HEq
       _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming thenBranch)
       _ _ (Term.rename_compose_HEq firstTermRenaming secondTermRenaming elseBranch)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        functionTerm argumentTerm => by
-    -- Outer-cast peeling on each side, then constructor congruence.
+        resultEq functionTerm argumentTerm => by
+    -- W9.B1.1 — equation-bearing appPi.  Because resultEq is propositional,
+    -- cases on resultEq once normalises resultType := codomain.subst0 domain
+    -- on both sides.  The remaining casts are subst0_rename_commute on each
+    -- rename layer.  Use rename_HEq_cast_input + cong with rfl-resultEq
+    -- both cancel via eqRec_heq.
+    cases resultEq
+    -- Total casts: LHS has rename second (rename first (rfl-cast ▸ subst0-cast ▸ appPi)).
+    -- Inner rfl-cast vanishes; then rename second processes (subst0-cast ▸ appPi).
+    -- Use Term.rename_HEq_cast_input on the outer.
     apply HEq.trans
       (Term.rename_HEq_cast_input secondTermRenaming
         (Ty.subst0_rename_commute codomainType domainType firstRawRenaming).symm
-        (Term.appPi (Term.rename firstTermRenaming functionTerm)
-                    (Term.rename firstTermRenaming argumentTerm)))
-    -- Strip outer cast from Term.rename's appPi clause.
+        (Term.appPi rfl (Term.rename firstTermRenaming functionTerm)
+                        (Term.rename firstTermRenaming argumentTerm)))
+    -- LHS now: rename second (appPi rfl ...) which unfolds to:
+    --   (rfl-cast ▸ subst0-cast ▸ appPi rfl rename rename)
+    -- The rfl-cast is congrArg of rfl, which is rfl on the function level,
+    -- so its `▸` is actually the identity. Thus only ONE actual cast remains.
     apply HEq.trans (eqRec_heq _ _)
-    -- Flip and process RHS.
+    -- LHS now: appPi rfl (rename second (rename first f)) (rename second (rename first a))
+    -- RHS: rename compose (appPi rfl f a) = rfl-cast ▸ subst0-cast ▸ appPi rfl (rename compose f) (rename compose a)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm

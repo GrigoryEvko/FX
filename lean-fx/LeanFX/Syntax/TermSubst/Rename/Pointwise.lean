@@ -85,19 +85,24 @@ theorem Term.rename_HEq_pointwise
       _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
             secondTermRenaming rawRenamingsAgreePointwise elseBranch)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        functionTerm argumentTerm => by
+        resultEq functionTerm argumentTerm => by
     cases targetContextEq
+    -- Term.rename on Term.appPi produces double cast; strip both.
     show HEq
-      ((Ty.subst0_rename_commute codomainType domainType firstRawRenaming).symm ▸
-        Term.appPi (Term.rename firstTermRenaming functionTerm)
-                   (Term.rename firstTermRenaming argumentTerm))
-      ((Ty.subst0_rename_commute codomainType domainType secondRawRenaming).symm ▸
-        Term.appPi (Term.rename secondTermRenaming functionTerm)
-                   (Term.rename secondTermRenaming argumentTerm))
+      ((congrArg (Ty.rename · firstRawRenaming) resultEq).symm ▸
+        ((Ty.subst0_rename_commute codomainType domainType firstRawRenaming).symm ▸
+          Term.appPi rfl (Term.rename firstTermRenaming functionTerm)
+                         (Term.rename firstTermRenaming argumentTerm)))
+      ((congrArg (Ty.rename · secondRawRenaming) resultEq).symm ▸
+        ((Ty.subst0_rename_commute codomainType domainType secondRawRenaming).symm ▸
+          Term.appPi rfl (Term.rename secondTermRenaming functionTerm)
+                         (Term.rename secondTermRenaming argumentTerm)))
+    apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.trans (b :=
-      Term.appPi (Term.rename secondTermRenaming functionTerm)
-                 (Term.rename secondTermRenaming argumentTerm))
+      Term.appPi (context := firstTargetContext) rfl
+        (Term.rename secondTermRenaming functionTerm)
+        (Term.rename secondTermRenaming argumentTerm))
     · exact Term.appPi_HEq_congr
         (Ty.rename_congr rawRenamingsAgreePointwise domainType)
         (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) codomainType)
@@ -105,7 +110,9 @@ theorem Term.rename_HEq_pointwise
               secondTermRenaming rawRenamingsAgreePointwise functionTerm)
         _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
               secondTermRenaming rawRenamingsAgreePointwise argumentTerm)
-    · exact (eqRec_heq _ _).symm
+    · apply HEq.symm
+      apply HEq.trans (eqRec_heq _ _)
+      exact (eqRec_heq _ _)
   | _, .pair (firstType := firstType) (secondType := secondType) firstVal secondVal => by
     cases targetContextEq
     show HEq
