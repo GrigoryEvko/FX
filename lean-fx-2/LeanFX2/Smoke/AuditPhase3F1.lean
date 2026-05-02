@@ -4,3 +4,5 @@ import LeanFX2.Term.Pointwise
 
 #print axioms LeanFX2.TermSubst.lift_pointwise
 #print axioms LeanFX2.Term.subst_pointwise
+#print axioms LeanFX2.TermSubst.compose
+#print axioms LeanFX2.TermSubst.compose_position_HEq
