@@ -24,5 +24,11 @@ namespace LeanFX2.SmokePhase7BConvCanonical
 #print axioms LeanFX2.Conv.boolElimScrutinee_cong
 #print axioms LeanFX2.Conv.natElimScrutinee_cong
 #print axioms LeanFX2.Conv.natRecScrutinee_cong
+#print axioms LeanFX2.Conv.boolElimThen_cong_unit
+#print axioms LeanFX2.Conv.boolElimThen_cong_bool
+#print axioms LeanFX2.Conv.boolElimThen_cong_nat
+#print axioms LeanFX2.Conv.boolElimElse_cong_unit
+#print axioms LeanFX2.Conv.boolElimElse_cong_bool
+#print axioms LeanFX2.Conv.boolElimElse_cong_nat
 
 end LeanFX2.SmokePhase7BConvCanonical

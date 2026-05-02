@@ -232,4 +232,132 @@ theorem Conv.natRecScrutinee_cong
   · exact StepStar.natRecScrutinee_lift_general
             chainB rfl midIsNat zeroBranch succBranch
 
+/-! ## Branch cong rules at closed motive types
+
+For `boolElim`'s then-branch with closed motive type
+(`Ty.unit`/`Ty.bool`/`Ty.nat`), `Conv` on the branch lifts to
+`Conv` on the `boolElim` wrapper.  Three explicit variants per
+closed motive — generic motive needs general subject reduction
+(Phase 7.D, deferred). -/
+
+/-- `Conv` on `boolElim`'s then-branch at `Ty.unit` motive. -/
+theorem Conv.boolElimThen_cong_unit
+    {scrutRaw thenRawA thenRawB elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    {thenA : Term context Ty.unit thenRawA}
+    {thenB : Term context Ty.unit thenRawB}
+    (elseBranch : Term context Ty.unit elseRaw)
+    (thenConv : Conv thenA thenB) :
+    Conv (Term.boolElim scrutinee thenA elseBranch)
+         (Term.boolElim scrutinee thenB elseBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := thenConv
+  have midIsUnit : midType = Ty.unit := StepStar.preserves_ty_unit chainA rfl
+  refine ⟨Ty.unit, RawTerm.boolElim scrutRaw midRaw elseRaw,
+          Term.boolElim scrutinee (midIsUnit ▸ midTerm) elseBranch,
+          ?_, ?_⟩
+  · exact StepStar.boolElimThenBranch_lift_general_unit
+            chainA rfl midIsUnit scrutinee elseBranch
+  · exact StepStar.boolElimThenBranch_lift_general_unit
+            chainB rfl midIsUnit scrutinee elseBranch
+
+/-- `Conv` on `boolElim`'s then-branch at `Ty.bool` motive. -/
+theorem Conv.boolElimThen_cong_bool
+    {scrutRaw thenRawA thenRawB elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    {thenA : Term context Ty.bool thenRawA}
+    {thenB : Term context Ty.bool thenRawB}
+    (elseBranch : Term context Ty.bool elseRaw)
+    (thenConv : Conv thenA thenB) :
+    Conv (Term.boolElim scrutinee thenA elseBranch)
+         (Term.boolElim scrutinee thenB elseBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := thenConv
+  have midIsBool : midType = Ty.bool := StepStar.preserves_ty_bool chainA rfl
+  refine ⟨Ty.bool, RawTerm.boolElim scrutRaw midRaw elseRaw,
+          Term.boolElim scrutinee (midIsBool ▸ midTerm) elseBranch,
+          ?_, ?_⟩
+  · exact StepStar.boolElimThenBranch_lift_general_bool
+            chainA rfl midIsBool scrutinee elseBranch
+  · exact StepStar.boolElimThenBranch_lift_general_bool
+            chainB rfl midIsBool scrutinee elseBranch
+
+/-- `Conv` on `boolElim`'s then-branch at `Ty.nat` motive. -/
+theorem Conv.boolElimThen_cong_nat
+    {scrutRaw thenRawA thenRawB elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    {thenA : Term context Ty.nat thenRawA}
+    {thenB : Term context Ty.nat thenRawB}
+    (elseBranch : Term context Ty.nat elseRaw)
+    (thenConv : Conv thenA thenB) :
+    Conv (Term.boolElim scrutinee thenA elseBranch)
+         (Term.boolElim scrutinee thenB elseBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := thenConv
+  have midIsNat : midType = Ty.nat := StepStar.preserves_ty_nat chainA rfl
+  refine ⟨Ty.nat, RawTerm.boolElim scrutRaw midRaw elseRaw,
+          Term.boolElim scrutinee (midIsNat ▸ midTerm) elseBranch,
+          ?_, ?_⟩
+  · exact StepStar.boolElimThenBranch_lift_general_nat
+            chainA rfl midIsNat scrutinee elseBranch
+  · exact StepStar.boolElimThenBranch_lift_general_nat
+            chainB rfl midIsNat scrutinee elseBranch
+
+/-- `Conv` on `boolElim`'s else-branch at `Ty.unit` motive. -/
+theorem Conv.boolElimElse_cong_unit
+    {scrutRaw thenRaw elseRawA elseRawB : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    (thenBranch : Term context Ty.unit thenRaw)
+    {elseA : Term context Ty.unit elseRawA}
+    {elseB : Term context Ty.unit elseRawB}
+    (elseConv : Conv elseA elseB) :
+    Conv (Term.boolElim scrutinee thenBranch elseA)
+         (Term.boolElim scrutinee thenBranch elseB) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := elseConv
+  have midIsUnit : midType = Ty.unit := StepStar.preserves_ty_unit chainA rfl
+  refine ⟨Ty.unit, RawTerm.boolElim scrutRaw thenRaw midRaw,
+          Term.boolElim scrutinee thenBranch (midIsUnit ▸ midTerm),
+          ?_, ?_⟩
+  · exact StepStar.boolElimElseBranch_lift_general_unit
+            chainA rfl midIsUnit scrutinee thenBranch
+  · exact StepStar.boolElimElseBranch_lift_general_unit
+            chainB rfl midIsUnit scrutinee thenBranch
+
+/-- `Conv` on `boolElim`'s else-branch at `Ty.bool` motive. -/
+theorem Conv.boolElimElse_cong_bool
+    {scrutRaw thenRaw elseRawA elseRawB : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    (thenBranch : Term context Ty.bool thenRaw)
+    {elseA : Term context Ty.bool elseRawA}
+    {elseB : Term context Ty.bool elseRawB}
+    (elseConv : Conv elseA elseB) :
+    Conv (Term.boolElim scrutinee thenBranch elseA)
+         (Term.boolElim scrutinee thenBranch elseB) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := elseConv
+  have midIsBool : midType = Ty.bool := StepStar.preserves_ty_bool chainA rfl
+  refine ⟨Ty.bool, RawTerm.boolElim scrutRaw thenRaw midRaw,
+          Term.boolElim scrutinee thenBranch (midIsBool ▸ midTerm),
+          ?_, ?_⟩
+  · exact StepStar.boolElimElseBranch_lift_general_bool
+            chainA rfl midIsBool scrutinee thenBranch
+  · exact StepStar.boolElimElseBranch_lift_general_bool
+            chainB rfl midIsBool scrutinee thenBranch
+
+/-- `Conv` on `boolElim`'s else-branch at `Ty.nat` motive. -/
+theorem Conv.boolElimElse_cong_nat
+    {scrutRaw thenRaw elseRawA elseRawB : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    (thenBranch : Term context Ty.nat thenRaw)
+    {elseA : Term context Ty.nat elseRawA}
+    {elseB : Term context Ty.nat elseRawB}
+    (elseConv : Conv elseA elseB) :
+    Conv (Term.boolElim scrutinee thenBranch elseA)
+         (Term.boolElim scrutinee thenBranch elseB) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := elseConv
+  have midIsNat : midType = Ty.nat := StepStar.preserves_ty_nat chainA rfl
+  refine ⟨Ty.nat, RawTerm.boolElim scrutRaw thenRaw midRaw,
+          Term.boolElim scrutinee thenBranch (midIsNat ▸ midTerm),
+          ?_, ?_⟩
+  · exact StepStar.boolElimElseBranch_lift_general_nat
+            chainA rfl midIsNat scrutinee thenBranch
+  · exact StepStar.boolElimElseBranch_lift_general_nat
+            chainB rfl midIsNat scrutinee thenBranch
+
 end LeanFX2
