@@ -699,4 +699,105 @@ theorem Ty.subst0_optRename_success {source target : Nat}
   rw [codomainMaps] at commute
   exact commute
 
+/-- Raw one-hole substitution forms a raw optional-renaming square when
+the substituent itself optional-renames successfully. -/
+theorem RawTermSubst.singleton_optionalRenamingSquare {source target : Nat}
+    (rawSubstituent : RawTerm source) (renamedRawSubstituent : RawTerm target)
+    (optionalRenaming : OptionalRenaming source target)
+    (rawSubstituentMaps :
+      rawSubstituent.optRename optionalRenaming = some renamedRawSubstituent) :
+    RawTermSubst.OptionalRenamingSquare (RawTermSubst.singleton rawSubstituent)
+      optionalRenaming.lift optionalRenaming
+      (RawTermSubst.singleton renamedRawSubstituent)
+  | ⟨0, _⟩ => by
+      change rawSubstituent.optRename optionalRenaming =
+        Option.map (fun renamedRawTerm =>
+            renamedRawTerm.subst (RawTermSubst.singleton renamedRawSubstituent))
+          (Option.map RawTerm.var (some ⟨0, Nat.zero_lt_succ target⟩))
+      rw [rawSubstituentMaps]
+      rfl
+  | ⟨sourcePosition + 1, isWithinSource⟩ => by
+      let sourcePredecessor : Fin source :=
+        ⟨sourcePosition, Nat.lt_of_succ_lt_succ isWithinSource⟩
+      change Option.map RawTerm.var (optionalRenaming sourcePredecessor) =
+        Option.map (fun renamedRawTerm =>
+            renamedRawTerm.subst (RawTermSubst.singleton renamedRawSubstituent))
+          (Option.map RawTerm.var
+            (Option.map Fin.succ (optionalRenaming sourcePredecessor)))
+      cases optionalRenaming sourcePredecessor <;> rfl
+
+/-- Term-aware one-hole substitution forms a joint optional-renaming square
+when both the type substituent and the raw argument optional-rename
+successfully.  Companion to `Subst.singleton_optionalRenamingSquare` for
+the W9.B1.3a `termSingleton`-flavored equation in `Term.appPi`. -/
+theorem Subst.termSingleton_optionalRenamingSquare {level source target : Nat}
+    (substituent : Ty level source) (renamedSubstituent : Ty level target)
+    (rawSubstituent : RawTerm source) (renamedRawSubstituent : RawTerm target)
+    (optionalRenaming : OptionalRenaming source target)
+    (substituentMaps : substituent.optRename optionalRenaming = some renamedSubstituent)
+    (rawSubstituentMaps :
+      rawSubstituent.optRename optionalRenaming = some renamedRawSubstituent) :
+    Subst.OptionalRenamingSquare
+      (Subst.termSingleton substituent rawSubstituent)
+      optionalRenaming.lift optionalRenaming
+      (Subst.termSingleton renamedSubstituent renamedRawSubstituent) :=
+  And.intro
+    (fun sourcePosition =>
+      match sourcePosition with
+      | ⟨0, _⟩ => by
+          change substituent.optRename optionalRenaming =
+            Option.map (fun renamedType =>
+                renamedType.subst (Subst.termSingleton renamedSubstituent
+                  renamedRawSubstituent))
+              (Option.map Ty.tyVar (some ⟨0, Nat.zero_lt_succ target⟩))
+          rw [substituentMaps]
+          rfl
+      | ⟨sourcePositionIndex + 1, isWithinSource⟩ => by
+          let sourcePredecessor : Fin source :=
+            ⟨sourcePositionIndex, Nat.lt_of_succ_lt_succ isWithinSource⟩
+          change Option.map Ty.tyVar (optionalRenaming sourcePredecessor) =
+            Option.map (fun renamedType =>
+                renamedType.subst (Subst.termSingleton renamedSubstituent
+                  renamedRawSubstituent))
+              (Option.map Ty.tyVar
+                (Option.map Fin.succ (optionalRenaming sourcePredecessor)))
+          cases optionalRenaming sourcePredecessor <;> rfl)
+    (RawTermSubst.singleton_optionalRenamingSquare rawSubstituent
+      renamedRawSubstituent optionalRenaming rawSubstituentMaps)
+
+/-- Successful optional renaming commutes with `termSingleton`-flavored
+substitution.  Companion of `Ty.subst0_optRename_success` for the
+W9.B1.3a equation form of `Term.appPi`. -/
+theorem Ty.subst_termSingleton_optRename_success {source target : Nat}
+    (optionalRenaming : OptionalRenaming source target)
+    (codomain : Ty level (source + 1))
+    (substituent : Ty level source) (renamedSubstituent : Ty level target)
+    (rawSubstituent : RawTerm source) (renamedRawSubstituent : RawTerm target)
+    (renamedCodomain : Ty level (target + 1))
+    (codomainMaps : codomain.optRename optionalRenaming.lift = some renamedCodomain)
+    (substituentMaps : substituent.optRename optionalRenaming = some renamedSubstituent)
+    (rawSubstituentMaps :
+      rawSubstituent.optRename optionalRenaming = some renamedRawSubstituent) :
+    (codomain.subst (Subst.termSingleton substituent rawSubstituent)).optRename
+        optionalRenaming =
+      some (renamedCodomain.subst
+        (Subst.termSingleton renamedSubstituent renamedRawSubstituent)) := by
+  have commute :=
+    Ty.subst_optRename_commute
+      (Subst.termSingleton substituent rawSubstituent)
+      optionalRenaming.lift optionalRenaming
+      (Subst.termSingleton renamedSubstituent renamedRawSubstituent)
+      (Subst.termSingleton_optionalRenamingSquare substituent
+        renamedSubstituent rawSubstituent renamedRawSubstituent
+        optionalRenaming substituentMaps rawSubstituentMaps)
+      codomain
+  change (codomain.subst (Subst.termSingleton substituent rawSubstituent)).optRename
+        optionalRenaming =
+    Option.map (fun renamedType =>
+        renamedType.subst (Subst.termSingleton renamedSubstituent
+          renamedRawSubstituent))
+      (codomain.optRename optionalRenaming.lift) at commute
+  rw [codomainMaps] at commute
+  exact commute
+
 end LeanFX.Syntax

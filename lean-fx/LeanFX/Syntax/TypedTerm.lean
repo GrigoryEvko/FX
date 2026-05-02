@@ -58,36 +58,31 @@ inductive Term : {mode : Mode} → {level scope : Nat} →
       {codomainType : Ty level (scope + 1)} →
       (body : Term (Ctx.cons context domainType) codomainType) →
       Term context (Ty.piTy domainType codomainType)
-  /-- Application for dependent `piTy` (W9.B1.1 — equation-bearing
-  form).  Result type is a free index `resultType` constrained by the
-  equation parameter `resultEq` to equal the codomain substituted by
-  `domainType` at var 0 (legacy `Ty.subst0` shape preserved).
+  /-- Application for dependent `piTy` (W9.B1.3a — termSingleton-flavored
+  equation form).  Result type is a free index `resultType` constrained
+  by the equation parameter `resultEq` to equal the codomain substituted
+  by a `termSingleton` carrying domain type plus a free `argumentRaw :
+  RawTerm scope`.  Generic callers pass `argumentRaw := RawTerm.unit`
+  and discharge `resultEq` via `Ty.subst0_eq_termSingleton_unit`.
 
-  The equation form (W9.B1.1) decouples `appPi`'s result type from
-  the literal `subst0` shape, enabling pattern-matching consumers to
-  see `appPi` produce ANY type provably equal to the canonical
-  β-result form.  This is the architectural prerequisite for the
-  later termSingleton migration (W9.B1.3+) which replaces `subst0`
-  in the equation with `Subst.termSingleton domainType
-  argumentTerm.toRaw`, closing the dependent β bridge sorries
-  documented at `ParToRawBridge.lean:202-205`.
+  The equation form (W9.B1.1) decoupled `appPi`'s result type from the
+  literal `subst0` shape; W9.B1.3a refines the equation to a
+  termSingleton flavor.  When the Step ctors (later phases) instantiate
+  `argumentRaw := Term.toRaw argumentTerm`, the dependent β bridge
+  sorries at `ParToRawBridge.lean:202-205` close.
 
-  Construction: at every call site, pass `(by rfl)` (or `rfl`) for
-  `resultEq` and let Lean unify `resultType := codomainType.subst0
-  domainType`.  Existing `Term.appPi f a` becomes
-  `Term.appPi rfl f a`.
-
-  For v1.0+ `Ty` (no `Ty.tyVar`), `B.subst0 A` reduces to `B`'s
-  structural shape at scope (the substituent is unused since `B` has
-  no variable references).  When `Ty.tyVar` lands in v1.5+, this rule
-  remains unchanged but `subst0` actually looks up the substituent. -/
+  Construction (generic, type-only callers): pass `argumentRaw :=
+  RawTerm.unit` and `resultEq := Ty.subst0_eq_termSingleton_unit
+  codomainType domainType`. -/
   | appPi :
       {mode : Mode} → {level scope : Nat} →
       {context : Ctx mode level scope} →
       {domainType : Ty level scope} →
       {codomainType : Ty level (scope + 1)} →
       {resultType : Ty level scope} →
-      (resultEq : resultType = codomainType.subst0 domainType) →
+      {argumentRaw : RawTerm scope} →
+      (resultEq : resultType =
+        codomainType.subst (Subst.termSingleton domainType argumentRaw)) →
       (functionTerm : Term context (Ty.piTy domainType codomainType)) →
       (argumentTerm : Term context domainType) →
       Term context resultType
@@ -435,14 +430,18 @@ def Term.rename {m scope scope'}
   | _, .lamPi (domainType := domainType) body =>
       Term.lamPi (Term.rename (TermRenaming.lift ρt domainType) body)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-              resultEq f a =>
+              (argumentRaw := argumentRaw) resultEq f a =>
       -- Reduct's expected type: resultType.rename ρ.
-      -- We have resultEq : resultType = codomainType.subst0 domainType.
-      -- Build the renamed appPi at canonical (renamedCodomain.subst0 renamedDomain),
-      -- then cast through resultEq's renamed form and subst0_rename_commute.
+      -- We have resultEq : resultType =
+      --   codomainType.subst (Subst.termSingleton domainType argumentRaw).
+      -- Build the renamed appPi at the canonical post-rename termSingleton
+      -- shape, then cast through resultEq's renamed form and the
+      -- termSingleton-rename commute lemma.
       (congrArg (Ty.rename · ρ) resultEq).symm ▸
-        ((Ty.subst0_rename_commute codomainType domainType ρ).symm ▸
-          Term.appPi rfl (Term.rename ρt f) (Term.rename ρt a))
+        ((Ty.subst_termSingleton_rename_commute codomainType domainType
+            argumentRaw ρ).symm ▸
+          Term.appPi (argumentRaw := argumentRaw.rename ρ) rfl
+            (Term.rename ρt f) (Term.rename ρt a))
   | _, .pair (firstType := firstType) (secondType := secondType)
              firstVal secondVal =>
       Term.pair (Term.rename ρt firstVal)
