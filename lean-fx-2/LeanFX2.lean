@@ -67,6 +67,7 @@ import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdLemma
+import LeanFX2.Confluence.RawDiamond
 
 -- Layer 4 — Bridge
 import LeanFX2.Bridge
@@ -161,6 +162,7 @@ import LeanFX2.Smoke.AuditPhase6BInversion
 import LeanFX2.Smoke.AuditPhase6BCdDominates
 import LeanFX2.Smoke.AuditPhase6BCompatible
 import LeanFX2.Smoke.AuditPhase6BCdLemma
+import LeanFX2.Smoke.AuditPhase6CDiamond
 
 namespace LeanFX2
 
