@@ -1,111 +1,163 @@
 import LeanFX2.Reduction.StepStar
 
-/-! # Reduction/Conv — definitional conversion (∃-StepStar form)
+/-! # Reduction/Conv — definitional conversion as ∃-StepStar.
 
-**Architectural decision**: Conv is defined as the existential
-"common reduct" relation, NOT as an inductive with cong rules.
+`Conv source target` holds iff there's a common reduct `tMid`
+reachable from both via `StepStar`.  This characterization is the
+content of the Church-Rosser corollary; defining `Conv` this way
+(rather than as inductive with 13 cong rules) collapses the
+trans/sym/refl/cong story into a few existential operations and
+`StepStar.mapStep` invocations.
 
-```lean
-def Conv (t1 t2 : Term ctx ty raw) : Prop :=
-  ∃ t', StepStar t1 t' ∧ StepStar t2 t'
-```
+## Two-Ty + two-RawTerm
 
-Wait — but `t1` and `t2` may have different raws.  Conv allows
-them.  The `t'` has both source raws reduce to its raw.  More
-precisely:
+Inherited from `Step` / `StepStar`: source and target Term values
+may have different Ty / raw indices.  `Conv` allows them, and the
+common reduct's `(tyMid, rawMid)` is also free.
 
-```lean
-def Conv {raw1 raw2 : RawTerm scope}
-    (t1 : Term ctx ty raw1) (t2 : Term ctx ty raw2) : Prop :=
-  ∃ rawCommon (t' : Term ctx ty rawCommon),
-    StepStar t1 t' ∧ StepStar t2 t'
-```
+## What lives here
 
-## Why ∃-StepStar instead of inductive Conv
+* `Conv` definition (Σ-of-Σ packaged as Prop existential)
+* `Conv.refl`, `Conv.sym`
+* `Conv.fromStepStar` (single chain ⇒ Conv via target-as-reduct)
+* `Conv.fromStep` (single step ⇒ Conv)
 
-In lean-fx (W14 mapStep refactor era), `Conv` was inductive with
-13 cong rules + refl + sym + trans.  Each cong rule was a 4-line
-induction that the W14 refactor collapsed into a 1-line `mapStep`
-application.
+## Deferred to Layer 3 (Confluence)
 
-But the deeper observation: **Conv is uniquely characterized as
-∃-StepStar** (this is the Church-Rosser corollary's actual content).
-Defining it that way:
+* `Conv.trans` — needs Church-Rosser to merge two triangles into one
+* `Conv.canonical_form` — both endpoints reach a shared canonical
+  representative (this IS the Church-Rosser corollary applied)
 
-1. **Decidable conversion** is direct: WHNF both sides, compare,
-   recurse.  No inductive Conv structure to navigate.
-2. **Cong rules become 1-line** corollaries of `StepStar.mapStep`
-   (3-line proofs):
-   ```lean
-   theorem Conv.app_cong (h : Conv f f') (a) : Conv (Term.app f a) (Term.app f' a) := by
-     obtain ⟨_, t', s1, s2⟩ := h
-     exact ⟨_, Term.app t' a, StepStar.mapStep _ Step.appLeft s1, StepStar.mapStep _ Step.appLeft s2⟩
-   ```
-3. **Trans, sym are direct**: ∃-flavored, no induction.
-4. **Decidability** (Layer 9 `Algo/DecConv.lean`) reduces to
-   StepStar termination + WHNF equality — clean separation.
+## Cong corollaries via mapStep
 
-## Refl, sym, trans
+For each Term constructor `c`, a cong rule
+`Conv.<c>_cong : Conv inputA inputB → Conv (c inputA) (c inputB)`
+is a 3-line proof:
 
 ```lean
-theorem Conv.refl (t : Term ctx ty raw) : Conv t t :=
-  ⟨_, t, StepStar.refl t, StepStar.refl t⟩
-
-theorem Conv.sym (h : Conv t1 t2) : Conv t2 t1 := by
-  obtain ⟨_, t', s1, s2⟩ := h; exact ⟨_, t', s2, s1⟩
-
-theorem Conv.trans (h12 : Conv t1 t2) (h23 : Conv t2 t3) : Conv t1 t3 := by
-  -- requires Church-Rosser confluence: from h12 reach common t12',
-  --   from h23 reach common t23'.  Confluence between t12' and t23'
-  --   gives a final common reduct.
-  ...
+theorem Conv.appLeft_cong (...) (h : Conv funA funB) :
+    Conv (Term.app funA arg) (Term.app funB arg) := by
+  obtain ⟨_, _, midTerm, chainA, chainB⟩ := h
+  exact ⟨_, _, Term.app midTerm arg,
+         StepStar.mapStep _ Step.appLeft chainA,
+         StepStar.mapStep _ Step.appLeft chainB⟩
 ```
 
-Trans **needs Church-Rosser** to combine two convergence triangles.
-This is fine — Church-Rosser is proved in Layer 3 (`Confluence/`),
-which we depend on.
-
-## Cong rules (1-line each via mapStep)
-
-* `Conv.app_cong_left/right`, `Conv.lam_cong`
-* `Conv.appPi_cong`, `Conv.lamPi_cong`
-* `Conv.pair_cong`, `Conv.fst_cong`, `Conv.snd_cong`
-* `Conv.boolElim_cong`, `Conv.natElim_cong`, etc.
-* `Conv.idJ_cong`
-
-Each is a `obtain ⟨_, t', s1, s2⟩` destructure + `StepStar.mapStep`
-on each chain.  ~3 lines per cong.
-
-## Dependencies
-
-* `Reduction/StepStar.lean`
-* (`Confluence/ChurchRosser.lean` for `Conv.trans` — circular?
-  Solved by stating `Conv.trans` AFTER Church-Rosser, in Layer 4
-  or moving it to `Confluence/CanonicalForm.lean`.)
-
-## Downstream consumers
-
-* `Algo/DecConv.lean` — decidable Conv instance
-* `Algo/Check.lean` — bidirectional check uses Conv
-* All elaboration — Conv determines type equality
-
-## Diff from lean-fx
-
-* lean-fx's `Conv` is inductive with 13 cong rules + refl/sym/trans
-  ctors (~330 lines)
-* lean-fx-2's `Conv` is `def` ≅ ∃-StepStar (~80 lines)
-* `Conv.trans` is proved (not a constructor) using Church-Rosser
-* `Decidable Conv` (lean-fx task #909) becomes algorithmically
-  natural
-
-## Implementation plan (Phase 3)
-
-1. Define `Conv` as `def ... := ∃ t', StepStar t1 t' ∧ StepStar t2 t'`
-2. `Conv.refl`, `Conv.sym` directly
-3. `Conv.trans` deferred to Layer 4 (`Confluence/`)
-4. Cong shortcuts as `mapStep` corollaries
+Layer 3 expands the cong family.  At Phase 3.C, we ship the
+core: definition + refl/sym + lift-from-StepStar.
 -/
 
 namespace LeanFX2
+
+/-- Definitional conversion: `source` and `target` are convertible
+iff they reach a common reduct `midTerm`.  Two-Ty + two-RawTerm
+indices on src/tgt + free middle indices match `Step`'s relaxed
+shape. -/
+def Conv {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (sourceTerm : Term context sourceType sourceRaw)
+    (targetTerm : Term context targetType targetRaw) : Prop :=
+  ∃ (midType : Ty level scope) (midRaw : RawTerm scope)
+    (midTerm : Term context midType midRaw),
+      StepStar sourceTerm midTerm ∧ StepStar targetTerm midTerm
+
+/-- Every Term is convertible to itself: refl. -/
+theorem Conv.refl
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    Conv someTerm someTerm :=
+  ⟨someType, someRaw, someTerm, StepStar.refl someTerm, StepStar.refl someTerm⟩
+
+/-- Conv is symmetric: just swap the two convergence chains. -/
+theorem Conv.sym
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    Conv targetTerm sourceTerm := by
+  obtain ⟨midType, midRaw, midTerm, chainSource, chainTarget⟩ := convertibility
+  exact ⟨midType, midRaw, midTerm, chainTarget, chainSource⟩
+
+/-- A `StepStar` chain witnesses convertibility: take the target as
+the common reduct.  `targetTerm` is its own reduct (zero steps)
+plus we already have a chain from `sourceTerm`. -/
+theorem Conv.fromStepStar
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm) :
+    Conv sourceTerm targetTerm :=
+  ⟨targetType, targetRaw, targetTerm, chain, StepStar.refl targetTerm⟩
+
+/-- A single `Step` witnesses convertibility. -/
+theorem Conv.fromStep
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (singleStep : Step sourceTerm targetTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.fromStepStar (StepStar.fromStep singleStep)
+
+/-! ## Cast helpers — propositional transport for indices. -/
+
+/-- Replace the source Ty by a propositionally equal Ty. -/
+theorem Conv.castSourceType
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceTypeOriginal sourceTypeReplacement targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (typeEquality : sourceTypeOriginal = sourceTypeReplacement)
+    {sourceTerm : Term context sourceTypeOriginal sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    Conv (typeEquality ▸ sourceTerm) targetTerm := by
+  cases typeEquality
+  exact convertibility
+
+/-- Replace the target Ty by a propositionally equal Ty. -/
+theorem Conv.castTargetType
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetTypeOriginal targetTypeReplacement : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (typeEquality : targetTypeOriginal = targetTypeReplacement)
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetTypeOriginal targetRaw}
+    (convertibility : Conv sourceTerm targetTerm) :
+    Conv sourceTerm (typeEquality ▸ targetTerm) := by
+  cases typeEquality
+  exact convertibility
+
+/-- Replace the source Term by a propositionally equal Term. -/
+theorem Conv.castSourceTerm
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceOriginal sourceReplacement : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (sourceEquality : sourceOriginal = sourceReplacement)
+    (convertibility : Conv sourceOriginal targetTerm) :
+    Conv sourceReplacement targetTerm := by
+  cases sourceEquality
+  exact convertibility
+
+/-- Replace the target Term by a propositionally equal Term. -/
+theorem Conv.castTargetTerm
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetOriginal targetReplacement : Term context targetType targetRaw}
+    (targetEquality : targetOriginal = targetReplacement)
+    (convertibility : Conv sourceTerm targetOriginal) :
+    Conv sourceTerm targetReplacement := by
+  cases targetEquality
+  exact convertibility
 
 end LeanFX2
