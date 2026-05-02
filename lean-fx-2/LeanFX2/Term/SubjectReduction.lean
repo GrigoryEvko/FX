@@ -432,15 +432,46 @@ theorem StepStar.natRecScrutinee_lift
 For `boolElim`'s then/else branches at closed motive types
 (`Ty.unit`, `Ty.bool`, `Ty.nat`), reductions inside the branch
 preserve the motive type — preservation is by the closed-type SR
-lemmas already proved. -/
+lemmas already proved.
 
-/-- Generalized lift for `boolElim` then-branch cong at a closed
-motive type.  Works for any motive whose preservation lemma is
-available; we parameterize by a preservation predicate.  Closed-
-type instances follow.
+We ship one **generic** lifter per branch position parameterized by
+a preservation lemma, plus three closed-type derivations as
+1-line wrappers.  Generic version takes preservation as a function
+argument so any future preservation lemma (e.g., for arrow types
+once Phase 7.D lands) can plug in. -/
 
-Internal: pattern matches `srcTerm → midTerm` step-by-step, lifting
-each via `Step.boolElimThen`. -/
+/-- Generic branch-lifter for `boolElim`'s then-branch position,
+parameterized by a preservation predicate over the motive type. -/
+theorem StepStar.boolElimThenBranch_lift_generic
+    (motiveType : Ty level scope)
+    (preservesType : ∀ {a b : Ty level scope} {ra rb : RawTerm scope}
+        {ta : Term context a ra} {tb : Term context b rb},
+        Step ta tb → a = motiveType → b = motiveType)
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsMotive : srcTy = motiveType)
+    (tgtIsMotive : tgtTy = motiveType)
+    {scrutRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    (elseBranch : Term context motiveType elseRaw) :
+    StepStar (Term.boolElim scrutinee (srcIsMotive ▸ srcTerm) elseBranch)
+             (Term.boolElim scrutinee (tgtIsMotive ▸ tgtTerm) elseBranch) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsMotive
+      cases tgtIsMotive
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsMotive : _ = motiveType := preservesType head srcIsMotive
+      cases srcIsMotive
+      cases midIsMotive
+      exact StepStar.step (Step.boolElimThen head)
+                          (tailIH rfl tgtIsMotive)
+
+/-- Closed-type derivation for `Ty.unit` motive. -/
 theorem StepStar.boolElimThenBranch_lift_general_unit
     {srcTy tgtTy : Ty level scope}
     {srcRaw tgtRaw : RawTerm scope}
@@ -453,20 +484,12 @@ theorem StepStar.boolElimThenBranch_lift_general_unit
     (scrutinee : Term context Ty.bool scrutRaw)
     (elseBranch : Term context Ty.unit elseRaw) :
     StepStar (Term.boolElim scrutinee (srcIsUnit ▸ srcTerm) elseBranch)
-             (Term.boolElim scrutinee (tgtIsUnit ▸ tgtTerm) elseBranch) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsUnit
-      cases tgtIsUnit
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsUnit : _ = Ty.unit := Step.preserves_ty_unit head srcIsUnit
-      cases srcIsUnit
-      cases midIsUnit
-      exact StepStar.step (Step.boolElimThen head)
-                          (tailIH rfl tgtIsUnit)
+             (Term.boolElim scrutinee (tgtIsUnit ▸ tgtTerm) elseBranch) :=
+  StepStar.boolElimThenBranch_lift_generic
+    Ty.unit (fun head srcEq => Step.preserves_ty_unit head srcEq)
+    someChain srcIsUnit tgtIsUnit scrutinee elseBranch
 
-/-- Generalized lift for `boolElim` then-branch at `Ty.bool` motive. -/
+/-- Closed-type derivation for `Ty.bool` motive. -/
 theorem StepStar.boolElimThenBranch_lift_general_bool
     {srcTy tgtTy : Ty level scope}
     {srcRaw tgtRaw : RawTerm scope}
@@ -479,20 +502,12 @@ theorem StepStar.boolElimThenBranch_lift_general_bool
     (scrutinee : Term context Ty.bool scrutRaw)
     (elseBranch : Term context Ty.bool elseRaw) :
     StepStar (Term.boolElim scrutinee (srcIsBool ▸ srcTerm) elseBranch)
-             (Term.boolElim scrutinee (tgtIsBool ▸ tgtTerm) elseBranch) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsBool
-      cases tgtIsBool
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsBool : _ = Ty.bool := Step.preserves_ty_bool head srcIsBool
-      cases srcIsBool
-      cases midIsBool
-      exact StepStar.step (Step.boolElimThen head)
-                          (tailIH rfl tgtIsBool)
+             (Term.boolElim scrutinee (tgtIsBool ▸ tgtTerm) elseBranch) :=
+  StepStar.boolElimThenBranch_lift_generic
+    Ty.bool (fun head srcEq => Step.preserves_ty_bool head srcEq)
+    someChain srcIsBool tgtIsBool scrutinee elseBranch
 
-/-- Generalized lift for `boolElim` then-branch at `Ty.nat` motive. -/
+/-- Closed-type derivation for `Ty.nat` motive. -/
 theorem StepStar.boolElimThenBranch_lift_general_nat
     {srcTy tgtTy : Ty level scope}
     {srcRaw tgtRaw : RawTerm scope}
@@ -505,20 +520,42 @@ theorem StepStar.boolElimThenBranch_lift_general_nat
     (scrutinee : Term context Ty.bool scrutRaw)
     (elseBranch : Term context Ty.nat elseRaw) :
     StepStar (Term.boolElim scrutinee (srcIsNat ▸ srcTerm) elseBranch)
-             (Term.boolElim scrutinee (tgtIsNat ▸ tgtTerm) elseBranch) := by
+             (Term.boolElim scrutinee (tgtIsNat ▸ tgtTerm) elseBranch) :=
+  StepStar.boolElimThenBranch_lift_generic
+    Ty.nat (fun head srcEq => Step.preserves_ty_nat head srcEq)
+    someChain srcIsNat tgtIsNat scrutinee elseBranch
+
+/-- Generic branch-lifter for `boolElim`'s else-branch position. -/
+theorem StepStar.boolElimElseBranch_lift_generic
+    (motiveType : Ty level scope)
+    (preservesType : ∀ {a b : Ty level scope} {ra rb : RawTerm scope}
+        {ta : Term context a ra} {tb : Term context b rb},
+        Step ta tb → a = motiveType → b = motiveType)
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsMotive : srcTy = motiveType)
+    (tgtIsMotive : tgtTy = motiveType)
+    {scrutRaw thenRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutRaw)
+    (thenBranch : Term context motiveType thenRaw) :
+    StepStar (Term.boolElim scrutinee thenBranch (srcIsMotive ▸ srcTerm))
+             (Term.boolElim scrutinee thenBranch (tgtIsMotive ▸ tgtTerm)) := by
   induction someChain with
   | refl _ =>
-      cases srcIsNat
-      cases tgtIsNat
+      cases srcIsMotive
+      cases tgtIsMotive
       exact StepStar.refl _
   | step head _ tailIH =>
-      have midIsNat : _ = Ty.nat := Step.preserves_ty_nat head srcIsNat
-      cases srcIsNat
-      cases midIsNat
-      exact StepStar.step (Step.boolElimThen head)
-                          (tailIH rfl tgtIsNat)
+      have midIsMotive : _ = motiveType := preservesType head srcIsMotive
+      cases srcIsMotive
+      cases midIsMotive
+      exact StepStar.step (Step.boolElimElse head)
+                          (tailIH rfl tgtIsMotive)
 
-/-- Generalized lift for `boolElim` else-branch at `Ty.unit` motive. -/
+/-- Closed-type derivation for `Ty.unit` motive. -/
 theorem StepStar.boolElimElseBranch_lift_general_unit
     {srcTy tgtTy : Ty level scope}
     {srcRaw tgtRaw : RawTerm scope}
@@ -531,20 +568,12 @@ theorem StepStar.boolElimElseBranch_lift_general_unit
     (scrutinee : Term context Ty.bool scrutRaw)
     (thenBranch : Term context Ty.unit thenRaw) :
     StepStar (Term.boolElim scrutinee thenBranch (srcIsUnit ▸ srcTerm))
-             (Term.boolElim scrutinee thenBranch (tgtIsUnit ▸ tgtTerm)) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsUnit
-      cases tgtIsUnit
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsUnit : _ = Ty.unit := Step.preserves_ty_unit head srcIsUnit
-      cases srcIsUnit
-      cases midIsUnit
-      exact StepStar.step (Step.boolElimElse head)
-                          (tailIH rfl tgtIsUnit)
+             (Term.boolElim scrutinee thenBranch (tgtIsUnit ▸ tgtTerm)) :=
+  StepStar.boolElimElseBranch_lift_generic
+    Ty.unit (fun head srcEq => Step.preserves_ty_unit head srcEq)
+    someChain srcIsUnit tgtIsUnit scrutinee thenBranch
 
-/-- Generalized lift for `boolElim` else-branch at `Ty.bool` motive. -/
+/-- Closed-type derivation for `Ty.bool` motive. -/
 theorem StepStar.boolElimElseBranch_lift_general_bool
     {srcTy tgtTy : Ty level scope}
     {srcRaw tgtRaw : RawTerm scope}
@@ -557,20 +586,12 @@ theorem StepStar.boolElimElseBranch_lift_general_bool
     (scrutinee : Term context Ty.bool scrutRaw)
     (thenBranch : Term context Ty.bool thenRaw) :
     StepStar (Term.boolElim scrutinee thenBranch (srcIsBool ▸ srcTerm))
-             (Term.boolElim scrutinee thenBranch (tgtIsBool ▸ tgtTerm)) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsBool
-      cases tgtIsBool
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsBool : _ = Ty.bool := Step.preserves_ty_bool head srcIsBool
-      cases srcIsBool
-      cases midIsBool
-      exact StepStar.step (Step.boolElimElse head)
-                          (tailIH rfl tgtIsBool)
+             (Term.boolElim scrutinee thenBranch (tgtIsBool ▸ tgtTerm)) :=
+  StepStar.boolElimElseBranch_lift_generic
+    Ty.bool (fun head srcEq => Step.preserves_ty_bool head srcEq)
+    someChain srcIsBool tgtIsBool scrutinee thenBranch
 
-/-- Generalized lift for `boolElim` else-branch at `Ty.nat` motive. -/
+/-- Closed-type derivation for `Ty.nat` motive. -/
 theorem StepStar.boolElimElseBranch_lift_general_nat
     {srcTy tgtTy : Ty level scope}
     {srcRaw tgtRaw : RawTerm scope}
@@ -583,17 +604,9 @@ theorem StepStar.boolElimElseBranch_lift_general_nat
     (scrutinee : Term context Ty.bool scrutRaw)
     (thenBranch : Term context Ty.nat thenRaw) :
     StepStar (Term.boolElim scrutinee thenBranch (srcIsNat ▸ srcTerm))
-             (Term.boolElim scrutinee thenBranch (tgtIsNat ▸ tgtTerm)) := by
-  induction someChain with
-  | refl _ =>
-      cases srcIsNat
-      cases tgtIsNat
-      exact StepStar.refl _
-  | step head _ tailIH =>
-      have midIsNat : _ = Ty.nat := Step.preserves_ty_nat head srcIsNat
-      cases srcIsNat
-      cases midIsNat
-      exact StepStar.step (Step.boolElimElse head)
-                          (tailIH rfl tgtIsNat)
+             (Term.boolElim scrutinee thenBranch (tgtIsNat ▸ tgtTerm)) :=
+  StepStar.boolElimElseBranch_lift_generic
+    Ty.nat (fun head srcEq => Step.preserves_ty_nat head srcEq)
+    someChain srcIsNat tgtIsNat scrutinee thenBranch
 
 end LeanFX2
