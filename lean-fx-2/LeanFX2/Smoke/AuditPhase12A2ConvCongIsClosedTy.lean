@@ -16,3 +16,7 @@ import LeanFX2.Reduction.ConvCongIsClosedTy
 #print axioms LeanFX2.Conv.optionMatch_some_cong_isClosedTy
 #print axioms LeanFX2.Conv.eitherMatch_left_cong_isClosedTy
 #print axioms LeanFX2.Conv.eitherMatch_right_cong_isClosedTy
+#print axioms LeanFX2.Conv.appLeft_cong_isClosedTy
+#print axioms LeanFX2.Conv.appRight_cong_isClosedTy
+#print axioms LeanFX2.Conv.natElimSucc_cong_isClosedTy
+#print axioms LeanFX2.Conv.natRecSucc_cong_isClosedTy

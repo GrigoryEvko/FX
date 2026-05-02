@@ -397,4 +397,112 @@ theorem Conv.eitherMatch_right_cong_isClosedTy
     (fun step => Step.eitherMatchRight step)
     rightConv
 
+/-! ## App-position cong rules at closed arrow types
+
+For non-dependent application `app f a : codomain` where `f :
+arrow domain codomain`: when both domain and codomain are
+closed, the arrow type itself is closed (via `IsClosedTy.arrow`),
+which lets us lift Conv on either the function or argument
+position to Conv on the application.
+
+These are load-bearing for Conv-transitivity across nested
+redexes — without them, Conv on `f` cannot propagate through
+`app f a` even when result type is closed. -/
+
+/-- Conv cong on the function position of a non-dep app at
+closed types.  Given Conv on `f` at `arrow domain codomain`
+(both closed), produces Conv on `app f a` at `codomain`. -/
+theorem Conv.appLeft_cong_isClosedTy
+    {domainType codomainType : Ty level scope}
+    (closedDomain : IsClosedTy domainType)
+    (closedCodomain : IsClosedTy codomainType)
+    {fnRawA fnRawB argRaw : RawTerm scope}
+    {functionA : Term context (Ty.arrow domainType codomainType) fnRawA}
+    {functionB : Term context (Ty.arrow domainType codomainType) fnRawB}
+    (argumentTerm : Term context domainType argRaw)
+    (functionConv : Conv functionA functionB) :
+    Conv (Term.app functionA argumentTerm)
+         (Term.app functionB argumentTerm) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := codomainType)
+    (IsClosedTy.arrow closedDomain closedCodomain)
+    (wrapRaw := fun raw => RawTerm.app raw argRaw)
+    (fun term => Term.app term argumentTerm)
+    (fun step => Step.appLeft step)
+    functionConv
+
+/-- Conv cong on the argument position of a non-dep app at a
+closed domain type.  Given Conv on `a` at `domain` (closed),
+produces Conv on `app f a` at `codomain`. -/
+theorem Conv.appRight_cong_isClosedTy
+    {domainType codomainType : Ty level scope}
+    (closedDomain : IsClosedTy domainType)
+    {fnRaw argRawA argRawB : RawTerm scope}
+    (functionTerm : Term context (Ty.arrow domainType codomainType) fnRaw)
+    {argumentA : Term context domainType argRawA}
+    {argumentB : Term context domainType argRawB}
+    (argumentConv : Conv argumentA argumentB) :
+    Conv (Term.app functionTerm argumentA)
+         (Term.app functionTerm argumentB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := codomainType) closedDomain
+    (wrapRaw := fun raw => RawTerm.app fnRaw raw)
+    (fun term => Term.app functionTerm term)
+    (fun step => Step.appRight step)
+    argumentConv
+
+/-! ## natElim/natRec succ-branch cong rules at closed motives
+
+The succ-branches have arrow types: `arrow nat motive` for
+natElim, `arrow nat (arrow motive motive)` for natRec.  When
+the motive is closed, IsClosedTy.arrow gives the full arrow
+closure. -/
+
+/-- Conv cong on `natElim`'s succ-branch at a closed motive.
+The succ-branch's type `arrow nat motive` is closed via
+`IsClosedTy.arrow IsClosedTy.nat closedMotive`. -/
+theorem Conv.natElimSucc_cong_isClosedTy
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw zeroRaw succRawA succRawB : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    {succBranchA : Term context (Ty.arrow Ty.nat motiveType) succRawA}
+    {succBranchB : Term context (Ty.arrow Ty.nat motiveType) succRawB}
+    (succConv : Conv succBranchA succBranchB) :
+    Conv (Term.natElim scrutinee zeroBranch succBranchA)
+         (Term.natElim scrutinee zeroBranch succBranchB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.arrow IsClosedTy.nat closedMotive)
+    (wrapRaw := fun raw => RawTerm.natElim scrutRaw zeroRaw raw)
+    (fun term => Term.natElim scrutinee zeroBranch term)
+    (fun step => Step.natElimSucc step)
+    succConv
+
+/-- Conv cong on `natRec`'s succ-branch at a closed motive.
+The succ-branch's type `arrow nat (arrow motive motive)` is
+closed via nested `IsClosedTy.arrow`. -/
+theorem Conv.natRecSucc_cong_isClosedTy
+    {motiveType : Ty level scope}
+    (closedMotive : IsClosedTy motiveType)
+    {scrutRaw zeroRaw succRawA succRawB : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    {succBranchA :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawA}
+    {succBranchB :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRawB}
+    (succConv : Conv succBranchA succBranchB) :
+    Conv (Term.natRec scrutinee zeroBranch succBranchA)
+         (Term.natRec scrutinee zeroBranch succBranchB) :=
+  Conv.cong_at_isClosedTy
+    (resultTy := motiveType)
+    (IsClosedTy.arrow IsClosedTy.nat
+       (IsClosedTy.arrow closedMotive closedMotive))
+    (wrapRaw := fun raw => RawTerm.natRec scrutRaw zeroRaw raw)
+    (fun term => Term.natRec scrutinee zeroBranch term)
+    (fun step => Step.natRecSucc step)
+    succConv
+
 end LeanFX2
