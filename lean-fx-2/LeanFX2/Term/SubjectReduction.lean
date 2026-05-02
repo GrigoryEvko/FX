@@ -1,97 +1,56 @@
-import LeanFX2.Reduction.StepStar
+import LeanFX2.Term.SubjectReductionGeneral
 
-/-! # Term/SubjectReduction — type preservation for closed types
+/-! # Term/SubjectReduction — per-type SR specializations + cong lifters
 
-Closed types (`Ty.unit`, `Ty.bool`, `Ty.nat`) have no free type-
-variable references and are fixed points of `Ty.weaken` and
-`Ty.subst0` by definitional equality.  This makes subject
-reduction at the `Step` level a trivial structural argument for
-these types: every `Step` ctor's target type is computed from
-the source type via operations that fix closed types.
+Per-type subject reduction at the closed leaves (`Ty.unit`,
+`Ty.bool`, `Ty.nat`) plus cong-rule lifters at those types.
 
-## Why this matters
+## Architecture (post-refactor)
 
-Without general subject reduction, lifting `Conv` cong rules to
-unary canonical heads (`Conv.canonical_natSucc`,
-`Conv.canonical_listCons`, ...) is blocked because the
-existentially-quantified middle type in `Conv` cannot be
-constrained to match the head's expected type.
+The general SR theorems (`Step.preserves_isClosedTy`,
+`StepStar.preserves_isClosedTy`) and their leaf-invariance
+building blocks live in `Term/SubjectReductionGeneral.lean`.
+This file consumes them to produce the per-type specializations
+that downstream callers (`Reduction/ConvCanonical.lean`, the
+cong-rule lifters below) need.
 
-For closed types, this lemma supplies the missing constraint:
-`StepStar source mid → mid's type = source's type`.
+Per-type lemmas are now **one-line corollaries** of the general
+theorem instantiated at `IsClosedTy.{unit, bool, nat}`.  This
+reduces ~80 lines of duplicate proof to ~12 lines while keeping
+the same call-site API.
 
 ## What's proved here
 
-* `Step.preserves_ty_unit`: `Step (t : Term ctx Ty.unit _) _ → tgtType = Ty.unit`
-* `Step.preserves_ty_bool`: same for `Ty.bool`
-* `Step.preserves_ty_nat`: same for `Ty.nat`
-* `StepStar.preserves_ty_unit / bool / nat`: chain extensions
+* `Step.preserves_ty_unit / bool / nat` — corollaries
+* `StepStar.preserves_ty_unit / bool / nat` — corollaries
+* `StepStar.{natSucc, boolElimScrutinee, natElimScrutinee,
+   natRecScrutinee}_lift` — cong-rule lifters
+* `StepStar.boolElim{Then,Else}Branch_lift` — branch lifters at
+   closed motive types
 
-## What's NOT proved here
+## What's elsewhere
 
-General subject reduction for open or substitution-laden types
-(arrow, piTy, sigmaTy, id, listType, etc.) needs richer
-machinery (typed `Conv`-modulo subject reduction, or a full
-metatheory).  Deferred to a later phase.
+* General SR (over `IsClosedTy`): `SubjectReductionGeneral.lean`
+* Closed-type families (arrow, list, option, either):
+  `SubjectReductionGeneral.lean`
+* Open-type SR (piTy, sigmaTy, id, ...): deferred to a later
+  phase requiring richer machinery.
 -/
 
 namespace LeanFX2
 
 variable {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
 
-/-! ## Substitution invariance for closed-type results
+/-! ## Per-type SR corollaries
 
-If `T.subst0 α raw₁ = Ty.nat`, then `T.subst0 α raw₂ = Ty.nat`
-for any other `raw₂` — because `Ty.nat` is a leaf ctor and the
-raw argument is consulted only inside `Ty.id` endpoints, which
-can never reduce to `Ty.nat` under substitution. -/
-theorem Ty.subst0_raw_invariance_nat
-    {someType : Ty level (scope + 1)} {argType : Ty level scope}
-    {raw1 raw2 : RawTerm scope}
-    (someTypeReducesToNat : someType.subst0 argType raw1 = Ty.nat) :
-    someType.subst0 argType raw2 = Ty.nat := by
-  cases someType with
-  | unit => nomatch someTypeReducesToNat
-  | bool => nomatch someTypeReducesToNat
-  | nat => rfl
-  | arrow _ _ => nomatch someTypeReducesToNat
-  | piTy _ _ => nomatch someTypeReducesToNat
-  | sigmaTy _ _ => nomatch someTypeReducesToNat
-  | tyVar position =>
-    cases position with
-    | mk val isLt =>
-      cases val with
-      | zero => exact someTypeReducesToNat
-      | succ k => nomatch someTypeReducesToNat
-  | id _ _ _ => nomatch someTypeReducesToNat
-  | listType _ => nomatch someTypeReducesToNat
-  | optionType _ => nomatch someTypeReducesToNat
-  | eitherType _ _ => nomatch someTypeReducesToNat
+Each is a one-line specialization of `Step.preserves_isClosedTy`
+(resp. StepStar variant) at the matching `IsClosedTy` leaf
+witness.  Functionally equivalent to the previous bespoke
+proofs; the same `induction someStep + first` tactic combo lives
+in the general theorem rather than being duplicated three times. -/
 
-/-! ## Closed-type preservation: per-ctor case analysis
-
-Each `Step` ctor's target type is one of:
-* Same as source (cong rules — `appLeft`, `natSuccPred`, ...)
-* `closedType.weaken.subst0 dom argRaw` for some `closedType`
-  (β rules — `betaApp`, `betaSndPair`)
-* `closedType.subst0 dom argRaw` for some `closedType`
-  (`betaAppPi`, the dep β)
-* `motiveType` for the ι rules — preserved when motive equals
-  the source's type
-
-For closed types like `Ty.nat`, all `weaken` and `subst0`
-operations are `rfl` — these reduce by computation to the
-original closed type.
--/
-
-/-- Generalized form: every `Step` whose source has type `Ty.nat`
-produces a target of type `Ty.nat`.  The source type is kept
-as a variable to enable `induction` (Lean's dep-elim refuses to
-case-split when the source type is fixed to `Ty.nat`).
-
-Each `Step` ctor either preserves the source type structurally
-(cong rules) or computes a new type via Ty.subst — for closed
-types like `Ty.nat`, both reduce to the source type by `rfl`. -/
+/-- Subject reduction for `Ty.nat`: every `Step` whose source
+type is `Ty.nat` produces a target of type `Ty.nat`. -/
 theorem Step.preserves_ty_nat
     {sourceType : Ty level scope}
     {sourceRaw targetRaw : RawTerm scope}
@@ -100,69 +59,10 @@ theorem Step.preserves_ty_nat
     {targetTerm : Term context targetType targetRaw}
     (someStep : Step sourceTerm targetTerm)
     (sourceIsNat : sourceType = Ty.nat) :
-    targetType = Ty.nat := by
-  induction someStep
-  all_goals
-    first
-      | exact sourceIsNat
-      | (subst sourceIsNat; rfl)
-      | rfl
-      -- betaSndPair: source = sT.subst0 fT (fst (pair fr sr)),
-      -- target = sT.subst0 fT fr.  Use raw-invariance lemma.
-      | exact Ty.subst0_raw_invariance_nat sourceIsNat
+    targetType = Ty.nat :=
+  Step.preserves_isClosedTy IsClosedTy.nat someStep sourceIsNat
 
-/-! ## Closed-type analogs for Ty.unit and Ty.bool -/
-
-/-- Substitution-raw-invariance for `Ty.unit`. -/
-theorem Ty.subst0_raw_invariance_unit
-    {someType : Ty level (scope + 1)} {argType : Ty level scope}
-    {raw1 raw2 : RawTerm scope}
-    (someTypeReducesToUnit : someType.subst0 argType raw1 = Ty.unit) :
-    someType.subst0 argType raw2 = Ty.unit := by
-  cases someType with
-  | unit => rfl
-  | bool => nomatch someTypeReducesToUnit
-  | nat => nomatch someTypeReducesToUnit
-  | arrow _ _ => nomatch someTypeReducesToUnit
-  | piTy _ _ => nomatch someTypeReducesToUnit
-  | sigmaTy _ _ => nomatch someTypeReducesToUnit
-  | tyVar position =>
-    cases position with
-    | mk val isLt =>
-      cases val with
-      | zero => exact someTypeReducesToUnit
-      | succ k => nomatch someTypeReducesToUnit
-  | id _ _ _ => nomatch someTypeReducesToUnit
-  | listType _ => nomatch someTypeReducesToUnit
-  | optionType _ => nomatch someTypeReducesToUnit
-  | eitherType _ _ => nomatch someTypeReducesToUnit
-
-/-- Substitution-raw-invariance for `Ty.bool`. -/
-theorem Ty.subst0_raw_invariance_bool
-    {someType : Ty level (scope + 1)} {argType : Ty level scope}
-    {raw1 raw2 : RawTerm scope}
-    (someTypeReducesToBool : someType.subst0 argType raw1 = Ty.bool) :
-    someType.subst0 argType raw2 = Ty.bool := by
-  cases someType with
-  | unit => nomatch someTypeReducesToBool
-  | bool => rfl
-  | nat => nomatch someTypeReducesToBool
-  | arrow _ _ => nomatch someTypeReducesToBool
-  | piTy _ _ => nomatch someTypeReducesToBool
-  | sigmaTy _ _ => nomatch someTypeReducesToBool
-  | tyVar position =>
-    cases position with
-    | mk val isLt =>
-      cases val with
-      | zero => exact someTypeReducesToBool
-      | succ k => nomatch someTypeReducesToBool
-  | id _ _ _ => nomatch someTypeReducesToBool
-  | listType _ => nomatch someTypeReducesToBool
-  | optionType _ => nomatch someTypeReducesToBool
-  | eitherType _ _ => nomatch someTypeReducesToBool
-
-/-- Subject reduction for `Ty.unit`: every `Step` whose source has
-type `Ty.unit` produces a target of type `Ty.unit`. -/
+/-- Subject reduction for `Ty.unit`. -/
 theorem Step.preserves_ty_unit
     {sourceType : Ty level scope}
     {sourceRaw targetRaw : RawTerm scope}
@@ -171,17 +71,10 @@ theorem Step.preserves_ty_unit
     {targetTerm : Term context targetType targetRaw}
     (someStep : Step sourceTerm targetTerm)
     (sourceIsUnit : sourceType = Ty.unit) :
-    targetType = Ty.unit := by
-  induction someStep
-  all_goals
-    first
-      | exact sourceIsUnit
-      | (subst sourceIsUnit; rfl)
-      | rfl
-      | exact Ty.subst0_raw_invariance_unit sourceIsUnit
+    targetType = Ty.unit :=
+  Step.preserves_isClosedTy IsClosedTy.unit someStep sourceIsUnit
 
-/-- Subject reduction for `Ty.bool`: every `Step` whose source has
-type `Ty.bool` produces a target of type `Ty.bool`. -/
+/-- Subject reduction for `Ty.bool`. -/
 theorem Step.preserves_ty_bool
     {sourceType : Ty level scope}
     {sourceRaw targetRaw : RawTerm scope}
@@ -190,14 +83,8 @@ theorem Step.preserves_ty_bool
     {targetTerm : Term context targetType targetRaw}
     (someStep : Step sourceTerm targetTerm)
     (sourceIsBool : sourceType = Ty.bool) :
-    targetType = Ty.bool := by
-  induction someStep
-  all_goals
-    first
-      | exact sourceIsBool
-      | (subst sourceIsBool; rfl)
-      | rfl
-      | exact Ty.subst0_raw_invariance_bool sourceIsBool
+    targetType = Ty.bool :=
+  Step.preserves_isClosedTy IsClosedTy.bool someStep sourceIsBool
 
 /-! ## Lifts to StepStar -/
 
@@ -210,11 +97,8 @@ theorem StepStar.preserves_ty_nat
     {targetTerm : Term context targetType targetRaw}
     (chain : StepStar sourceTerm targetTerm)
     (sourceIsNat : sourceType = Ty.nat) :
-    targetType = Ty.nat := by
-  induction chain with
-  | refl _ => exact sourceIsNat
-  | step head _ tailIH =>
-      exact tailIH (Step.preserves_ty_nat head sourceIsNat)
+    targetType = Ty.nat :=
+  StepStar.preserves_isClosedTy IsClosedTy.nat chain sourceIsNat
 
 /-- Subject reduction extended to `StepStar` for `Ty.unit`. -/
 theorem StepStar.preserves_ty_unit
@@ -225,11 +109,8 @@ theorem StepStar.preserves_ty_unit
     {targetTerm : Term context targetType targetRaw}
     (chain : StepStar sourceTerm targetTerm)
     (sourceIsUnit : sourceType = Ty.unit) :
-    targetType = Ty.unit := by
-  induction chain with
-  | refl _ => exact sourceIsUnit
-  | step head _ tailIH =>
-      exact tailIH (Step.preserves_ty_unit head sourceIsUnit)
+    targetType = Ty.unit :=
+  StepStar.preserves_isClosedTy IsClosedTy.unit chain sourceIsUnit
 
 /-- Subject reduction extended to `StepStar` for `Ty.bool`. -/
 theorem StepStar.preserves_ty_bool
@@ -240,11 +121,8 @@ theorem StepStar.preserves_ty_bool
     {targetTerm : Term context targetType targetRaw}
     (chain : StepStar sourceTerm targetTerm)
     (sourceIsBool : sourceType = Ty.bool) :
-    targetType = Ty.bool := by
-  induction chain with
-  | refl _ => exact sourceIsBool
-  | step head _ tailIH =>
-      exact tailIH (Step.preserves_ty_bool head sourceIsBool)
+    targetType = Ty.bool :=
+  StepStar.preserves_isClosedTy IsClosedTy.bool chain sourceIsBool
 
 /-! ## Cong-rule lifters at `Ty.nat`
 
