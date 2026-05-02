@@ -26,5 +26,7 @@ namespace LeanFX2.SmokePhase7ATypeInversions
 #print axioms LeanFX2.Term.optionSome_ty_inv
 #print axioms LeanFX2.Term.eitherInl_ty_inv
 #print axioms LeanFX2.Term.eitherInr_ty_inv
+#print axioms LeanFX2.Term.refl_ty_inv
+#print axioms LeanFX2.Term.pair_ty_inv
 
 end LeanFX2.SmokePhase7ATypeInversions

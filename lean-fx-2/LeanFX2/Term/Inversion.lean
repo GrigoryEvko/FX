@@ -150,4 +150,23 @@ theorem Term.eitherInr_ty_inv
   cases someTerm
   exact ⟨_, _, rfl⟩
 
+/-- `Term ctx _ (.refl rawWitness)` forces identity type with both
+endpoints equal to `rawWitness`. -/
+theorem Term.refl_ty_inv
+    {someType : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (someTerm : Term context someType (RawTerm.refl rawWitness)) :
+    ∃ carrier, someType = Ty.id carrier rawWitness rawWitness := by
+  cases someTerm
+  exact ⟨_, rfl⟩
+
+/-- `Term ctx _ (.pair _ _)` forces sigma type. -/
+theorem Term.pair_ty_inv
+    {someType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    (someTerm : Term context someType (RawTerm.pair firstRaw secondRaw)) :
+    ∃ firstType secondType, someType = Ty.sigmaTy firstType secondType := by
+  cases someTerm
+  exact ⟨_, _, rfl⟩
+
 end LeanFX2
