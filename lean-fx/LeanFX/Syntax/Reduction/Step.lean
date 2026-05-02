@@ -46,8 +46,8 @@ inductive Step :
       Step (Term.lam (codomainType := codomainType) body)
            (Term.lam (codomainType := codomainType) body')
   /-- Step inside the function position of a dependent application.
-  W9.B1.1 — uses `rfl` for the equation-bearing appPi's resultEq;
-  thus both sides have the canonical β-result type. -/
+  W9.B1.3a — termSingleton-flavored, uses `argumentRaw := RawTerm.unit`
+  and `Ty.subst0_eq_termSingleton_unit` for resultEq. -/
   | appPiLeft :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
@@ -55,8 +55,12 @@ inductive Step :
           Term ctx (.piTy domainType codomainType)}
         {argumentTerm : Term ctx domainType},
       Step functionTerm functionTerm' →
-      Step (Term.appPi rfl functionTerm argumentTerm)
-           (Term.appPi rfl functionTerm' argumentTerm)
+      Step (Term.appPi (argumentRaw := RawTerm.unit)
+              (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+              functionTerm argumentTerm)
+           (Term.appPi (argumentRaw := RawTerm.unit)
+              (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+              functionTerm' argumentTerm)
   /-- Step inside the argument position of a dependent application. -/
   | appPiRight :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
@@ -64,8 +68,12 @@ inductive Step :
         {functionTerm : Term ctx (.piTy domainType codomainType)}
         {argumentTerm argumentTerm' : Term ctx domainType},
       Step argumentTerm argumentTerm' →
-      Step (Term.appPi rfl functionTerm argumentTerm)
-           (Term.appPi rfl functionTerm argumentTerm')
+      Step (Term.appPi (argumentRaw := RawTerm.unit)
+              (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+              functionTerm argumentTerm)
+           (Term.appPi (argumentRaw := RawTerm.unit)
+              (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+              functionTerm argumentTerm')
   /-- Step inside the body of a dependent λ-abstraction. -/
   | lamPiBody :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
@@ -132,7 +140,9 @@ inductive Step :
         {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
         (body : Term (ctx.cons domainType) codomainType)
         (arg : Term ctx domainType),
-      Step (Term.appPi rfl (Term.lamPi (domainType := domainType) body) arg)
+      Step (Term.appPi (argumentRaw := RawTerm.unit)
+              (Ty.subst0_eq_termSingleton_unit codomainType domainType)
+              (Term.lamPi (domainType := domainType) body) arg)
            (Term.subst0 body arg)
   /-- **Σ first projection**: `fst (pair a b) ⟶ a`. -/
   | betaFstPair :

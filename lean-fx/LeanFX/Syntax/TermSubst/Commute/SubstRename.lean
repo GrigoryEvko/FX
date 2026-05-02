@@ -75,18 +75,16 @@ theorem Term.subst_rename_commute_HEq
       _ _ (eq_of_heq (Term.subst_rename_commute_HEq termSubstitution termRenaming s))
       _ _ (Term.subst_rename_commute_HEq termSubstitution termRenaming t)
       _ _ (Term.subst_rename_commute_HEq termSubstitution termRenaming e)
-  | _, .appPi (domainType := dom) (codomainType := cod) resultEq f a => by
-    -- W9.B1.1 — equation-bearing appPi.  Cases on resultEq normalises shape.
+  | _, .appPi (domainType := dom) (codomainType := cod) (argumentRaw := argRaw)
+        resultEq f a => by
+    -- W9.B1.3a — termSingleton-flavored appPi.  Cases on resultEq normalises shape.
     cases resultEq
-    -- LHS: Term.rename termRenaming (rfl-cast.symm ▸ subst-cast.symm ▸ Term.appPi rfl (subst f) (subst a))
     apply HEq.trans
       (Term.rename_HEq_cast_input termRenaming
-        (Ty.subst0_subst_commute cod dom typeSubstitution).symm
-        (Term.appPi rfl (Term.subst termSubstitution f) (Term.subst termSubstitution a)))
-    -- After helper: rename termRenaming (Term.appPi rfl ...) emits 1 outer cast (subst0_rename_commute).
-    -- The vacuous rfl-resultEq cast on the inner construction is actually NO-OP via congrArg of rfl.
+        (Ty.subst_termSingleton_subst_commute cod dom argRaw typeSubstitution).symm
+        (Term.appPi (argumentRaw := argRaw.subst typeSubstitution.forRaw) rfl
+          (Term.subst termSubstitution f) (Term.subst termSubstitution a)))
     apply HEq.trans (eqRec_heq _ _)
-    -- RHS: subst (renameAfter ...) (Term.appPi rfl) — emits 1 outer cast.
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
@@ -95,6 +93,7 @@ theorem Term.subst_rename_commute_HEq
       (Ty.subst_rename_commute dom typeSubstitution rawRenaming)
       ((Ty.subst_rename_commute cod typeSubstitution.lift rawRenaming.lift).trans
         (Ty.subst_congr (Subst.lift_renameAfter_commute typeSubstitution rawRenaming) cod))
+      (RawTerm.rename_subst_commute argRaw typeSubstitution.forRaw rawRenaming)
       _ _ (Term.subst_rename_commute_HEq termSubstitution termRenaming f)
       _ _ (Term.subst_rename_commute_HEq termSubstitution termRenaming a)
   | _, .pair (firstType := first) (secondType := second) v w => by

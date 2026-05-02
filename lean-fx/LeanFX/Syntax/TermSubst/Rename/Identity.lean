@@ -68,13 +68,13 @@ theorem Term.rename_id_HEq
       _ _ (Term.rename_id_HEq thenBranch)
       _ _ (Term.rename_id_HEq elseBranch)
   | _, .appPi (domainType := domainType) (codomainType := codomainType)
-        resultEq functionTerm argumentTerm => by
-    -- W9.B1.1 — Term.rename on equation-bearing appPi yields a double cast.
+        (argumentRaw := argumentRaw) resultEq functionTerm argumentTerm => by
+    -- W9.B1.3a — Term.rename on termSingleton-flavored appPi yields a double cast.
     show HEq
       ((congrArg (Ty.rename · Renaming.identity) resultEq).symm ▸
-        ((Ty.subst0_rename_commute codomainType domainType
-            Renaming.identity).symm ▸
-          Term.appPi rfl
+        ((Ty.subst_termSingleton_rename_commute codomainType domainType
+            argumentRaw Renaming.identity).symm ▸
+          Term.appPi (argumentRaw := argumentRaw.rename Renaming.identity) rfl
             (Term.rename (TermRenaming.identity context) functionTerm)
             (Term.rename (TermRenaming.identity context) argumentTerm)))
       (Term.appPi resultEq functionTerm argumentTerm)
@@ -85,6 +85,7 @@ theorem Term.rename_id_HEq
       (Ty.rename_identity domainType)
       ((Ty.rename_congr Renaming.lift_identity_equiv codomainType).trans
         (Ty.rename_identity codomainType))
+      (RawTerm.rename_identity (level := level) argumentRaw)
       _ _ (Term.rename_id_HEq functionTerm)
       _ _ (Term.rename_id_HEq argumentTerm)
   | _, .pair (firstType := firstType) (secondType := secondType)
