@@ -123,7 +123,10 @@ theorem Term.subst_par_pointwise
           (Term.subst_par_pointwise related secondVal))
   | _, .fst pairTerm =>
       Step.par.fst (Term.subst_par_pointwise related pairTerm)
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+  | _, .snd (firstType := firstType) (secondType := secondType)
+        pairTerm resultEq => by
+      -- W9.B1.2 — equation-bearing snd.  Cases on resultEq normalises shape.
+      cases resultEq
       simp only [Term.subst]
       exact Step.par.castBoth
         (Ty.subst0_subst_commute secondType firstType typeSubstitution).symm
@@ -561,15 +564,17 @@ theorem Step.parStar.fst_cong
     (Term.fst (firstType := firstType) (secondType := secondType))
     Step.par.fst pairChain
 
-/-- Second-projection congruence at the `parStar` level. -/
+/-- Second-projection congruence at the `parStar` level.  W9.B1.2:
+`Term.snd` requires `rfl` for resultEq. -/
 theorem Step.parStar.snd_cong
     {mode : Mode} {level scope : Nat} {ctx : Ctx mode level scope}
     {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
     {pairTerm pairTerm' : Term ctx (Ty.sigmaTy firstType secondType)}
     (pairChain : Step.parStar pairTerm pairTerm') :
-    Step.parStar (Term.snd pairTerm) (Term.snd pairTerm') :=
+    Step.parStar (Term.snd pairTerm rfl) (Term.snd pairTerm' rfl) :=
   Step.parStar.mapStep
-    (Term.snd (firstType := firstType) (secondType := secondType))
+    (fun pTerm => Term.snd (firstType := firstType)
+      (secondType := secondType) pTerm rfl)
     Step.par.snd pairChain
 
 /-- Single-position `boolElim` congruence on scrutinee. -/

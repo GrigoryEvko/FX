@@ -95,10 +95,10 @@ example (f : Term EmptyCtx (Ty.arrow Ty.unit Ty.unit)) :
          f :=
   Step.etaArrow f
 
-/-- η-contraction for Σ pairs. -/
+/-- η-contraction for Σ pairs.  W9.B1.2: `Term.snd p` requires `rfl`. -/
 example {firstType : Ty 0 0} {secondType : Ty 0 1}
     (p : Term EmptyCtx (Ty.sigmaTy firstType secondType)) :
-    Step (Term.pair (Term.fst p) (Term.snd p)) p :=
+    Step (Term.pair (Term.fst p) (Term.snd p rfl)) p :=
   Step.etaSigma p
 
 /-! ### IdProof — identity-proof scaffold (meta-level). -/
