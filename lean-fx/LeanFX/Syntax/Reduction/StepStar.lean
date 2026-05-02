@@ -155,13 +155,14 @@ theorem StepStar.lamPi_cong {mode level scope} {ctx : Ctx mode level scope}
              (Term.lamPi (domainType := domainType) body₂) :=
   StepStar.mapStep (Term.lamPi (domainType := domainType)) Step.lamPiBody h
 
-/-- Multi-step reduction threads through the function position of `Term.appPi`. -/
+/-- Multi-step reduction threads through the function position of `Term.appPi`.
+W9.B1.1 — uses `rfl` for the equation-bearing appPi's resultEq. -/
 theorem StepStar.appPi_cong_left {mode level scope} {ctx : Ctx mode level scope}
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     (a : Term ctx domainType) (h : StepStar f₁ f₂) :
-    StepStar (Term.appPi f₁ a) (Term.appPi f₂ a) :=
-  StepStar.mapStep (fun functionTerm => Term.appPi functionTerm a)
+    StepStar (Term.appPi rfl f₁ a) (Term.appPi rfl f₂ a) :=
+  StepStar.mapStep (fun functionTerm => Term.appPi rfl functionTerm a)
     Step.appPiLeft h
 
 /-- Multi-step reduction threads through the argument position of `Term.appPi`. -/
@@ -169,8 +170,8 @@ theorem StepStar.appPi_cong_right {mode level scope} {ctx : Ctx mode level scope
     {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
     (f : Term ctx (Ty.piTy domainType codomainType))
     {a₁ a₂ : Term ctx domainType} (h : StepStar a₁ a₂) :
-    StepStar (Term.appPi f a₁) (Term.appPi f a₂) :=
-  StepStar.mapStep (fun argumentTerm => Term.appPi f argumentTerm)
+    StepStar (Term.appPi rfl f a₁) (Term.appPi rfl f a₂) :=
+  StepStar.mapStep (fun argumentTerm => Term.appPi rfl f argumentTerm)
     Step.appPiRight h
 
 /-- Multi-step reduction threads through both positions of `Term.appPi`. -/
@@ -179,7 +180,7 @@ theorem StepStar.appPi_cong {mode level scope} {ctx : Ctx mode level scope}
     {f₁ f₂ : Term ctx (Ty.piTy domainType codomainType)}
     {a₁ a₂ : Term ctx domainType}
     (h_f : StepStar f₁ f₂) (h_a : StepStar a₁ a₂) :
-    StepStar (Term.appPi f₁ a₁) (Term.appPi f₂ a₂) :=
+    StepStar (Term.appPi rfl f₁ a₁) (Term.appPi rfl f₂ a₂) :=
   StepStar.trans (StepStar.appPi_cong_left a₁ h_f)
                  (StepStar.appPi_cong_right f₂ h_a)
 

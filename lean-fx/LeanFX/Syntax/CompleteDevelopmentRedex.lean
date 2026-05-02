@@ -108,51 +108,51 @@ def Term.cd_appPi_redex
         Term.body_of_lamPi_general developedFunction rfl h_raw
       Term.subst0 body developedArgument
   | RawTerm.var _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.unit =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.app _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.pair _ _ =>
-      Term.appPi developedFunction developedArgument
-  | RawTerm.fst _ => Term.appPi developedFunction developedArgument
-  | RawTerm.snd _ => Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
+  | RawTerm.fst _ => Term.appPi rfl developedFunction developedArgument
+  | RawTerm.snd _ => Term.appPi rfl developedFunction developedArgument
   | RawTerm.boolTrue =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.boolFalse =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.boolElim _ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.natZero =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.natSucc _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.natElim _ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.natRec _ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.listNil =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.listCons _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.listElim _ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.optionNone =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.optionSome _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.optionMatch _ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.eitherInl _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.eitherInr _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.eitherMatch _ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.refl _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
   | RawTerm.idJ _ _ =>
-      Term.appPi developedFunction developedArgument
+      Term.appPi rfl developedFunction developedArgument
 
 /-! ### β-fst, β-snd: pair projections. -/
 
