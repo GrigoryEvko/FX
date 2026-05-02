@@ -2,61 +2,192 @@ import LeanFX2.Reduction.Step
 
 /-! # Algo/WHNF — weak head normal form classifier
 
-```lean
-def Term.isWHNF : Term ctx ty raw → Bool
-```
+`Term.isWHNF` returns `true` iff a typed term is in **weak head normal
+form** — that is, the head constructor is a value-form (lam, pair,
+refl, ...) or a neutral form (variable, application of variable, or
+elimination of a neutral) rather than a redex.
 
-Decides whether a term is in **weak head normal form** — that is,
-whether the head constructor is a value-form (`Term.lam`, `Term.pair`,
-`Term.refl`, etc.) rather than an eliminator applied to a non-value
-(`Term.app (Term.lam _) _` is NOT in WHNF — it's a β-redex).
+## WHNF classification table
 
-## WHNF classifications
+| Head ctor | WHNF? | Reason |
+|---|---|---|
+| `var` | yes | head reduction stops at variables |
+| `unit`, `boolTrue`, `boolFalse`, `natZero` | yes | canonical leaf values |
+| `lam`, `lamPi`, `pair`, `refl` | yes | value introductions |
+| `natSucc t` | yes | canonical successor |
+| `listNil`, `listCons _ _` | yes | canonical list values |
+| `optionNone`, `optionSome _` | yes | canonical option values |
+| `eitherInl _`, `eitherInr _` | yes | canonical either values |
+| `modIntro _`, `subsume _` | yes | modal value introduction |
+| `app (lam _) _` | NO | β-redex |
+| `appPi (lamPi _) _` | NO | β-redex (Π) |
+| `fst (pair _ _)`, `snd (pair _ _)` | NO | β-redex (Σ projection) |
+| `boolElim` of canonical bool | NO | ι-redex |
+| `natElim/natRec` of canonical nat | NO | ι-redex |
+| `listElim` of canonical list | NO | ι-redex |
+| `optionMatch` of canonical option | NO | ι-redex |
+| `eitherMatch` of canonical either | NO | ι-redex |
+| `idJ _ (refl _ _)` | NO | ι-redex |
+| `modElim (modIntro _)` | NO | ι-redex (modal) |
+| any eliminator on neutral | yes | neutral |
 
-| Term head | WHNF? |
-|---|---|
-| `var` | yes (head reduction stops at variables) |
-| `unit`, `boolTrue`, `boolFalse`, `natZero` | yes (canonical) |
-| `lam`, `lamPi`, `pair`, `refl` | yes (value introductions) |
-| `natSucc t` | yes (canonical succ form) |
-| `listNil`, `listCons _ _`, `optionNone`, `optionSome _`, etc. | yes |
-| `app fn arg` where `fn` is `Term.lam` | NO (β-redex) |
-| `app fn arg` where `fn` is var/app | yes (neutral) |
-| `appPi`, `fst`, `snd`, `boolElim`, `natElim`, etc. on values | NO (ι-redex) |
-| `idJ base (refl _)` | NO (ι-redex) |
-| `modIntro/modElim` similar pattern | NO if eliminating intro |
+## Why classify
 
-## Why WHNF, not full NF
+`Algo/DecConv` decides convertibility by reducing both sides to WHNF
+and structurally comparing.  WHNF is finer than full normal form
+(strictly weaker reduction), but enough for decidable conversion
+because Church-Rosser ensures common reducts share WHNF heads.
 
-Decidable conversion (Layer 9 `DecConv`) reduces both sides to WHNF,
-compares heads, recurses on sub-terms.  This is faster than reducing
-to full normal form.  For the kernel's correctness, WHNF + structural
-recursion gives complete decidable conversion (per the Church-Rosser
-theorem from Layer 3).
+## Implementation discipline
 
-## Dependencies
-
-* `Reduction/Step.lean` — for the redex classification
-
-## Downstream
-
-* `Algo/DecConv.lean` — decidable conversion runs WHNF on both sides
-* `Algo/Eval.lean` — fuel-bounded eval steps to WHNF then dispatches
-
-## Implementation plan (Layer 9)
-
-1. Define `isWHNF` by Term ctor enumeration
-2. Provide `Term.whnf : Term → Term` that reduces to WHNF (uses Step
-   in a fuel loop or via direct β/ι firing)
-3. Smoke: identity terms, β-redexes reduce one step
-
-Target: ~150 lines.
+To avoid propext leaks (wildcards on dep-indexed matches always leak),
+we project Term ctor identity to a flat enum `Term.HeadCtor` via full
+enumeration first, then use Bool dispatch on the flat enum.  The
+result: `Term.isWHNF` is zero-axiom.
 -/
 
-namespace LeanFX2.Algo
+namespace LeanFX2
 
--- TODO Layer 9: isWHNF predicate
--- TODO Layer 9: whnf reduction
--- TODO Layer 9: smoke tests
+/-- Flat enum tagging the head constructor of a `Term`.  Used by
+`isWHNF` to dispatch on the head shape without nested dep-indexed
+matches that would leak `propext`. -/
+inductive Term.HeadCtor : Type
+  | var
+  | unit
+  | lam
+  | app
+  | lamPi
+  | appPi
+  | pair
+  | fst
+  | snd
+  | boolTrue
+  | boolFalse
+  | boolElim
+  | natZero
+  | natSucc
+  | natElim
+  | natRec
+  | listNil
+  | listCons
+  | listElim
+  | optionNone
+  | optionSome
+  | optionMatch
+  | eitherInl
+  | eitherInr
+  | eitherMatch
+  | refl
+  | idJ
+  | modIntro
+  | modElim
+  | subsume
+  deriving DecidableEq
 
-end LeanFX2.Algo
+/-- Project a typed Term to its flat head-ctor tag.  Full enumeration
+of all 29 ctors — no wildcards, so no propext leak. -/
+def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context someType raw) : Term.HeadCtor :=
+  match someTerm with
+  | .var _ => .var
+  | .unit => .unit
+  | .lam _ => .lam
+  | .app _ _ => .app
+  | .lamPi _ => .lamPi
+  | .appPi _ _ => .appPi
+  | .pair _ _ => .pair
+  | .fst _ => .fst
+  | .snd _ => .snd
+  | .boolTrue => .boolTrue
+  | .boolFalse => .boolFalse
+  | .boolElim _ _ _ => .boolElim
+  | .natZero => .natZero
+  | .natSucc _ => .natSucc
+  | .natElim _ _ _ => .natElim
+  | .natRec _ _ _ => .natRec
+  | .listNil => .listNil
+  | .listCons _ _ => .listCons
+  | .listElim _ _ _ => .listElim
+  | .optionNone => .optionNone
+  | .optionSome _ => .optionSome
+  | .optionMatch _ _ _ => .optionMatch
+  | .eitherInl _ => .eitherInl
+  | .eitherInr _ => .eitherInr
+  | .eitherMatch _ _ _ => .eitherMatch
+  | .refl _ _ => .refl
+  | .idJ _ _ => .idJ
+  | .modIntro _ => .modIntro
+  | .modElim _ => .modElim
+  | .subsume _ => .subsume
+
+/-- True iff the Term is in weak head normal form: head ctor is not
+a β/ι redex.  Recursion happens only on the immediate head shape;
+deeper redexes elsewhere don't disqualify WHNF.  Implemented via
+`Term.headCtor` projection to keep the dispatch propext-free. -/
+def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context someType raw) : Bool :=
+  match someTerm with
+  -- Variables and canonical leaf values are WHNF
+  | .var _ => true
+  | .unit => true
+  | .boolTrue => true
+  | .boolFalse => true
+  | .natZero => true
+  | .listNil => true
+  | .optionNone => true
+  -- Value introductions are WHNF
+  | .lam _ => true
+  | .lamPi _ => true
+  | .pair _ _ => true
+  | .refl _ _ => true
+  | .natSucc _ => true
+  | .listCons _ _ => true
+  | .optionSome _ => true
+  | .eitherInl _ => true
+  | .eitherInr _ => true
+  | .modIntro _ => true
+  | .subsume _ => true
+  -- Application is WHNF iff function head is NOT .lam
+  | .app functionTerm _ =>
+      !(functionTerm.headCtor == .lam)
+  -- Π-application is WHNF iff function head is NOT .lamPi
+  | .appPi functionTerm _ =>
+      !(functionTerm.headCtor == .lamPi)
+  -- Σ projections are WHNF iff pair head is NOT .pair
+  | .fst pairTerm =>
+      !(pairTerm.headCtor == .pair)
+  | .snd pairTerm =>
+      !(pairTerm.headCtor == .pair)
+  -- Boolean elimination is WHNF iff scrutinee head is not a canonical bool
+  | .boolElim scrutinee _ _ =>
+      let scrutineeHead := scrutinee.headCtor
+      !(scrutineeHead == .boolTrue) && !(scrutineeHead == .boolFalse)
+  -- Nat elimination is WHNF iff scrutinee head is not a canonical nat
+  | .natElim scrutinee _ _ =>
+      let scrutineeHead := scrutinee.headCtor
+      !(scrutineeHead == .natZero) && !(scrutineeHead == .natSucc)
+  | .natRec scrutinee _ _ =>
+      let scrutineeHead := scrutinee.headCtor
+      !(scrutineeHead == .natZero) && !(scrutineeHead == .natSucc)
+  -- List elimination
+  | .listElim scrutinee _ _ =>
+      let scrutineeHead := scrutinee.headCtor
+      !(scrutineeHead == .listNil) && !(scrutineeHead == .listCons)
+  -- Option match
+  | .optionMatch scrutinee _ _ =>
+      let scrutineeHead := scrutinee.headCtor
+      !(scrutineeHead == .optionNone) && !(scrutineeHead == .optionSome)
+  -- Either match
+  | .eitherMatch scrutinee _ _ =>
+      let scrutineeHead := scrutinee.headCtor
+      !(scrutineeHead == .eitherInl) && !(scrutineeHead == .eitherInr)
+  -- Identity J: WHNF iff witness head is NOT .refl
+  | .idJ _ witness =>
+      !(witness.headCtor == .refl)
+  -- Modal eliminator: WHNF iff inner head is NOT .modIntro
+  | .modElim innerTerm =>
+      !(innerTerm.headCtor == .modIntro)
+
+end LeanFX2
