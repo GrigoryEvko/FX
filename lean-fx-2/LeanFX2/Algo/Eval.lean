@@ -1,53 +1,189 @@
 import LeanFX2.Algo.WHNF
 import LeanFX2.Reduction.Step
 
-/-! # Algo/Eval — fuel-bounded evaluator
+/-! # Algo/Eval — fuel-bounded typed evaluator
 
 ```lean
-def Term.eval (fuel : Nat) (term : Term ctx ty raw) :
-    Σ (raw' : RawTerm scope), Term ctx ty raw'
+def Term.headStep? (someTerm : Term ctx ty raw) :
+    Option (Σ (resultRaw : RawTerm scope), Term ctx ty resultRaw)
+
+def Term.eval (fuel : Nat) (someTerm : Term ctx ty raw) :
+    Σ (resultRaw : RawTerm scope), Term ctx ty resultRaw
 ```
 
-Reduces a typed Term by repeatedly firing β/ι rules.  Fuel parameter
-ensures termination even before SN is proven.
+`headStep?` fires a single ι-redex at the head of the term whenever
+the firing **does not require destructuring inner Term constructors**
+— i.e., when the canonical scrutinee form has no payload that the
+reduct depends on.
 
-## Why fuel-bounded
+Coverage (zero-axiom subset):
 
-Strong normalization is a separate metatheorem (Tait's reducibility).
-Until SN is proven for the full kernel (with all 19 dimensions), the
-evaluator must guard against non-termination via explicit fuel.
+| Redex                                | Fires? | Reason                          |
+|--------------------------------------|--------|---------------------------------|
+| `boolElim true t e   → t`            | yes    | `t` already destructured        |
+| `boolElim false t e  → e`            | yes    | `e` already destructured        |
+| `natElim zero z s    → z`            | yes    | `z` already destructured        |
+| `natRec zero z s     → z`            | yes    | `z` already destructured        |
+| `listElim nil n c    → n`            | yes    | `n` already destructured        |
+| `optionMatch none n s → n`           | yes    | `n` already destructured        |
 
-For Tot effect terms (default): fuel suffices (SN guaranteed).
-For `Div`-effect terms: fuel is essential (terms may diverge).
+The remaining redex rules (β-app, β-Π, β-pair, succ-elim, cons-elim,
+some-match, inl/inr-match) require **inner Term destructuring** —
+e.g., `app (lam body) arg ⟶ body[arg/x]` needs to extract `body`
+from `lam body`.  In Lean 4 v4.29.1, that triggers `propext` via
+the dep-pattern matcher (Discipline #2 Rule 5 from `WORKING_RULES.md`:
+"full enum on dep+restricted-index FAILS").  These rules are deferred
+to a future revision that uses Step-witness construction or
+RawTerm-level reduction + subject reduction lifting (the latter
+blocked on Phase 7.D — SR for arrow / non-closed types).
 
-## Reduction strategy
+`headStep?` returning `none` does not mean WHNF.  It means *this
+implementation cannot fire the redex zero-axiom*.  Use `Term.isWHNF`
+for true WHNF classification.
 
-Call-by-name to start (head reduction first); switch to call-by-value
-when needed for performance.  The reduction order doesn't affect
-correctness (Church-Rosser confluence) but affects evaluator speed.
+`eval` iterates `headStep?` up to `fuel` times.
+
+## Result type preserves Ty
+
+Each ι-rule we handle has the form `eliminator scrutinee branches →
+selectedBranch`, where `selectedBranch : Term context motiveType _`.
+The eliminator's own Ty is also `motiveType`.  No cast needed.
+
+## Zero-axiom
+
+Pattern match on outer Term ctor (full enumeration to avoid wildcard
+propext leak).  Dispatch on `scrutinee.headCtor` which is a flat
+`Term.HeadCtor` enum projection (already proven propext-free in
+`Algo/WHNF.lean`).
 
 ## Dependencies
 
-* `Algo/WHNF.lean`
-* `Reduction/Step.lean`
+* `Algo/WHNF.lean` — `Term.HeadCtor` + `Term.headCtor` projection
+* `Reduction/Step.lean` — semantic anchor (eval witnesses Step+ later)
 
 ## Downstream
 
 * `Pipeline.lean` — end-to-end pipeline runs eval at the end
-* User-level tests / smoke
-
-## Implementation plan (Layer 9)
-
-1. Define `Term.eval` recursive (with fuel parameter)
-2. Each Term ctor: dispatch based on β/ι fireability
-3. Smoke: identity application, addition on naturals, list reduction
-
-Target: ~300 lines.
+* Future `Algo/Soundness.lean` — eval ⟹ Step+
 -/
+
+namespace LeanFX2
+
+variable {mode : Mode} {level : Nat}
+
+/-- Fire a single ι-redex at the head of a typed term, restricted to
+the cases where the reduct does not require inner-Term destructuring
+(see file docstring for the coverage table).  Returns `none` for
+non-redexes AND for redexes whose firing is currently blocked on the
+propext-clean Term destructuring infrastructure.
+
+Full Term.ctor enumeration ensures no wildcard propext leak. -/
+def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {raw : RawTerm scope},
+    Term context someType raw →
+    Option (Σ (resultRaw : RawTerm scope), Term context someType resultRaw)
+  -- Atomic / canonical / WHNF heads — never reduce.
+  | _, _, _, _, .var _ => none
+  | _, _, _, _, .unit => none
+  | _, _, _, _, .lam _ => none
+  | _, _, _, _, .lamPi _ => none
+  | _, _, _, _, .pair _ _ => none
+  | _, _, _, _, .boolTrue => none
+  | _, _, _, _, .boolFalse => none
+  | _, _, _, _, .natZero => none
+  | _, _, _, _, .natSucc _ => none
+  | _, _, _, _, .listNil => none
+  | _, _, _, _, .listCons _ _ => none
+  | _, _, _, _, .optionNone => none
+  | _, _, _, _, .optionSome _ => none
+  | _, _, _, _, .eitherInl _ => none
+  | _, _, _, _, .eitherInr _ => none
+  | _, _, _, _, .refl _ _ => none
+  | _, _, _, _, .modIntro _ => none
+  | _, _, _, _, .subsume _ => none
+  -- Eliminators — fire only when the canonical scrutinee has no payload.
+  | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
+  | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction
+  | _, _, _, _, .fst _ => none              -- β-pair-fst needs first extraction
+  | _, _, _, _, .snd _ => none              -- β-pair-snd needs second extraction
+  | _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>
+      let scrutineeHead := scrutinee.headCtor
+      if scrutineeHead == .boolTrue then
+        some ⟨_, thenBranch⟩
+      else if scrutineeHead == .boolFalse then
+        some ⟨_, elseBranch⟩
+      else
+        none
+  | _, _, _, _, .natElim scrutinee zeroBranch _ =>
+      let scrutineeHead := scrutinee.headCtor
+      if scrutineeHead == .natZero then
+        some ⟨_, zeroBranch⟩
+      else
+        none  -- succ case needs predecessor extraction
+  | _, _, _, _, .natRec scrutinee zeroBranch _ =>
+      let scrutineeHead := scrutinee.headCtor
+      if scrutineeHead == .natZero then
+        some ⟨_, zeroBranch⟩
+      else
+        none  -- succ case needs predecessor extraction
+  | _, _, _, _, .listElim scrutinee nilBranch _ =>
+      let scrutineeHead := scrutinee.headCtor
+      if scrutineeHead == .listNil then
+        some ⟨_, nilBranch⟩
+      else
+        none  -- cons case needs head/tail extraction
+  | _, _, _, _, .optionMatch scrutinee noneBranch _ =>
+      let scrutineeHead := scrutinee.headCtor
+      if scrutineeHead == .optionNone then
+        some ⟨_, noneBranch⟩
+      else
+        none  -- some case needs value extraction
+  | _, _, _, _, .eitherMatch _ _ _ => none  -- all canonicals carry payload
+  | _, _, _, _, .idJ _ _ => none            -- J-on-refl needs witness extraction
+  | _, _, _, _, .modElim _ => none          -- needs inner extraction
+
+/-- Fuel-bounded head reducer.  Repeatedly fires head ι-redexes via
+`Term.headStep?` until either the term is non-reducible (per the
+restricted coverage) or fuel runs out.  Returns the current
+`(rawForm, typedTerm)` pair.
+
+## Termination guarantees
+
+* Every well-typed pure term has a normal form (Tait's reducibility,
+  not yet proven for this kernel).
+* Until SN is mechanised, fuel is essential to guarantee that
+  `Term.eval` itself terminates.
+* For terms with `Div` effect, fuel is the *only* reason eval ever
+  returns. -/
+def Term.eval {scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {raw : RawTerm scope} :
+    Nat → Term context someType raw →
+    Σ (resultRaw : RawTerm scope), Term context someType resultRaw
+  | 0, someTerm => ⟨_, someTerm⟩
+  | fuel + 1, someTerm =>
+    match someTerm.headStep? with
+    | some ⟨_, reducedTerm⟩ => Term.eval fuel reducedTerm
+    | none => ⟨_, someTerm⟩
+
+end LeanFX2
 
 namespace LeanFX2.Algo
 
--- TODO Layer 9: Term.eval with fuel
--- TODO Layer 9: smoke tests
+-- TODO Layer 9 + Phase 7.D: extend headStep? to β-app, β-Π, β-pair,
+-- and the payload-carrying ι-rules (succ-elim, cons-elim, some-match,
+-- inl/inr-match, J-on-refl, modElim-on-modIntro).  Two viable paths:
+--
+-- 1. Build the result via Step-witness construction (define a typed
+--    one-step parallel reducer that produces a Σ pair (target,
+--    Step.par source target) and project from there).  Casts route
+--    through Eq.rec in the Step-rule indices.
+--
+-- 2. Reduce on RawTerm via existing Algo/RawWHNF, then lift the
+--    raw-result back to Term via subject reduction.  Blocked on
+--    Phase 7.D — current SR proofs only cover closed types
+--    (Ty.nat / Ty.bool / Ty.unit).  Extending to Ty.arrow requires
+--    weaken-stable preservation reasoning.
+--
+-- Both paths preserve zero-axiom but require non-trivial scaffolding.
 
 end LeanFX2.Algo

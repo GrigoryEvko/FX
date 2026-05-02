@@ -56,7 +56,7 @@ Target: ~300 lines.
 
 namespace LeanFX2
 
-variable {mode : Mode} {level scope : Nat}
+variable {mode : Mode} {level : Nat}
 
 /-- Bidirectional type check.  Given a context, an expected
 type, and a raw term, returns `some t : Term ctx expectedType raw`
@@ -82,9 +82,11 @@ otherwise.
 Uses DecidableEq on `Ty` for type matching.  The propositional
 `▸` cast routes through `Eq.rec` (no `propext`).
 -/
-def Term.check (context : Ctx mode level scope) (expectedType : Ty level scope) :
-    (raw : RawTerm scope) →
+def Term.check : ∀ {scope : Nat}
+    (context : Ctx mode level scope) (expectedType : Ty level scope)
+    (raw : RawTerm scope),
     Option (Term context expectedType raw)
+  | _, context, expectedType, raw => match raw with
   | .var position =>
       if h : expectedType = varType context position then
         some (h ▸ Term.var position)
@@ -164,8 +166,22 @@ def Term.check (context : Ctx mode level scope) (expectedType : Ty level scope) 
           | none => none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
       | .tyVar _ | .id _ _ _ | .listType _ | .optionType _ => none
-  -- Forms requiring richer disambiguation: deferred
-  | .lam _              => none
+  -- Lambda: expected type disambiguates non-dep arrow vs Π
+  | .lam bodyRaw =>
+      match expectedType with
+      | .arrow domainType codomainType =>
+          match Term.check (context.cons domainType)
+                           codomainType.weaken bodyRaw with
+          | some bodyTerm => some (Term.lam bodyTerm)
+          | none => none
+      | .piTy domainType codomainType =>
+          match Term.check (context.cons domainType)
+                           codomainType bodyRaw with
+          | some bodyTerm => some (Term.lamPi bodyTerm)
+          | none => none
+      | .unit | .bool | .nat | .sigmaTy _ _ | .tyVar _ | .id _ _ _
+      | .listType _ | .optionType _ | .eitherType _ _ => none
+  -- App: deferred (requires inference of function's arrow domain)
   | .app _ _            => none
   | .pair _ _           => none
   | .fst _              => none
