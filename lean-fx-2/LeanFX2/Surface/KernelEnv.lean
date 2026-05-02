@@ -1,101 +1,67 @@
 import LeanFX2.Surface.AST
 import LeanFX2.Surface.KernelBridge
+import LeanFX2.Surface.StdNames
 
-/-! # Surface/KernelEnv — global environment for free-name resolution
+/-! # Surface/KernelEnv — env-aware bridge for free-name + operator resolution
 
-The "fully kernel-backed AST" mission has four genuine kernel
-gaps (per `Surface/KernelBridge.lean`'s docstring):
+Per `Surface/KernelBridge.lean`'s docstring, the env-free bridge
+`RawExpr.toRawTerm?` returns `none` for:
+* Gap #1: free names (no kernel encoding)
+* Gap #2: binops / unops (desugar to free-name applications)
+* Gap #3: dot projections (need record schema)
+* Gap #4: non-zero literals (need succ-chain)
 
-1. `RawTerm.const` / global env — for free names
-2. Primitive operators
-3. First-class records
-4. N-literal primitives
-
-This module addresses gap #1 from the surface side: an `Env`
-type that maps qualified names to their kernel forms, enabling
-the bridge to resolve free names without extending the kernel.
-
-## Architecture
+This module addresses gaps #1 and #2 with an `Env` (qualified-
+name → RawTerm symbol table) and `RawExpr.toRawTermWithEnv?`.
 
 ```lean
-structure Env where
-  -- Map from QualifiedName to its kernel-form definition
-  lookup : QualifiedName → Option ResolvedDef
-  -- Module-level scope (always 0 for top-level defs)
-  --   Resolved values are weakened to caller's scope on lookup.
-```
+structure ResolvedDef where rawTerm : RawTerm 0
+structure Env where lookup : QualifiedName → Option ResolvedDef
 
-A `ResolvedDef` carries the kernel `RawTerm` representing the
-definition.  Module-level definitions live at scope 0 (no
-enclosing binders); the env provides a `liftToScope` operation
-that weakens the RawTerm into the caller's binder scope.
-
-## Bridge integration
-
-The env-aware bridge:
-
-```lean
 def RawExpr.toRawTermWithEnv? (env : Env) :
     RawExpr scope → Option (RawTerm scope)
 ```
 
-resolves `rawFree qname` via `env.lookup` and lifts to scope.
-Other cases match the env-free `toRawTerm?` shipped in
-`KernelBridge.lean`.
+## Free-name resolution (gap #1)
 
-## Operator desugaring (gap #2)
+`rawFree qname` → `env.lookup qname` → lift module-scope
+`RawTerm 0` to caller's `RawTerm scope` via iterated
+`RawTerm.weaken`.
 
-Once Env is in place, the bridge can also desugar binops:
+## Operator resolution (gap #2)
 
-```lean
-| .rawBinop op lhs rhs =>
-    -- Operators are just stdlib free names: + ↦ Std.Int.add etc.
-    let opName := BinaryOp.toQualifiedName op  -- from Std.Ops
-    match env.lookup opName with
-    | none => none
-    | some opDef =>
-        -- Build: app (app opDef lhsRaw) rhsRaw
-        ...
-```
+`rawBinop op lhs rhs` → look up `op.toQualifiedName` (defined
+in `Surface/StdNames.lean`) in the env → if resolved, build
+`app (app opRaw lhsRaw) rhsRaw`.
 
-A `BinaryOp.toQualifiedName : BinaryOp → QualifiedName` mapping
-table provides the canonical stdlib names for each operator.
+`rawUnop op operand` → analogous: `app opRaw operandRaw`.
 
-## Status
+## Why not extend the kernel?
 
-This file is currently a STUB providing the interface +
-documentation.  Implementation requires:
-1. Kernel weakening function `RawTerm.weakenAtScope :
-   RawTerm 0 → ∀ s, RawTerm s` (or similar — exists in
-   `Foundation/RawSubst.lean` as `RawTermSubst.shift`).
-2. Decidable equality on QualifiedName (needs LowerIdent /
-   UpperIdent DecidableEq, which currently aren't derived).
-3. A concrete env type (List of (QualifiedName, ResolvedDef) is
-   the simplest; performance later via Trie).
+Extending `RawTerm` with a `const` ctor would require updating
+every reduction proof (Step / Step.par / confluence / ...) with
+inert cases.  ~500 LoC of mechanical proof amendment.  The
+env-at-surface approach keeps the kernel pristine and Layer K
+strict zero-axiom.
 
-Phase 10.C will land these.
+## Architecture
 
-## Why not just extend `RawTerm` with `const`?
+Full mutual block mirroring `Surface/KernelBridge.lean`'s
+env-free bridge but threading `env` through every recursive
+call.  Termination by Lean's auto-derived `sizeOf`.
 
-Extending the kernel ADDS cases to every reduction proof
-(Step, Step.par, confluence, ...).  These cases are inert (const
-doesn't reduce), so they're mechanical, but the work is real:
-~50 cases × ~10 ctor additions = ~500 lines of mechanical proof
-amendments.
+The env-free bridge (in `KernelBridge.lean`) is a SPECIAL CASE
+of the env-aware bridge with `Env.empty` — provable as a
+theorem `RawExpr.toRawTermWithEnv?_empty` (deferred).
 
-Per `AXIOMS.md` Layer K policy: kernel extensions are
-HIGH-COST.  Better to handle free names at the surface layer
-via an Env, leaving the kernel pristine.
+Zero-axiom verified.
 -/
 
 namespace LeanFX2.Surface
 
 /-- A resolved kernel-side definition for a qualified name.
 The RawTerm is at module scope (`scope = 0`); the env's
-`liftToScope` operation weakens it to the caller's scope.
-
-Future extension: also carry a `Ty 0 0` (the def's kernel type)
-and a typed `Term` value, for full elaboration support. -/
+`liftToScope` operation weakens it to the caller's scope. -/
 structure ResolvedDef where
   /-- The definition's kernel RawTerm at module scope (0). -/
   rawTerm : RawTerm 0
@@ -111,54 +77,136 @@ def Env.empty : Env := { lookup := fun _ => none }
 
 /-- Iterated weakening: `RawTerm sourceScope` lifted to
 `RawTerm (sourceScope + n)` by applying `RawTerm.weaken` n
-times.  Structural recursion on the iteration count. -/
+times. -/
 def RawTerm.weakenIter {sourceScope : Nat}
     (term : RawTerm sourceScope) : ∀ (n : Nat), RawTerm (sourceScope + n)
   | 0 => term
   | n + 1 => (RawTerm.weakenIter term n).weaken
 
 /-- Lift a module-scope (`RawTerm 0`) definition to the caller's
-scope.  Implementation: iterate kernel `RawTerm.weaken`
-(`Foundation/RawSubst.lean`) `scope` times.
-
-`Nat.zero_add` reconciles the result type — `RawTerm (0 + scope)`
-is definitionally `RawTerm scope`. -/
+scope by iterated weakening. -/
 def ResolvedDef.liftToScope {scope : Nat} (rd : ResolvedDef) :
     Option (RawTerm scope) :=
   some (Nat.zero_add scope ▸ RawTerm.weakenIter rd.rawTerm scope)
 
-/-- Sketch: resolve an `RawExpr` to a kernel `RawTerm` using an
-environment.  Currently calls `RawExpr.toRawTerm?` (env-free)
-for non-free-name cases and uses `env.lookup` + `liftToScope`
-for free names.
+mutual
 
-Note: this is currently INCOMPLETE — the env-aware path only
-handles free names at scope 0.  Lifting at higher scopes is
-gated on `RawTermSubst.shift` integration. -/
+/-- Env-aware bridge: desugars `RawExpr scope` to kernel
+`RawTerm scope`, resolving free names and operators via `env`.
+
+Mirrors `RawExpr.toRawTerm?` from `KernelBridge.lean` but
+threads `env` through every recursive call. -/
 def RawExpr.toRawTermWithEnv? {scope : Nat} (env : Env) :
     RawExpr scope → Option (RawTerm scope)
+  | .rawBound idx => some (RawTerm.var idx)
   | .rawFree qname =>
     match env.lookup qname with
     | none => none
     | some rd => rd.liftToScope
-  -- All other cases delegate to the env-free bridge.  Recursion
-  -- through compound forms (rawApp, rawLam, etc.) currently
-  -- doesn't pass the env through subterms — env-aware recursion
-  -- requires reproducing the bridge's structure here.  Phase
-  -- 10.C work item.
-  --
-  -- Full enumeration (rather than `| other => ...`) keeps this
-  -- propext-clean per Rule 2 of the match recipe.
-  | r@(.rawBound _) => RawExpr.toRawTerm? r
-  | r@(.rawLit _) => RawExpr.toRawTerm? r
-  | r@.rawUnit => RawExpr.toRawTerm? r
-  | r@(.rawParen _) => RawExpr.toRawTerm? r
-  | r@(.rawDot _ _) => RawExpr.toRawTerm? r
-  | r@(.rawApp _ _) => RawExpr.toRawTerm? r
-  | r@(.rawBinop _ _ _) => RawExpr.toRawTerm? r
-  | r@(.rawUnop _ _) => RawExpr.toRawTerm? r
-  | r@(.rawLam _ _ _) => RawExpr.toRawTerm? r
-  | r@(.rawBlock _ _) => RawExpr.toRawTerm? r
-  | r@(.rawIf _ _ _) => RawExpr.toRawTerm? r
+  | .rawLit lit => Literal.toRawTerm? lit
+  | .rawUnit => some RawTerm.unit
+  | .rawParen inner => RawExpr.toRawTermWithEnv? env inner
+  | .rawDot _ _ => none  -- gap #3: needs record schema
+  | .rawApp fn args =>
+      match RawExpr.toRawTermWithEnv? env fn with
+      | none => none
+      | some fnRaw => RawArgList.foldAppsEnv? env fnRaw args
+  | .rawBinop op lhs rhs =>
+      -- Desugar binop via env lookup of op.toQualifiedName.
+      -- Nested single-match (rather than tuple-with-wildcard)
+      -- to avoid propext leak from multi-arg wildcard.
+      match env.lookup op.toQualifiedName with
+      | none => none
+      | some opDef =>
+        match opDef.liftToScope (scope := scope) with
+        | none => none
+        | some opRaw =>
+          match RawExpr.toRawTermWithEnv? env lhs with
+          | none => none
+          | some lhsRaw =>
+            match RawExpr.toRawTermWithEnv? env rhs with
+            | none => none
+            | some rhsRaw =>
+              some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)
+  | .rawUnop op operand =>
+      match env.lookup op.toQualifiedName with
+      | none => none
+      | some opDef =>
+        match opDef.liftToScope (scope := scope) with
+        | none => none
+        | some opRaw =>
+          match RawExpr.toRawTermWithEnv? env operand with
+          | none => none
+          | some operandRaw =>
+            some (RawTerm.app opRaw operandRaw)
+  | .rawLam _ _ body =>
+      match RawExpr.toRawTermWithEnv? env body with
+      | none => none
+      | some bodyRaw => some (RawTerm.lam bodyRaw)
+  | .rawBlock stmts final =>
+      match RawExpr.toRawTermWithEnv? env final with
+      | none => none
+      | some finalRaw => RawStmtList.foldBlockEnv? env stmts finalRaw
+  | .rawIf cond thenBr elseBr =>
+      match RawExpr.toRawTermWithEnv? env cond with
+      | none => none
+      | some condRaw =>
+        match RawExpr.toRawTermWithEnv? env thenBr with
+        | none => none
+        | some thenRaw =>
+          match OptRawExpr.toRawTermOrUnitEnv? env elseBr with
+          | none => none
+          | some elseRaw =>
+              some (RawTerm.boolElim condRaw thenRaw elseRaw)
+
+/-- Env-aware fold of an arg list into nested `RawTerm.app`. -/
+def RawArgList.foldAppsEnv? {scope : Nat} (env : Env) (acc : RawTerm scope) :
+    RawArgList scope → Option (RawTerm scope)
+  | .rawNilArg => some acc
+  | .rawConsArg arg rest =>
+      match RawCallArg.toRawTermWithEnv? env arg with
+      | none => none
+      | some argRaw => RawArgList.foldAppsEnv? env (RawTerm.app acc argRaw) rest
+
+/-- Env-aware desugar of a single call-arg. -/
+def RawCallArg.toRawTermWithEnv? {scope : Nat} (env : Env) :
+    RawCallArg scope → Option (RawTerm scope)
+  | .rawPositional v => RawExpr.toRawTermWithEnv? env v
+  | .rawNamed _ v => RawExpr.toRawTermWithEnv? env v
+  | .rawImplicit v => RawExpr.toRawTermWithEnv? env v
+
+/-- Env-aware OptRawExpr → RawTerm (with unit fallback). -/
+def OptRawExpr.toRawTermOrUnitEnv? {scope : Nat} (env : Env) :
+    OptRawExpr scope → Option (RawTerm scope)
+  | .rawNone => some RawTerm.unit
+  | .rawSome r => RawExpr.toRawTermWithEnv? env r
+
+/-- Env-aware fold of a StmtList into the let-as-application chain. -/
+def RawStmtList.foldBlockEnv? {scope outScope : Nat} (env : Env) :
+    RawStmtList scope outScope → RawTerm outScope →
+    Option (RawTerm scope)
+  | .rawNilStmt, finalRaw => some finalRaw
+  | .rawLetCons _ _ value rest, finalRaw =>
+      match RawExpr.toRawTermWithEnv? env value with
+      | none => none
+      | some valueRaw =>
+        match RawStmtList.foldBlockEnv? env rest finalRaw with
+        | none => none
+        | some restRaw => some (RawTerm.app (RawTerm.lam restRaw) valueRaw)
+  | .rawExprCons value rest, finalRaw =>
+      match RawExpr.toRawTermWithEnv? env value with
+      | none => none
+      | some valueRaw =>
+        match RawStmtList.foldBlockEnv? env rest finalRaw with
+        | none => none
+        | some restRaw =>
+          some (RawTerm.app (RawTerm.lam restRaw.weaken) valueRaw)
+
+end -- mutual
+
+/-- Wrapper: env-aware desugar from decorated `Expr`. -/
+@[reducible] def Expr.toRawTermWithEnv? {scope : Nat} {raw : RawExpr scope}
+    (env : Env) (_e : Expr raw) : Option (RawTerm scope) :=
+  RawExpr.toRawTermWithEnv? env raw
 
 end LeanFX2.Surface
