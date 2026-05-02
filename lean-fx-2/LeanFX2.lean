@@ -51,6 +51,7 @@ import LeanFX2.Term.Inversion
 import LeanFX2.Reduction.Step
 import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
+import LeanFX2.Reduction.ConvCanonical
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
@@ -180,6 +181,7 @@ import LeanFX2.Smoke.AuditPhase9CDecConv
 import LeanFX2.Smoke.AuditPhase9CDecConvTyped
 import LeanFX2.Smoke.AuditPhase9DSynth
 import LeanFX2.Smoke.AuditPhase7ATypeInversions
+import LeanFX2.Smoke.AuditPhase7BConvCanonical
 
 namespace LeanFX2
 
