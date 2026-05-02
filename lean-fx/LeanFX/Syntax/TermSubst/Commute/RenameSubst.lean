@@ -116,11 +116,13 @@ theorem Term.rename_subst_commute_HEq
         (Term.rename termRenaming w))
     apply HEq.trans (Term.rename_subst_commute_HEq termRenaming termSubstitution' w)
     exact (eqRec_heq _ _).symm
-  | _, .snd (firstType := first) (secondType := second) p => by
+  | _, .snd (firstType := first) (secondType := second) p resultEq => by
+    -- W9.B1.2 — equation-bearing snd.  Mirror of appPi.
+    cases resultEq
     apply HEq.trans
       (Term.subst_HEq_cast_input termSubstitution'
         (Ty.subst0_rename_commute second first rawRenaming).symm
-        (Term.snd (Term.rename termRenaming p)))
+        (Term.snd (Term.rename termRenaming p) rfl))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)

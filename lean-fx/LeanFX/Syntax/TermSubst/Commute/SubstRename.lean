@@ -112,11 +112,14 @@ theorem Term.subst_rename_commute_HEq
         (Term.subst termSubstitution w))
     apply HEq.trans (Term.subst_rename_commute_HEq termSubstitution termRenaming w)
     exact (eqRec_heq _ _).symm
-  | _, .snd (firstType := first) (secondType := second) p => by
+  | _, .snd (firstType := first) (secondType := second) p resultEq => by
+    -- W9.B1.2 — equation-bearing snd.  Mirror of appPi: cases on
+    -- resultEq normalises shape, then strip casts as before.
+    cases resultEq
     apply HEq.trans
       (Term.rename_HEq_cast_input termRenaming
         (Ty.subst0_subst_commute second first typeSubstitution).symm
-        (Term.snd (Term.subst termSubstitution p)))
+        (Term.snd (Term.subst termSubstitution p) rfl))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)

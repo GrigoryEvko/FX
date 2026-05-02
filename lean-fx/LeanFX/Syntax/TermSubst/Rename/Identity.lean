@@ -101,17 +101,23 @@ theorem Term.rename_id_HEq
       _ _ (Term.rename_id_HEq firstVal)
     apply HEq.trans (eqRec_heq _ _)
     exact Term.rename_id_HEq secondVal
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+  | _, .snd (firstType := firstType) (secondType := secondType)
+        pairTerm resultEq => by
+    -- W9.B1.2 — Term.rename on equation-bearing snd yields a double cast.
     show HEq
-      ((Ty.subst0_rename_commute secondType firstType Renaming.identity).symm ▸
-        Term.snd (Term.rename (TermRenaming.identity context) pairTerm))
-      (Term.snd pairTerm)
+      ((congrArg (Ty.rename · Renaming.identity) resultEq).symm ▸
+        ((Ty.subst0_rename_commute secondType firstType
+            Renaming.identity).symm ▸
+          Term.snd (Term.rename (TermRenaming.identity context) pairTerm) rfl))
+      (Term.snd pairTerm resultEq)
     apply HEq.trans (eqRec_heq _ _)
-    apply Term.snd_HEq_congr
+    apply HEq.trans (eqRec_heq _ _)
+    cases resultEq
+    exact Term.snd_HEq_congr
       (Ty.rename_identity firstType)
       ((Ty.rename_congr Renaming.lift_identity_equiv secondType).trans
         (Ty.rename_identity secondType))
-    exact Term.rename_id_HEq pairTerm
+      _ _ (Term.rename_id_HEq pairTerm)
   | _, .lam (domainType := domainType) (codomainType := codomainType)
         lambdaBody => by
     show HEq

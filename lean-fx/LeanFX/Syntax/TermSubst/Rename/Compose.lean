@@ -206,12 +206,16 @@ theorem Term.rename_compose_HEq
       (Term.rename_compose_HEq firstTermRenaming secondTermRenaming secondVal)
     -- Strip outer cast on RHS.
     exact (eqRec_heq _ _).symm
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
-    -- Mirror of fst plus outer cast strips on each side.
+  | _, .snd (firstType := firstType) (secondType := secondType)
+        pairTerm resultEq => by
+    -- W9.B1.2 — equation-bearing snd.  Mirror of appPi: cases on
+    -- resultEq normalises resultType, leaving one inner cast pair to
+    -- strip on each side.
+    cases resultEq
     apply HEq.trans
       (Term.rename_HEq_cast_input secondTermRenaming
         (Ty.subst0_rename_commute secondType firstType firstRawRenaming).symm
-        (Term.snd (Term.rename firstTermRenaming pairTerm)))
+        (Term.snd (Term.rename firstTermRenaming pairTerm) rfl))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)

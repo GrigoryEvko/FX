@@ -206,30 +206,30 @@ def Term.cd_snd_redex
   match h_raw : Term.toRaw developedPair with
   | RawTerm.pair _ _ =>
       Term.secondVal_of_pair_general developedPair rfl h_raw
-  | RawTerm.var _ => Term.snd developedPair
-  | RawTerm.unit => Term.snd developedPair
-  | RawTerm.lam _ => Term.snd developedPair
-  | RawTerm.app _ _ => Term.snd developedPair
-  | RawTerm.fst _ => Term.snd developedPair
-  | RawTerm.snd _ => Term.snd developedPair
-  | RawTerm.boolTrue => Term.snd developedPair
-  | RawTerm.boolFalse => Term.snd developedPair
-  | RawTerm.boolElim _ _ _ => Term.snd developedPair
-  | RawTerm.natZero => Term.snd developedPair
-  | RawTerm.natSucc _ => Term.snd developedPair
-  | RawTerm.natElim _ _ _ => Term.snd developedPair
-  | RawTerm.natRec _ _ _ => Term.snd developedPair
-  | RawTerm.listNil => Term.snd developedPair
-  | RawTerm.listCons _ _ => Term.snd developedPair
-  | RawTerm.listElim _ _ _ => Term.snd developedPair
-  | RawTerm.optionNone => Term.snd developedPair
-  | RawTerm.optionSome _ => Term.snd developedPair
-  | RawTerm.optionMatch _ _ _ => Term.snd developedPair
-  | RawTerm.eitherInl _ => Term.snd developedPair
-  | RawTerm.eitherInr _ => Term.snd developedPair
-  | RawTerm.eitherMatch _ _ _ => Term.snd developedPair
-  | RawTerm.refl _ => Term.snd developedPair
-  | RawTerm.idJ _ _ => Term.snd developedPair
+  | RawTerm.var _ => Term.snd developedPair rfl
+  | RawTerm.unit => Term.snd developedPair rfl
+  | RawTerm.lam _ => Term.snd developedPair rfl
+  | RawTerm.app _ _ => Term.snd developedPair rfl
+  | RawTerm.fst _ => Term.snd developedPair rfl
+  | RawTerm.snd _ => Term.snd developedPair rfl
+  | RawTerm.boolTrue => Term.snd developedPair rfl
+  | RawTerm.boolFalse => Term.snd developedPair rfl
+  | RawTerm.boolElim _ _ _ => Term.snd developedPair rfl
+  | RawTerm.natZero => Term.snd developedPair rfl
+  | RawTerm.natSucc _ => Term.snd developedPair rfl
+  | RawTerm.natElim _ _ _ => Term.snd developedPair rfl
+  | RawTerm.natRec _ _ _ => Term.snd developedPair rfl
+  | RawTerm.listNil => Term.snd developedPair rfl
+  | RawTerm.listCons _ _ => Term.snd developedPair rfl
+  | RawTerm.listElim _ _ _ => Term.snd developedPair rfl
+  | RawTerm.optionNone => Term.snd developedPair rfl
+  | RawTerm.optionSome _ => Term.snd developedPair rfl
+  | RawTerm.optionMatch _ _ _ => Term.snd developedPair rfl
+  | RawTerm.eitherInl _ => Term.snd developedPair rfl
+  | RawTerm.eitherInr _ => Term.snd developedPair rfl
+  | RawTerm.eitherMatch _ _ _ => Term.snd developedPair rfl
+  | RawTerm.refl _ => Term.snd developedPair rfl
+  | RawTerm.idJ _ _ => Term.snd developedPair rfl
 
 /-! ### ι-boolElim: branch on bool scrutinee. -/
 

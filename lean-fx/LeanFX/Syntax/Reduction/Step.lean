@@ -99,13 +99,15 @@ inductive Step :
         {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
       Step pairTerm pairTerm' →
       Step (Term.fst pairTerm) (Term.fst pairTerm')
-  /-- Step inside the argument of a second projection. -/
+  /-- Step inside the argument of a second projection.  W9.B1.2:
+  `Term.snd` takes `rfl` for resultEq, fixing resultType to
+  `secondType.subst0 firstType`.  Both sides use the same shape. -/
   | sndCong :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         {pairTerm pairTerm' : Term ctx (.sigmaTy firstType secondType)},
       Step pairTerm pairTerm' →
-      Step (Term.snd pairTerm) (Term.snd pairTerm')
+      Step (Term.snd pairTerm rfl) (Term.snd pairTerm' rfl)
   /-- **β-reduction for non-dependent application**: `(λx. body) arg ⟶
   body[arg/x]`.  The result type matches `Term.app`'s codomain because
   `body : Term (ctx.cons domainType) codomainType.weaken` and
@@ -144,8 +146,8 @@ inductive Step :
            firstVal
   /-- **Σ second projection**: `snd (pair a b) ⟶ b`.  The result type
   is `Term ctx (secondType.subst0 firstType)` — both `Term.snd`'s
-  declared result and `secondVal`'s declared type — so no cast is
-  needed. -/
+  resultType (under W9.B1.2 with `rfl` for resultEq) and `secondVal`'s
+  declared type — so no cast is needed. -/
   | betaSndPair :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -153,7 +155,8 @@ inductive Step :
         (secondVal : Term ctx (secondType.subst0 firstType)),
       Step (Term.snd
               (Term.pair (firstType := firstType)
-                         (secondType := secondType) firstVal secondVal))
+                         (secondType := secondType) firstVal secondVal)
+              rfl)
            secondVal
   /-- **η-contraction for non-dependent arrow**: `λx. (f.weaken) x ⟶ f`
   whenever `f : Term ctx (arrow A B)`.  The body of the lam is the
@@ -172,14 +175,15 @@ inductive Step :
   /-- **η-contraction for Σ-pair**: `pair (fst p) (snd p) ⟶ p`
   whenever `p : Term ctx (sigmaTy A B)`.  Reconstituting a pair from
   its projections collapses to the original pair value.  The result
-  type matches because both sides have type `Term ctx (sigmaTy A B)`. -/
+  type matches because both sides have type `Term ctx (sigmaTy A B)`.
+  W9.B1.2: `Term.snd p` requires `rfl` for resultEq. -/
   | etaSigma :
       ∀ {mode level scope} {ctx : Ctx mode level scope}
         {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
         (p : Term ctx (Ty.sigmaTy firstType secondType)),
       Step (Term.pair (firstType := firstType)
                        (secondType := secondType)
-              (Term.fst p) (Term.snd p))
+              (Term.fst p) (Term.snd p rfl))
            p
   /-- Step inside the scrutinee position of a `boolElim`.  Together
   with the two ι-rules below, completes the boolean-evaluation

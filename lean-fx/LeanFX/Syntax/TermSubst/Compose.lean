@@ -277,12 +277,14 @@ theorem Term.subst_compose_HEq
         firstTermSubstitution secondTermSubstitution secondVal)
     exact (eqRec_heq _ _).symm
   | _, .snd (firstType := firstType) (secondType := secondType)
-            pairTerm => by
+            pairTerm resultEq => by
+    -- W9.B1.2 — equation-bearing snd.  Mirror of appPi.
+    cases resultEq
     apply HEq.trans
       (Term.subst_HEq_cast_input secondTermSubstitution
         (Ty.subst0_subst_commute secondType firstType
           firstTypeSubstitution).symm
-        (Term.snd (Term.subst firstTermSubstitution pairTerm)))
+        (Term.snd (Term.subst firstTermSubstitution pairTerm) rfl))
     apply HEq.trans (eqRec_heq _ _)
     apply HEq.symm
     apply HEq.trans (eqRec_heq _ _)

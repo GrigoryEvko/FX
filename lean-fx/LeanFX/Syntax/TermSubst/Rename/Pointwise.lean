@@ -132,21 +132,30 @@ theorem Term.rename_HEq_pointwise
       (Term.rename_HEq_pointwise rfl firstTermRenaming
         secondTermRenaming rawRenamingsAgreePointwise secondVal)
     exact (eqRec_heq _ _).symm
-  | _, .snd (firstType := firstType) (secondType := secondType) pairTerm => by
+  | _, .snd (firstType := firstType) (secondType := secondType)
+            pairTerm resultEq => by
     cases targetContextEq
+    -- Term.rename on Term.snd produces double cast; strip both.
     show HEq
-      ((Ty.subst0_rename_commute secondType firstType firstRawRenaming).symm ▸
-        Term.snd (Term.rename firstTermRenaming pairTerm))
-      ((Ty.subst0_rename_commute secondType firstType secondRawRenaming).symm ▸
-        Term.snd (Term.rename secondTermRenaming pairTerm))
+      ((congrArg (Ty.rename · firstRawRenaming) resultEq).symm ▸
+        ((Ty.subst0_rename_commute secondType firstType firstRawRenaming).symm ▸
+          Term.snd (Term.rename firstTermRenaming pairTerm) rfl))
+      ((congrArg (Ty.rename · secondRawRenaming) resultEq).symm ▸
+        ((Ty.subst0_rename_commute secondType firstType secondRawRenaming).symm ▸
+          Term.snd (Term.rename secondTermRenaming pairTerm) rfl))
     apply HEq.trans (eqRec_heq _ _)
-    apply HEq.trans (b := Term.snd (Term.rename secondTermRenaming pairTerm))
+    apply HEq.trans (eqRec_heq _ _)
+    apply HEq.trans (b :=
+      Term.snd (context := firstTargetContext)
+        (Term.rename secondTermRenaming pairTerm) rfl)
     · exact Term.snd_HEq_congr
         (Ty.rename_congr rawRenamingsAgreePointwise firstType)
         (Ty.rename_congr (Renaming.lift_equiv rawRenamingsAgreePointwise) secondType)
         _ _ (Term.rename_HEq_pointwise rfl firstTermRenaming
               secondTermRenaming rawRenamingsAgreePointwise pairTerm)
-    · exact (eqRec_heq _ _).symm
+    · apply HEq.symm
+      apply HEq.trans (eqRec_heq _ _)
+      exact (eqRec_heq _ _)
   | _, .lam (domainType := domainType) (codomainType := codomainType) lambdaBody => by
     cases targetContextEq
     show HEq
