@@ -748,4 +748,105 @@ theorem RawTerm.subst0_rename_commute {sourceScope targetScope : Nat}
   apply RawTerm.subst_pointwise
   exact RawTermSubst.singleton_rename_commute_pointwise rho rawArg
 
+/-! ### Identity substitution + load-bearing β-reduction lemmas. -/
+
+/-- Lift of identity substitution agrees pointwise with identity. -/
+theorem RawTermSubst.identity_lift_pointwise {scope : Nat} :
+    ∀ position,
+      (@RawTermSubst.identity scope).lift position = RawTermSubst.identity position
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
+/-- Substituting by the identity is the identity. -/
+theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
+    term.subst RawTermSubst.identity = term := by
+  induction term with
+  | var position => rfl
+  | unit => rfl
+  | lam body bodyIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise body, bodyIH]
+  | app fn arg fnIH argIH =>
+      simp only [RawTerm.subst]; rw [fnIH, argIH]
+  | pair fv sv fvIH svIH =>
+      simp only [RawTerm.subst]; rw [fvIH, svIH]
+  | fst pairTerm pairIH =>
+      simp only [RawTerm.subst]; rw [pairIH]
+  | snd pairTerm pairIH =>
+      simp only [RawTerm.subst]; rw [pairIH]
+  | boolTrue => rfl
+  | boolFalse => rfl
+  | boolElim s t e sIH tIH eIH =>
+      simp only [RawTerm.subst]; rw [sIH, tIH, eIH]
+  | natZero => rfl
+  | natSucc p pIH =>
+      simp only [RawTerm.subst]; rw [pIH]
+  | natElim s z c sIH zIH cIH =>
+      simp only [RawTerm.subst]; rw [sIH, zIH, cIH]
+  | natRec s z c sIH zIH cIH =>
+      simp only [RawTerm.subst]; rw [sIH, zIH, cIH]
+  | listNil => rfl
+  | listCons h t hIH tIH =>
+      simp only [RawTerm.subst]; rw [hIH, tIH]
+  | listElim s n c sIH nIH cIH =>
+      simp only [RawTerm.subst]; rw [sIH, nIH, cIH]
+  | optionNone => rfl
+  | optionSome v vIH =>
+      simp only [RawTerm.subst]; rw [vIH]
+  | optionMatch s n c sIH nIH cIH =>
+      simp only [RawTerm.subst]; rw [sIH, nIH, cIH]
+  | eitherInl v vIH =>
+      simp only [RawTerm.subst]; rw [vIH]
+  | eitherInr v vIH =>
+      simp only [RawTerm.subst]; rw [vIH]
+  | eitherMatch s l r sIH lIH rIH =>
+      simp only [RawTerm.subst]; rw [sIH, lIH, rIH]
+  | refl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH]
+  | idJ base witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH, witnessIH]
+  | modIntro inner innerIH =>
+      simp only [RawTerm.subst]; rw [innerIH]
+  | modElim inner innerIH =>
+      simp only [RawTerm.subst]; rw [innerIH]
+  | subsume inner innerIH =>
+      simp only [RawTerm.subst]; rw [innerIH]
+
+/-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
+identity substitution pointwise. -/
+theorem RawTermSubst.weaken_then_singleton_pointwise {scope : Nat}
+    (rawArg : RawTerm scope) :
+    ∀ position,
+      (RawTermSubst.singleton rawArg) (RawRenaming.weaken position) =
+        RawTermSubst.identity position :=
+  fun _ => rfl
+
+/-- Weakening a raw term then substituting by a singleton returns the
+original term — the load-bearing β-reduction lemma on raw terms. -/
+theorem RawTerm.weaken_subst_singleton {scope : Nat}
+    (term rawArg : RawTerm scope) :
+    term.weaken.subst (RawTermSubst.singleton rawArg) = term := by
+  show (term.rename RawRenaming.weaken).subst (RawTermSubst.singleton rawArg) = term
+  rw [RawTerm.rename_subst_commute RawRenaming.weaken (RawTermSubst.singleton rawArg) term,
+      RawTerm.subst_pointwise (RawTermSubst.weaken_then_singleton_pointwise rawArg) term,
+      RawTerm.subst_identity term]
+
+/-- Lift commutes with renameOutput (RawTerm side, weaken-flavor). -/
+theorem RawTermSubst.weaken_lift_subst_pointwise {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope) :
+    ∀ position,
+      sigma.lift (RawRenaming.weaken position) = (sigma position).rename RawRenaming.weaken :=
+  fun _ => rfl
+
+/-- weaken-after-subst equals subst-after-weaken on raw terms. -/
+theorem RawTerm.weaken_subst_commute {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope) (term : RawTerm sourceScope) :
+    term.weaken.subst sigma.lift = (term.subst sigma).weaken := by
+  show (term.rename RawRenaming.weaken).subst sigma.lift =
+       (term.subst sigma).rename RawRenaming.weaken
+  rw [RawTerm.rename_subst_commute RawRenaming.weaken sigma.lift term,
+      RawTerm.subst_rename_commute sigma RawRenaming.weaken term]
+  apply RawTerm.subst_pointwise
+  exact RawTermSubst.weaken_lift_subst_pointwise sigma
+
 end LeanFX2

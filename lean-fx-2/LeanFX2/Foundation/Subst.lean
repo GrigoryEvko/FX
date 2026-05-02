@@ -385,4 +385,115 @@ theorem Ty.subst0_rename_commute {level : Nat} {scope targetScope : Nat}
   · exact Subst.singleton_rename_commute_forTy_pointwise argType argRaw rho
   · exact Subst.singleton_rename_commute_forRaw_pointwise argType argRaw rho
 
+/-! ### Identity substitution + load-bearing β-reduction lemmas. -/
+
+/-- Lift of identity Subst agrees pointwise with identity on forTy. -/
+theorem Subst.identity_lift_forTy_pointwise {level scope : Nat} :
+    ∀ position,
+      (@Subst.identity level scope).lift.forTy position =
+        (@Subst.identity level (scope + 1)).forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
+/-- Lift of identity Subst agrees pointwise with identity on forRaw. -/
+theorem Subst.identity_lift_forRaw_pointwise {level scope : Nat} :
+    ∀ position,
+      (@Subst.identity level scope).lift.forRaw position =
+        (@Subst.identity level (scope + 1)).forRaw position :=
+  fun position => RawTermSubst.identity_lift_pointwise position
+
+/-- Substituting by the identity is the identity on Ty. -/
+theorem Ty.subst_identity {level scope : Nat} (someType : Ty level scope) :
+    someType.subst Subst.identity = someType := by
+  induction someType with
+  | unit => rfl
+  | bool => rfl
+  | nat => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.subst]; rw [dIH, cIH]
+  | piTy d c dIH cIH =>
+      simp only [Ty.subst]
+      rw [dIH,
+          Ty.subst_pointwise Subst.identity_lift_forTy_pointwise
+                             Subst.identity_lift_forRaw_pointwise c,
+          cIH]
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.subst]
+      rw [fIH,
+          Ty.subst_pointwise Subst.identity_lift_forTy_pointwise
+                             Subst.identity_lift_forRaw_pointwise sT,
+          sIH]
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH, RawTerm.subst_identity left, RawTerm.subst_identity right]
+  | listType e eIH => simp only [Ty.subst]; rw [eIH]
+  | optionType e eIH => simp only [Ty.subst]; rw [eIH]
+  | eitherType l r lIH rIH => simp only [Ty.subst]; rw [lIH, rIH]
+
+/-- Pre-composing weaken with a singleton (Subst-level) gives the identity
+substitution on forTy pointwise. -/
+theorem Subst.weaken_then_singleton_forTy_pointwise {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    ∀ position,
+      (Subst.singleton substituent rawArg).forTy (RawRenaming.weaken position) =
+        (@Subst.identity level scope).forTy position :=
+  fun _ => rfl
+
+/-- Pre-composing weaken with a singleton (Subst-level) gives the identity
+substitution on forRaw pointwise. -/
+theorem Subst.weaken_then_singleton_forRaw_pointwise {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    ∀ position,
+      (Subst.singleton substituent rawArg).forRaw (RawRenaming.weaken position) =
+        (@Subst.identity level scope).forRaw position :=
+  fun _ => rfl
+
+/-- Weakening a type then substituting by a singleton returns the original
+type — the load-bearing β-reduction lemma on Ty.  Used by Term.subst's
+var case (when looking up beyond the substituted position) and by
+TermSubst.singleton's higher positions. -/
+theorem Ty.weaken_subst_singleton {level scope : Nat}
+    (someType : Ty level scope) (substituent : Ty level scope)
+    (rawArg : RawTerm scope) :
+    someType.weaken.subst (Subst.singleton substituent rawArg) = someType := by
+  show (someType.rename RawRenaming.weaken).subst
+        (Subst.singleton substituent rawArg) = someType
+  rw [Ty.rename_subst_commute RawRenaming.weaken
+        (Subst.singleton substituent rawArg) someType]
+  apply Eq.trans
+  · apply Ty.subst_pointwise
+    · exact Subst.weaken_then_singleton_forTy_pointwise substituent rawArg
+    · exact Subst.weaken_then_singleton_forRaw_pointwise substituent rawArg
+  · exact Ty.subst_identity someType
+
+/-- Pointwise: lift commutes with weaken-output on forTy. -/
+theorem Subst.weaken_lift_forTy_pointwise {level sourceScope targetScope : Nat}
+    (sigma : Subst level sourceScope targetScope) :
+    ∀ position,
+      sigma.lift.forTy (RawRenaming.weaken position) =
+        (sigma.forTy position).rename RawRenaming.weaken :=
+  fun _ => rfl
+
+/-- Pointwise: lift commutes with weaken-output on forRaw. -/
+theorem Subst.weaken_lift_forRaw_pointwise {level sourceScope targetScope : Nat}
+    (sigma : Subst level sourceScope targetScope) :
+    ∀ position,
+      sigma.lift.forRaw (RawRenaming.weaken position) =
+        (sigma.forRaw position).rename RawRenaming.weaken :=
+  fun _ => rfl
+
+/-- weaken-after-subst equals subst-after-weaken on Ty.  Load-bearing for
+typed `Term.subst` on the lam/lamPi case (body's weakened codomain). -/
+theorem Ty.weaken_subst_commute {level : Nat} {sourceScope targetScope : Nat}
+    (sigma : Subst level sourceScope targetScope) (someType : Ty level sourceScope) :
+    someType.weaken.subst sigma.lift = (someType.subst sigma).weaken := by
+  show (someType.rename RawRenaming.weaken).subst sigma.lift =
+       (someType.subst sigma).rename RawRenaming.weaken
+  rw [Ty.rename_subst_commute RawRenaming.weaken sigma.lift someType,
+      Ty.subst_rename_commute sigma RawRenaming.weaken someType]
+  apply Ty.subst_pointwise
+  · exact Subst.weaken_lift_forTy_pointwise sigma
+  · exact Subst.weaken_lift_forRaw_pointwise sigma
+
 end LeanFX2
