@@ -1,86 +1,130 @@
 import LeanFX2.Foundation.RawTerm
-import LeanFX2.Foundation.Mode
+import LeanFX2.Foundation.RawSubst
 
-/-! # Ty — types indexed by `(level, scope)`.
+/-! # Ty — Layer 0 types indexed by `(level, scope)`.
 
-`Ty level scope : Type` is the type-level syntax indexed by universe level
-and de Bruijn scope size.
+`Ty level scope : Type` is the type-level syntax indexed by universe
+level and de Bruijn scope size.
 
-## Constructor list
+## Phase 1 ctor list
 
-Standard MLTT base + dependent + Identity + Modal + Refinement:
+Foundational subset (matching lean-fx).  Modal types (`Ty.modal`)
+land in Layer 6, refinement types (`Ty.refine`) in Layer 8, universe
+types (`Ty.universe`) when cumulativity discipline is added.  Each
+addition is a constructor extension, not a structural change.
 
-* `unit`, `bool`, `nat`
-* `arrow (dom cod : Ty level scope)` — non-dependent function type
-* `piTy (dom : Ty level scope) (cod : Ty level (scope+1))` — dependent Π
-* `sigmaTy (first : Ty level scope) (second : Ty level (scope+1))` — dependent Σ
-* `tyVar (position : Fin scope)` — type variable (for Π/Σ codomains referencing the binder)
-* `id (carrier : Ty level scope) (left right : RawTerm scope)` — Identity type
-* `universe (level : Nat) (boundOk : level < universeBound)` — universe type
-* `list (element : Ty level scope)`, `option (element : Ty level scope)`
-* `either (left right : Ty level scope)`
-* `modal (modality : Modality m₁ m₂) (inner : Ty level scope)` — modally-decorated type
-* `refine (base : Ty level scope) (predicate : RefinePredicate base)` — refinement type
+## Why level + scope as indices
 
-## Cumulativity policy
+Per `fx_design.md` §3.1, FX types stratify into universe levels.
+Every type `Ty level scope` lives at universe `level` with `scope`
+free variables.  The level index is propagated trivially through
+Layer 0–5; cumulativity (a Conv rule, per `feedback_lean_cumul_subst_mismatch`)
+manages level subsumption at Layer 3+.
 
-**Cumulativity is a Conv rule, not a Ty constructor.**  lean-fx had `Ty.cumul`
-constructor experimentally in v1.29 — it was reverted because cumulativity
-between universe levels generates Subst incoherence (base's tyVars expect
-Subst at levelLow but outer call passes Subst at levelHigh, per
-`feedback_lean_cumul_subst_mismatch.md`).  lean-fx-2 puts cumulativity in
-`Reduction/Conv.lean` as a definitional-conversion rule between universe
-levels.  Subtype semantics, not constructor-level distinction.
+## Ty.id endpoints as RawTerm
 
-## Identity types — endpoints as RawTerm
+Per CLAUDE.md commitment: `Ty.id carrier left right` carries `left`
+and `right` as `RawTerm scope` (NOT as typed Term).  This sidesteps
+Lean 4's mutual-index rule (per `feedback_lean_mutual_index_rule.md`)
+which forbids `Term : Ctx → Ty Γ → Type` mutual where Ty references
+Term in its index.
 
-`id carrier left right` carries the endpoint terms as `RawTerm scope` values,
-NOT as typed `Term` values.  This is the standard MLTT-formalisation pattern
-(BiSikkel, lean4-tt-in-lean4, Coq HoTT).  Forcing endpoints to be typed Term
-values would require Term to be defined before Ty — which would force a mutual
-inductive definition that Lean 4's strict-positivity check rejects (per
-`feedback_lean_mutual_index_rule.md`).
-
-The trade-off: typed Term values' raw projections must align with their
-identity-type endpoints.  In lean-fx-2 this is automatic because Term's
-raw index IS the projection.
-
-## Modal types
-
-`modal modality inner` decorates `inner` with a 1-cell `modality : Modality m₁ m₂`.
-The decoration carries the modal computation rules (modElim of modIntro reduces,
-subsume composition, etc.) — these live in Layer 6.
-
-## Refinement types
-
-`refine base predicate` is a subtype: values of `refine base p` are values
-of `base` satisfying `p`.  Predicate is decidable in the Lean-internal fragment;
-SMT-cert-recheckable for the broader fragment.  Layer 8 details.
+The trade-off: typed Term values' raw projections must align with
+their identity-type endpoints.  In lean-fx-2 this is automatic
+because Term's raw index IS the projection.
 
 ## Decidable equality
 
-`deriving DecidableEq` — works for inductive families with finite indices,
-provided the predicate fields are also DecidableEq.  Manual instance for
-`refine` (since `RefinePredicate` carries a `Decidable` instance, not raw decision).
+`deriving DecidableEq` — works for Nat-indexed families with universal
+indices (Rule 3 of `feedback_lean_zero_axiom_match.md`).  If derive
+leaks propext on this multi-index family, we fall back to manual
+instance.
 
-## Dependencies
+## Ty.rename
 
-* `Foundation/RawTerm.lean` — for Identity-type endpoints
-* `Foundation/Mode.lean` — for Modality 1-cells
+Single-pass structural recursion.  Uses `RawRenaming` for var
+positions; uses `RawTerm.rename` for `Ty.id` endpoints.  Ty.subst
+lives in `Foundation/Subst.lean` (avoids cyclic import — Subst's
+`forTy` field requires Ty, so subst is downstream).
 
-## Downstream
+## Ty.weaken
 
-* `Foundation/Subst.lean` — `Ty.subst` operates structurally on Ty
-* `Foundation/Context.lean` — Ctx stores `Ty` values
-* `Term.lean` — Term's second index is `Ty`
+Convenience: `Ty.weaken := Ty.rename RawRenaming.weaken`.
+Marked `@[reducible]` per `feedback_lean_reducible_weaken.md` — used
+inside Term constructor signatures (the `lam` ctor's body type is
+`codomainType.weaken`).
 -/
 
 namespace LeanFX2
 
--- TODO: Ty inductive (per constructor list above)
--- TODO: deriving DecidableEq (with manual instance for `refine` ctor)
--- TODO: Ty.weaken via Renaming.weaken
--- TODO: Ty.rename via structural recursion
--- TODO: Ty.subst via structural recursion (consults Subst.forTy)
+/-- Types indexed by universe level and de Bruijn scope size.
+
+For Phase 1, we ship the foundational subset.  Universe / Modal /
+Refinement constructors are added in their respective layers without
+backward-incompatible changes to the existing ctors. -/
+inductive Ty : Nat → Nat → Type
+  -- Constants
+  | unit {level scope : Nat} : Ty level scope
+  | bool {level scope : Nat} : Ty level scope
+  | nat  {level scope : Nat} : Ty level scope
+  -- Function types
+  | arrow {level scope : Nat}
+      (domainType codomainType : Ty level scope) : Ty level scope
+  | piTy {level scope : Nat}
+      (domainType : Ty level scope)
+      (codomainType : Ty level (scope + 1)) : Ty level scope
+  -- Pair types
+  | sigmaTy {level scope : Nat}
+      (firstType : Ty level scope)
+      (secondType : Ty level (scope + 1)) : Ty level scope
+  -- Type variable (refers to a context-bound type via Fin position)
+  | tyVar {level scope : Nat} (position : Fin scope) : Ty level scope
+  -- Identity type with raw endpoints
+  | id {level scope : Nat}
+      (carrier : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope) : Ty level scope
+  -- Structural type formers
+  | listType   {level scope : Nat} (elementType : Ty level scope) : Ty level scope
+  | optionType {level scope : Nat} (elementType : Ty level scope) : Ty level scope
+  | eitherType {level scope : Nat}
+      (leftType rightType : Ty level scope) : Ty level scope
+  deriving DecidableEq
+
+/-- Apply a renaming to a type.  Var positions and `Ty.id` raw
+endpoints both transport along the renaming.
+
+Per `feedback_lean_match_arity_axioms.md`: `level` is hoisted to the
+function header (before `:`) to keep pattern arity at 2 Nat indices
+(scope + sourceScope, before adding Ty + RawRenaming).  This avoids
+the multi-Nat-index propext trap. -/
+def Ty.rename {level : Nat} : ∀ {scope sourceScope : Nat},
+    Ty level scope → RawRenaming scope sourceScope → Ty level sourceScope
+  | _, _, .unit, _ => .unit
+  | _, _, .bool, _ => .bool
+  | _, _, .nat, _ => .nat
+  | _, _, .arrow domainType codomainType, rho =>
+      .arrow (domainType.rename rho) (codomainType.rename rho)
+  | _, _, .piTy domainType codomainType, rho =>
+      .piTy (domainType.rename rho) (codomainType.rename rho.lift)
+  | _, _, .sigmaTy firstType secondType, rho =>
+      .sigmaTy (firstType.rename rho) (secondType.rename rho.lift)
+  | _, _, .tyVar position, rho =>
+      .tyVar (rho position)
+  | _, _, .id carrier leftEndpoint rightEndpoint, rho =>
+      .id (carrier.rename rho)
+          (leftEndpoint.rename rho)
+          (rightEndpoint.rename rho)
+  | _, _, .listType elementType, rho =>
+      .listType (elementType.rename rho)
+  | _, _, .optionType elementType, rho =>
+      .optionType (elementType.rename rho)
+  | _, _, .eitherType leftType rightType, rho =>
+      .eitherType (leftType.rename rho) (rightType.rename rho)
+
+/-- Single-binder weakening: shift all type-variable references up
+by one to make room for a new binder at position 0. -/
+@[reducible] def Ty.weaken {level scope : Nat} (someType : Ty level scope) :
+    Ty level (scope + 1) :=
+  someType.rename RawRenaming.weaken
 
 end LeanFX2

@@ -1,75 +1,132 @@
 import LeanFX2.Foundation.Ty
-import LeanFX2.Foundation.RawSubst
 
-/-! # Subst — joint type/raw substitution.
+/-! # Subst — Layer 0 joint type/raw substitution.
 
-`Subst level source target` is the joint substitution structure:
+`Subst level source target` is the **unified** joint substitution
+structure carrying BOTH:
+* `forTy` — type substitution for `Ty.tyVar` positions
+* `forRaw` — raw substitution for `Ty.id` endpoints (and downstream
+   Term raw indices)
 
-```
+A single Subst handles both.  Per CLAUDE.md commitment: ONE singleton
+operation, NO `dropNewest`, NO separate `termSingleton` variant.
+
+## Definition
+
+```lean
 structure Subst (level source target : Nat) where
   forTy  : Fin source → Ty level target
   forRaw : RawTermSubst source target
 ```
 
-A single Subst handles both type-level substitution (via `forTy`) and
-raw-level substitution (via `forRaw`).  Used uniformly throughout the
-kernel — no separate `singleton` vs `termSingleton` flavors.
-
 ## Operations
 
-* `Subst.identity : Subst level scope scope`
-* `Subst.lift : Subst level src tgt → Subst level (src+1) (tgt+1)` — under a binder
-* `Subst.compose : Subst a b → Subst b c → Subst a c`
-* `Subst.singleton : (substituent : Ty level scope) (rawArg : RawTerm scope) →
-                     Subst level (scope+1) scope`
-* `Ty.subst : Ty level src → Subst level src tgt → Ty level tgt`
-* `Ty.rename` via `Subst` adapted from a `Renaming`
+* `Subst.identity` — both forTy and forRaw are identity
+* `Subst.lift` — under a binder; both fields lift in lockstep
+* `Subst.singleton substituent rawArg` — single-binder substitution
+* `Subst.compose` — sequential composition
 
-## Critical unification vs lean-fx
+## Critical: forRaw at singleton
 
-lean-fx had TWO singletons:
-* `Subst.singleton substituent` with `forRaw = RawTermSubst.dropNewest`
-* `Subst.termSingleton substituent rawArg` with `forRaw = RawTermSubst.singleton rawArg`
+`Subst.singleton substituent rawArg` has `forRaw =
+RawTermSubst.singleton rawArg`.  This puts `rawArg` (NOT `RawTerm.unit`)
+at position 0.  This is the architectural commitment that makes
+`Term.subst σ (Term.refl r)` produce `Term.refl rawArg` after β-firing,
+which makes the typed↔raw bridge `rfl` for refl-bearing β-redexes.
 
-The two coexisted because lean-fx's `Term.appPi`'s result type used the first
-flavor (where `arg.toRaw` was lost), but the bridge to raw reduction needed the
-second flavor (where `arg.toRaw` was preserved).  This split caused the 4 bridge
-sorries.
+## Ty.subst
 
-**lean-fx-2 has ONE singleton**: `Subst.singleton substituent rawArg` with
-`forRaw = RawTermSubst.singleton rawArg`.  Every call site supplies the rawArg —
-naturally, since lean-fx-2's raw-aware Term means every typed argument has its
-raw form pinned by the type index.
+Defined here (not in `Foundation/Ty.lean`) to avoid cyclic import:
+`Subst.forTy` returns `Ty`, so Subst's structure imports Ty; therefore
+`Ty.subst` (which takes a Subst) belongs in this file.
 
 ## Composition + lift laws
 
-* `subst_subst : (T.subst σ).subst τ = T.subst (compose σ τ)`
-* `lift_compose : (compose σ τ).lift = compose σ.lift τ.lift`
-* `subst_id : T.subst Subst.identity = T`
-* `weaken_subst_singleton : T.weaken.subst (singleton _ _) = T`
+* `subst_subst : (T.subst σ).subst τ = T.subst (compose σ τ)` — proved
+  in Phase 1.C
+* `lift_compose : (compose σ τ).lift = compose σ.lift τ.lift` — Phase 1.C
+* `subst_id : T.subst Subst.identity = T` — Phase 1.C
+* `weaken_subst_singleton : T.weaken.subst (singleton _ _) = T` — Phase 1.C
   (the load-bearing β-reduction cast)
 
-These laws are axiom-free.  The `weaken_subst_singleton` lemma is uniform:
-no separate `weaken_subst_termSingleton`-style variant.
-
-## Dependencies
-
-* `Foundation/Ty.lean` — `forTy` produces Ty values
-* `Foundation/RawSubst.lean` — `forRaw` is `RawTermSubst`
-
-## Downstream
-
-* `Term/Subst.lean` — `TermSubst` extends `Subst` with typed-value-per-position data
-* `Reduction/Subst.lean` — `Step.subst_compatible` uses `Term.subst`
+These are axiom-free.  Phase 1.B ships the operations only; lemmas
+land in Phase 1.C alongside Term.lean.
 -/
 
 namespace LeanFX2
 
--- TODO: Subst structure (forTy + forRaw)
--- TODO: Subst.lift, Subst.identity, Subst.singleton (UNIFIED — single definition)
--- TODO: Subst.compose
--- TODO: Subst.equiv (pointwise equivalence)
--- TODO: Ty.subst (structural recursion on Ty, consults forTy + forRaw at id endpoints)
--- TODO: Ty.subst_id, Ty.subst_compose, Ty.weaken_subst_singleton, etc. (axiom-free)
+/-! ## The joint Subst structure -/
+
+/-- Joint type/raw substitution.  The `forTy` field substitutes type
+variables (`Ty.tyVar` positions); the `forRaw` field substitutes raw
+term variables (`Ty.id` endpoints, and downstream Term raw indices). -/
+structure Subst (level source target : Nat) : Type where
+  forTy  : Fin source → Ty level target
+  forRaw : RawTermSubst source target
+
+/-- Identity substitution: both fields are identity. -/
+@[reducible] def Subst.identity {level scope : Nat} : Subst level scope scope where
+  forTy  := fun position => Ty.tyVar position
+  forRaw := RawTermSubst.identity
+
+/-- Lift a substitution under a binder: both forTy and forRaw lift. -/
+@[reducible] def Subst.lift {level source target : Nat}
+    (sigma : Subst level source target) :
+    Subst level (source + 1) (target + 1) where
+  forTy
+    | ⟨0, _⟩      => Ty.tyVar ⟨0, Nat.zero_lt_succ _⟩
+    | ⟨k + 1, h⟩  => (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken
+  forRaw := sigma.forRaw.lift
+
+/-- Single-binder substitution.  Position 0 of forTy gets `substituent`;
+position 0 of forRaw gets `rawArg` (NOT `RawTerm.unit`).  This is the
+architectural commitment that closes the bridge β cases. -/
+@[reducible] def Subst.singleton {level scope : Nat}
+    (substituent : Ty level scope) (rawArg : RawTerm scope) :
+    Subst level (scope + 1) scope where
+  forTy
+    | ⟨0, _⟩      => substituent
+    | ⟨k + 1, h⟩  => Ty.tyVar ⟨k, Nat.lt_of_succ_lt_succ h⟩
+  forRaw := RawTermSubst.singleton rawArg
+
+/-! ## Ty.subst -/
+
+/-- Apply a joint substitution to a type.  Type variables consult
+`forTy`; identity-type endpoints consult `forRaw`.
+
+Per `feedback_lean_match_arity_axioms.md`: `level` is hoisted to the
+function header to keep pattern arity at 2 Nat indices (source +
+target). -/
+def Ty.subst {level : Nat} : ∀ {source target : Nat},
+    Ty level source → Subst level source target → Ty level target
+  | _, _, .unit, _ => .unit
+  | _, _, .bool, _ => .bool
+  | _, _, .nat, _ => .nat
+  | _, _, .arrow domainType codomainType, sigma =>
+      .arrow (domainType.subst sigma) (codomainType.subst sigma)
+  | _, _, .piTy domainType codomainType, sigma =>
+      .piTy (domainType.subst sigma) (codomainType.subst sigma.lift)
+  | _, _, .sigmaTy firstType secondType, sigma =>
+      .sigmaTy (firstType.subst sigma) (secondType.subst sigma.lift)
+  | _, _, .tyVar position, sigma =>
+      sigma.forTy position
+  | _, _, .id carrier leftEndpoint rightEndpoint, sigma =>
+      .id (carrier.subst sigma)
+          (leftEndpoint.subst sigma.forRaw)
+          (rightEndpoint.subst sigma.forRaw)
+  | _, _, .listType elementType, sigma =>
+      .listType (elementType.subst sigma)
+  | _, _, .optionType elementType, sigma =>
+      .optionType (elementType.subst sigma)
+  | _, _, .eitherType leftType rightType, sigma =>
+      .eitherType (leftType.subst sigma) (rightType.subst sigma)
+
+/-- Single-variable substitution on Ty: substitute `argType` (and
+its raw form `argRaw`) at position 0. -/
+@[reducible] def Ty.subst0 {level scope : Nat}
+    (codomainType : Ty level (scope + 1))
+    (argType : Ty level scope)
+    (argRaw : RawTerm scope) : Ty level scope :=
+  codomainType.subst (Subst.singleton argType argRaw)
 
 end LeanFX2
