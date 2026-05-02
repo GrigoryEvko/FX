@@ -229,16 +229,9 @@ because each `lam`/`lamPi`/`appPi`/`pair`/`snd` case has internal Ty
 casts that must be aligned across the two formulations.  Following the
 W7-analysis: HEq cascade hits a factorization limit at typed Term level.
 
-We pursue an alternative: prove `Term.subst_compose` for *trivial-cast*
-constructor families directly (var, unit, leaf constants, elimination
-forms with no cast), and defer the cast-bearing cases (lam, lamPi,
-appPi, pair, snd) to dedicated specialized lemmas with their own cast
-infrastructure.
-
-For now, we land what's directly needed by Compat's β-arm:
-* Term.weaken_subst_singleton — Term-level analog of
-  Ty.weaken_subst_singleton; load-bearing for βArm tgt-Ty alignment.
-
-Other lemmas are added incrementally as Compat's cases require them. -/
+We attempt the cascade incrementally.  Simple constructor families
+(no internal cast on the recursive call) work cleanly; cast-bearing
+families are handled with the HEq tactic helpers from
+`Tools/Tactics/HEq`. -/
 
 end LeanFX2
