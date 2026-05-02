@@ -131,4 +131,30 @@ example :
           (RawTerm.lam (RawTerm.lam RawTerm.unit))) =
       none := rfl
 
+/-- Identity refl: `check (Ty.id Ty.unit unit unit) (refl unit) = some Term.refl`. -/
+example :
+    Term.check context
+        (Ty.id (Ty.unit (level := level) (scope := scope))
+               RawTerm.unit RawTerm.unit)
+        (RawTerm.refl RawTerm.unit) =
+      some (Term.refl Ty.unit RawTerm.unit) := rfl
+
+/-- Refl with mismatched endpoints: `check (Ty.id Ty.unit unit boolTrue)
+(refl unit)` fails because endpointA ≠ endpointB. -/
+example :
+    Term.check context
+        (Ty.id (Ty.unit (level := level) (scope := scope))
+               RawTerm.unit RawTerm.boolTrue)
+        (RawTerm.refl RawTerm.unit) =
+      none := rfl
+
+/-- Refl where witness ≠ endpoint: `check (Ty.id Ty.unit unit unit)
+(refl boolTrue)` fails — witness must equal endpoint. -/
+example :
+    Term.check context
+        (Ty.id (Ty.unit (level := level) (scope := scope))
+               RawTerm.unit RawTerm.unit)
+        (RawTerm.refl RawTerm.boolTrue) =
+      none := rfl
+
 end LeanFX2.SmokePhase9DCheck

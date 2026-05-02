@@ -315,8 +315,58 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.id _ _ _, _⟩ | some ⟨.listType _, _⟩
       | some ⟨.optionType _, _⟩ => none
       | none => none
-  | .refl _             => none
-  | .idJ _ _            => none
+  -- Identity introduction (refl): expected Ty must be `Ty.id carrier
+  -- endpointA endpointB` where both endpoints equal `rawWitness`.
+  -- That requires endpointA = endpointB (the type carries reflexivity)
+  -- AND rawWitness = endpointA.  Two Eq.rec steps cast each endpoint
+  -- independently — keeps the cast propext-free (no congrArg₂ tactic).
+  | .refl rawWitness =>
+      match expectedType with
+      | .id carrier endpointA endpointB =>
+          if endpointEq : endpointA = endpointB then
+            if witnessMatchesA : rawWitness = endpointA then
+              let leftEq : rawWitness = endpointA := witnessMatchesA
+              let rightEq : rawWitness = endpointB :=
+                witnessMatchesA.trans endpointEq
+              let baseTerm : Term context (Ty.id carrier rawWitness rawWitness)
+                                          (RawTerm.refl rawWitness) :=
+                Term.refl carrier rawWitness
+              -- Step 1: rewrite RIGHT endpoint via rightEq.
+              let withRightCast : Term context
+                  (Ty.id carrier rawWitness endpointB) (RawTerm.refl rawWitness) :=
+                @Eq.rec (RawTerm _) rawWitness
+                  (fun (rightSlot : RawTerm _) _ =>
+                    Term context (Ty.id carrier rawWitness rightSlot)
+                                 (RawTerm.refl rawWitness))
+                  baseTerm endpointB rightEq
+              -- Step 2: rewrite LEFT endpoint via leftEq.
+              let withBothCasts : Term context
+                  (Ty.id carrier endpointA endpointB) (RawTerm.refl rawWitness) :=
+                @Eq.rec (RawTerm _) rawWitness
+                  (fun (leftSlot : RawTerm _) _ =>
+                    Term context (Ty.id carrier leftSlot endpointB)
+                                 (RawTerm.refl rawWitness))
+                  withRightCast endpointA leftEq
+              some withBothCasts
+            else none
+          else none
+      | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
+      | .tyVar _ | .listType _ | .optionType _ | .eitherType _ _ => none
+  -- J eliminator: expected Ty is the motive.  Synth the witness to
+  -- recover its id-type structure (carrier + endpoints), then check
+  -- the base case at the motive.
+  | .idJ baseRaw witnessRaw =>
+      match Term.infer context witnessRaw with
+      | some ⟨.id _ _ _, witnessTerm⟩ =>
+          match Term.check context expectedType baseRaw with
+          | some baseTerm => some (Term.idJ baseTerm witnessTerm)
+          | none => none
+      | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+      | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+      | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
+      | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
+      | some ⟨.eitherType _ _, _⟩ => none
+      | none => none
   | .modIntro _         => none
   | .modElim _          => none
   | .subsume _          => none
