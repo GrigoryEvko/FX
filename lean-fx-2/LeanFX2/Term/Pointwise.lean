@@ -2,53 +2,205 @@ import LeanFX2.Term.Subst
 
 /-! # Term/Pointwise — substitution pointwise & commute lemmas
 
-Lemmas about how `Term.subst` and `Term.rename` interact when
-substitutions are pointwise-equivalent or compose with each other.
+Lemmas about how `Term.subst` and `Term.rename` interact with
+substitutions that are pointwise-equivalent or compose with each other.
 
-## Contents
+## Approach
 
-### Pointwise equivalence
-* `Term.subst_HEq_pointwise` — if two TermSubsts agree pointwise
-  (HEq) and their underlying Substs agree (Subst.equiv), then
-  `Term.subst σ1 t HEq Term.subst σ2 t`
-* `TermSubst.lift_HEq_pointwise` — lift preserves pointwise HEq
+The Foundation layer (`Foundation/Subst.lean` + `Foundation/RawSubst.lean`)
+proves Eq-shaped commute laws on `Ty` and `RawTerm` because their indices
+are scope/level naturals — no dependency on contexts or term values.
 
-### Single-step lifts
-* `Term.subst_par_pointwise` — Step.par on each position lifts to
-  Step.par on the substituted term (used by ParRed compat)
+At the Term layer, `Term someCtx someType raw` carries the *value* of
+`someType` and `raw` as type-level indices, so Term-level commutes
+generally come in two shapes:
 
-### Commute laws (subst-rename, rename-subst, subst-subst, etc.)
-* `Term.rename_subst_commute` — rename ∘ subst = subst ∘ rename (lifted)
-* `Term.subst_rename_commute_HEq`
-* `Term.rename_subst0` — single-binder variant
-* `Term.subst_compose_HEq`
+* **Eq-shaped pointwise lemmas** — when both sides have the same
+  `someType` and `raw` (e.g. `Term.subst_pointwise`: two TermSubsts
+  over the same Subst).  These reduce to structural induction.
+* **HEq-shaped commute lemmas** — when the subst/rename composition
+  changes the index (e.g. `Term.subst_compose`: subst-then-subst vs
+  subst-by-composed).  Both sides have types that are *propositionally*
+  Eq via the Foundation lemmas, but not definitionally Eq, so HEq is
+  the right tool.
 
-## Diff from lean-fx
-
-lean-fx had these split across:
-* `TermSubst/Pointwise.lean` (697 lines)
-* `TermSubst/HEqCongr.lean` (725 lines)
-* `TermSubst/Compose.lean` (555 lines)
-* `TermSubst/Rename/{Identity,Compose,Pointwise}.lean`
-* `TermSubst/Commute/{SubstRename,RenameSubst,Subst0Rename,Subst0Subst,SingletonRename}.lean`
-
-= ~3000+ lines total, much of it HEq scaffolding for the toRaw-vs-
-type-index disconnect.
-
-In lean-fx-2, raw indices propagate through Term.subst/rename
-automatically.  Most HEq lemmas collapse to `rfl` because the type
-index does the work.  Target file size: ~300-500 lines.
+Downstream consumers (Compat) lift HEq results to Eq via `▸` casts at
+the use site, or absorb the index difference into the two-Ty signature
+of Step / Step.par / StepStar / Conv.
 
 ## Dependencies
 
 * `Term/Subst.lean`
-
-## Downstream consumers
-
-* `Reduction/Compat.lean` — Step compat proofs use these
-* `Confluence/Cd.lean` — Term.cd's β-arms use subst0 commute laws
+* (transitively) `Foundation/Subst.lean`, `Foundation/RawSubst.lean`
 -/
 
 namespace LeanFX2
+
+/-! ## Pointwise lemmas — TermSubsts agreeing on every position
+
+When two TermSubsts over the *same* underlying `Subst` agree pointwise,
+`Term.subst` produces equal results.  No HEq needed — both sides have
+the same `someType.subst sigma` index.  Casts that appear in `Term.subst`
+(e.g. via `Ty.weaken_subst_commute`) are identical between LHS and RHS
+because they depend only on `sigma` and the type indices, not on the
+TermSubst values themselves; rewriting with the IH passes through them
+unchanged. -/
+
+/-- Lift preserves pointwise equality of TermSubsts. -/
+theorem TermSubst.lift_pointwise
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    {firstTermSubst secondTermSubst : TermSubst sourceCtx targetCtx sigma}
+    (pointwiseEq : ∀ position, firstTermSubst position = secondTermSubst position)
+    (newSourceType : Ty level sourceScope) :
+    ∀ position,
+      firstTermSubst.lift newSourceType position =
+        secondTermSubst.lift newSourceType position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show
+        (Ty.weaken_subst_commute sigma
+            (varType sourceCtx ⟨k, Nat.lt_of_succ_lt_succ h⟩)).symm ▸
+          Term.weaken (newSourceType.subst sigma)
+            (firstTermSubst ⟨k, Nat.lt_of_succ_lt_succ h⟩) =
+        (Ty.weaken_subst_commute sigma
+            (varType sourceCtx ⟨k, Nat.lt_of_succ_lt_succ h⟩)).symm ▸
+          Term.weaken (newSourceType.subst sigma)
+            (secondTermSubst ⟨k, Nat.lt_of_succ_lt_succ h⟩)
+      rw [pointwiseEq ⟨k, Nat.lt_of_succ_lt_succ h⟩]
+
+/-- Term.subst respects pointwise equality of TermSubsts.  If two
+TermSubsts over the same Subst agree on every variable position, then
+they substitute equally into every term.  29-case structural induction. -/
+theorem Term.subst_pointwise
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    {firstTermSubst secondTermSubst : TermSubst sourceCtx targetCtx sigma}
+    (pointwiseEq : ∀ position, firstTermSubst position = secondTermSubst position) :
+    ∀ {someType : Ty level sourceScope} {raw : RawTerm sourceScope}
+      (someTerm : Term sourceCtx someType raw),
+        Term.subst firstTermSubst someTerm = Term.subst secondTermSubst someTerm
+  | _, _, .var position => pointwiseEq position
+  | _, _, .unit => rfl
+  | _, _, .lam body => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise (TermSubst.lift_pointwise pointwiseEq _) body]
+  | _, _, .app fnTerm argTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq fnTerm,
+          Term.subst_pointwise pointwiseEq argTerm]
+  | _, _, .lamPi body => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise (TermSubst.lift_pointwise pointwiseEq _) body]
+  | _, _, .appPi fnTerm argTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq fnTerm,
+          Term.subst_pointwise pointwiseEq argTerm]
+  | _, _, .pair firstValue secondValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq firstValue,
+          Term.subst_pointwise pointwiseEq secondValue]
+  | _, _, .fst pairTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq pairTerm]
+  | _, _, .snd pairTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq pairTerm]
+  | _, _, .boolTrue => rfl
+  | _, _, .boolFalse => rfl
+  | _, _, .boolElim scrutinee thenBranch elseBranch => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq scrutinee,
+          Term.subst_pointwise pointwiseEq thenBranch,
+          Term.subst_pointwise pointwiseEq elseBranch]
+  | _, _, .natZero => rfl
+  | _, _, .natSucc predecessor => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq predecessor]
+  | _, _, .natElim scrutinee zeroBranch succBranch => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq scrutinee,
+          Term.subst_pointwise pointwiseEq zeroBranch,
+          Term.subst_pointwise pointwiseEq succBranch]
+  | _, _, .natRec scrutinee zeroBranch succBranch => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq scrutinee,
+          Term.subst_pointwise pointwiseEq zeroBranch,
+          Term.subst_pointwise pointwiseEq succBranch]
+  | _, _, .listNil => rfl
+  | _, _, .listCons headTerm tailTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq headTerm,
+          Term.subst_pointwise pointwiseEq tailTerm]
+  | _, _, .listElim scrutinee nilBranch consBranch => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq scrutinee,
+          Term.subst_pointwise pointwiseEq nilBranch,
+          Term.subst_pointwise pointwiseEq consBranch]
+  | _, _, .optionNone => rfl
+  | _, _, .optionSome valueTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq valueTerm]
+  | _, _, .optionMatch scrutinee noneBranch someBranch => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq scrutinee,
+          Term.subst_pointwise pointwiseEq noneBranch,
+          Term.subst_pointwise pointwiseEq someBranch]
+  | _, _, .eitherInl valueTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq valueTerm]
+  | _, _, .eitherInr valueTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq valueTerm]
+  | _, _, .eitherMatch scrutinee leftBranch rightBranch => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq scrutinee,
+          Term.subst_pointwise pointwiseEq leftBranch,
+          Term.subst_pointwise pointwiseEq rightBranch]
+  | _, _, .refl _ _ => rfl
+  | _, _, .idJ baseCase witness => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq baseCase,
+          Term.subst_pointwise pointwiseEq witness]
+  | _, _, .modIntro innerTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq innerTerm]
+  | _, _, .modElim innerTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq innerTerm]
+  | _, _, .subsume innerTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq innerTerm]
+
+/-! ## TermSubst composition
+
+`TermSubst.compose` builds the typed companion of `Subst.compose`.
+For each source position `position`, it produces a Term in the final
+target whose type/raw match the composed substitution by post-substituting
+the first TermSubst's value through the second TermSubst.  The Ty
+alignment uses `Ty.subst_compose`; the raw alignment is definitional
+(both `Subst.compose.forRaw` and `RawTermSubst.compose` are defined
+pointwise as `(σ1.forRaw p).subst σ2.forRaw`). -/
+
+/-- Compose two TermSubsts: post-substitute the first's image through
+the second.  The Ty cast aligns `(varType src pos).subst σ1).subst σ2`
+with `(varType src pos).subst (Subst.compose σ1 σ2)`. -/
+def TermSubst.compose
+    {mode : Mode} {level : Nat} {sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstSubst : Subst level sourceScope middleScope}
+    {secondSubst : Subst level middleScope targetScope}
+    (firstTermSubst : TermSubst sourceCtx middleCtx firstSubst)
+    (secondTermSubst : TermSubst middleCtx targetCtx secondSubst) :
+    TermSubst sourceCtx targetCtx (Subst.compose firstSubst secondSubst) :=
+  fun position =>
+    Ty.subst_compose firstSubst secondSubst (varType sourceCtx position) ▸
+      Term.subst secondTermSubst (firstTermSubst position)
 
 end LeanFX2
