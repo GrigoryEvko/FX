@@ -175,6 +175,7 @@ import LeanFX2.Smoke.AuditPhase6EStepStarToPar
 import LeanFX2.Smoke.AuditPhase6FConvBridge
 import LeanFX2.Smoke.AuditPhase9ARawWHNF
 import LeanFX2.Smoke.AuditPhase9ARawWHNFInversions
+import LeanFX2.Smoke.AuditPhase9CDecConv
 
 namespace LeanFX2
 
