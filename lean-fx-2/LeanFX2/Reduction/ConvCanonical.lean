@@ -360,4 +360,95 @@ theorem Conv.boolElimElse_cong_nat
   · exact StepStar.boolElimElseBranch_lift_general_nat
             chainB rfl midIsNat scrutinee thenBranch
 
+/-! ## natElim/natRec zero-branch cong rules at closed motive types -/
+
+/-- `Conv` on `natElim`'s zero-branch at `Ty.unit` motive. -/
+theorem Conv.natElimZero_cong_unit
+    {scrutRaw zeroRawA zeroRawB succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    {zeroA : Term context Ty.unit zeroRawA}
+    {zeroB : Term context Ty.unit zeroRawB}
+    (succBranch : Term context (Ty.arrow Ty.nat Ty.unit) succRaw)
+    (zeroConv : Conv zeroA zeroB) :
+    Conv (Term.natElim scrutinee zeroA succBranch)
+         (Term.natElim scrutinee zeroB succBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := zeroConv
+  have midIsUnit : midType = Ty.unit := StepStar.preserves_ty_unit chainA rfl
+  refine ⟨Ty.unit, RawTerm.natElim scrutRaw midRaw succRaw,
+          Term.natElim scrutinee (midIsUnit ▸ midTerm) succBranch,
+          ?_, ?_⟩
+  · exact StepStar.natElimZeroBranch_lift_generic
+            Ty.unit (fun head srcEq => Step.preserves_ty_unit head srcEq)
+            chainA rfl midIsUnit scrutinee succBranch
+  · exact StepStar.natElimZeroBranch_lift_generic
+            Ty.unit (fun head srcEq => Step.preserves_ty_unit head srcEq)
+            chainB rfl midIsUnit scrutinee succBranch
+
+/-- `Conv` on `natElim`'s zero-branch at `Ty.bool` motive. -/
+theorem Conv.natElimZero_cong_bool
+    {scrutRaw zeroRawA zeroRawB succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    {zeroA : Term context Ty.bool zeroRawA}
+    {zeroB : Term context Ty.bool zeroRawB}
+    (succBranch : Term context (Ty.arrow Ty.nat Ty.bool) succRaw)
+    (zeroConv : Conv zeroA zeroB) :
+    Conv (Term.natElim scrutinee zeroA succBranch)
+         (Term.natElim scrutinee zeroB succBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := zeroConv
+  have midIsBool : midType = Ty.bool := StepStar.preserves_ty_bool chainA rfl
+  refine ⟨Ty.bool, RawTerm.natElim scrutRaw midRaw succRaw,
+          Term.natElim scrutinee (midIsBool ▸ midTerm) succBranch,
+          ?_, ?_⟩
+  · exact StepStar.natElimZeroBranch_lift_generic
+            Ty.bool (fun head srcEq => Step.preserves_ty_bool head srcEq)
+            chainA rfl midIsBool scrutinee succBranch
+  · exact StepStar.natElimZeroBranch_lift_generic
+            Ty.bool (fun head srcEq => Step.preserves_ty_bool head srcEq)
+            chainB rfl midIsBool scrutinee succBranch
+
+/-- `Conv` on `natElim`'s zero-branch at `Ty.nat` motive. -/
+theorem Conv.natElimZero_cong_nat
+    {scrutRaw zeroRawA zeroRawB succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    {zeroA : Term context Ty.nat zeroRawA}
+    {zeroB : Term context Ty.nat zeroRawB}
+    (succBranch : Term context (Ty.arrow Ty.nat Ty.nat) succRaw)
+    (zeroConv : Conv zeroA zeroB) :
+    Conv (Term.natElim scrutinee zeroA succBranch)
+         (Term.natElim scrutinee zeroB succBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := zeroConv
+  have midIsNat : midType = Ty.nat := StepStar.preserves_ty_nat chainA rfl
+  refine ⟨Ty.nat, RawTerm.natElim scrutRaw midRaw succRaw,
+          Term.natElim scrutinee (midIsNat ▸ midTerm) succBranch,
+          ?_, ?_⟩
+  · exact StepStar.natElimZeroBranch_lift_generic
+            Ty.nat (fun head srcEq => Step.preserves_ty_nat head srcEq)
+            chainA rfl midIsNat scrutinee succBranch
+  · exact StepStar.natElimZeroBranch_lift_generic
+            Ty.nat (fun head srcEq => Step.preserves_ty_nat head srcEq)
+            chainB rfl midIsNat scrutinee succBranch
+
+/-- `Conv` on `natRec`'s zero-branch at `Ty.unit` motive. -/
+theorem Conv.natRecZero_cong_unit
+    {scrutRaw zeroRawA zeroRawB succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    {zeroA : Term context Ty.unit zeroRawA}
+    {zeroB : Term context Ty.unit zeroRawB}
+    (succBranch : Term context
+                    (Ty.arrow Ty.nat (Ty.arrow Ty.unit Ty.unit)) succRaw)
+    (zeroConv : Conv zeroA zeroB) :
+    Conv (Term.natRec scrutinee zeroA succBranch)
+         (Term.natRec scrutinee zeroB succBranch) := by
+  obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := zeroConv
+  have midIsUnit : midType = Ty.unit := StepStar.preserves_ty_unit chainA rfl
+  refine ⟨Ty.unit, RawTerm.natRec scrutRaw midRaw succRaw,
+          Term.natRec scrutinee (midIsUnit ▸ midTerm) succBranch,
+          ?_, ?_⟩
+  · exact StepStar.natRecZeroBranch_lift_generic
+            Ty.unit (fun head srcEq => Step.preserves_ty_unit head srcEq)
+            chainA rfl midIsUnit scrutinee succBranch
+  · exact StepStar.natRecZeroBranch_lift_generic
+            Ty.unit (fun head srcEq => Step.preserves_ty_unit head srcEq)
+            chainB rfl midIsUnit scrutinee succBranch
+
 end LeanFX2

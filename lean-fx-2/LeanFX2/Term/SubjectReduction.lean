@@ -609,4 +609,67 @@ theorem StepStar.boolElimElseBranch_lift_general_nat
     Ty.nat (fun head srcEq => Step.preserves_ty_nat head srcEq)
     someChain srcIsNat tgtIsNat scrutinee thenBranch
 
+/-! ## Branch lifters for natElim and natRec at closed motive types -/
+
+/-- Generic branch-lifter for `natElim`'s zero-branch position. -/
+theorem StepStar.natElimZeroBranch_lift_generic
+    (motiveType : Ty level scope)
+    (preservesType : ∀ {a b : Ty level scope} {ra rb : RawTerm scope}
+        {ta : Term context a ra} {tb : Term context b rb},
+        Step ta tb → a = motiveType → b = motiveType)
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsMotive : srcTy = motiveType)
+    (tgtIsMotive : tgtTy = motiveType)
+    {scrutRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+    StepStar (Term.natElim scrutinee (srcIsMotive ▸ srcTerm) succBranch)
+             (Term.natElim scrutinee (tgtIsMotive ▸ tgtTerm) succBranch) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsMotive
+      cases tgtIsMotive
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsMotive : _ = motiveType := preservesType head srcIsMotive
+      cases srcIsMotive
+      cases midIsMotive
+      exact StepStar.step (Step.natElimZero head)
+                          (tailIH rfl tgtIsMotive)
+
+/-- Generic branch-lifter for `natRec`'s zero-branch position. -/
+theorem StepStar.natRecZeroBranch_lift_generic
+    (motiveType : Ty level scope)
+    (preservesType : ∀ {a b : Ty level scope} {ra rb : RawTerm scope}
+        {ta : Term context a ra} {tb : Term context b rb},
+        Step ta tb → a = motiveType → b = motiveType)
+    {srcTy tgtTy : Ty level scope}
+    {srcRaw tgtRaw : RawTerm scope}
+    {srcTerm : Term context srcTy srcRaw}
+    {tgtTerm : Term context tgtTy tgtRaw}
+    (someChain : StepStar srcTerm tgtTerm)
+    (srcIsMotive : srcTy = motiveType)
+    (tgtIsMotive : tgtTy = motiveType)
+    {scrutRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutRaw)
+    (succBranch : Term context
+                    (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+    StepStar (Term.natRec scrutinee (srcIsMotive ▸ srcTerm) succBranch)
+             (Term.natRec scrutinee (tgtIsMotive ▸ tgtTerm) succBranch) := by
+  induction someChain with
+  | refl _ =>
+      cases srcIsMotive
+      cases tgtIsMotive
+      exact StepStar.refl _
+  | step head _ tailIH =>
+      have midIsMotive : _ = motiveType := preservesType head srcIsMotive
+      cases srcIsMotive
+      cases midIsMotive
+      exact StepStar.step (Step.natRecZero head)
+                          (tailIH rfl tgtIsMotive)
+
 end LeanFX2
