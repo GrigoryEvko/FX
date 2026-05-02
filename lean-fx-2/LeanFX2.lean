@@ -187,6 +187,7 @@ import LeanFX2.Smoke.AuditPhase7CSubjectReduction
 import LeanFX2.Smoke.AuditPhase9DInfer
 import LeanFX2.Smoke.AuditPhase9DCheck
 import LeanFX2.Smoke.AuditPhase9EEval
+import LeanFX2.Smoke.AuditPhase9FCheckEval
 import LeanFX2.Smoke.AuditPhase79EndToEnd
 
 namespace LeanFX2
