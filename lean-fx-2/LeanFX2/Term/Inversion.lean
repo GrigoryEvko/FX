@@ -97,33 +97,150 @@ theorem Term.natSucc_ty_inv
   cases someTerm
   rfl
 
-/-! ## Destructor for natSucc — DEFERRED
+/-! ## Destructor for natSucc — propext-clean via free-the-index
 
-Attempted: `Term.natSuccDestruct` to extract the predecessor
-from a typed Term at `Ty.nat` with raw `RawTerm.natSucc _`.
-This would unblock `Term.headStep?` extension for the
-`iotaNatElimSucc` and `iotaNatRecSucc` ι-rules.
+Pattern: Lean 4 v4.29.1's `cases t` tactic on `t : Term context
+Ty.nat (RawTerm.natSucc predRaw)` fails because the matcher
+encounters non-natSucc cases (e.g., `Term.var pos`) and tries to
+unify the TYPE first (`Ty.nat = varType context pos`), getting
+stuck on the opaque `varType` projection.
 
-Blocker: Lean 4 v4.29.1's dependent-elimination tactic / match
-compiler fails on `cases someTerm with | natSucc p => ...` even
-when the raw form constraint rules out all other ctors.  The
-specific error: "Failed to solve equation Ty.nat = varType
-context position" — the matcher cannot use the raw-form
-contradiction to discharge the var case despite `Term.var pos`'s
-raw being `RawTerm.var pos`, NOT `RawTerm.natSucc _`.
+Workaround per `feedback_lean_free_type_via_suffices.md`: free
+the type index with `suffices`, then `cases t` runs on a generic
+`ty` where the matcher discharges non-natSucc cases by RAW
+contradiction (RawTerm.var pos ≠ RawTerm.natSucc predRaw is
+constructor-mismatch, propext-clean).  The `ty = Ty.nat`
+hypothesis is then used at the natSucc case to align indices.
 
-This is the same propext-leak class documented in
-`feedback_lean_zero_axiom_match.md`.  Resolution requires either:
+Used to extend `Term.headStep?` for the `iotaNatElimSucc` /
+`iotaNatRecSucc` cases — which need the predecessor to construct
+the reduct `Term.app succBranch predecessor`. -/
 
-* A toRaw-shape dispatch helper (`Term.fromRawNatSucc?`) using
-  full ctor enumeration with raw-form discharge.
-* A dedicated propext-clean recursor.
+/-- Destructor for `Term.natSucc`: from a typed Term at `Ty.nat`
+whose raw form is `RawTerm.natSucc predRaw`, extract the
+predecessor (a Term at `Ty.nat` with raw `predRaw`) bundled with
+an HEq proof.  Zero-axiom via the suffices/free-index pattern. -/
+def Term.natSuccDestruct
+    {predRaw : RawTerm scope}
+    (someTerm : Term context Ty.nat (RawTerm.natSucc predRaw)) :
+    Σ' (predTerm : Term context Ty.nat predRaw),
+       HEq someTerm (Term.natSucc predTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.natSucc predRaw)),
+        someType = Ty.nat →
+        Σ' (predTerm : Term context Ty.nat predRaw),
+           HEq genericTerm (Term.natSucc predTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsNat
+  cases genericTerm
+  rename_i predTerm
+  exact ⟨predTerm, HEq.rfl⟩
 
-Both are >50-line additions, deferred to a future structural
-phase.  M08 (extend headStep? to fire ι-rules requiring payload
-extraction) thus remains blocked beyond the no-payload subset
-(boolElim true/false, natElim/natRec zero, listElim nil,
-optionMatch none — all of which `headStep?` already handles). -/
+/-- Destructor for `Term.listCons`: from a typed Term at
+`Ty.listType elementType` whose raw form is `RawTerm.listCons
+headRaw tailRaw`, extract the head (a Term at elementType with
+raw headRaw) and tail (a Term at listType with raw tailRaw)
+bundled with an HEq proof. -/
+def Term.listConsDestruct
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (someTerm : Term context (Ty.listType elementType)
+                              (RawTerm.listCons headRaw tailRaw)) :
+    Σ' (headTerm : Term context elementType headRaw)
+       (tailTerm : Term context (Ty.listType elementType) tailRaw),
+       HEq someTerm (Term.listCons headTerm tailTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType
+                                    (RawTerm.listCons headRaw tailRaw)),
+        someType = Ty.listType elementType →
+        Σ' (headTerm : Term context elementType headRaw)
+           (tailTerm : Term context (Ty.listType elementType) tailRaw),
+           HEq genericTerm (Term.listCons headTerm tailTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsListType
+  cases genericTerm
+  rename_i innerElement headTerm tailTerm
+  -- innerElement is the element type from the listCons ctor;
+  -- the type-index hypothesis pins it to elementType
+  have elementEq : innerElement = elementType :=
+    Ty.listType.inj someTypeIsListType
+  cases elementEq
+  exact ⟨headTerm, tailTerm, HEq.rfl⟩
+
+/-- Destructor for `Term.optionSome`: extract the value. -/
+def Term.optionSomeDestruct
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (someTerm : Term context (Ty.optionType elementType)
+                              (RawTerm.optionSome valueRaw)) :
+    Σ' (valueTerm : Term context elementType valueRaw),
+       HEq someTerm (Term.optionSome valueTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.optionSome valueRaw)),
+        someType = Ty.optionType elementType →
+        Σ' (valueTerm : Term context elementType valueRaw),
+           HEq genericTerm (Term.optionSome valueTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsOpt
+  cases genericTerm
+  rename_i innerElement valueTerm
+  have elementEq : innerElement = elementType :=
+    Ty.optionType.inj someTypeIsOpt
+  cases elementEq
+  exact ⟨valueTerm, HEq.rfl⟩
+
+/-- Destructor for `Term.eitherInl`: extract the left value. -/
+def Term.eitherInlDestruct
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (someTerm : Term context (Ty.eitherType leftType rightType)
+                              (RawTerm.eitherInl valueRaw)) :
+    Σ' (valueTerm : Term context leftType valueRaw),
+       HEq someTerm
+           (Term.eitherInl (rightType := rightType) valueTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.eitherInl valueRaw)),
+        someType = Ty.eitherType leftType rightType →
+        Σ' (valueTerm : Term context leftType valueRaw),
+           HEq genericTerm
+               (Term.eitherInl (rightType := rightType) valueTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsEither
+  cases genericTerm
+  rename_i innerLeft innerRight valueTerm
+  have eitherEq := Ty.eitherType.inj someTypeIsEither
+  cases eitherEq.1
+  cases eitherEq.2
+  exact ⟨valueTerm, HEq.rfl⟩
+
+/-- Destructor for `Term.eitherInr`: extract the right value. -/
+def Term.eitherInrDestruct
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (someTerm : Term context (Ty.eitherType leftType rightType)
+                              (RawTerm.eitherInr valueRaw)) :
+    Σ' (valueTerm : Term context rightType valueRaw),
+       HEq someTerm
+           (Term.eitherInr (leftType := leftType) valueTerm) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.eitherInr valueRaw)),
+        someType = Ty.eitherType leftType rightType →
+        Σ' (valueTerm : Term context rightType valueRaw),
+           HEq genericTerm
+               (Term.eitherInr (leftType := leftType) valueTerm) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsEither
+  cases genericTerm
+  rename_i innerLeft innerRight valueTerm
+  have eitherEq := Ty.eitherType.inj someTypeIsEither
+  cases eitherEq.1
+  cases eitherEq.2
+  exact ⟨valueTerm, HEq.rfl⟩
 
 /-- `Term ctx _ .listNil` forces `ty = Ty.listType elementType` for
 some `elementType`. -/

@@ -1,5 +1,6 @@
 import LeanFX2.Algo.WHNF
 import LeanFX2.Reduction.Step
+import LeanFX2.Term.Inversion
 
 /-! # Algo/Eval — fuel-bounded typed evaluator
 
@@ -119,26 +120,28 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
       if scrutineeHead == .natZero then
         some ⟨_, zeroBranch⟩
       else
-        none  -- succ case needs predecessor extraction
+        none  -- succ case: extension via natSuccDestruct deferred to
+              -- avoid `match rawEq:` propext leak; see Phase 12.A.3
+              -- M08 work-in-progress notes
   | _, _, _, _, .natRec scrutinee zeroBranch _ =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then
         some ⟨_, zeroBranch⟩
       else
-        none  -- succ case needs predecessor extraction
+        none
   | _, _, _, _, .listElim scrutinee nilBranch _ =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .listNil then
         some ⟨_, nilBranch⟩
       else
-        none  -- cons case needs head/tail extraction
+        none
   | _, _, _, _, .optionMatch scrutinee noneBranch _ =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .optionNone then
         some ⟨_, noneBranch⟩
       else
-        none  -- some case needs value extraction
-  | _, _, _, _, .eitherMatch _ _ _ => none  -- all canonicals carry payload
+        none
+  | _, _, _, _, .eitherMatch _ _ _ => none
   | _, _, _, _, .idJ _ _ => none            -- J-on-refl needs witness extraction
   | _, _, _, _, .modElim _ => none          -- needs inner extraction
 
