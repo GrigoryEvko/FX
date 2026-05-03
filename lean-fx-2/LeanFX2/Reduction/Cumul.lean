@@ -334,6 +334,107 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (elseRel : ConvCumul elseFirst elseSecond) :
       ConvCumul (Term.boolElim scrutFirst thenFirst elseFirst)
                 (Term.boolElim scrutSecond thenSecond elseSecond)
+  /-- Homogeneous natElim: ConvCumul-related branches lift to ConvCumul-
+  related natElim term. -/
+  | natElimCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {scrutFirstRaw scrutSecondRaw : RawTerm scope}
+      {zeroFirstRaw zeroSecondRaw succFirstRaw succSecondRaw : RawTerm scope}
+      {scrutFirst : Term context Ty.nat scrutFirstRaw}
+      {scrutSecond : Term context Ty.nat scrutSecondRaw}
+      {zeroFirst : Term context motiveType zeroFirstRaw}
+      {zeroSecond : Term context motiveType zeroSecondRaw}
+      {succFirst : Term context (Ty.arrow Ty.nat motiveType) succFirstRaw}
+      {succSecond : Term context (Ty.arrow Ty.nat motiveType) succSecondRaw}
+      (scrutRel : ConvCumul scrutFirst scrutSecond)
+      (zeroRel : ConvCumul zeroFirst zeroSecond)
+      (succRel : ConvCumul succFirst succSecond) :
+      ConvCumul (Term.natElim scrutFirst zeroFirst succFirst)
+                (Term.natElim scrutSecond zeroSecond succSecond)
+  /-- Homogeneous natRec: ConvCumul-related branches lift to ConvCumul-
+  related natRec term. -/
+  | natRecCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {scrutFirstRaw scrutSecondRaw : RawTerm scope}
+      {zeroFirstRaw zeroSecondRaw succFirstRaw succSecondRaw : RawTerm scope}
+      {scrutFirst : Term context Ty.nat scrutFirstRaw}
+      {scrutSecond : Term context Ty.nat scrutSecondRaw}
+      {zeroFirst : Term context motiveType zeroFirstRaw}
+      {zeroSecond : Term context motiveType zeroSecondRaw}
+      {succFirst :
+        Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succFirstRaw}
+      {succSecond :
+        Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succSecondRaw}
+      (scrutRel : ConvCumul scrutFirst scrutSecond)
+      (zeroRel : ConvCumul zeroFirst zeroSecond)
+      (succRel : ConvCumul succFirst succSecond) :
+      ConvCumul (Term.natRec scrutFirst zeroFirst succFirst)
+                (Term.natRec scrutSecond zeroSecond succSecond)
+  /-- Homogeneous listElim: ConvCumul-related branches lift to ConvCumul-
+  related listElim term. -/
+  | listElimCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      {scrutFirstRaw scrutSecondRaw : RawTerm scope}
+      {nilFirstRaw nilSecondRaw consFirstRaw consSecondRaw : RawTerm scope}
+      {scrutFirst : Term context (Ty.listType elementType) scrutFirstRaw}
+      {scrutSecond : Term context (Ty.listType elementType) scrutSecondRaw}
+      {nilFirst : Term context motiveType nilFirstRaw}
+      {nilSecond : Term context motiveType nilSecondRaw}
+      {consFirst :
+        Term context (Ty.arrow elementType
+                        (Ty.arrow (Ty.listType elementType) motiveType)) consFirstRaw}
+      {consSecond :
+        Term context (Ty.arrow elementType
+                        (Ty.arrow (Ty.listType elementType) motiveType)) consSecondRaw}
+      (scrutRel : ConvCumul scrutFirst scrutSecond)
+      (nilRel : ConvCumul nilFirst nilSecond)
+      (consRel : ConvCumul consFirst consSecond) :
+      ConvCumul (Term.listElim scrutFirst nilFirst consFirst)
+                (Term.listElim scrutSecond nilSecond consSecond)
+  /-- Homogeneous optionMatch: ConvCumul-related branches lift to ConvCumul-
+  related optionMatch term. -/
+  | optionMatchCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      {scrutFirstRaw scrutSecondRaw : RawTerm scope}
+      {noneFirstRaw noneSecondRaw someFirstRaw someSecondRaw : RawTerm scope}
+      {scrutFirst : Term context (Ty.optionType elementType) scrutFirstRaw}
+      {scrutSecond : Term context (Ty.optionType elementType) scrutSecondRaw}
+      {noneFirst : Term context motiveType noneFirstRaw}
+      {noneSecond : Term context motiveType noneSecondRaw}
+      {someFirst : Term context (Ty.arrow elementType motiveType) someFirstRaw}
+      {someSecond : Term context (Ty.arrow elementType motiveType) someSecondRaw}
+      (scrutRel : ConvCumul scrutFirst scrutSecond)
+      (noneRel : ConvCumul noneFirst noneSecond)
+      (someRel : ConvCumul someFirst someSecond) :
+      ConvCumul (Term.optionMatch scrutFirst noneFirst someFirst)
+                (Term.optionMatch scrutSecond noneSecond someSecond)
+  /-- Homogeneous eitherMatch: ConvCumul-related branches lift to ConvCumul-
+  related eitherMatch term. -/
+  | eitherMatchCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftType rightType motiveType : Ty level scope}
+      {scrutFirstRaw scrutSecondRaw : RawTerm scope}
+      {leftFirstRaw leftSecondRaw rightFirstRaw rightSecondRaw : RawTerm scope}
+      {scrutFirst : Term context (Ty.eitherType leftType rightType) scrutFirstRaw}
+      {scrutSecond : Term context (Ty.eitherType leftType rightType) scrutSecondRaw}
+      {leftFirst : Term context (Ty.arrow leftType motiveType) leftFirstRaw}
+      {leftSecond : Term context (Ty.arrow leftType motiveType) leftSecondRaw}
+      {rightFirst : Term context (Ty.arrow rightType motiveType) rightFirstRaw}
+      {rightSecond : Term context (Ty.arrow rightType motiveType) rightSecondRaw}
+      (scrutRel : ConvCumul scrutFirst scrutSecond)
+      (leftRel : ConvCumul leftFirst leftSecond)
+      (rightRel : ConvCumul rightFirst rightSecond) :
+      ConvCumul (Term.eitherMatch scrutFirst leftFirst rightFirst)
+                (Term.eitherMatch scrutSecond leftSecond rightSecond)
   /-- Homogeneous natSucc: ConvCumul-related predecessor lifts to ConvCumul-
   related natSucc. -/
   | natSuccCong
