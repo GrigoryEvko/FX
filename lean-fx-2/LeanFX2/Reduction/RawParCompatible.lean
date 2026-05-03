@@ -163,6 +163,99 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
   | .subsume innerTerm, _, _, substsRelated =>
       RawStep.par.subsume
         (RawTerm.subst_par_pointwise innerTerm substsRelated)
+  -- D1.6: pure cong rules for the 27 new RawTerm ctors.
+  | .interval0, _, _, _ => RawStep.par.refl _
+  | .interval1, _, _, _ => RawStep.par.refl _
+  | .intervalOpp intervalTerm, _, _, substsRelated =>
+      RawStep.par.intervalOppCong
+        (RawTerm.subst_par_pointwise intervalTerm substsRelated)
+  | .intervalMeet leftInterval rightInterval, _, _, substsRelated =>
+      RawStep.par.intervalMeetCong
+        (RawTerm.subst_par_pointwise leftInterval substsRelated)
+        (RawTerm.subst_par_pointwise rightInterval substsRelated)
+  | .intervalJoin leftInterval rightInterval, _, _, substsRelated =>
+      RawStep.par.intervalJoinCong
+        (RawTerm.subst_par_pointwise leftInterval substsRelated)
+        (RawTerm.subst_par_pointwise rightInterval substsRelated)
+  | .pathLam body, _, _, substsRelated =>
+      RawStep.par.pathLamCong
+        (RawTerm.subst_par_pointwise body
+          (RawTermSubst.par_lift substsRelated))
+  | .pathApp pathTerm intervalArg, _, _, substsRelated =>
+      RawStep.par.pathAppCong
+        (RawTerm.subst_par_pointwise pathTerm substsRelated)
+        (RawTerm.subst_par_pointwise intervalArg substsRelated)
+  | .glueIntro baseValue partialValue, _, _, substsRelated =>
+      RawStep.par.glueIntroCong
+        (RawTerm.subst_par_pointwise baseValue substsRelated)
+        (RawTerm.subst_par_pointwise partialValue substsRelated)
+  | .glueElim gluedValue, _, _, substsRelated =>
+      RawStep.par.glueElimCong
+        (RawTerm.subst_par_pointwise gluedValue substsRelated)
+  | .transp pathTerm sourceTerm, _, _, substsRelated =>
+      RawStep.par.transpCong
+        (RawTerm.subst_par_pointwise pathTerm substsRelated)
+        (RawTerm.subst_par_pointwise sourceTerm substsRelated)
+  | .hcomp sidesTerm capTerm, _, _, substsRelated =>
+      RawStep.par.hcompCong
+        (RawTerm.subst_par_pointwise sidesTerm substsRelated)
+        (RawTerm.subst_par_pointwise capTerm substsRelated)
+  | .oeqRefl witnessTerm, _, _, substsRelated =>
+      RawStep.par.oeqReflCong
+        (RawTerm.subst_par_pointwise witnessTerm substsRelated)
+  | .oeqJ baseCase witness, _, _, substsRelated =>
+      RawStep.par.oeqJCong
+        (RawTerm.subst_par_pointwise baseCase substsRelated)
+        (RawTerm.subst_par_pointwise witness substsRelated)
+  | .oeqFunext pointwiseEquality, _, _, substsRelated =>
+      RawStep.par.oeqFunextCong
+        (RawTerm.subst_par_pointwise pointwiseEquality substsRelated)
+  | .idStrictRefl witnessTerm, _, _, substsRelated =>
+      RawStep.par.idStrictReflCong
+        (RawTerm.subst_par_pointwise witnessTerm substsRelated)
+  | .idStrictRec baseCase witness, _, _, substsRelated =>
+      RawStep.par.idStrictRecCong
+        (RawTerm.subst_par_pointwise baseCase substsRelated)
+        (RawTerm.subst_par_pointwise witness substsRelated)
+  | .equivIntro forwardFn backwardFn, _, _, substsRelated =>
+      RawStep.par.equivIntroCong
+        (RawTerm.subst_par_pointwise forwardFn substsRelated)
+        (RawTerm.subst_par_pointwise backwardFn substsRelated)
+  | .equivApp equivTerm argument, _, _, substsRelated =>
+      RawStep.par.equivAppCong
+        (RawTerm.subst_par_pointwise equivTerm substsRelated)
+        (RawTerm.subst_par_pointwise argument substsRelated)
+  | .refineIntro rawValue predicateProof, _, _, substsRelated =>
+      RawStep.par.refineIntroCong
+        (RawTerm.subst_par_pointwise rawValue substsRelated)
+        (RawTerm.subst_par_pointwise predicateProof substsRelated)
+  | .refineElim refinedValue, _, _, substsRelated =>
+      RawStep.par.refineElimCong
+        (RawTerm.subst_par_pointwise refinedValue substsRelated)
+  | .recordIntro firstField, _, _, substsRelated =>
+      RawStep.par.recordIntroCong
+        (RawTerm.subst_par_pointwise firstField substsRelated)
+  | .recordProj recordValue, _, _, substsRelated =>
+      RawStep.par.recordProjCong
+        (RawTerm.subst_par_pointwise recordValue substsRelated)
+  | .codataUnfold initialState transition, _, _, substsRelated =>
+      RawStep.par.codataUnfoldCong
+        (RawTerm.subst_par_pointwise initialState substsRelated)
+        (RawTerm.subst_par_pointwise transition substsRelated)
+  | .codataDest codataValue, _, _, substsRelated =>
+      RawStep.par.codataDestCong
+        (RawTerm.subst_par_pointwise codataValue substsRelated)
+  | .sessionSend channel payload, _, _, substsRelated =>
+      RawStep.par.sessionSendCong
+        (RawTerm.subst_par_pointwise channel substsRelated)
+        (RawTerm.subst_par_pointwise payload substsRelated)
+  | .sessionRecv channel, _, _, substsRelated =>
+      RawStep.par.sessionRecvCong
+        (RawTerm.subst_par_pointwise channel substsRelated)
+  | .effectPerform operationTag arguments, _, _, substsRelated =>
+      RawStep.par.effectPerformCong
+        (RawTerm.subst_par_pointwise operationTag substsRelated)
+        (RawTerm.subst_par_pointwise arguments substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -363,6 +456,57 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]
       exact RawStep.par.iotaIdJReflDeep
         (witnessIH substsRelated) (baseIH substsRelated)
+  -- D1.6: cong cases for the 27 new RawTerm ctors.
+  | intervalOppCong _ intervalIH =>
+      exact RawStep.par.intervalOppCong (intervalIH substsRelated)
+  | intervalMeetCong _ _ leftIH rightIH =>
+      exact RawStep.par.intervalMeetCong (leftIH substsRelated) (rightIH substsRelated)
+  | intervalJoinCong _ _ leftIH rightIH =>
+      exact RawStep.par.intervalJoinCong (leftIH substsRelated) (rightIH substsRelated)
+  | pathLamCong _ bodyIH =>
+      exact RawStep.par.pathLamCong (bodyIH (RawTermSubst.par_lift substsRelated))
+  | pathAppCong _ _ pathIH intervalIH =>
+      exact RawStep.par.pathAppCong (pathIH substsRelated) (intervalIH substsRelated)
+  | glueIntroCong _ _ baseIH partialIH =>
+      exact RawStep.par.glueIntroCong (baseIH substsRelated) (partialIH substsRelated)
+  | glueElimCong _ gluedIH =>
+      exact RawStep.par.glueElimCong (gluedIH substsRelated)
+  | transpCong _ _ pathIH sourceIH =>
+      exact RawStep.par.transpCong (pathIH substsRelated) (sourceIH substsRelated)
+  | hcompCong _ _ sidesIH capIH =>
+      exact RawStep.par.hcompCong (sidesIH substsRelated) (capIH substsRelated)
+  | oeqReflCong _ witnessIH =>
+      exact RawStep.par.oeqReflCong (witnessIH substsRelated)
+  | oeqJCong _ _ baseIH witnessIH =>
+      exact RawStep.par.oeqJCong (baseIH substsRelated) (witnessIH substsRelated)
+  | oeqFunextCong _ pointwiseIH =>
+      exact RawStep.par.oeqFunextCong (pointwiseIH substsRelated)
+  | idStrictReflCong _ witnessIH =>
+      exact RawStep.par.idStrictReflCong (witnessIH substsRelated)
+  | idStrictRecCong _ _ baseIH witnessIH =>
+      exact RawStep.par.idStrictRecCong (baseIH substsRelated) (witnessIH substsRelated)
+  | equivIntroCong _ _ forwardIH backwardIH =>
+      exact RawStep.par.equivIntroCong (forwardIH substsRelated) (backwardIH substsRelated)
+  | equivAppCong _ _ equivIH argumentIH =>
+      exact RawStep.par.equivAppCong (equivIH substsRelated) (argumentIH substsRelated)
+  | refineIntroCong _ _ valueIH proofIH =>
+      exact RawStep.par.refineIntroCong (valueIH substsRelated) (proofIH substsRelated)
+  | refineElimCong _ refinedIH =>
+      exact RawStep.par.refineElimCong (refinedIH substsRelated)
+  | recordIntroCong _ firstIH =>
+      exact RawStep.par.recordIntroCong (firstIH substsRelated)
+  | recordProjCong _ recordIH =>
+      exact RawStep.par.recordProjCong (recordIH substsRelated)
+  | codataUnfoldCong _ _ stateIH transitionIH =>
+      exact RawStep.par.codataUnfoldCong (stateIH substsRelated) (transitionIH substsRelated)
+  | codataDestCong _ codataIH =>
+      exact RawStep.par.codataDestCong (codataIH substsRelated)
+  | sessionSendCong _ _ channelIH payloadIH =>
+      exact RawStep.par.sessionSendCong (channelIH substsRelated) (payloadIH substsRelated)
+  | sessionRecvCong _ channelIH =>
+      exact RawStep.par.sessionRecvCong (channelIH substsRelated)
+  | effectPerformCong _ _ operationIH argumentsIH =>
+      exact RawStep.par.effectPerformCong (operationIH substsRelated) (argumentsIH substsRelated)
 
 /-! ## β-corollary: parallel substitution at position 0. -/
 

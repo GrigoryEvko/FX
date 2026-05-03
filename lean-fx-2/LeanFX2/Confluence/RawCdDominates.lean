@@ -27,6 +27,13 @@ when the modality theory ships).  Each modal arm is a one-line
 `simp + cong rule + recursive call`.
 -/
 
+-- D1.6 grew RawTerm to 55 ctors and `RawTerm.cd` to a match with
+-- 10 inner matches × 55 arms ≈ 550 branches.  `simp only [RawTerm.cd]`
+-- and the per-arm `split` tactic exceed the 200K-heartbeat default
+-- when reducing the now-large cd into shape.  Set to 0 to disable
+-- the heartbeat check entirely; the proof structure is unchanged.
+set_option maxHeartbeats 0
+
 namespace LeanFX2
 
 /-- Every raw term parallel-reduces to its complete development.
@@ -35,46 +42,48 @@ reduct of `t` reaches `cd t`, and `cd t` is a parallel-reduct of `t`. -/
 theorem RawStep.par.cd_dominates :
     {scope : Nat} → (rawTerm : RawTerm scope) →
     RawStep.par rawTerm (RawTerm.cd rawTerm)
-  | _, .var _ => by unfold RawTerm.cd; exact RawStep.par.refl _
-  | _, .unit => by unfold RawTerm.cd; exact RawStep.par.refl _
-  | _, .lam body => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.lam (RawStep.par.cd_dominates body)
+  | _, .var _ => RawStep.par.refl _
+  | _, .unit => RawStep.par.refl _
+  | _, .lam body =>
+      RawStep.par.lam (RawStep.par.cd_dominates body)
   | _, .app functionTerm argumentTerm => by
       let functionParStep := RawStep.par.cd_dominates functionTerm
       let argumentParStep := RawStep.par.cd_dominates argumentTerm
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdAppCase
       split
       case _ body bodyEqn =>
           exact RawStep.par.betaAppDeep
             (bodyEqn ▸ functionParStep) argumentParStep
       all_goals exact RawStep.par.app functionParStep argumentParStep
-  | _, .pair firstValue secondValue => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.pair
+  | _, .pair firstValue secondValue =>
+      RawStep.par.pair
         (RawStep.par.cd_dominates firstValue)
         (RawStep.par.cd_dominates secondValue)
   | _, .fst pairTerm => by
       let pairParStep := RawStep.par.cd_dominates pairTerm
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdFstCase
       split
       case _ firstValue secondValue pairEqn =>
           exact RawStep.par.betaFstPairDeep (pairEqn ▸ pairParStep)
       all_goals exact RawStep.par.fst pairParStep
   | _, .snd pairTerm => by
       let pairParStep := RawStep.par.cd_dominates pairTerm
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdSndCase
       split
       case _ firstValue secondValue pairEqn =>
           exact RawStep.par.betaSndPairDeep (pairEqn ▸ pairParStep)
       all_goals exact RawStep.par.snd pairParStep
-  | _, .boolTrue => by unfold RawTerm.cd; exact RawStep.par.refl _
-  | _, .boolFalse => by unfold RawTerm.cd; exact RawStep.par.refl _
+  | _, .boolTrue => RawStep.par.refl _
+  | _, .boolFalse => RawStep.par.refl _
   | _, .boolElim scrutinee thenBranch elseBranch => by
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let thenParStep := RawStep.par.cd_dominates thenBranch
       let elseParStep := RawStep.par.cd_dominates elseBranch
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdBoolElimCase
       split
       case _ scrutineeEqn =>
           exact RawStep.par.iotaBoolElimTrueDeep elseBranch
@@ -84,15 +93,15 @@ theorem RawStep.par.cd_dominates :
             (scrutineeEqn ▸ scrutineeParStep) elseParStep
       all_goals
         exact RawStep.par.boolElim scrutineeParStep thenParStep elseParStep
-  | _, .natZero => by unfold RawTerm.cd; exact RawStep.par.refl _
-  | _, .natSucc predecessor => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.natSucc (RawStep.par.cd_dominates predecessor)
+  | _, .natZero => RawStep.par.refl _
+  | _, .natSucc predecessor =>
+      RawStep.par.natSucc (RawStep.par.cd_dominates predecessor)
   | _, .natElim scrutinee zeroBranch succBranch => by
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let zeroParStep := RawStep.par.cd_dominates zeroBranch
       let succParStep := RawStep.par.cd_dominates succBranch
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdNatElimCase
       split
       case _ scrutineeEqn =>
           exact RawStep.par.iotaNatElimZeroDeep succBranch
@@ -106,7 +115,8 @@ theorem RawStep.par.cd_dominates :
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let zeroParStep := RawStep.par.cd_dominates zeroBranch
       let succParStep := RawStep.par.cd_dominates succBranch
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdNatRecCase
       split
       case _ scrutineeEqn =>
           exact RawStep.par.iotaNatRecZeroDeep succBranch
@@ -116,17 +126,17 @@ theorem RawStep.par.cd_dominates :
             (scrutineeEqn ▸ scrutineeParStep) zeroParStep succParStep
       all_goals
         exact RawStep.par.natRec scrutineeParStep zeroParStep succParStep
-  | _, .listNil => by unfold RawTerm.cd; exact RawStep.par.refl _
-  | _, .listCons headTerm tailTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.listCons
+  | _, .listNil => RawStep.par.refl _
+  | _, .listCons headTerm tailTerm =>
+      RawStep.par.listCons
         (RawStep.par.cd_dominates headTerm)
         (RawStep.par.cd_dominates tailTerm)
   | _, .listElim scrutinee nilBranch consBranch => by
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let nilParStep := RawStep.par.cd_dominates nilBranch
       let consParStep := RawStep.par.cd_dominates consBranch
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdListElimCase
       split
       case _ scrutineeEqn =>
           exact RawStep.par.iotaListElimNilDeep consBranch
@@ -136,15 +146,15 @@ theorem RawStep.par.cd_dominates :
             (scrutineeEqn ▸ scrutineeParStep) consParStep
       all_goals
         exact RawStep.par.listElim scrutineeParStep nilParStep consParStep
-  | _, .optionNone => by unfold RawTerm.cd; exact RawStep.par.refl _
-  | _, .optionSome valueTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.optionSome (RawStep.par.cd_dominates valueTerm)
+  | _, .optionNone => RawStep.par.refl _
+  | _, .optionSome valueTerm =>
+      RawStep.par.optionSome (RawStep.par.cd_dominates valueTerm)
   | _, .optionMatch scrutinee noneBranch someBranch => by
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let noneParStep := RawStep.par.cd_dominates noneBranch
       let someParStep := RawStep.par.cd_dominates someBranch
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdOptionMatchCase
       split
       case _ scrutineeEqn =>
           exact RawStep.par.iotaOptionMatchNoneDeep someBranch
@@ -154,17 +164,16 @@ theorem RawStep.par.cd_dominates :
             (scrutineeEqn ▸ scrutineeParStep) someParStep
       all_goals
         exact RawStep.par.optionMatch scrutineeParStep noneParStep someParStep
-  | _, .eitherInl valueTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.eitherInl (RawStep.par.cd_dominates valueTerm)
-  | _, .eitherInr valueTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.eitherInr (RawStep.par.cd_dominates valueTerm)
+  | _, .eitherInl valueTerm =>
+      RawStep.par.eitherInl (RawStep.par.cd_dominates valueTerm)
+  | _, .eitherInr valueTerm =>
+      RawStep.par.eitherInr (RawStep.par.cd_dominates valueTerm)
   | _, .eitherMatch scrutinee leftBranch rightBranch => by
       let scrutineeParStep := RawStep.par.cd_dominates scrutinee
       let leftParStep := RawStep.par.cd_dominates leftBranch
       let rightParStep := RawStep.par.cd_dominates rightBranch
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdEitherMatchCase
       split
       case _ valueTerm scrutineeEqn =>
           exact RawStep.par.iotaEitherMatchInlDeep rightBranch
@@ -174,26 +183,110 @@ theorem RawStep.par.cd_dominates :
             (scrutineeEqn ▸ scrutineeParStep) rightParStep
       all_goals
         exact RawStep.par.eitherMatch scrutineeParStep leftParStep rightParStep
-  | _, .refl rawWitness => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.reflCong (RawStep.par.cd_dominates rawWitness)
+  | _, .refl rawWitness =>
+      RawStep.par.reflCong (RawStep.par.cd_dominates rawWitness)
   | _, .idJ baseCase witness => by
       let baseParStep := RawStep.par.cd_dominates baseCase
       let witnessParStep := RawStep.par.cd_dominates witness
-      simp only [RawTerm.cd]
+      unfold RawTerm.cd
+      unfold RawTerm.cdIdJCase
       split
       case _ rawTerm witnessEqn =>
           exact RawStep.par.iotaIdJReflDeep
             (witnessEqn ▸ witnessParStep) baseParStep
       all_goals exact RawStep.par.idJ baseParStep witnessParStep
-  | _, .modIntro innerTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.modIntro (RawStep.par.cd_dominates innerTerm)
-  | _, .modElim innerTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.modElim (RawStep.par.cd_dominates innerTerm)
-  | _, .subsume innerTerm => by
-      simp only [RawTerm.cd]
-      exact RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
+  | _, .modIntro innerTerm =>
+      RawStep.par.modIntro (RawStep.par.cd_dominates innerTerm)
+  | _, .modElim innerTerm =>
+      RawStep.par.modElim (RawStep.par.cd_dominates innerTerm)
+  | _, .subsume innerTerm =>
+      RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
+  -- D1.6: 27 new ctors are pure cong at raw level (no β/ι rules).
+  -- We use term-mode (no `by`) so Lean elaborates by unifying the
+  -- expected type against the cong rule directly, avoiding the
+  -- 550-branch `simp only [RawTerm.cd]` whnf blowup.  Each ctor's
+  -- `cd` arm is a single rfl-equation (no inner match), so the
+  -- target type computes to the cong-rule's output shape via
+  -- definitional reduction during unification.
+  | _, .interval0 => RawStep.par.refl _
+  | _, .interval1 => RawStep.par.refl _
+  | _, .intervalOpp intervalTerm =>
+      RawStep.par.intervalOppCong (RawStep.par.cd_dominates intervalTerm)
+  | _, .intervalMeet leftInterval rightInterval =>
+      RawStep.par.intervalMeetCong
+        (RawStep.par.cd_dominates leftInterval)
+        (RawStep.par.cd_dominates rightInterval)
+  | _, .intervalJoin leftInterval rightInterval =>
+      RawStep.par.intervalJoinCong
+        (RawStep.par.cd_dominates leftInterval)
+        (RawStep.par.cd_dominates rightInterval)
+  | _, .pathLam body =>
+      RawStep.par.pathLamCong (RawStep.par.cd_dominates body)
+  | _, .pathApp pathTerm intervalArg =>
+      RawStep.par.pathAppCong
+        (RawStep.par.cd_dominates pathTerm)
+        (RawStep.par.cd_dominates intervalArg)
+  | _, .glueIntro baseValue partialValue =>
+      RawStep.par.glueIntroCong
+        (RawStep.par.cd_dominates baseValue)
+        (RawStep.par.cd_dominates partialValue)
+  | _, .glueElim gluedValue =>
+      RawStep.par.glueElimCong (RawStep.par.cd_dominates gluedValue)
+  | _, .transp pathTerm sourceTerm =>
+      RawStep.par.transpCong
+        (RawStep.par.cd_dominates pathTerm)
+        (RawStep.par.cd_dominates sourceTerm)
+  | _, .hcomp sidesTerm capTerm =>
+      RawStep.par.hcompCong
+        (RawStep.par.cd_dominates sidesTerm)
+        (RawStep.par.cd_dominates capTerm)
+  | _, .oeqRefl witnessTerm =>
+      RawStep.par.oeqReflCong (RawStep.par.cd_dominates witnessTerm)
+  | _, .oeqJ baseCase witness =>
+      RawStep.par.oeqJCong
+        (RawStep.par.cd_dominates baseCase)
+        (RawStep.par.cd_dominates witness)
+  | _, .oeqFunext pointwiseEquality =>
+      RawStep.par.oeqFunextCong (RawStep.par.cd_dominates pointwiseEquality)
+  | _, .idStrictRefl witnessTerm =>
+      RawStep.par.idStrictReflCong (RawStep.par.cd_dominates witnessTerm)
+  | _, .idStrictRec baseCase witness =>
+      RawStep.par.idStrictRecCong
+        (RawStep.par.cd_dominates baseCase)
+        (RawStep.par.cd_dominates witness)
+  | _, .equivIntro forwardFn backwardFn =>
+      RawStep.par.equivIntroCong
+        (RawStep.par.cd_dominates forwardFn)
+        (RawStep.par.cd_dominates backwardFn)
+  | _, .equivApp equivTerm argument =>
+      RawStep.par.equivAppCong
+        (RawStep.par.cd_dominates equivTerm)
+        (RawStep.par.cd_dominates argument)
+  | _, .refineIntro rawValue predicateProof =>
+      RawStep.par.refineIntroCong
+        (RawStep.par.cd_dominates rawValue)
+        (RawStep.par.cd_dominates predicateProof)
+  | _, .refineElim refinedValue =>
+      RawStep.par.refineElimCong (RawStep.par.cd_dominates refinedValue)
+  | _, .recordIntro firstField =>
+      RawStep.par.recordIntroCong (RawStep.par.cd_dominates firstField)
+  | _, .recordProj recordValue =>
+      RawStep.par.recordProjCong (RawStep.par.cd_dominates recordValue)
+  | _, .codataUnfold initialState transition =>
+      RawStep.par.codataUnfoldCong
+        (RawStep.par.cd_dominates initialState)
+        (RawStep.par.cd_dominates transition)
+  | _, .codataDest codataValue =>
+      RawStep.par.codataDestCong (RawStep.par.cd_dominates codataValue)
+  | _, .sessionSend channel payload =>
+      RawStep.par.sessionSendCong
+        (RawStep.par.cd_dominates channel)
+        (RawStep.par.cd_dominates payload)
+  | _, .sessionRecv channel =>
+      RawStep.par.sessionRecvCong (RawStep.par.cd_dominates channel)
+  | _, .effectPerform operationTag arguments =>
+      RawStep.par.effectPerformCong
+        (RawStep.par.cd_dominates operationTag)
+        (RawStep.par.cd_dominates arguments)
 
 end LeanFX2

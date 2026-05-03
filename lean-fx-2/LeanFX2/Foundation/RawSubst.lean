@@ -115,6 +115,64 @@ def RawTerm.rename : ∀ {source target : Nat},
   | _, _, .modIntro inner, rawRenaming => .modIntro (inner.rename rawRenaming)
   | _, _, .modElim inner, rawRenaming => .modElim (inner.rename rawRenaming)
   | _, _, .subsume inner, rawRenaming => .subsume (inner.rename rawRenaming)
+  -- D1.6 cubical interval + path
+  | _, _, .interval0, _ => .interval0
+  | _, _, .interval1, _ => .interval1
+  | _, _, .intervalOpp i, rawRenaming => .intervalOpp (i.rename rawRenaming)
+  | _, _, .intervalMeet l r, rawRenaming =>
+      .intervalMeet (l.rename rawRenaming) (r.rename rawRenaming)
+  | _, _, .intervalJoin l r, rawRenaming =>
+      .intervalJoin (l.rename rawRenaming) (r.rename rawRenaming)
+  | _, _, .pathLam body, rawRenaming =>
+      .pathLam (body.rename rawRenaming.lift)
+  | _, _, .pathApp pathTerm intervalArg, rawRenaming =>
+      .pathApp (pathTerm.rename rawRenaming) (intervalArg.rename rawRenaming)
+  | _, _, .glueIntro baseValue partialValue, rawRenaming =>
+      .glueIntro (baseValue.rename rawRenaming) (partialValue.rename rawRenaming)
+  | _, _, .glueElim gluedValue, rawRenaming =>
+      .glueElim (gluedValue.rename rawRenaming)
+  | _, _, .transp path source, rawRenaming =>
+      .transp (path.rename rawRenaming) (source.rename rawRenaming)
+  | _, _, .hcomp sides cap, rawRenaming =>
+      .hcomp (sides.rename rawRenaming) (cap.rename rawRenaming)
+  -- D1.6 observational + strict equality
+  | _, _, .oeqRefl witness, rawRenaming => .oeqRefl (witness.rename rawRenaming)
+  | _, _, .oeqJ baseCase witness, rawRenaming =>
+      .oeqJ (baseCase.rename rawRenaming) (witness.rename rawRenaming)
+  | _, _, .oeqFunext pointwiseEquality, rawRenaming =>
+      .oeqFunext (pointwiseEquality.rename rawRenaming)
+  | _, _, .idStrictRefl witness, rawRenaming =>
+      .idStrictRefl (witness.rename rawRenaming)
+  | _, _, .idStrictRec baseCase witness, rawRenaming =>
+      .idStrictRec (baseCase.rename rawRenaming) (witness.rename rawRenaming)
+  -- D1.6 type equivalence
+  | _, _, .equivIntro fwd bwd, rawRenaming =>
+      .equivIntro (fwd.rename rawRenaming) (bwd.rename rawRenaming)
+  | _, _, .equivApp equivTerm argument, rawRenaming =>
+      .equivApp (equivTerm.rename rawRenaming) (argument.rename rawRenaming)
+  -- D1.6 refinement, record, codata
+  | _, _, .refineIntro rawValue predicateProof, rawRenaming =>
+      .refineIntro (rawValue.rename rawRenaming)
+                   (predicateProof.rename rawRenaming)
+  | _, _, .refineElim refinedValue, rawRenaming =>
+      .refineElim (refinedValue.rename rawRenaming)
+  | _, _, .recordIntro firstField, rawRenaming =>
+      .recordIntro (firstField.rename rawRenaming)
+  | _, _, .recordProj recordValue, rawRenaming =>
+      .recordProj (recordValue.rename rawRenaming)
+  | _, _, .codataUnfold initialState transition, rawRenaming =>
+      .codataUnfold (initialState.rename rawRenaming)
+                    (transition.rename rawRenaming)
+  | _, _, .codataDest codataValue, rawRenaming =>
+      .codataDest (codataValue.rename rawRenaming)
+  -- D1.6 sessions, effects
+  | _, _, .sessionSend channel payload, rawRenaming =>
+      .sessionSend (channel.rename rawRenaming) (payload.rename rawRenaming)
+  | _, _, .sessionRecv channel, rawRenaming =>
+      .sessionRecv (channel.rename rawRenaming)
+  | _, _, .effectPerform operationTag arguments, rawRenaming =>
+      .effectPerform (operationTag.rename rawRenaming)
+                     (arguments.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -194,6 +252,64 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [innerIH renamingEq]
   | subsume inner innerIH =>
       simp only [RawTerm.rename]; rw [innerIH renamingEq]
+  -- D1.6 cubical interval + path
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH =>
+      simp only [RawTerm.rename]; rw [iIH renamingEq]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.rename]; rw [lIH renamingEq, rIH renamingEq]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.rename]; rw [lIH renamingEq, rIH renamingEq]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.rename]
+      rw [bodyIH (RawRenaming.lift_pointwise renamingEq)]
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.rename]; rw [pathIH renamingEq, intervalIH renamingEq]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.rename]; rw [baseIH renamingEq, partialIH renamingEq]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.rename]; rw [gluedIH renamingEq]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.rename]; rw [pathIH renamingEq, sourceIH renamingEq]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.rename]; rw [sidesIH renamingEq, capIH renamingEq]
+  -- D1.6 observational + strict equality
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.rename]; rw [witnessIH renamingEq]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.rename]; rw [baseIH renamingEq, witnessIH renamingEq]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.rename]; rw [pointwiseIH renamingEq]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.rename]; rw [witnessIH renamingEq]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.rename]; rw [baseIH renamingEq, witnessIH renamingEq]
+  -- D1.6 type equivalence
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.rename]; rw [fwdIH renamingEq, bwdIH renamingEq]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.rename]; rw [equivIH renamingEq, argIH renamingEq]
+  -- D1.6 refinement / record / codata
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.rename]; rw [valueIH renamingEq, proofIH renamingEq]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.rename]; rw [refinedIH renamingEq]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.rename]; rw [firstIH renamingEq]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.rename]; rw [recordIH renamingEq]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.rename]; rw [stateIH renamingEq, transIH renamingEq]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.rename]; rw [codataIH renamingEq]
+  -- D1.6 sessions, effects
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.rename]; rw [chIH renamingEq, payloadIH renamingEq]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.rename]; rw [chIH renamingEq]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.rename]; rw [tagIH renamingEq, argsIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -251,6 +367,66 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
   | modIntro inner innerIH => simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
   | modElim inner innerIH => simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
   | subsume inner innerIH => simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH => simp only [RawTerm.rename]; rw [iIH rho1 rho2]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.rename]
+      rw [bodyIH rho1.lift rho2.lift]
+      congr 1
+      apply RawTerm.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.rename]; rw [pathIH rho1 rho2, intervalIH rho1 rho2]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.rename]; rw [baseIH rho1 rho2, partialIH rho1 rho2]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.rename]; rw [gluedIH rho1 rho2]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.rename]; rw [pathIH rho1 rho2, sourceIH rho1 rho2]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.rename]; rw [sidesIH rho1 rho2, capIH rho1 rho2]
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.rename]; rw [witnessIH rho1 rho2]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.rename]; rw [baseIH rho1 rho2, witnessIH rho1 rho2]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.rename]; rw [pointwiseIH rho1 rho2]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.rename]; rw [witnessIH rho1 rho2]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.rename]; rw [baseIH rho1 rho2, witnessIH rho1 rho2]
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.rename]; rw [fwdIH rho1 rho2, bwdIH rho1 rho2]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.rename]; rw [equivIH rho1 rho2, argIH rho1 rho2]
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.rename]; rw [valueIH rho1 rho2, proofIH rho1 rho2]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.rename]; rw [refinedIH rho1 rho2]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.rename]; rw [firstIH rho1 rho2]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.rename]; rw [recordIH rho1 rho2]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.rename]; rw [stateIH rho1 rho2, transIH rho1 rho2]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.rename]; rw [codataIH rho1 rho2]
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.rename]; rw [chIH rho1 rho2, payloadIH rho1 rho2]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.rename]; rw [chIH rho1 rho2]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.rename]; rw [tagIH rho1 rho2, argsIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -353,6 +529,55 @@ def RawTerm.subst : ∀ {source target : Nat},
   | _, _, .modIntro inner, sigma => .modIntro (inner.subst sigma)
   | _, _, .modElim inner, sigma => .modElim (inner.subst sigma)
   | _, _, .subsume inner, sigma => .subsume (inner.subst sigma)
+  -- D1.6 cubical interval + path
+  | _, _, .interval0, _ => .interval0
+  | _, _, .interval1, _ => .interval1
+  | _, _, .intervalOpp i, sigma => .intervalOpp (i.subst sigma)
+  | _, _, .intervalMeet l r, sigma =>
+      .intervalMeet (l.subst sigma) (r.subst sigma)
+  | _, _, .intervalJoin l r, sigma =>
+      .intervalJoin (l.subst sigma) (r.subst sigma)
+  | _, _, .pathLam body, sigma =>
+      .pathLam (body.subst sigma.lift)
+  | _, _, .pathApp pathTerm intervalArg, sigma =>
+      .pathApp (pathTerm.subst sigma) (intervalArg.subst sigma)
+  | _, _, .glueIntro baseValue partialValue, sigma =>
+      .glueIntro (baseValue.subst sigma) (partialValue.subst sigma)
+  | _, _, .glueElim gluedValue, sigma => .glueElim (gluedValue.subst sigma)
+  | _, _, .transp path source, sigma =>
+      .transp (path.subst sigma) (source.subst sigma)
+  | _, _, .hcomp sides cap, sigma =>
+      .hcomp (sides.subst sigma) (cap.subst sigma)
+  -- D1.6 observational + strict equality
+  | _, _, .oeqRefl witness, sigma => .oeqRefl (witness.subst sigma)
+  | _, _, .oeqJ baseCase witness, sigma =>
+      .oeqJ (baseCase.subst sigma) (witness.subst sigma)
+  | _, _, .oeqFunext pointwiseEquality, sigma =>
+      .oeqFunext (pointwiseEquality.subst sigma)
+  | _, _, .idStrictRefl witness, sigma =>
+      .idStrictRefl (witness.subst sigma)
+  | _, _, .idStrictRec baseCase witness, sigma =>
+      .idStrictRec (baseCase.subst sigma) (witness.subst sigma)
+  -- D1.6 type equivalence
+  | _, _, .equivIntro fwd bwd, sigma =>
+      .equivIntro (fwd.subst sigma) (bwd.subst sigma)
+  | _, _, .equivApp equivTerm argument, sigma =>
+      .equivApp (equivTerm.subst sigma) (argument.subst sigma)
+  -- D1.6 refinement / record / codata
+  | _, _, .refineIntro rawValue predicateProof, sigma =>
+      .refineIntro (rawValue.subst sigma) (predicateProof.subst sigma)
+  | _, _, .refineElim refinedValue, sigma => .refineElim (refinedValue.subst sigma)
+  | _, _, .recordIntro firstField, sigma => .recordIntro (firstField.subst sigma)
+  | _, _, .recordProj recordValue, sigma => .recordProj (recordValue.subst sigma)
+  | _, _, .codataUnfold initialState transition, sigma =>
+      .codataUnfold (initialState.subst sigma) (transition.subst sigma)
+  | _, _, .codataDest codataValue, sigma => .codataDest (codataValue.subst sigma)
+  -- D1.6 sessions, effects
+  | _, _, .sessionSend channel payload, sigma =>
+      .sessionSend (channel.subst sigma) (payload.subst sigma)
+  | _, _, .sessionRecv channel, sigma => .sessionRecv (channel.subst sigma)
+  | _, _, .effectPerform operationTag arguments, sigma =>
+      .effectPerform (operationTag.subst sigma) (arguments.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -439,6 +664,64 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [innerIH substEq]
   | subsume inner innerIH =>
       simp only [RawTerm.subst]; rw [innerIH substEq]
+  -- D1.6 cubical interval + path
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH =>
+      simp only [RawTerm.subst]; rw [iIH substEq]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.subst]; rw [lIH substEq, rIH substEq]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.subst]; rw [lIH substEq, rIH substEq]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.subst]
+      rw [bodyIH (RawTermSubst.lift_pointwise substEq)]
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.subst]; rw [pathIH substEq, intervalIH substEq]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.subst]; rw [baseIH substEq, partialIH substEq]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.subst]; rw [gluedIH substEq]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.subst]; rw [pathIH substEq, sourceIH substEq]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.subst]; rw [sidesIH substEq, capIH substEq]
+  -- D1.6 observational + strict equality
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH substEq]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.subst]; rw [pointwiseIH substEq]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH substEq]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH substEq, witnessIH substEq]
+  -- D1.6 type equivalence
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.subst]; rw [fwdIH substEq, bwdIH substEq]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.subst]; rw [equivIH substEq, argIH substEq]
+  -- D1.6 refinement / record / codata
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.subst]; rw [valueIH substEq, proofIH substEq]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.subst]; rw [refinedIH substEq]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.subst]; rw [firstIH substEq]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.subst]; rw [recordIH substEq]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.subst]; rw [stateIH substEq, transIH substEq]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.subst]; rw [codataIH substEq]
+  -- D1.6 sessions, effects
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.subst]; rw [chIH substEq, payloadIH substEq]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.subst]; rw [chIH substEq]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.subst]; rw [tagIH substEq, argsIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -523,6 +806,81 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename, RawTerm.subst]; rw [innerIH rho sigma]
   | subsume inner innerIH =>
       simp only [RawTerm.rename, RawTerm.subst]; rw [innerIH rho sigma]
+  -- D1.6 cubical interval + path
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [iIH rho sigma]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [lIH rho sigma, rIH rho sigma]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [lIH rho sigma, rIH rho sigma]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [bodyIH rho.lift sigma.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      exact RawTermSubst.lift_renaming_pull rho sigma
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [pathIH rho sigma, intervalIH rho sigma]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [baseIH rho sigma, partialIH rho sigma]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [gluedIH rho sigma]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [pathIH rho sigma, sourceIH rho sigma]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [sidesIH rho sigma, capIH rho sigma]
+  -- D1.6 observational + strict equality
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [witnessIH rho sigma]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [baseIH rho sigma, witnessIH rho sigma]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [pointwiseIH rho sigma]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [witnessIH rho sigma]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [baseIH rho sigma, witnessIH rho sigma]
+  -- D1.6 type equivalence
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [fwdIH rho sigma, bwdIH rho sigma]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [equivIH rho sigma, argIH rho sigma]
+  -- D1.6 refinement / record / codata
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [valueIH rho sigma, proofIH rho sigma]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [refinedIH rho sigma]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [firstIH rho sigma]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [recordIH rho sigma]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [stateIH rho sigma, transIH rho sigma]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [codataIH rho sigma]
+  -- D1.6 sessions, effects
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [chIH rho sigma, payloadIH rho sigma]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [chIH rho sigma]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [tagIH rho sigma, argsIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -613,6 +971,81 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst, RawTerm.rename]; rw [innerIH sigma rho]
   | subsume inner innerIH =>
       simp only [RawTerm.subst, RawTerm.rename]; rw [innerIH sigma rho]
+  -- D1.6 cubical interval + path
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [iIH sigma rho]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [lIH sigma rho, rIH sigma rho]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [lIH sigma rho, rIH sigma rho]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [bodyIH sigma.lift rho.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      exact RawTermSubst.lift_then_rename_lift sigma rho
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [pathIH sigma rho, intervalIH sigma rho]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [baseIH sigma rho, partialIH sigma rho]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [gluedIH sigma rho]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [pathIH sigma rho, sourceIH sigma rho]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [sidesIH sigma rho, capIH sigma rho]
+  -- D1.6 observational + strict equality
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [witnessIH sigma rho]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [baseIH sigma rho, witnessIH sigma rho]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [pointwiseIH sigma rho]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [witnessIH sigma rho]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [baseIH sigma rho, witnessIH sigma rho]
+  -- D1.6 type equivalence
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [fwdIH sigma rho, bwdIH sigma rho]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [equivIH sigma rho, argIH sigma rho]
+  -- D1.6 refinement / record / codata
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [valueIH sigma rho, proofIH sigma rho]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [refinedIH sigma rho]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [firstIH sigma rho]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [recordIH sigma rho]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [stateIH sigma rho, transIH sigma rho]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [codataIH sigma rho]
+  -- D1.6 sessions, effects
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [chIH sigma rho, payloadIH sigma rho]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [chIH sigma rho]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [tagIH sigma rho, argsIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -714,6 +1147,68 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
   | subsume inner innerIH =>
       simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
+  -- D1.6 cubical interval + path
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH =>
+      simp only [RawTerm.subst]; rw [iIH sigma1 sigma2]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.subst]
+      rw [bodyIH sigma1.lift sigma2.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro p
+      exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 p).symm
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.subst]; rw [pathIH sigma1 sigma2, intervalIH sigma1 sigma2]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, partialIH sigma1 sigma2]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.subst]; rw [gluedIH sigma1 sigma2]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.subst]; rw [pathIH sigma1 sigma2, sourceIH sigma1 sigma2]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.subst]; rw [sidesIH sigma1 sigma2, capIH sigma1 sigma2]
+  -- D1.6 observational + strict equality
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.subst]; rw [pointwiseIH sigma1 sigma2]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH sigma1 sigma2]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH sigma1 sigma2, witnessIH sigma1 sigma2]
+  -- D1.6 type equivalence
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.subst]; rw [fwdIH sigma1 sigma2, bwdIH sigma1 sigma2]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.subst]; rw [equivIH sigma1 sigma2, argIH sigma1 sigma2]
+  -- D1.6 refinement / record / codata
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.subst]; rw [valueIH sigma1 sigma2, proofIH sigma1 sigma2]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.subst]; rw [refinedIH sigma1 sigma2]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.subst]; rw [recordIH sigma1 sigma2]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.subst]; rw [stateIH sigma1 sigma2, transIH sigma1 sigma2]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.subst]; rw [codataIH sigma1 sigma2]
+  -- D1.6 sessions, effects
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.subst]; rw [chIH sigma1 sigma2, payloadIH sigma1 sigma2]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.subst]; rw [chIH sigma1 sigma2]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.subst]; rw [tagIH sigma1 sigma2, argsIH sigma1 sigma2]
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -811,6 +1306,64 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [innerIH]
   | subsume inner innerIH =>
       simp only [RawTerm.subst]; rw [innerIH]
+  -- D1.6 cubical interval + path
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp i iIH =>
+      simp only [RawTerm.subst]; rw [iIH]
+  | intervalMeet l r lIH rIH =>
+      simp only [RawTerm.subst]; rw [lIH, rIH]
+  | intervalJoin l r lIH rIH =>
+      simp only [RawTerm.subst]; rw [lIH, rIH]
+  | pathLam body bodyIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise body, bodyIH]
+  | pathApp pathTerm intervalArg pathIH intervalIH =>
+      simp only [RawTerm.subst]; rw [pathIH, intervalIH]
+  | glueIntro baseValue partialValue baseIH partialIH =>
+      simp only [RawTerm.subst]; rw [baseIH, partialIH]
+  | glueElim gluedValue gluedIH =>
+      simp only [RawTerm.subst]; rw [gluedIH]
+  | transp path source pathIH sourceIH =>
+      simp only [RawTerm.subst]; rw [pathIH, sourceIH]
+  | hcomp sides cap sidesIH capIH =>
+      simp only [RawTerm.subst]; rw [sidesIH, capIH]
+  -- D1.6 observational + strict equality
+  | oeqRefl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH]
+  | oeqJ baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH, witnessIH]
+  | oeqFunext pointwiseEquality pointwiseIH =>
+      simp only [RawTerm.subst]; rw [pointwiseIH]
+  | idStrictRefl witness witnessIH =>
+      simp only [RawTerm.subst]; rw [witnessIH]
+  | idStrictRec baseCase witness baseIH witnessIH =>
+      simp only [RawTerm.subst]; rw [baseIH, witnessIH]
+  -- D1.6 type equivalence
+  | equivIntro fwd bwd fwdIH bwdIH =>
+      simp only [RawTerm.subst]; rw [fwdIH, bwdIH]
+  | equivApp equivTerm argument equivIH argIH =>
+      simp only [RawTerm.subst]; rw [equivIH, argIH]
+  -- D1.6 refinement / record / codata
+  | refineIntro rawValue predicateProof valueIH proofIH =>
+      simp only [RawTerm.subst]; rw [valueIH, proofIH]
+  | refineElim refinedValue refinedIH =>
+      simp only [RawTerm.subst]; rw [refinedIH]
+  | recordIntro firstField firstIH =>
+      simp only [RawTerm.subst]; rw [firstIH]
+  | recordProj recordValue recordIH =>
+      simp only [RawTerm.subst]; rw [recordIH]
+  | codataUnfold initialState transition stateIH transIH =>
+      simp only [RawTerm.subst]; rw [stateIH, transIH]
+  | codataDest codataValue codataIH =>
+      simp only [RawTerm.subst]; rw [codataIH]
+  -- D1.6 sessions, effects
+  | sessionSend channel payload chIH payloadIH =>
+      simp only [RawTerm.subst]; rw [chIH, payloadIH]
+  | sessionRecv channel chIH =>
+      simp only [RawTerm.subst]; rw [chIH]
+  | effectPerform operationTag arguments tagIH argsIH =>
+      simp only [RawTerm.subst]; rw [tagIH, argsIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

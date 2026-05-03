@@ -47,7 +47,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.lam bodyIH
   | app functionStep argumentStep functionIH argumentIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdAppCase]
       split
       case _ body cdFunctionEq =>
           exact RawStep.par.betaAppDeep
@@ -57,20 +57,20 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.pair firstIH secondIH
   | fst pairStep pairIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdFstCase]
       split
       case _ firstVal secondVal cdPairEq =>
           exact RawStep.par.betaFstPairDeep (cdPairEq ▸ pairIH)
       all_goals exact RawStep.par.fst pairIH
   | snd pairStep pairIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdSndCase]
       split
       case _ firstVal secondVal cdPairEq =>
           exact RawStep.par.betaSndPairDeep (cdPairEq ▸ pairIH)
       all_goals exact RawStep.par.snd pairIH
   | boolElim scrutineeStep thenStep elseStep
         scrutineeIH thenIH elseIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdBoolElimCase]
       split
       case _ cdScrutineeEq =>
           exact RawStep.par.iotaBoolElimTrueDeep _
@@ -84,7 +84,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       exact RawStep.par.natSucc predIH
   | natElim scrutineeStep zeroStep succStep
         scrutineeIH zeroIH succIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdNatElimCase]
       split
       case _ cdScrutineeEq =>
           exact RawStep.par.iotaNatElimZeroDeep _
@@ -95,7 +95,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       all_goals exact RawStep.par.natElim scrutineeIH zeroIH succIH
   | natRec scrutineeStep zeroStep succStep
         scrutineeIH zeroIH succIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdNatRecCase]
       split
       case _ cdScrutineeEq =>
           exact RawStep.par.iotaNatRecZeroDeep _
@@ -109,7 +109,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       exact RawStep.par.listCons headIH tailIH
   | listElim scrutineeStep nilStep consStep
         scrutineeIH nilIH consIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdListElimCase]
       split
       case _ cdScrutineeEq =>
           exact RawStep.par.iotaListElimNilDeep _
@@ -123,7 +123,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       exact RawStep.par.optionSome valueIH
   | optionMatch scrutineeStep noneStep someStep
         scrutineeIH noneIH someIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdOptionMatchCase]
       split
       case _ cdScrutineeEq =>
           exact RawStep.par.iotaOptionMatchNoneDeep _
@@ -140,7 +140,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       exact RawStep.par.eitherInr valueIH
   | eitherMatch scrutineeStep leftStep rightStep
         scrutineeIH leftIH rightIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdEitherMatchCase]
       split
       case _ value cdScrutineeEq =>
           exact RawStep.par.iotaEitherMatchInlDeep _
@@ -153,7 +153,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.reflCong rawTermIH
   | idJ baseStep witnessStep baseIH witnessIH =>
-      simp only [RawTerm.cd]
+      simp only [RawTerm.cd, RawTerm.cdIdJCase]
       split
       case _ rawTerm cdWitnessEq =>
           exact RawStep.par.iotaIdJReflDeep
@@ -331,5 +331,84 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.refl_inv witnessIH
       rw [cdWitnessEq]
       exact baseIH
+  -- D1.6: 27 new pure-cong rules (no β/ι at raw level — these
+  -- ctors all have only `*Cong` rules in `RawStep.par`).  Each is
+  -- a one-line cong-with-IH; cd is pure cong on these, so simp +
+  -- cong rule + IH composes directly.
+  | intervalOppCong _ intervalIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.intervalOppCong intervalIH
+  | intervalMeetCong _ _ leftIH rightIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.intervalMeetCong leftIH rightIH
+  | intervalJoinCong _ _ leftIH rightIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.intervalJoinCong leftIH rightIH
+  | pathLamCong _ bodyIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.pathLamCong bodyIH
+  | pathAppCong _ _ pathIH intervalIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.pathAppCong pathIH intervalIH
+  | glueIntroCong _ _ baseIH partialIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.glueIntroCong baseIH partialIH
+  | glueElimCong _ gluedIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.glueElimCong gluedIH
+  | transpCong _ _ pathIH sourceIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.transpCong pathIH sourceIH
+  | hcompCong _ _ sidesIH capIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.hcompCong sidesIH capIH
+  | oeqReflCong _ witnessIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.oeqReflCong witnessIH
+  | oeqJCong _ _ baseIH witnessIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.oeqJCong baseIH witnessIH
+  | oeqFunextCong _ pointwiseIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.oeqFunextCong pointwiseIH
+  | idStrictReflCong _ witnessIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.idStrictReflCong witnessIH
+  | idStrictRecCong _ _ baseIH witnessIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.idStrictRecCong baseIH witnessIH
+  | equivIntroCong _ _ forwardIH backwardIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.equivIntroCong forwardIH backwardIH
+  | equivAppCong _ _ equivIH argumentIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.equivAppCong equivIH argumentIH
+  | refineIntroCong _ _ valueIH proofIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.refineIntroCong valueIH proofIH
+  | refineElimCong _ refinedIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.refineElimCong refinedIH
+  | recordIntroCong _ firstIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.recordIntroCong firstIH
+  | recordProjCong _ recordIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.recordProjCong recordIH
+  | codataUnfoldCong _ _ stateIH transitionIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.codataUnfoldCong stateIH transitionIH
+  | codataDestCong _ codataIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.codataDestCong codataIH
+  | sessionSendCong _ _ channelIH payloadIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.sessionSendCong channelIH payloadIH
+  | sessionRecvCong _ channelIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.sessionRecvCong channelIH
+  | effectPerformCong _ _ tagIH argumentsIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.effectPerformCong tagIH argumentsIH
 
 end LeanFX2

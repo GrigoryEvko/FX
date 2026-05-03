@@ -22,7 +22,7 @@ clearing the typed-Term HEq cascade (W7 wall).
 
 ## Zero-axiom discipline
 
-Every inner `match` enumerates all 28 `RawTerm` constructors
+Every inner `match` enumerates all 55 `RawTerm` constructors
 explicitly — no `_ =>` wildcards — to satisfy AXIOMS.md Layer M
 strict-zero-axiom policy.  Per
 `feedback_lean_zero_axiom_match.md`, full enumeration over a
@@ -30,16 +30,32 @@ non-dependent inductive (RawTerm is Nat-indexed only) keeps the
 match compiler from emitting `propext` to discharge the catch-all
 redundancy obligation.
 
+## Structure
+
+D1.6 grew RawTerm to 55 ctors.  A monolithic `RawTerm.cd` with 10
+inner 55-arm matches × 55 outer arms produced ≈3000 branches —
+`unfold` + `split` in `RawCdDominates.lean` exhausted simp's
+heartbeat budget (per-whnf 200K, not propagated by file-level
+`set_option maxHeartbeats 0`).
+
+The refactor below extracts each redex-bearing case's inner match
+into a dedicated helper definition — `cdAppCase`, `cdFstCase`,
+`cdSndCase`, `cdBoolElimCase`, `cdNatElimCase`, `cdNatRecCase`,
+`cdListElimCase`, `cdOptionMatchCase`, `cdEitherMatchCase`,
+`cdIdJCase`.  Each helper carries its own 55-arm match in its own
+elaboration scope, so `unfold cdAppCase; split` inside cd_dominates
+only walks ~55 branches instead of ~3000.  `RawTerm.cd` itself
+becomes a thin dispatcher (one short arm per RawTerm ctor).
+
 ## Construction sketch
 
 * Atomic ctors (var, unit, *True/False/Zero/Nil/None) → identity
 * Cong ctors (lam, pair, listCons, optionSome, eitherInl/Inr,
-  natSucc, refl, modIntro/Elim, subsume) → recurse into subterms
+  natSucc, refl, modIntro/Elim, subsume, plus 27 D1.6 cong ctors)
+  → recurse into subterms
 * Redex-bearing ctors (app, fst, snd, boolElim, natElim, natRec,
-  listElim, optionMatch, eitherMatch, idJ) → develop subterms,
-  then dispatch on the developed scrutinee:
-  - canonical ctor → contract
-  - any other ctor → reconstruct with developed subterms
+  listElim, optionMatch, eitherMatch, idJ) → dispatch to per-redex
+  helper, which handles canonical-ctor contraction + cong fallback
 
 Modal ctors `modIntro`, `modElim`, `subsume` are pure cong (no
 `iotaModal` rule lives in `RawStep.par` yet; will be added when
@@ -48,515 +64,1045 @@ Layer 6 ships its modal reduction rules).
 
 namespace LeanFX2
 
+/-- App redex: `(λ b) a → b[a]`; otherwise rebuild `app df da`.
+55-arm full enumeration keeps match propext-clean. -/
+def RawTerm.cdAppCase {scope : Nat}
+    (developedFunction developedArgument : RawTerm scope) : RawTerm scope :=
+  match developedFunction with
+  | RawTerm.lam body => body.subst0 developedArgument
+  | RawTerm.var _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.unit => RawTerm.app developedFunction developedArgument
+  | RawTerm.app _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.pair _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.fst _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.snd _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.boolTrue => RawTerm.app developedFunction developedArgument
+  | RawTerm.boolFalse => RawTerm.app developedFunction developedArgument
+  | RawTerm.boolElim _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.natZero => RawTerm.app developedFunction developedArgument
+  | RawTerm.natSucc _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.natElim _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.natRec _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.listNil => RawTerm.app developedFunction developedArgument
+  | RawTerm.listCons _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.listElim _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.optionNone => RawTerm.app developedFunction developedArgument
+  | RawTerm.optionSome _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.optionMatch _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.eitherInl _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.eitherInr _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.eitherMatch _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.refl _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.idJ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.modIntro _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.modElim _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.subsume _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.interval0 => RawTerm.app developedFunction developedArgument
+  | RawTerm.interval1 => RawTerm.app developedFunction developedArgument
+  | RawTerm.intervalOpp _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.intervalMeet _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.intervalJoin _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.pathLam _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.pathApp _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.glueIntro _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.glueElim _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.transp _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.hcomp _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.oeqRefl _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.oeqJ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.oeqFunext _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.idStrictRefl _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.idStrictRec _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.equivIntro _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.equivApp _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.refineIntro _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.refineElim _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.recordIntro _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.recordProj _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.codataUnfold _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.codataDest _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.sessionSend _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.sessionRecv _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.effectPerform _ _ => RawTerm.app developedFunction developedArgument
+
+/-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
+def RawTerm.cdFstCase {scope : Nat}
+    (developedPair : RawTerm scope) : RawTerm scope :=
+  match developedPair with
+  | RawTerm.pair firstValue _ => firstValue
+  | RawTerm.var _ => RawTerm.fst developedPair
+  | RawTerm.unit => RawTerm.fst developedPair
+  | RawTerm.lam _ => RawTerm.fst developedPair
+  | RawTerm.app _ _ => RawTerm.fst developedPair
+  | RawTerm.fst _ => RawTerm.fst developedPair
+  | RawTerm.snd _ => RawTerm.fst developedPair
+  | RawTerm.boolTrue => RawTerm.fst developedPair
+  | RawTerm.boolFalse => RawTerm.fst developedPair
+  | RawTerm.boolElim _ _ _ => RawTerm.fst developedPair
+  | RawTerm.natZero => RawTerm.fst developedPair
+  | RawTerm.natSucc _ => RawTerm.fst developedPair
+  | RawTerm.natElim _ _ _ => RawTerm.fst developedPair
+  | RawTerm.natRec _ _ _ => RawTerm.fst developedPair
+  | RawTerm.listNil => RawTerm.fst developedPair
+  | RawTerm.listCons _ _ => RawTerm.fst developedPair
+  | RawTerm.listElim _ _ _ => RawTerm.fst developedPair
+  | RawTerm.optionNone => RawTerm.fst developedPair
+  | RawTerm.optionSome _ => RawTerm.fst developedPair
+  | RawTerm.optionMatch _ _ _ => RawTerm.fst developedPair
+  | RawTerm.eitherInl _ => RawTerm.fst developedPair
+  | RawTerm.eitherInr _ => RawTerm.fst developedPair
+  | RawTerm.eitherMatch _ _ _ => RawTerm.fst developedPair
+  | RawTerm.refl _ => RawTerm.fst developedPair
+  | RawTerm.idJ _ _ => RawTerm.fst developedPair
+  | RawTerm.modIntro _ => RawTerm.fst developedPair
+  | RawTerm.modElim _ => RawTerm.fst developedPair
+  | RawTerm.subsume _ => RawTerm.fst developedPair
+  | RawTerm.interval0 => RawTerm.fst developedPair
+  | RawTerm.interval1 => RawTerm.fst developedPair
+  | RawTerm.intervalOpp _ => RawTerm.fst developedPair
+  | RawTerm.intervalMeet _ _ => RawTerm.fst developedPair
+  | RawTerm.intervalJoin _ _ => RawTerm.fst developedPair
+  | RawTerm.pathLam _ => RawTerm.fst developedPair
+  | RawTerm.pathApp _ _ => RawTerm.fst developedPair
+  | RawTerm.glueIntro _ _ => RawTerm.fst developedPair
+  | RawTerm.glueElim _ => RawTerm.fst developedPair
+  | RawTerm.transp _ _ => RawTerm.fst developedPair
+  | RawTerm.hcomp _ _ => RawTerm.fst developedPair
+  | RawTerm.oeqRefl _ => RawTerm.fst developedPair
+  | RawTerm.oeqJ _ _ => RawTerm.fst developedPair
+  | RawTerm.oeqFunext _ => RawTerm.fst developedPair
+  | RawTerm.idStrictRefl _ => RawTerm.fst developedPair
+  | RawTerm.idStrictRec _ _ => RawTerm.fst developedPair
+  | RawTerm.equivIntro _ _ => RawTerm.fst developedPair
+  | RawTerm.equivApp _ _ => RawTerm.fst developedPair
+  | RawTerm.refineIntro _ _ => RawTerm.fst developedPair
+  | RawTerm.refineElim _ => RawTerm.fst developedPair
+  | RawTerm.recordIntro _ => RawTerm.fst developedPair
+  | RawTerm.recordProj _ => RawTerm.fst developedPair
+  | RawTerm.codataUnfold _ _ => RawTerm.fst developedPair
+  | RawTerm.codataDest _ => RawTerm.fst developedPair
+  | RawTerm.sessionSend _ _ => RawTerm.fst developedPair
+  | RawTerm.sessionRecv _ => RawTerm.fst developedPair
+  | RawTerm.effectPerform _ _ => RawTerm.fst developedPair
+
+/-- Snd redex: `snd (a, b) → b`; otherwise rebuild `snd dp`. -/
+def RawTerm.cdSndCase {scope : Nat}
+    (developedPair : RawTerm scope) : RawTerm scope :=
+  match developedPair with
+  | RawTerm.pair _ secondValue => secondValue
+  | RawTerm.var _ => RawTerm.snd developedPair
+  | RawTerm.unit => RawTerm.snd developedPair
+  | RawTerm.lam _ => RawTerm.snd developedPair
+  | RawTerm.app _ _ => RawTerm.snd developedPair
+  | RawTerm.fst _ => RawTerm.snd developedPair
+  | RawTerm.snd _ => RawTerm.snd developedPair
+  | RawTerm.boolTrue => RawTerm.snd developedPair
+  | RawTerm.boolFalse => RawTerm.snd developedPair
+  | RawTerm.boolElim _ _ _ => RawTerm.snd developedPair
+  | RawTerm.natZero => RawTerm.snd developedPair
+  | RawTerm.natSucc _ => RawTerm.snd developedPair
+  | RawTerm.natElim _ _ _ => RawTerm.snd developedPair
+  | RawTerm.natRec _ _ _ => RawTerm.snd developedPair
+  | RawTerm.listNil => RawTerm.snd developedPair
+  | RawTerm.listCons _ _ => RawTerm.snd developedPair
+  | RawTerm.listElim _ _ _ => RawTerm.snd developedPair
+  | RawTerm.optionNone => RawTerm.snd developedPair
+  | RawTerm.optionSome _ => RawTerm.snd developedPair
+  | RawTerm.optionMatch _ _ _ => RawTerm.snd developedPair
+  | RawTerm.eitherInl _ => RawTerm.snd developedPair
+  | RawTerm.eitherInr _ => RawTerm.snd developedPair
+  | RawTerm.eitherMatch _ _ _ => RawTerm.snd developedPair
+  | RawTerm.refl _ => RawTerm.snd developedPair
+  | RawTerm.idJ _ _ => RawTerm.snd developedPair
+  | RawTerm.modIntro _ => RawTerm.snd developedPair
+  | RawTerm.modElim _ => RawTerm.snd developedPair
+  | RawTerm.subsume _ => RawTerm.snd developedPair
+  | RawTerm.interval0 => RawTerm.snd developedPair
+  | RawTerm.interval1 => RawTerm.snd developedPair
+  | RawTerm.intervalOpp _ => RawTerm.snd developedPair
+  | RawTerm.intervalMeet _ _ => RawTerm.snd developedPair
+  | RawTerm.intervalJoin _ _ => RawTerm.snd developedPair
+  | RawTerm.pathLam _ => RawTerm.snd developedPair
+  | RawTerm.pathApp _ _ => RawTerm.snd developedPair
+  | RawTerm.glueIntro _ _ => RawTerm.snd developedPair
+  | RawTerm.glueElim _ => RawTerm.snd developedPair
+  | RawTerm.transp _ _ => RawTerm.snd developedPair
+  | RawTerm.hcomp _ _ => RawTerm.snd developedPair
+  | RawTerm.oeqRefl _ => RawTerm.snd developedPair
+  | RawTerm.oeqJ _ _ => RawTerm.snd developedPair
+  | RawTerm.oeqFunext _ => RawTerm.snd developedPair
+  | RawTerm.idStrictRefl _ => RawTerm.snd developedPair
+  | RawTerm.idStrictRec _ _ => RawTerm.snd developedPair
+  | RawTerm.equivIntro _ _ => RawTerm.snd developedPair
+  | RawTerm.equivApp _ _ => RawTerm.snd developedPair
+  | RawTerm.refineIntro _ _ => RawTerm.snd developedPair
+  | RawTerm.refineElim _ => RawTerm.snd developedPair
+  | RawTerm.recordIntro _ => RawTerm.snd developedPair
+  | RawTerm.recordProj _ => RawTerm.snd developedPair
+  | RawTerm.codataUnfold _ _ => RawTerm.snd developedPair
+  | RawTerm.codataDest _ => RawTerm.snd developedPair
+  | RawTerm.sessionSend _ _ => RawTerm.snd developedPair
+  | RawTerm.sessionRecv _ => RawTerm.snd developedPair
+  | RawTerm.effectPerform _ _ => RawTerm.snd developedPair
+
+/-- BoolElim redex: `boolElim true t e → t`, `boolElim false t e → e`;
+otherwise rebuild. -/
+def RawTerm.cdBoolElimCase {scope : Nat}
+    (developedScrutinee developedThen developedElse : RawTerm scope) :
+    RawTerm scope :=
+  match developedScrutinee with
+  | RawTerm.boolTrue => developedThen
+  | RawTerm.boolFalse => developedElse
+  | RawTerm.var _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.unit =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.lam _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.app _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.pair _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.fst _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.snd _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.boolElim _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.natZero =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.natSucc _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.natElim _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.natRec _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.listNil =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.listCons _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.listElim _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.optionNone =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.optionSome _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.optionMatch _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.eitherInl _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.eitherInr _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.eitherMatch _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.refl _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.idJ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.modIntro _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.modElim _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.subsume _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.interval0 =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.interval1 =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.intervalOpp _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.intervalMeet _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.intervalJoin _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.pathLam _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.pathApp _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.glueIntro _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.glueElim _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.transp _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.hcomp _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.oeqRefl _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.oeqJ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.oeqFunext _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.idStrictRefl _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.idStrictRec _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.equivIntro _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.equivApp _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.refineIntro _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.refineElim _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.recordIntro _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.recordProj _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.codataUnfold _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.codataDest _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.sessionSend _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.sessionRecv _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.effectPerform _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+
+/-- NatElim redex: `natElim 0 z s → z`, `natElim (succ p) z s → s p`;
+otherwise rebuild. -/
+def RawTerm.cdNatElimCase {scope : Nat}
+    (developedScrutinee developedZero developedSucc : RawTerm scope) :
+    RawTerm scope :=
+  match developedScrutinee with
+  | RawTerm.natZero => developedZero
+  | RawTerm.natSucc predecessor =>
+      RawTerm.app developedSucc predecessor
+  | RawTerm.var _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.unit =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.lam _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.app _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.pair _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.fst _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.snd _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.boolTrue =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.boolFalse =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.boolElim _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.natElim _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.natRec _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.listNil =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.listCons _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.listElim _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.optionNone =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.optionSome _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.optionMatch _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.eitherInl _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.eitherInr _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.eitherMatch _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.refl _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.idJ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.modIntro _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.modElim _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.subsume _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.interval0 =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.interval1 =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.intervalOpp _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.intervalMeet _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.intervalJoin _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.pathLam _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.pathApp _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.glueIntro _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.glueElim _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.transp _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.hcomp _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.oeqRefl _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.oeqJ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.oeqFunext _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.idStrictRefl _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.idStrictRec _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.equivIntro _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.equivApp _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.refineIntro _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.refineElim _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.recordIntro _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.recordProj _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.codataUnfold _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.codataDest _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.sessionSend _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.sessionRecv _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.effectPerform _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+
+/-- NatRec redex: `natRec 0 z s → z`,
+`natRec (succ p) z s → s p (natRec p z s)`; otherwise rebuild. -/
+def RawTerm.cdNatRecCase {scope : Nat}
+    (developedScrutinee developedZero developedSucc : RawTerm scope) :
+    RawTerm scope :=
+  match developedScrutinee with
+  | RawTerm.natZero => developedZero
+  | RawTerm.natSucc predecessor =>
+      RawTerm.app (RawTerm.app developedSucc predecessor)
+        (RawTerm.natRec predecessor developedZero developedSucc)
+  | RawTerm.var _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.unit =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.lam _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.app _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.pair _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.fst _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.snd _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.boolTrue =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.boolFalse =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.boolElim _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.natElim _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.natRec _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.listNil =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.listCons _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.listElim _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.optionNone =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.optionSome _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.optionMatch _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.eitherInl _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.eitherInr _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.eitherMatch _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.refl _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.idJ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.modIntro _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.modElim _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.subsume _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.interval0 =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.interval1 =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.intervalOpp _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.intervalMeet _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.intervalJoin _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.pathLam _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.pathApp _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.glueIntro _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.glueElim _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.transp _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.hcomp _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.oeqRefl _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.oeqJ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.oeqFunext _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.idStrictRefl _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.idStrictRec _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.equivIntro _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.equivApp _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.refineIntro _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.refineElim _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.recordIntro _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.recordProj _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.codataUnfold _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.codataDest _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.sessionSend _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.sessionRecv _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.effectPerform _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+
+/-- ListElim redex: `listElim nil n c → n`,
+`listElim (cons h t) n c → c h t`; otherwise rebuild. -/
+def RawTerm.cdListElimCase {scope : Nat}
+    (developedScrutinee developedNil developedCons : RawTerm scope) :
+    RawTerm scope :=
+  match developedScrutinee with
+  | RawTerm.listNil => developedNil
+  | RawTerm.listCons headTerm tailTerm =>
+      RawTerm.app (RawTerm.app developedCons headTerm) tailTerm
+  | RawTerm.var _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.unit =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.lam _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.app _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.pair _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.fst _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.snd _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.boolTrue =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.boolFalse =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.boolElim _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.natZero =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.natSucc _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.natElim _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.natRec _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.listElim _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.optionNone =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.optionSome _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.optionMatch _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.eitherInl _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.eitherInr _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.eitherMatch _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.refl _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.idJ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.modIntro _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.modElim _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.subsume _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.interval0 =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.interval1 =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.intervalOpp _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.intervalMeet _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.intervalJoin _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.pathLam _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.pathApp _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.glueIntro _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.glueElim _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.transp _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.hcomp _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.oeqRefl _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.oeqJ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.oeqFunext _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.idStrictRefl _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.idStrictRec _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.equivIntro _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.equivApp _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.refineIntro _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.refineElim _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.recordIntro _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.recordProj _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.codataUnfold _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.codataDest _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.sessionSend _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.sessionRecv _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.effectPerform _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+
+/-- OptionMatch redex: `optionMatch none n s → n`,
+`optionMatch (some v) n s → s v`; otherwise rebuild. -/
+def RawTerm.cdOptionMatchCase {scope : Nat}
+    (developedScrutinee developedNone developedSome : RawTerm scope) :
+    RawTerm scope :=
+  match developedScrutinee with
+  | RawTerm.optionNone => developedNone
+  | RawTerm.optionSome valueTerm =>
+      RawTerm.app developedSome valueTerm
+  | RawTerm.var _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.unit =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.lam _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.app _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.pair _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.fst _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.snd _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.boolTrue =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.boolFalse =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.boolElim _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.natZero =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.natSucc _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.natElim _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.natRec _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.listNil =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.listCons _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.listElim _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.optionMatch _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.eitherInl _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.eitherInr _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.eitherMatch _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.refl _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.idJ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.modIntro _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.modElim _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.subsume _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.interval0 =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.interval1 =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.intervalOpp _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.intervalMeet _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.intervalJoin _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.pathLam _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.pathApp _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.glueIntro _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.glueElim _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.transp _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.hcomp _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.oeqRefl _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.oeqJ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.oeqFunext _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.idStrictRefl _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.idStrictRec _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.equivIntro _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.equivApp _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.refineIntro _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.refineElim _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.recordIntro _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.recordProj _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.codataUnfold _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.codataDest _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.sessionSend _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.sessionRecv _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.effectPerform _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+
+/-- EitherMatch redex: `eitherMatch (inl v) l r → l v`,
+`eitherMatch (inr v) l r → r v`; otherwise rebuild. -/
+def RawTerm.cdEitherMatchCase {scope : Nat}
+    (developedScrutinee developedLeft developedRight : RawTerm scope) :
+    RawTerm scope :=
+  match developedScrutinee with
+  | RawTerm.eitherInl valueTerm => RawTerm.app developedLeft valueTerm
+  | RawTerm.eitherInr valueTerm => RawTerm.app developedRight valueTerm
+  | RawTerm.var _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.unit =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.lam _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.app _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.pair _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.fst _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.snd _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.boolTrue =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.boolFalse =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.boolElim _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.natZero =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.natSucc _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.natElim _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.natRec _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.listNil =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.listCons _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.listElim _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.optionNone =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.optionSome _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.optionMatch _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.eitherMatch _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.refl _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.idJ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.modIntro _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.modElim _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.subsume _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.interval0 =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.interval1 =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.intervalOpp _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.intervalMeet _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.intervalJoin _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.pathLam _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.pathApp _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.glueIntro _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.glueElim _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.transp _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.hcomp _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.oeqRefl _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.oeqJ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.oeqFunext _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.idStrictRefl _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.idStrictRec _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.equivIntro _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.equivApp _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.refineIntro _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.refineElim _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.recordIntro _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.recordProj _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.codataUnfold _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.codataDest _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.sessionSend _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.sessionRecv _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.effectPerform _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+
+/-- IdJ redex: `idJ b (refl _) → b`; otherwise rebuild. -/
+def RawTerm.cdIdJCase {scope : Nat}
+    (developedBase developedWitness : RawTerm scope) : RawTerm scope :=
+  match developedWitness with
+  | RawTerm.refl _ => developedBase
+  | RawTerm.var _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.unit => RawTerm.idJ developedBase developedWitness
+  | RawTerm.lam _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.app _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.pair _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.fst _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.snd _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.boolTrue => RawTerm.idJ developedBase developedWitness
+  | RawTerm.boolFalse => RawTerm.idJ developedBase developedWitness
+  | RawTerm.boolElim _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.natZero => RawTerm.idJ developedBase developedWitness
+  | RawTerm.natSucc _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.natElim _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.natRec _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.listNil => RawTerm.idJ developedBase developedWitness
+  | RawTerm.listCons _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.listElim _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.optionNone => RawTerm.idJ developedBase developedWitness
+  | RawTerm.optionSome _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.optionMatch _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.eitherInl _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.eitherInr _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.eitherMatch _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.idJ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.modIntro _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.modElim _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.subsume _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.interval0 => RawTerm.idJ developedBase developedWitness
+  | RawTerm.interval1 => RawTerm.idJ developedBase developedWitness
+  | RawTerm.intervalOpp _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.intervalMeet _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.intervalJoin _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.pathLam _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.pathApp _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.glueIntro _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.glueElim _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.transp _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.hcomp _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.oeqRefl _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.oeqJ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.oeqFunext _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.idStrictRefl _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.idStrictRec _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.equivIntro _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.equivApp _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.refineIntro _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.refineElim _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.recordIntro _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.recordProj _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.codataUnfold _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.codataDest _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.sessionSend _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.sessionRecv _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.effectPerform _ _ => RawTerm.idJ developedBase developedWitness
+
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
 developed.  Zero axioms: full enumeration in every inner match
-keeps Lean's match compiler from leaking propext. -/
+keeps Lean's match compiler from leaking propext.
+
+Each redex-bearing case dispatches to a per-redex helper
+(`cdAppCase`, `cdFstCase`, ..., `cdIdJCase`) — see comment at top.
+This factoring keeps `unfold RawTerm.cd` cheap and confines the
+55-arm inner match to one helper definition at a time, fitting the
+200K-heartbeat budget enforced by simp's nested whnf. -/
 def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   | _, .var position => RawTerm.var position
   | _, .unit => RawTerm.unit
   | _, .lam body => RawTerm.lam (RawTerm.cd body)
   | _, .app functionTerm argumentTerm =>
-      let developedFunction := RawTerm.cd functionTerm
-      let developedArgument := RawTerm.cd argumentTerm
-      match developedFunction with
-      | RawTerm.lam body => body.subst0 developedArgument
-      | RawTerm.var _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.unit => RawTerm.app developedFunction developedArgument
-      | RawTerm.app _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.pair _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.fst _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.snd _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.boolTrue => RawTerm.app developedFunction developedArgument
-      | RawTerm.boolFalse => RawTerm.app developedFunction developedArgument
-      | RawTerm.boolElim _ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.natZero => RawTerm.app developedFunction developedArgument
-      | RawTerm.natSucc _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.natElim _ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.natRec _ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.listNil => RawTerm.app developedFunction developedArgument
-      | RawTerm.listCons _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.listElim _ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.optionNone => RawTerm.app developedFunction developedArgument
-      | RawTerm.optionSome _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.optionMatch _ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.eitherInl _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.eitherInr _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.eitherMatch _ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.refl _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.idJ _ _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.modIntro _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.modElim _ => RawTerm.app developedFunction developedArgument
-      | RawTerm.subsume _ => RawTerm.app developedFunction developedArgument
+      RawTerm.cdAppCase (RawTerm.cd functionTerm) (RawTerm.cd argumentTerm)
   | _, .pair firstValue secondValue =>
       RawTerm.pair (RawTerm.cd firstValue) (RawTerm.cd secondValue)
   | _, .fst pairTerm =>
-      let developedPair := RawTerm.cd pairTerm
-      match developedPair with
-      | RawTerm.pair firstValue _ => firstValue
-      | RawTerm.var _ => RawTerm.fst developedPair
-      | RawTerm.unit => RawTerm.fst developedPair
-      | RawTerm.lam _ => RawTerm.fst developedPair
-      | RawTerm.app _ _ => RawTerm.fst developedPair
-      | RawTerm.fst _ => RawTerm.fst developedPair
-      | RawTerm.snd _ => RawTerm.fst developedPair
-      | RawTerm.boolTrue => RawTerm.fst developedPair
-      | RawTerm.boolFalse => RawTerm.fst developedPair
-      | RawTerm.boolElim _ _ _ => RawTerm.fst developedPair
-      | RawTerm.natZero => RawTerm.fst developedPair
-      | RawTerm.natSucc _ => RawTerm.fst developedPair
-      | RawTerm.natElim _ _ _ => RawTerm.fst developedPair
-      | RawTerm.natRec _ _ _ => RawTerm.fst developedPair
-      | RawTerm.listNil => RawTerm.fst developedPair
-      | RawTerm.listCons _ _ => RawTerm.fst developedPair
-      | RawTerm.listElim _ _ _ => RawTerm.fst developedPair
-      | RawTerm.optionNone => RawTerm.fst developedPair
-      | RawTerm.optionSome _ => RawTerm.fst developedPair
-      | RawTerm.optionMatch _ _ _ => RawTerm.fst developedPair
-      | RawTerm.eitherInl _ => RawTerm.fst developedPair
-      | RawTerm.eitherInr _ => RawTerm.fst developedPair
-      | RawTerm.eitherMatch _ _ _ => RawTerm.fst developedPair
-      | RawTerm.refl _ => RawTerm.fst developedPair
-      | RawTerm.idJ _ _ => RawTerm.fst developedPair
-      | RawTerm.modIntro _ => RawTerm.fst developedPair
-      | RawTerm.modElim _ => RawTerm.fst developedPair
-      | RawTerm.subsume _ => RawTerm.fst developedPair
+      RawTerm.cdFstCase (RawTerm.cd pairTerm)
   | _, .snd pairTerm =>
-      let developedPair := RawTerm.cd pairTerm
-      match developedPair with
-      | RawTerm.pair _ secondValue => secondValue
-      | RawTerm.var _ => RawTerm.snd developedPair
-      | RawTerm.unit => RawTerm.snd developedPair
-      | RawTerm.lam _ => RawTerm.snd developedPair
-      | RawTerm.app _ _ => RawTerm.snd developedPair
-      | RawTerm.fst _ => RawTerm.snd developedPair
-      | RawTerm.snd _ => RawTerm.snd developedPair
-      | RawTerm.boolTrue => RawTerm.snd developedPair
-      | RawTerm.boolFalse => RawTerm.snd developedPair
-      | RawTerm.boolElim _ _ _ => RawTerm.snd developedPair
-      | RawTerm.natZero => RawTerm.snd developedPair
-      | RawTerm.natSucc _ => RawTerm.snd developedPair
-      | RawTerm.natElim _ _ _ => RawTerm.snd developedPair
-      | RawTerm.natRec _ _ _ => RawTerm.snd developedPair
-      | RawTerm.listNil => RawTerm.snd developedPair
-      | RawTerm.listCons _ _ => RawTerm.snd developedPair
-      | RawTerm.listElim _ _ _ => RawTerm.snd developedPair
-      | RawTerm.optionNone => RawTerm.snd developedPair
-      | RawTerm.optionSome _ => RawTerm.snd developedPair
-      | RawTerm.optionMatch _ _ _ => RawTerm.snd developedPair
-      | RawTerm.eitherInl _ => RawTerm.snd developedPair
-      | RawTerm.eitherInr _ => RawTerm.snd developedPair
-      | RawTerm.eitherMatch _ _ _ => RawTerm.snd developedPair
-      | RawTerm.refl _ => RawTerm.snd developedPair
-      | RawTerm.idJ _ _ => RawTerm.snd developedPair
-      | RawTerm.modIntro _ => RawTerm.snd developedPair
-      | RawTerm.modElim _ => RawTerm.snd developedPair
-      | RawTerm.subsume _ => RawTerm.snd developedPair
+      RawTerm.cdSndCase (RawTerm.cd pairTerm)
   | _, .boolTrue => RawTerm.boolTrue
   | _, .boolFalse => RawTerm.boolFalse
   | _, .boolElim scrutinee thenBranch elseBranch =>
-      let developedScrutinee := RawTerm.cd scrutinee
-      let developedThen := RawTerm.cd thenBranch
-      let developedElse := RawTerm.cd elseBranch
-      match developedScrutinee with
-      | RawTerm.boolTrue => developedThen
-      | RawTerm.boolFalse => developedElse
-      | RawTerm.var _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.unit =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.lam _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.app _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.pair _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.fst _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.snd _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.boolElim _ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.natZero =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.natSucc _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.natElim _ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.natRec _ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.listNil =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.listCons _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.listElim _ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.optionNone =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.optionSome _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.optionMatch _ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.eitherInl _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.eitherInr _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.eitherMatch _ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.refl _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.idJ _ _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.modIntro _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.modElim _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
-      | RawTerm.subsume _ =>
-          RawTerm.boolElim developedScrutinee developedThen developedElse
+      RawTerm.cdBoolElimCase (RawTerm.cd scrutinee)
+        (RawTerm.cd thenBranch) (RawTerm.cd elseBranch)
   | _, .natZero => RawTerm.natZero
   | _, .natSucc predecessor => RawTerm.natSucc (RawTerm.cd predecessor)
   | _, .natElim scrutinee zeroBranch succBranch =>
-      let developedScrutinee := RawTerm.cd scrutinee
-      let developedZero := RawTerm.cd zeroBranch
-      let developedSucc := RawTerm.cd succBranch
-      match developedScrutinee with
-      | RawTerm.natZero => developedZero
-      | RawTerm.natSucc predecessor =>
-          RawTerm.app developedSucc predecessor
-      | RawTerm.var _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.unit =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.lam _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.app _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.pair _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.fst _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.snd _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.boolTrue =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.boolFalse =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.boolElim _ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.natElim _ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.natRec _ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.listNil =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.listCons _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.listElim _ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.optionNone =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.optionSome _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.optionMatch _ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.eitherInl _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.eitherInr _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.eitherMatch _ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.refl _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.idJ _ _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.modIntro _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.modElim _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
-      | RawTerm.subsume _ =>
-          RawTerm.natElim developedScrutinee developedZero developedSucc
+      RawTerm.cdNatElimCase (RawTerm.cd scrutinee)
+        (RawTerm.cd zeroBranch) (RawTerm.cd succBranch)
   | _, .natRec scrutinee zeroBranch succBranch =>
-      let developedScrutinee := RawTerm.cd scrutinee
-      let developedZero := RawTerm.cd zeroBranch
-      let developedSucc := RawTerm.cd succBranch
-      match developedScrutinee with
-      | RawTerm.natZero => developedZero
-      | RawTerm.natSucc predecessor =>
-          RawTerm.app (RawTerm.app developedSucc predecessor)
-            (RawTerm.natRec predecessor developedZero developedSucc)
-      | RawTerm.var _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.unit =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.lam _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.app _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.pair _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.fst _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.snd _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.boolTrue =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.boolFalse =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.boolElim _ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.natElim _ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.natRec _ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.listNil =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.listCons _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.listElim _ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.optionNone =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.optionSome _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.optionMatch _ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.eitherInl _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.eitherInr _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.eitherMatch _ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.refl _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.idJ _ _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.modIntro _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.modElim _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
-      | RawTerm.subsume _ =>
-          RawTerm.natRec developedScrutinee developedZero developedSucc
+      RawTerm.cdNatRecCase (RawTerm.cd scrutinee)
+        (RawTerm.cd zeroBranch) (RawTerm.cd succBranch)
   | _, .listNil => RawTerm.listNil
   | _, .listCons headTerm tailTerm =>
       RawTerm.listCons (RawTerm.cd headTerm) (RawTerm.cd tailTerm)
   | _, .listElim scrutinee nilBranch consBranch =>
-      let developedScrutinee := RawTerm.cd scrutinee
-      let developedNil := RawTerm.cd nilBranch
-      let developedCons := RawTerm.cd consBranch
-      match developedScrutinee with
-      | RawTerm.listNil => developedNil
-      | RawTerm.listCons headTerm tailTerm =>
-          RawTerm.app (RawTerm.app developedCons headTerm) tailTerm
-      | RawTerm.var _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.unit =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.lam _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.app _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.pair _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.fst _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.snd _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.boolTrue =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.boolFalse =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.boolElim _ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.natZero =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.natSucc _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.natElim _ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.natRec _ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.listElim _ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.optionNone =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.optionSome _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.optionMatch _ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.eitherInl _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.eitherInr _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.eitherMatch _ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.refl _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.idJ _ _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.modIntro _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.modElim _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
-      | RawTerm.subsume _ =>
-          RawTerm.listElim developedScrutinee developedNil developedCons
+      RawTerm.cdListElimCase (RawTerm.cd scrutinee)
+        (RawTerm.cd nilBranch) (RawTerm.cd consBranch)
   | _, .optionNone => RawTerm.optionNone
   | _, .optionSome valueTerm => RawTerm.optionSome (RawTerm.cd valueTerm)
   | _, .optionMatch scrutinee noneBranch someBranch =>
-      let developedScrutinee := RawTerm.cd scrutinee
-      let developedNone := RawTerm.cd noneBranch
-      let developedSome := RawTerm.cd someBranch
-      match developedScrutinee with
-      | RawTerm.optionNone => developedNone
-      | RawTerm.optionSome valueTerm =>
-          RawTerm.app developedSome valueTerm
-      | RawTerm.var _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.unit =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.lam _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.app _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.pair _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.fst _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.snd _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.boolTrue =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.boolFalse =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.boolElim _ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.natZero =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.natSucc _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.natElim _ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.natRec _ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.listNil =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.listCons _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.listElim _ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.optionMatch _ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.eitherInl _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.eitherInr _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.eitherMatch _ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.refl _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.idJ _ _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.modIntro _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.modElim _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
-      | RawTerm.subsume _ =>
-          RawTerm.optionMatch developedScrutinee developedNone developedSome
+      RawTerm.cdOptionMatchCase (RawTerm.cd scrutinee)
+        (RawTerm.cd noneBranch) (RawTerm.cd someBranch)
   | _, .eitherInl valueTerm => RawTerm.eitherInl (RawTerm.cd valueTerm)
   | _, .eitherInr valueTerm => RawTerm.eitherInr (RawTerm.cd valueTerm)
   | _, .eitherMatch scrutinee leftBranch rightBranch =>
-      let developedScrutinee := RawTerm.cd scrutinee
-      let developedLeft := RawTerm.cd leftBranch
-      let developedRight := RawTerm.cd rightBranch
-      match developedScrutinee with
-      | RawTerm.eitherInl valueTerm => RawTerm.app developedLeft valueTerm
-      | RawTerm.eitherInr valueTerm => RawTerm.app developedRight valueTerm
-      | RawTerm.var _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.unit =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.lam _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.app _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.pair _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.fst _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.snd _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.boolTrue =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.boolFalse =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.boolElim _ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.natZero =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.natSucc _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.natElim _ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.natRec _ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.listNil =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.listCons _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.listElim _ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.optionNone =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.optionSome _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.optionMatch _ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.eitherMatch _ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.refl _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.idJ _ _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.modIntro _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.modElim _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
-      | RawTerm.subsume _ =>
-          RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+      RawTerm.cdEitherMatchCase (RawTerm.cd scrutinee)
+        (RawTerm.cd leftBranch) (RawTerm.cd rightBranch)
   | _, .refl rawWitness => RawTerm.refl (RawTerm.cd rawWitness)
   | _, .idJ baseCase witness =>
-      let developedBase := RawTerm.cd baseCase
-      let developedWitness := RawTerm.cd witness
-      match developedWitness with
-      | RawTerm.refl _ => developedBase
-      | RawTerm.var _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.unit => RawTerm.idJ developedBase developedWitness
-      | RawTerm.lam _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.app _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.pair _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.fst _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.snd _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.boolTrue => RawTerm.idJ developedBase developedWitness
-      | RawTerm.boolFalse => RawTerm.idJ developedBase developedWitness
-      | RawTerm.boolElim _ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.natZero => RawTerm.idJ developedBase developedWitness
-      | RawTerm.natSucc _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.natElim _ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.natRec _ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.listNil => RawTerm.idJ developedBase developedWitness
-      | RawTerm.listCons _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.listElim _ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.optionNone => RawTerm.idJ developedBase developedWitness
-      | RawTerm.optionSome _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.optionMatch _ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.eitherInl _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.eitherInr _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.eitherMatch _ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.idJ _ _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.modIntro _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.modElim _ => RawTerm.idJ developedBase developedWitness
-      | RawTerm.subsume _ => RawTerm.idJ developedBase developedWitness
+      RawTerm.cdIdJCase (RawTerm.cd baseCase) (RawTerm.cd witness)
   | _, .modIntro innerTerm => RawTerm.modIntro (RawTerm.cd innerTerm)
   | _, .modElim innerTerm => RawTerm.modElim (RawTerm.cd innerTerm)
   | _, .subsume innerTerm => RawTerm.subsume (RawTerm.cd innerTerm)
+  -- D1.6: cubical interval + path (pure cong, no β rules at raw level yet)
+  | _, .interval0 => RawTerm.interval0
+  | _, .interval1 => RawTerm.interval1
+  | _, .intervalOpp intervalTerm => RawTerm.intervalOpp (RawTerm.cd intervalTerm)
+  | _, .intervalMeet leftInterval rightInterval =>
+      RawTerm.intervalMeet (RawTerm.cd leftInterval) (RawTerm.cd rightInterval)
+  | _, .intervalJoin leftInterval rightInterval =>
+      RawTerm.intervalJoin (RawTerm.cd leftInterval) (RawTerm.cd rightInterval)
+  | _, .pathLam body => RawTerm.pathLam (RawTerm.cd body)
+  | _, .pathApp pathTerm intervalArg =>
+      RawTerm.pathApp (RawTerm.cd pathTerm) (RawTerm.cd intervalArg)
+  | _, .glueIntro baseValue partialValue =>
+      RawTerm.glueIntro (RawTerm.cd baseValue) (RawTerm.cd partialValue)
+  | _, .glueElim gluedValue => RawTerm.glueElim (RawTerm.cd gluedValue)
+  | _, .transp pathTerm sourceTerm =>
+      RawTerm.transp (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
+  | _, .hcomp sidesTerm capTerm =>
+      RawTerm.hcomp (RawTerm.cd sidesTerm) (RawTerm.cd capTerm)
+  -- D1.6: observational + strict equality (pure cong)
+  | _, .oeqRefl witnessTerm => RawTerm.oeqRefl (RawTerm.cd witnessTerm)
+  | _, .oeqJ baseCase witness =>
+      RawTerm.oeqJ (RawTerm.cd baseCase) (RawTerm.cd witness)
+  | _, .oeqFunext pointwiseEquality =>
+      RawTerm.oeqFunext (RawTerm.cd pointwiseEquality)
+  | _, .idStrictRefl witnessTerm => RawTerm.idStrictRefl (RawTerm.cd witnessTerm)
+  | _, .idStrictRec baseCase witness =>
+      RawTerm.idStrictRec (RawTerm.cd baseCase) (RawTerm.cd witness)
+  -- D1.6: type equivalence (pure cong)
+  | _, .equivIntro forwardFn backwardFn =>
+      RawTerm.equivIntro (RawTerm.cd forwardFn) (RawTerm.cd backwardFn)
+  | _, .equivApp equivTerm argument =>
+      RawTerm.equivApp (RawTerm.cd equivTerm) (RawTerm.cd argument)
+  -- D1.6: refinement / record / codata (pure cong)
+  | _, .refineIntro rawValue predicateProof =>
+      RawTerm.refineIntro (RawTerm.cd rawValue) (RawTerm.cd predicateProof)
+  | _, .refineElim refinedValue => RawTerm.refineElim (RawTerm.cd refinedValue)
+  | _, .recordIntro firstField => RawTerm.recordIntro (RawTerm.cd firstField)
+  | _, .recordProj recordValue => RawTerm.recordProj (RawTerm.cd recordValue)
+  | _, .codataUnfold initialState transition =>
+      RawTerm.codataUnfold (RawTerm.cd initialState) (RawTerm.cd transition)
+  | _, .codataDest codataValue => RawTerm.codataDest (RawTerm.cd codataValue)
+  -- D1.6: sessions, effects (pure cong)
+  | _, .sessionSend channel payload =>
+      RawTerm.sessionSend (RawTerm.cd channel) (RawTerm.cd payload)
+  | _, .sessionRecv channel => RawTerm.sessionRecv (RawTerm.cd channel)
+  | _, .effectPerform operationTag arguments =>
+      RawTerm.effectPerform (RawTerm.cd operationTag) (RawTerm.cd arguments)
 
 end LeanFX2

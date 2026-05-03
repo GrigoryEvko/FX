@@ -75,6 +75,63 @@ inductive RawTerm : Nat → Type
   | modIntro {scope : Nat} (raw : RawTerm scope) : RawTerm scope
   | modElim {scope : Nat} (raw : RawTerm scope) : RawTerm scope
   | subsume {scope : Nat} (raw : RawTerm scope) : RawTerm scope
+  -- D1.6 extension: 27 new ctors covering cubical / HOTT / refine /
+  -- record / codata / session / effect / strict layers.  All are raw-
+  -- syntactic skeletons; semantic interpretation lives in Reduction
+  -- (D2.5–D2.7) and the typed Term inductive (D1.9).
+  -- Cubical interval endpoints + lattice operations
+  | interval0 {scope : Nat} : RawTerm scope
+  | interval1 {scope : Nat} : RawTerm scope
+  | intervalOpp {scope : Nat} (intervalTerm : RawTerm scope) : RawTerm scope
+  | intervalMeet {scope : Nat}
+      (leftInterval rightInterval : RawTerm scope) : RawTerm scope
+  | intervalJoin {scope : Nat}
+      (leftInterval rightInterval : RawTerm scope) : RawTerm scope
+  -- Cubical path types (intro = lambda over interval, elim = path application)
+  | pathLam {scope : Nat} (body : RawTerm (scope + 1)) : RawTerm scope
+  | pathApp {scope : Nat}
+      (pathTerm intervalArg : RawTerm scope) : RawTerm scope
+  -- Cubical glue + transport / composition
+  | glueIntro {scope : Nat}
+      (baseValue partialValue : RawTerm scope) : RawTerm scope
+  | glueElim {scope : Nat} (gluedValue : RawTerm scope) : RawTerm scope
+  | transp {scope : Nat}
+      (path source : RawTerm scope) : RawTerm scope
+  | hcomp {scope : Nat}
+      (sides cap : RawTerm scope) : RawTerm scope
+  -- Observational equality (set-level OEq) — refl, J eliminator, funext
+  | oeqRefl {scope : Nat} (witness : RawTerm scope) : RawTerm scope
+  | oeqJ {scope : Nat}
+      (baseCase witness : RawTerm scope) : RawTerm scope
+  | oeqFunext {scope : Nat}
+      (pointwiseEquality : RawTerm scope) : RawTerm scope
+  -- Strict (definitional) identity — refl + eliminator
+  | idStrictRefl {scope : Nat} (witness : RawTerm scope) : RawTerm scope
+  | idStrictRec {scope : Nat}
+      (baseCase witness : RawTerm scope) : RawTerm scope
+  -- Type equivalence (Equiv A B) — intro from a function + inverse
+  | equivIntro {scope : Nat}
+      (forwardFn backwardFn : RawTerm scope) : RawTerm scope
+  | equivApp {scope : Nat}
+      (equivTerm argument : RawTerm scope) : RawTerm scope
+  -- Refinement types — bundle a value with its predicate proof
+  | refineIntro {scope : Nat}
+      (rawValue predicateProof : RawTerm scope) : RawTerm scope
+  | refineElim {scope : Nat} (refinedValue : RawTerm scope) : RawTerm scope
+  -- Record types — single-field placeholder (multi-field via nesting)
+  | recordIntro {scope : Nat} (firstField : RawTerm scope) : RawTerm scope
+  | recordProj {scope : Nat} (recordValue : RawTerm scope) : RawTerm scope
+  -- Codata — corecursive constructor + destructor
+  | codataUnfold {scope : Nat}
+      (initialState transition : RawTerm scope) : RawTerm scope
+  | codataDest {scope : Nat} (codataValue : RawTerm scope) : RawTerm scope
+  -- Session-typed channels — send / receive / end
+  | sessionSend {scope : Nat}
+      (channel payload : RawTerm scope) : RawTerm scope
+  | sessionRecv {scope : Nat} (channel : RawTerm scope) : RawTerm scope
+  -- Algebraic effect operation — perform an effect at runtime
+  | effectPerform {scope : Nat}
+      (operationTag arguments : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 end LeanFX2

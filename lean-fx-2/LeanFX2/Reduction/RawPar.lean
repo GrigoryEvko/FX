@@ -494,5 +494,175 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par baseRawSource baseRawTarget →
       RawStep.par (RawTerm.idJ baseRawSource witnessRawSource)
                   baseRawTarget
+  -- D1.6 / D2.5–D2.7 stub: pure cong rules for the 27 new RawTerm
+  -- ctors.  β/ι reduction rules for cubical / HOTT / refine / record
+  -- / codata / session / effect / strict layers land in D2.5–D2.7;
+  -- here we only commit to the structural cong layer so that
+  -- substitution-compatibility lemmas (`subst_par_pointwise`) can
+  -- discharge their cases without sorry.
+  /-- Cong: intervalOpp reduces in argument. -/
+  | intervalOppCong {scope : Nat}
+      {intervalRawSource intervalRawTarget : RawTerm scope} :
+      RawStep.par intervalRawSource intervalRawTarget →
+      RawStep.par (RawTerm.intervalOpp intervalRawSource)
+                  (RawTerm.intervalOpp intervalRawTarget)
+  /-- Cong: intervalMeet reduces in both arguments. -/
+  | intervalMeetCong {scope : Nat}
+      {leftRawSource leftRawTarget rightRawSource rightRawTarget : RawTerm scope} :
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par rightRawSource rightRawTarget →
+      RawStep.par (RawTerm.intervalMeet leftRawSource rightRawSource)
+                  (RawTerm.intervalMeet leftRawTarget rightRawTarget)
+  /-- Cong: intervalJoin reduces in both arguments. -/
+  | intervalJoinCong {scope : Nat}
+      {leftRawSource leftRawTarget rightRawSource rightRawTarget : RawTerm scope} :
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par rightRawSource rightRawTarget →
+      RawStep.par (RawTerm.intervalJoin leftRawSource rightRawSource)
+                  (RawTerm.intervalJoin leftRawTarget rightRawTarget)
+  /-- Cong: pathLam reduces in body (under binder). -/
+  | pathLamCong {scope : Nat}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)} :
+      RawStep.par bodyRawSource bodyRawTarget →
+      RawStep.par (RawTerm.pathLam bodyRawSource)
+                  (RawTerm.pathLam bodyRawTarget)
+  /-- Cong: pathApp reduces in path and interval-arg. -/
+  | pathAppCong {scope : Nat}
+      {pathRawSource pathRawTarget intervalRawSource intervalRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource pathRawTarget →
+      RawStep.par intervalRawSource intervalRawTarget →
+      RawStep.par (RawTerm.pathApp pathRawSource intervalRawSource)
+                  (RawTerm.pathApp pathRawTarget intervalRawTarget)
+  /-- Cong: glueIntro reduces in base and partial values. -/
+  | glueIntroCong {scope : Nat}
+      {baseRawSource baseRawTarget partialRawSource partialRawTarget : RawTerm scope} :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par partialRawSource partialRawTarget →
+      RawStep.par (RawTerm.glueIntro baseRawSource partialRawSource)
+                  (RawTerm.glueIntro baseRawTarget partialRawTarget)
+  /-- Cong: glueElim reduces in glued value. -/
+  | glueElimCong {scope : Nat}
+      {gluedRawSource gluedRawTarget : RawTerm scope} :
+      RawStep.par gluedRawSource gluedRawTarget →
+      RawStep.par (RawTerm.glueElim gluedRawSource)
+                  (RawTerm.glueElim gluedRawTarget)
+  /-- Cong: transp reduces in path and source. -/
+  | transpCong {scope : Nat}
+      {pathRawSource pathRawTarget sourceRawSource sourceRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource pathRawTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
+                  (RawTerm.transp pathRawTarget sourceRawTarget)
+  /-- Cong: hcomp reduces in sides and cap. -/
+  | hcompCong {scope : Nat}
+      {sidesRawSource sidesRawTarget capRawSource capRawTarget : RawTerm scope} :
+      RawStep.par sidesRawSource sidesRawTarget →
+      RawStep.par capRawSource capRawTarget →
+      RawStep.par (RawTerm.hcomp sidesRawSource capRawSource)
+                  (RawTerm.hcomp sidesRawTarget capRawTarget)
+  /-- Cong: oeqRefl reduces in witness. -/
+  | oeqReflCong {scope : Nat}
+      {witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource witnessRawTarget →
+      RawStep.par (RawTerm.oeqRefl witnessRawSource)
+                  (RawTerm.oeqRefl witnessRawTarget)
+  /-- Cong: oeqJ reduces in baseCase and witness. -/
+  | oeqJCong {scope : Nat}
+      {baseRawSource baseRawTarget witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par witnessRawSource witnessRawTarget →
+      RawStep.par (RawTerm.oeqJ baseRawSource witnessRawSource)
+                  (RawTerm.oeqJ baseRawTarget witnessRawTarget)
+  /-- Cong: oeqFunext reduces in pointwiseEquality. -/
+  | oeqFunextCong {scope : Nat}
+      {pointwiseRawSource pointwiseRawTarget : RawTerm scope} :
+      RawStep.par pointwiseRawSource pointwiseRawTarget →
+      RawStep.par (RawTerm.oeqFunext pointwiseRawSource)
+                  (RawTerm.oeqFunext pointwiseRawTarget)
+  /-- Cong: idStrictRefl reduces in witness. -/
+  | idStrictReflCong {scope : Nat}
+      {witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource witnessRawTarget →
+      RawStep.par (RawTerm.idStrictRefl witnessRawSource)
+                  (RawTerm.idStrictRefl witnessRawTarget)
+  /-- Cong: idStrictRec reduces in baseCase and witness. -/
+  | idStrictRecCong {scope : Nat}
+      {baseRawSource baseRawTarget witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par witnessRawSource witnessRawTarget →
+      RawStep.par (RawTerm.idStrictRec baseRawSource witnessRawSource)
+                  (RawTerm.idStrictRec baseRawTarget witnessRawTarget)
+  /-- Cong: equivIntro reduces in forward and backward functions. -/
+  | equivIntroCong {scope : Nat}
+      {forwardRawSource forwardRawTarget backwardRawSource backwardRawTarget : RawTerm scope} :
+      RawStep.par forwardRawSource forwardRawTarget →
+      RawStep.par backwardRawSource backwardRawTarget →
+      RawStep.par (RawTerm.equivIntro forwardRawSource backwardRawSource)
+                  (RawTerm.equivIntro forwardRawTarget backwardRawTarget)
+  /-- Cong: equivApp reduces in equiv and argument. -/
+  | equivAppCong {scope : Nat}
+      {equivRawSource equivRawTarget argumentRawSource argumentRawTarget : RawTerm scope} :
+      RawStep.par equivRawSource equivRawTarget →
+      RawStep.par argumentRawSource argumentRawTarget →
+      RawStep.par (RawTerm.equivApp equivRawSource argumentRawSource)
+                  (RawTerm.equivApp equivRawTarget argumentRawTarget)
+  /-- Cong: refineIntro reduces in value and predicate proof. -/
+  | refineIntroCong {scope : Nat}
+      {valueRawSource valueRawTarget proofRawSource proofRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par proofRawSource proofRawTarget →
+      RawStep.par (RawTerm.refineIntro valueRawSource proofRawSource)
+                  (RawTerm.refineIntro valueRawTarget proofRawTarget)
+  /-- Cong: refineElim reduces in refined value. -/
+  | refineElimCong {scope : Nat}
+      {refinedRawSource refinedRawTarget : RawTerm scope} :
+      RawStep.par refinedRawSource refinedRawTarget →
+      RawStep.par (RawTerm.refineElim refinedRawSource)
+                  (RawTerm.refineElim refinedRawTarget)
+  /-- Cong: recordIntro reduces in first field. -/
+  | recordIntroCong {scope : Nat}
+      {firstRawSource firstRawTarget : RawTerm scope} :
+      RawStep.par firstRawSource firstRawTarget →
+      RawStep.par (RawTerm.recordIntro firstRawSource)
+                  (RawTerm.recordIntro firstRawTarget)
+  /-- Cong: recordProj reduces in record value. -/
+  | recordProjCong {scope : Nat}
+      {recordRawSource recordRawTarget : RawTerm scope} :
+      RawStep.par recordRawSource recordRawTarget →
+      RawStep.par (RawTerm.recordProj recordRawSource)
+                  (RawTerm.recordProj recordRawTarget)
+  /-- Cong: codataUnfold reduces in initial state and transition. -/
+  | codataUnfoldCong {scope : Nat}
+      {stateRawSource stateRawTarget transitionRawSource transitionRawTarget : RawTerm scope} :
+      RawStep.par stateRawSource stateRawTarget →
+      RawStep.par transitionRawSource transitionRawTarget →
+      RawStep.par (RawTerm.codataUnfold stateRawSource transitionRawSource)
+                  (RawTerm.codataUnfold stateRawTarget transitionRawTarget)
+  /-- Cong: codataDest reduces in codata value. -/
+  | codataDestCong {scope : Nat}
+      {codataRawSource codataRawTarget : RawTerm scope} :
+      RawStep.par codataRawSource codataRawTarget →
+      RawStep.par (RawTerm.codataDest codataRawSource)
+                  (RawTerm.codataDest codataRawTarget)
+  /-- Cong: sessionSend reduces in channel and payload. -/
+  | sessionSendCong {scope : Nat}
+      {channelRawSource channelRawTarget payloadRawSource payloadRawTarget : RawTerm scope} :
+      RawStep.par channelRawSource channelRawTarget →
+      RawStep.par payloadRawSource payloadRawTarget →
+      RawStep.par (RawTerm.sessionSend channelRawSource payloadRawSource)
+                  (RawTerm.sessionSend channelRawTarget payloadRawTarget)
+  /-- Cong: sessionRecv reduces in channel. -/
+  | sessionRecvCong {scope : Nat}
+      {channelRawSource channelRawTarget : RawTerm scope} :
+      RawStep.par channelRawSource channelRawTarget →
+      RawStep.par (RawTerm.sessionRecv channelRawSource)
+                  (RawTerm.sessionRecv channelRawTarget)
+  /-- Cong: effectPerform reduces in operation tag and arguments. -/
+  | effectPerformCong {scope : Nat}
+      {operationRawSource operationRawTarget argumentsRawSource argumentsRawTarget : RawTerm scope} :
+      RawStep.par operationRawSource operationRawTarget →
+      RawStep.par argumentsRawSource argumentsRawTarget →
+      RawStep.par (RawTerm.effectPerform operationRawSource argumentsRawSource)
+                  (RawTerm.effectPerform operationRawTarget argumentsRawTarget)
 
 end LeanFX2

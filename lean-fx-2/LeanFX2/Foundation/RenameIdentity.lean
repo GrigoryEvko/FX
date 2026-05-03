@@ -136,6 +136,102 @@ theorem RawTerm.rename_identity {scope : Nat} :
   | .subsume innerTerm => by
       show (innerTerm.rename _).subsume = innerTerm.subsume
       rw [RawTerm.rename_identity innerTerm]
+  -- D1.6 cubical interval + path
+  | .interval0 => rfl
+  | .interval1 => rfl
+  | .intervalOpp intervalTerm => by
+      show (intervalTerm.rename _).intervalOpp = intervalTerm.intervalOpp
+      rw [RawTerm.rename_identity intervalTerm]
+  | .intervalMeet leftInterval rightInterval => by
+      show (leftInterval.rename _).intervalMeet (rightInterval.rename _) =
+           leftInterval.intervalMeet rightInterval
+      rw [RawTerm.rename_identity leftInterval, RawTerm.rename_identity rightInterval]
+  | .intervalJoin leftInterval rightInterval => by
+      show (leftInterval.rename _).intervalJoin (rightInterval.rename _) =
+           leftInterval.intervalJoin rightInterval
+      rw [RawTerm.rename_identity leftInterval, RawTerm.rename_identity rightInterval]
+  | .pathLam body => by
+      show (body.rename (@RawRenaming.identity scope).lift).pathLam = body.pathLam
+      rw [RawTerm.rename_pointwise (@RawRenaming.identity_lift_pointwise scope) body,
+          RawTerm.rename_identity body]
+  | .pathApp pathTerm intervalArg => by
+      show (pathTerm.rename _).pathApp (intervalArg.rename _) =
+           pathTerm.pathApp intervalArg
+      rw [RawTerm.rename_identity pathTerm, RawTerm.rename_identity intervalArg]
+  | .glueIntro baseValue partialValue => by
+      show (baseValue.rename _).glueIntro (partialValue.rename _) =
+           baseValue.glueIntro partialValue
+      rw [RawTerm.rename_identity baseValue, RawTerm.rename_identity partialValue]
+  | .glueElim gluedValue => by
+      show (gluedValue.rename _).glueElim = gluedValue.glueElim
+      rw [RawTerm.rename_identity gluedValue]
+  | .transp pathTerm sourceTerm => by
+      show (pathTerm.rename _).transp (sourceTerm.rename _) =
+           pathTerm.transp sourceTerm
+      rw [RawTerm.rename_identity pathTerm, RawTerm.rename_identity sourceTerm]
+  | .hcomp sidesTerm capTerm => by
+      show (sidesTerm.rename _).hcomp (capTerm.rename _) =
+           sidesTerm.hcomp capTerm
+      rw [RawTerm.rename_identity sidesTerm, RawTerm.rename_identity capTerm]
+  -- D1.6 observational + strict equality
+  | .oeqRefl witnessTerm => by
+      show (witnessTerm.rename _).oeqRefl = witnessTerm.oeqRefl
+      rw [RawTerm.rename_identity witnessTerm]
+  | .oeqJ baseCase witness => by
+      show (baseCase.rename _).oeqJ (witness.rename _) = baseCase.oeqJ witness
+      rw [RawTerm.rename_identity baseCase, RawTerm.rename_identity witness]
+  | .oeqFunext pointwiseEquality => by
+      show (pointwiseEquality.rename _).oeqFunext = pointwiseEquality.oeqFunext
+      rw [RawTerm.rename_identity pointwiseEquality]
+  | .idStrictRefl witnessTerm => by
+      show (witnessTerm.rename _).idStrictRefl = witnessTerm.idStrictRefl
+      rw [RawTerm.rename_identity witnessTerm]
+  | .idStrictRec baseCase witness => by
+      show (baseCase.rename _).idStrictRec (witness.rename _) =
+           baseCase.idStrictRec witness
+      rw [RawTerm.rename_identity baseCase, RawTerm.rename_identity witness]
+  -- D1.6 type equivalence
+  | .equivIntro forwardFn backwardFn => by
+      show (forwardFn.rename _).equivIntro (backwardFn.rename _) =
+           forwardFn.equivIntro backwardFn
+      rw [RawTerm.rename_identity forwardFn, RawTerm.rename_identity backwardFn]
+  | .equivApp equivTerm argument => by
+      show (equivTerm.rename _).equivApp (argument.rename _) =
+           equivTerm.equivApp argument
+      rw [RawTerm.rename_identity equivTerm, RawTerm.rename_identity argument]
+  -- D1.6 refinement / record / codata
+  | .refineIntro rawValue predicateProof => by
+      show (rawValue.rename _).refineIntro (predicateProof.rename _) =
+           rawValue.refineIntro predicateProof
+      rw [RawTerm.rename_identity rawValue, RawTerm.rename_identity predicateProof]
+  | .refineElim refinedValue => by
+      show (refinedValue.rename _).refineElim = refinedValue.refineElim
+      rw [RawTerm.rename_identity refinedValue]
+  | .recordIntro firstField => by
+      show (firstField.rename _).recordIntro = firstField.recordIntro
+      rw [RawTerm.rename_identity firstField]
+  | .recordProj recordValue => by
+      show (recordValue.rename _).recordProj = recordValue.recordProj
+      rw [RawTerm.rename_identity recordValue]
+  | .codataUnfold initialState transition => by
+      show (initialState.rename _).codataUnfold (transition.rename _) =
+           initialState.codataUnfold transition
+      rw [RawTerm.rename_identity initialState, RawTerm.rename_identity transition]
+  | .codataDest codataValue => by
+      show (codataValue.rename _).codataDest = codataValue.codataDest
+      rw [RawTerm.rename_identity codataValue]
+  -- D1.6 sessions, effects
+  | .sessionSend channel payload => by
+      show (channel.rename _).sessionSend (payload.rename _) =
+           channel.sessionSend payload
+      rw [RawTerm.rename_identity channel, RawTerm.rename_identity payload]
+  | .sessionRecv channel => by
+      show (channel.rename _).sessionRecv = channel.sessionRecv
+      rw [RawTerm.rename_identity channel]
+  | .effectPerform operationTag arguments => by
+      show (operationTag.rename _).effectPerform (arguments.rename _) =
+           operationTag.effectPerform arguments
+      rw [RawTerm.rename_identity operationTag, RawTerm.rename_identity arguments]
 
 /-! ## Ty.rename_identity
 

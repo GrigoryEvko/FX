@@ -206,5 +206,56 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | iotaIdJReflDeep _ _ witnessIH baseIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJReflDeep (witnessIH _) (baseIH _)
+  -- D1.6 cong rules for the 27 new RawTerm ctors (pure cong; no β/ι).
+  | intervalOppCong _ intervalIH =>
+      exact RawStep.par.intervalOppCong (intervalIH _)
+  | intervalMeetCong _ _ leftIH rightIH =>
+      exact RawStep.par.intervalMeetCong (leftIH _) (rightIH _)
+  | intervalJoinCong _ _ leftIH rightIH =>
+      exact RawStep.par.intervalJoinCong (leftIH _) (rightIH _)
+  | pathLamCong _ bodyIH =>
+      exact RawStep.par.pathLamCong (bodyIH _)
+  | pathAppCong _ _ pathIH intervalIH =>
+      exact RawStep.par.pathAppCong (pathIH _) (intervalIH _)
+  | glueIntroCong _ _ baseIH partialIH =>
+      exact RawStep.par.glueIntroCong (baseIH _) (partialIH _)
+  | glueElimCong _ gluedIH =>
+      exact RawStep.par.glueElimCong (gluedIH _)
+  | transpCong _ _ pathIH sourceIH =>
+      exact RawStep.par.transpCong (pathIH _) (sourceIH _)
+  | hcompCong _ _ sidesIH capIH =>
+      exact RawStep.par.hcompCong (sidesIH _) (capIH _)
+  | oeqReflCong _ witnessIH =>
+      exact RawStep.par.oeqReflCong (witnessIH _)
+  | oeqJCong _ _ baseIH witnessIH =>
+      exact RawStep.par.oeqJCong (baseIH _) (witnessIH _)
+  | oeqFunextCong _ pointwiseIH =>
+      exact RawStep.par.oeqFunextCong (pointwiseIH _)
+  | idStrictReflCong _ witnessIH =>
+      exact RawStep.par.idStrictReflCong (witnessIH _)
+  | idStrictRecCong _ _ baseIH witnessIH =>
+      exact RawStep.par.idStrictRecCong (baseIH _) (witnessIH _)
+  | equivIntroCong _ _ forwardIH backwardIH =>
+      exact RawStep.par.equivIntroCong (forwardIH _) (backwardIH _)
+  | equivAppCong _ _ equivIH argumentIH =>
+      exact RawStep.par.equivAppCong (equivIH _) (argumentIH _)
+  | refineIntroCong _ _ valueIH proofIH =>
+      exact RawStep.par.refineIntroCong (valueIH _) (proofIH _)
+  | refineElimCong _ refinedIH =>
+      exact RawStep.par.refineElimCong (refinedIH _)
+  | recordIntroCong _ firstIH =>
+      exact RawStep.par.recordIntroCong (firstIH _)
+  | recordProjCong _ recordIH =>
+      exact RawStep.par.recordProjCong (recordIH _)
+  | codataUnfoldCong _ _ stateIH transitionIH =>
+      exact RawStep.par.codataUnfoldCong (stateIH _) (transitionIH _)
+  | codataDestCong _ codataIH =>
+      exact RawStep.par.codataDestCong (codataIH _)
+  | sessionSendCong _ _ channelIH payloadIH =>
+      exact RawStep.par.sessionSendCong (channelIH _) (payloadIH _)
+  | sessionRecvCong _ channelIH =>
+      exact RawStep.par.sessionRecvCong (channelIH _)
+  | effectPerformCong _ _ operationIH argumentsIH =>
+      exact RawStep.par.effectPerformCong (operationIH _) (argumentsIH _)
 
 end LeanFX2
