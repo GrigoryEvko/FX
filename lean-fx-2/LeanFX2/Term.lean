@@ -52,6 +52,26 @@ Foundational + dependent + Identity + Modal:
 * `refl, idJ` — Identity
 * `modIntro, modElim, subsume` — Modal (Layer 6 references; ship raw-side from day 1)
 
+## D1.9 typed Term ctors — DEFERRED to per-need addition
+
+The 27 raw ctors added in D1.6 (cubical/HOTT/refine/record/codata/session/
+effect/strict) deliberately do NOT have typed Term mirrors yet.  The
+math work for D2.5–D2.7 (cubical β, HOTT OEq, modal/refine/etc. β) lives
+at the RAW level (RawTerm.cd, Step.par); typed reduction lifts via the
+rfl bridge once the raw rules ship.
+
+A bulk addition of 27 typed ctors would cascade ~6000 lines of mechanical
+extensions through Term/{Rename,Subst,Pointwise,HEqCongr,Inversion,
+SubjectReduction,Bridge}, and Algo/{Check,Infer,WHNF}.  Each Term.subst
+match grows past simp's heartbeat budget at ~30+ arms.  Better strategy:
+add typed ctors one-at-a-time as specific reduction rules need them,
+co-located with their Step.* introduction.
+
+This matches the "scaffold at raw, lift to typed only when needed"
+discipline that the existing modIntro/modElim/subsume ctors illustrate
+— typed scaffolding without semantic content was added preemptively
+and now sits unused.
+
 ## DecidableEq deferred
 
 Manual instance lands when needed.  For Phase 1.C, just shipping the
