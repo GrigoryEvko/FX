@@ -63,6 +63,7 @@ import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.Cumul
 import LeanFX2.Reduction.CumulSubstCompat
+import LeanFX2.Reduction.ConvCumulHomo
 
 -- Layer 3 — Confluence
 import LeanFX2.Confluence.Cd
