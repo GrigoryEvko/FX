@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.ConvCumulHomo
 import LeanFX2.Term.Rename
 
 /-! # Reduction/CumulSubstCompat — CUMUL-1.7 substitution-compatibility theorems
@@ -1767,6 +1768,160 @@ theorem ConvCumul.rename_compatible_eitherMatch_benton
       ((Term.eitherMatch scrutFirst leftFirst rightFirst).rename termRenaming)
       ((Term.eitherMatch scrutSecond leftSecond rightSecond).rename termRenaming) :=
   ConvCumul.eitherMatchCong scrutRel leftRel rightRel
+
+/-! # Pattern 3 (Allais paired-env) — Homo-typed compat + lift
+
+This section ships the FOUNDATIONAL infrastructure for Pattern 3
+proper: a paired-environment compat predicate `PointwiseCompatHomo`
+where each per-position relation is `ConvCumulHomo` (not `ConvCumul`),
+and a `lift` lemma that propagates compat through binders.
+
+## Why Homo-typed compat is the right shape
+
+`PointwiseCompat termSubstA termSubstB` (defined above, line 177)
+quantifies `ConvCumul (termSubstA pos) (termSubstB pos)` per position.
+The lift lemma needs to RENAME each per-position witness via
+`Term.weaken` (= `Term.rename (TermRenaming.weakenStep _ _)`).
+Renaming a full `ConvCumul` witness hits the heterogeneous-Prop wall:
+`viaUp`'s `lowerTerm` lives at decoupled `scopeLow`, so a single
+outer renaming is ill-typed for it.
+
+`PointwiseCompatHomo` restricts each per-position witness to
+`ConvCumulHomo` (the homogeneous fragment, no `viaUp`).  Homo IS
+preserved under typed renaming (see `ConvCumulHomo.rename_compatible_benton`,
+ConvCumulHomo.lean line 522), so the lift lemma ships zero-axiom.
+
+For substituents at the SAME outer target context (which is the case
+for any well-typed `TermSubstHet` instance), the per-position
+witnesses can always be expressed as `ConvCumulHomo` — `viaUp`-style
+witnesses would require the substituents at different scopes, which
+the typing of `TermSubstHet` rules out.  So `PointwiseCompatHomo`
+is no less expressive than `PointwiseCompat` in the well-typed
+setting.
+
+## Conversion + combinators
+
+`PointwiseCompatHomo.toPointwiseCompat` lifts to the ConvCumul-typed
+form via per-position `ConvCumulHomo.toCumul`.  This bridges to the
+existing per-Term-ctor Allais arms (which consume `ConvCumul` per
+subterm).
+
+Refl / sym / trans mirror `PointwiseCompat`'s combinators but at
+ConvCumulHomo level. -/
+
+/-- **Pattern 3 paired-env compat (Homo-typed)**.  Stronger than
+`PointwiseCompat`: each per-position relation is `ConvCumulHomo`,
+restricted to the homogeneous fragment.
+
+Required for the lift lemma since `ConvCumulHomo` IS preserved by
+typed renaming whereas full `ConvCumul` is not (viaUp's heterogeneous
+endpoint scopes block a uniform rename theorem). -/
+def TermSubstHet.PointwiseCompatHomo
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma) :
+    Prop :=
+  ∀ position, ConvCumulHomo (termSubstA position) (termSubstB position)
+
+/-- Reflexivity: any `TermSubstHet` is Homo-compat with itself. -/
+theorem TermSubstHet.PointwiseCompatHomo.refl
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubst : TermSubstHet sourceCtx targetCtx sigma) :
+    TermSubstHet.PointwiseCompatHomo termSubst termSubst :=
+  fun position => ConvCumulHomo.refl (termSubst position)
+
+/-- Symmetry of Homo-compat. -/
+theorem TermSubstHet.PointwiseCompatHomo.sym
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB) :
+    TermSubstHet.PointwiseCompatHomo termSubstB termSubstA :=
+  fun position => ConvCumulHomo.sym (compat position)
+
+/-- Transitivity of Homo-compat. -/
+theorem TermSubstHet.PointwiseCompatHomo.trans
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB termSubstC : TermSubstHet sourceCtx targetCtx sigma}
+    (compatAB : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB)
+    (compatBC : TermSubstHet.PointwiseCompatHomo termSubstB termSubstC) :
+    TermSubstHet.PointwiseCompatHomo termSubstA termSubstC :=
+  fun position => ConvCumulHomo.trans (compatAB position) (compatBC position)
+
+/-- **Bridge**: Homo-compat ⇒ general PointwiseCompat (over ConvCumul).
+Per-position via `ConvCumulHomo.toCumul`.  Used to feed the Homo-compat
+into the existing per-Term-ctor Allais arms (which consume
+`PointwiseCompat` for the var arm). -/
+theorem TermSubstHet.PointwiseCompatHomo.toPointwiseCompat
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB) :
+    TermSubstHet.PointwiseCompat termSubstA termSubstB :=
+  fun position => (compat position).toCumul
+
+/-- **The lift lemma** — load-bearing for Pattern 3 binder cases.
+
+Given Homo-compat between two `TermSubstHet`s at `(sourceCtx, targetCtx, sigma)`,
+produce Homo-compat between their lifts at `(sourceCtx.cons T, targetCtx.cons (T.substHet sigma), sigma.lift)`.
+
+Architecture (per `TermSubstHet.lift` definition, Term/SubstHet.lean line 86):
+
+* Position `⟨0, _⟩`: both lifts produce the SAME expression
+  `(Ty.weaken_substHet_commute sigma T).symm ▸ Term.var ⟨0, _⟩`
+  (no termSubst dependence) → `ConvCumulHomo.refl _`.
+
+* Position `⟨k+1, h⟩`: both lifts apply the SAME cast around
+  `Term.weaken (T.substHet sigma) (termSubstX ⟨k, _⟩)`.  Apply
+  `ConvCumulHomo.rename_compatible_benton` to `compat ⟨k, _⟩` with
+  the canonical weakening `TermRenaming.weakenStep`, then peel the
+  cast via `cast_eq_both`.
+
+`Term.weaken` unfolds to `Term.rename (TermRenaming.weakenStep _ _)`
+(Term/Rename.lean line 240), so the rename theorem applies directly. -/
+theorem TermSubstHet.PointwiseCompatHomo.lift
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB)
+    (newSourceType : Ty sourceLevel sourceScope) :
+    TermSubstHet.PointwiseCompatHomo
+        (termSubstA.lift newSourceType)
+        (termSubstB.lift newSourceType)
+  | ⟨0, _⟩ =>
+      -- Both lifts produce the same expression at position 0;
+      -- ConvCumulHomo.refl on a single Term value, no compat needed.
+      ConvCumulHomo.refl _
+  | ⟨k + 1, hPos⟩ =>
+      -- Both lifts apply the SAME cast (Ty.weaken_substHet_commute)
+      -- around Term.weaken (newSourceType.substHet sigma) (termSubstX ⟨k, _⟩).
+      -- compat ⟨k, _⟩ : ConvCumulHomo (termSubstA k) (termSubstB k).
+      -- rename_compatible_benton lifts to ConvCumulHomo of weakened forms.
+      -- cast_eq_both peels the equal-on-both-sides cast.
+      ConvCumulHomo.cast_eq_both _
+        (ConvCumulHomo.rename_compatible_benton
+          (compat ⟨k, Nat.lt_of_succ_lt_succ hPos⟩)
+          (TermRenaming.weakenStep targetCtx (newSourceType.substHet sigma)))
 
 /-! # HONEST STATUS — what is NOT shipped
 

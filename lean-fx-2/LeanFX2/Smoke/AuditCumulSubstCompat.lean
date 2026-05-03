@@ -109,3 +109,10 @@ import LeanFX2.Reduction.CumulSubstCompat
 #print axioms LeanFX2.ConvCumul.rename_compatible_listElim_benton
 #print axioms LeanFX2.ConvCumul.rename_compatible_optionMatch_benton
 #print axioms LeanFX2.ConvCumul.rename_compatible_eitherMatch_benton
+
+-- Pattern 3 (Allais paired-env) Homo-typed compat + lift (5)
+#print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.refl
+#print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.sym
+#print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.trans
+#print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.toPointwiseCompat
+#print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.lift
