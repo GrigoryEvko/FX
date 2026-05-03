@@ -4,19 +4,25 @@ import LeanFX2.Term.Subst
 /-! # Reduction/ConvCumulHomo — homogeneous-context-only ConvCumul
 
 Sister inductive to `ConvCumul` (in `Reduction/Cumul.lean`) that
-EXCLUDES the `viaUp` constructor.  All remaining ctors are
-HOMOGENEOUS in outer context (same `mode` / `level` / `scope` /
-`ctx` on both endpoints).  Inner ctors may still be heterogeneous
-in TYPE / RAW / sub-term structure (the cong rules permit this),
-but never in outer-ctx parameters.
+EXCLUDES the `viaUp` constructor.  Includes 26 ctors: refl + sym +
+trans + 22 cong rules + cumulUpCong (which takes a FULL `ConvCumul`
+on the lower side at decoupled `scopeLow`, but is itself
+homogeneous in outer ctx).  ConvCumul has 27 ctors total — the
+ONE excluded is viaUp.
+
+`viaUp` is the cross-context cumul-promotion ctor: it relates
+`lowerTerm` at `(ctxLow at lowerLevel+1, scopeLow)` to
+`Term.cumulUp ... lowerTerm` at `(ctxHigh at higherLevel+1, scope)`.
+Its endpoints are HETEROGENEOUS in scope/level/ctx, so a unified
+`ConvCumul a b → ConvCumul (a.subst σ) (b.subst σ)` is genuinely
+ill-typed for viaUp — a single σ at outer scope cannot rename
+lowerTerm at scopeLow.
 
 ## Why this exists
 
-The `viaUp` ctor in `ConvCumul` cross-promotes between contexts
-at different levels (`ctxLow` at `lowerLevel + 1` vs `ctxHigh` at
-`higherLevel + 1`).  Lean 4.29.1's dep-pattern matcher cannot
-unify viaUp's heterogeneous indices when the outer relation is
-constrained to homogeneous context, leading to a propositional
+Lean 4.29.1's dep-pattern matcher cannot unify viaUp's
+heterogeneous indices when the outer relation is constrained to
+homogeneous context, leading to a propositional
 `lowerLevel.toNat = higherLevel.toNat` equation Lean cannot
 discharge automatically.  This blocks `induction cumulRel` and
 `cases cumulRel` for ConvCumul's recursive headline theorems
@@ -24,30 +30,43 @@ discharge automatically.  This blocks `induction cumulRel` and
 subst — both verified empirically).
 
 `ConvCumulHomo` sidesteps this wall by construction: drop viaUp
-from the inductive.  The recursive headlines `rename_compatible`
-and `subst_compatible` become trivially provable via `induction`.
-
-The cross-context cumul-promotion case is recovered by the
-existing `Conv.cumul_subst_outer` / `subst_compatible_outer`
-helpers in `Reduction/Cumul.lean` (these handle the viaUp case
-directly, NOT via induction).
+from the inductive but keep cumulUpCong (homogeneous in outer
+ctx — its inner lowerRel lives at decoupled scopeLow and is
+unaffected by outer subst).  The recursive headlines
+`rename_compatible_benton` and `subst_compatible_benton` become
+provable via `induction`.
 
 ## Bridge
 
 `ConvCumulHomo.toCumul : ConvCumulHomo a b → ConvCumul a b` lifts
 the restricted relation back to the full ConvCumul — ctor-by-ctor
-trivial.
+trivial.  The reverse direction `ConvCumul → ConvCumulHomo` is
+NOT generally derivable: viaUp witnesses cannot be re-expressed
+as ConvCumulHomo because viaUp's heterogeneous indices have no
+ConvCumulHomo analog.
+
+## Coverage of full ConvCumul under subst/rename
+
+* The 26 homogeneous ctors (cong + refl/sym/trans + cumulUpCong) →
+  `ConvCumulHomo.{rename,subst}_compatible_benton` recursive
+  headlines (this file).
+* The 1 viaUp ctor → `ConvCumul.{rename,subst}_compatible_viaUp`
+  separate theorem with outer-only subst (this file, below).
+  These are NOT vacuous: their type asserts non-trivial subst
+  preservation; their proof body is short BECAUSE
+  `Term.{rename,subst}`'s cumulUp arm preserves lowerTerm
+  verbatim by kernel design.
+
+A unified `ConvCumul a b → ConvCumul (a.subst σ) (b.subst σ)` is
+ill-typed for viaUp and so doesn't exist as a single theorem.
+The two complementary theorems above cover all cases at the
+correct typing.
 
 ## Architecture commitment
 
-The Pattern 2 + Pattern 3 recursive headlines defined HERE are
+Pattern 2 (BHKM-style) recursive headlines defined HERE are
 genuine zero-axiom theorems for the homogeneous-context fragment.
-The cross-context viaUp fragment is the SEPARATE concern handled
-by the per-arm helpers in `CumulSubstCompat.lean`.
-
-The two together cover all ConvCumul shapes at zero axioms:
-* Homogeneous-ctx: `ConvCumulHomo.{rename,subst}_compatible` (this file)
-* Cross-ctx viaUp: `ConvCumul.subst_compatible_outer` (Cumul.lean)
+viaUp is a separate complementary theorem.
 
 ## Audit gate
 
@@ -381,6 +400,34 @@ inductive ConvCumulHomo : ∀ {mode : Mode} {level scope : Nat}
       {innerSecond : Term context innerType innerSecondRaw}
       (innerRel : ConvCumulHomo innerFirst innerSecond) :
       ConvCumulHomo (Term.subsume innerFirst) (Term.subsume innerSecond)
+  /-- Cross-level cumul promotion's cong rule.  The inner `lowerRel`
+  is at decoupled `scopeLow` (independent of outer scope), and takes
+  the FULL `ConvCumul` (not ConvCumulHomo) — the lower side may
+  itself contain viaUp witnesses, totally separate from the outer
+  homogeneous structure.  Outer ctx is HOMOGENEOUS (both sides at
+  same `ctxHigh`), so this ctor fits ConvCumulHomo's discipline
+  even though the inner lowerRel is full ConvCumul. -/
+  | cumulUpCong
+      {mode : Mode} {scopeLow scope : Nat}
+      (innerLevel lowerLevel higherLevel : UniverseLevel)
+      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+      {lowerFirst lowerSecond :
+        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                    (RawTerm.universeCode innerLevel.toNat)}
+      (lowerRel : ConvCumul lowerFirst lowerSecond) :
+      ConvCumulHomo
+        (Term.cumulUp (ctxHigh := ctxHigh)
+                      innerLevel lowerLevel higherLevel
+                      cumulOkLow cumulOkHigh cumulMonotone
+                      (Nat.le_refl _) (Nat.le_refl _) lowerFirst)
+        (Term.cumulUp (ctxHigh := ctxHigh)
+                      innerLevel lowerLevel higherLevel
+                      cumulOkLow cumulOkHigh cumulMonotone
+                      (Nat.le_refl _) (Nat.le_refl _) lowerSecond)
 
 /-! # Bridge: ConvCumulHomo → ConvCumul -/
 
@@ -420,6 +467,10 @@ theorem ConvCumulHomo.toCumul {mode : Mode} {level scope : Nat}
   | modIntroCong _ ih               => exact ConvCumul.modIntroCong ih
   | modElimCong _ ih                => exact ConvCumul.modElimCong ih
   | subsumeCong _ ih                => exact ConvCumul.subsumeCong ih
+  | cumulUpCong innerLevel lowerLevel higherLevel
+                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
+      exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
+                                  cumulOkLow cumulOkHigh cumulMonotone lowerRel
 
 /-! # BHKM cast-elim primitives (for ConvCumulHomo)
 
@@ -531,6 +582,17 @@ theorem ConvCumulHomo.rename_compatible_benton
   | modIntroCong _ ih => intros; exact ConvCumulHomo.modIntroCong (ih _)
   | modElimCong _ ih => intros; exact ConvCumulHomo.modElimCong (ih _)
   | subsumeCong _ ih => intros; exact ConvCumulHomo.subsumeCong (ih _)
+  | cumulUpCong innerLevel lowerLevel higherLevel
+                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
+      -- Term.{rename,subst}'s cumulUp arm preserves lowerTerm verbatim
+      -- (scopeLow decoupled from outer scope per Phase 12.A.B1.5).
+      -- ConvCumulHomo.cumulUpCong reapplies at target ctx with the
+      -- same lowerRel — substantive use: lowerRel is consumed as a
+      -- ctor argument and rebuilt in the result.
+      intros
+      exact ConvCumulHomo.cumulUpCong innerLevel lowerLevel higherLevel
+                                      cumulOkLow cumulOkHigh cumulMonotone
+                                      lowerRel
 
 /-! # Pattern 2 (BHKM JAR'12): subst_compatible — recursive headline (the SUBST rung)
 
@@ -607,6 +669,17 @@ theorem ConvCumulHomo.subst_compatible_benton
   | modIntroCong _ ih => intros; exact ConvCumulHomo.modIntroCong (ih _)
   | modElimCong _ ih => intros; exact ConvCumulHomo.modElimCong (ih _)
   | subsumeCong _ ih => intros; exact ConvCumulHomo.subsumeCong (ih _)
+  | cumulUpCong innerLevel lowerLevel higherLevel
+                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
+      -- Term.{rename,subst}'s cumulUp arm preserves lowerTerm verbatim
+      -- (scopeLow decoupled from outer scope per Phase 12.A.B1.5).
+      -- ConvCumulHomo.cumulUpCong reapplies at target ctx with the
+      -- same lowerRel — substantive use: lowerRel is consumed as a
+      -- ctor argument and rebuilt in the result.
+      intros
+      exact ConvCumulHomo.cumulUpCong innerLevel lowerLevel higherLevel
+                                      cumulOkLow cumulOkHigh cumulMonotone
+                                      lowerRel
 
 /-! # Bridge: ConvCumul → ConvCumulHomo for the homogeneous fragment
 
