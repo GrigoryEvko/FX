@@ -1036,6 +1036,25 @@ For practical use, the per-shape lemmas above SUFFICE:
 
 If a future Lean version (or a different match-strategy in
 Reduction/) lifts the heterogeneous-induction wall, the unified
-theorem can be added without breaking existing per-shape lemmas. -/
+theorem can be added without breaking existing per-shape lemmas.
+
+## Why even the heterogeneous-Subst unified form is intractable
+
+A unified theorem accepting heterogeneous Subst pairs on each side
+INDEPENDENTLY (i.e., the two TermSubst's are unrelated) is also
+blocked, because:
+* `trans` ctor: midTerm needs its OWN TermSubst (third one not
+  given by the caller).  Without a "ConvCumul-related TermSubst
+  triple", we can't recurse on `firstToMid` and `midToSecond`.
+* `refl`: firstTerm = secondTerm forces the two given TermSubst's
+  to act on the same Term, but they may target different scopes,
+  so the two subst'd Terms differ — refl alone doesn't discharge.
+* The cong ctors: each requires inner ConvCumul on inner Terms,
+  whose subst alignment depends on the outer Subst's lifts; this
+  cascades through the recursion.
+
+The compositional per-shape approach we ship handles each of these
+correctly by letting callers structure their own subst-compat
+proofs at the right level of granularity. -/
 
 end LeanFX2
