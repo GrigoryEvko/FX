@@ -17,3 +17,9 @@ import LeanFX2.Reduction.ConvCumulHomo
 -- viaUp case (cross-context cumul promotion at arbitrary scopeLow)
 #print axioms LeanFX2.ConvCumul.subst_compatible_viaUp
 #print axioms LeanFX2.ConvCumul.rename_compatible_viaUp
+
+-- Dispatch sum + branch-dependent route theorems
+#print axioms LeanFX2.ConvCumul.SubstDispatch.toCumul
+#print axioms LeanFX2.ConvCumul.SubstDispatch.rename_compatible_homo_route
+#print axioms LeanFX2.ConvCumul.SubstDispatch.subst_compatible_homo_route
+#print axioms LeanFX2.ConvCumul.SubstDispatch.example_homo_dispatch

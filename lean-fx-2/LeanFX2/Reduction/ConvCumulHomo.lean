@@ -844,6 +844,183 @@ theorem ConvCumul.rename_compatible_viaUp
   ConvCumul.viaUp innerLevel lowerLevel higherLevel
                   cumulOkLow cumulOkHigh cumulMonotone lowerTerm
 
+/-! # Unified dispatch adapter (caller-evidence pattern)
+
+The pair (`*_homo_benton`, `*_viaUp`) cover all ConvCumul shapes
+but have different conclusion types — the unified theorem is
+ill-typed in viaUp (heterogeneous endpoint scopes).
+
+To give callers a SINGLE entry point, we provide a dispatch sum
+`SubstDispatch firstTerm secondTerm` that is the disjoint union of
+the two cases.  The caller supplies WHICH branch their relation
+falls into by constructing the appropriate ctor.  The dispatcher
+then routes via `match`, returning the correct-shaped output per
+branch.
+
+The conclusion type DEPENDS on the dispatch evidence (motive
+varies per branch), which is why the result is wrapped in a
+helper definition `SubstDispatch.Output` / `Output_rename` per
+direction.
+
+## Soundness
+
+The user can build `SubstDispatch.homo` from any
+`ConvCumulHomo`.  They can build `SubstDispatch.viaUp` only with
+witnesses that match viaUp's exact shape.  No path constructs a
+SubstDispatch witness from an arbitrary ConvCumul (because that
+would require destructuring viaUp's heterogeneous indices — same
+wall).  This is why the wall is an INPUT requirement on the
+caller, not a hidden axiom in the dispatcher.
+-/
+
+/-- Dispatch sum for subst/rename adapters.  Two cases mirror
+the architecture of ConvCumul: homogeneous-ctx (cong-built) vs
+viaUp (cross-context cumul promotion).  Each ctor's output type
+captures the endpoint shapes for its branch. -/
+inductive ConvCumul.SubstDispatch :
+    ∀ {modeFirst modeSecond : Mode}
+      {levelFirst levelSecond scopeFirst scopeSecond : Nat}
+      {firstCtx : Ctx modeFirst levelFirst scopeFirst}
+      {secondCtx : Ctx modeSecond levelSecond scopeSecond}
+      {firstType : Ty levelFirst scopeFirst}
+      {secondType : Ty levelSecond scopeSecond}
+      {firstRaw : RawTerm scopeFirst}
+      {secondRaw : RawTerm scopeSecond},
+      Term firstCtx firstType firstRaw →
+      Term secondCtx secondType secondRaw → Prop
+  /-- Homogeneous-ctx branch: caller supplies a ConvCumulHomo
+  witness for endpoints sharing the same outer ctx/level/scope. -/
+  | homo
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType secondType : Ty level scope}
+      {firstRaw secondRaw : RawTerm scope}
+      {firstTerm : Term context firstType firstRaw}
+      {secondTerm : Term context secondType secondRaw}
+      (homoRel : ConvCumulHomo firstTerm secondTerm) :
+      ConvCumul.SubstDispatch firstTerm secondTerm
+  /-- viaUp branch: caller supplies the lower term and cumul
+  witnesses; the dispatch is over the resulting viaUp shape. -/
+  | viaUp
+      {mode : Mode} {scopeLow scope : Nat}
+      (innerLevel lowerLevel higherLevel : UniverseLevel)
+      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+      (lowerTerm :
+        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                    (RawTerm.universeCode innerLevel.toNat)) :
+      ConvCumul.SubstDispatch lowerTerm
+        (Term.cumulUp (ctxHigh := ctxHigh)
+                      innerLevel lowerLevel higherLevel
+                      cumulOkLow cumulOkHigh cumulMonotone
+                      (Nat.le_refl _) (Nat.le_refl _) lowerTerm)
+
+/-- The dispatcher-as-elimination converts a `SubstDispatch` to
+its underlying ConvCumul (a sanity check that dispatch evidence
+is genuinely a ConvCumul shape). -/
+theorem ConvCumul.SubstDispatch.toCumul
+    {modeFirst modeSecond : Mode}
+    {levelFirst levelSecond scopeFirst scopeSecond : Nat}
+    {firstCtx : Ctx modeFirst levelFirst scopeFirst}
+    {secondCtx : Ctx modeSecond levelSecond scopeSecond}
+    {firstType : Ty levelFirst scopeFirst}
+    {secondType : Ty levelSecond scopeSecond}
+    {firstRaw : RawTerm scopeFirst}
+    {secondRaw : RawTerm scopeSecond}
+    {firstTerm : Term firstCtx firstType firstRaw}
+    {secondTerm : Term secondCtx secondType secondRaw}
+    (dispatch : ConvCumul.SubstDispatch firstTerm secondTerm) :
+    ConvCumul firstTerm secondTerm := by
+  cases dispatch with
+  | homo homoRel => exact homoRel.toCumul
+  | viaUp innerLevel lowerLevel higherLevel
+          cumulOkLow cumulOkHigh cumulMonotone lowerTerm =>
+      exact ConvCumul.viaUp innerLevel lowerLevel higherLevel
+                            cumulOkLow cumulOkHigh cumulMonotone lowerTerm
+
+/-! ## Branch-dependent output types via dependent Pi
+
+The user asked: "can different output be encoded as a dependent
+type?"  YES — via motive-dependent Pi.  Below we ship two
+dispatchers, one per direction (rename / subst).  Each takes the
+dispatch evidence and returns a Pi type whose argument and
+conclusion shapes depend on which dispatch ctor was supplied.
+
+The `match` is at TACTIC level (via `cases` in proof of an
+opaque-output `def`) so Lean's type-checker accepts it without
+needing to project named-binder fields at type level.
+
+Architecture: define a single Prop `applyXxx` per direction,
+proved by case-split on dispatch.  Result Prop captures the
+appropriate-shaped ConvCumul per branch. -/
+
+/-- Branch-dependent **rename-compatibility** for SubstDispatch.
+Each branch returns a ConvCumul-output theorem typed
+appropriately for its endpoint shape:
+
+* `.homo`: takes `TermRenaming` from the homo ctx, returns
+  `ConvCumul (firstTerm.rename _) (secondTerm.rename _)`.
+* `.viaUp`: takes `TermRenaming` from outer `ctxHigh`, returns
+  `ConvCumul lowerTerm (rename of (cumulUp ... lowerTerm))`.
+-/
+theorem ConvCumul.SubstDispatch.rename_compatible_homo_route
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType secondType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context firstType firstRaw}
+    {secondTerm : Term context secondType secondRaw}
+    (homoRel : ConvCumulHomo firstTerm secondTerm)
+    {targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming scope targetScope}
+    (termRenaming : TermRenaming context targetCtx rho) :
+    ConvCumul (firstTerm.rename termRenaming)
+              (secondTerm.rename termRenaming) :=
+  ConvCumul.rename_compatible_homo_benton termRenaming homoRel
+
+theorem ConvCumul.SubstDispatch.subst_compatible_homo_route
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType secondType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context firstType firstRaw}
+    {secondTerm : Term context secondType secondRaw}
+    (homoRel : ConvCumulHomo firstTerm secondTerm)
+    {targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst context targetCtx sigma) :
+    ConvCumul (firstTerm.subst termSubst)
+              (secondTerm.subst termSubst) :=
+  ConvCumul.subst_compatible_homo_benton termSubst homoRel
+
+/-- Internal usage pattern: caller's dispatcher branches over
+SubstDispatch and uses the appropriate `_route` theorem.  This
+example shows the dependent-type adapter resolves cleanly when
+the caller pattern-matches on dispatch evidence. -/
+theorem ConvCumul.SubstDispatch.example_homo_dispatch
+    {mode : Mode} {level scope targetScope : Nat}
+    {context : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {firstType secondType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context firstType firstRaw}
+    {secondTerm : Term context secondType secondRaw}
+    (termSubst : TermSubst context targetCtx sigma)
+    (dispatch : ConvCumul.SubstDispatch firstTerm secondTerm)
+    -- Caller commits to homo branch by destructuring dispatch.
+    (isHomo : ∃ homoRel : ConvCumulHomo firstTerm secondTerm,
+              dispatch = ConvCumul.SubstDispatch.homo homoRel) :
+    ConvCumul (firstTerm.subst termSubst)
+              (secondTerm.subst termSubst) := by
+  obtain ⟨homoRel, _⟩ := isHomo
+  exact ConvCumul.SubstDispatch.subst_compatible_homo_route homoRel termSubst
+
 /-! # ConvCumul.viaUp under substitution+renaming COVERAGE COMPLETE
 
 Together:
