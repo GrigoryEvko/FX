@@ -97,6 +97,34 @@ theorem Term.natSucc_ty_inv
   cases someTerm
   rfl
 
+/-! ## Destructor for natSucc — DEFERRED
+
+Attempted: `Term.natSuccDestruct` to extract the predecessor
+from a typed Term at `Ty.nat` with raw `RawTerm.natSucc _`.
+This would unblock `Term.headStep?` extension for the
+`iotaNatElimSucc` and `iotaNatRecSucc` ι-rules.
+
+Blocker: Lean 4 v4.29.1's dependent-elimination tactic / match
+compiler fails on `cases someTerm with | natSucc p => ...` even
+when the raw form constraint rules out all other ctors.  The
+specific error: "Failed to solve equation Ty.nat = varType
+context position" — the matcher cannot use the raw-form
+contradiction to discharge the var case despite `Term.var pos`'s
+raw being `RawTerm.var pos`, NOT `RawTerm.natSucc _`.
+
+This is the same propext-leak class documented in
+`feedback_lean_zero_axiom_match.md`.  Resolution requires either:
+
+* A toRaw-shape dispatch helper (`Term.fromRawNatSucc?`) using
+  full ctor enumeration with raw-form discharge.
+* A dedicated propext-clean recursor.
+
+Both are >50-line additions, deferred to a future structural
+phase.  M08 (extend headStep? to fire ι-rules requiring payload
+extraction) thus remains blocked beyond the no-payload subset
+(boolElim true/false, natElim/natRec zero, listElim nil,
+optionMatch none — all of which `headStep?` already handles). -/
+
 /-- `Term ctx _ .listNil` forces `ty = Ty.listType elementType` for
 some `elementType`. -/
 theorem Term.listNil_ty_inv
