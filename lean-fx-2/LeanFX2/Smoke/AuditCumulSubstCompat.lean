@@ -116,3 +116,9 @@ import LeanFX2.Reduction.CumulSubstCompat
 #print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.trans
 #print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.toPointwiseCompat
 #print axioms LeanFX2.TermSubstHet.PointwiseCompatHomo.lift
+
+-- Pattern 3 fundamental lemma — Term-induction with per-arm dispatch (1)
+#print axioms LeanFX2.Term.subst_compatible_pointwise_allais
+
+-- Pattern 3 fundamental headline — Allais sim at identity simulation (1)
+#print axioms LeanFX2.ConvCumul.subst_compatible_paired_allais

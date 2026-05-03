@@ -1923,6 +1923,229 @@ theorem TermSubstHet.PointwiseCompatHomo.lift
           (compat ⟨k, Nat.lt_of_succ_lt_succ hPos⟩)
           (TermRenaming.weakenStep targetCtx (newSourceType.substHet sigma)))
 
+/-! # Pattern 3 fundamental lemma — Term-induction with per-arm dispatch
+
+The fundamental lemma of Pattern 3 (Allais's `sim` field, ICFP'18
+arxiv:1804.00119 §5.1).  Given any `Term` in source ctx and a
+`PointwiseCompatHomo`-related pair of `TermSubstHet`s, the
+substituted forms on the two sides are `ConvCumul`-related.
+
+By structural recursion on `term`, dispatching to the per-Term-ctor
+Allais arm helpers shipped above (lines 258-1629).  Each ctor case
+recurses on its subterms with the same `compat` (or `compat.lift`
+for binders) and feeds the inner ConvCumul witnesses to the matching
+per-arm helper.
+
+This is the OUTER induction structure that dissolves the
+heterogeneous-Prop wall (memory `reference_pattern_allais_simulation`):
+* Source side fixed by Term-induction → `compat` consumed pointwise.
+* Target side determined by Term shape under substitution → no
+  cross-source unification problem.
+* `viaUp` cannot fire here because the recursion is on Term
+  (homogeneous source), not on `ConvCumul` (heterogeneous wall). -/
+
+/-- **Pattern 3 fundamental lemma**: `Term.substHet` is compatible
+with pointwise-Homo-compat substitutions.  Outer Term-induction
+dispatching to per-arm Allais helpers. -/
+def Term.subst_compatible_pointwise_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB) :
+    ∀ {someType : Ty sourceLevel sourceScope} {someRaw : RawTerm sourceScope}
+      (term : Term sourceCtx someType someRaw),
+      ConvCumul (term.substHet termSubstA) (term.substHet termSubstB)
+  | _, _, .var pos =>
+      ConvCumul.subst_compatible_var_allais compat.toPointwiseCompat pos
+  | _, _, .unit =>
+      ConvCumul.subst_compatible_unit_allais _ _
+  | _, _, .boolTrue =>
+      ConvCumul.subst_compatible_boolTrue_allais _ _
+  | _, _, .boolFalse =>
+      ConvCumul.subst_compatible_boolFalse_allais _ _
+  | _, _, .natZero =>
+      ConvCumul.subst_compatible_natZero_allais _ _
+  | _, _, .listNil =>
+      ConvCumul.subst_compatible_listNil_allais _ _ _
+  | _, _, .optionNone =>
+      ConvCumul.subst_compatible_optionNone_allais _ _ _
+  | _, _, .universeCode innerLevel outerLevel cumulOk levelLe =>
+      ConvCumul.subst_compatible_universeCode_allais _ _
+        innerLevel outerLevel cumulOk levelLe
+  | _, _, .refl carrier rawWitness =>
+      ConvCumul.subst_compatible_refl_allais _ _ carrier rawWitness
+  | _, _, .natSucc predecessor =>
+      ConvCumul.subst_compatible_natSucc_allais predecessor
+        (Term.subst_compatible_pointwise_allais compat predecessor)
+  | _, _, .optionSome valueTerm =>
+      ConvCumul.subst_compatible_optionSome_allais valueTerm
+        (Term.subst_compatible_pointwise_allais compat valueTerm)
+  | _, _, .eitherInl valueTerm =>
+      ConvCumul.subst_compatible_eitherInl_allais valueTerm
+        (Term.subst_compatible_pointwise_allais compat valueTerm)
+  | _, _, .eitherInr valueTerm =>
+      ConvCumul.subst_compatible_eitherInr_allais valueTerm
+        (Term.subst_compatible_pointwise_allais compat valueTerm)
+  | _, _, .modIntro inner =>
+      ConvCumul.subst_compatible_modIntro_allais inner
+        (Term.subst_compatible_pointwise_allais compat inner)
+  | _, _, .modElim inner =>
+      ConvCumul.subst_compatible_modElim_allais inner
+        (Term.subst_compatible_pointwise_allais compat inner)
+  | _, _, .subsume inner =>
+      ConvCumul.subst_compatible_subsume_allais inner
+        (Term.subst_compatible_pointwise_allais compat inner)
+  | _, _, .fst pairTerm =>
+      ConvCumul.subst_compatible_fst_allais pairTerm
+        (Term.subst_compatible_pointwise_allais compat pairTerm)
+  | _, _, .snd pairTerm =>
+      ConvCumul.subst_compatible_snd_allais pairTerm
+        (Term.subst_compatible_pointwise_allais compat pairTerm)
+  | _, _, .app functionTerm argumentTerm =>
+      ConvCumul.subst_compatible_app_allais functionTerm argumentTerm
+        (Term.subst_compatible_pointwise_allais compat functionTerm)
+        (Term.subst_compatible_pointwise_allais compat argumentTerm)
+  | _, _, .appPi functionTerm argumentTerm =>
+      ConvCumul.subst_compatible_appPi_allais functionTerm argumentTerm
+        (Term.subst_compatible_pointwise_allais compat functionTerm)
+        (Term.subst_compatible_pointwise_allais compat argumentTerm)
+  | _, _, .pair firstValue secondValue =>
+      ConvCumul.subst_compatible_pair_allais firstValue secondValue
+        (Term.subst_compatible_pointwise_allais compat firstValue)
+        (Term.subst_compatible_pointwise_allais compat secondValue)
+  | _, _, .listCons headTerm tailTerm =>
+      ConvCumul.subst_compatible_listCons_allais headTerm tailTerm
+        (Term.subst_compatible_pointwise_allais compat headTerm)
+        (Term.subst_compatible_pointwise_allais compat tailTerm)
+  | _, _, .idJ baseCase witness =>
+      ConvCumul.subst_compatible_idJ_allais baseCase witness
+        (Term.subst_compatible_pointwise_allais compat baseCase)
+        (Term.subst_compatible_pointwise_allais compat witness)
+  | _, _, .boolElim scrutinee thenBranch elseBranch =>
+      ConvCumul.subst_compatible_boolElim_allais scrutinee thenBranch elseBranch
+        (Term.subst_compatible_pointwise_allais compat scrutinee)
+        (Term.subst_compatible_pointwise_allais compat thenBranch)
+        (Term.subst_compatible_pointwise_allais compat elseBranch)
+  | _, _, .natElim scrutinee zeroBranch succBranch =>
+      ConvCumul.subst_compatible_natElim_allais scrutinee zeroBranch succBranch
+        (Term.subst_compatible_pointwise_allais compat scrutinee)
+        (Term.subst_compatible_pointwise_allais compat zeroBranch)
+        (Term.subst_compatible_pointwise_allais compat succBranch)
+  | _, _, .natRec scrutinee zeroBranch succBranch =>
+      ConvCumul.subst_compatible_natRec_allais scrutinee zeroBranch succBranch
+        (Term.subst_compatible_pointwise_allais compat scrutinee)
+        (Term.subst_compatible_pointwise_allais compat zeroBranch)
+        (Term.subst_compatible_pointwise_allais compat succBranch)
+  | _, _, .listElim scrutinee nilBranch consBranch =>
+      ConvCumul.subst_compatible_listElim_allais scrutinee nilBranch consBranch
+        (Term.subst_compatible_pointwise_allais compat scrutinee)
+        (Term.subst_compatible_pointwise_allais compat nilBranch)
+        (Term.subst_compatible_pointwise_allais compat consBranch)
+  | _, _, .optionMatch scrutinee noneBranch someBranch =>
+      ConvCumul.subst_compatible_optionMatch_allais scrutinee noneBranch someBranch
+        (Term.subst_compatible_pointwise_allais compat scrutinee)
+        (Term.subst_compatible_pointwise_allais compat noneBranch)
+        (Term.subst_compatible_pointwise_allais compat someBranch)
+  | _, _, .eitherMatch scrutinee leftBranch rightBranch =>
+      ConvCumul.subst_compatible_eitherMatch_allais scrutinee leftBranch rightBranch
+        (Term.subst_compatible_pointwise_allais compat scrutinee)
+        (Term.subst_compatible_pointwise_allais compat leftBranch)
+        (Term.subst_compatible_pointwise_allais compat rightBranch)
+  | _, _, .lam body =>
+      ConvCumul.subst_compatible_lam_allais body
+        (Term.subst_compatible_pointwise_allais (compat.lift _) body)
+  | _, _, .lamPi body =>
+      ConvCumul.subst_compatible_lamPi_allais body
+        (Term.subst_compatible_pointwise_allais (compat.lift _) body)
+  | _, _, .cumulUp innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelLeLow levelLeHigh lowerTerm =>
+      ConvCumul.subst_compatible_cumulUp_allais _ _
+        innerLevel lowerLevel higherLevel
+        cumulOkLow cumulOkHigh cumulMonotone
+        levelLeLow levelLeHigh lowerTerm
+
+/-! # Pattern 3 headline — ConvCumulHomo + paired-env compat → ConvCumul
+
+The full Allais ICFP'18 headline (memory `reference_pattern_allais_simulation`).
+
+Architecture: structural induction on `cumulRel : ConvCumulHomo a b`
+with the per-cumulRel-ctor decomposition:
+
+* `refl t`: fundamental lemma (Term-induction on `t` with `compat`).
+* `sym inner`: recurse on `inner` with `compat.sym`, apply `ConvCumul.sym`.
+* `trans rel1 rel2`: recurse on `rel1` with `compat.refl-of-σA` to get
+  `ConvCumul (a.substHet σA) (m.substHet σA)`; recurse on `rel2` with
+  `compat` to get `ConvCumul (m.substHet σA) (b.substHet σB)`; trans.
+* cong rules (22 + 5 eliminator + cumulUpCong = 28): recurse on inner
+  ConvCumulHomo subwitnesses with `compat`, apply matching `ConvCumul.{X}Cong`
+  rule, peel casts via `cast_eq_both_benton` / `cast_eq_indep` as needed.
+
+The wall is sidestepped because:
+* Outer induction is on `ConvCumulHomo` (no viaUp ctor present).
+* All ctor cases match canonically without index-unification problems.
+* Per-position renaming inside `compat.lift` works on `ConvCumulHomo`
+  (which IS preserved by typed renaming).
+
+Result type: `ConvCumul` (not `ConvCumulHomo`) because some cases
+(notably cumulUpCong) need the lower side at decoupled scopeLow,
+which fits ConvCumul's full ctor set but not ConvCumulHomo's
+homogeneous-only fragment after substitution.  Caveat: the inner
+`lowerRel` of cumulUpCong remains untouched — substHet preserves
+lowerTerm verbatim. -/
+
+/-- **Pattern 3 fundamental headline (Allais sim at identity simulation)**:
+for any source Term and paired-env Homo-compat, the substituted
+forms on each side are ConvCumul-related.  This is the `cumulRel = .refl`
+case of the full headline. -/
+theorem ConvCumul.subst_compatible_paired_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {someType : Ty sourceLevel sourceScope}
+    {someRaw : RawTerm sourceScope}
+    (term : Term sourceCtx someType someRaw)
+    (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB) :
+    ConvCumul (term.substHet termSubstA) (term.substHet termSubstB) :=
+  Term.subst_compatible_pointwise_allais compat term
+
+/-! # Pattern 3 full-headline — status note
+
+The FULL `ConvCumulHomo.subst_compatible_paired_allais` (induction on
+cumulRel with all 26 ctor cases, output `ConvCumul (a.substHet σA) (b.substHet σB)`)
+requires:
+
+* `ConvCumul.cast_eq_indep_benton` (parallel of `ConvCumulHomo.cast_eq_indep`)
+  for cong cases with different LHS/RHS casts (lam/lamPi/appPi/pair/snd).
+* Restriction to homogeneous level (`sourceLevel = targetLevel`) for the
+  cumulUpCong arm — `ConvCumul.cumulUpCong`'s ctor signature requires
+  ctxHigh at exactly `higherLevel.toNat + 1`, but `Term.substHet` emits
+  ctxHigh at arbitrary `targetLevel ≥ higherLevel.toNat + 1` via
+  `Nat.le_trans levelLeHigh sigma.cumulOk`.  These coincide only when
+  `sourceLevel = targetLevel`.
+* Subsingleton.elim on `Nat.le` proof witnesses to align
+  `Nat.le_trans (Nat.le_refl _) sigma.cumulOk` with the `(Nat.le_refl _)`
+  required by `cumulUpCong`'s output ctxHigh constraint.
+
+These prerequisites are tractable but constitute their own ~150-line
+follow-up.  For this iteration we ship Pattern 3's CORE (fundamental
+lemma + identity-simulation headline) which IS the load-bearing
+mathematical content of Allais's framework.  The cumulRel-induction
+headline lifts the result from "single Term, two related substs" to
+"two related Terms, two related substs" via a routine outer induction;
+the substantive work is the inner per-Term-ctor dispatch (already
+shipped in the 32 Allais arms above).
+
+CUMUL-P3.3 (refl arm) is closed via the fundamental headline; the
+remaining cumulRel-ctor arms (sym/trans/22 cong/cumulUpCong) are the
+deferred follow-up. -/
+
 /-! # HONEST STATUS — what is NOT shipped
 
 This file is the substantive zero-axiom CATALOGUE of per-Term-ctor
