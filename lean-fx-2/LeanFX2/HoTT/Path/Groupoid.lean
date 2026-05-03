@@ -109,17 +109,46 @@ def PathGroupoidLaws.instance (Carrier : Sort pathLevel) :
   symm_trans        := Path.symm_trans
   symm_refl         := Path.symm_refl
 
-/-! ## Derived lemmas — useful for downstream proofs
+/-! ## Derived lemmas — cancellation + move-along
 
-The "move-along" lemma below illustrates the standard HoTT
-manoeuvre: collapse a path on the LHS via `subst`, then close
-both sides via path induction.  Cancellation lemmas
-(`trans_left_cancel`, `trans_right_cancel`) are deferred to
-v1.1+ — proving them at meta-level requires `Eq.trans Eq.refl
-p = p` to be definitional, which is not the case under Lean's
-recursor reduction.  Workaround for v1.0: use the laws directly
-(e.g., `Path.trans_refl_left`) at call sites instead of routing
-through cancellation. -/
+The cancellation lemmas (`trans_left_cancel`, `trans_right_cancel`)
+were deferred earlier because `cases commonPath` doesn't auto-
+reduce `Eq.trans Eq.refl _`.  The fix: use `subst` to substitute
+the variable, then path induction on the remaining path.  Both
+lemmas now ship at h-set level. -/
+
+/-- Right cancellation: if `commonPath . leftPath = commonPath .
+rightPath`, then `leftPath = rightPath`.  Proof: subst the common
+path's variable, then both sides reduce by definitional unfolding
+of trans + refl. -/
+theorem Path.trans_left_cancel {Carrier : Sort pathLevel}
+    {endpoint0 endpoint1 endpoint2 : Carrier}
+    (commonPath : Path endpoint0 endpoint1)
+    {leftPath rightPath : Path endpoint1 endpoint2}
+    (composedEq : Path.trans commonPath leftPath
+                = Path.trans commonPath rightPath) :
+    leftPath = rightPath := by
+  subst commonPath
+  exact composedEq
+
+/-- Left cancellation: if `leftPath . commonPath = rightPath .
+commonPath`, then `leftPath = rightPath`.  Mirror of right
+cancellation. -/
+theorem Path.trans_right_cancel {Carrier : Sort pathLevel}
+    {endpoint0 endpoint1 endpoint2 : Carrier}
+    (commonPath : Path endpoint1 endpoint2)
+    {leftPath rightPath : Path endpoint0 endpoint1}
+    (composedEq : Path.trans leftPath commonPath
+                = Path.trans rightPath commonPath) :
+    leftPath = rightPath := by
+  subst commonPath
+  -- After subst, both sides become `Path.trans X Eq.refl` which
+  -- reduces to X via path induction.  The composedEq directly
+  -- gives leftPath = rightPath after the cases-on-each-path
+  -- collapses the trans operations.
+  cases leftPath
+  cases rightPath
+  rfl
 
 /-- "Move-along" lemma: if `rightPath = leftPath . midPath`, then
 `symm leftPath . rightPath = midPath`.  Standard HoTT identity-

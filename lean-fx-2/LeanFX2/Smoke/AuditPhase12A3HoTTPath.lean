@@ -19,3 +19,5 @@ import LeanFX2.HoTT.Path.Groupoid
 #print axioms LeanFX2.PathGroupoidLaws
 #print axioms LeanFX2.PathGroupoidLaws.instance
 #print axioms LeanFX2.Path.trans_symm_move_left
+#print axioms LeanFX2.Path.trans_left_cancel
+#print axioms LeanFX2.Path.trans_right_cancel
