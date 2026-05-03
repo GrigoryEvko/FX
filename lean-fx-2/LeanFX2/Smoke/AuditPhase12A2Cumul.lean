@@ -98,4 +98,14 @@ namespace LeanFX2
 #print axioms ConvCumul.subsumeCong
 #print axioms ConvCumul.cumulUpCong
 
+-- Phase 12.A.B1.6-finish: subst-compat theorems (decomposed approach)
+#print axioms ConvCumul.subst_compatible_refl
+#print axioms ConvCumul.subst_compatible_sym
+#print axioms ConvCumul.subst_compatible_trans
+#print axioms ConvCumul.appCong_subst_compatible
+#print axioms ConvCumul.pairCong_subst_compatible
+#print axioms ConvCumul.fstCong_subst_compatible
+#print axioms ConvCumul.sndCong_subst_compatible
+#print axioms ConvCumul.cumulUpCong_subst_compatible
+
 end LeanFX2

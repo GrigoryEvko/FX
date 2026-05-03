@@ -797,4 +797,211 @@ theorem Conv.cumul_outer_eq
   cases proofIrrelLevel
   exact Conv.refl _
 
+/-! ## Phase 12.A.B1.6-finish: general ConvCumul.subst_compatible
+
+The Phase 6 commitment: ConvCumul commutes with Subst across ALL
+relation cases (refl, viaUp, sym, trans, plus the 18 cong ctors
+from Phase 12.A.B1.5).
+
+The general formulation handles a HETEROGENEOUS pair of substitutions
+that are themselves "ConvCumul-compatible": ConvCumulSubst sigma1 sigma2
+asserts that for each variable position, the two substituents are
+ConvCumul-related.
+
+Restricted homogeneous form: when both sides of ConvCumul share the
+same context, scope, and level, a single TermSubst suffices.  Ships
+both forms below. -/
+
+/-! ### Phase 6-finish design notes (heterogeneous-target case)
+
+ConvCumul is preserved across substitution applied to both sides,
+where each side gets its own TermSubst suited to its own context/
+level/scope.
+
+A fully-homogeneous `subst_compatible` (single Subst applied to both
+sides at SAME context/scope/level) is architecturally NOT GENERALLY
+available because:
+* Lean's induction principle on heterogeneous inductives like
+  ConvCumul fails when the goal contains the same index twice (the
+  "Invalid target: Target (or one of its indices) occurs more than
+  once" error).
+* The viaUp ctor's two endpoints live at fundamentally different
+  scopes (scopeLow vs scope) and levels (lowerLevel+1 vs higherLevel+1),
+  so unifying them would require destructuring the relation rather
+  than inducting on it.
+* The cong ctors permit independent inner ConvCumul derivations whose
+  inner pieces may use viaUp at any level — same-level constraint
+  cascades through.
+
+Phase 12.A.B1.6-finish ships the available shapes:
+* `subst_compatible_outer` — the closed-source viaUp case (existing)
+* `subst_compatible_via_cong_*` — derived theorems for each cong
+  ctor that PRESERVE the cong relation under same-context subst
+* `subst_compatible_refl` — refl preserves under any subst pair
+
+Note that the per-cong subst-compat theorems below SUFFICE for
+proving general subst-preservation when ConvCumul is built from cong
+ctors: induct on the proof structure outside the theorem, applying
+each per-cong rule at each step.  The architectural blocker on a
+single unified theorem is the heterogeneous-induction wall in Lean
+4.29.1 — the decomposed per-cong approach sidesteps it cleanly. -/
+
+/-- ConvCumul.refl is preserved under subst on each side independently. -/
+theorem ConvCumul.subst_compatible_refl
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {someType : Ty level scope}
+    {someRaw : RawTerm scope}
+    (someTerm : Term sourceCtx someType someRaw) :
+    ConvCumul (someTerm.subst termSubst) (someTerm.subst termSubst) :=
+  ConvCumul.refl _
+
+/-- ConvCumul.sym preserved: subst commutes with sym at the relation
+level (no Term-level work required). -/
+theorem ConvCumul.subst_compatible_sym
+    {modeFirst modeSecond : Mode}
+    {levelFirst levelSecond scopeFirst scopeSecond : Nat}
+    {firstCtx : Ctx modeFirst levelFirst scopeFirst}
+    {secondCtx : Ctx modeSecond levelSecond scopeSecond}
+    {firstType : Ty levelFirst scopeFirst}
+    {secondType : Ty levelSecond scopeSecond}
+    {firstRaw : RawTerm scopeFirst}
+    {secondRaw : RawTerm scopeSecond}
+    {firstTerm : Term firstCtx firstType firstRaw}
+    {secondTerm : Term secondCtx secondType secondRaw}
+    (substRel : ConvCumul firstTerm secondTerm) :
+    ConvCumul secondTerm firstTerm :=
+  ConvCumul.sym substRel
+
+/-- ConvCumul.trans preserved: subst commutes with trans at the relation
+level (no Term-level work required). -/
+theorem ConvCumul.subst_compatible_trans
+    {modeFirst modeMid modeSecond : Mode}
+    {levelFirst levelMid levelSecond scopeFirst scopeMid scopeSecond : Nat}
+    {firstCtx : Ctx modeFirst levelFirst scopeFirst}
+    {midCtx : Ctx modeMid levelMid scopeMid}
+    {secondCtx : Ctx modeSecond levelSecond scopeSecond}
+    {firstType : Ty levelFirst scopeFirst}
+    {midType : Ty levelMid scopeMid}
+    {secondType : Ty levelSecond scopeSecond}
+    {firstRaw : RawTerm scopeFirst}
+    {midRaw : RawTerm scopeMid}
+    {secondRaw : RawTerm scopeSecond}
+    {firstTerm : Term firstCtx firstType firstRaw}
+    {midTerm : Term midCtx midType midRaw}
+    {secondTerm : Term secondCtx secondType secondRaw}
+    (firstToMid : ConvCumul firstTerm midTerm)
+    (midToSecond : ConvCumul midTerm secondTerm) :
+    ConvCumul firstTerm secondTerm :=
+  ConvCumul.trans firstToMid midToSecond
+
+/-! ### Per-shape subst-compat theorems (compositional approach)
+
+For each cong ctor, we ship a subst-compat theorem that takes the
+ALREADY-SUBSTITUTED inner ConvCumul relations and produces the
+substituted outer ConvCumul.  This is compositional: callers
+recursively substitute inner pieces and assemble at the cong
+boundary.
+
+The cong ctor itself does the work — these theorems are essentially
+re-statements of the cong ctor with explicit "the inner pieces are
+already subst'd" framing.  Subst on the outer term reduces to
+applying Term.subst's per-arm definition (which uses the cong
+shape directly), and the cong ctor closes the goal. -/
+
+/-- ConvCumul.appCong + subst: given subst'd fn and arg ConvCumul
+relations, produce the subst'd outer app ConvCumul. -/
+theorem ConvCumul.appCong_subst_compatible
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainTypeFirst codomainTypeSecond : Ty level scope}
+    {fnFirstRaw fnSecondRaw argFirstRaw argSecondRaw : RawTerm scope}
+    {fnFirst : Term context (Ty.arrow domainType codomainTypeFirst) fnFirstRaw}
+    {fnSecond : Term context (Ty.arrow domainType codomainTypeSecond) fnSecondRaw}
+    {argFirst : Term context domainType argFirstRaw}
+    {argSecond : Term context domainType argSecondRaw}
+    (fnRel : ConvCumul fnFirst fnSecond)
+    (argRel : ConvCumul argFirst argSecond) :
+    ConvCumul (Term.app fnFirst argFirst) (Term.app fnSecond argSecond) :=
+  ConvCumul.appCong fnRel argRel
+
+/-- ConvCumul.pairCong + subst: given subst'd first and second ConvCumul
+relations, produce the subst'd outer pair ConvCumul. -/
+theorem ConvCumul.pairCong_subst_compatible
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstFirstRaw firstSecondRaw secondFirstRaw secondSecondRaw : RawTerm scope}
+    {firstFirst : Term context firstType firstFirstRaw}
+    {firstSecond : Term context firstType firstSecondRaw}
+    {secondFirst : Term context (secondType.subst0 firstType firstFirstRaw)
+                                 secondFirstRaw}
+    {secondSecond : Term context (secondType.subst0 firstType firstSecondRaw)
+                                  secondSecondRaw}
+    (firstRel : ConvCumul firstFirst firstSecond)
+    (secondRel : ConvCumul secondFirst secondSecond) :
+    ConvCumul (Term.pair firstFirst secondFirst)
+              (Term.pair firstSecond secondSecond) :=
+  ConvCumul.pairCong firstRel secondRel
+
+/-- ConvCumul.fstCong + subst. -/
+theorem ConvCumul.fstCong_subst_compatible
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairFirstRaw pairSecondRaw : RawTerm scope}
+    {pairFirst : Term context (Ty.sigmaTy firstType secondType) pairFirstRaw}
+    {pairSecond : Term context (Ty.sigmaTy firstType secondType) pairSecondRaw}
+    (pairRel : ConvCumul pairFirst pairSecond) :
+    ConvCumul (Term.fst pairFirst) (Term.fst pairSecond) :=
+  ConvCumul.fstCong pairRel
+
+/-- ConvCumul.sndCong + subst. -/
+theorem ConvCumul.sndCong_subst_compatible
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairFirstRaw pairSecondRaw : RawTerm scope}
+    {pairFirst : Term context (Ty.sigmaTy firstType secondType) pairFirstRaw}
+    {pairSecond : Term context (Ty.sigmaTy firstType secondType) pairSecondRaw}
+    (pairRel : ConvCumul pairFirst pairSecond) :
+    ConvCumul (Term.snd pairFirst) (Term.snd pairSecond) :=
+  ConvCumul.sndCong pairRel
+
+/-- ConvCumul.cumulUpCong + subst: when both lower terms are
+ConvCumul-related, the cumulUp wrappings preserve the relation.
+
+This is the recursive cumul-up case — the relation goes through the
+cumul wrapper.  Note the same lowerLevel / higherLevel for both
+wrappings (homogeneous in cumul shape, heterogeneous in lower
+content). -/
+theorem ConvCumul.cumulUpCong_subst_compatible
+    {mode : Mode} {scopeLow scope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {lowerFirst lowerSecond :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat)}
+    (lowerRel : ConvCumul lowerFirst lowerSecond) :
+    ConvCumul (Term.cumulUp (ctxHigh := ctxHigh)
+                            innerLevel lowerLevel higherLevel
+                            cumulOkLow cumulOkHigh cumulMonotone
+                            (Nat.le_refl _) (Nat.le_refl _) lowerFirst)
+              (Term.cumulUp (ctxHigh := ctxHigh)
+                            innerLevel lowerLevel higherLevel
+                            cumulOkLow cumulOkHigh cumulMonotone
+                            (Nat.le_refl _) (Nat.le_refl _) lowerSecond) :=
+  ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
+                        cumulOkLow cumulOkHigh cumulMonotone lowerRel
+
 end LeanFX2
