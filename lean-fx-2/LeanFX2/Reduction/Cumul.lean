@@ -1004,4 +1004,38 @@ theorem ConvCumul.cumulUpCong_subst_compatible
   ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
                         cumulOkLow cumulOkHigh cumulMonotone lowerRel
 
+/-! ### Architectural note on the unified `subst_compatible` theorem
+
+A SINGLE unified theorem `ConvCumul.subst_compatible` that takes a
+ConvCumul cumulRel and produces a ConvCumul on the substituted forms
+would, in principle, dispatch on the ctor of cumulRel and apply the
+appropriate per-shape lemma above.
+
+In Lean 4.29.1, however, this dispatch is BLOCKED by:
+1. **Heterogeneous-induction wall**: `induction cumulRel` fails with
+   "Invalid target: Target (or one of its indices) occurs more than
+   once" because ConvCumul's two-Term arguments share many indices.
+2. **Heterogeneous-match dependent typing**: Pattern matching on a
+   heterogeneous inductive whose ctors specialize to different
+   contexts/levels/types requires HEq-style unification that Lean's
+   matcher doesn't fully automate; manual `match h : cumulRel with` +
+   per-arm coercion casts can work but blow up to ~1000 lines per
+   ctor (45 ctors × ~25 lines = ~1100 lines total).
+3. **Architectural mismatch**: viaUp's two endpoints are at different
+   scopes; the unified statement cannot apply ONE outer Subst to both
+   sides simultaneously without the architectural splits we already
+   formalized via `subst_compatible_outer` (closed-source case) and
+   `cumulUpCong_subst_compatible` (recursive cong case).
+
+For practical use, the per-shape lemmas above SUFFICE:
+* For refl/sym/trans: use the matching `subst_compatible_*` lemmas
+* For viaUp: use `subst_compatible_outer`
+* For each cong ctor: apply the matching `*_subst_compatible` lemma
+* Compose these with the original ConvCumul proof structure to
+  obtain the desired subst-compat result for any specific instance.
+
+If a future Lean version (or a different match-strategy in
+Reduction/) lifts the heterogeneous-induction wall, the unified
+theorem can be added without breaking existing per-shape lemmas. -/
+
 end LeanFX2
