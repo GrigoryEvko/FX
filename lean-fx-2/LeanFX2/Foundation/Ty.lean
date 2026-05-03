@@ -424,4 +424,184 @@ theorem Ty.weaken_rename_commute {level : Nat} {scope targetScope : Nat}
       Ty.rename_compose rho RawRenaming.weaken someType]
   exact Ty.rename_pointwise (RawRenaming.weaken_lift_commute rho) someType
 
+/-! ## Ty.lift_level — Phase 12.A.B1.2 cumulativity-as-data
+
+Promote a `Ty sourceLevel scope` to `Ty targetLevel scope` given a
+witness `sourceLevel ≤ targetLevel`.  Most ctors are level-uniform
+(level is just a parameter), so lift is structural recursion.  The
+ONE non-trivial arm is `Ty.universe`: combine its existing
+`u + 1 ≤ sourceLevel` proof with `sourceLevel ≤ targetLevel` via
+`Nat.le_trans` to get `u + 1 ≤ targetLevel`.
+
+This is the operation that makes Phase 1's intrinsic-cumul Ty.universe
+usable across the kernel: any `Ty sourceLevel scope` carrier can be
+lifted to a higher universe.  Cumul-Subst-mismatch is escaped because
+the kernel's other ctors don't carry level-mismatched payloads — they
+just thread `level` through their subterms uniformly. -/
+def Ty.lift_level {sourceLevel targetLevel : Nat}
+    (cumulOk : sourceLevel ≤ targetLevel) :
+    ∀ {scope : Nat}, Ty sourceLevel scope → Ty targetLevel scope
+  | _, .unit => .unit
+  | _, .bool => .bool
+  | _, .nat  => .nat
+  | _, .arrow domainType codomainType =>
+      .arrow (Ty.lift_level cumulOk domainType)
+             (Ty.lift_level cumulOk codomainType)
+  | _, .piTy domainType codomainType =>
+      .piTy (Ty.lift_level cumulOk domainType)
+            (Ty.lift_level cumulOk codomainType)
+  | _, .sigmaTy firstType secondType =>
+      .sigmaTy (Ty.lift_level cumulOk firstType)
+               (Ty.lift_level cumulOk secondType)
+  | _, .tyVar position => .tyVar position
+  | _, .id carrier leftEndpoint rightEndpoint =>
+      .id (Ty.lift_level cumulOk carrier) leftEndpoint rightEndpoint
+  | _, .listType elementType =>
+      .listType (Ty.lift_level cumulOk elementType)
+  | _, .optionType elementType =>
+      .optionType (Ty.lift_level cumulOk elementType)
+  | _, .eitherType leftType rightType =>
+      .eitherType (Ty.lift_level cumulOk leftType)
+                  (Ty.lift_level cumulOk rightType)
+  | _, .universe universeLevel levelLe =>
+      .universe universeLevel (Nat.le_trans levelLe cumulOk)
+  | _, .empty => .empty
+  | _, .interval => .interval
+  | _, .path carrier leftEndpoint rightEndpoint =>
+      .path (Ty.lift_level cumulOk carrier) leftEndpoint rightEndpoint
+  | _, .glue baseType boundaryWitness =>
+      .glue (Ty.lift_level cumulOk baseType) boundaryWitness
+  | _, .oeq carrier leftEndpoint rightEndpoint =>
+      .oeq (Ty.lift_level cumulOk carrier) leftEndpoint rightEndpoint
+  | _, .idStrict carrier leftEndpoint rightEndpoint =>
+      .idStrict (Ty.lift_level cumulOk carrier) leftEndpoint rightEndpoint
+  | _, .equiv domainType codomainType =>
+      .equiv (Ty.lift_level cumulOk domainType)
+             (Ty.lift_level cumulOk codomainType)
+  | _, .refine baseType predicate =>
+      .refine (Ty.lift_level cumulOk baseType) predicate
+  | _, .record singleFieldType =>
+      .record (Ty.lift_level cumulOk singleFieldType)
+  | _, .codata stateType outputType =>
+      .codata (Ty.lift_level cumulOk stateType)
+              (Ty.lift_level cumulOk outputType)
+  | _, .session protocolStep => .session protocolStep
+  | _, .effect carrierType effectTag =>
+      .effect (Ty.lift_level cumulOk carrierType) effectTag
+  | _, .modal modalityTag carrierType =>
+      .modal modalityTag (Ty.lift_level cumulOk carrierType)
+
+/-- Reflexivity of level-lifting: `Ty.lift_level (Nat.le_refl _) ty = ty`.
+Structural induction over Ty.  Every recursive arm preserves the term
+because the cumul witness becomes refl, and `Nat.le_trans levelLe (Nat.le_refl _)
+= levelLe` by Subsingleton on Nat.le proofs.
+
+NOTE: Subsingleton.elim on Nat.le may emit propext on some Lean
+versions; we use direct structural equality with `proof_irrel_le` if
+audit fires.  The version landed here uses `Subsingleton.elim` for
+brevity; will refactor to direct match if axiom audit fails. -/
+theorem Ty.lift_level_refl {level : Nat}
+    (cumulOkRefl : level ≤ level) :
+    ∀ {scope : Nat} (someType : Ty level scope),
+      Ty.lift_level cumulOkRefl someType = someType := by
+  intro scope someType
+  induction someType with
+  | unit => rfl
+  | bool => rfl
+  | nat  => rfl
+  | arrow d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
+  | piTy d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
+  | sigmaTy fT sT fIH sIH => simp only [Ty.lift_level]; rw [fIH, sIH]
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | listType e eIH => simp only [Ty.lift_level]; rw [eIH]
+  | optionType e eIH => simp only [Ty.lift_level]; rw [eIH]
+  | eitherType l r lIH rIH => simp only [Ty.lift_level]; rw [lIH, rIH]
+  | «universe» universeLevel levelLe =>
+      show Ty.universe universeLevel (Nat.le_trans levelLe cumulOkRefl) =
+           Ty.universe universeLevel levelLe
+      have proofIrrel : Nat.le_trans levelLe cumulOkRefl = levelLe :=
+        Subsingleton.elim _ _
+      rw [proofIrrel]
+  | empty => rfl
+  | interval => rfl
+  | path carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.lift_level]; rw [baseIH]
+  | oeq carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | idStrict carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | equiv d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.lift_level]; rw [baseIH]
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.lift_level]; rw [singleFieldIH]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.lift_level]; rw [stateIH, outputIH]
+  | session protocolStep => rfl
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+
+/-- Transitivity of level-lifting: lifting through the composite
+witness equals lifting twice.  Proof reduces to `Nat.le_trans`
+associativity (subsingleton on Nat.le proofs). -/
+theorem Ty.lift_level_trans
+    {sourceLevel midLevel targetLevel : Nat}
+    (cumulOkLow : sourceLevel ≤ midLevel)
+    (cumulOkHigh : midLevel ≤ targetLevel) :
+    ∀ {scope : Nat} (someType : Ty sourceLevel scope),
+      Ty.lift_level cumulOkHigh (Ty.lift_level cumulOkLow someType) =
+        Ty.lift_level (Nat.le_trans cumulOkLow cumulOkHigh) someType := by
+  intro scope someType
+  induction someType with
+  | unit => rfl
+  | bool => rfl
+  | nat  => rfl
+  | arrow d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
+  | piTy d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
+  | sigmaTy fT sT fIH sIH => simp only [Ty.lift_level]; rw [fIH, sIH]
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | listType e eIH => simp only [Ty.lift_level]; rw [eIH]
+  | optionType e eIH => simp only [Ty.lift_level]; rw [eIH]
+  | eitherType l r lIH rIH => simp only [Ty.lift_level]; rw [lIH, rIH]
+  | «universe» universeLevel levelLe =>
+      show Ty.universe universeLevel
+            (Nat.le_trans (Nat.le_trans levelLe cumulOkLow) cumulOkHigh) =
+           Ty.universe universeLevel
+            (Nat.le_trans levelLe (Nat.le_trans cumulOkLow cumulOkHigh))
+      have proofIrrel :
+          Nat.le_trans (Nat.le_trans levelLe cumulOkLow) cumulOkHigh =
+            Nat.le_trans levelLe (Nat.le_trans cumulOkLow cumulOkHigh) :=
+        Subsingleton.elim _ _
+      rw [proofIrrel]
+  | empty => rfl
+  | interval => rfl
+  | path carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.lift_level]; rw [baseIH]
+  | oeq carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | idStrict carrier left right carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | equiv d c dIH cIH => simp only [Ty.lift_level]; rw [dIH, cIH]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.lift_level]; rw [baseIH]
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.lift_level]; rw [singleFieldIH]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.lift_level]; rw [stateIH, outputIH]
+  | session protocolStep => rfl
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.lift_level]; rw [carrierIH]
+
 end LeanFX2
