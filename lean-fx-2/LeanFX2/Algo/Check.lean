@@ -482,6 +482,7 @@ def Term.check : ∀ {scope : Nat}
   | .sessionSend _ _    => none
   | .sessionRecv _      => none
   | .effectPerform _ _  => none
+  | .universeCode _     => none
 
 end LeanFX2
 

@@ -205,6 +205,13 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.modElim (Term.rename termRenaming innerTerm)
   | _, _, .subsume innerTerm =>
       Term.subsume (Term.rename termRenaming innerTerm)
+  -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
+  -- levelEq` and `RawTerm.universeCode innerLevel.toNat` rename to
+  -- themselves (no scope-dependent payload), so the `someType.rename
+  -- rho` and `raw.rename rho` results match the ctor's expected types
+  -- definitionally.
+  | _, _, .universeCode innerLevel outerLevel cumulOk levelEq =>
+      Term.universeCode innerLevel outerLevel cumulOk levelEq
 
 /-! ## Term.weaken — convenience wrapper -/
 

@@ -191,6 +191,12 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.modElim (Term.subst termSubst innerTerm)
   | _, _, .subsume innerTerm =>
       Term.subsume (Term.subst termSubst innerTerm)
+  -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
+  -- levelEq` and `RawTerm.universeCode innerLevel.toNat` substitute to
+  -- themselves (no scope-dependent payload), so rebuilding the ctor
+  -- at the target scope matches the expected types definitionally.
+  | _, _, .universeCode innerLevel outerLevel cumulOk levelEq =>
+      Term.universeCode innerLevel outerLevel cumulOk levelEq
 
 /-! ## Term.subst0 — single-variable β-substitution -/
 

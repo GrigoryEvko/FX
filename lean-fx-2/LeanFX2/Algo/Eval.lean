@@ -207,6 +207,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .refl _ _ => none
   | _, _, _, _, .modIntro _ => none
   | _, _, _, _, .subsume _ => none
+  | _, _, _, _, .universeCode _ _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction

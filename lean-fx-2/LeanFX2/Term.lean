@@ -249,5 +249,20 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {innerType : Ty level scope} {innerRaw : RawTerm scope}
       (innerTerm : Term context innerType innerRaw) :
       Term context innerType (RawTerm.subsume innerRaw)
+  /-- Universe-code at inner level `innerLevel`, typed at outer level
+      `outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
+      The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`
+      makes the same raw `RawTerm.universeCode innerLevel.toNat`
+      inhabit `Ty.universe outerLevel` for any compatible outer level
+      (used by `Conv.cumul`).  The propositional `levelEq` parameter
+      threads through `Ty.universe` per the P-3 universe-constructor-
+      blocker workaround. -/
+  | universeCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel outerLevel : UniverseLevel)
+      (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+      (levelEq : level = outerLevel.toNat + 1) :
+      Term context (Ty.universe outerLevel levelEq)
+                   (RawTerm.universeCode innerLevel.toNat)
 
 end LeanFX2

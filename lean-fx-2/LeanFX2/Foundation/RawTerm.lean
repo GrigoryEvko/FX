@@ -132,6 +132,13 @@ inductive RawTerm : Nat → Type
   -- Algebraic effect operation — perform an effect at runtime
   | effectPerform {scope : Nat}
       (operationTag arguments : RawTerm scope) : RawTerm scope
+  /-- Universe-code term: the raw form of "Type ⟨innerLevel⟩".  At
+      typing layer this term lives at `Ty.universe outerLevel _` for
+      any `outerLevel ≥ innerLevel` (cumulativity is intrinsic to
+      `Term.universeCode`).  Used by `Conv.cumul` to prove that the
+      same universe code is convertible across compatible outer
+      levels.  No scope-dependent payload — just the inner level. -/
+  | universeCode {scope : Nat} (innerLevel : Nat) : RawTerm scope
   deriving DecidableEq
 
 end LeanFX2

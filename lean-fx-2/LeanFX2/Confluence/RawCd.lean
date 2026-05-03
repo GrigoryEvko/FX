@@ -124,6 +124,7 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.sessionSend _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.sessionRecv _ => RawTerm.app developedFunction developedArgument
   | RawTerm.effectPerform _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.universeCode _ => RawTerm.app developedFunction developedArgument
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -184,6 +185,7 @@ def RawTerm.cdFstCase {scope : Nat}
   | RawTerm.sessionSend _ _ => RawTerm.fst developedPair
   | RawTerm.sessionRecv _ => RawTerm.fst developedPair
   | RawTerm.effectPerform _ _ => RawTerm.fst developedPair
+  | RawTerm.universeCode _ => RawTerm.fst developedPair
 
 /-- Snd redex: `snd (a, b) → b`; otherwise rebuild `snd dp`. -/
 def RawTerm.cdSndCase {scope : Nat}
@@ -244,6 +246,7 @@ def RawTerm.cdSndCase {scope : Nat}
   | RawTerm.sessionSend _ _ => RawTerm.snd developedPair
   | RawTerm.sessionRecv _ => RawTerm.snd developedPair
   | RawTerm.effectPerform _ _ => RawTerm.snd developedPair
+  | RawTerm.universeCode _ => RawTerm.snd developedPair
 
 /-- BoolElim redex: `boolElim true t e → t`, `boolElim false t e → e`;
 otherwise rebuild. -/
@@ -358,6 +361,8 @@ def RawTerm.cdBoolElimCase {scope : Nat}
   | RawTerm.sessionRecv _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.effectPerform _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.universeCode _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
 
 /-- NatElim redex: `natElim 0 z s → z`, `natElim (succ p) z s → s p`;
@@ -474,6 +479,8 @@ def RawTerm.cdNatElimCase {scope : Nat}
   | RawTerm.sessionRecv _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.effectPerform _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.universeCode _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
 
 /-- NatRec redex: `natRec 0 z s → z`,
@@ -592,6 +599,8 @@ def RawTerm.cdNatRecCase {scope : Nat}
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.effectPerform _ _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.universeCode _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
 
 /-- ListElim redex: `listElim nil n c → n`,
 `listElim (cons h t) n c → c h t`; otherwise rebuild. -/
@@ -707,6 +716,8 @@ def RawTerm.cdListElimCase {scope : Nat}
   | RawTerm.sessionRecv _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.effectPerform _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.universeCode _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
 
 /-- OptionMatch redex: `optionMatch none n s → n`,
@@ -824,6 +835,8 @@ def RawTerm.cdOptionMatchCase {scope : Nat}
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.effectPerform _ _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.universeCode _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
 
 /-- EitherMatch redex: `eitherMatch (inl v) l r → l v`,
 `eitherMatch (inr v) l r → r v`; otherwise rebuild. -/
@@ -939,6 +952,8 @@ def RawTerm.cdEitherMatchCase {scope : Nat}
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.effectPerform _ _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.universeCode _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
 
 /-- IdJ redex: `idJ b (refl _) → b`; otherwise rebuild. -/
 def RawTerm.cdIdJCase {scope : Nat}
@@ -999,6 +1014,7 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.sessionSend _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.sessionRecv _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.effectPerform _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.universeCode _ => RawTerm.idJ developedBase developedWitness
 
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
@@ -1104,5 +1120,7 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   | _, .sessionRecv channel => RawTerm.sessionRecv (RawTerm.cd channel)
   | _, .effectPerform operationTag arguments =>
       RawTerm.effectPerform (RawTerm.cd operationTag) (RawTerm.cd arguments)
+  -- D1.6/A2: universeCode is atomic (no subterms to develop)
+  | _, .universeCode innerLevel => RawTerm.universeCode innerLevel
 
 end LeanFX2

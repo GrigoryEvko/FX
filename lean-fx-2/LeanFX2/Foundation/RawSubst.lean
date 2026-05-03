@@ -173,6 +173,10 @@ def RawTerm.rename : ∀ {source target : Nat},
   | _, _, .effectPerform operationTag arguments, rawRenaming =>
       .effectPerform (operationTag.rename rawRenaming)
                      (arguments.rename rawRenaming)
+  -- D1.6/A2: universeCode is scope-polymorphic — rename is identity
+  -- on the inner-level payload (no Fin variables to remap).
+  | _, _, .universeCode innerLevel, _ =>
+      .universeCode innerLevel
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -310,6 +314,7 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [chIH renamingEq]
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.rename]; rw [tagIH renamingEq, argsIH renamingEq]
+  | universeCode innerLevel => rfl
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -427,6 +432,7 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [chIH rho1 rho2]
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.rename]; rw [tagIH rho1 rho2, argsIH rho1 rho2]
+  | universeCode innerLevel => rfl
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -578,6 +584,10 @@ def RawTerm.subst : ∀ {source target : Nat},
   | _, _, .sessionRecv channel, sigma => .sessionRecv (channel.subst sigma)
   | _, _, .effectPerform operationTag arguments, sigma =>
       .effectPerform (operationTag.subst sigma) (arguments.subst sigma)
+  -- D1.6/A2: universeCode is scope-polymorphic — subst is identity
+  -- on the inner-level payload (no Fin variables to substitute).
+  | _, _, .universeCode innerLevel, _ =>
+      .universeCode innerLevel
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -722,6 +732,7 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [chIH substEq]
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst]; rw [tagIH substEq, argsIH substEq]
+  | universeCode innerLevel => rfl
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -881,6 +892,7 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.rename, RawTerm.subst]
       rw [tagIH rho sigma, argsIH rho sigma]
+  | universeCode innerLevel => rfl
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -1046,6 +1058,7 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst, RawTerm.rename]
       rw [tagIH sigma rho, argsIH sigma rho]
+  | universeCode innerLevel => rfl
 
 /-! ### subst-subst composition. -/
 
@@ -1209,6 +1222,7 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [chIH sigma1 sigma2]
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst]; rw [tagIH sigma1 sigma2, argsIH sigma1 sigma2]
+  | universeCode innerLevel => rfl
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -1364,6 +1378,7 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [chIH]
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst]; rw [tagIH, argsIH]
+  | universeCode innerLevel => rfl
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

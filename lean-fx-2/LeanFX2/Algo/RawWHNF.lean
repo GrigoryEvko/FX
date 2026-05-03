@@ -74,6 +74,7 @@ inductive RawTerm.HeadCtor : Type
   | equivIntro | equivApp | refineIntro | refineElim
   | recordIntro | recordProj | codataUnfold | codataDest
   | sessionSend | sessionRecv | effectPerform
+  | universeCode
 
 /-- Project a raw term to its head-ctor tag.  Full enumeration of
 all 28 RawTerm ctors keeps this propext-free. -/
@@ -112,6 +113,7 @@ def RawTerm.headCtor {scope : Nat} (term : RawTerm scope) : RawTerm.HeadCtor :=
   | .codataUnfold _ _ => .codataUnfold | .codataDest _ => .codataDest
   | .sessionSend _ _ => .sessionSend | .sessionRecv _ => .sessionRecv
   | .effectPerform _ _ => .effectPerform
+  | .universeCode _ => .universeCode
 
 /-! ## ?-projection helpers — full 28-arm enumeration
 
@@ -154,6 +156,7 @@ def RawTerm.lamBody? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Project the components of a `pair` term. -/
 def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
@@ -183,6 +186,7 @@ def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Project the predecessor from a `natSucc` term. -/
 def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
@@ -212,6 +216,7 @@ def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Project head/tail from a `listCons`. -/
 def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
@@ -241,6 +246,7 @@ def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Project the value from `optionSome`. -/
 def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
@@ -270,6 +276,7 @@ def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Project the value from `eitherInl`. -/
 def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
@@ -299,6 +306,7 @@ def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Project the value from `eitherInr`. -/
 def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
@@ -328,6 +336,7 @@ def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
   | .codataUnfold _ _ => none | .codataDest _ => none
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
+  | .universeCode _ => none
 
 /-- Test whether a term is a `refl` (independent of the witness). -/
 def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
@@ -356,6 +365,7 @@ def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
   | .codataUnfold _ _ => false | .codataDest _ => false
   | .sessionSend _ _ => false | .sessionRecv _ => false
   | .effectPerform _ _ => false
+  | .universeCode _ => false
 
 /-! ## Eq-witness recovery for the projection helpers
 
@@ -514,7 +524,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .boolElim scrutineeWhnf thenBranch elseBranch
     | .natZero => .natZero
     | .natSucc predecessor => .natSucc predecessor
@@ -541,7 +552,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .natElim scrutineeWhnf zeroBranch succBranch
     | .natRec scrutinee zeroBranch succBranch =>
         let scrutineeWhnf := RawTerm.whnf fuel scrutinee
@@ -568,7 +580,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .natRec scrutineeWhnf zeroBranch succBranch
     | .listNil => .listNil
     | .listCons headTerm tailTerm => .listCons headTerm tailTerm
@@ -595,7 +608,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .listElim scrutineeWhnf nilBranch consBranch
     | .optionNone => .optionNone
     | .optionSome valueTerm => .optionSome valueTerm
@@ -622,7 +636,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .optionMatch scrutineeWhnf noneBranch someBranch
     | .eitherInl valueTerm => .eitherInl valueTerm
     | .eitherInr valueTerm => .eitherInr valueTerm
@@ -653,7 +668,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .eitherMatch scrutineeWhnf leftBranch rightBranch
     | .refl rawWitness => .refl rawWitness
     | .idJ baseCase witness =>
@@ -673,7 +689,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
-        | .sessionSend | .sessionRecv | .effectPerform =>
+        | .sessionSend | .sessionRecv | .effectPerform
+        | .universeCode =>
             .idJ baseCase witnessWhnf
     -- Modal: no reduction rules yet (Layer 6 will add iotaModal).
     | .modIntro innerTerm => .modIntro innerTerm
@@ -709,5 +726,6 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
     | .sessionSend channel payload => .sessionSend channel payload
     | .sessionRecv channel => .sessionRecv channel
     | .effectPerform operationTag arguments => .effectPerform operationTag arguments
+    | .universeCode innerLevel => .universeCode innerLevel
 
 end LeanFX2

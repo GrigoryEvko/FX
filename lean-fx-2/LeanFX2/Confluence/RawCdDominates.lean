@@ -288,5 +288,6 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.effectPerformCong
         (RawStep.par.cd_dominates operationTag)
         (RawStep.par.cd_dominates arguments)
+  | _, .universeCode _ => RawStep.par.refl _
 
 end LeanFX2

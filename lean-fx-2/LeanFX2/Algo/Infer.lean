@@ -308,6 +308,7 @@ def Term.infer (context : Ctx mode level scope) :
   | .sessionSend _ _    => none
   | .sessionRecv _      => none
   | .effectPerform _ _  => none
+  | .universeCode _     => none
 
 end LeanFX2
 

@@ -175,6 +175,9 @@ theorem Term.subst_pointwise
   | _, _, .subsume innerTerm => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq innerTerm]
+  -- Universe-code: scope-polymorphic; both sides definitionally
+  -- equal regardless of substitution (no var dependencies).
+  | _, _, .universeCode _ _ _ _ => rfl
 
 /-! ## TermSubst composition
 

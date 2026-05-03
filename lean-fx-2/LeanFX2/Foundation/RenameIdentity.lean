@@ -232,6 +232,7 @@ theorem RawTerm.rename_identity {scope : Nat} :
       show (operationTag.rename _).effectPerform (arguments.rename _) =
            operationTag.effectPerform arguments
       rw [RawTerm.rename_identity operationTag, RawTerm.rename_identity arguments]
+  | .universeCode innerLevel => rfl
 
 /-! ## Ty.rename_identity
 

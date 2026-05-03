@@ -256,6 +256,7 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
       RawStep.par.effectPerformCong
         (RawTerm.subst_par_pointwise operationTag substsRelated)
         (RawTerm.subst_par_pointwise arguments substsRelated)
+  | .universeCode _, _, _, _ => RawStep.par.refl _
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
