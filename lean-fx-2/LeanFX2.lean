@@ -79,8 +79,16 @@ import LeanFX2.Confluence.ConvBridge
 
 -- Layer 4 — Bridge
 import LeanFX2.Bridge
+import LeanFX2.Bridge.PathToId
+import LeanFX2.Bridge.IdToPath
+import LeanFX2.Bridge.PathIdInverse
+import LeanFX2.Bridge.IdEqType
+import LeanFX2.Bridge.PathEqType
+import LeanFX2.Bridge.BoxObservational
+import LeanFX2.Bridge.BoxCubical
 
 -- Layer 5 — HoTT
+import LeanFX2.HoTT.OEq
 import LeanFX2.HoTT.Identity
 import LeanFX2.HoTT.J
 import LeanFX2.HoTT.Path.Composition
@@ -94,6 +102,21 @@ import LeanFX2.HoTT.HIT.Spec
 import LeanFX2.HoTT.HIT.Setoid
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.Examples
+import LeanFX2.HoTT.HIT.Quot
+import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.S1
+import LeanFX2.HoTT.HIT.Suspension
+import LeanFX2.HoTT.HIT.Pushout
+import LeanFX2.HoTT.HIT.Coequalizer
+
+-- Cubical scaffold
+import LeanFX2.Cubical.Path
+import LeanFX2.Cubical.Composition
+import LeanFX2.Cubical.Transport
+import LeanFX2.Cubical.Glue
+import LeanFX2.Cubical.Ua
+import LeanFX2.Cubical.PathLemmas
+import LeanFX2.Cubical.Bridge
 
 -- Layer 6 — Modal
 import LeanFX2.Modal.Foundation
@@ -103,6 +126,10 @@ import LeanFX2.Modal.Bridge
 import LeanFX2.Modal.Cap
 import LeanFX2.Modal.Ghost
 import LeanFX2.Modal.«2LTT»
+import LeanFX2.Modal.TwoLevel
+import LeanFX2.Modal.BoxPath
+import LeanFX2.Modal.Cohesive
+import LeanFX2.Modal.Adjunction
 
 -- Layer 7 — Graded
 import LeanFX2.Graded.Semiring
@@ -119,6 +146,17 @@ import LeanFX2.Refine.Term
 import LeanFX2.Refine.Decidable
 import LeanFX2.Refine.SMTCert
 import LeanFX2.Refine.SMTRecheck
+
+-- Effects, sessions, codata
+import LeanFX2.Effects.Foundation
+import LeanFX2.Effects.Handlers
+import LeanFX2.Effects.Step
+import LeanFX2.Sessions.Foundation
+import LeanFX2.Sessions.Duality
+import LeanFX2.Sessions.Step
+import LeanFX2.Codata.Foundation
+import LeanFX2.Codata.Productivity
+import LeanFX2.Codata.Step
 
 -- Layer 9 — Algo
 import LeanFX2.Algo.RawWHNF
@@ -146,6 +184,27 @@ import LeanFX2.Surface.ElabCompleteness
 -- Layer 11 — Pipeline
 import LeanFX2.Pipeline
 
+-- Cross-theory conservativity and translation scaffolds
+import LeanFX2.Conservativity.HOTTOverMLTT
+import LeanFX2.Conservativity.CubicalOverHOTT
+import LeanFX2.Conservativity.ModalOverObservational
+import LeanFX2.Translation.CubicalToObservational
+import LeanFX2.Translation.ObservationalToCubical
+import LeanFX2.Translation.Inverse
+import LeanFX2.InternalLanguage.Coherence
+
+-- Lean kernel meta-verification scaffold
+import LeanFX2.Lean.Kernel.Level
+import LeanFX2.Lean.Kernel.Name
+import LeanFX2.Lean.Kernel.Expr
+import LeanFX2.Lean.Kernel.Substitution
+import LeanFX2.Lean.Kernel.Reduction
+import LeanFX2.Lean.Kernel.Inductive
+import LeanFX2.Lean.Kernel.HasType
+import LeanFX2.Lean.Kernel.Check
+import LeanFX2.Lean.Kernel.Soundness
+import LeanFX2.Lean.Kernel.Audit
+
 -- Layer 12 — Tools
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditAll
@@ -166,6 +225,7 @@ import LeanFX2.Smoke.Bridge
 import LeanFX2.Smoke.HoTT
 import LeanFX2.Smoke.Modal
 import LeanFX2.Smoke.Graded
+import LeanFX2.Smoke.AuditAll
 import LeanFX2.Smoke.AuditPhase5Bridge
 import LeanFX2.Smoke.AuditPhase6ARawCd
 import LeanFX2.Smoke.AuditPhase6BInversion
