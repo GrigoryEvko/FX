@@ -2268,6 +2268,32 @@ theorem ConvCumulHomo.subst_compatible_paired_allais
       exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
               cumulOkLow cumulOkHigh cumulMonotone lowerRel
 
+/-! # `ConvCumul.subst_compatible`
+
+`ConvCumulHomo` (homogeneous fragment, no `viaUp` ctor) is closed
+under typed heterogeneous-scope substitution at homogeneous level:
+applying a single `TermSubstHet sigma` to both sides of a homogeneous
+ConvCumul relation yields a `ConvCumul`-related pair.
+
+Body: `ConvCumulHomo.subst_compatible_paired_allais` (Pattern 3 /
+Allais ICFP'18 paired-env simulation) instantiated at `refl`-compat
+(sigma vs sigma).  The viaUp ctor is covered by separate shims in
+`ConvCumulHomo.lean` (`ConvCumul.subst_compatible_viaUp`). -/
+theorem ConvCumul.subst_compatible
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : SubstHet level level sourceScope targetScope}
+    {firstType secondType : Ty level sourceScope}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    {firstTerm : Term sourceCtx firstType firstRaw}
+    {secondTerm : Term sourceCtx secondType secondRaw}
+    (cumulRel : ConvCumulHomo firstTerm secondTerm)
+    (termSubst : TermSubstHet sourceCtx targetCtx sigma) :
+    ConvCumul (firstTerm.substHet termSubst) (secondTerm.substHet termSubst) :=
+  ConvCumulHomo.subst_compatible_paired_allais cumulRel
+    (TermSubstHet.PointwiseCompatHomo.refl termSubst)
+
 /-! # HONEST STATUS — what is NOT shipped
 
 This file is the substantive zero-axiom CATALOGUE of per-Term-ctor

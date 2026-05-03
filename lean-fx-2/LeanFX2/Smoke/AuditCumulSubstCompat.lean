@@ -128,3 +128,6 @@ import LeanFX2.Reduction.CumulSubstCompat
 
 -- Pattern 3 FULL HEADLINE at homogeneous level (1)
 #print axioms LeanFX2.ConvCumulHomo.subst_compatible_paired_allais
+
+-- CUMUL-1.7 entry point — unified ConvCumul.subst_compatible (1)
+#print axioms LeanFX2.ConvCumul.subst_compatible
