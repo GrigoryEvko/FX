@@ -108,4 +108,12 @@ namespace LeanFX2
 #print axioms ConvCumul.sndCong_subst_compatible
 #print axioms ConvCumul.cumulUpCong_subst_compatible
 
+-- CUMUL-1.7: unified ConvCumul.subst_compatible theorem
+#print axioms ConvCumul.subst_compatible
+
+-- CUMUL-1.7: per-Term-shape unified theorem helpers
+#print axioms ConvCumul.subst_compatible_var
+#print axioms ConvCumul.subst_compatible_unit
+#print axioms ConvCumul.subst_compatible_cumulUp_term
+
 end LeanFX2
