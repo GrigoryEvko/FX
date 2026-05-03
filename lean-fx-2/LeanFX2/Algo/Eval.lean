@@ -220,13 +220,15 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
         some ⟨_, elseBranch⟩
       else
         none
-  -- Eliminator cases: keep firing only the no-payload canonical
-  -- cases (zeroBranch, nilBranch, noneBranch) for now.  The
-  -- `tryDestruct*` helpers are SHIPPED for future M08 use — they
-  -- enable payload-bearing β/ι extension once the corresponding
-  -- soundness theorems (`Term.headStep?_sound_natElimSucc` etc.)
-  -- land.  Until then, headStep? matches the existing soundness
-  -- contract.
+  -- Eliminator cases: fire only no-payload canonical cases for
+  -- compatibility with the existing `Term.headStep?_sound` closure
+  -- proof (whose `show ... from rfl` patterns expect this shape).
+  -- Payload firings are SHIPPED as standalone theorems
+  -- (`Term.headStep?_sound_<rule>` for natElimSucc / natRecSucc /
+  -- listElimCons / optionMatchSome / eitherMatchInl / eitherMatchInr)
+  -- in `Algo/Soundness.lean`.  Future work: rewrite the closure
+  -- proof to dispatch via per-firing sound theorems, unblocking
+  -- the full headStep? extension.
   | _, _, _, _, .natElim scrutinee zeroBranch _ =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then
