@@ -170,14 +170,39 @@ def Term.infer (context : Ctx mode level scope) :
   | .boolElim _ _ _   => none
   | .natElim _ _ _    => none
   | .natRec _ _ _     => none
-  | .listNil          => none
-  | .listCons _ _     => none
+  | .listNil          => none  -- needs expected element type
+  -- listCons: infer the head's type, then synthesize tail at
+  -- listType of that head type.  When both succeed AND tail's
+  -- inferred type is `listType elementType`, build listCons.
+  | .listCons headRaw tailRaw =>
+      match Term.infer context headRaw with
+      | some ⟨elementType, headTerm⟩ =>
+          match Term.infer context tailRaw with
+          | some ⟨.listType tailElementType, tailTerm⟩ =>
+              if elementEq : tailElementType = elementType then
+                some ⟨Ty.listType elementType,
+                      Term.listCons headTerm (elementEq ▸ tailTerm)⟩
+              else
+                none
+          | some ⟨.unit, _⟩ | some ⟨.bool, _⟩ | some ⟨.nat, _⟩
+          | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
+          | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
+          | some ⟨.id _ _ _, _⟩ | some ⟨.optionType _, _⟩
+          | some ⟨.eitherType _ _, _⟩ => none
+          | none => none
+      | none => none
   | .listElim _ _ _   => none
-  | .optionNone       => none
-  | .optionSome _     => none
+  | .optionNone       => none  -- needs expected element type
+  -- optionSome: infer the inner value's type, build optionSome.
+  -- Always inferable when the inner term is.
+  | .optionSome valueRaw =>
+      match Term.infer context valueRaw with
+      | some ⟨elementType, valueTerm⟩ =>
+          some ⟨Ty.optionType elementType, Term.optionSome valueTerm⟩
+      | none => none
   | .optionMatch _ _ _ => none
-  | .eitherInl _      => none
-  | .eitherInr _      => none
+  | .eitherInl _      => none  -- ambiguous: rightType free
+  | .eitherInr _      => none  -- ambiguous: leftType free
   | .eitherMatch _ _ _ => none
   | .refl _           => none  -- needs expected Ty.id carrier endpts
   -- J eliminator: synth witness (must be Ty.id _ _ _), synth base
