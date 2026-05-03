@@ -106,22 +106,57 @@ A theorem that prints `propext`, `Quot.sound`, `Classical.choice`, or
 ANY user-declared axiom name is NOT shipped.  Either prove it cleanly
 or DELETE it.
 
-### How to handle genuinely-unprovable principles (Univalence, funext)
+### Univalence, funext, and HIT eliminators are PROVED, not postulated
 
-These principles cannot be proven in vanilla MLTT.  They must enter
-the kernel as **definitional reductions**, not axioms:
+Vanilla MLTT cannot prove Univalence — but lean-fx-2 is NOT vanilla
+MLTT.  We define our own `Step` relation, and we MAKE univalence
+definitional by adding the right reduction rule.  Univalence in this
+project is a REAL THEOREM with a REAL BODY, gated by `#print axioms`.
+Same for funext.  Same for HIT eliminators.
 
-* **Univalence**: `Step.eqType : Step (Ty.id (Ty.universe lvl) A B) (Ty.equiv A B)`.
-  Then `theorem Univalence : Conv (Ty.id _ A B) (Ty.equiv A B) := Conv.fromStep Step.eqType`.
-  Real theorem.  Body `Conv.fromStep _`.  Zero axioms.
-* **Funext**: `Step.eqArrow : Step (Ty.id (Ty.arrow A B) f g) (Π x, Ty.id B (f x) (g x))`.
-  Then funext is `Conv.fromStep Step.eqArrow`.  Real theorem.
-* **HIT eliminators**: ship via the Step relation's quotient-induced
-  reductions (Cubical Path / `Step.transp`).  Their elimination behavior
-  is a Step rule, not an axiom.
+**Univalence (must ship as a theorem):**
 
-If you cannot ship a Step rule, you cannot ship the theorem.  DELETE
-the file rather than slip an axiom in under any name.
+```lean
+-- in Reduction/Step.lean (D2.6)
+inductive Step ... where
+  | eqType : Step (Ty.id (Ty.universe lvl) leftTy rightTy)
+                  (Ty.equiv leftTy rightTy)
+  ...
+
+-- in HoTT/Univalence.lean (D3.6)
+theorem Univalence (lvl : Nat) (leftTy rightTy : Ty lvl scope) :
+    Conv (Ty.id (Ty.universe lvl) leftTy rightTy) (Ty.equiv leftTy rightTy) :=
+  Conv.fromStep Step.eqType
+```
+
+`#print axioms Univalence` MUST report "does not depend on any axioms".
+The theorem has a body.  No hypothesis.  No `Inhabited`.  No `axiom`.
+This is the only acceptable form.
+
+**Funext (must ship as a theorem):**
+
+```lean
+-- in Reduction/Step.lean (D2.6)
+  | eqArrow : Step (Ty.id (Ty.arrow domainTy codomainTy) leftFn rightFn)
+                   (Ty.piTy domainTy (Ty.id codomainTy ...))
+```
+
+Then `theorem funext := Conv.fromStep Step.eqArrow`.  Real theorem.
+
+**HIT eliminators (must ship as theorems):**
+
+Each HIT (Quot, propTrunc, setTrunc, S¹, suspension, pushout,
+coequalizer) ships its eliminator's computation rule as a `Step`
+constructor.  The eliminator itself is a `theorem` whose body invokes
+those `Step` rules via `Conv.fromStep _`.  Body required.  No
+postulate.  No hypothesis-as-postulate.
+
+**There is no "if you cannot ship"** — this commitment is non-negotiable.
+The dependency chain D1.2 → D2.6 → D3.6 is the LOAD-BEARING work that
+makes Univalence-as-theorem possible, and shipping those reductions is
+mandatory.  An empty file with a docstring describing the plan is
+acceptable as a placeholder; an `axiom` or hypothesis-as-postulate
+filling in for the missing theorem is NOT.
 
 ### Shipping discipline
 

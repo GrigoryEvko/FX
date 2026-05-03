@@ -145,6 +145,13 @@ inductive Ty : Nat → Nat → Type
   | modal {level scope : Nat}
       (modalityTag : Nat)
       (carrierType : Ty level scope) : Ty level scope
+  /-- Universe type — `Ty.universe lvl : Ty (lvl+1) scope` is the type of
+      types at universe `lvl`.  Type-stratification: every type lives one
+      level above the universe whose inhabitants it can be.  No `Type : Type`
+      (Girard's paradox forbids it).  Per kernel-sprint.md §1.1.5, this ctor
+      is foundational for `Step.eqType`'s definitional univalence rule
+      (D2.6): `Step (Ty.id (Ty.universe lvl) A B) (Ty.equiv A B)`. -/
+  | universe {scope : Nat} (level : Nat) : Ty (level + 1) scope
   deriving DecidableEq
 
 /-- Apply a renaming to a type.  Var positions and `Ty.id` raw
@@ -208,6 +215,8 @@ def Ty.rename {level : Nat} : ∀ {scope sourceScope : Nat},
       .effect (carrierType.rename rho) (effectTag.rename rho)
   | _, _, .modal modalityTag carrierType, rho =>
       .modal modalityTag (carrierType.rename rho)
+  | _, _, .universe lvl, _ =>
+      .universe lvl
 
 /-- Single-binder weakening: shift all type-variable references up
 by one to make room for a new binder at position 0. -/
@@ -297,6 +306,7 @@ theorem Ty.rename_pointwise {level : Nat}
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.rename]
       rw [carrierIH renamingEq]
+  | «universe» lvl => rfl
 
 /-- Compose two renamings on a Ty.  Mirrors `RawTerm.rename_compose`. -/
 theorem Ty.rename_compose {level : Nat}
@@ -394,6 +404,7 @@ theorem Ty.rename_compose {level : Nat}
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.rename]
       rw [carrierIH rho1 rho2]
+  | «universe» lvl => rfl
 
 /-- weaken-after-rename equals rename-after-weaken on Ty.  Load-bearing
 for the lam case of typed Term.rename. -/

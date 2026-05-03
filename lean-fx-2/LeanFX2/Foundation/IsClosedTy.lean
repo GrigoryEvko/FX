@@ -105,6 +105,8 @@ inductive IsClosedTy : ∀ {level scope : Nat}, Ty level scope → Prop
   | modal {level scope : Nat} {modalityTag : Nat} {carrierType : Ty level scope}
           (closedCarrier : IsClosedTy carrierType) :
           IsClosedTy (Ty.modal modalityTag carrierType)
+  | universe {scope : Nat} {lvl : Nat} :
+          IsClosedTy (Ty.universe (scope := scope) lvl)
 
 /-! ## Decidability
 
@@ -199,6 +201,7 @@ def IsClosedTy.decide {level : Nat} : ∀ {scope : Nat}
       | .isTrue closedCarrier => .isTrue (.modal closedCarrier)
       | .isFalse openCarrier =>
           .isFalse (fun closedModal => by cases closedModal; exact openCarrier ‹_›)
+  | _, .universe _ => .isTrue .universe
 
 instance IsClosedTy.decidable {level scope : Nat} (someType : Ty level scope) :
     Decidable (IsClosedTy someType) :=
