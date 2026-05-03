@@ -54,3 +54,39 @@ import LeanFX2.Reduction.CumulSubstCompat
 
 -- Allais cumul-promotion arm (1)
 #print axioms LeanFX2.ConvCumul.subst_compatible_cumulUp_allais
+
+-- Benton rename per-Term-ctor helpers (Step A — 22 ctors, 5 eliminator gap)
+-- Closed-payload arms (10)
+#print axioms LeanFX2.ConvCumul.rename_compatible_unit_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_boolTrue_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_boolFalse_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_natZero_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_var_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_universeCode_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_listNil_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_optionNone_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_refl_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_cumulUp_benton
+
+-- Single-subterm cong arms (9)
+#print axioms LeanFX2.ConvCumul.rename_compatible_natSucc_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_optionSome_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_eitherInl_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_eitherInr_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_modIntro_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_modElim_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_subsume_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_fst_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_snd_benton
+
+-- Multi-subterm cong arms (5)
+#print axioms LeanFX2.ConvCumul.rename_compatible_app_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_appPi_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_pair_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_listCons_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_idJ_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_boolElim_benton
+
+-- Binder cong arms (2)
+#print axioms LeanFX2.ConvCumul.rename_compatible_lam_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_lamPi_benton
