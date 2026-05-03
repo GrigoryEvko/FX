@@ -104,6 +104,19 @@ theorem Ty.subst0_raw_invariance_unit
   | listType _ => nomatch someTypeReducesToUnit
   | optionType _ => nomatch someTypeReducesToUnit
   | eitherType _ _ => nomatch someTypeReducesToUnit
+  | empty => nomatch someTypeReducesToUnit
+  | interval => nomatch someTypeReducesToUnit
+  | path _ _ _ => nomatch someTypeReducesToUnit
+  | glue _ _ => nomatch someTypeReducesToUnit
+  | oeq _ _ _ => nomatch someTypeReducesToUnit
+  | idStrict _ _ _ => nomatch someTypeReducesToUnit
+  | equiv _ _ => nomatch someTypeReducesToUnit
+  | refine _ _ => nomatch someTypeReducesToUnit
+  | record _ => nomatch someTypeReducesToUnit
+  | codata _ _ => nomatch someTypeReducesToUnit
+  | session _ => nomatch someTypeReducesToUnit
+  | effect _ _ => nomatch someTypeReducesToUnit
+  | modal _ _ => nomatch someTypeReducesToUnit
 
 /-- Substitution-raw-invariance for `Ty.bool`. -/
 theorem Ty.subst0_raw_invariance_bool
@@ -128,6 +141,19 @@ theorem Ty.subst0_raw_invariance_bool
   | listType _ => nomatch someTypeReducesToBool
   | optionType _ => nomatch someTypeReducesToBool
   | eitherType _ _ => nomatch someTypeReducesToBool
+  | empty => nomatch someTypeReducesToBool
+  | interval => nomatch someTypeReducesToBool
+  | path _ _ _ => nomatch someTypeReducesToBool
+  | glue _ _ => nomatch someTypeReducesToBool
+  | oeq _ _ _ => nomatch someTypeReducesToBool
+  | idStrict _ _ _ => nomatch someTypeReducesToBool
+  | equiv _ _ => nomatch someTypeReducesToBool
+  | refine _ _ => nomatch someTypeReducesToBool
+  | record _ => nomatch someTypeReducesToBool
+  | codata _ _ => nomatch someTypeReducesToBool
+  | session _ => nomatch someTypeReducesToBool
+  | effect _ _ => nomatch someTypeReducesToBool
+  | modal _ _ => nomatch someTypeReducesToBool
 
 /-- Substitution-raw-invariance for `Ty.nat`. -/
 theorem Ty.subst0_raw_invariance_nat
@@ -152,6 +178,19 @@ theorem Ty.subst0_raw_invariance_nat
   | listType _ => nomatch someTypeReducesToNat
   | optionType _ => nomatch someTypeReducesToNat
   | eitherType _ _ => nomatch someTypeReducesToNat
+  | empty => nomatch someTypeReducesToNat
+  | interval => nomatch someTypeReducesToNat
+  | path _ _ _ => nomatch someTypeReducesToNat
+  | glue _ _ => nomatch someTypeReducesToNat
+  | oeq _ _ _ => nomatch someTypeReducesToNat
+  | idStrict _ _ _ => nomatch someTypeReducesToNat
+  | equiv _ _ => nomatch someTypeReducesToNat
+  | refine _ _ => nomatch someTypeReducesToNat
+  | record _ => nomatch someTypeReducesToNat
+  | codata _ _ => nomatch someTypeReducesToNat
+  | session _ => nomatch someTypeReducesToNat
+  | effect _ _ => nomatch someTypeReducesToNat
+  | modal _ _ => nomatch someTypeReducesToNat
 
 /-- Generalized substitution-raw-invariance.  For any `someType : Ty
 level (scope+1)`, if `someType.subst0 argType raw1` equals a closed
@@ -200,6 +239,19 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | listType _ => nomatch someTypeReduces
       | optionType _ => nomatch someTypeReduces
       | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
   | listType closedElement ihElement =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -222,6 +274,19 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
           rw [elementInv]
       | optionType _ => nomatch someTypeReduces
       | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
   | optionType closedElement ihElement =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -244,6 +309,19 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
           show Ty.optionType (elementSrc.subst0 argType raw2) = _
           rw [elementInv]
       | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
   | eitherType closedLeft closedRight ihLeft ihRight =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -268,6 +346,230 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
           show Ty.eitherType (leftSrc.subst0 argType raw2)
                               (rightSrc.subst0 argType raw2) = _
           rw [leftInv, rightInv]
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+  -- D1.5 new IsClosedTy ctors — analogous treatment.
+  | empty =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => rfl
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+  | interval =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => rfl
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+  | equiv closedDomain closedCodomain ihDomain ihCodomain =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv domainSrc codomainSrc =>
+          injection someTypeReduces with _ hDomain hCodomain
+          have domainInv := ihDomain domainSrc raw1 raw2 hDomain
+          have codomainInv := ihCodomain codomainSrc raw1 raw2 hCodomain
+          show Ty.equiv (domainSrc.subst0 argType raw2)
+                        (codomainSrc.subst0 argType raw2) = _
+          rw [domainInv, codomainInv]
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+  | record closedSingleField ihSingleField =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record singleFieldSrc =>
+          injection someTypeReduces with _ hSingleField
+          have singleFieldInv :=
+            ihSingleField singleFieldSrc raw1 raw2 hSingleField
+          show Ty.record (singleFieldSrc.subst0 argType raw2) = _
+          rw [singleFieldInv]
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+  | codata closedState closedOutput ihState ihOutput =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata stateSrc outputSrc =>
+          injection someTypeReduces with _ hState hOutput
+          have stateInv := ihState stateSrc raw1 raw2 hState
+          have outputInv := ihOutput outputSrc raw1 raw2 hOutput
+          show Ty.codata (stateSrc.subst0 argType raw2)
+                          (outputSrc.subst0 argType raw2) = _
+          rw [stateInv, outputInv]
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+  | modal closedCarrier ihCarrier =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal modalityTagSrc carrierSrc =>
+          -- D1.5: Ty.modal injects on (tag, carrier).  After cases, the
+          -- tag is unified with modalityTag, leaving carrier as the only
+          -- thing to drive via IH.
+          cases someTypeReduces
+          have carrierInv := ihCarrier carrierSrc raw1 raw2 rfl
+          show Ty.modal _ (carrierSrc.subst0 argType raw2) = _
+          rw [carrierInv]
 
 /-! ## Generalized step-preservation theorem
 

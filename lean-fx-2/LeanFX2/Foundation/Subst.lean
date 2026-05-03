@@ -120,6 +120,38 @@ def Ty.subst {level : Nat} : ∀ {source target : Nat},
       .optionType (elementType.subst sigma)
   | _, _, .eitherType leftType rightType, sigma =>
       .eitherType (leftType.subst sigma) (rightType.subst sigma)
+  -- D1.5 substitution arms — type indices substitute via `forTy`,
+  -- raw payloads via `forRaw`, opaque tags pass through unchanged.
+  | _, _, .empty, _ => .empty
+  | _, _, .interval, _ => .interval
+  | _, _, .path carrier leftEndpoint rightEndpoint, sigma =>
+      .path (carrier.subst sigma)
+            (leftEndpoint.subst sigma.forRaw)
+            (rightEndpoint.subst sigma.forRaw)
+  | _, _, .glue baseType boundaryWitness, sigma =>
+      .glue (baseType.subst sigma) (boundaryWitness.subst sigma.forRaw)
+  | _, _, .oeq carrier leftEndpoint rightEndpoint, sigma =>
+      .oeq (carrier.subst sigma)
+           (leftEndpoint.subst sigma.forRaw)
+           (rightEndpoint.subst sigma.forRaw)
+  | _, _, .idStrict carrier leftEndpoint rightEndpoint, sigma =>
+      .idStrict (carrier.subst sigma)
+                (leftEndpoint.subst sigma.forRaw)
+                (rightEndpoint.subst sigma.forRaw)
+  | _, _, .equiv domainType codomainType, sigma =>
+      .equiv (domainType.subst sigma) (codomainType.subst sigma)
+  | _, _, .refine baseType predicate, sigma =>
+      .refine (baseType.subst sigma) (predicate.subst sigma.forRaw.lift)
+  | _, _, .record singleFieldType, sigma =>
+      .record (singleFieldType.subst sigma)
+  | _, _, .codata stateType outputType, sigma =>
+      .codata (stateType.subst sigma) (outputType.subst sigma)
+  | _, _, .session protocolStep, sigma =>
+      .session (protocolStep.subst sigma.forRaw)
+  | _, _, .effect carrierType effectTag, sigma =>
+      .effect (carrierType.subst sigma) (effectTag.subst sigma.forRaw)
+  | _, _, .modal modalityTag carrierType, sigma =>
+      .modal modalityTag (carrierType.subst sigma)
 
 /-- Single-variable substitution on Ty: substitute `argType` (and
 its raw form `argRaw`) at position 0. -/
@@ -192,6 +224,50 @@ theorem Ty.subst_pointwise {level : Nat}
       simp only [Ty.subst]; rw [eIH forTyEq forRawEq]
   | eitherType l r lIH rIH =>
       simp only [Ty.subst]; rw [lIH forTyEq forRawEq, rIH forTyEq forRawEq]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH forTyEq forRawEq,
+          RawTerm.subst_pointwise forRawEq leftEndpoint,
+          RawTerm.subst_pointwise forRawEq rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.subst]
+      rw [baseIH forTyEq forRawEq,
+          RawTerm.subst_pointwise forRawEq boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH forTyEq forRawEq,
+          RawTerm.subst_pointwise forRawEq leftEndpoint,
+          RawTerm.subst_pointwise forRawEq rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH forTyEq forRawEq,
+          RawTerm.subst_pointwise forRawEq leftEndpoint,
+          RawTerm.subst_pointwise forRawEq rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.subst]
+      rw [domainIH forTyEq forRawEq, codomainIH forTyEq forRawEq]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.subst]
+      rw [baseIH forTyEq forRawEq,
+          RawTerm.subst_pointwise (RawTermSubst.lift_pointwise forRawEq) predicate]
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.subst]
+      rw [singleFieldIH forTyEq forRawEq]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.subst]
+      rw [stateIH forTyEq forRawEq, outputIH forTyEq forRawEq]
+  | session protocolStep =>
+      simp only [Ty.subst]
+      rw [RawTerm.subst_pointwise forRawEq protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH forTyEq forRawEq,
+          RawTerm.subst_pointwise forRawEq effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH forTyEq forRawEq]
 
 /-! ### Renaming after substitution: Ty.subst then rename. -/
 
@@ -269,6 +345,54 @@ theorem Ty.subst_rename_commute {level : Nat}
   | optionType e eIH => simp only [Ty.subst, Ty.rename]; rw [eIH sigma rho]
   | eitherType l r lIH rIH =>
       simp only [Ty.subst, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho leftEndpoint,
+          RawTerm.subst_rename_commute sigma.forRaw rho rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [baseIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho leftEndpoint,
+          RawTerm.subst_rename_commute sigma.forRaw rho rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho leftEndpoint,
+          RawTerm.subst_rename_commute sigma.forRaw rho rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [domainIH sigma rho, codomainIH sigma rho]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [baseIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw.lift rho.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact RawTermSubst.lift_then_rename_lift sigma.forRaw rho position
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [singleFieldIH sigma rho]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [stateIH sigma rho, outputIH sigma rho]
+  | session protocolStep =>
+      simp only [Ty.subst, Ty.rename]
+      rw [RawTerm.subst_rename_commute sigma.forRaw rho protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.subst, Ty.rename]
+      rw [carrierIH sigma rho]
 
 /-! ### Substitution after renaming: Ty.rename then subst. -/
 
@@ -339,6 +463,54 @@ theorem Ty.rename_subst_commute {level : Nat}
   | optionType e eIH => simp only [Ty.rename, Ty.subst]; rw [eIH rho sigma]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename, Ty.subst]; rw [lIH rho sigma, rIH rho sigma]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint,
+          RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [baseIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint,
+          RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw leftEndpoint,
+          RawTerm.rename_subst_commute rho sigma.forRaw rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [domainIH rho sigma, codomainIH rho sigma]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [baseIH rho sigma,
+          RawTerm.rename_subst_commute rho.lift sigma.forRaw.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact RawTermSubst.lift_renaming_pull rho sigma.forRaw position
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [singleFieldIH rho sigma]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [stateIH rho sigma, outputIH rho sigma]
+  | session protocolStep =>
+      simp only [Ty.rename, Ty.subst]
+      rw [RawTerm.rename_subst_commute rho sigma.forRaw protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.rename, Ty.subst]
+      rw [carrierIH rho sigma]
 
 /-! ### Singleton-rename pointwise + Ty.subst0_rename_commute. -/
 
@@ -430,6 +602,44 @@ theorem Ty.subst_identity {level scope : Nat} (someType : Ty level scope) :
   | listType e eIH => simp only [Ty.subst]; rw [eIH]
   | optionType e eIH => simp only [Ty.subst]; rw [eIH]
   | eitherType l r lIH rIH => simp only [Ty.subst]; rw [lIH, rIH]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH,
+          RawTerm.subst_identity leftEndpoint,
+          RawTerm.subst_identity rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.subst]
+      rw [baseIH, RawTerm.subst_identity boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH,
+          RawTerm.subst_identity leftEndpoint,
+          RawTerm.subst_identity rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH,
+          RawTerm.subst_identity leftEndpoint,
+          RawTerm.subst_identity rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.subst]; rw [domainIH, codomainIH]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.subst]
+      rw [baseIH,
+          RawTerm.subst_pointwise (@Subst.identity_lift_forRaw_pointwise level _) predicate,
+          RawTerm.subst_identity predicate]
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.subst]; rw [singleFieldIH]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.subst]; rw [stateIH, outputIH]
+  | session protocolStep =>
+      simp only [Ty.subst]; rw [RawTerm.subst_identity protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH, RawTerm.subst_identity effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.subst]; rw [carrierIH]
 
 /-- Pre-composing weaken with a singleton (Subst-level) gives the identity
 substitution on forTy pointwise. -/
@@ -569,6 +779,54 @@ theorem Ty.subst_compose {level : Nat}
   | optionType e eIH => simp only [Ty.subst]; rw [eIH sigma1 sigma2]
   | eitherType l r lIH rIH =>
       simp only [Ty.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw leftEndpoint,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.subst]
+      rw [baseIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw leftEndpoint,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw leftEndpoint,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.subst]
+      rw [domainIH sigma1 sigma2, codomainIH sigma1 sigma2]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.subst]
+      rw [baseIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw.lift sigma2.forRaw.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact (RawTermSubst.lift_compose_pointwise sigma1.forRaw sigma2.forRaw position).symm
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.subst]
+      rw [singleFieldIH sigma1 sigma2]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.subst]
+      rw [stateIH sigma1 sigma2, outputIH sigma1 sigma2]
+  | session protocolStep =>
+      simp only [Ty.subst]
+      rw [RawTerm.subst_compose sigma1.forRaw sigma2.forRaw protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH sigma1 sigma2,
+          RawTerm.subst_compose sigma1.forRaw sigma2.forRaw effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.subst]
+      rw [carrierIH sigma1 sigma2]
 
 /-- Pointwise: composing singleton with sigma agrees with composing
 sigma.lift with renamed singleton on forTy. -/

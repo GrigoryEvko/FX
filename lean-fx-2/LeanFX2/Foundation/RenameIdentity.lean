@@ -181,5 +181,57 @@ theorem Ty.rename_identity {level scope : Nat} :
       show (leftType.rename _).eitherType (rightType.rename _) =
            leftType.eitherType rightType
       rw [Ty.rename_identity leftType, Ty.rename_identity rightType]
+  | .empty => rfl
+  | .interval => rfl
+  | .path carrier leftEndpoint rightEndpoint => by
+      show (carrier.rename _).path (leftEndpoint.rename _) (rightEndpoint.rename _) =
+           carrier.path leftEndpoint rightEndpoint
+      rw [Ty.rename_identity carrier,
+          RawTerm.rename_identity leftEndpoint,
+          RawTerm.rename_identity rightEndpoint]
+  | .glue baseType boundaryWitness => by
+      show (baseType.rename _).glue (boundaryWitness.rename _) =
+           baseType.glue boundaryWitness
+      rw [Ty.rename_identity baseType, RawTerm.rename_identity boundaryWitness]
+  | .oeq carrier leftEndpoint rightEndpoint => by
+      show (carrier.rename _).oeq (leftEndpoint.rename _) (rightEndpoint.rename _) =
+           carrier.oeq leftEndpoint rightEndpoint
+      rw [Ty.rename_identity carrier,
+          RawTerm.rename_identity leftEndpoint,
+          RawTerm.rename_identity rightEndpoint]
+  | .idStrict carrier leftEndpoint rightEndpoint => by
+      show (carrier.rename _).idStrict (leftEndpoint.rename _) (rightEndpoint.rename _) =
+           carrier.idStrict leftEndpoint rightEndpoint
+      rw [Ty.rename_identity carrier,
+          RawTerm.rename_identity leftEndpoint,
+          RawTerm.rename_identity rightEndpoint]
+  | .equiv domainType codomainType => by
+      show (domainType.rename _).equiv (codomainType.rename _) =
+           domainType.equiv codomainType
+      rw [Ty.rename_identity domainType, Ty.rename_identity codomainType]
+  | .refine baseType predicate => by
+      show (baseType.rename _).refine (predicate.rename _) =
+           baseType.refine predicate
+      rw [Ty.rename_identity baseType,
+          RawTerm.rename_pointwise (@RawRenaming.identity_lift_pointwise scope) predicate,
+          RawTerm.rename_identity predicate]
+  | .record singleFieldType => by
+      show (singleFieldType.rename _).record = singleFieldType.record
+      rw [Ty.rename_identity singleFieldType]
+  | .codata stateType outputType => by
+      show (stateType.rename _).codata (outputType.rename _) =
+           stateType.codata outputType
+      rw [Ty.rename_identity stateType, Ty.rename_identity outputType]
+  | .session protocolStep => by
+      show Ty.session (protocolStep.rename _) = Ty.session protocolStep
+      rw [RawTerm.rename_identity protocolStep]
+  | .effect carrierType effectTag => by
+      show (carrierType.rename _).effect (effectTag.rename _) =
+           carrierType.effect effectTag
+      rw [Ty.rename_identity carrierType, RawTerm.rename_identity effectTag]
+  | .modal modalityTag carrierType => by
+      show Ty.modal modalityTag (carrierType.rename _) =
+           Ty.modal modalityTag carrierType
+      rw [Ty.rename_identity carrierType]
 
 end LeanFX2

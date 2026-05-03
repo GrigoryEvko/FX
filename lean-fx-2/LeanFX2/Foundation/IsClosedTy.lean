@@ -82,6 +82,29 @@ inductive IsClosedTy : ∀ {level scope : Nat}, Ty level scope → Prop
                (closedLeft : IsClosedTy leftType)
                (closedRight : IsClosedTy rightType) :
                IsClosedTy (Ty.eitherType leftType rightType)
+  -- D1.5 new closed-ctor witnesses.  Tagless leaves (`empty`, `interval`)
+  -- are unconditionally closed.  Parametric ctors recurse on their Ty
+  -- components only — RawTerm payloads (path/oeq/idStrict endpoints,
+  -- glue boundary, refine predicate, session protocolStep, effect tag)
+  -- depend on scope, so those ctors are NOT closed and don't appear here.
+  | empty {level scope : Nat} :
+      IsClosedTy (Ty.empty (level := level) (scope := scope))
+  | interval {level scope : Nat} :
+      IsClosedTy (Ty.interval (level := level) (scope := scope))
+  | equiv {level scope : Nat} {domainType codomainType : Ty level scope}
+          (closedDomain : IsClosedTy domainType)
+          (closedCodomain : IsClosedTy codomainType) :
+          IsClosedTy (Ty.equiv domainType codomainType)
+  | record {level scope : Nat} {singleFieldType : Ty level scope}
+           (closedSingleField : IsClosedTy singleFieldType) :
+           IsClosedTy (Ty.record singleFieldType)
+  | codata {level scope : Nat} {stateType outputType : Ty level scope}
+           (closedState : IsClosedTy stateType)
+           (closedOutput : IsClosedTy outputType) :
+           IsClosedTy (Ty.codata stateType outputType)
+  | modal {level scope : Nat} {modalityTag : Nat} {carrierType : Ty level scope}
+          (closedCarrier : IsClosedTy carrierType) :
+          IsClosedTy (Ty.modal modalityTag carrierType)
 
 /-! ## Decidability
 
@@ -133,6 +156,49 @@ def IsClosedTy.decide {level : Nat} : ∀ {scope : Nat}
           .isFalse (fun closedEither => by cases closedEither; exact openLeft ‹_›)
       | _, .isFalse openRight =>
           .isFalse (fun closedEither => by cases closedEither; exact openRight ‹_›)
+  -- D1.5 decidable-closed dispatch for the 13 new ctors.
+  | _, .empty => .isTrue .empty
+  | _, .interval => .isTrue .interval
+  | _, .path _ _ _ =>
+      .isFalse (fun closedPath => nomatch closedPath)
+  | _, .glue _ _ =>
+      .isFalse (fun closedGlue => nomatch closedGlue)
+  | _, .oeq _ _ _ =>
+      .isFalse (fun closedOeq => nomatch closedOeq)
+  | _, .idStrict _ _ _ =>
+      .isFalse (fun closedIdStrict => nomatch closedIdStrict)
+  | _, .equiv domainType codomainType =>
+      match IsClosedTy.decide domainType, IsClosedTy.decide codomainType with
+      | .isTrue closedDomain, .isTrue closedCodomain =>
+          .isTrue (.equiv closedDomain closedCodomain)
+      | .isFalse openDomain, _ =>
+          .isFalse (fun closedEquiv => by cases closedEquiv; exact openDomain ‹_›)
+      | _, .isFalse openCodomain =>
+          .isFalse (fun closedEquiv => by cases closedEquiv; exact openCodomain ‹_›)
+  | _, .refine _ _ =>
+      .isFalse (fun closedRefine => nomatch closedRefine)
+  | _, .record singleFieldType =>
+      match IsClosedTy.decide singleFieldType with
+      | .isTrue closedSingleField => .isTrue (.record closedSingleField)
+      | .isFalse openSingleField =>
+          .isFalse (fun closedRecord => by cases closedRecord; exact openSingleField ‹_›)
+  | _, .codata stateType outputType =>
+      match IsClosedTy.decide stateType, IsClosedTy.decide outputType with
+      | .isTrue closedState, .isTrue closedOutput =>
+          .isTrue (.codata closedState closedOutput)
+      | .isFalse openState, _ =>
+          .isFalse (fun closedCodata => by cases closedCodata; exact openState ‹_›)
+      | _, .isFalse openOutput =>
+          .isFalse (fun closedCodata => by cases closedCodata; exact openOutput ‹_›)
+  | _, .session _ =>
+      .isFalse (fun closedSession => nomatch closedSession)
+  | _, .effect _ _ =>
+      .isFalse (fun closedEffect => nomatch closedEffect)
+  | _, .modal _ carrierType =>
+      match IsClosedTy.decide carrierType with
+      | .isTrue closedCarrier => .isTrue (.modal closedCarrier)
+      | .isFalse openCarrier =>
+          .isFalse (fun closedModal => by cases closedModal; exact openCarrier ‹_›)
 
 instance IsClosedTy.decidable {level scope : Nat} (someType : Ty level scope) :
     Decidable (IsClosedTy someType) :=

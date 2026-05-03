@@ -88,6 +88,63 @@ inductive Ty : Nat → Nat → Type
   | optionType {level scope : Nat} (elementType : Ty level scope) : Ty level scope
   | eitherType {level scope : Nat}
       (leftType rightType : Ty level scope) : Ty level scope
+  -- D1.5 extension — 13 new foundational ctors.  All use RawTerm scope or
+  -- Nat tags for raw payloads; richer semantic content (Modality, SessionProtocol,
+  -- EffectRow, BoundaryCofib) is interpreted by downstream layers via tag dispatch
+  -- so Foundation/Ty.lean stays at Layer 0 (no import cycles).
+  /-- Empty/never type — uninhabited, subtype of everything. -/
+  | empty {level scope : Nat} : Ty level scope
+  /-- Cubical interval type — inhabitants are points in [i0, i1]. -/
+  | interval {level scope : Nat} : Ty level scope
+  /-- Path type over the cubical interval — `Path A x y` from x to y in A. -/
+  | path {level scope : Nat}
+      (carrier : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope) : Ty level scope
+  /-- Glue type — base equipped with a boundary witness (CCHM Glue). -/
+  | glue {level scope : Nat}
+      (baseType : Ty level scope)
+      (boundaryWitness : RawTerm scope) : Ty level scope
+  /-- Observational equality at the type level (set-level OEq). -/
+  | oeq {level scope : Nat}
+      (carrier : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope) : Ty level scope
+  /-- Strict (definitional, axiom-free) identity type. -/
+  | idStrict {level scope : Nat}
+      (carrier : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope) : Ty level scope
+  /-- Type equivalence at the type level — `Equiv A B`. -/
+  | equiv {level scope : Nat}
+      (domainType codomainType : Ty level scope) : Ty level scope
+  /-- Refinement type — base type with a predicate over the inhabitant.
+      The predicate is a RawTerm at `scope+1` (binds the inhabitant). -/
+  | refine {level scope : Nat}
+      (baseType : Ty level scope)
+      (predicate : RawTerm (scope + 1)) : Ty level scope
+  /-- Single-field record type placeholder.  Multi-field records compose
+      via nested `record (record ...)` until the surface elaborator's
+      record-schema layer ships. -/
+  | record {level scope : Nat}
+      (singleFieldType : Ty level scope) : Ty level scope
+  /-- Codata type — `(state, output)` pair characterising the destructor
+      shape of a corecursive value. -/
+  | codata {level scope : Nat}
+      (stateType outputType : Ty level scope) : Ty level scope
+  /-- Session type — protocol step represented as a raw term carrying
+      send/receive/branch structure.  The richer SessionProtocol is
+      interpreted at the Sessions layer. -/
+  | session {level scope : Nat}
+      (protocolStep : RawTerm scope) : Ty level scope
+  /-- Effectful type — `(carrier, effectTag)` where the tag enumerates the
+      effect row.  Bridge to EffectRow happens at the Effects layer. -/
+  | effect {level scope : Nat}
+      (carrierType : Ty level scope)
+      (effectTag : RawTerm scope) : Ty level scope
+  /-- Modal type — `□ M . T` carrying an opaque modality tag.  The full
+      Modality 1-cell with mode parameters is interpreted at the Modal
+      layer; here we just track the tag for kernel-level dispatch. -/
+  | modal {level scope : Nat}
+      (modalityTag : Nat)
+      (carrierType : Ty level scope) : Ty level scope
   deriving DecidableEq
 
 /-- Apply a renaming to a type.  Var positions and `Ty.id` raw
@@ -120,6 +177,37 @@ def Ty.rename {level : Nat} : ∀ {scope sourceScope : Nat},
       .optionType (elementType.rename rho)
   | _, _, .eitherType leftType rightType, rho =>
       .eitherType (leftType.rename rho) (rightType.rename rho)
+  -- D1.5 new ctor renaming
+  | _, _, .empty, _ => .empty
+  | _, _, .interval, _ => .interval
+  | _, _, .path carrier leftEndpoint rightEndpoint, rho =>
+      .path (carrier.rename rho)
+            (leftEndpoint.rename rho)
+            (rightEndpoint.rename rho)
+  | _, _, .glue baseType boundaryWitness, rho =>
+      .glue (baseType.rename rho) (boundaryWitness.rename rho)
+  | _, _, .oeq carrier leftEndpoint rightEndpoint, rho =>
+      .oeq (carrier.rename rho)
+           (leftEndpoint.rename rho)
+           (rightEndpoint.rename rho)
+  | _, _, .idStrict carrier leftEndpoint rightEndpoint, rho =>
+      .idStrict (carrier.rename rho)
+                (leftEndpoint.rename rho)
+                (rightEndpoint.rename rho)
+  | _, _, .equiv domainType codomainType, rho =>
+      .equiv (domainType.rename rho) (codomainType.rename rho)
+  | _, _, .refine baseType predicate, rho =>
+      .refine (baseType.rename rho) (predicate.rename rho.lift)
+  | _, _, .record singleFieldType, rho =>
+      .record (singleFieldType.rename rho)
+  | _, _, .codata stateType outputType, rho =>
+      .codata (stateType.rename rho) (outputType.rename rho)
+  | _, _, .session protocolStep, rho =>
+      .session (protocolStep.rename rho)
+  | _, _, .effect carrierType effectTag, rho =>
+      .effect (carrierType.rename rho) (effectTag.rename rho)
+  | _, _, .modal modalityTag carrierType, rho =>
+      .modal modalityTag (carrierType.rename rho)
 
 /-- Single-binder weakening: shift all type-variable references up
 by one to make room for a new binder at position 0. -/
@@ -165,6 +253,50 @@ theorem Ty.rename_pointwise {level : Nat}
       simp only [Ty.rename]; rw [eIH renamingEq]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename]; rw [lIH renamingEq, rIH renamingEq]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH renamingEq,
+          RawTerm.rename_pointwise renamingEq leftEndpoint,
+          RawTerm.rename_pointwise renamingEq rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.rename]
+      rw [baseIH renamingEq,
+          RawTerm.rename_pointwise renamingEq boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH renamingEq,
+          RawTerm.rename_pointwise renamingEq leftEndpoint,
+          RawTerm.rename_pointwise renamingEq rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH renamingEq,
+          RawTerm.rename_pointwise renamingEq leftEndpoint,
+          RawTerm.rename_pointwise renamingEq rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.rename]
+      rw [domainIH renamingEq, codomainIH renamingEq]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.rename]
+      rw [baseIH renamingEq,
+          RawTerm.rename_pointwise (RawRenaming.lift_pointwise renamingEq) predicate]
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.rename]
+      rw [singleFieldIH renamingEq]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.rename]
+      rw [stateIH renamingEq, outputIH renamingEq]
+  | session protocolStep =>
+      simp only [Ty.rename]
+      rw [RawTerm.rename_pointwise renamingEq protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH renamingEq,
+          RawTerm.rename_pointwise renamingEq effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH renamingEq]
 
 /-- Compose two renamings on a Ty.  Mirrors `RawTerm.rename_compose`. -/
 theorem Ty.rename_compose {level : Nat}
@@ -212,6 +344,56 @@ theorem Ty.rename_compose {level : Nat}
   | optionType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
+  | empty => rfl
+  | interval => rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH rho1 rho2,
+          RawTerm.rename_compose rho1 rho2 leftEndpoint,
+          RawTerm.rename_compose rho1 rho2 rightEndpoint]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.rename]
+      rw [baseIH rho1 rho2,
+          RawTerm.rename_compose rho1 rho2 boundaryWitness]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH rho1 rho2,
+          RawTerm.rename_compose rho1 rho2 leftEndpoint,
+          RawTerm.rename_compose rho1 rho2 rightEndpoint]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH rho1 rho2,
+          RawTerm.rename_compose rho1 rho2 leftEndpoint,
+          RawTerm.rename_compose rho1 rho2 rightEndpoint]
+  | equiv domainType codomainType domainIH codomainIH =>
+      simp only [Ty.rename]
+      rw [domainIH rho1 rho2, codomainIH rho1 rho2]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.rename]
+      rw [baseIH rho1 rho2, RawTerm.rename_compose rho1.lift rho2.lift predicate]
+      congr 1
+      apply RawTerm.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.rename]
+      rw [singleFieldIH rho1 rho2]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.rename]
+      rw [stateIH rho1 rho2, outputIH rho1 rho2]
+  | session protocolStep =>
+      simp only [Ty.rename]
+      rw [RawTerm.rename_compose rho1 rho2 protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH rho1 rho2, RawTerm.rename_compose rho1 rho2 effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.rename]
+      rw [carrierIH rho1 rho2]
 
 /-- weaken-after-rename equals rename-after-weaken on Ty.  Load-bearing
 for the lam case of typed Term.rename. -/

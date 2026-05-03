@@ -125,12 +125,18 @@ def Term.check : ∀ {scope : Nat}
       match expectedType with
       | .listType _ => some Term.listNil
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .id _ _ _ | .optionType _ | .eitherType _ _ => none
+      | .tyVar _ | .id _ _ _ | .optionType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   | .optionNone =>
       match expectedType with
       | .optionType _ => some Term.optionNone
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .id _ _ _ | .listType _ | .eitherType _ _ => none
+      | .tyVar _ | .id _ _ _ | .listType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   | .listCons headRaw tailRaw =>
       match expectedType with
       | .listType elementType =>
@@ -141,7 +147,10 @@ def Term.check : ∀ {scope : Nat}
           | none, _ => none
           | _, none => none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .id _ _ _ | .optionType _ | .eitherType _ _ => none
+      | .tyVar _ | .id _ _ _ | .optionType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   | .optionSome valueRaw =>
       match expectedType with
       | .optionType elementType =>
@@ -149,7 +158,10 @@ def Term.check : ∀ {scope : Nat}
           | some valueTerm => some (Term.optionSome valueTerm)
           | none => none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .id _ _ _ | .listType _ | .eitherType _ _ => none
+      | .tyVar _ | .id _ _ _ | .listType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   | .eitherInl valueRaw =>
       match expectedType with
       | .eitherType leftType _ =>
@@ -157,7 +169,10 @@ def Term.check : ∀ {scope : Nat}
           | some valueTerm => some (Term.eitherInl valueTerm)
           | none => none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .id _ _ _ | .listType _ | .optionType _ => none
+      | .tyVar _ | .id _ _ _ | .listType _ | .optionType _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   | .eitherInr valueRaw =>
       match expectedType with
       | .eitherType _ rightType =>
@@ -165,7 +180,10 @@ def Term.check : ∀ {scope : Nat}
           | some valueTerm => some (Term.eitherInr valueTerm)
           | none => none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .id _ _ _ | .listType _ | .optionType _ => none
+      | .tyVar _ | .id _ _ _ | .listType _ | .optionType _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   -- Lambda: expected type disambiguates non-dep arrow vs Π
   | .lam bodyRaw =>
       match expectedType with
@@ -180,7 +198,10 @@ def Term.check : ∀ {scope : Nat}
           | some bodyTerm => some (Term.lamPi bodyTerm)
           | none => none
       | .unit | .bool | .nat | .sigmaTy _ _ | .tyVar _ | .id _ _ _
-      | .listType _ | .optionType _ | .eitherType _ _ => none
+      | .listType _ | .optionType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   -- App: synth-then-check fallthrough.  `Term.infer` handles
   -- `RawTerm.app` for non-dep arrows; we then verify the inferred
   -- result type matches the expected type via DecidableEq.
@@ -208,7 +229,10 @@ def Term.check : ∀ {scope : Nat}
               | none => none
           | none => none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .tyVar _
-      | .id _ _ _ | .listType _ | .optionType _ | .eitherType _ _ => none
+      | .id _ _ _ | .listType _ | .optionType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   -- Σ first projection: synth-then-check fallthrough via Term.infer.
   | .fst pairRaw =>
       match Term.infer context (RawTerm.fst pairRaw) with
@@ -280,7 +304,14 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
       | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
       | some ⟨.id _ _ _, _⟩ | some ⟨.optionType _, _⟩
-      | some ⟨.eitherType _ _, _⟩ => none
+      | some ⟨.eitherType _ _, _⟩
+      | some ⟨.empty, _⟩ | some ⟨.interval, _⟩
+      | some ⟨.path _ _ _, _⟩ | some ⟨.glue _ _, _⟩
+      | some ⟨.oeq _ _ _, _⟩ | some ⟨.idStrict _ _ _, _⟩
+      | some ⟨.equiv _ _, _⟩ | some ⟨.refine _ _, _⟩
+      | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
+      | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
+      | some ⟨.modal _ _, _⟩ => none
       | none => none
   -- Option matcher: scrutinee must infer to `Ty.optionType elementType`.
   | .optionMatch scrutineeRaw noneRaw someRaw =>
@@ -296,7 +327,14 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
       | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
       | some ⟨.id _ _ _, _⟩ | some ⟨.listType _, _⟩
-      | some ⟨.eitherType _ _, _⟩ => none
+      | some ⟨.eitherType _ _, _⟩
+      | some ⟨.empty, _⟩ | some ⟨.interval, _⟩
+      | some ⟨.path _ _ _, _⟩ | some ⟨.glue _ _, _⟩
+      | some ⟨.oeq _ _ _, _⟩ | some ⟨.idStrict _ _ _, _⟩
+      | some ⟨.equiv _ _, _⟩ | some ⟨.refine _ _, _⟩
+      | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
+      | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
+      | some ⟨.modal _ _, _⟩ => none
       | none => none
   -- Either matcher: scrutinee must infer to `Ty.eitherType left right`,
   -- which determines both branch parameter types.
@@ -313,7 +351,14 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
       | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
       | some ⟨.id _ _ _, _⟩ | some ⟨.listType _, _⟩
-      | some ⟨.optionType _, _⟩ => none
+      | some ⟨.optionType _, _⟩
+      | some ⟨.empty, _⟩ | some ⟨.interval, _⟩
+      | some ⟨.path _ _ _, _⟩ | some ⟨.glue _ _, _⟩
+      | some ⟨.oeq _ _ _, _⟩ | some ⟨.idStrict _ _ _, _⟩
+      | some ⟨.equiv _ _, _⟩ | some ⟨.refine _ _, _⟩
+      | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
+      | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
+      | some ⟨.modal _ _, _⟩ => none
       | none => none
   -- Identity introduction (refl): expected Ty must be `Ty.id carrier
   -- endpointA endpointB` where both endpoints equal `rawWitness`.
@@ -351,7 +396,10 @@ def Term.check : ∀ {scope : Nat}
             else none
           else none
       | .unit | .bool | .nat | .arrow _ _ | .piTy _ _ | .sigmaTy _ _
-      | .tyVar _ | .listType _ | .optionType _ | .eitherType _ _ => none
+      | .tyVar _ | .listType _ | .optionType _ | .eitherType _ _
+      | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
+      | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
+      | .codata _ _ | .session _ | .effect _ _ | .modal _ _ => none
   -- J eliminator: expected Ty is the motive.  Synth the witness to
   -- recover its id-type structure (carrier + endpoints), then check
   -- the base case at the motive.
@@ -365,7 +413,14 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.arrow _ _, _⟩ | some ⟨.piTy _ _, _⟩
       | some ⟨.sigmaTy _ _, _⟩ | some ⟨.tyVar _, _⟩
       | some ⟨.listType _, _⟩ | some ⟨.optionType _, _⟩
-      | some ⟨.eitherType _ _, _⟩ => none
+      | some ⟨.eitherType _ _, _⟩
+      | some ⟨.empty, _⟩ | some ⟨.interval, _⟩
+      | some ⟨.path _ _ _, _⟩ | some ⟨.glue _ _, _⟩
+      | some ⟨.oeq _ _ _, _⟩ | some ⟨.idStrict _ _ _, _⟩
+      | some ⟨.equiv _ _, _⟩ | some ⟨.refine _ _, _⟩
+      | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
+      | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
+      | some ⟨.modal _ _, _⟩ => none
       | none => none
   -- Modal — Layer 1 ships RAW-SIDE SCAFFOLDING ONLY (per Term.lean
   -- comment).  Inner type is preserved across modal markers; checking
