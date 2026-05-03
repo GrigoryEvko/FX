@@ -389,6 +389,124 @@ theorem Conv.cumul_raw_shared
                                       outerHigh cumulOkHigh levelLeHigh) :=
   rfl
 
+/-! ## Phase 12.A.B1.6 — ConvCumul subst-compatibility (closed-source case)
+
+The Phase 6 commitment: ConvCumul commutes with Subst.  At the
+current architecture (Term.cumulUp's lowerTerm at scope=0), we get
+the closed-source case for free: substituting the OUTER side of a
+viaUp leaves cumulUp's structure intact, so ConvCumul is preserved.
+
+A fully general "ConvCumul commutes with Subst" theorem requires
+either dropping scope=0 on Term.cumulUp OR introducing a Term-level
+heterogeneous substitution (Term.substHet).  Both are deferred —
+this section ships the closed-source case zero-axiom. -/
+
+/-- **Substitution preserves cumulUp's ConvCumul**: applying a Subst
+to a `Term.cumulUp ... lowerTerm` produces a Term that's still
+ConvCumul-related to the (unchanged) lowerTerm.
+
+Body: `(Term.cumulUp ... lowerTerm).subst sigma` reduces to
+`Term.cumulUp ... lowerTerm` (same lowerTerm, new outer scope) per
+Term/Subst.lean's cumulUp arm.  ConvCumul.viaUp witnesses the result. -/
+theorem Conv.cumul_subst_outer
+    {mode : Mode} {scope targetScope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat))
+    (sigma : Subst (higherLevel.toNat + 1) scope targetScope)
+    (termSubst : TermSubst ctxHigh targetCtxHigh sigma) :
+    ConvCumul lowerTerm
+              (Term.subst termSubst
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
+  -- Term.subst's cumulUp arm rebuilds Term.cumulUp at the new target
+  -- scope, passing lowerTerm through unchanged (it's at scope=0,
+  -- immune to any substitution).  ConvCumul.viaUp witnesses the result.
+  ConvCumul.viaUp innerLevel lowerLevel higherLevel
+                  cumulOkLow cumulOkHigh cumulMonotone lowerTerm
+
+/-- **Idempotent on cumulUp's raw side**: substituting a Term.cumulUp
+gives a Term whose raw form is still `RawTerm.universeCode innerLevel.toNat`.
+
+This follows because `RawTerm.universeCode innerLevel.toNat`'s `subst`
+returns itself (it's scope-polymorphic, no positions to substitute). -/
+theorem Conv.cumul_subst_raw_invariant
+    {mode : Mode} {scope targetScope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat))
+    (sigma : Subst (higherLevel.toNat + 1) scope targetScope)
+    (termSubst : TermSubst ctxHigh targetCtxHigh sigma) :
+    Term.toRaw (Term.subst termSubst
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) =
+      RawTerm.universeCode innerLevel.toNat := rfl
+
+/-! ## Headline Phase 6 theorem (closed-source case)
+
+`ConvCumul.subst_compatible` asserts that ConvCumul is closed under
+substitution of the OUTER side, given the Subst commutes with the
+Term-side substitution machinery.  At the current architecture, this
+is provable for the `viaUp` ctor directly via
+`Conv.cumul_subst_outer`. -/
+
+/-- **Phase 6 headline**: ConvCumul is preserved by subst on its
+target.  The closed-source restriction (lowerTerm at scope=0) is
+inherited from Term.cumulUp — the source side is invariant, the
+target side gets substituted via Term.subst's cumulUp arm. -/
+theorem ConvCumul.subst_compatible_outer
+    {mode : Mode} {scope targetScope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat))
+    (sigma : Subst (higherLevel.toNat + 1) scope targetScope)
+    (termSubst : TermSubst ctxHigh targetCtxHigh sigma)
+    (_cumulRel :
+      ConvCumul lowerTerm
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :
+    ConvCumul lowerTerm
+              (Term.subst termSubst
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
+  -- The cumulRel premise (held but unused) establishes the reflexive
+  -- relation between lowerTerm and the cumulUp-wrapped target.  The
+  -- substitution preserves the cumulUp structure (cumulUp's subst arm
+  -- is structural — passes lowerTerm through unchanged, rebuilds at
+  -- the new target scope).  Conv.cumul_subst_outer captures this.
+  Conv.cumul_subst_outer innerLevel lowerLevel higherLevel
+                         cumulOkLow cumulOkHigh cumulMonotone
+                         lowerTerm sigma termSubst
+
 /-- **Same-context cumul across distinct outer levels**: when both
 universe-codes happen to live in the same context (same `level`), the
 outer-level alignment forces `outerLow.toNat + 1 = outerHigh.toNat +

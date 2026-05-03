@@ -73,4 +73,9 @@ namespace LeanFX2
 #print axioms Conv.cumul_raw_shared
 #print axioms Conv.cumul_outer_eq
 
+-- Phase 12.A.B1.6: ConvCumul subst-compatibility (closed-source case)
+#print axioms Conv.cumul_subst_outer
+#print axioms Conv.cumul_subst_raw_invariant
+#print axioms ConvCumul.subst_compatible_outer
+
 end LeanFX2
