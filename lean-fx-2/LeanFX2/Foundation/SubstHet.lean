@@ -470,4 +470,641 @@ theorem Ty.substHet_cumul
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.substHet, Ty.lift_level]; rw [carrierIH]
 
+/-! ## Phase 12.A.B1.3-finish: rename/substHet commute lemmas
+
+These mirror the single-level `Ty.subst_rename_commute` and
+`Ty.rename_subst_commute` for the heterogeneous SubstHet.  Used by
+`Term.substHet`'s lam/lamPi/appPi/pair/snd casts to align dependent
+type signatures.
+
+* `Ty.substHet_rename_commute` — `(someType.substHet sigma).rename rho =
+   someType.substHet (sigma.renameOutput rho)` — substHet then rename.
+* `Ty.rename_substHet_commute` — `(someType.rename rho).substHet sigma =
+   someType.substHet (sigma.precomposeRenaming rho)` — rename then substHet.
+
+The level threading: SubstHet's source/target levels parameterize the
+operation, but renaming acts only on scopes (not levels), so the
+level threading is the same as in `Ty.substHet` itself. -/
+
+/-- Post-compose a SubstHet with a renaming on the output side. -/
+@[reducible] def SubstHet.renameOutput
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope middleScope)
+    (rho : RawRenaming middleScope targetScope) :
+    SubstHet sourceLevel targetLevel sourceScope targetScope where
+  forTy   := fun position => (sigma.forTy position).rename rho
+  forRaw  := fun position => (sigma.forRaw position).rename rho
+  cumulOk := sigma.cumulOk
+
+/-- Lift commutes with renameOutput on forTy. -/
+theorem SubstHet.renameOutput_lift_forTy_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope middleScope)
+    (rho : RawRenaming middleScope targetScope) :
+    ∀ position,
+      (sigma.lift.forTy position).rename rho.lift =
+        (SubstHet.renameOutput sigma rho).lift.forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show ((sigma.forTy ⟨k, _⟩).rename RawRenaming.weaken).rename rho.lift =
+           ((sigma.forTy ⟨k, _⟩).rename rho).rename RawRenaming.weaken
+      rw [Ty.rename_compose RawRenaming.weaken rho.lift
+            (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩),
+          Ty.rename_compose rho RawRenaming.weaken
+            (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩)]
+      apply Ty.rename_pointwise
+      intro pos
+      exact RawRenaming.weaken_lift_commute rho pos
+
+/-- Lift commutes with renameOutput on forRaw. -/
+theorem SubstHet.renameOutput_lift_forRaw_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope middleScope)
+    (rho : RawRenaming middleScope targetScope) :
+    ∀ position,
+      (sigma.lift.forRaw position).rename rho.lift =
+        (SubstHet.renameOutput sigma rho).lift.forRaw position :=
+  fun position => RawTermSubst.lift_then_rename_lift sigma.forRaw rho position
+
+/-- substHet-then-rename factors through SubstHet.renameOutput. -/
+theorem Ty.substHet_rename_commute
+    {sourceLevel targetLevel : Nat}
+    {scope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel scope middleScope)
+    (rho : RawRenaming middleScope targetScope)
+    (someType : Ty sourceLevel scope) :
+    (someType.substHet sigma).rename rho =
+      someType.substHet (SubstHet.renameOutput sigma rho) := by
+  induction someType generalizing middleScope targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat  => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.substHet, Ty.rename]; rw [dIH sigma rho, cIH sigma rho]
+  | piTy d c dIH cIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [dIH sigma rho, cIH sigma.lift rho.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact SubstHet.renameOutput_lift_forTy_pointwise sigma rho
+      · exact SubstHet.renameOutput_lift_forRaw_pointwise sigma rho
+      · rfl
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [fIH sigma rho, sIH sigma.lift rho.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact SubstHet.renameOutput_lift_forTy_pointwise sigma rho
+      · exact SubstHet.renameOutput_lift_forRaw_pointwise sigma rho
+      · rfl
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho left,
+          RawTerm.subst_rename_commute sigma.forRaw rho right]
+  | listType e eIH => simp only [Ty.substHet, Ty.rename]; rw [eIH sigma rho]
+  | optionType e eIH => simp only [Ty.substHet, Ty.rename]; rw [eIH sigma rho]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.substHet, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
+  | «universe» universeLevel levelLe => rfl
+  | empty => rfl
+  | interval => rfl
+  | path carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho left,
+          RawTerm.subst_rename_commute sigma.forRaw rho right]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [baseIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho boundaryWitness]
+  | oeq carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho left,
+          RawTerm.subst_rename_commute sigma.forRaw rho right]
+  | idStrict carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho left,
+          RawTerm.subst_rename_commute sigma.forRaw rho right]
+  | equiv d c dIH cIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [dIH sigma rho, cIH sigma rho]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [baseIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw.lift rho.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact RawTermSubst.lift_then_rename_lift sigma.forRaw rho position
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [singleFieldIH sigma rho]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [stateIH sigma rho, outputIH sigma rho]
+  | session protocolStep =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [RawTerm.subst_rename_commute sigma.forRaw rho protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [carrierIH sigma rho,
+          RawTerm.subst_rename_commute sigma.forRaw rho effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.substHet, Ty.rename]
+      rw [carrierIH sigma rho]
+
+/-- Pre-compose a renaming with a SubstHet on the input side. -/
+@[reducible] def SubstHet.precomposeRenaming
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (rho : RawRenaming sourceScope middleScope)
+    (sigma : SubstHet sourceLevel targetLevel middleScope targetScope) :
+    SubstHet sourceLevel targetLevel sourceScope targetScope where
+  forTy   := fun position => sigma.forTy (rho position)
+  forRaw  := fun position => sigma.forRaw (rho position)
+  cumulOk := sigma.cumulOk
+
+/-- Lift commutes with precomposeRenaming on forTy. -/
+theorem SubstHet.precomposeRenaming_lift_forTy_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (rho : RawRenaming sourceScope middleScope)
+    (sigma : SubstHet sourceLevel targetLevel middleScope targetScope) :
+    ∀ position,
+      sigma.lift.forTy (rho.lift position) =
+        (SubstHet.precomposeRenaming rho sigma).lift.forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨_ + 1, _⟩  => rfl
+
+/-- Lift commutes with precomposeRenaming on forRaw. -/
+theorem SubstHet.precomposeRenaming_lift_forRaw_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (rho : RawRenaming sourceScope middleScope)
+    (sigma : SubstHet sourceLevel targetLevel middleScope targetScope) :
+    ∀ position,
+      sigma.lift.forRaw (rho.lift position) =
+        (SubstHet.precomposeRenaming rho sigma).lift.forRaw position :=
+  fun position => RawTermSubst.lift_renaming_pull rho sigma.forRaw position
+
+/-- rename-then-substHet factors through SubstHet.precomposeRenaming. -/
+theorem Ty.rename_substHet_commute
+    {sourceLevel targetLevel : Nat}
+    {scope middleScope targetScope : Nat}
+    (rho : RawRenaming scope middleScope)
+    (sigma : SubstHet sourceLevel targetLevel middleScope targetScope)
+    (someType : Ty sourceLevel scope) :
+    (someType.rename rho).substHet sigma =
+      someType.substHet (SubstHet.precomposeRenaming rho sigma) := by
+  induction someType generalizing middleScope targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat  => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.rename, Ty.substHet]; rw [dIH rho sigma, cIH rho sigma]
+  | piTy d c dIH cIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [dIH rho sigma, cIH rho.lift sigma.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact SubstHet.precomposeRenaming_lift_forTy_pointwise rho sigma
+      · exact SubstHet.precomposeRenaming_lift_forRaw_pointwise rho sigma
+      · rfl
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [fIH rho sigma, sIH rho.lift sigma.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact SubstHet.precomposeRenaming_lift_forTy_pointwise rho sigma
+      · exact SubstHet.precomposeRenaming_lift_forRaw_pointwise rho sigma
+      · rfl
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw left,
+          RawTerm.rename_subst_commute rho sigma.forRaw right]
+  | listType e eIH => simp only [Ty.rename, Ty.substHet]; rw [eIH rho sigma]
+  | optionType e eIH => simp only [Ty.rename, Ty.substHet]; rw [eIH rho sigma]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.rename, Ty.substHet]; rw [lIH rho sigma, rIH rho sigma]
+  | «universe» universeLevel levelLe => rfl
+  | empty => rfl
+  | interval => rfl
+  | path carrier left right carrierIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw left,
+          RawTerm.rename_subst_commute rho sigma.forRaw right]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [baseIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw boundaryWitness]
+  | oeq carrier left right carrierIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw left,
+          RawTerm.rename_subst_commute rho sigma.forRaw right]
+  | idStrict carrier left right carrierIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw left,
+          RawTerm.rename_subst_commute rho sigma.forRaw right]
+  | equiv d c dIH cIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [dIH rho sigma, cIH rho sigma]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [baseIH rho sigma,
+          RawTerm.rename_subst_commute rho.lift sigma.forRaw.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact RawTermSubst.lift_renaming_pull rho sigma.forRaw position
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [singleFieldIH rho sigma]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [stateIH rho sigma, outputIH rho sigma]
+  | session protocolStep =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [RawTerm.rename_subst_commute rho sigma.forRaw protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [carrierIH rho sigma,
+          RawTerm.rename_subst_commute rho sigma.forRaw effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.rename, Ty.substHet]
+      rw [carrierIH rho sigma]
+
+/-! ## Pointwise: lift commutes with weaken-output on SubstHet -/
+
+/-- Pointwise: lift commutes with weaken-output on forTy. -/
+theorem SubstHet.weaken_lift_forTy_pointwise
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope) :
+    ∀ position,
+      sigma.lift.forTy (RawRenaming.weaken position) =
+        (sigma.forTy position).rename RawRenaming.weaken :=
+  fun _ => rfl
+
+/-- Pointwise: lift commutes with weaken-output on forRaw. -/
+theorem SubstHet.weaken_lift_forRaw_pointwise
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope) :
+    ∀ position,
+      sigma.lift.forRaw (RawRenaming.weaken position) =
+        (sigma.forRaw position).rename RawRenaming.weaken :=
+  fun _ => rfl
+
+/-- weaken-after-substHet equals substHet-after-weaken on Ty.  Load-bearing
+for the lam case of typed `Term.substHet` (body's weakened codomain). -/
+theorem Ty.weaken_substHet_commute
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (someType : Ty sourceLevel sourceScope) :
+    someType.weaken.substHet sigma.lift = (someType.substHet sigma).weaken := by
+  show (someType.rename RawRenaming.weaken).substHet sigma.lift =
+       (someType.substHet sigma).rename RawRenaming.weaken
+  rw [Ty.rename_substHet_commute RawRenaming.weaken sigma.lift someType,
+      Ty.substHet_rename_commute sigma RawRenaming.weaken someType]
+  apply Ty.substHet_pointwise
+  · exact SubstHet.weaken_lift_forTy_pointwise sigma
+  · exact SubstHet.weaken_lift_forRaw_pointwise sigma
+  · rfl
+
+/-! ## SubstHet composition with same-level Subst (left and right)
+
+We need to commute substHet over substitutions for Ty.subst0_substHet_commute.
+Two composition patterns:
+
+* `Subst.composeSubstHet` — `(Subst sourceLevel src mid).compose (SubstHet sourceLevel targetLevel mid tgt) = SubstHet sourceLevel targetLevel src tgt`
+* `SubstHet.composeSubst` — `(SubstHet sourceLevel targetLevel src mid).compose (Subst targetLevel mid tgt) = SubstHet sourceLevel targetLevel src tgt`
+
+Both threaded with cumulOk preserved. -/
+
+/-- Compose Subst (at sourceLevel) followed by SubstHet (sourceLevel→targetLevel).
+The sourceLevel substituents from the first get substHet-applied via the second. -/
+@[reducible] def Subst.composeSubstHet
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : Subst sourceLevel sourceScope middleScope)
+    (tau : SubstHet sourceLevel targetLevel middleScope targetScope) :
+    SubstHet sourceLevel targetLevel sourceScope targetScope where
+  forTy   := fun position => (sigma.forTy position).substHet tau
+  forRaw  := RawTermSubst.compose sigma.forRaw tau.forRaw
+  cumulOk := tau.cumulOk
+
+/-- Compose SubstHet (sourceLevel→targetLevel) followed by Subst (at targetLevel).
+The targetLevel substituents from the first get subst-applied via the second. -/
+@[reducible] def SubstHet.composeSubst
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope middleScope)
+    (tau : Subst targetLevel middleScope targetScope) :
+    SubstHet sourceLevel targetLevel sourceScope targetScope where
+  forTy   := fun position => (sigma.forTy position).subst tau
+  forRaw  := RawTermSubst.compose sigma.forRaw tau.forRaw
+  cumulOk := sigma.cumulOk
+
+/-- Lift commutes with composeSubstHet on forTy. -/
+theorem Subst.composeSubstHet_lift_forTy_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : Subst sourceLevel sourceScope middleScope)
+    (tau : SubstHet sourceLevel targetLevel middleScope targetScope) :
+    ∀ position,
+      (Subst.composeSubstHet sigma tau).lift.forTy position =
+        (Subst.composeSubstHet sigma.lift tau.lift).forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show ((sigma.forTy ⟨k, _⟩).substHet tau).weaken =
+           ((sigma.forTy ⟨k, _⟩).weaken).substHet tau.lift
+      exact (Ty.weaken_substHet_commute tau (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩)).symm
+
+/-- Lift commutes with composeSubstHet on forRaw. -/
+theorem Subst.composeSubstHet_lift_forRaw_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : Subst sourceLevel sourceScope middleScope)
+    (tau : SubstHet sourceLevel targetLevel middleScope targetScope) :
+    ∀ position,
+      (Subst.composeSubstHet sigma tau).lift.forRaw position =
+        (Subst.composeSubstHet sigma.lift tau.lift).forRaw position :=
+  fun position => RawTermSubst.lift_compose_pointwise sigma.forRaw tau.forRaw position
+
+/-- subst-then-substHet factors through Subst.composeSubstHet.  Mirror of
+Ty.subst_compose for the cross-level case. -/
+theorem Ty.subst_substHet_compose
+    {sourceLevel targetLevel : Nat}
+    {scope middleScope targetScope : Nat}
+    (sigma : Subst sourceLevel scope middleScope)
+    (tau : SubstHet sourceLevel targetLevel middleScope targetScope)
+    (someType : Ty sourceLevel scope) :
+    (someType.subst sigma).substHet tau =
+      someType.substHet (Subst.composeSubstHet sigma tau) := by
+  induction someType generalizing middleScope targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat  => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.subst, Ty.substHet]; rw [dIH sigma tau, cIH sigma tau]
+  | piTy d c dIH cIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [dIH sigma tau, cIH sigma.lift tau.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact fun p => (Subst.composeSubstHet_lift_forTy_pointwise sigma tau p).symm
+      · exact fun p => (Subst.composeSubstHet_lift_forRaw_pointwise sigma tau p).symm
+      · rfl
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [fIH sigma tau, sIH sigma.lift tau.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact fun p => (Subst.composeSubstHet_lift_forTy_pointwise sigma tau p).symm
+      · exact fun p => (Subst.composeSubstHet_lift_forRaw_pointwise sigma tau p).symm
+      · rfl
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | listType e eIH => simp only [Ty.subst, Ty.substHet]; rw [eIH sigma tau]
+  | optionType e eIH => simp only [Ty.subst, Ty.substHet]; rw [eIH sigma tau]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.subst, Ty.substHet]; rw [lIH sigma tau, rIH sigma tau]
+  | «universe» universeLevel levelLe => rfl
+  | empty => rfl
+  | interval => rfl
+  | path carrier left right carrierIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [baseIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw boundaryWitness]
+  | oeq carrier left right carrierIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | idStrict carrier left right carrierIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | equiv d c dIH cIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [dIH sigma tau, cIH sigma tau]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [baseIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw.lift tau.forRaw.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact (RawTermSubst.lift_compose_pointwise sigma.forRaw tau.forRaw position).symm
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [singleFieldIH sigma tau]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [stateIH sigma tau, outputIH sigma tau]
+  | session protocolStep =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [RawTerm.subst_compose sigma.forRaw tau.forRaw protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.subst, Ty.substHet]
+      rw [carrierIH sigma tau]
+
+/-- Lift commutes with composeSubst on forTy. -/
+theorem SubstHet.composeSubst_lift_forTy_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope middleScope)
+    (tau : Subst targetLevel middleScope targetScope) :
+    ∀ position,
+      (SubstHet.composeSubst sigma tau).lift.forTy position =
+        (SubstHet.composeSubst sigma.lift tau.lift).forTy position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show ((sigma.forTy ⟨k, _⟩).subst tau).weaken =
+           ((sigma.forTy ⟨k, _⟩).weaken).subst tau.lift
+      exact (Ty.weaken_subst_commute tau (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩)).symm
+
+/-- Lift commutes with composeSubst on forRaw. -/
+theorem SubstHet.composeSubst_lift_forRaw_pointwise
+    {sourceLevel targetLevel sourceScope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope middleScope)
+    (tau : Subst targetLevel middleScope targetScope) :
+    ∀ position,
+      (SubstHet.composeSubst sigma tau).lift.forRaw position =
+        (SubstHet.composeSubst sigma.lift tau.lift).forRaw position :=
+  fun position => RawTermSubst.lift_compose_pointwise sigma.forRaw tau.forRaw position
+
+/-- substHet-then-subst factors through SubstHet.composeSubst.  Mirror of
+Ty.subst_compose for the cross-level case. -/
+theorem Ty.substHet_subst_compose
+    {sourceLevel targetLevel : Nat}
+    {scope middleScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel scope middleScope)
+    (tau : Subst targetLevel middleScope targetScope)
+    (someType : Ty sourceLevel scope) :
+    (someType.substHet sigma).subst tau =
+      someType.substHet (SubstHet.composeSubst sigma tau) := by
+  induction someType generalizing middleScope targetScope with
+  | unit => rfl
+  | bool => rfl
+  | nat  => rfl
+  | arrow d c dIH cIH =>
+      simp only [Ty.substHet, Ty.subst]; rw [dIH sigma tau, cIH sigma tau]
+  | piTy d c dIH cIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [dIH sigma tau, cIH sigma.lift tau.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact fun p => (SubstHet.composeSubst_lift_forTy_pointwise sigma tau p).symm
+      · exact fun p => (SubstHet.composeSubst_lift_forRaw_pointwise sigma tau p).symm
+      · rfl
+  | sigmaTy fT sT fIH sIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [fIH sigma tau, sIH sigma.lift tau.lift]
+      congr 1
+      apply Ty.substHet_pointwise
+      · exact fun p => (SubstHet.composeSubst_lift_forTy_pointwise sigma tau p).symm
+      · exact fun p => (SubstHet.composeSubst_lift_forRaw_pointwise sigma tau p).symm
+      · rfl
+  | tyVar position => rfl
+  | id carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | listType e eIH => simp only [Ty.substHet, Ty.subst]; rw [eIH sigma tau]
+  | optionType e eIH => simp only [Ty.substHet, Ty.subst]; rw [eIH sigma tau]
+  | eitherType l r lIH rIH =>
+      simp only [Ty.substHet, Ty.subst]; rw [lIH sigma tau, rIH sigma tau]
+  | «universe» universeLevel levelLe => rfl
+  | empty => rfl
+  | interval => rfl
+  | path carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | glue baseType boundaryWitness baseIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [baseIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw boundaryWitness]
+  | oeq carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | idStrict carrier left right carrierIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw left,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw right]
+  | equiv d c dIH cIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [dIH sigma tau, cIH sigma tau]
+  | refine baseType predicate baseIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [baseIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw.lift tau.forRaw.lift predicate]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact (RawTermSubst.lift_compose_pointwise sigma.forRaw tau.forRaw position).symm
+  | record singleFieldType singleFieldIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [singleFieldIH sigma tau]
+  | codata stateType outputType stateIH outputIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [stateIH sigma tau, outputIH sigma tau]
+  | session protocolStep =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [RawTerm.subst_compose sigma.forRaw tau.forRaw protocolStep]
+  | effect carrierType effectTag carrierIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [carrierIH sigma tau,
+          RawTerm.subst_compose sigma.forRaw tau.forRaw effectTag]
+  | modal modalityTag carrierType carrierIH =>
+      simp only [Ty.substHet, Ty.subst]
+      rw [carrierIH sigma tau]
+
+/-! ## Ty.subst0_substHet_commute via subst-substHet composition
+
+The key Ty subst0 commute lemma for Term.substHet's appPi/pair/snd casts.
+Given a `Subst.singleton substituent rawArg` then `substHet sigma`,
+we want to factor through a `sigma.lift` then `Subst.singleton (substHet
+substituent) (subst rawArg)`. -/
+
+/-- Pointwise: composing singleton with substHet sigma agrees with composing
+sigma.lift with substHet-renamed singleton on forTy. -/
+theorem SubstHet.singleton_substHet_swap_forTy_pointwise
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    (substituent : Ty sourceLevel sourceScope) (rawArg : RawTerm sourceScope)
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope) :
+    ∀ position,
+      (Subst.composeSubstHet (Subst.singleton substituent rawArg) sigma).forTy position =
+        (SubstHet.composeSubst sigma.lift
+          (Subst.singleton (substituent.substHet sigma) (rawArg.subst sigma.forRaw))).forTy
+          position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩ =
+           (sigma.forTy ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken.subst
+             (Subst.singleton (substituent.substHet sigma) (rawArg.subst sigma.forRaw))
+      exact (Ty.weaken_subst_singleton (sigma.forTy ⟨k, _⟩)
+              (substituent.substHet sigma) (rawArg.subst sigma.forRaw)).symm
+
+/-- Pointwise: composing singleton with substHet sigma agrees with composing
+sigma.lift with substHet-renamed singleton on forRaw. -/
+theorem SubstHet.singleton_substHet_swap_forRaw_pointwise
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    (substituent : Ty sourceLevel sourceScope) (rawArg : RawTerm sourceScope)
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope) :
+    ∀ position,
+      (Subst.composeSubstHet (Subst.singleton substituent rawArg) sigma).forRaw position =
+        (SubstHet.composeSubst sigma.lift
+          (Subst.singleton (substituent.substHet sigma) (rawArg.subst sigma.forRaw))).forRaw
+          position
+  | ⟨0, _⟩      => rfl
+  | ⟨k + 1, h⟩  => by
+      show sigma.forRaw ⟨k, Nat.lt_of_succ_lt_succ h⟩ =
+           (sigma.forRaw ⟨k, Nat.lt_of_succ_lt_succ h⟩).weaken.subst
+             (RawTermSubst.singleton (rawArg.subst sigma.forRaw))
+      exact (RawTerm.weaken_subst_singleton (sigma.forRaw ⟨k, _⟩)
+              (rawArg.subst sigma.forRaw)).symm
+
+/-- subst0 then substHet equals substHet.lift then subst0.  Load-bearing for
+typed `Term.substHet` on β-redex result types: `(cod.subst0 dom argRaw).substHet sigma`
+matches `(cod.substHet sigma.lift).subst0 (dom.substHet sigma) (argRaw.subst sigma.forRaw)`. -/
+theorem Ty.subst0_substHet_commute
+    {sourceLevel targetLevel scope targetScope : Nat}
+    (codomainType : Ty sourceLevel (scope + 1))
+    (argType : Ty sourceLevel scope) (argRaw : RawTerm scope)
+    (sigma : SubstHet sourceLevel targetLevel scope targetScope) :
+    (codomainType.subst0 argType argRaw).substHet sigma =
+      (codomainType.substHet sigma.lift).subst0
+        (argType.substHet sigma) (argRaw.subst sigma.forRaw) := by
+  show (codomainType.subst (Subst.singleton argType argRaw)).substHet sigma =
+       (codomainType.substHet sigma.lift).subst
+         (Subst.singleton (argType.substHet sigma) (argRaw.subst sigma.forRaw))
+  rw [Ty.subst_substHet_compose (Subst.singleton argType argRaw) sigma codomainType,
+      Ty.substHet_subst_compose sigma.lift
+        (Subst.singleton (argType.substHet sigma) (argRaw.subst sigma.forRaw)) codomainType]
+  apply Ty.substHet_pointwise
+  · exact SubstHet.singleton_substHet_swap_forTy_pointwise argType argRaw sigma
+  · exact SubstHet.singleton_substHet_swap_forRaw_pointwise argType argRaw sigma
+  · rfl
+
 end LeanFX2
