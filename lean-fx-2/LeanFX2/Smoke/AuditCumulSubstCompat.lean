@@ -90,3 +90,10 @@ import LeanFX2.Reduction.CumulSubstCompat
 -- Binder cong arms (2)
 #print axioms LeanFX2.ConvCumul.rename_compatible_lam_benton
 #print axioms LeanFX2.ConvCumul.rename_compatible_lamPi_benton
+
+-- Allais binder arms (Step C — 2)
+#print axioms LeanFX2.ConvCumul.subst_compatible_lam_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_lamPi_allais
+
+-- Joint composition (Step E — assembler)
+#print axioms LeanFX2.ConvCumul.subst_compatible_joint

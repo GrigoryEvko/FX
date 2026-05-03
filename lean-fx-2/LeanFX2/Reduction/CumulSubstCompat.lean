@@ -1438,4 +1438,118 @@ Same kernel gap is documented in the Allais arms section above
 (near line 766).
 -/
 
+/-! # Allais binder arms (Step C — lam + lamPi)
+
+The two binder Term constructors close the per-ctor Allais
+catalogue.  Each takes a body-level inner ConvCumul (typically
+produced by a recursive call on the body under a lifted
+TermSubstHet) and applies the matching `lamCong` / `lamPiCong`
+rule, peeling `Term.substHet`'s `Ty.weaken_substHet_commute` cast
+via `cast_eq_both_benton` where needed.
+
+The user is responsible for constructing the inner compat for
+the lifted TermSubstHets — that's the standard Allais
+`Simulation.alg` discharge pattern (arxiv:1804.00119 §5.1).  The
+kernel does not auto-generate `PointwiseCompat.lift` because
+weakening preserves heterogeneous-source-ctx ConvCumul requires
+`induction cumulRel` (the Lean 4.29.1 wall described above) for
+the general case.  For homogeneous compat (compat = refl), the
+lifted compat is trivially refl.
+-/
+
+/-- Allais arm for `lam`: binder cong via `lamCong`.
+
+`Term.substHet`'s `lam` arm wraps the body in
+`Ty.weaken_substHet_commute ▸ ·` — same cast on both sides (same
+sigma), peeled via `cast_eq_both_benton`. -/
+theorem ConvCumul.subst_compatible_lam_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty sourceLevel sourceScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body : Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw)
+    (innerCompat :
+      ConvCumul (body.substHet (termSubstA.lift domainType))
+                (body.substHet (termSubstB.lift domainType))) :
+    ConvCumul ((Term.lam body).substHet termSubstA)
+              ((Term.lam body).substHet termSubstB) :=
+  ConvCumul.lamCong (ConvCumul.cast_eq_both_benton _ innerCompat)
+
+/-- Allais arm for `lamPi`: binder cong via `lamPiCong`.
+
+`Term.substHet`'s `lamPi` arm has NO cast (body type is just
+codomainType in extended scope) — direct cong application. -/
+theorem ConvCumul.subst_compatible_lamPi_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {domainType : Ty sourceLevel sourceScope}
+    {codomainType : Ty sourceLevel (sourceScope + 1)}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body : Term (sourceCtx.cons domainType) codomainType bodyRaw)
+    (innerCompat :
+      ConvCumul (body.substHet (termSubstA.lift domainType))
+                (body.substHet (termSubstB.lift domainType))) :
+    ConvCumul ((Term.lamPi body).substHet termSubstA)
+              ((Term.lamPi body).substHet termSubstB) :=
+  ConvCumul.lamPiCong innerCompat
+
+/-! # Joint composition (Step E — partial)
+
+The full strongest form `ConvCumul (firstTerm.substHet sigmaA)
+(secondTerm.substHet sigmaB)` from a paired `compat` and a
+`cumulRel` decomposes via `ConvCumul.trans`:
+
+```
+ConvCumul (firstTerm.substHet sigmaA)
+          (secondTerm.substHet sigmaB)
+  =  ConvCumul.trans
+       (allais_lift  : ConvCumul (firstTerm.substHet sigmaA)
+                                 (firstTerm.substHet sigmaB))
+       (benton_lift  : ConvCumul (firstTerm.substHet sigmaB)
+                                 (secondTerm.substHet sigmaB))
+```
+
+The `allais_lift` factor uses the per-ctor Allais helpers above
+(structural recursion on `firstTerm` with caller-supplied
+binder-arm bodies).  The `benton_lift` factor uses the per-ctor
+Benton helpers (also caller-supplied at construction).
+
+This `subst_compatible_joint` ASSEMBLER takes the two pre-built
+factors and combines them.  The factors themselves are user-built
+because the recursive headlines hit the heterogeneous-induction
+wall (memory `reference_cumul_subst_pattern_decision`); the
+shipped per-ctor helpers cover all 22 ctors with existing cong
+rules.
+
+Shipping this assembler closes the API surface: any caller who
+can build the two factors gets the joint result for free. -/
+
+/-- Joint composition: combine an Allais-style same-source factor
+with a Benton-style same-subst factor via `ConvCumul.trans` to
+produce the strongest cross-subst cross-source ConvCumul. -/
+theorem ConvCumul.subst_compatible_joint
+    {modeF modeS : Mode}
+    {levelF levelS scopeF scopeS : Nat}
+    {ctxF : Ctx modeF levelF scopeF}
+    {ctxS : Ctx modeS levelS scopeS}
+    {tyF : Ty levelF scopeF}
+    {tyS : Ty levelS scopeS}
+    {rawF : RawTerm scopeF}
+    {rawS : RawTerm scopeS}
+    {firstTermSubst : Term ctxF tyF rawF}
+    {secondTermSubst : Term ctxF tyF rawF}
+    {finalTerm : Term ctxS tyS rawS}
+    (allaisFactor : ConvCumul firstTermSubst secondTermSubst)
+    (bentonFactor : ConvCumul secondTermSubst finalTerm) :
+    ConvCumul firstTermSubst finalTerm :=
+  ConvCumul.trans allaisFactor bentonFactor
+
 end LeanFX2
