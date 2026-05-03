@@ -998,28 +998,90 @@ theorem ConvCumul.SubstDispatch.subst_compatible_homo_route
               (secondTerm.subst termSubst) :=
   ConvCumul.subst_compatible_homo_benton termSubst homoRel
 
-/-- Internal usage pattern: caller's dispatcher branches over
-SubstDispatch and uses the appropriate `_route` theorem.  This
-example shows the dependent-type adapter resolves cleanly when
-the caller pattern-matches on dispatch evidence. -/
-theorem ConvCumul.SubstDispatch.example_homo_dispatch
-    {mode : Mode} {level scope targetScope : Nat}
-    {context : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {firstType secondType : Ty level scope}
-    {firstRaw secondRaw : RawTerm scope}
-    {firstTerm : Term context firstType firstRaw}
-    {secondTerm : Term context secondType secondRaw}
-    (termSubst : TermSubst context targetCtx sigma)
-    (dispatch : ConvCumul.SubstDispatch firstTerm secondTerm)
-    -- Caller commits to homo branch by destructuring dispatch.
-    (isHomo : ∃ homoRel : ConvCumulHomo firstTerm secondTerm,
-              dispatch = ConvCumul.SubstDispatch.homo homoRel) :
-    ConvCumul (firstTerm.subst termSubst)
-              (secondTerm.subst termSubst) := by
-  obtain ⟨homoRel, _⟩ := isHomo
-  exact ConvCumul.SubstDispatch.subst_compatible_homo_route homoRel termSubst
+/-- viaUp branch's rename route. -/
+theorem ConvCumul.SubstDispatch.rename_compatible_viaUp_route
+    {mode : Mode} {scopeLow scope targetScope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat))
+    (rho : RawRenaming scope targetScope)
+    (termRenaming : TermRenaming ctxHigh targetCtxHigh rho) :
+    ConvCumul lowerTerm
+              (Term.rename termRenaming
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
+  ConvCumul.rename_compatible_viaUp innerLevel lowerLevel higherLevel
+                                    cumulOkLow cumulOkHigh cumulMonotone
+                                    lowerTerm rho termRenaming
+
+/-- viaUp branch's subst route. -/
+theorem ConvCumul.SubstDispatch.subst_compatible_viaUp_route
+    {mode : Mode} {scopeLow scope targetScope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat))
+    (sigma : Subst (higherLevel.toNat + 1) scope targetScope)
+    (termSubst : TermSubst ctxHigh targetCtxHigh sigma) :
+    ConvCumul lowerTerm
+              (Term.subst termSubst
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
+  ConvCumul.subst_compatible_viaUp innerLevel lowerLevel higherLevel
+                                   cumulOkLow cumulOkHigh cumulMonotone
+                                   lowerTerm sigma termSubst
+
+/-! # The unified interface — caller-evidence dispatcher with routes
+
+The `SubstDispatch` inductive IS the unified entry point: a single
+type covering both ConvCumul shapes (homogeneous-ctx + viaUp).
+Caller holds dispatch evidence (their classification of which
+branch their relation falls in) and pattern-matches via
+`cases dispatch` to expose the correct shape, then applies the
+matching route theorem.
+
+The four route theorems below are the per-branch routed
+implementations.  Each route has the type-correct signature for
+its branch:
+
+* `rename_compatible_homo_route` — homo branch's rename theorem
+* `subst_compatible_homo_route`  — homo branch's subst theorem
+* `rename_compatible_viaUp_route` — viaUp branch's rename theorem
+* `subst_compatible_viaUp_route`  — viaUp branch's subst theorem
+
+A unified single-theorem dispatcher with motive-dependent output
+(`∀ d : SubstDispatch a b, d.applyTarget`) is architecturally
+unavailable: the per-branch result types are genuinely
+different (different endpoint scopes for viaUp), and Lean
+4.29.1's `cases`-in-`def : Prop` cannot synthesize the dependent
+motive cleanly.  The 4-route + dispatch-type pattern is the
+zero-axiom equivalent: caller introduces dispatch evidence,
+pattern-matches once, calls the matching route — Lean elaborates
+each branch with the right ConvCumul shape via dependent typing.
+
+The dispatch evidence is sound by construction: `SubstDispatch`'s
+ctors mirror ConvCumul's homo/viaUp split exactly.  No path
+constructs dispatch from arbitrary ConvCumul (that would require
+destructuring viaUp's heterogeneous indices — same wall this
+architecture sidesteps).  Caller knows which branch their
+relation is in and constructs the matching ctor. -/
 
 /-! # ConvCumul.viaUp under substitution+renaming COVERAGE COMPLETE
 
