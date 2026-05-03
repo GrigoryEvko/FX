@@ -178,6 +178,10 @@ theorem Term.subst_pointwise
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl
+  -- Cumul-up: closed lower side (scope 0), no scope-dependent
+  -- substitution.  Both sides identical regardless of forTy/forRaw
+  -- pointwise hypothesis.
+  | _, _, .cumulUp _ _ _ _ _ _ _ _ _ => rfl
 
 /-! ## TermSubst composition
 

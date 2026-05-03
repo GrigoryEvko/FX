@@ -197,6 +197,21 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- at the target scope matches the expected types definitionally.
   | _, _, .universeCode innerLevel outerLevel cumulOk levelEq =>
       Term.universeCode innerLevel outerLevel cumulOk levelEq
+  -- Cumul-up (REAL cumul ctor): the inner Term lives at scope 0, so
+  -- it carries no positions to substitute.  We pass `lowerTerm`
+  -- through unchanged and reconstruct cumulUp at the new target
+  -- scope.  Both the universe-code raw form and `Ty.universe ...`
+  -- substitute to themselves (no scope-dependent payload), so no
+  -- cast is needed.  This is the architectural escape from the P-4
+  -- cumul-Subst-mismatch wall: by anchoring the lower side at scope
+  -- 0, no level-mismatched substituents are ever needed.
+  | _, _, .cumulUp innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelEqLow levelEqHigh lowerTerm =>
+      Term.cumulUp (ctxHigh := targetCtx)
+                   innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelEqLow levelEqHigh lowerTerm
 
 /-! ## Term.subst0 — single-variable β-substitution -/
 

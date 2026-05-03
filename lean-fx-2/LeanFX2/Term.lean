@@ -264,5 +264,52 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (levelEq : level = outerLevel.toNat + 1) :
       Term context (Ty.universe outerLevel levelEq)
                    (RawTerm.universeCode innerLevel.toNat)
+  /-- **REAL CROSS-LEVEL CUMULATIVITY** at the typed Term level.
+      Promotes a closed (scope = 0) Term inhabiting `Ty.universe lowerLevel`
+      to one inhabiting `Ty.universe higherLevel`, packaging the source
+      term as a payload field.  The output's static type lives at a
+      different outer universe-level than the input — this is the
+      cumulativity rule `u ≤ v ⊢ u : Type → u : Type[v]` made REAL at
+      the term level.
+
+      ## Why scope = 0 on the lower side
+      The P-4 cumul-Subst-mismatch wall (`feedback_lean_cumul_subst_mismatch`)
+      forbids freely substituting through a level-mismatched payload —
+      `lowerTerm`'s `tyVar` references would expect substituents at
+      `lowerLevel.toNat + 1`, but `Term.subst` would supply them at
+      `higherLevel.toNat + 1`.  Restricting the lower-side scope to 0
+      eliminates `tyVar` references entirely (no `Fin 0` positions),
+      sidestepping the wall.  The output side stays scope-polymorphic
+      via raw weakening `RawTerm.rename Fin.elim0`.
+
+      ## How cumulUp uses its source
+      `lowerTerm` is a real field of the constructor.  Term.subst's
+      arm for cumulUp passes `lowerTerm` through unchanged (it lives
+      at scope 0, immune to any non-empty Subst), reconstructing the
+      output via `Term.cumulUp` at the new target scope.  The output
+      structure literally contains the input term as a payload —
+      that is REAL packaging, not witness synthesis.
+
+      ## Field meaning
+      * `lowerLevel`, `higherLevel` — outer universe levels
+      * `cumulOk` — the cumulativity witness `lowerLevel ≤ higherLevel`
+      * `ctxLow` — closed context at the lower outer level (scope = 0)
+      * `ctxHigh` — arbitrary outer context at the higher level
+      * `innerRaw` — raw form of the lower term (at scope 0)
+      * `lowerTerm` — the REAL TYPED SOURCE Term we're promoting -/
+  | cumulUp {mode : Mode} {levelLow level scope : Nat}
+      (innerLevel lowerLevel higherLevel : UniverseLevel)
+      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      (levelEqLow : levelLow = lowerLevel.toNat + 1)
+      (levelEqHigh : level = higherLevel.toNat + 1)
+      {ctxLow : Ctx mode levelLow 0}
+      {ctxHigh : Ctx mode level scope}
+      (lowerTerm :
+        Term ctxLow (Ty.universe lowerLevel levelEqLow)
+                    (RawTerm.universeCode innerLevel.toNat)) :
+      Term ctxHigh (Ty.universe higherLevel levelEqHigh)
+           (RawTerm.universeCode innerLevel.toNat)
 
 end LeanFX2

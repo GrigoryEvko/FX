@@ -212,6 +212,21 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- definitionally.
   | _, _, .universeCode innerLevel outerLevel cumulOk levelEq =>
       Term.universeCode innerLevel outerLevel cumulOk levelEq
+  -- Cumul-up (REAL cumul ctor): the inner Term lives at scope 0, so
+  -- it is invariant under any renaming on the outer scope.  We just
+  -- pass `lowerTerm` through unchanged and reconstruct the cumulUp
+  -- ctor at the new target scope (the output context uses the new
+  -- scope, the inner context stays at scope 0).  Both sides project
+  -- to `RawTerm.universeCode innerLevel.toNat`, identical at any
+  -- scope, so no cast is needed for the raw axis.  The output type
+  -- `Ty.universe higherLevel rfl` renames to itself.
+  | _, _, .cumulUp innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelEqLow levelEqHigh lowerTerm =>
+      Term.cumulUp (ctxHigh := targetCtx)
+                   innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelEqLow levelEqHigh lowerTerm
 
 /-! ## Term.weaken — convenience wrapper -/
 
