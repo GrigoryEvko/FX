@@ -437,6 +437,38 @@ def Term.check : ∀ {scope : Nat}
       match Term.check context expectedType innerRaw with
       | some innerTerm => some (Term.subsume innerTerm)
       | none => none
+  -- D1.6: 27 new RawTerm ctors don't have typed Term counterparts
+  -- yet (D1.9 task #1302).  Returning `none` keeps the checker total
+  -- and behavioural-equivalent to its pre-D1.6 form on the checkable
+  -- subset.  Once D1.9 lands, replace each with the proper typed
+  -- check rule.
+  | .interval0          => none
+  | .interval1          => none
+  | .intervalOpp _      => none
+  | .intervalMeet _ _   => none
+  | .intervalJoin _ _   => none
+  | .pathLam _          => none
+  | .pathApp _ _        => none
+  | .glueIntro _ _      => none
+  | .glueElim _         => none
+  | .transp _ _         => none
+  | .hcomp _ _          => none
+  | .oeqRefl _          => none
+  | .oeqJ _ _           => none
+  | .oeqFunext _        => none
+  | .idStrictRefl _     => none
+  | .idStrictRec _ _    => none
+  | .equivIntro _ _     => none
+  | .equivApp _ _       => none
+  | .refineIntro _ _    => none
+  | .refineElim _       => none
+  | .recordIntro _      => none
+  | .recordProj _       => none
+  | .codataUnfold _ _   => none
+  | .codataDest _       => none
+  | .sessionSend _ _    => none
+  | .sessionRecv _      => none
+  | .effectPerform _ _  => none
 
 end LeanFX2
 

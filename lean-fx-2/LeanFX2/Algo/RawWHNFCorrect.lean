@@ -94,6 +94,33 @@ theorem RawTerm.eq_lam_of_lamBody?_eq_some
   | modIntro _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
 
 /-- Inversion for `pairComponents?`. -/
 theorem RawTerm.eq_pair_of_pairComponents?_eq_some
@@ -135,6 +162,33 @@ theorem RawTerm.eq_pair_of_pairComponents?_eq_some
   | modIntro _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
 
 /-- Inversion for `natSuccPred?`. -/
 theorem RawTerm.eq_natSucc_of_natSuccPred?_eq_some
@@ -173,6 +227,33 @@ theorem RawTerm.eq_natSucc_of_natSuccPred?_eq_some
   | modIntro _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
 
 /-- Inversion for `listConsParts?`. -/
 theorem RawTerm.eq_listCons_of_listConsParts?_eq_some
@@ -214,6 +295,33 @@ theorem RawTerm.eq_listCons_of_listConsParts?_eq_some
   | modIntro _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
 
 /-- Inversion for `optionSomeValue?`. -/
 theorem RawTerm.eq_optionSome_of_optionSomeValue?_eq_some
@@ -252,6 +360,33 @@ theorem RawTerm.eq_optionSome_of_optionSomeValue?_eq_some
   | modIntro _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
 
 /-- Inversion for `eitherInlValue?`. -/
 theorem RawTerm.eq_eitherInl_of_eitherInlValue?_eq_some
@@ -290,6 +425,33 @@ theorem RawTerm.eq_eitherInl_of_eitherInlValue?_eq_some
   | modIntro _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
 
 /-- Inversion for `eitherInrValue?`. -/
 theorem RawTerm.eq_eitherInr_of_eitherInrValue?_eq_some
@@ -328,6 +490,33 @@ theorem RawTerm.eq_eitherInr_of_eitherInrValue?_eq_some
   | modIntro _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | modElim _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | subsume _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | interval0 => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | interval1 => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | intervalOpp _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | intervalMeet _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | intervalJoin _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | pathLam _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | pathApp _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | glueIntro _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | glueElim _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | transp _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | hcomp _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | oeqRefl _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | oeqJ _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | oeqFunext _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | idStrictRefl _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | idStrictRec _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | equivIntro _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | equivApp _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | refineIntro _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | refineElim _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | recordIntro _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | recordProj _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | codataUnfold _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | codataDest _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | sessionSend _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | sessionRecv _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | effectPerform _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
 
 /-! ## Headline theorem: `RawTerm.whnf` reaches a parallel reduct
 
@@ -521,7 +710,19 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionNone | optionSome _ | optionMatch _ _ _
         | eitherInl _ | eitherInr _ | eitherMatch _ _ _
         | refl _ | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.boolElimScrutinee thenBranch elseBranch
@@ -577,7 +778,19 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionNone | optionSome _ | optionMatch _ _ _
         | eitherInl _ | eitherInr _ | eitherMatch _ _ _
         | refl _ | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.natElimScrutinee zeroBranch succBranch
@@ -636,7 +849,19 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionNone | optionSome _ | optionMatch _ _ _
         | eitherInl _ | eitherInr _ | eitherMatch _ _ _
         | refl _ | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.natRecScrutinee zeroBranch succBranch
@@ -693,7 +918,19 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionNone | optionSome _ | optionMatch _ _ _
         | eitherInl _ | eitherInr _ | eitherMatch _ _ _
         | refl _ | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.listElimScrutinee nilBranch consBranch
@@ -751,7 +988,19 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionMatch _ _ _
         | eitherInl _ | eitherInr _ | eitherMatch _ _ _
         | refl _ | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.optionMatchScrutinee noneBranch someBranch
@@ -812,7 +1061,19 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionNone | optionSome _ | optionMatch _ _ _
         | eitherMatch _ _ _
         | refl _ | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.eitherMatchScrutinee leftBranch rightBranch
@@ -848,13 +1109,54 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | optionNone | optionSome _ | optionMatch _ _ _
         | eitherInl _ | eitherInr _ | eitherMatch _ _ _
         | idJ _ _
-        | modIntro _ | modElim _ | subsume _ =>
+        | modIntro _ | modElim _ | subsume _
+        | interval0 | interval1 | intervalOpp _
+        | intervalMeet _ _ | intervalJoin _ _
+        | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
+        | transp _ _ | hcomp _ _
+        | oeqRefl _ | oeqJ _ _ | oeqFunext _
+        | idStrictRefl _ | idStrictRec _ _
+        | equivIntro _ _ | equivApp _ _
+        | refineIntro _ _ | refineElim _
+        | recordIntro _ | recordProj _
+        | codataUnfold _ _ | codataDest _
+        | sessionSend _ _ | sessionRecv _
+        | effectPerform _ _ =>
             rw [hWitnessWhnf] at witnessChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.idJWitness baseCase witnessChain
     | modIntro _ => exact RawStep.parStar.refl _
     | modElim _ => exact RawStep.parStar.refl _
     | subsume _ => exact RawStep.parStar.refl _
+    -- D1.6: 27 new ctors are pure cong at raw level — no β/ι rule
+    -- fires in whnf, so whnf returns the term unchanged.
+    | interval0 => exact RawStep.parStar.refl _
+    | interval1 => exact RawStep.parStar.refl _
+    | intervalOpp _ => exact RawStep.parStar.refl _
+    | intervalMeet _ _ => exact RawStep.parStar.refl _
+    | intervalJoin _ _ => exact RawStep.parStar.refl _
+    | pathLam _ => exact RawStep.parStar.refl _
+    | pathApp _ _ => exact RawStep.parStar.refl _
+    | glueIntro _ _ => exact RawStep.parStar.refl _
+    | glueElim _ => exact RawStep.parStar.refl _
+    | transp _ _ => exact RawStep.parStar.refl _
+    | hcomp _ _ => exact RawStep.parStar.refl _
+    | oeqRefl _ => exact RawStep.parStar.refl _
+    | oeqJ _ _ => exact RawStep.parStar.refl _
+    | oeqFunext _ => exact RawStep.parStar.refl _
+    | idStrictRefl _ => exact RawStep.parStar.refl _
+    | idStrictRec _ _ => exact RawStep.parStar.refl _
+    | equivIntro _ _ => exact RawStep.parStar.refl _
+    | equivApp _ _ => exact RawStep.parStar.refl _
+    | refineIntro _ _ => exact RawStep.parStar.refl _
+    | refineElim _ => exact RawStep.parStar.refl _
+    | recordIntro _ => exact RawStep.parStar.refl _
+    | recordProj _ => exact RawStep.parStar.refl _
+    | codataUnfold _ _ => exact RawStep.parStar.refl _
+    | codataDest _ => exact RawStep.parStar.refl _
+    | sessionSend _ _ => exact RawStep.parStar.refl _
+    | sessionRecv _ => exact RawStep.parStar.refl _
+    | effectPerform _ _ => exact RawStep.parStar.refl _
 
 /-! ## Corollary: WHNF agreement ⇒ common reduct
 
