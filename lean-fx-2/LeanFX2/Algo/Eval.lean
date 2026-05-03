@@ -1,4 +1,5 @@
 import LeanFX2.Algo.WHNF
+import LeanFX2.Algo.RawWHNF
 import LeanFX2.Reduction.Step
 import LeanFX2.Term.Inversion
 
@@ -72,6 +73,110 @@ namespace LeanFX2
 
 variable {mode : Mode} {level : Nat}
 
+/-! ## Typed-destruct helpers — bridge raw projections to typed payloads
+
+Each `tryDestruct<Ctor>` follows a uniform recipe:
+1. Project to Option payload via the raw `<projection>?` helper.
+2. On `some`, lift to the Eq witness via the iff lemma.
+3. Cast the typed term to the raw-indexed shape.
+4. Apply the typed destructor to extract the payload.
+5. Return the typed payload (some) or fall through (none).
+
+These let `Term.headStep?` fire payload-bearing β/ι rules
+zero-axiom — the destructor + iff combo discharges the
+propext-leak that direct `match rawEq:` patterns trigger. -/
+
+/-- Try to destruct a typed `Term ctx Ty.nat raw` as a
+`Term.natSucc` of a predecessor.  Returns the predecessor's
+raw + typed payload, or `none` if the raw isn't natSucc-shaped. -/
+def Term.tryDestructNatSucc
+    {scope : Nat} {context : Ctx mode level scope} {raw : RawTerm scope}
+    (someTerm : Term context Ty.nat raw) :
+    Option (Σ' (predRaw : RawTerm scope), Term context Ty.nat predRaw) :=
+  match witnessPred : raw.natSuccPred? with
+  | some predRaw =>
+      have rawIsNatSucc : raw = RawTerm.natSucc predRaw :=
+        RawTerm.natSuccPred?_eq_some witnessPred
+      let scrutineeAtRaw : Term context Ty.nat (RawTerm.natSucc predRaw) :=
+        rawIsNatSucc ▸ someTerm
+      let ⟨predTerm, _⟩ := Term.natSuccDestruct scrutineeAtRaw
+      some ⟨predRaw, predTerm⟩
+  | none => none
+
+/-- Try to destruct a typed list term as a `Term.listCons` of
+head + tail.  Returns the typed parts on success. -/
+def Term.tryDestructListCons
+    {scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context (Ty.listType elementType) raw) :
+    Option (Σ' (headRaw tailRaw : RawTerm scope)
+              (_ : Term context elementType headRaw),
+              Term context (Ty.listType elementType) tailRaw) :=
+  match witnessParts : raw.listConsParts? with
+  | some (headRaw, tailRaw) =>
+      have rawIsListCons : raw = RawTerm.listCons headRaw tailRaw :=
+        RawTerm.listConsParts?_eq_some witnessParts
+      let scrutineeAtRaw : Term context (Ty.listType elementType)
+                                         (RawTerm.listCons headRaw tailRaw) :=
+        rawIsListCons ▸ someTerm
+      let ⟨headTerm, tailTerm, _⟩ := Term.listConsDestruct scrutineeAtRaw
+      some ⟨headRaw, tailRaw, headTerm, tailTerm⟩
+  | none => none
+
+/-- Try to destruct a typed option term as a `Term.optionSome`. -/
+def Term.tryDestructOptionSome
+    {scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context (Ty.optionType elementType) raw) :
+    Option (Σ' (valueRaw : RawTerm scope),
+              Term context elementType valueRaw) :=
+  match witnessValue : raw.optionSomeValue? with
+  | some valueRaw =>
+      have rawIsOptionSome : raw = RawTerm.optionSome valueRaw :=
+        RawTerm.optionSomeValue?_eq_some witnessValue
+      let scrutineeAtRaw : Term context (Ty.optionType elementType)
+                                         (RawTerm.optionSome valueRaw) :=
+        rawIsOptionSome ▸ someTerm
+      let ⟨valueTerm, _⟩ := Term.optionSomeDestruct scrutineeAtRaw
+      some ⟨valueRaw, valueTerm⟩
+  | none => none
+
+/-- Try to destruct a typed either term as a `Term.eitherInl`. -/
+def Term.tryDestructEitherInl
+    {scope : Nat} {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context (Ty.eitherType leftType rightType) raw) :
+    Option (Σ' (valueRaw : RawTerm scope),
+              Term context leftType valueRaw) :=
+  match witnessValue : raw.eitherInlValue? with
+  | some valueRaw =>
+      have rawIsEitherInl : raw = RawTerm.eitherInl valueRaw :=
+        RawTerm.eitherInlValue?_eq_some witnessValue
+      let scrutineeAtRaw : Term context (Ty.eitherType leftType rightType)
+                                         (RawTerm.eitherInl valueRaw) :=
+        rawIsEitherInl ▸ someTerm
+      let ⟨valueTerm, _⟩ := Term.eitherInlDestruct scrutineeAtRaw
+      some ⟨valueRaw, valueTerm⟩
+  | none => none
+
+/-- Try to destruct a typed either term as a `Term.eitherInr`. -/
+def Term.tryDestructEitherInr
+    {scope : Nat} {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context (Ty.eitherType leftType rightType) raw) :
+    Option (Σ' (valueRaw : RawTerm scope),
+              Term context rightType valueRaw) :=
+  match witnessValue : raw.eitherInrValue? with
+  | some valueRaw =>
+      have rawIsEitherInr : raw = RawTerm.eitherInr valueRaw :=
+        RawTerm.eitherInrValue?_eq_some witnessValue
+      let scrutineeAtRaw : Term context (Ty.eitherType leftType rightType)
+                                         (RawTerm.eitherInr valueRaw) :=
+        rawIsEitherInr ▸ someTerm
+      let ⟨valueTerm, _⟩ := Term.eitherInrDestruct scrutineeAtRaw
+      some ⟨valueRaw, valueTerm⟩
+  | none => none
+
 /-- Fire a single ι-redex at the head of a typed term, restricted to
 the cases where the reduct does not require inner-Term destructuring
 (see file docstring for the coverage table).  Returns `none` for
@@ -115,14 +220,19 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
         some ⟨_, elseBranch⟩
       else
         none
+  -- Eliminator cases: keep firing only the no-payload canonical
+  -- cases (zeroBranch, nilBranch, noneBranch) for now.  The
+  -- `tryDestruct*` helpers are SHIPPED for future M08 use — they
+  -- enable payload-bearing β/ι extension once the corresponding
+  -- soundness theorems (`Term.headStep?_sound_natElimSucc` etc.)
+  -- land.  Until then, headStep? matches the existing soundness
+  -- contract.
   | _, _, _, _, .natElim scrutinee zeroBranch _ =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then
         some ⟨_, zeroBranch⟩
       else
-        none  -- succ case: extension via natSuccDestruct deferred to
-              -- avoid `match rawEq:` propext leak; see Phase 12.A.3
-              -- M08 work-in-progress notes
+        none
   | _, _, _, _, .natRec scrutinee zeroBranch _ =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then

@@ -242,6 +242,20 @@ def Term.eitherInrDestruct
   cases eitherEq.2
   exact ⟨valueTerm, HEq.rfl⟩
 
+/-! ## Raw-form recovery helpers — see `Algo/RawWHNF.lean`
+
+When `Term.headStep?` dispatches via `scrutinee.headCtor`, it
+gets a flat-enum tag but no Eq witness on `scrutinee.toRaw`.
+The destructors above need raw-indexed terms — they require an
+Eq proof.
+
+Bridge helpers like `RawTerm.natSuccPred?_eq_some` recover the
+raw form `term = RawTerm.natSucc predRaw` from a witness
+`term.natSuccPred? = some predRaw`.  These live in
+`Algo/RawWHNF.lean` next to the projection helpers themselves
+(to keep the dependency direction clean — `Term/Inversion`
+should not depend on `Algo`). -/
+
 /-- `Term ctx _ .listNil` forces `ty = Ty.listType elementType` for
 some `elementType`. -/
 theorem Term.listNil_ty_inv
