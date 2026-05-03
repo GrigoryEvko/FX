@@ -122,3 +122,9 @@ import LeanFX2.Reduction.CumulSubstCompat
 
 -- Pattern 3 fundamental headline — Allais sim at identity simulation (1)
 #print axioms LeanFX2.ConvCumul.subst_compatible_paired_allais
+
+-- BHKM cast-elim independent (1)
+#print axioms LeanFX2.ConvCumul.cast_eq_indep_benton
+
+-- Pattern 3 FULL HEADLINE at homogeneous level (1)
+#print axioms LeanFX2.ConvCumulHomo.subst_compatible_paired_allais

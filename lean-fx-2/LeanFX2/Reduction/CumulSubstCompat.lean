@@ -159,6 +159,27 @@ theorem ConvCumul.cast_eq_both_benton
   cases eq
   exact origRel
 
+/-- BHKM cast-elim INDEPENDENT: each endpoint may carry its own
+type-equation cast.  Used for cong cases where the two sides
+involve different cast equations (e.g., `lamCong` with different
+codomain types per side, `pairCong` / `sndCong` / `appPiCong`
+with `Ty.subst0_substHet_commute` casts depending on per-side raw
+witnesses). -/
+theorem ConvCumul.cast_eq_indep_benton
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstTy firstTy' secondTy secondTy' : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context firstTy firstRaw}
+    {secondTerm : Term context secondTy secondRaw}
+    (eqFirst : firstTy = firstTy')
+    (eqSecond : secondTy = secondTy')
+    (origRel : ConvCumul firstTerm secondTerm) :
+    ConvCumul (eqFirst ▸ firstTerm) (eqSecond ▸ secondTerm) := by
+  cases eqFirst
+  cases eqSecond
+  exact origRel
+
 /-! # Allais et al. ICFP'18 — paired-environment compat
 
 This section instantiates the Allais simulation framework's
@@ -2115,36 +2136,137 @@ theorem ConvCumul.subst_compatible_paired_allais
     ConvCumul (term.substHet termSubstA) (term.substHet termSubstB) :=
   Term.subst_compatible_pointwise_allais compat term
 
-/-! # Pattern 3 full-headline — status note
+/-! # Pattern 3 FULL HEADLINE — ConvCumulHomo + paired-env compat → ConvCumul
 
-The FULL `ConvCumulHomo.subst_compatible_paired_allais` (induction on
-cumulRel with all 26 ctor cases, output `ConvCumul (a.substHet σA) (b.substHet σB)`)
-requires:
+Restricted to homogeneous level (`sourceLevel = targetLevel = level`).
+The level restriction is forced by `cumulUpCong`'s output ctxHigh
+constraint: ConvCumul.cumulUpCong requires ctxHigh at exactly
+`higherLevel.toNat + 1`, and after substHet the ctxHigh is at
+targetLevel.  These coincide only when sourceLevel = targetLevel
+(= higherLevel.toNat + 1 for the cumulUpCong ctor of ConvCumulHomo).
 
-* `ConvCumul.cast_eq_indep_benton` (parallel of `ConvCumulHomo.cast_eq_indep`)
-  for cong cases with different LHS/RHS casts (lam/lamPi/appPi/pair/snd).
-* Restriction to homogeneous level (`sourceLevel = targetLevel`) for the
-  cumulUpCong arm — `ConvCumul.cumulUpCong`'s ctor signature requires
-  ctxHigh at exactly `higherLevel.toNat + 1`, but `Term.substHet` emits
-  ctxHigh at arbitrary `targetLevel ≥ higherLevel.toNat + 1` via
-  `Nat.le_trans levelLeHigh sigma.cumulOk`.  These coincide only when
-  `sourceLevel = targetLevel`.
-* Subsingleton.elim on `Nat.le` proof witnesses to align
-  `Nat.le_trans (Nat.le_refl _) sigma.cumulOk` with the `(Nat.le_refl _)`
-  required by `cumulUpCong`'s output ctxHigh constraint.
+For homogeneous-level subst, this is the FULL Pattern 3 result —
+all 26 ConvCumulHomo ctor cases discharged via outer cumulRel
+induction with paired-env compat propagation. -/
 
-These prerequisites are tractable but constitute their own ~150-line
-follow-up.  For this iteration we ship Pattern 3's CORE (fundamental
-lemma + identity-simulation headline) which IS the load-bearing
-mathematical content of Allais's framework.  The cumulRel-induction
-headline lifts the result from "single Term, two related substs" to
-"two related Terms, two related substs" via a routine outer induction;
-the substantive work is the inner per-Term-ctor dispatch (already
-shipped in the 32 Allais arms above).
+/-- **Pattern 3 FULL HEADLINE** at homogeneous level: ConvCumulHomo
+witnesses lift to ConvCumul under paired-env Homo-compat between
+two TermSubstHets at the same homogeneous SubstHet.
 
-CUMUL-P3.3 (refl arm) is closed via the fundamental headline; the
-remaining cumulRel-ctor arms (sym/trans/22 cong/cumulUpCong) are the
-deferred follow-up. -/
+Outer induction on cumulRel (ConvCumulHomo): 26 ctor cases.
+* `refl t` → fundamental lemma on `t` with compat.
+* `sym _ ih` → recurse with `compat.sym`, apply `ConvCumul.sym`.
+* `trans _ _ ih1 ih2` → ih1 with compat to bridge through middle
+  via σB, then ih2 with refl-compat at σB.
+* 22 cong rules + cumulUpCong → recurse on inner subwitnesses
+  with `compat` (or `compat.lift` for binders), apply matching
+  ConvCumul cong rule with cast handling. -/
+theorem ConvCumulHomo.subst_compatible_paired_allais
+    {mode : Mode}
+    {level : Nat} {sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {firstType secondType : Ty level sourceScope}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    {firstTerm : Term sourceCtx firstType firstRaw}
+    {secondTerm : Term sourceCtx secondType secondRaw}
+    (cumulRel : ConvCumulHomo firstTerm secondTerm) :
+    ∀ {targetScope : Nat}
+      {targetCtx : Ctx mode level targetScope}
+      {sigma : SubstHet level level sourceScope targetScope}
+      {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+      (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB),
+      ConvCumul (firstTerm.substHet termSubstA) (secondTerm.substHet termSubstB) := by
+  induction cumulRel with
+  | refl t =>
+      intros _ _ _ _ _ compat
+      exact Term.subst_compatible_pointwise_allais compat t
+  | sym _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.sym (ih compat.sym)
+  | trans _ _ ih1 ih2 =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.trans (ih1 compat) (ih2 (TermSubstHet.PointwiseCompatHomo.refl _))
+  | lamCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.lamCong
+        (ConvCumul.cast_eq_indep_benton _ _ (ih (compat.lift _)))
+  | lamPiCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.lamPiCong (ih (compat.lift _))
+  | appCong _ _ ihFn ihArg =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.appCong (ihFn compat) (ihArg compat)
+  | appPiCong _ _ ihFn ihArg =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.cast_eq_indep_benton _ _
+        (ConvCumul.appPiCong (ihFn compat) (ihArg compat))
+  | pairCong _ _ ihFst ihSnd =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.pairCong (ihFst compat)
+        (ConvCumul.cast_eq_indep_benton _ _ (ihSnd compat))
+  | fstCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.fstCong (ih compat)
+  | sndCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.cast_eq_indep_benton _ _ (ConvCumul.sndCong (ih compat))
+  | natSuccCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.natSuccCong (ih compat)
+  | optionSomeCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.optionSomeCong (ih compat)
+  | eitherInlCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.eitherInlCong (ih compat)
+  | eitherInrCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.eitherInrCong (ih compat)
+  | modIntroCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.modIntroCong (ih compat)
+  | modElimCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.modElimCong (ih compat)
+  | subsumeCong _ ih =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.subsumeCong (ih compat)
+  | listConsCong _ _ ihHead ihTail =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.listConsCong (ihHead compat) (ihTail compat)
+  | idJCong _ _ ihBase ihWitness =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.idJCong (ihBase compat) (ihWitness compat)
+  | boolElimCong _ _ _ ihScrut ihThen ihElse =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.boolElimCong (ihScrut compat) (ihThen compat) (ihElse compat)
+  | natElimCong _ _ _ ihScrut ihZero ihSucc =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.natElimCong (ihScrut compat) (ihZero compat) (ihSucc compat)
+  | natRecCong _ _ _ ihScrut ihZero ihSucc =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.natRecCong (ihScrut compat) (ihZero compat) (ihSucc compat)
+  | listElimCong _ _ _ ihScrut ihNil ihCons =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.listElimCong (ihScrut compat) (ihNil compat) (ihCons compat)
+  | optionMatchCong _ _ _ ihScrut ihNone ihSome =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.optionMatchCong (ihScrut compat) (ihNone compat) (ihSome compat)
+  | eitherMatchCong _ _ _ ihScrut ihLeft ihRight =>
+      intros _ _ _ _ _ compat
+      exact ConvCumul.eitherMatchCong (ihScrut compat) (ihLeft compat) (ihRight compat)
+  | cumulUpCong innerLevel lowerLevel higherLevel
+                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
+      intros _ _ _ _ _ _compat
+      -- substHet on Term.cumulUp: lowerTerm preserved verbatim, ctxHigh
+      -- moves from sourceCtx to targetCtx.  Both sides at same targetCtx.
+      -- ConvCumul.cumulUpCong applied to original lowerRel produces the
+      -- result.  At homogeneous level, the ctxHigh-level constraint
+      -- coincides (both at higherLevel.toNat + 1 = level).
+      -- compat unused: the lowerRel inhabits a separate ConvCumul at
+      -- decoupled scopeLow, untouched by the outer paired-env compat.
+      exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
+              cumulOkLow cumulOkHigh cumulMonotone lowerRel
 
 /-! # HONEST STATUS — what is NOT shipped
 
