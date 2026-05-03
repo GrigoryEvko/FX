@@ -391,6 +391,207 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
 
+/-! ## Payload-bearing canonical heads — existential raw recovery
+
+For `natSucc / listCons / optionSome / eitherInl / eitherInr`,
+the raw form has a payload (predecessor / head-tail / value).
+Each headCtor witness gives an EXISTENTIAL: the raw is some
+ctor-application with a specific payload.
+
+These extend the no-payload lemmas above to support extending
+`Term.headStep?` with payload-bearing β/ι firings (M08). -/
+
+/-- If `someTerm.headCtor = .natSucc`, the raw is `natSucc`-shaped
+for some predecessor raw. -/
+theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.natSucc) :
+    ∃ (predRaw : RawTerm scope), raw = RawTerm.natSucc predRaw := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => exact ⟨_, rfl⟩
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If `someTerm.headCtor = .listCons`, the raw is `listCons`-shaped. -/
+theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.listCons) :
+    ∃ (headRaw tailRaw : RawTerm scope), raw = RawTerm.listCons headRaw tailRaw := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => exact ⟨_, _, rfl⟩
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If `someTerm.headCtor = .optionSome`, the raw is `optionSome`-shaped. -/
+theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.optionSome) :
+    ∃ (valueRaw : RawTerm scope), raw = RawTerm.optionSome valueRaw := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => exact ⟨_, rfl⟩
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If `someTerm.headCtor = .eitherInl`, the raw is `eitherInl`-shaped. -/
+theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.eitherInl) :
+    ∃ (valueRaw : RawTerm scope), raw = RawTerm.eitherInl valueRaw := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => exact ⟨_, rfl⟩
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
+/-- If `someTerm.headCtor = .eitherInr`, the raw is `eitherInr`-shaped. -/
+theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.eitherInr) :
+    ∃ (valueRaw : RawTerm scope), raw = RawTerm.eitherInr valueRaw := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => exact ⟨_, rfl⟩
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+
 /-- If a term's `headCtor` is `unit`, its raw is `RawTerm.unit`. -/
 theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope} {ty : Ty level scope} {raw : RawTerm scope}
