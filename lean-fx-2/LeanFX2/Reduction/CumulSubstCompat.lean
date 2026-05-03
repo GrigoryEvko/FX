@@ -96,6 +96,67 @@ in `Smoke/AuditPhase12A2Cumul.lean`.
 
 namespace LeanFX2
 
+/-! # Shared groundwork — BHKM-style cast-elim utilities
+
+`Term.substHet`'s `lam` / `lamPi` / `pair` / `snd` / `appPi` arms
+wrap the result in propositional `Ty.X_substHet_commute` casts.
+Lifting cong rules through these casts requires the
+transport-through-eq utility below: for any propositional type
+equality `eq : ty1 = ty2`, `(eq ▸ term)` and `term` are
+ConvCumul-related (heterogeneously, since their types differ).
+
+This is BHKM JAR'12 p.17 `cast_elim_cong` adapted to FX's
+heterogeneous `ConvCumul`.  Both the Allais arms (below) and the
+Benton headline (further below) use these primitives.
+
+Reference: Benton, Hur, Kennedy, McBride, *Strongly Typed Term
+Representations in Coq*, JAR 2012 §6 (polymorphic case
+discipline).  FX memory `reference_pattern_bhkm_ladder`. -/
+
+/-- BHKM cast-elim left: a term and its left-side propositional
+cast are ConvCumul-related.  FX analog of BHKM JAR'12 p.17
+`cast_elim_cong`. -/
+theorem ConvCumul.cast_eq_left_benton
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {someTyOne someTyTwo : Ty level scope}
+    {someRaw : RawTerm scope}
+    (eq : someTyOne = someTyTwo)
+    (someTerm : Term context someTyOne someRaw) :
+    ConvCumul (eq ▸ someTerm) someTerm := by
+  cases eq
+  exact ConvCumul.refl someTerm
+
+/-- BHKM cast-elim right: symmetric to `cast_eq_left_benton`. -/
+theorem ConvCumul.cast_eq_right_benton
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {someTyOne someTyTwo : Ty level scope}
+    {someRaw : RawTerm scope}
+    (eq : someTyOne = someTyTwo)
+    (someTerm : Term context someTyOne someRaw) :
+    ConvCumul someTerm (eq ▸ someTerm) := by
+  cases eq
+  exact ConvCumul.refl someTerm
+
+/-- BHKM cast-elim both: when an existing ConvCumul is wrapped
+identically on both sides by the same propositional cast, the
+cast lifts through.  Used by Allais arms whose `Term.substHet`
+output carries a `Ty.subst0_substHet_commute` cast (snd / pair /
+appPi / lam / lamPi). -/
+theorem ConvCumul.cast_eq_both_benton
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {someTyOne someTyTwo : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstTerm : Term context someTyOne firstRaw}
+    {secondTerm : Term context someTyOne secondRaw}
+    (eq : someTyOne = someTyTwo)
+    (origRel : ConvCumul firstTerm secondTerm) :
+    ConvCumul (eq ▸ firstTerm) (eq ▸ secondTerm) := by
+  cases eq
+  exact origRel
+
 /-! # Allais et al. ICFP'18 — paired-environment compat
 
 This section instantiates the Allais simulation framework's
@@ -473,17 +534,31 @@ theorem ConvCumul.subst_compatible_fst_allais
               ((Term.fst pairTerm).substHet termSubstB) :=
   ConvCumul.fstCong pairCompat
 
-/-! Note: `snd` arm DEFERRED.
+/-- Allais arm for `snd`: single-subterm cong via `sndCong` plus
+BHKM cast handling.
 
-`Term.substHet`'s `snd` arm wraps the result in a propositional cast
-`(Ty.subst0_substHet_commute secondType firstType (RawTerm.fst pairRaw)
-  sigma).symm ▸ Term.snd (pairTerm.substHet ·)`.
-
-The bare `ConvCumul.sndCong` expects the un-cast shape.  Lifting the
-cong rule through the cast requires `ConvCumul.transport_through_eq`
-infrastructure (transport-stability of ConvCumul under propositional
-type equality).  That utility is part of the Benton section's
-groundwork — `snd` arm lands once Benton's cast-handling lands. -/
+`Term.substHet`'s `snd` arm wraps the result in
+`(Ty.subst0_substHet_commute ...).symm ▸ Term.snd (...)`.  We
+peel the cast via `ConvCumul.cast_eq_both_benton` (defined in
+the Benton section below). -/
+theorem ConvCumul.subst_compatible_snd_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {firstType : Ty sourceLevel sourceScope}
+    {secondType : Ty sourceLevel (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairCompat :
+      ConvCumul (pairTerm.substHet termSubstA)
+                (pairTerm.substHet termSubstB)) :
+    ConvCumul ((Term.snd pairTerm).substHet termSubstA)
+              ((Term.snd pairTerm).substHet termSubstB) :=
+  ConvCumul.cast_eq_both_benton _
+    (ConvCumul.sndCong pairCompat)
 
 /-! ### Allais multi-subterm cong arms
 
@@ -512,15 +587,69 @@ theorem ConvCumul.subst_compatible_app_allais
               ((Term.app functionTerm argumentTerm).substHet termSubstB) :=
   ConvCumul.appCong functionCompat argumentCompat
 
-/-! Note: `appPi` and `pair` arms DEFERRED.
+/-- Allais arm for `appPi`: two-subterm cong via `appPiCong` plus
+BHKM cast handling.
 
-Same `Ty.subst0_substHet_commute` cast issue as `snd` above.
-Both `Term.substHet`'s `appPi` arm and `pair` arm wrap the
-result component in a propositional type-cast that the bare
-`appPiCong` / `pairCong` rules don't see.  Lifting through
-the cast requires `ConvCumul.transport_through_eq` from the
-Benton section's groundwork — these arms land alongside `snd`
-once that utility ships. -/
+`Term.substHet`'s `appPi` arm wraps the result in
+`(Ty.subst0_substHet_commute ...).symm ▸ Term.appPi ...`.  Same
+cast on both sides → `cast_eq_both_benton` peels it. -/
+theorem ConvCumul.subst_compatible_appPi_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {domainType : Ty sourceLevel sourceScope}
+    {codomainType : Ty sourceLevel (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (functionCompat :
+      ConvCumul (functionTerm.substHet termSubstA)
+                (functionTerm.substHet termSubstB))
+    (argumentCompat :
+      ConvCumul (argumentTerm.substHet termSubstA)
+                (argumentTerm.substHet termSubstB)) :
+    ConvCumul ((Term.appPi functionTerm argumentTerm).substHet termSubstA)
+              ((Term.appPi functionTerm argumentTerm).substHet termSubstB) :=
+  ConvCumul.cast_eq_both_benton _
+    (ConvCumul.appPiCong functionCompat argumentCompat)
+
+/-- Allais arm for `pair`: two-subterm cong via `pairCong` plus
+BHKM cast handling on the second component.
+
+`Term.substHet`'s `pair` arm wraps the second component in
+`Ty.subst0_substHet_commute ... ▸ ...`.  We use
+`cast_eq_both_benton` to bridge the cast on the second component;
+the first component is straight subst.
+
+Construction strategy: the substituted output is
+`Term.pair (firstValue.substHet ...) (cast ▸ secondValue.substHet ...)`.
+Compose `pairCong` with cast_eq_both. -/
+theorem ConvCumul.subst_compatible_pair_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {firstType : Ty sourceLevel sourceScope}
+    {secondType : Ty sourceLevel (sourceScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (firstValue : Term sourceCtx firstType firstRaw)
+    (secondValue : Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstCompat :
+      ConvCumul (firstValue.substHet termSubstA)
+                (firstValue.substHet termSubstB))
+    (secondCompat :
+      ConvCumul (secondValue.substHet termSubstA)
+                (secondValue.substHet termSubstB)) :
+    ConvCumul ((Term.pair firstValue secondValue).substHet termSubstA)
+              ((Term.pair firstValue secondValue).substHet termSubstB) :=
+  ConvCumul.pairCong firstCompat
+    (ConvCumul.cast_eq_both_benton _ secondCompat)
 
 /-- Allais arm for `listCons`: two-subterm cong via `listConsCong`. -/
 theorem ConvCumul.subst_compatible_listCons_allais
@@ -663,18 +792,18 @@ in the next section. -/
 
 /-! # Benton-Hur-Kennedy-McBride JAR'12 — single-substitution lift
 
-This section will house the BHKM-style theorems: starting from
-an EXISTING `ConvCumul firstTerm secondTerm`, lift through a
-SINGLE `termSubst` to `ConvCumul (firstTerm.substHet termSubst)
-(secondTerm.substHet termSubst)`.
+This section will house the BHKM-style headline theorems:
+starting from an EXISTING `ConvCumul firstTerm secondTerm`, lift
+through a SINGLE `termSubst` to `ConvCumul (firstTerm.substHet
+termSubst) (secondTerm.substHet termSubst)`.
 
 Reference: Benton-Hur-Kennedy-McBride JAR'12 §6 (the
 `ActScS_conv` corollary of the 4-lemma renaming-first ladder).
 FX memory `reference_pattern_bhkm_ladder`.
 
-**Status: pending** — this section will be filled in once the
-Allais headline (`ConvCumul.subst_compatible_allais`) lands,
-because the Benton form's binder arms (lam / lamPi) reuse the
-Allais lift infrastructure for under-binder propagation. -/
+The cast-elim primitives (`cast_eq_left_benton` /
+`cast_eq_right_benton` / `cast_eq_both_benton`) are shipped in the
+shared groundwork section at the top of this file.  Status: full
+single-substitution lift theorem deferred. -/
 
 end LeanFX2

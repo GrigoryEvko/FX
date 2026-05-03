@@ -36,11 +36,21 @@ import LeanFX2.Reduction.CumulSubstCompat
 #print axioms LeanFX2.ConvCumul.subst_compatible_subsume_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_fst_allais
 
--- Allais multi-subterm cong arms (4)
+-- BHKM cast-elim primitives (3)
+#print axioms LeanFX2.ConvCumul.cast_eq_left_benton
+#print axioms LeanFX2.ConvCumul.cast_eq_right_benton
+#print axioms LeanFX2.ConvCumul.cast_eq_both_benton
+
+-- Allais cast-aware single-subterm arm (1)
+#print axioms LeanFX2.ConvCumul.subst_compatible_snd_allais
+
+-- Allais multi-subterm cong arms (6: 4 cast-free + 2 cast-aware)
 #print axioms LeanFX2.ConvCumul.subst_compatible_app_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_listCons_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_idJ_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_boolElim_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_appPi_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_pair_allais
 
 -- Allais cumul-promotion arm (1)
 #print axioms LeanFX2.ConvCumul.subst_compatible_cumulUp_allais
