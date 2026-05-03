@@ -397,6 +397,270 @@ theorem ConvCumul.subst_compatible_subsume_allais
               ((Term.subsume innerTerm).substHet termSubstB) :=
   ConvCumul.subsumeCong innerCompat
 
+/-! ### Allais closed-payload arms (parametric data + refl)
+
+Like `unit` / `boolTrue`, these ctors carry no scope-dependent
+substituents.  Both `Term.substHet` calls produce identical
+output → `ConvCumul.refl _`. -/
+
+/-- Allais arm for `listNil`: closed-payload, refl. -/
+theorem ConvCumul.subst_compatible_listNil_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (elementType : Ty sourceLevel sourceScope) :
+    ConvCumul ((Term.listNil (context := sourceCtx)
+                             (elementType := elementType)).substHet termSubstA)
+              ((Term.listNil (context := sourceCtx)
+                             (elementType := elementType)).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `optionNone`: closed-payload, refl. -/
+theorem ConvCumul.subst_compatible_optionNone_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (elementType : Ty sourceLevel sourceScope) :
+    ConvCumul ((Term.optionNone (context := sourceCtx)
+                                (elementType := elementType)).substHet termSubstA)
+              ((Term.optionNone (context := sourceCtx)
+                                (elementType := elementType)).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `refl` (identity-type witness): closed-payload
+because `Term.refl` carries only Ty + RawTerm payload, no typed
+subterms.  Both substituted sides produce the same `Term.refl`. -/
+theorem ConvCumul.subst_compatible_refl_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (carrier : Ty sourceLevel sourceScope)
+    (rawWitness : RawTerm sourceScope) :
+    ConvCumul ((Term.refl (context := sourceCtx) carrier rawWitness).substHet termSubstA)
+              ((Term.refl (context := sourceCtx) carrier rawWitness).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-! ### Allais single-subterm pair-projection arms
+
+Term ctors that take a single Σ-pair as substituent.  Recurse
+into pair compat, apply matching projection cong rule. -/
+
+/-- Allais arm for `fst`: single-subterm cong via `fstCong`. -/
+theorem ConvCumul.subst_compatible_fst_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {firstType : Ty sourceLevel sourceScope}
+    {secondType : Ty sourceLevel (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    (pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairCompat :
+      ConvCumul (pairTerm.substHet termSubstA)
+                (pairTerm.substHet termSubstB)) :
+    ConvCumul ((Term.fst pairTerm).substHet termSubstA)
+              ((Term.fst pairTerm).substHet termSubstB) :=
+  ConvCumul.fstCong pairCompat
+
+/-! Note: `snd` arm DEFERRED.
+
+`Term.substHet`'s `snd` arm wraps the result in a propositional cast
+`(Ty.subst0_substHet_commute secondType firstType (RawTerm.fst pairRaw)
+  sigma).symm ▸ Term.snd (pairTerm.substHet ·)`.
+
+The bare `ConvCumul.sndCong` expects the un-cast shape.  Lifting the
+cong rule through the cast requires `ConvCumul.transport_through_eq`
+infrastructure (transport-stability of ConvCumul under propositional
+type equality).  That utility is part of the Benton section's
+groundwork — `snd` arm lands once Benton's cast-handling lands. -/
+
+/-! ### Allais multi-subterm cong arms
+
+Term ctors with two or more substituent subterms.  Recurse into
+each inner ConvCumul witness; apply multi-arg cong rule. -/
+
+/-- Allais arm for `app`: two-subterm cong via `appCong`. -/
+theorem ConvCumul.subst_compatible_app_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty sourceLevel sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    (functionTerm : Term sourceCtx (Ty.arrow domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (functionCompat :
+      ConvCumul (functionTerm.substHet termSubstA)
+                (functionTerm.substHet termSubstB))
+    (argumentCompat :
+      ConvCumul (argumentTerm.substHet termSubstA)
+                (argumentTerm.substHet termSubstB)) :
+    ConvCumul ((Term.app functionTerm argumentTerm).substHet termSubstA)
+              ((Term.app functionTerm argumentTerm).substHet termSubstB) :=
+  ConvCumul.appCong functionCompat argumentCompat
+
+/-! Note: `appPi` and `pair` arms DEFERRED.
+
+Same `Ty.subst0_substHet_commute` cast issue as `snd` above.
+Both `Term.substHet`'s `appPi` arm and `pair` arm wrap the
+result component in a propositional type-cast that the bare
+`appPiCong` / `pairCong` rules don't see.  Lifting through
+the cast requires `ConvCumul.transport_through_eq` from the
+Benton section's groundwork — these arms land alongside `snd`
+once that utility ships. -/
+
+/-- Allais arm for `listCons`: two-subterm cong via `listConsCong`. -/
+theorem ConvCumul.subst_compatible_listCons_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {elementType : Ty sourceLevel sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    (headTerm : Term sourceCtx elementType headRaw)
+    (tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw)
+    (headCompat :
+      ConvCumul (headTerm.substHet termSubstA)
+                (headTerm.substHet termSubstB))
+    (tailCompat :
+      ConvCumul (tailTerm.substHet termSubstA)
+                (tailTerm.substHet termSubstB)) :
+    ConvCumul ((Term.listCons headTerm tailTerm).substHet termSubstA)
+              ((Term.listCons headTerm tailTerm).substHet termSubstB) :=
+  ConvCumul.listConsCong headCompat tailCompat
+
+/-- Allais arm for `idJ`: two-subterm cong via `idJCong`. -/
+theorem ConvCumul.subst_compatible_idJ_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrier : Ty sourceLevel sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty sourceLevel sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness : Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseCompat :
+      ConvCumul (baseCase.substHet termSubstA)
+                (baseCase.substHet termSubstB))
+    (witnessCompat :
+      ConvCumul (witness.substHet termSubstA)
+                (witness.substHet termSubstB)) :
+    ConvCumul ((Term.idJ baseCase witness).substHet termSubstA)
+              ((Term.idJ baseCase witness).substHet termSubstB) :=
+  ConvCumul.idJCong baseCompat witnessCompat
+
+/-- Allais arm for `boolElim`: three-subterm cong via `boolElimCong`. -/
+theorem ConvCumul.subst_compatible_boolElim_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {motiveType : Ty sourceLevel sourceScope}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenBranch : Term sourceCtx motiveType thenRaw)
+    (elseBranch : Term sourceCtx motiveType elseRaw)
+    (scrutineeCompat :
+      ConvCumul (scrutinee.substHet termSubstA)
+                (scrutinee.substHet termSubstB))
+    (thenCompat :
+      ConvCumul (thenBranch.substHet termSubstA)
+                (thenBranch.substHet termSubstB))
+    (elseCompat :
+      ConvCumul (elseBranch.substHet termSubstA)
+                (elseBranch.substHet termSubstB)) :
+    ConvCumul ((Term.boolElim scrutinee thenBranch elseBranch).substHet termSubstA)
+              ((Term.boolElim scrutinee thenBranch elseBranch).substHet termSubstB) :=
+  ConvCumul.boolElimCong scrutineeCompat thenCompat elseCompat
+
+/-! ### Allais cumul-promotion arm
+
+The `cumulUp` ctor's `Term.substHet` arm preserves `lowerTerm`
+verbatim (its `scopeLow` is decoupled from outer `scope`).  Both
+substituted sides produce literally the same Term value →
+`ConvCumul.refl _`.
+
+This mirrors the existing `ConvCumul.subst_compatible_cumulUp_term`
+in `Reduction/Cumul.lean` (line ~1289) but takes the source ctor
+fields directly rather than via specialized signature. -/
+
+/-- Allais arm for `cumulUp`: closed cumul-promotion, refl. -/
+theorem ConvCumul.subst_compatible_cumulUp_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    {scopeLow levelLow : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ sourceLevel)
+    {ctxLow : Ctx mode levelLow scopeLow}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel levelLeLow)
+                  (RawTerm.universeCode innerLevel.toNat)) :
+    ConvCumul ((Term.cumulUp (ctxHigh := sourceCtx)
+                             innerLevel lowerLevel higherLevel
+                             cumulOkLow cumulOkHigh cumulMonotone
+                             levelLeLow levelLeHigh lowerTerm).substHet termSubstA)
+              ((Term.cumulUp (ctxHigh := sourceCtx)
+                             innerLevel lowerLevel higherLevel
+                             cumulOkLow cumulOkHigh cumulMonotone
+                             levelLeLow levelLeHigh lowerTerm).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-! ## Allais kernel-gap note: missing eliminator cong rules
+
+The current `ConvCumul` inductive (`Reduction/Cumul.lean`) ships
+cong rules for the data ctors above but DOES NOT ship cong rules
+for the five eliminator ctors:
+* `natElim` (3-subterm: scrutinee, zero branch, succ branch)
+* `natRec`  (3-subterm: same shape as natElim)
+* `listElim` (3-subterm: scrutinee, nil branch, cons branch)
+* `optionMatch` (3-subterm: scrutinee, none branch, some branch)
+* `eitherMatch` (3-subterm: scrutinee, left branch, right branch)
+
+Without these cong rules, the Allais-style structural recursion on
+the source Term cannot construct the substituted ConvCumul for
+these five ctors.  Pre-existing kernel gap; documented as future
+follow-up.  Tracked separately as a kernel extension task — adding
+five cong rules to `ConvCumul` and an Allais arm for each follows
+the same shape as `boolElimCong` / `subst_compatible_boolElim_allais`
+above.
+
+The remaining 25 ctors (var + unit + arrow + sigma + bool +
+nat-data-without-eliminators + list-data-without-eliminator +
+option-data-without-eliminator + either-data-without-eliminator +
+identity-types + modal + universe + cumul-promotion) ARE covered
+by the per-ctor Allais arms shipped above, contingent on the
+binder lift (lam, lamPi) which awaits the Benton rename theorem
+in the next section. -/
+
 /-! # Benton-Hur-Kennedy-McBride JAR'12 — single-substitution lift
 
 This section will house the BHKM-style theorems: starting from
