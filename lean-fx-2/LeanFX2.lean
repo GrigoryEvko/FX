@@ -226,6 +226,7 @@ import LeanFX2.Smoke.HoTT
 import LeanFX2.Smoke.Modal
 import LeanFX2.Smoke.Graded
 import LeanFX2.Smoke.AuditAll
+import LeanFX2.Smoke.AuditPhase12A1Mode
 import LeanFX2.Smoke.AuditPhase5Bridge
 import LeanFX2.Smoke.AuditPhase6ARawCd
 import LeanFX2.Smoke.AuditPhase6BInversion

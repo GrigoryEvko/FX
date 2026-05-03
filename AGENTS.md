@@ -4,7 +4,8 @@
 
 **Hard rule, no exceptions.**  Before writing, modifying, or
 reviewing any FX kernel, elaborator, or derived-layer code —
-including every fresh conversation start —
+including every fresh conversation start, every session after
+conversation compaction, and every reset of working context —
 read every line of the following three documents in full:
 
   1. `fx_design.md` — 16583 lines — canonical language spec
@@ -16,6 +17,16 @@ read every line of the following three documents in full:
   3. `fx_lexer.md` — 598 lines — tokenizer specification
 
 Total: ~19,200 lines.
+
+**Exception — `lean-fx/` and `lean-fx-2/`:** when the task is
+specifically about the Lean mechanization projects under `lean-fx/`
+or `lean-fx-2/`, do **not** read the root `fx_design.md`,
+`fx_grammar.md`, or `fx_lexer.md` files as a prerequisite.  Use the
+project-local Lean instructions and planning artifacts instead
+(`lean-fx*/CLAUDE.md`, `AXIOMS.md`, `WORKING_RULES.md`,
+`ROADMAP.md`, `kernel-sprint.md`, and the Lean source itself).
+The root `fx*.md` specs are for FX language work, not a mandatory
+preflight for Lean kernel sprint execution.
 
 This is not optional.  FX is a 21-dimensional graded modal type
 theory with cross-dimension soundness collisions catalogued in
@@ -30,10 +41,9 @@ and Appendix H.
 
   * On clean-context / fresh-conversation start: read all three
     docs fully before touching code or tasks.
-  * Session compaction is not a fresh conversation start.  After
-    `/compact` or automatic context compaction, continue from the
-    compacted summary and refresh only the spec sections directly
-    relevant to the code being changed.
+  * After any conversation compaction: re-read all three docs
+    fully before resuming work.  Compaction is lossy; the specs
+    are the recovery mechanism.
   * Do NOT rely on summaries, CLAUDE.md excerpts, or memory
     entries as substitutes for reading the specs themselves.
     Memories and CLAUDE.md are index layers over the specs, not

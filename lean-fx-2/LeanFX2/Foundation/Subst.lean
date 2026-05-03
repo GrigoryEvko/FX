@@ -120,6 +120,7 @@ def Ty.subst {level : Nat} : ∀ {source target : Nat},
       .optionType (elementType.subst sigma)
   | _, _, .eitherType leftType rightType, sigma =>
       .eitherType (leftType.subst sigma) (rightType.subst sigma)
+  | _, _, .universe universeLevel, _ => .universe universeLevel
   -- D1.5 substitution arms — type indices substitute via `forTy`,
   -- raw payloads via `forRaw`, opaque tags pass through unchanged.
   | _, _, .empty, _ => .empty
@@ -224,6 +225,7 @@ theorem Ty.subst_pointwise {level : Nat}
       simp only [Ty.subst]; rw [eIH forTyEq forRawEq]
   | eitherType l r lIH rIH =>
       simp only [Ty.subst]; rw [lIH forTyEq forRawEq, rIH forTyEq forRawEq]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
@@ -345,6 +347,7 @@ theorem Ty.subst_rename_commute {level : Nat}
   | optionType e eIH => simp only [Ty.subst, Ty.rename]; rw [eIH sigma rho]
   | eitherType l r lIH rIH =>
       simp only [Ty.subst, Ty.rename]; rw [lIH sigma rho, rIH sigma rho]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
@@ -463,6 +466,7 @@ theorem Ty.rename_subst_commute {level : Nat}
   | optionType e eIH => simp only [Ty.rename, Ty.subst]; rw [eIH rho sigma]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename, Ty.subst]; rw [lIH rho sigma, rIH rho sigma]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
@@ -602,6 +606,7 @@ theorem Ty.subst_identity {level scope : Nat} (someType : Ty level scope) :
   | listType e eIH => simp only [Ty.subst]; rw [eIH]
   | optionType e eIH => simp only [Ty.subst]; rw [eIH]
   | eitherType l r lIH rIH => simp only [Ty.subst]; rw [lIH, rIH]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
@@ -779,6 +784,7 @@ theorem Ty.subst_compose {level : Nat}
   | optionType e eIH => simp only [Ty.subst]; rw [eIH sigma1 sigma2]
   | eitherType l r lIH rIH =>
       simp only [Ty.subst]; rw [lIH sigma1 sigma2, rIH sigma1 sigma2]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>

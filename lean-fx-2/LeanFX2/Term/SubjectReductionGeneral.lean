@@ -117,6 +117,7 @@ theorem Ty.subst0_raw_invariance_unit
   | session _ => nomatch someTypeReducesToUnit
   | effect _ _ => nomatch someTypeReducesToUnit
   | modal _ _ => nomatch someTypeReducesToUnit
+  | «universe» _ => nomatch someTypeReducesToUnit
 
 /-- Substitution-raw-invariance for `Ty.bool`. -/
 theorem Ty.subst0_raw_invariance_bool
@@ -154,6 +155,7 @@ theorem Ty.subst0_raw_invariance_bool
   | session _ => nomatch someTypeReducesToBool
   | effect _ _ => nomatch someTypeReducesToBool
   | modal _ _ => nomatch someTypeReducesToBool
+  | «universe» _ => nomatch someTypeReducesToBool
 
 /-- Substitution-raw-invariance for `Ty.nat`. -/
 theorem Ty.subst0_raw_invariance_nat
@@ -191,6 +193,7 @@ theorem Ty.subst0_raw_invariance_nat
   | session _ => nomatch someTypeReducesToNat
   | effect _ _ => nomatch someTypeReducesToNat
   | modal _ _ => nomatch someTypeReducesToNat
+  | «universe» _ => nomatch someTypeReducesToNat
 
 /-- Generalized substitution-raw-invariance.  For any `someType : Ty
 level (scope+1)`, if `someType.subst0 argType raw1` equals a closed
@@ -252,6 +255,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | listType closedElement ihElement =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -287,6 +291,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | optionType closedElement ihElement =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -322,6 +327,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | eitherType closedLeft closedRight ihLeft ihRight =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -359,6 +365,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   -- D1.5 new IsClosedTy ctors — analogous treatment.
   | empty =>
       cases someType with
@@ -391,6 +398,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | interval =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -422,6 +430,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | equiv closedDomain closedCodomain ihDomain ihCodomain =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -459,6 +468,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | record closedSingleField ihSingleField =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -495,6 +505,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | codata closedState closedOutput ihState ihOutput =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -532,6 +543,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
+      | «universe» _ => nomatch someTypeReduces
   | modal closedCarrier ihCarrier =>
       cases someType with
       | unit => nomatch someTypeReduces
@@ -570,6 +582,44 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
           have carrierInv := ihCarrier carrierSrc raw1 raw2 rfl
           show Ty.modal _ (carrierSrc.subst0 argType raw2) = _
           rw [carrierInv]
+      | «universe» _ => nomatch someTypeReduces
+  | «universe» universeLevel =>
+      cases someType with
+      | unit => nomatch someTypeReduces
+      | bool => nomatch someTypeReduces
+      | nat  => nomatch someTypeReduces
+      | tyVar position =>
+          cases position with
+          | mk val isLt =>
+              cases val with
+              | zero => exact someTypeReduces
+              | succ _ => nomatch someTypeReduces
+      | arrow _ _ => nomatch someTypeReduces
+      | piTy _ _ => nomatch someTypeReduces
+      | sigmaTy _ _ => nomatch someTypeReduces
+      | id _ _ _ => nomatch someTypeReduces
+      | listType _ => nomatch someTypeReduces
+      | optionType _ => nomatch someTypeReduces
+      | eitherType _ _ => nomatch someTypeReduces
+      | empty => nomatch someTypeReduces
+      | interval => nomatch someTypeReduces
+      | path _ _ _ => nomatch someTypeReduces
+      | glue _ _ => nomatch someTypeReduces
+      | oeq _ _ _ => nomatch someTypeReduces
+      | idStrict _ _ _ => nomatch someTypeReduces
+      | equiv _ _ => nomatch someTypeReduces
+      | refine _ _ => nomatch someTypeReduces
+      | record _ => nomatch someTypeReduces
+      | codata _ _ => nomatch someTypeReduces
+      | session _ => nomatch someTypeReduces
+      | effect _ _ => nomatch someTypeReduces
+      | modal _ _ => nomatch someTypeReduces
+      | «universe» universeLevelSrc =>
+          -- D1.2: Ty.universe injects on its single UniverseLevel payload.
+          -- cases unifies universeLevelSrc with universeLevel; subst on
+          -- Ty.universe is a no-op so both raw substitutions agree.
+          cases someTypeReduces
+          rfl
 
 /-! ## Generalized step-preservation theorem
 

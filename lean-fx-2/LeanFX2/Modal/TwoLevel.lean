@@ -115,6 +115,11 @@ def layer : Mode → Layer
   | .hardware => .dynamic
   | .wire     => .dynamic
   | .bridge   => .dynamic
+  | .strict => .dynamic
+  | .observational => .dynamic
+  | .univalent => .dynamic
+  | .cohesiveFlat => .dynamic
+  | .cohesiveSharp => .dynamic
 
 /-- A mode is static iff its layer is `static`.  By the
 projection table above, only `ghost` is static. -/
@@ -139,6 +144,11 @@ theorem layer_dichotomy (someMode : Mode) :
   | .hardware => exact Or.inr rfl
   | .wire     => exact Or.inr rfl
   | .bridge   => exact Or.inr rfl
+  | .strict => exact Or.inr rfl
+  | .observational => exact Or.inr rfl
+  | .univalent => exact Or.inr rfl
+  | .cohesiveFlat => exact Or.inr rfl
+  | .cohesiveSharp => exact Or.inr rfl
 
 /-- A mode cannot be both static and dynamic.  Discharged by
 case-splitting + Layer ctor disjointness. -/

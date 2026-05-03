@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawTerm
+import LeanFX2.Foundation.Universe
 import LeanFX2.Foundation.RawSubst
 
 /-! # Ty — Layer 0 types indexed by `(level, scope)`.
@@ -88,6 +89,10 @@ inductive Ty : Nat → Nat → Type
   | optionType {level scope : Nat} (elementType : Ty level scope) : Ty level scope
   | eitherType {level scope : Nat}
       (leftType rightType : Ty level scope) : Ty level scope
+  /-- Universe code at this syntactic level.  The level-index consistency
+      discipline is enforced by checking/conversion layers, not by this
+      syntax constructor. -/
+  | «universe» {level scope : Nat} (universeLevel : UniverseLevel) : Ty level scope
   -- D1.5 extension — 13 new foundational ctors.  All use RawTerm scope or
   -- Nat tags for raw payloads; richer semantic content (Modality, SessionProtocol,
   -- EffectRow, BoundaryCofib) is interpreted by downstream layers via tag dispatch
@@ -177,6 +182,7 @@ def Ty.rename {level : Nat} : ∀ {scope sourceScope : Nat},
       .optionType (elementType.rename rho)
   | _, _, .eitherType leftType rightType, rho =>
       .eitherType (leftType.rename rho) (rightType.rename rho)
+  | _, _, .universe universeLevel, _ => .universe universeLevel
   -- D1.5 new ctor renaming
   | _, _, .empty, _ => .empty
   | _, _, .interval, _ => .interval
@@ -253,6 +259,7 @@ theorem Ty.rename_pointwise {level : Nat}
       simp only [Ty.rename]; rw [eIH renamingEq]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename]; rw [lIH renamingEq, rIH renamingEq]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
@@ -344,6 +351,7 @@ theorem Ty.rename_compose {level : Nat}
   | optionType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
+  | «universe» universeLevel => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>

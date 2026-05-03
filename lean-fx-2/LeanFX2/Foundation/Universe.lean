@@ -1,11 +1,7 @@
-import LeanFX2.Foundation.Ty
-
 /-! # Foundation/Universe — universe hierarchy + cumulativity preorder
 
-**STATUS: Structural scaffolding for FUTURE integration of universe
-levels.**  This file defines the universe-level preorder (`Ty.universeLe`)
-and the design of `Ty.universe` as a future `Ty` constructor.  No
-`Ty.universe` ctor is added yet — see "Phased rollout" below.
+This file defines the universe-level syntax and preorder used by the
+Day 1 `Ty.universe` constructor.
 
 ## Why prepare structurally now
 
@@ -28,11 +24,17 @@ preorder and Conv-rule shape NOW, we lock in:
 5. Universe checking happens at **elaboration time** (Algo/Check),
    not in the kernel — the kernel just propagates the level tag
 
+## Universe levels
+
+`UniverseLevel` mirrors the sprint plan's first-order level language:
+zero, successor, maximum, and imax.  Level variables and metavariables
+are explicitly deferred.
+
 ## The universe preorder
 
-`Ty.universeLe : Nat → Nat → Prop` is just `Nat.le` but exposed at
-the Ty namespace for clarity.  Lean's `Nat.le` is decidable + zero-axiom,
-so this preorder is computable at elaboration time.
+`UniverseLevel.le` compares normalized numeric approximations of the finite
+level expression.  This keeps the Day 1 hierarchy constructive and decidable;
+full symbolic universe constraints belong to the later Lean-kernel encoding.
 
 ## Cumulativity (planned `Conv.cumul` rule, Layer 3+)
 
@@ -51,15 +53,10 @@ silent type coercion, not a runtime computation.
 
 ## Phased rollout
 
-* **Now (Phase 1.F)**: This file; `Ty.universeLe` exposed as a
-  Decidable preorder.  No `Ty.universe` ctor yet.  Existing kernel
-  unchanged.
-* **Phase X.Y (TBD)**: `Ty.universe (level : Nat) : Ty (level+1) scope`
-  added to the inductive.  All Ty match arms updated (additive — one
-  new case each).  ~6 files touched: Ty/RawSubst/Subst/Pointwise/
-  Rename/HEqCongr (each gets a `.universe` arm returning `.universe _`).
-* **Phase Y.Z (TBD)**: `Conv.cumul` rule added as Conv constructor.
-  Decidable per-pair via Nat decidable order.
+* **Day 1**: This file exposes `UniverseLevel`; `Foundation/Ty.lean`
+  exposes `Ty.universe`.
+* **Later reduction layer**: cumulativity becomes a Conv rule, not a Ty
+  coercion constructor.
 
 ## Design rationale: why no `Ty : Ty` (Type-in-Type)
 
@@ -83,10 +80,57 @@ constructive (`Nat` operations + structural induction).
 
 namespace LeanFX2
 
-/-- The universe-level preorder.  `Ty.universeLe lower upper` iff
-`lower ≤ upper` as naturals — a smaller universe is structurally
-contained in a larger one (cumulativity direction).  Reuses Lean's
-`Nat.le` for zero-axiom decidability. -/
+/-- Finite universe-level expressions for the Day 1 hierarchy.
+
+No parameters or metavariables are included in v1.0 kernel syntax; those
+belong to the later Lean-kernel meta-verification layer. -/
+inductive UniverseLevel : Type
+  | zero : UniverseLevel
+  | succ (lowerLevel : UniverseLevel) : UniverseLevel
+  | max (leftLevel rightLevel : UniverseLevel) : UniverseLevel
+  | imax (leftLevel rightLevel : UniverseLevel) : UniverseLevel
+  deriving DecidableEq, Repr
+
+namespace UniverseLevel
+
+/-- Interpret finite universe expressions as natural heights.
+
+For the Day 1 syntax fragment, `imax` is represented by the same numeric
+upper bound as `max`; the later Lean-kernel encoding will carry Lean's exact
+special-case equation for `imax _ 0`. -/
+def toNat : UniverseLevel → Nat
+  | .zero => 0
+  | .succ lowerLevel => lowerLevel.toNat + 1
+  | .max leftLevel rightLevel => Nat.max leftLevel.toNat rightLevel.toNat
+  | .imax leftLevel rightLevel => Nat.max leftLevel.toNat rightLevel.toNat
+
+/-- Decidable cumulativity preorder on finite universe expressions. -/
+@[reducible] def le (lowerLevel upperLevel : UniverseLevel) : Prop :=
+  lowerLevel.toNat ≤ upperLevel.toNat
+
+instance leDecidable (lowerLevel upperLevel : UniverseLevel) :
+    Decidable (le lowerLevel upperLevel) :=
+  Nat.decLe lowerLevel.toNat upperLevel.toNat
+
+/-- Reflexivity of universe cumulativity. -/
+theorem le_refl (level : UniverseLevel) : le level level :=
+  Nat.le_refl level.toNat
+
+/-- Transitivity of universe cumulativity. -/
+theorem le_trans {lowLevel midLevel highLevel : UniverseLevel}
+    (lowToMid : le lowLevel midLevel)
+    (midToHigh : le midLevel highLevel) :
+    le lowLevel highLevel :=
+  Nat.le_trans lowToMid midToHigh
+
+/-- Every universe is below its successor. -/
+theorem le_succ (level : UniverseLevel) : le level (UniverseLevel.succ level) :=
+  Nat.le_succ level.toNat
+
+end UniverseLevel
+
+/-- Nat-level preorder retained for older code paths that have not yet moved
+to `UniverseLevel`. -/
 @[reducible] def Ty.universeLe (lower upper : Nat) : Prop :=
   lower ≤ upper
 
