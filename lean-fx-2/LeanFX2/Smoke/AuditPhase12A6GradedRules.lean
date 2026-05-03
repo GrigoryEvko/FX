@@ -1,0 +1,29 @@
+import LeanFX2.Graded.Rules
+
+#print axioms LeanFX2.Graded.GradeAttribution
+#print axioms LeanFX2.Graded.GradeAttribution.zero
+#print axioms LeanFX2.Graded.GradeAttribution.unitHead
+#print axioms LeanFX2.Graded.GradeAttribution.add
+#print axioms LeanFX2.Graded.GradeAttribution.scaleBy
+#print axioms LeanFX2.Graded.GradeAttribution.singleton
+#print axioms LeanFX2.Graded.GradeAttribution.le
+#print axioms LeanFX2.Graded.GradeAttribution.add_zero_left
+#print axioms LeanFX2.Graded.GradeAttribution.add_zero_right
+#print axioms LeanFX2.Graded.GradeAttribution.add_comm
+#print axioms LeanFX2.Graded.GradeAttribution.add_assoc
+#print axioms LeanFX2.Graded.GradeAttribution.scaleBy_zero_scalar
+#print axioms LeanFX2.Graded.GradeAttribution.scaleBy_zero_attr
+#print axioms LeanFX2.Graded.GradeAttribution.scaleBy_one_scalar
+#print axioms LeanFX2.Graded.GradeAttribution.le_refl
+#print axioms LeanFX2.Graded.GradeAttribution.le_trans
+#print axioms LeanFX2.Graded.IsLamCompatible
+#print axioms LeanFX2.Graded.IsLamCompatible.allZero
+#print axioms LeanFX2.Graded.IsVarCompatible
+#print axioms LeanFX2.Graded.IsVarCompatible.atZero
+#print axioms LeanFX2.Graded.IsAppCompatible
+#print axioms LeanFX2.Graded.IsAppCompatible.allZero
+#print axioms LeanFX2.Graded.IsLetCompatible
+#print axioms LeanFX2.Graded.IsIfCompatible
+#print axioms LeanFX2.Graded.IsSubsumptionCompatible
+#print axioms LeanFX2.Graded.IsSubsumptionCompatible.refl
+#print axioms LeanFX2.Graded.IsSubsumptionCompatible.trans
