@@ -73,7 +73,7 @@ Each constructor pins its raw form structurally.  `Term.toRaw t = raw` is `rfl`.
 | `HoTT/Transport.lean` | `transport : (P : A → Type) → Id A a b → P a → P b`. |
 | `HoTT/Equivalence.lean` | `Equiv A B`, bi-inverses with coherence, `id ≃ id` is the trivial equiv. |
 | `HoTT/NTypes.lean` | `isProp`, `isSet`, `isGroupoid` predicates and stratification. |
-| `HoTT/Univalence.lean` | Univalence — building blocks; long-term cubical derivation; near-term postulate scoped via `@[univalence_postulate]`. |
+| `HoTT/Univalence.lean` | Univalence as a REAL THEOREM with body `Conv.fromStep Step.eqType` (zero-axiom).  NEVER a postulate, NEVER an axiom, NEVER scoped via `@[univalence_postulate]` (that attribute is forbidden — see CLAUDE.md / AXIOMS.md). |
 | `HoTT/HIT/Spec.lean` | HIT specification structure: data + path constructors. |
 | `HoTT/HIT/Setoid.lean` | HIT setoid encoding (Quotient inductive with manual respect — propext-free). |
 | `HoTT/HIT/Eliminator.lean` | HIT induction over data with respect proofs. |

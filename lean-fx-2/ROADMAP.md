@@ -64,7 +64,7 @@ Acceptance: `Step.par.toRawBridge` total, no sorries.
 * [ ] `HoTT/Path/{Composition,Inverse,Groupoid}.lean`
 * [ ] `HoTT/Transport.lean`
 * [ ] `HoTT/Equivalence.lean`, `HoTT/NTypes.lean`
-* [ ] `HoTT/Univalence.lean` — postulate (long-term: derive via cubical)
+* [ ] `HoTT/Univalence.lean` — `Univalence` as REAL THEOREM via `Conv.fromStep Step.eqType` (NEVER an axiom; per CLAUDE.md / AXIOMS.md "Zero-axiom commitment — ABSOLUTE, NO EXCEPTIONS")
 * [ ] `HoTT/HIT/{Spec,Setoid,Eliminator,Examples}.lean`
 
 Acceptance: J on refl reduces, transport laws hold, S¹ via setoid works without propext.

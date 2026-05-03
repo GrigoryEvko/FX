@@ -16,11 +16,13 @@ A lean-fx-2 theorem stands on:
    We *can* avoid using them; we cannot remove them from the
    environment without forking Lean.
 3. **lean-fx-2-specific axioms** — postulates we add for FX-foundational
-   reasons.  Currently: ZERO declared.  Reserved future ceiling:
-   `Univalence` (in `HoTT/Univalence.lean`, scoped via
-   `@[univalence_postulate]` attribute) + the four `lean-fx`-style
-   slots (`ua_wire`, `ua_ghost`, `fix_productivity`, `hit_path_intro`)
-   reserved as design warnings.
+   reasons.  **Currently: ZERO declared.  Permanently: ZERO.**  No
+   slot is reserved for `Univalence`, no slot is reserved for
+   `ua_wire` / `ua_ghost` / `fix_productivity` / `hit_path_intro`,
+   no slot is reserved at all.  Principles that cannot be proven in
+   vanilla MLTT (univalence, function extensionality, HIT
+   eliminators) enter the kernel as **`Step` reductions**, NOT as
+   axioms.  See "Genuinely-unprovable principles" below.
 4. **lean-fx-2's definitions** — every `def`, `theorem`, `inductive`,
    `structure`.  These don't add logical strength but expand the
    surface that the Lean kernel must check correctly.
@@ -31,33 +33,62 @@ A lean-fx-2 theorem stands on:
 | ----- | -------------------------------------------------------- | ------------- | --------- |
 | 1     | Lean 4 C++ kernel                                         | n/a (meta)    | n/a       |
 | K     | Kernel: `Foundation/`, `Term*`, `Reduction/`              | FORBIDDEN     | FORBIDDEN |
-| M     | Metatheory: `Confluence/`, `Bridge`, `HoTT/` (non-univ)  | FORBIDDEN     | FORBIDDEN |
+| M     | Metatheory: `Confluence/`, `Bridge`, `HoTT/`              | FORBIDDEN     | FORBIDDEN |
 | E     | Algorithmic: `Algo/`, `Pipeline`, `Surface/`              | FORBIDDEN     | FORBIDDEN |
-| U     | HoTT/Univalence: `HoTT/Univalence.lean`                   | discouraged   | 1 allowed |
-| S     | Surface user reasoning (`verify`, `assert` blocks)        | discouraged   | allowed   |
-| F     | FX-specific axioms (future: ua_wire, etc.)                | n/a           | ceiling 5 |
+| U     | HoTT/Univalence: `HoTT/Univalence.lean`                   | FORBIDDEN     | FORBIDDEN |
+| S     | Surface user reasoning (`verify`, `assert` blocks)        | discouraged   | FORBIDDEN |
+| F     | FX-specific axioms                                        | n/a           | ceiling 0 |
 
-Goal: push zero-axiom property as far as it will go.  A theorem only
-falls back to an axiom once a credible zero-axiom encoding has been
-attempted and shown impossible at the current state of lean-fx-2; the
-fallback is a documented design exception, not a default.
+Goal: zero axioms.  Period.  No ceiling-of-five.  No "discouraged but
+allowed".  Every shipped declaration is a `theorem`, `lemma`, `def`,
+`inductive`, `structure`, or `instance` with a body that the Lean
+kernel can typecheck without consulting any user-declared axiom or
+the three Lean core axioms (`propext`, `Quot.sound`, `Classical.choice`).
 
-## Univalence — the documented exception
+`#print axioms YourTheorem` MUST report "does not depend on any
+axioms" or the theorem is rejected at audit.
 
-In standard MLTT, univalence is not provable.  HoTT-style theories
-admit it as either:
-1. A primitive axiom (loses 0-axiom status)
-2. A theorem in cubical type theory (huge implementation cost)
-3. A truth-by-construction in models (meta-theoretic, not internal)
+## Genuinely-unprovable principles — Step reductions, NOT axioms
 
-lean-fx-2's stance:
-* **Short term**: postulate via `axiom Univalence` + `@[univalence_postulate]`
-  attribute, scoped to `HoTT/Univalence.lean`.  Downstream theorems
-  that depend on it carry the attribute (propagation tracked by
-  `#assert_no_axioms_except_univalence` gate).
-* **Long term**: derive via cubical layer (deferred to v3.x).
+In vanilla MLTT, univalence (UA) and function extensionality (funext)
+are not provable.  HoTT-style theories admit them as either:
+1. A primitive axiom (loses 0-axiom status — REJECTED)
+2. A theorem in cubical type theory (Path types + Kan composition)
+3. A theorem in HOTT-with-`Step.eqType` (observational HoTT)
+4. A truth-by-construction in models (meta-theoretic, not internal)
 
-This is **one** documented exception, not a license for axiom slippage.
+**lean-fx-2's stance is option 3 (with option 2 as a parallel
+mechanism via `Foundation/Interval.lean` + cubical `Path` types):**
+
+* `Step.eqType : Step (Ty.id (Ty.universe lvl) A B) (Ty.equiv A B)` —
+  the HOTT reduction rule that makes type-equality and type-
+  equivalence definitionally interchangeable.  Adds NO axiom; it
+  is a constructor of an inductive `Step` relation.
+* Univalence becomes a real theorem with body
+  `Conv.fromStep Step.eqType` — provable, zero-axiom, NOT postulated.
+* `Step.eqArrow : Step (Ty.id (Ty.arrow A B) f g) (Π x, Ty.id B (f x) (g x))` —
+  the HOTT reduction rule that makes function-equality and
+  pointwise-equality definitionally interchangeable.  Funext becomes
+  a real theorem with body `Conv.fromStep Step.eqArrow`.
+* HIT eliminators land via parallel `Step` reductions whose left
+  side is a constructor application and right side is the
+  computation rule's RHS — same shape as iota for ordinary
+  inductives.
+
+If a `Step` rule cannot be defined for a principle, the principle
+does NOT enter the kernel.  No file is permitted to ship a theorem
+that depends on a postulate dressed up in any other guise:
+hypothesis-as-postulate, `IsX : Sort N` placeholder, `Inhabited X`
+for unconstructible `X`, `Eq.mpr` cascade hiding choice — all
+banned.
+
+## NO documented exceptions
+
+Older versions of this document granted Univalence as "the one
+documented exception".  That grant is REVOKED.  See
+`/root/iprit/FX/lean-fx-2/CLAUDE.md` "Zero-axiom commitment —
+ABSOLUTE, NO EXCEPTIONS" for the full list of forbidden declaration
+forms and reasoning patterns.
 
 ## Per-axiom catastrophe analysis
 
@@ -254,10 +285,9 @@ behind a layer label.
 
 ```bash
 # Strict zero-axiom check across the kernel:
-grep -rn "propext\|Quot.sound\|Classical.choice\|funext\|sorry" LeanFX2/ \
-  --include="*.lean" \
-  | grep -v "Univalence.lean\|axiom_policy\|comment\|AXIOMS.md\|WORKING_RULES.md"
-# Should return nothing.
+rg -n 'propext|Quot\.sound|Classical\.choice|funext|sorry|admit|^axiom|^postulate|^opaque' LeanFX2/ \
+  --type lean
+# Filter out docstring hits manually.  Code-body hits MUST be zero.
 
 # Per-decl axiom check (run by AuditAll.lean during build):
 lake build LeanFX2 2>&1 | grep "axiom audit failed"
@@ -280,15 +310,21 @@ oracles.  Use validated Sail-derived ISA specs where they exist.
 This is a separate category of risk from axiom-induced unsoundness
 but no less critical.
 
-## Eight-axiom ceiling
+## Zero-axiom ceiling — ABSOLUTE
 
-The project's standing commitment: total axiom budget = 3 Lean core +
-5 FX-specific.  Hitting the ceiling without dropping an existing axiom
-forces a project-policy review before the 9th lands.
+The project's commitment: total axiom budget = **0** (Lean core and
+FX-specific combined, for SHIPPED kernel/metatheory/algorithmic/
+HoTT theorems).
 
 Currently used: 0 Lean core (all kernel theorems strictly axiom-free);
-0 FX-specific.  Reserved: 1 (`Univalence` in HoTT/Univalence.lean).
-Future budget: 4 (ua_wire, ua_ghost, fix_productivity, hit_path_intro).
+0 FX-specific.  Reserved: 0.  Future budget: 0.
+
+The previous "8-axiom ceiling" (3 Lean core + 5 FX-specific reserved
+for Univalence + ua_wire + ua_ghost + fix_productivity + hit_path_intro)
+is REVOKED.  Univalence and funext enter via `Step.eqType`/`Step.eqArrow`
+reductions (theorems, not axioms).  HIT eliminators enter via parallel
+`Step` reductions.  See "Genuinely-unprovable principles — Step
+reductions, NOT axioms" above.
 
 ## Living document
 

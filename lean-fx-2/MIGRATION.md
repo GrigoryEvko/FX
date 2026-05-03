@@ -56,7 +56,7 @@ When lean-fx-2 reaches Phase 11 (Surface complete):
 
 1. [ ] Verify `lake build LeanFX2` is green with all phases 0–11
 2. [ ] Verify zero axioms across kernel via AuditAll
-3. [ ] Verify zero sorries: `grep -rn "sorry" LeanFX2/` returns only Univalence postulate (if not yet derived) and intentional spec markers
+3. [ ] Verify zero sorries: `rg --type lean -n '\bsorry\b' LeanFX2/` returns NO matches in declaration bodies (docstring/keyword mentions are OK).  Univalence is NOT exempt — it is a real theorem with body `Conv.fromStep Step.eqType` per `HoTT/Univalence.lean`
 4. [ ] Smoke test parity: every smoke test in `lean-fx/LeanFX/Syntax/Smoke.lean` has an analog in `lean-fx-2/LeanFX2/Smoke/`
 5. [ ] W8 confluence chain delivers same theorems as `lean-fx/LeanFX/Syntax/Reduction/Confluence.lean`
 6. [ ] Bridge sorries closed (`grep -c sorry lean-fx-2/LeanFX2/Bridge.lean` returns 0)

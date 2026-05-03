@@ -47,13 +47,16 @@ violating decl immediately.
 
 ## Layered policy
 
-Per `AXIOMS.md`:
-* Layer K/M/E (Foundation/Reduction/Confluence/Bridge/...): strict
-  zero-axiom; gate fails if any axiom in dependency tree
-* Layer 5 HoTT: strict EXCEPT `HoTT/Univalence.lean` (univalence
-  postulated long-term until cubical layer derives it).  Theorems
-  using univalence carry `@[univalence_postulate]` attribute and are
-  gated by `#assert_no_axioms_except_univalence`
+Per `AXIOMS.md` and `CLAUDE.md` "Zero-axiom commitment — ABSOLUTE,
+NO EXCEPTIONS":
+* Every layer is strict zero-axiom.  No HoTT exception.  No
+  Univalence carve-out.  No `@[univalence_postulate]` attribute.
+* Univalence and funext enter the kernel via `Step.eqType` /
+  `Step.eqArrow` reductions — they are real theorems with bodies
+  `Conv.fromStep _`, NOT axioms.
+* Gate fails if any axiom appears in any dependency tree, including
+  the three Lean core axioms (`propext`, `Quot.sound`,
+  `Classical.choice`).
 
 ## Dependencies
 

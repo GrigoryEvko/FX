@@ -1,87 +1,118 @@
 import LeanFX2.HoTT.NTypes
 
-/-! # HoTT/Univalence — the univalence axiom (long-term: derived)
+/-! # HoTT/Univalence — Univalence as a derivable theorem (NEVER an axiom)
 
 Univalence is the principle that **type equivalence equals type
 equality**:
 
-```lean
-axiom Univalence : ∀ (A B : Type), Equiv (Id Type A B) (Equiv A B)
+```
+Univalence : (A B : Ty.universe lvl) → Conv (Ty.id (Ty.universe lvl) A B) (Ty.equiv A B)
 ```
 
-(Voevodsky's formulation: the canonical map `Id Type A B → Equiv A B`
-is itself an equivalence.)
+(Voevodsky's formulation: the canonical map
+`Id Type A B → Equiv A B` is itself an equivalence; equivalently, the
+kernel sees the two types as definitionally interchangeable.)
 
-## The 0-axiom commitment problem
+## Zero-axiom commitment — NO EXCEPTIONS
 
-Univalence is *not* provable in standard MLTT.  To get univalence
-without `axiom`:
+Per `/root/iprit/FX/lean-fx-2/CLAUDE.md` "Zero-axiom commitment —
+ABSOLUTE, NO EXCEPTIONS" and `AXIOMS.md` "NO documented exceptions":
 
-1. **Cubical type theory** — interpret types as filling Kan complex,
-   univalence is a theorem of the Kan structure.  This requires
-   adding `Path` types with face/degeneracy operations and a
-   substantial new computation rule infrastructure.
+* **No `axiom Univalence`.**  Period.
+* **No `@[univalence_postulate]` attribute.**  The attribute itself
+  was a deception scaffold and is forbidden.
+* **No hypothesis-as-postulate.**  Theorems do NOT take `Univalence`
+  as an input.  That pattern is the same lie as `axiom Univalence`,
+  just with extra parameters.
+* **No `IsUnivalent : Sort N` placeholder.**  A predicate that
+  pretends to ship a result is not shipping a result.
 
-2. **Models** — interpret in simplicial sets, etc.  Meta-theoretic;
-   not internal to Lean.
+Univalence is not provable in standard MLTT.  It enters lean-fx-2 as
+a **`Step` reduction** — a constructor of an inductive relation, not
+an axiom — and the result becomes a theorem with a real proof body.
 
-3. **Postulate** — accept `axiom`.
+## Plan: definitional univalence via `Step.eqType`
 
-## lean-fx-2's stance
+When `Reduction/Step.lean` ships the rule
 
-**Short term**: postulate univalence with `@[univalence_postulate]`
-attribute.  Downstream theorems that depend on it carry the
-attribute (propagation tracked).  This is *one* documented exception
-to the zero-axiom rule, scoped to this file.
-
-**Long term**: derive univalence via a cubical layer (deferred to
-v3.x — requires `Path` types as a separate level above Id, or
-extending `Ty` with face operations).
-
-## What's available without univalence
-
-Even without univalence, lean-fx-2 has:
-* Identity types (Id, refl, J)
-* Path composition, inverse, groupoid laws
-* Transport
-* Equivalence (≃)
-* n-type stratification
-
-Univalence is needed for:
-* "propositional univalence" on a Tarski universe (lean-fx task v3.24)
-* Function extensionality (provable from univalence)
-* Higher inductive types' eliminators with full faithfulness
-
-## Postulate
-
-```lean
-@[univalence_postulate]
-axiom Univalence (A B : Type) : Equiv (Id Type A B) (Equiv A B)
+```
+Step.eqType {scope levelTy : Nat}
+  (innerLevel : Nat) (innerLevelLt : innerLevel < levelTy)
+  {leftTy rightTy : Ty innerLevel scope} :
+  Step (Ty.id (Ty.universe (level := levelTy) (scope := scope) innerLevel innerLevelLt)
+                leftTy rightTy)
+       (Ty.equiv leftTy rightTy)
 ```
 
-## Funext from univalence
+(or similar — exact shape determined when `Ty.universe` lands per
+`kernel-sprint.md` D1.2 and the HOTT eqType rule lands per D2.6),
+this file ships:
 
 ```lean
-theorem funext {f g : A → B} (h : ∀ x, Id (f x) (g x)) : Id f g
+theorem Univalence
+    {scope levelTy : Nat} (innerLevel : Nat) (innerLevelLt : innerLevel < levelTy)
+    (leftTy rightTy : Ty innerLevel scope) :
+    Conv (Ty.id (Ty.universe (level := levelTy) (scope := scope) innerLevel innerLevelLt)
+                  leftTy rightTy)
+         (Ty.equiv leftTy rightTy) :=
+  Conv.fromStep (Step.eqType innerLevel innerLevelLt)
 ```
 
-Provable from Univalence + `Pi`-type elimination.
+`#print axioms Univalence` then reports "does not depend on any axioms".
+
+## Funext from `Step.eqArrow`
+
+Same pattern.  When `Reduction/Step.lean` ships
+
+```
+Step.eqArrow {scope level : Nat} {domainTy codomainTy : Ty level scope}
+    {leftFn rightFn : Term ... (Ty.arrow domainTy codomainTy) ...} :
+  Step (Ty.id (Ty.arrow domainTy codomainTy) leftFn rightFn)
+       (Ty.piTy domainTy (Ty.id codomainTy ...))
+```
+
+this file ships `theorem funext := Conv.fromStep Step.eqArrow`.
+
+## Status (as of `kernel-sprint.md` cycle)
+
+* `Step.eqType` / `Step.eqArrow` not yet shipped — see D2.6.
+* `Univalence` / `funext` theorems land in this file the moment
+  D2.6 lands.
+* This file currently exposes NO declarations.  Empty namespace is
+  fine; the file documents the commitment until the dependency
+  resolves.
 
 ## Dependencies
 
-* `HoTT/NTypes.lean`
+* `Foundation/Ty.lean` — `Ty.universe` (D1.2), `Ty.id`, `Ty.equiv`,
+  `Ty.arrow`, `Ty.piTy`
+* `Reduction/Step.lean` — `Step.eqType` (D2.6), `Step.eqArrow` (D2.6)
+* `Reduction/Conv.lean` — `Conv.fromStep`
+* `HoTT/NTypes.lean` — n-type stratification (orthogonal but useful)
 
 ## Downstream consumers
 
-* `HoTT/HIT/*` — HITs assume univalent universe for full coherence
-* Anywhere needing function extensionality
+* `HoTT/HIT/*` — HITs use the same `Step`-reduction pattern for their
+  eliminators.  Zero axioms.
+* `Cubical/Bridge.lean` — Path ↔ Id equivalence (D3.11) lives at
+  set level and uses `Step.eqArrow`-style reductions for cubical
+  funext.
 
-## Implementation plan (Phase 6)
+## What this file MUST NOT do
 
-1. State Univalence as `axiom` + `@[univalence_postulate]`
-2. Derive funext from Univalence
-3. Smoke tests: equivalence Inv, extensionality on ID
-4. Long-term task: derive Univalence from cubical layer (Phase 6+)
+* Declare `axiom Univalence` (banned).
+* Declare `@[univalence_postulate]` attribute (banned).
+* Declare `theorem foo (h : Univalence) : ...` taking univalence as
+  a hypothesis (banned — hypothesis-as-postulate).
+* Declare `def Univalence : Sort N := ...` as a placeholder
+  predicate without a real proof (banned).
+* Use `propext`, `Quot.sound`, `Classical.choice`, `funext`,
+  `noncomputable`, `Inhabited` of unconstructible types, or any
+  axiom-equivalent (banned).
+
+If `Step.eqType` cannot be shipped, this file stays empty and the
+`Univalence` theorem does not enter the project.  Better to lack
+the result than to ship the deception.
 -/
 
 namespace LeanFX2
