@@ -153,11 +153,11 @@ theorem static_dynamic_disjoint (someMode : Mode)
 /-! ## Decidability -/
 
 /-- Layer-of-mode is decidable for every mode. -/
-instance Mode.IsStatic.decidable (someMode : Mode) :
+instance IsStatic.decidable (someMode : Mode) :
     Decidable someMode.IsStatic :=
   inferInstanceAs (Decidable (someMode.layer = Layer.static))
 
-instance Mode.IsDynamic.decidable (someMode : Mode) :
+instance IsDynamic.decidable (someMode : Mode) :
     Decidable someMode.IsDynamic :=
   inferInstanceAs (Decidable (someMode.layer = Layer.dynamic))
 
