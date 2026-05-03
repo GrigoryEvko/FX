@@ -519,4 +519,28 @@ theorem StepStar.preserves_ty_eitherType
   StepStar.preserves_isClosedTy
     (IsClosedTy.eitherType closedLeft closedRight) chain sourceIsEither
 
+/-! ## Conv-level preservation at closed types — DEFERRED
+
+A `Conv.preserves_isClosedTy` corollary would lift SR through
+both sides of a Conv: if `Conv source target` and `source` has
+a closed type, then `target` has the same closed type.
+
+Naive proof attempt extracts the existential common reduct and
+applies `StepStar.preserves_isClosedTy` forward to constrain the
+middle's type — but the target side requires REVERSE SR (chain
+goes from target to middle; we need to deduce target's type
+from middle's type).
+
+Reverse SR for arbitrary `Step` rules is provable but
+non-trivial: each Step rule's source/target type relationship
+must be inspected.  Most cong rules have `srcType = tgtType`
+definitionally (forward = reverse).  βι rules have a propositional
+equality (`Ty.weaken_subst_singleton` for βapp, etc.) — reverse
+proof mirrors forward.
+
+Deferred to a future structural phase.  Use case-by-case forward
+SR via `StepStar.preserves_isClosedTy` at consumer sites (which
+is what `Conv.cong_at_isClosedTy` already does for cong rules
+via the source-side chain). -/
+
 end LeanFX2
