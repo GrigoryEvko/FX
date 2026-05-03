@@ -117,7 +117,6 @@ theorem Ty.subst0_raw_invariance_unit
   | session _ => nomatch someTypeReducesToUnit
   | effect _ _ => nomatch someTypeReducesToUnit
   | modal _ _ => nomatch someTypeReducesToUnit
-  | «universe» _ => nomatch someTypeReducesToUnit
 
 /-- Substitution-raw-invariance for `Ty.bool`. -/
 theorem Ty.subst0_raw_invariance_bool
@@ -155,7 +154,6 @@ theorem Ty.subst0_raw_invariance_bool
   | session _ => nomatch someTypeReducesToBool
   | effect _ _ => nomatch someTypeReducesToBool
   | modal _ _ => nomatch someTypeReducesToBool
-  | «universe» _ => nomatch someTypeReducesToBool
 
 /-- Substitution-raw-invariance for `Ty.nat`. -/
 theorem Ty.subst0_raw_invariance_nat

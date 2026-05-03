@@ -152,8 +152,6 @@ def Ty.subst {level : Nat} : ∀ {source target : Nat},
       .effect (carrierType.subst sigma) (effectTag.subst sigma.forRaw)
   | _, _, .modal modalityTag carrierType, sigma =>
       .modal modalityTag (carrierType.subst sigma)
-  | _, _, .universe lvl, _ =>
-      .universe lvl
 
 /-- Single-variable substitution on Ty: substitute `argType` (and
 its raw form `argRaw`) at position 0. -/
@@ -270,7 +268,6 @@ theorem Ty.subst_pointwise {level : Nat}
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.subst]
       rw [carrierIH forTyEq forRawEq]
-  | «universe» lvl => rfl
 
 /-! ### Renaming after substitution: Ty.subst then rename. -/
 
@@ -396,7 +393,6 @@ theorem Ty.subst_rename_commute {level : Nat}
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.subst, Ty.rename]
       rw [carrierIH sigma rho]
-  | «universe» lvl => rfl
 
 /-! ### Substitution after renaming: Ty.rename then subst. -/
 
@@ -515,7 +511,6 @@ theorem Ty.rename_subst_commute {level : Nat}
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.rename, Ty.subst]
       rw [carrierIH rho sigma]
-  | «universe» lvl => rfl
 
 /-! ### Singleton-rename pointwise + Ty.subst0_rename_commute. -/
 
@@ -645,7 +640,6 @@ theorem Ty.subst_identity {level scope : Nat} (someType : Ty level scope) :
       rw [carrierIH, RawTerm.subst_identity effectTag]
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.subst]; rw [carrierIH]
-  | «universe» lvl => rfl
 
 /-- Pre-composing weaken with a singleton (Subst-level) gives the identity
 substitution on forTy pointwise. -/
@@ -833,7 +827,6 @@ theorem Ty.subst_compose {level : Nat}
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.subst]
       rw [carrierIH sigma1 sigma2]
-  | «universe» lvl => rfl
 
 /-- Pointwise: composing singleton with sigma agrees with composing
 sigma.lift with renamed singleton on forTy. -/

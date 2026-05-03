@@ -329,6 +329,5 @@ theorem Ty.rename_identity {level scope : Nat} :
       show Ty.modal modalityTag (carrierType.rename _) =
            Ty.modal modalityTag carrierType
       rw [Ty.rename_identity carrierType]
-  | .universe _ => rfl
 
 end LeanFX2
