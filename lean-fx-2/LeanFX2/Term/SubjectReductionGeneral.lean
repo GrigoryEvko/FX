@@ -583,7 +583,7 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
           show Ty.modal _ (carrierSrc.subst0 argType raw2) = _
           rw [carrierInv]
       | «universe» _ _ => nomatch someTypeReduces
-  | «universe» universeLevel levelEq =>
+  | «universe» universeLevel levelLe =>
       cases someType with
       | unit => nomatch someTypeReduces
       | bool => nomatch someTypeReduces
@@ -614,9 +614,9 @@ theorem Ty.subst0_raw_invariance_isClosedTy {level scope : Nat}
       | session _ => nomatch someTypeReduces
       | effect _ _ => nomatch someTypeReduces
       | modal _ _ => nomatch someTypeReduces
-      | «universe» universeLevelSrc levelEqSrc =>
+      | «universe» universeLevelSrc levelLeSrc =>
           -- D1.2: Ty.universe injects on its UniverseLevel payload (the
-          -- propositional-equation field is irrelevant by Prop subsingleton).
+          -- propositional-inequality field is irrelevant by Prop subsingleton).
           -- cases unifies universeLevelSrc with universeLevel; subst on
           -- Ty.universe is a no-op so both raw substitutions agree.
           cases someTypeReduces

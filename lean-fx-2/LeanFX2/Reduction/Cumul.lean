@@ -167,13 +167,13 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
       {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
       (lowerTerm :
-        Term ctxLow (Ty.universe lowerLevel rfl)
+        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
                     (RawTerm.universeCode innerLevel.toNat)) :
       ConvCumul lowerTerm
                 (Term.cumulUp (ctxHigh := ctxHigh)
                               innerLevel lowerLevel higherLevel
                               cumulOkLow cumulOkHigh cumulMonotone
-                              rfl rfl lowerTerm)
+                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)
   /-- Symmetry: cross-level cumul is symmetric. -/
   | sym
       {modeFirst modeSecond : Mode}
@@ -238,13 +238,13 @@ theorem Conv.cumul_uses_source
     {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
     {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
     (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel rfl)
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
                   (RawTerm.universeCode innerLevel.toNat)) :
     ConvCumul lowerTerm
               (Term.cumulUp (ctxHigh := ctxHigh)
                             innerLevel lowerLevel higherLevel
                             cumulOkLow cumulOkHigh cumulMonotone
-                            rfl rfl lowerTerm) :=
+                            (Nat.le_refl _) (Nat.le_refl _) lowerTerm) :=
   ConvCumul.viaUp innerLevel lowerLevel higherLevel
                   cumulOkLow cumulOkHigh cumulMonotone lowerTerm
 
@@ -260,12 +260,13 @@ theorem Conv.cumul_idempotent
     {ctxLow : Ctx mode (sameLevel.toNat + 1) 0}
     {ctxHigh : Ctx mode (sameLevel.toNat + 1) scope}
     (lowerTerm :
-      Term ctxLow (Ty.universe sameLevel rfl)
+      Term ctxLow (Ty.universe sameLevel (Nat.le_refl _))
                   (RawTerm.universeCode innerLevel.toNat)) :
     ConvCumul lowerTerm
               (Term.cumulUp (ctxHigh := ctxHigh)
                             innerLevel sameLevel sameLevel
-                            cumulOk cumulOk (Nat.le_refl _) rfl rfl lowerTerm) :=
+                            cumulOk cumulOk (Nat.le_refl _)
+                            (Nat.le_refl _) (Nat.le_refl _) lowerTerm) :=
   ConvCumul.viaUp innerLevel sameLevel sameLevel
                   cumulOk cumulOk (Nat.le_refl _) lowerTerm
 
@@ -289,13 +290,13 @@ theorem ConvCumul.viaUp_raw_eq
     {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
     {ctxHigh : Ctx mode (higherLevel.toNat + 1) 0}
     (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel rfl)
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
                   (RawTerm.universeCode innerLevel.toNat)) :
     Term.toRaw lowerTerm =
       Term.toRaw (Term.cumulUp (ctxHigh := ctxHigh)
                                innerLevel lowerLevel higherLevel
                                cumulOkLow cumulOkHigh cumulMonotone
-                               rfl rfl lowerTerm) := rfl
+                               (Nat.le_refl _) (Nat.le_refl _) lowerTerm) := rfl
 
 /-! ## Cross-level cumul over arbitrary scope (existing theorem set)
 
@@ -320,12 +321,13 @@ theorem Conv.cumul_cross_level_real
     {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope} :
     ConvCumul
       (Term.universeCode (context := ctxLow) innerLevel lowerLevel
-                         cumulOkLow rfl)
+                         cumulOkLow (Nat.le_refl _))
       (Term.cumulUp (ctxHigh := ctxHigh)
                     innerLevel lowerLevel higherLevel
-                    cumulOkLow cumulOkHigh cumulMonotone rfl rfl
+                    cumulOkLow cumulOkHigh cumulMonotone
+                    (Nat.le_refl _) (Nat.le_refl _)
                     (Term.universeCode (context := ctxLow) innerLevel
-                                       lowerLevel cumulOkLow rfl)) :=
+                                       lowerLevel cumulOkLow (Nat.le_refl _))) :=
   ConvCumul.viaUp innerLevel lowerLevel higherLevel
                   cumulOkLow cumulOkHigh cumulMonotone _
 
@@ -343,11 +345,11 @@ theorem Conv.cumul_refl
     {context : Ctx mode level scope}
     (innerLevel outerLevel : UniverseLevel)
     (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
-    (levelEq : level = outerLevel.toNat + 1) :
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
     Conv (Term.universeCode (context := context) innerLevel outerLevel
-                            cumulOk levelEq)
+                            cumulOk levelLe)
          (Term.universeCode (context := context) innerLevel outerLevel
-                            cumulOk levelEq) :=
+                            cumulOk levelLe) :=
   Conv.refl _
 
 /-- **Cumulativity-witness equivalence**: two universe-codes at the
@@ -360,11 +362,11 @@ theorem Conv.cumul_proof_irrel
     {context : Ctx mode level scope}
     (innerLevel outerLevel : UniverseLevel)
     (cumulOk1 cumulOk2 : innerLevel.toNat ≤ outerLevel.toNat)
-    (levelEq : level = outerLevel.toNat + 1) :
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
     Conv (Term.universeCode (context := context) innerLevel outerLevel
-                            cumulOk1 levelEq)
+                            cumulOk1 levelLe)
          (Term.universeCode (context := context) innerLevel outerLevel
-                            cumulOk2 levelEq) := by
+                            cumulOk2 levelLe) := by
   have proofIrrel : cumulOk1 = cumulOk2 := Subsingleton.elim cumulOk1 cumulOk2
   cases proofIrrel
   exact Conv.refl _
@@ -379,12 +381,12 @@ theorem Conv.cumul_raw_shared
     (innerLevel outerLow outerHigh : UniverseLevel)
     (cumulOkLow : innerLevel.toNat ≤ outerLow.toNat)
     (cumulOkHigh : innerLevel.toNat ≤ outerHigh.toNat)
-    (levelEqLow : levelLow = outerLow.toNat + 1)
-    (levelEqHigh : levelHigh = outerHigh.toNat + 1) :
+    (levelLeLow : outerLow.toNat + 1 ≤ levelLow)
+    (levelLeHigh : outerHigh.toNat + 1 ≤ levelHigh) :
     Term.toRaw (Term.universeCode (context := contextLow) innerLevel
-                                  outerLow cumulOkLow levelEqLow)
+                                  outerLow cumulOkLow levelLeLow)
       = Term.toRaw (Term.universeCode (context := contextHigh) innerLevel
-                                      outerHigh cumulOkHigh levelEqHigh) :=
+                                      outerHigh cumulOkHigh levelLeHigh) :=
   rfl
 
 /-- **Same-context cumul across distinct outer levels**: when both
@@ -400,18 +402,18 @@ theorem Conv.cumul_outer_eq
     (outerEq : outerLevelA = outerLevelB)
     (cumulOkA : innerLevel.toNat ≤ outerLevelA.toNat)
     (cumulOkB : innerLevel.toNat ≤ outerLevelB.toNat)
-    (levelEqA : level = outerLevelA.toNat + 1)
-    (levelEqB : level = outerLevelB.toNat + 1) :
+    (levelLeA : outerLevelA.toNat + 1 ≤ level)
+    (levelLeB : outerLevelB.toNat + 1 ≤ level) :
     Conv (Term.universeCode (context := context) innerLevel outerLevelA
-                            cumulOkA levelEqA)
+                            cumulOkA levelLeA)
          (Term.universeCode (context := context) innerLevel outerLevelB
-                            cumulOkB levelEqB) := by
+                            cumulOkB levelLeB) := by
   cases outerEq
   have proofIrrelCumul : cumulOkA = cumulOkB :=
     Subsingleton.elim cumulOkA cumulOkB
   cases proofIrrelCumul
-  have proofIrrelLevel : levelEqA = levelEqB :=
-    Subsingleton.elim levelEqA levelEqB
+  have proofIrrelLevel : levelLeA = levelLeB :=
+    Subsingleton.elim levelLeA levelLeB
   cases proofIrrelLevel
   exact Conv.refl _
 

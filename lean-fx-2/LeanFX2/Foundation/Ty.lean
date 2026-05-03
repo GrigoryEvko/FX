@@ -89,18 +89,20 @@ inductive Ty : Nat → Nat → Type
   | optionType {level scope : Nat} (elementType : Ty level scope) : Ty level scope
   | eitherType {level scope : Nat}
       (leftType rightType : Ty level scope) : Ty level scope
-  /-- Universe code.  `Ty.universe u rfl` lives one level above its
-      payload's `toNat` height — `Ty.universe u rfl : Ty (u.toNat + 1) scope`.
-      No `Type : Type` (Girard's paradox forbids it: the propositional
-      equation `level = universeLevel.toNat + 1` makes constructing a
-      level-`u` universe AT level `u` impossible since `u ≠ u + 1`).
-      Cumulativity is a Conv rule (`Conv.cumul`, Layer 3+), never a Ty
-      constructor.  The propositional-equation parameter is the standard
+  /-- Universe code.  `Ty.universe u (h : u.toNat + 1 ≤ level) :
+      Ty level scope` lives at any level `≥ u + 1`.  No `Type : Type`
+      (Girard's paradox forbids it: `u + 1 ≤ u` is impossible).
+      Cumulativity is BUILT-IN to the constructor: a level-`u` universe
+      can inhabit any `Ty l scope` for `l ≥ u + 1` directly — no
+      `Term.cumulUp` wrapper needed at the Ty level.
+      The propositional-inequality parameter is the standard
       P-3 (Universe Constructor Blocker) workaround per
       `feedback_lean_universe_constructor_block.md`: keeps `level` free
-      so pattern-form match + `deriving DecidableEq` succeed. -/
+      so pattern-form match + `deriving DecidableEq` succeed.  Per
+      Phase 12.A.B1.1, this replaced `level = universeLevel.toNat + 1`
+      with `universeLevel.toNat + 1 ≤ level` to make cumul intrinsic. -/
   | «universe» {level scope : Nat} (universeLevel : UniverseLevel)
-      (levelEq : level = universeLevel.toNat + 1) : Ty level scope
+      (levelLe : universeLevel.toNat + 1 ≤ level) : Ty level scope
   -- D1.5 extension — 13 new foundational ctors.  All use RawTerm scope or
   -- Nat tags for raw payloads; richer semantic content (Modality, SessionProtocol,
   -- EffectRow, BoundaryCofib) is interpreted by downstream layers via tag dispatch
@@ -190,7 +192,7 @@ def Ty.rename {level : Nat} : ∀ {scope sourceScope : Nat},
       .optionType (elementType.rename rho)
   | _, _, .eitherType leftType rightType, rho =>
       .eitherType (leftType.rename rho) (rightType.rename rho)
-  | _, _, .universe universeLevel levelEq, _ => .universe universeLevel levelEq
+  | _, _, .universe universeLevel levelLe, _ => .universe universeLevel levelLe
   -- D1.5 new ctor renaming
   | _, _, .empty, _ => .empty
   | _, _, .interval, _ => .interval
@@ -267,7 +269,7 @@ theorem Ty.rename_pointwise {level : Nat}
       simp only [Ty.rename]; rw [eIH renamingEq]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename]; rw [lIH renamingEq, rIH renamingEq]
-  | «universe» universeLevel levelEq => rfl
+  | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>
@@ -359,7 +361,7 @@ theorem Ty.rename_compose {level : Nat}
   | optionType e eIH => simp only [Ty.rename]; rw [eIH rho1 rho2]
   | eitherType l r lIH rIH =>
       simp only [Ty.rename]; rw [lIH rho1 rho2, rIH rho1 rho2]
-  | «universe» universeLevel levelEq => rfl
+  | «universe» universeLevel levelLe => rfl
   | empty => rfl
   | interval => rfl
   | path carrier leftEndpoint rightEndpoint carrierIH =>

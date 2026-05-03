@@ -206,12 +206,12 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .subsume innerTerm =>
       Term.subsume (Term.rename termRenaming innerTerm)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
-  -- levelEq` and `RawTerm.universeCode innerLevel.toNat` rename to
+  -- levelLe` and `RawTerm.universeCode innerLevel.toNat` rename to
   -- themselves (no scope-dependent payload), so the `someType.rename
   -- rho` and `raw.rename rho` results match the ctor's expected types
   -- definitionally.
-  | _, _, .universeCode innerLevel outerLevel cumulOk levelEq =>
-      Term.universeCode innerLevel outerLevel cumulOk levelEq
+  | _, _, .universeCode innerLevel outerLevel cumulOk levelLe =>
+      Term.universeCode innerLevel outerLevel cumulOk levelLe
   -- Cumul-up (REAL cumul ctor): the inner Term lives at scope 0, so
   -- it is invariant under any renaming on the outer scope.  We just
   -- pass `lowerTerm` through unchanged and reconstruct the cumulUp
@@ -219,14 +219,14 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- scope, the inner context stays at scope 0).  Both sides project
   -- to `RawTerm.universeCode innerLevel.toNat`, identical at any
   -- scope, so no cast is needed for the raw axis.  The output type
-  -- `Ty.universe higherLevel rfl` renames to itself.
+  -- `Ty.universe higherLevel _` renames to itself.
   | _, _, .cumulUp innerLevel lowerLevel higherLevel
                    cumulOkLow cumulOkHigh cumulMonotone
-                   levelEqLow levelEqHigh lowerTerm =>
+                   levelLeLow levelLeHigh lowerTerm =>
       Term.cumulUp (ctxHigh := targetCtx)
                    innerLevel lowerLevel higherLevel
                    cumulOkLow cumulOkHigh cumulMonotone
-                   levelEqLow levelEqHigh lowerTerm
+                   levelLeLow levelLeHigh lowerTerm
 
 /-! ## Term.weaken — convenience wrapper -/
 

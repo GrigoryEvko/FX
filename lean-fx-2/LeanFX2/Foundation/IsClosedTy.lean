@@ -83,9 +83,9 @@ inductive IsClosedTy : ∀ {level scope : Nat}, Ty level scope → Prop
                (closedRight : IsClosedTy rightType) :
                IsClosedTy (Ty.eitherType leftType rightType)
   | «universe» {level scope : Nat} (universeLevel : UniverseLevel)
-               (levelEq : level = universeLevel.toNat + 1) :
+               (levelLe : universeLevel.toNat + 1 ≤ level) :
                IsClosedTy (Ty.universe (level := level) (scope := scope)
-                                       universeLevel levelEq)
+                                       universeLevel levelLe)
   -- D1.5 new closed-ctor witnesses.  Tagless leaves (`empty`, `interval`)
   -- are unconditionally closed.  Parametric ctors recurse on their Ty
   -- components only — RawTerm payloads (path/oeq/idStrict endpoints,
@@ -160,7 +160,7 @@ def IsClosedTy.decide {level : Nat} : ∀ {scope : Nat}
           .isFalse (fun closedEither => by cases closedEither; exact openLeft ‹_›)
       | _, .isFalse openRight =>
           .isFalse (fun closedEither => by cases closedEither; exact openRight ‹_›)
-  | _, .universe universeLevel levelEq => .isTrue (.universe universeLevel levelEq)
+  | _, .universe universeLevel levelLe => .isTrue (.universe universeLevel levelLe)
   -- D1.5 decidable-closed dispatch for the 13 new ctors.
   | _, .empty => .isTrue .empty
   | _, .interval => .isTrue .interval

@@ -250,19 +250,21 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (innerTerm : Term context innerType innerRaw) :
       Term context innerType (RawTerm.subsume innerRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
-      `outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
+      `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`
       makes the same raw `RawTerm.universeCode innerLevel.toNat`
       inhabit `Ty.universe outerLevel` for any compatible outer level
-      (used by `Conv.cumul`).  The propositional `levelEq` parameter
-      threads through `Ty.universe` per the P-3 universe-constructor-
-      blocker workaround. -/
+      (used by `Conv.cumul`).  Per Phase 12.A.B1.1, the propositional
+      inequality `levelLe : outerLevel.toNat + 1 ≤ level` replaced the
+      old `levelEq : level = outerLevel.toNat + 1` to make
+      cumulativity intrinsic: a universe-code at outer level
+      `outerLevel` inhabits any `level ≥ outerLevel.toNat + 1`. -/
   | universeCode {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       (innerLevel outerLevel : UniverseLevel)
       (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
-      (levelEq : level = outerLevel.toNat + 1) :
-      Term context (Ty.universe outerLevel levelEq)
+      (levelLe : outerLevel.toNat + 1 ≤ level) :
+      Term context (Ty.universe outerLevel levelLe)
                    (RawTerm.universeCode innerLevel.toNat)
   /-- **REAL CROSS-LEVEL CUMULATIVITY** at the typed Term level.
       Promotes a closed (scope = 0) Term inhabiting `Ty.universe lowerLevel`
@@ -302,14 +304,14 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
       (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
       (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-      (levelEqLow : levelLow = lowerLevel.toNat + 1)
-      (levelEqHigh : level = higherLevel.toNat + 1)
+      (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+      (levelLeHigh : higherLevel.toNat + 1 ≤ level)
       {ctxLow : Ctx mode levelLow 0}
       {ctxHigh : Ctx mode level scope}
       (lowerTerm :
-        Term ctxLow (Ty.universe lowerLevel levelEqLow)
+        Term ctxLow (Ty.universe lowerLevel levelLeLow)
                     (RawTerm.universeCode innerLevel.toNat)) :
-      Term ctxHigh (Ty.universe higherLevel levelEqHigh)
+      Term ctxHigh (Ty.universe higherLevel levelLeHigh)
            (RawTerm.universeCode innerLevel.toNat)
 
 end LeanFX2
