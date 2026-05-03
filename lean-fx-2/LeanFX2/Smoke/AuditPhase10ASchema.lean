@@ -135,23 +135,57 @@ example : OperatorKind.arrow.assoc = OperatorAssoc.rightA := by rfl
 
 /-! ## Section 7 — BlockOpener typed-closer schema -/
 
-example : BlockOpener.fnK.expectedClosers = [KeywordKind.fnK] := by rfl
-example : BlockOpener.matchK.expectedClosers = [KeywordKind.matchK] := by rfl
+example : BlockOpener.fnK.expectedClosers
+        = [CloserKeyword.keyword KeywordKind.fnK] := by rfl
+example : BlockOpener.matchK.expectedClosers
+        = [CloserKeyword.keyword KeywordKind.matchK] := by rfl
 example : BlockOpener.moduleType.expectedClosers
-        = [KeywordKind.moduleK, KeywordKind.typeK] := by rfl
+        = [CloserKeyword.keyword KeywordKind.moduleK,
+           CloserKeyword.keyword KeywordKind.typeK] := by rfl
+
+/-- After C01: contextual-keyword closers are now named precisely.
+The `pipeline` block's typed closer is the contextual keyword
+`pipeline`, not the surrogate `KeywordKind.codata` previously used. -/
+example : BlockOpener.pipeline.expectedClosers
+        = [CloserKeyword.contextualKeyword ContextualKeyword.pipelineK] := by rfl
+
+example : BlockOpener.hardwareFn.expectedClosers
+        = [CloserKeyword.contextualKeyword ContextualKeyword.hardwareK,
+           CloserKeyword.keyword KeywordKind.fnK] := by rfl
+
+example : BlockOpener.moduleFunctor.expectedClosers
+        = [CloserKeyword.keyword KeywordKind.moduleK,
+           CloserKeyword.contextualKeyword ContextualKeyword.functorK] := by rfl
 
 example : BlockOpener.fnK.isSimple = true := by rfl
 example : BlockOpener.moduleType.isSimple = false := by rfl
 
 /-- Concrete typed-closer match check: `end fn` matches a `fnK`
-opener when the lookahead has `[KeywordKind.fnK]`. -/
-example : BlockOpener.fnK.matchesEnd [KeywordKind.fnK] = true := by rfl
+opener when the lookahead has `[CloserKeyword.keyword .fnK]`. -/
+example : BlockOpener.fnK.matchesEnd
+            [CloserKeyword.keyword KeywordKind.fnK] = true := by rfl
 
 example :
-    BlockOpener.fnK.matchesEnd [KeywordKind.matchK] = false := by rfl
+    BlockOpener.fnK.matchesEnd
+      [CloserKeyword.keyword KeywordKind.matchK] = false := by rfl
 
 example :
-    BlockOpener.moduleType.matchesEnd [KeywordKind.moduleK, KeywordKind.typeK]
+    BlockOpener.moduleType.matchesEnd
+      [CloserKeyword.keyword KeywordKind.moduleK,
+       CloserKeyword.keyword KeywordKind.typeK]
+      = true := by rfl
+
+/-- C01 correctness: the parser DISTINGUISHES `end pipeline` (closes
+a `pipeline` block) from `end codata` (closes a `codata` block).
+Pre-C01 these would both have matched a `pipeline` opener via the
+`KeywordKind.codata` surrogate — a real bug. -/
+example :
+    BlockOpener.pipeline.matchesEnd
+      [CloserKeyword.keyword KeywordKind.codata] = false := by rfl
+
+example :
+    BlockOpener.pipeline.matchesEnd
+      [CloserKeyword.contextualKeyword ContextualKeyword.pipelineK]
       = true := by rfl
 
 /-! ## Section 8 — Lex.run end-to-end
@@ -219,6 +253,11 @@ block at the top of `TokenSchema.lean`, `TokenInvariants.lean`,
 #print axioms KeywordKind.category
 #print axioms BlockOpener.expectedClosers
 #print axioms BlockOpener.matchesEnd
+#print axioms ContextualKeyword
+#print axioms ContextualKeyword.toLexemeChars
+#print axioms ContextualKeyword.all
+#print axioms CloserKeyword
+#print axioms CloserKeyword.toLexemeChars
 #print axioms Token.IsWellFormed
 #print axioms Token.IsWellFormed.ofKeyword
 #print axioms Token.IsWellFormed.ofIdentLowerChars

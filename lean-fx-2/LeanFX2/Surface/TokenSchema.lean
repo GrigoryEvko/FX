@@ -656,77 +656,137 @@ inductive BlockOpener : Type
   | moduleFunctor     -- `module functor … end module functor`
   deriving DecidableEq, Repr
 
+/-! ## Contextual keywords
+
+Per `fx_design.md` §2.3 / `fx_grammar.md` §16: certain identifiers
+behave as keywords ONLY inside specific block contexts (machine,
+hardware, register_file, contract, register, effect, class, test).
+Outside their context, they are ordinary identifiers.  The lexer
+emits them as `Token.ident` regardless; the parser reclassifies
+them inside the matching block.
+
+`ContextualKeyword` enumerates the contextual keywords that appear
+in typed-closer sequences (`end <X>`), so that `BlockOpener.expectedClosers`
+can name them correctly without abusing an unrelated `KeywordKind`
+case as a surrogate.
+
+The full §16 list includes additional contextual keywords that
+are NOT typed-closer payloads (`field`, `virtual`, `RW`, `RO`,
+`always`, `never`, etc.); those are added as needed when a parser
+phase requires them. -/
+inductive ContextualKeyword : Type
+  | branchK         -- inside session/select branch protocol
+  | pipelineK       -- inside hardware pipeline blocks
+  | stageK          -- inside pipeline stage blocks
+  | registerFileK   -- inside `register_file` blocks
+  | regK            -- inside `reg ... end reg` blocks
+  | onK             -- inside `on rising/falling` clock blocks
+  | asmK            -- inside `asm ... end asm` blocks
+  | structK         -- inside `struct ... end struct` blocks
+  | hardwareK       -- inside `hardware fn / hardware module` blocks
+  | functorK        -- inside `module functor ... end module functor`
+  deriving DecidableEq, Repr
+
+/-- Canonical `List Char` spelling for each contextual keyword.
+Same discipline as `KeywordKind.toLexemeChars`: literal char list,
+no `String.toList` (which leaks propext / Quot.sound). -/
+def ContextualKeyword.toLexemeChars : ContextualKeyword → List Char
+  | .branchK       => ['b', 'r', 'a', 'n', 'c', 'h']
+  | .pipelineK     => ['p', 'i', 'p', 'e', 'l', 'i', 'n', 'e']
+  | .stageK        => ['s', 't', 'a', 'g', 'e']
+  | .registerFileK => ['r', 'e', 'g', 'i', 's', 't', 'e', 'r', '_', 'f', 'i', 'l', 'e']
+  | .regK          => ['r', 'e', 'g']
+  | .onK           => ['o', 'n']
+  | .asmK          => ['a', 's', 'm']
+  | .structK       => ['s', 't', 'r', 'u', 'c', 't']
+  | .hardwareK     => ['h', 'a', 'r', 'd', 'w', 'a', 'r', 'e']
+  | .functorK      => ['f', 'u', 'n', 'c', 't', 'o', 'r']
+
+/-- Exhaustive list of contextual keywords that appear as typed-
+closer payloads.  Used in proofs and audits. -/
+def ContextualKeyword.all : List ContextualKeyword :=
+  [.branchK, .pipelineK, .stageK, .registerFileK, .regK,
+   .onK, .asmK, .structK, .hardwareK, .functorK]
+
+/-- The contextual-closer set has 10 entries. -/
+example : ContextualKeyword.all.length = 10 := by decide
+
+/-- Closer keyword: either a global keyword or a contextual one.
+`BlockOpener.expectedClosers` returns a list of these. -/
+inductive CloserKeyword : Type
+  | keyword (kind : KeywordKind)
+  | contextualKeyword (kind : ContextualKeyword)
+  deriving DecidableEq, Repr
+
+/-- Spelling of a closer keyword (delegates to the underlying
+keyword's `toLexemeChars`). -/
+def CloserKeyword.toLexemeChars : CloserKeyword → List Char
+  | .keyword kind            => kind.toLexemeChars
+  | .contextualKeyword kind  => kind.toLexemeChars
+
 /-- Composite-closer sequence for each block opener.  Per
 `fx_grammar.md` §14: every block ends with `end` followed by
-the listed sequence of keywords.
+the listed sequence of closer keywords.
 
 The parser's well-balanced check uses this function to verify
 each `end` token is followed by the expected keyword sequence
 for the most recently opened block.
 
-`KeywordKind.X` is fully qualified throughout because Lean's
-dot notation can't disambiguate `.fnK` between `BlockOpener.fnK`
-and `KeywordKind.fnK` from the function's return type alone.
+After C01 (this rewrite), every closer is named precisely:
+* In-set keywords go through `CloserKeyword.keyword`.
+* Contextual keywords (`branch`, `pipeline`, `stage`,
+  `register_file`, `reg`, `on`, `asm`, `struct`, `hardware`,
+  `functor`) go through `CloserKeyword.contextualKeyword`. -/
+def BlockOpener.expectedClosers : BlockOpener → List CloserKeyword
+  | .begin             => [.keyword .begin]
+  | .fnK               => [.keyword .fnK]
+  | .matchK            => [.keyword .matchK]
+  | .typeK             => [.keyword .typeK]
+  | .ifK               => [.keyword .ifK]
+  | .forK              => [.keyword .forK]
+  | .whileK            => [.keyword .whileK]
+  | .effectK           => [.keyword .effectK]
+  | .handle            => [.keyword .handle]
+  | .tryK              => [.keyword .tryK]
+  | .select            => [.keyword .select]
+  | .machine           => [.keyword .machine]
+  | .contract          => [.keyword .contract]
+  | .classK            => [.keyword .classK]
+  | .instance          => [.keyword .instance]
+  | .impl              => [.keyword .impl]
+  | .test              => [.keyword .test]
+  | .bench             => [.keyword .bench]
+  | .calc              => [.keyword .calc]
+  | .verify            => [.keyword .verify]
+  | .proof             => [.keyword .proof]
+  | .codata            => [.keyword .codata]
+  | .session           => [.keyword .session]
+  | .branch            => [.contextualKeyword .branchK]
+  | .unfold            => [.keyword .unfold]
+  | .pipeline          => [.contextualKeyword .pipelineK]
+  | .stage             => [.contextualKeyword .stageK]
+  | .registerFile      => [.contextualKeyword .registerFileK]
+  | .reg               => [.contextualKeyword .regK]
+  | .onClock           => [.contextualKeyword .onK]
+  | .asmBlock          => [.contextualKeyword .asmK]
+  | .structBlock       => [.contextualKeyword .structK]
+  | .externBlock       => [.keyword .extern]
+  | .refinementBlock   => [.keyword .refinement]
+  | .bisimulationBlock => [.keyword .bisimulation]
+  | .hardwareFn        => [.contextualKeyword .hardwareK, .keyword .fnK]
+  | .hardwareModule    => [.contextualKeyword .hardwareK, .keyword .moduleK]
+  | .moduleType        => [.keyword .moduleK, .keyword .typeK]
+  | .moduleFunctor     => [.keyword .moduleK, .contextualKeyword .functorK]
 
-Several openers below (`registerFile`, `reg`, `onClock`,
-`asmBlock`, `structBlock`, `hardwareFn`, `hardwareModule`,
-`moduleFunctor`) reference closer keywords that are NOT in the
-92-keyword set (`hardware`, `register_file` is one keyword but
-spelled with `_`; `on`, `asm`, `struct`, `pipeline`, `stage`,
-`reg`, `field`, `virtual`, etc. are CONTEXTUAL keywords per
-fx_grammar.md §16).  We use the closest in-set surrogate and
-mark the gap with a TODO; the resolution is to extend
-`KeywordKind` with the contextual-keyword set in a future
-phase. -/
-def BlockOpener.expectedClosers : BlockOpener → List KeywordKind
-  | .begin             => [KeywordKind.begin]
-  | .fnK               => [KeywordKind.fnK]
-  | .matchK            => [KeywordKind.matchK]
-  | .typeK             => [KeywordKind.typeK]
-  | .ifK               => [KeywordKind.ifK]
-  | .forK              => [KeywordKind.forK]
-  | .whileK            => [KeywordKind.whileK]
-  | .effectK           => [KeywordKind.effectK]
-  | .handle            => [KeywordKind.handle]
-  | .tryK              => [KeywordKind.tryK]
-  | .select            => [KeywordKind.select]
-  | .machine           => [KeywordKind.machine]
-  | .contract          => [KeywordKind.contract]
-  | .classK            => [KeywordKind.classK]
-  | .instance          => [KeywordKind.instance]
-  | .impl              => [KeywordKind.impl]
-  | .test              => [KeywordKind.test]
-  | .bench             => [KeywordKind.bench]
-  | .calc              => [KeywordKind.calc]
-  | .verify            => [KeywordKind.verify]
-  | .proof             => [KeywordKind.proof]
-  | .codata            => [KeywordKind.codata]
-  | .session           => [KeywordKind.session]
-  | .branch            => [KeywordKind.codata]    -- TODO: `branch` contextual
-  | .unfold            => [KeywordKind.unfold]
-  | .pipeline          => [KeywordKind.codata]    -- TODO: `pipeline` contextual
-  | .stage             => [KeywordKind.codata]    -- TODO: `stage` contextual
-  | .registerFile      => [KeywordKind.codata]    -- TODO: `register_file` contextual
-  | .reg               => [KeywordKind.ref]       -- TODO: `reg` contextual
-  | .onClock           => [KeywordKind.codata]    -- TODO: `on` contextual
-  | .asmBlock          => [KeywordKind.codata]    -- TODO: `asm` contextual
-  | .structBlock       => [KeywordKind.codata]    -- TODO: `struct` contextual
-  | .externBlock       => [KeywordKind.extern]
-  | .refinementBlock   => [KeywordKind.refinement]
-  | .bisimulationBlock => [KeywordKind.bisimulation]
-  | .hardwareFn        => [KeywordKind.codata, KeywordKind.fnK]      -- TODO `hardware`
-  | .hardwareModule    => [KeywordKind.codata, KeywordKind.moduleK]  -- TODO `hardware`
-  | .moduleType        => [KeywordKind.moduleK, KeywordKind.typeK]
-  | .moduleFunctor     => [KeywordKind.moduleK, KeywordKind.fnK]     -- TODO `functor`
-
-/-- Decidable check: do the keywords on the parser's lookahead
+/-- Decidable check: do the closer keywords on the parser's lookahead
 stack match the expected closer sequence for `opener`?
 
 This is what the parser calls after consuming `kwEnd` to
 verify the block is properly typed-closed.  Returns `true`
-when the next-N keywords match `opener.expectedClosers` exactly. -/
+when the next-N closer keywords match `opener.expectedClosers`
+exactly. -/
 def BlockOpener.matchesEnd (opener : BlockOpener)
-    (lookahead : List KeywordKind) : Bool :=
+    (lookahead : List CloserKeyword) : Bool :=
   opener.expectedClosers.length ≤ lookahead.length &&
   decide (opener.expectedClosers = lookahead.take opener.expectedClosers.length)
 
