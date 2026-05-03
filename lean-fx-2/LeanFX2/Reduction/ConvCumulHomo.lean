@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.Cumul
+import LeanFX2.Term.Subst
 
 /-! # Reduction/ConvCumulHomo — homogeneous-context-only ConvCumul
 
@@ -508,6 +509,82 @@ theorem ConvCumulHomo.rename_compatible_benton
   | sndCong _ ih =>
       intros _ _ _ termRenaming
       have inner := ConvCumulHomo.sndCong (ih termRenaming)
+      exact ConvCumulHomo.cast_eq_indep _ _ inner
+  | boolElimCong _ _ _ ihS ihT ihE =>
+      intros; exact ConvCumulHomo.boolElimCong (ihS _) (ihT _) (ihE _)
+  | natElimCong _ _ _ ihS ihZ ihK =>
+      intros; exact ConvCumulHomo.natElimCong (ihS _) (ihZ _) (ihK _)
+  | natRecCong _ _ _ ihS ihZ ihK =>
+      intros; exact ConvCumulHomo.natRecCong (ihS _) (ihZ _) (ihK _)
+  | listElimCong _ _ _ ihS ihN ihC =>
+      intros; exact ConvCumulHomo.listElimCong (ihS _) (ihN _) (ihC _)
+  | optionMatchCong _ _ _ ihS ihN ihM =>
+      intros; exact ConvCumulHomo.optionMatchCong (ihS _) (ihN _) (ihM _)
+  | eitherMatchCong _ _ _ ihS ihL ihR =>
+      intros; exact ConvCumulHomo.eitherMatchCong (ihS _) (ihL _) (ihR _)
+  | natSuccCong _ ih => intros; exact ConvCumulHomo.natSuccCong (ih _)
+  | listConsCong _ _ ihH ihT => intros; exact ConvCumulHomo.listConsCong (ihH _) (ihT _)
+  | optionSomeCong _ ih => intros; exact ConvCumulHomo.optionSomeCong (ih _)
+  | eitherInlCong _ ih => intros; exact ConvCumulHomo.eitherInlCong (ih _)
+  | eitherInrCong _ ih => intros; exact ConvCumulHomo.eitherInrCong (ih _)
+  | idJCong _ _ ihB ihW => intros; exact ConvCumulHomo.idJCong (ihB _) (ihW _)
+  | modIntroCong _ ih => intros; exact ConvCumulHomo.modIntroCong (ih _)
+  | modElimCong _ ih => intros; exact ConvCumulHomo.modElimCong (ih _)
+  | subsumeCong _ ih => intros; exact ConvCumulHomo.subsumeCong (ih _)
+
+/-! # Pattern 2 (BHKM JAR'12): subst_compatible — recursive headline (the SUBST rung)
+
+`Term.subst` is the substitution analog of `Term.rename`.  Same
+recursive structure, same cast-handling pattern: where the subst
+arm wraps in `Ty.weaken_subst_commute` or `Ty.subst0_subst_commute`,
+we use `cast_eq_indep` with the `have inner := ...` ordering trick
+to let Lean elaborate the inner term type concretely first. -/
+
+/-- **Benton subst headline**: `ConvCumulHomo` is preserved under
+typed substitution.  Genuine recursive theorem, proven by induction
+on the relation.  All 24 ctors discharged at zero axioms,
+including the four cast cases (lam, appPi, pair, snd). -/
+theorem ConvCumulHomo.subst_compatible_benton
+    {mode : Mode} {level : Nat} {sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {firstType secondType : Ty level sourceScope}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    {firstTerm : Term sourceCtx firstType firstRaw}
+    {secondTerm : Term sourceCtx secondType secondRaw}
+    (cumulRel : ConvCumulHomo firstTerm secondTerm) :
+    ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+      {sigma : Subst level sourceScope targetScope}
+      (termSubst : TermSubst sourceCtx targetCtx sigma),
+      ConvCumulHomo (firstTerm.subst termSubst)
+                    (secondTerm.subst termSubst) := by
+  induction cumulRel with
+  | refl _ => intros; exact ConvCumulHomo.refl _
+  | sym _ ih => intros; exact ConvCumulHomo.sym (ih _)
+  | trans _ _ ihAB ihBC => intros; exact ConvCumulHomo.trans (ihAB _) (ihBC _)
+  | lamCong _ ih =>
+      intros _ _ _ termSubst
+      have inner := ih (TermSubst.lift termSubst _)
+      exact ConvCumulHomo.lamCong
+              (ConvCumulHomo.cast_eq_indep _ _ inner)
+  | lamPiCong _ ih =>
+      intros _ _ _ termSubst
+      exact ConvCumulHomo.lamPiCong (ih (TermSubst.lift termSubst _))
+  | appCong _ _ ihFn ihArg =>
+      intros _ _ _ termSubst
+      exact ConvCumulHomo.appCong (ihFn termSubst) (ihArg termSubst)
+  | appPiCong _ _ ihFn ihArg =>
+      intros _ _ _ termSubst
+      have inner := ConvCumulHomo.appPiCong (ihFn termSubst) (ihArg termSubst)
+      exact ConvCumulHomo.cast_eq_indep _ _ inner
+  | pairCong _ _ ihFst ihSnd =>
+      intros _ _ _ termSubst
+      have innerSnd := ihSnd termSubst
+      exact ConvCumulHomo.pairCong (ihFst termSubst)
+              (ConvCumulHomo.cast_eq_indep _ _ innerSnd)
+  | fstCong _ ih => intros _ _ _ termSubst; exact ConvCumulHomo.fstCong (ih termSubst)
+  | sndCong _ ih =>
+      intros _ _ _ termSubst
+      have inner := ConvCumulHomo.sndCong (ih termSubst)
       exact ConvCumulHomo.cast_eq_indep _ _ inner
   | boolElimCong _ _ _ ihS ihT ihE =>
       intros; exact ConvCumulHomo.boolElimCong (ihS _) (ihT _) (ihE _)
