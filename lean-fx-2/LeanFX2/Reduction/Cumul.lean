@@ -157,14 +157,16 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
   /-- **REAL UP-PROMOTION**: a typed source Term `lowerTerm` is
       cross-level cumul-related to its `Term.cumulUp`-wrapped target.
       The source `lowerTerm` is a ctor field appearing on BOTH sides
-      of the relation — this is REAL packaging, NOT witness synthesis. -/
+      of the relation — this is REAL packaging, NOT witness synthesis.
+
+      Phase 12.A.B1.5: scopeLow now decoupled (was forced to 0). -/
   | viaUp
-      {mode : Mode} {scope : Nat}
+      {mode : Mode} {scopeLow scope : Nat}
       (innerLevel lowerLevel higherLevel : UniverseLevel)
       (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
       (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
       (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-      {ctxLow : Ctx mode (lowerLevel.toNat + 1) 0}
+      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
       {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
       (lowerTerm :
         Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
@@ -207,6 +209,266 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (firstToMid : ConvCumul firstTerm midTerm)
       (midToSecond : ConvCumul midTerm secondTerm) :
       ConvCumul firstTerm secondTerm
+  -- Phase 12.A.B1.5 cong constructors: structural cong rules where
+  -- ConvCumul-related inner pieces lift to ConvCumul-related outer
+  -- terms.  HOMOGENEOUS in outer shape (both lam, both app, etc.);
+  -- HETEROGENEOUS in inner cumul-relevant fields (different types/
+  -- scopes/levels permitted).  Pure-data ctors (unit, boolTrue, etc.)
+  -- don't need cong — ConvCumul.refl covers them.
+  /-- Homogeneous lam: ConvCumul-related bodies lift to ConvCumul-related
+  lam terms.  The two contexts must extend by the same domain type for
+  the inner Cumul-relation to type-check at the outer level. -/
+  | lamCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType codomainTypeFirst codomainTypeSecond : Ty level scope}
+      {bodyFirstRaw bodySecondRaw : RawTerm (scope + 1)}
+      {bodyFirst : Term (Ctx.cons context domainType)
+                          codomainTypeFirst.weaken bodyFirstRaw}
+      {bodySecond : Term (Ctx.cons context domainType)
+                           codomainTypeSecond.weaken bodySecondRaw}
+      (bodyRel : ConvCumul bodyFirst bodySecond) :
+      ConvCumul (Term.lam bodyFirst) (Term.lam bodySecond)
+  /-- Homogeneous lamPi: ConvCumul-related bodies lift to ConvCumul-
+  related dependent lam terms. -/
+  | lamPiCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType : Ty level scope}
+      {codomainTypeFirst codomainTypeSecond : Ty level (scope + 1)}
+      {bodyFirstRaw bodySecondRaw : RawTerm (scope + 1)}
+      {bodyFirst : Term (Ctx.cons context domainType)
+                          codomainTypeFirst bodyFirstRaw}
+      {bodySecond : Term (Ctx.cons context domainType)
+                           codomainTypeSecond bodySecondRaw}
+      (bodyRel : ConvCumul bodyFirst bodySecond) :
+      ConvCumul (Term.lamPi bodyFirst) (Term.lamPi bodySecond)
+  /-- Homogeneous app: ConvCumul-related fn and arg lift to ConvCumul-
+  related app term. -/
+  | appCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType codomainTypeFirst codomainTypeSecond : Ty level scope}
+      {fnFirstRaw fnSecondRaw argFirstRaw argSecondRaw : RawTerm scope}
+      {fnFirst : Term context (Ty.arrow domainType codomainTypeFirst) fnFirstRaw}
+      {fnSecond : Term context (Ty.arrow domainType codomainTypeSecond) fnSecondRaw}
+      {argFirst : Term context domainType argFirstRaw}
+      {argSecond : Term context domainType argSecondRaw}
+      (fnRel : ConvCumul fnFirst fnSecond)
+      (argRel : ConvCumul argFirst argSecond) :
+      ConvCumul (Term.app fnFirst argFirst) (Term.app fnSecond argSecond)
+  /-- Homogeneous appPi: ConvCumul-related fn and arg lift to ConvCumul-
+  related dep app term. -/
+  | appPiCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType : Ty level scope}
+      {codomainType : Ty level (scope + 1)}
+      {fnFirstRaw fnSecondRaw argFirstRaw argSecondRaw : RawTerm scope}
+      {fnFirst : Term context (Ty.piTy domainType codomainType) fnFirstRaw}
+      {fnSecond : Term context (Ty.piTy domainType codomainType) fnSecondRaw}
+      {argFirst : Term context domainType argFirstRaw}
+      {argSecond : Term context domainType argSecondRaw}
+      (fnRel : ConvCumul fnFirst fnSecond)
+      (argRel : ConvCumul argFirst argSecond) :
+      ConvCumul (Term.appPi fnFirst argFirst) (Term.appPi fnSecond argSecond)
+  /-- Homogeneous pair: ConvCumul-related first and second components
+  lift to ConvCumul-related pair. -/
+  | pairCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType : Ty level scope}
+      {secondType : Ty level (scope + 1)}
+      {firstFirstRaw firstSecondRaw secondFirstRaw secondSecondRaw : RawTerm scope}
+      {firstFirst : Term context firstType firstFirstRaw}
+      {firstSecond : Term context firstType firstSecondRaw}
+      {secondFirst : Term context (secondType.subst0 firstType firstFirstRaw)
+                                  secondFirstRaw}
+      {secondSecond : Term context (secondType.subst0 firstType firstSecondRaw)
+                                   secondSecondRaw}
+      (firstRel : ConvCumul firstFirst firstSecond)
+      (secondRel : ConvCumul secondFirst secondSecond) :
+      ConvCumul (Term.pair firstFirst secondFirst)
+                (Term.pair firstSecond secondSecond)
+  /-- Homogeneous fst: ConvCumul-related pair lifts to ConvCumul-related
+  fst projection. -/
+  | fstCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType : Ty level scope}
+      {secondType : Ty level (scope + 1)}
+      {pairFirstRaw pairSecondRaw : RawTerm scope}
+      {pairFirst : Term context (Ty.sigmaTy firstType secondType) pairFirstRaw}
+      {pairSecond : Term context (Ty.sigmaTy firstType secondType) pairSecondRaw}
+      (pairRel : ConvCumul pairFirst pairSecond) :
+      ConvCumul (Term.fst pairFirst) (Term.fst pairSecond)
+  /-- Homogeneous snd: ConvCumul-related pair lifts to ConvCumul-related
+  snd projection. -/
+  | sndCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {firstType : Ty level scope}
+      {secondType : Ty level (scope + 1)}
+      {pairFirstRaw pairSecondRaw : RawTerm scope}
+      {pairFirst : Term context (Ty.sigmaTy firstType secondType) pairFirstRaw}
+      {pairSecond : Term context (Ty.sigmaTy firstType secondType) pairSecondRaw}
+      (pairRel : ConvCumul pairFirst pairSecond) :
+      ConvCumul (Term.snd pairFirst) (Term.snd pairSecond)
+  /-- Homogeneous boolElim: ConvCumul-related branches lift to ConvCumul-
+  related boolElim term. -/
+  | boolElimCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {scrutFirstRaw scrutSecondRaw : RawTerm scope}
+      {thenFirstRaw thenSecondRaw elseFirstRaw elseSecondRaw : RawTerm scope}
+      {scrutFirst : Term context Ty.bool scrutFirstRaw}
+      {scrutSecond : Term context Ty.bool scrutSecondRaw}
+      {thenFirst : Term context motiveType thenFirstRaw}
+      {thenSecond : Term context motiveType thenSecondRaw}
+      {elseFirst : Term context motiveType elseFirstRaw}
+      {elseSecond : Term context motiveType elseSecondRaw}
+      (scrutRel : ConvCumul scrutFirst scrutSecond)
+      (thenRel : ConvCumul thenFirst thenSecond)
+      (elseRel : ConvCumul elseFirst elseSecond) :
+      ConvCumul (Term.boolElim scrutFirst thenFirst elseFirst)
+                (Term.boolElim scrutSecond thenSecond elseSecond)
+  /-- Homogeneous natSucc: ConvCumul-related predecessor lifts to ConvCumul-
+  related natSucc. -/
+  | natSuccCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {predFirstRaw predSecondRaw : RawTerm scope}
+      {predFirst : Term context Ty.nat predFirstRaw}
+      {predSecond : Term context Ty.nat predSecondRaw}
+      (predRel : ConvCumul predFirst predSecond) :
+      ConvCumul (Term.natSucc predFirst) (Term.natSucc predSecond)
+  /-- Homogeneous listCons: ConvCumul-related head and tail lift to
+  ConvCumul-related listCons. -/
+  | listConsCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType : Ty level scope}
+      {headFirstRaw headSecondRaw tailFirstRaw tailSecondRaw : RawTerm scope}
+      {headFirst : Term context elementType headFirstRaw}
+      {headSecond : Term context elementType headSecondRaw}
+      {tailFirst : Term context (Ty.listType elementType) tailFirstRaw}
+      {tailSecond : Term context (Ty.listType elementType) tailSecondRaw}
+      (headRel : ConvCumul headFirst headSecond)
+      (tailRel : ConvCumul tailFirst tailSecond) :
+      ConvCumul (Term.listCons headFirst tailFirst)
+                (Term.listCons headSecond tailSecond)
+  /-- Homogeneous optionSome: ConvCumul-related value lifts to ConvCumul-
+  related optionSome. -/
+  | optionSomeCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType : Ty level scope}
+      {valueFirstRaw valueSecondRaw : RawTerm scope}
+      {valueFirst : Term context elementType valueFirstRaw}
+      {valueSecond : Term context elementType valueSecondRaw}
+      (valueRel : ConvCumul valueFirst valueSecond) :
+      ConvCumul (Term.optionSome valueFirst) (Term.optionSome valueSecond)
+  /-- Homogeneous eitherInl: ConvCumul-related value lifts to ConvCumul-
+  related eitherInl. -/
+  | eitherInlCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftType rightType : Ty level scope}
+      {valueFirstRaw valueSecondRaw : RawTerm scope}
+      {valueFirst : Term context leftType valueFirstRaw}
+      {valueSecond : Term context leftType valueSecondRaw}
+      (valueRel : ConvCumul valueFirst valueSecond) :
+      ConvCumul (Term.eitherInl (rightType := rightType) valueFirst)
+                (Term.eitherInl (rightType := rightType) valueSecond)
+  /-- Homogeneous eitherInr: ConvCumul-related value lifts to ConvCumul-
+  related eitherInr. -/
+  | eitherInrCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftType rightType : Ty level scope}
+      {valueFirstRaw valueSecondRaw : RawTerm scope}
+      {valueFirst : Term context rightType valueFirstRaw}
+      {valueSecond : Term context rightType valueSecondRaw}
+      (valueRel : ConvCumul valueFirst valueSecond) :
+      ConvCumul (Term.eitherInr (leftType := leftType) valueFirst)
+                (Term.eitherInr (leftType := leftType) valueSecond)
+  /-- Homogeneous idJ: ConvCumul-related base case and witness lift to
+  ConvCumul-related idJ. -/
+  | idJCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseFirstRaw baseSecondRaw witnessFirstRaw witnessSecondRaw : RawTerm scope}
+      {baseFirst : Term context motiveType baseFirstRaw}
+      {baseSecond : Term context motiveType baseSecondRaw}
+      {witnessFirst : Term context (Ty.id carrier leftEndpoint rightEndpoint)
+                                   witnessFirstRaw}
+      {witnessSecond : Term context (Ty.id carrier leftEndpoint rightEndpoint)
+                                    witnessSecondRaw}
+      (baseRel : ConvCumul baseFirst baseSecond)
+      (witnessRel : ConvCumul witnessFirst witnessSecond) :
+      ConvCumul (Term.idJ baseFirst witnessFirst)
+                (Term.idJ baseSecond witnessSecond)
+  /-- Homogeneous modIntro: ConvCumul-related inner term lifts to ConvCumul-
+  related modIntro. -/
+  | modIntroCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerFirstRaw innerSecondRaw : RawTerm scope}
+      {innerFirst : Term context innerType innerFirstRaw}
+      {innerSecond : Term context innerType innerSecondRaw}
+      (innerRel : ConvCumul innerFirst innerSecond) :
+      ConvCumul (Term.modIntro innerFirst) (Term.modIntro innerSecond)
+  /-- Homogeneous modElim: ConvCumul-related inner term lifts to ConvCumul-
+  related modElim. -/
+  | modElimCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerFirstRaw innerSecondRaw : RawTerm scope}
+      {innerFirst : Term context innerType innerFirstRaw}
+      {innerSecond : Term context innerType innerSecondRaw}
+      (innerRel : ConvCumul innerFirst innerSecond) :
+      ConvCumul (Term.modElim innerFirst) (Term.modElim innerSecond)
+  /-- Homogeneous subsume: ConvCumul-related inner term lifts to ConvCumul-
+  related subsume. -/
+  | subsumeCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerFirstRaw innerSecondRaw : RawTerm scope}
+      {innerFirst : Term context innerType innerFirstRaw}
+      {innerSecond : Term context innerType innerSecondRaw}
+      (innerRel : ConvCumul innerFirst innerSecond) :
+      ConvCumul (Term.subsume innerFirst) (Term.subsume innerSecond)
+  /-- Homogeneous cumulUp: ConvCumul-related lower terms lift to ConvCumul-
+  related cumulUp.  This is the recursive cumul-up case: when
+  lower-side terms are themselves cumul-related, their cumulUp wrappings
+  are also cumul-related. -/
+  | cumulUpCong
+      {mode : Mode} {scopeLow scope : Nat}
+      (innerLevel lowerLevel higherLevel : UniverseLevel)
+      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+      {lowerFirst lowerSecond :
+        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                    (RawTerm.universeCode innerLevel.toNat)}
+      (lowerRel : ConvCumul lowerFirst lowerSecond) :
+      ConvCumul (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerFirst)
+                (Term.cumulUp (ctxHigh := ctxHigh)
+                              innerLevel lowerLevel higherLevel
+                              cumulOkLow cumulOkHigh cumulMonotone
+                              (Nat.le_refl _) (Nat.le_refl _) lowerSecond)
 
 /-! ## REAL TERM-PROMOTION (uses source substantively)
 

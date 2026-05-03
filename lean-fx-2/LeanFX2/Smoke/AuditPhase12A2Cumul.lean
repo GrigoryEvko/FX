@@ -78,4 +78,24 @@ namespace LeanFX2
 #print axioms Conv.cumul_subst_raw_invariant
 #print axioms ConvCumul.subst_compatible_outer
 
+-- Phase 12.A.B1.5 cong ctors: structural cong rules for Term shapes
+#print axioms ConvCumul.lamCong
+#print axioms ConvCumul.lamPiCong
+#print axioms ConvCumul.appCong
+#print axioms ConvCumul.appPiCong
+#print axioms ConvCumul.pairCong
+#print axioms ConvCumul.fstCong
+#print axioms ConvCumul.sndCong
+#print axioms ConvCumul.boolElimCong
+#print axioms ConvCumul.natSuccCong
+#print axioms ConvCumul.listConsCong
+#print axioms ConvCumul.optionSomeCong
+#print axioms ConvCumul.eitherInlCong
+#print axioms ConvCumul.eitherInrCong
+#print axioms ConvCumul.idJCong
+#print axioms ConvCumul.modIntroCong
+#print axioms ConvCumul.modElimCong
+#print axioms ConvCumul.subsumeCong
+#print axioms ConvCumul.cumulUpCong
+
 end LeanFX2
