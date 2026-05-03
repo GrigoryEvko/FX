@@ -91,9 +91,21 @@ import LeanFX2.Reduction.CumulSubstCompat
 #print axioms LeanFX2.ConvCumul.rename_compatible_lam_benton
 #print axioms LeanFX2.ConvCumul.rename_compatible_lamPi_benton
 
--- Allais binder arms (Step C — 2)
+-- Allais binder arms (lam + lamPi)
 #print axioms LeanFX2.ConvCumul.subst_compatible_lam_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_lamPi_allais
 
--- Joint composition (Step E — assembler)
-#print axioms LeanFX2.ConvCumul.subst_compatible_joint
+-- Allais eliminator arms (5 — kernel-gap closed via natElimCong / natRecCong /
+-- listElimCong / optionMatchCong / eitherMatchCong added to ConvCumul)
+#print axioms LeanFX2.ConvCumul.subst_compatible_natElim_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_natRec_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_listElim_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_optionMatch_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_eitherMatch_allais
+
+-- Benton eliminator rename arms (5)
+#print axioms LeanFX2.ConvCumul.rename_compatible_natElim_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_natRec_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_listElim_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_optionMatch_benton
+#print axioms LeanFX2.ConvCumul.rename_compatible_eitherMatch_benton

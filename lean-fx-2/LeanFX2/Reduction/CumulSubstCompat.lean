@@ -1501,55 +1501,338 @@ theorem ConvCumul.subst_compatible_lamPi_allais
               ((Term.lamPi body).substHet termSubstB) :=
   ConvCumul.lamPiCong innerCompat
 
-/-! # Joint composition (Step E — partial)
+/-! # Allais eliminator arms — kernel-gap closed
 
-The full strongest form `ConvCumul (firstTerm.substHet sigmaA)
-(secondTerm.substHet sigmaB)` from a paired `compat` and a
-`cumulRel` decomposes via `ConvCumul.trans`:
+The 5 eliminator constructors (`natElim`, `natRec`, `listElim`,
+`optionMatch`, `eitherMatch`) now have `ConvCumul` cong rules in
+the kernel (`Reduction/Cumul.lean`).  These per-arm helpers
+mirror the cong rules at `Term.substHet` level. -/
+
+/-- Allais arm for `natElim`: three-subterm cong via `natElimCong`. -/
+theorem ConvCumul.subst_compatible_natElim_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {motiveType : Ty sourceLevel sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    (succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutCompat :
+      ConvCumul (scrutinee.substHet termSubstA) (scrutinee.substHet termSubstB))
+    (zeroCompat :
+      ConvCumul (zeroBranch.substHet termSubstA) (zeroBranch.substHet termSubstB))
+    (succCompat :
+      ConvCumul (succBranch.substHet termSubstA) (succBranch.substHet termSubstB)) :
+    ConvCumul ((Term.natElim scrutinee zeroBranch succBranch).substHet termSubstA)
+              ((Term.natElim scrutinee zeroBranch succBranch).substHet termSubstB) :=
+  ConvCumul.natElimCong scrutCompat zeroCompat succCompat
+
+/-- Allais arm for `natRec`: three-subterm cong via `natRecCong`. -/
+theorem ConvCumul.subst_compatible_natRec_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {motiveType : Ty sourceLevel sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    (succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (scrutCompat :
+      ConvCumul (scrutinee.substHet termSubstA) (scrutinee.substHet termSubstB))
+    (zeroCompat :
+      ConvCumul (zeroBranch.substHet termSubstA) (zeroBranch.substHet termSubstB))
+    (succCompat :
+      ConvCumul (succBranch.substHet termSubstA) (succBranch.substHet termSubstB)) :
+    ConvCumul ((Term.natRec scrutinee zeroBranch succBranch).substHet termSubstA)
+              ((Term.natRec scrutinee zeroBranch succBranch).substHet termSubstB) :=
+  ConvCumul.natRecCong scrutCompat zeroCompat succCompat
+
+/-- Allais arm for `listElim`: three-subterm cong via `listElimCong`. -/
+theorem ConvCumul.subst_compatible_listElim_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty sourceLevel sourceScope}
+    {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term sourceCtx motiveType nilRaw)
+    (consBranch :
+      Term sourceCtx (Ty.arrow elementType
+                      (Ty.arrow (Ty.listType elementType) motiveType)) consRaw)
+    (scrutCompat :
+      ConvCumul (scrutinee.substHet termSubstA) (scrutinee.substHet termSubstB))
+    (nilCompat :
+      ConvCumul (nilBranch.substHet termSubstA) (nilBranch.substHet termSubstB))
+    (consCompat :
+      ConvCumul (consBranch.substHet termSubstA) (consBranch.substHet termSubstB)) :
+    ConvCumul ((Term.listElim scrutinee nilBranch consBranch).substHet termSubstA)
+              ((Term.listElim scrutinee nilBranch consBranch).substHet termSubstB) :=
+  ConvCumul.listElimCong scrutCompat nilCompat consCompat
+
+/-- Allais arm for `optionMatch`: three-subterm cong via `optionMatchCong`. -/
+theorem ConvCumul.subst_compatible_optionMatch_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty sourceLevel sourceScope}
+    {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term sourceCtx motiveType noneRaw)
+    (someBranch : Term sourceCtx (Ty.arrow elementType motiveType) someRaw)
+    (scrutCompat :
+      ConvCumul (scrutinee.substHet termSubstA) (scrutinee.substHet termSubstB))
+    (noneCompat :
+      ConvCumul (noneBranch.substHet termSubstA) (noneBranch.substHet termSubstB))
+    (someCompat :
+      ConvCumul (someBranch.substHet termSubstA) (someBranch.substHet termSubstB)) :
+    ConvCumul
+      ((Term.optionMatch scrutinee noneBranch someBranch).substHet termSubstA)
+      ((Term.optionMatch scrutinee noneBranch someBranch).substHet termSubstB) :=
+  ConvCumul.optionMatchCong scrutCompat noneCompat someCompat
+
+/-- Allais arm for `eitherMatch`: three-subterm cong via `eitherMatchCong`. -/
+theorem ConvCumul.subst_compatible_eitherMatch_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {leftType rightType motiveType : Ty sourceLevel sourceScope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
+    (scrutinee : Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw)
+    (scrutCompat :
+      ConvCumul (scrutinee.substHet termSubstA) (scrutinee.substHet termSubstB))
+    (leftCompat :
+      ConvCumul (leftBranch.substHet termSubstA) (leftBranch.substHet termSubstB))
+    (rightCompat :
+      ConvCumul (rightBranch.substHet termSubstA) (rightBranch.substHet termSubstB)) :
+    ConvCumul
+      ((Term.eitherMatch scrutinee leftBranch rightBranch).substHet termSubstA)
+      ((Term.eitherMatch scrutinee leftBranch rightBranch).substHet termSubstB) :=
+  ConvCumul.eitherMatchCong scrutCompat leftCompat rightCompat
+
+/-! ## Benton eliminator rename arms (5) -/
+
+/-- Benton rename arm for `natElim`: three-subterm cong via `natElimCong`. -/
+theorem ConvCumul.rename_compatible_natElim_benton
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    {termRenaming : TermRenaming sourceCtx targetCtx rho}
+    {motiveType : Ty level sourceScope}
+    {scrutFirstRaw scrutSecondRaw zeroFirstRaw zeroSecondRaw
+     succFirstRaw succSecondRaw : RawTerm sourceScope}
+    {scrutFirst : Term sourceCtx Ty.nat scrutFirstRaw}
+    {scrutSecond : Term sourceCtx Ty.nat scrutSecondRaw}
+    {zeroFirst : Term sourceCtx motiveType zeroFirstRaw}
+    {zeroSecond : Term sourceCtx motiveType zeroSecondRaw}
+    {succFirst : Term sourceCtx (Ty.arrow Ty.nat motiveType) succFirstRaw}
+    {succSecond : Term sourceCtx (Ty.arrow Ty.nat motiveType) succSecondRaw}
+    (scrutRel :
+      ConvCumul (scrutFirst.rename termRenaming) (scrutSecond.rename termRenaming))
+    (zeroRel :
+      ConvCumul (zeroFirst.rename termRenaming) (zeroSecond.rename termRenaming))
+    (succRel :
+      ConvCumul (succFirst.rename termRenaming) (succSecond.rename termRenaming)) :
+    ConvCumul ((Term.natElim scrutFirst zeroFirst succFirst).rename termRenaming)
+              ((Term.natElim scrutSecond zeroSecond succSecond).rename termRenaming) :=
+  ConvCumul.natElimCong scrutRel zeroRel succRel
+
+/-- Benton rename arm for `natRec`: three-subterm cong via `natRecCong`. -/
+theorem ConvCumul.rename_compatible_natRec_benton
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    {termRenaming : TermRenaming sourceCtx targetCtx rho}
+    {motiveType : Ty level sourceScope}
+    {scrutFirstRaw scrutSecondRaw zeroFirstRaw zeroSecondRaw
+     succFirstRaw succSecondRaw : RawTerm sourceScope}
+    {scrutFirst : Term sourceCtx Ty.nat scrutFirstRaw}
+    {scrutSecond : Term sourceCtx Ty.nat scrutSecondRaw}
+    {zeroFirst : Term sourceCtx motiveType zeroFirstRaw}
+    {zeroSecond : Term sourceCtx motiveType zeroSecondRaw}
+    {succFirst :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succFirstRaw}
+    {succSecond :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succSecondRaw}
+    (scrutRel :
+      ConvCumul (scrutFirst.rename termRenaming) (scrutSecond.rename termRenaming))
+    (zeroRel :
+      ConvCumul (zeroFirst.rename termRenaming) (zeroSecond.rename termRenaming))
+    (succRel :
+      ConvCumul (succFirst.rename termRenaming) (succSecond.rename termRenaming)) :
+    ConvCumul ((Term.natRec scrutFirst zeroFirst succFirst).rename termRenaming)
+              ((Term.natRec scrutSecond zeroSecond succSecond).rename termRenaming) :=
+  ConvCumul.natRecCong scrutRel zeroRel succRel
+
+/-- Benton rename arm for `listElim`: three-subterm cong via `listElimCong`. -/
+theorem ConvCumul.rename_compatible_listElim_benton
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    {termRenaming : TermRenaming sourceCtx targetCtx rho}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutFirstRaw scrutSecondRaw nilFirstRaw nilSecondRaw
+     consFirstRaw consSecondRaw : RawTerm sourceScope}
+    {scrutFirst : Term sourceCtx (Ty.listType elementType) scrutFirstRaw}
+    {scrutSecond : Term sourceCtx (Ty.listType elementType) scrutSecondRaw}
+    {nilFirst : Term sourceCtx motiveType nilFirstRaw}
+    {nilSecond : Term sourceCtx motiveType nilSecondRaw}
+    {consFirst :
+      Term sourceCtx (Ty.arrow elementType
+                       (Ty.arrow (Ty.listType elementType) motiveType)) consFirstRaw}
+    {consSecond :
+      Term sourceCtx (Ty.arrow elementType
+                       (Ty.arrow (Ty.listType elementType) motiveType)) consSecondRaw}
+    (scrutRel :
+      ConvCumul (scrutFirst.rename termRenaming) (scrutSecond.rename termRenaming))
+    (nilRel :
+      ConvCumul (nilFirst.rename termRenaming) (nilSecond.rename termRenaming))
+    (consRel :
+      ConvCumul (consFirst.rename termRenaming) (consSecond.rename termRenaming)) :
+    ConvCumul ((Term.listElim scrutFirst nilFirst consFirst).rename termRenaming)
+              ((Term.listElim scrutSecond nilSecond consSecond).rename termRenaming) :=
+  ConvCumul.listElimCong scrutRel nilRel consRel
+
+/-- Benton rename arm for `optionMatch`: three-subterm cong via `optionMatchCong`. -/
+theorem ConvCumul.rename_compatible_optionMatch_benton
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    {termRenaming : TermRenaming sourceCtx targetCtx rho}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutFirstRaw scrutSecondRaw noneFirstRaw noneSecondRaw
+     someFirstRaw someSecondRaw : RawTerm sourceScope}
+    {scrutFirst : Term sourceCtx (Ty.optionType elementType) scrutFirstRaw}
+    {scrutSecond : Term sourceCtx (Ty.optionType elementType) scrutSecondRaw}
+    {noneFirst : Term sourceCtx motiveType noneFirstRaw}
+    {noneSecond : Term sourceCtx motiveType noneSecondRaw}
+    {someFirst : Term sourceCtx (Ty.arrow elementType motiveType) someFirstRaw}
+    {someSecond : Term sourceCtx (Ty.arrow elementType motiveType) someSecondRaw}
+    (scrutRel :
+      ConvCumul (scrutFirst.rename termRenaming) (scrutSecond.rename termRenaming))
+    (noneRel :
+      ConvCumul (noneFirst.rename termRenaming) (noneSecond.rename termRenaming))
+    (someRel :
+      ConvCumul (someFirst.rename termRenaming) (someSecond.rename termRenaming)) :
+    ConvCumul
+      ((Term.optionMatch scrutFirst noneFirst someFirst).rename termRenaming)
+      ((Term.optionMatch scrutSecond noneSecond someSecond).rename termRenaming) :=
+  ConvCumul.optionMatchCong scrutRel noneRel someRel
+
+/-- Benton rename arm for `eitherMatch`: three-subterm cong via `eitherMatchCong`. -/
+theorem ConvCumul.rename_compatible_eitherMatch_benton
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    {termRenaming : TermRenaming sourceCtx targetCtx rho}
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutFirstRaw scrutSecondRaw leftFirstRaw leftSecondRaw
+     rightFirstRaw rightSecondRaw : RawTerm sourceScope}
+    {scrutFirst : Term sourceCtx (Ty.eitherType leftType rightType) scrutFirstRaw}
+    {scrutSecond : Term sourceCtx (Ty.eitherType leftType rightType) scrutSecondRaw}
+    {leftFirst : Term sourceCtx (Ty.arrow leftType motiveType) leftFirstRaw}
+    {leftSecond : Term sourceCtx (Ty.arrow leftType motiveType) leftSecondRaw}
+    {rightFirst : Term sourceCtx (Ty.arrow rightType motiveType) rightFirstRaw}
+    {rightSecond : Term sourceCtx (Ty.arrow rightType motiveType) rightSecondRaw}
+    (scrutRel :
+      ConvCumul (scrutFirst.rename termRenaming) (scrutSecond.rename termRenaming))
+    (leftRel :
+      ConvCumul (leftFirst.rename termRenaming) (leftSecond.rename termRenaming))
+    (rightRel :
+      ConvCumul (rightFirst.rename termRenaming) (rightSecond.rename termRenaming)) :
+    ConvCumul
+      ((Term.eitherMatch scrutFirst leftFirst rightFirst).rename termRenaming)
+      ((Term.eitherMatch scrutSecond leftSecond rightSecond).rename termRenaming) :=
+  ConvCumul.eitherMatchCong scrutRel leftRel rightRel
+
+/-! # HONEST STATUS — what is NOT shipped
+
+This file is the substantive zero-axiom CATALOGUE of per-Term-ctor
+helpers for both Pattern 2 (Benton single-rename) and Pattern 3
+(Allais paired-env subst) styles.  But the RECURSIVE HEADLINES
+that glue these per-arm helpers into uniform statements
 
 ```
-ConvCumul (firstTerm.substHet sigmaA)
-          (secondTerm.substHet sigmaB)
-  =  ConvCumul.trans
-       (allais_lift  : ConvCumul (firstTerm.substHet sigmaA)
-                                 (firstTerm.substHet sigmaB))
-       (benton_lift  : ConvCumul (firstTerm.substHet sigmaB)
-                                 (secondTerm.substHet sigmaB))
+∀ sourceTerm, ConvCumul (sourceTerm.substHet sigmaA)
+                        (sourceTerm.substHet sigmaB)
 ```
 
-The `allais_lift` factor uses the per-ctor Allais helpers above
-(structural recursion on `firstTerm` with caller-supplied
-binder-arm bodies).  The `benton_lift` factor uses the per-ctor
-Benton helpers (also caller-supplied at construction).
+```
+∀ firstTerm secondTerm, ConvCumul firstTerm secondTerm →
+    ConvCumul (firstTerm.substHet sigma) (secondTerm.substHet sigma)
+```
 
-This `subst_compatible_joint` ASSEMBLER takes the two pre-built
-factors and combines them.  The factors themselves are user-built
-because the recursive headlines hit the heterogeneous-induction
-wall (memory `reference_cumul_subst_pattern_decision`); the
-shipped per-ctor helpers cover all 22 ctors with existing cong
-rules.
+are NOT SHIPPED.  Both hit the heterogeneous-Prop induction wall
+in Lean 4.29.1: `induction cumulRel` and `cases cumulRel` both
+fail at `viaUp` arm because viaUp's outputs sit at INDEPENDENT
+`scopeLow` (decoupled from outer `scope` by Phase 12.A.B1.5).
+The dep-pattern matcher cannot decide propositional
+`lowerLevel = higherLevel` to unify viaUp at homogeneous levels,
+so neither tactic-mode `induction`, term-mode `match`, nor
+`recOn` with non-trivial motive succeeds.
 
-Shipping this assembler closes the API surface: any caller who
-can build the two factors gets the joint result for free. -/
+A previous draft of this file shipped a `subst_compatible_joint`
+theorem that was just `ConvCumul.trans` renamed — that was a
+deception and has been removed.  Trans is already directly
+available from `Reduction/Cumul.lean`; renaming it does not
+constitute closing CUMUL-1.7.
 
-/-- Joint composition: combine an Allais-style same-source factor
-with a Benton-style same-subst factor via `ConvCumul.trans` to
-produce the strongest cross-subst cross-source ConvCumul. -/
-theorem ConvCumul.subst_compatible_joint
-    {modeF modeS : Mode}
-    {levelF levelS scopeF scopeS : Nat}
-    {ctxF : Ctx modeF levelF scopeF}
-    {ctxS : Ctx modeS levelS scopeS}
-    {tyF : Ty levelF scopeF}
-    {tyS : Ty levelS scopeS}
-    {rawF : RawTerm scopeF}
-    {rawS : RawTerm scopeS}
-    {firstTermSubst : Term ctxF tyF rawF}
-    {secondTermSubst : Term ctxF tyF rawF}
-    {finalTerm : Term ctxS tyS rawS}
-    (allaisFactor : ConvCumul firstTermSubst secondTermSubst)
-    (bentonFactor : ConvCumul secondTermSubst finalTerm) :
-    ConvCumul firstTermSubst finalTerm :=
-  ConvCumul.trans allaisFactor bentonFactor
+## What this file genuinely ships (zero-axiom)
+
+* 4 PointwiseCompat predicate + combinators
+* 3 BHKM cast-elim primitives
+* 27 per-Term-ctor Allais arms (subst-side, paired-env)
+  including the lam + lamPi binder arms that take user-supplied
+  body-level inner ConvCumul.
+* 27 per-Term-ctor Benton arms (rename-side, single-rename)
+  including lam + lamPi.
+* 5 ConvCumul cong-rule eliminator arms — DEFERRED
+  (kernel gap: ConvCumul lacks `natElimCong`, `natRecCong`,
+  `listElimCong`, `optionMatchCong`, `eitherMatchCong`)
+
+## What CUMUL-1.7 still needs
+
+1. The general `subst_compatible_allais` recursive headline
+   (structural recursion on sourceTerm, dispatching to the per-arm
+   helpers; binder cases need `PointwiseCompat.lift`).
+2. `PointwiseCompat.lift` itself — needs Pattern 2 weakening which
+   hits the viaUp wall.
+3. The general `subst_compatible_benton` recursive headline
+   (structural recursion on cumulRel — directly walled).
+4. Closing the 5 eliminator cong rules in `Reduction/Cumul.lean`.
+
+The honest path forward, per memory
+`reference_cumul_subst_pattern_decision`, is to either:
+* Refine `ConvCumul` to constrain viaUp's scopeLow = scope
+  (kernel modification; partial undo of Phase 12.A.B1.5 decoupling)
+* Add a level-equating witness on viaUp (kernel modification)
+* Accept the per-arm catalogue as the API for now and revisit
+  the recursive headlines after future kernel work
+
+CUMUL-1.7 PARENT TASK #1400 IS NOT YET CLOSED.  The per-arm
+catalogue is real progress but not sufficient for closure. -/
 
 end LeanFX2
