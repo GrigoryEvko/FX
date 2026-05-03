@@ -102,12 +102,26 @@ inductive Layer : Type
 
 namespace Mode
 
-/-- Project a Mode into its Layer.  Per `fx_design.md` §6.3:
-* `ghost` → static
-* `software`, `hardware`, `wire`, `bridge` → dynamic
+/-- Project a Mode into its Layer.  Per `fx_design.md` §6.3 +
+kernel-sprint.md §1.1.1:
 
-This is the canonical 2LTT classification.  Compilation depends
-on this projection: static-mode values are erased (no code
+FX runtime modes:
+* `ghost` → static (compile-time erasure for proofs/annotations)
+* `software`, `hardware`, `wire`, `bridge` → dynamic (runtime)
+
+2LTT/HOTT discipline modes (kernel-sprint extension):
+* `strict` → static (outer 2LTT mode, compile-time meta-reasoning;
+  no path/oeq reduction, decidable Ty equality, used for hardware
+  specs and outer-layer reasoning where univalence would be unsound)
+* `observational` → dynamic (inner 2LTT, h-set level, OEq reduces)
+* `univalent` → dynamic (inner 2LTT + cubical paths, runtime)
+* `cohesiveFlat` → static (♭ A : crisp/discrete subspace, the data
+  available at the "crisp" / compile-time layer of cohesive HoTT —
+  Shulman 2018 "Brouwer's fixed-point theorem in real-cohesive HoTT")
+* `cohesiveSharp` → dynamic (♯ A : codiscrete subspace, runtime)
+
+This is the canonical 2LTT/cohesive classification.  Compilation
+depends on this projection: static-mode values are erased (no code
 emission), dynamic-mode values are emitted as instructions. -/
 def layer : Mode → Layer
   | .ghost    => .static
@@ -115,14 +129,15 @@ def layer : Mode → Layer
   | .hardware => .dynamic
   | .wire     => .dynamic
   | .bridge   => .dynamic
-  | .strict => .dynamic
+  | .strict => .static
   | .observational => .dynamic
   | .univalent => .dynamic
-  | .cohesiveFlat => .dynamic
+  | .cohesiveFlat => .static
   | .cohesiveSharp => .dynamic
 
-/-- A mode is static iff its layer is `static`.  By the
-projection table above, only `ghost` is static. -/
+/-- A mode is static iff its layer is `static`.  Per the projection
+table: `ghost`, `strict`, and `cohesiveFlat` are static; the
+remaining 7 modes are dynamic. -/
 def IsStatic (someMode : Mode) : Prop :=
   someMode.layer = Layer.static
 
@@ -144,10 +159,10 @@ theorem layer_dichotomy (someMode : Mode) :
   | .hardware => exact Or.inr rfl
   | .wire     => exact Or.inr rfl
   | .bridge   => exact Or.inr rfl
-  | .strict => exact Or.inr rfl
+  | .strict => exact Or.inl rfl
   | .observational => exact Or.inr rfl
   | .univalent => exact Or.inr rfl
-  | .cohesiveFlat => exact Or.inr rfl
+  | .cohesiveFlat => exact Or.inl rfl
   | .cohesiveSharp => exact Or.inr rfl
 
 /-- A mode cannot be both static and dynamic.  Discharged by

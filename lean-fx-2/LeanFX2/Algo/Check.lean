@@ -129,7 +129,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   | .optionNone =>
       match expectedType with
       | .optionType _ => some Term.optionNone
@@ -138,7 +138,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   | .listCons headRaw tailRaw =>
       match expectedType with
       | .listType elementType =>
@@ -153,7 +153,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   | .optionSome valueRaw =>
       match expectedType with
       | .optionType elementType =>
@@ -165,7 +165,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   | .eitherInl valueRaw =>
       match expectedType with
       | .eitherType leftType _ =>
@@ -177,7 +177,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   | .eitherInr valueRaw =>
       match expectedType with
       | .eitherType _ rightType =>
@@ -189,7 +189,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   -- Lambda: expected type disambiguates non-dep arrow vs Π
   | .lam bodyRaw =>
       match expectedType with
@@ -208,7 +208,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   -- App: synth-then-check fallthrough.  `Term.infer` handles
   -- `RawTerm.app` for non-dep arrows; we then verify the inferred
   -- result type matches the expected type via DecidableEq.
@@ -240,7 +240,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   -- Σ first projection: synth-then-check fallthrough via Term.infer.
   | .fst pairRaw =>
       match Term.infer context (RawTerm.fst pairRaw) with
@@ -320,7 +320,7 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   -- Option matcher: scrutinee must infer to `Ty.optionType elementType`.
   | .optionMatch scrutineeRaw noneRaw someRaw =>
@@ -344,7 +344,7 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   -- Either matcher: scrutinee must infer to `Ty.eitherType left right`,
   -- which determines both branch parameter types.
@@ -369,7 +369,7 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   -- Identity introduction (refl): expected Ty must be `Ty.id carrier
   -- endpointA endpointB` where both endpoints equal `rawWitness`.
@@ -411,7 +411,7 @@ def Term.check : ∀ {scope : Nat}
       | .empty | .interval | .path _ _ _ | .glue _ _ | .oeq _ _ _
       | .idStrict _ _ _ | .equiv _ _ | .refine _ _ | .record _
       | .codata _ _ | .session _ | .effect _ _ | .modal _ _
-      | .universe _ => none
+      | .universe _ _ => none
   -- J eliminator: expected Ty is the motive.  Synth the witness to
   -- recover its id-type structure (carrier + endpoints), then check
   -- the base case at the motive.
@@ -433,7 +433,7 @@ def Term.check : ∀ {scope : Nat}
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   -- Modal — Layer 1 ships RAW-SIDE SCAFFOLDING ONLY (per Term.lean
   -- comment).  Inner type is preserved across modal markers; checking

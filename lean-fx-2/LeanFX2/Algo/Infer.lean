@@ -144,7 +144,7 @@ def Term.infer (context : Ctx mode level scope) :
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   | .pair _ _     => none  -- pair needs sigmaTy ctor — defer to check
   -- Σ first projection: synth pair (must be `Ty.sigmaTy first second`),
@@ -165,7 +165,7 @@ def Term.infer (context : Ctx mode level scope) :
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   -- Σ second projection: synth pair (must be `Ty.sigmaTy first second`),
   -- return `second.subst0 first (RawTerm.fst pairRaw)` — the well-typed
@@ -189,7 +189,7 @@ def Term.infer (context : Ctx mode level scope) :
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   | .boolElim _ _ _   => none
   | .natElim _ _ _    => none
@@ -220,7 +220,7 @@ def Term.infer (context : Ctx mode level scope) :
           | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
           | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
           | some ⟨.modal _ _, _⟩
-          | some ⟨.universe _, _⟩ => none
+          | some ⟨.universe _ _, _⟩ => none
           | none => none
       | none => none
   | .listElim _ _ _   => none
@@ -258,7 +258,7 @@ def Term.infer (context : Ctx mode level scope) :
       | some ⟨.record _, _⟩ | some ⟨.codata _ _, _⟩
       | some ⟨.session _, _⟩ | some ⟨.effect _ _, _⟩
       | some ⟨.modal _ _, _⟩
-      | some ⟨.universe _, _⟩ => none
+      | some ⟨.universe _ _, _⟩ => none
       | none => none
   -- Modal markers preserve inner type — synth the inner.
   | .modIntro innerRaw =>

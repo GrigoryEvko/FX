@@ -277,7 +277,7 @@ theorem Ty.rename_identity {level scope : Nat} :
       show (leftType.rename _).eitherType (rightType.rename _) =
            leftType.eitherType rightType
       rw [Ty.rename_identity leftType, Ty.rename_identity rightType]
-  | .universe universeLevel => rfl
+  | .universe universeLevel levelEq => rfl
   | .empty => rfl
   | .interval => rfl
   | .path carrier leftEndpoint rightEndpoint => by
