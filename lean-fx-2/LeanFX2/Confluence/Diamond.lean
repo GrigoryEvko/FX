@@ -1,49 +1,110 @@
-import LeanFX2.Confluence.CdLemma
+import LeanFX2.Confluence.RawDiamond
+import LeanFX2.Bridge
 
-/-! # Confluence/Diamond — diamond property for Step.par
+/-! # Confluence/Diamond — diamond corollaries for typed parallel reduction
 
-Step.par is "diamond":
+Diamond at the raw level (`RawStep.par.diamond`, shipped in
+`Confluence/RawDiamond.lean`) lifts to a typed corollary via the
+typed→raw bridge `Step.par.toRawBridge`.
+
+## Typed-input, raw-output diamond
 
 ```lean
-theorem Step.par.diamond
-    (s1 : Step.par t t1) (s2 : Step.par t t2) :
-    ∃ t', Step.par t1 t' ∧ Step.par t2 t'
+theorem Step.par.diamondRaw
+    {sourceTerm leftTarget rightTarget : ...}
+    (leftStep : Step.par sourceTerm leftTarget)
+    (rightStep : Step.par sourceTerm rightTarget) :
+    ∃ commonRaw,
+      RawStep.par leftRaw commonRaw ∧
+      RawStep.par rightRaw commonRaw
 ```
 
-If `t` parallel-reduces to both `t1` and `t2`, there's a common
-reduct `t'` reachable from both in one parallel step.
+Both typed inputs project to raw via `Step.par.toRawBridge`, then
+`RawStep.par.diamond` produces the common raw reduct.
 
-## Proof
+## Why not a typed-output diamond?
 
-Take `t' := Term.cd t`.  By `Step.par.cd_lemma`:
-* `Step.par t1 (Term.cd t)`
-* `Step.par t2 (Term.cd t)`
+A typed-output diamond would deliver `∃ (commonType : Ty)
+(commonRaw : RawTerm) (commonTerm : Term context commonType
+commonRaw), Step.par leftTarget commonTerm ∧ Step.par rightTarget
+commonTerm`.  Constructing the typed `commonTerm` requires subject
+reduction for `Step.par`: given a parallel-reduction step from a
+well-typed `leftTarget`, we must produce a Ty for the further
+reduct that lands at the common raw form.  Subject reduction is
+M05/M06 work (planned Phase 7) — only the `IsClosedTy` family
+(M07) is shipped at present, which doesn't cover the arrow-typed
+β-redex case.
 
-Done.
+Until subject reduction lands, the strongest typed-input diamond
+shippable is the raw-output corollary above.  Layer 9 (decidable
+conversion) and the elaborator's coherence proofs consume the raw
+form directly: typed convertibility is preserved by typing
+(elaboration-time invariant), so once two reducts agree at the
+raw level, their original typed terms are convertible by
+construction.
 
-## Why diamond, not "joinable in many steps"
+## What this file ships (zero axioms)
 
-Diamond is a *single-step* convergence property of parallel
-reduction.  It's strictly stronger than the multi-step property
-of single Step.  This stronger property is what makes the Tait-
-Martin-Löf strip lemma work for proving multi-step Step
-confluence.
+* `Step.par.diamondRaw` — typed inputs, raw common reduct, single-step
+* `Step.par.diamondRawSingle` — alias matching the predecessor's
+  `cd`-based proof shape (uses `RawTerm.cd` as the join witness)
 
 ## Dependencies
 
-* `Confluence/CdLemma.lean`
+* `Confluence/RawDiamond.lean` — `RawStep.par.diamond` shipped
+* `Bridge.lean` — `Step.par.toRawBridge` shipped
 
 ## Downstream consumers
 
-* `Confluence/ChurchRosser.lean` — multi-step confluence via strip
-  lemma applied to diamond
-
-## Implementation plan (Phase 4)
-
-Port from `lean-fx/LeanFX/Syntax/Reduction/Confluence.lean`'s
-diamond section.  Tiny file (~30 lines).
+* `Confluence/ChurchRosser.lean` — multi-step typed-input
+  confluence via raw output
+* `Algo/DecConv.lean` — decidable conversion uses raw join
 -/
 
 namespace LeanFX2
+
+/-- **Typed-input, raw-output diamond** for `Step.par`.
+
+If `sourceTerm` parallel-reduces to both `leftTarget` and
+`rightTarget` (each typed potentially differently), then their raw
+projections share a common raw reduct reachable by single
+parallel steps.
+
+The raw common reduct is `RawTerm.cd sourceTerm.toRaw` in lean-fx-2's
+construction (per `RawStep.par.diamond` from the cd-domination
+chain).  Lifting back to a typed common Term requires subject
+reduction — see file docstring. -/
+theorem Step.par.diamondRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType leftType rightType : Ty level scope}
+    {sourceRaw leftRaw rightRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {leftTarget : Term context leftType leftRaw}
+    {rightTarget : Term context rightType rightRaw}
+    (leftStep : Step.par sourceTerm leftTarget)
+    (rightStep : Step.par sourceTerm rightTarget) :
+    ∃ commonRaw,
+      RawStep.par leftRaw commonRaw ∧
+      RawStep.par rightRaw commonRaw :=
+  RawStep.par.diamond
+    (Step.par.toRawBridge leftStep)
+    (Step.par.toRawBridge rightStep)
+
+/-- Alias of `Step.par.diamondRaw` exposing the cd-based join
+witness.  By construction `RawStep.par.diamond` chooses
+`RawTerm.cd sourceRaw` as the common reduct. -/
+theorem Step.par.diamondRawCd
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType leftType rightType : Ty level scope}
+    {sourceRaw leftRaw rightRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {leftTarget : Term context leftType leftRaw}
+    {rightTarget : Term context rightType rightRaw}
+    (leftStep : Step.par sourceTerm leftTarget)
+    (rightStep : Step.par sourceTerm rightTarget) :
+    RawStep.par leftRaw (RawTerm.cd sourceRaw) ∧
+    RawStep.par rightRaw (RawTerm.cd sourceRaw) :=
+  ⟨RawStep.par.cd_lemma (Step.par.toRawBridge leftStep),
+   RawStep.par.cd_lemma (Step.par.toRawBridge rightStep)⟩
 
 end LeanFX2

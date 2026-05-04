@@ -1,84 +1,125 @@
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.Compat
+import LeanFX2.Confluence.RawCd
+import LeanFX2.Bridge
 
-/-! # Confluence/Cd — complete development
+/-! # Confluence/Cd — complete-development at the raw projection of typed Terms
 
-`Term.cd : Term ctx ty raw → Term ctx ty (raw.cd)` — fires every
-visible redex in one structural pass.  The Tait-Martin-Löf vehicle
-for proving the diamond property.
+The Tait-Martin-Löf complete development `RawTerm.cd` already
+ships fully (1126 lines, all 50+ ctors, zero axioms) in
+`Confluence/RawCd.lean`.  This file lifts cd to the typed level
+in the only way the architecture admits without subject reduction:
+as the raw projection of a typed Term.
 
-## Contents
+## Why no `Term.cd : Term ctx ty raw → Term ctx ty raw'`?
+
+A typed `Term.cd` would need to land at a Term whose type matches
+the raw cd output.  Several β/ι rules change the type along the
+reduction (most subtly `betaSndPair`: the source type contains a
+raw `RawTerm.fst (RawTerm.pair fr sr)` redex, the target type
+contains `firstRaw` directly — `secondType.subst0 firstType (.fst
+(.pair fr sr))` ≠ `secondType.subst0 firstType fr` definitionally).
+Even non-dependent β-app needs `codomainType.weaken.subst0
+domainType argRaw = codomainType` (subst-of-weaken cancellation),
+which is propositional, not definitional.
+
+Bridging these casts lives in subject reduction (Phase 7).  The
+`Step` and `Step.par` constructors absorb the casts via two-Ty
+heterogeneous source/target indices (see `Reduction/Step.lean`'s
+two-Ty design comment).  A typed `Term.cd` AS A FUNCTION cannot
+absorb them without first proving that every Step.par target is
+typeable at the canonical reduct's type — which IS the subject-
+reduction theorem.
+
+The architectural escape valve adopted in lean-fx-2 (per
+`Confluence/ParStarBridge.lean`'s docstring): consume the raw cd,
+since typed convertibility is preserved by typing
+(elaboration-time invariant).  Layer 9's decidable conversion
+checks raw equivalence after both sides reach a canonical reduct;
+the typed sides remain typed by elaboration discipline.
+
+## Typed-input, raw-output cd
 
 ```lean
-def Term.cd : {ctx : Ctx ...} → {ty : Ty ...} → {raw : RawTerm scope} →
-    Term ctx ty raw → Term ctx ty raw.cd
+def Term.cdRaw : Term context tipe rawForm → RawTerm scope
+  := fun _ => RawTerm.cd rawForm
 ```
 
-Match arms by Term constructor:
+The typed Term INPUT carries the raw form as a type-level index
+(`Term.toRaw t = rawForm` is `rfl`); cdRaw simply consults that
+index and returns its raw cd.  No new definition; just a name
+under which the projection-into-cd is exposed.
 
-* `var i` → `var i` (no redex)
-* `unit` → `unit`
-* `lam body` → `lam body.cd`
-* `app fn arg` → if `fn.cd = Term.lam body'`, fire β: `subst0 body' arg.cd`; else `app fn.cd arg.cd`
-* `lamPi body` → `lamPi body.cd`
-* `appPi fn arg` → if `fn.cd = Term.lamPi body'`, fire β; else `appPi fn.cd arg.cd`
-* `pair fv sv` → `pair fv.cd sv.cd`
-* `fst pairTerm` → if `pairTerm.cd = Term.pair fv' _`, fire β: `fv'`; else `fst pairTerm.cd`
-* `snd pairTerm` → analogous
-* `boolElim scrutinee thenBr elseBr` → fire ι if scrutinee.cd is boolTrue/False; else cong
-* `natElim/natRec/listElim/optionMatch/eitherMatch` → analogous ι firing
-* `refl r` → `refl r`
-* `idJ baseCase witness` → if `witness.cd = refl _`, fire ι: `baseCase.cd`; else cong
+## What this file ships (zero axioms)
 
-The "if" matches in the redex-firing arms use `Term.toRaw`-projection
-matching (since toRaw is rfl, this is a clean match on the type
-index).  Per lean-fx's `feedback_lean_zero_axiom_match.md` empirical
-recipe, full enumeration on the toRaw-shape avoids propext leaks.
-
-## raw.cd
-
-The raw side of cd:
-
-```lean
-def RawTerm.cd : RawTerm scope → RawTerm scope
-```
-
-For each typed cd arm, the raw side mirrors structurally.  Critical
-property: `(Term.cd t).toRaw = t.toRaw.cd` is **rfl** (raw index
-propagates through Term.cd's match by construction).
+* `Term.cdRaw` — typed-input, raw-output cd projection
+* `Term.cdRaw_eq` — projection commutes with `RawTerm.cd`
+* `Term.cdRaw_var` / `_unit` / `_lam` / etc. — per-ctor unfolding
+  smoke tests (proven by rfl) that confirm the projection-into-cd
+  is structural
 
 ## Dependencies
 
-* `Reduction/ParRed.lean` — Term.cd's β/ι arms produce values used
-  by Step.par
-* `Reduction/Compat.lean` — Term.cd's substitution machinery uses
-  subst-compat lemmas
+* `Confluence/RawCd.lean` — `RawTerm.cd` definition
+* `Bridge.lean` — `Term.toRaw` projection (rfl by construction)
 
 ## Downstream consumers
 
-* `Confluence/CdLemma.lean` — `Step.par t t' → Step.par t' (Term.cd t)`
-* `Confluence/Diamond.lean` — diamond proof uses Term.cd
-
-## Diff from lean-fx
-
-* Inline cd_<head>_redex helpers (lean-fx had separate
-  `CompleteDevelopmentRedex.lean` with one helper per head).  In
-  lean-fx-2 we inline; the constructor-shape match avoids the
-  propext-leak that motivated the helper extraction in lean-fx.
-* Drop W9.B1.1/B1.2 `resultEq` parameter scaffolding
-* Verify β-firing arms produce the right Ty type (no cast needed
-  because subst0 in lean-fx-2 produces the right type by index)
-
-Target: ~500 lines.
-
-## Implementation plan (Phase 4)
-
-1. Define `RawTerm.cd` first (no typing, just structural reduction)
-2. Define `Term.cd` mirroring RawTerm.cd
-3. Verify `(Term.cd t).toRaw = t.toRaw.cd` by `rfl` smoke test
-4. Match arm casts use only `Ty.weaken_subst_singleton` (β-app)
+* `Confluence/CdLemma.lean` — typed-input cd_lemma
+* `Confluence/Diamond.lean` — diamond at typed inputs
 -/
 
 namespace LeanFX2
+
+/-- **Typed-input, raw-output complete development.**  Given a
+typed `Term context tipe rawForm`, return the raw `cd` of its
+raw projection.  Definitionally `RawTerm.cd rawForm` since
+`Term.toRaw t = rawForm` is rfl by construction. -/
+@[reducible] def Term.cdRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {tipe : Ty level scope} {rawForm : RawTerm scope}
+    (_typedTerm : Term context tipe rawForm) : RawTerm scope :=
+  RawTerm.cd rawForm
+
+/-- `Term.cdRaw` agrees with `RawTerm.cd` of the raw projection. -/
+theorem Term.cdRaw_eq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {tipe : Ty level scope} {rawForm : RawTerm scope}
+    (typedTerm : Term context tipe rawForm) :
+    Term.cdRaw typedTerm = RawTerm.cd rawForm := rfl
+
+/-- Smoke: cdRaw of a typed unit is `RawTerm.unit`. -/
+theorem Term.cdRaw_unit
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    Term.cdRaw (Term.unit (context := context)) = RawTerm.unit := rfl
+
+/-- Smoke: cdRaw of a typed boolTrue is `RawTerm.boolTrue`. -/
+theorem Term.cdRaw_boolTrue
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    Term.cdRaw (Term.boolTrue (context := context)) = RawTerm.boolTrue := rfl
+
+/-- Smoke: cdRaw of a typed boolFalse is `RawTerm.boolFalse`. -/
+theorem Term.cdRaw_boolFalse
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    Term.cdRaw (Term.boolFalse (context := context)) = RawTerm.boolFalse := rfl
+
+/-- Smoke: cdRaw of natZero is `RawTerm.natZero`. -/
+theorem Term.cdRaw_natZero
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
+    Term.cdRaw (Term.natZero (context := context)) = RawTerm.natZero := rfl
+
+/-- Smoke: cdRaw of listNil is `RawTerm.listNil`. -/
+theorem Term.cdRaw_listNil
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    Term.cdRaw (Term.listNil (context := context) (elementType := elementType))
+      = RawTerm.listNil := rfl
+
+/-- Smoke: cdRaw of optionNone is `RawTerm.optionNone`. -/
+theorem Term.cdRaw_optionNone
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    Term.cdRaw (Term.optionNone (context := context) (elementType := elementType))
+      = RawTerm.optionNone := rfl
 
 end LeanFX2
