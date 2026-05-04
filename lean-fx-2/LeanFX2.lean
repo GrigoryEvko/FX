@@ -42,6 +42,7 @@ import LeanFX2.Foundation.RenameIdentity
 import LeanFX2.Term
 import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
+import LeanFX2.Term.Act
 import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
 import LeanFX2.Term.HEqCongr
@@ -256,6 +257,8 @@ import LeanFX2.Smoke.AuditPhase9FCheckEval
 import LeanFX2.Smoke.AuditPhase79EndToEnd
 import LeanFX2.Smoke.AuditMegaZ4A
 import LeanFX2.Smoke.AuditMegaZ2A1
+import LeanFX2.Smoke.AuditMegaZ5A1
+import LeanFX2.Smoke.AuditMegaZ5A
 
 namespace LeanFX2
 
