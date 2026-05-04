@@ -866,6 +866,38 @@ inductive Step.par :
                              innerLevel lowerLevel higherLevel
                              cumulOkLow cumulOkHigh cumulMonotone
                              (Nat.le_refl _) (Nat.le_refl _) lowerTarget)
+  /-- **Univalence rfl-fragment at the parallel level.**  Mirrors
+  `Step.eqType`: the canonical Id-typed identity-equivalence proof at
+  the universe parallel-reduces in one step to the canonical identity
+  equivalence.  Both project to the SAME raw form
+  `RawTerm.equivIntro id id`, so `Step.par.toRawBridge` returns
+  `RawStep.par.refl _`.
+  Phase 12.A.B8.1 (CUMUL-8.3 part 1). -/
+  | eqType {mode : Mode} {level scope : Nat}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope)
+      (carrierRaw : RawTerm scope) :
+      Step.par
+        (Term.equivReflIdAtId (context := context)
+                              innerLevel innerLevelLt carrier carrierRaw)
+        (Term.equivReflId (context := context) carrier)
+  /-- **Funext rfl-fragment at the parallel level.**  Mirrors
+  `Step.eqArrow`: the canonical Id-typed funext witness at arrow types
+  parallel-reduces to the canonical pointwise-refl funext witness.
+  Both project to the SAME raw form `RawTerm.lam (RawTerm.refl
+  applyRaw)`, so the toRawBridge arm is `RawStep.par.refl _`.
+  Phase 12.A.B8.2 (CUMUL-8.3 part 2). -/
+  | eqArrow {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      Step.par
+        (Term.funextReflAtId (context := context)
+                             domainType codomainType applyRaw)
+        (Term.funextRefl (context := context)
+                         domainType codomainType applyRaw)
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 
@@ -1001,6 +1033,14 @@ theorem Step.toPar
       exact Step.par.cumulUpInnerCong innerLevel lowerLevel higherLevel
                                        cumulOkLow cumulOkHigh cumulMonotone
                                        singleStepIH
+  -- Univalence rfl-fragment lift to par: source has no inner steps
+  -- (it's a leaf-canonical ctor), so we apply Step.par.eqType directly.
+  | eqType innerLevel innerLevelLt carrier carrierRaw =>
+      exact Step.par.eqType innerLevel innerLevelLt carrier carrierRaw
+  -- Funext rfl-fragment lift to par: source has no inner steps; apply
+  -- Step.par.eqArrow directly.
+  | eqArrow domainType codomainType applyRaw =>
+      exact Step.par.eqArrow domainType codomainType applyRaw
 
 /-! ## Cast helpers — propositional transport for indices. -/
 

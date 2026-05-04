@@ -192,6 +192,12 @@ theorem Step.toConvCumul
                   cumulOkLow cumulOkHigh cumulMonotone _ ih =>
       exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
                                   cumulOkLow cumulOkHigh cumulMonotone ih
+  -- Univalence rfl-fragment lifts to ConvCumul.iotaEqTypeCumul.
+  | eqType innerLevel innerLevelLt carrier carrierRaw =>
+      exact ConvCumul.iotaEqTypeCumul innerLevel innerLevelLt carrier carrierRaw
+  -- Funext rfl-fragment lifts to ConvCumul.iotaEqArrowCumul.
+  | eqArrow domainType codomainType applyRaw =>
+      exact ConvCumul.iotaEqArrowCumul domainType codomainType applyRaw
 
 /-! ## StepStar.toConvCumul
 

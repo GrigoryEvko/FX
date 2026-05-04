@@ -654,6 +654,11 @@ theorem Step.preserves_isClosedTy
       | exact Ty.subst0_raw_invariance_isClosedTy _ _ _ _
                 sourceClosed sourceIsClosed
       | (subst sourceIsClosed; exact Ty.weaken_subst_singleton _ _ _)
+      | -- Fallback for type-changing reductions (Step.eqType, Step.eqArrow)
+        -- whose source type (Ty.id, Ty.piTy etc.) is not in IsClosedTy:
+        -- substituting the source-equality through `sourceClosed` makes
+        -- it contradictory, so `cases sourceClosed` discharges the goal.
+        (subst sourceIsClosed; cases sourceClosed)
 
 /-- StepStar lift of `Step.preserves_isClosedTy`: closed-typed
 StepStar chains preserve the closed target type.  Trivial chain

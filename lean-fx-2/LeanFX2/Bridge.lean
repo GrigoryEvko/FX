@@ -191,5 +191,18 @@ theorem Step.par.toRawBridge
   -- SAME constant raw `RawTerm.universeCode innerLevel.toNat`.
   -- Therefore the raw-side parallel reduction is reflexive.
   | cumulUpInnerCong _ _ _ _ _ _ _ => exact RawStep.par.refl _
+  -- Univalence rfl-fragment: source `Term.equivReflIdAtId` and target
+  -- `Term.equivReflId` BOTH project to the same raw form
+  -- `RawTerm.equivIntro (lam (var 0)) (lam (var 0))`, so the bridge
+  -- discharges with `RawStep.par.refl _`.  This is the architectural
+  -- payoff of pre-aligning the source ctor's raw with the target's
+  -- raw (Phase 12.A.B8.1 prep): no `RawStep.par.eqType` ctor needed,
+  -- raw confluence inherits the rule for free.
+  | eqType _ _ _ _ => exact RawStep.par.refl _
+  -- Funext rfl-fragment: same trick — source `Term.funextReflAtId`
+  -- and target `Term.funextRefl` BOTH project to
+  -- `RawTerm.lam (RawTerm.refl applyRaw)`.  RawStep.par.refl _
+  -- discharges (Phase 12.A.B8.2 prep).
+  | eqArrow _ _ _ => exact RawStep.par.refl _
 
 end LeanFX2

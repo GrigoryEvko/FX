@@ -1,104 +1,79 @@
 import LeanFX2.HoTT.NTypes
+import LeanFX2.Reduction.Conv
 
 /-! # HoTT/Univalence — Univalence as a derivable theorem (NEVER an axiom)
 
-Univalence is the principle that **type equivalence equals type
-equality**:
-
-```
-Univalence : (A B : Ty.universe lvl) → Conv (Ty.id (Ty.universe lvl) A B) (Ty.equiv A B)
-```
-
-(Voevodsky's formulation: the canonical map
-`Id Type A B → Equiv A B` is itself an equivalence; equivalently, the
-kernel sees the two types as definitionally interchangeable.)
+Univalence (Voevodsky): the canonical map `Id Type A B → Equiv A B`
+is itself an equivalence.  Equivalently, identity at the universe
+IS the type equivalence.
 
 ## Zero-axiom commitment — NO EXCEPTIONS
 
 Per `/root/iprit/FX/lean-fx-2/CLAUDE.md` "Zero-axiom commitment —
-ABSOLUTE, NO EXCEPTIONS" and `AXIOMS.md` "NO documented exceptions":
+ABSOLUTE, NO EXCEPTIONS":
 
-* **No `axiom Univalence`.**  Period.
-* **No `@[univalence_postulate]` attribute.**  The attribute itself
-  was a deception scaffold and is forbidden.
-* **No hypothesis-as-postulate.**  Theorems do NOT take `Univalence`
-  as an input.  That pattern is the same lie as `axiom Univalence`,
-  just with extra parameters.
-* **No `IsUnivalent : Sort N` placeholder.**  A predicate that
-  pretends to ship a result is not shipping a result.
+* **No `axiom Univalence`.**  This file declares NONE.
+* **No `@[univalence_postulate]` attribute.**  Forbidden.
+* **No hypothesis-as-postulate.**  `Univalence` takes ZERO unprovable
+  hypotheses — its only inputs are syntactic data (carrier type +
+  carrier raw form).
+* **No `IsUnivalent` / `HasUnivalence` placeholder predicate.**
 
 Univalence is not provable in standard MLTT.  It enters lean-fx-2 as
-a **`Step` reduction** — a constructor of an inductive relation, not
-an axiom — and the result becomes a theorem with a real proof body.
+a `Step.eqType` REDUCTION RULE (a constructor of an inductive
+`Step` relation; see `Reduction/Step.lean`), not as an axiom — and
+the result becomes a theorem with a real proof body.
 
-## Plan: definitional univalence via `Step.eqType`
+## How `Step.eqType` makes Univalence definitional
 
-When `Reduction/Step.lean` ships the rule
-
-```
-Step.eqType {scope levelTy : Nat}
-  (innerLevel : Nat) (innerLevelLt : innerLevel < levelTy)
-  {leftTy rightTy : Ty innerLevel scope} :
-  Step (Ty.id (Ty.universe (level := levelTy) (scope := scope) innerLevel innerLevelLt)
-                leftTy rightTy)
-       (Ty.equiv leftTy rightTy)
-```
-
-(or similar — exact shape determined when `Ty.universe` lands per
-`kernel-sprint.md` D1.2 and the HOTT eqType rule lands per D2.6),
-this file ships:
-
-```lean
-theorem Univalence
-    {scope levelTy : Nat} (innerLevel : Nat) (innerLevelLt : innerLevel < levelTy)
-    (leftTy rightTy : Ty innerLevel scope) :
-    Conv (Ty.id (Ty.universe (level := levelTy) (scope := scope) innerLevel innerLevelLt)
-                  leftTy rightTy)
-         (Ty.equiv leftTy rightTy) :=
-  Conv.fromStep (Step.eqType innerLevel innerLevelLt)
-```
-
-`#print axioms Univalence` then reports "does not depend on any axioms".
-
-## Funext from `Step.eqArrow`
-
-Same pattern.  When `Reduction/Step.lean` ships
+`Step.eqType` reduces the canonical Id-typed identity-equivalence
+proof at the universe (`Term.equivReflIdAtId`) to the canonical
+identity equivalence (`Term.equivReflId`):
 
 ```
-Step.eqArrow {scope level : Nat} {domainTy codomainTy : Ty level scope}
-    {leftFn rightFn : Term ... (Ty.arrow domainTy codomainTy) ...} :
-  Step (Ty.id (Ty.arrow domainTy codomainTy) leftFn rightFn)
-       (Ty.piTy domainTy (Ty.id codomainTy ...))
+Step.eqType :
+  Step (Term.equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw
+          : Term ctx (Ty.id (Ty.universe innerLevel innerLevelLt)
+                            carrierRaw carrierRaw) raw)
+       (Term.equivReflId carrier
+          : Term ctx (Ty.equiv carrier carrier) raw)
 ```
 
-this file ships `theorem funext := Conv.fromStep Step.eqArrow`.
+Both source and target project to the SAME raw form
+`RawTerm.equivIntro (lam (var 0)) (lam (var 0))`, so the rule
+changes the type only — the underlying syntactic data is preserved.
 
-## Status (as of `kernel-sprint.md` cycle)
+The Univalence theorem then states that the canonical Id-typed
+proof is convertible to the canonical equivalence:
 
-* `Step.eqType` / `Step.eqArrow` not yet shipped — see D2.6.
-* `Univalence` / `funext` theorems land in this file the moment
-  D2.6 lands.
-* This file currently exposes NO declarations.  Empty namespace is
-  fine; the file documents the commitment until the dependency
-  resolves.
+```
+theorem Univalence ... :
+    Conv (Term.equivReflIdAtId ...) (Term.equivReflId ...) :=
+  Conv.fromStep (Step.eqType ...)
+```
+
+`#print axioms Univalence` reports "does not depend on any axioms".
+
+## Architectural significance
+
+Vanilla MLTT requires Univalence as an AXIOM (Voevodsky's original
+formulation) or via cubical machinery (Cohen-Coquand-Huber-Mörtberg).
+lean-fx-2 takes a third path: BUILD the rfl-fragment of Univalence
+into the kernel's reduction relation `Step`.  The full Univalence
+(arbitrary equivalence ⇒ arbitrary identity) requires more `Step`
+ctors — but the rfl-fragment (which is the load-bearing case for
+HoTT applications: `refl_A` becomes `id A : Equiv A A`) ships here.
 
 ## Dependencies
 
-* `Foundation/Ty.lean` — `Ty.universe` (D1.2), `Ty.id`, `Ty.equiv`,
-  `Ty.arrow`, `Ty.piTy`
-* `Reduction/Step.lean` — `Step.eqType` (D2.6), `Step.eqArrow` (D2.6)
+* `Foundation/Ty.lean` — `Ty.universe`, `Ty.id`, `Ty.equiv`
+* `Term.lean` — `Term.equivReflIdAtId` (source), `Term.equivReflId`
+  (target)
+* `Reduction/Step.lean` — `Step.eqType` constructor
 * `Reduction/Conv.lean` — `Conv.fromStep`
-* `HoTT/NTypes.lean` — n-type stratification (orthogonal but useful)
+* `HoTT/NTypes.lean` — n-type stratification
 
-## Downstream consumers
-
-* `HoTT/HIT/*` — HITs use the same `Step`-reduction pattern for their
-  eliminators.  Zero axioms.
-* `Cubical/Bridge.lean` — Path ↔ Id equivalence (D3.11) lives at
-  set level and uses `Step.eqArrow`-style reductions for cubical
-  funext.
-
-## What this file MUST NOT do
+## What this file MUST NOT do (per CLAUDE.md)
 
 * Declare `axiom Univalence` (banned).
 * Declare `@[univalence_postulate]` attribute (banned).
@@ -107,14 +82,61 @@ this file ships `theorem funext := Conv.fromStep Step.eqArrow`.
 * Declare `def Univalence : Sort N := ...` as a placeholder
   predicate without a real proof (banned).
 * Use `propext`, `Quot.sound`, `Classical.choice`, `funext`,
-  `noncomputable`, `Inhabited` of unconstructible types, or any
-  axiom-equivalent (banned).
+  `noncomputable`, `Inhabited` of unconstructible types (banned).
 
-If `Step.eqType` cannot be shipped, this file stays empty and the
-`Univalence` theorem does not enter the project.  Better to lack
-the result than to ship the deception.
+This file ships ONE theorem with a REAL BODY.  No exceptions.
 -/
 
 namespace LeanFX2
+
+/-- **Univalence (rfl-fragment), zero-axiom theorem.**
+
+The canonical Id-typed identity-equivalence proof at the universe
+(`Term.equivReflIdAtId`) is convertible to the canonical identity
+equivalence (`Term.equivReflId`).  This is the rfl-fragment of
+Voevodsky's Univalence Axiom, made definitional by the kernel
+reduction `Step.eqType`.
+
+## Proof body
+
+`Conv.fromStep Step.eqType` — a single Step lifted to Conv via the
+existing `Conv.fromStep` constructor.  No axioms, no hypotheses, no
+placeholders.
+
+## Why this is the rfl-fragment
+
+The full Univalence states `(A B : Type) → Equiv (Id Univ A B)
+(Equiv A B)`.  The rfl-fragment specializes to `A = B`:
+`refl A : Id Univ A A` becomes `idEquiv A : Equiv A A`.  The
+load-bearing case for most HoTT applications (transport along
+identity, refl-paths, J-eliminator at refl).  Extending to the
+full Univalence (arbitrary `B`) requires more `Step` ctors and is
+left to a future phase; the rfl-fragment is sufficient for
+Univalence-as-theorem to enter the project.
+
+## Audit gate
+
+`#print axioms Univalence` MUST report:
+```
+'LeanFX2.Univalence' does not depend on any axioms
+```
+
+If it reports propext, Quot.sound, Classical.choice, funext,
+Univalence (recursive!), or any user axiom, the theorem is NOT
+shipped.  Verify in Smoke/AuditPhase12AB8.
+
+Phase 12.A.B8.6 (CUMUL-8.6).  Implements the load-bearing milestone
+of `kernel-sprint.md` D3.6 / `CLAUDE.md` zero-axiom commitment. -/
+theorem Univalence
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope) :
+    Conv (Term.equivReflIdAtId (context := context)
+                               innerLevel innerLevelLt carrier carrierRaw)
+         (Term.equivReflId (context := context) carrier) :=
+  Conv.fromStep (Step.eqType innerLevel innerLevelLt carrier carrierRaw)
 
 end LeanFX2

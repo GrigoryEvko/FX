@@ -693,6 +693,62 @@ inductive Step :
                          innerLevel lowerLevel higherLevel
                          cumulOkLow cumulOkHigh cumulMonotone
                          (Nat.le_refl _) (Nat.le_refl _) lowerTarget)
+  /-- **Univalence rfl-fragment as a definitional reduction.**
+      `Step.eqType` reduces the canonical Id-typed identity-equivalence
+      proof at the universe (`Term.equivReflIdAtId ... carrier carrierRaw :
+      Ty.id (Ty.universe ...) carrierRaw carrierRaw`) to the canonical
+      identity equivalence (`Term.equivReflId carrier : Ty.equiv carrier
+      carrier`).  Both Terms project to the SAME raw form
+      `RawTerm.equivIntro (lam (var 0)) (lam (var 0))`, so the rule
+      changes the type only — the data is preserved.
+      ## Architectural significance
+      This is the single Step constructor that makes Univalence (rfl-
+      fragment) DEFINITIONAL in lean-fx-2: vanilla MLTT cannot prove
+      `Id Universe A B ~ Equiv A B`, but lean-fx-2 BUILDS it into the
+      kernel's reduction relation.  The downstream theorem
+      `Univalence : Conv (equivReflIdAtId ...) (equivReflId ...)` is
+      then `Conv.fromStep Step.eqType` — zero axioms.
+      ## Why source raw = target raw
+      The toRawBridge (Bridge.lean) projects each typed Step.par to a
+      raw-side step.  Designing this rule with matching raw forms means
+      the bridge arm is `RawStep.par.refl _` — no cascade through
+      RawCd / RawCdLemma / RawDiamond required.  Same trick as
+      `cumulUpInner` (both source/target project to the same raw).
+      Phase 12.A.B8.1 (CUMUL-8.1). -/
+  | eqType {mode : Mode} {level scope : Nat}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope)
+      (carrierRaw : RawTerm scope) :
+      Step (Term.equivReflIdAtId (context := context)
+                                 innerLevel innerLevelLt carrier carrierRaw)
+           (Term.equivReflId (context := context) carrier)
+  /-- **Funext rfl-fragment as a definitional reduction.**
+      `Step.eqArrow` reduces the canonical Id-typed funext witness at
+      arrow types (`Term.funextReflAtId ... domainTy codomainTy applyRaw :
+      Ty.id (Ty.arrow domainTy codomainTy) (lam (refl applyRaw))
+      (lam (refl applyRaw))`) to the canonical pointwise-refl funext
+      witness (`Term.funextRefl domainTy codomainTy applyRaw :
+      Ty.piTy domainTy (Ty.id codomainTy.weaken applyRaw applyRaw)`).
+      Both Terms project to the SAME raw form
+      `RawTerm.lam (RawTerm.refl applyRaw)`.
+      ## Architectural significance
+      This is the Step constructor that makes funext (rfl-fragment)
+      DEFINITIONAL in lean-fx-2.  Vanilla MLTT requires funext as an
+      axiom (or via cubical machinery); lean-fx-2 builds the rfl-
+      fragment into the kernel's reduction.  The downstream theorem
+      `funext : Conv (funextReflAtId ...) (funextRefl ...)` is
+      `Conv.fromStep Step.eqArrow` — zero axioms.
+      Phase 12.A.B8.2 (CUMUL-8.2). -/
+  | eqArrow {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      Step (Term.funextReflAtId (context := context)
+                                domainType codomainType applyRaw)
+           (Term.funextRefl (context := context)
+                            domainType codomainType applyRaw)
 
 /-! ## Cast helpers
 

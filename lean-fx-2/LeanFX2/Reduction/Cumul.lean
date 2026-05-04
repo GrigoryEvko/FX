@@ -766,6 +766,35 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                   baseCase
                   (Term.refl carrier endpoint))
                 baseCase
+  /-- **Univalence rfl-fragment at the ConvCumul level.**  Mirror of
+  `Step.eqType`: the canonical Id-typed identity-equivalence proof
+  at the universe is ConvCumul-related to the canonical identity
+  equivalence.  ConvCumul absorbs the type change (Ty.id on the
+  source vs Ty.equiv on the target) — its own typing relation is
+  heterogeneous on Ty by design.
+  Phase 12.A.B8.1 (CUMUL-8.5 part 1). -/
+  | iotaEqTypeCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (carrier : Ty level scope)
+      (carrierRaw : RawTerm scope) :
+      ConvCumul (Term.equivReflIdAtId (context := context)
+                                      innerLevel innerLevelLt carrier carrierRaw)
+                (Term.equivReflId (context := context) carrier)
+  /-- **Funext rfl-fragment at the ConvCumul level.**  Mirror of
+  `Step.eqArrow`: the canonical Id-typed funext witness at arrow
+  types is ConvCumul-related to the canonical pointwise-refl funext
+  witness.
+  Phase 12.A.B8.2 (CUMUL-8.5 part 2). -/
+  | iotaEqArrowCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      ConvCumul (Term.funextReflAtId (context := context)
+                                     domainType codomainType applyRaw)
+                (Term.funextRefl (context := context)
+                                 domainType codomainType applyRaw)
 
 /-! ## REAL TERM-PROMOTION (uses source substantively)
 
