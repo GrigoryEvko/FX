@@ -6,7 +6,9 @@ package «lean-fx-2» where
   leanOptions := #[
     ⟨`autoImplicit, false⟩,
     ⟨`relaxedAutoImplicit, false⟩,
-    ⟨`pp.unicode.fun, true⟩
+    ⟨`pp.unicode.fun, true⟩,
+    ⟨`maxHeartbeats, (2000000 : Nat)⟩,
+    ⟨`synthInstance.maxHeartbeats, 2000000⟩
   ]
 
 @[default_target]
