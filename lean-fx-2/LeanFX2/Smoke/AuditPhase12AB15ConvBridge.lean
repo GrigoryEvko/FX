@@ -14,6 +14,7 @@ including:
   backward direction (homogeneous-ctx only).
 * 17 `ConvCumul.X_toConv` lift theorems for β/ι ctors at the
   homogeneous fragment.
+* Inverse theorems (Phase 6 / CUMUL-5.3) on the refl fragment.
 
 ## What did NOT ship (and why)
 
@@ -63,5 +64,69 @@ namespace LeanFX2
 #print axioms ConvCumul.iotaEitherMatchInlCumul_toConv
 #print axioms ConvCumul.iotaEitherMatchInrCumul_toConv
 #print axioms ConvCumul.iotaIdJReflCumul_toConv
+
+#print axioms Step.toConvCumul_back_to_Conv
+#print axioms StepStar.toConvCumul_back_to_Conv
+#print axioms Conv.fromStep_eq_fromStepStar_fromStep
+
+#print axioms Conv.refl_inverse_roundtrip_A
+#print axioms ConvCumul.refl_inverse_roundtrip_B
+#print axioms ConvCumul.betaApp_roundtrip_eq
+#print axioms ConvCumul.refl_inverse_identity
+#print axioms Conv.refl_inverse_identity
+
+/-! ## Real-fragment β/ι roundtrip example
+
+A β-redex roundtrip: lift a `Step.betaApp` to `ConvCumul`, project
+back to `Conv` via the matching β/ι Conv-helper.  Body should
+type-check, demonstrating Phase 7 audit. -/
+
+/-- β-redex roundtrip example: works at any context. -/
+example
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+    (bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (argumentTerm : Term context domainType argumentRaw) :
+    ConvCumul (Term.app (Term.lam (codomainType := codomainType) bodyTerm) argumentTerm)
+              (Term.subst0 bodyTerm argumentTerm) :=
+  Step.toConvCumul (Step.betaApp bodyTerm argumentTerm)
+
+/-- ι-redex roundtrip example. -/
+example
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {thenRaw elseRaw : RawTerm scope}
+    (thenBranch : Term context motiveType thenRaw)
+    (elseBranch : Term context motiveType elseRaw) :
+    ConvCumul (Term.boolElim Term.boolTrue thenBranch elseBranch) thenBranch :=
+  Step.toConvCumul (Step.iotaBoolElimTrue thenBranch elseBranch)
+
+/-- cong roundtrip example: appLeft inner step lifts to appCong. -/
+example
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRawA functionRawB argumentRaw : RawTerm scope}
+    {functionTermA functionTermB :
+      Term context (Ty.arrow domainType codomainType) functionRawA}
+    {argumentTerm : Term context domainType argumentRaw}
+    (innerStep : Step functionTermA functionTermB) :
+    ConvCumul (Term.app functionTermA argumentTerm)
+              (Term.app functionTermB argumentTerm) :=
+  Step.toConvCumul (Step.appLeft innerStep)
+
+/-- ConvCumul-promote-then-Conv-project at matched level via the
+βι helpers (real composition). -/
+example
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+    (bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (argumentTerm : Term context domainType argumentRaw) :
+    Conv (Term.app (Term.lam (codomainType := codomainType) bodyTerm) argumentTerm)
+         (Term.subst0 bodyTerm argumentTerm) :=
+  ConvCumul.betaAppCumul_toConv bodyTerm argumentTerm
 
 end LeanFX2

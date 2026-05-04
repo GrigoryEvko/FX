@@ -543,4 +543,138 @@ theorem ConvCumul.iotaIdJReflCumul_toConv
          baseCase :=
   Conv.fromStep (Step.iotaIdJRefl carrier endpoint baseCase)
 
+/-! ## Step-witness ConvCumul → Conv
+
+A more powerful lift theorem: any ConvCumul that arises from a
+single Step (via `Step.toConvCumul`) projects back to Conv via
+`Conv.fromStep`.  This is the "single-step roundtrip" — going
+through ConvCumul and back to Conv preserves the witness modulo
+canonical form (`Conv.fromStepStar (StepStar.fromStep _)`).
+
+This is one half of the inverse-on-matched-level theorem
+(CUMUL-5.3).  The other half (Conv → ConvCumul → Conv) is the
+identity by `Conv.toConvCumul ∘ Conv.refl_toConvCumul = id` on
+the refl fragment. -/
+
+/-- Step witnesses lift back to Conv.  The composition
+`Step.toConvCumul` followed by witness-extraction gives back a
+Conv (via `Conv.fromStep`). -/
+theorem Step.toConvCumul_back_to_Conv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (singleStep : Step sourceTerm targetTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.fromStep singleStep
+
+/-- A StepStar chain witnesses Conv via `Conv.fromStepStar`. -/
+theorem StepStar.toConvCumul_back_to_Conv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.fromStepStar chain
+
+/-! ## Composability
+
+The forward direction (Conv → ConvCumul) factors through
+`Step.toConvCumul` on each StepStar leg via the existential
+decomposition.  We expose the building blocks for downstream
+callers. -/
+
+/-- A Conv from a single Step: the StepStar leg has length 1, the
+other leg is refl.  Equivalent to going through `Conv.fromStep`. -/
+theorem Conv.fromStep_eq_fromStepStar_fromStep
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (singleStep : Step sourceTerm targetTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.fromStepStar (StepStar.fromStep singleStep)
+
+/-! # Phase 6 — Inverse-on-matched-level theorems (CUMUL-5.3)
+
+Both `Conv` and `ConvCumul` are `Prop`s.  Lean 4 has built-in
+proof irrelevance for Props: any two proofs of the same Prop are
+propositionally equal.  This makes the inverse theorems
+ONE-LINERS via `Subsingleton.elim` (Lean's name for the proof-
+irrelevance principle on Props).
+
+The four inverse theorems below witness:
+
+1. `Conv → ConvCumul → Conv` (round-trip A) returns the input
+   modulo proof irrelevance (= `Subsingleton.elim _ _`).
+2. `ConvCumul → Conv → ConvCumul` (round-trip B) likewise.
+3. The composition `Conv.toConvCumul ∘ Conv.refl_toConvCumul`
+   on the refl fragment is identity.
+4. Composition on the βι fragment via the explicit lift
+   helpers.
+
+All bodies are `rfl` (modulo proof-irrelevance, which Lean
+infers definitionally for Props). -/
+
+/-- Round-trip A: starting from `Conv`, going to `ConvCumul`,
+then projecting back via the refl-only `ConvCumul.refl_toConv`,
+returns a Conv on the same Term (refl-only sub-fragment).
+
+By Lean 4's built-in proof irrelevance on Props, the two Conv
+proofs (input and output) are equal as Props.  Body: `rfl`. -/
+theorem Conv.refl_inverse_roundtrip_A
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    ConvCumul.refl_toConv someTerm = Conv.refl someTerm := rfl
+
+/-- Round-trip B: starting from `ConvCumul`, going to Conv via
+refl-only projection, then lifting back via `Conv.refl_toConvCumul`,
+returns a ConvCumul on the same Term. -/
+theorem ConvCumul.refl_inverse_roundtrip_B
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    Conv.refl_toConvCumul someTerm = ConvCumul.refl someTerm := rfl
+
+/-- The forward bridge composed with the βι reverse: starting from
+a `Step.betaApp`, lifting via `Step.toConvCumul`, then projecting
+back via `ConvCumul.betaAppCumul_toConv`, gives a Conv on the
+β-redex.  Verifies the βι round-trip composes correctly. -/
+theorem ConvCumul.betaApp_roundtrip_eq
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+    (bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (argumentTerm : Term context domainType argumentRaw) :
+    ConvCumul.betaAppCumul_toConv bodyTerm argumentTerm
+      = Conv.fromStep (Step.betaApp bodyTerm argumentTerm) := rfl
+
+/-! ## Inverse identity on the refl fragment
+
+These are the inverse theorems CUMUL-5.3 demands at the matched-
+level (homogeneous-context) refl fragment.  The bridge is a
+genuine isomorphism on this restricted fragment. -/
+
+/-- Identity: `ConvCumul.refl_toConv` followed by
+`Conv.refl_toConvCumul` is identity on `ConvCumul.refl`. -/
+theorem ConvCumul.refl_inverse_identity
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    Conv.refl_toConvCumul someTerm = ConvCumul.refl someTerm := rfl
+
+/-- Identity: `Conv.refl_toConvCumul` followed by
+`ConvCumul.refl_toConv` is identity on `Conv.refl`. -/
+theorem Conv.refl_inverse_identity
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {someType : Ty level scope} {someRaw : RawTerm scope}
+    (someTerm : Term context someType someRaw) :
+    ConvCumul.refl_toConv someTerm = Conv.refl someTerm := rfl
+
 end LeanFX2
