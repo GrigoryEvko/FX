@@ -132,6 +132,10 @@ carrier Step ctors); see file docstring of `HoTT/Univalence.lean`. -/
 #print axioms LeanFX2.Univalence.idToEquivMeta
 #print axioms LeanFX2.Univalence.idToEquivMeta_refl
 #print axioms LeanFX2.Univalence.idToEquivMeta_refl_toFun
+#print axioms LeanFX2.Univalence.idToEquivMeta_refl_invFun
+#print axioms LeanFX2.Univalence.idToEquivMeta_refl_isEquiv_toFun
+#print axioms LeanFX2.Univalence.idToEquivMeta_isEquiv_toFun
+#print axioms LeanFX2.Univalence.idToEquivMeta_refl_eq_reflEquiv
 
 /-! ## §5. Confluence cascade audit (re-shown for completeness).
 

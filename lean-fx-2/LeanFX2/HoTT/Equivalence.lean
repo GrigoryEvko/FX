@@ -118,17 +118,70 @@ upgrade to structure equality. -/
 theorem Equiv.refl_toFun (LeftType : Sort leftLevel) :
     (Equiv.refl LeftType).toFun = fun (leftValue : LeftType) => leftValue := rfl
 
+/-- `(Equiv.refl L).invFun` is the identity function. -/
+theorem Equiv.refl_invFun (LeftType : Sort leftLevel) :
+    (Equiv.refl LeftType).invFun = fun (leftValue : LeftType) => leftValue := rfl
+
 /-- `(Equiv.symm e).toFun = e.invFun` definitionally. -/
 theorem Equiv.symm_toFun
     {LeftType : Sort leftLevel} {RightType : Sort rightLevel}
     (someEquiv : Equiv LeftType RightType) :
     (Equiv.symm someEquiv).toFun = someEquiv.invFun := rfl
 
+/-- `(Equiv.symm e).invFun = e.toFun` definitionally. -/
+theorem Equiv.symm_invFun
+    {LeftType : Sort leftLevel} {RightType : Sort rightLevel}
+    (someEquiv : Equiv LeftType RightType) :
+    (Equiv.symm someEquiv).invFun = someEquiv.toFun := rfl
+
 /-- `Equiv.symm` is involutive on the toFun field. -/
 theorem Equiv.symm_symm_toFun
     {LeftType : Sort leftLevel} {RightType : Sort rightLevel}
     (someEquiv : Equiv LeftType RightType) :
     (Equiv.symm (Equiv.symm someEquiv)).toFun = someEquiv.toFun := rfl
+
+/-- `(Equiv.trans e1 e2).toFun` is the pointwise composition
+`fun x => e2.toFun (e1.toFun x)`.  This is the canonical
+computation rule for transitivity of equivalences and is
+definitional `rfl` because `Equiv.trans` defines `toFun` exactly
+as that lambda. -/
+theorem Equiv.trans_toFun
+    {LeftType : Sort leftLevel} {MiddleType : Sort middleLevel}
+    {RightType : Sort rightLevel}
+    (firstEquiv  : Equiv LeftType MiddleType)
+    (secondEquiv : Equiv MiddleType RightType) :
+    (Equiv.trans firstEquiv secondEquiv).toFun
+      = fun (leftValue : LeftType) =>
+          secondEquiv.toFun (firstEquiv.toFun leftValue) := rfl
+
+/-- `(Equiv.trans e1 e2).invFun` is the pointwise composition of
+inverses in the swapped order: `fun x => e1.invFun (e2.invFun x)`.
+Definitional `rfl`. -/
+theorem Equiv.trans_invFun
+    {LeftType : Sort leftLevel} {MiddleType : Sort middleLevel}
+    {RightType : Sort rightLevel}
+    (firstEquiv  : Equiv LeftType MiddleType)
+    (secondEquiv : Equiv MiddleType RightType) :
+    (Equiv.trans firstEquiv secondEquiv).invFun
+      = fun (rightValue : RightType) =>
+          firstEquiv.invFun (secondEquiv.invFun rightValue) := rfl
+
+/-- `Equiv.trans` left-unit law on `toFun`: composing on the left
+with `Equiv.refl` is the identity equivalence's toFun.
+Definitional `rfl` since `(refl _).toFun = id`. -/
+theorem Equiv.trans_refl_left_toFun
+    {LeftType : Sort leftLevel} {RightType : Sort rightLevel}
+    (someEquiv : Equiv LeftType RightType) :
+    (Equiv.trans (Equiv.refl LeftType) someEquiv).toFun
+      = someEquiv.toFun := rfl
+
+/-- `Equiv.trans` right-unit law on `toFun`: composing on the right
+with `Equiv.refl` is the identity on toFun.  Definitional `rfl`. -/
+theorem Equiv.trans_refl_right_toFun
+    {LeftType : Sort leftLevel} {RightType : Sort rightLevel}
+    (someEquiv : Equiv LeftType RightType) :
+    (Equiv.trans someEquiv (Equiv.refl RightType)).toFun
+      = someEquiv.toFun := rfl
 
 /-- Composing an equivalence with its inverse on `toFun` is the
 identity (pointwise). -/

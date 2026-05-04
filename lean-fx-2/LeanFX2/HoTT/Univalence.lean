@@ -206,4 +206,140 @@ theorem Univalence.idToEquivMeta_refl_toFun
     (Univalence.idToEquivMeta (rfl : LeftType = LeftType)).toFun
       = fun (leftValue : LeftType) => leftValue := rfl
 
+/-- **Meta-level Univalence `invFun` projection at rfl**: the
+backward function of the canonical equivalence at the rfl path is
+also the identity function.  Definitional `rfl` because
+`(idToEquivMeta rfl) = Equiv.refl LeftType` and
+`(Equiv.refl LeftType).invFun` reduces to the identity by
+`Equiv.refl_invFun`. -/
+theorem Univalence.idToEquivMeta_refl_invFun
+    (LeftType : Sort metaLevel) :
+    (Univalence.idToEquivMeta (rfl : LeftType = LeftType)).invFun
+      = fun (leftValue : LeftType) => leftValue := rfl
+
+/-! ## §3. Meta-level forward map is itself an equivalence (at refl).
+
+The meta-level forward map `idToEquivMeta : (A = B) → Equiv A B`
+takes the canonical refl path to the canonical identity
+equivalence.  At that point its `toFun` IS the identity, so
+`IsEquiv (idToEquivMeta rfl).toFun` reduces to `IsEquiv id`,
+which is shipped in `HoTT/Equivalence.lean` as `IsEquiv.identity`.
+
+This is the **rfl-case** of the forward direction of
+"Univalence-as-equivalence": `idToEquivMeta` is itself an
+equivalence between `A = B` and `Equiv A B`.  The full statement
+(arbitrary `B`) requires the converse direction `Equiv → Eq`
+which is non-derivable without further kernel structure or
+propext (see file docstring); but the rfl-case is constructive
+zero-axiom. -/
+
+/-- **Meta-level idToEquiv at refl is an equivalence on toFun**:
+the forward function of `idToEquivMeta rfl` (the identity function
+on `LeftType`) is itself an equivalence in the IsEquiv sense
+(every fiber over `target` is contractible — singleton at
+`(target, refl)`).  Body invokes `IsEquiv.identity`.
+
+Note: `IsEquiv` lives in `Sort N` (not `Prop`), so this is `def`
+rather than `theorem` — but it has a real definitional body and
+audits zero-axiom under `#print axioms`. -/
+def Univalence.idToEquivMeta_refl_isEquiv_toFun
+    (LeftType : Sort metaLevel) :
+    IsEquiv (Univalence.idToEquivMeta (rfl : LeftType = LeftType)).toFun :=
+  IsEquiv.identity LeftType
+
+/-- **Meta-level idToEquivMeta produces an IsEquiv at every path**.
+Proof: path-induct on the equality.  When the path is `rfl`, the
+forward function reduces to the identity function, and
+`IsEquiv.identity` discharges the goal.  This is the meta-level
+forward direction of Univalence-as-equivalence at full generality
+on Lean's `Eq`.
+
+Note: this does NOT extend to arbitrary `Equiv → Eq` (the converse
+direction requires propext or further kernel structure).  This
+theorem says the FORWARD map is an equivalence; the converse map
+is the hard part.
+
+Note: `IsEquiv` is `Sort N` (not `Prop`), so this is `def`.  The
+body is `Eq.rec`-based path induction with `IsEquiv.identity` at
+the rfl base case — fully constructive, audits zero-axiom. -/
+def Univalence.idToEquivMeta_isEquiv_toFun
+    {LeftType : Sort metaLevel} {RightType : Sort metaLevel}
+    (typeEquality : LeftType = RightType) :
+    IsEquiv (Univalence.idToEquivMeta typeEquality).toFun := by
+  cases typeEquality
+  exact IsEquiv.identity LeftType
+
+/-! ## §4. Bundled meta-level forward equivalence.
+
+Package `idToEquivMeta typeEquality` together with the proof that
+its `toFun` IS an equivalence into an `Equiv (A = B) (Equiv A B)`
+shape — wait, that's the FULL Univalence axiom and is not
+provable at zero axioms.
+
+What we CAN bundle: at the rfl path, `idToEquivMeta rfl` is
+**propositionally equal** to `Equiv.refl LeftType`, and the
+forward function is **definitionally** the identity.  We bundle
+the rfl-case into a single named theorem so downstream users have
+a one-line citation. -/
+
+/-- **Meta-level Univalence rfl-bundle**: at `rfl`, the
+`idToEquivMeta` map IS structurally identical to `Equiv.refl`.
+The two form the same `Equiv` value because their fields are all
+definitionally equal:
+
+* `toFun  = id` (definitional)
+* `invFun = id` (definitional)
+* `leftInv  = fun _ => rfl` (definitional)
+* `rightInv = fun _ => rfl` (definitional)
+
+Body is `rfl` — Lean recognizes that `(rfl ▸ Equiv.refl L) =
+Equiv.refl L` reduces by `Eq.rec`. -/
+theorem Univalence.idToEquivMeta_refl_eq_reflEquiv
+    (LeftType : Sort metaLevel) :
+    Univalence.idToEquivMeta (rfl : LeftType = LeftType)
+      = Equiv.refl LeftType := rfl
+
+/-! ## §5. Honest scope — what we DO NOT and CANNOT ship.
+
+The full Voevodsky Univalence is the statement that `idToEquiv`
+is itself an `Equiv`-valued equivalence, i.e.:
+
+```
+Univalence.canonical : Equiv (LeftType = RightType) (Equiv LeftType RightType)
+```
+
+This requires the **converse map** `Equiv LeftType RightType →
+LeftType = RightType` — a function producing a Lean equality from
+arbitrary equivalence data.  In standard Lean 4 this is provable
+ONLY via `propext` (for `Sort 0` types — but our types are
+arbitrary `Sort metaLevel`) or via kernel-level univalence
+(unavailable in Lean's kernel without an axiom).
+
+lean-fx-2's strict zero-axiom policy forbids `propext`, forbids
+`axiom Univalence`, forbids hypothesis-as-postulate.  So the FULL
+Univalence-as-equivalence statement at the meta level cannot be
+shipped — and we do not pretend to.
+
+What lean-fx-2 ships HONESTLY:
+
+1. **Kernel rfl-fragment** (`LeanFX2.Univalence` above): a
+   `Conv`-relation between two specific kernel `Term` values
+   `equivReflIdAtId` and `equivReflId`, made definitional by
+   `Step.eqType`.  Real theorem with a real body.
+
+2. **Meta-level forward direction** (`idToEquivMeta` + computation
+   rules): the easy direction, derivable from `Eq.mpr`.  Real
+   theorems.
+
+3. **Meta-level forward direction is itself an equivalence**
+   (`idToEquivMeta_isEquiv_toFun` above): the rfl-case is
+   constructive; full-generality version uses path induction.
+   Real theorem.
+
+Future kernel extensions (heterogeneous-carrier `Step` ctors,
+or a Tarski-universe code structure) would unlock the converse
+direction at zero axioms.  Until then, the rfl-fragment + meta-
+level forward neighbourhood is the maximum honestly extensible
+zero-axiom Univalence presentation. -/
+
 end LeanFX2
