@@ -557,5 +557,124 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
                (RawTerm.lam applyARaw)
                (RawTerm.lam applyBRaw))
         (RawTerm.lam (RawTerm.refl applyARaw))
+  /-- **Type code for `Ty.arrow`** (non-dependent function type code).
+      Inhabitant of `Ty.universe outerLevel levelLe`, raw form is
+      `RawTerm.arrowCode domainCodeRaw codomainCodeRaw`.
+
+      ## Why VALUE-shaped (schematic raw payloads)
+
+      Mirroring the `funextIntroHet` / `equivReflIdAtId` precedent
+      (Phase 12.A.B8.x), this ctor carries the two subterm raws as
+      SCHEMATIC fields rather than recursive Term children.  This
+      keeps the cascade machinery (`Term.subst`, `Term.substHet`,
+      `Term.pointwise`, `ConvCumul.subst_compatible_*_allais`)
+      structural and refl-discharging, avoiding the need for new
+      `*Cong` rules in `ConvCumul` (which would cascade through
+      every ConvCumul induction).
+
+      A future CUMUL-2.5 may upgrade this ctor to recursive Term
+      subterms once the cong infrastructure is in place; for
+      CUMUL-2.4 we ship the schematic-payload variant to keep
+      cascade arms zero-axiom and atomic.
+
+      Phase 12.A.B-CUMUL-2.4 (typed type-code constructors). -/
+  | arrowCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (domainCodeRaw codomainCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.arrowCode domainCodeRaw codomainCodeRaw)
+  /-- **Type code for `Ty.piTy`** (dependent function type code).
+      Codomain raw lives at `scope + 1` (under the Π binder).  Same
+      VALUE-shaped (schematic raw) discipline as `arrowCode`. -/
+  | piTyCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (domainCodeRaw : RawTerm scope)
+      (codomainCodeRaw : RawTerm (scope + 1)) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.piTyCode domainCodeRaw codomainCodeRaw)
+  /-- **Type code for `Ty.sigmaTy`** (dependent pair type code).
+      Codomain raw lives at `scope + 1` (the second component's type
+      may depend on the first).  Same VALUE-shaped (schematic raw)
+      discipline as `arrowCode`. -/
+  | sigmaTyCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (domainCodeRaw : RawTerm scope)
+      (codomainCodeRaw : RawTerm (scope + 1)) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.sigmaTyCode domainCodeRaw codomainCodeRaw)
+  /-- **Type code for `Ty.product`** (non-dependent pair type code).
+      Schematic raw payloads (firstCodeRaw, secondCodeRaw).  VALUE-
+      shaped per CUMUL-2.4 discipline. -/
+  | productCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (firstCodeRaw secondCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.productCode firstCodeRaw secondCodeRaw)
+  /-- **Type code for `Ty.sum`** (binary sum type code).  Schematic
+      raw payloads (leftCodeRaw, rightCodeRaw).  VALUE-shaped per
+      CUMUL-2.4 discipline. -/
+  | sumCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (leftCodeRaw rightCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.sumCode leftCodeRaw rightCodeRaw)
+  /-- **Type code for `Ty.listType`**.  Single schematic raw payload
+      (elementCodeRaw).  VALUE-shaped per CUMUL-2.4 discipline. -/
+  | listCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (elementCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.listCode elementCodeRaw)
+  /-- **Type code for `Ty.optionType`**.  Single schematic raw payload
+      (elementCodeRaw).  VALUE-shaped per CUMUL-2.4 discipline. -/
+  | optionCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (elementCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.optionCode elementCodeRaw)
+  /-- **Type code for `Ty.eitherType`**.  Schematic raw payloads
+      (leftCodeRaw, rightCodeRaw).  VALUE-shaped per CUMUL-2.4
+      discipline. -/
+  | eitherCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (leftCodeRaw rightCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.eitherCode leftCodeRaw rightCodeRaw)
+  /-- **Type code for `Ty.id`** (identity type code).  Three schematic
+      raw payloads (typeCodeRaw, leftRaw, rightRaw).  VALUE-shaped
+      per CUMUL-2.4 discipline. -/
+  | idCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (typeCodeRaw leftRaw rightRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.idCode typeCodeRaw leftRaw rightRaw)
+  /-- **Type code for `Ty.equiv`** (equivalence type code).  Schematic
+      raw payloads (leftTypeCodeRaw, rightTypeCodeRaw).  VALUE-shaped
+      per CUMUL-2.4 discipline. -/
+  | equivCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope) :
+      Term context (Ty.universe outerLevel levelLe)
+                   (RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw)
 
 end LeanFX2

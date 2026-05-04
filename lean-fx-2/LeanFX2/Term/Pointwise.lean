@@ -220,6 +220,22 @@ theorem Term.subst_pointwise
   -- depend only on `sigma`, not on the TermSubst values.  rfl
   -- discharges the pointwise equality.
   | _, _, .funextIntroHet _ _ _ _ => rfl
+  -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  The subst
+  -- arms in Term/Subst.lean for ALL ten ctors depend ONLY on the
+  -- underlying `sigma` (specifically `sigma.forRaw`), NOT on the
+  -- TermSubst pointwise data.  Both TermSubsts share the SAME
+  -- `sigma`, so all schematic raw payloads substitute identically on
+  -- both sides.  rfl discharges the pointwise equality.
+  | _, _, .arrowCode _ _ _ _ => rfl
+  | _, _, .piTyCode _ _ _ _ => rfl
+  | _, _, .sigmaTyCode _ _ _ _ => rfl
+  | _, _, .productCode _ _ _ _ => rfl
+  | _, _, .sumCode _ _ _ _ => rfl
+  | _, _, .listCode _ _ _ => rfl
+  | _, _, .optionCode _ _ _ => rfl
+  | _, _, .eitherCode _ _ _ _ => rfl
+  | _, _, .idCode _ _ _ _ _ => rfl
+  | _, _, .equivCode _ _ _ _ => rfl
 
 /-! ## TermSubst composition
 

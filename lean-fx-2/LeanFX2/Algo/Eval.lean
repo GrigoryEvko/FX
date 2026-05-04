@@ -230,6 +230,19 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- `Step.eqArrowHet` rule will fire from this ctor, but at the headStep?
   -- level we treat it as a non-redex head (mirror of funextReflAtId).
   | _, _, _, _, .funextIntroHet _ _ _ _ => none
+  -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  No β/ι
+  -- redex head fires from these ctors — they are canonical type
+  -- codes inhabiting `Ty.universe outerLevel`.
+  | _, _, _, _, .arrowCode _ _ _ _ => none
+  | _, _, _, _, .piTyCode _ _ _ _ => none
+  | _, _, _, _, .sigmaTyCode _ _ _ _ => none
+  | _, _, _, _, .productCode _ _ _ _ => none
+  | _, _, _, _, .sumCode _ _ _ _ => none
+  | _, _, _, _, .listCode _ _ _ => none
+  | _, _, _, _, .optionCode _ _ _ => none
+  | _, _, _, _, .eitherCode _ _ _ _ => none
+  | _, _, _, _, .idCode _ _ _ _ _ => none
+  | _, _, _, _, .equivCode _ _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction

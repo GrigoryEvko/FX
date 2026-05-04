@@ -306,6 +306,63 @@ def Term.substHet {mode : Mode}
                           (codomainType.substHet sigma)
                           (applyARaw.subst sigma.forRaw.lift)
                           (applyBRaw.subst sigma.forRaw.lift)
+  -- CUMUL-2.4 typed type-code constructors (VALUE-shaped) —
+  -- heterogeneous-Subst variant.  Each ctor's schematic raw payloads
+  -- substitute via `sigma.forRaw` at the outer scope; binder-shape
+  -- codes (piTyCode, sigmaTyCode) thread `sigma.forRaw.lift` through
+  -- the codomain raw at `scope + 1`.  The level shift on the result
+  -- type `Ty.universe outerLevel levelLe` requires composing
+  -- `levelLe` with `sigma.cumulOk` via `Nat.le_trans` (mirror of
+  -- universeCode's arm).
+  | _, _, .arrowCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.arrowCode outerLevel
+                     (Nat.le_trans levelLe sigma.cumulOk)
+                     (domainCodeRaw.subst sigma.forRaw)
+                     (codomainCodeRaw.subst sigma.forRaw)
+  | _, _, .piTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.piTyCode outerLevel
+                    (Nat.le_trans levelLe sigma.cumulOk)
+                    (domainCodeRaw.subst sigma.forRaw)
+                    (codomainCodeRaw.subst sigma.forRaw.lift)
+  | _, _, .sigmaTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.sigmaTyCode outerLevel
+                       (Nat.le_trans levelLe sigma.cumulOk)
+                       (domainCodeRaw.subst sigma.forRaw)
+                       (codomainCodeRaw.subst sigma.forRaw.lift)
+  | _, _, .productCode outerLevel levelLe firstCodeRaw secondCodeRaw =>
+      Term.productCode outerLevel
+                       (Nat.le_trans levelLe sigma.cumulOk)
+                       (firstCodeRaw.subst sigma.forRaw)
+                       (secondCodeRaw.subst sigma.forRaw)
+  | _, _, .sumCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      Term.sumCode outerLevel
+                   (Nat.le_trans levelLe sigma.cumulOk)
+                   (leftCodeRaw.subst sigma.forRaw)
+                   (rightCodeRaw.subst sigma.forRaw)
+  | _, _, .listCode outerLevel levelLe elementCodeRaw =>
+      Term.listCode outerLevel
+                    (Nat.le_trans levelLe sigma.cumulOk)
+                    (elementCodeRaw.subst sigma.forRaw)
+  | _, _, .optionCode outerLevel levelLe elementCodeRaw =>
+      Term.optionCode outerLevel
+                      (Nat.le_trans levelLe sigma.cumulOk)
+                      (elementCodeRaw.subst sigma.forRaw)
+  | _, _, .eitherCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      Term.eitherCode outerLevel
+                      (Nat.le_trans levelLe sigma.cumulOk)
+                      (leftCodeRaw.subst sigma.forRaw)
+                      (rightCodeRaw.subst sigma.forRaw)
+  | _, _, .idCode outerLevel levelLe typeCodeRaw leftRaw rightRaw =>
+      Term.idCode outerLevel
+                  (Nat.le_trans levelLe sigma.cumulOk)
+                  (typeCodeRaw.subst sigma.forRaw)
+                  (leftRaw.subst sigma.forRaw)
+                  (rightRaw.subst sigma.forRaw)
+  | _, _, .equivCode outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw =>
+      Term.equivCode outerLevel
+                     (Nat.le_trans levelLe sigma.cumulOk)
+                     (leftTypeCodeRaw.subst sigma.forRaw)
+                     (rightTypeCodeRaw.subst sigma.forRaw)
 
 /-! ## Bridge: TermSubst → TermSubstHet (kernel piece for Pattern 2 ⇔ 3 bridge)
 

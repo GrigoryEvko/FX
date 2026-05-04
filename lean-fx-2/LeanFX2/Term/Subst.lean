@@ -294,6 +294,49 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                           (codomainType.subst sigma)
                           (applyARaw.subst sigma.forRaw.lift)
                           (applyBRaw.subst sigma.forRaw.lift)
+  -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  All ten
+  -- ctors substitute their schematic raw payloads via `sigma.forRaw`
+  -- at the outer scope; binder-shape codes (piTyCode, sigmaTyCode)
+  -- thread `sigma.forRaw.lift` through the codomain raw at
+  -- `scope + 1`.  The `Ty.universe outerLevel levelLe` result type
+  -- substitutes to itself (no scope-dependent payload).
+  | _, _, .arrowCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.arrowCode outerLevel levelLe
+                     (domainCodeRaw.subst sigma.forRaw)
+                     (codomainCodeRaw.subst sigma.forRaw)
+  | _, _, .piTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.piTyCode outerLevel levelLe
+                    (domainCodeRaw.subst sigma.forRaw)
+                    (codomainCodeRaw.subst sigma.forRaw.lift)
+  | _, _, .sigmaTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.sigmaTyCode outerLevel levelLe
+                       (domainCodeRaw.subst sigma.forRaw)
+                       (codomainCodeRaw.subst sigma.forRaw.lift)
+  | _, _, .productCode outerLevel levelLe firstCodeRaw secondCodeRaw =>
+      Term.productCode outerLevel levelLe
+                       (firstCodeRaw.subst sigma.forRaw)
+                       (secondCodeRaw.subst sigma.forRaw)
+  | _, _, .sumCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      Term.sumCode outerLevel levelLe
+                   (leftCodeRaw.subst sigma.forRaw)
+                   (rightCodeRaw.subst sigma.forRaw)
+  | _, _, .listCode outerLevel levelLe elementCodeRaw =>
+      Term.listCode outerLevel levelLe (elementCodeRaw.subst sigma.forRaw)
+  | _, _, .optionCode outerLevel levelLe elementCodeRaw =>
+      Term.optionCode outerLevel levelLe (elementCodeRaw.subst sigma.forRaw)
+  | _, _, .eitherCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      Term.eitherCode outerLevel levelLe
+                      (leftCodeRaw.subst sigma.forRaw)
+                      (rightCodeRaw.subst sigma.forRaw)
+  | _, _, .idCode outerLevel levelLe typeCodeRaw leftRaw rightRaw =>
+      Term.idCode outerLevel levelLe
+                  (typeCodeRaw.subst sigma.forRaw)
+                  (leftRaw.subst sigma.forRaw)
+                  (rightRaw.subst sigma.forRaw)
+  | _, _, .equivCode outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw =>
+      Term.equivCode outerLevel levelLe
+                     (leftTypeCodeRaw.subst sigma.forRaw)
+                     (rightTypeCodeRaw.subst sigma.forRaw)
 
 /-! ## Term.subst0 — single-variable β-substitution -/
 

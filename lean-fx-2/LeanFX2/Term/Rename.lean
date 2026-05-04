@@ -315,6 +315,53 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                           (codomainType.rename rho)
                           (applyARaw.rename rho.lift)
                           (applyBRaw.rename rho.lift)
+  -- CUMUL-2.4 typed type-code constructors.  All ten ctors are
+  -- VALUE-shaped (schematic raw payloads, no recursive Term
+  -- children).  Atom-shape codes rename their raw payloads via
+  -- `rho` at the outer scope; binder-shape codes (piTyCode,
+  -- sigmaTyCode) thread `rho.lift` through the codomain raw at
+  -- `scope + 1`.  Both sides project to the matching
+  -- `RawTerm.{X}Code (raw.rename rho) ...` (and `rho.lift` for
+  -- binder slot), aligning definitionally with the ctor's expected
+  -- raw form.  The `Ty.universe outerLevel levelLe` result type
+  -- renames to itself (no scope-dependent payload).
+  | _, _, .arrowCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.arrowCode outerLevel levelLe
+                     (domainCodeRaw.rename rho)
+                     (codomainCodeRaw.rename rho)
+  | _, _, .piTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.piTyCode outerLevel levelLe
+                    (domainCodeRaw.rename rho)
+                    (codomainCodeRaw.rename rho.lift)
+  | _, _, .sigmaTyCode outerLevel levelLe domainCodeRaw codomainCodeRaw =>
+      Term.sigmaTyCode outerLevel levelLe
+                       (domainCodeRaw.rename rho)
+                       (codomainCodeRaw.rename rho.lift)
+  | _, _, .productCode outerLevel levelLe firstCodeRaw secondCodeRaw =>
+      Term.productCode outerLevel levelLe
+                       (firstCodeRaw.rename rho)
+                       (secondCodeRaw.rename rho)
+  | _, _, .sumCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      Term.sumCode outerLevel levelLe
+                   (leftCodeRaw.rename rho)
+                   (rightCodeRaw.rename rho)
+  | _, _, .listCode outerLevel levelLe elementCodeRaw =>
+      Term.listCode outerLevel levelLe (elementCodeRaw.rename rho)
+  | _, _, .optionCode outerLevel levelLe elementCodeRaw =>
+      Term.optionCode outerLevel levelLe (elementCodeRaw.rename rho)
+  | _, _, .eitherCode outerLevel levelLe leftCodeRaw rightCodeRaw =>
+      Term.eitherCode outerLevel levelLe
+                      (leftCodeRaw.rename rho)
+                      (rightCodeRaw.rename rho)
+  | _, _, .idCode outerLevel levelLe typeCodeRaw leftRaw rightRaw =>
+      Term.idCode outerLevel levelLe
+                  (typeCodeRaw.rename rho)
+                  (leftRaw.rename rho)
+                  (rightRaw.rename rho)
+  | _, _, .equivCode outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw =>
+      Term.equivCode outerLevel levelLe
+                     (leftTypeCodeRaw.rename rho)
+                     (rightTypeCodeRaw.rename rho)
 
 /-! ## Term.weaken — convenience wrapper -/
 
