@@ -571,6 +571,201 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                               innerLevel lowerLevel higherLevel
                               cumulOkLow cumulOkHigh cumulMonotone
                               (Nat.le_refl _) (Nat.le_refl _) lowerSecond)
+  -- Phase 12.A.B15 (CUMUL-5.1 prerequisite): β/ι ctors mirroring
+  -- Step.lean's β/ι rules.  One ConvCumul ctor per Step β/ι rule,
+  -- taking the same constructor parameters as the matching Step ctor.
+  -- This unblocks Step.toConvCumul.
+  /-- β-reduction non-dep arrow: `(λx. body) arg ⟶ body[arg/x]`.
+  Mirror of `Step.betaApp`. -/
+  | betaAppCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {domainType codomainType : Ty level scope}
+      {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+      (bodyTerm :
+        Term (context.cons domainType) codomainType.weaken bodyRaw)
+      (argumentTerm : Term context domainType argumentRaw) :
+      ConvCumul (Term.app (Term.lam (codomainType := codomainType) bodyTerm) argumentTerm)
+                (Term.subst0 bodyTerm argumentTerm)
+  /-- β-reduction dependent Π: `(λx. body) arg ⟶ body[arg/x]`.
+  Mirror of `Step.betaAppPi`. -/
+  | betaAppPiCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+      {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+      (bodyTerm : Term (context.cons domainType) codomainType bodyRaw)
+      (argumentTerm : Term context domainType argumentRaw) :
+      ConvCumul (Term.appPi (Term.lamPi (domainType := domainType) bodyTerm) argumentTerm)
+                (Term.subst0 bodyTerm argumentTerm)
+  /-- β-reduction Σ first projection: `fst (pair a b) ⟶ a`.
+  Mirror of `Step.betaFstPair`. -/
+  | betaFstPairCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+      {firstRaw secondRaw : RawTerm scope}
+      (firstValue : Term context firstType firstRaw)
+      (secondValue :
+        Term context (secondType.subst0 firstType firstRaw) secondRaw) :
+      ConvCumul (Term.fst (Term.pair (secondType := secondType) firstValue secondValue))
+                firstValue
+  /-- β-reduction Σ second projection: `snd (pair a b) ⟶ b`.
+  Mirror of `Step.betaSndPair`. -/
+  | betaSndPairCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+      {firstRaw secondRaw : RawTerm scope}
+      (firstValue : Term context firstType firstRaw)
+      (secondValue :
+        Term context (secondType.subst0 firstType firstRaw) secondRaw) :
+      ConvCumul (Term.snd (Term.pair (secondType := secondType) firstValue secondValue))
+                secondValue
+  /-- ι-reduction `boolElim true t e ⟶ t`.  Mirror of
+  `Step.iotaBoolElimTrue`. -/
+  | iotaBoolElimTrueCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {thenRaw elseRaw : RawTerm scope}
+      (thenBranch : Term context motiveType thenRaw)
+      (elseBranch : Term context motiveType elseRaw) :
+      ConvCumul (Term.boolElim Term.boolTrue thenBranch elseBranch) thenBranch
+  /-- ι-reduction `boolElim false t e ⟶ e`.  Mirror of
+  `Step.iotaBoolElimFalse`. -/
+  | iotaBoolElimFalseCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {thenRaw elseRaw : RawTerm scope}
+      (thenBranch : Term context motiveType thenRaw)
+      (elseBranch : Term context motiveType elseRaw) :
+      ConvCumul (Term.boolElim Term.boolFalse thenBranch elseBranch) elseBranch
+  /-- ι-reduction `natElim 0 z s ⟶ z`.  Mirror of
+  `Step.iotaNatElimZero`. -/
+  | iotaNatElimZeroCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {zeroRaw succRaw : RawTerm scope}
+      (zeroBranch : Term context motiveType zeroRaw)
+      (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+      ConvCumul (Term.natElim Term.natZero zeroBranch succBranch) zeroBranch
+  /-- ι-reduction `natElim (succ n) z s ⟶ s n`.  Mirror of
+  `Step.iotaNatElimSucc`. -/
+  | iotaNatElimSuccCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {predecessorRaw zeroRaw succRaw : RawTerm scope}
+      (predecessor : Term context Ty.nat predecessorRaw)
+      (zeroBranch : Term context motiveType zeroRaw)
+      (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw) :
+      ConvCumul (Term.natElim (Term.natSucc predecessor) zeroBranch succBranch)
+                (Term.app succBranch predecessor)
+  /-- ι-reduction `natRec 0 z s ⟶ z`.  Mirror of
+  `Step.iotaNatRecZero`. -/
+  | iotaNatRecZeroCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {zeroRaw succRaw : RawTerm scope}
+      (zeroBranch : Term context motiveType zeroRaw)
+      (succBranch :
+        Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+      ConvCumul (Term.natRec Term.natZero zeroBranch succBranch) zeroBranch
+  /-- ι-reduction `natRec (succ n) z s ⟶ s n (natRec n z s)`.  Mirror of
+  `Step.iotaNatRecSucc`. -/
+  | iotaNatRecSuccCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      {predecessorRaw zeroRaw succRaw : RawTerm scope}
+      (predecessor : Term context Ty.nat predecessorRaw)
+      (zeroBranch : Term context motiveType zeroRaw)
+      (succBranch :
+        Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw) :
+      ConvCumul (Term.natRec (Term.natSucc predecessor) zeroBranch succBranch)
+                (Term.app (Term.app succBranch predecessor)
+                          (Term.natRec predecessor zeroBranch succBranch))
+  /-- ι-reduction `listElim [] n c ⟶ n`.  Mirror of
+  `Step.iotaListElimNil`. -/
+  | iotaListElimNilCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      {nilRaw consRaw : RawTerm scope}
+      (nilBranch : Term context motiveType nilRaw)
+      (consBranch :
+        Term context (Ty.arrow elementType
+                        (Ty.arrow (Ty.listType elementType) motiveType)) consRaw) :
+      ConvCumul (Term.listElim (elementType := elementType) Term.listNil
+                  nilBranch consBranch)
+                nilBranch
+  /-- ι-reduction `listElim (cons h t) n c ⟶ c h t`.  Mirror of
+  `Step.iotaListElimCons`. -/
+  | iotaListElimConsCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      {headRaw tailRaw nilRaw consRaw : RawTerm scope}
+      (headTerm : Term context elementType headRaw)
+      (tailTerm : Term context (Ty.listType elementType) tailRaw)
+      (nilBranch : Term context motiveType nilRaw)
+      (consBranch :
+        Term context (Ty.arrow elementType
+                        (Ty.arrow (Ty.listType elementType) motiveType)) consRaw) :
+      ConvCumul (Term.listElim (Term.listCons headTerm tailTerm) nilBranch consBranch)
+                (Term.app (Term.app consBranch headTerm) tailTerm)
+  /-- ι-reduction `optionMatch none n s ⟶ n`.  Mirror of
+  `Step.iotaOptionMatchNone`. -/
+  | iotaOptionMatchNoneCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      {noneRaw someRaw : RawTerm scope}
+      (noneBranch : Term context motiveType noneRaw)
+      (someBranch : Term context (Ty.arrow elementType motiveType) someRaw) :
+      ConvCumul (Term.optionMatch (elementType := elementType) Term.optionNone
+                  noneBranch someBranch)
+                noneBranch
+  /-- ι-reduction `optionMatch (some v) n s ⟶ s v`.  Mirror of
+  `Step.iotaOptionMatchSome`. -/
+  | iotaOptionMatchSomeCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      {valueRaw noneRaw someRaw : RawTerm scope}
+      (valueTerm : Term context elementType valueRaw)
+      (noneBranch : Term context motiveType noneRaw)
+      (someBranch : Term context (Ty.arrow elementType motiveType) someRaw) :
+      ConvCumul (Term.optionMatch (Term.optionSome valueTerm) noneBranch someBranch)
+                (Term.app someBranch valueTerm)
+  /-- ι-reduction `eitherMatch (inl v) lb rb ⟶ lb v`.  Mirror of
+  `Step.iotaEitherMatchInl`. -/
+  | iotaEitherMatchInlCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {leftType rightType motiveType : Ty level scope}
+      {valueRaw leftRaw rightRaw : RawTerm scope}
+      (valueTerm : Term context leftType valueRaw)
+      (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+      (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw) :
+      ConvCumul (Term.eitherMatch (Term.eitherInl (rightType := rightType) valueTerm)
+                  leftBranch rightBranch)
+                (Term.app leftBranch valueTerm)
+  /-- ι-reduction `eitherMatch (inr v) lb rb ⟶ rb v`.  Mirror of
+  `Step.iotaEitherMatchInr`. -/
+  | iotaEitherMatchInrCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {leftType rightType motiveType : Ty level scope}
+      {valueRaw leftRaw rightRaw : RawTerm scope}
+      (valueTerm : Term context rightType valueRaw)
+      (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+      (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw) :
+      ConvCumul (Term.eitherMatch (Term.eitherInr (leftType := leftType) valueTerm)
+                  leftBranch rightBranch)
+                (Term.app rightBranch valueTerm)
+  /-- ι-reduction `J base (refl rt) ⟶ base`.  Mirror of
+  `Step.iotaIdJRefl`. -/
+  | iotaIdJReflCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (carrier : Ty level scope) (endpoint : RawTerm scope)
+      {motiveType : Ty level scope}
+      {baseRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw) :
+      ConvCumul (Term.idJ (carrier := carrier)
+                          (leftEndpoint := endpoint)
+                          (rightEndpoint := endpoint)
+                  baseCase
+                  (Term.refl carrier endpoint))
+                baseCase
 
 /-! ## REAL TERM-PROMOTION (uses source substantively)
 
