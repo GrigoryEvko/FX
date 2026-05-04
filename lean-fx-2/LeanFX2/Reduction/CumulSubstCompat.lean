@@ -427,6 +427,32 @@ theorem ConvCumul.subst_compatible_funextReflAtId_allais
                                     domainType codomainType applyRaw).substHet termSubstB) :=
   ConvCumul.refl _
 
+/-- Allais arm for `equivIntroHet`: two-subterm cong via
+`equivIntroHetCong`.  Mirrors the structure of
+`subst_compatible_pair_allais` / `subst_compatible_listCons_allais`:
+both subterms recurse via the `compat` IH, and the ctor-level cong
+rule reassembles the pair. -/
+theorem ConvCumul.subst_compatible_equivIntroHet_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty sourceLevel sourceScope}
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (forward : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (forwardCompat :
+      ConvCumul (forward.substHet termSubstA)
+                (forward.substHet termSubstB))
+    (backwardCompat :
+      ConvCumul (backward.substHet termSubstA)
+                (backward.substHet termSubstB)) :
+    ConvCumul ((Term.equivIntroHet forward backward).substHet termSubstA)
+              ((Term.equivIntroHet forward backward).substHet termSubstB) :=
+  ConvCumul.equivIntroHetCong forwardCompat backwardCompat
+
 /-- Allais arm for `natSucc`: single-subterm cong via `natSuccCong`. -/
 theorem ConvCumul.subst_compatible_natSucc_allais
     {mode : Mode}
@@ -2170,6 +2196,11 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .funextReflAtId domainType codomainType applyRaw =>
       ConvCumul.subst_compatible_funextReflAtId_allais _ _
         domainType codomainType applyRaw
+  | _, _, .equivIntroHet forward backward =>
+      ConvCumul.subst_compatible_equivIntroHet_allais
+        forward backward
+        (Term.subst_compatible_pointwise_allais compat forward)
+        (Term.subst_compatible_pointwise_allais compat backward)
 
 /-! # Pattern 3 headline — ConvCumulHomo + paired-env compat → ConvCumul
 

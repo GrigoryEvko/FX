@@ -216,6 +216,9 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .funextRefl _ _ _ => none
   | _, _, _, _, .equivReflIdAtId _ _ _ _ => none
   | _, _, _, _, .funextReflAtId _ _ _ => none
+  -- HoTT heterogeneous-carrier equivIntroHet is a value (canonical
+  -- equivalence form, not a β/ι redex head): no head step fires.
+  | _, _, _, _, .equivIntroHet _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction

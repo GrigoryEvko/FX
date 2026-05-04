@@ -218,6 +218,14 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- back to itself.
   | _, _, .equivReflId carrier =>
       Term.equivReflId (carrier.subst sigma)
+  -- HoTT heterogeneous-carrier equivalence introduction (Phase 12.A.B8.5):
+  -- carrierA + carrierB substitute via `sigma`; the two subterms
+  -- `forward`, `backward` substitute structurally.  No `weaken`-commute
+  -- cast needed because `Ty.equiv` and `Ty.arrow` are non-binder
+  -- carriers whose substitution doesn't introduce a scope shift.
+  | _, _, .equivIntroHet forward backward =>
+      Term.equivIntroHet (Term.subst termSubst forward)
+                         (Term.subst termSubst backward)
   -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
   -- carrier types substitute via `sigma`; the schematic `applyRaw`
   -- payload (at scope+1) substitutes via `sigma.forRaw.lift`.  The

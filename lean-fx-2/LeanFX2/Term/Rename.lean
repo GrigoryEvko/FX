@@ -233,6 +233,16 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- positions which are vacuous).
   | _, _, .equivReflId carrier =>
       Term.equivReflId (carrier.rename rho)
+  -- HoTT heterogeneous-carrier equivalence introduction (Phase 12.A.B8.5):
+  -- carrierA + carrierB rename via `rho`; the two subterms `forward`
+  -- and `backward` rename structurally; raw projection is
+  -- `RawTerm.equivIntro (forwardRaw.rename rho) (backwardRaw.rename
+  -- rho)` which aligns with the ctor's expected raw form.  No type-
+  -- equality cast needed because `Ty.equiv` and `Ty.arrow` rename
+  -- structurally (no binder shift, no weaken interaction).
+  | _, _, .equivIntroHet forward backward =>
+      Term.equivIntroHet (Term.rename termRenaming forward)
+                         (Term.rename termRenaming backward)
   -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
   -- carrier types rename via `rho`; the schematic `applyRaw` payload
   -- (at scope+1) renames via `rho.lift`.  The result type involves

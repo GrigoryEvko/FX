@@ -547,6 +547,23 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {innerSecond : Term context innerType innerSecondRaw}
       (innerRel : ConvCumul innerFirst innerSecond) :
       ConvCumul (Term.subsume innerFirst) (Term.subsume innerSecond)
+  /-- Homogeneous equivIntroHet: ConvCumul-related forward + backward
+  subterms lift to ConvCumul-related equivIntroHet.  Two-subterm cong
+  rule mirroring `pairCong` and `listConsCong`.  Phase 12.A.B8.5. -/
+  | equivIntroHetCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {forwardFirstRaw forwardSecondRaw
+       backwardFirstRaw backwardSecondRaw : RawTerm scope}
+      {forwardFirst : Term context (Ty.arrow carrierA carrierB) forwardFirstRaw}
+      {forwardSecond : Term context (Ty.arrow carrierA carrierB) forwardSecondRaw}
+      {backwardFirst : Term context (Ty.arrow carrierB carrierA) backwardFirstRaw}
+      {backwardSecond : Term context (Ty.arrow carrierB carrierA) backwardSecondRaw}
+      (forwardRel : ConvCumul forwardFirst forwardSecond)
+      (backwardRel : ConvCumul backwardFirst backwardSecond) :
+      ConvCumul (Term.equivIntroHet forwardFirst backwardFirst)
+                (Term.equivIntroHet forwardSecond backwardSecond)
   /-- Homogeneous cumulUp: ConvCumul-related lower terms lift to ConvCumul-
   related cumulUp.  This is the recursive cumul-up case: when
   lower-side terms are themselves cumul-related, their cumulUp wrappings

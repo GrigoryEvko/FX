@@ -410,5 +410,40 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
                (RawTerm.lam (RawTerm.refl applyRaw))
                (RawTerm.lam (RawTerm.refl applyRaw)))
         (RawTerm.lam (RawTerm.refl applyRaw))
+  /-- **Heterogeneous-carrier equivalence introduction.**
+      Inhabitant of `Ty.equiv carrierA carrierB` for arbitrary
+      carriers A, B at the same universe level.  Packages a forward
+      function `carrierA → carrierB` and a backward function
+      `carrierB → carrierA`; the raw form is `RawTerm.equivIntro
+      forwardRaw backwardRaw`.
+
+      ## Why this generalizes `Term.equivReflId`
+
+      `Term.equivReflId carrier` ships the canonical identity
+      equivalence at `Ty.equiv carrier carrier` — the rfl-fragment
+      of Univalence.  Heterogeneous Univalence (`(A B : Type) →
+      (A = B) ≃ (A ≃ B)` for ARBITRARY A ≠ B) needs a Term ctor that
+      carries arbitrary forward + backward witnesses; this ctor
+      provides exactly that.
+
+      ## Cascade contract
+
+      The two subterms (`forward`, `backward`) propagate through
+      `Term.rename`, `Term.subst`, `Term.substHet`, `Term.pointwise`,
+      and the Allais arm of `ConvCumul.subst_compatible` via two-
+      subterm cong infrastructure (mirror of `pairCong` /
+      `listConsCong`).  No new Step β/ι rule fires from this ctor
+      (it is a value); only `Step.par.equivIntroHetCong` allows
+      parallel reduction inside its subterms.
+
+      Phase 12.A.B8.5 (heterogeneous Univalence prerequisite). -/
+  | equivIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {forwardRaw backwardRaw : RawTerm scope}
+      (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+      (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw) :
+      Term context (Ty.equiv carrierA carrierB)
+                   (RawTerm.equivIntro forwardRaw backwardRaw)
 
 end LeanFX2

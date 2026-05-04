@@ -190,6 +190,15 @@ theorem Term.subst_pointwise
   | _, _, .funextRefl _ _ _ => rfl
   | _, _, .equivReflIdAtId _ _ _ _ => rfl
   | _, _, .funextReflAtId _ _ _ => rfl
+  -- HoTT heterogeneous-carrier equivIntroHet (Phase 12.A.B8.5): the
+  -- subst arm in Term/Subst.lean recurses on the two subterms via
+  -- Term.subst (which respects pointwise hypothesis by structural
+  -- IH).  Pointwise equality propagates through both forward and
+  -- backward subterms, then the ctor reassembles identically.
+  | _, _, .equivIntroHet forward backward => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq forward,
+          Term.subst_pointwise pointwiseEq backward]
 
 /-! ## TermSubst composition
 

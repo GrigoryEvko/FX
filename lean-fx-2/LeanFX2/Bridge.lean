@@ -204,5 +204,12 @@ theorem Step.par.toRawBridge
   -- `RawTerm.lam (RawTerm.refl applyRaw)`.  RawStep.par.refl _
   -- discharges (Phase 12.A.B8.2 prep).
   | eqArrow _ _ _ => exact RawStep.par.refl _
+  -- Heterogeneous equivIntroHet cong: both subterms parallel-reduce.
+  -- Source raw `RawTerm.equivIntro forwardRawSource backwardRawSource`,
+  -- target raw `RawTerm.equivIntro forwardRawTarget backwardRawTarget`.
+  -- The bridge collapses to `RawStep.par.equivIntroCong (forwardIH)
+  -- (backwardIH)` — raw indices align by construction.  Phase 12.A.B8.5.
+  | equivIntroHetCong _ _ ihForward ihBackward =>
+      exact RawStep.par.equivIntroCong ihForward ihBackward
 
 end LeanFX2

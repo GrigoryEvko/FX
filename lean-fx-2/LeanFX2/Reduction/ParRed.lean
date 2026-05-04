@@ -898,6 +898,28 @@ inductive Step.par :
                              domainType codomainType applyRaw)
         (Term.funextRefl (context := context)
                          domainType codomainType applyRaw)
+  /-- Parallel-cong: heterogeneous equivIntroHet reduces in both
+  subterms.  Phase 12.A.B8.5: two-subterm cong rule mirroring
+  `Step.par.pair` / `Step.par.listCons` — forward + backward
+  parallel-reduce simultaneously, the carrier types are fixed,
+  the ctor reassembles. -/
+  | equivIntroHetCong {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {forwardRawSource forwardRawTarget
+       backwardRawSource backwardRawTarget : RawTerm scope}
+      {forwardSource :
+        Term context (Ty.arrow carrierA carrierB) forwardRawSource}
+      {forwardTarget :
+        Term context (Ty.arrow carrierA carrierB) forwardRawTarget}
+      {backwardSource :
+        Term context (Ty.arrow carrierB carrierA) backwardRawSource}
+      {backwardTarget :
+        Term context (Ty.arrow carrierB carrierA) backwardRawTarget} :
+      Step.par forwardSource forwardTarget →
+      Step.par backwardSource backwardTarget →
+      Step.par (Term.equivIntroHet forwardSource backwardSource)
+               (Term.equivIntroHet forwardTarget backwardTarget)
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 

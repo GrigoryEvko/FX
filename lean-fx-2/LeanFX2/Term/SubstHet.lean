@@ -236,6 +236,14 @@ def Term.substHet {mode : Mode}
   -- constant (substituent var-0 of an identity-lift is itself).
   | _, _, .equivReflId carrier =>
       Term.equivReflId (carrier.substHet sigma)
+  -- HoTT heterogeneous-carrier equivalence introduction (Phase 12.A.B8.5)
+  -- — heterogeneous-Subst variant.  carrierA + carrierB substitute via
+  -- `sigma`; the two subterms `forward`, `backward` substitute
+  -- structurally.  No `weaken`-commute cast needed because `Ty.equiv`
+  -- and `Ty.arrow` are non-binder carriers (no scope shift).
+  | _, _, .equivIntroHet forward backward =>
+      Term.equivIntroHet (Term.substHet termSubstHet forward)
+                         (Term.substHet termSubstHet backward)
   -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
   -- mirror the homogeneous Subst arm, swapping in `Ty.weaken_substHet_commute`.
   | _, _, .funextRefl domainType codomainType applyRaw =>
