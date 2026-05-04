@@ -973,6 +973,23 @@ inductive Step.par :
                          innerLevel innerLevelLt
                          carrierARaw carrierBRaw equivWitness)
         equivWitness
+  /-- **Heterogeneous funext at the parallel level.**  Mirrors
+  `Step.eqArrowHet`: the heterogeneous-carrier funext-introduction
+  Term at Id-of-arrow parallel-reduces in one step to the canonical
+  pointwise-refl funext witness instantiated at `applyARaw`.  Both
+  project to the SAME raw form `RawTerm.lam (RawTerm.refl applyARaw)`
+  (the architectural raw-alignment trick of `Term.funextIntroHet`),
+  so `Step.par.toRawBridge` returns `RawStep.par.refl _`.
+  Phase 12.A.B8.B (heterogeneous funext at par level). -/
+  | eqArrowHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyARaw applyBRaw : RawTerm (scope + 1)) :
+      Step.par
+        (Term.funextIntroHet (context := context)
+                             domainType codomainType applyARaw applyBRaw)
+        (Term.funextRefl (context := context)
+                         domainType codomainType applyARaw)
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 
@@ -1123,6 +1140,12 @@ theorem Step.toPar
   | eqTypeHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness =>
       exact Step.par.eqTypeHet innerLevel innerLevelLt
                                 carrierARaw carrierBRaw equivWitness
+  -- Heterogeneous funext lift to par: source `Term.funextIntroHet
+  -- ... applyARaw applyBRaw` has no inner steps (it's a leaf-
+  -- canonical VALUE ctor, like `funextReflAtId`), so apply
+  -- `Step.par.eqArrowHet` directly.
+  | eqArrowHet domainType codomainType applyARaw applyBRaw =>
+      exact Step.par.eqArrowHet domainType codomainType applyARaw applyBRaw
 
 /-! ## Cast helpers — propositional transport for indices. -/
 

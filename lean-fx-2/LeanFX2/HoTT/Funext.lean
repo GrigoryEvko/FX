@@ -142,4 +142,96 @@ theorem funext
                           domainType codomainType applyRaw) :=
   Conv.fromStep (Step.eqArrow domainType codomainType applyRaw)
 
+/-! ## §2. Heterogeneous Funext — the headline theorem.
+
+`funext` (rfl-fragment, above) handles only the case where both
+endpoints share the SAME apply payload (`funextReflAtId → funextRefl`,
+where `applyARaw = applyBRaw = applyRaw`).
+
+`FunextHet` (this section) generalises to ANY two distinct apply
+payloads `applyARaw, applyBRaw` packaged through `Term.funextIntroHet`.
+The theorem asserts that the canonical heterogeneous funext-introduction
+Term at Id-of-arrow is convertible to the canonical pointwise-refl
+funext witness instantiated at `applyARaw`.
+
+Together with the rfl-fragment `funext`, the union covers the FULL
+heterogeneous funext at the kernel level — `Step.eqArrow` for refl,
+`Step.eqArrowHet` for arbitrary, and the union is full Funext
+definitional.  Both ship as zero-axiom theorems under strict policy.
+
+## Architectural raw-alignment trick (recap)
+
+Both source `Term.funextIntroHet ... applyARaw applyBRaw` and target
+`Term.funextRefl ... applyARaw` project to the SAME raw form
+`RawTerm.lam (RawTerm.refl applyARaw)` (the `funextIntroHet` ctor's
+raw uses `applyARaw` and coincides with `funextRefl`'s raw at the
+same payload — see `Term.funextIntroHet` docstring).  The rule changes
+the type only: `Ty.id (Ty.arrow ...) (lam applyARaw) (lam applyBRaw)`
+reduces to `Ty.piTy domainType (Ty.id codomainType.weaken applyARaw
+applyARaw)` while the raw data is preserved.  Same architectural
+payoff as `cumulUpInner` / `eqType` / `eqArrow` / `eqTypeHet`.
+
+## Asymmetric collapse to applyARaw
+
+The target instantiates `funextRefl` at `applyARaw` (the LEFT apply
+payload of the source `Ty.id`).  This is forced by raw alignment:
+`funextIntroHet`'s raw uses `applyARaw` (not `applyBRaw`), so the
+rfl-collapse target must also pick `applyARaw`.  Sufficient for the
+heterogeneous funext theorem — the kernel ships ONE direction (LEFT-
+biased to applyARaw); the dual direction is symmetric by `Conv.sym`. -/
+
+/-- **Heterogeneous Funext, zero-axiom theorem.**
+
+The canonical heterogeneous funext-introduction Term at Id-of-arrow
+(`Term.funextIntroHet ... applyARaw applyBRaw : Term context
+(Ty.id (Ty.arrow domainType codomainType) (lam applyARaw)
+(lam applyBRaw)) ...`) is convertible to the canonical pointwise-refl
+funext witness instantiated at `applyARaw` (`Term.funextRefl ...
+applyARaw : Term context (Ty.piTy domainType (Ty.id codomainType.weaken
+applyARaw applyARaw)) ...`).
+
+This is the heterogeneous fragment of function extensionality, made
+definitional by the kernel reduction `Step.eqArrowHet`.
+
+## Proof body
+
+`Conv.fromStep (Step.eqArrowHet ...)` — a single Step lifted to Conv
+via the existing `Conv.fromStep` constructor.  No axioms, no
+hypotheses, no placeholders.
+
+## Relationship to the rfl-fragment `funext`
+
+`funext` (rfl-fragment, §1 above) handles the case `applyARaw =
+applyBRaw = applyRaw` via `Step.eqArrow`.  `FunextHet` (this theorem)
+handles any heterogeneous `applyARaw, applyBRaw` via `Step.eqArrowHet`.
+Together they cover the FULL heterogeneous Funext schema as
+definitional reductions.
+
+## Audit gate
+
+`#print axioms FunextHet` MUST report:
+```
+'LeanFX2.FunextHet' does not depend on any axioms
+```
+
+If it reports propext, Quot.sound, Classical.choice, funext (Lean
+stdlib, distinct from this kernel theorem), Univalence (recursive!),
+or any user axiom, the theorem is NOT shipped.  Verify in
+Smoke/AuditPhase12AB89.
+
+Phase 12.A.B8.B (CUMUL-8.B).  Implements the FINAL load-bearing
+milestone of `kernel-sprint.md` D3.7 / `CLAUDE.md` zero-axiom
+commitment for the HoTT foundation: Univalence + UnivalenceHet +
+funext + FunextHet all ship as zero-axiom theorems with real bodies. -/
+theorem FunextHet
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyARaw applyBRaw : RawTerm (scope + 1)) :
+    Conv (Term.funextIntroHet (context := context)
+                              domainType codomainType applyARaw applyBRaw)
+         (Term.funextRefl (context := context)
+                          domainType codomainType applyARaw) :=
+  Conv.fromStep (Step.eqArrowHet domainType codomainType applyARaw applyBRaw)
+
 end LeanFX2

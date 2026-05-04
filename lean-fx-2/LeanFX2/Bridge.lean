@@ -232,5 +232,16 @@ theorem Step.par.toRawBridge
   -- Same architectural payoff as `cumulUpInnerCong` / `eqType` /
   -- `eqArrow`.
   | eqTypeHet _ _ _ _ _ => exact RawStep.par.refl _
+  -- Heterogeneous funext reduction (Phase 12.A.B8.B): both source
+  -- `Term.funextIntroHet ... applyARaw applyBRaw` and target
+  -- `Term.funextRefl ... applyARaw` project to the SAME raw form
+  -- `RawTerm.lam (RawTerm.refl applyARaw)` (the architectural raw-
+  -- alignment trick — `funextIntroHet`'s raw uses `applyARaw` and
+  -- coincides with `funextRefl`'s raw at the same payload).  The
+  -- bridge therefore collapses to `RawStep.par.refl _` — no new
+  -- `RawStep.par.eqArrowHet` ctor needed, the rule is purely a
+  -- typed-level type change with raw preserved.  Same architectural
+  -- payoff as `cumulUpInnerCong` / `eqType` / `eqArrow` / `eqTypeHet`.
+  | eqArrowHet _ _ _ _ => exact RawStep.par.refl _
 
 end LeanFX2

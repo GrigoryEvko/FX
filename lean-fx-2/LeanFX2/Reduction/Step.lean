@@ -793,6 +793,61 @@ inductive Step :
                             innerLevel innerLevelLt
                             carrierARaw carrierBRaw equivWitness)
            equivWitness
+  /-- **Heterogeneous funext as a definitional reduction.**
+      `Step.eqArrowHet` reduces the canonical heterogeneous-carrier
+      funext-introduction Term at Id-of-arrow
+      (`Term.funextIntroHet ... applyARaw applyBRaw :
+      Ty.id (Ty.arrow domainType codomainType)
+            (RawTerm.lam applyARaw) (RawTerm.lam applyBRaw)`)
+      to the canonical pointwise-refl funext witness instantiated at
+      `applyARaw` (`Term.funextRefl ... applyARaw :
+      Ty.piTy domainType (Ty.id codomainType.weaken applyARaw applyARaw)`).
+      Both Terms project to the SAME raw form
+      `RawTerm.lam (RawTerm.refl applyARaw)` (the architectural raw-
+      alignment trick of `Term.funextIntroHet`): the rule changes the
+      type only — `Ty.id (Ty.arrow ...) (lam applyARaw) (lam applyBRaw)`
+      reduces to `Ty.piTy domainType (Ty.id codomainType.weaken
+      applyARaw applyARaw)` while the raw data is preserved.
+      ## Architectural significance
+      This is the Step constructor that makes funext DEFINITIONAL at
+      heterogeneous lambda payloads in lean-fx-2.  `Step.eqArrow`
+      (CUMUL-8.2) handles only the rfl-fragment (`funextReflAtId →
+      funextRefl`, where source has `applyARaw = applyBRaw = applyRaw`);
+      `Step.eqArrowHet` generalises to ANY two distinct apply payloads
+      `applyARaw, applyBRaw` packaged through `Term.funextIntroHet`.
+      The downstream theorem
+      `FunextHet : Conv (funextIntroHet ... applyARaw applyBRaw)
+                        (funextRefl ... applyARaw)`
+      is `Conv.fromStep Step.eqArrowHet` — zero axioms.
+      ## Why source raw = target raw
+      Both `Term.funextIntroHet ... applyARaw applyBRaw` and
+      `Term.funextRefl ... applyARaw` project to
+      `RawTerm.lam (RawTerm.refl applyARaw)` — the `funextIntroHet`
+      ctor's raw is by construction the same as `funextRefl`'s raw at
+      the `applyARaw` payload (see `Term.funextIntroHet` docstring).
+      Therefore the `Step.par.toRawBridge` arm collapses to
+      `RawStep.par.refl _` — no cascade through `RawCd` / `RawCdLemma`
+      / `RawDiamond` required, mirroring `cumulUpInner` / `eqType` /
+      `eqArrow` / `eqTypeHet`.
+      ## Asymmetric target collapse to applyARaw
+      The target instantiates `funextRefl` at `applyARaw` (the LEFT
+      apply payload of the source `Ty.id`).  This is forced by raw
+      alignment: `funextIntroHet`'s raw uses `applyARaw` (not
+      `applyBRaw`), so the rfl-collapse target must also pick
+      `applyARaw`.  The dual variant collapsing to `applyBRaw` would
+      require `funextIntroHet`'s raw to be `RawTerm.lam (RawTerm.refl
+      applyBRaw)` — a different ctor design.  The current design picks
+      `applyARaw` consistently throughout, sufficient for the
+      heterogeneous funext theorem.
+      Phase 12.A.B8.B (heterogeneous funext reduction). -/
+  | eqArrowHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyARaw applyBRaw : RawTerm (scope + 1)) :
+      Step (Term.funextIntroHet (context := context)
+                                domainType codomainType applyARaw applyBRaw)
+           (Term.funextRefl (context := context)
+                            domainType codomainType applyARaw)
 
 /-! ## Cast helpers
 

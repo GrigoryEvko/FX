@@ -862,6 +862,24 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                                  innerLevel innerLevelLt
                                  carrierARaw carrierBRaw equivWitness)
                 equivWitness
+  /-- **Heterogeneous funext at the ConvCumul level.**  Mirror of
+  `Step.eqArrowHet`: the heterogeneous-carrier funext-introduction
+  Term at Id-of-arrow is ConvCumul-related to the canonical pointwise-
+  refl funext witness instantiated at `applyARaw`.  ConvCumul absorbs
+  the type change (`Ty.id (Ty.arrow ...) (lam applyARaw) (lam applyBRaw)`
+  on the source vs `Ty.piTy domainType (Ty.id codomainType.weaken
+  applyARaw applyARaw)` on the target) — its own typing relation is
+  heterogeneous on Ty by design.
+  Phase 12.A.B8.B (heterogeneous funext at ConvCumul level). -/
+  | iotaEqArrowHetCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyARaw applyBRaw : RawTerm (scope + 1)) :
+      ConvCumul (Term.funextIntroHet (context := context)
+                                     domainType codomainType
+                                     applyARaw applyBRaw)
+                (Term.funextRefl (context := context)
+                                 domainType codomainType applyARaw)
 
 /-! ## REAL TERM-PROMOTION (uses source substantively)
 

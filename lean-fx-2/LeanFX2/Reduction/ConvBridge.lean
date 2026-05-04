@@ -202,6 +202,10 @@ theorem Step.toConvCumul
   | eqTypeHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness =>
       exact ConvCumul.iotaEqTypeHetCumul innerLevel innerLevelLt
                                           carrierARaw carrierBRaw equivWitness
+  -- Heterogeneous funext lifts to ConvCumul.iotaEqArrowHetCumul.
+  | eqArrowHet domainType codomainType applyARaw applyBRaw =>
+      exact ConvCumul.iotaEqArrowHetCumul domainType codomainType
+                                           applyARaw applyBRaw
 
 /-! ## StepStar.toConvCumul
 
