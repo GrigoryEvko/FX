@@ -84,6 +84,8 @@ inductive Term.HeadCtor : Type
   | subsume
   | universeCode
   | cumulUp
+  | equivReflId
+  | funextRefl
   deriving DecidableEq
 
 /-- Project a typed Term to its flat head-ctor tag.  Full enumeration
@@ -124,6 +126,8 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .subsume _ => .subsume
   | .universeCode _ _ _ _ => .universeCode
   | .cumulUp _ _ _ _ _ _ _ _ _ => .cumulUp
+  | .equivReflId _ => .equivReflId
+  | .funextRefl _ _ _ => .funextRefl
 
 /-- True iff the Term is in weak head normal form: head ctor is not
 a β/ι redex.  Recursion happens only on the immediate head shape;
@@ -158,6 +162,10 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   -- Cumul-up is a value (the inner term is a closed universe-code,
   -- and cumulUp itself is not a β/ι redex head)
   | .cumulUp _ _ _ _ _ _ _ _ _ => true
+  -- HoTT canonical equivalence/funext refl-fragment witnesses are
+  -- values (not β/ι redex heads).
+  | .equivReflId _ => true
+  | .funextRefl _ _ _ => true
   -- Application is WHNF iff function head is NOT .lam
   | .app functionTerm _ =>
       !(functionTerm.headCtor == .lam)
@@ -249,6 +257,8 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If a term's `headCtor` is `boolFalse`, its raw is `RawTerm.boolFalse`. -/
 theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
@@ -289,6 +299,8 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If a term's `headCtor` is `natZero`, its raw is `RawTerm.natZero`. -/
 theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
@@ -329,6 +341,8 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If a term's `headCtor` is `listNil`, its raw is `RawTerm.listNil`. -/
 theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
@@ -369,6 +383,8 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If a term's `headCtor` is `optionNone`, its raw is `RawTerm.optionNone`. -/
 theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
@@ -409,6 +425,8 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-! ## Payload-bearing canonical heads — existential raw recovery
 
@@ -460,6 +478,8 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If `someTerm.headCtor = .listCons`, the raw is `listCons`-shaped. -/
 theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
@@ -500,6 +520,8 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If `someTerm.headCtor = .optionSome`, the raw is `optionSome`-shaped. -/
 theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
@@ -540,6 +562,8 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If `someTerm.headCtor = .eitherInl`, the raw is `eitherInl`-shaped. -/
 theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
@@ -580,6 +604,8 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If `someTerm.headCtor = .eitherInr`, the raw is `eitherInr`-shaped. -/
 theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
@@ -620,6 +646,8 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 /-- If a term's `headCtor` is `unit`, its raw is `RawTerm.unit`. -/
 theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
@@ -660,5 +688,7 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
 
 end LeanFX2

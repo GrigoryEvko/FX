@@ -231,6 +231,28 @@ def Term.substHet {mode : Mode}
                    cumulOkLow cumulOkHigh cumulMonotone
                    levelLeLow (Nat.le_trans levelLeHigh sigma.cumulOk)
                    lowerTerm
+  -- HoTT canonical identity equivalence (Phase 12.A.B8.1): carrier
+  -- substitutes via `sigma`; the raw-side identity-lambda shape is
+  -- constant (substituent var-0 of an identity-lift is itself).
+  | _, _, .equivReflId carrier =>
+      Term.equivReflId (carrier.substHet sigma)
+  -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
+  -- mirror the homogeneous Subst arm, swapping in `Ty.weaken_substHet_commute`.
+  | _, _, .funextRefl domainType codomainType applyRaw =>
+      show Term targetCtx
+        (Ty.piTy (domainType.substHet sigma)
+          (Ty.id (codomainType.weaken.substHet sigma.lift)
+            (applyRaw.subst sigma.forRaw.lift)
+            (applyRaw.subst sigma.forRaw.lift)))
+        (RawTerm.lam (RawTerm.refl (applyRaw.subst sigma.forRaw.lift))) from
+      let codomainEqInverse :
+          (codomainType.substHet sigma).weaken =
+            codomainType.weaken.substHet sigma.lift :=
+        (Ty.weaken_substHet_commute sigma codomainType).symm
+      codomainEqInverse ▸
+        Term.funextRefl (domainType.substHet sigma)
+                        (codomainType.substHet sigma)
+                        (applyRaw.subst sigma.forRaw.lift)
 
 /-! ## Bridge: TermSubst → TermSubstHet (kernel piece for Pattern 2 ⇔ 3 bridge)
 

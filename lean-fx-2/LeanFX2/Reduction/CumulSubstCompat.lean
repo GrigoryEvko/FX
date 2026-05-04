@@ -356,6 +356,38 @@ theorem ConvCumul.subst_compatible_universeCode_allais
                                   innerLevel outerLevel cumulOk levelLe).substHet termSubstB) :=
   ConvCumul.refl _
 
+/-- Allais arm for `equivReflId`: the substHet arm depends only on
+sigma (not on the per-position TermSubstHet data), so both sides
+reduce to the same Term and `ConvCumul.refl` discharges. -/
+theorem ConvCumul.subst_compatible_equivReflId_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (carrier : Ty sourceLevel sourceScope) :
+    ConvCumul ((Term.equivReflId (context := sourceCtx) carrier).substHet termSubstA)
+              ((Term.equivReflId (context := sourceCtx) carrier).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `funextRefl`: same shape as `equivReflId` arm —
+the substHet arm depends only on sigma, so both sides agree. -/
+theorem ConvCumul.subst_compatible_funextRefl_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (domainType codomainType : Ty sourceLevel sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    ConvCumul ((Term.funextRefl (context := sourceCtx)
+                                domainType codomainType applyRaw).substHet termSubstA)
+              ((Term.funextRefl (context := sourceCtx)
+                                domainType codomainType applyRaw).substHet termSubstB) :=
+  ConvCumul.refl _
+
 /-- Allais arm for `natSucc`: single-subterm cong via `natSuccCong`. -/
 theorem ConvCumul.subst_compatible_natSucc_allais
     {mode : Mode}
@@ -2088,6 +2120,11 @@ def Term.subst_compatible_pointwise_allais
         innerLevel lowerLevel higherLevel
         cumulOkLow cumulOkHigh cumulMonotone
         levelLeLow levelLeHigh lowerTerm
+  | _, _, .equivReflId carrier =>
+      ConvCumul.subst_compatible_equivReflId_allais _ _ carrier
+  | _, _, .funextRefl domainType codomainType applyRaw =>
+      ConvCumul.subst_compatible_funextRefl_allais _ _
+        domainType codomainType applyRaw
 
 /-! # Pattern 3 headline — ConvCumulHomo + paired-env compat → ConvCumul
 

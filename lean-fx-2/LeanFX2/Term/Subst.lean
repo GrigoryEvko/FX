@@ -212,6 +212,32 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                    innerLevel lowerLevel higherLevel
                    cumulOkLow cumulOkHigh cumulMonotone
                    levelLeLow levelLeHigh lowerTerm
+  -- HoTT canonical identity equivalence (Phase 12.A.B8.1): carrier
+  -- substitutes via `sigma`; the raw-side identity-lambda shape is
+  -- constant, with `RawTerm.var 0` substituting through identity-lift
+  -- back to itself.
+  | _, _, .equivReflId carrier =>
+      Term.equivReflId (carrier.subst sigma)
+  -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
+  -- carrier types substitute via `sigma`; the schematic `applyRaw`
+  -- payload (at scope+1) substitutes via `sigma.forRaw.lift`.  The
+  -- result type involves `codomainType.weaken.id ...`; we cast via
+  -- `Ty.weaken_subst_commute` like the `lam` arm.
+  | _, _, .funextRefl domainType codomainType applyRaw =>
+      show Term targetCtx
+        (Ty.piTy (domainType.subst sigma)
+          (Ty.id (codomainType.weaken.subst sigma.lift)
+            (applyRaw.subst sigma.forRaw.lift)
+            (applyRaw.subst sigma.forRaw.lift)))
+        (RawTerm.lam (RawTerm.refl (applyRaw.subst sigma.forRaw.lift))) from
+      let codomainEqInverse :
+          (codomainType.subst sigma).weaken =
+            codomainType.weaken.subst sigma.lift :=
+        (Ty.weaken_subst_commute sigma codomainType).symm
+      codomainEqInverse ▸
+        Term.funextRefl (domainType.subst sigma)
+                        (codomainType.subst sigma)
+                        (applyRaw.subst sigma.forRaw.lift)
 
 /-! ## Term.subst0 — single-variable β-substitution -/
 

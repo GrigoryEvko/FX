@@ -182,6 +182,12 @@ theorem Term.subst_pointwise
   -- substitution.  Both sides identical regardless of forTy/forRaw
   -- pointwise hypothesis.
   | _, _, .cumulUp _ _ _ _ _ _ _ _ _ => rfl
+  -- HoTT canonical equivalence/funext refl-fragment witnesses: their
+  -- subst arms in Term/Subst.lean depend ONLY on the underlying
+  -- Subst (not on the TermSubst pointwise data), so both sides
+  -- reduce to identical shapes.
+  | _, _, .equivReflId _ => rfl
+  | _, _, .funextRefl _ _ _ => rfl
 
 /-! ## TermSubst composition
 

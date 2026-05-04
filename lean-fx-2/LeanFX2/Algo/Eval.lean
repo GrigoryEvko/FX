@@ -210,6 +210,10 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .universeCode _ _ _ _ => none
   -- Cumul-up is a value (not a redex head)
   | _, _, _, _, .cumulUp _ _ _ _ _ _ _ _ _ => none
+  -- HoTT canonical equivalence/funext refl-fragment witnesses are
+  -- values (not β/ι redex heads).
+  | _, _, _, _, .equivReflId _ => none
+  | _, _, _, _, .funextRefl _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction

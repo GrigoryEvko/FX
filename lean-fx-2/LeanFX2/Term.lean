@@ -318,5 +318,43 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
                     (RawTerm.universeCode innerLevel.toNat)) :
       Term ctxHigh (Ty.universe higherLevel levelLeHigh)
            (RawTerm.universeCode innerLevel.toNat)
+  /-- **The canonical identity equivalence `A ≃ A`.**  Inhabitant of
+      `Ty.equiv carrier carrier`, raw form is `RawTerm.equivIntro id id`
+      where `id = RawTerm.lam (RawTerm.var 0)` is the syntactic
+      identity function.  This term is the reduction TARGET of
+      `Step.eqType` (the rfl-fragment of Univalence): when an
+      identity proof of `Ty.id carrier raw raw` (which can only be
+      `Term.refl carrier raw`) reduces under Univalence, it becomes
+      this canonical equivalence.
+      Phase 12.A.B8.1 (CUMUL-8.1 prerequisite). -/
+  | equivReflId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope) :
+      Term context (Ty.equiv carrier carrier)
+                   (RawTerm.equivIntro
+                     (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+                     (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)))
+  /-- **The canonical pointwise-refl funext witness.**  Inhabitant of
+      `Ty.piTy domainTy (Ty.id codomainTy.weaken applyRaw applyRaw)`
+      where `applyRaw : RawTerm (scope+1)` is a free raw payload
+      (semantically "f x" under the binder, but kept as a fresh
+      schematic field to keep rename/subst arms structural).  Raw
+      form: `RawTerm.lam (RawTerm.refl applyRaw)`.  This is the
+      reduction TARGET of `Step.eqArrow` (the rfl-fragment of
+      funext): the Step rule constructs a `funextRefl` whose
+      `applyRaw` is concretely `RawTerm.app rawWitness.weaken
+      (RawTerm.var 0)`, witnessing "fun x => refl (f x)".  By
+      keeping `applyRaw` schematic in the ctor, structural rename
+      / subst arms thread it through without fighting weakening
+      commute lemmas.
+      Phase 12.A.B8.2 (CUMUL-8.2 prerequisite). -/
+  | funextRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      Term context
+        (Ty.piTy domainType
+          (Ty.id codomainType.weaken applyRaw applyRaw))
+        (RawTerm.lam (RawTerm.refl applyRaw))
 
 end LeanFX2
