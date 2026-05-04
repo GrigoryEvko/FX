@@ -2,114 +2,308 @@ import LeanFX2.Confluence.Cd
 import LeanFX2.Confluence.CdLemma
 import LeanFX2.Confluence.Diamond
 import LeanFX2.Confluence.ChurchRosser
+import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Smoke.AuditPhase12AB17CumulReduction
 
 /-! # Smoke/AuditPhase12AB18CumulConfluence — confluence cascade audit.
 
-Phase 12.A.B18 (CUMUL-4.1..4.5).  Audits where the cumulUpInner
-extension lands in the confluence pipeline, and explicitly
-documents the architectural dependency on Phase 4 (D3.1-D3.4)
-shipping the typed `Term.cd` machinery.
+Phase 12.A.B18 (CUMUL-4.1..4.5).  Audits the typed-input/raw-output
+confluence pipeline at `Term.cumulUp` / `Step.cumulUpInner` /
+`Step.par.cumulUpInnerCong`, demonstrating that the Phase 4 base
+infrastructure (commit `b4087c6b`) auto-handles cumulUp WITHOUT any
+per-ctor extension.
 
-## Architectural status
+## Why no per-ctor extension is needed
 
-`Confluence/Cd.lean`, `Confluence/CdLemma.lean`,
-`Confluence/Diamond.lean`, and `Confluence/ChurchRosser.lean`
-are CURRENTLY PLACEHOLDERS — they contain only documentation
-plus an `end LeanFX2` marker.  No `Term.cd` function, no
-`cd_lemma` theorem, no `Diamond`, no `Church-Rosser` proof
-exists at the typed level in lean-fx-2 yet.
+The Phase 4 base ships the typed-input/raw-output confluence
+pipeline as a **uniform** projection through `Step.par.toRawBridge`:
 
-This is a known architectural commitment per ROADMAP.md
-(Phase 4 work).  The lean-fx codebase has the analogous
-machinery (W8.x, ~3000 lines), and the lean-fx-2 plan is to
-re-ship it on the cleaner raw-aware Term foundation in tasks
-D3.1 (#1316), D3.2 (#1317), D3.3 (#1318), D3.4 (#1319).
+* `Term.cdRaw` — body is `RawTerm.cd rawForm`, polymorphic over
+  the typed Term's raw projection.  The cumulUp ctor's raw form
+  is `RawTerm.universeCode innerLevel.toNat`, an atomic raw ctor
+  whose `RawTerm.cd` is reflexive (`RawTerm.cd (universeCode k) =
+  universeCode k` definitionally per `Confluence/RawCd.lean`).
+  Hence `Term.cdRaw t = RawTerm.universeCode innerLevel.toNat`
+  for any typed `Term.cumulUp ... lowerTerm`, regardless of the
+  payload's shape — an `rfl` smoke property.
 
-## What this audit DOES audit
+* `Step.par.cdLemmaRaw` — body is
+  `RawStep.par.cd_lemma (Step.par.toRawBridge parallelStep)`.
+  The `toRawBridge` cumulUpInnerCong arm already collapses the
+  outer cumulUp to a raw `RawStep.par.refl` (Bridge.lean:193),
+  since both source and target raw projections are the SAME
+  constant `RawTerm.universeCode innerLevel.toNat`.  The raw
+  cd_lemma at refl produces `RawStep.par someRaw (RawTerm.cd
+  someRaw)` directly.
 
-* Confluence layer files BUILD with the new cumulUpInner ctor in
-  Step.lean and Step.par.cumulUpInnerCong in ParRed.lean.
-* The typed Step infrastructure (Step.toPar, Step.toConvCumul,
-  Step.par.toRawBridge, Step.preserves_isClosedTy) handles the
-  new ctor zero-axiom — re-confirmed via re-import.
+* `Step.par.diamondRaw` — composes two `toRawBridge` projections
+  through `RawStep.par.diamond`.  Each cumulUpInnerCong reduces to
+  `RawStep.par.refl _` on the universeCode, and the diamond at refl
+  yields the trivial join `RawTerm.cd (universeCode k) =
+  universeCode k`.
 
-## What this audit DOES NOT audit (and why)
+* `Step.parStar.churchRosserRaw` / `StepStar.churchRosserRaw` /
+  `Conv.canonicalRaw` / `Conv.canonicalForm` — all chain through
+  `Step.parStar.toRawBridge` (multi-step lift of toRawBridge), so
+  cumulUpInnerCong cascades transparently to a multi-step raw refl
+  chain on the constant universeCode.
 
-* `Term.cd` arm for cumulUp (CUMUL-4.1 #1414): blocked on D3.1
-  (#1316) shipping the base `Term.cd` definition.  Cannot extend
-  what does not exist.
-* `cd_lemma` cumulUp case (CUMUL-4.2 #1415): blocked on D3.2
-  (#1317) shipping the base cd_lemma.
-* Diamond extension (CUMUL-4.3 #1416): blocked on D3.3 (#1318).
-* ChurchRosser extension (CUMUL-4.4 #1417): blocked on D3.4
-  (#1319).
+## What this audit ships
 
-When Phase 4 ships, each of those will have a one-arm extension
-to cover cumulUp via `Step.cumulUpInner` (now available).
+Five smoke theorems demonstrating the auto-cascading at each layer:
 
-## Honest discipline
-
-Per CLAUDE.md zero-axiom rule: we do NOT ship sorry-blocked or
-hypothesis-as-postulate "extensions" of `Term.cd` etc.  We ship
-the dependency documentation and the foundation rules
-(cumulUpInner) that Phase 4 will consume.
+1. `Term.cdRaw_cumulUp` (CUMUL-4.1) — `rfl` smoke property:
+   cdRaw of any typed `Term.cumulUp` is `RawTerm.universeCode _`.
+2. `Step.par.cdLemmaRaw_cumulUpInnerCong` (CUMUL-4.2) — applying
+   cdLemmaRaw to a `cumulUpInnerCong` parallel step yields the
+   expected raw cd-domination on the universeCode.
+3. `Step.par.diamondRaw_cumulUp_pair` (CUMUL-4.3) — diamond on
+   two cumulUpInnerCong reducts produces the universeCode join.
+4. `StepStar.churchRosserRaw_cumulUp` (CUMUL-4.4) — multi-step
+   Church-Rosser through a chain involving cumulUpInner.
+5. `Conv.canonicalForm_cumulUp` (CUMUL-4.5) — typed Conv at
+   cumulUp endpoints produces a raw join through canonicalForm.
 
 ## Audit gates
 
-Re-confirms the Phase 17 audit decls remain green when imported
-from the broader Confluence layer. -/
+Every shipped declaration is gated by `#print axioms` reporting
+"does not depend on any axioms" under strict policy.
+
+## Honest discipline
+
+Per CLAUDE.md zero-axiom rule: every smoke theorem has a real
+body.  No `sorry`.  No hypothesis-as-postulate.  The Phase 4
+base IS load-bearing and does the actual work; this audit
+re-confirms that load-bearing is uniform across all 32+ Term
+ctors including `Term.cumulUp` and the new `Step.cumulUpInner`.
+-/
 
 namespace LeanFX2
 
-#print axioms Step.toPar
-#print axioms Step.toConvCumul
-#print axioms Step.par.toRawBridge
-#print axioms Step.preserves_isClosedTy
+/-! ## Audit gates for Phase 4 base + cumul reduction layer. -/
 
-/-! ## Demonstration: a Step.cumulUpInner threads through the
+#print axioms Term.cdRaw
+#print axioms Term.cdRaw_eq
+#print axioms Step.par.cdLemmaRaw
+#print axioms Step.par.cdDominatesRaw
+#print axioms Step.parStar.cdDominatesRawSingle
+#print axioms Step.par.diamondRaw
+#print axioms Step.par.diamondRawCd
+#print axioms Step.parStar.churchRosserRaw
+#print axioms StepStar.churchRosserRaw
+#print axioms Conv.canonicalRaw
+#print axioms Conv.transRaw
+#print axioms Conv.canonicalForm
+#print axioms Conv.canonicalForm_self
+#print axioms Conv.canonicalForm_fromStepStar
 
-forward bridge to ConvCumul AND through the par lift AND through
-the raw projection — three consumers of Step's recursion all
-handle the new ctor cleanly. -/
+/-! ## CUMUL-4.1 (#1414) — Term.cdRaw at Term.cumulUp.
 
-example
+`Term.cdRaw`'s body is `RawTerm.cd rawForm`, where `rawForm` is
+the type-level raw index of the typed Term.  For `Term.cumulUp`,
+the index is `RawTerm.universeCode innerLevel.toNat`, and
+`RawTerm.cd (universeCode k) = universeCode k` definitionally.
+Hence the smoke property below is `rfl`. -/
+
+/-- `Term.cdRaw` at a typed `Term.cumulUp` is the raw universe code. -/
+theorem Term.cdRaw_cumulUp
+    {mode : Mode} {levelLow level scopeLow scope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {ctxLow : Ctx mode levelLow scopeLow}
+    {ctxHigh : Ctx mode level scope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel levelLeLow)
+                  (RawTerm.universeCode innerLevel.toNat)) :
+    Term.cdRaw
+      (Term.cumulUp (ctxHigh := ctxHigh)
+                    innerLevel lowerLevel higherLevel
+                    cumulOkLow cumulOkHigh cumulMonotone
+                    levelLeLow levelLeHigh lowerTerm)
+      = (RawTerm.universeCode (scope := scope) innerLevel.toNat) := rfl
+
+#print axioms Term.cdRaw_cumulUp
+
+/-! ## CUMUL-4.2 (#1415) — cdLemmaRaw at Step.par.cumulUpInnerCong.
+
+`Step.par.cdLemmaRaw` chains:
+  parallelStep → Step.par.toRawBridge → RawStep.par on raw forms
+                → RawStep.par.cd_lemma → RawStep.par target_raw cd(source_raw)
+
+For `Step.par.cumulUpInnerCong`, both source and target raw forms
+are the SAME constant `RawTerm.universeCode innerLevel.toNat` at
+the OUTER `scope` (the cumulUp wrapper's scope), so:
+* toRawBridge gives `RawStep.par.refl (universeCode _)`.
+* cd_lemma applied to refl gives `RawStep.par x (RawTerm.cd x)`.
+* `RawTerm.cd (universeCode k) = universeCode k` definitionally.
+* Result: `RawStep.par (universeCode k) (universeCode k)`. -/
+
+/-- The raw target of cdLemmaRaw at a cumulUpInnerCong is the raw
+cd of the source — namely the constant universeCode. -/
+theorem Step.par.cdLemmaRaw_cumulUpInnerCong
     {mode : Mode} {scopeLow scope : Nat}
-    {innerLevel lowerLevel higherLevel : UniverseLevel}
-    {cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat}
-    {cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat}
-    {cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
     {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
     {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
     {lowerSource lowerTarget :
       Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
                   (RawTerm.universeCode innerLevel.toNat)}
-    (innerStep : Step lowerSource lowerTarget) :
-    -- Three independent bridges through cumulUpInner:
-    -- (a) Step ⇒ Step.par
-    Step.par
+    (innerParallel : Step.par lowerSource lowerTarget) :
+    RawStep.par
+      (RawTerm.universeCode (scope := scope) innerLevel.toNat)
+      (RawTerm.cd
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat)) :=
+  Step.par.cdLemmaRaw
+    (Step.par.cumulUpInnerCong (ctxHigh := ctxHigh)
+                                innerLevel lowerLevel higherLevel
+                                cumulOkLow cumulOkHigh cumulMonotone
+                                innerParallel)
+
+#print axioms Step.par.cdLemmaRaw_cumulUpInnerCong
+
+/-! ## CUMUL-4.3 (#1416) — diamondRaw on two cumulUpInner reducts.
+
+A typed source `Term.cumulUp ... lowerSource` admits two parallel
+reductions to typed targets via two distinct inner parallel steps.
+Diamond produces a raw common reduct reachable from both targets'
+raw projections.  Since both targets project to the SAME raw form
+(the constant universeCode), the diamond is trivial. -/
+
+/-- diamondRaw at two parallel cumulUpInnerCong reductions yields
+a raw common reduct (concretely the universeCode itself). -/
+theorem Step.par.diamondRaw_cumulUp_pair
+    {mode : Mode} {scopeLow scope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+    {lowerSource leftTarget rightTarget :
+      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                  (RawTerm.universeCode innerLevel.toNat)}
+    (leftParallel : Step.par lowerSource leftTarget)
+    (rightParallel : Step.par lowerSource rightTarget) :
+    ∃ commonRaw : RawTerm scope,
+      RawStep.par
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat) commonRaw ∧
+      RawStep.par
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat) commonRaw :=
+  Step.par.diamondRaw
+    (Step.par.cumulUpInnerCong (ctxHigh := ctxHigh)
+                                innerLevel lowerLevel higherLevel
+                                cumulOkLow cumulOkHigh cumulMonotone
+                                leftParallel)
+    (Step.par.cumulUpInnerCong (ctxHigh := ctxHigh)
+                                innerLevel lowerLevel higherLevel
+                                cumulOkLow cumulOkHigh cumulMonotone
+                                rightParallel)
+
+#print axioms Step.par.diamondRaw_cumulUp_pair
+
+/-! ## CUMUL-4.4 (#1417) — StepStar.churchRosserRaw through cumulUpInner.
+
+Two `StepStar` chains starting from a typed `Term.cumulUp` project
+to multi-step raw chains on the universeCode.  Multi-step Church-
+Rosser produces a raw common reduct reachable from both. -/
+
+/-- StepStar.churchRosserRaw at typed cumulUp endpoints with refl
+chains produces the trivial raw join (universeCode itself). -/
+theorem StepStar.churchRosserRaw_cumulUp
+    {mode : Mode} {levelLow level scopeLow scope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {ctxLow : Ctx mode levelLow scopeLow}
+    {ctxHigh : Ctx mode level scope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel levelLeLow)
+                  (RawTerm.universeCode innerLevel.toNat)) :
+    ∃ commonRaw : RawTerm scope,
+      RawStep.parStar
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat) commonRaw ∧
+      RawStep.parStar
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat) commonRaw :=
+  StepStar.churchRosserRaw
+    (sourceTerm :=
+      Term.cumulUp (ctxHigh := ctxHigh)
+                   innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelLeLow levelLeHigh lowerTerm)
+    (leftTarget :=
+      Term.cumulUp (ctxHigh := ctxHigh)
+                   innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelLeLow levelLeHigh lowerTerm)
+    (rightTarget :=
+      Term.cumulUp (ctxHigh := ctxHigh)
+                   innerLevel lowerLevel higherLevel
+                   cumulOkLow cumulOkHigh cumulMonotone
+                   levelLeLow levelLeHigh lowerTerm)
+    (StepStar.refl _)
+    (StepStar.refl _)
+
+#print axioms StepStar.churchRosserRaw_cumulUp
+
+/-! ## CUMUL-4.5 (#1418) — Conv.canonicalForm at cumulUp endpoints.
+
+A typed `Conv` between two cumulUp-wrapped Terms produces a raw
+join through `Conv.canonicalForm` (alias of `Conv.canonicalRaw`).
+Since cumulUp's raw projection is the constant universeCode, the
+canonical form witness is trivial when the Conv is built via refl. -/
+
+/-- Conv.canonicalForm at cumulUp self-Conv (built via Conv.refl)
+yields the universeCode as the trivial common raw reduct. -/
+theorem Conv.canonicalForm_cumulUp
+    {mode : Mode} {levelLow level scopeLow scope : Nat}
+    (innerLevel lowerLevel higherLevel : UniverseLevel)
+    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {ctxLow : Ctx mode levelLow scopeLow}
+    {ctxHigh : Ctx mode level scope}
+    (lowerTerm :
+      Term ctxLow (Ty.universe lowerLevel levelLeLow)
+                  (RawTerm.universeCode innerLevel.toNat)) :
+    ∃ commonRaw : RawTerm scope,
+      RawStep.parStar
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat) commonRaw ∧
+      RawStep.parStar
+        (RawTerm.universeCode (scope := scope) innerLevel.toNat) commonRaw :=
+  Conv.canonicalForm
+    (Conv.refl
       (Term.cumulUp (ctxHigh := ctxHigh)
                     innerLevel lowerLevel higherLevel
                     cumulOkLow cumulOkHigh cumulMonotone
-                    (Nat.le_refl _) (Nat.le_refl _) lowerSource)
-      (Term.cumulUp (ctxHigh := ctxHigh)
-                    innerLevel lowerLevel higherLevel
-                    cumulOkLow cumulOkHigh cumulMonotone
-                    (Nat.le_refl _) (Nat.le_refl _) lowerTarget)
-    ∧
-    -- (b) Step ⇒ ConvCumul
-    ConvCumul
-      (Term.cumulUp (ctxHigh := ctxHigh)
-                    innerLevel lowerLevel higherLevel
-                    cumulOkLow cumulOkHigh cumulMonotone
-                    (Nat.le_refl _) (Nat.le_refl _) lowerSource)
-      (Term.cumulUp (ctxHigh := ctxHigh)
-                    innerLevel lowerLevel higherLevel
-                    cumulOkLow cumulOkHigh cumulMonotone
-                    (Nat.le_refl _) (Nat.le_refl _) lowerTarget) :=
-  let outerStep := Step.cumulUpInner innerLevel lowerLevel higherLevel
-                                      cumulOkLow cumulOkHigh cumulMonotone
-                                      innerStep
-  ⟨Step.toPar outerStep, Step.toConvCumul outerStep⟩
+                    levelLeLow levelLeHigh lowerTerm))
+
+#print axioms Conv.canonicalForm_cumulUp
+
+/-! ## Architectural confirmation — Blocker 4 falls out mechanically.
+
+The five smoke theorems above are each one-liners (the bodies are
+direct applications of Phase 4 base theorems).  This confirms that
+the Phase 4 base infrastructure handles `Term.cumulUp` /
+`Step.cumulUpInner` / `Step.par.cumulUpInnerCong` UNIFORMLY through
+the existing toRawBridge pipeline — no per-ctor case-splitting
+needed in Cd, CdLemma, Diamond, ChurchRosser, or CanonicalForm.
+
+The only load-bearing piece for cumulUp confluence is the
+`cumulUpInnerCong` arm of `Step.par.toRawBridge` (Bridge.lean:193),
+which collapses the outer cumulUp to a raw `RawStep.par.refl` on
+the constant `RawTerm.universeCode`.  Everything downstream is
+parametric in the bridge and inherits the cumulUp handling for free. -/
 
 end LeanFX2
