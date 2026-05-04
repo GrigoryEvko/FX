@@ -842,6 +842,26 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                                      domainType codomainType applyRaw)
                 (Term.funextRefl (context := context)
                                  domainType codomainType applyRaw)
+  /-- **Heterogeneous Univalence at the ConvCumul level.**  Mirror of
+  `Step.eqTypeHet`: the heterogeneous-carrier path-from-equivalence
+  proof at the universe is ConvCumul-related to the underlying packaged
+  equivalence.  ConvCumul absorbs the type change (Ty.id at the
+  universe on the source vs Ty.equiv on the target) — its own typing
+  relation is heterogeneous on Ty by design.
+  Phase 12.A.B8.6 (heterogeneous Univalence at ConvCumul level). -/
+  | iotaEqTypeHetCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRaw backwardRaw : RawTerm scope}
+      (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw)) :
+      ConvCumul (Term.uaIntroHet (context := context)
+                                 innerLevel innerLevelLt
+                                 carrierARaw carrierBRaw equivWitness)
+                equivWitness
 
 /-! ## REAL TERM-PROMOTION (uses source substantively)
 

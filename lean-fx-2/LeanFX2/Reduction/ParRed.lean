@@ -951,6 +951,28 @@ inductive Step.par :
                                 innerLevel innerLevelLt
                                 carrierARaw carrierBRaw
                                 equivWitnessTarget)
+  /-- **Heterogeneous Univalence at the parallel level.**  Mirrors
+  `Step.eqTypeHet`: the heterogeneous-carrier path-from-equivalence
+  proof at the universe parallel-reduces in one step to the underlying
+  packaged equivalence.  Both project to the SAME raw form
+  `RawTerm.equivIntro forwardRaw backwardRaw` (the architectural
+  raw-alignment trick of `Term.uaIntroHet`), so
+  `Step.par.toRawBridge` returns `RawStep.par.refl _`.
+  Phase 12.A.B8.6 (heterogeneous Univalence at par level). -/
+  | eqTypeHet {mode : Mode} {level scope : Nat}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRaw backwardRaw : RawTerm scope}
+      (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw)) :
+      Step.par
+        (Term.uaIntroHet (context := context)
+                         innerLevel innerLevelLt
+                         carrierARaw carrierBRaw equivWitness)
+        equivWitness
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 
@@ -1094,6 +1116,13 @@ theorem Step.toPar
   -- Step.par.eqArrow directly.
   | eqArrow domainType codomainType applyRaw =>
       exact Step.par.eqArrow domainType codomainType applyRaw
+  -- Heterogeneous Univalence lift to par: source `Term.uaIntroHet
+  -- ... equivWitness` has no inner steps relevant to this rule (the
+  -- whole packaged Term reduces to its underlying equivWitness via a
+  -- single par step), so apply `Step.par.eqTypeHet` directly.
+  | eqTypeHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness =>
+      exact Step.par.eqTypeHet innerLevel innerLevelLt
+                                carrierARaw carrierBRaw equivWitness
 
 /-! ## Cast helpers — propositional transport for indices. -/
 

@@ -221,5 +221,16 @@ theorem Step.par.toRawBridge
   -- exists (or is needed) — we reuse the equivWitness's raw-side step
   -- directly, mirroring the `eqType` / `cumulUpInnerCong` collapse.
   | uaIntroHetCong _ _ _ _ _ ihEquivWitness => exact ihEquivWitness
+  -- Heterogeneous Univalence reduction (Phase 12.A.B8.6): both source
+  -- `Term.uaIntroHet ... equivWitness` and target `equivWitness`
+  -- project to the SAME raw form `RawTerm.equivIntro forwardRaw
+  -- backwardRaw` (the architectural raw-alignment trick — `uaIntroHet`
+  -- ctor's raw is by construction the same as its packaged
+  -- equivWitness's raw).  The bridge therefore collapses to
+  -- `RawStep.par.refl _` — no new `RawStep.par.eqTypeHet` ctor needed,
+  -- the rule is purely a typed-level type change with raw preserved.
+  -- Same architectural payoff as `cumulUpInnerCong` / `eqType` /
+  -- `eqArrow`.
+  | eqTypeHet _ _ _ _ _ => exact RawStep.par.refl _
 
 end LeanFX2

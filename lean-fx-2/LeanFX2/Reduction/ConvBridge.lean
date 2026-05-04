@@ -198,6 +198,10 @@ theorem Step.toConvCumul
   -- Funext rfl-fragment lifts to ConvCumul.iotaEqArrowCumul.
   | eqArrow domainType codomainType applyRaw =>
       exact ConvCumul.iotaEqArrowCumul domainType codomainType applyRaw
+  -- Heterogeneous Univalence lifts to ConvCumul.iotaEqTypeHetCumul.
+  | eqTypeHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness =>
+      exact ConvCumul.iotaEqTypeHetCumul innerLevel innerLevelLt
+                                          carrierARaw carrierBRaw equivWitness
 
 /-! ## StepStar.toConvCumul
 

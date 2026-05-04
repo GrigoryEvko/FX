@@ -749,6 +749,50 @@ inductive Step :
                                 domainType codomainType applyRaw)
            (Term.funextRefl (context := context)
                             domainType codomainType applyRaw)
+  /-- **Heterogeneous Univalence as a definitional reduction.**
+      `Step.eqTypeHet` reduces the canonical heterogeneous-carrier
+      path-from-equivalence proof at the universe
+      (`Term.uaIntroHet ... equivWitness :
+      Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw carrierBRaw`)
+      to the underlying packaged equivalence
+      (`equivWitness : Ty.equiv carrierA carrierB`).  Both Terms project
+      to the SAME raw form `RawTerm.equivIntro forwardRaw backwardRaw`
+      (the architectural raw-alignment trick of `Term.uaIntroHet`):
+      the rule changes the type only — `Ty.id (Ty.universe ...)
+      carrierARaw carrierBRaw` reduces to `Ty.equiv carrierA carrierB`
+      while the raw data is preserved.
+      ## Architectural significance
+      This is the Step constructor that makes Univalence DEFINITIONAL
+      at heterogeneous carriers in lean-fx-2.  `Step.eqType` (CUMUL-8.1)
+      handles only the rfl-fragment (`equivReflIdAtId → equivReflId`,
+      where both carriers are the SAME `carrier`); `Step.eqTypeHet`
+      generalises to ANY equivalence between two distinct carrier
+      type-codes.  The downstream theorem
+      `UnivalenceHet : Conv (uaIntroHet ... equivWitness) equivWitness`
+      is `Conv.fromStep Step.eqTypeHet` — zero axioms.
+      ## Why source raw = target raw
+      Both `Term.uaIntroHet ... equivWitness` and `equivWitness`
+      project to `RawTerm.equivIntro forwardRaw backwardRaw` — the
+      `uaIntroHet` ctor's raw is by construction the same as its
+      packaged `equivWitness`'s raw (see `Term.uaIntroHet` docstring).
+      Therefore the `Step.par.toRawBridge` arm collapses to
+      `RawStep.par.refl _` — no cascade through `RawCd` / `RawCdLemma`
+      / `RawDiamond` required, mirroring `cumulUpInner` / `eqType` /
+      `eqArrow`.
+      Phase 12.A.B8.6 (heterogeneous Univalence reduction). -/
+  | eqTypeHet {mode : Mode} {level scope : Nat}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRaw backwardRaw : RawTerm scope}
+      (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw)) :
+      Step (Term.uaIntroHet (context := context)
+                            innerLevel innerLevelLt
+                            carrierARaw carrierBRaw equivWitness)
+           equivWitness
 
 /-! ## Cast helpers
 
