@@ -253,6 +253,23 @@ def Term.substHet {mode : Mode}
         Term.funextRefl (domainType.substHet sigma)
                         (codomainType.substHet sigma)
                         (applyRaw.subst sigma.forRaw.lift)
+  -- HoTT canonical Id-typed identity-equivalence proof at the universe
+  -- (Phase 12.A.B8.1) — heterogeneous-Subst variant.  Both substituent
+  -- carrier and carrierRaw substitute structurally; level cumulativity
+  -- threads through `Nat.le_trans levelLeHigh sigma.cumulOk` (mirrors
+  -- the cumulUp arm above).
+  | _, _, .equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw =>
+      Term.equivReflIdAtId innerLevel
+                           (Nat.le_trans innerLevelLt sigma.cumulOk)
+                           (carrier.substHet sigma)
+                           (carrierRaw.subst sigma.forRaw)
+  -- HoTT canonical Id-typed funext witness at arrow types
+  -- (Phase 12.A.B8.2) — heterogeneous-Subst variant.  No `weaken`
+  -- commute cast needed (carrier is a non-binder `Ty.arrow`).
+  | _, _, .funextReflAtId domainType codomainType applyRaw =>
+      Term.funextReflAtId (domainType.substHet sigma)
+                          (codomainType.substHet sigma)
+                          (applyRaw.subst sigma.forRaw.lift)
 
 /-! ## Bridge: TermSubst → TermSubstHet (kernel piece for Pattern 2 ⇔ 3 bridge)
 

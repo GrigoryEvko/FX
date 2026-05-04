@@ -238,6 +238,25 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         Term.funextRefl (domainType.subst sigma)
                         (codomainType.subst sigma)
                         (applyRaw.subst sigma.forRaw.lift)
+  -- HoTT canonical Id-typed identity-equivalence proof at the universe
+  -- (Phase 12.A.B8.1).  `Ty.id (Ty.universe innerLevel ...) carrierRaw
+  -- carrierRaw` substitutes carrierRaw via `sigma.forRaw`; carrier
+  -- substitutes via `sigma`; the universe-code raw is constant.  The
+  -- raw-side identity-lambda is constant under any `sigma.forRaw`.
+  | _, _, .equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw =>
+      Term.equivReflIdAtId innerLevel innerLevelLt
+                           (carrier.subst sigma)
+                           (carrierRaw.subst sigma.forRaw)
+  -- HoTT canonical Id-typed funext witness at arrow types
+  -- (Phase 12.A.B8.2).  `Ty.id (Ty.arrow ...) (lam (refl applyRaw))
+  -- (lam (refl applyRaw))` substitutes domainType + codomainType via
+  -- `sigma`; applyRaw at scope+1 via `sigma.forRaw.lift`.  No
+  -- `weaken`-commute cast needed because `Ty.arrow` is a non-binder
+  -- carrier whose substitution doesn't introduce a scope shift.
+  | _, _, .funextReflAtId domainType codomainType applyRaw =>
+      Term.funextReflAtId (domainType.subst sigma)
+                          (codomainType.subst sigma)
+                          (applyRaw.subst sigma.forRaw.lift)
 
 /-! ## Term.subst0 — single-variable β-substitution -/
 

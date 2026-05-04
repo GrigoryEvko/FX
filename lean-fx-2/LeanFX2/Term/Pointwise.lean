@@ -188,6 +188,8 @@ theorem Term.subst_pointwise
   -- reduce to identical shapes.
   | _, _, .equivReflId _ => rfl
   | _, _, .funextRefl _ _ _ => rfl
+  | _, _, .equivReflIdAtId _ _ _ _ => rfl
+  | _, _, .funextReflAtId _ _ _ => rfl
 
 /-! ## TermSubst composition
 

@@ -388,6 +388,45 @@ theorem ConvCumul.subst_compatible_funextRefl_allais
                                 domainType codomainType applyRaw).substHet termSubstB) :=
   ConvCumul.refl _
 
+/-- Allais arm for `equivReflIdAtId`: the substHet arm depends only
+on sigma (not on the per-position TermSubstHet data), so both sides
+reduce to the same Term and `ConvCumul.refl` discharges. -/
+theorem ConvCumul.subst_compatible_equivReflIdAtId_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ sourceLevel)
+    (carrier : Ty sourceLevel sourceScope)
+    (carrierRaw : RawTerm sourceScope) :
+    ConvCumul ((Term.equivReflIdAtId (context := sourceCtx)
+                                     innerLevel innerLevelLt
+                                     carrier carrierRaw).substHet termSubstA)
+              ((Term.equivReflIdAtId (context := sourceCtx)
+                                     innerLevel innerLevelLt
+                                     carrier carrierRaw).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `funextReflAtId`: the substHet arm depends only on
+sigma; both sides agree, `ConvCumul.refl` discharges. -/
+theorem ConvCumul.subst_compatible_funextReflAtId_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (domainType codomainType : Ty sourceLevel sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    ConvCumul ((Term.funextReflAtId (context := sourceCtx)
+                                    domainType codomainType applyRaw).substHet termSubstA)
+              ((Term.funextReflAtId (context := sourceCtx)
+                                    domainType codomainType applyRaw).substHet termSubstB) :=
+  ConvCumul.refl _
+
 /-- Allais arm for `natSucc`: single-subterm cong via `natSuccCong`. -/
 theorem ConvCumul.subst_compatible_natSucc_allais
     {mode : Mode}
@@ -2124,6 +2163,12 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_equivReflId_allais _ _ carrier
   | _, _, .funextRefl domainType codomainType applyRaw =>
       ConvCumul.subst_compatible_funextRefl_allais _ _
+        domainType codomainType applyRaw
+  | _, _, .equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw =>
+      ConvCumul.subst_compatible_equivReflIdAtId_allais _ _
+        innerLevel innerLevelLt carrier carrierRaw
+  | _, _, .funextReflAtId domainType codomainType applyRaw =>
+      ConvCumul.subst_compatible_funextReflAtId_allais _ _
         domainType codomainType applyRaw
 
 /-! # Pattern 3 headline — ConvCumulHomo + paired-env compat → ConvCumul

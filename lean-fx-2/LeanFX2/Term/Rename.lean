@@ -256,6 +256,27 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         Term.funextRefl (domainType.rename rho)
                         (codomainType.rename rho)
                         (applyRaw.rename rho.lift)
+  -- HoTT canonical Id-typed identity-equivalence proof at the universe
+  -- (Phase 12.A.B8.1).  The Ty `Ty.id (Ty.universe innerLevel ...)
+  -- carrierRaw carrierRaw` renames carrierRaw via `rho`; the universe
+  -- code is constant (no scope dependency).  The raw form is the same
+  -- under any rename (only Fin 0 positions appear in the id-lambdas).
+  | _, _, .equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw =>
+      Term.equivReflIdAtId innerLevel innerLevelLt
+                           (carrier.rename rho)
+                           (carrierRaw.rename rho)
+  -- HoTT canonical Id-typed funext witness at arrow types
+  -- (Phase 12.A.B8.2).  The Ty `Ty.id (Ty.arrow domainType codomainType)
+  -- (RawTerm.lam (RawTerm.refl applyRaw)) ...` renames structurally:
+  -- domainType + codomainType via `rho`; applyRaw at scope+1 via
+  -- `rho.lift`; the lambda-refl raw form lifts uniformly.  No type-
+  -- equality cast needed since both endpoints inside `Ty.id` use the
+  -- same lambda-refl shape and the carrier `Ty.arrow ...` doesn't
+  -- involve scope-shifting `weaken`.
+  | _, _, .funextReflAtId domainType codomainType applyRaw =>
+      Term.funextReflAtId (domainType.rename rho)
+                          (codomainType.rename rho)
+                          (applyRaw.rename rho.lift)
 
 /-! ## Term.weaken — convenience wrapper -/
 

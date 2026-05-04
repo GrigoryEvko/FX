@@ -356,5 +356,59 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
         (Ty.piTy domainType
           (Ty.id codomainType.weaken applyRaw applyRaw))
         (RawTerm.lam (RawTerm.refl applyRaw))
+  /-- **The canonical Id-typed identity-equivalence proof at the universe.**
+      Inhabitant of `Ty.id (Ty.universe lvl) carrierRaw carrierRaw` — that
+      is, a proof that `carrierRaw = carrierRaw` at the universe level.
+      The raw form is the SAME as `Term.equivReflId`'s raw form
+      (`RawTerm.equivIntro id id`), making `Step.eqType` a type-only
+      reduction at the raw level.  This ctor is the SOURCE of
+      `Step.eqType`: it inhabits the universe-level identity type and
+      reduces (under Univalence) to `Term.equivReflId carrier`, which
+      inhabits `Ty.equiv carrier carrier`.
+      ## Why this isn't `Term.refl (Ty.universe lvl) carrierRaw`
+      `Term.refl ...` has raw form `RawTerm.refl carrierRaw`.  For
+      `Step.eqType` to bridge cleanly through `Step.par.toRawBridge`,
+      source and target raw forms must coincide.  This ctor provides
+      a canonical witness in `Ty.id (Ty.universe lvl) carrierRaw
+      carrierRaw` whose raw is pre-aligned with `Term.equivReflId`'s
+      raw form.  Univalence's content is precisely this alignment:
+      identity at the universe IS the identity equivalence.
+      Phase 12.A.B8.1. -/
+  | equivReflIdAtId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (carrier : Ty level scope)
+      (carrierRaw : RawTerm scope) :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw)
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)))
+  /-- **The canonical Id-typed funext witness at arrow types.**
+      Inhabitant of `Ty.id (Ty.arrow domainType codomainType) someFnRaw
+      someFnRaw` — that is, a reflexive proof that some function equals
+      itself.  The raw form is the SAME as `Term.funextRefl`'s raw form
+      (`RawTerm.lam (RawTerm.refl applyRaw)`), making `Step.eqArrow` a
+      type-only reduction at the raw level.  This ctor is the SOURCE
+      of `Step.eqArrow`.
+      ## Why this isn't `Term.refl (Ty.arrow ...) someFnRaw`
+      `Term.refl ...` has raw form `RawTerm.refl someFnRaw`.  The
+      bridge through `Step.par.toRawBridge` requires source and target
+      raw forms to match.  This ctor supplies a canonical witness in
+      `Ty.id (Ty.arrow domainType codomainType) someFnRaw someFnRaw`
+      whose raw is pre-aligned with `Term.funextRefl`'s raw form.
+      Funext's content is precisely the alignment: equality of
+      functions IS pointwise equality (at the rfl-fragment).
+      Phase 12.A.B8.2. -/
+  | funextReflAtId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      (applyRaw : RawTerm (scope + 1)) :
+      Term context
+        (Ty.id (Ty.arrow domainType codomainType)
+               (RawTerm.lam (RawTerm.refl applyRaw))
+               (RawTerm.lam (RawTerm.refl applyRaw)))
+        (RawTerm.lam (RawTerm.refl applyRaw))
 
 end LeanFX2
