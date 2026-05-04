@@ -1542,4 +1542,161 @@ theorem RawTermSubst.compose_eq_action {sourceScope middleScope targetScope : Na
     RawTermSubst.compose firstSigma secondSigma =
       Action.compose firstSigma secondSigma := rfl
 
+/-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` instances.
+
+`RawTerm.act` (defined in `Foundation/RawTerm.lean`) takes a Container
+with `[Action Container]` and `[ActsOnRawTermVar Container]`.  The
+Container's `Action` instance ships above (Z1.B); the
+`ActsOnRawTermVar` instances are Z4.A additions, mirroring Z2.A's
+`ActsOnTyVar` discipline at the raw layer.
+
+For `RawRenaming`, `varToRawTerm` wraps the renamed Fin back as
+`RawTerm.var` — this matches the `var` arm of the existing
+`RawTerm.rename` definition.
+
+For `RawTermSubst`, `varToRawTerm` returns the substituent term
+directly (`sigma position`) — this matches the `var` arm of the
+existing `RawTerm.subst` definition.
+
+Once these instances are in scope, `RawTerm.act t (someRenaming :
+RawRenaming src tgt)` reduces by `rfl` to the same shape as
+`RawTerm.rename t someRenaming` for representative ctors; similarly
+for `RawTermSubst`. -/
+
+/-- `ActsOnRawTermVar` instance: `RawRenaming` wraps renamed Fin as
+`RawTerm.var`. -/
+instance : ActsOnRawTermVar RawRenaming where
+  varToRawTerm := fun someRenaming position => RawTerm.var (someRenaming position)
+
+/-- `ActsOnRawTermVar` instance: `RawTermSubst` returns the
+substituent RawTerm directly. -/
+instance : ActsOnRawTermVar RawTermSubst where
+  varToRawTerm := fun sigma position => sigma position
+
+/-! ## Smoke equivalences with existing `RawTerm.rename` / `RawTerm.subst`.
+
+The `RawTerm.act` engine over `RawRenaming` should produce the same
+result as the existing `RawTerm.rename`; over `RawTermSubst`, the
+same as `RawTerm.subst`.  The full equivalence theorems (~56-case
+structural inductions) are deferred to the Z4.B redirect milestone.
+For Z4.A we ship the per-ctor `rfl`-bodied smoke theorems
+demonstrating that the engine reduces correctly at leaf, recursive,
+binder, and var positions on each Container. -/
+
+/-- Smoke: identity-of-act on `RawTerm.unit` under a renaming. -/
+theorem RawTerm.act_rawRenaming_unit_smoke
+    {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope) :
+    (RawTerm.unit (scope := sourceScope)).act someRenaming = .unit := rfl
+
+/-- Smoke: var-arm under a renaming wraps the renamed Fin. -/
+theorem RawTerm.act_rawRenaming_var_smoke
+    {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope)
+    (position : Fin sourceScope) :
+    (RawTerm.var position).act someRenaming = RawTerm.var (someRenaming position) := rfl
+
+/-- Smoke: app-arm under a renaming recurses both subterms. -/
+theorem RawTerm.act_rawRenaming_app_smoke
+    {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope)
+    (functionTerm argumentTerm : RawTerm sourceScope) :
+    (RawTerm.app functionTerm argumentTerm).act someRenaming =
+      RawTerm.app (functionTerm.act someRenaming) (argumentTerm.act someRenaming) := rfl
+
+/-- Smoke: lam-arm under a renaming uses `Action.liftForRaw`. -/
+theorem RawTerm.act_rawRenaming_lam_smoke
+    {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope)
+    (body : RawTerm (sourceScope + 1)) :
+    (RawTerm.lam body).act someRenaming =
+      RawTerm.lam (body.act (Action.liftForRaw someRenaming)) := rfl
+
+/-- Smoke: pathLam-arm under a renaming uses `Action.liftForRaw`. -/
+theorem RawTerm.act_rawRenaming_pathLam_smoke
+    {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope)
+    (body : RawTerm (sourceScope + 1)) :
+    (RawTerm.pathLam body).act someRenaming =
+      RawTerm.pathLam (body.act (Action.liftForRaw someRenaming)) := rfl
+
+/-- Smoke: universeCode is scope-polymorphic and unchanged by act. -/
+theorem RawTerm.act_rawRenaming_universeCode_smoke
+    {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope)
+    (innerLevel : Nat) :
+    (RawTerm.universeCode (scope := sourceScope) innerLevel).act someRenaming =
+      RawTerm.universeCode innerLevel := rfl
+
+/-- Smoke: identity-of-act on `RawTerm.unit` under a substitution. -/
+theorem RawTerm.act_rawTermSubst_unit_smoke
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope) :
+    (RawTerm.unit (scope := sourceScope)).act sigma = .unit := rfl
+
+/-- Smoke: var-arm under a substitution returns the substituent. -/
+theorem RawTerm.act_rawTermSubst_var_smoke
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (position : Fin sourceScope) :
+    (RawTerm.var position).act sigma = sigma position := rfl
+
+/-- Smoke: app-arm under a substitution recurses both subterms. -/
+theorem RawTerm.act_rawTermSubst_app_smoke
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (functionTerm argumentTerm : RawTerm sourceScope) :
+    (RawTerm.app functionTerm argumentTerm).act sigma =
+      RawTerm.app (functionTerm.act sigma) (argumentTerm.act sigma) := rfl
+
+/-- Smoke: lam-arm under a substitution uses `Action.liftForRaw`. -/
+theorem RawTerm.act_rawTermSubst_lam_smoke
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (body : RawTerm (sourceScope + 1)) :
+    (RawTerm.lam body).act sigma =
+      RawTerm.lam (body.act (Action.liftForRaw sigma)) := rfl
+
+/-- Smoke: pathLam-arm under a substitution uses `Action.liftForRaw`. -/
+theorem RawTerm.act_rawTermSubst_pathLam_smoke
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (body : RawTerm (sourceScope + 1)) :
+    (RawTerm.pathLam body).act sigma =
+      RawTerm.pathLam (body.act (Action.liftForRaw sigma)) := rfl
+
+/-- Smoke: universeCode is scope-polymorphic under substitution too. -/
+theorem RawTerm.act_rawTermSubst_universeCode_smoke
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (innerLevel : Nat) :
+    (RawTerm.universeCode (scope := sourceScope) innerLevel).act sigma =
+      RawTerm.universeCode innerLevel := rfl
+
+/-- Smoke: identity-action on `RawTerm.unit` reduces to the same term
+under `RawRenaming.identity`. -/
+theorem RawTerm.act_identity_rawRenaming_unit_smoke {scope : Nat} :
+    (RawTerm.unit (scope := scope)).act (RawRenaming.identity (scope := scope)) =
+      RawTerm.unit := rfl
+
+/-- Smoke: identity-action on `RawTerm.unit` reduces to the same term
+under `RawTermSubst.identity`. -/
+theorem RawTerm.act_identity_rawTermSubst_unit_smoke {scope : Nat} :
+    (RawTerm.unit (scope := scope)).act (RawTermSubst.identity (scope := scope)) =
+      RawTerm.unit := rfl
+
+/-- Smoke: identity-action on `RawTerm.var` reduces to the same
+variable under `RawRenaming.identity`. -/
+theorem RawTerm.act_identity_rawRenaming_var_smoke
+    {scope : Nat} (position : Fin scope) :
+    (RawTerm.var position).act (RawRenaming.identity (scope := scope)) =
+      RawTerm.var position := rfl
+
+/-- Smoke: identity-action on `RawTerm.var` reduces to the same
+variable under `RawTermSubst.identity`. -/
+theorem RawTerm.act_identity_rawTermSubst_var_smoke
+    {scope : Nat} (position : Fin scope) :
+    (RawTerm.var position).act (RawTermSubst.identity (scope := scope)) =
+      RawTerm.var position := rfl
+
 end LeanFX2

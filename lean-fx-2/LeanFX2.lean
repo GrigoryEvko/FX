@@ -254,6 +254,7 @@ import LeanFX2.Smoke.AuditPhase9DCheck
 import LeanFX2.Smoke.AuditPhase9EEval
 import LeanFX2.Smoke.AuditPhase9FCheckEval
 import LeanFX2.Smoke.AuditPhase79EndToEnd
+import LeanFX2.Smoke.AuditMegaZ4A
 
 namespace LeanFX2
 
