@@ -604,4 +604,281 @@ theorem Ty.lift_level_trans
   | modal modalityTag carrierType carrierIH =>
       simp only [Ty.lift_level]; rw [carrierIH]
 
+/-! ## Tier 3 / MEGA-Z2.A — `ActsOnTy` typeclass + `Ty.act` recursion engine.
+
+The `Action` typeclass (`Foundation/Action.lean`) describes any
+`Container : Nat → Nat → Type` that can lift through binders and
+compose sequentially.  However, `Action` alone does NOT determine
+how a Container acts on a `Ty` — different Containers map variables
+to different things:
+
+* `RawRenaming src tgt` maps `Fin src → Fin tgt` (a renaming);
+  on a `Ty.tyVar position`, the action wraps the renamed Fin back
+  as `Ty.tyVar`.
+* `Subst level src tgt` maps `Fin src → Ty level tgt` (a typed
+  substitution); on a `Ty.tyVar position`, the action looks up the
+  substituent type directly.
+* `RawTermSubst src tgt` maps `Fin src → RawTerm tgt` — this
+  Container does NOT naturally act on `Ty` because `Ty.tyVar
+  position` cannot be replaced by a `RawTerm` (mismatched syntactic
+  category).  Hence `RawTermSubst` is intentionally NOT an
+  `ActsOnTy` instance.
+
+`ActsOnTy Container level` adds two methods on top of `Action`:
+
+* `varToTy` — lookup at a Fin position in the source scope, producing
+  a `Ty level tgt`.  `Ty.tyVar` arm of `Ty.act` invokes this.
+* `actOnRawTerm` — apply the Container to a `RawTerm` (used by ctors
+  whose subterms include raw payloads: `Ty.id` endpoints, `Ty.path`
+  endpoints, `Ty.glue` boundary witness, `Ty.refine` predicate, etc.).
+
+The `actOnRawTerm` method abstracts dispatch between
+`RawTerm.rename` and `RawTerm.subst` — RawRenaming's instance
+delegates to `RawTerm.rename`, Subst's instance delegates to
+`RawTerm.subst sigma.forRaw`.  The eventual `RawTerm.act` (MEGA-Z4.A)
+will fold these into a single `RawTerm.act` invocation; until then,
+this typeclass-level dispatch is the cleanest interim handling for
+the refine-arm's RawTerm-under-binder discipline (R8/R11).
+
+For the refine arm specifically, the predicate lives at `scope + 1`
+and must be acted upon under the RawTerm-level binder lift —
+`Action.liftForRaw action`.  Because ActsOnTy is parametric in the
+source/target scopes, the lifted Container `Container (src+1) (tgt+1)`
+inherits the ActsOnTy capability automatically.
+
+## Hoisted level
+
+Per `feedback_lean_match_arity_axioms.md`, `level` is hoisted to the
+function header (before `:`) on `Ty.act`, matching `Ty.rename` and
+`Ty.subst`.  This keeps pattern arity at 2 Nat indices (scope +
+sourceScope, before adding Ty + Container) and avoids the multi-Nat-
+index propext trap.
+
+## Universe arm caveat
+
+The `Ty.universe universeLevel levelLe` arm passes through unchanged
+under any `ActsOnTy` instance whose `level` matches the carrier's
+level (this `Ty.act` is homogeneous — `Container` indexes only
+scope, not level).  Heterogeneous-level actions (`SubstHet`) require
+a separate `ActsOnTyHet` typeclass for their universe arm, which
+threads `Nat.le_trans levelLe action.cumulOk` — that is a future
+phase (currently `Ty.substHet` keeps its dedicated definition; per
+Z1.B's SubstHet retreat). -/
+
+/-- A `Container` that acts on `RawTerm`.  Provides the `actOnRawTerm`
+dispatch used by Ty constructors with raw payloads (Ty.id endpoints,
+Ty.path endpoints, Ty.glue boundary witness, Ty.refine predicate,
+Ty.session protocol step, Ty.effect effect tag, Ty.oeq endpoints,
+Ty.idStrict endpoints).
+
+`ActsOnRawTerm` is split off from `ActsOnTy` because its capability
+is level-independent — `RawTerm` doesn't carry a universe level.
+This split also lets `RawTermSubst` (which acts on raw terms but
+NOT on Ty.tyVar) admit an `ActsOnRawTerm` instance for use by
+downstream RawTerm.act (MEGA-Z4.A) without forcing it into the
+`ActsOnTy` typeclass. -/
+class ActsOnRawTerm (Container : Nat → Nat → Type) where
+  /-- Apply the Container to a `RawTerm`. -/
+  actOnRawTerm : ∀ {sourceScope targetScope : Nat},
+      Container sourceScope targetScope →
+      RawTerm sourceScope → RawTerm targetScope
+
+/-- A `Container` that acts on `Ty level _` types' variable
+positions.  Different Containers map variables to different things:
+`RawRenaming` wraps the renamed Fin as `Ty.tyVar`; `Subst level`
+looks up a substituent `Ty level tgt` directly.
+
+The `level` parameter is a regular implicit argument (not `outParam`).
+Typeclass resolution uses the surrounding `Ty level _` context to
+determine which instance to pick:
+* For `Subst level`, the Container's type already carries `level`
+  in `Container = Subst level`, so the instance pins `level`.
+* For `RawRenaming` (level-polymorphic), the instance is `∀ level,
+  ActsOnTyVar RawRenaming level`, providing a witness at any level.
+
+For `RawTermSubst`, no `ActsOnTyVar` instance is provided —
+`RawTermSubst` cannot replace `Ty.tyVar position` with a `RawTerm`
+(mismatched syntactic category).
+
+`ActsOnTyVar` does NOT extend `Action`; the `Ty.act` engine takes
+`[Action Container]`, `[ActsOnRawTerm Container]`, and
+`[ActsOnTyVar Container level]` as separate constraints, keeping the
+typeclass dependency lattice flat. -/
+class ActsOnTyVar (Container : Nat → Nat → Type) (level : Nat) where
+  /-- Variable lookup — convert a Fin position in the source scope
+  to a `Ty level` value in the target scope.  `Ty.tyVar` arm of
+  `Ty.act` calls this. -/
+  varToTy : ∀ {sourceScope targetScope : Nat},
+      Container sourceScope targetScope →
+      Fin sourceScope → Ty level targetScope
+
+/-- The generic Tier 3 recursion engine over `Ty`.  Single structural
+recursion replaces parallel `Ty.rename` and `Ty.subst` engines.
+
+For each of the 25 Ty constructors:
+* Non-binder, non-raw arms simply recurse with `someAction`.
+* Raw-payload arms (Ty.id, path, glue, oeq, idStrict, session,
+  effect endpoints) invoke `ActsOnTy.actOnRawTerm someAction` on
+  the raw subterm.
+* Binder-bearing arms with Ty under binder (piTy, sigmaTy) recurse
+  with `Action.liftForTy someAction`.
+* The refine arm's predicate (RawTerm under binder) invokes
+  `ActsOnTy.actOnRawTerm (Action.liftForRaw someAction)` on the
+  predicate at `scope + 1`.
+* `tyVar` invokes `ActsOnTy.varToTy someAction`.
+* `«universe» universeLevel levelLe` passes through (level-uniform).
+
+Per `feedback_lean_match_arity_axioms.md`: `level` is hoisted to the
+function header to match `Ty.rename` and `Ty.subst`.
+
+Marked `@[reducible]` so the unifier can chain through definitional
+equalities (e.g. `Ty.act t Action.identity` should reduce to `t`
+for representative ctors). -/
+@[reducible] def Ty.act
+    {Container : Nat → Nat → Type} [Action Container]
+    [ActsOnRawTerm Container]
+    {level : Nat} [ActsOnTyVar Container level] :
+    ∀ {sourceScope targetScope : Nat},
+      Ty level sourceScope →
+      Container sourceScope targetScope →
+      Ty level targetScope
+  | _, _, .unit, _ => .unit
+  | _, _, .bool, _ => .bool
+  | _, _, .nat, _ => .nat
+  | _, _, .arrow domainType codomainType, someAction =>
+      .arrow (domainType.act someAction) (codomainType.act someAction)
+  | _, _, .piTy domainType codomainType, someAction =>
+      .piTy (domainType.act someAction)
+            (codomainType.act (Action.liftForTy someAction))
+  | _, _, .sigmaTy firstType secondType, someAction =>
+      .sigmaTy (firstType.act someAction)
+               (secondType.act (Action.liftForTy someAction))
+  | _, _, .tyVar position, someAction =>
+      ActsOnTyVar.varToTy someAction position
+  | _, _, .id carrier leftEndpoint rightEndpoint, someAction =>
+      .id (carrier.act someAction)
+          (ActsOnRawTerm.actOnRawTerm someAction leftEndpoint)
+          (ActsOnRawTerm.actOnRawTerm someAction rightEndpoint)
+  | _, _, .listType elementType, someAction =>
+      .listType (elementType.act someAction)
+  | _, _, .optionType elementType, someAction =>
+      .optionType (elementType.act someAction)
+  | _, _, .eitherType leftType rightType, someAction =>
+      .eitherType (leftType.act someAction) (rightType.act someAction)
+  | _, _, .universe universeLevel levelLe, _ =>
+      .universe universeLevel levelLe
+  | _, _, .empty, _ => .empty
+  | _, _, .interval, _ => .interval
+  | _, _, .path carrier leftEndpoint rightEndpoint, someAction =>
+      .path (carrier.act someAction)
+            (ActsOnRawTerm.actOnRawTerm someAction leftEndpoint)
+            (ActsOnRawTerm.actOnRawTerm someAction rightEndpoint)
+  | _, _, .glue baseType boundaryWitness, someAction =>
+      .glue (baseType.act someAction)
+            (ActsOnRawTerm.actOnRawTerm someAction boundaryWitness)
+  | _, _, .oeq carrier leftEndpoint rightEndpoint, someAction =>
+      .oeq (carrier.act someAction)
+           (ActsOnRawTerm.actOnRawTerm someAction leftEndpoint)
+           (ActsOnRawTerm.actOnRawTerm someAction rightEndpoint)
+  | _, _, .idStrict carrier leftEndpoint rightEndpoint, someAction =>
+      .idStrict (carrier.act someAction)
+                (ActsOnRawTerm.actOnRawTerm someAction leftEndpoint)
+                (ActsOnRawTerm.actOnRawTerm someAction rightEndpoint)
+  | _, _, .equiv domainType codomainType, someAction =>
+      .equiv (domainType.act someAction) (codomainType.act someAction)
+  | _, _, .refine baseType predicate, someAction =>
+      .refine (baseType.act someAction)
+              (ActsOnRawTerm.actOnRawTerm
+                  (Action.liftForRaw someAction) predicate)
+  | _, _, .record singleFieldType, someAction =>
+      .record (singleFieldType.act someAction)
+  | _, _, .codata stateType outputType, someAction =>
+      .codata (stateType.act someAction) (outputType.act someAction)
+  | _, _, .session protocolStep, someAction =>
+      .session (ActsOnRawTerm.actOnRawTerm someAction protocolStep)
+  | _, _, .effect carrierType effectTag, someAction =>
+      .effect (carrierType.act someAction)
+              (ActsOnRawTerm.actOnRawTerm someAction effectTag)
+  | _, _, .modal modalityTag carrierType, someAction =>
+      .modal modalityTag (carrierType.act someAction)
+
+/-! ## ActsOnRawTerm + ActsOnTyVar instances for `RawRenaming`.
+
+Renaming acts on `Ty.tyVar position` by wrapping the renamed Fin back
+as `Ty.tyVar` (level-polymorphic).  `actOnRawTerm` delegates to
+`RawTerm.rename`. -/
+
+instance : ActsOnRawTerm RawRenaming where
+  actOnRawTerm := fun someRenaming rawTerm => rawTerm.rename someRenaming
+
+instance ActsOnTyVarOfRawRenaming (level : Nat) :
+    ActsOnTyVar RawRenaming level where
+  varToTy := fun someRenaming position => Ty.tyVar (someRenaming position)
+
+/-! ## Smoke equivalences with existing `Ty.rename`.
+
+The `Ty.act` engine over `RawRenaming` should produce the same result
+as the existing `Ty.rename`.  The proof would be a 25-case structural
+induction; for Z2.A we ship the per-ctor `rfl` smokes that demonstrate
+the engine reduces correctly at leaf and binder positions.  The full
+equivalence theorem `Ty.act_rawRenaming_eq_rename` lands in Z2.B
+(when `Ty.rename` is REDIRECTED to `Ty.act`). -/
+
+theorem Ty.act_rawRenaming_unit_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope) :
+    (Ty.unit (level := level) (scope := scope)).act someRenaming = .unit := rfl
+
+theorem Ty.act_rawRenaming_tyVar_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope)
+    (position : Fin scope) :
+    (Ty.tyVar (level := level) position).act someRenaming =
+      Ty.tyVar (someRenaming position) := rfl
+
+theorem Ty.act_rawRenaming_arrow_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope)
+    (domainType codomainType : Ty level scope) :
+    (Ty.arrow domainType codomainType).act someRenaming =
+      Ty.arrow (domainType.act someRenaming)
+               (codomainType.act someRenaming) := rfl
+
+theorem Ty.act_rawRenaming_piTy_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope)
+    (domainType : Ty level scope)
+    (codomainType : Ty level (scope + 1)) :
+    (Ty.piTy domainType codomainType).act someRenaming =
+      Ty.piTy (domainType.act someRenaming)
+              (codomainType.act (Action.liftForTy someRenaming)) := rfl
+
+theorem Ty.act_rawRenaming_refine_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope)
+    (baseType : Ty level scope)
+    (predicate : RawTerm (scope + 1)) :
+    (Ty.refine baseType predicate).act someRenaming =
+      Ty.refine (baseType.act someRenaming)
+                (ActsOnRawTerm.actOnRawTerm
+                    (Action.liftForRaw someRenaming) predicate) := rfl
+
+theorem Ty.act_rawRenaming_id_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope)
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope) :
+    (Ty.id carrier leftEndpoint rightEndpoint).act someRenaming =
+      Ty.id (carrier.act someRenaming)
+            (ActsOnRawTerm.actOnRawTerm someRenaming leftEndpoint)
+            (ActsOnRawTerm.actOnRawTerm someRenaming rightEndpoint) := rfl
+
+theorem Ty.act_rawRenaming_universe_smoke
+    {level scope targetScope : Nat}
+    (someRenaming : RawRenaming scope targetScope)
+    (universeLevel : UniverseLevel)
+    (levelLe : universeLevel.toNat + 1 ≤ level) :
+    (Ty.universe (scope := scope) universeLevel levelLe).act someRenaming =
+      Ty.universe universeLevel levelLe := rfl
+
 end LeanFX2
