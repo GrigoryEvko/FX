@@ -299,6 +299,97 @@ theorem Univalence.idToEquivMeta_refl_eq_reflEquiv
     Univalence.idToEquivMeta (rfl : LeftType = LeftType)
       = Equiv.refl LeftType := rfl
 
+/-! ## §6. Meta-level groupoid coherence with `idToEquivMeta`.
+
+The forward map `idToEquivMeta : (A = B) → Equiv A B` should be a
+**functor** with respect to the groupoid structure on equalities
+and equivalences:
+
+* `idToEquivMeta rfl = Equiv.refl _` (preserves identity)
+* `idToEquivMeta (Eq.symm p) = Equiv.symm (idToEquivMeta p)`
+  (preserves inverses)
+* `idToEquivMeta (Eq.trans p q) = Equiv.trans (idToEquivMeta p)
+  (idToEquivMeta q)` (preserves composition)
+
+These laws establish that the meta-level forward direction IS
+the canonical functor from the equality-groupoid on Sorts to
+the equivalence-groupoid on Sorts.  They are derivable by path
+induction on the equalities, with definitional `rfl` at the
+base case.
+
+These laws extend the rfl-fragment to NON-trivial paths — they
+hold on arbitrary `p, q : A = B` (and so on) without requiring
+any kernel structure beyond `Eq.rec`.  Audits zero-axiom. -/
+
+/-- **Meta-level Univalence preserves equality-`symm`.**
+`idToEquivMeta` of a symm-path equals the `Equiv.symm` of the
+forward image.  At `rfl`, both sides reduce to `Equiv.refl _`
+(which is its own `symm`).  Path induction on `typeEquality`
+discharges the goal at the rfl base case. -/
+theorem Univalence.idToEquivMeta_symm
+    {LeftType : Sort metaLevel} {RightType : Sort metaLevel}
+    (typeEquality : LeftType = RightType) :
+    Univalence.idToEquivMeta (Eq.symm typeEquality)
+      = Equiv.symm (Univalence.idToEquivMeta typeEquality) := by
+  cases typeEquality
+  rfl
+
+/-- **Meta-level Univalence preserves equality-`trans`.**
+`idToEquivMeta` of a transitive path equals the `Equiv.trans` of
+the forward images.  Path induction on the first equality
+collapses both equalities to `rfl`, at which point both sides are
+definitionally `Equiv.refl`. -/
+theorem Univalence.idToEquivMeta_trans
+    {LeftType : Sort metaLevel}
+    {MiddleType : Sort metaLevel}
+    {RightType : Sort metaLevel}
+    (firstEquality  : LeftType = MiddleType)
+    (secondEquality : MiddleType = RightType) :
+    Univalence.idToEquivMeta (Eq.trans firstEquality secondEquality)
+      = Equiv.trans (Univalence.idToEquivMeta firstEquality)
+                    (Univalence.idToEquivMeta secondEquality) := by
+  cases firstEquality
+  cases secondEquality
+  rfl
+
+/-! ## §7. Meta-level toFun + invFun pointwise behaviour at general path.
+
+Beyond the rfl-case, we can give a uniform pointwise computation
+rule for `idToEquivMeta`'s `toFun` and `invFun` fields: at any
+path, both fields agree with the standard transport along the
+path.
+
+* `(idToEquivMeta p).toFun  = transport id p` (forward via `▸`)
+* `(idToEquivMeta p).invFun = transport id p.symm` (backward)
+
+In Lean 4, `transport id p x = p ▸ x` for any `p : A = B` and
+`x : A`.  This equality is definitional via `Eq.rec`. -/
+
+/-- **Meta-level idToEquivMeta toFun is transport along the path.**
+`(idToEquivMeta typeEquality).toFun x = typeEquality ▸ x`.  Proof:
+path-induct on the equality.  When `typeEquality = rfl`, both
+sides reduce to `x`.  Zero-axiom. -/
+theorem Univalence.idToEquivMeta_toFun_eq_transport
+    {LeftType : Sort metaLevel} {RightType : Sort metaLevel}
+    (typeEquality : LeftType = RightType)
+    (leftValue : LeftType) :
+    (Univalence.idToEquivMeta typeEquality).toFun leftValue
+      = typeEquality ▸ leftValue := by
+  cases typeEquality
+  rfl
+
+/-- **Meta-level idToEquivMeta invFun is transport along the inverse path.**
+`(idToEquivMeta typeEquality).invFun y = typeEquality.symm ▸ y`.
+Proof: path-induct on the equality.  Zero-axiom. -/
+theorem Univalence.idToEquivMeta_invFun_eq_transport
+    {LeftType : Sort metaLevel} {RightType : Sort metaLevel}
+    (typeEquality : LeftType = RightType)
+    (rightValue : RightType) :
+    (Univalence.idToEquivMeta typeEquality).invFun rightValue
+      = typeEquality.symm ▸ rightValue := by
+  cases typeEquality
+  rfl
+
 /-! ## §5. Honest scope — what we DO NOT and CANNOT ship.
 
 The full Voevodsky Univalence is the statement that `idToEquiv`
