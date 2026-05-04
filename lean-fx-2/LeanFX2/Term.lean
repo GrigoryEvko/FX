@@ -502,5 +502,60 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       Term context
         (Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw carrierBRaw)
         (RawTerm.equivIntro forwardRaw backwardRaw)
+  /-- **Heterogeneous-carrier funext-introduction at Id-of-arrow.**
+      Inhabitant of `Ty.id (Ty.arrow domainType codomainType) (RawTerm.lam
+      applyARaw) (RawTerm.lam applyBRaw)` — that is, a path between two
+      DISTINCT lambda-shaped raw functions at the arrow type.  The raw
+      form is `RawTerm.lam (RawTerm.refl applyARaw)` (same shape as
+      `funextRefl` / `funextReflAtId`, pre-aligned for a future
+      `Step.eqArrowHet` reduction).
+
+      ## Why this generalizes `Term.funextReflAtId`
+
+      `Term.funextReflAtId domainType codomainType applyRaw` ships the
+      reflexive case: `applyARaw = applyBRaw = applyRaw`, witnessing
+      `f = f`.  Heterogeneous funext (`f x = g x for all x ⇒ f = g`
+      for ARBITRARY f, g) needs a Term ctor that carries TWO distinct
+      apply-payloads `applyARaw, applyBRaw`; this ctor provides exactly
+      that.
+
+      ## Why no cast in the type signature
+
+      The result type is `Ty.id (Ty.arrow ...) ... ...` — a non-binder
+      `Ty.arrow` carrier inside `Ty.id`.  No `weaken_substHet_commute`
+      cast appears in the type signature itself; the substHet/rename/
+      subst arms thread `applyARaw, applyBRaw` through `sigma.forRaw.lift`
+      structurally, just like `funextReflAtId`.  This is the same
+      architectural trick uaIntroHet uses (avoiding the `weaken_subst_
+      commute` cast that bogs down `lam` / `funextRefl` arms): keep
+      the type carrier `Ty.id (Ty.arrow ...) ...` flat at the OUTER
+      scope, push the per-position raw payloads `applyARaw, applyBRaw`
+      schematic at scope+1.
+
+      ## Cascade contract
+
+      The four schematic fields (`domainType`, `codomainType`, `applyARaw`,
+      `applyBRaw`) propagate through `Term.rename`, `Term.subst`,
+      `Term.substHet`, `Term.pointwise`, and the Allais arm of
+      `ConvCumul.subst_compatible`.  Like `funextReflAtId`, this is a
+      VALUE — its substHet arm depends only on `sigma` (no per-position
+      TermSubstHet differences), so the Allais arm collapses to
+      `ConvCumul.refl _` (no cast wall).  No new Step β/ι rule fires
+      from this ctor as a redex source yet (the future `Step.eqArrowHet`
+      reduction will fire FROM `funextIntroHet ... ⇒ funextRefl-style
+      witness`, deferred to the next phase).
+
+      Phase 12.A.B8.8 (heterogeneous funext prerequisite, pairs with
+      `Term.uaIntroHet` from B8.5b for the full HoTT path-via-equivalence
+      / path-via-pointwise duality). -/
+  | funextIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      (applyARaw applyBRaw : RawTerm (scope + 1)) :
+      Term context
+        (Ty.id (Ty.arrow domainType codomainType)
+               (RawTerm.lam applyARaw)
+               (RawTerm.lam applyBRaw))
+        (RawTerm.lam (RawTerm.refl applyARaw))
 
 end LeanFX2

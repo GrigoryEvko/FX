@@ -301,6 +301,20 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.uaIntroHet innerLevel innerLevelLt
                       (carrierARaw.rename rho) (carrierBRaw.rename rho)
                       (Term.rename termRenaming equivWitness)
+  -- HoTT heterogeneous-carrier funext-introduction at Id-of-arrow
+  -- (Phase 12.A.B8.8).  `Ty.id (Ty.arrow domainType codomainType)
+  -- (RawTerm.lam applyARaw) (RawTerm.lam applyBRaw)` renames via `rho`:
+  -- domainType + codomainType rename at outer scope; applyARaw + applyBRaw
+  -- at scope+1 rename via `rho.lift` (under the lambda binder).  No
+  -- subterm to recurse on — funextIntroHet is a VALUE (canonical
+  -- heterogeneous-funext witness) just like funextReflAtId.  No
+  -- type-equality cast needed since `Ty.id` and `Ty.arrow` are
+  -- non-binder carriers (no scope shift).
+  | _, _, .funextIntroHet domainType codomainType applyARaw applyBRaw =>
+      Term.funextIntroHet (domainType.rename rho)
+                          (codomainType.rename rho)
+                          (applyARaw.rename rho.lift)
+                          (applyBRaw.rename rho.lift)
 
 /-! ## Term.weaken — convenience wrapper -/
 

@@ -427,6 +427,30 @@ theorem ConvCumul.subst_compatible_funextReflAtId_allais
                                     domainType codomainType applyRaw).substHet termSubstB) :=
   ConvCumul.refl _
 
+/-- Allais arm for `funextIntroHet`: like `funextReflAtId`, this is a
+VALUE ctor with NO typed subterms (just schematic raws
+`domainType, codomainType, applyARaw, applyBRaw`).  Both
+`termSubstA` and `termSubstB` share the underlying `sigma`, so the
+substHet arm in `Term/SubstHet.lean` consults only `sigma`/
+`sigma.forRaw.lift` — both sides agree definitionally.
+`ConvCumul.refl` discharges.  Phase 12.A.B8.8. -/
+theorem ConvCumul.subst_compatible_funextIntroHet_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (domainType codomainType : Ty sourceLevel sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1)) :
+    ConvCumul ((Term.funextIntroHet (context := sourceCtx)
+                                    domainType codomainType
+                                    applyARaw applyBRaw).substHet termSubstA)
+              ((Term.funextIntroHet (context := sourceCtx)
+                                    domainType codomainType
+                                    applyARaw applyBRaw).substHet termSubstB) :=
+  ConvCumul.refl _
+
 /-- Allais arm for `equivIntroHet`: two-subterm cong via
 `equivIntroHetCong`.  Mirrors the structure of
 `subst_compatible_pair_allais` / `subst_compatible_listCons_allais`:
@@ -2245,6 +2269,13 @@ def Term.subst_compatible_pointwise_allais
         innerLevel innerLevelLt carrierARaw carrierBRaw
         equivWitness
         (Term.subst_compatible_pointwise_allais compat equivWitness)
+  -- Phase 12.A.B8.8 (heterogeneous funext-intro at Id-of-arrow):
+  -- VALUE ctor, NO typed subterms — same precedent as funextReflAtId.
+  -- Both substHet sides depend only on `sigma`, ConvCumul.refl
+  -- discharges via the helper.
+  | _, _, .funextIntroHet domainType codomainType applyARaw applyBRaw =>
+      ConvCumul.subst_compatible_funextIntroHet_allais _ _
+        domainType codomainType applyARaw applyBRaw
 
 /-! # Pattern 3 headline — ConvCumulHomo + paired-env compat → ConvCumul
 

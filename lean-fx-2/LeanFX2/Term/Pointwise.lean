@@ -210,6 +210,16 @@ theorem Term.subst_pointwise
   | _, _, .uaIntroHet _ _ _ _ equivWitness => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq equivWitness]
+  -- HoTT heterogeneous-carrier funext-introduction at Id-of-arrow
+  -- (Phase 12.A.B8.8): the subst arm in Term/Subst.lean has NO
+  -- subterm to recurse on (funextIntroHet is a VALUE, like
+  -- funextReflAtId).  Both TermSubsts share the SAME underlying
+  -- `sigma`, so `domainType.subst sigma`, `codomainType.subst sigma`,
+  -- `applyARaw.subst sigma.forRaw.lift`, and `applyBRaw.subst
+  -- sigma.forRaw.lift` are all identical on both sides — they
+  -- depend only on `sigma`, not on the TermSubst values.  rfl
+  -- discharges the pointwise equality.
+  | _, _, .funextIntroHet _ _ _ _ => rfl
 
 /-! ## TermSubst composition
 

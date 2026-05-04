@@ -293,6 +293,19 @@ def Term.substHet {mode : Mode}
                       (carrierARaw.subst sigma.forRaw)
                       (carrierBRaw.subst sigma.forRaw)
                       (Term.substHet termSubstHet equivWitness)
+  -- HoTT heterogeneous-carrier funext-introduction at Id-of-arrow
+  -- (Phase 12.A.B8.8) — heterogeneous-Subst variant.  domainType +
+  -- codomainType substitute via `sigma`; applyARaw + applyBRaw via
+  -- `sigma.forRaw.lift` (under the lambda binder).  No subterm to
+  -- recurse on — funextIntroHet is a VALUE (canonical heterogeneous-
+  -- funext witness) just like funextReflAtId.  No `weaken`-commute
+  -- cast needed since `Ty.id` and `Ty.arrow` are non-binder carriers
+  -- (no scope shift).
+  | _, _, .funextIntroHet domainType codomainType applyARaw applyBRaw =>
+      Term.funextIntroHet (domainType.substHet sigma)
+                          (codomainType.substHet sigma)
+                          (applyARaw.subst sigma.forRaw.lift)
+                          (applyBRaw.subst sigma.forRaw.lift)
 
 /-! ## Bridge: TermSubst → TermSubstHet (kernel piece for Pattern 2 ⇔ 3 bridge)
 

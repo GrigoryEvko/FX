@@ -225,6 +225,11 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- level we treat it as a non-redex head (mirror of equivReflIdAtId,
   -- whose Step.eqType reduction is also not yet wired into headStep?).
   | _, _, _, _, .uaIntroHet _ _ _ _ _ => none
+  -- HoTT heterogeneous-carrier funextIntroHet (Phase 12.A.B8.8): a value
+  -- (canonical heterogeneous-funext witness at Id-of-arrow).  The future
+  -- `Step.eqArrowHet` rule will fire from this ctor, but at the headStep?
+  -- level we treat it as a non-redex head (mirror of funextReflAtId).
+  | _, _, _, _, .funextIntroHet _ _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction
