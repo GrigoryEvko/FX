@@ -7,8 +7,8 @@ package «lean-fx-2» where
     ⟨`autoImplicit, false⟩,
     ⟨`relaxedAutoImplicit, false⟩,
     ⟨`pp.unicode.fun, true⟩,
-    ⟨`maxHeartbeats, (2000000 : Nat)⟩,
-    ⟨`synthInstance.maxHeartbeats, 2000000⟩
+    ⟨`maxHeartbeats, (20000000 : Nat)⟩,
+    ⟨`synthInstance.maxHeartbeats, 20000000⟩
   ]
 
 @[default_target]
