@@ -61,6 +61,31 @@ instance ActsOnRawTermVarOfSubst (level : Nat) :
     ActsOnRawTermVar (Subst level) where
   varToRawTerm := fun someSubst position => someSubst.forRaw position
 
+/-! ## Tier 3 / MEGA-Z5.A.1 — `ActsOnRawTermVarLifts` instance: Subst level.
+
+Mirror of the `RawRenaming` / `RawTermSubst` instances in
+`Foundation/RawSubst.lean`.  For `Subst level`, `Action.liftForRaw
+sigma = sigma.lift`, and `(sigma.lift).forRaw = sigma.forRaw.lift`
+by the definition of `Subst.lift`.  Composing with the var-arms of
+`RawTermSubst.lift`:
+
+* `liftForRaw_var_zero` — `(sigma.lift).forRaw ⟨0, _⟩
+    = (sigma.forRaw.lift) ⟨0, _⟩
+    = RawTerm.var ⟨0, Nat.zero_lt_succ _⟩`
+  by `RawTermSubst.lift`'s var-zero arm.  Holds by `rfl`.
+
+* `liftForRaw_var_succ` — `(sigma.lift).forRaw ⟨k+1, h⟩
+    = (sigma.forRaw.lift) ⟨k+1, h⟩
+    = (sigma.forRaw ⟨k, _⟩).rename RawRenaming.weaken
+    = RawTerm.weaken (sigma.forRaw ⟨k, _⟩)
+    = RawTerm.weaken (varToRawTerm sigma ⟨k, _⟩)`
+  by `RawTermSubst.lift`'s var-succ arm and the
+  `ActsOnRawTermVarOfSubst` body above.  Holds by `rfl`. -/
+instance ActsOnRawTermVarLiftsOfSubst (level : Nat) :
+    ActsOnRawTermVarLifts (Subst level) where
+  liftForRaw_var_zero := fun _ => rfl
+  liftForRaw_var_succ := fun _ _ => rfl
+
 /-! ## ActsOnRawTerm instance: Subst level — Z2.A.1 alignment.
 
 A Subst's raw-term action delegates to the unified `RawTerm.act`

@@ -1573,6 +1573,105 @@ substituent RawTerm directly. -/
 instance : ActsOnRawTermVar RawTermSubst where
   varToRawTerm := fun sigma position => sigma position
 
+/-! ## Tier 3 / MEGA-Z5.A.1 — `ActsOnRawTermVarLifts` typeclass + instances.
+
+The closed-payload HoTT ctors that Z5.A's `Term.act` recursion engine
+must traverse (`Term.equivReflId`, `Term.funextRefl`, etc.) bury a
+`RawTerm.var ⟨0, _⟩` under `Action.liftForRaw action`.  Without a
+reduction law for that specific shape, the typeclass dispatch
+through `RawTerm.act` cannot rewrite the closed payload to a
+`rfl`-equivalent target.
+
+`ActsOnRawTermVarLifts` adds two extra fields to the `Action +
+ActsOnRawTermVar` pair: a reduction law for the var-zero case under
+`liftForRaw`, and a corresponding law for the var-succ case.
+Concretely:
+
+* `liftForRaw_var_zero` — under any lifted action, position `0`
+  resolves to `RawTerm.var ⟨0, _⟩` in the target's lifted scope.
+* `liftForRaw_var_succ` — under any lifted action, position `k+1`
+  resolves to `RawTerm.weaken (varToRawTerm action k)`.
+
+For all three Containers that the Tier 3 framework currently ships
+(`RawRenaming`, `RawTermSubst`, `Subst level`), both laws hold by
+`rfl` after the existing `@[reducible]` `lift` definitions unfold
+— the `RawRenaming.lift` / `RawTermSubst.lift` / `Subst.lift`
+definitions were chosen with these reductions in mind.
+
+`ActsOnRawTermVarLifts` does NOT extend `Action` or
+`ActsOnRawTermVar`; it sits alongside them as a separate constraint,
+keeping the typeclass dependency lattice flat (mirroring the
+discipline of Z2.A's `ActsOnTyVar` / Z4.A's `ActsOnRawTermVar`).
+Consumers (`Term.act` in Z5.A, downstream HoTT ctor traversal arms)
+take all three constraints as separate `[…]` arguments. -/
+
+/-- Bridge typeclass: var-zero and var-succ reductions of
+`varToRawTerm` under `Action.liftForRaw`.
+
+Both laws hold by `rfl` for every Container that lifts variables
+through `RawRenaming.lift` / `RawTermSubst.lift` / `Subst.lift`'s
+`forRaw` discipline (i.e. position `0` maps to `RawTerm.var
+⟨0, _⟩`, position `k+1` maps to `RawTerm.weaken` of the renamed/
+substituted source). -/
+class ActsOnRawTermVarLifts (Container : Nat → Nat → Type)
+    [Action Container] [ActsOnRawTermVar Container] where
+  /-- At position `0` under `Action.liftForRaw`, the lifted action
+  produces `RawTerm.var ⟨0, _⟩` in the target's lifted scope. -/
+  liftForRaw_var_zero : ∀ {sourceScope targetScope : Nat}
+      (someAction : Container sourceScope targetScope),
+        ActsOnRawTermVar.varToRawTerm
+            (Action.liftForRaw someAction)
+            (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1))
+          = (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩ :
+              RawTerm (targetScope + 1))
+  /-- At position `k+1` under `Action.liftForRaw`, the lifted action
+  produces `RawTerm.weaken` of the action applied to `k`. -/
+  liftForRaw_var_succ : ∀ {sourceScope targetScope : Nat}
+      (someAction : Container sourceScope targetScope)
+      (predecessorIndex : Fin sourceScope),
+        ActsOnRawTermVar.varToRawTerm
+            (Action.liftForRaw someAction)
+            ⟨predecessorIndex.val + 1,
+              Nat.succ_lt_succ predecessorIndex.isLt⟩
+          = RawTerm.weaken
+              (ActsOnRawTermVar.varToRawTerm someAction predecessorIndex)
+
+/-- `ActsOnRawTermVarLifts` instance for `RawRenaming`.
+
+* `liftForRaw_var_zero` — `(rho.lift) ⟨0, _⟩ = ⟨0, Nat.zero_lt_succ _⟩`
+  by the var-zero arm of `RawRenaming.lift`; `varToRawTerm` then wraps
+  it as `RawTerm.var ⟨0, _⟩`.  Holds by `rfl` after `@[reducible]`
+  unfolding of `RawRenaming.lift`.
+
+* `liftForRaw_var_succ` — `(rho.lift) ⟨k+1, h⟩ = Fin.succ (rho ⟨k, _⟩)`
+  by the var-succ arm of `RawRenaming.lift`; `varToRawTerm` wraps
+  that as `RawTerm.var (Fin.succ (rho ⟨k, _⟩))`.  On the RHS,
+  `RawTerm.weaken (RawTerm.var (rho ⟨k, _⟩))
+    = (RawTerm.var (rho ⟨k, _⟩)).rename RawRenaming.weaken
+    = RawTerm.var (Fin.succ (rho ⟨k, _⟩))`
+  by the var-arm of `RawTerm.rename` and the definition of
+  `RawRenaming.weaken`.  Holds by `rfl`. -/
+instance : ActsOnRawTermVarLifts RawRenaming where
+  liftForRaw_var_zero := fun _ => rfl
+  liftForRaw_var_succ := fun _ _ => rfl
+
+/-- `ActsOnRawTermVarLifts` instance for `RawTermSubst`.
+
+* `liftForRaw_var_zero` — `(sigma.lift) ⟨0, _⟩ = RawTerm.var
+  ⟨0, Nat.zero_lt_succ _⟩` by the var-zero arm of
+  `RawTermSubst.lift`; `varToRawTerm` returns it directly.  Holds
+  by `rfl`.
+
+* `liftForRaw_var_succ` — `(sigma.lift) ⟨k+1, h⟩
+    = (sigma ⟨k, _⟩).rename RawRenaming.weaken`
+  by the var-succ arm of `RawTermSubst.lift`; this is the definition
+  of `RawTerm.weaken (sigma ⟨k, _⟩)`, which in turn equals
+  `RawTerm.weaken (varToRawTerm sigma ⟨k, _⟩)` since
+  `varToRawTerm sigma pos = sigma pos`.  Holds by `rfl`. -/
+instance : ActsOnRawTermVarLifts RawTermSubst where
+  liftForRaw_var_zero := fun _ => rfl
+  liftForRaw_var_succ := fun _ _ => rfl
+
 /-! ## Smoke equivalences with existing `RawTerm.rename` / `RawTerm.subst`.
 
 The `RawTerm.act` engine over `RawRenaming` should produce the same
