@@ -139,6 +139,82 @@ theorem Univalence
          (Term.equivReflId (context := context) carrier) :=
   Conv.fromStep (Step.eqType innerLevel innerLevelLt carrier carrierRaw)
 
+/-- **Univalence (heterogeneous-carrier headline), zero-axiom theorem.**
+
+The canonical heterogeneous-carrier path-from-equivalence proof at
+the universe (`Term.uaIntroHet ... equivWitness`) is convertible to
+the underlying packaged equivalence (`equivWitness`) — for ANY
+equivalence between two distinct carrier type-codes
+`carrierA, carrierB : Ty level scope`.
+
+This is the **headline heterogeneous Univalence theorem** — the
+Voevodsky form for arbitrary equivalences (not just rfl).  It
+states:
+
+```
+Conv (Term.uaIntroHet ... equivWitness) equivWitness
+```
+
+at the heterogeneous Id-type
+`Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw carrierBRaw`
+versus `Ty.equiv carrierA carrierB`.  Both Terms project to the
+SAME raw form `RawTerm.equivIntro forwardRaw backwardRaw` (the
+architectural raw-alignment trick of `Term.uaIntroHet`):  the rule
+changes the type only — `Ty.id (Ty.universe ...) carrierARaw
+carrierBRaw` reduces to `Ty.equiv carrierA carrierB` while the
+raw data is preserved.
+
+## Relationship to the rfl-fragment `Univalence` above
+
+The rfl-fragment `Univalence` (`Step.eqType`) handles only the case
+where both endpoints are the SAME `carrier` (specialised via
+`Term.equivReflIdAtId → Term.equivReflId`).  The heterogeneous form
+generalises to ANY equivalence between distinct carriers
+`carrierA, carrierB`, packaged by the user as `equivWitness :
+Term ctx (Ty.equiv carrierA carrierB) (RawTerm.equivIntro ...)`.
+Together the two cover the full Voevodsky Univalence at the kernel
+level (`Step.eqType` for refl, `Step.eqTypeHet` for arbitrary).
+
+## Proof body
+
+`Conv.fromStep (Step.eqTypeHet innerLevel innerLevelLt
+carrierARaw carrierBRaw equivWitness)` — a single Step lifted to
+Conv via the existing `Conv.fromStep` constructor.  No axioms, no
+hypotheses, no placeholders.
+
+## Audit gate
+
+`#print axioms UnivalenceHet` MUST report:
+```
+'LeanFX2.UnivalenceHet' does not depend on any axioms
+```
+
+If it reports propext, Quot.sound, Classical.choice, funext,
+Univalence (recursive!), or any user axiom, the theorem is NOT
+shipped.  Verified in `Smoke/AuditPhase12AB87.lean`.
+
+Phase 12.A.B8.7 (CUMUL-8.7).  Consumes the `Step.eqTypeHet`
+constructor shipped in commit `ab017bb0` (Phase 12.A.B8.6).  The
+load-bearing milestone for FULL Voevodsky Univalence at the kernel
+level — `Step.eqType` covers refl, `Step.eqTypeHet` covers
+arbitrary, and the union is full Univalence definitional. -/
+theorem UnivalenceHet
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                 (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    Conv (Term.uaIntroHet (context := context)
+                          innerLevel innerLevelLt
+                          carrierARaw carrierBRaw equivWitness)
+         equivWitness :=
+  Conv.fromStep (Step.eqTypeHet innerLevel innerLevelLt
+                                carrierARaw carrierBRaw equivWitness)
+
 /-! ## §2. Meta-level Univalence neighbourhood (stretch milestone).
 
 The kernel `Univalence` theorem above is the rfl-fragment at the
