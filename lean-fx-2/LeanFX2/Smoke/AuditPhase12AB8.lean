@@ -1,6 +1,12 @@
 import LeanFX2.HoTT.Univalence
 import LeanFX2.HoTT.Funext
+import LeanFX2.HoTT.UnivalenceFull
+import LeanFX2.HoTT.UnivalenceTransport
+import LeanFX2.HoTT.FunextFull
 import LeanFX2.Smoke.AuditPhase12AB8Cascade
+import LeanFX2.Smoke.AuditUnivalenceFull
+import LeanFX2.Smoke.AuditUnivalenceTransport
+import LeanFX2.Smoke.AuditFunextFull
 
 /-! # Smoke/AuditPhase12AB8 — final comprehensive audit for CUMUL-8.
 
