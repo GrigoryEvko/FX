@@ -2174,7 +2174,7 @@ theorem ConvCumulHomo.subst_compatible_paired_allais
       {targetCtx : Ctx mode level targetScope}
       {sigma : SubstHet level level sourceScope targetScope}
       {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
-      (compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB),
+      (_compat : TermSubstHet.PointwiseCompatHomo termSubstA termSubstB),
       ConvCumul (firstTerm.substHet termSubstA) (secondTerm.substHet termSubstB) := by
   induction cumulRel with
   | refl t =>
