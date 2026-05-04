@@ -186,5 +186,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInrDeep _ ihScrutinee ihRight
   | iotaIdJReflDeep _ _ ihWitness ihBase =>
       exact RawStep.par.iotaIdJReflDeep ihWitness ihBase
+  -- cumulUpInnerCong: source and target are both
+  -- `Term.cumulUp ... lowerSource/lowerTarget`, which project to the
+  -- SAME constant raw `RawTerm.universeCode innerLevel.toNat`.
+  -- Therefore the raw-side parallel reduction is reflexive.
+  | cumulUpInnerCong _ _ _ _ _ _ _ => exact RawStep.par.refl _
 
 end LeanFX2

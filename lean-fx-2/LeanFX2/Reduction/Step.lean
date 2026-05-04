@@ -660,6 +660,39 @@ inductive Step :
               baseCase
               (Term.refl carrier endpoint))
            baseCase
+  /-- Cong rule for `Term.cumulUp`: a Step inside the lower payload
+  lifts to a Step on the wrapping `cumulUp`.  The lower payload sits
+  at its own context `ctxLow` and scope `scopeLow` (decoupled per
+  Phase 12.A.B1.5 from the outer `ctxHigh`/`scope`); the inner
+  `Step` therefore lives at parameters distinct from the outer one.
+
+  This is the FIRST Step ctor that bridges different scope/context
+  parameterizations.  The outer Step's parameterization picks up
+  `ctxHigh, level, scope`; the inner Step's is `ctxLow,
+  lowerLevel.toNat + 1, scopeLow`.
+
+  The lower-side `levelLow` is fixed at `lowerLevel.toNat + 1` to
+  match `ConvCumul.cumulUpCong`'s restriction, so the cong rule
+  lifts cleanly through the convertibility bridge. -/
+  | cumulUpInner {mode : Mode} {scopeLow scope : Nat}
+      (innerLevel lowerLevel higherLevel : UniverseLevel)
+      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+      {lowerSource lowerTarget :
+        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                    (RawTerm.universeCode innerLevel.toNat)} :
+      Step lowerSource lowerTarget →
+      Step (Term.cumulUp (ctxHigh := ctxHigh)
+                         innerLevel lowerLevel higherLevel
+                         cumulOkLow cumulOkHigh cumulMonotone
+                         (Nat.le_refl _) (Nat.le_refl _) lowerSource)
+           (Term.cumulUp (ctxHigh := ctxHigh)
+                         innerLevel lowerLevel higherLevel
+                         cumulOkLow cumulOkHigh cumulMonotone
+                         (Nat.le_refl _) (Nat.le_refl _) lowerTarget)
 
 /-! ## Cast helpers
 

@@ -842,6 +842,30 @@ inductive Step.par :
                           (rightEndpoint := endpoint)
                           baseSource witnessSource)
                baseTarget
+  /-- Parallel-cong for `Term.cumulUp`: a `Step.par` inside the lower
+  payload lifts to a `Step.par` on the wrapping `cumulUp`.  Mirrors
+  `Step.cumulUpInner` at the parallel level.  The lower payload is
+  fixed at level `lowerLevel.toNat + 1` to match
+  `ConvCumul.cumulUpCong`'s restriction. -/
+  | cumulUpInnerCong {mode : Mode} {scopeLow scope : Nat}
+      (innerLevel lowerLevel higherLevel : UniverseLevel)
+      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
+      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
+      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
+      {lowerSource lowerTarget :
+        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
+                    (RawTerm.universeCode innerLevel.toNat)} :
+      Step.par lowerSource lowerTarget →
+      Step.par (Term.cumulUp (ctxHigh := ctxHigh)
+                             innerLevel lowerLevel higherLevel
+                             cumulOkLow cumulOkHigh cumulMonotone
+                             (Nat.le_refl _) (Nat.le_refl _) lowerSource)
+               (Term.cumulUp (ctxHigh := ctxHigh)
+                             innerLevel lowerLevel higherLevel
+                             cumulOkLow cumulOkHigh cumulMonotone
+                             (Nat.le_refl _) (Nat.le_refl _) lowerTarget)
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 
@@ -972,6 +996,11 @@ theorem Step.toPar
       exact Step.par.idJ (Step.par.refl baseCase) singleStepIH
   | iotaIdJRefl carrier endpoint baseCase =>
       exact Step.par.iotaIdJRefl carrier endpoint (Step.par.refl baseCase)
+  | cumulUpInner innerLevel lowerLevel higherLevel
+                  cumulOkLow cumulOkHigh cumulMonotone _ singleStepIH =>
+      exact Step.par.cumulUpInnerCong innerLevel lowerLevel higherLevel
+                                       cumulOkLow cumulOkHigh cumulMonotone
+                                       singleStepIH
 
 /-! ## Cast helpers — propositional transport for indices. -/
 

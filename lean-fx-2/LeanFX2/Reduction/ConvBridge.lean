@@ -188,6 +188,10 @@ theorem Step.toConvCumul
       exact ConvCumul.idJCong (ConvCumul.refl baseCase) ih
   | iotaIdJRefl carrier endpoint baseCase =>
       exact ConvCumul.iotaIdJReflCumul carrier endpoint baseCase
+  | cumulUpInner innerLevel lowerLevel higherLevel
+                  cumulOkLow cumulOkHigh cumulMonotone _ ih =>
+      exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
+                                  cumulOkLow cumulOkHigh cumulMonotone ih
 
 /-! ## StepStar.toConvCumul
 
