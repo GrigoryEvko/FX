@@ -139,4 +139,71 @@ theorem Univalence
          (Term.equivReflId (context := context) carrier) :=
   Conv.fromStep (Step.eqType innerLevel innerLevelLt carrier carrierRaw)
 
+/-! ## §2. Meta-level Univalence neighbourhood (stretch milestone).
+
+The kernel `Univalence` theorem above is the rfl-fragment at the
+KERNEL level (Conv between two typed `Term`s related by
+`Step.eqType`).  The full Voevodsky Univalence — `(A B : Type) →
+(A = B) ≃ (A ≃ B)` for arbitrary `A`, `B` — requires kernel
+extensions beyond the rfl-fragment (heterogeneous-carrier `Step`
+ctors with new raw forms; see file docstring).
+
+Below we ship the **meta-level** companion: a Lean-level map from
+Lean `Eq` to lean-fx-2's meta-level `Equiv` structure (defined in
+`HoTT/Equivalence.lean`).  This is the "easy" direction
+(`A = B → Equiv A B`) — it always exists in any theory that has
+`Eq.mpr`-style transport.  The HARD direction (`Equiv A B →
+A = B`) is the real Univalence; that one cannot enter at zero
+axioms without further kernel structure.
+
+The pair below establishes:
+
+* **Existence**: `Univalence.idToEquivMeta` — canonical map from
+  Lean's `Eq` between Sorts to `Equiv` between them.
+* **Computation rule**: `Univalence.idToEquivMeta_refl` — at the
+  rfl path, the map produces the canonical identity equivalence
+  `Equiv.refl`.
+
+These are "real theorems with bodies" (not axioms / placeholders),
+shipped at the meta level alongside the kernel rfl-fragment.  They
+mirror what the kernel `Univalence` theorem says ABOUT the kernel
+(`refl path ↦ identity equivalence`) but at Lean's meta level.
+
+**Honest scope** — this does NOT make the full Univalence Axiom
+provable.  Lean's metatheory rejects the converse (`Equiv → Eq`
+on Sorts) without `propext` or a kernel extension.  Shipping the
+meta-level forward direction documents what IS provable cleanly
+and does not pretend to ship more. -/
+
+universe metaLevel
+
+/-- **Meta-level `idToEquiv`** — the canonical map from Lean's
+`Eq` between two `Sort metaLevel` types to lean-fx-2's `Equiv`
+structure between them.
+
+Body uses `Eq.mpr` (propext-free, since `Eq.mpr` for `a = b → b →
+a` is just `Eq.subst` in disguise).  The two round-trip witnesses
+hold by `Eq.subst` reduction at refl. -/
+def Univalence.idToEquivMeta
+    {LeftType : Sort metaLevel} {RightType : Sort metaLevel}
+    (typeEquality : LeftType = RightType) : Equiv LeftType RightType :=
+  typeEquality ▸ Equiv.refl LeftType
+
+/-- **Meta-level Univalence rfl-case**: at `rfl`, the canonical
+`idToEquivMeta` map produces the canonical identity equivalence.
+Definitional `rfl` because `(rfl ▸ x) = x` reduces. -/
+theorem Univalence.idToEquivMeta_refl
+    (LeftType : Sort metaLevel) :
+    Univalence.idToEquivMeta (rfl : LeftType = LeftType)
+      = Equiv.refl LeftType := rfl
+
+/-- **Meta-level Univalence `toFun` projection at rfl**: the
+forward function of the canonical equivalence is the identity
+function.  This is the meta-level computation rule corresponding
+to the kernel `Step.eqType` reduction. -/
+theorem Univalence.idToEquivMeta_refl_toFun
+    (LeftType : Sort metaLevel) :
+    (Univalence.idToEquivMeta (rfl : LeftType = LeftType)).toFun
+      = fun (leftValue : LeftType) => leftValue := rfl
+
 end LeanFX2
