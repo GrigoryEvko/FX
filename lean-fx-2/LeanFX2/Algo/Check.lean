@@ -483,6 +483,18 @@ def Term.check : ∀ {scope : Nat}
   | .sessionRecv _      => none
   | .effectPerform _ _  => none
   | .universeCode _     => none
+  -- CUMUL-2.1 per-shape type codes (no typed Term counterparts yet —
+  -- CUMUL-2.4 ships those).  Return `none` keeps the checker total.
+  | .arrowCode _ _      => none
+  | .piTyCode _ _       => none
+  | .sigmaTyCode _ _    => none
+  | .productCode _ _    => none
+  | .sumCode _ _        => none
+  | .listCode _         => none
+  | .optionCode _       => none
+  | .eitherCode _ _     => none
+  | .idCode _ _ _       => none
+  | .equivCode _ _      => none
 
 end LeanFX2
 

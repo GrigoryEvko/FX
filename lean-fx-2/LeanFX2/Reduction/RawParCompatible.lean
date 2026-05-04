@@ -257,6 +257,52 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
         (RawTerm.subst_par_pointwise operationTag substsRelated)
         (RawTerm.subst_par_pointwise arguments substsRelated)
   | .universeCode _, _, _, _ => RawStep.par.refl _
+  -- CUMUL-2.1 per-shape type codes — descend into subterms via the
+  -- shape-specific cong rules (`arrowCodeCong`, `piTyCodeCong`, ...)
+  -- defined in `Reduction/RawPar.lean`.  Binder-shape ctors
+  -- (`piTyCode`, `sigmaTyCode`) recurse with `RawTermSubst.par_lift
+  -- substsRelated` to thread the parallelism under the binder.
+  | .arrowCode domainCode codomainCode, _, _, substsRelated =>
+      RawStep.par.arrowCodeCong
+        (RawTerm.subst_par_pointwise domainCode substsRelated)
+        (RawTerm.subst_par_pointwise codomainCode substsRelated)
+  | .piTyCode domainCode codomainCode, _, _, substsRelated =>
+      RawStep.par.piTyCodeCong
+        (RawTerm.subst_par_pointwise domainCode substsRelated)
+        (RawTerm.subst_par_pointwise codomainCode
+          (RawTermSubst.par_lift substsRelated))
+  | .sigmaTyCode domainCode codomainCode, _, _, substsRelated =>
+      RawStep.par.sigmaTyCodeCong
+        (RawTerm.subst_par_pointwise domainCode substsRelated)
+        (RawTerm.subst_par_pointwise codomainCode
+          (RawTermSubst.par_lift substsRelated))
+  | .productCode firstCode secondCode, _, _, substsRelated =>
+      RawStep.par.productCodeCong
+        (RawTerm.subst_par_pointwise firstCode substsRelated)
+        (RawTerm.subst_par_pointwise secondCode substsRelated)
+  | .sumCode leftCode rightCode, _, _, substsRelated =>
+      RawStep.par.sumCodeCong
+        (RawTerm.subst_par_pointwise leftCode substsRelated)
+        (RawTerm.subst_par_pointwise rightCode substsRelated)
+  | .listCode elementCode, _, _, substsRelated =>
+      RawStep.par.listCodeCong
+        (RawTerm.subst_par_pointwise elementCode substsRelated)
+  | .optionCode elementCode, _, _, substsRelated =>
+      RawStep.par.optionCodeCong
+        (RawTerm.subst_par_pointwise elementCode substsRelated)
+  | .eitherCode leftCode rightCode, _, _, substsRelated =>
+      RawStep.par.eitherCodeCong
+        (RawTerm.subst_par_pointwise leftCode substsRelated)
+        (RawTerm.subst_par_pointwise rightCode substsRelated)
+  | .idCode typeCode leftRaw rightRaw, _, _, substsRelated =>
+      RawStep.par.idCodeCong
+        (RawTerm.subst_par_pointwise typeCode substsRelated)
+        (RawTerm.subst_par_pointwise leftRaw substsRelated)
+        (RawTerm.subst_par_pointwise rightRaw substsRelated)
+  | .equivCode leftTypeCode rightTypeCode, _, _, substsRelated =>
+      RawStep.par.equivCodeCong
+        (RawTerm.subst_par_pointwise leftTypeCode substsRelated)
+        (RawTerm.subst_par_pointwise rightTypeCode substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -508,6 +554,34 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.sessionRecvCong (channelIH substsRelated)
   | effectPerformCong _ _ operationIH argumentsIH =>
       exact RawStep.par.effectPerformCong (operationIH substsRelated) (argumentsIH substsRelated)
+  -- CUMUL-2.1 per-shape type-code cong rules.  Binder-shape ctors
+  -- (`piTyCode`, `sigmaTyCode`) recurse with `RawTermSubst.par_lift
+  -- substsRelated` to thread parallelism under the binder.
+  | arrowCodeCong _ _ domainIH codomainIH =>
+      exact RawStep.par.arrowCodeCong (domainIH substsRelated) (codomainIH substsRelated)
+  | piTyCodeCong _ _ domainIH codomainIH =>
+      exact RawStep.par.piTyCodeCong
+        (domainIH substsRelated)
+        (codomainIH (RawTermSubst.par_lift substsRelated))
+  | sigmaTyCodeCong _ _ domainIH codomainIH =>
+      exact RawStep.par.sigmaTyCodeCong
+        (domainIH substsRelated)
+        (codomainIH (RawTermSubst.par_lift substsRelated))
+  | productCodeCong _ _ firstIH secondIH =>
+      exact RawStep.par.productCodeCong (firstIH substsRelated) (secondIH substsRelated)
+  | sumCodeCong _ _ leftIH rightIH =>
+      exact RawStep.par.sumCodeCong (leftIH substsRelated) (rightIH substsRelated)
+  | listCodeCong _ elementIH =>
+      exact RawStep.par.listCodeCong (elementIH substsRelated)
+  | optionCodeCong _ elementIH =>
+      exact RawStep.par.optionCodeCong (elementIH substsRelated)
+  | eitherCodeCong _ _ leftIH rightIH =>
+      exact RawStep.par.eitherCodeCong (leftIH substsRelated) (rightIH substsRelated)
+  | idCodeCong _ _ _ typeIH leftIH rightIH =>
+      exact RawStep.par.idCodeCong
+        (typeIH substsRelated) (leftIH substsRelated) (rightIH substsRelated)
+  | equivCodeCong _ _ leftIH rightIH =>
+      exact RawStep.par.equivCodeCong (leftIH substsRelated) (rightIH substsRelated)
 
 /-! ## β-corollary: parallel substitution at position 0. -/
 

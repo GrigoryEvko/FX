@@ -430,6 +430,69 @@ theorem RawTerm.act_eq_rename :
            RawTerm.effectPerform (operationTag.rename someRenaming) (arguments.rename someRenaming)
       rw [operationIH someRenaming, argumentsIH someRenaming]
   | universeCode innerLevel => intro _; rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      intro someRenaming
+      show RawTerm.arrowCode (domainCode.act someRenaming) (codomainCode.act someRenaming) =
+           RawTerm.arrowCode (domainCode.rename someRenaming) (codomainCode.rename someRenaming)
+      rw [domainIH someRenaming, codomainIH someRenaming]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      intro someRenaming
+      show RawTerm.piTyCode (domainCode.act someRenaming)
+                            (codomainCode.act (Action.liftForRaw someRenaming)) =
+           RawTerm.piTyCode (domainCode.rename someRenaming)
+                            (codomainCode.rename someRenaming.lift)
+      rw [domainIH someRenaming, codomainIH (Action.liftForRaw someRenaming)]
+      rfl
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      intro someRenaming
+      show RawTerm.sigmaTyCode (domainCode.act someRenaming)
+                               (codomainCode.act (Action.liftForRaw someRenaming)) =
+           RawTerm.sigmaTyCode (domainCode.rename someRenaming)
+                               (codomainCode.rename someRenaming.lift)
+      rw [domainIH someRenaming, codomainIH (Action.liftForRaw someRenaming)]
+      rfl
+  | productCode firstCode secondCode firstIH secondIH =>
+      intro someRenaming
+      show RawTerm.productCode (firstCode.act someRenaming) (secondCode.act someRenaming) =
+           RawTerm.productCode (firstCode.rename someRenaming) (secondCode.rename someRenaming)
+      rw [firstIH someRenaming, secondIH someRenaming]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      intro someRenaming
+      show RawTerm.sumCode (leftCode.act someRenaming) (rightCode.act someRenaming) =
+           RawTerm.sumCode (leftCode.rename someRenaming) (rightCode.rename someRenaming)
+      rw [leftIH someRenaming, rightIH someRenaming]
+  | listCode elementCode elementIH =>
+      intro someRenaming
+      show RawTerm.listCode (elementCode.act someRenaming) =
+           RawTerm.listCode (elementCode.rename someRenaming)
+      rw [elementIH someRenaming]
+  | optionCode elementCode elementIH =>
+      intro someRenaming
+      show RawTerm.optionCode (elementCode.act someRenaming) =
+           RawTerm.optionCode (elementCode.rename someRenaming)
+      rw [elementIH someRenaming]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      intro someRenaming
+      show RawTerm.eitherCode (leftCode.act someRenaming) (rightCode.act someRenaming) =
+           RawTerm.eitherCode (leftCode.rename someRenaming) (rightCode.rename someRenaming)
+      rw [leftIH someRenaming, rightIH someRenaming]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      intro someRenaming
+      show RawTerm.idCode (typeCode.act someRenaming)
+                          (leftRaw.act someRenaming)
+                          (rightRaw.act someRenaming) =
+           RawTerm.idCode (typeCode.rename someRenaming)
+                          (leftRaw.rename someRenaming)
+                          (rightRaw.rename someRenaming)
+      rw [typeIH someRenaming, leftIH someRenaming, rightIH someRenaming]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      intro someRenaming
+      show RawTerm.equivCode (leftTypeCode.act someRenaming)
+                             (rightTypeCode.act someRenaming) =
+           RawTerm.equivCode (leftTypeCode.rename someRenaming)
+                             (rightTypeCode.rename someRenaming)
+      rw [leftIH someRenaming, rightIH someRenaming]
 
 /-- Bridge theorem: applying `RawTerm.act` over a `Subst level`
 Container produces the same result as applying `RawTerm.subst
@@ -725,6 +788,73 @@ theorem RawTerm.act_eq_subst_forRaw {level : Nat} :
            RawTerm.effectPerform (operationTag.subst someSubst.forRaw) (arguments.subst someSubst.forRaw)
       rw [operationIH someSubst, argumentsIH someSubst]
   | universeCode innerLevel => intro _; rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      intro someSubst
+      show RawTerm.arrowCode (domainCode.act someSubst) (codomainCode.act someSubst) =
+           RawTerm.arrowCode (domainCode.subst someSubst.forRaw)
+                             (codomainCode.subst someSubst.forRaw)
+      rw [domainIH someSubst, codomainIH someSubst]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      intro someSubst
+      show RawTerm.piTyCode (domainCode.act someSubst)
+                            (codomainCode.act (Action.liftForRaw someSubst)) =
+           RawTerm.piTyCode (domainCode.subst someSubst.forRaw)
+                            (codomainCode.subst someSubst.forRaw.lift)
+      rw [domainIH someSubst, codomainIH (Action.liftForRaw someSubst)]
+      rfl
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      intro someSubst
+      show RawTerm.sigmaTyCode (domainCode.act someSubst)
+                               (codomainCode.act (Action.liftForRaw someSubst)) =
+           RawTerm.sigmaTyCode (domainCode.subst someSubst.forRaw)
+                               (codomainCode.subst someSubst.forRaw.lift)
+      rw [domainIH someSubst, codomainIH (Action.liftForRaw someSubst)]
+      rfl
+  | productCode firstCode secondCode firstIH secondIH =>
+      intro someSubst
+      show RawTerm.productCode (firstCode.act someSubst) (secondCode.act someSubst) =
+           RawTerm.productCode (firstCode.subst someSubst.forRaw)
+                               (secondCode.subst someSubst.forRaw)
+      rw [firstIH someSubst, secondIH someSubst]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      intro someSubst
+      show RawTerm.sumCode (leftCode.act someSubst) (rightCode.act someSubst) =
+           RawTerm.sumCode (leftCode.subst someSubst.forRaw)
+                           (rightCode.subst someSubst.forRaw)
+      rw [leftIH someSubst, rightIH someSubst]
+  | listCode elementCode elementIH =>
+      intro someSubst
+      show RawTerm.listCode (elementCode.act someSubst) =
+           RawTerm.listCode (elementCode.subst someSubst.forRaw)
+      rw [elementIH someSubst]
+  | optionCode elementCode elementIH =>
+      intro someSubst
+      show RawTerm.optionCode (elementCode.act someSubst) =
+           RawTerm.optionCode (elementCode.subst someSubst.forRaw)
+      rw [elementIH someSubst]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      intro someSubst
+      show RawTerm.eitherCode (leftCode.act someSubst) (rightCode.act someSubst) =
+           RawTerm.eitherCode (leftCode.subst someSubst.forRaw)
+                              (rightCode.subst someSubst.forRaw)
+      rw [leftIH someSubst, rightIH someSubst]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      intro someSubst
+      show RawTerm.idCode (typeCode.act someSubst)
+                          (leftRaw.act someSubst)
+                          (rightRaw.act someSubst) =
+           RawTerm.idCode (typeCode.subst someSubst.forRaw)
+                          (leftRaw.subst someSubst.forRaw)
+                          (rightRaw.subst someSubst.forRaw)
+      rw [typeIH someSubst, leftIH someSubst, rightIH someSubst]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      intro someSubst
+      show RawTerm.equivCode (leftTypeCode.act someSubst)
+                             (rightTypeCode.act someSubst) =
+           RawTerm.equivCode (leftTypeCode.subst someSubst.forRaw)
+                             (rightTypeCode.subst someSubst.forRaw)
+      rw [leftIH someSubst, rightIH someSubst]
 
 /-! ## Smoke equivalences with existing `Ty.subst`.
 

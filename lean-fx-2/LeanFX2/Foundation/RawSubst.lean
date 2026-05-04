@@ -178,6 +178,32 @@ def RawTerm.rename : ∀ {source target : Nat},
   -- on the inner-level payload (no Fin variables to remap).
   | _, _, .universeCode innerLevel, _ =>
       .universeCode innerLevel
+  -- CUMUL-2.1 per-shape type codes.
+  | _, _, .arrowCode domainCode codomainCode, rawRenaming =>
+      .arrowCode (domainCode.rename rawRenaming) (codomainCode.rename rawRenaming)
+  | _, _, .piTyCode domainCode codomainCode, rawRenaming =>
+      .piTyCode (domainCode.rename rawRenaming)
+                (codomainCode.rename rawRenaming.lift)
+  | _, _, .sigmaTyCode domainCode codomainCode, rawRenaming =>
+      .sigmaTyCode (domainCode.rename rawRenaming)
+                   (codomainCode.rename rawRenaming.lift)
+  | _, _, .productCode firstCode secondCode, rawRenaming =>
+      .productCode (firstCode.rename rawRenaming) (secondCode.rename rawRenaming)
+  | _, _, .sumCode leftCode rightCode, rawRenaming =>
+      .sumCode (leftCode.rename rawRenaming) (rightCode.rename rawRenaming)
+  | _, _, .listCode elementCode, rawRenaming =>
+      .listCode (elementCode.rename rawRenaming)
+  | _, _, .optionCode elementCode, rawRenaming =>
+      .optionCode (elementCode.rename rawRenaming)
+  | _, _, .eitherCode leftCode rightCode, rawRenaming =>
+      .eitherCode (leftCode.rename rawRenaming) (rightCode.rename rawRenaming)
+  | _, _, .idCode typeCode leftRaw rightRaw, rawRenaming =>
+      .idCode (typeCode.rename rawRenaming)
+              (leftRaw.rename rawRenaming)
+              (rightRaw.rename rawRenaming)
+  | _, _, .equivCode leftTypeCode rightTypeCode, rawRenaming =>
+      .equivCode (leftTypeCode.rename rawRenaming)
+                 (rightTypeCode.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -316,6 +342,30 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.rename]; rw [tagIH renamingEq, argsIH renamingEq]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename]; rw [domainIH renamingEq, codomainIH renamingEq]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename]
+      rw [domainIH renamingEq, codomainIH (RawRenaming.lift_pointwise renamingEq)]
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename]
+      rw [domainIH renamingEq, codomainIH (RawRenaming.lift_pointwise renamingEq)]
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.rename]; rw [firstIH renamingEq, secondIH renamingEq]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.rename]; rw [elementIH renamingEq]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.rename]; rw [elementIH renamingEq]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.rename]
+      rw [typeIH renamingEq, leftIH renamingEq, rightIH renamingEq]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -434,6 +484,46 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.rename]; rw [tagIH rho1 rho2, argsIH rho1 rho2]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename]; rw [domainIH rho1 rho2, codomainIH rho1 rho2]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename]
+      rw [domainIH rho1 rho2, codomainIH rho1.lift rho2.lift]
+      congr 1
+      apply RawTerm.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename]
+      rw [domainIH rho1 rho2, codomainIH rho1.lift rho2.lift]
+      congr 1
+      apply RawTerm.rename_pointwise
+      intro position
+      cases position with
+      | mk val isLt =>
+        cases val with
+        | zero => rfl
+        | succ k => rfl
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.rename]; rw [firstIH rho1 rho2, secondIH rho1 rho2]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.rename]; rw [elementIH rho1 rho2]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.rename]; rw [elementIH rho1 rho2]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.rename]
+      rw [typeIH rho1 rho2, leftIH rho1 rho2, rightIH rho1 rho2]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -589,6 +679,27 @@ def RawTerm.subst : ∀ {source target : Nat},
   -- on the inner-level payload (no Fin variables to substitute).
   | _, _, .universeCode innerLevel, _ =>
       .universeCode innerLevel
+  -- CUMUL-2.1 per-shape type codes.
+  | _, _, .arrowCode domainCode codomainCode, sigma =>
+      .arrowCode (domainCode.subst sigma) (codomainCode.subst sigma)
+  | _, _, .piTyCode domainCode codomainCode, sigma =>
+      .piTyCode (domainCode.subst sigma) (codomainCode.subst sigma.lift)
+  | _, _, .sigmaTyCode domainCode codomainCode, sigma =>
+      .sigmaTyCode (domainCode.subst sigma) (codomainCode.subst sigma.lift)
+  | _, _, .productCode firstCode secondCode, sigma =>
+      .productCode (firstCode.subst sigma) (secondCode.subst sigma)
+  | _, _, .sumCode leftCode rightCode, sigma =>
+      .sumCode (leftCode.subst sigma) (rightCode.subst sigma)
+  | _, _, .listCode elementCode, sigma =>
+      .listCode (elementCode.subst sigma)
+  | _, _, .optionCode elementCode, sigma =>
+      .optionCode (elementCode.subst sigma)
+  | _, _, .eitherCode leftCode rightCode, sigma =>
+      .eitherCode (leftCode.subst sigma) (rightCode.subst sigma)
+  | _, _, .idCode typeCode leftRaw rightRaw, sigma =>
+      .idCode (typeCode.subst sigma) (leftRaw.subst sigma) (rightRaw.subst sigma)
+  | _, _, .equivCode leftTypeCode rightTypeCode, sigma =>
+      .equivCode (leftTypeCode.subst sigma) (rightTypeCode.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -734,6 +845,30 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst]; rw [tagIH substEq, argsIH substEq]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]; rw [domainIH substEq, codomainIH substEq]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [domainIH substEq, codomainIH (RawTermSubst.lift_pointwise substEq)]
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [domainIH substEq, codomainIH (RawTermSubst.lift_pointwise substEq)]
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.subst]; rw [elementIH substEq]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.subst]; rw [elementIH substEq]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.subst]
+      rw [typeIH substEq, leftIH substEq, rightIH substEq]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -894,6 +1029,41 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename, RawTerm.subst]
       rw [tagIH rho sigma, argsIH rho sigma]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [domainIH rho sigma, codomainIH rho sigma]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [domainIH rho sigma, codomainIH rho.lift sigma.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      exact RawTermSubst.lift_renaming_pull rho sigma
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [domainIH rho sigma, codomainIH rho.lift sigma.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      exact RawTermSubst.lift_renaming_pull rho sigma
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [firstIH rho sigma, secondIH rho sigma]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [leftIH rho sigma, rightIH rho sigma]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [elementIH rho sigma]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [elementIH rho sigma]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [leftIH rho sigma, rightIH rho sigma]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [typeIH rho sigma, leftIH rho sigma, rightIH rho sigma]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [leftIH rho sigma, rightIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -1060,6 +1230,41 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst, RawTerm.rename]
       rw [tagIH sigma rho, argsIH sigma rho]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [domainIH sigma rho, codomainIH sigma rho]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [domainIH sigma rho, codomainIH sigma.lift rho.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      exact RawTermSubst.lift_then_rename_lift sigma rho
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [domainIH sigma rho, codomainIH sigma.lift rho.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      exact RawTermSubst.lift_then_rename_lift sigma rho
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [firstIH sigma rho, secondIH sigma rho]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [leftIH sigma rho, rightIH sigma rho]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [elementIH sigma rho]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [elementIH sigma rho]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [leftIH sigma rho, rightIH sigma rho]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [typeIH sigma rho, leftIH sigma rho, rightIH sigma rho]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [leftIH sigma rho, rightIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -1224,6 +1429,39 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst]; rw [tagIH sigma1 sigma2, argsIH sigma1 sigma2]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [domainIH sigma1 sigma2, codomainIH sigma1 sigma2]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [domainIH sigma1 sigma2, codomainIH sigma1.lift sigma2.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 position).symm
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [domainIH sigma1 sigma2, codomainIH sigma1.lift sigma2.lift]
+      congr 1
+      apply RawTerm.subst_pointwise
+      intro position
+      exact (RawTermSubst.lift_compose_pointwise sigma1 sigma2 position).symm
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.subst]; rw [elementIH sigma1 sigma2]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.subst]; rw [elementIH sigma1 sigma2]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.subst]
+      rw [typeIH sigma1 sigma2, leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -1380,6 +1618,31 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
   | effectPerform operationTag arguments tagIH argsIH =>
       simp only [RawTerm.subst]; rw [tagIH, argsIH]
   | universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | arrowCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]; rw [domainIH, codomainIH]
+  | piTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise codomainCode,
+          codomainIH, domainIH]
+  | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst_pointwise RawTermSubst.identity_lift_pointwise codomainCode,
+          codomainIH, domainIH]
+  | productCode firstCode secondCode firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH, secondIH]
+  | sumCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH, rightIH]
+  | listCode elementCode elementIH =>
+      simp only [RawTerm.subst]; rw [elementIH]
+  | optionCode elementCode elementIH =>
+      simp only [RawTerm.subst]; rw [elementIH]
+  | eitherCode leftCode rightCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH, rightIH]
+  | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [typeIH, leftIH, rightIH]
+  | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
+      simp only [RawTerm.subst]; rw [leftIH, rightIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

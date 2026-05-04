@@ -289,5 +289,46 @@ theorem RawStep.par.cd_dominates :
         (RawStep.par.cd_dominates operationTag)
         (RawStep.par.cd_dominates arguments)
   | _, .universeCode _ => RawStep.par.refl _
+  -- CUMUL-2.1 per-shape type codes: pure cong (no β/ι rule).  Each
+  -- arm uses the corresponding `*CodeCong` rule from `RawStep.par`
+  -- (added in CUMUL-2.1's RawPar.lean extension) to recurse on all
+  -- subterms.
+  | _, .arrowCode domainCode codomainCode =>
+      RawStep.par.arrowCodeCong
+        (RawStep.par.cd_dominates domainCode)
+        (RawStep.par.cd_dominates codomainCode)
+  | _, .piTyCode domainCode codomainCode =>
+      RawStep.par.piTyCodeCong
+        (RawStep.par.cd_dominates domainCode)
+        (RawStep.par.cd_dominates codomainCode)
+  | _, .sigmaTyCode domainCode codomainCode =>
+      RawStep.par.sigmaTyCodeCong
+        (RawStep.par.cd_dominates domainCode)
+        (RawStep.par.cd_dominates codomainCode)
+  | _, .productCode firstCode secondCode =>
+      RawStep.par.productCodeCong
+        (RawStep.par.cd_dominates firstCode)
+        (RawStep.par.cd_dominates secondCode)
+  | _, .sumCode leftCode rightCode =>
+      RawStep.par.sumCodeCong
+        (RawStep.par.cd_dominates leftCode)
+        (RawStep.par.cd_dominates rightCode)
+  | _, .listCode elementCode =>
+      RawStep.par.listCodeCong (RawStep.par.cd_dominates elementCode)
+  | _, .optionCode elementCode =>
+      RawStep.par.optionCodeCong (RawStep.par.cd_dominates elementCode)
+  | _, .eitherCode leftCode rightCode =>
+      RawStep.par.eitherCodeCong
+        (RawStep.par.cd_dominates leftCode)
+        (RawStep.par.cd_dominates rightCode)
+  | _, .idCode typeCode leftRaw rightRaw =>
+      RawStep.par.idCodeCong
+        (RawStep.par.cd_dominates typeCode)
+        (RawStep.par.cd_dominates leftRaw)
+        (RawStep.par.cd_dominates rightRaw)
+  | _, .equivCode leftTypeCode rightTypeCode =>
+      RawStep.par.equivCodeCong
+        (RawStep.par.cd_dominates leftTypeCode)
+        (RawStep.par.cd_dominates rightTypeCode)
 
 end LeanFX2

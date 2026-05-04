@@ -125,6 +125,16 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.sessionRecv _ => RawTerm.app developedFunction developedArgument
   | RawTerm.effectPerform _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.universeCode _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.arrowCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.piTyCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.sigmaTyCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.productCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.sumCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.listCode _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.optionCode _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.eitherCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.idCode _ _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.equivCode _ _ => RawTerm.app developedFunction developedArgument
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -186,6 +196,16 @@ def RawTerm.cdFstCase {scope : Nat}
   | RawTerm.sessionRecv _ => RawTerm.fst developedPair
   | RawTerm.effectPerform _ _ => RawTerm.fst developedPair
   | RawTerm.universeCode _ => RawTerm.fst developedPair
+  | RawTerm.arrowCode _ _ => RawTerm.fst developedPair
+  | RawTerm.piTyCode _ _ => RawTerm.fst developedPair
+  | RawTerm.sigmaTyCode _ _ => RawTerm.fst developedPair
+  | RawTerm.productCode _ _ => RawTerm.fst developedPair
+  | RawTerm.sumCode _ _ => RawTerm.fst developedPair
+  | RawTerm.listCode _ => RawTerm.fst developedPair
+  | RawTerm.optionCode _ => RawTerm.fst developedPair
+  | RawTerm.eitherCode _ _ => RawTerm.fst developedPair
+  | RawTerm.idCode _ _ _ => RawTerm.fst developedPair
+  | RawTerm.equivCode _ _ => RawTerm.fst developedPair
 
 /-- Snd redex: `snd (a, b) → b`; otherwise rebuild `snd dp`. -/
 def RawTerm.cdSndCase {scope : Nat}
@@ -247,6 +267,16 @@ def RawTerm.cdSndCase {scope : Nat}
   | RawTerm.sessionRecv _ => RawTerm.snd developedPair
   | RawTerm.effectPerform _ _ => RawTerm.snd developedPair
   | RawTerm.universeCode _ => RawTerm.snd developedPair
+  | RawTerm.arrowCode _ _ => RawTerm.snd developedPair
+  | RawTerm.piTyCode _ _ => RawTerm.snd developedPair
+  | RawTerm.sigmaTyCode _ _ => RawTerm.snd developedPair
+  | RawTerm.productCode _ _ => RawTerm.snd developedPair
+  | RawTerm.sumCode _ _ => RawTerm.snd developedPair
+  | RawTerm.listCode _ => RawTerm.snd developedPair
+  | RawTerm.optionCode _ => RawTerm.snd developedPair
+  | RawTerm.eitherCode _ _ => RawTerm.snd developedPair
+  | RawTerm.idCode _ _ _ => RawTerm.snd developedPair
+  | RawTerm.equivCode _ _ => RawTerm.snd developedPair
 
 /-- BoolElim redex: `boolElim true t e → t`, `boolElim false t e → e`;
 otherwise rebuild. -/
@@ -363,6 +393,26 @@ def RawTerm.cdBoolElimCase {scope : Nat}
   | RawTerm.effectPerform _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.universeCode _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.arrowCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.piTyCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.sigmaTyCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.productCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.sumCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.listCode _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.optionCode _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.eitherCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.idCode _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.equivCode _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
 
 /-- NatElim redex: `natElim 0 z s → z`, `natElim (succ p) z s → s p`;
@@ -481,6 +531,26 @@ def RawTerm.cdNatElimCase {scope : Nat}
   | RawTerm.effectPerform _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.universeCode _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.arrowCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.piTyCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.sigmaTyCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.productCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.sumCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.listCode _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.optionCode _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.eitherCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.idCode _ _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.equivCode _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
 
 /-- NatRec redex: `natRec 0 z s → z`,
@@ -601,6 +671,26 @@ def RawTerm.cdNatRecCase {scope : Nat}
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.universeCode _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.arrowCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.piTyCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.sigmaTyCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.productCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.sumCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.listCode _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.optionCode _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.eitherCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.idCode _ _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.equivCode _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
 
 /-- ListElim redex: `listElim nil n c → n`,
 `listElim (cons h t) n c → c h t`; otherwise rebuild. -/
@@ -718,6 +808,26 @@ def RawTerm.cdListElimCase {scope : Nat}
   | RawTerm.effectPerform _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.universeCode _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.arrowCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.piTyCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.sigmaTyCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.productCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.sumCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.listCode _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.optionCode _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.eitherCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.idCode _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.equivCode _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
 
 /-- OptionMatch redex: `optionMatch none n s → n`,
@@ -837,6 +947,26 @@ def RawTerm.cdOptionMatchCase {scope : Nat}
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.universeCode _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.arrowCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.piTyCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.sigmaTyCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.productCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.sumCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.listCode _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.optionCode _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.eitherCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.idCode _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.equivCode _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
 
 /-- EitherMatch redex: `eitherMatch (inl v) l r → l v`,
 `eitherMatch (inr v) l r → r v`; otherwise rebuild. -/
@@ -954,6 +1084,26 @@ def RawTerm.cdEitherMatchCase {scope : Nat}
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.universeCode _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.arrowCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.piTyCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.sigmaTyCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.productCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.sumCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.listCode _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.optionCode _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.eitherCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.idCode _ _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.equivCode _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
 
 /-- IdJ redex: `idJ b (refl _) → b`; otherwise rebuild. -/
 def RawTerm.cdIdJCase {scope : Nat}
@@ -1015,6 +1165,16 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.sessionRecv _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.effectPerform _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.universeCode _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.arrowCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.piTyCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.sigmaTyCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.productCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.sumCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.listCode _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.optionCode _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.eitherCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.idCode _ _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.equivCode _ _ => RawTerm.idJ developedBase developedWitness
 
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
@@ -1122,5 +1282,28 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.effectPerform (RawTerm.cd operationTag) (RawTerm.cd arguments)
   -- D1.6/A2: universeCode is atomic (no subterms to develop)
   | _, .universeCode innerLevel => RawTerm.universeCode innerLevel
+  -- CUMUL-2.1 per-shape type codes (pure cong, no β rules — these
+  -- are type-code values, recursing on subterms develops them under
+  -- the binder where applicable).
+  | _, .arrowCode domainCode codomainCode =>
+      RawTerm.arrowCode (RawTerm.cd domainCode) (RawTerm.cd codomainCode)
+  | _, .piTyCode domainCode codomainCode =>
+      RawTerm.piTyCode (RawTerm.cd domainCode) (RawTerm.cd codomainCode)
+  | _, .sigmaTyCode domainCode codomainCode =>
+      RawTerm.sigmaTyCode (RawTerm.cd domainCode) (RawTerm.cd codomainCode)
+  | _, .productCode firstCode secondCode =>
+      RawTerm.productCode (RawTerm.cd firstCode) (RawTerm.cd secondCode)
+  | _, .sumCode leftCode rightCode =>
+      RawTerm.sumCode (RawTerm.cd leftCode) (RawTerm.cd rightCode)
+  | _, .listCode elementCode =>
+      RawTerm.listCode (RawTerm.cd elementCode)
+  | _, .optionCode elementCode =>
+      RawTerm.optionCode (RawTerm.cd elementCode)
+  | _, .eitherCode leftCode rightCode =>
+      RawTerm.eitherCode (RawTerm.cd leftCode) (RawTerm.cd rightCode)
+  | _, .idCode typeCode leftRaw rightRaw =>
+      RawTerm.idCode (RawTerm.cd typeCode) (RawTerm.cd leftRaw) (RawTerm.cd rightRaw)
+  | _, .equivCode leftTypeCode rightTypeCode =>
+      RawTerm.equivCode (RawTerm.cd leftTypeCode) (RawTerm.cd rightTypeCode)
 
 end LeanFX2

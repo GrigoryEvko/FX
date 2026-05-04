@@ -664,5 +664,84 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par argumentsRawSource argumentsRawTarget →
       RawStep.par (RawTerm.effectPerform operationRawSource argumentsRawSource)
                   (RawTerm.effectPerform operationRawTarget argumentsRawTarget)
+  -- CUMUL-2.1: Cong rules for per-shape type-code constructors.
+  --
+  -- Each new code ctor has a structural cong rule that says: if all
+  -- subterms parallel-reduce, so does the wrapper.  Binder-shape codes
+  -- (`piTyCode`, `sigmaTyCode`) take a parallel reduction at scope+1
+  -- for the codomain — mirroring `lam`'s cong rule.
+  --
+  -- No β/ι rules exist for these codes — they are canonical type
+  -- values that don't reduce at the head.  Reduction only happens
+  -- inside their subterms via these cong rules.
+  /-- Cong: arrowCode reduces in domain and codomain. -/
+  | arrowCodeCong {scope : Nat}
+      {domainSource domainTarget codomainSource codomainTarget : RawTerm scope} :
+      RawStep.par domainSource domainTarget →
+      RawStep.par codomainSource codomainTarget →
+      RawStep.par (RawTerm.arrowCode domainSource codomainSource)
+                  (RawTerm.arrowCode domainTarget codomainTarget)
+  /-- Cong: piTyCode reduces in domain (scope) and codomain (scope+1). -/
+  | piTyCodeCong {scope : Nat}
+      {domainSource domainTarget : RawTerm scope}
+      {codomainSource codomainTarget : RawTerm (scope + 1)} :
+      RawStep.par domainSource domainTarget →
+      RawStep.par codomainSource codomainTarget →
+      RawStep.par (RawTerm.piTyCode domainSource codomainSource)
+                  (RawTerm.piTyCode domainTarget codomainTarget)
+  /-- Cong: sigmaTyCode reduces in domain (scope) and codomain (scope+1). -/
+  | sigmaTyCodeCong {scope : Nat}
+      {domainSource domainTarget : RawTerm scope}
+      {codomainSource codomainTarget : RawTerm (scope + 1)} :
+      RawStep.par domainSource domainTarget →
+      RawStep.par codomainSource codomainTarget →
+      RawStep.par (RawTerm.sigmaTyCode domainSource codomainSource)
+                  (RawTerm.sigmaTyCode domainTarget codomainTarget)
+  /-- Cong: productCode reduces in both subterms. -/
+  | productCodeCong {scope : Nat}
+      {firstSource firstTarget secondSource secondTarget : RawTerm scope} :
+      RawStep.par firstSource firstTarget →
+      RawStep.par secondSource secondTarget →
+      RawStep.par (RawTerm.productCode firstSource secondSource)
+                  (RawTerm.productCode firstTarget secondTarget)
+  /-- Cong: sumCode reduces in both subterms. -/
+  | sumCodeCong {scope : Nat}
+      {leftSource leftTarget rightSource rightTarget : RawTerm scope} :
+      RawStep.par leftSource leftTarget →
+      RawStep.par rightSource rightTarget →
+      RawStep.par (RawTerm.sumCode leftSource rightSource)
+                  (RawTerm.sumCode leftTarget rightTarget)
+  /-- Cong: listCode reduces in element. -/
+  | listCodeCong {scope : Nat}
+      {elementSource elementTarget : RawTerm scope} :
+      RawStep.par elementSource elementTarget →
+      RawStep.par (RawTerm.listCode elementSource) (RawTerm.listCode elementTarget)
+  /-- Cong: optionCode reduces in element. -/
+  | optionCodeCong {scope : Nat}
+      {elementSource elementTarget : RawTerm scope} :
+      RawStep.par elementSource elementTarget →
+      RawStep.par (RawTerm.optionCode elementSource) (RawTerm.optionCode elementTarget)
+  /-- Cong: eitherCode reduces in both subterms. -/
+  | eitherCodeCong {scope : Nat}
+      {leftSource leftTarget rightSource rightTarget : RawTerm scope} :
+      RawStep.par leftSource leftTarget →
+      RawStep.par rightSource rightTarget →
+      RawStep.par (RawTerm.eitherCode leftSource rightSource)
+                  (RawTerm.eitherCode leftTarget rightTarget)
+  /-- Cong: idCode reduces in carrier and both endpoints. -/
+  | idCodeCong {scope : Nat}
+      {typeSource typeTarget leftSource leftTarget rightSource rightTarget : RawTerm scope} :
+      RawStep.par typeSource typeTarget →
+      RawStep.par leftSource leftTarget →
+      RawStep.par rightSource rightTarget →
+      RawStep.par (RawTerm.idCode typeSource leftSource rightSource)
+                  (RawTerm.idCode typeTarget leftTarget rightTarget)
+  /-- Cong: equivCode reduces in both type subterms. -/
+  | equivCodeCong {scope : Nat}
+      {leftSource leftTarget rightSource rightTarget : RawTerm scope} :
+      RawStep.par leftSource leftTarget →
+      RawStep.par rightSource rightTarget →
+      RawStep.par (RawTerm.equivCode leftSource rightSource)
+                  (RawTerm.equivCode leftTarget rightTarget)
 
 end LeanFX2

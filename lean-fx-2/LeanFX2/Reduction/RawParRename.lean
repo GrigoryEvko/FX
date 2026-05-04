@@ -257,5 +257,32 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.sessionRecvCong (channelIH _)
   | effectPerformCong _ _ operationIH argumentsIH =>
       exact RawStep.par.effectPerformCong (operationIH _) (argumentsIH _)
+  -- CUMUL-2.1 per-shape type-code cong rules.  Each arm threads
+  -- `rawRenaming` through the appropriate `*CodeCong` constructor.
+  -- Binder-shape ctors (`piTyCodeCong`, `sigmaTyCodeCong`) recurse
+  -- with `rawRenaming.lift` automatically since the IH was set up
+  -- by `induction parallelStep generalizing targetScope` over the
+  -- body — the unifier picks up the lifted scope from the codomain
+  -- argument.
+  | arrowCodeCong _ _ domainIH codomainIH =>
+      exact RawStep.par.arrowCodeCong (domainIH _) (codomainIH _)
+  | piTyCodeCong _ _ domainIH codomainIH =>
+      exact RawStep.par.piTyCodeCong (domainIH _) (codomainIH _)
+  | sigmaTyCodeCong _ _ domainIH codomainIH =>
+      exact RawStep.par.sigmaTyCodeCong (domainIH _) (codomainIH _)
+  | productCodeCong _ _ firstIH secondIH =>
+      exact RawStep.par.productCodeCong (firstIH _) (secondIH _)
+  | sumCodeCong _ _ leftIH rightIH =>
+      exact RawStep.par.sumCodeCong (leftIH _) (rightIH _)
+  | listCodeCong _ elementIH =>
+      exact RawStep.par.listCodeCong (elementIH _)
+  | optionCodeCong _ elementIH =>
+      exact RawStep.par.optionCodeCong (elementIH _)
+  | eitherCodeCong _ _ leftIH rightIH =>
+      exact RawStep.par.eitherCodeCong (leftIH _) (rightIH _)
+  | idCodeCong _ _ _ typeIH leftIH rightIH =>
+      exact RawStep.par.idCodeCong (typeIH _) (leftIH _) (rightIH _)
+  | equivCodeCong _ _ leftIH rightIH =>
+      exact RawStep.par.equivCodeCong (leftIH _) (rightIH _)
 
 end LeanFX2

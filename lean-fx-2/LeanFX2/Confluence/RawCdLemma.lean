@@ -410,5 +410,38 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | effectPerformCong _ _ tagIH argumentsIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.effectPerformCong tagIH argumentsIH
+  -- CUMUL-2.1 per-shape type-code cong rules.  Each arm `simp only
+  -- [RawTerm.cd]` reduces `RawTerm.cd (XCode ...)` to `XCode (cd ...)`,
+  -- then applies the `*CodeCong` rule with the inductive hypotheses.
+  | arrowCodeCong _ _ domainIH codomainIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.arrowCodeCong domainIH codomainIH
+  | piTyCodeCong _ _ domainIH codomainIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.piTyCodeCong domainIH codomainIH
+  | sigmaTyCodeCong _ _ domainIH codomainIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.sigmaTyCodeCong domainIH codomainIH
+  | productCodeCong _ _ firstIH secondIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.productCodeCong firstIH secondIH
+  | sumCodeCong _ _ leftIH rightIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.sumCodeCong leftIH rightIH
+  | listCodeCong _ elementIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.listCodeCong elementIH
+  | optionCodeCong _ elementIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.optionCodeCong elementIH
+  | eitherCodeCong _ _ leftIH rightIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.eitherCodeCong leftIH rightIH
+  | idCodeCong _ _ _ typeIH leftIH rightIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.idCodeCong typeIH leftIH rightIH
+  | equivCodeCong _ _ leftIH rightIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.equivCodeCong leftIH rightIH
 
 end LeanFX2

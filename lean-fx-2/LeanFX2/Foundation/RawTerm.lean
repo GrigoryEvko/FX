@@ -141,6 +141,67 @@ inductive RawTerm : Nat → Type
       same universe code is convertible across compatible outer
       levels.  No scope-dependent payload — just the inner level. -/
   | universeCode {scope : Nat} (innerLevel : Nat) : RawTerm scope
+  -- Phase CUMUL-2.1 — per-shape type-code constructors.
+  --
+  -- Each ctor below represents a TYPE CODE — a value whose typing
+  -- level is `Ty.universe N` and whose RawTerm encodes the structural
+  -- shape of a type former at lean-fx-2's `Ty` layer.  These ctors
+  -- unblock per-shape cumulativity: lifting
+  -- `Term ctxLow (Ty.universe lower _) raw` for any type-code raw,
+  -- not just `universeCode N`.
+  --
+  -- Atom-shape codes (no binder, recurse on subterms):
+  --   arrowCode, productCode, sumCode, listCode, optionCode,
+  --   eitherCode, idCode, equivCode.
+  --
+  -- Binder-shape codes (codomain at scope+1, threads `Action.liftForRaw`):
+  --   piTyCode, sigmaTyCode.
+  /-- Type code for `Ty.arrow domain codomain` (non-dependent function
+  type).  The two raw subterms must themselves be type codes (i.e.
+  inhabit some universe at the typing layer); structural enforcement
+  of that constraint is the job of the typed `Term` layer (CUMUL-2.4). -/
+  | arrowCode {scope : Nat} (domainCode codomainCode : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.piTy domain codomain` (dependent function type).
+  Codomain lives at `scope + 1` because the binder introduces a fresh
+  variable bound by the Π. -/
+  | piTyCode {scope : Nat}
+      (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+      RawTerm scope
+  /-- Type code for `Ty.sigmaTy first second` (dependent pair type).
+  Codomain (the second component's type, possibly depending on the
+  first) lives at `scope + 1`. -/
+  | sigmaTyCode {scope : Nat}
+      (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
+      RawTerm scope
+  /-- Type code for `Ty.product first second` (non-dependent pair).
+  In lean-fx-2's Ty inductive, the non-dependent product is encoded
+  as `sigmaTy` with weakened codomain; the corresponding raw code is
+  this `productCode` ctor (no binder). -/
+  | productCode {scope : Nat}
+      (firstCode secondCode : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.sum left right` (binary sum type).  Each side
+  is a type code at the same scope. -/
+  | sumCode {scope : Nat}
+      (leftCode rightCode : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.listType element`.  Single subcomponent: the
+  element type's code. -/
+  | listCode {scope : Nat} (elementCode : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.optionType element`.  Single subcomponent: the
+  element type's code. -/
+  | optionCode {scope : Nat} (elementCode : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.eitherType left right`.  Two subcomponents:
+  the left and right type codes. -/
+  | eitherCode {scope : Nat}
+      (leftCode rightCode : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.id carrier leftEndpoint rightEndpoint`.  Three
+  subcomponents: the carrier type's code and the two endpoint terms
+  (themselves raw terms inhabiting the carrier at the typing layer). -/
+  | idCode {scope : Nat}
+      (typeCode leftRaw rightRaw : RawTerm scope) : RawTerm scope
+  /-- Type code for `Ty.equiv left right` (type equivalence).  Two
+  subcomponents: the left and right type codes. -/
+  | equivCode {scope : Nat}
+      (leftTypeCode rightTypeCode : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -387,5 +448,34 @@ equalities. -/
   -- the inner-level payload (no Fin variables to remap).
   | _, _, .universeCode innerLevel, _ =>
       .universeCode innerLevel
+  -- CUMUL-2.1: per-shape type codes.  Atom-shape codes recurse on
+  -- subterms with `someAction` unchanged; binder-shape codes
+  -- (`piTyCode`, `sigmaTyCode`) recurse on the codomain with
+  -- `Action.liftForRaw someAction` to thread the action under the binder.
+  | _, _, .arrowCode domainCode codomainCode, someAction =>
+      .arrowCode (domainCode.act someAction) (codomainCode.act someAction)
+  | _, _, .piTyCode domainCode codomainCode, someAction =>
+      .piTyCode (domainCode.act someAction)
+                (codomainCode.act (Action.liftForRaw someAction))
+  | _, _, .sigmaTyCode domainCode codomainCode, someAction =>
+      .sigmaTyCode (domainCode.act someAction)
+                   (codomainCode.act (Action.liftForRaw someAction))
+  | _, _, .productCode firstCode secondCode, someAction =>
+      .productCode (firstCode.act someAction) (secondCode.act someAction)
+  | _, _, .sumCode leftCode rightCode, someAction =>
+      .sumCode (leftCode.act someAction) (rightCode.act someAction)
+  | _, _, .listCode elementCode, someAction =>
+      .listCode (elementCode.act someAction)
+  | _, _, .optionCode elementCode, someAction =>
+      .optionCode (elementCode.act someAction)
+  | _, _, .eitherCode leftCode rightCode, someAction =>
+      .eitherCode (leftCode.act someAction) (rightCode.act someAction)
+  | _, _, .idCode typeCode leftRaw rightRaw, someAction =>
+      .idCode (typeCode.act someAction)
+              (leftRaw.act someAction)
+              (rightRaw.act someAction)
+  | _, _, .equivCode leftTypeCode rightTypeCode, someAction =>
+      .equivCode (leftTypeCode.act someAction)
+                 (rightTypeCode.act someAction)
 
 end LeanFX2

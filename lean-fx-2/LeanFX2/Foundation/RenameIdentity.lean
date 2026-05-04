@@ -233,6 +233,53 @@ theorem RawTerm.rename_identity {scope : Nat} :
            operationTag.effectPerform arguments
       rw [RawTerm.rename_identity operationTag, RawTerm.rename_identity arguments]
   | .universeCode innerLevel => rfl
+  -- CUMUL-2.1 per-shape type codes.
+  | .arrowCode domainCode codomainCode => by
+      show (domainCode.rename _).arrowCode (codomainCode.rename _) =
+           domainCode.arrowCode codomainCode
+      rw [RawTerm.rename_identity domainCode, RawTerm.rename_identity codomainCode]
+  | .piTyCode domainCode codomainCode => by
+      show (domainCode.rename _).piTyCode
+             (codomainCode.rename (@RawRenaming.identity scope).lift) =
+           domainCode.piTyCode codomainCode
+      rw [RawTerm.rename_identity domainCode,
+          RawTerm.rename_pointwise (@RawRenaming.identity_lift_pointwise scope) codomainCode,
+          RawTerm.rename_identity codomainCode]
+  | .sigmaTyCode domainCode codomainCode => by
+      show (domainCode.rename _).sigmaTyCode
+             (codomainCode.rename (@RawRenaming.identity scope).lift) =
+           domainCode.sigmaTyCode codomainCode
+      rw [RawTerm.rename_identity domainCode,
+          RawTerm.rename_pointwise (@RawRenaming.identity_lift_pointwise scope) codomainCode,
+          RawTerm.rename_identity codomainCode]
+  | .productCode firstCode secondCode => by
+      show (firstCode.rename _).productCode (secondCode.rename _) =
+           firstCode.productCode secondCode
+      rw [RawTerm.rename_identity firstCode, RawTerm.rename_identity secondCode]
+  | .sumCode leftCode rightCode => by
+      show (leftCode.rename _).sumCode (rightCode.rename _) =
+           leftCode.sumCode rightCode
+      rw [RawTerm.rename_identity leftCode, RawTerm.rename_identity rightCode]
+  | .listCode elementCode => by
+      show (elementCode.rename _).listCode = elementCode.listCode
+      rw [RawTerm.rename_identity elementCode]
+  | .optionCode elementCode => by
+      show (elementCode.rename _).optionCode = elementCode.optionCode
+      rw [RawTerm.rename_identity elementCode]
+  | .eitherCode leftCode rightCode => by
+      show (leftCode.rename _).eitherCode (rightCode.rename _) =
+           leftCode.eitherCode rightCode
+      rw [RawTerm.rename_identity leftCode, RawTerm.rename_identity rightCode]
+  | .idCode typeCode leftRaw rightRaw => by
+      show (typeCode.rename _).idCode (leftRaw.rename _) (rightRaw.rename _) =
+           typeCode.idCode leftRaw rightRaw
+      rw [RawTerm.rename_identity typeCode,
+          RawTerm.rename_identity leftRaw,
+          RawTerm.rename_identity rightRaw]
+  | .equivCode leftTypeCode rightTypeCode => by
+      show (leftTypeCode.rename _).equivCode (rightTypeCode.rename _) =
+           leftTypeCode.equivCode rightTypeCode
+      rw [RawTerm.rename_identity leftTypeCode, RawTerm.rename_identity rightTypeCode]
 
 /-! ## Ty.rename_identity
 

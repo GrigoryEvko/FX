@@ -75,6 +75,9 @@ inductive RawTerm.HeadCtor : Type
   | recordIntro | recordProj | codataUnfold | codataDest
   | sessionSend | sessionRecv | effectPerform
   | universeCode
+  -- CUMUL-2.1 per-shape type codes
+  | arrowCode | piTyCode | sigmaTyCode | productCode | sumCode
+  | listCode | optionCode | eitherCode | idCode | equivCode
 
 /-- Project a raw term to its head-ctor tag.  Full enumeration of
 all 28 RawTerm ctors keeps this propext-free. -/
@@ -114,6 +117,17 @@ def RawTerm.headCtor {scope : Nat} (term : RawTerm scope) : RawTerm.HeadCtor :=
   | .sessionSend _ _ => .sessionSend | .sessionRecv _ => .sessionRecv
   | .effectPerform _ _ => .effectPerform
   | .universeCode _ => .universeCode
+  -- CUMUL-2.1 per-shape type codes
+  | .arrowCode _ _ => .arrowCode
+  | .piTyCode _ _ => .piTyCode
+  | .sigmaTyCode _ _ => .sigmaTyCode
+  | .productCode _ _ => .productCode
+  | .sumCode _ _ => .sumCode
+  | .listCode _ => .listCode
+  | .optionCode _ => .optionCode
+  | .eitherCode _ _ => .eitherCode
+  | .idCode _ _ _ => .idCode
+  | .equivCode _ _ => .equivCode
 
 /-! ## ?-projection helpers — full 28-arm enumeration
 
@@ -157,6 +171,10 @@ def RawTerm.lamBody? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Project the components of a `pair` term. -/
 def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
@@ -187,6 +205,10 @@ def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Project the predecessor from a `natSucc` term. -/
 def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
@@ -217,6 +239,10 @@ def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Project head/tail from a `listCons`. -/
 def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
@@ -247,6 +273,10 @@ def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Project the value from `optionSome`. -/
 def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
@@ -277,6 +307,10 @@ def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Project the value from `eitherInl`. -/
 def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
@@ -307,6 +341,10 @@ def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Project the value from `eitherInr`. -/
 def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
@@ -337,6 +375,10 @@ def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
   | .sessionSend _ _ => none | .sessionRecv _ => none
   | .effectPerform _ _ => none
   | .universeCode _ => none
+  | .arrowCode _ _ => none | .piTyCode _ _ => none | .sigmaTyCode _ _ => none
+  | .productCode _ _ => none | .sumCode _ _ => none
+  | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
+  | .idCode _ _ _ => none | .equivCode _ _ => none
 
 /-- Test whether a term is a `refl` (independent of the witness). -/
 def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
@@ -366,6 +408,10 @@ def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
   | .sessionSend _ _ => false | .sessionRecv _ => false
   | .effectPerform _ _ => false
   | .universeCode _ => false
+  | .arrowCode _ _ => false | .piTyCode _ _ => false | .sigmaTyCode _ _ => false
+  | .productCode _ _ => false | .sumCode _ _ => false
+  | .listCode _ => false | .optionCode _ => false | .eitherCode _ _ => false
+  | .idCode _ _ _ => false | .equivCode _ _ => false
 
 /-! ## Eq-witness recovery for the projection helpers
 
@@ -525,7 +571,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .boolElim scrutineeWhnf thenBranch elseBranch
     | .natZero => .natZero
     | .natSucc predecessor => .natSucc predecessor
@@ -553,7 +601,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .natElim scrutineeWhnf zeroBranch succBranch
     | .natRec scrutinee zeroBranch succBranch =>
         let scrutineeWhnf := RawTerm.whnf fuel scrutinee
@@ -581,7 +631,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .natRec scrutineeWhnf zeroBranch succBranch
     | .listNil => .listNil
     | .listCons headTerm tailTerm => .listCons headTerm tailTerm
@@ -609,7 +661,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .listElim scrutineeWhnf nilBranch consBranch
     | .optionNone => .optionNone
     | .optionSome valueTerm => .optionSome valueTerm
@@ -637,7 +691,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .optionMatch scrutineeWhnf noneBranch someBranch
     | .eitherInl valueTerm => .eitherInl valueTerm
     | .eitherInr valueTerm => .eitherInr valueTerm
@@ -669,7 +725,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .eitherMatch scrutineeWhnf leftBranch rightBranch
     | .refl rawWitness => .refl rawWitness
     | .idJ baseCase witness =>
@@ -690,7 +748,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
         | .sessionSend | .sessionRecv | .effectPerform
-        | .universeCode =>
+        | .universeCode
+        | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+        | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
             .idJ baseCase witnessWhnf
     -- Modal: no reduction rules yet (Layer 6 will add iotaModal).
     | .modIntro innerTerm => .modIntro innerTerm
@@ -727,5 +787,16 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
     | .sessionRecv channel => .sessionRecv channel
     | .effectPerform operationTag arguments => .effectPerform operationTag arguments
     | .universeCode innerLevel => .universeCode innerLevel
+    -- CUMUL-2.1 per-shape type codes (canonical: no β/ι rule fires).
+    | .arrowCode domainCode codomainCode => .arrowCode domainCode codomainCode
+    | .piTyCode domainCode codomainCode => .piTyCode domainCode codomainCode
+    | .sigmaTyCode domainCode codomainCode => .sigmaTyCode domainCode codomainCode
+    | .productCode firstCode secondCode => .productCode firstCode secondCode
+    | .sumCode leftCode rightCode => .sumCode leftCode rightCode
+    | .listCode elementCode => .listCode elementCode
+    | .optionCode elementCode => .optionCode elementCode
+    | .eitherCode leftCode rightCode => .eitherCode leftCode rightCode
+    | .idCode typeCode leftRaw rightRaw => .idCode typeCode leftRaw rightRaw
+    | .equivCode leftTypeCode rightTypeCode => .equivCode leftTypeCode rightTypeCode
 
 end LeanFX2
