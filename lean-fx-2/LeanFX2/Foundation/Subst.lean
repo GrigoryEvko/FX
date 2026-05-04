@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.Ty
+import LeanFX2.Foundation.Action
 
 /-! # Subst — Layer 0 joint type/raw substitution.
 
@@ -890,5 +891,101 @@ theorem Ty.subst0_subst_commute {level scope targetScope : Nat}
   apply Ty.subst_pointwise
   · exact Subst.singleton_compose_swap_forTy_pointwise argType argRaw sigma
   · exact Subst.singleton_compose_swap_forRaw_pointwise argType argRaw sigma
+
+/-! ## Tier 3 / MEGA-Z1.B — Action typeclass instance for `Subst level`.
+
+Wrap the existing joint `Subst level` operations as an `Action`
+typeclass instance.  `Subst` carries TWO components (`forTy` and
+`forRaw`); `headIndex` projects the `forTy` component (the user-facing
+"what does the substitution do at a single Fin position?" view).
+`liftForTy` and `liftForRaw` both return the same `Subst.lift`
+operation — `Subst.lift` lifts both fields in lockstep, so it
+coincides for Ty-level and RawTerm-level binders.
+
+The level parameter is fixed in the instance signature: `instance
+(level : Nat) : Action (Subst level)`.  This means `Action.compose`
+on Subst stays at the same level — exactly what `Subst.compose`
+delivers.
+
+Cross-level composition (`SubstHet`-style) is NOT served by this
+instance; it requires its own structural treatment because
+`SubstHet`'s cumulOk witness threading does not collapse to a
+self-composition under fixed (sourceLevel, targetLevel).  See the
+`Action SubstHet` retreat note in this file's audit (`AuditMegaZ1B`)
+and the `MEGA-Z1.B report` for details. -/
+
+/-- `Action` instance for `Subst level` (level fixed).  Joint
+substitution at a single level: forTy returns `Ty level target`, forRaw
+substitutes raw terms.  Compose threads through `Ty.subst` (forTy
+substituents are substituted by the second's joint substitution).
+
+Laws:
+* `compose_assoc_pointwise` reduces to `Ty.subst_compose` on the
+  forTy substituent at each Fin position.
+* `compose_identity_left_pointwise` is `rfl` — `Subst.identity.forTy
+  pos = Ty.tyVar pos`, and `(Ty.tyVar pos).subst σ = σ.forTy pos` by
+  the tyVar arm of `Ty.subst`.
+* `compose_identity_right_pointwise` follows from `Ty.subst_identity`
+  on `someAction.forTy pos`.
+* `headIndex_compose` is `rfl` since `Subst.compose`'s `forTy` field
+  is `fun pos => (σ1.forTy pos).subst σ2`. -/
+instance (level : Nat) : Action (Subst level) where
+  ActionTarget       := Ty level
+  headIndex          := fun sigma position => sigma.forTy position
+  liftForTy          := fun sigma => sigma.lift
+  liftForRaw         := fun sigma => sigma.lift
+  identity           := Subst.identity
+  compose            := Subst.compose
+  composeAtHeadIndex := fun firstSigma secondSigma position =>
+    (firstSigma.forTy position).subst secondSigma
+  compose_assoc_pointwise firstSigma middleSigma lastSigma position := by
+    -- Associativity reduces to `Ty.subst_compose` on the forTy
+    -- substituent at the source position.
+    show ((Subst.compose firstSigma middleSigma).forTy position).subst lastSigma =
+         (firstSigma.forTy position).subst (Subst.compose middleSigma lastSigma)
+    show ((firstSigma.forTy position).subst middleSigma).subst lastSigma =
+         (firstSigma.forTy position).subst (Subst.compose middleSigma lastSigma)
+    exact Ty.subst_compose middleSigma lastSigma (firstSigma.forTy position)
+  compose_identity_left_pointwise someSigma position := by
+    -- Identity-on-the-left: `Subst.identity.forTy pos = Ty.tyVar pos`,
+    -- and `(Ty.tyVar pos).subst σ = σ.forTy pos` by Ty.subst's tyVar arm.
+    show ((Subst.identity (level := level)).forTy position).subst someSigma =
+         someSigma.forTy position
+    rfl
+  compose_identity_right_pointwise someSigma position := by
+    -- Identity-on-the-right: substituting `someSigma.forTy pos` by the
+    -- identity substitution returns it unchanged via `Ty.subst_identity`.
+    exact Ty.subst_identity (someSigma.forTy position)
+  headIndex_compose firstSigma secondSigma position := by
+    -- `Subst.compose σ1 σ2`'s forTy field is `fun pos => (σ1.forTy pos).subst σ2`
+    -- by `@[reducible]` definition; this matches `composeAtHeadIndex`.
+    rfl
+
+/-- Equivalence theorem: `Subst.identity` is the action's identity. -/
+theorem Subst.identity_eq_action {level scope : Nat} :
+    (Subst.identity : Subst level scope scope) =
+      (Action.identity : Subst level scope scope) := rfl
+
+/-- Equivalence theorem: `Subst.lift` agrees with
+`Action.liftForTy`. -/
+theorem Subst.lift_eq_actionForTy {level sourceScope targetScope : Nat}
+    (sigma : Subst level sourceScope targetScope) :
+    sigma.lift = Action.liftForTy sigma := rfl
+
+/-- Equivalence theorem: `Subst.lift` agrees with
+`Action.liftForRaw`.  At the unified Subst layer, the Ty-binder and
+RawTerm-binder lifts coincide structurally; this theorem witnesses
+that fact at the typeclass-equivalence level. -/
+theorem Subst.lift_eq_actionForRaw {level sourceScope targetScope : Nat}
+    (sigma : Subst level sourceScope targetScope) :
+    sigma.lift = Action.liftForRaw sigma := rfl
+
+/-- Equivalence theorem: `Subst.compose` is the action's compose. -/
+theorem Subst.compose_eq_action
+    {level sourceScope middleScope targetScope : Nat}
+    (firstSigma  : Subst level sourceScope middleScope)
+    (secondSigma : Subst level middleScope targetScope) :
+    Subst.compose firstSigma secondSigma =
+      Action.compose firstSigma secondSigma := rfl
 
 end LeanFX2

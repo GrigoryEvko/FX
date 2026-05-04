@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawTerm
+import LeanFX2.Foundation.Action
 
 /-! # RawSubst — Layer 0 raw substitution algebra.
 
@@ -1416,5 +1417,129 @@ theorem RawTerm.weaken_subst_commute {sourceScope targetScope : Nat}
       RawTerm.subst_rename_commute sigma RawRenaming.weaken term]
   apply RawTerm.subst_pointwise
   exact RawTermSubst.weaken_lift_subst_pointwise sigma
+
+/-! ## Tier 3 / MEGA-Z1.B — Action typeclass instances (raw layer).
+
+Wrap the existing `RawRenaming` and `RawTermSubst` operations as
+`Action` typeclass instances.  These are the raw-side Container
+inhabitants of the universal-action-with-binding framework shipped in
+`Foundation/Action.lean` (Z1.A).  Per the Z1.A docstring, these
+instances supply:
+* `liftForTy` and `liftForRaw` — set to the same existing `lift`
+  (the operation is binder-shape-agnostic at the raw layer)
+* `compose`, `identity`, `headIndex` — the existing top-level operations
+* `composeAtHeadIndex` — the abstract pointwise behaviour exposed
+  opaquely so the typeclass laws can be witnessed without funext.
+
+All laws ship by `rfl` after `@[reducible]` unfolding plus, for the
+substitution case, `RawTerm.subst_compose` / `RawTerm.subst_identity`. -/
+
+/-- `Action` instance for `RawRenaming`.  Renamings are pure functions
+`Fin source → Fin target`; compose is function composition; lift is
+the existing `RawRenaming.lift`.  All laws hold by `rfl` (renaming is
+the first-order action). -/
+instance : Action RawRenaming where
+  ActionTarget       := Fin
+  headIndex          := fun rho position => rho position
+  liftForTy          := fun rho => rho.lift
+  liftForRaw         := fun rho => rho.lift
+  identity           := RawRenaming.identity
+  compose            := RawRenaming.compose
+  composeAtHeadIndex := fun firstRenaming secondRenaming position =>
+    secondRenaming (firstRenaming position)
+  compose_assoc_pointwise            := fun _ _ _ _ => rfl
+  compose_identity_left_pointwise    := fun _ _ => rfl
+  compose_identity_right_pointwise   := fun _ _ => rfl
+  headIndex_compose                  := fun _ _ _ => rfl
+
+/-- Equivalence theorem: `RawRenaming.identity` is the identity action. -/
+theorem RawRenaming.identity_eq_action {scope : Nat} :
+    (RawRenaming.identity : RawRenaming scope scope) =
+      (Action.identity : RawRenaming scope scope) := rfl
+
+/-- Equivalence theorem: `RawRenaming.lift` agrees with
+`Action.liftForTy`. -/
+theorem RawRenaming.lift_eq_actionForTy {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) :
+    rho.lift = Action.liftForTy rho := rfl
+
+/-- Equivalence theorem: `RawRenaming.lift` agrees with
+`Action.liftForRaw`. -/
+theorem RawRenaming.lift_eq_actionForRaw {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) :
+    rho.lift = Action.liftForRaw rho := rfl
+
+/-- Equivalence theorem: `RawRenaming.compose` is the action's compose. -/
+theorem RawRenaming.compose_eq_action
+    {scopeA scopeB scopeC : Nat}
+    (firstRenaming  : RawRenaming scopeA scopeB)
+    (secondRenaming : RawRenaming scopeB scopeC) :
+    RawRenaming.compose firstRenaming secondRenaming =
+      Action.compose firstRenaming secondRenaming := rfl
+
+/-- `Action` instance for `RawTermSubst`.  Substitutions are functions
+`Fin source → RawTerm target`; compose threads through `RawTerm.subst`;
+lift is the existing `RawTermSubst.lift`.
+
+`composeAtHeadIndex` exposes `(σ1 pos).subst σ2` opaquely.  Laws
+unfold via `RawTerm.subst_compose` (associativity) and
+`RawTerm.subst_identity` (right unit); left unit is `rfl` since
+`RawTermSubst.identity pos = RawTerm.var pos` and `Ty.subst` /
+`RawTerm.subst` map a bare variable to the looked-up substituent. -/
+instance : Action RawTermSubst where
+  ActionTarget       := RawTerm
+  headIndex          := fun sigma position => sigma position
+  liftForTy          := fun sigma => sigma.lift
+  liftForRaw         := fun sigma => sigma.lift
+  identity           := RawTermSubst.identity
+  compose            := RawTermSubst.compose
+  composeAtHeadIndex := fun firstSigma secondSigma position =>
+    (firstSigma position).subst secondSigma
+  compose_assoc_pointwise firstSigma middleSigma lastSigma position := by
+    -- Associativity reduces to `RawTerm.subst_compose` on the looked-up
+    -- substituent at the source position.
+    show ((RawTermSubst.compose firstSigma middleSigma) position).subst lastSigma =
+         (firstSigma position).subst (RawTermSubst.compose middleSigma lastSigma)
+    show ((firstSigma position).subst middleSigma).subst lastSigma =
+         (firstSigma position).subst (RawTermSubst.compose middleSigma lastSigma)
+    exact RawTerm.subst_compose middleSigma lastSigma (firstSigma position)
+  compose_identity_left_pointwise someSigma position := by
+    -- Identity-on-the-left: looking up at identity gives `RawTerm.var
+    -- position`, and substituting `RawTerm.var position` against any
+    -- σ is `σ position` by the var-arm of `RawTerm.subst`.
+    show (RawTermSubst.identity position).subst someSigma = someSigma position
+    rfl
+  compose_identity_right_pointwise someSigma position := by
+    -- Identity-on-the-right: substituting `someSigma position` by the
+    -- identity substitution returns `someSigma position`.
+    exact RawTerm.subst_identity (someSigma position)
+  headIndex_compose firstSigma secondSigma position := by
+    -- `RawTermSubst.compose σ1 σ2 pos = (σ1 pos).subst σ2` by the
+    -- definition of `compose`; equals `composeAtHeadIndex σ1 σ2 pos`.
+    rfl
+
+/-- Equivalence theorem: `RawTermSubst.identity` is the action's identity. -/
+theorem RawTermSubst.identity_eq_action {scope : Nat} :
+    (RawTermSubst.identity : RawTermSubst scope scope) =
+      (Action.identity : RawTermSubst scope scope) := rfl
+
+/-- Equivalence theorem: `RawTermSubst.lift` agrees with
+`Action.liftForTy`. -/
+theorem RawTermSubst.lift_eq_actionForTy {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope) :
+    sigma.lift = Action.liftForTy sigma := rfl
+
+/-- Equivalence theorem: `RawTermSubst.lift` agrees with
+`Action.liftForRaw`. -/
+theorem RawTermSubst.lift_eq_actionForRaw {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope) :
+    sigma.lift = Action.liftForRaw sigma := rfl
+
+/-- Equivalence theorem: `RawTermSubst.compose` is the action's compose. -/
+theorem RawTermSubst.compose_eq_action {sourceScope middleScope targetScope : Nat}
+    (firstSigma  : RawTermSubst sourceScope middleScope)
+    (secondSigma : RawTermSubst middleScope targetScope) :
+    RawTermSubst.compose firstSigma secondSigma =
+      Action.compose firstSigma secondSigma := rfl
 
 end LeanFX2
