@@ -217,12 +217,26 @@ def IsContr.unit : IsContr Unit where
   center := ()
   spoke  := fun _ => rfl
 
+/-- The PUnit type (any universe level) is contractible. -/
+def IsContr.punit : IsContr (PUnit : Sort leftLevel) where
+  center := PUnit.unit
+  spoke  := fun _ => rfl
+
 /-- A contractible type's center is unique up to definitional
 equality with the spoke. -/
 theorem IsContr.center_unique {SomeType : Sort leftLevel}
     (contrWitness : IsContr SomeType) (someValue : SomeType) :
     someValue = contrWitness.center :=
   contrWitness.spoke someValue
+
+/-- Two values of a contractible type are equal.  Composes left
+spoke (`leftValue = center`) with the symmetric of right spoke
+(`center = rightValue`). -/
+theorem IsContr.values_equal {SomeType : Sort leftLevel}
+    (contrWitness : IsContr SomeType)
+    (leftValue rightValue : SomeType) :
+    leftValue = rightValue := by
+  rw [contrWitness.spoke leftValue, contrWitness.spoke rightValue]
 
 /-! ## Fiber + IsEquiv -/
 
@@ -255,6 +269,34 @@ def IsEquiv.identity (LeftType : Sort leftLevel) :
           cases preimageEq
           rfl
   }
+
+/-! ## Equiv ↔ IsEquiv interconversion (set-level)
+
+The bi-inverse `Equiv` form and the fiber-contractible `IsEquiv`
+form are equivalent at set level.  Both directions require
+threading coherence proofs:
+
+* **`Equiv → IsEquiv`** (forward): given `e : Equiv A B`, every
+  fiber of `e.toFun` over `target : B` is contractible at center
+  `(e.invFun target, e.rightInv target)`.  The contractibility
+  proof requires combining `leftInv` and `rightInv` coherently —
+  in HoTT this needs the "half-adjoint equivalence" upgrade or
+  funext+J.  Without funext at the meta level, the spoke proof
+  is **not constructive at zero axioms** in the general case.
+
+* **`IsEquiv → Equiv`** (converse): given an `IsEquiv` witness,
+  extract `invFun`, `leftInv`, `rightInv` from the contractibility
+  data.  Same coherence constraint.
+
+For the rfl-case (identity equivalence), both directions are
+trivial — and `IsEquiv.identity` already ships that direction
+above.  The general bridge is an HoTT theorem that requires
+either funext or extra coherence data, deferred to v1.1.
+
+What IS shipped: `IsEquiv.identity` (the rfl-case on the forward
+direction), plus the meta-level Univalence forward map (which
+relies on `IsEquiv.identity` via path induction; see
+`HoTT/Univalence.lean`). -/
 
 /-! ## Smoke samples -/
 

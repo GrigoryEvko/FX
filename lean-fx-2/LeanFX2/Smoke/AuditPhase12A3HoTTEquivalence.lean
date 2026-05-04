@@ -15,6 +15,8 @@ import LeanFX2.HoTT.Equivalence
 #print axioms LeanFX2.Equiv.trans_symm_toFun_pointwise
 #print axioms LeanFX2.Equiv.symm_trans_toFun_pointwise
 #print axioms LeanFX2.IsContr.unit
+#print axioms LeanFX2.IsContr.punit
 #print axioms LeanFX2.IsContr.center_unique
+#print axioms LeanFX2.IsContr.values_equal
 #print axioms LeanFX2.IsEquiv.identity
 #print axioms LeanFX2.Equiv.boolNot
