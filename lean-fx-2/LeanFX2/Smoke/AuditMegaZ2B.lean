@@ -127,13 +127,14 @@ theorem Ty.act_eq_rename {level : Nat} :
   | id carrier leftEndpoint rightEndpoint carrierIH =>
       intro someRenaming
       show Ty.id (carrier.act someRenaming)
-                 (ActsOnRawTerm.actOnRawTerm someRenaming leftEndpoint)
-                 (ActsOnRawTerm.actOnRawTerm someRenaming rightEndpoint) =
+                 (RawTerm.act leftEndpoint someRenaming)
+                 (RawTerm.act rightEndpoint someRenaming) =
            Ty.id (carrier.rename someRenaming)
                  (leftEndpoint.rename someRenaming)
                  (rightEndpoint.rename someRenaming)
-      rw [carrierIH someRenaming]
-      rfl
+      rw [carrierIH someRenaming,
+          RawTerm.act_eq_rename leftEndpoint someRenaming,
+          RawTerm.act_eq_rename rightEndpoint someRenaming]
   | listType elementType elementIH =>
       intro someRenaming
       show Ty.listType (elementType.act someRenaming) =
@@ -155,41 +156,44 @@ theorem Ty.act_eq_rename {level : Nat} :
   | path carrier leftEndpoint rightEndpoint carrierIH =>
       intro someRenaming
       show Ty.path (carrier.act someRenaming)
-                   (ActsOnRawTerm.actOnRawTerm someRenaming leftEndpoint)
-                   (ActsOnRawTerm.actOnRawTerm someRenaming rightEndpoint) =
+                   (RawTerm.act leftEndpoint someRenaming)
+                   (RawTerm.act rightEndpoint someRenaming) =
            Ty.path (carrier.rename someRenaming)
                    (leftEndpoint.rename someRenaming)
                    (rightEndpoint.rename someRenaming)
-      rw [carrierIH someRenaming]
-      rfl
+      rw [carrierIH someRenaming,
+          RawTerm.act_eq_rename leftEndpoint someRenaming,
+          RawTerm.act_eq_rename rightEndpoint someRenaming]
   | glue baseType boundaryWitness baseIH =>
       intro someRenaming
       show Ty.glue (baseType.act someRenaming)
-                   (ActsOnRawTerm.actOnRawTerm someRenaming boundaryWitness) =
+                   (RawTerm.act boundaryWitness someRenaming) =
            Ty.glue (baseType.rename someRenaming)
                    (boundaryWitness.rename someRenaming)
-      rw [baseIH someRenaming]
-      rfl
+      rw [baseIH someRenaming,
+          RawTerm.act_eq_rename boundaryWitness someRenaming]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
       intro someRenaming
       show Ty.oeq (carrier.act someRenaming)
-                  (ActsOnRawTerm.actOnRawTerm someRenaming leftEndpoint)
-                  (ActsOnRawTerm.actOnRawTerm someRenaming rightEndpoint) =
+                  (RawTerm.act leftEndpoint someRenaming)
+                  (RawTerm.act rightEndpoint someRenaming) =
            Ty.oeq (carrier.rename someRenaming)
                   (leftEndpoint.rename someRenaming)
                   (rightEndpoint.rename someRenaming)
-      rw [carrierIH someRenaming]
-      rfl
+      rw [carrierIH someRenaming,
+          RawTerm.act_eq_rename leftEndpoint someRenaming,
+          RawTerm.act_eq_rename rightEndpoint someRenaming]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
       intro someRenaming
       show Ty.idStrict (carrier.act someRenaming)
-                       (ActsOnRawTerm.actOnRawTerm someRenaming leftEndpoint)
-                       (ActsOnRawTerm.actOnRawTerm someRenaming rightEndpoint) =
+                       (RawTerm.act leftEndpoint someRenaming)
+                       (RawTerm.act rightEndpoint someRenaming) =
            Ty.idStrict (carrier.rename someRenaming)
                        (leftEndpoint.rename someRenaming)
                        (rightEndpoint.rename someRenaming)
-      rw [carrierIH someRenaming]
-      rfl
+      rw [carrierIH someRenaming,
+          RawTerm.act_eq_rename leftEndpoint someRenaming,
+          RawTerm.act_eq_rename rightEndpoint someRenaming]
   | equiv domainType codomainType domainIH codomainIH =>
       intro someRenaming
       show Ty.equiv (domainType.act someRenaming) (codomainType.act someRenaming) =
@@ -198,11 +202,11 @@ theorem Ty.act_eq_rename {level : Nat} :
   | refine baseType predicate baseIH =>
       intro someRenaming
       show Ty.refine (baseType.act someRenaming)
-                     (ActsOnRawTerm.actOnRawTerm
-                         (Action.liftForRaw someRenaming) predicate) =
+                     (RawTerm.act predicate (Action.liftForRaw someRenaming)) =
            Ty.refine (baseType.rename someRenaming)
                      (predicate.rename someRenaming.lift)
-      rw [baseIH someRenaming]
+      rw [baseIH someRenaming,
+          RawTerm.act_eq_rename predicate (Action.liftForRaw someRenaming)]
       rfl
   | record singleFieldType singleFieldIH =>
       intro someRenaming
@@ -214,15 +218,19 @@ theorem Ty.act_eq_rename {level : Nat} :
       show Ty.codata (stateType.act someRenaming) (outputType.act someRenaming) =
            Ty.codata (stateType.rename someRenaming) (outputType.rename someRenaming)
       rw [stateIH someRenaming, outputIH someRenaming]
-  | session protocolStep => intro _; rfl
+  | session protocolStep =>
+      intro someRenaming
+      show Ty.session (RawTerm.act protocolStep someRenaming) =
+           Ty.session (protocolStep.rename someRenaming)
+      rw [RawTerm.act_eq_rename protocolStep someRenaming]
   | effect carrierType effectTag carrierIH =>
       intro someRenaming
       show Ty.effect (carrierType.act someRenaming)
-                     (ActsOnRawTerm.actOnRawTerm someRenaming effectTag) =
+                     (RawTerm.act effectTag someRenaming) =
            Ty.effect (carrierType.rename someRenaming)
                      (effectTag.rename someRenaming)
-      rw [carrierIH someRenaming]
-      rfl
+      rw [carrierIH someRenaming,
+          RawTerm.act_eq_rename effectTag someRenaming]
   | modal modalityTag carrierType carrierIH =>
       intro someRenaming
       show Ty.modal modalityTag (carrierType.act someRenaming) =
@@ -283,13 +291,14 @@ theorem Ty.act_eq_subst {level : Nat} :
   | id carrier leftEndpoint rightEndpoint carrierIH =>
       intro someSubst
       show Ty.id (carrier.act someSubst)
-                 (ActsOnRawTerm.actOnRawTerm someSubst leftEndpoint)
-                 (ActsOnRawTerm.actOnRawTerm someSubst rightEndpoint) =
+                 (RawTerm.act leftEndpoint someSubst)
+                 (RawTerm.act rightEndpoint someSubst) =
            Ty.id (carrier.subst someSubst)
                  (leftEndpoint.subst someSubst.forRaw)
                  (rightEndpoint.subst someSubst.forRaw)
-      rw [carrierIH someSubst]
-      rfl
+      rw [carrierIH someSubst,
+          RawTerm.act_eq_subst_forRaw leftEndpoint someSubst,
+          RawTerm.act_eq_subst_forRaw rightEndpoint someSubst]
   | listType elementType elementIH =>
       intro someSubst
       show Ty.listType (elementType.act someSubst) =
@@ -311,41 +320,44 @@ theorem Ty.act_eq_subst {level : Nat} :
   | path carrier leftEndpoint rightEndpoint carrierIH =>
       intro someSubst
       show Ty.path (carrier.act someSubst)
-                   (ActsOnRawTerm.actOnRawTerm someSubst leftEndpoint)
-                   (ActsOnRawTerm.actOnRawTerm someSubst rightEndpoint) =
+                   (RawTerm.act leftEndpoint someSubst)
+                   (RawTerm.act rightEndpoint someSubst) =
            Ty.path (carrier.subst someSubst)
                    (leftEndpoint.subst someSubst.forRaw)
                    (rightEndpoint.subst someSubst.forRaw)
-      rw [carrierIH someSubst]
-      rfl
+      rw [carrierIH someSubst,
+          RawTerm.act_eq_subst_forRaw leftEndpoint someSubst,
+          RawTerm.act_eq_subst_forRaw rightEndpoint someSubst]
   | glue baseType boundaryWitness baseIH =>
       intro someSubst
       show Ty.glue (baseType.act someSubst)
-                   (ActsOnRawTerm.actOnRawTerm someSubst boundaryWitness) =
+                   (RawTerm.act boundaryWitness someSubst) =
            Ty.glue (baseType.subst someSubst)
                    (boundaryWitness.subst someSubst.forRaw)
-      rw [baseIH someSubst]
-      rfl
+      rw [baseIH someSubst,
+          RawTerm.act_eq_subst_forRaw boundaryWitness someSubst]
   | oeq carrier leftEndpoint rightEndpoint carrierIH =>
       intro someSubst
       show Ty.oeq (carrier.act someSubst)
-                  (ActsOnRawTerm.actOnRawTerm someSubst leftEndpoint)
-                  (ActsOnRawTerm.actOnRawTerm someSubst rightEndpoint) =
+                  (RawTerm.act leftEndpoint someSubst)
+                  (RawTerm.act rightEndpoint someSubst) =
            Ty.oeq (carrier.subst someSubst)
                   (leftEndpoint.subst someSubst.forRaw)
                   (rightEndpoint.subst someSubst.forRaw)
-      rw [carrierIH someSubst]
-      rfl
+      rw [carrierIH someSubst,
+          RawTerm.act_eq_subst_forRaw leftEndpoint someSubst,
+          RawTerm.act_eq_subst_forRaw rightEndpoint someSubst]
   | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
       intro someSubst
       show Ty.idStrict (carrier.act someSubst)
-                       (ActsOnRawTerm.actOnRawTerm someSubst leftEndpoint)
-                       (ActsOnRawTerm.actOnRawTerm someSubst rightEndpoint) =
+                       (RawTerm.act leftEndpoint someSubst)
+                       (RawTerm.act rightEndpoint someSubst) =
            Ty.idStrict (carrier.subst someSubst)
                        (leftEndpoint.subst someSubst.forRaw)
                        (rightEndpoint.subst someSubst.forRaw)
-      rw [carrierIH someSubst]
-      rfl
+      rw [carrierIH someSubst,
+          RawTerm.act_eq_subst_forRaw leftEndpoint someSubst,
+          RawTerm.act_eq_subst_forRaw rightEndpoint someSubst]
   | equiv domainType codomainType domainIH codomainIH =>
       intro someSubst
       show Ty.equiv (domainType.act someSubst) (codomainType.act someSubst) =
@@ -354,11 +366,11 @@ theorem Ty.act_eq_subst {level : Nat} :
   | refine baseType predicate baseIH =>
       intro someSubst
       show Ty.refine (baseType.act someSubst)
-                     (ActsOnRawTerm.actOnRawTerm
-                         (Action.liftForRaw someSubst) predicate) =
+                     (RawTerm.act predicate (Action.liftForRaw someSubst)) =
            Ty.refine (baseType.subst someSubst)
                      (predicate.subst someSubst.forRaw.lift)
-      rw [baseIH someSubst]
+      rw [baseIH someSubst,
+          RawTerm.act_eq_subst_forRaw predicate (Action.liftForRaw someSubst)]
       rfl
   | record singleFieldType singleFieldIH =>
       intro someSubst
@@ -370,15 +382,19 @@ theorem Ty.act_eq_subst {level : Nat} :
       show Ty.codata (stateType.act someSubst) (outputType.act someSubst) =
            Ty.codata (stateType.subst someSubst) (outputType.subst someSubst)
       rw [stateIH someSubst, outputIH someSubst]
-  | session protocolStep => intro _; rfl
+  | session protocolStep =>
+      intro someSubst
+      show Ty.session (RawTerm.act protocolStep someSubst) =
+           Ty.session (protocolStep.subst someSubst.forRaw)
+      rw [RawTerm.act_eq_subst_forRaw protocolStep someSubst]
   | effect carrierType effectTag carrierIH =>
       intro someSubst
       show Ty.effect (carrierType.act someSubst)
-                     (ActsOnRawTerm.actOnRawTerm someSubst effectTag) =
+                     (RawTerm.act effectTag someSubst) =
            Ty.effect (carrierType.subst someSubst)
                      (effectTag.subst someSubst.forRaw)
-      rw [carrierIH someSubst]
-      rfl
+      rw [carrierIH someSubst,
+          RawTerm.act_eq_subst_forRaw effectTag someSubst]
   | modal modalityTag carrierType carrierIH =>
       intro someSubst
       show Ty.modal modalityTag (carrierType.act someSubst) =

@@ -805,11 +805,17 @@ for representative ctors). -/
 /-! ## ActsOnRawTerm + ActsOnTyVar instances for `RawRenaming`.
 
 Renaming acts on `Ty.tyVar position` by wrapping the renamed Fin back
-as `Ty.tyVar` (level-polymorphic).  `actOnRawTerm` delegates to
-`RawTerm.rename`. -/
+as `Ty.tyVar` (level-polymorphic).  `actOnRawTerm` delegates to the
+unified `RawTerm.act` engine (Z4.A) — the alignment fix shipped by
+Z2.A.1 means `actOnRawTerm someRenaming rawTerm` is `rfl`-equal to
+`RawTerm.act rawTerm someRenaming`, allowing `Ty.act`-driven recursion
+to dispatch through the same engine that drives `RawTerm.act`.  This
+is the prerequisite for `Term.act` (Z5.A): once both `Ty.act` and
+`RawTerm.act` agree on raw payloads, `Term.act` can be defined by a
+single recursion that delegates to both. -/
 
 instance : ActsOnRawTerm RawRenaming where
-  actOnRawTerm := fun someRenaming rawTerm => rawTerm.rename someRenaming
+  actOnRawTerm := fun someRenaming rawTerm => RawTerm.act rawTerm someRenaming
 
 instance ActsOnTyVarOfRawRenaming (level : Nat) :
     ActsOnTyVar RawRenaming level where
