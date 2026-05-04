@@ -32,6 +32,8 @@ import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
+import LeanFX2.Foundation.SubstActsOnTy
+import LeanFX2.Foundation.TyAct
 import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Universe
 import LeanFX2.Foundation.RenameIdentity
