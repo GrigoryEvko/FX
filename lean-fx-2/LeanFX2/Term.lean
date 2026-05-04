@@ -445,5 +445,62 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw) :
       Term context (Ty.equiv carrierA carrierB)
                    (RawTerm.equivIntro forwardRaw backwardRaw)
+  /-- **Heterogeneous-carrier path-from-equivalence (univalence introduction).**
+      Inhabitant of `Ty.id (Ty.universe innerLevel innerLevelLt)
+      carrierARaw carrierBRaw` — i.e. a path proof at the universe between
+      two arbitrary type-codes — built from a packaged equivalence
+      `equivWitness : Term context (Ty.equiv carrierA carrierB)
+      (RawTerm.equivIntro forwardRaw backwardRaw)`.
+
+      Generalizes `Term.equivReflIdAtId` (rfl-fragment / homogeneous
+      carriers only) so that heterogeneous Univalence can produce an
+      identity proof at the universe from ANY equivalence between two
+      distinct type-codes.
+
+      ## Why the same raw as the equivalence
+
+      The raw form is the SAME `RawTerm.equivIntro forwardRaw backwardRaw`
+      as the underlying `equivWitness`.  This pre-aligns the projected
+      raw form for the eventual `Step.eqTypeHet` reduction (heterogeneous
+      Univalence): the source `Term.uaIntroHet ...` and the target
+      `Term.equivIntroHet forward backward` will share the same raw
+      projection, so the `Step.par.toRawBridge` arm collapses to
+      `RawStep.par.refl _` (the same architectural trick as
+      `Step.eqType` / `Step.eqArrow` and `Step.cumulUpInner`).
+
+      ## Carrier representation
+
+      `carrierA, carrierB : Ty level scope` at the OUTER level — the
+      universe-of-types level.  The schematic `carrierARaw, carrierBRaw
+      : RawTerm scope` are the per-position raw representations of the
+      carriers (their universe-codes), kept as fresh schematic fields
+      to avoid weakening commute issues during rename/subst (mirror of
+      `equivReflIdAtId` and `funextReflAtId`).
+
+      ## Cascade contract
+
+      The single subterm (`equivWitness`) propagates through
+      `Term.rename`, `Term.subst`, `Term.substHet`, `Term.pointwise`,
+      and the Allais arm of `ConvCumul.subst_compatible` via single-
+      subterm cong infrastructure (mirror of `optionSomeCong` /
+      `natSuccCong`).  No new Step β/ι rule fires from this ctor as
+      a redex source yet (the univalence reduction `Step.eqTypeHet`
+      will fire from it later).  Only `Step.par.uaIntroHetCong`
+      allows parallel reduction inside its subterm.
+
+      Phase 12.A.B8.5b (heterogeneous Univalence prerequisite, second
+      half — pairs with `Term.equivIntroHet` from B8.5). -/
+  | uaIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRaw backwardRaw : RawTerm scope}
+      (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw)) :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw carrierBRaw)
+        (RawTerm.equivIntro forwardRaw backwardRaw)
 
 end LeanFX2

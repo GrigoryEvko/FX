@@ -287,6 +287,20 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.funextReflAtId (domainType.rename rho)
                           (codomainType.rename rho)
                           (applyRaw.rename rho.lift)
+  -- HoTT heterogeneous-carrier path-from-equivalence (Phase 12.A.B8.5b).
+  -- The Ty `Ty.id (Ty.universe innerLevel ...) carrierARaw carrierBRaw`
+  -- renames carrierA + carrierB via `rho`, and carrierARaw + carrierBRaw
+  -- via `rho`.  The single subterm `equivWitness` recurses structurally;
+  -- its raw form `RawTerm.equivIntro forwardRaw backwardRaw` renames
+  -- pointwise to `RawTerm.equivIntro (forwardRaw.rename rho)
+  -- (backwardRaw.rename rho)` — same shape as the ctor expects after
+  -- the recursive call.  No type-equality cast needed since `Ty.equiv`
+  -- and `Ty.universe` rename structurally (no binder shift).
+  | _, _, .uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+                      equivWitness =>
+      Term.uaIntroHet innerLevel innerLevelLt
+                      (carrierARaw.rename rho) (carrierBRaw.rename rho)
+                      (Term.rename termRenaming equivWitness)
 
 /-! ## Term.weaken — convenience wrapper -/
 

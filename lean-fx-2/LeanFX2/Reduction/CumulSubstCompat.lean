@@ -453,6 +453,44 @@ theorem ConvCumul.subst_compatible_equivIntroHet_allais
               ((Term.equivIntroHet forward backward).substHet termSubstB) :=
   ConvCumul.equivIntroHetCong forwardCompat backwardCompat
 
+/-- Allais arm for `uaIntroHet`: single-subterm cong via
+`uaIntroHetCong`.  Mirrors the structure of
+`subst_compatible_optionSome_allais` / `subst_compatible_natSucc_allais`:
+the equivWitness subterm recurses via the `compat` IH, and the
+ctor-level cong rule reassembles.  The carrierARaw/carrierBRaw
+substitute structurally via `sigma.forRaw` (identical on both A and B
+sides since both share `sigma`); only the equivWitness differs.
+Phase 12.A.B8.5b. -/
+theorem ConvCumul.subst_compatible_uaIntroHet_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ sourceLevel)
+    {carrierA carrierB : Ty sourceLevel sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (equivWitness : Term sourceCtx (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivWitnessCompat :
+      ConvCumul (equivWitness.substHet termSubstA)
+                (equivWitness.substHet termSubstB)) :
+    ConvCumul ((Term.uaIntroHet (context := sourceCtx)
+                                innerLevel innerLevelLt
+                                carrierARaw carrierBRaw
+                                equivWitness).substHet termSubstA)
+              ((Term.uaIntroHet (context := sourceCtx)
+                                innerLevel innerLevelLt
+                                carrierARaw carrierBRaw
+                                equivWitness).substHet termSubstB) :=
+  ConvCumul.uaIntroHetCong (context := targetCtx) innerLevel
+    (Nat.le_trans innerLevelLt sigma.cumulOk)
+    (carrierARaw.subst sigma.forRaw) (carrierBRaw.subst sigma.forRaw)
+    equivWitnessCompat
+
 /-- Allais arm for `natSucc`: single-subterm cong via `natSuccCong`. -/
 theorem ConvCumul.subst_compatible_natSucc_allais
     {mode : Mode}
@@ -2201,6 +2239,12 @@ def Term.subst_compatible_pointwise_allais
         forward backward
         (Term.subst_compatible_pointwise_allais compat forward)
         (Term.subst_compatible_pointwise_allais compat backward)
+  | _, _, .uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+                      equivWitness =>
+      ConvCumul.subst_compatible_uaIntroHet_allais
+        innerLevel innerLevelLt carrierARaw carrierBRaw
+        equivWitness
+        (Term.subst_compatible_pointwise_allais compat equivWitness)
 
 /-! # Pattern 3 headline — ConvCumulHomo + paired-env compat → ConvCumul
 

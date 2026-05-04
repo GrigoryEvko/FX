@@ -422,6 +422,7 @@ theorem Term.headStep?_sound
   | equivReflIdAtId _ _ _ _ => nomatch firedEq
   | funextReflAtId _ _ _ => nomatch firedEq
   | equivIntroHet _ _ => nomatch firedEq
+  | uaIntroHet _ _ _ _ _ => nomatch firedEq
   -- Eliminators not yet handled by headStep? (return none)
   | app _ _ => nomatch firedEq
   | appPi _ _ => nomatch firedEq
@@ -467,7 +468,7 @@ theorem Term.headStep?_sound
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
-    | .equivIntroHet =>
+    | .equivIntroHet | .uaIntroHet =>
       rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
@@ -492,7 +493,7 @@ theorem Term.headStep?_sound
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
-    | .equivIntroHet =>
+    | .equivIntroHet | .uaIntroHet =>
       rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
@@ -516,7 +517,7 @@ theorem Term.headStep?_sound
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
-    | .equivIntroHet =>
+    | .equivIntroHet | .uaIntroHet =>
       rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
@@ -540,7 +541,7 @@ theorem Term.headStep?_sound
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
-    | .equivIntroHet =>
+    | .equivIntroHet | .uaIntroHet =>
       rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .listNil then some ⟨_, nilBranch⟩
@@ -564,7 +565,7 @@ theorem Term.headStep?_sound
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
-    | .equivIntroHet =>
+    | .equivIntroHet | .uaIntroHet =>
       rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .optionNone then some ⟨_, noneBranch⟩

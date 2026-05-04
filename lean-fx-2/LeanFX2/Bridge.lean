@@ -211,5 +211,15 @@ theorem Step.par.toRawBridge
   -- (backwardIH)` — raw indices align by construction.  Phase 12.A.B8.5.
   | equivIntroHetCong _ _ ihForward ihBackward =>
       exact RawStep.par.equivIntroCong ihForward ihBackward
+  -- Heterogeneous uaIntroHet cong (Phase 12.A.B8.5b): the source and
+  -- target Terms BOTH project to `RawTerm.equivIntro forwardRaw...
+  -- backwardRaw...` (same as their packaged equivWitness's raw — the
+  -- architectural raw-alignment trick).  The IH gives a raw parallel
+  -- step from `RawTerm.equivIntro forwardRawSource backwardRawSource`
+  -- to `RawTerm.equivIntro forwardRawTarget backwardRawTarget`, which
+  -- IS the bridge result we need.  No `RawStep.par.uaIntroCong` ctor
+  -- exists (or is needed) — we reuse the equivWitness's raw-side step
+  -- directly, mirroring the `eqType` / `cumulUpInnerCong` collapse.
+  | uaIntroHetCong _ _ _ _ _ ihEquivWitness => exact ihEquivWitness
 
 end LeanFX2

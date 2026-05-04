@@ -199,6 +199,17 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq forward,
           Term.subst_pointwise pointwiseEq backward]
+  -- HoTT heterogeneous-carrier path-from-equivalence (Phase 12.A.B8.5b):
+  -- the subst arm in Term/Subst.lean recurses on the single subterm
+  -- `equivWitness` via Term.subst.  Both TermSubsts share the SAME
+  -- underlying `sigma`, so `carrierARaw.subst sigma.forRaw` and
+  -- `carrierBRaw.subst sigma.forRaw` are identical on both sides
+  -- (depending only on sigma, not on the TermSubst values).  Pointwise
+  -- equality propagates through the equivWitness subterm via the
+  -- structural IH and the ctor reassembles identically.
+  | _, _, .uaIntroHet _ _ _ _ equivWitness => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq equivWitness]
 
 /-! ## TermSubst composition
 

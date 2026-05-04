@@ -278,6 +278,21 @@ def Term.substHet {mode : Mode}
       Term.funextReflAtId (domainType.substHet sigma)
                           (codomainType.substHet sigma)
                           (applyRaw.subst sigma.forRaw.lift)
+  -- HoTT heterogeneous-carrier path-from-equivalence (Phase 12.A.B8.5b)
+  -- — heterogeneous-Subst variant.  carrierA + carrierB substitute via
+  -- `sigma`; carrierARaw + carrierBRaw via `sigma.forRaw`; level
+  -- cumulativity threads through `Nat.le_trans innerLevelLt
+  -- sigma.cumulOk` (mirrors the `equivReflIdAtId` arm above).  The
+  -- single subterm `equivWitness` substitutes structurally; no
+  -- `weaken`-commute cast needed since `Ty.equiv` and `Ty.universe`
+  -- are non-binder carriers (no scope shift).
+  | _, _, .uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+                      equivWitness =>
+      Term.uaIntroHet innerLevel
+                      (Nat.le_trans innerLevelLt sigma.cumulOk)
+                      (carrierARaw.subst sigma.forRaw)
+                      (carrierBRaw.subst sigma.forRaw)
+                      (Term.substHet termSubstHet equivWitness)
 
 /-! ## Bridge: TermSubst → TermSubstHet (kernel piece for Pattern 2 ⇔ 3 bridge)
 

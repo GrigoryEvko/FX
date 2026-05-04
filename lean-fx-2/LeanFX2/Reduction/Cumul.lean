@@ -564,6 +564,36 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (backwardRel : ConvCumul backwardFirst backwardSecond) :
       ConvCumul (Term.equivIntroHet forwardFirst backwardFirst)
                 (Term.equivIntroHet forwardSecond backwardSecond)
+  /-- Homogeneous uaIntroHet: ConvCumul-related equivWitness subterms
+  lift to ConvCumul-related uaIntroHet.  Single-subterm cong rule
+  mirroring `optionSomeCong` / `natSuccCong` — the carriers + carrier
+  raws + universe level + cumul witness are fixed; only the packaged
+  equivWitness ConvCumul-relates the two sides; the ctor reassembles
+  with the matching raw indices.  Phase 12.A.B8.5b. -/
+  | uaIntroHetCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardFirstRaw forwardSecondRaw
+       backwardFirstRaw backwardSecondRaw : RawTerm scope}
+      {equivWitnessFirst :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardFirstRaw backwardFirstRaw)}
+      {equivWitnessSecond :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardSecondRaw backwardSecondRaw)}
+      (equivWitnessRel : ConvCumul equivWitnessFirst equivWitnessSecond) :
+      ConvCumul (Term.uaIntroHet (context := context)
+                                 innerLevel innerLevelLt
+                                 carrierARaw carrierBRaw
+                                 equivWitnessFirst)
+                (Term.uaIntroHet (context := context)
+                                 innerLevel innerLevelLt
+                                 carrierARaw carrierBRaw
+                                 equivWitnessSecond)
   /-- Homogeneous cumulUp: ConvCumul-related lower terms lift to ConvCumul-
   related cumulUp.  This is the recursive cumul-up case: when
   lower-side terms are themselves cumul-related, their cumulUp wrappings

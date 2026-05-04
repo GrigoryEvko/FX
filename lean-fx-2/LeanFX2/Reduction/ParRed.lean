@@ -920,6 +920,37 @@ inductive Step.par :
       Step.par backwardSource backwardTarget →
       Step.par (Term.equivIntroHet forwardSource backwardSource)
                (Term.equivIntroHet forwardTarget backwardTarget)
+  /-- Parallel-cong: heterogeneous uaIntroHet reduces in its single
+  equivWitness subterm.  Phase 12.A.B8.5b: single-subterm cong rule
+  mirroring `Step.par.optionSomeCong` / `Step.par.natSuccCong` — the
+  packaged equivalence parallel-reduces, the carriers + carrier raws
+  + universe level + cumul witness are fixed, the ctor reassembles
+  with the new raw indices.  Note: the source and target equivWitness
+  are at the SAME `Ty.equiv carrierA carrierB` type but with different
+  `RawTerm.equivIntro` raws — exactly as `equivIntroHetCong`. -/
+  | uaIntroHetCong {mode level scope}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRawSource forwardRawTarget
+       backwardRawSource backwardRawTarget : RawTerm scope}
+      {equivWitnessSource :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardRawSource backwardRawSource)}
+      {equivWitnessTarget :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardRawTarget backwardRawTarget)} :
+      Step.par equivWitnessSource equivWitnessTarget →
+      Step.par (Term.uaIntroHet (context := context)
+                                innerLevel innerLevelLt
+                                carrierARaw carrierBRaw
+                                equivWitnessSource)
+               (Term.uaIntroHet (context := context)
+                                innerLevel innerLevelLt
+                                carrierARaw carrierBRaw
+                                equivWitnessTarget)
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 

@@ -265,6 +265,21 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.funextReflAtId (domainType.subst sigma)
                           (codomainType.subst sigma)
                           (applyRaw.subst sigma.forRaw.lift)
+  -- HoTT heterogeneous-carrier path-from-equivalence (Phase 12.A.B8.5b).
+  -- `Ty.id (Ty.universe innerLevel ...) carrierARaw carrierBRaw` substitutes
+  -- carrierA + carrierB via `sigma`, and carrierARaw + carrierBRaw via
+  -- `sigma.forRaw`.  The single subterm `equivWitness` substitutes
+  -- structurally; its raw form `RawTerm.equivIntro forwardRaw backwardRaw`
+  -- substitutes pointwise to `RawTerm.equivIntro (forwardRaw.subst
+  -- sigma.forRaw) (backwardRaw.subst sigma.forRaw)` — the same shape the
+  -- ctor expects.  No `weaken`-commute cast needed since `Ty.equiv` and
+  -- `Ty.universe` are non-binder carriers (no scope shift).
+  | _, _, .uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+                      equivWitness =>
+      Term.uaIntroHet innerLevel innerLevelLt
+                      (carrierARaw.subst sigma.forRaw)
+                      (carrierBRaw.subst sigma.forRaw)
+                      (Term.subst termSubst equivWitness)
 
 /-! ## Term.subst0 — single-variable β-substitution -/
 

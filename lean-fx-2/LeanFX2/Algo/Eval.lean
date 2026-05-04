@@ -219,6 +219,12 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- HoTT heterogeneous-carrier equivIntroHet is a value (canonical
   -- equivalence form, not a β/ι redex head): no head step fires.
   | _, _, _, _, .equivIntroHet _ _ => none
+  -- HoTT heterogeneous-carrier uaIntroHet (Phase 12.A.B8.5b): a value
+  -- (canonical path-from-equivalence form at the universe).  The future
+  -- `Step.eqTypeHet` rule will fire from this ctor, but at the headStep?
+  -- level we treat it as a non-redex head (mirror of equivReflIdAtId,
+  -- whose Step.eqType reduction is also not yet wired into headStep?).
+  | _, _, _, _, .uaIntroHet _ _ _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction
