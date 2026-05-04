@@ -232,4 +232,30 @@ def Term.substHet {mode : Mode}
                    levelLeLow (Nat.le_trans levelLeHigh sigma.cumulOk)
                    lowerTerm
 
+/-! ## Bridge: TermSubst → TermSubstHet (kernel piece for Pattern 2 ⇔ 3 bridge)
+
+Same-level `TermSubst` lifts to `TermSubstHet` along
+`SubstHet.fromSubst`.  Per-position cast through `Ty.substHet_fromSubst`
+realigns the Ty index from `someTy.subst sigma` to
+`someTy.substHet (SubstHet.fromSubst sigma)` (propositionally equal,
+not definitional — the universe arm differs by `Nat.le_trans levelLe
+(Nat.le_refl _)` vs `levelLe`, equal via Subsingleton.elim).
+
+Used by `Reduction/CumulPattern23Bridge.lean` to express Pattern 2's
+single-σ result as a paired-env Pattern 3 instance at refl-compat. -/
+
+/-- Lift a same-level `TermSubst` to a `TermSubstHet` along
+`SubstHet.fromSubst`.  Per position, cast through `Ty.substHet_fromSubst`
+to realign the Ty index. -/
+def TermSubstHet.fromTermSubst {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma) :
+    TermSubstHet sourceCtx targetCtx (SubstHet.fromSubst sigma) :=
+  fun position =>
+    (Ty.substHet_fromSubst sigma (varType sourceCtx position)).symm ▸
+      termSubst position
+
 end LeanFX2
