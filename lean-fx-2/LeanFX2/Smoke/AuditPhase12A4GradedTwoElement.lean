@@ -11,6 +11,7 @@ import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Representation
 import LeanFX2.Graded.Instances.ClockDomain
 import LeanFX2.Graded.Instances.Complexity
+import LeanFX2.Graded.Instances.Precision
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Overflow
 import LeanFX2.Graded.Instances.Size
@@ -69,7 +70,9 @@ Remaining D5.4 instances (TBD per-need):
                                        with conflict predicate
 * `ComplexityGrade` (dim 13)        — shipped as bounded-or-unbounded
                                        cost semiring
-* `PrecisionGrade` (dim 14)         — Rat (sum-monoid)
+* `PrecisionGrade` (dim 14)         — shipped as `GradeJoinSemilattice`
+                                       over rational ULP-bound facts
+                                       plus unbounded top
 * `SpaceGrade` (dim 15)             — shipped as allocation strategy ×
                                        bounded-or-unbounded byte bound
 * `OverflowGrade` (dim 16)          — shipped as `GradeJoinSemilattice`
@@ -185,6 +188,22 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade.mul
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringComplexityGrade
+
+-- D5.4 Precision (dim 14, rational ULP-bound facts plus unbounded top)
+#print axioms LeanFX2.Graded.Instances.ULPBound
+#print axioms LeanFX2.Graded.Instances.ULPBound.denominator
+#print axioms LeanFX2.Graded.Instances.PrecisionFact
+#print axioms LeanFX2.Graded.Instances.PrecisionRow
+#print axioms LeanFX2.Graded.Instances.PrecisionRow.Member
+#print axioms LeanFX2.Graded.Instances.PrecisionRow.subset
+#print axioms LeanFX2.Graded.Instances.PrecisionRow.join
+#print axioms LeanFX2.Graded.Instances.PrecisionRow.member_append_left
+#print axioms LeanFX2.Graded.Instances.PrecisionRow.member_append_right
+#print axioms LeanFX2.Graded.Instances.PrecisionRow.member_append_inv
+#print axioms LeanFX2.Graded.Instances.PrecisionGrade
+#print axioms LeanFX2.Graded.Instances.PrecisionGrade.join
+#print axioms LeanFX2.Graded.Instances.PrecisionGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticePrecisionGrade
 
 -- D5.4 Space (dim 15, allocation strategy plus byte-bound semiring)
 #print axioms LeanFX2.Graded.Instances.AllocStrategy
