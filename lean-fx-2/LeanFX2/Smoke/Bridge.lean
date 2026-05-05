@@ -4,6 +4,8 @@ import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Cubical.Transport
 import LeanFX2.Translation.CubicalToObservational
+import LeanFX2.Translation.ObservationalToCubical
+import LeanFX2.Translation.Inverse
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/Bridge — typed↔raw roundtrip examples.
@@ -379,6 +381,58 @@ theorem cubicalToObservationalTy_fullStackWiring_smoke
       (Translation.cubicalToObservationalTy_glue
         carrier boundaryWitness))
 
+/-- Type-level observational-to-cubical translation smoke. -/
+theorem observationalToCubicalTy_fullStackWiring_smoke
+    {level scope : Nat}
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope) :
+    And
+      (Translation.observationalToCubicalTy
+        (Ty.id carrier leftEndpoint rightEndpoint) =
+          Ty.path (Translation.observationalToCubicalTy carrier)
+            leftEndpoint rightEndpoint)
+      (And
+        (Translation.observationalToCubicalTy
+          (Ty.oeq carrier leftEndpoint rightEndpoint) =
+            Ty.path (Translation.observationalToCubicalTy carrier)
+              leftEndpoint rightEndpoint)
+        (Translation.observationalToCubicalTy
+          (Ty.idStrict carrier leftEndpoint rightEndpoint) =
+            Ty.path (Translation.observationalToCubicalTy carrier)
+              leftEndpoint rightEndpoint)) :=
+  And.intro
+    (Translation.observationalToCubicalTy_id
+      carrier leftEndpoint rightEndpoint)
+    (And.intro
+      (Translation.observationalToCubicalTy_oeq
+        carrier leftEndpoint rightEndpoint)
+      (Translation.observationalToCubicalTy_idStrict
+        carrier leftEndpoint rightEndpoint))
+
+/-- Type-level translation inverse smoke on the supported `Unit` carrier
+fragment. -/
+theorem translationInverseTy_fullStackWiring_smoke
+    {level scope : Nat}
+    (leftEndpoint rightEndpoint : RawTerm scope) :
+    And
+      (Translation.cubicalToObservationalTy
+        (Translation.observationalToCubicalTy
+          (Ty.id (Ty.unit (level := level) (scope := scope))
+            leftEndpoint rightEndpoint)) =
+          Ty.id Ty.unit leftEndpoint rightEndpoint)
+      (Translation.observationalToCubicalTy
+        (Translation.cubicalToObservationalTy
+          (Ty.path (Ty.unit (level := level) (scope := scope))
+            leftEndpoint rightEndpoint)) =
+          Ty.path Ty.unit leftEndpoint rightEndpoint) :=
+  And.intro
+    (Translation.observationalCubicalRoundTripTy_id
+      Ty.unit leftEndpoint rightEndpoint
+      Translation.observationalCubicalRoundTripTy_unit)
+    (Translation.cubicalObservationalRoundTripTy_path
+      Ty.unit leftEndpoint rightEndpoint
+      Translation.cubicalObservationalRoundTripTy_unit)
+
 #assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
@@ -391,5 +445,7 @@ theorem cubicalToObservationalTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.idEqTypeBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.pathEqTypeBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.cubicalToObservationalTy_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.observationalToCubicalTy_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.translationInverseTy_fullStackWiring_smoke
 
 end LeanFX2.Smoke
