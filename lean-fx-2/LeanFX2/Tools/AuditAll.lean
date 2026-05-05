@@ -15,6 +15,7 @@ import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
 import LeanFX2.Cubical.Path
+import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.AtkeyAttack
 import LeanFX2.Graded.Dimensions21
@@ -63,6 +64,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantPath_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypePath
 #assert_no_axioms LeanFX2.Cubical.constantTypePath_toRaw
+#assert_no_axioms LeanFX2.Cubical.constantPath_rawBetaApp
+#assert_no_axioms LeanFX2.Cubical.constantPath_betaPathApp
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathApp
 #assert_no_axioms LeanFX2.Step.par.betaPathApp
