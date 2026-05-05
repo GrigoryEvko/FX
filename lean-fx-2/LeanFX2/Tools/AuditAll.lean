@@ -404,6 +404,25 @@ namespace LeanFX2.Tools
 -- mode where a raw cubical β rule lands without its typed mirror.
 #assert_raw_typed_parity
 
+-- Naming discipline gate.  Bans non-ASCII identifiers and short
+-- identifiers (< 4 chars) outside the documented whitelist.  Catches
+-- regressions like `def f (x) := ...` or pasted Greek-letter names
+-- that violate CLAUDE.md naming rules.
+#assert_namespace_naming LeanFX2
+
+-- Hypothesis-as-postulate detector.  No theorem signature in the
+-- production namespace may take Univalence / funext / their het
+-- variants as a hypothesis (CLAUDE.md "Forbidden reasoning patterns":
+-- shipping a theorem conditionally on an unprovable hypothesis is
+-- semantically identical to adding an axiom).
+#assert_no_postulate_hypothesis LeanFX2
+
+-- Per-namespace decl-count snapshot.  Strictly informational; surfaces
+-- the count distribution across `LeanFX2.*` sub-namespaces so a
+-- coverage regression (whole sub-namespace shrinking unexpectedly)
+-- is visible at a glance.
+#audit_subnamespace_counts
+
 -- End-of-build summary.  Logs `Total / Clean / Failed` plus per-decl
 -- failure list.  Strictly informational (does not throw); the actual
 -- blocking happens via `#audit_namespace_strict` above.  Surfaces

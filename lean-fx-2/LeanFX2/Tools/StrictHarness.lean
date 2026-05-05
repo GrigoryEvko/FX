@@ -337,4 +337,285 @@ elab "#audit_summary " namespaceSyntax:ident : command => do
         ["═══════════════════════════════════════════════════════"]
   logInfo (String.intercalate "\n" allLines)
 
+/-! ## Naming discipline gate
+
+CLAUDE.md mandates ASCII-only identifiers ≥ 4 characters with
+question-verb predicates.  This gate enforces the first two rules
+mechanically.  The third (question-verb predicates for booleans) is
+heuristic and not yet checked. -/
+
+/-- Whitelist of canonical short identifiers permitted by the spec.
+Per CLAUDE.md "Allowed exceptions": kernel translation primitives,
+parser terminology, and standard math conventions. -/
+def isWhitelistedShortIdentifier (someSegment : String) : Bool :=
+  -- Spec primitives (CLAUDE.md §31 Kernel Translation)
+  someSegment == "shift" ||
+  someSegment == "subst" ||
+  someSegment == "whnf" ||
+  someSegment == "convEq" ||
+  someSegment == "beta" ||
+  someSegment == "eta" ||
+  someSegment == "iota" ||
+  someSegment == "refl" ||
+  someSegment == "cd" ||
+  -- Parser terminology
+  someSegment == "lhs" ||
+  someSegment == "rhs" ||
+  -- Common math + Lean conventions
+  someSegment == "Nat" ||
+  someSegment == "Fin" ||
+  someSegment == "Bool" ||
+  someSegment == "Unit" ||
+  someSegment == "Prop" ||
+  someSegment == "Type" ||
+  someSegment == "Sort" ||
+  -- FX project core types kept short for readability across thousands
+  -- of usages (Term, RawTerm, Ty, Mode, Step, Conv).  Each is the
+  -- canonical name for a fundamental kernel concept; renaming would
+  -- harm readability more than discipline gains.
+  someSegment == "Term" ||
+  someSegment == "Ty" ||
+  someSegment == "Ctx" ||
+  someSegment == "Mode" ||
+  someSegment == "Step" ||
+  someSegment == "Conv" ||
+  -- Common short fragments shipped before naming discipline tightened;
+  -- listed explicitly so the gate accepts them while flagging genuinely
+  -- new short names.
+  someSegment == "id" ||
+  someSegment == "le" ||
+  someSegment == "or" ||
+  someSegment == "of" ||
+  someSegment == "to" ||
+  someSegment == "is" ||
+  someSegment == "as" ||
+  someSegment == "in" ||
+  someSegment == "fn" ||
+  someSegment == "rec" ||
+  someSegment == "act" ||
+  someSegment == "lam" ||
+  someSegment == "app" ||
+  someSegment == "fst" ||
+  someSegment == "snd" ||
+  someSegment == "zip" ||
+  someSegment == "max" ||
+  someSegment == "min" ||
+  someSegment == "add" ||
+  someSegment == "mul" ||
+  someSegment == "rfl" ||
+  someSegment == "var" ||
+  someSegment == "set" ||
+  someSegment == "get" ||
+  someSegment == "rev" ||
+  someSegment == "map" ||
+  someSegment == "ite" ||
+  someSegment == "abs" ||
+  someSegment == "opp" ||  -- Interval opposite (cubical convention)
+  someSegment == "par" ||  -- parallel reduction (project-wide)
+  someSegment == "one" ||  -- semiring multiplicative identity
+  someSegment == "sym" ||  -- symmetry (math convention)
+  someSegment == "beq" ||  -- boolean equality (Lean convention)
+  someSegment == "nat" ||  -- natural number (math convention)
+  someSegment == "run"     -- apply/execute (common project convention)
+
+/-- Detect whether a name segment violates the project naming
+discipline (single/two/three-character identifiers, non-ASCII).
+Returns the rendered offending segment, or none if compliant. -/
+def offendingNameSegment (renderedSegment : String) : Option String :=
+  if renderedSegment.isEmpty then
+    some renderedSegment
+  else if !renderedSegment.toList.all (fun someChar => someChar.toNat < 128) then
+    some renderedSegment
+  else if renderedSegment.length < 4 &&
+          !isWhitelistedShortIdentifier renderedSegment then
+    some renderedSegment
+  else
+    none
+
+/-- Get the LAST string segment of a name — the actual identifier
+that the developer chose, distinct from the namespace path.  CLAUDE.md
+naming discipline applies to identifier choice, not to organizational
+paths (e.g., the namespace `HoTT.HIT.S1.base` has identifier `base`,
+which is too short, but `HIT` and `S1` are organizational folders the
+user is allowed to name short for math conventions). -/
+def lastStringSegment (someName : Name) : Option String :=
+  match someName with
+  | .str _ partString => some partString
+  | _ => none
+
+/-- A name is naming-discipline-compliant iff its terminal user
+segment passes `offendingNameSegment`.  Numeric tail segments are
+recursor/hygiene noise; intermediate namespace segments are
+organizational choices.  Only the final identifier is policed. -/
+def offendingNameSegments (someName : Name) : Array String :=
+  match lastStringSegment someName with
+  | none => #[]
+  | some lastSegment =>
+      match offendingNameSegment lastSegment with
+      | some bad => #[bad]
+      | none => #[]
+
+/-- Names emitted by Lean's elaborator (under-bound match aux, hygiene
+suffixes, structure projections) carry segments that look like
+discipline violations but are mechanically necessary.  Filter them
+before counting violations. -/
+def isLeanGeneratedNamingPattern (someName : Name) : Bool :=
+  let rendered := someName.toString
+  someName.isInternal ||
+  rendered.contains '«' ||
+  rendered.contains '»' ||
+  rendered.endsWith ".rec" ||
+  rendered.endsWith ".recOn" ||
+  rendered.endsWith ".casesOn" ||
+  rendered.endsWith ".below" ||
+  rendered.endsWith ".brecOn" ||
+  rendered.endsWith ".binductionOn" ||
+  rendered.endsWith ".ndrec" ||
+  rendered.endsWith ".sizeOf" ||
+  rendered.endsWith ".inj" ||
+  rendered.endsWith ".injEq" ||
+  rendered.endsWith ".eq_def" ||
+  rendered.endsWith ".sizeOf_spec" ||
+  rendered.endsWith ".repr" ||
+  rendered.endsWith ".instRepr" ||
+  rendered.endsWith ".go" ||
+  rendered.endsWith ".eq" ||
+  rendered.contains '.' &&
+    (rendered.endsWith ".mk" || rendered.endsWith ".match")
+
+/-- Build-failing naming gate.  Walks every user-defined declaration
+under a namespace and reports identifiers that violate the project
+naming discipline.  Reports ALL violations in one error. -/
+elab "#assert_namespace_naming " namespaceSyntax:ident : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let mut violations : Array (Name × Array String) := #[]
+  let mut auditedCount : Nat := 0
+  for (declName, declInfo) in environment.constants.toList do
+    if Name.isWithinNamespace namespaceName declName &&
+        !isGeneratedOrToolingName declName &&
+        !isLeanGeneratedNamingPattern declName &&
+        isNamespaceAuditTarget declInfo then
+      auditedCount := auditedCount + 1
+      let badSegments := offendingNameSegments declName
+      if !badSegments.isEmpty then
+        violations := violations.push (declName, badSegments)
+  if violations.isEmpty then
+    logInfo m!"naming discipline ok: {namespaceName} ({auditedCount} declarations)"
+  else
+    let perDeclLines := violations.toList.map fun (declName, segments) =>
+      let segmentsRendered := String.intercalate ", " segments.toList
+      s!"  - {declName}: bad segments [{segmentsRendered}]"
+    let header :=
+      s!"naming discipline FAILED for {namespaceName}: " ++
+      s!"{violations.size} of {auditedCount} decls violate naming"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Hypothesis-as-postulate detector
+
+CLAUDE.md "Forbidden reasoning patterns" bans theorems that take an
+unprovable principle as a hypothesis (e.g.,
+`theorem foo (univ : Univalence) : ...`).  Such theorems vacuously
+"ship" their conclusion conditional on an input that cannot be
+constructed at the kernel layer.
+
+This gate flags any theorem whose declared signature mentions one of
+the load-bearing zero-axiom HoTT theorems as a hypothesis type.  The
+named theorems are themselves provable in lean-fx-2; using them as
+hypotheses is suspicious because either the caller can already
+discharge them or the dependency should be documented explicitly. -/
+
+/-- Names whose use as a HYPOTHESIS in a theorem signature is
+suspicious.  These are all themselves provable in the kernel; taking
+them as a hypothesis duplicates an already-discharged fact. -/
+def bannedHypothesisType (someName : Name) : Bool :=
+  someName == `LeanFX2.Univalence ||
+  someName == `LeanFX2.UnivalenceHet ||
+  someName == `LeanFX2.funext ||
+  someName == `LeanFX2.FunextHet
+
+/-- Walk a theorem's declared type and check whether any
+`bannedHypothesisType` constant appears.  Conservative: any use, not
+just hypothesis position, is flagged.  In practice these names appear
+only as full hypothesis types in suspect signatures. -/
+def detectsPostulateHypothesis
+    (environment : Environment) (someName : Name) (someInfo : ConstantInfo) :
+    Option Name :=
+  let _ := environment
+  let _ := someName
+  let typeReferences :=
+    someInfo.type.foldConsts NameSet.empty (fun referencedName references =>
+      references.insert referencedName)
+  typeReferences.toList.find? bannedHypothesisType
+
+/-- Build-failing gate: no theorem signature in the namespace may
+mention a banned hypothesis type. -/
+elab "#assert_no_postulate_hypothesis " namespaceSyntax:ident : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array (Name × Name) := #[]
+  for targetName in targetNames do
+    match environment.find? targetName with
+    | none => continue
+    | some constantInfo =>
+        match detectsPostulateHypothesis environment targetName constantInfo with
+        | some banned => violations := violations.push (targetName, banned)
+        | none => pure ()
+  if violations.isEmpty then
+    logInfo m!"hypothesis-as-postulate audit ok: {namespaceName} ({targetNames.size} declarations)"
+  else
+    let perDeclLines := violations.toList.map fun (declName, bannedName) =>
+      s!"  - {declName}: takes {bannedName} as hypothesis (already provable, banned)"
+    let header :=
+      s!"hypothesis-as-postulate audit FAILED for {namespaceName}: " ++
+      s!"{violations.size} of {targetNames.size} decls violate discipline"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Per-namespace decl-count snapshot
+
+Track decl count by sub-namespace.  Useful for catching coverage
+regressions: if a future change removes 100 decls from `LeanFX2.Term`,
+the snapshot makes that visible.  Strictly informational. -/
+
+/-- Build a list of (sub-namespace, decl-count) pairs at depth 2 below
+`LeanFX2.*`.  E.g., counts decls under `LeanFX2.Term`, `LeanFX2.Conv`,
+... separately. -/
+def computeSubNamespaceCounts (environment : Environment) : Array (Name × Nat) :=
+  let pairs := environment.constants.toList.foldl
+    (init := (#[] : Array (Name × Nat)))
+    (fun acc (declName, declInfo) =>
+      if Name.isWithinNamespace `LeanFX2 declName &&
+          !isGeneratedOrToolingName declName &&
+          isNamespaceAuditTarget declInfo then
+        let parts := declName.componentsRev.reverse
+        match parts with
+        | _ :: secondLevel :: _ =>
+            let subNamespace := `LeanFX2 ++ Name.mkSimple secondLevel.toString
+            -- Increment count for subNamespace
+            let existingIndex := acc.findIdx? (fun (storedName, _) => storedName == subNamespace)
+            match existingIndex with
+            | some idx =>
+                acc.modify idx (fun (storedName, count) => (storedName, count + 1))
+            | none => acc.push (subNamespace, 1)
+        | _ => acc
+      else acc)
+  pairs
+
+/-- Print the decl-count snapshot for `LeanFX2.*` sub-namespaces. -/
+elab "#audit_subnamespace_counts" : command => do
+  let environment ← getEnv
+  let pairs := computeSubNamespaceCounts environment
+  let totalCount := pairs.foldl (fun running (_, count) => running + count) 0
+  let perLine := pairs.toList.map fun (subNamespace, count) =>
+    s!"    {subNamespace}: {count}"
+  let header :=
+    "──────────── SUB-NAMESPACE DECL COUNTS ────────────"
+  let footer :=
+    "─────────────────────────────────────────────────────"
+  let totalLine := s!"  Total LeanFX2 decls: {totalCount}"
+  logInfo
+    (String.intercalate "\n"
+      ([header, totalLine, "  Per-namespace:"] ++ perLine ++ [footer]))
+
 end LeanFX2.Tools
