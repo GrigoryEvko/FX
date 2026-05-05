@@ -20,6 +20,7 @@ import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Cubical.Transport
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Term
 import LeanFX2.Graded.AtkeyAttack
@@ -174,6 +175,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.rec_squash
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.recConstant
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.recConstant_intro
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.equality
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.intro
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.sound
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.rec
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.rec_intro
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.rec_sound
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.recConstant
+#assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.recConstant_intro
 
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono

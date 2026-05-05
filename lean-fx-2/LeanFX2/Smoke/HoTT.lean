@@ -3,6 +3,7 @@ import LeanFX2.HoTT.J
 import LeanFX2.HoTT.Transport
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
@@ -76,10 +77,47 @@ theorem propTrunc_rec_intro_smoke :
     (fun _ _ => rfl)
     ()
 
+/-- The equality quotient presentation keeps equality as its relation. -/
+theorem quotientHIT_equality_relation_smoke :
+    (HoTT.HIT.QuotientHIT.equality Unit).relation () () :=
+  rfl
+
+/-- Quotient recursion computes on introduced representatives. -/
+theorem quotientHIT_rec_intro_smoke :
+    (HoTT.HIT.QuotientHIT.rec
+      (sourceType := Unit)
+      (relation := Eq)
+      (isRefl := fun sourceValue => Eq.refl sourceValue)
+      (isSymm := fun relationWitness => Eq.symm relationWitness)
+      (isTrans := fun firstWitness secondWitness =>
+        Eq.trans firstWitness secondWitness)
+      Bool
+      (fun _ => true)
+      (fun relationWitness => by
+        cases relationWitness
+        rfl)).run
+      (HoTT.HIT.QuotientHIT.intro ()) =
+      true :=
+  HoTT.HIT.QuotientHIT.rec_intro
+    (sourceType := Unit)
+    (relation := Eq)
+    (isRefl := fun sourceValue => Eq.refl sourceValue)
+    (isSymm := fun relationWitness => Eq.symm relationWitness)
+    (isTrans := fun firstWitness secondWitness =>
+      Eq.trans firstWitness secondWitness)
+    Bool
+    (fun _ => true)
+    (fun relationWitness => by
+      cases relationWitness
+      rfl)
+    ()
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.quotientHIT_equality_relation_smoke
+#assert_no_axioms LeanFX2.Smoke.quotientHIT_rec_intro_smoke
 
 end LeanFX2.Smoke
