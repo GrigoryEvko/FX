@@ -1,8 +1,10 @@
 /-! # Graded/Semiring — generic semiring framework for graded type system
 
 A `GradeSemiring` is a semiring `(R, +, *, 0, 1, ≤)` with a preorder
-compatible with `+` and `*`.  Each of FX's 19 graded dimensions
-instantiates this typeclass.
+compatible with `+` and `*`.  FX dimensions whose sequencing operation
+really has semiring scaling instantiate this typeclass.  Dimensions
+that only accumulate capabilities by join use `GradeJoinSemilattice`
+below instead.
 
 Per `fx_design.md` §6.1.
 
@@ -17,7 +19,8 @@ Per `fx_design.md` §6.1.
 ## Concrete instances (downstream `Graded/Instances/*`)
 
 * `UsageGrade` = `{0, 1, ω}` — linearity tracking
-* `EffectGrade` = set of effect labels — capability tracking
+* `EffectGrade` = set of effect labels — capability tracking via
+  `GradeJoinSemilattice`
 * `SecurityGrade` = `{unclassified < classified}` — info flow
 * ... 19 total per `fx_design.md` §6.3
 
@@ -126,6 +129,57 @@ instance : ∀ (first second : Carrier), Decidable (GradeSemiring.le first secon
 
 end DecidableGradeSemiring
 
+/-! ## Join-semilattice grades
+
+Some FX dimensions accumulate capabilities by join but are not
+semirings with annihilating zero.  Effects are the canonical example:
+`Tot` is the bottom effect row and row union is the least upper bound,
+but forcing row union into both `+` and `*` would imply `0 * effect = 0`,
+which is false for a nonempty effect row.  These dimensions use
+`GradeJoinSemilattice` until a later graded-monad layer connects them
+to sequencing-specific rules. -/
+
+/-- Bounded join-semilattice with preorder for dimensions that
+accumulate capabilities by least upper bound rather than semiring
+scaling. -/
+class GradeJoinSemilattice (Carrier : Type) where
+  /-- Bottom element: no capability/resource in this dimension. -/
+  bottom : Carrier
+  /-- Least upper bound / capability union. -/
+  join : Carrier → Carrier → Carrier
+  /-- Subsumption preorder. -/
+  le : Carrier → Carrier → Prop
+
+  -- Preorder laws
+  le_refl : ∀ value, le value value
+  le_trans : ∀ first second third, le first second → le second third → le first third
+
+  -- Bounded join laws
+  bottom_le : ∀ value, le bottom value
+  le_join_left : ∀ left right, le left (join left right)
+  le_join_right : ∀ left right, le right (join left right)
+  join_least_upper_bound : ∀ left right upper,
+    le left upper → le right upper → le (join left right) upper
+
+  -- Normalization laws, stated in the preorder because some carriers
+  -- intentionally use list/set representations where equality is too
+  -- strict but mutual subsumption is the semantic equality.
+  join_idempotent_le : ∀ value, le (join value value) value
+  join_comm_le : ∀ left right, le (join left right) (join right left)
+  join_assoc_le : ∀ first second third,
+    le (join (join first second) third) (join first (join second third))
+
+namespace GradeJoinSemilattice
+
+variable {Carrier : Type} [GradeJoinSemilattice Carrier]
+
+/-- Join many grades, using bottom for the empty list. -/
+def joinAll : List Carrier → Carrier
+  | [] => bottom
+  | head :: rest => join head (joinAll rest)
+
+end GradeJoinSemilattice
+
 /-! ## Smoke: trivial 1-element semiring (Unit)
 
 The unit semiring has a single element; all laws hold trivially.
@@ -152,5 +206,19 @@ instance : GradeSemiring Unit where
   le_trans := fun _ _ _ _ _ => True.intro
   add_mono := fun _ _ _ _ _ _ => True.intro
   mul_mono := fun _ _ _ _ _ _ => True.intro
+
+instance : GradeJoinSemilattice Unit where
+  bottom := ()
+  join := fun _ _ => ()
+  le := fun _ _ => True
+  le_refl := fun _ => True.intro
+  le_trans := fun _ _ _ _ _ => True.intro
+  bottom_le := fun _ => True.intro
+  le_join_left := fun _ _ => True.intro
+  le_join_right := fun _ _ => True.intro
+  join_least_upper_bound := fun _ _ _ _ _ => True.intro
+  join_idempotent_le := fun _ => True.intro
+  join_comm_le := fun _ _ => True.intro
+  join_assoc_le := fun _ _ _ => True.intro
 
 end LeanFX2.Graded

@@ -1,4 +1,5 @@
 import LeanFX2.Graded.Instances.Security
+import LeanFX2.Graded.Instances.Effect
 import LeanFX2.Graded.Instances.Observability
 import LeanFX2.Graded.Instances.Reentrancy
 import LeanFX2.Graded.Instances.FPOrder
@@ -44,11 +45,11 @@ verifies these instances stay axiom-clean under `#print axioms`.
 Remaining D5.4 instances (TBD per-need):
 * `UsageGrade` (dim 3)              — already shipped (3-element
                                        `{0, 1, ω}`)
-* `EffectGrade` (dim 4)             — needs `GradeJoinSemilattice`
-                                       since join-only lattices
-                                       cannot be GradeSemirings with
-                                       annihilation (`+ = * = ∨`
-                                       breaks `mul_zero_left`)
+* `EffectGrade` (dim 4)             — shipped as `GradeJoinSemilattice`
+                                       over effect rows; deliberately
+                                       not a semiring because join-only
+                                       lattices cannot satisfy
+                                       annihilation
 * `LifetimeGrade` (dim 7)           — region-variable preorder
 * `ProvenanceGrade` (dim 8)         — origin-label lattice
 * `TrustGrade` (dim 9)              — shipped as 5-chain trust-debt
@@ -110,6 +111,13 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.MutationGrade.mul
 #print axioms LeanFX2.Graded.Instances.MutationGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringMutationGrade
+
+-- D5.4 Effect (dim 4, bounded join-semilattice over effect rows)
+#print axioms LeanFX2.Graded.GradeJoinSemilattice
+#print axioms LeanFX2.Graded.GradeJoinSemilattice.joinAll
+#print axioms LeanFX2.Graded.instGradeJoinSemilatticeUnit
+#print axioms LeanFX2.Graded.Instances.EffectGrade
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeEffectGrade
 
 -- D5.4 Trust (dim 9, 5-chain trust-debt lattice)
 #print axioms LeanFX2.Graded.Instances.TrustGrade

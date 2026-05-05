@@ -1,92 +1,78 @@
 import LeanFX2.Graded.Semiring
+import LeanFX2.Effects.Foundation
 
-/-! # Graded/Instances/Effect — effect lattice as semiring
+/-! # Graded/Instances/Effect — effect rows as join-semilattice grades
 
-Effects form a bounded join-semilattice — a degenerate semiring where
-`+` and `*` are both join.
+Effects do not form a nontrivial `GradeSemiring` under FX semantics.
+The effect dimension accumulates capabilities by row union:
 
-## Effect labels (per fx_design.md §9.4)
+* `bottom` = `Tot` / empty effect row
+* `join` = row union
+* `≤` = row subset / subeffect
 
-```lean
-inductive EffectLabel
-  | tot       -- pure terminating (zero)
-  | div       -- may diverge
-  | ghost     -- erased at runtime
-  | exn       -- may raise
-  | io        -- general input/output
-  | alloc     -- may allocate heap
-  | read      -- may read from references/state
-  | write     -- may write (implies read)
-  | async     -- may perform async operations
-  | usrEffect (name : String)  -- user-defined effects
-```
+Sequential and parallel composition both accumulate effects, but
+semiring annihilation would require `bottom * effect = bottom`, which
+is false for any nonempty effect row.  This file therefore exposes
+effects through `GradeJoinSemilattice`, not by pretending they satisfy
+the stronger semiring interface.
 
-## EffectGrade as set
-
-```lean
-def EffectGrade : Type := Finset EffectLabel
-```
-
-(Or `List EffectLabel` with set-equivalence if Finset has propext
-issues.)
-
-## Operations
-
-`+` = `*` = set union (lattice join).
-* `Tot ∨ e = e`  (Tot is bottom = empty set)
-* `e ∨ e = e` (idempotent)
-* `e1 ∨ e2 = e2 ∨ e1` (commutative)
-
-`0` = `Tot` (empty set).
-`1` = `Tot` (also empty set — multiplicative identity).
-
-`≤` = subset.  Subsumption: a `Tot` function fits where `IO`
-expected, not vice versa.
-
-## Per fx_design.md §B (Appendix B)
-
-Only declared subeffect: `Read ⊆ Write`.  Other built-ins are
-incomparable lattice elements.
-
-```lean
-def EffectLabel.le (e1 e2 : EffectLabel) : Prop :=
-  e1 = e2 ∨ (e1 = Read ∧ e2 = Write)
-```
-
-(Then EffectGrade.le compares pointwise plus user-effect ordering.)
-
-## Why a degenerate semiring works
-
-For effect tracking, sequential and parallel composition both
-*accumulate* effects (you don't multiply effect counts; you
-union effect sets).  This means `+ = * = ∨`.  All semiring laws
-hold trivially because join-semilattices satisfy them with both
-ops being join.
-
-## Dependencies
-
-* `Graded/Semiring.lean`
-
-## Downstream
-
-* `Graded/Rules.lean` — effect grade tracks via App/Let rules
-* fx_design.md §9 — full effect semantics
-
-## Implementation plan (Phase 8)
-
-1. Define `EffectLabel` enum + extension for user effects
-2. Define `EffectGrade = Finset EffectLabel` (or List with set-equiv)
-3. Define `+`, `*`, `≤` as join + subset
-4. Discharge semiring laws (all trivial because of degenerate ops)
-5. `instance : GradeSemiring EffectGrade`
-
-Target: ~200 lines.
--/
+Zero-axiom verified per declaration. -/
 
 namespace LeanFX2.Graded.Instances
 
--- TODO Phase 8: EffectLabel inductive
--- TODO Phase 8: EffectGrade as Finset/List
--- TODO Phase 8: GradeSemiring instance via degenerate (join) semiring
+open LeanFX2.Graded
+
+/-- Effect grade reuses the kernel effect-row carrier. -/
+abbrev EffectGrade : Type := LeanFX2.Effects.EffectRow
+
+/-- Effect rows form a bounded join-semilattice under row union and
+subset.  The laws are imported from `Effects.Foundation`, where they
+are proven directly over the custom membership predicate. -/
+instance : GradeJoinSemilattice EffectGrade where
+  bottom := LeanFX2.Effects.EffectRow.empty
+  join := LeanFX2.Effects.EffectRow.join
+  le := LeanFX2.Effects.EffectRow.subset
+
+  le_refl := LeanFX2.Effects.EffectRow.subset_refl
+
+  le_trans := by
+    intro firstRow secondRow thirdRow firstSubset secondSubset
+    exact LeanFX2.Effects.EffectRow.subset_trans firstSubset secondSubset
+
+  bottom_le := LeanFX2.Effects.EffectRow.empty_subset
+
+  le_join_left := LeanFX2.Effects.EffectRow.join_subset_left
+
+  le_join_right := LeanFX2.Effects.EffectRow.join_subset_right
+
+  join_least_upper_bound := by
+    intro firstRow secondRow thirdRow firstSubset secondSubset
+    exact LeanFX2.Effects.EffectRow.join_least_upper_bound
+      firstSubset secondSubset
+
+  join_idempotent_le := LeanFX2.Effects.EffectRow.join_idempotent_subset
+
+  join_comm_le := LeanFX2.Effects.EffectRow.join_commutes_subset
+
+  join_assoc_le := LeanFX2.Effects.EffectRow.join_associates_subset
+
+/-! ## Smoke samples -/
+
+/-- `Tot` is the bottom effect grade. -/
+example (someRow : EffectGrade) :
+    GradeJoinSemilattice.le
+      (GradeJoinSemilattice.bottom : EffectGrade) someRow :=
+  GradeJoinSemilattice.bottom_le someRow
+
+/-- Joining IO and Alloc contains Alloc. -/
+example :
+    LeanFX2.Effects.EffectRow.Member LeanFX2.Effects.EffectLabel.alloc
+      (GradeJoinSemilattice.join
+        (LeanFX2.Effects.EffectRow.singleton LeanFX2.Effects.EffectLabel.io)
+        (LeanFX2.Effects.EffectRow.singleton LeanFX2.Effects.EffectLabel.alloc)
+          : EffectGrade) :=
+  LeanFX2.Effects.EffectRow.member_append_right
+    [LeanFX2.Effects.EffectLabel.io] _
+    (LeanFX2.Effects.EffectRow.Member.head [])
 
 end LeanFX2.Graded.Instances
