@@ -5,6 +5,7 @@ import LeanFX2.Graded.Instances.FPOrder
 import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
 import LeanFX2.Graded.Instances.Trust
+import LeanFX2.Graded.Instances.Representation
 import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Size
@@ -52,7 +53,8 @@ Remaining D5.4 instances (TBD per-need):
 * `ProvenanceGrade` (dim 8)         — origin-label lattice
 * `TrustGrade` (dim 9)              — shipped as 5-chain trust-debt
                                        lattice
-* `RepresentationGrade` (dim 10)    — preorder over layout attrs
+* `RepresentationGrade` (dim 10)    — shipped as 5-chain
+                                       layout-exposure lattice
 * `ClockDomainGrade` (dim 12)       — `combinational + sync(c)`
                                        partial structure
 * `ComplexityGrade` (dim 13)        — shipped as bounded-or-unbounded
@@ -115,6 +117,13 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.TrustGrade.mul
 #print axioms LeanFX2.Graded.Instances.TrustGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringTrustGrade
+
+-- D5.4 Representation (dim 10, 5-chain layout-exposure lattice)
+#print axioms LeanFX2.Graded.Instances.RepresentationGrade
+#print axioms LeanFX2.Graded.Instances.RepresentationGrade.add
+#print axioms LeanFX2.Graded.Instances.RepresentationGrade.mul
+#print axioms LeanFX2.Graded.Instances.RepresentationGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeSemiringRepresentationGrade
 
 -- D5.4 Complexity (dim 13, bounded-or-unbounded cost semiring)
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade
