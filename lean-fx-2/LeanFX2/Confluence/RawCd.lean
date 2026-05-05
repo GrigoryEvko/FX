@@ -40,8 +40,8 @@ heartbeat budget (per-whnf 200K, not propagated by file-level
 
 The refactor below extracts each redex-bearing case's inner match
 into a dedicated helper definition — `cdAppCase`, `cdFstCase`,
-`cdPathAppCase`, `cdGlueElimCase`, `cdSndCase`, `cdBoolElimCase`,
-`cdNatElimCase`, `cdNatRecCase`, `cdListElimCase`,
+`cdPathAppCase`, `cdGlueElimCase`, `cdRefineElimCase`, `cdSndCase`,
+`cdBoolElimCase`, `cdNatElimCase`, `cdNatRecCase`, `cdListElimCase`,
 `cdOptionMatchCase`, `cdEitherMatchCase`, `cdIdJCase`.  Each helper
 carries its own 55-arm match in its own elaboration scope, so
 `unfold cdAppCase; split` inside cd_dominates only walks ~55 branches
@@ -54,9 +54,9 @@ short arm per RawTerm ctor).
 * Cong ctors (lam, pair, listCons, optionSome, eitherInl/Inr,
   natSucc, refl, modIntro/Elim, subsume, plus 27 D1.6 cong ctors)
   → recurse into subterms
-* Redex-bearing ctors (app, pathApp, glueElim, fst, snd, boolElim,
-  natElim, natRec, listElim, optionMatch, eitherMatch, idJ) →
-  dispatch to per-redex helper, which handles canonical-ctor
+* Redex-bearing ctors (app, pathApp, glueElim, refineElim, fst, snd,
+  boolElim, natElim, natRec, listElim, optionMatch, eitherMatch, idJ)
+  → dispatch to per-redex helper, which handles canonical-ctor
   contraction + cong fallback
 
 Modal ctors `modIntro`, `modElim`, `subsume` are pure cong (no
@@ -284,6 +284,79 @@ def RawTerm.cdGlueElimCase {scope : Nat}
   | RawTerm.idCode _ _ _ => RawTerm.glueElim developedGlued
   | RawTerm.equivCode _ _ => RawTerm.glueElim developedGlued
   | RawTerm.cumulUpMarker _ => RawTerm.glueElim developedGlued
+
+/-- Refinement elimination redex: `refineElim (refineIntro value proof)
+→ value`; otherwise rebuild `refineElim dr`. -/
+def RawTerm.cdRefineElimCase {scope : Nat}
+    (developedRefined : RawTerm scope) : RawTerm scope :=
+  match developedRefined with
+  | RawTerm.refineIntro rawValue _ => rawValue
+  | RawTerm.var _ => RawTerm.refineElim developedRefined
+  | RawTerm.unit => RawTerm.refineElim developedRefined
+  | RawTerm.lam _ => RawTerm.refineElim developedRefined
+  | RawTerm.app _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.pair _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.fst _ => RawTerm.refineElim developedRefined
+  | RawTerm.snd _ => RawTerm.refineElim developedRefined
+  | RawTerm.boolTrue => RawTerm.refineElim developedRefined
+  | RawTerm.boolFalse => RawTerm.refineElim developedRefined
+  | RawTerm.boolElim _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.natZero => RawTerm.refineElim developedRefined
+  | RawTerm.natSucc _ => RawTerm.refineElim developedRefined
+  | RawTerm.natElim _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.natRec _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.listNil => RawTerm.refineElim developedRefined
+  | RawTerm.listCons _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.listElim _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.optionNone => RawTerm.refineElim developedRefined
+  | RawTerm.optionSome _ => RawTerm.refineElim developedRefined
+  | RawTerm.optionMatch _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.eitherInl _ => RawTerm.refineElim developedRefined
+  | RawTerm.eitherInr _ => RawTerm.refineElim developedRefined
+  | RawTerm.eitherMatch _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.refl _ => RawTerm.refineElim developedRefined
+  | RawTerm.idJ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.modIntro _ => RawTerm.refineElim developedRefined
+  | RawTerm.modElim _ => RawTerm.refineElim developedRefined
+  | RawTerm.subsume _ => RawTerm.refineElim developedRefined
+  | RawTerm.interval0 => RawTerm.refineElim developedRefined
+  | RawTerm.interval1 => RawTerm.refineElim developedRefined
+  | RawTerm.intervalOpp _ => RawTerm.refineElim developedRefined
+  | RawTerm.intervalMeet _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.intervalJoin _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.pathLam _ => RawTerm.refineElim developedRefined
+  | RawTerm.pathApp _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.glueIntro _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.glueElim _ => RawTerm.refineElim developedRefined
+  | RawTerm.transp _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.hcomp _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.oeqRefl _ => RawTerm.refineElim developedRefined
+  | RawTerm.oeqJ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.oeqFunext _ => RawTerm.refineElim developedRefined
+  | RawTerm.idStrictRefl _ => RawTerm.refineElim developedRefined
+  | RawTerm.idStrictRec _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.equivIntro _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.equivApp _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.refineElim _ => RawTerm.refineElim developedRefined
+  | RawTerm.recordIntro _ => RawTerm.refineElim developedRefined
+  | RawTerm.recordProj _ => RawTerm.refineElim developedRefined
+  | RawTerm.codataUnfold _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.codataDest _ => RawTerm.refineElim developedRefined
+  | RawTerm.sessionSend _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.sessionRecv _ => RawTerm.refineElim developedRefined
+  | RawTerm.effectPerform _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.universeCode _ => RawTerm.refineElim developedRefined
+  | RawTerm.arrowCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.piTyCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.sigmaTyCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.productCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.sumCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.listCode _ => RawTerm.refineElim developedRefined
+  | RawTerm.optionCode _ => RawTerm.refineElim developedRefined
+  | RawTerm.eitherCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.idCode _ _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.equivCode _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.cumulUpMarker _ => RawTerm.refineElim developedRefined
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -1432,7 +1505,8 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   -- D1.6: refinement / record / codata (pure cong)
   | _, .refineIntro rawValue predicateProof =>
       RawTerm.refineIntro (RawTerm.cd rawValue) (RawTerm.cd predicateProof)
-  | _, .refineElim refinedValue => RawTerm.refineElim (RawTerm.cd refinedValue)
+  | _, .refineElim refinedValue =>
+      RawTerm.cdRefineElimCase (RawTerm.cd refinedValue)
   | _, .recordIntro firstField => RawTerm.recordIntro (RawTerm.cd firstField)
   | _, .recordProj recordValue => RawTerm.recordProj (RawTerm.cd recordValue)
   | _, .codataUnfold initialState transition =>

@@ -647,6 +647,21 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par proofRawSource proofRawTarget →
       RawStep.par (RawTerm.refineIntro valueRawSource proofRawSource)
                   (RawTerm.refineIntro valueRawTarget proofRawTarget)
+  /-- Refinement β: extracting from an introduced refinement yields the value. -/
+  | betaRefineElimIntro {scope : Nat}
+      {valueRawSource valueRawTarget proofRawSource proofRawTarget : RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par proofRawSource proofRawTarget →
+      RawStep.par (RawTerm.refineElim
+                    (RawTerm.refineIntro valueRawSource proofRawSource))
+                  valueRawTarget
+  /-- Deep refinement β: refined value develops to a `refineIntro`. -/
+  | betaRefineElimIntroDeep {scope : Nat}
+      {refinedRawSource : RawTerm scope}
+      {valueRawTarget proofRawTarget : RawTerm scope} :
+      RawStep.par refinedRawSource
+        (RawTerm.refineIntro valueRawTarget proofRawTarget) →
+      RawStep.par (RawTerm.refineElim refinedRawSource) valueRawTarget
   /-- Cong: refineElim reduces in refined value. -/
   | refineElimCong {scope : Nat}
       {refinedRawSource refinedRawTarget : RawTerm scope} :

@@ -480,15 +480,26 @@ theorem RawStep.par.refineIntro_inv {scope : Nat}
   | refineIntroCong valueStep proofStep =>
       exact ⟨_, _, rfl, valueStep, proofStep⟩
 
-/-- `RawStep.par (refineElim r) target → target = refineElim r' ∧ par`. -/
+/-- `RawStep.par (refineElim r) target` either stays a congruent
+`refineElim`, or fires refinement β after the refined value develops
+to a `refineIntro`. -/
 theorem RawStep.par.refineElim_inv {scope : Nat}
     {refinedValue : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.refineElim refinedValue) target) :
-    ∃ refinedTarget, target = RawTerm.refineElim refinedTarget ∧
-      RawStep.par refinedValue refinedTarget := by
+    (∃ refinedTarget, target = RawTerm.refineElim refinedTarget ∧
+      RawStep.par refinedValue refinedTarget) ∨
+    (∃ valueTarget proofTarget,
+      target = valueTarget ∧
+        RawStep.par refinedValue
+          (RawTerm.refineIntro valueTarget proofTarget)) := by
   cases parallelStep with
-  | refl _ => exact ⟨refinedValue, rfl, RawStep.par.refl _⟩
-  | refineElimCong refinedStep => exact ⟨_, rfl, refinedStep⟩
+  | refl _ => exact Or.inl ⟨refinedValue, rfl, RawStep.par.refl _⟩
+  | betaRefineElimIntro valueStep proofStep =>
+      exact Or.inr ⟨_, _, rfl,
+        RawStep.par.refineIntroCong valueStep proofStep⟩
+  | betaRefineElimIntroDeep refinedStep =>
+      exact Or.inr ⟨_, _, rfl, refinedStep⟩
+  | refineElimCong refinedStep => exact Or.inl ⟨_, rfl, refinedStep⟩
 
 /-- `RawStep.par (recordIntro f) target → target = recordIntro f' ∧ par`. -/
 theorem RawStep.par.recordIntro_inv {scope : Nat}

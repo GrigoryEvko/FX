@@ -255,6 +255,12 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.equivAppCong (equivIH _) (argumentIH _)
   | refineIntroCong _ _ valueIH proofIH =>
       exact RawStep.par.refineIntroCong (valueIH _) (proofIH _)
+  | betaRefineElimIntro _ _ valueIH proofIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaRefineElimIntro (valueIH _) (proofIH _)
+  | betaRefineElimIntroDeep _ refinedIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaRefineElimIntroDeep (refinedIH _)
   | refineElimCong _ refinedIH =>
       exact RawStep.par.refineElimCong (refinedIH _)
   | recordIntroCong _ firstIH =>

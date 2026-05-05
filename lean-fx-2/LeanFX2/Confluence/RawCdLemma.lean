@@ -16,10 +16,10 @@ Proof shape: induction on the parallel-step derivation.
 * `refl t`: `cd_dominates t` directly.
 * Pure cong (lam/pair/listCons/optionSome/eitherInl/Inr/natSucc
   /reflCong/modIntro/modElim/subsume): apply cong rule with IHs.
-* Redex-bearing cong (app/pathApp/glueElim/fst/snd/boolElim
-  /natElim/natRec/listElim/optionMatch/eitherMatch/idJ): unfold cd
-  via simp + split.  Redex arms fire the deep rule with `heq ▸ IH`;
-  cong fallthrough closes via `all_goals`.
+* Redex-bearing cong (app/pathApp/glueElim/refineElim/fst/snd
+  /boolElim/natElim/natRec/listElim/optionMatch/eitherMatch/idJ):
+  unfold cd via simp + split.  Redex arms fire the deep rule with
+  `heq ▸ IH`; cong fallthrough closes via `all_goals`.
 * Shallow β: cd contracts the same redex; `subst0_par` for
   betaApp; direct IH for betaFst/SndPair.
 * Shallow ι: cd contracts the redex; pick the appropriate IH or
@@ -340,9 +340,9 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.refl_inv witnessIH
       rw [cdWitnessEq]
       exact baseIH
-  -- D1.6/D2.5: most new raw ctors are pure cong. pathApp and
-  -- glueElim also have cubical β, so their cong proofs split on the
-  -- developed head.
+  -- D1.6/D2.5/D2.7: most new raw ctors are pure cong. pathApp,
+  -- glueElim, and refineElim also have β, so their cong proofs split
+  -- on the developed head.
   | intervalOppCong _ intervalIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.intervalOppCong intervalIH
@@ -411,9 +411,22 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | refineIntroCong _ _ valueIH proofIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.refineIntroCong valueIH proofIH
+  | betaRefineElimIntro valueStep proofStep valueIH proofIH =>
+      simp only [RawTerm.cd, RawTerm.cdRefineElimCase]
+      exact valueIH
+  | betaRefineElimIntroDeep refinedStep refinedIH =>
+      simp only [RawTerm.cd, RawTerm.cdRefineElimCase]
+      obtain ⟨valueAfter, proofAfter, cdRefinedEq, valueParStep, _⟩ :=
+        RawStep.par.refineIntro_inv refinedIH
+      rw [cdRefinedEq]
+      exact valueParStep
   | refineElimCong _ refinedIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.refineElimCong refinedIH
+      simp only [RawTerm.cd, RawTerm.cdRefineElimCase]
+      split
+      case _ valueRawTarget proofRawTarget refinedEqn =>
+          exact RawStep.par.betaRefineElimIntroDeep
+            (refinedEqn ▸ refinedIH)
+      all_goals exact RawStep.par.refineElimCong refinedIH
   | recordIntroCong _ firstIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.recordIntroCong firstIH

@@ -50,6 +50,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.par.equivIntroCong
 #print axioms LeanFX2.RawStep.par.equivAppCong
 #print axioms LeanFX2.RawStep.par.refineIntroCong
+#print axioms LeanFX2.RawStep.par.betaRefineElimIntro
+#print axioms LeanFX2.RawStep.par.betaRefineElimIntroDeep
 #print axioms LeanFX2.RawStep.par.refineElimCong
 #print axioms LeanFX2.RawStep.par.recordIntroCong
 #print axioms LeanFX2.RawStep.par.recordProjCong

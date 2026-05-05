@@ -562,6 +562,14 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.equivAppCong (equivIH substsRelated) (argumentIH substsRelated)
   | refineIntroCong _ _ valueIH proofIH =>
       exact RawStep.par.refineIntroCong (valueIH substsRelated) (proofIH substsRelated)
+  | betaRefineElimIntro _ _ valueIH proofIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaRefineElimIntro
+        (valueIH substsRelated)
+        (proofIH substsRelated)
+  | betaRefineElimIntroDeep _ refinedIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaRefineElimIntroDeep (refinedIH substsRelated)
   | refineElimCong _ refinedIH =>
       exact RawStep.par.refineElimCong (refinedIH substsRelated)
   | recordIntroCong _ firstIH =>
