@@ -218,9 +218,9 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- strict-identity layer is currently raw-only scaffolding).
   suffix == "idStrictReflCong" ||
   suffix == "idStrictRecCong" ||
-  -- Section D: equivalence cong rules (typed equivalence types not yet
-  -- introduced as Term ctors; equiv lives in raw form only).
-  suffix == "equivIntroCong" ||
+  -- Section D: equivalence application has no typed Term constructor yet.
+  -- `equivIntroCong` is covered by typed `Step.par.equivIntroCong`,
+  -- an alias over `Term.equivIntroHet`.
   suffix == "equivAppCong" ||
   -- Section E: refinement type cong + β rules (typed Term has no refine
   -- ctor yet; D5.6 refinement types pending).

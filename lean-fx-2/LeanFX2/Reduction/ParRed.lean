@@ -1180,6 +1180,26 @@ inductive Step.par :
       Step.par backwardSource backwardTarget →
       Step.par (Term.equivIntroHet forwardSource backwardSource)
                (Term.equivIntroHet forwardTarget backwardTarget)
+  /-- Raw-name parity alias for heterogeneous equivalence introduction
+  congruence.  The raw constructor is `RawStep.par.equivIntroCong`;
+  the typed carrier is `Term.equivIntroHet`. -/
+  | equivIntroCong {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {forwardRawSource forwardRawTarget
+       backwardRawSource backwardRawTarget : RawTerm scope}
+      {forwardSource :
+        Term context (Ty.arrow carrierA carrierB) forwardRawSource}
+      {forwardTarget :
+        Term context (Ty.arrow carrierA carrierB) forwardRawTarget}
+      {backwardSource :
+        Term context (Ty.arrow carrierB carrierA) backwardRawSource}
+      {backwardTarget :
+        Term context (Ty.arrow carrierB carrierA) backwardRawTarget} :
+      Step.par forwardSource forwardTarget →
+      Step.par backwardSource backwardTarget →
+      Step.par (Term.equivIntroHet forwardSource backwardSource)
+               (Term.equivIntroHet forwardTarget backwardTarget)
   /-- Parallel-cong: heterogeneous uaIntroHet reduces in its single
   equivWitness subterm.  Phase 12.A.B8.5b: single-subterm cong rule
   mirroring `Step.par.optionSomeCong` / `Step.par.natSuccCong` — the
