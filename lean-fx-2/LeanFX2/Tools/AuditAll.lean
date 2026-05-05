@@ -685,7 +685,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.join_mono
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_mono
 
--- FX1/Core minimal syntax scaffold
+-- FX1/Core minimal syntax and M1 environment scaffold
 #assert_no_axioms LeanFX2.FX1.Name
 #assert_no_axioms LeanFX2.FX1.Name.appendString
 #assert_no_axioms LeanFX2.FX1.Name.appendNumber
@@ -695,6 +695,30 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Level.nodeCount
 #assert_no_axioms LeanFX2.FX1.Expr
 #assert_no_axioms LeanFX2.FX1.Expr.nodeCount
+#assert_no_axioms LeanFX2.FX1.Declaration
+#assert_no_axioms LeanFX2.FX1.Declaration.name
+#assert_no_axioms LeanFX2.FX1.Declaration.typeExpr
+#assert_no_axioms LeanFX2.FX1.Declaration.valueExpr?
+#assert_no_axioms LeanFX2.FX1.Declaration.hasValue
+#assert_no_axioms LeanFX2.FX1.Declaration.isAxiomDeclaration
+#assert_no_axioms LeanFX2.FX1.Environment
+#assert_no_axioms LeanFX2.FX1.Environment.empty
+#assert_no_axioms LeanFX2.FX1.Environment.extend
+#assert_no_axioms LeanFX2.FX1.Environment.declarationCountInList
+#assert_no_axioms LeanFX2.FX1.Environment.declarationCount
+#assert_no_axioms LeanFX2.FX1.Environment.findInDeclarations?
+#assert_no_axioms LeanFX2.FX1.Environment.findWhere?
+#assert_no_axioms LeanFX2.FX1.Environment.hasDeclarationWhere
+#assert_no_axioms LeanFX2.FX1.Environment.hasAxiomDeclaration
+#assert_no_axioms LeanFX2.FX1.Context
+#assert_no_axioms LeanFX2.FX1.Context.empty
+#assert_no_axioms LeanFX2.FX1.Context.extend
+#assert_no_axioms LeanFX2.FX1.Context.lengthInEntries
+#assert_no_axioms LeanFX2.FX1.Context.length
+#assert_no_axioms LeanFX2.FX1.Context.lookupInEntries?
+#assert_no_axioms LeanFX2.FX1.Context.lookup?
+#assert_no_axioms LeanFX2.FX1.Context.hasIndex
+#assert_no_axioms LeanFX2.FX1.Expr.isScopedIn
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
