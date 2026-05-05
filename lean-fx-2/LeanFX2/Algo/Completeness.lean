@@ -1,5 +1,3 @@
-import LeanFX2.Algo.Soundness
-
 /-! # Algo/Completeness — algorithmic completeness
 
 Every well-typed Term has an inferable / checkable type:

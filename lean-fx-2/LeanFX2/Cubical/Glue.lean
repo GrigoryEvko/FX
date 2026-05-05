@@ -1,6 +1,3 @@
-import LeanFX2.Foundation.Cofib
-import LeanFX2.Cubical.Composition
-
 /-! # Cubical/Glue
 
 Day 0 scaffold for the boundary-cofibration Glue construction.

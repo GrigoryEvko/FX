@@ -1,5 +1,3 @@
-import LeanFX2.Cubical.Path
-
 /-! # Cubical/Bridge
 
 Day 0 scaffold for cubical-to-observational bridge material.

@@ -1,5 +1,3 @@
-import LeanFX2.Sessions.Foundation
-
 /-! # Sessions/Step
 
 Day 0 scaffold for session-channel reduction rules.

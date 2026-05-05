@@ -1,5 +1,3 @@
-import LeanFX2.Cubical.Glue
-
 /-! # Cubical/Ua
 
 Day 0 scaffold for univalence via Glue.

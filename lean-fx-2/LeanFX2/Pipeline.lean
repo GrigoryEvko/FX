@@ -1,9 +1,3 @@
-import LeanFX2.Surface.Lex
-import LeanFX2.Surface.Parse
-import LeanFX2.Surface.Elab
-import LeanFX2.Algo.Check
-import LeanFX2.Algo.Eval
-
 /-! # Pipeline — end-to-end FX compilation
 
 ```lean

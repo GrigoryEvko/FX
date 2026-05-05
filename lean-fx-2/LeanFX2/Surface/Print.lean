@@ -1,5 +1,3 @@
-import LeanFX2.Surface.AST
-
 /-! # Surface/Print — AST → String pretty printer
 
 ```lean

@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/Bridge — Bridge modality (parametricity)
 
 The Bridge modality `Bridge` encodes parametricity at the software

@@ -1,6 +1,3 @@
-import LeanFX2.Bridge
-import LeanFX2.Modal.Foundation
-
 /-! # Bridge/BoxCubical
 
 Day 0 scaffold for box commuting with cubical paths.

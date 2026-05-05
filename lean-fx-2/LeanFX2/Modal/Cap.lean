@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/Cap — Capability modality
 
 Capability-label data + lattice + intro/elim/subsumption.  Used by

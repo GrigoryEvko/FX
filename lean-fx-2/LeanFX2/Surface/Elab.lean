@@ -1,7 +1,3 @@
-import LeanFX2.Surface.AST
-import LeanFX2.Algo.Check
-import LeanFX2.Algo.Infer
-
 /-! # Surface/Elab — surface AST → kernel Term
 
 Elaboration: bridges from human-readable surface syntax to the typed

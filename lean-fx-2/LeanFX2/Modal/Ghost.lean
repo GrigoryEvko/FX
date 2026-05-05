@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/Ghost — Ghost (erased) modality
 
 The Ghost modality marks data as **compile-time only** — present in

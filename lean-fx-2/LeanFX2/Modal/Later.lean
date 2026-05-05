@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/Later — Later modality (▶)
 
 The Later modality `▶` enables productive corecursion / guarded

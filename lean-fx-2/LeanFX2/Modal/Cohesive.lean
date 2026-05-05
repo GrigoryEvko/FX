@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/Cohesive
 
 Day 0 scaffold for cohesive modalities.

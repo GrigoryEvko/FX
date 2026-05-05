@@ -1,5 +1,3 @@
-import LeanFX2.Surface.AST
-
 /-! # Surface/Parse — token stream → AST
 
 ```lean

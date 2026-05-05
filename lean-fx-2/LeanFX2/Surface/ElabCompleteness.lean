@@ -1,5 +1,3 @@
-import LeanFX2.Surface.ElabSoundness
-
 /-! # Surface/ElabCompleteness — elaboration completeness
 
 Every kernel Term has a surface preimage that elaborates to it:

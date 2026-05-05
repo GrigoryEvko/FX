@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Later
-
 /-! # Modal/Clock — clock quantification
 
 Clock quantification `∀κ.A` (universally quantify over clocks)

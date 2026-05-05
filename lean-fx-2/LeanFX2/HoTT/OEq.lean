@@ -1,5 +1,3 @@
-import LeanFX2.Foundation.Ty
-
 /-! # HoTT/OEq
 
 Day 0 scaffold for observational equality reductions.

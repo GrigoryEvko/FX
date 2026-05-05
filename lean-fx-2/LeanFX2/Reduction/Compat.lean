@@ -1,9 +1,3 @@
-import LeanFX2.Reduction.Step
-import LeanFX2.Reduction.StepStar
-import LeanFX2.Reduction.Conv
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Term.Pointwise
-
 /-! # Reduction/Compat — rename + subst compatibility
 
 Renaming and substitution preserve every reduction relation:

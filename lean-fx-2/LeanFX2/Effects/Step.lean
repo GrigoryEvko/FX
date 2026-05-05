@@ -1,5 +1,3 @@
-import LeanFX2.Effects.Handlers
-
 /-! # Effects/Step
 
 Day 0 scaffold for effect-handler reduction rules.

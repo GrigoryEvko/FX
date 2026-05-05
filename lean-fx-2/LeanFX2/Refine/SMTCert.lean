@@ -1,5 +1,3 @@
-import LeanFX2.Refine.Ty
-
 /-! # Refine/SMTCert — SMT certificate format
 
 For predicates beyond Lean's `Decidable` fragment but within

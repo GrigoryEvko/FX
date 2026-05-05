@@ -1,5 +1,3 @@
-import LeanFX2.Lean.Kernel.Check
-
 /-! # Lean/Kernel/Soundness
 
 Day 0 scaffold for the Lean kernel checker soundness theorem.

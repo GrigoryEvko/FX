@@ -1,5 +1,3 @@
-import LeanFX2.Lean.Kernel.HasType
-
 /-! # Lean/Kernel/Check
 
 Day 0 scaffold for the executable Lean kernel checker.

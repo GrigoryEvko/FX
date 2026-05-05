@@ -1,5 +1,3 @@
-import LeanFX2.Codata.Foundation
-
 /-! # Codata/Productivity
 
 Day 0 scaffold for guarded productivity checks.

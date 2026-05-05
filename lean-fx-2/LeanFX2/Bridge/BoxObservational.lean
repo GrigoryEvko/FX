@@ -1,6 +1,3 @@
-import LeanFX2.Bridge
-import LeanFX2.Modal.Foundation
-
 /-! # Bridge/BoxObservational
 
 Day 0 scaffold for box commuting with observational identity.

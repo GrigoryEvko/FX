@@ -1,5 +1,3 @@
-import LeanFX2.Refine.SMTCert
-
 /-! # Refine/SMTRecheck — Lean-side certificate validator
 
 Given an `SMTCert`, validate it inside Lean (no SMT solver in the

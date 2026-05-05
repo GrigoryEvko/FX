@@ -1,5 +1,3 @@
-import LeanFX2.Effects.Foundation
-
 /-! # Effects/Handlers
 
 Day 0 scaffold for algebraic effect handlers.

@@ -1,6 +1,3 @@
-import LeanFX2.Refine.Ty
-import LeanFX2.Term
-
 /-! # Refine/Term — refinement intro/elim
 
 Refinements are introduced by bundling a base term with proof of

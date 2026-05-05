@@ -1,5 +1,3 @@
-import LeanFX2.Lean.Kernel.Soundness
-
 /-! # Lean/Kernel/Audit
 
 Day 0 scaffold for Lean kernel meta-verification audits.

@@ -1,6 +1,3 @@
-import LeanFX2.Foundation.Cofib
-import LeanFX2.Cubical.Path
-
 /-! # Cubical/Composition
 
 Day 0 scaffold for cubical composition and homogeneous composition.

@@ -1,5 +1,3 @@
-import LeanFX2.Lean.Kernel.Inductive
-
 /-! # Lean/Kernel/HasType
 
 Day 0 scaffold for the Lean kernel typing relation.

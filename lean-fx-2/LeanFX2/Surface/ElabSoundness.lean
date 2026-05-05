@@ -1,5 +1,3 @@
-import LeanFX2.Surface.Elab
-
 /-! # Surface/ElabSoundness — elaboration soundness
 
 ```lean

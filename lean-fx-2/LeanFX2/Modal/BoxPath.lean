@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/BoxPath
 
 Day 0 scaffold for the theorem that box commutes with paths.

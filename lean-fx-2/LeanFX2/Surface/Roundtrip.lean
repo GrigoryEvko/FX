@@ -1,7 +1,3 @@
-import LeanFX2.Surface.Lex
-import LeanFX2.Surface.Parse
-import LeanFX2.Surface.Print
-
 /-! # Surface/Roundtrip — lex/parse/print correctness theorems
 
 The two load-bearing roundtrip theorems for the surface layer:

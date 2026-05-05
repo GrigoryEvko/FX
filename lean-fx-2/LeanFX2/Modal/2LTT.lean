@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Ghost
-
 /-! # Modal/2LTT — Two-Level Type Theory
 
 Stratify types into two layers:

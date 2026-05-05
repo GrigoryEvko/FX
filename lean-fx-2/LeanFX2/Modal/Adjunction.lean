@@ -1,5 +1,3 @@
-import LeanFX2.Modal.Foundation
-
 /-! # Modal/Adjunction
 
 Day 0 scaffold for modal adjunction theorems.

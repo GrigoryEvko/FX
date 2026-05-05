@@ -1,5 +1,3 @@
-import LeanFX2.HoTT.Identity
-
 /-! # HoTT/J — J eliminator (full dependent motive)
 
 The J eliminator with **full dependent motive** — the lean-fx v2.7

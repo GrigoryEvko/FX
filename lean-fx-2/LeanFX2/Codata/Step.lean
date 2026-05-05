@@ -1,5 +1,3 @@
-import LeanFX2.Codata.Foundation
-
 /-! # Codata/Step
 
 Day 0 scaffold for codata observation reductions.
