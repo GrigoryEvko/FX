@@ -430,9 +430,22 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | recordIntroCong _ firstIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.recordIntroCong firstIH
+  | betaRecordProjIntro firstStep firstIH =>
+      simp only [RawTerm.cd, RawTerm.cdRecordProjCase]
+      exact firstIH
+  | betaRecordProjIntroDeep recordStep recordIH =>
+      simp only [RawTerm.cd, RawTerm.cdRecordProjCase]
+      obtain ⟨firstAfter, cdRecordEq, firstParStep⟩ :=
+        RawStep.par.recordIntro_inv recordIH
+      rw [cdRecordEq]
+      exact firstParStep
   | recordProjCong _ recordIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.recordProjCong recordIH
+      simp only [RawTerm.cd, RawTerm.cdRecordProjCase]
+      split
+      case _ firstRawTarget recordEqn =>
+          exact RawStep.par.betaRecordProjIntroDeep
+            (recordEqn ▸ recordIH)
+      all_goals exact RawStep.par.recordProjCong recordIH
   | codataUnfoldCong _ _ stateIH transitionIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.codataUnfoldCong stateIH transitionIH

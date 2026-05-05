@@ -574,6 +574,12 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.refineElimCong (refinedIH substsRelated)
   | recordIntroCong _ firstIH =>
       exact RawStep.par.recordIntroCong (firstIH substsRelated)
+  | betaRecordProjIntro _ firstIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaRecordProjIntro (firstIH substsRelated)
+  | betaRecordProjIntroDeep _ recordIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaRecordProjIntroDeep (recordIH substsRelated)
   | recordProjCong _ recordIH =>
       exact RawStep.par.recordProjCong (recordIH substsRelated)
   | codataUnfoldCong _ _ stateIH transitionIH =>

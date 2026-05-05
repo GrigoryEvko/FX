@@ -9,8 +9,8 @@ Proof shape: structural induction on the raw term.  For each ctor:
 * Atomic (var/unit/booleans/zero/Nil/None) — `RawStep.par.refl _`.
 * Pure cong (lam/pair/listCons/optionSome/eitherInl/Inr/natSucc/refl
   /modIntro/modElim/subsume) — apply the cong rule with IH.
-* Redex-bearing (app/pathApp/glueElim/refineElim/fst/snd/boolElim
-  /natElim/natRec/listElim/optionMatch/eitherMatch/idJ) —
+* Redex-bearing (app/pathApp/glueElim/refineElim/recordProj/fst/snd
+  /boolElim/natElim/natRec/listElim/optionMatch/eitherMatch/idJ) —
   `simp only [RawTerm.cd]; split` produces one goal per ctor of the
   inner match's scrutinee; the redex case fires the appropriate Deep
   β/ι rule using the IH; `all_goals` discharges the cong-shape
@@ -203,7 +203,8 @@ theorem RawStep.par.cd_dominates :
   | _, .subsume innerTerm =>
       RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
   -- D1.6/D2.5/D2.7: most new ctors are pure cong at raw level;
-  -- pathApp, glueElim, and refineElim now have β redexes below.
+  -- pathApp, glueElim, refineElim, and recordProj now have β
+  -- redexes below.
   -- We use term-mode (no `by`) so Lean elaborates by unifying the
   -- expected type against the cong rule directly, avoiding the
   -- 550-branch `simp only [RawTerm.cd]` whnf blowup.  Each ctor's
@@ -292,8 +293,15 @@ theorem RawStep.par.cd_dominates :
       all_goals exact RawStep.par.refineElimCong refinedParStep
   | _, .recordIntro firstField =>
       RawStep.par.recordIntroCong (RawStep.par.cd_dominates firstField)
-  | _, .recordProj recordValue =>
-      RawStep.par.recordProjCong (RawStep.par.cd_dominates recordValue)
+  | _, .recordProj recordValue => by
+      let recordParStep := RawStep.par.cd_dominates recordValue
+      unfold RawTerm.cd
+      unfold RawTerm.cdRecordProjCase
+      split
+      case _ firstRawTarget recordEqn =>
+          exact RawStep.par.betaRecordProjIntroDeep
+            (recordEqn ▸ recordParStep)
+      all_goals exact RawStep.par.recordProjCong recordParStep
   | _, .codataUnfold initialState transition =>
       RawStep.par.codataUnfoldCong
         (RawStep.par.cd_dominates initialState)

@@ -265,6 +265,12 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.refineElimCong (refinedIH _)
   | recordIntroCong _ firstIH =>
       exact RawStep.par.recordIntroCong (firstIH _)
+  | betaRecordProjIntro _ firstIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaRecordProjIntro (firstIH _)
+  | betaRecordProjIntroDeep _ recordIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaRecordProjIntroDeep (recordIH _)
   | recordProjCong _ recordIH =>
       exact RawStep.par.recordProjCong (recordIH _)
   | codataUnfoldCong _ _ stateIH transitionIH =>

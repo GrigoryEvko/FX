@@ -674,6 +674,18 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par firstRawSource firstRawTarget →
       RawStep.par (RawTerm.recordIntro firstRawSource)
                   (RawTerm.recordIntro firstRawTarget)
+  /-- Record β: projecting from a single-field record intro yields the field. -/
+  | betaRecordProjIntro {scope : Nat}
+      {firstRawSource firstRawTarget : RawTerm scope} :
+      RawStep.par firstRawSource firstRawTarget →
+      RawStep.par (RawTerm.recordProj (RawTerm.recordIntro firstRawSource))
+                  firstRawTarget
+  /-- Deep record β: record value develops to a `recordIntro`. -/
+  | betaRecordProjIntroDeep {scope : Nat}
+      {recordRawSource : RawTerm scope}
+      {firstRawTarget : RawTerm scope} :
+      RawStep.par recordRawSource (RawTerm.recordIntro firstRawTarget) →
+      RawStep.par (RawTerm.recordProj recordRawSource) firstRawTarget
   /-- Cong: recordProj reduces in record value. -/
   | recordProjCong {scope : Nat}
       {recordRawSource recordRawTarget : RawTerm scope} :

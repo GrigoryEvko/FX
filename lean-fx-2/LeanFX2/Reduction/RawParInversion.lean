@@ -511,15 +511,23 @@ theorem RawStep.par.recordIntro_inv {scope : Nat}
   | refl _ => exact ⟨firstField, rfl, RawStep.par.refl _⟩
   | recordIntroCong firstStep => exact ⟨_, rfl, firstStep⟩
 
-/-- `RawStep.par (recordProj r) target → target = recordProj r' ∧ par`. -/
+/-- `RawStep.par (recordProj r) target` either stays a congruent
+`recordProj`, or fires record β after the record develops to a
+`recordIntro`. -/
 theorem RawStep.par.recordProj_inv {scope : Nat}
     {recordValue : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.recordProj recordValue) target) :
-    ∃ recordTarget, target = RawTerm.recordProj recordTarget ∧
-      RawStep.par recordValue recordTarget := by
+    (∃ recordTarget, target = RawTerm.recordProj recordTarget ∧
+      RawStep.par recordValue recordTarget) ∨
+    (∃ firstTarget, target = firstTarget ∧
+      RawStep.par recordValue (RawTerm.recordIntro firstTarget)) := by
   cases parallelStep with
-  | refl _ => exact ⟨recordValue, rfl, RawStep.par.refl _⟩
-  | recordProjCong recordStep => exact ⟨_, rfl, recordStep⟩
+  | refl _ => exact Or.inl ⟨recordValue, rfl, RawStep.par.refl _⟩
+  | betaRecordProjIntro firstStep =>
+      exact Or.inr ⟨_, rfl, RawStep.par.recordIntroCong firstStep⟩
+  | betaRecordProjIntroDeep recordStep =>
+      exact Or.inr ⟨_, rfl, recordStep⟩
+  | recordProjCong recordStep => exact Or.inl ⟨_, rfl, recordStep⟩
 
 /-- `RawStep.par (codataUnfold s t) target → target = codataUnfold s' t' ∧ pars`. -/
 theorem RawStep.par.codataUnfold_inv {scope : Nat}

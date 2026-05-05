@@ -35,6 +35,7 @@ typed confluence as an immediate corollary at usage sites.
 #print axioms LeanFX2.RawTerm.cdPathAppCase
 #print axioms LeanFX2.RawTerm.cdGlueElimCase
 #print axioms LeanFX2.RawTerm.cdRefineElimCase
+#print axioms LeanFX2.RawTerm.cdRecordProjCase
 
 -- D3.2: cd_lemma extends through cong and raw cubical beta rules
 #print axioms LeanFX2.RawStep.par.cd_lemma
