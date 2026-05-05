@@ -149,6 +149,7 @@ import LeanFX2.Graded.Instances.Usage
 import LeanFX2.Graded.Instances.Effect
 import LeanFX2.Graded.Instances.Security
 import LeanFX2.Graded.Instances.NatResource
+import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Size

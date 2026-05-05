@@ -4,6 +4,7 @@ import LeanFX2.Graded.Instances.Reentrancy
 import LeanFX2.Graded.Instances.FPOrder
 import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
+import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Size
@@ -49,8 +50,8 @@ Remaining D5.4 instances (TBD per-need):
                                        breaks `mul_zero_left`)
 * `LifetimeGrade` (dim 7)           — region-variable preorder
 * `ProvenanceGrade` (dim 8)         — origin-label lattice
-* `TrustGrade` (dim 9)              — 5-chain
-                                       `Verified > ... > External`
+* `TrustGrade` (dim 9)              — shipped as 5-chain trust-debt
+                                       lattice
 * `RepresentationGrade` (dim 10)    — preorder over layout attrs
 * `ClockDomainGrade` (dim 12)       — `combinational + sync(c)`
                                        partial structure
@@ -108,6 +109,13 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.MutationGrade.mul
 #print axioms LeanFX2.Graded.Instances.MutationGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringMutationGrade
+
+-- D5.4 Trust (dim 9, 5-chain trust-debt lattice)
+#print axioms LeanFX2.Graded.Instances.TrustGrade
+#print axioms LeanFX2.Graded.Instances.TrustGrade.add
+#print axioms LeanFX2.Graded.Instances.TrustGrade.mul
+#print axioms LeanFX2.Graded.Instances.TrustGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeSemiringTrustGrade
 
 -- D5.4 Complexity (dim 13, Nat-backed semiring)
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade
