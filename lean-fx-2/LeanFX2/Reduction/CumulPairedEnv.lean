@@ -434,6 +434,11 @@ def Term.subst_compatible_pointwise_allais
         forward backward
         (Term.subst_compatible_pointwise_allais compat forward)
         (Term.subst_compatible_pointwise_allais compat backward)
+  | _, _, .equivApp equivTerm argumentTerm =>
+      ConvCumul.subst_compatible_equivApp_allais
+        equivTerm argumentTerm
+        (Term.subst_compatible_pointwise_allais compat equivTerm)
+        (Term.subst_compatible_pointwise_allais compat argumentTerm)
   | _, _, .uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
                       equivWitness =>
       ConvCumul.subst_compatible_uaIntroHet_allais

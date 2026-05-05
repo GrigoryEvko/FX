@@ -292,6 +292,9 @@ def Term.substHet {mode : Mode}
   | _, _, .equivIntroHet forward backward =>
       Term.equivIntroHet (Term.substHet termSubstHet forward)
                          (Term.substHet termSubstHet backward)
+  | _, _, .equivApp equivTerm argumentTerm =>
+      Term.equivApp (Term.substHet termSubstHet equivTerm)
+                    (Term.substHet termSubstHet argumentTerm)
   -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
   -- mirror the homogeneous Subst arm, swapping in `Ty.weaken_substHet_commute`.
   | _, _, .funextRefl domainType codomainType applyRaw =>

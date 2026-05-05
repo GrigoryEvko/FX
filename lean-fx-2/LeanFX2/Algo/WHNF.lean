@@ -104,6 +104,7 @@ inductive Term.HeadCtor : Type
   | equivReflIdAtId
   | funextReflAtId
   | equivIntroHet
+  | equivApp
   | uaIntroHet
   | funextIntroHet
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).
@@ -177,6 +178,7 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .equivReflIdAtId _ _ _ _ => .equivReflIdAtId
   | .funextReflAtId _ _ _ => .funextReflAtId
   | .equivIntroHet _ _ => .equivIntroHet
+  | .equivApp _ _ => .equivApp
   | .uaIntroHet _ _ _ _ _ => .uaIntroHet
   | .funextIntroHet _ _ _ _ => .funextIntroHet
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).
@@ -244,6 +246,9 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   -- HoTT heterogeneous-carrier equivIntroHet is a value (canonical
   -- equivalence form, not a β/ι redex head).
   | .equivIntroHet _ _ => true
+  -- Equivalence application has congruence parity only; no raw β-rule
+  -- fires from `RawTerm.equivApp` in the current Day 2 layer.
+  | .equivApp _ _ => true
   -- HoTT heterogeneous-carrier uaIntroHet (Phase 12.A.B8.5b) is a value
   -- (canonical path-from-equivalence form at the universe; the future
   -- Step.eqTypeHet rule reduces from it but the headStep? machinery
@@ -389,6 +394,7 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -461,6 +467,7 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -533,6 +540,7 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -605,6 +613,7 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -677,6 +686,7 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -760,6 +770,7 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -832,6 +843,7 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -904,6 +916,7 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -976,6 +989,7 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -1048,6 +1062,7 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
@@ -1120,6 +1135,7 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | equivReflIdAtId _ _ _ _ => nomatch headEq
   | funextReflAtId _ _ _ => nomatch headEq
   | equivIntroHet _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq

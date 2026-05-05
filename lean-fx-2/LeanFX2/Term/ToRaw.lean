@@ -389,4 +389,13 @@ theorem Term.toRaw_recordProj {mode : Mode} {level scope : Nat}
     (Term.recordProj recordValue).toRaw =
       RawTerm.recordProj recordValue.toRaw := rfl
 
+theorem Term.toRaw_equivApp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw) :
+    (Term.equivApp equivTerm argumentTerm).toRaw =
+      RawTerm.equivApp equivTerm.toRaw argumentTerm.toRaw := rfl
+
 end LeanFX2

@@ -534,6 +534,29 @@ theorem ConvCumul.subst_compatible_equivIntroHet_allais
               ((Term.equivIntroHet forward backward).substHet termSubstB) :=
   ConvCumul.equivIntroHetCong forwardCompat backwardCompat
 
+/-- Allais arm for `equivApp`: two-subterm congruence over the packaged
+equivalence and its argument. -/
+theorem ConvCumul.subst_compatible_equivApp_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty sourceLevel sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (equivCompat :
+      ConvCumul (equivTerm.substHet termSubstA)
+                (equivTerm.substHet termSubstB))
+    (argumentCompat :
+      ConvCumul (argumentTerm.substHet termSubstA)
+                (argumentTerm.substHet termSubstB)) :
+    ConvCumul ((Term.equivApp equivTerm argumentTerm).substHet termSubstA)
+              ((Term.equivApp equivTerm argumentTerm).substHet termSubstB) :=
+  ConvCumul.equivAppCong equivCompat argumentCompat
+
 /-- Allais arm for `uaIntroHet`: single-subterm cong via
 `uaIntroHetCong`.  Mirrors the structure of
 `subst_compatible_optionSome_allais` / `subst_compatible_natSucc_allais`:

@@ -971,6 +971,28 @@ inductive Step :
       Step backwardSource backwardTarget →
       Step (Term.equivIntroHet forwardTerm backwardSource)
            (Term.equivIntroHet forwardTerm backwardTarget)
+  /-- Step inside the equivalence position of an equivalence application. -/
+  | equivAppEquiv {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRawSource equivRawTarget argumentRaw : RawTerm scope}
+      {equivSource : Term context (Ty.equiv carrierA carrierB) equivRawSource}
+      {equivTarget : Term context (Ty.equiv carrierA carrierB) equivRawTarget}
+      {argumentTerm : Term context carrierA argumentRaw} :
+      Step equivSource equivTarget →
+      Step (Term.equivApp equivSource argumentTerm)
+           (Term.equivApp equivTarget argumentTerm)
+  /-- Step inside the argument position of an equivalence application. -/
+  | equivAppArgument {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRaw argumentRawSource argumentRawTarget : RawTerm scope}
+      (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+      {argumentSource : Term context carrierA argumentRawSource}
+      {argumentTarget : Term context carrierA argumentRawTarget} :
+      Step argumentSource argumentTarget →
+      Step (Term.equivApp equivTerm argumentSource)
+           (Term.equivApp equivTerm argumentTarget)
   /-- Step inside the equivalence witness carried by heterogeneous ua. -/
   | uaIntroHetWitness {mode level scope}
       {context : Ctx mode level scope}

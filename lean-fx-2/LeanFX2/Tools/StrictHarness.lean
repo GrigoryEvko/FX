@@ -210,26 +210,22 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "oeqReflCong" ||
   suffix == "oeqJCong" ||
   suffix == "oeqFunextCong" ||
-  -- Section B: equivalence application has no typed Term constructor yet.
-  -- `equivIntroCong` is covered by typed `Step.par.equivIntroCong`,
-  -- an alias over `Term.equivIntroHet`.
-  suffix == "equivAppCong" ||
-  -- Section C: refinement type cong + β rules (typed Term has no refine
+  -- Section B: refinement type cong + β rules (typed Term has no refine
   -- ctor yet; D5.6 refinement types pending).
   suffix == "refineIntroCong" ||
   suffix == "betaRefineElimIntro" ||
   suffix == "betaRefineElimIntroDeep" ||
   suffix == "refineElimCong" ||
-  -- Section D: codata cong rules (typed codata pending D5.13).
+  -- Section C: codata cong rules (typed codata pending D5.13).
   suffix == "codataUnfoldCong" ||
   suffix == "codataDestCong" ||
-  -- Section E: session protocol cong rules (typed sessions pending D5.11).
+  -- Section D: session protocol cong rules (typed sessions pending D5.11).
   suffix == "sessionSendCong" ||
   suffix == "sessionRecvCong" ||
-  -- Section F: effect-perform cong rule (typed effect handlers pending
+  -- Section E: effect-perform cong rule (typed effect handlers pending
   -- D5.10).
   suffix == "effectPerformCong" ||
-  -- Section G: parametric type-code cong rules (CUMUL-2 cumulativity
+  -- Section F: parametric type-code cong rules (CUMUL-2 cumulativity
   -- type-codes ship raw-only; typed cumulativity uses cumulUp directly).
   suffix == "arrowCodeCong" ||
   suffix == "piTyCodeCong" ||
@@ -242,7 +238,7 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "idCodeCong" ||
   suffix == "equivCodeCong" ||
   suffix == "cumulUpMarkerCong" ||
-  -- Section H: refl cong rule (typed Term.refl uses different reduction
+  -- Section G: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong"
 

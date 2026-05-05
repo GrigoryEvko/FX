@@ -98,6 +98,7 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Term.toRaw_recordProj
 #print axioms LeanFX2.Term.toRaw_idStrictRefl
 #print axioms LeanFX2.Term.toRaw_idStrictRec
+#print axioms LeanFX2.Term.toRaw_equivApp
 #print axioms LeanFX2.Term.subst_pointwise
 #print axioms LeanFX2.Step.par.pathLam
 #print axioms LeanFX2.Step.par.pathApp
@@ -130,6 +131,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.idStrictRecWitness
 #print axioms LeanFX2.Step.par.idStrictReflCong
 #print axioms LeanFX2.Step.par.idStrictRecCong
+#print axioms LeanFX2.Step.equivAppEquiv
+#print axioms LeanFX2.Step.equivAppArgument
+#print axioms LeanFX2.Step.par.equivAppCong
 #print axioms LeanFX2.Step.par.toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong
@@ -147,6 +151,7 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul
 #print axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul_toConv
 #print axioms LeanFX2.ConvCumul.idStrictRecCong
+#print axioms LeanFX2.ConvCumul.equivAppCong
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval0_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval1_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_intervalOpp_allais
@@ -162,6 +167,7 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.subst_compatible_recordProj_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_idStrictRefl_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_idStrictRec_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_equivApp_allais
 #print axioms LeanFX2.Term.subst_compatible_pointwise_allais
 #print axioms LeanFX2.Term.headCtor
 #print axioms LeanFX2.Term.isWHNF

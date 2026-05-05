@@ -273,6 +273,9 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .equivIntroHet forward backward =>
       Term.equivIntroHet (Term.subst termSubst forward)
                          (Term.subst termSubst backward)
+  | _, _, .equivApp equivTerm argumentTerm =>
+      Term.equivApp (Term.subst termSubst equivTerm)
+                    (Term.subst termSubst argumentTerm)
   -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
   -- carrier types substitute via `sigma`; the schematic `applyRaw`
   -- payload (at scope+1) substitutes via `sigma.forRaw.lift`.  The

@@ -567,6 +567,17 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw) :
       Term context (Ty.equiv carrierA carrierB)
                    (RawTerm.equivIntro forwardRaw backwardRaw)
+  /-- Apply a packaged equivalence to an argument.  This mirrors the raw
+      `RawTerm.equivApp` constructor and provides the typed target needed
+      for Day 2 raw/typed reduction parity.  No β-rule is introduced here:
+      the current raw layer only exposes congruence for `equivApp`. -/
+  | equivApp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRaw argumentRaw : RawTerm scope}
+      (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+      (argumentTerm : Term context carrierA argumentRaw) :
+      Term context carrierB (RawTerm.equivApp equivRaw argumentRaw)
   /-- **Heterogeneous-carrier path-from-equivalence (univalence introduction).**
       Inhabitant of `Ty.id (Ty.universe innerLevel innerLevelLt)
       carrierARaw carrierBRaw` — i.e. a path proof at the universe between

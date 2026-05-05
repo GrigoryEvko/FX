@@ -291,6 +291,9 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .equivIntroHet forward backward =>
       Term.equivIntroHet (Term.rename termRenaming forward)
                          (Term.rename termRenaming backward)
+  | _, _, .equivApp equivTerm argumentTerm =>
+      Term.equivApp (Term.rename termRenaming equivTerm)
+                    (Term.rename termRenaming argumentTerm)
   -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
   -- carrier types rename via `rho`; the schematic `applyRaw` payload
   -- (at scope+1) renames via `rho.lift`.  The result type involves

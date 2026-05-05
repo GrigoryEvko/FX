@@ -264,6 +264,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.equivIntroCong ihForward ihBackward
   | equivIntroCong _ _ ihForward ihBackward =>
       exact RawStep.par.equivIntroCong ihForward ihBackward
+  | equivAppCong _ _ ihEquiv ihArgument =>
+      exact RawStep.par.equivAppCong ihEquiv ihArgument
   -- Heterogeneous uaIntroHet cong (Phase 12.A.B8.5b): the source and
   -- target Terms BOTH project to `RawTerm.equivIntro forwardRaw...
   -- backwardRaw...` (same as their packaged equivWitness's raw — the

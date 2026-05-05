@@ -248,6 +248,10 @@ theorem Step.toConvCumul
       exact ConvCumul.equivIntroHetCong ih (ConvCumul.refl _)
   | equivIntroHetBackward _ ih =>
       exact ConvCumul.equivIntroHetCong (ConvCumul.refl _) ih
+  | equivAppEquiv _ ih =>
+      exact ConvCumul.equivAppCong ih (ConvCumul.refl _)
+  | equivAppArgument equivTerm _ ih =>
+      exact ConvCumul.equivAppCong (ConvCumul.refl equivTerm) ih
   | uaIntroHetWitness innerLevel innerLevelLt carrierARaw carrierBRaw _ ih =>
       exact ConvCumul.uaIntroHetCong innerLevel innerLevelLt
         carrierARaw carrierBRaw ih

@@ -221,6 +221,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- HoTT heterogeneous-carrier equivIntroHet is a value (canonical
   -- equivalence form, not a β/ι redex head): no head step fires.
   | _, _, _, _, .equivIntroHet _ _ => none
+  | _, _, _, _, .equivApp _ _ => none
   -- HoTT heterogeneous-carrier uaIntroHet (Phase 12.A.B8.5b): a value
   -- (canonical path-from-equivalence form at the universe).  The future
   -- `Step.eqTypeHet` rule will fire from this ctor, but at the headStep?

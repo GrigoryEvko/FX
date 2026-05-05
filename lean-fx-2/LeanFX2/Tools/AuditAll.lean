@@ -307,6 +307,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRefl_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRec_allais
 
+-- Typed D2.6/D2.8 equivalence-application parity
+#assert_no_axioms LeanFX2.Term.toRaw_equivApp
+#assert_no_axioms LeanFX2.Step.equivAppEquiv
+#assert_no_axioms LeanFX2.Step.equivAppArgument
+#assert_no_axioms LeanFX2.Step.par.equivAppCong
+#assert_no_axioms LeanFX2.ConvCumul.equivAppCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_equivApp_allais
+
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl
 #assert_no_axioms LeanFX2.Conv.fromStep

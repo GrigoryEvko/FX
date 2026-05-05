@@ -248,6 +248,10 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq forward,
           Term.subst_pointwise pointwiseEq backward]
+  | _, _, .equivApp equivTerm argumentTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq equivTerm,
+          Term.subst_pointwise pointwiseEq argumentTerm]
   -- HoTT heterogeneous-carrier path-from-equivalence (Phase 12.A.B8.5b):
   -- the subst arm in Term/Subst.lean recurses on the single subterm
   -- `equivWitness` via Term.subst.  Both TermSubsts share the SAME

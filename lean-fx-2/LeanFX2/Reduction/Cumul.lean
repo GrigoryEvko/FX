@@ -762,6 +762,22 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (backwardRel : ConvCumul backwardFirst backwardSecond) :
       ConvCumul (Term.equivIntroHet forwardFirst backwardFirst)
                 (Term.equivIntroHet forwardSecond backwardSecond)
+  /-- Homogeneous equivalence application: ConvCumul-related equivalence
+  and argument subterms lift to ConvCumul-related applications. -/
+  | equivAppCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivFirstRaw equivSecondRaw argumentFirstRaw argumentSecondRaw :
+        RawTerm scope}
+      {equivFirst : Term context (Ty.equiv carrierA carrierB) equivFirstRaw}
+      {equivSecond : Term context (Ty.equiv carrierA carrierB) equivSecondRaw}
+      {argumentFirst : Term context carrierA argumentFirstRaw}
+      {argumentSecond : Term context carrierA argumentSecondRaw}
+      (equivRel : ConvCumul equivFirst equivSecond)
+      (argumentRel : ConvCumul argumentFirst argumentSecond) :
+      ConvCumul (Term.equivApp equivFirst argumentFirst)
+                (Term.equivApp equivSecond argumentSecond)
   /-- Homogeneous uaIntroHet: ConvCumul-related equivWitness subterms
   lift to ConvCumul-related uaIntroHet.  Single-subterm cong rule
   mirroring `optionSomeCong` / `natSuccCong` — the carriers + carrier

@@ -1294,6 +1294,21 @@ inductive Step.par :
       Step.par backwardSource backwardTarget →
       Step.par (Term.equivIntroHet forwardSource backwardSource)
                (Term.equivIntroHet forwardTarget backwardTarget)
+  /-- Raw-name parity: equivalence application reduces in the equivalence
+  and argument positions. -/
+  | equivAppCong {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRawSource equivRawTarget argumentRawSource argumentRawTarget :
+        RawTerm scope}
+      {equivSource : Term context (Ty.equiv carrierA carrierB) equivRawSource}
+      {equivTarget : Term context (Ty.equiv carrierA carrierB) equivRawTarget}
+      {argumentSource : Term context carrierA argumentRawSource}
+      {argumentTarget : Term context carrierA argumentRawTarget} :
+      Step.par equivSource equivTarget →
+      Step.par argumentSource argumentTarget →
+      Step.par (Term.equivApp equivSource argumentSource)
+               (Term.equivApp equivTarget argumentTarget)
   /-- Parallel-cong: heterogeneous uaIntroHet reduces in its single
   equivWitness subterm.  Phase 12.A.B8.5b: single-subterm cong rule
   mirroring `Step.par.optionSomeCong` / `Step.par.natSuccCong` — the
@@ -1556,6 +1571,10 @@ theorem Step.toPar
       exact Step.par.equivIntroHetCong singleStepIH (Step.par.refl _)
   | equivIntroHetBackward singleStep singleStepIH =>
       exact Step.par.equivIntroHetCong (Step.par.refl _) singleStepIH
+  | equivAppEquiv singleStep singleStepIH =>
+      exact Step.par.equivAppCong singleStepIH (Step.par.refl _)
+  | equivAppArgument equivTerm singleStep singleStepIH =>
+      exact Step.par.equivAppCong (Step.par.refl equivTerm) singleStepIH
   | uaIntroHetWitness innerLevel innerLevelLt carrierARaw carrierBRaw
       singleStep singleStepIH =>
       exact Step.par.uaIntroHetCong innerLevel innerLevelLt
