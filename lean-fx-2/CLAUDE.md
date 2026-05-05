@@ -94,9 +94,21 @@ extra parameters.  ALL of these are banned:
 
 ### Mandatory verification gate
 
-Every committed theorem/lemma/def MUST appear in an `AuditAll.lean`
-group with `#print axioms` (or equivalent kernel `assert_no_axioms`
-gate) and the audit MUST report:
+Every committed theorem/lemma/def MUST have an axiom gate.  The
+preferred gate is `#assert_no_axioms YourTheorem` in
+`LeanFX2/Tools/AuditAll.lean`, because it fails elaboration if any
+dependency tree contains an axiom.  `#print axioms` gates in
+`Smoke/AuditPhase*.lean` files remain useful reviewer-facing
+regression logs, but they are supplementary because they only print.
+
+`#assert_no_axioms` is implemented in
+`LeanFX2/Tools/DependencyAudit.lean` and includes Lean core axioms:
+`propext`, `Quot.sound`, and `Classical.choice` are build failures.
+Until the whole-project generated audit is complete, new load-bearing
+declarations MUST be added both to the curated fail-fast
+`Tools/AuditAll.lean` list and to the relevant smoke audit file.
+
+The smoke audit MUST report:
 
 ```
 'Foo' does not depend on any axioms
@@ -129,9 +141,10 @@ theorem Univalence (lvl : Nat) (leftTy rightTy : Ty lvl scope) :
   Conv.fromStep Step.eqType
 ```
 
-`#print axioms Univalence` MUST report "does not depend on any axioms".
-The theorem has a body.  No hypothesis.  No `Inhabited`.  No `axiom`.
-This is the only acceptable form.
+`#assert_no_axioms Univalence` MUST pass, and `#print axioms
+Univalence` MUST report "does not depend on any axioms".  The theorem
+has a body.  No hypothesis.  No `Inhabited`.  No `axiom`.  This is the
+only acceptable form.
 
 **Funext (must ship as a theorem):**
 
@@ -164,9 +177,13 @@ When you ship a new theorem:
 
 1. Write the proof.
 2. Run `lake build LeanFX2`.  Build green.
-3. Add `#print axioms YourTheorem` to the matching `Smoke/AuditPhase*.lean`
-   file.  Verify "does not depend on any axioms".
-4. Commit only after both gates pass.
+3. Add `#assert_no_axioms YourTheorem` to
+   `LeanFX2/Tools/AuditAll.lean` when the declaration is load-bearing
+   or otherwise part of the curated kernel gate.
+4. Add `#print axioms YourTheorem` to the matching
+   `Smoke/AuditPhase*.lean` file.  Verify "does not depend on any
+   axioms".
+5. Commit only after both gates pass.
 
 If the audit prints any axiom — including `propext`, `Quot.sound`,
 `Classical.choice`, `funext`, `Univalence`, or any user axiom — the
@@ -174,6 +191,7 @@ theorem is NOT shipped.  Either rewrite cleanly or delete.
 
 After every new theorem, verify:
 ```lean
+#assert_no_axioms TheoremName  -- must elaborate successfully
 #print axioms TheoremName  -- must report "does not depend on any axioms"
 ```
 
