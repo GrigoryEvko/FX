@@ -316,6 +316,22 @@ def IsLamCompatible {dims : List Dimension} {scope : Nat}
     (lamAttr : GradeAttribution dims scope) : Prop :=
   bodyAttr = (paramGrade, GradeAttribution.scaleBy closureGrade lamAttr)
 
+/-- Corrected Wood/Atkey Lam premise after context division has been
+computed.
+
+`availableAttr` is the divided inherited context `Gamma / p`.
+The lambda body may use the freshly-bound parameter exactly at
+`paramGrade`, and may use inherited bindings only within the divided
+availability.  This is the check that rejects a linear variable
+captured by an omega-multiplicity closure: after division its
+availability is zero, so any positive inherited usage fails. -/
+def IsLamCompatibleWithAvailable {dims : List Dimension} {scope : Nat}
+    (paramGrade : GradeVector dims)
+    (availableAttr : GradeAttribution dims scope)
+    (bodyAttr : GradeAttribution dims (scope + 1)) : Prop :=
+  bodyAttr.1 = paramGrade ∧
+  GradeAttribution.le bodyAttr.2 availableAttr
+
 /-! ## Trivial Lam-compatibility cases
 
 Two zero-knowledge cases that hold trivially: the all-zero body
@@ -338,6 +354,15 @@ theorem IsLamCompatible.allZero {dims : List Dimension} {scope : Nat}
             GradeAttribution.scaleBy closureGrade GradeAttribution.zero)
             : GradeAttribution dims (scope + 1))
   rw [GradeAttribution.scaleBy_zero_attr]
+
+/-- The all-zero body is compatible with zero divided availability:
+it uses the parameter at grade zero and uses no inherited binding. -/
+theorem IsLamCompatibleWithAvailable.allZeroAtZero {dims : List Dimension} {scope : Nat} :
+    IsLamCompatibleWithAvailable
+      (paramGrade := GradeVector.zero)
+      (availableAttr := (GradeAttribution.zero : GradeAttribution dims scope))
+      (bodyAttr := (GradeAttribution.zero : GradeAttribution dims (scope + 1))) :=
+  ⟨rfl, GradeAttribution.le_refl GradeAttribution.zero⟩
 
 /-! ## Var rule
 

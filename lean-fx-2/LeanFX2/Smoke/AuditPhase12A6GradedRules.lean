@@ -17,7 +17,9 @@ import LeanFX2.Graded.Rules
 #print axioms LeanFX2.Graded.GradeAttribution.le_refl
 #print axioms LeanFX2.Graded.GradeAttribution.le_trans
 #print axioms LeanFX2.Graded.IsLamCompatible
+#print axioms LeanFX2.Graded.IsLamCompatibleWithAvailable
 #print axioms LeanFX2.Graded.IsLamCompatible.allZero
+#print axioms LeanFX2.Graded.IsLamCompatibleWithAvailable.allZeroAtZero
 #print axioms LeanFX2.Graded.IsVarCompatible
 #print axioms LeanFX2.Graded.IsVarCompatible.atZero
 #print axioms LeanFX2.Graded.IsAppCompatible

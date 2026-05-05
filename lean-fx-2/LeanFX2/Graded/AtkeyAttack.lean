@@ -1,3 +1,4 @@
+import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Instances.Usage
 
 /-! # Graded/AtkeyAttack — verified rejection of Atkey 2018's broken Lam rule
@@ -199,6 +200,26 @@ def argumentUsage : AttackExpr → UsageGrade
 
 end AttackExpr
 
+/-! ## One-dimensional usage attribution for the attack
+
+The generic `GradeAttribution` machinery is heterogeneous over a list
+of dimensions.  The Atkey witness only needs the usage dimension, so
+we instantiate the generic rules at a single `UsageGrade` dimension.
+-/
+
+/-- The usage dimension packaged for a one-dimensional grade vector. -/
+def AttackUsageDimension : LeanFX2.Graded.Dimension :=
+  { carrier := UsageGrade, semiring := inferInstance }
+
+/-- The dimensions used by the Atkey attack smoke: usage only. -/
+def AttackUsageDimensions : List LeanFX2.Graded.Dimension :=
+  [AttackUsageDimension]
+
+/-- Embed a `UsageGrade` into the one-dimensional attack grade vector. -/
+def AttackUsageVector (someGrade : UsageGrade) :
+    LeanFX2.Graded.GradeVector AttackUsageDimensions :=
+  (someGrade, ())
+
 /-- The actual Atkey 2018 inner body: `f (f x)`. -/
 def HigherOrderAttackBody : AttackExpr :=
   AttackExpr.applyExpr
@@ -224,6 +245,33 @@ unavailable inside the omega closure. -/
 theorem CorrectedLamAvailableCapturedFunctionGrade.eqZero :
     CorrectedLamAvailableCapturedFunctionGrade = UsageGrade.zero := rfl
 
+/-- Full body attribution for `f (f x)` in the inner lambda scope.
+
+The head position is the inner argument `x`, used once.  The tail
+position is the captured function `f`, used twice and therefore at
+omega. -/
+def HigherOrderAttackBodyAttribution :
+    LeanFX2.Graded.GradeAttribution AttackUsageDimensions 2 :=
+  (AttackUsageVector (AttackExpr.argumentUsage HigherOrderAttackBody),
+   (AttackUsageVector (AttackExpr.capturedFunctionUsage HigherOrderAttackBody), ()))
+
+/-- Divided inherited availability for the captured linear function
+inside the omega closure. -/
+def CorrectedLamAvailableAttribution :
+    LeanFX2.Graded.GradeAttribution AttackUsageDimensions 1 :=
+  (AttackUsageVector CorrectedLamAvailableCapturedFunctionGrade, ())
+
+/-- The concrete body attribution computes to `(x : one, f : omega)`. -/
+theorem HigherOrderAttackBodyAttribution.eqOneOmega :
+    HigherOrderAttackBodyAttribution =
+      (AttackUsageVector UsageGrade.one,
+       (AttackUsageVector UsageGrade.omega, ())) := rfl
+
+/-- The divided inherited context computes to `(f : zero)`. -/
+theorem CorrectedLamAvailableAttribution.eqZero :
+    CorrectedLamAvailableAttribution =
+      (AttackUsageVector UsageGrade.zero, ()) := rfl
+
 /-- Syntactic rejection of the historical Atkey body.
 
 The recursive grade accounting for `f (f x)` requires omega usage of
@@ -235,6 +283,20 @@ theorem HigherOrderAttackBody.rejectedByCorrectedLam :
         CorrectedLamAvailableCapturedFunctionGrade := by
   intro impossibleLe
   exact impossibleLe.elim
+
+/-- The actual `f (f x)` body fails the corrected Lam compatibility
+predicate against the divided context.
+
+This connects the syntactic attack model to `Graded/Rules.lean`:
+the body wants inherited usage omega for `f`, but the divided
+availability gives only zero. -/
+theorem HigherOrderAttackBody.rejectedByCorrectedLamRule :
+    ¬ LeanFX2.Graded.IsLamCompatibleWithAvailable
+        (paramGrade := AttackUsageVector UsageGrade.one)
+        (availableAttr := CorrectedLamAvailableAttribution)
+        (bodyAttr := HigherOrderAttackBodyAttribution) := by
+  intro compatibleBody
+  exact compatibleBody.right.left.left
 
 /-! ## Concrete witnesses
 
