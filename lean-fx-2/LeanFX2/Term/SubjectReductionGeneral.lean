@@ -877,6 +877,191 @@ theorem StepStar.preserves_ty_eitherType
   StepStar.preserves_isClosedTy
     (IsClosedTy.eitherType closedLeft closedRight) chain sourceIsEither
 
+/-! ## D1.5 closed-ctor SR specializations
+
+The general theorem already handles every `IsClosedTy` constructor.
+These corollaries expose the newer closed type formers through the
+same API shape as arrow/list/option/either, so downstream Day 2
+callers do not have to construct the closed witness manually. -/
+
+/-- Subject reduction at `Ty.empty`. -/
+theorem Step.preserves_ty_empty
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    (someStep : Step sourceTerm targetTerm)
+    (sourceIsEmpty : sourceType = Ty.empty) :
+    targetType = Ty.empty :=
+  Step.preserves_isClosedTy IsClosedTy.empty someStep sourceIsEmpty
+
+/-- StepStar lift of `Step.preserves_ty_empty`. -/
+theorem StepStar.preserves_ty_empty
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm)
+    (sourceIsEmpty : sourceType = Ty.empty) :
+    targetType = Ty.empty :=
+  StepStar.preserves_isClosedTy IsClosedTy.empty chain sourceIsEmpty
+
+/-- Subject reduction at `Ty.interval`. -/
+theorem Step.preserves_ty_interval
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    (someStep : Step sourceTerm targetTerm)
+    (sourceIsInterval : sourceType = Ty.interval) :
+    targetType = Ty.interval :=
+  Step.preserves_isClosedTy IsClosedTy.interval someStep sourceIsInterval
+
+/-- StepStar lift of `Step.preserves_ty_interval`. -/
+theorem StepStar.preserves_ty_interval
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    (chain : StepStar sourceTerm targetTerm)
+    (sourceIsInterval : sourceType = Ty.interval) :
+    targetType = Ty.interval :=
+  StepStar.preserves_isClosedTy IsClosedTy.interval chain sourceIsInterval
+
+/-- Subject reduction at `Ty.equiv domain codomain` when both component
+types are closed. -/
+theorem Step.preserves_ty_equiv
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {domainType codomainType : Ty level scope}
+    (closedDomain : IsClosedTy domainType)
+    (closedCodomain : IsClosedTy codomainType)
+    (someStep : Step sourceTerm targetTerm)
+    (sourceIsEquiv : sourceType = Ty.equiv domainType codomainType) :
+    targetType = Ty.equiv domainType codomainType :=
+  Step.preserves_isClosedTy
+    (IsClosedTy.equiv closedDomain closedCodomain) someStep sourceIsEquiv
+
+/-- StepStar lift of `Step.preserves_ty_equiv`. -/
+theorem StepStar.preserves_ty_equiv
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {domainType codomainType : Ty level scope}
+    (closedDomain : IsClosedTy domainType)
+    (closedCodomain : IsClosedTy codomainType)
+    (chain : StepStar sourceTerm targetTerm)
+    (sourceIsEquiv : sourceType = Ty.equiv domainType codomainType) :
+    targetType = Ty.equiv domainType codomainType :=
+  StepStar.preserves_isClosedTy
+    (IsClosedTy.equiv closedDomain closedCodomain) chain sourceIsEquiv
+
+/-- Subject reduction at the current single-field `Ty.record` encoding
+when the field type is closed.  Completes the record branch of M07. -/
+theorem Step.preserves_ty_record
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {singleFieldType : Ty level scope}
+    (closedSingleField : IsClosedTy singleFieldType)
+    (someStep : Step sourceTerm targetTerm)
+    (sourceIsRecord : sourceType = Ty.record singleFieldType) :
+    targetType = Ty.record singleFieldType :=
+  Step.preserves_isClosedTy
+    (IsClosedTy.record closedSingleField) someStep sourceIsRecord
+
+/-- StepStar lift of `Step.preserves_ty_record`. -/
+theorem StepStar.preserves_ty_record
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {singleFieldType : Ty level scope}
+    (closedSingleField : IsClosedTy singleFieldType)
+    (chain : StepStar sourceTerm targetTerm)
+    (sourceIsRecord : sourceType = Ty.record singleFieldType) :
+    targetType = Ty.record singleFieldType :=
+  StepStar.preserves_isClosedTy
+    (IsClosedTy.record closedSingleField) chain sourceIsRecord
+
+/-- Subject reduction at `Ty.codata state output` when both component
+types are closed. -/
+theorem Step.preserves_ty_codata
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {stateType outputType : Ty level scope}
+    (closedState : IsClosedTy stateType)
+    (closedOutput : IsClosedTy outputType)
+    (someStep : Step sourceTerm targetTerm)
+    (sourceIsCodata : sourceType = Ty.codata stateType outputType) :
+    targetType = Ty.codata stateType outputType :=
+  Step.preserves_isClosedTy
+    (IsClosedTy.codata closedState closedOutput) someStep sourceIsCodata
+
+/-- StepStar lift of `Step.preserves_ty_codata`. -/
+theorem StepStar.preserves_ty_codata
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {stateType outputType : Ty level scope}
+    (closedState : IsClosedTy stateType)
+    (closedOutput : IsClosedTy outputType)
+    (chain : StepStar sourceTerm targetTerm)
+    (sourceIsCodata : sourceType = Ty.codata stateType outputType) :
+    targetType = Ty.codata stateType outputType :=
+  StepStar.preserves_isClosedTy
+    (IsClosedTy.codata closedState closedOutput) chain sourceIsCodata
+
+/-- Subject reduction at `Ty.modal modalityTag carrier` when the carrier
+type is closed. -/
+theorem Step.preserves_ty_modal
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {modalityTag : Nat}
+    {carrierType : Ty level scope}
+    (closedCarrier : IsClosedTy carrierType)
+    (someStep : Step sourceTerm targetTerm)
+    (sourceIsModal : sourceType = Ty.modal modalityTag carrierType) :
+    targetType = Ty.modal modalityTag carrierType :=
+  Step.preserves_isClosedTy
+    (IsClosedTy.modal closedCarrier) someStep sourceIsModal
+
+/-- StepStar lift of `Step.preserves_ty_modal`. -/
+theorem StepStar.preserves_ty_modal
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetType : Ty level scope}
+    {targetTerm : Term context targetType targetRaw}
+    {modalityTag : Nat}
+    {carrierType : Ty level scope}
+    (closedCarrier : IsClosedTy carrierType)
+    (chain : StepStar sourceTerm targetTerm)
+    (sourceIsModal : sourceType = Ty.modal modalityTag carrierType) :
+    targetType = Ty.modal modalityTag carrierType :=
+  StepStar.preserves_isClosedTy
+    (IsClosedTy.modal closedCarrier) chain sourceIsModal
+
 /-! ## Conv-level preservation at closed types — DEFERRED
 
 A `Conv.preserves_isClosedTy` corollary would lift SR through
