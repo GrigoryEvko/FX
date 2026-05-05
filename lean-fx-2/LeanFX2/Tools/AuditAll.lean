@@ -17,6 +17,7 @@ import LeanFX2.Bridge.IdToPath
 import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathEqType
+import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
@@ -131,6 +132,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Bridge.constantTypePathToEquivRefl
 #assert_no_axioms LeanFX2.Bridge.constantTypePathToEquivRefl_toRaw
 #assert_no_axioms LeanFX2.Bridge.constantTypePathToEquivRefl_onCanonical
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_interval
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_path
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_glue
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_id
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized

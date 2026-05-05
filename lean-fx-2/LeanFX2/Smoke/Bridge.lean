@@ -3,6 +3,7 @@ import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Cubical.Transport
+import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/Bridge — typed↔raw roundtrip examples.
@@ -354,6 +355,30 @@ theorem pathEqTypeBridge_fullStackWiring_smoke
     (Bridge.constantTypePathToEquivRefl_onCanonical innerLevel innerLevelLt
       carrier typeCode)
 
+/-- Type-level cubical-to-observational translation smoke. -/
+theorem cubicalToObservationalTy_fullStackWiring_smoke
+    {level scope : Nat}
+    (carrier : Ty level scope)
+    (leftEndpoint rightEndpoint boundaryWitness : RawTerm scope) :
+    And
+      (Translation.cubicalToObservationalTy Ty.interval =
+        (Ty.unit (level := level) (scope := scope)))
+      (And
+        (Translation.cubicalToObservationalTy
+          (Ty.path carrier leftEndpoint rightEndpoint) =
+            Ty.id (Translation.cubicalToObservationalTy carrier)
+              leftEndpoint rightEndpoint)
+        (Translation.cubicalToObservationalTy
+          (Ty.glue carrier boundaryWitness) =
+            Translation.cubicalToObservationalTy carrier)) :=
+  And.intro
+    Translation.cubicalToObservationalTy_interval
+    (And.intro
+      (Translation.cubicalToObservationalTy_path
+        carrier leftEndpoint rightEndpoint)
+      (Translation.cubicalToObservationalTy_glue
+        carrier boundaryWitness))
+
 #assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
@@ -365,5 +390,6 @@ theorem pathEqTypeBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.constantPathIdBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.idEqTypeBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.pathEqTypeBridge_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.cubicalToObservationalTy_fullStackWiring_smoke
 
 end LeanFX2.Smoke
