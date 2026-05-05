@@ -149,6 +149,86 @@ theorem rec_meridian {sourceType : Type sourceLevel}
     (Suspension.rec resultType northCase southCase meridianRespects)
     (Suspension.meridian sourceValue)
 
+/-- Dependent induction out of the setoid-level suspension.
+
+The motive is indexed by north/south representatives.  The caller
+supplies both point cases plus the heterogeneous computation data for
+each meridian. -/
+def dependentInductor {sourceType : Type sourceLevel}
+    (motive : (Suspension.setoid sourceType).carrier → Sort resultLevel)
+    (northCase :
+      motive (Suspension.north (sourceType := sourceType)))
+    (southCase :
+      motive (Suspension.south (sourceType := sourceType)))
+    (meridianRespects :
+      sourceType → HEq northCase southCase) :
+    HITInductor (Suspension.setoid sourceType) motive where
+  apply := fun
+    | SuspensionPoint.north => northCase
+    | SuspensionPoint.south => southCase
+  respectsRelation := fun {leftValue} {rightValue} relationWitness =>
+    match relationWitness with
+    | Or.inl equalityWitness => by
+        cases equalityWitness
+        exact HEq.rfl
+    | Or.inr ⟨sourceValue⟩ =>
+        match leftValue, rightValue with
+        | SuspensionPoint.north, SuspensionPoint.north => HEq.rfl
+        | SuspensionPoint.north, SuspensionPoint.south =>
+            meridianRespects sourceValue
+        | SuspensionPoint.south, SuspensionPoint.north =>
+            HEq.symm (meridianRespects sourceValue)
+        | SuspensionPoint.south, SuspensionPoint.south => HEq.rfl
+
+/-- Suspension dependent induction computes at north. -/
+theorem dependentInductor_north {sourceType : Type sourceLevel}
+    (motive : (Suspension.setoid sourceType).carrier → Sort resultLevel)
+    (northCase :
+      motive (Suspension.north (sourceType := sourceType)))
+    (southCase :
+      motive (Suspension.south (sourceType := sourceType)))
+    (meridianRespects :
+      sourceType → HEq northCase southCase) :
+    (Suspension.dependentInductor motive northCase southCase meridianRespects).run
+      (Suspension.north (sourceType := sourceType)) =
+      northCase :=
+  rfl
+
+/-- Suspension dependent induction computes at south. -/
+theorem dependentInductor_south {sourceType : Type sourceLevel}
+    (motive : (Suspension.setoid sourceType).carrier → Sort resultLevel)
+    (northCase :
+      motive (Suspension.north (sourceType := sourceType)))
+    (southCase :
+      motive (Suspension.south (sourceType := sourceType)))
+    (meridianRespects :
+      sourceType → HEq northCase southCase) :
+    (Suspension.dependentInductor motive northCase southCase meridianRespects).run
+      (Suspension.south (sourceType := sourceType)) =
+      southCase :=
+  rfl
+
+/-- Suspension dependent induction respects a meridian witness. -/
+theorem dependentInductor_meridian {sourceType : Type sourceLevel}
+    (motive : (Suspension.setoid sourceType).carrier → Sort resultLevel)
+    (northCase :
+      motive (Suspension.north (sourceType := sourceType)))
+    (southCase :
+      motive (Suspension.south (sourceType := sourceType)))
+    (meridianRespects :
+      sourceType → HEq northCase southCase)
+    (sourceValue : sourceType) :
+    HEq
+      ((Suspension.dependentInductor
+        motive northCase southCase meridianRespects).run
+        (Suspension.north (sourceType := sourceType)))
+      ((Suspension.dependentInductor
+        motive northCase southCase meridianRespects).run
+        (Suspension.south (sourceType := sourceType))) :=
+  HITInductor.run_respects
+    (Suspension.dependentInductor motive northCase southCase meridianRespects)
+    (Suspension.meridian sourceValue)
+
 end Suspension
 
 end HIT

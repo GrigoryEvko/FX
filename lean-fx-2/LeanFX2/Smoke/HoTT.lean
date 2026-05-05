@@ -91,6 +91,23 @@ theorem propTrunc_rec_intro_smoke :
     (fun _ _ => rfl)
     ()
 
+/-- Propositional truncation dependent induction computes on introduced
+values. -/
+theorem propTrunc_dependentInductor_intro_smoke :
+    (HoTT.HIT.PropTrunc.dependentInductor
+      (sourceType := Unit)
+      (fun _ => Bool)
+      (fun _ => true)
+      (fun _ _ => HEq.rfl)).run
+      (HoTT.HIT.PropTrunc.intro ()) =
+      true :=
+  HoTT.HIT.PropTrunc.dependentInductor_intro
+    (sourceType := Unit)
+    (fun _ => Bool)
+    (fun _ => true)
+    (fun _ _ => HEq.rfl)
+    ()
+
 /-- Set truncation relates equal introduced representatives. -/
 theorem setTrunc_path_smoke :
     (HoTT.HIT.SetTrunc Unit).relation
@@ -109,6 +126,21 @@ theorem setTrunc_rec_intro_smoke :
   HoTT.HIT.SetTrunc.rec_intro
     (sourceType := Unit)
     Bool
+    (fun _ => true)
+    ()
+
+/-- Set-truncation dependent induction computes on introduced
+representatives. -/
+theorem setTrunc_dependentInductor_intro_smoke :
+    (HoTT.HIT.SetTrunc.dependentInductor
+      (sourceType := Unit)
+      (fun _ => Bool)
+      (fun _ => true)).run
+      (HoTT.HIT.SetTrunc.intro ()) =
+      true :=
+  HoTT.HIT.SetTrunc.dependentInductor_intro
+    (sourceType := Unit)
+    (fun _ => Bool)
     (fun _ => true)
     ()
 
@@ -145,6 +177,36 @@ theorem quotientHIT_rec_intro_smoke :
     (fun relationWitness => by
       cases relationWitness
       rfl)
+    ()
+
+/-- Quotient dependent induction computes on introduced representatives. -/
+theorem quotientHIT_dependentInductor_intro_smoke :
+    (HoTT.HIT.QuotientHIT.dependentInductor
+      (sourceType := Unit)
+      (relation := Eq)
+      (isRefl := fun sourceValue => Eq.refl sourceValue)
+      (isSymm := fun relationWitness => Eq.symm relationWitness)
+      (isTrans := fun firstWitness secondWitness =>
+        Eq.trans firstWitness secondWitness)
+      (fun _ => Bool)
+      (fun _ => true)
+      (fun relationWitness => by
+        cases relationWitness
+        exact HEq.rfl)).run
+      (HoTT.HIT.QuotientHIT.intro ()) =
+      true :=
+  HoTT.HIT.QuotientHIT.dependentInductor_intro
+    (sourceType := Unit)
+    (relation := Eq)
+    (isRefl := fun sourceValue => Eq.refl sourceValue)
+    (isSymm := fun relationWitness => Eq.symm relationWitness)
+    (isTrans := fun firstWitness secondWitness =>
+      Eq.trans firstWitness secondWitness)
+    (fun _ => Bool)
+    (fun _ => true)
+    (fun relationWitness => by
+      cases relationWitness
+      exact HEq.rfl)
     ()
 
 /-- The S1 spec contains the loop path from base to base. -/
@@ -184,6 +246,21 @@ theorem suspension_rec_north_smoke :
     (sourceType := Unit)
     Bool true true
     (fun _ => rfl)
+
+/-- Suspension dependent induction computes at north. -/
+theorem suspension_dependentInductor_north_smoke :
+    (HoTT.HIT.Suspension.dependentInductor
+      (sourceType := Unit)
+      (fun _ => Bool)
+      true true
+      (fun _ => HEq.rfl)).run
+      (HoTT.HIT.Suspension.north (sourceType := Unit)) =
+      true :=
+  HoTT.HIT.Suspension.dependentInductor_north
+    (sourceType := Unit)
+    (fun _ => Bool)
+    true true
+    (fun _ => HEq.rfl)
 
 /-- A pushout glue witness relates the left and right images. -/
 theorem pushout_glue_smoke :
@@ -234,6 +311,40 @@ theorem pushout_rec_left_smoke :
       cases leftValue <;> cases rightValue <;> rfl)
     ()
 
+/-- Pushout dependent induction computes on left representatives. -/
+theorem pushout_dependentInductor_left_smoke :
+    (HoTT.HIT.PushoutHIT.dependentInductor
+      (sourceType := Unit)
+      (leftMap := fun sourceValue => sourceValue)
+      (rightMap := fun sourceValue => sourceValue)
+      (relation := fun _ _ => True)
+      (isRefl := fun _ => True.intro)
+      (isSymm := fun _ => True.intro)
+      (isTrans := fun _ _ => True.intro)
+      (glueRespects := fun _ => True.intro)
+      (fun _ => Bool)
+      (fun _ => true)
+      (fun _ => true)
+      (fun {leftValue} {rightValue} _ => by
+        cases leftValue <;> cases rightValue <;> exact HEq.rfl)).run
+      (Sum.inl ()) =
+      true :=
+  HoTT.HIT.PushoutHIT.dependentInductor_left
+    (sourceType := Unit)
+    (leftMap := fun sourceValue => sourceValue)
+    (rightMap := fun sourceValue => sourceValue)
+    (relation := fun _ _ => True)
+    (isRefl := fun _ => True.intro)
+    (isSymm := fun _ => True.intro)
+    (isTrans := fun _ _ => True.intro)
+    (glueRespects := fun _ => True.intro)
+    (fun _ => Bool)
+    (fun _ => true)
+    (fun _ => true)
+    (fun {leftValue} {rightValue} _ => by
+      cases leftValue <;> cases rightValue <;> exact HEq.rfl)
+    ()
+
 /-- A coequalizer path witness relates the two map images. -/
 theorem coequalizer_equalize_smoke :
     (HoTT.HIT.CoequalizerHIT
@@ -279,24 +390,60 @@ theorem coequalizer_rec_point_smoke :
     (fun _ => rfl)
     ()
 
+/-- Coequalizer dependent induction computes on point representatives. -/
+theorem coequalizer_dependentInductor_point_smoke :
+    (HoTT.HIT.CoequalizerHIT.dependentInductor
+      (sourceType := Unit)
+      (leftMap := fun sourceValue => sourceValue)
+      (rightMap := fun sourceValue => sourceValue)
+      (relation := fun _ _ => True)
+      (isRefl := fun _ => True.intro)
+      (isSymm := fun _ => True.intro)
+      (isTrans := fun _ _ => True.intro)
+      (equalizeRespects := fun _ => True.intro)
+      (fun _ => Bool)
+      (fun _ => true)
+      (fun _ => HEq.rfl)).run
+      (HoTT.HIT.CoequalizerHIT.point ()) =
+      true :=
+  HoTT.HIT.CoequalizerHIT.dependentInductor_point
+    (sourceType := Unit)
+    (leftMap := fun sourceValue => sourceValue)
+    (rightMap := fun sourceValue => sourceValue)
+    (relation := fun _ _ => True)
+    (isRefl := fun _ => True.intro)
+    (isSymm := fun _ => True.intro)
+    (isTrans := fun _ _ => True.intro)
+    (equalizeRespects := fun _ => True.intro)
+    (fun _ => Bool)
+    (fun _ => true)
+    (fun _ => HEq.rfl)
+    ()
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.hitInductor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.propTrunc_dependentInductor_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_path_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.setTrunc_dependentInductor_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_equality_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.quotientHIT_dependentInductor_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_loop_spec_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_rec_base_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_dependentInductor_base_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_meridian_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
+#assert_no_axioms LeanFX2.Smoke.suspension_dependentInductor_north_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_glue_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_rec_left_smoke
+#assert_no_axioms LeanFX2.Smoke.pushout_dependentInductor_left_smoke
 #assert_no_axioms LeanFX2.Smoke.coequalizer_equalize_smoke
 #assert_no_axioms LeanFX2.Smoke.coequalizer_rec_point_smoke
+#assert_no_axioms LeanFX2.Smoke.coequalizer_dependentInductor_point_smoke
 
 end LeanFX2.Smoke

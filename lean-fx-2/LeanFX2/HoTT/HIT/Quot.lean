@@ -207,6 +207,135 @@ theorem rec_sound
       resultType introCase relationRespects)
     (QuotientHIT.sound relationWitness)
 
+/-- Dependent induction out of a quotient presentation.
+
+The caller supplies a dependent function over representatives plus a
+heterogeneous relation-preservation proof.  This is the dependent
+counterpart of `QuotientHIT.rec`; it still works over representatives
+and does not quotient through Lean's `Quot`. -/
+def dependentInductor
+    {sourceType : Type sourceLevel}
+    {relation : sourceType → sourceType → Prop}
+    {isRefl : ∀ sourceValue : sourceType,
+      relation sourceValue sourceValue}
+    {isSymm :
+      ∀ {leftValue rightValue : sourceType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : sourceType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    (motive :
+      (QuotientHIT sourceType relation isRefl isSymm isTrans).carrier →
+        Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (QuotientHIT.intro sourceValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : sourceType},
+        relation leftValue rightValue →
+        HEq (introCase leftValue) (introCase rightValue)) :
+    HITInductor
+      (QuotientHIT sourceType relation isRefl isSymm isTrans)
+      motive where
+  apply := introCase
+  respectsRelation := relationRespects
+
+/-- Quotient dependent induction computes on introduced representatives
+by reflexive reduction. -/
+theorem dependentInductor_intro
+    {sourceType : Type sourceLevel}
+    {relation : sourceType → sourceType → Prop}
+    {isRefl : ∀ sourceValue : sourceType,
+      relation sourceValue sourceValue}
+    {isSymm :
+      ∀ {leftValue rightValue : sourceType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : sourceType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    (motive :
+      (QuotientHIT sourceType relation isRefl isSymm isTrans).carrier →
+        Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (QuotientHIT.intro sourceValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : sourceType},
+        relation leftValue rightValue →
+        HEq (introCase leftValue) (introCase rightValue))
+    (sourceValue : sourceType) :
+    (QuotientHIT.dependentInductor
+      (sourceType := sourceType)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      motive introCase relationRespects).run
+      (QuotientHIT.intro sourceValue) =
+      introCase sourceValue :=
+  rfl
+
+/-- Quotient dependent induction maps related representatives to
+heterogeneously equal motive witnesses. -/
+theorem dependentInductor_sound
+    {sourceType : Type sourceLevel}
+    {relation : sourceType → sourceType → Prop}
+    {isRefl : ∀ sourceValue : sourceType,
+      relation sourceValue sourceValue}
+    {isSymm :
+      ∀ {leftValue rightValue : sourceType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : sourceType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    (motive :
+      (QuotientHIT sourceType relation isRefl isSymm isTrans).carrier →
+        Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (QuotientHIT.intro sourceValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : sourceType},
+        relation leftValue rightValue →
+        HEq (introCase leftValue) (introCase rightValue))
+    {leftValue rightValue : sourceType}
+    (relationWitness : relation leftValue rightValue) :
+    HEq
+      ((QuotientHIT.dependentInductor
+        (sourceType := sourceType)
+        (relation := relation)
+        (isRefl := isRefl)
+        (isSymm := isSymm)
+        (isTrans := isTrans)
+        motive introCase relationRespects).run
+        (QuotientHIT.intro leftValue))
+      ((QuotientHIT.dependentInductor
+        (sourceType := sourceType)
+        (relation := relation)
+        (isRefl := isRefl)
+        (isSymm := isSymm)
+        (isTrans := isTrans)
+        motive introCase relationRespects).run
+        (QuotientHIT.intro rightValue)) :=
+  HITInductor.run_respects
+    (QuotientHIT.dependentInductor
+      (sourceType := sourceType)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      motive introCase relationRespects)
+    (QuotientHIT.sound relationWitness)
+
 /-- Constant recursion out of a quotient presentation. -/
 def recConstant
     {sourceType : Type sourceLevel}

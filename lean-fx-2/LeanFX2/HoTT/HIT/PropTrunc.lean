@@ -88,6 +88,60 @@ theorem rec_squash {sourceType : Type sourceLevel}
     (PropTrunc.rec resultType introCase squashRespects)
     (PropTrunc.squash leftValue rightValue)
 
+/-- Dependent induction out of propositional truncation.
+
+The caller supplies a motive over representatives, an intro case for
+each source value, and a proof that those motive witnesses are
+heterogeneously equal across the squash relation. -/
+def dependentInductor {sourceType : Type sourceLevel}
+    (motive : (PropTrunc sourceType).carrier → Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (PropTrunc.intro sourceValue))
+    (squashRespects :
+      ∀ leftValue rightValue : sourceType,
+        HEq (introCase leftValue) (introCase rightValue)) :
+    HITInductor (PropTrunc sourceType) motive where
+  apply := introCase
+  respectsRelation := fun {leftValue} {rightValue} _ =>
+    squashRespects leftValue rightValue
+
+/-- Dependent induction computes on introduced representatives by
+reflexive reduction. -/
+theorem dependentInductor_intro {sourceType : Type sourceLevel}
+    (motive : (PropTrunc sourceType).carrier → Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (PropTrunc.intro sourceValue))
+    (squashRespects :
+      ∀ leftValue rightValue : sourceType,
+        HEq (introCase leftValue) (introCase rightValue))
+    (sourceValue : sourceType) :
+    (PropTrunc.dependentInductor motive introCase squashRespects).run
+      (PropTrunc.intro sourceValue) =
+      introCase sourceValue :=
+  rfl
+
+/-- Dependent induction respects the propositional-truncation squash
+relation. -/
+theorem dependentInductor_squash {sourceType : Type sourceLevel}
+    (motive : (PropTrunc sourceType).carrier → Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (PropTrunc.intro sourceValue))
+    (squashRespects :
+      ∀ leftValue rightValue : sourceType,
+        HEq (introCase leftValue) (introCase rightValue))
+    (leftValue rightValue : sourceType) :
+    HEq
+      ((PropTrunc.dependentInductor motive introCase squashRespects).run
+        (PropTrunc.intro leftValue))
+      ((PropTrunc.dependentInductor motive introCase squashRespects).run
+        (PropTrunc.intro rightValue)) :=
+  HITInductor.run_respects
+    (PropTrunc.dependentInductor motive introCase squashRespects)
+    (PropTrunc.squash leftValue rightValue)
+
 /-- Constant recursion out of propositional truncation. -/
 def recConstant {sourceType : Type sourceLevel}
     (resultType : Sort resultLevel)

@@ -79,6 +79,22 @@ def evaluate
   | Sum.inl leftValue => leftCase leftValue
   | Sum.inr rightValue => rightCase rightValue
 
+/-- Evaluate a dependent pushout branch by case analysis on its side. -/
+def dependentEvaluate
+    {leftType : Type leftLevel}
+    {rightType : Type rightLevel}
+    (motive : PushoutCarrier leftType rightType → Sort resultLevel)
+    (leftCase :
+      ∀ leftValue : leftType,
+        motive (Sum.inl leftValue))
+    (rightCase :
+      ∀ rightValue : rightType,
+        motive (Sum.inr rightValue)) :
+    (pushoutValue : PushoutCarrier leftType rightType) →
+      motive pushoutValue
+  | Sum.inl leftValue => leftCase leftValue
+  | Sum.inr rightValue => rightCase rightValue
+
 /-- Introduce a left representative into the pushout. -/
 def left
     {sourceType : Type sourceLevel}
@@ -398,6 +414,259 @@ theorem rec_glue
       (isTrans := isTrans)
       (glueRespects := glueRespects)
       resultType leftCase rightCase relationRespects)
+    (PushoutHIT.glue sourceValue)
+
+/-- Dependent induction out of a pushout presentation.
+
+The caller supplies representative cases for both sides and a
+heterogeneous proof that the provided pushout relation is respected. -/
+def dependentInductor
+    {sourceType : Type sourceLevel}
+    {leftType : Type leftLevel}
+    {rightType : Type rightLevel}
+    {leftMap : sourceType → leftType}
+    {rightMap : sourceType → rightType}
+    {relation :
+      PushoutCarrier leftType rightType →
+      PushoutCarrier leftType rightType →
+      Prop}
+    {isRefl :
+      ∀ pushoutValue : PushoutCarrier leftType rightType,
+        relation pushoutValue pushoutValue}
+    {isSymm :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {glueRespects :
+      ∀ sourceValue : sourceType,
+        relation
+          (Sum.inl (leftMap sourceValue))
+          (Sum.inr (rightMap sourceValue))}
+    (motive :
+      (PushoutHIT sourceType leftType rightType leftMap rightMap
+        relation isRefl isSymm isTrans glueRespects).carrier →
+        Sort resultLevel)
+    (leftCase :
+      ∀ leftValue : leftType,
+        motive (Sum.inl leftValue))
+    (rightCase :
+      ∀ rightValue : rightType,
+        motive (Sum.inr rightValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        HEq
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase leftValue)
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase rightValue)) :
+    HITInductor
+      (PushoutHIT sourceType leftType rightType leftMap rightMap
+        relation isRefl isSymm isTrans glueRespects)
+      motive where
+  apply := PushoutHIT.dependentEvaluate motive leftCase rightCase
+  respectsRelation := relationRespects
+
+/-- Pushout dependent induction computes on left representatives. -/
+theorem dependentInductor_left
+    {sourceType : Type sourceLevel}
+    {leftType : Type leftLevel}
+    {rightType : Type rightLevel}
+    {leftMap : sourceType → leftType}
+    {rightMap : sourceType → rightType}
+    {relation :
+      PushoutCarrier leftType rightType →
+      PushoutCarrier leftType rightType →
+      Prop}
+    {isRefl :
+      ∀ pushoutValue : PushoutCarrier leftType rightType,
+        relation pushoutValue pushoutValue}
+    {isSymm :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {glueRespects :
+      ∀ sourceValue : sourceType,
+        relation
+          (Sum.inl (leftMap sourceValue))
+          (Sum.inr (rightMap sourceValue))}
+    (motive :
+      (PushoutHIT sourceType leftType rightType leftMap rightMap
+        relation isRefl isSymm isTrans glueRespects).carrier →
+        Sort resultLevel)
+    (leftCase :
+      ∀ leftValue : leftType,
+        motive (Sum.inl leftValue))
+    (rightCase :
+      ∀ rightValue : rightType,
+        motive (Sum.inr rightValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        HEq
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase leftValue)
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase rightValue))
+    (leftValue : leftType) :
+    (PushoutHIT.dependentInductor
+      (sourceType := sourceType)
+      (leftMap := leftMap)
+      (rightMap := rightMap)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      (glueRespects := glueRespects)
+      motive leftCase rightCase relationRespects).run
+      (Sum.inl leftValue) =
+      leftCase leftValue :=
+  rfl
+
+/-- Pushout dependent induction computes on right representatives. -/
+theorem dependentInductor_right
+    {sourceType : Type sourceLevel}
+    {leftType : Type leftLevel}
+    {rightType : Type rightLevel}
+    {leftMap : sourceType → leftType}
+    {rightMap : sourceType → rightType}
+    {relation :
+      PushoutCarrier leftType rightType →
+      PushoutCarrier leftType rightType →
+      Prop}
+    {isRefl :
+      ∀ pushoutValue : PushoutCarrier leftType rightType,
+        relation pushoutValue pushoutValue}
+    {isSymm :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {glueRespects :
+      ∀ sourceValue : sourceType,
+        relation
+          (Sum.inl (leftMap sourceValue))
+          (Sum.inr (rightMap sourceValue))}
+    (motive :
+      (PushoutHIT sourceType leftType rightType leftMap rightMap
+        relation isRefl isSymm isTrans glueRespects).carrier →
+        Sort resultLevel)
+    (leftCase :
+      ∀ leftValue : leftType,
+        motive (Sum.inl leftValue))
+    (rightCase :
+      ∀ rightValue : rightType,
+        motive (Sum.inr rightValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        HEq
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase leftValue)
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase rightValue))
+    (rightValue : rightType) :
+    (PushoutHIT.dependentInductor
+      (sourceType := sourceType)
+      (leftMap := leftMap)
+      (rightMap := rightMap)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      (glueRespects := glueRespects)
+      motive leftCase rightCase relationRespects).run
+      (Sum.inr rightValue) =
+      rightCase rightValue :=
+  rfl
+
+/-- Pushout dependent induction respects a glue witness. -/
+theorem dependentInductor_glue
+    {sourceType : Type sourceLevel}
+    {leftType : Type leftLevel}
+    {rightType : Type rightLevel}
+    {leftMap : sourceType → leftType}
+    {rightMap : sourceType → rightType}
+    {relation :
+      PushoutCarrier leftType rightType →
+      PushoutCarrier leftType rightType →
+      Prop}
+    {isRefl :
+      ∀ pushoutValue : PushoutCarrier leftType rightType,
+        relation pushoutValue pushoutValue}
+    {isSymm :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {glueRespects :
+      ∀ sourceValue : sourceType,
+        relation
+          (Sum.inl (leftMap sourceValue))
+          (Sum.inr (rightMap sourceValue))}
+    (motive :
+      (PushoutHIT sourceType leftType rightType leftMap rightMap
+        relation isRefl isSymm isTrans glueRespects).carrier →
+        Sort resultLevel)
+    (leftCase :
+      ∀ leftValue : leftType,
+        motive (Sum.inl leftValue))
+    (rightCase :
+      ∀ rightValue : rightType,
+        motive (Sum.inr rightValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : PushoutCarrier leftType rightType},
+        relation leftValue rightValue →
+        HEq
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase leftValue)
+          (PushoutHIT.dependentEvaluate motive leftCase rightCase rightValue))
+    (sourceValue : sourceType) :
+    HEq
+      ((PushoutHIT.dependentInductor
+        (sourceType := sourceType)
+        (leftMap := leftMap)
+        (rightMap := rightMap)
+        (relation := relation)
+        (isRefl := isRefl)
+        (isSymm := isSymm)
+        (isTrans := isTrans)
+        (glueRespects := glueRespects)
+        motive leftCase rightCase relationRespects).run
+        (Sum.inl (leftMap sourceValue)))
+      ((PushoutHIT.dependentInductor
+        (sourceType := sourceType)
+        (leftMap := leftMap)
+        (rightMap := rightMap)
+        (relation := relation)
+        (isRefl := isRefl)
+        (isSymm := isSymm)
+        (isTrans := isTrans)
+        (glueRespects := glueRespects)
+        motive leftCase rightCase relationRespects).run
+        (Sum.inr (rightMap sourceValue))) :=
+  HITInductor.run_respects
+    (PushoutHIT.dependentInductor
+      (sourceType := sourceType)
+      (leftMap := leftMap)
+      (rightMap := rightMap)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      (glueRespects := glueRespects)
+      motive leftCase rightCase relationRespects)
     (PushoutHIT.glue sourceValue)
 
 end PushoutHIT

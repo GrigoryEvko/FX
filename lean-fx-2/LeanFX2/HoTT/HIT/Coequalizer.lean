@@ -246,6 +246,165 @@ theorem rec_equalize
       resultType targetCase relationRespects)
     (CoequalizerHIT.equalize sourceValue)
 
+/-- Dependent induction out of a coequalizer presentation. -/
+def dependentInductor
+    {sourceType : Type sourceLevel}
+    {targetType : Type targetLevel}
+    {leftMap : sourceType → targetType}
+    {rightMap : sourceType → targetType}
+    {relation : targetType → targetType → Prop}
+    {isRefl :
+      ∀ targetValue : targetType,
+        relation targetValue targetValue}
+    {isSymm :
+      ∀ {leftValue rightValue : targetType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : targetType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {equalizeRespects :
+      ∀ sourceValue : sourceType,
+        relation (leftMap sourceValue) (rightMap sourceValue)}
+    (motive :
+      (CoequalizerHIT sourceType targetType leftMap rightMap
+        relation isRefl isSymm isTrans equalizeRespects).carrier →
+        Sort resultLevel)
+    (targetCase :
+      ∀ targetValue : targetType,
+        motive (CoequalizerHIT.point targetValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : targetType},
+        relation leftValue rightValue →
+        HEq (targetCase leftValue) (targetCase rightValue)) :
+    HITInductor
+      (CoequalizerHIT sourceType targetType leftMap rightMap
+        relation isRefl isSymm isTrans equalizeRespects)
+      motive where
+  apply := targetCase
+  respectsRelation := relationRespects
+
+/-- Coequalizer dependent induction computes on point representatives. -/
+theorem dependentInductor_point
+    {sourceType : Type sourceLevel}
+    {targetType : Type targetLevel}
+    {leftMap : sourceType → targetType}
+    {rightMap : sourceType → targetType}
+    {relation : targetType → targetType → Prop}
+    {isRefl :
+      ∀ targetValue : targetType,
+        relation targetValue targetValue}
+    {isSymm :
+      ∀ {leftValue rightValue : targetType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : targetType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {equalizeRespects :
+      ∀ sourceValue : sourceType,
+        relation (leftMap sourceValue) (rightMap sourceValue)}
+    (motive :
+      (CoequalizerHIT sourceType targetType leftMap rightMap
+        relation isRefl isSymm isTrans equalizeRespects).carrier →
+        Sort resultLevel)
+    (targetCase :
+      ∀ targetValue : targetType,
+        motive (CoequalizerHIT.point targetValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : targetType},
+        relation leftValue rightValue →
+        HEq (targetCase leftValue) (targetCase rightValue))
+    (targetValue : targetType) :
+    (CoequalizerHIT.dependentInductor
+      (sourceType := sourceType)
+      (leftMap := leftMap)
+      (rightMap := rightMap)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      (equalizeRespects := equalizeRespects)
+      motive targetCase relationRespects).run
+      (CoequalizerHIT.point targetValue) =
+      targetCase targetValue :=
+  rfl
+
+/-- Coequalizer dependent induction respects the path equating the two
+maps. -/
+theorem dependentInductor_equalize
+    {sourceType : Type sourceLevel}
+    {targetType : Type targetLevel}
+    {leftMap : sourceType → targetType}
+    {rightMap : sourceType → targetType}
+    {relation : targetType → targetType → Prop}
+    {isRefl :
+      ∀ targetValue : targetType,
+        relation targetValue targetValue}
+    {isSymm :
+      ∀ {leftValue rightValue : targetType},
+        relation leftValue rightValue →
+        relation rightValue leftValue}
+    {isTrans :
+      ∀ {leftValue middleValue rightValue : targetType},
+        relation leftValue middleValue →
+        relation middleValue rightValue →
+        relation leftValue rightValue}
+    {equalizeRespects :
+      ∀ sourceValue : sourceType,
+        relation (leftMap sourceValue) (rightMap sourceValue)}
+    (motive :
+      (CoequalizerHIT sourceType targetType leftMap rightMap
+        relation isRefl isSymm isTrans equalizeRespects).carrier →
+        Sort resultLevel)
+    (targetCase :
+      ∀ targetValue : targetType,
+        motive (CoequalizerHIT.point targetValue))
+    (relationRespects :
+      ∀ {leftValue rightValue : targetType},
+        relation leftValue rightValue →
+        HEq (targetCase leftValue) (targetCase rightValue))
+    (sourceValue : sourceType) :
+    HEq
+      ((CoequalizerHIT.dependentInductor
+        (sourceType := sourceType)
+        (leftMap := leftMap)
+        (rightMap := rightMap)
+        (relation := relation)
+        (isRefl := isRefl)
+        (isSymm := isSymm)
+        (isTrans := isTrans)
+        (equalizeRespects := equalizeRespects)
+        motive targetCase relationRespects).run
+        (CoequalizerHIT.point (leftMap sourceValue)))
+      ((CoequalizerHIT.dependentInductor
+        (sourceType := sourceType)
+        (leftMap := leftMap)
+        (rightMap := rightMap)
+        (relation := relation)
+        (isRefl := isRefl)
+        (isSymm := isSymm)
+        (isTrans := isTrans)
+        (equalizeRespects := equalizeRespects)
+        motive targetCase relationRespects).run
+        (CoequalizerHIT.point (rightMap sourceValue))) :=
+  HITInductor.run_respects
+    (CoequalizerHIT.dependentInductor
+      (sourceType := sourceType)
+      (leftMap := leftMap)
+      (rightMap := rightMap)
+      (relation := relation)
+      (isRefl := isRefl)
+      (isSymm := isSymm)
+      (isTrans := isTrans)
+      (equalizeRespects := equalizeRespects)
+      motive targetCase relationRespects)
+    (CoequalizerHIT.equalize sourceValue)
+
 end CoequalizerHIT
 
 end HIT

@@ -83,6 +83,52 @@ theorem rec_path {sourceType : Type sourceLevel}
     (SetTrunc.rec resultType introCase)
     (SetTrunc.path sameValue)
 
+/-- Dependent induction out of the set-truncation presentation.
+
+At the current setoid level, the only relation is equality of source
+representatives, so a dependent function over representatives lifts
+directly. -/
+def dependentInductor {sourceType : Type sourceLevel}
+    (motive : (SetTrunc sourceType).carrier → Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (SetTrunc.intro sourceValue)) :
+    HITInductor (SetTrunc sourceType) motive where
+  apply := introCase
+  respectsRelation := fun relationWitness => by
+    cases relationWitness
+    exact HEq.rfl
+
+/-- Set-truncation dependent induction computes on introduced
+representatives. -/
+theorem dependentInductor_intro {sourceType : Type sourceLevel}
+    (motive : (SetTrunc sourceType).carrier → Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (SetTrunc.intro sourceValue))
+    (sourceValue : sourceType) :
+    (SetTrunc.dependentInductor motive introCase).run
+      (SetTrunc.intro sourceValue) =
+      introCase sourceValue :=
+  rfl
+
+/-- Set-truncation dependent induction respects equality paths. -/
+theorem dependentInductor_path {sourceType : Type sourceLevel}
+    (motive : (SetTrunc sourceType).carrier → Sort resultLevel)
+    (introCase :
+      ∀ sourceValue : sourceType,
+        motive (SetTrunc.intro sourceValue))
+    {leftValue rightValue : sourceType}
+    (sameValue : leftValue = rightValue) :
+    HEq
+      ((SetTrunc.dependentInductor motive introCase).run
+        (SetTrunc.intro leftValue))
+      ((SetTrunc.dependentInductor motive introCase).run
+        (SetTrunc.intro rightValue)) :=
+  HITInductor.run_respects
+    (SetTrunc.dependentInductor motive introCase)
+    (SetTrunc.path sameValue)
+
 end SetTrunc
 
 end HIT
