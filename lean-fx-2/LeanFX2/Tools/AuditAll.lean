@@ -37,6 +37,13 @@ import LeanFX2.Algo.WHNF
 import LeanFX2.Cubical.Path
 import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Cubical.Transport
+import LeanFX2.HoTT.Equivalence
+import LeanFX2.HoTT.Funext
+import LeanFX2.HoTT.FunextFull
+import LeanFX2.HoTT.Path.Groupoid
+import LeanFX2.HoTT.Univalence
+import LeanFX2.HoTT.UnivalenceFull
+import LeanFX2.HoTT.UnivalenceTransport
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
 import LeanFX2.HoTT.HIT.SetTrunc
@@ -386,6 +393,41 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Conv.toRawJoin
 #assert_no_axioms LeanFX2.Conv.canonicalRaw
 #assert_no_axioms LeanFX2.Conv.transRaw
+
+-- Day 3 HoTT equivalence, univalence, funext, and path algebra.
+#assert_no_axioms LeanFX2.Equiv.refl
+#assert_no_axioms LeanFX2.Equiv.symm
+#assert_no_axioms LeanFX2.Equiv.trans
+#assert_no_axioms LeanFX2.Equiv.trans_refl_left_toFun
+#assert_no_axioms LeanFX2.Equiv.trans_refl_right_toFun
+#assert_no_axioms LeanFX2.IsContr.unit
+#assert_no_axioms LeanFX2.IsEquiv.identity
+#assert_no_axioms LeanFX2.Univalence
+#assert_no_axioms LeanFX2.UnivalenceHet
+#assert_no_axioms LeanFX2.Univalence.idToEquivMeta
+#assert_no_axioms LeanFX2.Univalence.idToEquivMeta_isEquiv_toFun
+#assert_no_axioms LeanFX2.Univalence.idToEquivMeta_isEquiv_invFun
+#assert_no_axioms LeanFX2.Univalence.ua_beta_meta
+#assert_no_axioms LeanFX2.Univalence.ua_beta_toFun_pointwise
+#assert_no_axioms LeanFX2.Univalence.ua_beta_invFun_pointwise
+#assert_no_axioms LeanFX2.funext
+#assert_no_axioms LeanFX2.FunextHet
+#assert_no_axioms LeanFX2.Funext.fnEqToPointwiseMeta
+#assert_no_axioms LeanFX2.Funext.pointwiseMetaToFnEqAtRefl
+#assert_no_axioms LeanFX2.Funext.kernelMetaCorrespondence_atRefl
+#assert_no_axioms LeanFX2.Path.trans
+#assert_no_axioms LeanFX2.Path.symm
+#assert_no_axioms LeanFX2.Path.trans_assoc
+#assert_no_axioms LeanFX2.Path.trans_refl_left
+#assert_no_axioms LeanFX2.Path.trans_refl_right
+#assert_no_axioms LeanFX2.Path.symm_symm
+#assert_no_axioms LeanFX2.Path.trans_symm_left
+#assert_no_axioms LeanFX2.Path.trans_symm_right
+#assert_no_axioms LeanFX2.Path.symm_trans
+#assert_no_axioms LeanFX2.PathGroupoidLaws
+#assert_no_axioms LeanFX2.PathGroupoidLaws.instance
+#assert_no_axioms LeanFX2.Path.trans_left_cancel
+#assert_no_axioms LeanFX2.Path.trans_right_cancel
 
 -- HoTT HIT setoid foundation
 #assert_no_axioms LeanFX2.HoTT.HIT.EmptyPathLabel
