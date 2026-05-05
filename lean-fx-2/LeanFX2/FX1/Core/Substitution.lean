@@ -85,6 +85,15 @@ theorem compose_lift_apply
         (lift (compose outerRenaming innerRenaming)
           (Nat.succ smallerIndex))
 
+/-- Shifting after a renaming agrees pointwise with lifting that renaming
+after shifting. -/
+theorem compose_shift_lift_apply
+    (variableRenaming : Renaming) (index : Nat) :
+    Eq
+      (compose shift variableRenaming index)
+      (compose (lift variableRenaming) shift index) :=
+  Eq.refl (compose shift variableRenaming index)
+
 end Renaming
 
 namespace Expr
@@ -247,6 +256,28 @@ theorem rename_compose
         (rename_compose outerRenaming innerRenaming functionExpr)
         (rename_compose outerRenaming innerRenaming argumentExpr)
 
+/-- Weakening after a renaming agrees with renaming after weakening by the
+lifted variable map. -/
+theorem rename_shift_lift_commute
+    (variableRenaming : Renaming) :
+    forall expression : Expr,
+      Eq
+        (rename Renaming.shift (rename variableRenaming expression))
+        (rename (Renaming.lift variableRenaming)
+          (rename Renaming.shift expression)) :=
+  fun expression =>
+    Eq.trans
+      (rename_compose Renaming.shift variableRenaming expression)
+      (Eq.trans
+        (rename_ext
+          (Renaming.compose_shift_lift_apply variableRenaming)
+          expression)
+        (Eq.symm
+          (rename_compose
+            (Renaming.lift variableRenaming)
+            Renaming.shift
+            expression)))
+
 end Expr
 
 /-- De Bruijn substitution for FX1 expressions. -/
@@ -262,6 +293,12 @@ def identity : Substitution :=
 /-- Embed a renaming as a substitution that maps each variable to a variable. -/
 def ofRenaming (variableRenaming : Renaming) : Substitution :=
   fun index => Expr.bvar (variableRenaming index)
+
+/-- Post-compose every substituted expression with a renaming. -/
+def renameOutput
+    (variableRenaming : Renaming) (substitution : Substitution) :
+    Substitution :=
+  fun index => Expr.rename variableRenaming (substitution index)
 
 /-- Lift a substitution under one binder. -/
 def lift (substitution : Substitution) : Substitution :=
@@ -315,6 +352,24 @@ theorem lift_ofRenaming_apply
         (ofRenaming
           (Renaming.lift variableRenaming)
           (Nat.succ smallerIndex))
+
+/-- Lifting commutes with post-renaming substituted expressions. -/
+theorem lift_renameOutput_apply
+    (variableRenaming : Renaming) (substitution : Substitution)
+    (index : Nat) :
+    Eq
+      (lift (renameOutput variableRenaming substitution) index)
+      (renameOutput (Renaming.lift variableRenaming)
+        (lift substitution) index) :=
+  match index with
+  | Nat.zero =>
+      Eq.refl
+        (renameOutput (Renaming.lift variableRenaming)
+          (lift substitution) Nat.zero)
+  | Nat.succ smallerIndex =>
+      Expr.rename_shift_lift_commute
+        variableRenaming
+        (substitution smallerIndex)
 
 /-- The singleton substitution maps the newest variable to its replacement. -/
 theorem singleton_newest (replacement : Expr) :
@@ -440,6 +495,60 @@ theorem subst_ofRenaming
       Expr.app_congr
         (subst_ofRenaming variableRenaming functionExpr)
         (subst_ofRenaming variableRenaming argumentExpr)
+
+/-- Renaming after substitution is substitution with post-renamed outputs. -/
+theorem rename_subst_commute
+    (variableRenaming : Renaming) (substitution : Substitution) :
+    forall expression : Expr,
+      Eq
+        (rename variableRenaming (subst substitution expression))
+        (subst (Substitution.renameOutput variableRenaming substitution)
+          expression)
+  | Expr.bvar index =>
+      Eq.refl
+        (Substitution.renameOutput variableRenaming substitution index)
+  | Expr.sort sortLevel =>
+      Eq.refl
+        (subst
+          (Substitution.renameOutput variableRenaming substitution)
+          (Expr.sort sortLevel))
+  | Expr.const constName =>
+      Eq.refl
+        (subst
+          (Substitution.renameOutput variableRenaming substitution)
+          (Expr.const constName))
+  | Expr.pi domainExpr bodyExpr =>
+      Expr.pi_congr
+        (rename_subst_commute variableRenaming substitution domainExpr)
+        (Eq.trans
+          (rename_subst_commute
+            (Renaming.lift variableRenaming)
+            (Substitution.lift substitution)
+            bodyExpr)
+          (subst_ext
+            (fun index =>
+              Eq.symm
+                (Substitution.lift_renameOutput_apply
+                  variableRenaming substitution index))
+            bodyExpr))
+  | Expr.lam domainExpr bodyExpr =>
+      Expr.lam_congr
+        (rename_subst_commute variableRenaming substitution domainExpr)
+        (Eq.trans
+          (rename_subst_commute
+            (Renaming.lift variableRenaming)
+            (Substitution.lift substitution)
+            bodyExpr)
+          (subst_ext
+            (fun index =>
+              Eq.symm
+                (Substitution.lift_renameOutput_apply
+                  variableRenaming substitution index))
+            bodyExpr))
+  | Expr.app functionExpr argumentExpr =>
+      Expr.app_congr
+        (rename_subst_commute variableRenaming substitution functionExpr)
+        (rename_subst_commute variableRenaming substitution argumentExpr)
 
 /-- `subst0` fires on the newest variable. -/
 theorem subst0_bvar_zero (replacement : Expr) :
