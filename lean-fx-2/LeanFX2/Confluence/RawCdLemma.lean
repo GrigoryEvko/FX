@@ -16,10 +16,10 @@ Proof shape: induction on the parallel-step derivation.
 * `refl t`: `cd_dominates t` directly.
 * Pure cong (lam/pair/listCons/optionSome/eitherInl/Inr/natSucc
   /reflCong/modIntro/modElim/subsume): apply cong rule with IHs.
-* Redex-bearing cong (app/pathApp/fst/snd/boolElim/natElim/natRec
-  /listElim/optionMatch/eitherMatch/idJ): unfold cd via simp +
-  split.  Redex arms fire the deep rule with `heq ▸ IH`; cong
-  fallthrough closes via `all_goals`.
+* Redex-bearing cong (app/pathApp/glueElim/fst/snd/boolElim
+  /natElim/natRec/listElim/optionMatch/eitherMatch/idJ): unfold cd
+  via simp + split.  Redex arms fire the deep rule with `heq ▸ IH`;
+  cong fallthrough closes via `all_goals`.
 * Shallow β: cd contracts the same redex; `subst0_par` for
   betaApp; direct IH for betaFst/SndPair.
 * Shallow ι: cd contracts the redex; pick the appropriate IH or
@@ -340,8 +340,9 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.refl_inv witnessIH
       rw [cdWitnessEq]
       exact baseIH
-  -- D1.6/D2.5: most new raw ctors are pure cong. pathApp also has
-  -- cubical β, so its cong proof splits on the developed path.
+  -- D1.6/D2.5: most new raw ctors are pure cong. pathApp and
+  -- glueElim also have cubical β, so their cong proofs split on the
+  -- developed head.
   | intervalOppCong _ intervalIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.intervalOppCong intervalIH
@@ -364,9 +365,22 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | glueIntroCong _ _ baseIH partialIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.glueIntroCong baseIH partialIH
+  | betaGlueElimIntro baseStep partialStep baseIH partialIH =>
+      simp only [RawTerm.cd, RawTerm.cdGlueElimCase]
+      exact baseIH
+  | betaGlueElimIntroDeep gluedStep gluedIH =>
+      simp only [RawTerm.cd, RawTerm.cdGlueElimCase]
+      obtain ⟨baseAfter, partialAfter, cdGluedEq, baseParStep, _⟩ :=
+        RawStep.par.glueIntro_inv gluedIH
+      rw [cdGluedEq]
+      exact baseParStep
   | glueElimCong _ gluedIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.glueElimCong gluedIH
+      simp only [RawTerm.cd, RawTerm.cdGlueElimCase]
+      split
+      case _ baseRawTarget partialRawTarget gluedEqn =>
+          exact RawStep.par.betaGlueElimIntroDeep
+            (gluedEqn ▸ gluedIH)
+      all_goals exact RawStep.par.glueElimCong gluedIH
   | transpCong _ _ pathIH sourceIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.transpCong pathIH sourceIH

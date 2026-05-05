@@ -27,7 +27,8 @@ prototyping confluence proofs and bridging back to typed.
 
 Mirrors `Step.par` at the raw layer: core MLTT congruence, shallow
 β/ι, deep β/ι, D1.6 cubical/HOTT/modal congruence, and incremental
-D2.5 cubical β for path application.  η deliberately omitted.
+D2.5 cubical β for path application and Glue elimination.  η
+deliberately omitted.
 
 ## modIntro / modElim / subsume
 
@@ -558,6 +559,21 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par partialRawSource partialRawTarget →
       RawStep.par (RawTerm.glueIntro baseRawSource partialRawSource)
                   (RawTerm.glueIntro baseRawTarget partialRawTarget)
+  /-- Cubical Glue β: `unglue (glue base partial) ⟶ base`. -/
+  | betaGlueElimIntro {scope : Nat}
+      {baseRawSource baseRawTarget partialRawSource partialRawTarget : RawTerm scope} :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par partialRawSource partialRawTarget →
+      RawStep.par (RawTerm.glueElim
+                    (RawTerm.glueIntro baseRawSource partialRawSource))
+                  baseRawTarget
+  /-- Deep cubical Glue β: glued value develops to a `glueIntro`. -/
+  | betaGlueElimIntroDeep {scope : Nat}
+      {gluedRawSource : RawTerm scope}
+      {baseRawTarget partialRawTarget : RawTerm scope} :
+      RawStep.par gluedRawSource
+        (RawTerm.glueIntro baseRawTarget partialRawTarget) →
+      RawStep.par (RawTerm.glueElim gluedRawSource) baseRawTarget
   /-- Cong: glueElim reduces in glued value. -/
   | glueElimCong {scope : Nat}
       {gluedRawSource gluedRawTarget : RawTerm scope} :

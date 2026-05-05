@@ -7,8 +7,9 @@ import LeanFX2.Confluence.RawDiamond
 
 Day 3 of the cubical+2LTT+HOTT sprint:
 * D3.1 — Confluence/RawCd.lean: D1.6 cong cases plus D2.5 raw
-  path-application beta complete development — verified by extension
-* D3.2 — Confluence/RawCdLemma.lean: congruence and raw beta pathApp
+  path-application and Glue beta complete development — verified by
+  extension
+* D3.2 — Confluence/RawCdLemma.lean: congruence plus raw cubical beta
   cases — verified by extension
 * D3.3 — Diamond property: RAW-side diamond + parStar.confluence DONE
   via parametric proof in cd_lemma; typed-side `Step.par.diamond` is
@@ -29,11 +30,12 @@ Until then, raw confluence + the rfl-bridge `Term.toRaw` deliver
 typed confluence as an immediate corollary at usage sites.
 -/
 
--- D3.1: cd extends through new ctors and raw path application beta
+-- D3.1: cd extends through new ctors and raw cubical beta rules
 #print axioms LeanFX2.RawTerm.cd
 #print axioms LeanFX2.RawTerm.cdPathAppCase
+#print axioms LeanFX2.RawTerm.cdGlueElimCase
 
--- D3.2: cd_lemma extends through cong and raw path application beta
+-- D3.2: cd_lemma extends through cong and raw cubical beta rules
 #print axioms LeanFX2.RawStep.par.cd_lemma
 
 -- D3.3: diamond + cd_dominates (parametric in cd_lemma)

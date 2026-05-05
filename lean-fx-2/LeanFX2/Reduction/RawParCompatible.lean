@@ -532,6 +532,14 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
         (intervalIH substsRelated)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH substsRelated) (partialIH substsRelated)
+  | betaGlueElimIntro _ _ baseIH partialIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaGlueElimIntro
+        (baseIH substsRelated)
+        (partialIH substsRelated)
+  | betaGlueElimIntroDeep _ gluedIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaGlueElimIntroDeep (gluedIH substsRelated)
   | glueElimCong _ gluedIH =>
       exact RawStep.par.glueElimCong (gluedIH substsRelated)
   | transpCong _ _ pathIH sourceIH =>

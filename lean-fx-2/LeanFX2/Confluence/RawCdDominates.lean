@@ -9,11 +9,12 @@ Proof shape: structural induction on the raw term.  For each ctor:
 * Atomic (var/unit/booleans/zero/Nil/None) — `RawStep.par.refl _`.
 * Pure cong (lam/pair/listCons/optionSome/eitherInl/Inr/natSucc/refl
   /modIntro/modElim/subsume) — apply the cong rule with IH.
-* Redex-bearing (app/pathApp/fst/snd/boolElim/natElim/natRec/listElim
-  /optionMatch/eitherMatch/idJ) — `simp only [RawTerm.cd]; split`
-  produces one goal per ctor of the inner match's scrutinee; the
-  redex case fires the appropriate Deep β/ι rule using the IH;
-  `all_goals` discharges the cong-shape fallthrough.
+* Redex-bearing (app/pathApp/glueElim/fst/snd/boolElim/natElim
+  /natRec/listElim/optionMatch/eitherMatch/idJ) —
+  `simp only [RawTerm.cd]; split` produces one goal per ctor of the
+  inner match's scrutinee; the redex case fires the appropriate Deep
+  β/ι rule using the IH; `all_goals` discharges the cong-shape
+  fallthrough.
 
 Pairs with `cd_lemma` (every parallel reduct lands in cd t) to give
 the Tait–Martin-Löf complete-development pair from which raw
@@ -202,7 +203,7 @@ theorem RawStep.par.cd_dominates :
   | _, .subsume innerTerm =>
       RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
   -- D1.6/D2.5: most new ctors are pure cong at raw level; pathApp
-  -- now has the cubical β redex below.
+  -- and glueElim now have cubical β redexes below.
   -- We use term-mode (no `by`) so Lean elaborates by unifying the
   -- expected type against the cong rule directly, avoiding the
   -- 550-branch `simp only [RawTerm.cd]` whnf blowup.  Each ctor's
@@ -237,8 +238,15 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.glueIntroCong
         (RawStep.par.cd_dominates baseValue)
         (RawStep.par.cd_dominates partialValue)
-  | _, .glueElim gluedValue =>
-      RawStep.par.glueElimCong (RawStep.par.cd_dominates gluedValue)
+  | _, .glueElim gluedValue => by
+      let gluedParStep := RawStep.par.cd_dominates gluedValue
+      unfold RawTerm.cd
+      unfold RawTerm.cdGlueElimCase
+      split
+      case _ baseRawTarget partialRawTarget gluedEqn =>
+          exact RawStep.par.betaGlueElimIntroDeep
+            (gluedEqn ▸ gluedParStep)
+      all_goals exact RawStep.par.glueElimCong gluedParStep
   | _, .transp pathTerm sourceTerm =>
       RawStep.par.transpCong
         (RawStep.par.cd_dominates pathTerm)

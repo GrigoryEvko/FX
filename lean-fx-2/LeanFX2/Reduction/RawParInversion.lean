@@ -323,15 +323,26 @@ theorem RawStep.par.glueIntro_inv {scope : Nat}
   | glueIntroCong baseStep partialStep =>
       exact ⟨_, _, rfl, baseStep, partialStep⟩
 
-/-- `RawStep.par (glueElim g) target → target = glueElim g' ∧ par`. -/
+/-- `RawStep.par (glueElim g) target` either stays a congruent
+`glueElim`, or fires Glue β after the glued value develops to a
+`glueIntro`. -/
 theorem RawStep.par.glueElim_inv {scope : Nat}
     {gluedValue : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.glueElim gluedValue) target) :
-    ∃ gluedTarget, target = RawTerm.glueElim gluedTarget ∧
-      RawStep.par gluedValue gluedTarget := by
+    (∃ gluedTarget, target = RawTerm.glueElim gluedTarget ∧
+      RawStep.par gluedValue gluedTarget) ∨
+    (∃ baseTarget partialTarget,
+      target = baseTarget ∧
+        RawStep.par gluedValue
+          (RawTerm.glueIntro baseTarget partialTarget)) := by
   cases parallelStep with
-  | refl _ => exact ⟨gluedValue, rfl, RawStep.par.refl _⟩
-  | glueElimCong gluedStep => exact ⟨_, rfl, gluedStep⟩
+  | refl _ => exact Or.inl ⟨gluedValue, rfl, RawStep.par.refl _⟩
+  | betaGlueElimIntro baseStep partialStep =>
+      exact Or.inr ⟨_, _, rfl,
+        RawStep.par.glueIntroCong baseStep partialStep⟩
+  | betaGlueElimIntroDeep gluedStep =>
+      exact Or.inr ⟨_, _, rfl, gluedStep⟩
+  | glueElimCong gluedStep => exact Or.inl ⟨_, rfl, gluedStep⟩
 
 /-- `RawStep.par (transp p s) target → target = transp p' s' ∧ pars`. -/
 theorem RawStep.par.transp_inv {scope : Nat}

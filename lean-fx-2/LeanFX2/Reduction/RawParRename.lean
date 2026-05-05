@@ -227,6 +227,12 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.betaPathAppDeep (pathIH _) (intervalIH _)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH _) (partialIH _)
+  | betaGlueElimIntro _ _ baseIH partialIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaGlueElimIntro (baseIH _) (partialIH _)
+  | betaGlueElimIntroDeep _ gluedIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaGlueElimIntroDeep (gluedIH _)
   | glueElimCong _ gluedIH =>
       exact RawStep.par.glueElimCong (gluedIH _)
   | transpCong _ _ pathIH sourceIH =>
