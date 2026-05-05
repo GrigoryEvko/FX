@@ -5,6 +5,7 @@ import LeanFX2.Graded.Instances.Reentrancy
 import LeanFX2.Graded.Instances.FPOrder
 import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
+import LeanFX2.Graded.Instances.Lifetime
 import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Representation
 import LeanFX2.Graded.Instances.ClockDomain
@@ -52,7 +53,8 @@ Remaining D5.4 instances (TBD per-need):
                                        not a semiring because join-only
                                        lattices cannot satisfy
                                        annihilation
-* `LifetimeGrade` (dim 7)           — region-variable preorder
+* `LifetimeGrade` (dim 7)           — shipped as `GradeJoinSemilattice`
+                                       over named-region obligation rows
 * `ProvenanceGrade` (dim 8)         — origin-label lattice
 * `TrustGrade` (dim 9)              — shipped as 5-chain trust-debt
                                        lattice
@@ -122,6 +124,16 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.instGradeJoinSemilatticeUnit
 #print axioms LeanFX2.Graded.Instances.EffectGrade
 #print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeEffectGrade
+
+-- D5.4 Lifetime (dim 7, bounded join-semilattice over region rows)
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade.Member
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade.subset
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade.join
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade.member_append_left
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade.member_append_right
+#print axioms LeanFX2.Graded.Instances.LifetimeGrade.member_append_inv
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeLifetimeGrade
 
 -- D5.4 Trust (dim 9, 5-chain trust-debt lattice)
 #print axioms LeanFX2.Graded.Instances.TrustGrade
