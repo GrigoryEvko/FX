@@ -503,6 +503,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.HITInductor.run_respects
 #assert_no_axioms LeanFX2.HoTT.HIT.HITInductor.constant
 #assert_no_axioms LeanFX2.HoTT.HIT.HITInductor.constant_run
+#assert_no_axioms LeanFX2.HoTT.HIT.PropTruncRel
+#assert_no_axioms LeanFX2.HoTT.HIT.PropTruncRel.relation_refl
+#assert_no_axioms LeanFX2.HoTT.HIT.PropTruncRel.relation_symm
+#assert_no_axioms LeanFX2.HoTT.HIT.PropTruncRel.relation_trans
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.intro
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.squash

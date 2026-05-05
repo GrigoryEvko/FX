@@ -75,6 +75,14 @@ theorem propTrunc_squash_smoke :
     (HoTT.HIT.PropTrunc.intro ())
     (HoTT.HIT.PropTrunc.intro ())
 
+/-- Propositional truncation relates distinct Bool witnesses through
+the named squash relation. -/
+theorem propTrunc_bool_squash_smoke :
+    (HoTT.HIT.PropTrunc Bool).relation
+      (HoTT.HIT.PropTrunc.intro false)
+      (HoTT.HIT.PropTrunc.intro true) :=
+  HoTT.HIT.PropTrunc.squash false true
+
 /-- Propositional truncation recursion computes on introduced values. -/
 theorem propTrunc_rec_intro_smoke :
     (HoTT.HIT.PropTrunc.rec
@@ -90,6 +98,29 @@ theorem propTrunc_rec_intro_smoke :
     (fun _ => true)
     (fun _ _ => rfl)
     ()
+
+/-- Propositional truncation recursion respects the squash path between
+distinct Bool representatives when the eliminator is constant. -/
+theorem propTrunc_bool_rec_squash_smoke :
+    (HoTT.HIT.PropTrunc.rec
+      (sourceType := Bool)
+      Bool
+      (fun _ => true)
+      (fun _ _ => rfl)).run
+      (HoTT.HIT.PropTrunc.intro false) =
+      (HoTT.HIT.PropTrunc.rec
+        (sourceType := Bool)
+        Bool
+        (fun _ => true)
+        (fun _ _ => rfl)).run
+        (HoTT.HIT.PropTrunc.intro true) :=
+  HoTT.HIT.PropTrunc.rec_squash
+    (sourceType := Bool)
+    Bool
+    (fun _ => true)
+    (fun _ _ => rfl)
+    false
+    true
 
 /-- Propositional truncation dependent induction computes on introduced
 values. -/
@@ -457,7 +488,9 @@ theorem coequalizer_dependentInductor_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.hitInductor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_squash_smoke
+#assert_no_axioms LeanFX2.Smoke.propTrunc_bool_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.propTrunc_bool_rec_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_dependentInductor_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_path_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_rec_intro_smoke
