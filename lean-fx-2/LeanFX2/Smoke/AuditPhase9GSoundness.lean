@@ -74,6 +74,19 @@ theorem eval_sound_unitInWhnf :
              (Term.eval 5 Term.unit).snd :=
   Term.eval_sound 5 Term.unit
 
+/-- Concrete: `headStep?_sound` on a fst-pair β reduction. -/
+theorem fstPair_step_sound
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (firstValue : Term context firstType firstRaw)
+    (secondValue :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw) :
+    Step (Term.fst (Term.pair (secondType := secondType)
+                      firstValue secondValue))
+         firstValue :=
+  Term.headStep?_sound (result := ⟨_, firstValue⟩) _ rfl
+
 /-- Concrete: `headStep?_sound` on a natElim-zero reduction. -/
 theorem natElimZero_step_sound
     {motiveType : Ty level scope}

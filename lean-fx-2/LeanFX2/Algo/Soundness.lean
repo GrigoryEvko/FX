@@ -464,7 +464,6 @@ theorem Term.headStep?_sound
   | appPi _ _ => nomatch firedEq
   | pathApp _ _ => nomatch firedEq
   | glueElim _ => nomatch firedEq
-  | fst _ => nomatch firedEq
   | snd _ => nomatch firedEq
   | idJ _ _ => nomatch firedEq
   | idStrictRefl _ _ => nomatch firedEq
@@ -479,6 +478,55 @@ theorem Term.headStep?_sound
   -- from rfl, headEq]` to definitionally unfold `headStep?` and
   -- substitute the headCtor value.  Avoids `simp` and `by_cases`
   -- which both leak propext on this large dep-typed match.
+  | fst pairTerm =>
+    match headEq : pairTerm.headCtor with
+    | .pair =>
+      rw [show (Term.fst pairTerm).headStep?
+            = (let pairHead := pairTerm.headCtor
+               if pairHead == .pair then
+                 match Term.tryDestructPair pairTerm with
+                 | some ⟨_, _, firstValue, _, _⟩ => some ⟨_, firstValue⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructPair pairTerm with
+      | some ⟨_, _, firstValue, secondValue, ⟨rawEq, pairHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have pairEq : pairTerm = Term.pair firstValue secondValue :=
+          eq_of_heq pairHEq
+        rw [pairEq]
+        exact Step.betaFstPair firstValue secondValue
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .fst | .snd
+    | .boolTrue | .boolFalse | .boolElim
+    | .natZero | .natSucc | .natElim | .natRec
+    | .listNil | .listCons | .listElim
+    | .optionNone | .optionSome | .optionMatch
+    | .eitherInl | .eitherInr | .eitherMatch
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
+    | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
+    | .universeCode | .cumulUp
+    | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
+    | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
+    | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+    | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
+      rw [show (Term.fst pairTerm).headStep?
+            = (let pairHead := pairTerm.headCtor
+               if pairHead == .pair then
+                 match Term.tryDestructPair pairTerm with
+                 | some ⟨_, _, firstValue, _, _⟩ => some ⟨_, firstValue⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
   | boolElim scrutinee thenBranch elseBranch =>
     match headEq : scrutinee.headCtor with
     | .boolTrue =>

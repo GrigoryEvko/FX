@@ -137,6 +137,36 @@ def Term.natSuccDestruct
   rename_i predTerm
   exact ⟨predTerm, HEq.rfl⟩
 
+/-- Destructor for `Term.pair`: from a typed Term at a sigma type whose
+raw form is `RawTerm.pair firstRaw secondRaw`, extract the first and
+second components bundled with an HEq proof. -/
+def Term.pairDestruct
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (someTerm : Term context (Ty.sigmaTy firstType secondType)
+                              (RawTerm.pair firstRaw secondRaw)) :
+    Σ' (firstValue : Term context firstType firstRaw)
+       (secondValue :
+          Term context (secondType.subst0 firstType firstRaw) secondRaw),
+       HEq someTerm (Term.pair firstValue secondValue) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.pair firstRaw secondRaw)),
+        someType = Ty.sigmaTy firstType secondType →
+        Σ' (firstValue : Term context firstType firstRaw)
+           (secondValue :
+              Term context (secondType.subst0 firstType firstRaw) secondRaw),
+           HEq genericTerm (Term.pair firstValue secondValue) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsSigma
+  cases genericTerm
+  rename_i innerFirstType innerSecondType firstValue secondValue
+  have sigmaEq := Ty.sigmaTy.inj someTypeIsSigma
+  cases sigmaEq.1
+  cases sigmaEq.2
+  exact ⟨firstValue, secondValue, HEq.rfl⟩
+
 /-- Destructor for `Term.listCons`: from a typed Term at
 `Ty.listType elementType` whose raw form is `RawTerm.listCons
 headRaw tailRaw`, extract the head (a Term at elementType with

@@ -453,6 +453,23 @@ theorem RawTerm.natSuccPred?_eq_some
       injection someEq with predEq
       rw [predEq]
 
+/-- `term.pairComponents? = some (firstRaw, secondRaw)` implies
+`term = RawTerm.pair firstRaw secondRaw`. -/
+theorem RawTerm.pairComponents?_eq_some
+    {scope : Nat} {someTerm : RawTerm scope}
+    {firstRaw secondRaw : RawTerm scope}
+    (witness : someTerm.pairComponents? = some (firstRaw, secondRaw)) :
+    someTerm = RawTerm.pair firstRaw secondRaw :=
+  match someTerm, witness with
+  | .pair innerFirst innerSecond, witnessEq => by
+      have someEq :
+          (some (innerFirst, innerSecond) : Option (RawTerm scope × RawTerm scope))
+            = some (firstRaw, secondRaw) :=
+        witnessEq
+      injection someEq with pairEq
+      injection pairEq with firstEq secondEq
+      rw [firstEq, secondEq]
+
 /-- `term.listConsParts? = some (h, t)` implies
 `term = RawTerm.listCons h t`.  Uses direct `injection` on
 both Option and Prod constructors — no propext via

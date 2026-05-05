@@ -24,6 +24,7 @@ Coverage (zero-axiom subset):
 |--------------------------------------|--------|---------------------------------|
 | `boolElim true t e   → t`            | yes    | `t` already destructured        |
 | `boolElim false t e  → e`            | yes    | `e` already destructured        |
+| `fst (pair a b)      → a`            | yes    | typed destructor extracts `a`   |
 | `natElim zero z s    → z`            | yes    | `z` already destructured        |
 | `natElim succ z s    → s n`          | yes    | typed destructor extracts `n`   |
 | `natRec zero z s     → z`            | yes    | `z` already destructured        |
@@ -35,7 +36,7 @@ Coverage (zero-axiom subset):
 | `eitherMatch inl l r → l v`          | yes    | typed destructor extracts `v`   |
 | `eitherMatch inr l r → r v`          | yes    | typed destructor extracts `v`   |
 
-The remaining redex rules (β-app, β-Π, β-pair, path-app beta) require **inner Term
+The remaining redex rules (β-app, β-Π, β-pair-snd, path-app beta) require **inner Term
 destructuring** — e.g., `app (lam body) arg ⟶ body[arg/x]` and
 `pathApp (pathLam body) interval ⟶ body[interval/i]` need to extract
 `body` from the canonical head.  In Lean 4 v4.29.1, that triggers
@@ -109,6 +110,28 @@ def Term.tryDestructNatSucc
       cases rawIsNatSucc
       obtain ⟨predTerm, scrutineeHEq⟩ := Term.natSuccDestruct someTerm
       exact some ⟨predRaw, predTerm, ⟨rfl, scrutineeHEq⟩⟩
+  | none => exact none
+
+/-- Try to destruct a typed sigma term as a `Term.pair`.
+Returns both components plus raw-shape and canonical-form witnesses. -/
+def Term.tryDestructPair
+    {scope : Nat} {context : Ctx mode level scope}
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {raw : RawTerm scope}
+    (someTerm : Term context (Ty.sigmaTy firstType secondType) raw) :
+    Option (Σ' (firstRaw secondRaw : RawTerm scope)
+              (firstValue : Term context firstType firstRaw)
+              (secondValue :
+                Term context (secondType.subst0 firstType firstRaw) secondRaw),
+              raw = RawTerm.pair firstRaw secondRaw ∧
+              HEq someTerm (Term.pair firstValue secondValue)) := by
+  match witnessPair : raw.pairComponents? with
+  | some (firstRaw, secondRaw) =>
+      have rawIsPair : raw = RawTerm.pair firstRaw secondRaw :=
+        RawTerm.pairComponents?_eq_some witnessPair
+      cases rawIsPair
+      obtain ⟨firstValue, secondValue, pairHEq⟩ := Term.pairDestruct someTerm
+      exact some ⟨firstRaw, secondRaw, firstValue, secondValue, ⟨rfl, pairHEq⟩⟩
   | none => exact none
 
 /-- Try to destruct a typed list term as a `Term.listCons` of
@@ -285,7 +308,14 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .recordProj _ => none        -- record β needs field extraction
   | _, _, _, _, .refineElim _ => none        -- refinement β needs intro extraction
   | _, _, _, _, .codataDest _ => none        -- codata has no typed β yet
-  | _, _, _, _, .fst _ => none              -- β-pair-fst needs first extraction
+  | _, _, _, _, .fst pairTerm =>
+      let pairHead := pairTerm.headCtor
+      if pairHead == .pair then
+        match Term.tryDestructPair pairTerm with
+        | some ⟨_, _, firstValue, _, _⟩ => some ⟨_, firstValue⟩
+        | none => none
+      else
+        none
   | _, _, _, _, .snd _ => none              -- β-pair-snd needs second extraction
   | _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>
       let scrutineeHead := scrutinee.headCtor
@@ -381,9 +411,8 @@ end LeanFX2
 
 namespace LeanFX2.Algo
 
--- TODO Layer 9 + Phase 7.D: extend headStep? to β-app, β-Π, β-pair,
--- and the payload-carrying ι-rules (succ-elim, cons-elim, some-match,
--- inl/inr-match, J-on-refl, modElim-on-modIntro).  Two viable paths:
+-- TODO Layer 9 + Phase 7.D: extend headStep? to β-app, β-Π, β-pair-snd,
+-- J-on-refl, modElim-on-modIntro, and richer payload redexes.  Two viable paths:
 --
 -- 1. Build the result via Step-witness construction (define a typed
 --    one-step parallel reducer that produces a Σ pair (target,

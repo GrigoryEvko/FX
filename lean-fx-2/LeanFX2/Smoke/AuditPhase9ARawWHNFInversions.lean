@@ -16,6 +16,7 @@ namespace LeanFX2.SmokePhase9AInversions
 
 #print axioms LeanFX2.RawTerm.eq_lam_of_lamBody?_eq_some
 #print axioms LeanFX2.RawTerm.eq_pair_of_pairComponents?_eq_some
+#print axioms LeanFX2.RawTerm.pairComponents?_eq_some
 #print axioms LeanFX2.RawTerm.eq_natSucc_of_natSuccPred?_eq_some
 #print axioms LeanFX2.RawTerm.eq_listCons_of_listConsParts?_eq_some
 #print axioms LeanFX2.RawTerm.eq_optionSome_of_optionSomeValue?_eq_some
