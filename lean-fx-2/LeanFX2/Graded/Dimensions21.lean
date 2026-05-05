@@ -1,0 +1,441 @@
+import LeanFX2.Graded.GradeVector
+import LeanFX2.Graded.Instances.Usage
+import LeanFX2.Graded.Instances.Effect
+import LeanFX2.Graded.Instances.Security
+import LeanFX2.Graded.Instances.Observability
+import LeanFX2.Graded.Instances.Reentrancy
+import LeanFX2.Graded.Instances.FPOrder
+import LeanFX2.Graded.Instances.Mutation
+import LeanFX2.Graded.Instances.Lifetime
+import LeanFX2.Graded.Instances.Provenance
+import LeanFX2.Graded.Instances.Trust
+import LeanFX2.Graded.Instances.Representation
+import LeanFX2.Graded.Instances.ClockDomain
+import LeanFX2.Graded.Instances.Complexity
+import LeanFX2.Graded.Instances.Precision
+import LeanFX2.Graded.Instances.Space
+import LeanFX2.Graded.Instances.Overflow
+import LeanFX2.Graded.Instances.Size
+import LeanFX2.Graded.Instances.Version
+
+/-! # Graded/Dimensions21 — honest registry for FX's 21 dimensions
+
+This module is the D5.4 aggregation layer.  It registers all twenty-one
+FX dimensions while preserving the algebra each dimension actually has:
+
+* semiring dimensions feed the existing Wood/Atkey `GradeVector`;
+* join-semilattice dimensions feed a parallel join vector;
+* structural dimensions are tracked as slots, not faked as grades.
+
+The split is intentional.  Effects, lifetime rows, provenance rows,
+clock domains, precision evidence, overflow modes, and version evidence
+accumulate by least upper bound, but they do not satisfy semiring
+annihilation.  Type, refinement, and protocol structure are already
+kernel data in other layers and are not D5.4 grade carriers.
+
+Zero-axiom verified per declaration. -/
+
+namespace LeanFX2.Graded
+
+open LeanFX2.Graded.Instances
+
+/-! ## Dimension slots and algebra classes -/
+
+/-- The twenty-one FX dimension slots, in specification order. -/
+inductive DimensionSlot : Type
+  | typeKind
+  | refinement
+  | usage
+  | effect
+  | security
+  | protocol
+  | lifetime
+  | provenance
+  | trust
+  | representation
+  | observability
+  | clockDomain
+  | complexity
+  | precision
+  | space
+  | overflow
+  | fpOrder
+  | mutation
+  | reentrancy
+  | size
+  | version
+  deriving DecidableEq, Repr
+
+/-- Algebra currently registered for a dimension slot. -/
+inductive DimensionAlgebraKind : Type
+  | structural
+  | semiring
+  | joinSemilattice
+  deriving DecidableEq, Repr
+
+/-- One-indexed dimension number from the FX specification. -/
+def DimensionSlot.number : DimensionSlot → Nat
+  | .typeKind => 1
+  | .refinement => 2
+  | .usage => 3
+  | .effect => 4
+  | .security => 5
+  | .protocol => 6
+  | .lifetime => 7
+  | .provenance => 8
+  | .trust => 9
+  | .representation => 10
+  | .observability => 11
+  | .clockDomain => 12
+  | .complexity => 13
+  | .precision => 14
+  | .space => 15
+  | .overflow => 16
+  | .fpOrder => 17
+  | .mutation => 18
+  | .reentrancy => 19
+  | .size => 20
+  | .version => 21
+
+/-- Stable ASCII display name for a dimension slot. -/
+def DimensionSlot.displayName : DimensionSlot → String
+  | .typeKind => "type"
+  | .refinement => "refinement"
+  | .usage => "usage"
+  | .effect => "effect"
+  | .security => "security"
+  | .protocol => "protocol"
+  | .lifetime => "lifetime"
+  | .provenance => "provenance"
+  | .trust => "trust"
+  | .representation => "representation"
+  | .observability => "observability"
+  | .clockDomain => "clock_domain"
+  | .complexity => "complexity"
+  | .precision => "precision"
+  | .space => "space"
+  | .overflow => "overflow"
+  | .fpOrder => "fp_order"
+  | .mutation => "mutation"
+  | .reentrancy => "reentrancy"
+  | .size => "size"
+  | .version => "version"
+
+/-- Algebra class attached to each slot at D5.4 closure. -/
+def DimensionSlot.algebraKind : DimensionSlot → DimensionAlgebraKind
+  | .typeKind => .structural
+  | .refinement => .structural
+  | .usage => .semiring
+  | .effect => .joinSemilattice
+  | .security => .semiring
+  | .protocol => .structural
+  | .lifetime => .joinSemilattice
+  | .provenance => .joinSemilattice
+  | .trust => .semiring
+  | .representation => .semiring
+  | .observability => .semiring
+  | .clockDomain => .joinSemilattice
+  | .complexity => .semiring
+  | .precision => .joinSemilattice
+  | .space => .semiring
+  | .overflow => .joinSemilattice
+  | .fpOrder => .semiring
+  | .mutation => .semiring
+  | .reentrancy => .semiring
+  | .size => .semiring
+  | .version => .joinSemilattice
+
+/-- All dimension slots in specification order. -/
+def allDimensionSlots : List DimensionSlot :=
+  [ .typeKind
+  , .refinement
+  , .usage
+  , .effect
+  , .security
+  , .protocol
+  , .lifetime
+  , .provenance
+  , .trust
+  , .representation
+  , .observability
+  , .clockDomain
+  , .complexity
+  , .precision
+  , .space
+  , .overflow
+  , .fpOrder
+  , .mutation
+  , .reentrancy
+  , .size
+  , .version
+  ]
+
+/-- D5.4 registry contains exactly twenty-one FX dimension slots. -/
+theorem allDimensionSlots_length :
+    allDimensionSlots.length = 21 := rfl
+
+/-! ## Join-semilattice vector -/
+
+/-- A registered join dimension: carrier type plus its bounded
+join-semilattice instance. -/
+structure JoinDimension : Type 1 where
+  carrier : Type
+  semilattice : GradeJoinSemilattice carrier
+
+/-- A vector carrying one join-semilattice grade per registered join
+dimension. -/
+def JoinGradeVector : List JoinDimension → Type
+  | [] => Unit
+  | head :: tail => head.carrier × JoinGradeVector tail
+
+/-- Bottom join-grade vector. -/
+def JoinGradeVector.bottom :
+    ∀ {dimensions : List JoinDimension}, JoinGradeVector dimensions
+  | [] => ()
+  | head :: tail =>
+      (head.semilattice.bottom, @JoinGradeVector.bottom tail)
+
+/-- Pointwise join for join-grade vectors. -/
+def JoinGradeVector.join :
+    ∀ {dimensions : List JoinDimension},
+      JoinGradeVector dimensions →
+      JoinGradeVector dimensions →
+      JoinGradeVector dimensions
+  | [], _, _ => ()
+  | head :: tail, (firstHead, firstTail), (secondHead, secondTail) =>
+      (head.semilattice.join firstHead secondHead,
+       @JoinGradeVector.join tail firstTail secondTail)
+
+/-- Pointwise preorder for join-grade vectors. -/
+def JoinGradeVector.le :
+    ∀ {dimensions : List JoinDimension},
+      JoinGradeVector dimensions →
+      JoinGradeVector dimensions →
+      Prop
+  | [], _, _ => True
+  | head :: tail, (firstHead, firstTail), (secondHead, secondTail) =>
+      head.semilattice.le firstHead secondHead ∧
+      @JoinGradeVector.le tail firstTail secondTail
+
+/-- Pointwise join-vector preorder is reflexive. -/
+theorem JoinGradeVector.le_refl :
+    ∀ {dimensions : List JoinDimension} (someVector : JoinGradeVector dimensions),
+      JoinGradeVector.le someVector someVector
+  | [], () => True.intro
+  | head :: _, (someHead, someTail) =>
+      ⟨head.semilattice.le_refl someHead, JoinGradeVector.le_refl someTail⟩
+
+/-- Pointwise join-vector preorder is transitive. -/
+theorem JoinGradeVector.le_trans :
+    ∀ {dimensions : List JoinDimension}
+      (firstVector secondVector thirdVector : JoinGradeVector dimensions),
+      JoinGradeVector.le firstVector secondVector →
+      JoinGradeVector.le secondVector thirdVector →
+      JoinGradeVector.le firstVector thirdVector
+  | [], _, _, _, _, _ => True.intro
+  | head :: _, (firstHead, firstTail), (secondHead, secondTail),
+      (thirdHead, thirdTail), ⟨headLeFirst, tailLeFirst⟩,
+      ⟨headLeSecond, tailLeSecond⟩ =>
+      ⟨head.semilattice.le_trans firstHead secondHead thirdHead
+          headLeFirst headLeSecond,
+       JoinGradeVector.le_trans firstTail secondTail thirdTail
+          tailLeFirst tailLeSecond⟩
+
+/-- Bottom is below every join-grade vector. -/
+theorem JoinGradeVector.bottom_le :
+    ∀ {dimensions : List JoinDimension} (someVector : JoinGradeVector dimensions),
+      JoinGradeVector.le JoinGradeVector.bottom someVector
+  | [], () => True.intro
+  | head :: _, (someHead, someTail) =>
+      ⟨head.semilattice.bottom_le someHead,
+       JoinGradeVector.bottom_le someTail⟩
+
+/-- Left operand is below pointwise join. -/
+theorem JoinGradeVector.le_join_left :
+    ∀ {dimensions : List JoinDimension}
+      (leftVector rightVector : JoinGradeVector dimensions),
+      JoinGradeVector.le leftVector
+        (JoinGradeVector.join leftVector rightVector)
+  | [], _, _ => True.intro
+  | head :: _, (leftHead, leftTail), (rightHead, rightTail) =>
+      ⟨head.semilattice.le_join_left leftHead rightHead,
+       JoinGradeVector.le_join_left leftTail rightTail⟩
+
+/-- Right operand is below pointwise join. -/
+theorem JoinGradeVector.le_join_right :
+    ∀ {dimensions : List JoinDimension}
+      (leftVector rightVector : JoinGradeVector dimensions),
+      JoinGradeVector.le rightVector
+        (JoinGradeVector.join leftVector rightVector)
+  | [], _, _ => True.intro
+  | head :: _, (leftHead, leftTail), (rightHead, rightTail) =>
+      ⟨head.semilattice.le_join_right leftHead rightHead,
+       JoinGradeVector.le_join_right leftTail rightTail⟩
+
+/-! ## Concrete D5.4 registry -/
+
+def usageDimension : Dimension :=
+  { carrier := UsageGrade, semiring := inferInstance }
+
+def securityDimension : Dimension :=
+  { carrier := SecurityGrade, semiring := inferInstance }
+
+def trustDimension : Dimension :=
+  { carrier := TrustGrade, semiring := inferInstance }
+
+def representationDimension : Dimension :=
+  { carrier := RepresentationGrade, semiring := inferInstance }
+
+def observabilityDimension : Dimension :=
+  { carrier := ObservabilityGrade, semiring := inferInstance }
+
+def complexityDimension : Dimension :=
+  { carrier := ComplexityGrade, semiring := inferInstance }
+
+def spaceDimension : Dimension :=
+  { carrier := SpaceGrade, semiring := inferInstance }
+
+def fpOrderDimension : Dimension :=
+  { carrier := FPOrderGrade, semiring := inferInstance }
+
+def mutationDimension : Dimension :=
+  { carrier := MutationGrade, semiring := inferInstance }
+
+def reentrancyDimension : Dimension :=
+  { carrier := ReentrancyGrade, semiring := inferInstance }
+
+def sizeDimension : Dimension :=
+  { carrier := SizeGrade, semiring := inferInstance }
+
+def effectJoinDimension : JoinDimension :=
+  { carrier := EffectGrade, semilattice := inferInstance }
+
+def lifetimeJoinDimension : JoinDimension :=
+  { carrier := LifetimeGrade, semilattice := inferInstance }
+
+def provenanceJoinDimension : JoinDimension :=
+  { carrier := ProvenanceGrade, semilattice := inferInstance }
+
+def clockDomainJoinDimension : JoinDimension :=
+  { carrier := ClockDomainGrade, semilattice := inferInstance }
+
+def precisionJoinDimension : JoinDimension :=
+  { carrier := PrecisionGrade, semilattice := inferInstance }
+
+def overflowJoinDimension : JoinDimension :=
+  { carrier := OverflowGrade, semilattice := inferInstance }
+
+def versionJoinDimension : JoinDimension :=
+  { carrier := VersionGrade, semilattice := inferInstance }
+
+/-- Semiring dimensions in specification order, excluding structural
+and join-only slots. -/
+def semiringDimensions21 : List Dimension :=
+  [ usageDimension
+  , securityDimension
+  , trustDimension
+  , representationDimension
+  , observabilityDimension
+  , complexityDimension
+  , spaceDimension
+  , fpOrderDimension
+  , mutationDimension
+  , reentrancyDimension
+  , sizeDimension
+  ]
+
+/-- Join-semilattice dimensions in specification order. -/
+def joinDimensions21 : List JoinDimension :=
+  [ effectJoinDimension
+  , lifetimeJoinDimension
+  , provenanceJoinDimension
+  , clockDomainJoinDimension
+  , precisionJoinDimension
+  , overflowJoinDimension
+  , versionJoinDimension
+  ]
+
+/-- Structural dimensions that are registered but not D5.4 algebra
+carriers. -/
+def structuralDimensionSlots21 : List DimensionSlot :=
+  [ .typeKind
+  , .refinement
+  , .protocol
+  ]
+
+theorem semiringDimensions21_length :
+    semiringDimensions21.length = 11 := rfl
+
+theorem joinDimensions21_length :
+    joinDimensions21.length = 7 := rfl
+
+theorem structuralDimensionSlots21_length :
+    structuralDimensionSlots21.length = 3 := rfl
+
+/-- D5.4 FX grade vector: semiring grades plus join-semilattice grades.
+Structural dimensions live in the kernel typing objects and are tracked
+by their slots rather than by this value-level grade payload. -/
+structure FXGradeVector21 : Type where
+  semiringGrades : GradeVector semiringDimensions21
+  joinGrades : JoinGradeVector joinDimensions21
+
+namespace FXGradeVector21
+
+/-- Most restrictive / empty grade vector for all D5.4 algebraic
+dimensions. -/
+def bottom : FXGradeVector21 where
+  semiringGrades := GradeVector.zero
+  joinGrades := JoinGradeVector.bottom
+
+/-- Pointwise composition for D5.4 algebraic grade payloads.  Semiring
+slots use `GradeVector.add`; join-only slots use `JoinGradeVector.join`. -/
+def join (firstVector secondVector : FXGradeVector21) : FXGradeVector21 where
+  semiringGrades :=
+    GradeVector.add firstVector.semiringGrades secondVector.semiringGrades
+  joinGrades :=
+    JoinGradeVector.join firstVector.joinGrades secondVector.joinGrades
+
+/-- Pointwise preorder for all D5.4 algebraic grade payloads. -/
+def le (firstVector secondVector : FXGradeVector21) : Prop :=
+  GradeVector.le firstVector.semiringGrades secondVector.semiringGrades ∧
+  JoinGradeVector.le firstVector.joinGrades secondVector.joinGrades
+
+/-- D5.4 payload preorder is reflexive. -/
+theorem le_refl (someVector : FXGradeVector21) :
+    le someVector someVector :=
+  ⟨GradeVector.le_refl someVector.semiringGrades,
+   JoinGradeVector.le_refl someVector.joinGrades⟩
+
+/-- D5.4 payload preorder is transitive. -/
+theorem le_trans
+    (firstVector secondVector thirdVector : FXGradeVector21)
+    (firstLeSecond : le firstVector secondVector)
+    (secondLeThird : le secondVector thirdVector) :
+    le firstVector thirdVector :=
+  ⟨GradeVector.le_trans
+      firstVector.semiringGrades secondVector.semiringGrades thirdVector.semiringGrades
+      firstLeSecond.left secondLeThird.left,
+   JoinGradeVector.le_trans
+      firstVector.joinGrades secondVector.joinGrades thirdVector.joinGrades
+      firstLeSecond.right secondLeThird.right⟩
+
+/-- Join-grade bottom is below the join-grade component.  The semiring
+component intentionally has no matching generic theorem: `GradeSemiring`
+does not state that zero is the least element. -/
+theorem joinGrades_bottom_le (someVector : FXGradeVector21) :
+    JoinGradeVector.le bottom.joinGrades someVector.joinGrades :=
+  JoinGradeVector.bottom_le someVector.joinGrades
+
+end FXGradeVector21
+
+/-! ## Smoke samples -/
+
+example : allDimensionSlots.length = 21 := rfl
+example : semiringDimensions21.length = 11 := rfl
+example : joinDimensions21.length = 7 := rfl
+example : structuralDimensionSlots21.length = 3 := rfl
+example : DimensionSlot.usage.number = 3 := rfl
+example : DimensionSlot.effect.algebraKind = .joinSemilattice := rfl
+example : DimensionSlot.protocol.algebraKind = .structural := rfl
+
+end LeanFX2.Graded
