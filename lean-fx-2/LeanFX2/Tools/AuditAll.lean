@@ -1,5 +1,6 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
+import LeanFX2.Tools.StrictHarness
 import LeanFX2.Term
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Term.Rename
@@ -390,5 +391,23 @@ namespace LeanFX2.Tools
 -- gate for every production declaration imported above, not a
 -- replacement for targeted smoke examples.
 #audit_namespace LeanFX2
+
+-- Aggregate strict gate.  Walks the same loaded production decls and
+-- flags every discipline violation in one error, including
+-- `noncomputable`, `@[extern]`, `@[implemented_by]`, and direct
+-- `Classical.*` references.  Subsumes `#audit_namespace` (which only
+-- looks at axioms) but kept side-by-side as defense in depth.
+#audit_namespace_strict LeanFX2
+
+-- Raw / typed parity gate.  Every constructor of `RawStep.par` must
+-- have a same-suffix constructor in `Step.par`.  Catches the failure
+-- mode where a raw cubical β rule lands without its typed mirror.
+#assert_raw_typed_parity
+
+-- End-of-build summary.  Logs `Total / Clean / Failed` plus per-decl
+-- failure list.  Strictly informational (does not throw); the actual
+-- blocking happens via `#audit_namespace_strict` above.  Surfaces
+-- audit health amid hundreds of OK info lines.
+#audit_summary LeanFX2
 
 end LeanFX2.Tools

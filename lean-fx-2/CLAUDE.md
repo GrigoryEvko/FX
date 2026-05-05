@@ -94,29 +94,50 @@ extra parameters.  ALL of these are banned:
 
 ### Mandatory verification gate
 
-Every committed theorem/lemma/def MUST have an axiom gate.  The
-preferred gate is `#assert_no_axioms YourTheorem` in
-`LeanFX2/Tools/AuditAll.lean`, because it fails elaboration if any
-dependency tree contains an axiom.  `#print axioms` gates in
-`Smoke/AuditPhase*.lean` files remain useful reviewer-facing
-regression logs, but they are supplementary because they only print.
+Every committed theorem/lemma/def is enforced by the strict harness
+in `LeanFX2/Tools/`.  `lake build LeanFX2` runs the gates inline; a
+failed gate fails the build, not just emits a warning.  Four layers:
 
-`#assert_no_axioms` is implemented in
-`LeanFX2/Tools/DependencyAudit.lean` and includes Lean core axioms:
-`propext`, `Quot.sound`, and `Classical.choice` are build failures.
-Until the whole-project generated audit is complete, new load-bearing
-declarations MUST be added both to the curated fail-fast
-`Tools/AuditAll.lean` list and to the relevant smoke audit file.
+1. **`#assert_no_axioms YourTheorem`** (`Tools/DependencyAudit.lean`)
+   per-decl axiom gate.  Fails elaboration if the transitive closure
+   of `YourTheorem` contains any Lean core axiom (`propext`,
+   `Quot.sound`, `Classical.choice`) or user-declared axiom.
 
-The smoke audit MUST report:
+2. **`#audit_namespace LeanFX2`** (`Tools/AuditGen.lean`) namespace
+   sweep.  Walks every user-defined declaration under `LeanFX2.*`
+   excluding `LeanFX2.Tools` / `LeanFX2.Smoke` and applies the same
+   per-decl axiom check.  This makes coverage automatic — new decls
+   get audited without manual gate-list updates.
 
-```
-'Foo' does not depend on any axioms
-```
+3. **`#audit_namespace_strict LeanFX2`** (`Tools/StrictHarness.lean`)
+   aggregate strict gate.  Walks the same namespace and detects, in
+   addition to axioms: `noncomputable` markers, `@[extern]` /
+   `@[implemented_by]` attributes, and direct references to
+   `Classical.*` constants.  Reports ALL violations in one error
+   rather than failing on the first.
+
+4. **`#assert_raw_typed_parity`** (`Tools/StrictHarness.lean`) raw /
+   typed parity check.  Every constructor of `LeanFX2.RawStep.par`
+   must have a same-suffix constructor in `LeanFX2.Step.par` unless
+   listed in `isDocumentedRawOnlyParity`.  Catches the failure mode
+   where a raw cubical/HoTT/refine β rule lands without its typed
+   mirror (the discipline that broke during Codex's D2.5 path-app
+   work).
+
+5. **`#audit_summary LeanFX2`** (`Tools/StrictHarness.lean`)
+   end-of-build reporter.  Logs total / clean / failed counts plus
+   per-decl failure list in a banner block.  Strictly informational;
+   the actual blocking happens in gates 1-4 above.  Surfaces audit
+   health amid hundreds of OK info lines.
+
+Reviewer-facing `#print axioms` gates in `Smoke/AuditPhase*.lean`
+files remain useful regression logs but are supplementary; the
+canonical machine-enforced gates are the four above.
 
 A theorem that prints `propext`, `Quot.sound`, `Classical.choice`, or
-ANY user-declared axiom name is NOT shipped.  Either prove it cleanly
-or DELETE it.
+ANY user-declared axiom name is NOT shipped.  Same goes for
+`noncomputable` markers, `@[extern]` attributes, and direct
+`Classical.*` references.  Either prove it cleanly or DELETE it.
 
 ### Univalence, funext, and HIT eliminators are PROVED, not postulated
 
