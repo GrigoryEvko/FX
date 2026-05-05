@@ -462,6 +462,29 @@ theorem IsAppCompatible.allZero {dims : List Dimension} {scope : Nat}
   rw [GradeAttribution.scaleBy_zero_attr,
       GradeAttribution.add_zero_left]
 
+/-- App compatibility is monotone under pointwise subsumption of the
+parameter grade, function attribution, and argument attribution. -/
+theorem IsAppCompatible.mono {dims : List Dimension} {scope : Nat}
+    (paramLow paramHigh : GradeVector dims)
+    (functionLow functionHigh argumentLow argumentHigh
+      resultLow resultHigh : GradeAttribution dims scope)
+    (paramLe : GradeVector.le paramLow paramHigh)
+    (functionLe : GradeAttribution.le functionLow functionHigh)
+    (argumentLe : GradeAttribution.le argumentLow argumentHigh)
+    (lowCompat :
+      IsAppCompatible paramLow functionLow argumentLow resultLow)
+    (highCompat :
+      IsAppCompatible paramHigh functionHigh argumentHigh resultHigh) :
+    GradeAttribution.le resultLow resultHigh := by
+  rw [lowCompat, highCompat]
+  exact GradeAttribution.add_mono
+    functionLow functionHigh
+    (GradeAttribution.scaleBy paramLow argumentLow)
+    (GradeAttribution.scaleBy paramHigh argumentHigh)
+    functionLe
+    (GradeAttribution.scaleBy_mono
+      paramLow paramHigh argumentLow argumentHigh paramLe argumentLe)
+
 /-! ## Let rule
 
 `Γ |-_p1 e, Γ, x :_r A |-_p2 body → Γ |-_(r * p1 + p2) (let x = e in body)`.
@@ -524,6 +547,28 @@ def IsIfCompatible {dims : List Dimension} {scope : Nat}
   resultAttr =
     GradeAttribution.add conditionAttr
       (GradeAttribution.add thenAttr elseAttr)
+
+/-- If/Match compatibility is monotone under pointwise subsumption of
+condition and branch attributions. -/
+theorem IsIfCompatible.mono {dims : List Dimension} {scope : Nat}
+    (conditionLow conditionHigh thenLow thenHigh elseLow elseHigh
+      resultLow resultHigh : GradeAttribution dims scope)
+    (conditionLe : GradeAttribution.le conditionLow conditionHigh)
+    (thenLe : GradeAttribution.le thenLow thenHigh)
+    (elseLe : GradeAttribution.le elseLow elseHigh)
+    (lowCompat :
+      IsIfCompatible conditionLow thenLow elseLow resultLow)
+    (highCompat :
+      IsIfCompatible conditionHigh thenHigh elseHigh resultHigh) :
+    GradeAttribution.le resultLow resultHigh := by
+  rw [lowCompat, highCompat]
+  exact GradeAttribution.add_mono
+    conditionLow conditionHigh
+    (GradeAttribution.add thenLow elseLow)
+    (GradeAttribution.add thenHigh elseHigh)
+    conditionLe
+    (GradeAttribution.add_mono
+      thenLow thenHigh elseLow elseHigh thenLe elseLe)
 
 /-! ## Subsumption rule
 

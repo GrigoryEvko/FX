@@ -155,6 +155,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.IsLamCompatible
 #assert_no_axioms LeanFX2.Graded.IsLamCompatibleWithAvailable
 #assert_no_axioms LeanFX2.Graded.GradeAttribution.scaleBy
+#assert_no_axioms LeanFX2.Graded.IsAppCompatible.mono
+#assert_no_axioms LeanFX2.Graded.IsIfCompatible.mono
 
 -- Dimensions21 registry and aggregate carrier operations
 #assert_no_axioms LeanFX2.Graded.allDimensionSlots_length
