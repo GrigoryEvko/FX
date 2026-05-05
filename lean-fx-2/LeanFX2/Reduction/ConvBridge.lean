@@ -220,6 +220,13 @@ theorem Step.toConvCumul
       exact ConvCumul.hcompCong ih (ConvCumul.refl _)
   | hcompCap _ ih =>
       exact ConvCumul.hcompCong (ConvCumul.refl _) ih
+  | equivIntroHetForward _ ih =>
+      exact ConvCumul.equivIntroHetCong ih (ConvCumul.refl _)
+  | equivIntroHetBackward _ ih =>
+      exact ConvCumul.equivIntroHetCong (ConvCumul.refl _) ih
+  | uaIntroHetWitness innerLevel innerLevelLt carrierARaw carrierBRaw _ ih =>
+      exact ConvCumul.uaIntroHetCong innerLevel innerLevelLt
+        carrierARaw carrierBRaw ih
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ ih =>
       exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone

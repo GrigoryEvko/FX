@@ -1412,6 +1412,14 @@ theorem Step.toPar
       exact Step.par.hcompCong singleStepIH (Step.par.refl _)
   | hcompCap singleStep singleStepIH =>
       exact Step.par.hcompCong (Step.par.refl _) singleStepIH
+  | equivIntroHetForward singleStep singleStepIH =>
+      exact Step.par.equivIntroHetCong singleStepIH (Step.par.refl _)
+  | equivIntroHetBackward singleStep singleStepIH =>
+      exact Step.par.equivIntroHetCong (Step.par.refl _) singleStepIH
+  | uaIntroHetWitness innerLevel innerLevelLt carrierARaw carrierBRaw
+      singleStep singleStepIH =>
+      exact Step.par.uaIntroHetCong innerLevel innerLevelLt
+        carrierARaw carrierBRaw singleStepIH
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ singleStepIH =>
       exact Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone

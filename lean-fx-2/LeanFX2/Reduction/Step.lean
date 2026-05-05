@@ -821,6 +821,53 @@ inductive Step :
       Step capSource capTarget →
       Step (Term.hcomp sidesValue capSource)
            (Term.hcomp sidesValue capTarget)
+  /-- Step inside the forward map of a heterogeneous equivalence. -/
+  | equivIntroHetForward {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {forwardRawSource forwardRawTarget backwardRaw : RawTerm scope}
+      {forwardSource :
+        Term context (Ty.arrow carrierA carrierB) forwardRawSource}
+      {forwardTarget :
+        Term context (Ty.arrow carrierA carrierB) forwardRawTarget}
+      {backwardTerm : Term context (Ty.arrow carrierB carrierA) backwardRaw} :
+      Step forwardSource forwardTarget →
+      Step (Term.equivIntroHet forwardSource backwardTerm)
+           (Term.equivIntroHet forwardTarget backwardTerm)
+  /-- Step inside the backward map of a heterogeneous equivalence. -/
+  | equivIntroHetBackward {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {forwardRaw backwardRawSource backwardRawTarget : RawTerm scope}
+      {forwardTerm : Term context (Ty.arrow carrierA carrierB) forwardRaw}
+      {backwardSource :
+        Term context (Ty.arrow carrierB carrierA) backwardRawSource}
+      {backwardTarget :
+        Term context (Ty.arrow carrierB carrierA) backwardRawTarget} :
+      Step backwardSource backwardTarget →
+      Step (Term.equivIntroHet forwardTerm backwardSource)
+           (Term.equivIntroHet forwardTerm backwardTarget)
+  /-- Step inside the equivalence witness carried by heterogeneous ua. -/
+  | uaIntroHetWitness {mode level scope}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRawSource forwardRawTarget
+       backwardRawSource backwardRawTarget : RawTerm scope}
+      {equivSource :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardRawSource backwardRawSource)}
+      {equivTarget :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardRawTarget backwardRawTarget)} :
+      Step equivSource equivTarget →
+      Step
+        (Term.uaIntroHet innerLevel innerLevelLt
+          carrierARaw carrierBRaw equivSource)
+        (Term.uaIntroHet innerLevel innerLevelLt
+          carrierARaw carrierBRaw equivTarget)
   /-- Cong rule for `Term.cumulUp`: a Step inside the lower payload
   lifts to a Step on the wrapping `cumulUp`.  The lower payload sits
   at its own context `ctxLow` and scope `scopeLow` (decoupled per
