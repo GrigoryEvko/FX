@@ -518,6 +518,31 @@ def IsLetCompatible {dims : List Dimension} {scope : Nat}
       (GradeAttribution.scaleBy bindingGrade boundAttr)
       bodyAttr.2
 
+/-- Let compatibility is monotone under pointwise subsumption of the
+binding grade, bound-expression attribution, and body attribution. -/
+theorem IsLetCompatible.mono {dims : List Dimension} {scope : Nat}
+    (bindingLow bindingHigh : GradeVector dims)
+    (boundLow boundHigh : GradeAttribution dims scope)
+    (bodyLow bodyHigh : GradeAttribution dims (scope + 1))
+    (resultLow resultHigh : GradeAttribution dims scope)
+    (bindingLe : GradeVector.le bindingLow bindingHigh)
+    (boundLe : GradeAttribution.le boundLow boundHigh)
+    (bodyLe : GradeAttribution.le bodyLow bodyHigh)
+    (lowCompat :
+      IsLetCompatible bindingLow boundLow bodyLow resultLow)
+    (highCompat :
+      IsLetCompatible bindingHigh boundHigh bodyHigh resultHigh) :
+    GradeAttribution.le resultLow resultHigh := by
+  rw [lowCompat.right, highCompat.right]
+  exact GradeAttribution.add_mono
+    (GradeAttribution.scaleBy bindingLow boundLow)
+    (GradeAttribution.scaleBy bindingHigh boundHigh)
+    bodyLow.2
+    bodyHigh.2
+    (GradeAttribution.scaleBy_mono
+      bindingLow bindingHigh boundLow boundHigh bindingLe boundLe)
+    bodyLe.right
+
 /-! ## If/Match rule (join-as-add)
 
 `Γ |-_p0 cond, Γ |-_p1 then, Γ |-_p2 else → Γ |-_(p0 + p1 ∨ p2)

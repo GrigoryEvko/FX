@@ -28,6 +28,7 @@ import LeanFX2.Graded.Rules
 #print axioms LeanFX2.Graded.IsAppCompatible.allZero
 #print axioms LeanFX2.Graded.IsAppCompatible.mono
 #print axioms LeanFX2.Graded.IsLetCompatible
+#print axioms LeanFX2.Graded.IsLetCompatible.mono
 #print axioms LeanFX2.Graded.IsIfCompatible
 #print axioms LeanFX2.Graded.IsIfCompatible.mono
 #print axioms LeanFX2.Graded.IsSubsumptionCompatible
