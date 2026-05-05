@@ -690,6 +690,52 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (codataRel : ConvCumul codataFirst codataSecond) :
       ConvCumul (Term.codataDest codataFirst)
                 (Term.codataDest codataSecond)
+  /-- Homogeneous session send: ConvCumul-related channel and payload
+  lift to ConvCumul-related sends. -/
+  | sessionSendCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {payloadType : Ty level scope}
+      {channelFirstRaw channelSecondRaw payloadFirstRaw payloadSecondRaw :
+        RawTerm scope}
+      {channelFirst : Term context (Ty.session protocolStep) channelFirstRaw}
+      {channelSecond : Term context (Ty.session protocolStep) channelSecondRaw}
+      {payloadFirst : Term context payloadType payloadFirstRaw}
+      {payloadSecond : Term context payloadType payloadSecondRaw}
+      (channelRel : ConvCumul channelFirst channelSecond)
+      (payloadRel : ConvCumul payloadFirst payloadSecond) :
+      ConvCumul (Term.sessionSend protocolStep channelFirst payloadFirst)
+                (Term.sessionSend protocolStep channelSecond payloadSecond)
+  /-- Homogeneous session receive: ConvCumul-related channels lift to
+  ConvCumul-related receives. -/
+  | sessionRecvCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {channelFirstRaw channelSecondRaw : RawTerm scope}
+      {channelFirst : Term context (Ty.session protocolStep) channelFirstRaw}
+      {channelSecond : Term context (Ty.session protocolStep) channelSecondRaw}
+      (channelRel : ConvCumul channelFirst channelSecond) :
+      ConvCumul (Term.sessionRecv channelFirst)
+                (Term.sessionRecv channelSecond)
+  /-- Homogeneous effect perform: ConvCumul-related operation tags and
+  argument payloads lift to ConvCumul-related performs. -/
+  | effectPerformCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {effectTag : RawTerm scope}
+      {carrierType : Ty level scope}
+      {operationFirstRaw operationSecondRaw argumentsFirstRaw argumentsSecondRaw :
+        RawTerm scope}
+      {operationFirst : Term context Ty.unit operationFirstRaw}
+      {operationSecond : Term context Ty.unit operationSecondRaw}
+      {argumentsFirst : Term context carrierType argumentsFirstRaw}
+      {argumentsSecond : Term context carrierType argumentsSecondRaw}
+      (operationRel : ConvCumul operationFirst operationSecond)
+      (argumentsRel : ConvCumul argumentsFirst argumentsSecond) :
+      ConvCumul (Term.effectPerform effectTag operationFirst argumentsFirst)
+                (Term.effectPerform effectTag operationSecond argumentsSecond)
   /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
   lift to ConvCumul-related path abstractions. -/
   | pathLamCong

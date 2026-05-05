@@ -268,6 +268,16 @@ def Term.substHet {mode : Mode}
                         (Term.substHet termSubstHet transition)
   | _, _, .codataDest codataValue =>
       Term.codataDest (Term.substHet termSubstHet codataValue)
+  | _, _, .sessionSend protocolStep channel payload =>
+      Term.sessionSend (protocolStep.subst sigma.forRaw)
+        (Term.substHet termSubstHet channel)
+        (Term.substHet termSubstHet payload)
+  | _, _, .sessionRecv channel =>
+      Term.sessionRecv (Term.substHet termSubstHet channel)
+  | _, _, .effectPerform effectTag operationTag arguments =>
+      Term.effectPerform (effectTag.subst sigma.forRaw)
+        (Term.substHet termSubstHet operationTag)
+        (Term.substHet termSubstHet arguments)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

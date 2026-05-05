@@ -431,6 +431,9 @@ theorem Term.headStep?_sound
   | refineElim _ => nomatch firedEq
   | codataUnfold _ _ => nomatch firedEq
   | codataDest _ => nomatch firedEq
+  | sessionSend _ _ _ => nomatch firedEq
+  | sessionRecv _ => nomatch firedEq
+  | effectPerform _ _ _ => nomatch firedEq
   | universeCode _ _ _ _ => nomatch firedEq
   | cumulUp _ _ _ _ _ _ => nomatch firedEq
   | equivReflId _ => nomatch firedEq
@@ -506,6 +509,7 @@ theorem Term.headStep?_sound
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
     | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -539,6 +543,7 @@ theorem Term.headStep?_sound
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
     | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -571,6 +576,7 @@ theorem Term.headStep?_sound
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
     | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -603,6 +609,7 @@ theorem Term.headStep?_sound
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
     | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -635,6 +642,7 @@ theorem Term.headStep?_sound
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
     | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet

@@ -1086,6 +1086,70 @@ theorem ConvCumul.subst_compatible_codataDest_allais
               ((Term.codataDest codataValue).substHet termSubstB) :=
   ConvCumul.codataDestCong codataCompat
 
+/-- Allais arm for `sessionSend`: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_sessionSend_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (protocolStep : RawTerm sourceScope)
+    {payloadType : Ty sourceLevel sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    (payload : Term sourceCtx payloadType payloadRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (channelCompat :
+      ConvCumul (channel.substHet termSubstA)
+                (channel.substHet termSubstB))
+    (payloadCompat :
+      ConvCumul (payload.substHet termSubstA)
+                (payload.substHet termSubstB)) :
+    ConvCumul ((Term.sessionSend protocolStep channel payload).substHet termSubstA)
+              ((Term.sessionSend protocolStep channel payload).substHet termSubstB) :=
+  ConvCumul.sessionSendCong channelCompat payloadCompat
+
+/-- Allais arm for `sessionRecv`: one-subterm congruence. -/
+theorem ConvCumul.subst_compatible_sessionRecv_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {channelRaw : RawTerm sourceScope}
+    (channel : Term sourceCtx (Ty.session protocolStep) channelRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (channelCompat :
+      ConvCumul (channel.substHet termSubstA)
+                (channel.substHet termSubstB)) :
+    ConvCumul ((Term.sessionRecv channel).substHet termSubstA)
+              ((Term.sessionRecv channel).substHet termSubstB) :=
+  ConvCumul.sessionRecvCong channelCompat
+
+/-- Allais arm for `effectPerform`: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_effectPerform_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (effectTag : RawTerm sourceScope)
+    {carrierType : Ty sourceLevel sourceScope}
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    (operationTag : Term sourceCtx Ty.unit operationRaw)
+    (arguments : Term sourceCtx carrierType argumentsRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (operationCompat :
+      ConvCumul (operationTag.substHet termSubstA)
+                (operationTag.substHet termSubstB))
+    (argumentsCompat :
+      ConvCumul (arguments.substHet termSubstA)
+                (arguments.substHet termSubstB)) :
+    ConvCumul ((Term.effectPerform effectTag operationTag arguments).substHet termSubstA)
+              ((Term.effectPerform effectTag operationTag arguments).substHet termSubstB) :=
+  ConvCumul.effectPerformCong operationCompat argumentsCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

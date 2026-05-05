@@ -345,6 +345,25 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
 
+-- Typed D2.7 session/effect congruence parity
+#assert_no_axioms LeanFX2.Term.toRaw_sessionSend
+#assert_no_axioms LeanFX2.Term.toRaw_sessionRecv
+#assert_no_axioms LeanFX2.Term.toRaw_effectPerform
+#assert_no_axioms LeanFX2.Step.sessionSendChannel
+#assert_no_axioms LeanFX2.Step.sessionSendPayload
+#assert_no_axioms LeanFX2.Step.sessionRecvChannel
+#assert_no_axioms LeanFX2.Step.effectPerformOperation
+#assert_no_axioms LeanFX2.Step.effectPerformArguments
+#assert_no_axioms LeanFX2.Step.par.sessionSendCong
+#assert_no_axioms LeanFX2.Step.par.sessionRecvCong
+#assert_no_axioms LeanFX2.Step.par.effectPerformCong
+#assert_no_axioms LeanFX2.ConvCumul.sessionSendCong
+#assert_no_axioms LeanFX2.ConvCumul.sessionRecvCong
+#assert_no_axioms LeanFX2.ConvCumul.effectPerformCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_sessionSend_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_sessionRecv_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_effectPerform_allais
+
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl
 #assert_no_axioms LeanFX2.Conv.fromStep

@@ -236,6 +236,17 @@ theorem Term.subst_pointwise
   | _, _, .codataDest codataValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq codataValue]
+  | _, _, .sessionSend _ channel payload => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq channel,
+          Term.subst_pointwise pointwiseEq payload]
+  | _, _, .sessionRecv channel => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq channel]
+  | _, _, .effectPerform _ operationTag arguments => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq operationTag,
+          Term.subst_pointwise pointwiseEq arguments]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl

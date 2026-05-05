@@ -766,6 +766,43 @@ inductive Step.par :
       Step.par codataSource codataTarget →
       Step.par (Term.codataDest codataSource)
                (Term.codataDest codataTarget)
+  /-- Raw-name parity: session send reduces in channel and payload. -/
+  | sessionSendCong {mode level scope} {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {payloadType : Ty level scope}
+      {channelRawSource channelRawTarget payloadRawSource payloadRawTarget :
+        RawTerm scope}
+      {channelSource : Term context (Ty.session protocolStep) channelRawSource}
+      {channelTarget : Term context (Ty.session protocolStep) channelRawTarget}
+      {payloadSource : Term context payloadType payloadRawSource}
+      {payloadTarget : Term context payloadType payloadRawTarget} :
+      Step.par channelSource channelTarget →
+      Step.par payloadSource payloadTarget →
+      Step.par (Term.sessionSend protocolStep channelSource payloadSource)
+               (Term.sessionSend protocolStep channelTarget payloadTarget)
+  /-- Raw-name parity: session receive reduces in its channel. -/
+  | sessionRecvCong {mode level scope} {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {channelRawSource channelRawTarget : RawTerm scope}
+      {channelSource : Term context (Ty.session protocolStep) channelRawSource}
+      {channelTarget : Term context (Ty.session protocolStep) channelRawTarget} :
+      Step.par channelSource channelTarget →
+      Step.par (Term.sessionRecv channelSource)
+               (Term.sessionRecv channelTarget)
+  /-- Raw-name parity: effect perform reduces in operation and arguments. -/
+  | effectPerformCong {mode level scope} {context : Ctx mode level scope}
+      {effectTag : RawTerm scope}
+      {carrierType : Ty level scope}
+      {operationRawSource operationRawTarget argumentsRawSource argumentsRawTarget :
+        RawTerm scope}
+      {operationSource : Term context Ty.unit operationRawSource}
+      {operationTarget : Term context Ty.unit operationRawTarget}
+      {argumentsSource : Term context carrierType argumentsRawSource}
+      {argumentsTarget : Term context carrierType argumentsRawTarget} :
+      Step.par operationSource operationTarget →
+      Step.par argumentsSource argumentsTarget →
+      Step.par (Term.effectPerform effectTag operationSource argumentsSource)
+               (Term.effectPerform effectTag operationTarget argumentsTarget)
   /-- Shallow β-fst: `fst (pair a b) ⟶ a'` with `Step.par a a'`. -/
   | betaFstPair {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -1644,6 +1681,16 @@ theorem Step.toPar
       exact Step.par.codataUnfoldCong (Step.par.refl _) singleStepIH
   | codataDestValue singleStep singleStepIH =>
       exact Step.par.codataDestCong singleStepIH
+  | sessionSendChannel singleStep singleStepIH =>
+      exact Step.par.sessionSendCong singleStepIH (Step.par.refl _)
+  | sessionSendPayload singleStep singleStepIH =>
+      exact Step.par.sessionSendCong (Step.par.refl _) singleStepIH
+  | sessionRecvChannel singleStep singleStepIH =>
+      exact Step.par.sessionRecvCong singleStepIH
+  | effectPerformOperation singleStep singleStepIH =>
+      exact Step.par.effectPerformCong singleStepIH (Step.par.refl _)
+  | effectPerformArguments singleStep singleStepIH =>
+      exact Step.par.effectPerformCong (Step.par.refl _) singleStepIH
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
       exact Step.par.transpCong universeLevel universeLevelLt

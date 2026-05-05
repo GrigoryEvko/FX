@@ -157,6 +157,25 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.codataDestCong
 #print axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
+
+-- Typed D2.7 session/effect congruence parity
+#print axioms LeanFX2.Term.toRaw_sessionSend
+#print axioms LeanFX2.Term.toRaw_sessionRecv
+#print axioms LeanFX2.Term.toRaw_effectPerform
+#print axioms LeanFX2.Step.sessionSendChannel
+#print axioms LeanFX2.Step.sessionSendPayload
+#print axioms LeanFX2.Step.sessionRecvChannel
+#print axioms LeanFX2.Step.effectPerformOperation
+#print axioms LeanFX2.Step.effectPerformArguments
+#print axioms LeanFX2.Step.par.sessionSendCong
+#print axioms LeanFX2.Step.par.sessionRecvCong
+#print axioms LeanFX2.Step.par.effectPerformCong
+#print axioms LeanFX2.ConvCumul.sessionSendCong
+#print axioms LeanFX2.ConvCumul.sessionRecvCong
+#print axioms LeanFX2.ConvCumul.effectPerformCong
+#print axioms LeanFX2.ConvCumul.subst_compatible_sessionSend_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_sessionRecv_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_effectPerform_allais
 #print axioms LeanFX2.Step.par.toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong

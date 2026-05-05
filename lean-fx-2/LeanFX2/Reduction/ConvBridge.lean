@@ -245,6 +245,16 @@ theorem Step.toConvCumul
       exact ConvCumul.codataUnfoldCong (ConvCumul.refl _) ih
   | codataDestValue _ ih =>
       exact ConvCumul.codataDestCong ih
+  | sessionSendChannel _ ih =>
+      exact ConvCumul.sessionSendCong ih (ConvCumul.refl _)
+  | sessionSendPayload _ ih =>
+      exact ConvCumul.sessionSendCong (ConvCumul.refl _) ih
+  | sessionRecvChannel _ ih =>
+      exact ConvCumul.sessionRecvCong ih
+  | effectPerformOperation _ ih =>
+      exact ConvCumul.effectPerformCong ih (ConvCumul.refl _)
+  | effectPerformArguments _ ih =>
+      exact ConvCumul.effectPerformCong (ConvCumul.refl _) ih
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
       exact ConvCumul.transpCong universeLevel universeLevelLt

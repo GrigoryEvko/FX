@@ -956,6 +956,59 @@ inductive Step :
       Step codataSource codataTarget →
       Step (Term.codataDest codataSource)
            (Term.codataDest codataTarget)
+  /-- Step inside a session-send channel. -/
+  | sessionSendChannel {mode level scope} {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {payloadType : Ty level scope}
+      {channelRawSource channelRawTarget payloadRaw : RawTerm scope}
+      {channelSource : Term context (Ty.session protocolStep) channelRawSource}
+      {channelTarget : Term context (Ty.session protocolStep) channelRawTarget}
+      {payload : Term context payloadType payloadRaw} :
+      Step channelSource channelTarget →
+      Step (Term.sessionSend protocolStep channelSource payload)
+           (Term.sessionSend protocolStep channelTarget payload)
+  /-- Step inside a session-send payload. -/
+  | sessionSendPayload {mode level scope} {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {payloadType : Ty level scope}
+      {channelRaw payloadRawSource payloadRawTarget : RawTerm scope}
+      {channel : Term context (Ty.session protocolStep) channelRaw}
+      {payloadSource : Term context payloadType payloadRawSource}
+      {payloadTarget : Term context payloadType payloadRawTarget} :
+      Step payloadSource payloadTarget →
+      Step (Term.sessionSend protocolStep channel payloadSource)
+           (Term.sessionSend protocolStep channel payloadTarget)
+  /-- Step inside a session-receive channel. -/
+  | sessionRecvChannel {mode level scope} {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {channelRawSource channelRawTarget : RawTerm scope}
+      {channelSource : Term context (Ty.session protocolStep) channelRawSource}
+      {channelTarget : Term context (Ty.session protocolStep) channelRawTarget} :
+      Step channelSource channelTarget →
+      Step (Term.sessionRecv channelSource)
+           (Term.sessionRecv channelTarget)
+  /-- Step inside an effect operation tag. -/
+  | effectPerformOperation {mode level scope} {context : Ctx mode level scope}
+      {effectTag : RawTerm scope}
+      {carrierType : Ty level scope}
+      {operationRawSource operationRawTarget argumentsRaw : RawTerm scope}
+      {operationSource : Term context Ty.unit operationRawSource}
+      {operationTarget : Term context Ty.unit operationRawTarget}
+      {arguments : Term context carrierType argumentsRaw} :
+      Step operationSource operationTarget →
+      Step (Term.effectPerform effectTag operationSource arguments)
+           (Term.effectPerform effectTag operationTarget arguments)
+  /-- Step inside effect arguments. -/
+  | effectPerformArguments {mode level scope} {context : Ctx mode level scope}
+      {effectTag : RawTerm scope}
+      {carrierType : Ty level scope}
+      {operationRaw argumentsRawSource argumentsRawTarget : RawTerm scope}
+      {operationTag : Term context Ty.unit operationRaw}
+      {argumentsSource : Term context carrierType argumentsRawSource}
+      {argumentsTarget : Term context carrierType argumentsRawTarget} :
+      Step argumentsSource argumentsTarget →
+      Step (Term.effectPerform effectTag operationTag argumentsSource)
+           (Term.effectPerform effectTag operationTag argumentsTarget)
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
       (universeLevel : UniverseLevel)

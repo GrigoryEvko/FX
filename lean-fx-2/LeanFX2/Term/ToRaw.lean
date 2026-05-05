@@ -165,6 +165,32 @@ theorem Term.toRaw_codataDest {mode : Mode} {level scope : Nat}
     (Term.codataDest codataValue).toRaw =
       RawTerm.codataDest codataValue.toRaw := rfl
 
+theorem Term.toRaw_sessionSend {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (payload : Term context payloadType payloadRaw) :
+    (Term.sessionSend protocolStep channel payload).toRaw =
+      RawTerm.sessionSend channel.toRaw payload.toRaw := rfl
+
+theorem Term.toRaw_sessionRecv {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {protocolStep : RawTerm scope} {channelRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw) :
+    (Term.sessionRecv channel).toRaw = RawTerm.sessionRecv channel.toRaw := rfl
+
+theorem Term.toRaw_effectPerform {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (effectTag : RawTerm scope)
+    {carrierType : Ty level scope}
+    {operationRaw argumentsRaw : RawTerm scope}
+    (operationTag : Term context Ty.unit operationRaw)
+    (arguments : Term context carrierType argumentsRaw) :
+    (Term.effectPerform effectTag operationTag arguments).toRaw =
+      RawTerm.effectPerform operationTag.toRaw arguments.toRaw := rfl
+
 /-! ## Booleans, Naturals, Lists, Options, Eithers, Modal -/
 
 theorem Term.toRaw_boolTrue {mode : Mode} {level scope : Nat}

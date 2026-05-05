@@ -413,6 +413,39 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {codataRaw : RawTerm scope}
       (codataValue : Term context (Ty.codata stateType outputType) codataRaw) :
       Term context outputType (RawTerm.codataDest codataRaw)
+  /-- Session send mirror.  The protocol transition relation is not yet
+      interpreted at the typed core, so this constructor preserves the
+      current session carrier while exposing raw/typed congruence. -/
+  | sessionSend {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (protocolStep : RawTerm scope)
+      {payloadType : Ty level scope}
+      {channelRaw payloadRaw : RawTerm scope}
+      (channel : Term context (Ty.session protocolStep) channelRaw)
+      (payload : Term context payloadType payloadRaw) :
+      Term context (Ty.session protocolStep)
+        (RawTerm.sessionSend channelRaw payloadRaw)
+  /-- Session receive mirror.  Full protocol-state advancement is handled
+      by the Sessions layer; this typed core rule gives the raw receive
+      form a session carrier and congruence parity. -/
+  | sessionRecv {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {protocolStep : RawTerm scope}
+      {channelRaw : RawTerm scope}
+      (channel : Term context (Ty.session protocolStep) channelRaw) :
+      Term context (Ty.session protocolStep) (RawTerm.sessionRecv channelRaw)
+  /-- Effect perform mirror.  The operation tag is proof-erased at this
+      layer as a unit-typed tag term; richer effect-row semantics live in
+      `Effects`. -/
+  | effectPerform {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (effectTag : RawTerm scope)
+      {carrierType : Ty level scope}
+      {operationRaw argumentsRaw : RawTerm scope}
+      (operationTag : Term context Ty.unit operationRaw)
+      (arguments : Term context carrierType argumentsRaw) :
+      Term context (Ty.effect carrierType effectTag)
+        (RawTerm.effectPerform operationRaw argumentsRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

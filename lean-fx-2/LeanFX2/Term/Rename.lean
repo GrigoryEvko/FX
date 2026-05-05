@@ -264,6 +264,16 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                         (Term.rename termRenaming transition)
   | _, _, .codataDest codataValue =>
       Term.codataDest (Term.rename termRenaming codataValue)
+  | _, _, .sessionSend protocolStep channel payload =>
+      Term.sessionSend (protocolStep.rename rho)
+        (Term.rename termRenaming channel)
+        (Term.rename termRenaming payload)
+  | _, _, .sessionRecv channel =>
+      Term.sessionRecv (Term.rename termRenaming channel)
+  | _, _, .effectPerform effectTag operationTag arguments =>
+      Term.effectPerform (effectTag.rename rho)
+        (Term.rename termRenaming operationTag)
+        (Term.rename termRenaming arguments)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` rename to
   -- themselves (no scope-dependent payload), so the `someType.rename

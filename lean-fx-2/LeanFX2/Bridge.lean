@@ -172,6 +172,12 @@ theorem Step.par.toRawBridge
       exact RawStep.par.codataUnfoldCong ihState ihTransition
   | codataDestCong _ ihCodata =>
       exact RawStep.par.codataDestCong ihCodata
+  | sessionSendCong _ _ ihChannel ihPayload =>
+      exact RawStep.par.sessionSendCong ihChannel ihPayload
+  | sessionRecvCong _ ihChannel =>
+      exact RawStep.par.sessionRecvCong ihChannel
+  | effectPerformCong _ _ ihOperation ihArguments =>
+      exact RawStep.par.effectPerformCong ihOperation ihArguments
   | betaFstPair secondValue _ ihFirst =>
       exact RawStep.par.betaFstPair _ ihFirst
   | betaSndPair firstValue _ ihSecond =>

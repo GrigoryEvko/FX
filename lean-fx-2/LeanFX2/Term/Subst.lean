@@ -251,6 +251,16 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                         (Term.subst termSubst transition)
   | _, _, .codataDest codataValue =>
       Term.codataDest (Term.subst termSubst codataValue)
+  | _, _, .sessionSend protocolStep channel payload =>
+      Term.sessionSend (protocolStep.subst sigma.forRaw)
+        (Term.subst termSubst channel)
+        (Term.subst termSubst payload)
+  | _, _, .sessionRecv channel =>
+      Term.sessionRecv (Term.subst termSubst channel)
+  | _, _, .effectPerform effectTag operationTag arguments =>
+      Term.effectPerform (effectTag.subst sigma.forRaw)
+        (Term.subst termSubst operationTag)
+        (Term.subst termSubst arguments)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` substitute to
   -- themselves (no scope-dependent payload), so rebuilding the ctor

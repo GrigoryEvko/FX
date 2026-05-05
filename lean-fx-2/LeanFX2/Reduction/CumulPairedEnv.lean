@@ -354,6 +354,18 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .codataDest codataValue =>
       ConvCumul.subst_compatible_codataDest_allais codataValue
         (Term.subst_compatible_pointwise_allais compat codataValue)
+  | _, _, .sessionSend protocolStep channel payload =>
+      ConvCumul.subst_compatible_sessionSend_allais protocolStep channel payload
+        (Term.subst_compatible_pointwise_allais compat channel)
+        (Term.subst_compatible_pointwise_allais compat payload)
+  | _, _, .sessionRecv channel =>
+      ConvCumul.subst_compatible_sessionRecv_allais channel
+        (Term.subst_compatible_pointwise_allais compat channel)
+  | _, _, .effectPerform effectTag operationTag arguments =>
+      ConvCumul.subst_compatible_effectPerform_allais
+        effectTag operationTag arguments
+        (Term.subst_compatible_pointwise_allais compat operationTag)
+        (Term.subst_compatible_pointwise_allais compat arguments)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)
