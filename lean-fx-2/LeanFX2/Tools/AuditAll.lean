@@ -784,6 +784,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.StepStar.step
 #assert_no_axioms LeanFX2.FX1.StepStar.single
 #assert_no_axioms LeanFX2.FX1.StepStar.trans
+#assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration
+#assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.newest
+#assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.older
+#assert_no_axioms LeanFX2.FX1.Context.HasTypeAt
+#assert_no_axioms LeanFX2.FX1.Context.HasTypeAt.newest
+#assert_no_axioms LeanFX2.FX1.Context.HasTypeAt.older
+#assert_no_axioms LeanFX2.FX1.HasType
+#assert_no_axioms LeanFX2.FX1.HasType.sort
+#assert_no_axioms LeanFX2.FX1.HasType.var
+#assert_no_axioms LeanFX2.FX1.HasType.const
+#assert_no_axioms LeanFX2.FX1.HasType.pi
+#assert_no_axioms LeanFX2.FX1.HasType.lam
+#assert_no_axioms LeanFX2.FX1.HasType.app
+#assert_no_axioms LeanFX2.FX1.HasType.sortZeroIdentity
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
