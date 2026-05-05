@@ -29,9 +29,9 @@ the minimal root namespace does not depend on host-heavy Lean modules
 or forbidden host axioms.  It is intentionally stricter than the
 project-wide gate because FX1/Core is the planned trusted root.
 
-The import-surface gates keep public production imports, FX1 imports,
-and the legacy Lean-kernel scaffold from accidentally collapsing into
-one dependency cone.
+The import-surface gates keep public production imports, host imports,
+FX1 imports, and the legacy Lean-kernel scaffold from accidentally
+collapsing into one dependency cone.
 -/
 
 namespace LeanFX2.Tools
@@ -302,6 +302,75 @@ elab "#assert_production_import_surface_clean" : command => do
       s!"{violations.size} of {scannedProductionModules} production modules violate import policy"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
+/-! ## Rich production host-import discipline -/
+
+/-- Rich production modules are the regular `LeanFX2` kernel/product modules,
+excluding the future FX1 trusted-root namespace.  FX1 has its own stricter
+source-import policy below, because it intentionally permits `Init.Prelude` as
+the only host import during the bootstrap phase. -/
+def isRichProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
+  isProductionLeanFX2ModuleName moduleName &&
+    !(`LeanFX2.FX1).isPrefixOf moduleName
+
+/-- Host-heavy modules that rich production source files must not import
+directly.
+
+This is a source-level gate, not a declaration-dependency gate.  It catches
+unused broad host imports before any declaration can depend on them.
+
+Lean records an implicit `Init` import for every module in `ModuleData`, so
+`Init` cannot be distinguished here from an explicit source import.  The
+declaration-dependency gates still catch forbidden axiom use from `Init`, while
+this import gate focuses on broad host APIs such as `Lean` and `Std`. -/
+def isForbiddenRichProductionHostImportModuleName (moduleName : Name) : Bool :=
+  (`Lean).isPrefixOf moduleName ||
+    (`Lake).isPrefixOf moduleName ||
+    (`Std).isPrefixOf moduleName ||
+    (`Mathlib).isPrefixOf moduleName ||
+    (`Classical).isPrefixOf moduleName ||
+    (`Quot).isPrefixOf moduleName
+
+/-- Direct host imports forbidden for one rich production module. -/
+def forbiddenRichProductionHostImportsForModule
+    (moduleData : ModuleData) : Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenImports directImport =>
+      if isForbiddenRichProductionHostImportModuleName directImport.module then
+        forbiddenImports.push directImport.module
+      else
+        forbiddenImports)
+
+/-- Build-failing gate for rich production modules that import host-heavy
+modules directly.  Tooling may import `Lean`; FX1 may import `Init.Prelude`;
+regular production modules must stay inside the project import cone apart from
+Lean's ambient `Init` prelude. -/
+elab "#assert_rich_production_host_import_surface_clean" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedRichProductionModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if isRichProductionLeanFX2ModuleName moduleName then
+      scannedRichProductionModules := scannedRichProductionModules + 1
+      let forbiddenImports :=
+        forbiddenRichProductionHostImportsForModule moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (moduleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"rich production host-import surface ok: {scannedRichProductionModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: forbidden host imports [{renderedImports}]"
+    let header :=
+      s!"rich production host-import surface FAILED: " ++
+      s!"{violations.size} of {scannedRichProductionModules} modules import host modules directly"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
 /-! ## FX1 direct-import discipline -/
 
 /-- FX1/Core modules are the planned minimal root calculus. -/
@@ -316,16 +385,24 @@ def isFX1LeanKernelModuleName (moduleName : Name) : Bool :=
 def isFX1ModuleName (moduleName : Name) : Bool :=
   (`LeanFX2.FX1).isPrefixOf moduleName
 
+/-- The only host module FX1 source files may import directly. -/
+def isAllowedFX1PreludeImport (moduleName : Name) : Bool :=
+  moduleName == `Init.Prelude
+
 /-- Direct imports allowed from an FX1 module.
 
 FX1/Core may only import FX1/Core.  FX1/LeanKernel may import FX1/Core and
 FX1/LeanKernel.  Any future FX1 module outside those two namespaces must stay
-inside `LeanFX2.FX1`.  External host imports such as `Lean` or `Std` therefore
-fail at the source-import boundary before dependency-closure audit even runs. -/
+inside `LeanFX2.FX1`.  The only allowed non-FX1 import is `Init.Prelude`,
+matching the FX1/Core policy in `kernel-sprint.md` §1.0.1.  Host-heavy imports
+such as `Lean` or `Std` therefore fail at the source-import boundary before
+dependency-closure audit even runs. -/
 def isAllowedFX1DirectImport
     (sourceModuleName : Name) (importedModuleName : Name) :
     Bool :=
-  if isFX1CoreModuleName sourceModuleName then
+  if isAllowedFX1PreludeImport importedModuleName then
+    true
+  else if isFX1CoreModuleName sourceModuleName then
     isFX1CoreModuleName importedModuleName
   else if isFX1LeanKernelModuleName sourceModuleName then
     isFX1CoreModuleName importedModuleName ||

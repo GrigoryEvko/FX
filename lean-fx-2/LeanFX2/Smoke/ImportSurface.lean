@@ -5,14 +5,17 @@ import LeanFX2.Tools.StrictHarness
 
 This smoke imports the public umbrella and then checks the direct imports of
 every visible public-production `LeanFX2.*` module.  Production modules may not
-import `Smoke`, `Tools`, `Sketch`, or the broad `LeanFX2` root.  The same broad
-environment also checks future FX1 source imports and prevents the legacy
-`LeanFX2.Lean.Kernel` scaffold from leaking into rich production modules.
+depend directly on `Smoke`, `Tools`, `Sketch`, the broad `LeanFX2` root, or
+host-heavy modules such as `Lean` and `Std`; Lean's ambient `Init` prelude is
+handled by declaration-dependency audits.  The same broad environment also checks
+future FX1 source imports and prevents the legacy `LeanFX2.Lean.Kernel` scaffold
+from leaking into rich production modules.
 -/
 
 namespace LeanFX2.Smoke.ImportSurface
 
 #assert_production_import_surface_clean
+#assert_rich_production_host_import_surface_clean
 #assert_fx1_import_surface_clean
 #assert_legacy_lean_kernel_scaffold_isolated
 

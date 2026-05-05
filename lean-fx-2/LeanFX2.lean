@@ -196,6 +196,9 @@ import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
 import LeanFX2.InternalLanguage.Coherence
 
+-- FX1 minimal trust spine
+import LeanFX2.FX1.Core
+
 /-! # LeanFX2 — umbrella import.
 
 Single-import gateway to the production lean-fx-2 engine.  Importing
@@ -220,7 +223,8 @@ surface or trusted-root dependency story.
 |  9    | Algo: WHNF, decConv, infer, check, eval, soundness/completeness |
 | 10    | Surface: lex, parse, print, elab, roundtrip      |
 | 11    | Pipeline: end-to-end compile                     |
-| 12    | Audit/tooling modules: built by Lake, not imported by this umbrella |
+| 12    | FX1: minimal lambda-Pi trust-spine syntax        |
+| 13    | Audit/tooling modules: built by Lake, not imported by this umbrella |
 
 See `ARCHITECTURE.md` for the dependency DAG and per-layer file list.
 See `ROADMAP.md` for the phasing from skeleton to full engine.

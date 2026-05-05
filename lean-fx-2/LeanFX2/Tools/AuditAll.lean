@@ -58,6 +58,7 @@ import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Term
 import LeanFX2.Graded.AtkeyAttack
 import LeanFX2.Graded.Dimensions21
+import LeanFX2.FX1.Core
 
 /-! # Tools/AuditAll — build-failing zero-axiom gate
 
@@ -683,6 +684,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.JoinGradeVector.join_mono
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.join_mono
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_mono
+
+-- FX1/Core minimal syntax scaffold
+#assert_no_axioms LeanFX2.FX1.Name
+#assert_no_axioms LeanFX2.FX1.Name.appendString
+#assert_no_axioms LeanFX2.FX1.Name.appendNumber
+#assert_no_axioms LeanFX2.FX1.Name.isAnonymous
+#assert_no_axioms LeanFX2.FX1.Name.nodeCount
+#assert_no_axioms LeanFX2.FX1.Level
+#assert_no_axioms LeanFX2.FX1.Level.nodeCount
+#assert_no_axioms LeanFX2.FX1.Expr
+#assert_no_axioms LeanFX2.FX1.Expr.nodeCount
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
