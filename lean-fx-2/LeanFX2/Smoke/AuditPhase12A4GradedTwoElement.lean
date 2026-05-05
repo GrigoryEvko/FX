@@ -10,10 +10,10 @@ import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Size
 
 /-! # AuditPhase12A4GradedTwoElement — D5.4 partial: graded semiring
-instances along chains of size 2 and 4.
+instances for finite chains and bounded resource dimensions.
 
 Phase 12.A.4 partial closure for D5.4 (21 graded semiring instances).
-This commit ships five canonical chain instances:
+The first wave ships five canonical chain instances:
 
 * `SecurityGrade`        (dim 5)  — `unclassified < classified` (2-chain)
 * `ObservabilityGrade`   (dim 11) — `opaque < transparent` (2-chain)
@@ -36,9 +36,9 @@ discharged by full case enumeration over the closed inductive (4 to
 256 sub-cases per law) — no `decide`, no `simp` over the typeclass,
 no tactics that risk axiom emission.
 
-Wildcards (`_`) over multi-ctor enums leak propext through the match
+Wildcards (`_`) over multi-ctor enums can leak propext through the match
 compiler (per `feedback_lean_zero_axiom_match.md`); this audit
-verifies all five instances pass the strict no-wildcards discipline.
+verifies these instances stay axiom-clean under `#print axioms`.
 
 Remaining D5.4 instances (TBD per-need):
 * `UsageGrade` (dim 3)              — already shipped (3-element
@@ -55,16 +55,15 @@ Remaining D5.4 instances (TBD per-need):
 * `RepresentationGrade` (dim 10)    — preorder over layout attrs
 * `ClockDomainGrade` (dim 12)       — `combinational + sync(c)`
                                        partial structure
-* `ComplexityGrade` (dim 13)        — shipped as a `Nat`-backed
-                                       real semiring
+* `ComplexityGrade` (dim 13)        — shipped as bounded-or-unbounded
+                                       cost semiring
 * `PrecisionGrade` (dim 14)         — Rat (sum-monoid)
-* `SpaceGrade` (dim 15)             — shipped as a `Nat`-backed
-                                       real semiring
+* `SpaceGrade` (dim 15)             — shipped as allocation strategy ×
+                                       bounded-or-unbounded byte bound
 * `OverflowGrade` (dim 16)          — `{exact, wrap, trap, sat}`
                                        partial lattice
-* `SizeGrade` (dim 20)              — shipped as a `Nat`-backed
-                                       codata observation-depth
-                                       semiring
+* `SizeGrade` (dim 20)              — shipped as bounded-or-unbounded
+                                       codata observation-depth semiring
 * `VersionGrade` (dim 21)           — version-label lattice with
                                        adapter edges
 
@@ -117,21 +116,25 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.TrustGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringTrustGrade
 
--- D5.4 Complexity (dim 13, Nat-backed semiring)
+-- D5.4 Complexity (dim 13, bounded-or-unbounded cost semiring)
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade.add
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade.mul
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringComplexityGrade
 
--- D5.4 Space (dim 15, Nat-backed semiring)
+-- D5.4 Space (dim 15, allocation strategy plus byte-bound semiring)
+#print axioms LeanFX2.Graded.Instances.AllocStrategy
+#print axioms LeanFX2.Graded.Instances.AllocStrategy.add
+#print axioms LeanFX2.Graded.Instances.AllocStrategy.mul
+#print axioms LeanFX2.Graded.Instances.AllocStrategy.le
 #print axioms LeanFX2.Graded.Instances.SpaceGrade
 #print axioms LeanFX2.Graded.Instances.SpaceGrade.add
 #print axioms LeanFX2.Graded.Instances.SpaceGrade.mul
 #print axioms LeanFX2.Graded.Instances.SpaceGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringSpaceGrade
 
--- D5.4 Size (dim 20, Nat-backed codata observation depth)
+-- D5.4 Size (dim 20, bounded-or-unbounded codata observation depth)
 #print axioms LeanFX2.Graded.Instances.SizeGrade
 #print axioms LeanFX2.Graded.Instances.SizeGrade.add
 #print axioms LeanFX2.Graded.Instances.SizeGrade.mul
