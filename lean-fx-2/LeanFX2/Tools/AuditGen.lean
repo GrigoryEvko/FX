@@ -27,9 +27,32 @@ def isGeneratedOrToolingName (candidateName : Name) : Bool :=
   renderedName.endsWith ".injEq" ||
   renderedName.endsWith ".noConfusion" ||
   renderedName.endsWith ".noConfusionType" ||
+  renderedName.endsWith ".eq_def" ||
   renderedName.endsWith ".sizeOf_spec" ||
   renderedName.endsWith ".repr" ||
+  renderedName.contains ".match_" ||
   renderedName.contains ".instRepr"
+
+/-- Variant used by the smoke audit: audit `LeanFX2.Smoke` declarations
+too, while still excluding the audit tooling itself and compiler noise. -/
+def isGeneratedOrToolingNameIncludingSmoke (candidateName : Name) : Bool :=
+  let renderedName := candidateName.toString
+  candidateName.isInternal ||
+  (`LeanFX2.Tools).isPrefixOf candidateName ||
+  renderedName.endsWith ".injEq" ||
+  renderedName.endsWith ".noConfusion" ||
+  renderedName.endsWith ".noConfusionType" ||
+  renderedName.endsWith ".eq_def" ||
+  renderedName.endsWith ".sizeOf_spec" ||
+  renderedName.endsWith ".repr" ||
+  renderedName.contains ".match_" ||
+  renderedName.contains ".instRepr"
+
+/-- Documented axiom-bearing boundary shims that must stay out of
+namespace sweeps.  Each entry needs an in-file explanation naming the
+stdlib axioms it inherits and why the leak is confined. -/
+def isDocumentedAxiomBoundaryName (candidateName : Name) : Bool :=
+  candidateName == `LeanFX2.Surface.Lex.runFromString
 
 /-- Only declarations with user-facing dependency bodies are audited by
 namespace sweeps.  Constructors and recursors are reached through their
@@ -61,6 +84,23 @@ def namespaceAuditTargets
       else
         targetNames)
 
+/-- Names in the current environment that should be checked when smoke
+declarations are also in scope. -/
+def namespaceAuditTargetsIncludingSmoke
+    (environment : Environment)
+    (namespaceName : Name) :
+    Array Name :=
+  environment.constants.toList.foldl
+    (init := #[])
+    (fun targetNames (constantName, constantInfo) =>
+      if Name.isWithinNamespace namespaceName constantName &&
+          !isGeneratedOrToolingNameIncludingSmoke constantName &&
+          !isDocumentedAxiomBoundaryName constantName &&
+          isNamespaceAuditTarget constantInfo then
+        targetNames.push constantName
+      else
+        targetNames)
+
 /-- Audit every loaded declaration under a namespace, failing at the
 first axiom leak. -/
 elab "#audit_namespace " namespaceSyntax:ident : command => do
@@ -85,5 +125,18 @@ elab "#auditgen " namespaceSyntax:ident : command => do
       throwError
         "namespace axiom audit failed for {targetName}: {stats.axiomNames.size} axiom(s): {formatNameList stats.axiomNames}"
   logInfo m!"namespace axiom audit ok: {namespaceName} ({targetNames.size} declarations)"
+
+/-- Audit a namespace without filtering out `LeanFX2.Smoke`.  Intended for
+the smoke audit entrypoint after it imports the smoke modules. -/
+elab "#audit_namespace_including_smoke " namespaceSyntax:ident : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let targetNames := namespaceAuditTargetsIncludingSmoke environment namespaceName
+  for targetName in targetNames do
+    let stats := computeStats environment targetName (includeStdlib := true)
+    if !stats.axiomNames.isEmpty then
+      throwError
+        "namespace axiom audit failed for {targetName}: {stats.axiomNames.size} axiom(s): {formatNameList stats.axiomNames}"
+  logInfo m!"namespace axiom audit ok including smoke: {namespaceName} ({targetNames.size} declarations)"
 
 end LeanFX2.Tools

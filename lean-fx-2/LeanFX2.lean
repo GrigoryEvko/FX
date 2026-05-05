@@ -282,6 +282,7 @@ import LeanFX2.Smoke.AuditMegaZ4A
 import LeanFX2.Smoke.AuditMegaZ2A1
 import LeanFX2.Smoke.AuditMegaZ5A1
 import LeanFX2.Smoke.AuditMegaZ5A
+import LeanFX2.Smoke.AuditNamespace
 
 namespace LeanFX2
 
