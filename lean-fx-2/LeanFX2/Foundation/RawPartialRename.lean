@@ -384,6 +384,81 @@ def RawTerm.unweaken? {scope : Nat}
     (term : RawTerm (scope + 1)) : Option (RawTerm scope) :=
   RawTerm.partialRename? term PartialRawRenaming.dropNewest
 
+/-- Recognize the raw shape of a constant path: a `pathLam` whose body
+is just a weakening of an outer-scope term.  This is deliberately only a
+recognizer, not a reduction rule; transport computation must use a
+separate confluence-aware cascade. -/
+def RawTerm.constantPathBody? {scope : Nat}
+    (pathTerm : RawTerm scope) : Option (RawTerm scope) :=
+  match pathTerm with
+  | RawTerm.pathLam body => RawTerm.unweaken? body
+  | RawTerm.var _ => none
+  | RawTerm.unit => none
+  | RawTerm.lam _ => none
+  | RawTerm.app _ _ => none
+  | RawTerm.pair _ _ => none
+  | RawTerm.fst _ => none
+  | RawTerm.snd _ => none
+  | RawTerm.boolTrue => none
+  | RawTerm.boolFalse => none
+  | RawTerm.boolElim _ _ _ => none
+  | RawTerm.natZero => none
+  | RawTerm.natSucc _ => none
+  | RawTerm.natElim _ _ _ => none
+  | RawTerm.natRec _ _ _ => none
+  | RawTerm.listNil => none
+  | RawTerm.listCons _ _ => none
+  | RawTerm.listElim _ _ _ => none
+  | RawTerm.optionNone => none
+  | RawTerm.optionSome _ => none
+  | RawTerm.optionMatch _ _ _ => none
+  | RawTerm.eitherInl _ => none
+  | RawTerm.eitherInr _ => none
+  | RawTerm.eitherMatch _ _ _ => none
+  | RawTerm.refl _ => none
+  | RawTerm.idJ _ _ => none
+  | RawTerm.modIntro _ => none
+  | RawTerm.modElim _ => none
+  | RawTerm.subsume _ => none
+  | RawTerm.interval0 => none
+  | RawTerm.interval1 => none
+  | RawTerm.intervalOpp _ => none
+  | RawTerm.intervalMeet _ _ => none
+  | RawTerm.intervalJoin _ _ => none
+  | RawTerm.pathApp _ _ => none
+  | RawTerm.glueIntro _ _ => none
+  | RawTerm.glueElim _ => none
+  | RawTerm.transp _ _ => none
+  | RawTerm.hcomp _ _ => none
+  | RawTerm.oeqRefl _ => none
+  | RawTerm.oeqJ _ _ => none
+  | RawTerm.oeqFunext _ => none
+  | RawTerm.idStrictRefl _ => none
+  | RawTerm.idStrictRec _ _ => none
+  | RawTerm.equivIntro _ _ => none
+  | RawTerm.equivApp _ _ => none
+  | RawTerm.refineIntro _ _ => none
+  | RawTerm.refineElim _ => none
+  | RawTerm.recordIntro _ => none
+  | RawTerm.recordProj _ => none
+  | RawTerm.codataUnfold _ _ => none
+  | RawTerm.codataDest _ => none
+  | RawTerm.sessionSend _ _ => none
+  | RawTerm.sessionRecv _ => none
+  | RawTerm.effectPerform _ _ => none
+  | RawTerm.universeCode _ => none
+  | RawTerm.arrowCode _ _ => none
+  | RawTerm.piTyCode _ _ => none
+  | RawTerm.sigmaTyCode _ _ => none
+  | RawTerm.productCode _ _ => none
+  | RawTerm.sumCode _ _ => none
+  | RawTerm.listCode _ => none
+  | RawTerm.optionCode _ => none
+  | RawTerm.eitherCode _ _ => none
+  | RawTerm.idCode _ _ _ => none
+  | RawTerm.equivCode _ _ => none
+  | RawTerm.cumulUpMarker _ => none
+
 /-- The newest variable cannot be lowered across the dropped binder. -/
 theorem RawTerm.unweaken?_newest_var_none {scope : Nat} :
     RawTerm.unweaken? (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩) = none := rfl
@@ -445,5 +520,50 @@ theorem RawTerm.unweaken?_pathLam_dropped_outer_var_none {scope : Nat} :
         (RawTerm.var
           ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩)) =
       none := rfl
+
+/-- The constant-path recognizer rejects a path body that mentions the
+interval binder.  Such a path is not constant, so future transport must
+not compute by the constant-path rule. -/
+theorem RawTerm.constantPathBody?_pathLam_interval_var_none {scope : Nat} :
+    RawTerm.constantPathBody?
+      (RawTerm.pathLam
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) =
+      none := rfl
+
+/-- The constant-path recognizer accepts a body that is exactly a
+weakened outer variable. -/
+theorem RawTerm.constantPathBody?_pathLam_weaken_var {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.constantPathBody?
+      (RawTerm.pathLam
+        (RawTerm.var (RawRenaming.weaken position))) =
+      some (RawTerm.var position) := rfl
+
+/-- The recognizer treats an inner path binder as local to that inner
+path, not as a use of the outer interval binder. -/
+theorem RawTerm.constantPathBody?_pathLam_nested_binder_var {scope : Nat} :
+    RawTerm.constantPathBody?
+      (RawTerm.pathLam
+        (RawTerm.pathLam
+          (RawTerm.var ⟨0, Nat.zero_lt_succ (scope + 1)⟩))) =
+      some
+        (RawTerm.pathLam
+          (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) := rfl
+
+/-- The recognizer rejects a nested body that mentions the outer
+interval binder.  This is the compile-time tripwire for the classic
+unsound constant-transport shortcut. -/
+theorem RawTerm.constantPathBody?_pathLam_nested_interval_escape_none
+    {scope : Nat} :
+    RawTerm.constantPathBody?
+      (RawTerm.pathLam
+        (RawTerm.pathLam
+          (RawTerm.var
+            ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩))) =
+      none := rfl
+
+/-- A non-path term is not a constant path. -/
+theorem RawTerm.constantPathBody?_unit_none {scope : Nat} :
+    RawTerm.constantPathBody? (RawTerm.unit (scope := scope)) = none := rfl
 
 end LeanFX2
