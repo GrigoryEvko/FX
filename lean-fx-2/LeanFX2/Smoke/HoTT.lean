@@ -223,9 +223,41 @@ theorem s1_rec_base_smoke :
 
 /-- Setoid-level S1 dependent induction computes at base. -/
 theorem s1_dependentInductor_base_smoke :
-    (HoTT.HIT.S1.dependentInductor (fun _ => Bool) true).run
+    (HoTT.HIT.S1.dependentInductor
+      (fun _ => Bool)
+      (fun _ => true)
+      (fun _ _ => HEq.rfl)).run
       HoTT.HIT.S1.base = true :=
-  HoTT.HIT.S1.dependentInductor_base (fun _ => Bool) true
+  HoTT.HIT.S1.dependentInductor_base
+    (fun _ => Bool)
+    (fun _ => true)
+    (fun _ _ => HEq.rfl)
+
+/-- Setoid-level S1 now has non-base winding representatives connected
+to base. -/
+theorem s1_forwardLoop_relation_smoke :
+    HoTT.HIT.S1.setoid.relation
+      HoTT.HIT.S1.base
+      (HoTT.HIT.S1.forwardLoop 0) :=
+  HoTT.HIT.S1.loopForward 0
+
+/-- S1 dependent induction must respect distinct winding representatives. -/
+theorem s1_dependentInductor_loopBetween_smoke :
+    HEq
+      ((HoTT.HIT.S1.dependentInductor
+        (fun _ => Bool)
+        (fun _ => true)
+        (fun _ _ => HEq.rfl)).run HoTT.HIT.S1.base)
+      ((HoTT.HIT.S1.dependentInductor
+        (fun _ => Bool)
+        (fun _ => true)
+        (fun _ _ => HEq.rfl)).run (HoTT.HIT.S1.forwardLoop 0)) :=
+  HoTT.HIT.S1.dependentInductor_loopBetween
+    (fun _ => Bool)
+    (fun _ => true)
+    (fun _ _ => HEq.rfl)
+    HoTT.HIT.S1.base
+    (HoTT.HIT.S1.forwardLoop 0)
 
 /-- A suspension meridian relates north and south when a source witness exists. -/
 theorem suspension_meridian_smoke :
@@ -436,6 +468,8 @@ theorem coequalizer_dependentInductor_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.s1_loop_spec_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_rec_base_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_dependentInductor_base_smoke
+#assert_no_axioms LeanFX2.Smoke.s1_forwardLoop_relation_smoke
+#assert_no_axioms LeanFX2.Smoke.s1_dependentInductor_loopBetween_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_meridian_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_dependentInductor_north_smoke
