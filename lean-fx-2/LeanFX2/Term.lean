@@ -266,58 +266,56 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (levelLe : outerLevel.toNat + 1 ≤ level) :
       Term context (Ty.universe outerLevel levelLe)
                    (RawTerm.universeCode innerLevel.toNat)
-  /-- **REAL CROSS-LEVEL CUMULATIVITY** at the typed Term level.
-      Promotes a closed (scope = 0) Term inhabiting `Ty.universe lowerLevel`
-      to one inhabiting `Ty.universe higherLevel`, packaging the source
+  /-- **REAL CROSS-LEVEL CUMULATIVITY** at the typed Term level —
+      Phase CUMUL-2.6 Design D.
+
+      Promotes a Term inhabiting `Ty.universe lowerLevel` to one
+      inhabiting `Ty.universe higherLevel`, packaging the source
       term as a payload field.  The output's static type lives at a
       different outer universe-level than the input — this is the
-      cumulativity rule `u ≤ v ⊢ u : Type → u : Type[v]` made REAL at
-      the term level.
+      cumulativity rule `u ≤ v ⊢ u : Type → u : Type[v]` made REAL
+      at the term level.
 
-      ## Decoupled lower scope (Phase 12.A.B1.4 — drop scope=0 restriction)
-      The P-4 cumul-Subst-mismatch wall (`feedback_lean_cumul_subst_mismatch`)
-      forbids freely substituting through a level-mismatched payload.
-      Phase 12.A.B1.4 sidesteps the wall by DECOUPLING `scopeLow` from
-      the outer `scope`: `ctxLow` lives at its own scope `scopeLow`, and
-      `Term.subst`'s arm leaves `scopeLow` (and hence `lowerTerm`)
-      UNCHANGED.  The lower-side substitution is opaque to the outer
-      Subst — the user can independently substitute the lower side via
-      `Term.cumulUp_subst_lower` (a separate operation).
+      ## Phase CUMUL-2.6 Design D — single ctx + cumulUpMarker raw output
 
-      Previous architecture (scope = 0 only): closed lower term required.
-      New architecture (arbitrary scopeLow): local lower term permitted,
-      but its substitution is independent of the outer Subst.
+      Earlier designs (B1, B1.4, etc.) parameterized cumulUp over a
+      decoupled lower scope/level/ctx, with the output raw being the
+      same `RawTerm.universeCode innerLevel.toNat` as the input —
+      breaking the propext-leak floor for inversion lemmas.
 
-      ## How cumulUp uses its source
-      `lowerTerm` is a real field of the constructor.  Term.subst's
-      arm for cumulUp passes `lowerTerm` through unchanged (its scope
-      `scopeLow` is independent of the outer `scope` being substituted),
-      reconstructing the output via `Term.cumulUp` at the new target
-      scope.  The output structure literally contains the input term
-      as a payload — that is REAL packaging, not witness synthesis.
+      Design D simplifies AND fixes the floor:
+
+      * SINGLE `context` and SINGLE `scope` — same throughout the
+        promotion (one outer universe context).
+      * `codeRaw` is SCHEMATIC — any raw inhabiting the lower
+        universe, not just `RawTerm.universeCode`.  Per CUMUL-2.4,
+        the typed `Term` layer at `Ty.universe _` covers
+        universeCode, arrowCode, piTyCode, sigmaTyCode, productCode,
+        sumCode, listCode, optionCode, eitherCode, idCode,
+        equivCode — so `cumulUp` lifts ALL of them uniformly.
+      * Output raw is `RawTerm.cumulUpMarker codeRaw` — structurally
+        distinct from every other RawTerm ctor, so cases on a typed
+        `Term ctx ty .unit` (or .universeCode, .arrowCode, ...)
+        excludes the cumulUp branch via raw-ctor mismatch.
+        This is the architectural answer to 15 prior CUMUL-2.6
+        retreats.
 
       ## Field meaning
       * `lowerLevel`, `higherLevel` — outer universe levels
-      * `cumulOk` — the cumulativity witness `lowerLevel ≤ higherLevel`
-      * `scopeLow` — the lower-side scope (decoupled from outer `scope`)
-      * `ctxLow` — context at the lower outer level (at `scopeLow`)
-      * `ctxHigh` — arbitrary outer context at the higher level
-      * `innerRaw` — raw form of the lower term (at `scopeLow`)
-      * `lowerTerm` — the REAL TYPED SOURCE Term we're promoting -/
-  | cumulUp {mode : Mode} {levelLow level scopeLow scope : Nat}
-      (innerLevel lowerLevel higherLevel : UniverseLevel)
-      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      * `cumulMonotone` — cumulativity witness `lowerLevel ≤ higherLevel`
+      * `levelLeLow`, `levelLeHigh` — outer-level pinning witnesses
+      * `codeRaw` — raw form of the source code (any code-shaped raw)
+      * `typeCode` — the REAL TYPED SOURCE Term we're promoting -/
+  | cumulUp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (lowerLevel higherLevel : UniverseLevel)
       (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-      (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+      (levelLeLow : lowerLevel.toNat + 1 ≤ level)
       (levelLeHigh : higherLevel.toNat + 1 ≤ level)
-      {ctxLow : Ctx mode levelLow scopeLow}
-      {ctxHigh : Ctx mode level scope}
-      (lowerTerm :
-        Term ctxLow (Ty.universe lowerLevel levelLeLow)
-                    (RawTerm.universeCode innerLevel.toNat)) :
-      Term ctxHigh (Ty.universe higherLevel levelLeHigh)
-           (RawTerm.universeCode innerLevel.toNat)
+      {codeRaw : RawTerm scope}
+      (typeCode : Term context (Ty.universe lowerLevel levelLeLow) codeRaw) :
+      Term context (Ty.universe higherLevel levelLeHigh)
+                   (RawTerm.cumulUpMarker codeRaw)
   /-- **The canonical identity equivalence `A ≃ A`.**  Inhabitant of
       `Ty.equiv carrier carrier`, raw form is `RawTerm.equivIntro id id`
       where `id = RawTerm.lam (RawTerm.var 0)` is the syntactic

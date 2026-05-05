@@ -667,32 +667,33 @@ inductive Step :
   `Step` therefore lives at parameters distinct from the outer one.
 
   This is the FIRST Step ctor that bridges different scope/context
-  parameterizations.  The outer Step's parameterization picks up
-  `ctxHigh, level, scope`; the inner Step's is `ctxLow,
-  lowerLevel.toNat + 1, scopeLow`.
+  parameterizations.  The Step's parameterization picks up
+  `context, level, scope` — single context throughout (Design D).
 
-  The lower-side `levelLow` is fixed at `lowerLevel.toNat + 1` to
-  match `ConvCumul.cumulUpCong`'s restriction, so the cong rule
-  lifts cleanly through the convertibility bridge. -/
-  | cumulUpInner {mode : Mode} {scopeLow scope : Nat}
-      (innerLevel lowerLevel higherLevel : UniverseLevel)
-      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+  The Step lifts the inner reduction `Step typeCodeSource
+  typeCodeTarget` to the corresponding outer reduction between the
+  two `cumulUp _ _ _ _ _ typeCodeSource` and `cumulUp _ _ _ _ _
+  typeCodeTarget` Terms.  Output raw shape `RawTerm.cumulUpMarker
+  (codeSourceRaw / codeTargetRaw)` matches the typed Term ctor's
+  output. -/
+  | cumulUpInner {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (lowerLevel higherLevel : UniverseLevel)
       (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-      {lowerSource lowerTarget :
-        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                    (RawTerm.universeCode innerLevel.toNat)} :
-      Step lowerSource lowerTarget →
-      Step (Term.cumulUp (ctxHigh := ctxHigh)
-                         innerLevel lowerLevel higherLevel
-                         cumulOkLow cumulOkHigh cumulMonotone
-                         (Nat.le_refl _) (Nat.le_refl _) lowerSource)
-           (Term.cumulUp (ctxHigh := ctxHigh)
-                         innerLevel lowerLevel higherLevel
-                         cumulOkLow cumulOkHigh cumulMonotone
-                         (Nat.le_refl _) (Nat.le_refl _) lowerTarget)
+      (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+      (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+      {codeSourceRaw codeTargetRaw : RawTerm scope}
+      {typeCodeSource :
+        Term context (Ty.universe lowerLevel levelLeLow) codeSourceRaw}
+      {typeCodeTarget :
+        Term context (Ty.universe lowerLevel levelLeLow) codeTargetRaw} :
+      Step typeCodeSource typeCodeTarget →
+      Step (Term.cumulUp (context := context)
+                         lowerLevel higherLevel cumulMonotone
+                         levelLeLow levelLeHigh typeCodeSource)
+           (Term.cumulUp (context := context)
+                         lowerLevel higherLevel cumulMonotone
+                         levelLeLow levelLeHigh typeCodeTarget)
   /-- **Univalence rfl-fragment as a definitional reduction.**
       `Step.eqType` reduces the canonical Id-typed identity-equivalence
       proof at the universe (`Term.equivReflIdAtId ... carrier carrierRaw :

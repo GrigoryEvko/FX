@@ -141,7 +141,7 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .modElim _ => .modElim
   | .subsume _ => .subsume
   | .universeCode _ _ _ _ => .universeCode
-  | .cumulUp _ _ _ _ _ _ _ _ _ => .cumulUp
+  | .cumulUp _ _ _ _ _ _ => .cumulUp
   | .equivReflId _ => .equivReflId
   | .funextRefl _ _ _ => .funextRefl
   | .equivReflIdAtId _ _ _ _ => .equivReflIdAtId
@@ -193,7 +193,7 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .universeCode _ _ _ _ => true
   -- Cumul-up is a value (the inner term is a closed universe-code,
   -- and cumulUp itself is not a β/ι redex head)
-  | .cumulUp _ _ _ _ _ _ _ _ _ => true
+  | .cumulUp _ _ _ _ _ _ => true
   -- HoTT canonical equivalence/funext refl-fragment witnesses are
   -- values (not β/ι redex heads).
   | .equivReflId _ => true
@@ -315,7 +315,7 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -372,7 +372,7 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -429,7 +429,7 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -486,7 +486,7 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -543,7 +543,7 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -611,7 +611,7 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -668,7 +668,7 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -725,7 +725,7 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -782,7 +782,7 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -839,7 +839,7 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq
@@ -896,7 +896,7 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | modElim _ => nomatch headEq
   | subsume _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
-  | cumulUp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
   | funextRefl _ _ _ => nomatch headEq
   | equivReflIdAtId _ _ _ _ => nomatch headEq

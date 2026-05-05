@@ -178,10 +178,12 @@ theorem Term.subst_pointwise
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl
-  -- Cumul-up: closed lower side (scope 0), no scope-dependent
-  -- substitution.  Both sides identical regardless of forTy/forRaw
-  -- pointwise hypothesis.
-  | _, _, .cumulUp _ _ _ _ _ _ _ _ _ => rfl
+  -- Cumul-up — Phase CUMUL-2.6 Design D: subst arm recurses on
+  -- inner typeCode, so pointwise propagates via Term.subst_pointwise
+  -- on the typeCode.
+  | _, _, .cumulUp _ _ _ _ _ typeCode => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq typeCode]
   -- HoTT canonical equivalence/funext refl-fragment witnesses: their
   -- subst arms in Term/Subst.lean depend ONLY on the underlying
   -- Subst (not on the TermSubst pointwise data), so both sides

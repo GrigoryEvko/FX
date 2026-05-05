@@ -212,21 +212,21 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- definitionally.
   | _, _, .universeCode innerLevel outerLevel cumulOk levelLe =>
       Term.universeCode innerLevel outerLevel cumulOk levelLe
-  -- Cumul-up (REAL cumul ctor): the inner Term lives at scope 0, so
-  -- it is invariant under any renaming on the outer scope.  We just
-  -- pass `lowerTerm` through unchanged and reconstruct the cumulUp
-  -- ctor at the new target scope (the output context uses the new
-  -- scope, the inner context stays at scope 0).  Both sides project
-  -- to `RawTerm.universeCode innerLevel.toNat`, identical at any
-  -- scope, so no cast is needed for the raw axis.  The output type
-  -- `Ty.universe higherLevel _` renames to itself.
-  | _, _, .cumulUp innerLevel lowerLevel higherLevel
-                   cumulOkLow cumulOkHigh cumulMonotone
-                   levelLeLow levelLeHigh lowerTerm =>
-      Term.cumulUp (ctxHigh := targetCtx)
-                   innerLevel lowerLevel higherLevel
-                   cumulOkLow cumulOkHigh cumulMonotone
-                   levelLeLow levelLeHigh lowerTerm
+  -- Cumul-up (REAL cumul ctor) — Phase CUMUL-2.6 Design D.  Single
+  -- context throughout, schematic codeRaw, output wrapped in
+  -- cumulUpMarker.  Since the inner typed source term lives at the
+  -- SAME scope/context as the outer (Design D unification), we
+  -- recursively rename the inner typeCode and reconstruct the
+  -- cumulUp ctor at the target scope.  The output raw becomes
+  -- `RawTerm.cumulUpMarker (codeRaw.rename rho)`, which is
+  -- definitionally `(RawTerm.cumulUpMarker codeRaw).rename rho` —
+  -- the cumulUpMarker arm of `RawTerm.rename` recurses on inner.
+  | _, _, .cumulUp lowerLevel higherLevel
+                   cumulMonotone levelLeLow levelLeHigh typeCode =>
+      Term.cumulUp (context := targetCtx)
+                   lowerLevel higherLevel cumulMonotone
+                   levelLeLow levelLeHigh
+                   (Term.rename termRenaming typeCode)
   -- HoTT canonical identity equivalence (Phase 12.A.B8.1): renames
   -- structurally; carrier is renamed; the raw-side identity-lambda
   -- shape is constant (no scope-dependent payload beyond Fin 0

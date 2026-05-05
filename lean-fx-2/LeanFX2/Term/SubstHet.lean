@@ -216,21 +216,19 @@ def Term.substHet {mode : Mode}
   | _, _, .universeCode innerLevel outerLevel cumulOk levelLe =>
       Term.universeCode innerLevel outerLevel cumulOk
                         (Nat.le_trans levelLe sigma.cumulOk)
-  -- Cumul-up (REAL cumul ctor): the inner Term lives at scope 0 in
-  -- the v12.A.2 architecture, so it carries no positions to substitute.
-  -- We pass `lowerTerm` through unchanged and reconstruct cumulUp at
-  -- the new target scope/level.  Both the universe-code raw form and
-  -- `Ty.universe ...` substitute to themselves (no scope-dependent
-  -- payload).  The level shift on the OUTER side requires composing
+  -- Cumul-up (REAL cumul ctor) — Phase CUMUL-2.6 Design D.  Single
+  -- context throughout, schematic codeRaw, output wrapped in
+  -- cumulUpMarker.  Recursively substitute the inner typeCode
+  -- via `Term.substHet` (heterogeneous-level substitution).  The
+  -- level shift on BOTH sides requires composing levelLeLow and
   -- levelLeHigh with sigma.cumulOk via Nat.le_trans.
-  | _, _, .cumulUp innerLevel lowerLevel higherLevel
-                   cumulOkLow cumulOkHigh cumulMonotone
-                   levelLeLow levelLeHigh lowerTerm =>
-      Term.cumulUp (ctxHigh := targetCtx)
-                   innerLevel lowerLevel higherLevel
-                   cumulOkLow cumulOkHigh cumulMonotone
-                   levelLeLow (Nat.le_trans levelLeHigh sigma.cumulOk)
-                   lowerTerm
+  | _, _, .cumulUp lowerLevel higherLevel
+                   cumulMonotone levelLeLow levelLeHigh typeCode =>
+      Term.cumulUp (context := targetCtx)
+                   lowerLevel higherLevel cumulMonotone
+                   (Nat.le_trans levelLeLow sigma.cumulOk)
+                   (Nat.le_trans levelLeHigh sigma.cumulOk)
+                   (Term.substHet termSubstHet typeCode)
   -- HoTT canonical identity equivalence (Phase 12.A.B8.1): carrier
   -- substitutes via `sigma`; the raw-side identity-lambda shape is
   -- constant (substituent var-0 of an identity-lift is itself).

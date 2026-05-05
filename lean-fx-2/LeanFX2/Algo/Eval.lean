@@ -209,7 +209,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .subsume _ => none
   | _, _, _, _, .universeCode _ _ _ _ => none
   -- Cumul-up is a value (not a redex head)
-  | _, _, _, _, .cumulUp _ _ _ _ _ _ _ _ _ => none
+  | _, _, _, _, .cumulUp _ _ _ _ _ _ => none
   -- HoTT canonical equivalence/funext refl-fragment witnesses are
   -- values (not β/ι redex heads).
   | _, _, _, _, .equivReflId _ => none

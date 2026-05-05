@@ -186,11 +186,13 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInrDeep _ ihScrutinee ihRight
   | iotaIdJReflDeep _ _ ihWitness ihBase =>
       exact RawStep.par.iotaIdJReflDeep ihWitness ihBase
-  -- cumulUpInnerCong: source and target are both
-  -- `Term.cumulUp ... lowerSource/lowerTarget`, which project to the
-  -- SAME constant raw `RawTerm.universeCode innerLevel.toNat`.
-  -- Therefore the raw-side parallel reduction is reflexive.
-  | cumulUpInnerCong _ _ _ _ _ _ _ => exact RawStep.par.refl _
+  -- cumulUpInnerCong — Phase CUMUL-2.6 Design D: source projects to
+  -- `RawTerm.cumulUpMarker codeSourceRaw`, target to
+  -- `RawTerm.cumulUpMarker codeTargetRaw`.  The inner-step IH is a
+  -- `RawStep.par codeSourceRaw codeTargetRaw`; wrap via the new
+  -- `RawStep.par.cumulUpMarkerCong` cong rule (Phase A5).
+  | cumulUpInnerCong _ _ _ _ _ _ innerIH =>
+      exact RawStep.par.cumulUpMarkerCong innerIH
   -- Univalence rfl-fragment: source `Term.equivReflIdAtId` and target
   -- `Term.equivReflId` BOTH project to the same raw form
   -- `RawTerm.equivIntro (lam (var 0)) (lam (var 0))`, so the bridge
