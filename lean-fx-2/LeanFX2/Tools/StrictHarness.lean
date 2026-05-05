@@ -23,6 +23,11 @@ The parity gate `#assert_raw_typed_parity` walks two inductives and
 verifies that every constructor of the first has a same-suffix
 constructor in the second.  Used to enforce raw-layer / typed-layer
 parity for `RawStep.par` and `Step.par`.
+
+The FX1 host-minimal gate `#assert_fx1_core_host_minimal` checks that
+the minimal root namespace does not depend on host-heavy Lean modules
+or forbidden host axioms.  It is intentionally stricter than the
+project-wide gate because FX1/Core is the planned trusted root.
 -/
 
 namespace LeanFX2.Tools
@@ -169,6 +174,129 @@ elab "#audit_namespace_strict_including_smoke " namespaceSyntax:ident : command 
       s!"strict audit FAILED for {namespaceName}: " ++
       s!"{violationsByDecl.size} of {targetNames.size} decls violate discipline"
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## FX1/Core host-minimal dependency gate -/
+
+/-- Host dependencies forbidden inside FX1/Core.
+
+This gate deliberately checks dependency names, not source imports.  The
+project-wide build environment may contain `Lean` or `Std` because the audit
+tools themselves use elaborator APIs; FX1/Core declarations must not depend on
+those symbols in their type or value dependency closure. -/
+def isForbiddenFX1HostDependency (dependencyName : Name) : Bool :=
+  (`Lean).isPrefixOf dependencyName ||
+  (`Std).isPrefixOf dependencyName ||
+  (`Classical).isPrefixOf dependencyName ||
+  (`Quot).isPrefixOf dependencyName ||
+  dependencyName == `propext ||
+  dependencyName == `Classical.choice ||
+  dependencyName == `Quot.sound ||
+  dependencyName == `Quot.lift ||
+  dependencyName == `sorryAx
+
+/-- Collect forbidden host dependencies for one FX1/Core declaration. -/
+def collectForbiddenFX1HostDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames := collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenSoFar dependencyName =>
+      if isForbiddenFX1HostDependency dependencyName then
+        forbiddenSoFar.push dependencyName
+      else
+        forbiddenSoFar)
+
+/-- Build-failing FX1/Core host-minimal gate.  Walks the given namespace and
+flags every declaration whose dependency closure mentions `Lean`, `Std`,
+`Classical`, host `Quot`, `propext`, `Classical.choice`, `Quot.sound`,
+`Quot.lift`, or `sorryAx`.
+
+Use this for `LeanFX2.FX1` once the minimal root namespace is imported by the
+build.  With zero declarations it still logs success, which lets the gate be
+wired before the namespace exists. -/
+elab "#assert_fx1_core_host_minimal " namespaceSyntax:ident : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array (Name × Array Name) := #[]
+  for targetName in targetNames do
+    let forbiddenDependencies :=
+      collectForbiddenFX1HostDependencies environment targetName
+    if !forbiddenDependencies.isEmpty then
+      violations := violations.push (targetName, forbiddenDependencies)
+  if violations.isEmpty then
+    logInfo m!"FX1 host-minimal audit ok: {namespaceName} ({targetNames.size} declarations)"
+  else
+    let perDeclLines := violations.toList.map fun (declName, dependencies) =>
+      let renderedDependencies :=
+        String.intercalate ", " (dependencies.toList.map toString)
+      s!"  - {declName}: forbidden host dependencies [{renderedDependencies}]"
+    let header :=
+      s!"FX1 host-minimal audit FAILED for {namespaceName}: " ++
+      s!"{violations.size} of {targetNames.size} decls violate host policy"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Import-surface gate -/
+
+/-- Modules that are production-bearing LeanFX2 modules rather than tests,
+tooling, sketches, or the broad public umbrella. -/
+def isProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2).isPrefixOf moduleName &&
+    moduleName != `LeanFX2 &&
+    !(`LeanFX2.Smoke).isPrefixOf moduleName &&
+    !(`LeanFX2.Tools).isPrefixOf moduleName &&
+    !(`LeanFX2.Sketch).isPrefixOf moduleName
+
+/-- Imports that production modules must not take directly.
+
+`Smoke` and `Tools` are allowed to depend on production code; production code
+must not depend on them.  `Sketch` is proof-of-concept space.  The root
+`LeanFX2` umbrella is intentionally broad and must not be used as an internal
+dependency. -/
+def isForbiddenProductionImportModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.Smoke).isPrefixOf moduleName ||
+    (`LeanFX2.Tools).isPrefixOf moduleName ||
+    (`LeanFX2.Sketch).isPrefixOf moduleName ||
+    moduleName == `LeanFX2
+
+/-- Direct forbidden imports for one imported module. -/
+def forbiddenProductionImportsForModule
+    (moduleData : ModuleData) : Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenImports directImport =>
+      if isForbiddenProductionImportModuleName directImport.module then
+        forbiddenImports.push directImport.module
+      else
+        forbiddenImports)
+
+/-- Build-failing import-surface gate.  It checks direct imports for every
+production `LeanFX2.*` module visible in the current environment. -/
+elab "#assert_production_import_surface_clean" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedProductionModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if isProductionLeanFX2ModuleName moduleName then
+      scannedProductionModules := scannedProductionModules + 1
+      let forbiddenImports := forbiddenProductionImportsForModule moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (moduleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"production import surface ok: {scannedProductionModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: forbidden direct imports [{renderedImports}]"
+    let header :=
+      s!"production import surface FAILED: " ++
+      s!"{violations.size} of {scannedProductionModules} production modules violate import policy"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
 /-! ## Raw/typed parity check -/
 

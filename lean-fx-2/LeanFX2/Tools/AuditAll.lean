@@ -697,6 +697,14 @@ namespace LeanFX2.Tools
 -- looks at axioms) but kept side-by-side as defense in depth.
 #audit_namespace_strict LeanFX2
 
+-- FX1/Core host-minimal gate.  This is intentionally scoped to the
+-- future minimal-root namespace, not the rich kernel: FX1 declarations
+-- must not depend on host-heavy `Lean`, `Std`, `Classical`, host `Quot`,
+-- `propext`, `Classical.choice`, `Quot.sound`, `Quot.lift`, or `sorryAx`.
+-- It succeeds with zero declarations, so it can be wired before FX1/Core
+-- exists and will begin enforcing as soon as FX1 files are imported.
+#assert_fx1_core_host_minimal LeanFX2.FX1
+
 -- Raw / typed parity gate.  Every constructor of `RawStep.par` must
 -- have a same-suffix constructor in `Step.par`.  Catches the failure
 -- mode where a raw cubical β rule lands without its typed mirror.

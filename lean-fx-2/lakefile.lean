@@ -13,4 +13,4 @@ package «lean-fx-2» where
 
 @[default_target]
 lean_lib LeanFX2 where
-  globs := #[.submodules `LeanFX2]
+  globs := #[.andSubmodules `LeanFX2]

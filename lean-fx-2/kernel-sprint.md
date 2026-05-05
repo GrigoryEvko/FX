@@ -34,11 +34,12 @@ A **strict zero-axiom** dependently-typed graded modal type theory with:
 9. **All 7 HITs**: Quot, propTrunc, setTrunc, S¹, suspension, pushout, coequalizer.
 10. **Surface frontend complete** with M01+M02 lex/parse roundtrip + elab
     soundness theorem.
-11. **Lean 4 kernel meta-verification**: a faithful encoding of Lean's 12-ctor
-    expression syntax + 8 reduction rules + `HasType` typing relation, with
-    `Lean.Kernel.check_sound` proven zero-axiom inside lean-fx-2 — reducing
-    Lean's TCB from "trust the C++ kernel" to "trust lean-fx-2's
-    machine-verified meta-theory".
+11. **Lean 4 kernel meta-verification over FX1**: a faithful encoding of Lean's
+    12-ctor expression syntax + 8 reduction rules + `HasType` typing relation,
+    with `LeanFX2.FX1.LeanKernel.check_sound` proven zero-axiom after
+    `FX1.check_sound` — reducing Lean's TCB for the modeled fragment from
+    "trust the C++ kernel" to "trust lean-fx-2's machine-verified FX1
+    meta-theory".
 12. **Cross-theory bridges**: provable equivalences between cubical Path,
     observational Id, modal-projected variants, plus conservativity proofs
     establishing theory-relative-faithful-translation.
@@ -63,6 +64,65 @@ The `#print axioms` of EVERY kernel declaration must report
 "does not depend on any axioms". This is enforced by `Tools/AuditAll.lean`
 running ~500 `#assert_no_axioms` calls per build.
 
+## 0.2.1 Metaplan overlay: rich layer vs trusted root
+
+`kernel-metaplan.md` is normative for trusted-computing-base claims. This
+sprint still builds the existing lean-fx-2 rich kernel, but a feature being
+implemented in the rich kernel does not automatically make it part of the
+minimal trusted root.
+
+The trust stack is:
+
+```text
+LeanFX2 rich layer
+  Existing Ty / RawTerm / Term / Step / Conv / Graded / HoTT / Cubical code.
+  This is where Day 1-7 feature work lands first.
+
+FX1
+  Minimal Lean-like lambda-Pi kernel.
+  This is the ergonomic self-hosting target and the substrate for Lean-in-FX.
+
+FX0
+  MM0-like first-order certificate checker.
+  This is the eventual skeptical root verifier.
+```
+
+Every new module or theorem must be classified with one of these root-status
+labels:
+
+```text
+Root-FX1
+  Part of the minimal lambda-Pi kernel and covered by FX1.check_sound.
+
+LeanKernel-FX1
+  Part of the Lean-kernel reimplementation over FX1.
+
+FX-rich
+  Existing expressive lean-fx-2 layer. Zero-axiom, but not minimal-root trusted.
+
+Bridge
+  Translation/soundness connection between the rich layer and FX1/FX0.
+
+FX0-root
+  First-order certificate checker layer.
+
+Scaffold
+  Syntax, file layout, or documentation without load-bearing theorem.
+
+Deferred
+  Explicitly not claimed.
+```
+
+Day 2 and Day 3 may continue before FX1.check_sound is complete. Their output
+is classified as `FX-rich` unless an explicit `encode_*_sound` theorem promotes
+the corresponding fragment to `Bridge` or `Root-FX1`. This avoids a later
+rewrite: the rich primitives are "fired in" first, then justified through the
+FX1 bridge when the minimal checker is ready.
+
+The Lean kernel reimplementation is no longer a direct Day 8 layer over the
+full rich kernel. It targets `LeanFX2.FX1.LeanKernel`, and it is blocked on
+FX1/Core syntax, substitution, typing, reduction, and checker soundness.
+
 ## 0.3 Acceptance criteria for v1.0
 
 A green build with the following invariants:
@@ -74,8 +134,11 @@ A green build with the following invariants:
 * `axiom` keyword does NOT appear in any kernel file (excluding documentation
   text that mentions it for didactic purposes).
 * `sorry` does NOT appear in any kernel file (durable check).
-* `Lean.Kernel.check_sound` typechecks zero-axiom OR a documented gap is
-  filed as a Lean issue with reproducer.
+* Every Day 2+ primitive has a root-status label from §0.2.1.
+* `FX1.check_sound` typechecks zero-axiom before any Lean-in-FX claim is made.
+* `LeanFX2.FX1.LeanKernel.check_sound` typechecks zero-axiom OR a documented
+  gap is filed with a local reproducer and an upstream Lean issue if the gap is
+  in Lean's reference behavior.
 * `Bridge.PathToId.equiv` is a zero-axiom theorem proving the cubical-
   observational identity-type bridge.
 * All 95 currently-pending tasks in TaskList resolved (some via shipping the
@@ -112,7 +175,8 @@ possible and beneficial in 9 days of focused agentic work."
 * Section 2: top-to-bottom dependency analysis (each goal's prerequisites).
 * Section 3: comprehensive pitfall catalog (25+ known issues + mitigations).
 * Section 4: risk register (probabilistic risks + impact + mitigation).
-* Section 5: day-by-day execution plan (granular sub-tasks per day).
+* Section 5: day-by-day execution plan (granular sub-tasks per day), including
+  the FX1 trust-spine interlock.
 * Section 6: cut order if behind schedule.
 * Section 7: per-day acceptance criteria.
 * Section 8: v1.0 manifest (what ships).
@@ -121,6 +185,115 @@ possible and beneficial in 9 days of focused agentic work."
 ---
 
 # Section 1 — Bottom-to-Top Architecture
+
+## 1.0 Trust spine below the rich kernel
+
+The rich lean-fx-2 kernel remains the feature implementation layer. The minimal
+root is introduced underneath it, not by replacing it in-place.
+
+### 1.0.1 FX1/Core
+
+`LeanFX2/FX1/Core` is a minimal Lean-like lambda-Pi kernel. It starts smaller
+than Lean's real kernel:
+
+```lean
+namespace LeanFX2.FX1
+
+inductive Name where
+  | anonymous
+  | str (prefix : Name) (part : String)
+  | num (prefix : Name) (index : Nat)
+
+inductive Level where
+  | zero
+  | succ (base : Level)
+  | max (left right : Level)
+  | imax (left right : Level)
+  | param (name : Name)
+
+inductive Expr where
+  | bvar (index : Nat)
+  | sort (level : Level)
+  | const (name : Name)
+  | pi (domain body : Expr)
+  | lam (domain body : Expr)
+  | app (function argument : Expr)
+
+end LeanFX2.FX1
+```
+
+FX1/Core intentionally omits free variables, metavariables, let expressions,
+literals, metadata, projections, inductives, quotient primitives, proof
+irrelevance, eta, unsafe declarations, partial declarations, and opaque
+declarations until the smaller core has preservation and checker soundness.
+
+Allowed host imports for FX1/Core are restricted to `prelude` and
+`Init.Prelude` unless a later line-item justifies an exception. Forbidden host
+dependencies include `Lean`, `Std`, `Classical`, `Quot`, `propext`,
+`noncomputable`, `unsafe`, `partial`, `opaque` proof shortcuts, `extern`,
+`implemented_by`, `sorry`, `admit`, `sorryAx`, and tactic-heavy automation.
+
+### 1.0.2 FX1 metatheory gates
+
+FX1/Core does not become trusted merely because it is small. It needs:
+
+* scope checking;
+* weakening;
+* renaming;
+* substitution;
+* substitution identity and composition;
+* renaming/substitution interaction;
+* beta substitution;
+* environment and context well-formedness;
+* beta and delta preservation;
+* conversion soundness;
+* WHNF soundness;
+* executable checker soundness.
+
+The root theorem is:
+
+```lean
+theorem FX1.check_sound :
+    FX1.check environment context expression = some typeExpression ->
+    FX1.HasType environment context expression typeExpression
+```
+
+No feature counts as `Root-FX1` until it is covered by this theorem or by a
+separate theorem reducing it to the covered fragment.
+
+### 1.0.3 Rich-layer bridge
+
+Existing `Ty`, `RawTerm`, `Term`, `Step`, `Conv`, HoTT, cubical, graded,
+refinement, effect, session, and codata modules are bridged into FX1 by
+translation:
+
+```lean
+def encodeTy :
+    LeanFX2.Ty level scope -> FX1.Expr
+
+def encodeRawTerm :
+    LeanFX2.RawTerm scope -> FX1.Expr
+
+def encodeCtx :
+    LeanFX2.Ctx mode level scope -> FX1.Context
+
+theorem encode_term_sound :
+    LeanFX2.Term context typeExpression rawExpression ->
+    FX1.HasType environment
+      (encodeCtx context)
+      (encodeRawTerm rawExpression)
+      (encodeTy typeExpression)
+```
+
+The bridge is incremental: variables, unit, Pi/lambda/app, universe codes,
+identity, declared rich constants, then rich constructors with real
+definitions. A rich primitive moves through:
+
+```text
+declared -> typed -> computational -> encoded-sound -> checker-sound -> FX0-certified
+```
+
+Only `checker-sound` and `FX0-certified` are root-trust statuses.
 
 ## 1.1 Layer 0: Foundation
 
@@ -1054,9 +1227,15 @@ theorem M02 : ∀ ast : AST, Parse.run (Lex.run (Print.run ast)) = ok ast
 `Tools/Tactics/HEq.lean` — HEq simplification (closes recurring W8-style HEq cascades).
 `Tools/Tactics/SimpStrip.lean` — simp lemma stripping for clean equation generation.
 
-## 1.16 Layer 14 (Day 8): Lean Kernel Encoding
+## 1.16 Layer 14 (Day 8): FX1 and Lean Kernel Encoding
 
-`Lean/Kernel/Level.lean` — Lean's universe levels:
+Layer 14 is split. FX1/Core is the minimal root. LeanKernel-FX1 is the faithful
+Lean-kernel model over that root. Existing `Lean/Kernel/*` files are historical
+scaffolding unless they are moved or mirrored under `LeanFX2/FX1/LeanKernel`.
+
+`FX1/Core/Level.lean` — minimal FX1 universe levels.
+
+`FX1/LeanKernel/Level.lean` — Lean's universe levels:
 ```
 inductive Level
   | zero
@@ -1068,9 +1247,9 @@ inductive Level
   deriving DecidableEq, Repr
 ```
 
-`Lean/Kernel/Name.lean` — hierarchical names.
+`FX1/LeanKernel/Name.lean` — hierarchical names.
 
-`Lean/Kernel/Expr.lean` — 12-ctor expression syntax:
+`FX1/LeanKernel/Expr.lean` — 12-ctor expression syntax:
 ```
 inductive Expr (level scope : Nat) : Type
   | bvar : Fin scope → Expr level scope
@@ -1086,9 +1265,9 @@ inductive Expr (level scope : Nat) : Type
   | proj : Name → Nat → Expr level scope → Expr level scope
 ```
 
-`Lean/Kernel/Substitution.lean` — instantiate + abstract + lift.
+`FX1/LeanKernel/Substitution.lean` — instantiate + abstract + lift.
 
-`Lean/Kernel/Reduction.lean` — all 8 reduction rules:
+`FX1/LeanKernel/Reduction.lean` — all 8 reduction rules:
 * β (App-Lambda)
 * η (Lambda-App when bvar 0 not free in body)
 * δ (Const unfolding via env)
@@ -1098,28 +1277,28 @@ inductive Expr (level scope : Nat) : Type
 * Quot β (Quot.lift on Quot.mk)
 * Nat literal reduction (`reduceBin`)
 
-`Lean/Kernel/Inductive.lean` — inductive type encoding:
+`FX1/LeanKernel/Inductive.lean` — inductive type encoding:
 * Inductive specifications (parameters, indices, constructors)
 * Recursor synthesis (motive + cases)
 * ι-reduction per inductive
 * Strict positivity check
 * Universe constraint inference
 
-`Lean/Kernel/HasType.lean` — typing relation (~25 typing rules).
+`FX1/LeanKernel/HasType.lean` — typing relation (~25 typing rules).
 
-`Lean/Kernel/Check.lean` — executable type checker:
+`FX1/LeanKernel/Check.lean` — executable type checker:
 ```
 def check : Environment → LocalContext → Expr → Option Expr
 ```
 
-`Lean/Kernel/Soundness.lean` — THE THEOREM:
+`FX1/LeanKernel/Soundness.lean` — THE THEOREM:
 ```
 theorem check_sound :
-    Lean.Kernel.check env ctx e = some ty →
-    Lean.Kernel.HasType env ctx e ty
+    LeanFX2.FX1.LeanKernel.check env ctx e = some ty →
+    LeanFX2.FX1.LeanKernel.HasType env ctx e ty
 ```
 
-`Lean/Kernel/Audit.lean` — `#print axioms check_sound`.
+`FX1/LeanKernel/Audit.lean` — `#print axioms check_sound`.
 
 ## 1.17 Layer 15 (Day 9): Cross-Theory Bridges
 
@@ -1191,17 +1370,25 @@ theorem diamond_coherence :
 
 # Section 2 — Top-to-Bottom Dependency Analysis
 
-## 2.1 Goal: `Lean.Kernel.check_sound` zero-axiom
+## 2.1 Goal: `FX1.check_sound` and `LeanKernel.check_sound` zero-axiom
 
-The terminal goal of Day 8.
+The terminal trust-spine goal of Day 8 has two gates:
+
+1. `LeanFX2.FX1.check_sound`, proving the minimal lambda-Pi checker sound.
+2. `LeanFX2.FX1.LeanKernel.check_sound`, proving the Lean-kernel model sound
+   over FX1.
+
+The second gate is not allowed to bypass the first.
 
 Direct dependencies:
-* `Lean.Kernel.Check` — type checker function (executable Lean code)
-* `Lean.Kernel.HasType` — typing relation (Prop, inductive)
+* `FX1.Core.Check` — minimal FX1 checker
+* `FX1.Core.HasType` — minimal FX1 typing relation
+* `FX1.LeanKernel.Check` — Lean-kernel checker model
+* `FX1.LeanKernel.HasType` — Lean-kernel typing relation
 * Faithful Lean.Kernel.Expr encoding (12 ctors)
 * Faithful Step encoding (8 reduction rules)
-* `Lean.Kernel.Reduction.confluence` — Lean's reduction is confluent
-* `Lean.Kernel.SR` — subject reduction for Lean's reduction
+* `FX1.LeanKernel.Reduction.confluence` — Lean's reduction is confluent
+* `FX1.LeanKernel.SR` — subject reduction for Lean's reduction
 * Decidable Conv for Lean's `is_def_eq`
 * WHNF termination for Lean's reduction
 
@@ -1556,7 +1743,7 @@ atNeither). General face lattice is v1.1.
 **Symptom:** Lean's kernel checks strict positivity for inductive types.
 Encoding this faithfully in lean-fx-2 requires structural decidability.
 
-**Mitigation:** `Lean.Kernel.Inductive.IsStrictlyPositive` decidable
+**Mitigation:** `LeanFX2.FX1.LeanKernel.Inductive.IsStrictlyPositive` decidable
 predicate, checked structurally.
 
 ## P-20: Native nat reductions in Lean kernel
@@ -1857,7 +2044,8 @@ Create:
 * `LeanFX2/Conservativity/{HOTTOverMLTT, CubicalOverHOTT, ModalOverObservational}.lean`
 * `LeanFX2/Translation/{CubicalToObservational, ObservationalToCubical, Inverse}.lean`
 * `LeanFX2/InternalLanguage/Coherence.lean`
-* `LeanFX2/Lean/Kernel/{Level, Name, Expr, Substitution, Reduction, Inductive, HasType, Check, Soundness, Audit}.lean`
+* `LeanFX2/FX1/Core/{Name, Level, Expr, Declaration, Environment, Context, Substitution, Reduction, HasType, Check, Soundness}.lean`
+* `LeanFX2/FX1/LeanKernel/{Level, Name, Expr, Substitution, Reduction, Inductive, HasType, Check, Soundness, Audit}.lean`
 * `LeanFX2/Tools/{AuditGen, Tactics/Cast, Tactics/HEq, Tactics/SimpStrip}.lean` (some exist)
 * `LeanFX2/Smoke/AuditAll.lean` (will extend)
 
@@ -2214,12 +2402,80 @@ Commit: `Phase 12.A.1: foundation rebuild — interval + cofib + ~27 ctors`.
 
 ---
 
+## Day M0 (2-4h) — Trust-spine interlock
+
+**Mission:** Before continuing Day 2/3 or starting any Lean reimplementation,
+make the metaplan operational. This is not a rewrite. It is the classification
+and audit interlock that prevents rich-layer work from being overclaimed as
+minimal-root work.
+
+**Dependencies:** Day 1 foundation rebuild complete enough for current source
+to build. `kernel-metaplan.md` exists and is the trust-spine reference.
+
+### Tasks
+
+**Task M0.1 — Root-status classification (1h)**
+
+Add a root-status paragraph to sprint execution notes and any touched module
+docstrings:
+
+```text
+Root status: FX-rich
+Bridge obligations:
+  - encodeTy/encodeRawTerm/encodeCtx case
+  - encode_term_sound case
+  - optional FX0 certificate later
+```
+
+For Day 2/3, the default status is `FX-rich`. Promotion requires an explicit
+bridge theorem.
+
+**Task M0.2 — FX1/Core import policy (1h)**
+
+Create or update the strict-harness policy so files under `LeanFX2/FX1/Core`
+are checked against the host-minimal import/dependency rules in §1.0.1.
+
+This can start as a path-aware scan plus namespace audit. It does not need to
+prove FX1.check_sound yet.
+
+**Task M0.3 — Timeline guard (0.5h)**
+
+Record in this sprint that Day 8 is blocked on FX1 M1-M4. The old direct
+`Lean/Kernel/*` path is now historical scaffolding unless it is moved under
+`LeanFX2/FX1/LeanKernel`.
+
+**Task M0.4 — Build/audit checkpoint (0.5-1.5h)**
+
+Run:
+
+```bash
+lake build LeanFX2
+```
+
+Expected result: build green; strict audit green; no root-status regression.
+
+**Day M0 acceptance criteria:**
+* `kernel-sprint.md` explicitly references `kernel-metaplan.md`.
+* Day 2/3 claims are classified as rich-layer unless bridged.
+* FX1/Core host-minimal policy exists as a planned or implemented harness gate.
+* Day 8 LeanKernel work is retargeted to `LeanFX2.FX1.LeanKernel`.
+* `lake build LeanFX2` exits 0 after any code changes.
+
+**Day M0 cut-line:** None. If this interlock is skipped, later work can become
+mathematically clean but TCB-ambiguous.
+
+---
+
 ## Day 2 (24h) — Reduction + General SR
 
 **Mission:** Add ~80 new Step rules + general SR via IsClosedTy. Unblock Conv
-cong rules and HOTT machinery.
+cong rules and HOTT machinery at the rich-layer level.
 
-**Dependencies:** Day 1 foundation rebuild complete.
+**Dependencies:** Day 1 foundation rebuild complete. Day M0 trust-spine
+interlock complete.
+
+**Root status:** Day 2 output is `FX-rich` by default. A rule becomes `Bridge`
+only when its corresponding FX1 encoding and soundness theorem exist.
 
 ### AM (8h) — General Subject Reduction
 
@@ -2419,6 +2675,12 @@ import LeanFX2.Term.SubjectReduction
 
 All zero-axiom.
 
+Root-status audit:
+* Mark each new reduction rule as `FX-rich`.
+* Add an FX1 bridge obligation for each rule whose computation must eventually
+  be visible to `FX1.check`.
+* Do not call any Day 2 rule `Root-FX1` unless it is covered by FX1.check_sound.
+
 Commit: `Phase 12.A.2: reduction core — ~80 Step rules + general SR`.
 
 **Day 2 acceptance criteria:**
@@ -2427,6 +2689,9 @@ Commit: `Phase 12.A.2: reduction core — ~80 Step rules + general SR`.
 * ~80 new Step rules + their par analogs shipped
 * All zero-axiom verified
 * M06, M07, M08, M09, M10 marked complete
+* Every new rule has a root-status label, normally `FX-rich`
+* FX1 bridge obligations are listed for rich primitives that must enter the
+  minimal checker later
 
 **Day 2 cut-line:** Some HOTT OEq rules deferred to Day 3 if Step explosion
 takes more than 8h.
@@ -2436,9 +2701,16 @@ takes more than 8h.
 ## Day 3 (24h) — Confluence + HoTT + HITs + Cubical math
 
 **Mission:** Extend confluence machinery for new ctors. Ship HOTT mathematics
-(Equiv, Univalence). DELETE `axiom Univalence`. Implement HITs.
+(Equiv, Univalence). DELETE `axiom Univalence`. Implement HITs. Classify all
+results by trust status so rich-layer theorems are not mistaken for minimal
+root theorems.
 
 **Dependencies:** Day 2 reduction complete.
+
+**Root status:** Day 3 output is `FX-rich` unless an explicit FX1 bridge theorem
+promotes a fragment. `Univalence` and `funext` can be zero-axiom rich-layer
+theorems before they are `Root-FX1`; the stronger root claim waits for FX1
+encoding and checker soundness.
 
 ### AM (8h) — Confluence extension
 
@@ -2677,6 +2949,17 @@ grep -r "^axiom" /root/iprit/FX/lean-fx-2/LeanFX2/HoTT/
 # Expected: empty (no axioms)
 ```
 
+Root-status audit:
+* `HoTT/Equivalence`, `HoTT/Univalence`, `Cubical/PathLemmas`, HIT modules,
+  and bridge modules receive explicit `FX-rich`, `Bridge`, or `Deferred`
+  classification.
+* HITs implemented as setoid presentations are labeled `FX-rich` or
+  `Scaffold`, not `Root-FX1`.
+* A Path↔Id bridge is labeled `Bridge` only for the exact fragment proven.
+  Refl-only bridges must say refl-only.
+* Any theorem that depends on future `idJDep`, full hcomp, full transp, or
+  full HIT eliminators is marked `Deferred`.
+
 Commit: `Phase 12.A.3: HOTT machinery + ua-as-theorem + 7 HITs + bridges`.
 
 **Day 3 acceptance criteria:**
@@ -2686,6 +2969,9 @@ Commit: `Phase 12.A.3: HOTT machinery + ua-as-theorem + 7 HITs + bridges`.
 * 7 HITs implemented and zero-axiom verified
 * Path↔Id bridge implemented and zero-axiom verified
 * All AuditAll smoke passes
+* Every HoTT/cubical/HIT/bridge claim has a root-status label
+* No setoid or refl-fragment bridge is described as full root-trusted HIT or
+  full Path↔Id equivalence unless the stronger theorem exists
 
 **Day 3 cut-line:** HITs reduced to {Quot, propTrunc, S¹} → v1.1 if budget
 tight. Path/Composition/Inverse/Groupoid can defer some lemmas.
@@ -3206,16 +3492,55 @@ git tag -a v1.0 -m "v1.0 — strict zero-axiom dependently-typed graded modal un
 
 ---
 
-## Day 8 (24h) — Lean Kernel Meta-Verification
+## Day 8 (24h+ gated) — FX1 + Lean Kernel Meta-Verification
 
-**Mission:** Faithful encoding of Lean 4 kernel + soundness theorem.
-Reduce TCB.
+**Mission:** Finish the minimal FX1 checker spine, then encode the Lean 4
+kernel over FX1 and prove the LeanKernel checker sound. Reduce TCB without
+mistaking the rich kernel for the minimal root.
 
-**Dependencies:** v1.0 (Day 7) complete.
+**Dependencies:** Day M0 complete. Rich-layer Day 2/3 work may be complete, but
+LeanKernel-FX1 is blocked on FX1 M1-M4:
 
-### AM (8h) — Lean syntax encoding
+* M1: FX1 syntax, declarations, environments, contexts, scope checking.
+* M2: FX1 renaming and substitution, with identity/composition lemmas.
+* M3: FX1 typing and beta/delta reduction, with preservation.
+* M4: FX1 executable checker, WHNF, conversion soundness, `FX1.check_sound`.
 
-**Task 8.1 — Lean/Kernel/Level.lean (2h)**
+If M4 is not complete, Day 8 does not start LeanKernel implementation. It stays
+on FX1/Core.
+
+### Gate 8.0 — FX1/Core minimal root
+
+Implement or verify:
+
+```text
+LeanFX2/FX1/Core/Name.lean
+LeanFX2/FX1/Core/Level.lean
+LeanFX2/FX1/Core/Expr.lean
+LeanFX2/FX1/Core/Declaration.lean
+LeanFX2/FX1/Core/Environment.lean
+LeanFX2/FX1/Core/Context.lean
+LeanFX2/FX1/Core/Substitution.lean
+LeanFX2/FX1/Core/Reduction.lean
+LeanFX2/FX1/Core/HasType.lean
+LeanFX2/FX1/Core/Check.lean
+LeanFX2/FX1/Core/Soundness.lean
+```
+
+The required theorem is:
+
+```lean
+theorem LeanFX2.FX1.check_sound :
+    FX1.check environment context expression = some typeExpression ->
+    FX1.HasType environment context expression typeExpression
+```
+
+Only after this theorem is audit-clean can LeanKernel-FX1 make a TCB-reduction
+claim.
+
+### AM (8h) — LeanKernel-FX1 syntax encoding
+
+**Task 8.1 — FX1/LeanKernel/Level.lean (2h)**
 
 Lean's universe levels:
 ```lean
@@ -3234,7 +3559,7 @@ instance : DecidableEq Level := ...
 instance : ∀ l1 l2, Decidable (Level.le l1 l2) := ...
 ```
 
-**Task 8.2 — Lean/Kernel/Name.lean (1h)**
+**Task 8.2 — FX1/LeanKernel/Name.lean (1h)**
 
 ```lean
 inductive Name
@@ -3243,7 +3568,7 @@ inductive Name
   | num : Name → Nat → Name
 ```
 
-**Task 8.3 — Lean/Kernel/Expr.lean: 12-ctor encoding (3h)**
+**Task 8.3 — FX1/LeanKernel/Expr.lean: 12-ctor encoding (3h)**
 
 ```lean
 inductive Expr (level scope : Nat) : Type
@@ -3264,14 +3589,14 @@ inductive Expr (level scope : Nat) : Type
 **Pitfall:** Lean's BVar uses Nat (not Fin); we strengthen via Fin scope.
 Lean's MVar is metavariable; we model as a separate inductive.
 
-**Task 8.4 — Lean/Kernel/Substitution.lean (2h)**
+**Task 8.4 — FX1/LeanKernel/Substitution.lean (2h)**
 
 `Expr.instantiate`, `Expr.abstract`, `Expr.lift`. Mirrors Lean's
 `instantiate.cpp`.
 
 ### PM (8h) — Reduction + typing rules
 
-**Task 8.5 — Lean/Kernel/Reduction.lean: 8 reduction rules (4h)**
+**Task 8.5 — FX1/LeanKernel/Reduction.lean: 8 reduction rules (4h)**
 
 ```lean
 inductive Step : Expr level scope → Expr level scope → Prop
@@ -3295,7 +3620,7 @@ def whnf : Environment → Expr level scope → Option (Expr level scope) := ...
 **Mitigation:** We prove SOUND, not COMPLETE. Lean's heuristic may accept
 things our pure relation rejects (acceptable).
 
-**Task 8.6 — Lean/Kernel/Inductive.lean (2h)**
+**Task 8.6 — FX1/LeanKernel/Inductive.lean (2h)**
 
 Inductive specifications + recursor synthesis + ι-reduction + strict
 positivity.
@@ -3303,13 +3628,13 @@ positivity.
 **Pitfall:** P-19 (strict positivity).
 **Mitigation:** `IsStrictlyPositive` decidable predicate, checked structurally.
 
-**Task 8.7 — Lean/Kernel/HasType.lean: typing rules (2h)**
+**Task 8.7 — FX1/LeanKernel/HasType.lean: typing rules (2h)**
 
 ~25 typing rules (one per Expr ctor + universe rules + Pi rule with imax + ...).
 
 ### Evening (8h) — Type checker + soundness
 
-**Task 8.8 — Lean/Kernel/Check.lean: executable type checker (4h)**
+**Task 8.8 — FX1/LeanKernel/Check.lean: executable type checker (4h)**
 
 ```lean
 def check : Environment → LocalContext → Expr → Option Expr := ...
@@ -3317,22 +3642,22 @@ def check : Environment → LocalContext → Expr → Option Expr := ...
 -- ~600 LoC mirroring Lean's type_checker.cpp ~1244 LoC of C++
 ```
 
-**Task 8.9 — Lean/Kernel/Soundness.lean: THE THEOREM (3h)**
+**Task 8.9 — FX1/LeanKernel/Soundness.lean: THE THEOREM (3h)**
 
 ```lean
 theorem check_sound :
-    Lean.Kernel.check env ctx e = some ty →
-    Lean.Kernel.HasType env ctx e ty := by
+    LeanFX2.FX1.LeanKernel.check env ctx e = some ty →
+    LeanFX2.FX1.LeanKernel.HasType env ctx e ty := by
   -- Induction on e's structure + structural induction on check function
   -- Using lean-fx-2's general SR for closed-typed positions
   -- Using lean-fx-2's confluence for DefEq decisions
   ...
 ```
 
-**Task 8.10 — Lean/Kernel/Audit.lean + commit (1h)**
+**Task 8.10 — FX1/LeanKernel/Audit.lean + commit (1h)**
 
 ```lean
-#print axioms Lean.Kernel.check_sound
+#print axioms LeanFX2.FX1.LeanKernel.check_sound
 -- Expected: zero (Outcome A)
 -- OR: documented dependency on a specific lemma (Outcome B/C)
 ```
@@ -3346,16 +3671,21 @@ Mario, get it fixed in Lean upstream, re-check.
 
 **Outcome D:** Trust list. Document specific operationally-trusted components.
 
-Commit: `Phase 12.A.8: Lean kernel meta-verification (Outcome X)`.
+Commit: `Phase 12.A.8: FX1-root + LeanKernel-FX1 meta-verification (Outcome X)`.
 
 **Day 8 acceptance criteria:**
-* `lake build LeanFX2.Lean.Kernel.Soundness` exits 0
-* `check_sound` typechecks
-* `#print axioms check_sound` reports zero OR documented gap filed
-* TCB reduced (Outcome A) OR research result (Outcome B/C)
+* `lake build LeanFX2` exits 0
+* `LeanFX2.FX1.check_sound` typechecks and is audit-clean
+* `lake build LeanFX2.FX1.LeanKernel.Soundness` exits 0 if LeanKernel work has
+  started
+* `LeanFX2.FX1.LeanKernel.check_sound` typechecks
+* `#print axioms LeanFX2.FX1.LeanKernel.check_sound` reports zero OR documented
+  gap filed
+* TCB reduced to FX1-root (Outcome A) OR research result (Outcome B/C)
+* No direct LeanKernel TCB claim is made against the broad rich kernel
 
 **Day 8 cut-line:** Completeness → v1.1. Universe normalization completeness
-→ v1.1.
+→ v1.1. LeanKernel-FX1 itself is delayed if FX1.check_sound is not complete.
 
 ---
 
@@ -3491,6 +3821,8 @@ Audit ~30 bridge/conservativity/translation theorems. Commit:
 
 In severity order (cut LAST things first):
 
+0. **Day M0 trust-spine interlock** is not cuttable. Without it, the sprint can
+   stay zero-axiom but become TCB-ambiguous.
 1. **Cohesive modalities ♭/♯** → v1.1 (keep ◇⊣□)
 2. **HITs beyond {Quot, propTrunc, S¹}** → v1.1
 3. **Multi-shot effect continuations** → v1.1
@@ -3502,7 +3834,10 @@ In severity order (cut LAST things first):
 9. **Day 8 completeness theorem** (soundness suffices)
 10. **Day 9 higher-coherence bridges** (set-level OK)
 
-Days 1-3 + 7 are non-negotiable. Cuts come from Days 4-6 and 8-9 if needed.
+Days 1-3 + M0 + 7 are non-negotiable for the rich-layer sprint. FX1.check_sound
+is non-negotiable before any TCB-reduction or Lean-in-FX claim. If FX1 M4
+overruns, Day 8 LeanKernel work slides; it is not replaced by a direct rich
+kernel encoding.
 
 ---
 
@@ -3519,17 +3854,28 @@ Days 1-3 + 7 are non-negotiable. Cuts come from Days 4-6 and 8-9 if needed.
 * Term layer rebuilt
 * Build green; per-ctor zero-axiom
 
+## Day M0
+* `kernel-sprint.md` wired to `kernel-metaplan.md`
+* Day 2/3 default status recorded as `FX-rich`
+* FX1/Core host-minimal audit gate planned or implemented
+* Day 8 retargeted to `LeanFX2.FX1.LeanKernel`
+* Build green after any code changes
+
 ## Day 2
 * General SR via IsClosedTy shipped
 * ~80 Step rules + their par analogs
 * M06, M07, M08, M09, M10 marked complete
 * Build green
+* New rules classified by root status
+* FX1 bridge obligations listed
 
 ## Day 3
 * `axiom Univalence` DELETED
 * ua, ua_β, funext zero-axiom theorems
 * 7 HITs implemented
 * Path↔Id bridge
+* Every HoTT/cubical/HIT/bridge claim classified as `FX-rich`, `Bridge`,
+  `Scaffold`, or `Deferred`
 
 ## Day 4
 * 2LTT ◇⊣□ adjunction shipped
@@ -3558,8 +3904,10 @@ Days 1-3 + 7 are non-negotiable. Cuts come from Days 4-6 and 8-9 if needed.
 * v1.0 tag placed
 
 ## Day 8
-* `Lean.Kernel.check_sound` typechecks
-* TCB reduced (Outcome A) OR documented gap (Outcome B/C)
+* `LeanFX2.FX1.check_sound` typechecks
+* `LeanFX2.FX1.LeanKernel.check_sound` typechecks if LeanKernel work starts
+* TCB reduced to FX1-root (Outcome A) OR documented gap (Outcome B/C)
+* No direct rich-kernel LeanKernel TCB claim
 
 ## Day 9
 * All 6 bridge equivalences zero-axiom
@@ -3573,6 +3921,23 @@ Days 1-3 + 7 are non-negotiable. Cuts come from Days 4-6 and 8-9 if needed.
 
 What ships at end of Day 9:
 
+## Trust status
+
+The manifest is split by trust role:
+
+* `FX-rich`: expressive lean-fx-2 features implemented directly in the current
+  `Ty` / `RawTerm` / `Term` / `Step` / `Conv` architecture.
+* `Bridge`: translations and soundness theorems connecting rich features into
+  FX1.
+* `Root-FX1`: the minimal lambda-Pi checker fragment covered by
+  `FX1.check_sound`.
+* `LeanKernel-FX1`: Lean-kernel model and checker soundness over FX1.
+* `FX0-root`: first-order certificate checker work. This is the final skeptical
+  root path and may remain post-v1.0 unless explicitly completed.
+
+No rich-layer feature is counted as minimal-root trusted merely because it is
+zero-axiom.
+
 ## Theory completeness
 
 * Higher Observational Type Theory at set-level
@@ -3580,6 +3945,8 @@ What ships at end of Day 9:
 * 2LTT outer/inner stratification with full ◇⊣□ adjunction
 * Cohesive modalities ♭⊣◇⊣□⊣♯ (or deferred to v1.1)
 * All 21 graded dimensions (Atkey-2022-corrected Lam)
+
+These are `FX-rich` unless promoted by bridge theorems.
 
 ## HITs
 
@@ -3635,12 +4002,17 @@ What ships at end of Day 9:
 
 ## Lean kernel meta-verification
 
-* Faithful encoding of Lean's 12-ctor expression syntax
-* Faithful encoding of all 8 reduction rules
-* HasType typing relation
-* Check function (executable)
-* `check_sound` zero-axiom (Outcome A) OR documented gap (Outcome B/C)
-* TCB reduced from "Lean's C++ kernel" to "lean-fx-2's verified meta-theory"
+* `FX1.check_sound` zero-axiom for the minimal lambda-Pi checker
+* Faithful LeanKernel-FX1 encoding of Lean's 12-ctor expression syntax
+* Faithful LeanKernel-FX1 encoding of all 8 reduction rules
+* LeanKernel-FX1 `HasType` typing relation
+* LeanKernel-FX1 `check` function (executable)
+* `LeanFX2.FX1.LeanKernel.check_sound` zero-axiom (Outcome A) OR documented
+  gap (Outcome B/C)
+* TCB reduced from "Lean's C++ kernel" to "lean-fx-2's verified FX1
+  meta-theory" for the modeled Lean fragment
+* Final minimal TCB claim deferred until FX0 certificates verify FX1 proof
+  traces, unless FX0-root is completed in this sprint
 
 ## Axioms ELIMINATED
 
@@ -3669,6 +4041,11 @@ What ships at end of Day 9:
 
 ## v1.1 (1-2 months post v1.0)
 
+* FX0 first-order certificate checker if not completed in v1.0
+* FX1 proof-trace emitter and FX0 certificate generation for at least one
+  non-trivial FX1 typing proof
+* Rich-layer bridge expansion: encode all Day 2/3 cubical, HoTT, HIT, and
+  bridge primitives into FX1 with `encode_*_sound` theorems
 * H-groupoid coherence in HOTT (n-truncation at all levels, Sterling et al.
   2024 paper full mechanization)
 * Full CCHM cofibration lattice
@@ -3679,7 +4056,7 @@ What ships at end of Day 9:
   Eilenberg-MacLane spaces
 * Cohesive `♭/♯` if deferred
 * Higher-coherence bridges (h-groupoid level)
-* `Lean.Kernel.check_complete` (completeness theorem)
+* `LeanFX2.FX1.LeanKernel.check_complete` (completeness theorem)
 * Lean kernel inductive elaborator full faithfulness
 
 ## v2.x (longer-term)
@@ -3694,18 +4071,19 @@ What ships at end of Day 9:
 ## v3.x
 
 * Full constructive cubical kernel (no fall-back to HOTT)
-* `Lean.Kernel.check_full_completeness` (full sound + complete)
+* `LeanFX2.FX1.LeanKernel.check_full_completeness` (full sound + complete)
 * Cross-language bridges to Coq, Agda, Idris
 
 ---
 
 # Closing Note
 
-This is **9 days of focused agentic work**. ~10,000 LoC kernel additions.
-~500 zero-axiom theorems. Four equality types (`idStrict`, `id`, `path`,
-`equiv`) bridged by provable equivalences. Lean's kernel embedded and
-soundness-verified. Cross-theory bridges making the three theories
-interchangeable for set-level reasoning.
+This is **9 days of focused agentic work** plus the FX1 trust-spine interlock.
+~10,000 LoC kernel additions. ~500 zero-axiom theorems. Four equality types
+(`idStrict`, `id`, `path`, `equiv`) bridged by provable equivalences. Lean's
+kernel is embedded only through `LeanFX2.FX1.LeanKernel`, after FX1.check_sound.
+Cross-theory bridges make the three rich theories interchangeable for set-level
+reasoning, while root-trust claims are routed through FX1 and eventually FX0.
 
 Each obstacle in Section 3 has a known mitigation. Each risk in Section 4 has
 a probability and an impact and a mitigation. Each cut in Section 6 is
@@ -3716,9 +4094,10 @@ files. Day 1 follows immediately. The Ralph loop drives the iteration.
 
 The acceptance criterion is concrete: `git tag v1.0` exists, `axiom
 Univalence` is absent from the source, AuditAll smoke passes with
-~500 `#print axioms` reports of "does not depend on any axioms",
-`Lean.Kernel.check_sound` typechecks zero-axiom or a documented gap is
-filed.
+~500 `#print axioms` reports of "does not depend on any axioms", every rich
+primitive has a root-status label, `FX1.check_sound` typechecks zero-axiom
+before any TCB-reduction claim, and `LeanFX2.FX1.LeanKernel.check_sound`
+typechecks zero-axiom or a documented gap is filed.
 
 Anything provable in zero-axiom Lean is engineering, not research.
 

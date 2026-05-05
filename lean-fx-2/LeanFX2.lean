@@ -1,31 +1,3 @@
-/-! # LeanFX2 — umbrella import.
-
-Single-import gateway to the entire lean-fx-2 engine.  Importing
-this pulls in all 13 layers from foundation through tools.
-
-## Layered architecture (each depends only on layers below)
-
-| Layer | Scope                                            |
-| ----- | ------------------------------------------------ |
-|  0    | Foundation: Mode, RawTerm, RawSubst, Ty, Subst, Context |
-|  1    | Term: raw-aware typed Term inductive             |
-|  2    | Reduction: Step, StepStar, Conv (∃-StepStar), ParRed, RawPar, Compat |
-|  3    | Confluence: Tait-Martin-Löf chain (Cd, Diamond, Church-Rosser) |
-|  4    | Bridge: typed↔raw correspondence (rfl-driven)    |
-|  5    | HoTT: Identity, J, Path, Transport, Equivalence, NTypes, HIT |
-|  6    | Modal: MTT (modal foundation, Later, Bridge, Cap, Ghost, 2LTT) |
-|  7    | Graded: semiring framework + dimension instances |
-|  8    | Refine: refinement types + decidable + SMT cert  |
-|  9    | Algo: WHNF, decConv, infer, check, eval, soundness/completeness |
-| 10    | Surface: lex, parse, print, elab, roundtrip      |
-| 11    | Pipeline: end-to-end compile                     |
-| 12    | Tools: AuditAll, AuditGen, tactic helpers        |
-
-See `ARCHITECTURE.md` for the dependency DAG and per-layer file list.
-See `ROADMAP.md` for the phasing from skeleton to full engine.
-See `WORKING_RULES.md` for kernel-discipline rules.
-See `AXIOMS.md` for trust-budget policy. -/
-
 -- Layer 0 — Foundation
 import LeanFX2.Foundation.Mode
 import LeanFX2.Foundation.RawTerm
@@ -35,6 +7,7 @@ import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.SubstActsOnTy
 import LeanFX2.Foundation.TyAct
+import LeanFX2.Foundation.TyActBridge
 import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Universe
 import LeanFX2.Foundation.RenameIdentity
@@ -287,6 +260,34 @@ import LeanFX2.Smoke.AuditMegaZ5A1
 import LeanFX2.Smoke.AuditMegaZ5A
 import LeanFX2.Smoke.AuditNamespace
 import LeanFX2.Smoke.StrictComposition
+
+/-! # LeanFX2 — umbrella import.
+
+Single-import gateway to the entire lean-fx-2 engine.  Importing
+this pulls in all 13 layers from foundation through tools.
+
+## Layered architecture (each depends only on layers below)
+
+| Layer | Scope                                            |
+| ----- | ------------------------------------------------ |
+|  0    | Foundation: Mode, RawTerm, RawSubst, Ty, Subst, Context |
+|  1    | Term: raw-aware typed Term inductive             |
+|  2    | Reduction: Step, StepStar, Conv (∃-StepStar), ParRed, RawPar, Compat |
+|  3    | Confluence: Tait-Martin-Löf chain (Cd, Diamond, Church-Rosser) |
+|  4    | Bridge: typed↔raw correspondence (rfl-driven)    |
+|  5    | HoTT: Identity, J, Path, Transport, Equivalence, NTypes, HIT |
+|  6    | Modal: MTT (modal foundation, Later, Bridge, Cap, Ghost, 2LTT) |
+|  7    | Graded: semiring framework + dimension instances |
+|  8    | Refine: refinement types + decidable + SMT cert  |
+|  9    | Algo: WHNF, decConv, infer, check, eval, soundness/completeness |
+| 10    | Surface: lex, parse, print, elab, roundtrip      |
+| 11    | Pipeline: end-to-end compile                     |
+| 12    | Tools: AuditAll, AuditGen, tactic helpers        |
+
+See `ARCHITECTURE.md` for the dependency DAG and per-layer file list.
+See `ROADMAP.md` for the phasing from skeleton to full engine.
+See `WORKING_RULES.md` for kernel-discipline rules.
+See `AXIOMS.md` for trust-budget policy. -/
 
 namespace LeanFX2
 
