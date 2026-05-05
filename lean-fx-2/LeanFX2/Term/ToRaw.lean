@@ -389,6 +389,25 @@ theorem Term.toRaw_recordProj {mode : Mode} {level scope : Nat}
     (Term.recordProj recordValue).toRaw =
       RawTerm.recordProj recordValue.toRaw := rfl
 
+theorem Term.toRaw_refineIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (baseValue : Term context baseType valueRaw)
+    (predicateProof : Term context Ty.unit proofRaw) :
+    (Term.refineIntro predicate baseValue predicateProof).toRaw =
+      RawTerm.refineIntro baseValue.toRaw predicateProof.toRaw := rfl
+
+theorem Term.toRaw_refineElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw) :
+    (Term.refineElim refinedValue).toRaw =
+      RawTerm.refineElim refinedValue.toRaw := rfl
+
 theorem Term.toRaw_equivApp {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {carrierA carrierB : Ty level scope}

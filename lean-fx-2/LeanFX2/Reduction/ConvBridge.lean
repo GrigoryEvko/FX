@@ -230,6 +230,15 @@ theorem Step.toConvCumul
       exact ConvCumul.recordProjCong ih
   | betaRecordProjIntro firstField =>
       exact ConvCumul.betaRecordProjIntroCumul firstField
+  | refineIntroValue _ ih =>
+      exact ConvCumul.refineIntroCong ih (ConvCumul.refl _)
+  | refineIntroProof _ ih =>
+      exact ConvCumul.refineIntroCong (ConvCumul.refl _) ih
+  | refineElimValue _ ih =>
+      exact ConvCumul.refineElimCong ih
+  | betaRefineElimIntro predicate baseValue predicateProof =>
+      exact ConvCumul.betaRefineElimIntroCumul
+        predicate baseValue predicateProof
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
       exact ConvCumul.transpCong universeLevel universeLevelLt

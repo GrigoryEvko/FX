@@ -629,6 +629,35 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (recordRel : ConvCumul recordFirst recordSecond) :
       ConvCumul (Term.recordProj recordFirst)
                 (Term.recordProj recordSecond)
+  /-- Homogeneous refinement intro: ConvCumul-related value and proof
+  payloads lift to ConvCumul-related refinement introductions. -/
+  | refineIntroCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {valueFirstRaw valueSecondRaw proofFirstRaw proofSecondRaw : RawTerm scope}
+      {valueFirst : Term context baseType valueFirstRaw}
+      {valueSecond : Term context baseType valueSecondRaw}
+      {proofFirst : Term context Ty.unit proofFirstRaw}
+      {proofSecond : Term context Ty.unit proofSecondRaw}
+      (valueRel : ConvCumul valueFirst valueSecond)
+      (proofRel : ConvCumul proofFirst proofSecond) :
+      ConvCumul (Term.refineIntro predicate valueFirst proofFirst)
+                (Term.refineIntro predicate valueSecond proofSecond)
+  /-- Homogeneous refinement elim: ConvCumul-related refined values lift to
+  ConvCumul-related eliminations. -/
+  | refineElimCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {refinedFirstRaw refinedSecondRaw : RawTerm scope}
+      {refinedFirst : Term context (Ty.refine baseType predicate) refinedFirstRaw}
+      {refinedSecond : Term context (Ty.refine baseType predicate) refinedSecondRaw}
+      (refinedRel : ConvCumul refinedFirst refinedSecond) :
+      ConvCumul (Term.refineElim refinedFirst)
+                (Term.refineElim refinedSecond)
   /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
   lift to ConvCumul-related path abstractions. -/
   | pathLamCong
@@ -892,6 +921,19 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {firstRaw : RawTerm scope}
       (firstField : Term context singleFieldType firstRaw) :
       ConvCumul (Term.recordProj (Term.recordIntro firstField)) firstField
+  /-- β-reduction for refinement elimination:
+  `refineElim (refineIntro value proof) ⟶ value`. -/
+  | betaRefineElimIntroCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      (predicate : RawTerm (scope + 1))
+      {valueRaw proofRaw : RawTerm scope}
+      (baseValue : Term context baseType valueRaw)
+      (predicateProof : Term context Ty.unit proofRaw) :
+      ConvCumul
+        (Term.refineElim
+          (Term.refineIntro predicate baseValue predicateProof))
+        baseValue
   /-- β-reduction Σ first projection: `fst (pair a b) ⟶ a`.
   Mirror of `Step.betaFstPair`. -/
   | betaFstPairCumul

@@ -134,6 +134,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.recordIntroCong ihFirst
   | recordProjCong _ ihRecord =>
       exact RawStep.par.recordProjCong ihRecord
+  | refineIntroCong _ _ ihValue ihProof =>
+      exact RawStep.par.refineIntroCong ihValue ihProof
+  | refineElimCong _ ihRefined =>
+      exact RawStep.par.refineElimCong ihRefined
   | intervalOppCong _ ihInner =>
       exact RawStep.par.intervalOppCong ihInner
   | intervalMeetCong _ _ ihLeft ihRight =>
@@ -162,6 +166,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaGlueElimIntro ihBase ihPartial
   | betaRecordProjIntro _ ihFirst =>
       exact RawStep.par.betaRecordProjIntro ihFirst
+  | betaRefineElimIntro _ _ ihValue ihProof =>
+      exact RawStep.par.betaRefineElimIntro ihValue ihProof
   | betaFstPair secondValue _ ihFirst =>
       exact RawStep.par.betaFstPair _ ihFirst
   | betaSndPair firstValue _ ihSecond =>
@@ -204,6 +210,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaGlueElimIntroDeep ihGlued
   | betaRecordProjIntroDeep _ ihRecord =>
       exact RawStep.par.betaRecordProjIntroDeep ihRecord
+  | betaRefineElimIntroDeep _ ihRefined =>
+      exact RawStep.par.betaRefineElimIntroDeep ihRefined
   | betaFstPairDeep _ ihPair =>
       exact RawStep.par.betaFstPairDeep ihPair
   | betaSndPairDeep _ ihPair =>

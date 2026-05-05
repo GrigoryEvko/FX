@@ -315,6 +315,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.equivAppCong
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_equivApp_allais
 
+-- Typed D2.7 refinement intro/elim parity
+#assert_no_axioms LeanFX2.Term.toRaw_refineIntro
+#assert_no_axioms LeanFX2.Term.toRaw_refineElim
+#assert_no_axioms LeanFX2.Step.refineIntroValue
+#assert_no_axioms LeanFX2.Step.refineIntroProof
+#assert_no_axioms LeanFX2.Step.refineElimValue
+#assert_no_axioms LeanFX2.Step.betaRefineElimIntro
+#assert_no_axioms LeanFX2.Step.par.refineIntroCong
+#assert_no_axioms LeanFX2.Step.par.refineElimCong
+#assert_no_axioms LeanFX2.Step.par.betaRefineElimIntro
+#assert_no_axioms LeanFX2.Step.par.betaRefineElimIntroDeep
+#assert_no_axioms LeanFX2.ConvCumul.refineIntroCong
+#assert_no_axioms LeanFX2.ConvCumul.refineElimCong
+#assert_no_axioms LeanFX2.ConvCumul.betaRefineElimIntroCumul
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_refineIntro_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_refineElim_allais
+
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl
 #assert_no_axioms LeanFX2.Conv.fromStep

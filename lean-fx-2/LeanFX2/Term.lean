@@ -373,6 +373,27 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {recordRaw : RawTerm scope}
       (recordValue : Term context (Ty.record singleFieldType) recordRaw) :
       Term context singleFieldType (RawTerm.recordProj recordRaw)
+  /-- Refinement introduction.  The predicate is a raw proof obligation
+      under one binder; the proof payload is proof-erased and currently
+      represented by a unit-typed certificate term. -/
+  | refineIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      (predicate : RawTerm (scope + 1))
+      {valueRaw proofRaw : RawTerm scope}
+      (baseValue : Term context baseType valueRaw)
+      (predicateProof : Term context Ty.unit proofRaw) :
+      Term context (Ty.refine baseType predicate)
+        (RawTerm.refineIntro valueRaw proofRaw)
+  /-- Refinement elimination forgets the proof component and returns the
+      base value. -/
+  | refineElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {refinedRaw : RawTerm scope}
+      (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw) :
+      Term context baseType (RawTerm.refineElim refinedRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

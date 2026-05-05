@@ -222,6 +222,13 @@ theorem Term.subst_pointwise
   | _, _, .recordProj recordValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq recordValue]
+  | _, _, .refineIntro _ baseValue predicateProof => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq baseValue,
+          Term.subst_pointwise pointwiseEq predicateProof]
+  | _, _, .refineElim refinedValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq refinedValue]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl

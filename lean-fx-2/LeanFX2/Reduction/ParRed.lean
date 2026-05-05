@@ -623,6 +623,30 @@ inductive Step.par :
       Step.par recordSource recordTarget →
       Step.par (Term.recordProj recordSource)
                (Term.recordProj recordTarget)
+  /-- Raw-name parity: refinement intro reduces in value and proof. -/
+  | refineIntroCong {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {valueRawSource valueRawTarget proofRawSource proofRawTarget :
+        RawTerm scope}
+      {valueSource : Term context baseType valueRawSource}
+      {valueTarget : Term context baseType valueRawTarget}
+      {proofSource : Term context Ty.unit proofRawSource}
+      {proofTarget : Term context Ty.unit proofRawTarget} :
+      Step.par valueSource valueTarget →
+      Step.par proofSource proofTarget →
+      Step.par (Term.refineIntro predicate valueSource proofSource)
+               (Term.refineIntro predicate valueTarget proofTarget)
+  /-- Raw-name parity: refinement elimination reduces in its refined value. -/
+  | refineElimCong {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {refinedRawSource refinedRawTarget : RawTerm scope}
+      {refinedSource : Term context (Ty.refine baseType predicate) refinedRawSource}
+      {refinedTarget : Term context (Ty.refine baseType predicate) refinedRawTarget} :
+      Step.par refinedSource refinedTarget →
+      Step.par (Term.refineElim refinedSource)
+               (Term.refineElim refinedTarget)
   /-- Shallow β: `(λx. body) arg ⟶ body[arg/x]` with parallel
   reduction in body and arg.  Source has Ty `cod`; target via
   `Term.subst0` has Ty `cod.weaken.subst0 dom argumentRawTarget` —
@@ -701,6 +725,21 @@ inductive Step.par :
       {firstTarget : Term context singleFieldType firstRawTarget} :
       Step.par firstSource firstTarget →
       Step.par (Term.recordProj (Term.recordIntro firstSource)) firstTarget
+  /-- Shallow refinement β: `refineElim (refineIntro value proof) ⟶ value'`. -/
+  | betaRefineElimIntro {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {valueRawSource valueRawTarget proofRawSource proofRawTarget :
+        RawTerm scope}
+      {valueSource : Term context baseType valueRawSource}
+      {valueTarget : Term context baseType valueRawTarget}
+      {proofSource : Term context Ty.unit proofRawSource}
+      {proofTarget : Term context Ty.unit proofRawTarget} :
+      Step.par valueSource valueTarget →
+      Step.par proofSource proofTarget →
+      Step.par
+        (Term.refineElim (Term.refineIntro predicate valueSource proofSource))
+        valueTarget
   /-- Shallow β-fst: `fst (pair a b) ⟶ a'` with `Step.par a a'`. -/
   | betaFstPair {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -985,6 +1024,17 @@ inductive Step.par :
       {firstTarget : Term context singleFieldType firstRawTarget} :
       Step.par recordSource (Term.recordIntro firstTarget) →
       Step.par (Term.recordProj recordSource) firstTarget
+  /-- Deep refinement β: refined value develops to a refinement intro. -/
+  | betaRefineElimIntroDeep {mode level scope}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {refinedRawSource valueRawTarget proofRawTarget : RawTerm scope}
+      {refinedSource : Term context (Ty.refine baseType predicate) refinedRawSource}
+      {valueTarget : Term context baseType valueRawTarget}
+      {proofTarget : Term context Ty.unit proofRawTarget} :
+      Step.par refinedSource (Term.refineIntro predicate valueTarget proofTarget) →
+      Step.par (Term.refineElim refinedSource) valueTarget
   /-- Deep β-fst: pair-shaped target. -/
   | betaFstPairDeep {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -1553,6 +1603,15 @@ theorem Step.toPar
       exact Step.par.recordProjCong singleStepIH
   | betaRecordProjIntro firstField =>
       exact Step.par.betaRecordProjIntro (Step.par.refl firstField)
+  | refineIntroValue singleStep singleStepIH =>
+      exact Step.par.refineIntroCong singleStepIH (Step.par.refl _)
+  | refineIntroProof singleStep singleStepIH =>
+      exact Step.par.refineIntroCong (Step.par.refl _) singleStepIH
+  | refineElimValue singleStep singleStepIH =>
+      exact Step.par.refineElimCong singleStepIH
+  | betaRefineElimIntro predicate baseValue predicateProof =>
+      exact Step.par.betaRefineElimIntro
+        (Step.par.refl baseValue) (Step.par.refl predicateProof)
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
       exact Step.par.transpCong universeLevel universeLevelLt

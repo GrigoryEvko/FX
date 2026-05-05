@@ -339,6 +339,14 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .recordProj recordValue =>
       ConvCumul.subst_compatible_recordProj_allais recordValue
         (Term.subst_compatible_pointwise_allais compat recordValue)
+  | _, _, .refineIntro predicate baseValue predicateProof =>
+      ConvCumul.subst_compatible_refineIntro_allais
+        predicate baseValue predicateProof
+        (Term.subst_compatible_pointwise_allais compat baseValue)
+        (Term.subst_compatible_pointwise_allais compat predicateProof)
+  | _, _, .refineElim refinedValue =>
+      ConvCumul.subst_compatible_refineElim_allais refinedValue
+        (Term.subst_compatible_pointwise_allais compat refinedValue)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)

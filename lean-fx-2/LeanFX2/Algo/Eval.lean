@@ -261,12 +261,14 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .transp _ _ _ _ _ _ _ _ => none
   | _, _, _, _, .hcomp _ _ => none
   | _, _, _, _, .recordIntro _ => none
+  | _, _, _, _, .refineIntro _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction
   | _, _, _, _, .pathApp _ _ => none        -- path β needs body extraction
   | _, _, _, _, .glueElim _ => none         -- Glue β needs value extraction
   | _, _, _, _, .recordProj _ => none        -- record β needs field extraction
+  | _, _, _, _, .refineElim _ => none        -- refinement β needs intro extraction
   | _, _, _, _, .fst _ => none              -- β-pair-fst needs first extraction
   | _, _, _, _, .snd _ => none              -- β-pair-snd needs second extraction
   | _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>

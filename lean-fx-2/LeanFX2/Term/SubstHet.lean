@@ -257,6 +257,12 @@ def Term.substHet {mode : Mode}
       Term.recordIntro (Term.substHet termSubstHet firstField)
   | _, _, .recordProj recordValue =>
       Term.recordProj (Term.substHet termSubstHet recordValue)
+  | _, _, .refineIntro predicate baseValue predicateProof =>
+      Term.refineIntro (predicate.subst sigma.forRaw.lift)
+        (Term.substHet termSubstHet baseValue)
+        (Term.substHet termSubstHet predicateProof)
+  | _, _, .refineElim refinedValue =>
+      Term.refineElim (Term.substHet termSubstHet refinedValue)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

@@ -240,6 +240,12 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.recordIntro (Term.subst termSubst firstField)
   | _, _, .recordProj recordValue =>
       Term.recordProj (Term.subst termSubst recordValue)
+  | _, _, .refineIntro predicate baseValue predicateProof =>
+      Term.refineIntro (predicate.subst sigma.forRaw.lift)
+        (Term.subst termSubst baseValue)
+        (Term.subst termSubst predicateProof)
+  | _, _, .refineElim refinedValue =>
+      Term.refineElim (Term.subst termSubst refinedValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` substitute to
   -- themselves (no scope-dependent payload), so rebuilding the ctor

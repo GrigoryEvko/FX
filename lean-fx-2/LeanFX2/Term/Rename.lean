@@ -253,6 +253,12 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.recordIntro (Term.rename termRenaming firstField)
   | _, _, .recordProj recordValue =>
       Term.recordProj (Term.rename termRenaming recordValue)
+  | _, _, .refineIntro predicate baseValue predicateProof =>
+      Term.refineIntro (predicate.rename rho.lift)
+        (Term.rename termRenaming baseValue)
+        (Term.rename termRenaming predicateProof)
+  | _, _, .refineElim refinedValue =>
+      Term.refineElim (Term.rename termRenaming refinedValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` rename to
   -- themselves (no scope-dependent payload), so the `someType.rename

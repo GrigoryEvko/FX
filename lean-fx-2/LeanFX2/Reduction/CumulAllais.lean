@@ -1004,6 +1004,48 @@ theorem ConvCumul.subst_compatible_recordProj_allais
               ((Term.recordProj recordValue).substHet termSubstB) :=
   ConvCumul.recordProjCong recordCompat
 
+/-- Allais arm for `refineIntro`: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_refineIntro_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {baseType : Ty sourceLevel sourceScope}
+    (predicate : RawTerm (sourceScope + 1))
+    {valueRaw proofRaw : RawTerm sourceScope}
+    (baseValue : Term sourceCtx baseType valueRaw)
+    (predicateProof : Term sourceCtx Ty.unit proofRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (valueCompat :
+      ConvCumul (baseValue.substHet termSubstA)
+                (baseValue.substHet termSubstB))
+    (proofCompat :
+      ConvCumul (predicateProof.substHet termSubstA)
+                (predicateProof.substHet termSubstB)) :
+    ConvCumul ((Term.refineIntro predicate baseValue predicateProof).substHet termSubstA)
+              ((Term.refineIntro predicate baseValue predicateProof).substHet termSubstB) :=
+  ConvCumul.refineIntroCong valueCompat proofCompat
+
+/-- Allais arm for `refineElim`: one-subterm congruence. -/
+theorem ConvCumul.subst_compatible_refineElim_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {baseType : Ty sourceLevel sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    (refinedValue : Term sourceCtx (Ty.refine baseType predicate) refinedRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (refinedCompat :
+      ConvCumul (refinedValue.substHet termSubstA)
+                (refinedValue.substHet termSubstB)) :
+    ConvCumul ((Term.refineElim refinedValue).substHet termSubstA)
+              ((Term.refineElim refinedValue).substHet termSubstB) :=
+  ConvCumul.refineElimCong refinedCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

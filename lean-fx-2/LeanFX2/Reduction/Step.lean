@@ -881,6 +881,48 @@ inductive Step :
       {firstRaw : RawTerm scope}
       (firstField : Term context singleFieldType firstRaw) :
       Step (Term.recordProj (Term.recordIntro firstField)) firstField
+  /-- Step inside a refinement introduction value. -/
+  | refineIntroValue {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {valueRawSource valueRawTarget proofRaw : RawTerm scope}
+      {valueSource : Term context baseType valueRawSource}
+      {valueTarget : Term context baseType valueRawTarget}
+      {predicateProof : Term context Ty.unit proofRaw} :
+      Step valueSource valueTarget →
+      Step (Term.refineIntro predicate valueSource predicateProof)
+           (Term.refineIntro predicate valueTarget predicateProof)
+  /-- Step inside a refinement proof certificate. -/
+  | refineIntroProof {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {valueRaw proofRawSource proofRawTarget : RawTerm scope}
+      {baseValue : Term context baseType valueRaw}
+      {proofSource : Term context Ty.unit proofRawSource}
+      {proofTarget : Term context Ty.unit proofRawTarget} :
+      Step proofSource proofTarget →
+      Step (Term.refineIntro predicate baseValue proofSource)
+           (Term.refineIntro predicate baseValue proofTarget)
+  /-- Step inside refinement elimination. -/
+  | refineElimValue {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : RawTerm (scope + 1)}
+      {refinedRawSource refinedRawTarget : RawTerm scope}
+      {refinedSource : Term context (Ty.refine baseType predicate) refinedRawSource}
+      {refinedTarget : Term context (Ty.refine baseType predicate) refinedRawTarget} :
+      Step refinedSource refinedTarget →
+      Step (Term.refineElim refinedSource)
+           (Term.refineElim refinedTarget)
+  /-- Refinement β-reduction: eliminating an introduced refinement
+  yields the base value. -/
+  | betaRefineElimIntro {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      (predicate : RawTerm (scope + 1))
+      {valueRaw proofRaw : RawTerm scope}
+      (baseValue : Term context baseType valueRaw)
+      (predicateProof : Term context Ty.unit proofRaw) :
+      Step (Term.refineElim (Term.refineIntro predicate baseValue predicateProof))
+           baseValue
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
       (universeLevel : UniverseLevel)
