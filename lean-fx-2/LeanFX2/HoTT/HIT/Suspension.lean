@@ -5,10 +5,8 @@ import LeanFX2.HoTT.HIT.Eliminator
 Setoid-level suspension HIT presentation.
 
 The suspension of a source type has two point representatives, `north`
-and `south`, and a meridian relating them for each source value.  At the
-current setoid level, the relation is equality unless the source type is
-inhabited; a source witness supplies the meridian and relates the two
-points.
+and `south`, and a named meridian relation constructor for each source
+value.
 
 This is the 0-truncated presentation.  It does not attempt to encode
 higher coherence data for iterated spheres.
@@ -25,30 +23,83 @@ inductive SuspensionPoint (sourceType : Type sourceLevel) : Type sourceLevel whe
   | north : SuspensionPoint sourceType
   | south : SuspensionPoint sourceType
 
+/-- Setoid-level suspension paths.
+
+The relation has reflexive paths at both endpoints, a meridian from
+north to south for every source value, and the symmetric meridian for
+the reverse direction.  This is the equivalence closure needed by the
+current two-point setoid without erasing the meridian constructor into
+`Nonempty`. -/
+inductive SuspensionRel (sourceType : Type sourceLevel) :
+    SuspensionPoint sourceType → SuspensionPoint sourceType → Prop where
+  | reflPath (somePoint : SuspensionPoint sourceType) :
+      SuspensionRel sourceType somePoint somePoint
+  | meridian (sourceValue : sourceType) :
+      SuspensionRel sourceType
+        SuspensionPoint.north SuspensionPoint.south
+  | meridianSymm (sourceValue : sourceType) :
+      SuspensionRel sourceType
+        SuspensionPoint.south SuspensionPoint.north
+
+namespace SuspensionRel
+
+/-- Reflexivity for suspension paths. -/
+theorem relation_refl {sourceType : Type sourceLevel}
+    (someValue : SuspensionPoint sourceType) :
+    SuspensionRel sourceType someValue someValue :=
+  SuspensionRel.reflPath someValue
+
+/-- Symmetry for suspension paths. -/
+theorem relation_symm {sourceType : Type sourceLevel}
+    {leftValue rightValue : SuspensionPoint sourceType}
+    (relationWitness : SuspensionRel sourceType leftValue rightValue) :
+    SuspensionRel sourceType rightValue leftValue := by
+  cases relationWitness with
+  | reflPath _ => exact SuspensionRel.reflPath leftValue
+  | meridian sourceValue => exact SuspensionRel.meridianSymm sourceValue
+  | meridianSymm sourceValue => exact SuspensionRel.meridian sourceValue
+
+/-- Transitivity for suspension paths. -/
+theorem relation_trans {sourceType : Type sourceLevel}
+    {leftValue middleValue rightValue : SuspensionPoint sourceType}
+    (firstWitness : SuspensionRel sourceType leftValue middleValue)
+    (secondWitness : SuspensionRel sourceType middleValue rightValue) :
+    SuspensionRel sourceType leftValue rightValue := by
+  cases firstWitness with
+  | reflPath _ => exact secondWitness
+  | meridian sourceValue =>
+      cases secondWitness with
+      | reflPath _ => exact SuspensionRel.meridian sourceValue
+      | meridianSymm _ => exact SuspensionRel.reflPath SuspensionPoint.north
+  | meridianSymm sourceValue =>
+      cases secondWitness with
+      | reflPath _ => exact SuspensionRel.meridianSymm sourceValue
+      | meridian _ => exact SuspensionRel.reflPath SuspensionPoint.south
+
+end SuspensionRel
+
 namespace Suspension
 
 /-- Relation for the setoid-level suspension.
 
-Equal points are related.  If the source type is inhabited, a meridian
-witness relates all points, including north and south. -/
+The named relation preserves meridian witnesses instead of collapsing
+them to `Nonempty sourceType`. -/
 def relation {sourceType : Type sourceLevel}
     (leftValue rightValue : SuspensionPoint sourceType) : Prop :=
-  leftValue = rightValue ∨ Nonempty sourceType
+  SuspensionRel sourceType leftValue rightValue
 
 /-- Reflexivity of the suspension relation. -/
 theorem relation_refl {sourceType : Type sourceLevel}
     (someValue : SuspensionPoint sourceType) :
     Suspension.relation someValue someValue :=
-  Or.inl rfl
+  SuspensionRel.relation_refl someValue
 
 /-- Symmetry of the suspension relation. -/
 theorem relation_symm {sourceType : Type sourceLevel}
     {leftValue rightValue : SuspensionPoint sourceType}
     (relationWitness : Suspension.relation leftValue rightValue) :
     Suspension.relation rightValue leftValue :=
-  match relationWitness with
-  | Or.inl equalityWitness => Or.inl (Eq.symm equalityWitness)
-  | Or.inr sourceWitness => Or.inr sourceWitness
+  SuspensionRel.relation_symm relationWitness
 
 /-- Transitivity of the suspension relation. -/
 theorem relation_trans {sourceType : Type sourceLevel}
@@ -56,11 +107,7 @@ theorem relation_trans {sourceType : Type sourceLevel}
     (firstWitness : Suspension.relation leftValue middleValue)
     (secondWitness : Suspension.relation middleValue rightValue) :
     Suspension.relation leftValue rightValue :=
-  match firstWitness, secondWitness with
-  | Or.inl firstEquality, Or.inl secondEquality =>
-      Or.inl (Eq.trans firstEquality secondEquality)
-  | Or.inr sourceWitness, _ => Or.inr sourceWitness
-  | _, Or.inr sourceWitness => Or.inr sourceWitness
+  SuspensionRel.relation_trans firstWitness secondWitness
 
 /-- Setoid-level suspension presentation. -/
 def setoid (sourceType : Type sourceLevel) : HITSetoid.{sourceLevel} :=
@@ -87,7 +134,7 @@ theorem meridian {sourceType : Type sourceLevel}
     (Suspension.setoid sourceType).relation
       (Suspension.north (sourceType := sourceType))
       (Suspension.south (sourceType := sourceType)) :=
-  Or.inr ⟨sourceValue⟩
+  SuspensionRel.meridian sourceValue
 
 /-- Non-dependent recursion out of the setoid-level suspension.
 
@@ -103,17 +150,14 @@ def rec {sourceType : Type sourceLevel}
     | SuspensionPoint.south => southCase
   respectsRelation := fun {leftValue} {rightValue} relationWitness =>
     match relationWitness with
-    | Or.inl equalityWitness => by
-        cases equalityWitness
-        rfl
-    | Or.inr ⟨sourceValue⟩ =>
-        match leftValue, rightValue with
-        | SuspensionPoint.north, SuspensionPoint.north => rfl
-        | SuspensionPoint.north, SuspensionPoint.south =>
-            meridianRespects sourceValue
-        | SuspensionPoint.south, SuspensionPoint.north =>
-            Eq.symm (meridianRespects sourceValue)
-        | SuspensionPoint.south, SuspensionPoint.south => rfl
+    | SuspensionRel.reflPath _ => by
+        cases leftValue
+        · rfl
+        · rfl
+    | SuspensionRel.meridian sourceValue =>
+        meridianRespects sourceValue
+    | SuspensionRel.meridianSymm sourceValue =>
+        Eq.symm (meridianRespects sourceValue)
 
 /-- Suspension recursion computes at north by reflexive reduction. -/
 theorem rec_north {sourceType : Type sourceLevel}
@@ -168,17 +212,14 @@ def dependentInductor {sourceType : Type sourceLevel}
     | SuspensionPoint.south => southCase
   respectsRelation := fun {leftValue} {rightValue} relationWitness =>
     match relationWitness with
-    | Or.inl equalityWitness => by
-        cases equalityWitness
-        exact HEq.rfl
-    | Or.inr ⟨sourceValue⟩ =>
-        match leftValue, rightValue with
-        | SuspensionPoint.north, SuspensionPoint.north => HEq.rfl
-        | SuspensionPoint.north, SuspensionPoint.south =>
-            meridianRespects sourceValue
-        | SuspensionPoint.south, SuspensionPoint.north =>
-            HEq.symm (meridianRespects sourceValue)
-        | SuspensionPoint.south, SuspensionPoint.south => HEq.rfl
+    | SuspensionRel.reflPath _ => by
+        cases leftValue
+        · exact HEq.rfl
+        · exact HEq.rfl
+    | SuspensionRel.meridian sourceValue =>
+        meridianRespects sourceValue
+    | SuspensionRel.meridianSymm sourceValue =>
+        HEq.symm (meridianRespects sourceValue)
 
 /-- Suspension dependent induction computes at north. -/
 theorem dependentInductor_north {sourceType : Type sourceLevel}

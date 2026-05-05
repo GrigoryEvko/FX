@@ -571,6 +571,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.S1.dependentInductor_loop
 #assert_no_axioms LeanFX2.HoTT.HIT.S1.dependentInductor_loopBetween
 #assert_no_axioms LeanFX2.HoTT.HIT.SuspensionPoint
+#assert_no_axioms LeanFX2.HoTT.HIT.SuspensionRel
+#assert_no_axioms LeanFX2.HoTT.HIT.SuspensionRel.relation_refl
+#assert_no_axioms LeanFX2.HoTT.HIT.SuspensionRel.relation_symm
+#assert_no_axioms LeanFX2.HoTT.HIT.SuspensionRel.relation_trans
 #assert_no_axioms LeanFX2.HoTT.HIT.Suspension.relation
 #assert_no_axioms LeanFX2.HoTT.HIT.Suspension.relation_refl
 #assert_no_axioms LeanFX2.HoTT.HIT.Suspension.relation_symm
