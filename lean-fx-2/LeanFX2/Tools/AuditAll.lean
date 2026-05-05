@@ -1,4 +1,5 @@
 import LeanFX2.Tools.DependencyAudit
+import LeanFX2.Tools.AuditGen
 import LeanFX2.Term
 import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
@@ -81,5 +82,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.le_refl
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.le_trans
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.joinGrades_bottom_le
+
+-- Namespace sweeps currently known to be clean.  These are still
+-- scoped, not a whole-project generated audit.
+#audit_namespace LeanFX2.Conv
+#audit_namespace LeanFX2.Graded
 
 end LeanFX2.Tools
