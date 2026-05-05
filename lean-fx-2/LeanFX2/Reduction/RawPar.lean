@@ -23,10 +23,11 @@ inversion principle for `RawStep.par (RawTerm.lam body) target`
 gives a clean case split.  This makes raw the cleaner setting for
 prototyping confluence proofs and bridging back to typed.
 
-## Constructors (53 total)
+## Constructors
 
-Mirrors `Step.par`: refl + 21 cong + 4 shallow β + 13 shallow ι +
-4 deep β + 12 deep ι.  η deliberately omitted.
+Mirrors `Step.par` at the raw layer: core MLTT congruence, shallow
+β/ι, deep β/ι, D1.6 cubical/HOTT/modal congruence, and incremental
+D2.5 cubical β for path application.  η deliberately omitted.
 
 ## modIntro / modElim / subsume
 
@@ -494,12 +495,11 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par baseRawSource baseRawTarget →
       RawStep.par (RawTerm.idJ baseRawSource witnessRawSource)
                   baseRawTarget
-  -- D1.6 / D2.5–D2.7 stub: pure cong rules for the 27 new RawTerm
-  -- ctors.  β/ι reduction rules for cubical / HOTT / refine / record
-  -- / codata / session / effect / strict layers land in D2.5–D2.7;
-  -- here we only commit to the structural cong layer so that
-  -- substitution-compatibility lemmas (`subst_par_pointwise`) can
-  -- discharge their cases without sorry.
+  -- D1.6 / D2.5–D2.7 extension layer: structural cong rules for
+  -- the new RawTerm ctors, plus the D2.5 cubical β rule for
+  -- pathApp/pathLam.  The remaining cubical / HOTT / refine /
+  -- record / codata / session / effect / strict β/ι rules land
+  -- incrementally with their cd/confluence cases.
   /-- Cong: intervalOpp reduces in argument. -/
   | intervalOppCong {scope : Nat}
       {intervalRawSource intervalRawTarget : RawTerm scope} :
@@ -533,6 +533,24 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par intervalRawSource intervalRawTarget →
       RawStep.par (RawTerm.pathApp pathRawSource intervalRawSource)
                   (RawTerm.pathApp pathRawTarget intervalRawTarget)
+  /-- Cubical β: `(pathLam body) @ point ⟶ body[point/i]`. -/
+  | betaPathApp {scope : Nat}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+      {intervalRawSource intervalRawTarget : RawTerm scope} :
+      RawStep.par bodyRawSource bodyRawTarget →
+      RawStep.par intervalRawSource intervalRawTarget →
+      RawStep.par
+        (RawTerm.pathApp (RawTerm.pathLam bodyRawSource) intervalRawSource)
+        (bodyRawTarget.subst0 intervalRawTarget)
+  /-- Deep cubical β: `pathTerm ⟶ pathLam body` then pathApp fires. -/
+  | betaPathAppDeep {scope : Nat}
+      {pathRawSource : RawTerm scope}
+      {bodyRawTarget : RawTerm (scope + 1)}
+      {intervalRawSource intervalRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource (RawTerm.pathLam bodyRawTarget) →
+      RawStep.par intervalRawSource intervalRawTarget →
+      RawStep.par (RawTerm.pathApp pathRawSource intervalRawSource)
+                  (bodyRawTarget.subst0 intervalRawTarget)
   /-- Cong: glueIntro reduces in base and partial values. -/
   | glueIntroCong {scope : Nat}
       {baseRawSource baseRawTarget partialRawSource partialRawTarget : RawTerm scope} :

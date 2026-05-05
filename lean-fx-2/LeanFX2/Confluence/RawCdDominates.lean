@@ -9,7 +9,7 @@ Proof shape: structural induction on the raw term.  For each ctor:
 * Atomic (var/unit/booleans/zero/Nil/None) — `RawStep.par.refl _`.
 * Pure cong (lam/pair/listCons/optionSome/eitherInl/Inr/natSucc/refl
   /modIntro/modElim/subsume) — apply the cong rule with IH.
-* Redex-bearing (app/fst/snd/boolElim/natElim/natRec/listElim
+* Redex-bearing (app/pathApp/fst/snd/boolElim/natElim/natRec/listElim
   /optionMatch/eitherMatch/idJ) — `simp only [RawTerm.cd]; split`
   produces one goal per ctor of the inner match's scrutinee; the
   redex case fires the appropriate Deep β/ι rule using the IH;
@@ -201,7 +201,8 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.modElim (RawStep.par.cd_dominates innerTerm)
   | _, .subsume innerTerm =>
       RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
-  -- D1.6: 27 new ctors are pure cong at raw level (no β/ι rules).
+  -- D1.6/D2.5: most new ctors are pure cong at raw level; pathApp
+  -- now has the cubical β redex below.
   -- We use term-mode (no `by`) so Lean elaborates by unifying the
   -- expected type against the cong rule directly, avoiding the
   -- 550-branch `simp only [RawTerm.cd]` whnf blowup.  Each ctor's
@@ -222,10 +223,16 @@ theorem RawStep.par.cd_dominates :
         (RawStep.par.cd_dominates rightInterval)
   | _, .pathLam body =>
       RawStep.par.pathLamCong (RawStep.par.cd_dominates body)
-  | _, .pathApp pathTerm intervalArg =>
-      RawStep.par.pathAppCong
-        (RawStep.par.cd_dominates pathTerm)
-        (RawStep.par.cd_dominates intervalArg)
+  | _, .pathApp pathTerm intervalArg => by
+      let pathParStep := RawStep.par.cd_dominates pathTerm
+      let intervalParStep := RawStep.par.cd_dominates intervalArg
+      unfold RawTerm.cd
+      unfold RawTerm.cdPathAppCase
+      split
+      case _ bodyRawTarget pathEqn =>
+          exact RawStep.par.betaPathAppDeep
+            (pathEqn ▸ pathParStep) intervalParStep
+      all_goals exact RawStep.par.pathAppCong pathParStep intervalParStep
   | _, .glueIntro baseValue partialValue =>
       RawStep.par.glueIntroCong
         (RawStep.par.cd_dominates baseValue)

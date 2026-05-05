@@ -6,10 +6,10 @@ import LeanFX2.Confluence.RawDiamond
 /-! # AuditPhase12A3Day3 — Day 3 (Phase 12.A.3) zero-axiom audit.
 
 Day 3 of the cubical+2LTT+HOTT sprint:
-* D3.1 — Confluence/RawCd.lean: 27 new cong cases for D1.6 ctors
-  (commits 2afe3493 / b9f173d8) — verified by extension
-* D3.2 — Confluence/RawCdLemma.lean: 27 cong cases (same commits)
-  — verified by extension
+* D3.1 — Confluence/RawCd.lean: D1.6 cong cases plus D2.5 raw
+  path-application beta complete development — verified by extension
+* D3.2 — Confluence/RawCdLemma.lean: congruence and raw beta pathApp
+  cases — verified by extension
 * D3.3 — Diamond property: RAW-side diamond + parStar.confluence DONE
   via parametric proof in cd_lemma; typed-side `Step.par.diamond` is
   scaffolded as a stub awaiting typed Term ctors (D1.9 deferred)
@@ -29,10 +29,11 @@ Until then, raw confluence + the rfl-bridge `Term.toRaw` deliver
 typed confluence as an immediate corollary at usage sites.
 -/
 
--- D3.1: cd extends through 27 new ctors (cong only at this layer)
+-- D3.1: cd extends through new ctors and raw path application beta
 #print axioms LeanFX2.RawTerm.cd
+#print axioms LeanFX2.RawTerm.cdPathAppCase
 
--- D3.2: cd_lemma extends through 27 new cong rules
+-- D3.2: cd_lemma extends through cong and raw path application beta
 #print axioms LeanFX2.RawStep.par.cd_lemma
 
 -- D3.3: diamond + cd_dominates (parametric in cd_lemma)

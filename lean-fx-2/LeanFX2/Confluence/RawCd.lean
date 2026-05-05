@@ -40,12 +40,13 @@ heartbeat budget (per-whnf 200K, not propagated by file-level
 
 The refactor below extracts each redex-bearing case's inner match
 into a dedicated helper definition — `cdAppCase`, `cdFstCase`,
-`cdSndCase`, `cdBoolElimCase`, `cdNatElimCase`, `cdNatRecCase`,
-`cdListElimCase`, `cdOptionMatchCase`, `cdEitherMatchCase`,
-`cdIdJCase`.  Each helper carries its own 55-arm match in its own
-elaboration scope, so `unfold cdAppCase; split` inside cd_dominates
-only walks ~55 branches instead of ~3000.  `RawTerm.cd` itself
-becomes a thin dispatcher (one short arm per RawTerm ctor).
+`cdPathAppCase`, `cdSndCase`, `cdBoolElimCase`, `cdNatElimCase`,
+`cdNatRecCase`, `cdListElimCase`, `cdOptionMatchCase`,
+`cdEitherMatchCase`, `cdIdJCase`.  Each helper carries its own
+55-arm match in its own elaboration scope, so `unfold cdAppCase;
+split` inside cd_dominates only walks ~55 branches instead of
+~3000.  `RawTerm.cd` itself becomes a thin dispatcher (one short arm
+per RawTerm ctor).
 
 ## Construction sketch
 
@@ -53,9 +54,10 @@ becomes a thin dispatcher (one short arm per RawTerm ctor).
 * Cong ctors (lam, pair, listCons, optionSome, eitherInl/Inr,
   natSucc, refl, modIntro/Elim, subsume, plus 27 D1.6 cong ctors)
   → recurse into subterms
-* Redex-bearing ctors (app, fst, snd, boolElim, natElim, natRec,
-  listElim, optionMatch, eitherMatch, idJ) → dispatch to per-redex
-  helper, which handles canonical-ctor contraction + cong fallback
+* Redex-bearing ctors (app, pathApp, fst, snd, boolElim, natElim,
+  natRec, listElim, optionMatch, eitherMatch, idJ) → dispatch to
+  per-redex helper, which handles canonical-ctor contraction + cong
+  fallback
 
 Modal ctors `modIntro`, `modElim`, `subsume` are pure cong (no
 `iotaModal` rule lives in `RawStep.par` yet; will be added when
@@ -136,6 +138,79 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.idCode _ _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.equivCode _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.cumulUpMarker _ => RawTerm.app developedFunction developedArgument
+
+/-- Path application redex: `(pathLam body) @ point → body[point/i]`;
+otherwise rebuild `pathApp dp di`. -/
+def RawTerm.cdPathAppCase {scope : Nat}
+    (developedPath developedInterval : RawTerm scope) : RawTerm scope :=
+  match developedPath with
+  | RawTerm.pathLam body => body.subst0 developedInterval
+  | RawTerm.var _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.unit => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.lam _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.app _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.pair _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.fst _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.snd _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.boolTrue => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.boolFalse => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.boolElim _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.natZero => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.natSucc _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.natElim _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.natRec _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.listNil => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.listCons _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.listElim _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.optionNone => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.optionSome _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.optionMatch _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.eitherInl _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.eitherInr _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.eitherMatch _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.refl _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.idJ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.modIntro _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.modElim _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.subsume _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.interval0 => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.interval1 => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.intervalOpp _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.intervalMeet _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.intervalJoin _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.pathApp _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.glueIntro _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.glueElim _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.transp _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.hcomp _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.oeqRefl _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.oeqJ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.oeqFunext _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.idStrictRefl _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.idStrictRec _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.equivIntro _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.equivApp _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.refineIntro _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.refineElim _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.recordIntro _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.recordProj _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.codataUnfold _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.codataDest _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.sessionSend _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.sessionRecv _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.effectPerform _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.universeCode _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.arrowCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.piTyCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.sigmaTyCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.productCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.sumCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.listCode _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.optionCode _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.eitherCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.idCode _ _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.equivCode _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.cumulUpMarker _ => RawTerm.pathApp developedPath developedInterval
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -1249,7 +1324,7 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   | _, .modIntro innerTerm => RawTerm.modIntro (RawTerm.cd innerTerm)
   | _, .modElim innerTerm => RawTerm.modElim (RawTerm.cd innerTerm)
   | _, .subsume innerTerm => RawTerm.subsume (RawTerm.cd innerTerm)
-  -- D1.6: cubical interval + path (pure cong, no β rules at raw level yet)
+  -- D1.6/D2.5: cubical interval + path; pathApp has betaPathApp.
   | _, .interval0 => RawTerm.interval0
   | _, .interval1 => RawTerm.interval1
   | _, .intervalOpp intervalTerm => RawTerm.intervalOpp (RawTerm.cd intervalTerm)
@@ -1259,7 +1334,7 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.intervalJoin (RawTerm.cd leftInterval) (RawTerm.cd rightInterval)
   | _, .pathLam body => RawTerm.pathLam (RawTerm.cd body)
   | _, .pathApp pathTerm intervalArg =>
-      RawTerm.pathApp (RawTerm.cd pathTerm) (RawTerm.cd intervalArg)
+      RawTerm.cdPathAppCase (RawTerm.cd pathTerm) (RawTerm.cd intervalArg)
   | _, .glueIntro baseValue partialValue =>
       RawTerm.glueIntro (RawTerm.cd baseValue) (RawTerm.cd partialValue)
   | _, .glueElim gluedValue => RawTerm.glueElim (RawTerm.cd gluedValue)

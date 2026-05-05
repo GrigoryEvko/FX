@@ -283,20 +283,30 @@ theorem RawStep.par.pathLam_inv {scope : Nat}
   | refl _ => exact ⟨body, rfl, RawStep.par.refl _⟩
   | pathLamCong bodyStep => exact ⟨_, rfl, bodyStep⟩
 
-/-- `RawStep.par (pathApp p i) target → target = pathApp p' i' ∧ pars`. -/
+/-- `RawStep.par (pathApp p i) target` either stays a congruent
+`pathApp`, or fires cubical path β after the path develops to a
+`pathLam`. -/
 theorem RawStep.par.pathApp_inv {scope : Nat}
     {pathTerm intervalArg : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.pathApp pathTerm intervalArg) target) :
-    ∃ pathTarget intervalTarget,
+    (∃ pathTarget intervalTarget,
       target = RawTerm.pathApp pathTarget intervalTarget ∧
         RawStep.par pathTerm pathTarget ∧
-        RawStep.par intervalArg intervalTarget := by
+        RawStep.par intervalArg intervalTarget) ∨
+    (∃ bodyTarget intervalTarget,
+      target = bodyTarget.subst0 intervalTarget ∧
+        RawStep.par pathTerm (RawTerm.pathLam bodyTarget) ∧
+        RawStep.par intervalArg intervalTarget) := by
   cases parallelStep with
   | refl _ =>
-      exact ⟨pathTerm, intervalArg, rfl,
+      exact Or.inl ⟨pathTerm, intervalArg, rfl,
         RawStep.par.refl _, RawStep.par.refl _⟩
   | pathAppCong pathStep intervalStep =>
-      exact ⟨_, _, rfl, pathStep, intervalStep⟩
+      exact Or.inl ⟨_, _, rfl, pathStep, intervalStep⟩
+  | betaPathApp bodyStep intervalStep =>
+      exact Or.inr ⟨_, _, rfl, RawStep.par.pathLamCong bodyStep, intervalStep⟩
+  | betaPathAppDeep pathStep intervalStep =>
+      exact Or.inr ⟨_, _, rfl, pathStep, intervalStep⟩
 
 /-- `RawStep.par (glueIntro b p) target → target = glueIntro b' p' ∧ pars`. -/
 theorem RawStep.par.glueIntro_inv {scope : Nat}

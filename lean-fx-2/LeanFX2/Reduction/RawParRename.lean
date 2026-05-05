@@ -217,6 +217,14 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.pathLamCong (bodyIH _)
   | pathAppCong _ _ pathIH intervalIH =>
       exact RawStep.par.pathAppCong (pathIH _) (intervalIH _)
+  | betaPathApp _ _ bodyIH intervalIH =>
+      simp only [RawTerm.rename]
+      rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
+      exact RawStep.par.betaPathApp (bodyIH _) (intervalIH _)
+  | betaPathAppDeep _ _ pathIH intervalIH =>
+      simp only [RawTerm.rename]
+      rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
+      exact RawStep.par.betaPathAppDeep (pathIH _) (intervalIH _)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH _) (partialIH _)
   | glueElimCong _ gluedIH =>

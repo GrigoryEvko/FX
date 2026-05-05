@@ -7,10 +7,10 @@ import LeanFX2.Reduction.RawParInversion
 
 Day 2 of the cubical+2LTT+HOTT sprint shipped:
 * D2.5–D2.7 — RAW-LEVEL only (typed Step rules deferred with D1.9).
-  At the raw level the cong rules for all 27 new ctors landed in
-  Reduction/RawPar.lean (commits 2afe3493, b9f173d8).  Raw β/ι rules
-  for new ctors deferred to incremental shipping (paired with their
-  cd-extension in Confluence/RawCd.lean).
+  At the raw level the cong rules for all 27 new ctors landed earlier;
+  this audit now also anchors the D2.5 raw betaPathApp increment.
+  Remaining raw β/ι rules for new ctors are still paired with their
+  cd-extension in Confluence/RawCd.lean before being claimed.
 * D2.9 — RawStep.par 27 new cong rules (DONE in 2afe3493)
 * D2.10 — Compat extension for 27 new cong rules in
   RawParRename.lean and RawParCompatible.lean (DONE in 2afe3493)
@@ -33,6 +33,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.par.intervalJoinCong
 #print axioms LeanFX2.RawStep.par.pathLamCong
 #print axioms LeanFX2.RawStep.par.pathAppCong
+#print axioms LeanFX2.RawStep.par.betaPathApp
+#print axioms LeanFX2.RawStep.par.betaPathAppDeep
 #print axioms LeanFX2.RawStep.par.glueIntroCong
 #print axioms LeanFX2.RawStep.par.glueElimCong
 #print axioms LeanFX2.RawStep.par.transpCong

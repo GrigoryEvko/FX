@@ -11,12 +11,12 @@ the Tait–Martin-Löf complete-development pair: `cd s` is the
 join point of all parallel reductions from `s`.  Diamond and
 confluence follow via the strip-lemma argument (Layer 6.C).
 
-Proof shape: induction on the parallel-step derivation (54 ctors).
+Proof shape: induction on the parallel-step derivation.
 
 * `refl t`: `cd_dominates t` directly.
 * Pure cong (lam/pair/listCons/optionSome/eitherInl/Inr/natSucc
   /reflCong/modIntro/modElim/subsume): apply cong rule with IHs.
-* Redex-bearing cong (app/fst/snd/boolElim/natElim/natRec
+* Redex-bearing cong (app/pathApp/fst/snd/boolElim/natElim/natRec
   /listElim/optionMatch/eitherMatch/idJ): unfold cd via simp +
   split.  Redex arms fire the deep rule with `heq ▸ IH`; cong
   fallthrough closes via `all_goals`.
@@ -231,6 +231,15 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.lam_inv functionIH
       rw [cdFunctionEq]
       exact RawStep.par.subst0_par bodyParStep argumentIH
+  | betaPathApp bodyStep intervalStep bodyIH intervalIH =>
+      simp only [RawTerm.cd, RawTerm.cdPathAppCase]
+      exact RawStep.par.subst0_par bodyIH intervalIH
+  | betaPathAppDeep pathStep intervalStep pathIH intervalIH =>
+      simp only [RawTerm.cd, RawTerm.cdPathAppCase]
+      obtain ⟨bodyAfter, cdPathEq, bodyParStep⟩ :=
+        RawStep.par.pathLam_inv pathIH
+      rw [cdPathEq]
+      exact RawStep.par.subst0_par bodyParStep intervalIH
   | betaFstPairDeep pairStep pairIH =>
       simp only [RawTerm.cd]
       obtain ⟨firstAfter, secondAfter, cdPairEq, firstParStep, _⟩ :=
@@ -331,10 +340,8 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.refl_inv witnessIH
       rw [cdWitnessEq]
       exact baseIH
-  -- D1.6: 27 new pure-cong rules (no β/ι at raw level — these
-  -- ctors all have only `*Cong` rules in `RawStep.par`).  Each is
-  -- a one-line cong-with-IH; cd is pure cong on these, so simp +
-  -- cong rule + IH composes directly.
+  -- D1.6/D2.5: most new raw ctors are pure cong. pathApp also has
+  -- cubical β, so its cong proof splits on the developed path.
   | intervalOppCong _ intervalIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.intervalOppCong intervalIH
@@ -348,8 +355,12 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.pathLamCong bodyIH
   | pathAppCong _ _ pathIH intervalIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.pathAppCong pathIH intervalIH
+      simp only [RawTerm.cd, RawTerm.cdPathAppCase]
+      split
+      case _ bodyRawTarget pathEqn =>
+          exact RawStep.par.betaPathAppDeep
+            (pathEqn ▸ pathIH) intervalIH
+      all_goals exact RawStep.par.pathAppCong pathIH intervalIH
   | glueIntroCong _ _ baseIH partialIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.glueIntroCong baseIH partialIH

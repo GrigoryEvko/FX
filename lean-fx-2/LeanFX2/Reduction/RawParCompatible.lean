@@ -518,6 +518,18 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.pathLamCong (bodyIH (RawTermSubst.par_lift substsRelated))
   | pathAppCong _ _ pathIH intervalIH =>
       exact RawStep.par.pathAppCong (pathIH substsRelated) (intervalIH substsRelated)
+  | betaPathApp _ _ bodyIH intervalIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst0_subst_commute _ _ secondSubst]
+      exact RawStep.par.betaPathApp
+        (bodyIH (RawTermSubst.par_lift substsRelated))
+        (intervalIH substsRelated)
+  | betaPathAppDeep _ _ pathIH intervalIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.subst0_subst_commute _ _ secondSubst]
+      exact RawStep.par.betaPathAppDeep
+        (pathIH substsRelated)
+        (intervalIH substsRelated)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH substsRelated) (partialIH substsRelated)
   | glueElimCong _ gluedIH =>
