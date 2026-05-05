@@ -135,6 +135,7 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.eitherCode _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.idCode _ _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.equivCode _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.cumulUpMarker _ => RawTerm.app developedFunction developedArgument
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -206,6 +207,7 @@ def RawTerm.cdFstCase {scope : Nat}
   | RawTerm.eitherCode _ _ => RawTerm.fst developedPair
   | RawTerm.idCode _ _ _ => RawTerm.fst developedPair
   | RawTerm.equivCode _ _ => RawTerm.fst developedPair
+  | RawTerm.cumulUpMarker _ => RawTerm.fst developedPair
 
 /-- Snd redex: `snd (a, b) → b`; otherwise rebuild `snd dp`. -/
 def RawTerm.cdSndCase {scope : Nat}
@@ -277,6 +279,7 @@ def RawTerm.cdSndCase {scope : Nat}
   | RawTerm.eitherCode _ _ => RawTerm.snd developedPair
   | RawTerm.idCode _ _ _ => RawTerm.snd developedPair
   | RawTerm.equivCode _ _ => RawTerm.snd developedPair
+  | RawTerm.cumulUpMarker _ => RawTerm.snd developedPair
 
 /-- BoolElim redex: `boolElim true t e → t`, `boolElim false t e → e`;
 otherwise rebuild. -/
@@ -413,6 +416,8 @@ def RawTerm.cdBoolElimCase {scope : Nat}
   | RawTerm.idCode _ _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.equivCode _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.cumulUpMarker _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
 
 /-- NatElim redex: `natElim 0 z s → z`, `natElim (succ p) z s → s p`;
@@ -551,6 +556,8 @@ def RawTerm.cdNatElimCase {scope : Nat}
   | RawTerm.idCode _ _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.equivCode _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.cumulUpMarker _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
 
 /-- NatRec redex: `natRec 0 z s → z`,
@@ -691,6 +698,8 @@ def RawTerm.cdNatRecCase {scope : Nat}
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.equivCode _ _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.cumulUpMarker _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
 
 /-- ListElim redex: `listElim nil n c → n`,
 `listElim (cons h t) n c → c h t`; otherwise rebuild. -/
@@ -828,6 +837,8 @@ def RawTerm.cdListElimCase {scope : Nat}
   | RawTerm.idCode _ _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.equivCode _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.cumulUpMarker _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
 
 /-- OptionMatch redex: `optionMatch none n s → n`,
@@ -967,6 +978,8 @@ def RawTerm.cdOptionMatchCase {scope : Nat}
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.equivCode _ _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.cumulUpMarker _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
 
 /-- EitherMatch redex: `eitherMatch (inl v) l r → l v`,
 `eitherMatch (inr v) l r → r v`; otherwise rebuild. -/
@@ -1104,6 +1117,8 @@ def RawTerm.cdEitherMatchCase {scope : Nat}
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.equivCode _ _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.cumulUpMarker _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
 
 /-- IdJ redex: `idJ b (refl _) → b`; otherwise rebuild. -/
 def RawTerm.cdIdJCase {scope : Nat}
@@ -1175,6 +1190,7 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.eitherCode _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.idCode _ _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.equivCode _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.cumulUpMarker _ => RawTerm.idJ developedBase developedWitness
 
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
@@ -1305,5 +1321,8 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.idCode (RawTerm.cd typeCode) (RawTerm.cd leftRaw) (RawTerm.cd rightRaw)
   | _, .equivCode leftTypeCode rightTypeCode =>
       RawTerm.equivCode (RawTerm.cd leftTypeCode) (RawTerm.cd rightTypeCode)
+  -- CUMUL-2.6: cumulUpMarker recurses on inner code raw.
+  | _, .cumulUpMarker innerCodeRaw =>
+      RawTerm.cumulUpMarker (RawTerm.cd innerCodeRaw)
 
 end LeanFX2

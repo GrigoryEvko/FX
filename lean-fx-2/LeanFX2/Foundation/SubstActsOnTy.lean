@@ -493,6 +493,11 @@ theorem RawTerm.act_eq_rename :
            RawTerm.equivCode (leftTypeCode.rename someRenaming)
                              (rightTypeCode.rename someRenaming)
       rw [leftIH someRenaming, rightIH someRenaming]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      intro someRenaming
+      show RawTerm.cumulUpMarker (innerCodeRaw.act someRenaming) =
+           RawTerm.cumulUpMarker (innerCodeRaw.rename someRenaming)
+      rw [innerIH someRenaming]
 
 /-- Bridge theorem: applying `RawTerm.act` over a `Subst level`
 Container produces the same result as applying `RawTerm.subst
@@ -855,6 +860,11 @@ theorem RawTerm.act_eq_subst_forRaw {level : Nat} :
            RawTerm.equivCode (leftTypeCode.subst someSubst.forRaw)
                              (rightTypeCode.subst someSubst.forRaw)
       rw [leftIH someSubst, rightIH someSubst]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      intro someSubst
+      show RawTerm.cumulUpMarker (innerCodeRaw.act someSubst) =
+           RawTerm.cumulUpMarker (innerCodeRaw.subst someSubst.forRaw)
+      rw [innerIH someSubst]
 
 /-! ## Smoke equivalences with existing `Ty.subst`.
 

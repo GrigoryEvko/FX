@@ -202,6 +202,18 @@ inductive RawTerm : Nat → Type
   subcomponents: the left and right type codes. -/
   | equivCode {scope : Nat}
       (leftTypeCode rightTypeCode : RawTerm scope) : RawTerm scope
+  /-- Phase CUMUL-2.6: cumulativity marker.  Wraps a raw term whose
+  typed counterpart is a type code that has been promoted from a
+  lower universe level to a higher one.  Structurally distinct from
+  every other `RawTerm` ctor (especially `.universeCode`,
+  `.arrowCode`, etc.), so `cases` on a typed `Term ctx ty .unit` (or
+  any other concrete raw form) excludes the cumulUp branch via
+  raw-ctor mismatch — sidesteps the propext leak that 15 prior CUMUL-2.6
+  attempts hit when Lean's match compiler emitted equation lemmas
+  for partial pattern enumerations of `Term`'s indexed-inductive
+  family with propositional index equations.  See the architectural
+  note in `LeanFX2/Term.lean` for the details. -/
+  | cumulUpMarker {scope : Nat} (innerCodeRaw : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -477,5 +489,10 @@ equalities. -/
   | _, _, .equivCode leftTypeCode rightTypeCode, someAction =>
       .equivCode (leftTypeCode.act someAction)
                  (rightTypeCode.act someAction)
+  -- CUMUL-2.6: cumulativity marker.  Atom-shape arm — recurse on the
+  -- single inner code (no binder under the marker; the marker just
+  -- re-tags an existing type code as "promoted to a higher level").
+  | _, _, .cumulUpMarker innerCodeRaw, someAction =>
+      .cumulUpMarker (innerCodeRaw.act someAction)
 
 end LeanFX2

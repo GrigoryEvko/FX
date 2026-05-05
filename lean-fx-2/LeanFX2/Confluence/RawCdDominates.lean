@@ -330,5 +330,9 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.equivCodeCong
         (RawStep.par.cd_dominates leftTypeCode)
         (RawStep.par.cd_dominates rightTypeCode)
+  -- CUMUL-2.6: cumulUpMarker — pure cong, recurse on inner.
+  | _, .cumulUpMarker innerCodeRaw =>
+      RawStep.par.cumulUpMarkerCong
+        (RawStep.par.cd_dominates innerCodeRaw)
 
 end LeanFX2

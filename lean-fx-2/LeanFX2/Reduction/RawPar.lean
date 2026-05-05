@@ -743,5 +743,11 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par rightSource rightTarget →
       RawStep.par (RawTerm.equivCode leftSource rightSource)
                   (RawTerm.equivCode leftTarget rightTarget)
+  /-- CUMUL-2.6 Cong: cumulUpMarker reduces in its inner code raw. -/
+  | cumulUpMarkerCong {scope : Nat}
+      {sourceRaw targetRaw : RawTerm scope} :
+      RawStep.par sourceRaw targetRaw →
+      RawStep.par (RawTerm.cumulUpMarker sourceRaw)
+                  (RawTerm.cumulUpMarker targetRaw)
 
 end LeanFX2

@@ -321,6 +321,7 @@ def Term.infer (context : Ctx mode level scope) :
   | .eitherCode _ _     => none
   | .idCode _ _ _       => none
   | .equivCode _ _      => none
+  | .cumulUpMarker _    => none
 
 end LeanFX2
 

@@ -204,6 +204,9 @@ def RawTerm.rename : ∀ {source target : Nat},
   | _, _, .equivCode leftTypeCode rightTypeCode, rawRenaming =>
       .equivCode (leftTypeCode.rename rawRenaming)
                  (rightTypeCode.rename rawRenaming)
+  -- CUMUL-2.6 cumulUpMarker arm.
+  | _, _, .cumulUpMarker innerCodeRaw, rawRenaming =>
+      .cumulUpMarker (innerCodeRaw.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -366,6 +369,8 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       rw [typeIH renamingEq, leftIH renamingEq, rightIH renamingEq]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.rename]; rw [innerIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -524,6 +529,8 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
       rw [typeIH rho1 rho2, leftIH rho1 rho2, rightIH rho1 rho2]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -700,6 +707,9 @@ def RawTerm.subst : ∀ {source target : Nat},
       .idCode (typeCode.subst sigma) (leftRaw.subst sigma) (rightRaw.subst sigma)
   | _, _, .equivCode leftTypeCode rightTypeCode, sigma =>
       .equivCode (leftTypeCode.subst sigma) (rightTypeCode.subst sigma)
+  -- CUMUL-2.6 cumulUpMarker arm.
+  | _, _, .cumulUpMarker innerCodeRaw, sigma =>
+      .cumulUpMarker (innerCodeRaw.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -869,6 +879,8 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       rw [typeIH substEq, leftIH substEq, rightIH substEq]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.subst]; rw [innerIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -1064,6 +1076,8 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.rename, RawTerm.subst]
       rw [leftIH rho sigma, rightIH rho sigma]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [innerIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -1265,6 +1279,8 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.subst, RawTerm.rename]
       rw [leftIH sigma rho, rightIH sigma rho]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [innerIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -1462,6 +1478,8 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       rw [typeIH sigma1 sigma2, leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -1643,6 +1661,8 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [typeIH, leftIH, rightIH]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
       simp only [RawTerm.subst]; rw [leftIH, rightIH]
+  | cumulUpMarker innerCodeRaw innerIH =>
+      simp only [RawTerm.subst]; rw [innerIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

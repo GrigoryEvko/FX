@@ -280,6 +280,10 @@ theorem RawTerm.rename_identity {scope : Nat} :
       show (leftTypeCode.rename _).equivCode (rightTypeCode.rename _) =
            leftTypeCode.equivCode rightTypeCode
       rw [RawTerm.rename_identity leftTypeCode, RawTerm.rename_identity rightTypeCode]
+  -- CUMUL-2.6: cumulUpMarker — recurse on inner code raw.
+  | .cumulUpMarker innerCodeRaw => by
+      show (innerCodeRaw.rename _).cumulUpMarker = innerCodeRaw.cumulUpMarker
+      rw [RawTerm.rename_identity innerCodeRaw]
 
 /-! ## Ty.rename_identity
 

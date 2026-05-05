@@ -303,6 +303,10 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
       RawStep.par.equivCodeCong
         (RawTerm.subst_par_pointwise leftTypeCode substsRelated)
         (RawTerm.subst_par_pointwise rightTypeCode substsRelated)
+  -- CUMUL-2.6: cumulUpMarker recurses on inner code raw.
+  | .cumulUpMarker innerCodeRaw, _, _, substsRelated =>
+      RawStep.par.cumulUpMarkerCong
+        (RawTerm.subst_par_pointwise innerCodeRaw substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -582,6 +586,8 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
         (typeIH substsRelated) (leftIH substsRelated) (rightIH substsRelated)
   | equivCodeCong _ _ leftIH rightIH =>
       exact RawStep.par.equivCodeCong (leftIH substsRelated) (rightIH substsRelated)
+  | cumulUpMarkerCong _ innerIH =>
+      exact RawStep.par.cumulUpMarkerCong (innerIH substsRelated)
 
 /-! ## β-corollary: parallel substitution at position 0. -/
 

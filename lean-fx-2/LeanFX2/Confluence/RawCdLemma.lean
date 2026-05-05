@@ -443,5 +443,8 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | equivCodeCong _ _ leftIH rightIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.equivCodeCong leftIH rightIH
+  | cumulUpMarkerCong _ innerIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.cumulUpMarkerCong innerIH
 
 end LeanFX2
