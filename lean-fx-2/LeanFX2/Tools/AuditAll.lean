@@ -91,6 +91,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantPath_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypePath
 #assert_no_axioms LeanFX2.Cubical.constantTypePath_toRaw
+#assert_no_axioms LeanFX2.Cubical.constantPath_rawRecognized
+#assert_no_axioms LeanFX2.Cubical.constantTypePath_rawRecognized
 #assert_no_axioms LeanFX2.Cubical.constantPath_rawBetaApp
 #assert_no_axioms LeanFX2.Cubical.constantPath_betaPathApp
 #assert_no_axioms LeanFX2.Step.par.pathLam
