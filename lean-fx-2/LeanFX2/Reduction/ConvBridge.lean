@@ -200,12 +200,16 @@ theorem Step.toConvCumul
       exact ConvCumul.pathAppCong ih (ConvCumul.refl _)
   | pathAppInterval _ ih =>
       exact ConvCumul.pathAppCong (ConvCumul.refl _) ih
+  | betaPathApp bodyTerm intervalTerm =>
+      exact ConvCumul.betaPathAppCumul bodyTerm intervalTerm
   | glueIntroBase _ ih =>
       exact ConvCumul.glueIntroCong ih (ConvCumul.refl _)
   | glueIntroPartial _ ih =>
       exact ConvCumul.glueIntroCong (ConvCumul.refl _) ih
   | glueElimValue _ ih =>
       exact ConvCumul.glueElimCong ih
+  | betaGlueElimIntro baseValue partialValue =>
+      exact ConvCumul.betaGlueElimIntroCumul baseValue partialValue
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
       exact ConvCumul.transpCong universeLevel universeLevelLt
@@ -429,6 +433,34 @@ theorem ConvCumul.betaAppPiCumul_toConv
     Conv (Term.appPi (Term.lamPi (domainType := domainType) bodyTerm) argumentTerm)
          (Term.subst0 bodyTerm argumentTerm) :=
   Conv.fromStep (Step.betaAppPi bodyTerm argumentTerm)
+
+theorem ConvCumul.betaPathAppCumul_toConv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)} {intervalRaw : RawTerm scope}
+    (bodyTerm :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    Conv
+      (Term.pathApp
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+        intervalTerm)
+      (Term.subst0 bodyTerm intervalTerm) :=
+  Conv.fromStep (Step.betaPathApp bodyTerm intervalTerm)
+
+theorem ConvCumul.betaGlueElimIntroCumul_toConv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {baseRaw partialRaw : RawTerm scope}
+    (baseValue : Term context baseType baseRaw)
+    (partialValue : Term context baseType partialRaw) :
+    Conv
+      (Term.glueElim
+        (Term.glueIntro baseType boundaryWitness baseValue partialValue))
+      baseValue :=
+  Conv.fromStep (Step.betaGlueElimIntro baseValue partialValue)
 
 theorem ConvCumul.betaFstPairCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}

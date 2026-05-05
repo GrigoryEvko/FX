@@ -724,6 +724,23 @@ inductive Step :
       Step intervalSource intervalTarget →
       Step (Term.pathApp pathTerm intervalSource)
            (Term.pathApp pathTerm intervalTarget)
+  /-- Cubical β-reduction: `(pathLam body) @ interval ⟶ body[interval]`.
+  Source type is `carrierType`; target type is
+  `carrierType.weaken.subst0 Ty.interval intervalRaw`, so this uses
+  the two-Ty Step signature just like `betaApp`. -/
+  | betaPathApp {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyRaw : RawTerm (scope + 1)}
+      {intervalRaw : RawTerm scope}
+      (bodyTerm :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+      (intervalTerm : Term context Ty.interval intervalRaw) :
+      Step
+        (Term.pathApp
+          (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+          intervalTerm)
+        (Term.subst0 bodyTerm intervalTerm)
   /-- Step inside `glueIntro`'s base value. -/
   | glueIntroBase {mode level scope} {context : Ctx mode level scope}
       {baseType : Ty level scope}
@@ -757,6 +774,17 @@ inductive Step :
         Term context (Ty.glue baseType boundaryWitness) gluedRawTarget} :
       Step gluedSource gluedTarget →
       Step (Term.glueElim gluedSource) (Term.glueElim gluedTarget)
+  /-- Cubical Glue β-reduction: `glueElim (glueIntro base partial) ⟶ base`. -/
+  | betaGlueElimIntro {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRaw partialRaw : RawTerm scope}
+      (baseValue : Term context baseType baseRaw)
+      (partialValue : Term context baseType partialRaw) :
+      Step
+        (Term.glueElim
+          (Term.glueIntro baseType boundaryWitness baseValue partialValue))
+        baseValue
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
       (universeLevel : UniverseLevel)

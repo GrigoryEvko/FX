@@ -754,6 +754,34 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (argumentTerm : Term context domainType argumentRaw) :
       ConvCumul (Term.appPi (Term.lamPi (domainType := domainType) bodyTerm) argumentTerm)
                 (Term.subst0 bodyTerm argumentTerm)
+  /-- Cubical β-reduction: `(pathLam body) @ interval ⟶ body[interval]`.
+  Mirror of `Step.betaPathApp`. -/
+  | betaPathAppCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyRaw : RawTerm (scope + 1)} {intervalRaw : RawTerm scope}
+      (bodyTerm :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+      (intervalTerm : Term context Ty.interval intervalRaw) :
+      ConvCumul
+        (Term.pathApp
+          (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+          intervalTerm)
+        (Term.subst0 bodyTerm intervalTerm)
+  /-- Cubical Glue β-reduction: `glueElim (glueIntro base partial) ⟶ base`.
+  Mirror of `Step.betaGlueElimIntro`. -/
+  | betaGlueElimIntroCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRaw partialRaw : RawTerm scope}
+      (baseValue : Term context baseType baseRaw)
+      (partialValue : Term context baseType partialRaw) :
+      ConvCumul
+        (Term.glueElim
+          (Term.glueIntro baseType boundaryWitness baseValue partialValue))
+        baseValue
   /-- β-reduction Σ first projection: `fst (pair a b) ⟶ a`.
   Mirror of `Step.betaFstPair`. -/
   | betaFstPairCumul

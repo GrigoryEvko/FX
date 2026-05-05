@@ -93,10 +93,12 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Term.subst_pointwise
 #print axioms LeanFX2.Step.par.pathLam
 #print axioms LeanFX2.Step.par.pathApp
+#print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathAppDeep
 #print axioms LeanFX2.Step.par.glueIntro
 #print axioms LeanFX2.Step.par.glueElim
+#print axioms LeanFX2.Step.betaGlueElimIntro
 #print axioms LeanFX2.Step.par.betaGlueElimIntro
 #print axioms LeanFX2.Step.par.betaGlueElimIntroDeep
 #print axioms LeanFX2.Step.par.transp
@@ -104,8 +106,10 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong
+#print axioms LeanFX2.ConvCumul.betaPathAppCumul
 #print axioms LeanFX2.ConvCumul.glueIntroCong
 #print axioms LeanFX2.ConvCumul.glueElimCong
+#print axioms LeanFX2.ConvCumul.betaGlueElimIntroCumul
 #print axioms LeanFX2.ConvCumul.transpCong
 #print axioms LeanFX2.ConvCumul.hcompCong
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval0_allais

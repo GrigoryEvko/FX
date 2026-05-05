@@ -1412,12 +1412,18 @@ theorem Step.toPar
       exact Step.par.pathAppCong singleStepIH (Step.par.refl _)
   | pathAppInterval singleStep singleStepIH =>
       exact Step.par.pathAppCong (Step.par.refl _) singleStepIH
+  | betaPathApp bodyTerm intervalTerm =>
+      exact Step.par.betaPathApp
+        (Step.par.refl bodyTerm) (Step.par.refl intervalTerm)
   | glueIntroBase singleStep singleStepIH =>
       exact Step.par.glueIntroCong singleStepIH (Step.par.refl _)
   | glueIntroPartial singleStep singleStepIH =>
       exact Step.par.glueIntroCong (Step.par.refl _) singleStepIH
   | glueElimValue singleStep singleStepIH =>
       exact Step.par.glueElimCong singleStepIH
+  | betaGlueElimIntro baseValue partialValue =>
+      exact Step.par.betaGlueElimIntro
+        (Step.par.refl baseValue) (Step.par.refl partialValue)
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
       exact Step.par.transpCong universeLevel universeLevelLt
