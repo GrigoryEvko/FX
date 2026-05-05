@@ -553,15 +553,26 @@ theorem RawStep.par.codataUnfold_inv {scope : Nat}
   | codataUnfoldCong stateStep transitionStep =>
       exact ⟨_, _, rfl, stateStep, transitionStep⟩
 
-/-- `RawStep.par (codataDest c) target → target = codataDest c' ∧ par`. -/
+/-- `RawStep.par (codataDest c) target` either stays a congruent
+`codataDest`, or fires codata β after the codata value develops to an
+unfold. -/
 theorem RawStep.par.codataDest_inv {scope : Nat}
     {codataValue : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.codataDest codataValue) target) :
-    ∃ codataTarget, target = RawTerm.codataDest codataTarget ∧
-      RawStep.par codataValue codataTarget := by
+    (∃ codataTarget, target = RawTerm.codataDest codataTarget ∧
+      RawStep.par codataValue codataTarget) ∨
+    (∃ stateTarget transitionTarget,
+      target = RawTerm.app transitionTarget stateTarget ∧
+        RawStep.par codataValue
+          (RawTerm.codataUnfold stateTarget transitionTarget)) := by
   cases parallelStep with
-  | refl _ => exact ⟨codataValue, rfl, RawStep.par.refl _⟩
-  | codataDestCong codataStep => exact ⟨_, rfl, codataStep⟩
+  | refl _ => exact Or.inl ⟨codataValue, rfl, RawStep.par.refl _⟩
+  | betaCodataDestUnfold stateStep transitionStep =>
+      exact Or.inr ⟨_, _, rfl,
+        RawStep.par.codataUnfoldCong stateStep transitionStep⟩
+  | betaCodataDestUnfoldDeep codataStep =>
+      exact Or.inr ⟨_, _, rfl, codataStep⟩
+  | codataDestCong codataStep => exact Or.inl ⟨_, rfl, codataStep⟩
 
 /-- `RawStep.par (sessionSend c p) target → target = sessionSend c' p' ∧ pars`. -/
 theorem RawStep.par.sessionSend_inv {scope : Nat}

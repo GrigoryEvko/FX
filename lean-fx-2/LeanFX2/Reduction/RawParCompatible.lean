@@ -588,6 +588,15 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.recordProjCong (recordIH substsRelated)
   | codataUnfoldCong _ _ stateIH transitionIH =>
       exact RawStep.par.codataUnfoldCong (stateIH substsRelated) (transitionIH substsRelated)
+  | betaCodataDestUnfold _ _ stateIH transitionIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaCodataDestUnfold
+        (stateIH substsRelated)
+        (transitionIH substsRelated)
+  | betaCodataDestUnfoldDeep _ codataIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.betaCodataDestUnfoldDeep
+        (codataIH substsRelated)
   | codataDestCong _ codataIH =>
       exact RawStep.par.codataDestCong (codataIH substsRelated)
   | sessionSendCong _ _ channelIH payloadIH =>

@@ -1006,6 +1006,16 @@ inductive Step :
       Step codataSource codataTarget →
       Step (Term.codataDest codataSource)
            (Term.codataDest codataTarget)
+  /-- Codata β-reduction: observing an unfold applies the transition to
+  the current state. -/
+  | betaCodataDestUnfold {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRaw transitionRaw : RawTerm scope}
+      (initialState : Term context stateType stateRaw)
+      (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+      Step
+        (Term.codataDest (Term.codataUnfold initialState transition))
+        (Term.app transition initialState)
   /-- Step inside a session-send channel. -/
   | sessionSendChannel {mode level scope} {context : Ctx mode level scope}
       {protocolStep : RawTerm scope}

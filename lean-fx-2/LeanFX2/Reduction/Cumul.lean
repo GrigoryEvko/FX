@@ -1058,6 +1058,17 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
         (Term.refineElim
           (Term.refineIntro predicate baseValue predicateProof))
         baseValue
+  /-- β-reduction for codata observation:
+  `codataDest (codataUnfold state transition) ⟶ transition state`. -/
+  | betaCodataDestUnfoldCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRaw transitionRaw : RawTerm scope}
+      (initialState : Term context stateType stateRaw)
+      (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+      ConvCumul
+        (Term.codataDest (Term.codataUnfold initialState transition))
+        (Term.app transition initialState)
   /-- β-reduction Σ first projection: `fst (pair a b) ⟶ a`.
   Mirror of `Step.betaFstPair`. -/
   | betaFstPairCumul

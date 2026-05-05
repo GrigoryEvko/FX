@@ -180,6 +180,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaRefineElimIntro ihValue ihProof
   | codataUnfoldCong _ _ ihState ihTransition =>
       exact RawStep.par.codataUnfoldCong ihState ihTransition
+  | betaCodataDestUnfold _ _ ihState ihTransition =>
+      exact RawStep.par.betaCodataDestUnfold ihState ihTransition
+  | betaCodataDestUnfoldDeep _ ihCodata =>
+      exact RawStep.par.betaCodataDestUnfoldDeep ihCodata
   | codataDestCong _ ihCodata =>
       exact RawStep.par.codataDestCong ihCodata
   | sessionSendCong _ _ ihChannel ihPayload =>

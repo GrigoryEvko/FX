@@ -279,6 +279,12 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.recordProjCong (recordIH _)
   | codataUnfoldCong _ _ stateIH transitionIH =>
       exact RawStep.par.codataUnfoldCong (stateIH _) (transitionIH _)
+  | betaCodataDestUnfold _ _ stateIH transitionIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaCodataDestUnfold (stateIH _) (transitionIH _)
+  | betaCodataDestUnfoldDeep _ codataIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.betaCodataDestUnfoldDeep (codataIH _)
   | codataDestCong _ codataIH =>
       exact RawStep.par.codataDestCong (codataIH _)
   | sessionSendCong _ _ channelIH payloadIH =>

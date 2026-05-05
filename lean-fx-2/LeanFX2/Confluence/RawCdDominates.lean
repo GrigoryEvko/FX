@@ -209,7 +209,7 @@ theorem RawStep.par.cd_dominates :
   | _, .subsume innerTerm =>
       RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
   -- D1.6/D2.5/D2.7: most new ctors are pure cong at raw level;
-  -- pathApp, glueElim, refineElim, and recordProj now have β
+  -- pathApp, glueElim, refineElim, recordProj, and codataDest now have β
   -- redexes below.
   -- We use term-mode (no `by`) so Lean elaborates by unifying the
   -- expected type against the cong rule directly, avoiding the
@@ -312,8 +312,15 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.codataUnfoldCong
         (RawStep.par.cd_dominates initialState)
         (RawStep.par.cd_dominates transition)
-  | _, .codataDest codataValue =>
-      RawStep.par.codataDestCong (RawStep.par.cd_dominates codataValue)
+  | _, .codataDest codataValue => by
+      let codataParStep := RawStep.par.cd_dominates codataValue
+      unfold RawTerm.cd
+      unfold RawTerm.cdCodataDestCase
+      split
+      case _ stateTarget transitionTarget codataEqn =>
+          exact RawStep.par.betaCodataDestUnfoldDeep
+            (codataEqn ▸ codataParStep)
+      all_goals exact RawStep.par.codataDestCong codataParStep
   | _, .sessionSend channel payload =>
       RawStep.par.sessionSendCong
         (RawStep.par.cd_dominates channel)

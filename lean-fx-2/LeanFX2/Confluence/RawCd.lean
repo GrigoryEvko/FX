@@ -504,6 +504,81 @@ def RawTerm.cdRecordProjCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.recordProj developedRecord
   | RawTerm.cumulUpMarker _ => RawTerm.recordProj developedRecord
 
+/-- Codata observation redex:
+`codataDest (codataUnfold state transition) → transition state`;
+otherwise rebuild `codataDest developedCodata`. -/
+def RawTerm.cdCodataDestCase {scope : Nat}
+    (developedCodata : RawTerm scope) : RawTerm scope :=
+  match developedCodata with
+  | RawTerm.codataUnfold stateValue transition =>
+      RawTerm.app transition stateValue
+  | RawTerm.var _ => RawTerm.codataDest developedCodata
+  | RawTerm.unit => RawTerm.codataDest developedCodata
+  | RawTerm.lam _ => RawTerm.codataDest developedCodata
+  | RawTerm.app _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.pair _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.fst _ => RawTerm.codataDest developedCodata
+  | RawTerm.snd _ => RawTerm.codataDest developedCodata
+  | RawTerm.boolTrue => RawTerm.codataDest developedCodata
+  | RawTerm.boolFalse => RawTerm.codataDest developedCodata
+  | RawTerm.boolElim _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.natZero => RawTerm.codataDest developedCodata
+  | RawTerm.natSucc _ => RawTerm.codataDest developedCodata
+  | RawTerm.natElim _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.natRec _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.listNil => RawTerm.codataDest developedCodata
+  | RawTerm.listCons _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.listElim _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.optionNone => RawTerm.codataDest developedCodata
+  | RawTerm.optionSome _ => RawTerm.codataDest developedCodata
+  | RawTerm.optionMatch _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.eitherInl _ => RawTerm.codataDest developedCodata
+  | RawTerm.eitherInr _ => RawTerm.codataDest developedCodata
+  | RawTerm.eitherMatch _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.refl _ => RawTerm.codataDest developedCodata
+  | RawTerm.idJ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.modIntro _ => RawTerm.codataDest developedCodata
+  | RawTerm.modElim _ => RawTerm.codataDest developedCodata
+  | RawTerm.subsume _ => RawTerm.codataDest developedCodata
+  | RawTerm.interval0 => RawTerm.codataDest developedCodata
+  | RawTerm.interval1 => RawTerm.codataDest developedCodata
+  | RawTerm.intervalOpp _ => RawTerm.codataDest developedCodata
+  | RawTerm.intervalMeet _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.intervalJoin _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.pathLam _ => RawTerm.codataDest developedCodata
+  | RawTerm.pathApp _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.glueIntro _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.glueElim _ => RawTerm.codataDest developedCodata
+  | RawTerm.transp _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.hcomp _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.oeqRefl _ => RawTerm.codataDest developedCodata
+  | RawTerm.oeqJ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.oeqFunext _ => RawTerm.codataDest developedCodata
+  | RawTerm.idStrictRefl _ => RawTerm.codataDest developedCodata
+  | RawTerm.idStrictRec _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.equivIntro _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.equivApp _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.refineIntro _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.refineElim _ => RawTerm.codataDest developedCodata
+  | RawTerm.recordIntro _ => RawTerm.codataDest developedCodata
+  | RawTerm.recordProj _ => RawTerm.codataDest developedCodata
+  | RawTerm.codataDest _ => RawTerm.codataDest developedCodata
+  | RawTerm.sessionSend _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.sessionRecv _ => RawTerm.codataDest developedCodata
+  | RawTerm.effectPerform _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.universeCode _ => RawTerm.codataDest developedCodata
+  | RawTerm.arrowCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.piTyCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.sigmaTyCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.productCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.sumCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.listCode _ => RawTerm.codataDest developedCodata
+  | RawTerm.optionCode _ => RawTerm.codataDest developedCodata
+  | RawTerm.eitherCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.idCode _ _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.equivCode _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.cumulUpMarker _ => RawTerm.codataDest developedCodata
+
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
     (developedPair : RawTerm scope) : RawTerm scope :=
@@ -1659,7 +1734,7 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.cdRecordProjCase (RawTerm.cd recordValue)
   | _, .codataUnfold initialState transition =>
       RawTerm.codataUnfold (RawTerm.cd initialState) (RawTerm.cd transition)
-  | _, .codataDest codataValue => RawTerm.codataDest (RawTerm.cd codataValue)
+  | _, .codataDest codataValue => RawTerm.cdCodataDestCase (RawTerm.cd codataValue)
   -- D1.6: sessions, effects (pure cong)
   | _, .sessionSend channel payload =>
       RawTerm.sessionSend (RawTerm.cd channel) (RawTerm.cd payload)

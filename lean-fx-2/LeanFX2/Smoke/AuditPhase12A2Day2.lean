@@ -75,6 +75,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.par.betaRecordProjIntroDeep
 #print axioms LeanFX2.RawStep.par.recordProjCong
 #print axioms LeanFX2.RawStep.par.codataUnfoldCong
+#print axioms LeanFX2.RawStep.par.betaCodataDestUnfold
+#print axioms LeanFX2.RawStep.par.betaCodataDestUnfoldDeep
+#print axioms LeanFX2.RawTerm.cdCodataDestCase
 #print axioms LeanFX2.RawStep.par.codataDestCong
 #print axioms LeanFX2.RawStep.par.sessionSendCong
 #print axioms LeanFX2.RawStep.par.sessionRecvCong
@@ -167,10 +170,15 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.codataUnfoldState
 #print axioms LeanFX2.Step.codataUnfoldTransition
 #print axioms LeanFX2.Step.codataDestValue
+#print axioms LeanFX2.Step.betaCodataDestUnfold
 #print axioms LeanFX2.Step.par.codataUnfoldCong
+#print axioms LeanFX2.Step.par.betaCodataDestUnfold
+#print axioms LeanFX2.Step.par.betaCodataDestUnfoldDeep
 #print axioms LeanFX2.Step.par.codataDestCong
 #print axioms LeanFX2.ConvCumul.codataUnfoldCong
 #print axioms LeanFX2.ConvCumul.codataDestCong
+#print axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul
+#print axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul_toConv
 #print axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
 

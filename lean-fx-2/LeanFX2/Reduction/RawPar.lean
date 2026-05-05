@@ -710,6 +710,23 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par transitionRawSource transitionRawTarget →
       RawStep.par (RawTerm.codataUnfold stateRawSource transitionRawSource)
                   (RawTerm.codataUnfold stateRawTarget transitionRawTarget)
+  /-- Codata β: observing an unfold applies the transition to the state. -/
+  | betaCodataDestUnfold {scope : Nat}
+      {stateRawSource stateRawTarget transitionRawSource transitionRawTarget :
+        RawTerm scope} :
+      RawStep.par stateRawSource stateRawTarget →
+      RawStep.par transitionRawSource transitionRawTarget →
+      RawStep.par
+        (RawTerm.codataDest
+          (RawTerm.codataUnfold stateRawSource transitionRawSource))
+        (RawTerm.app transitionRawTarget stateRawTarget)
+  /-- Deep codata β: codata value develops to an unfold, then observation fires. -/
+  | betaCodataDestUnfoldDeep {scope : Nat}
+      {codataRawSource stateRawTarget transitionRawTarget : RawTerm scope} :
+      RawStep.par codataRawSource
+        (RawTerm.codataUnfold stateRawTarget transitionRawTarget) →
+      RawStep.par (RawTerm.codataDest codataRawSource)
+        (RawTerm.app transitionRawTarget stateRawTarget)
   /-- Cong: codataDest reduces in codata value. -/
   | codataDestCong {scope : Nat}
       {codataRawSource codataRawTarget : RawTerm scope} :

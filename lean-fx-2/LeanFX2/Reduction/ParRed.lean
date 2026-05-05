@@ -814,6 +814,35 @@ inductive Step.par :
       Step.par transitionSource transitionTarget →
       Step.par (Term.codataUnfold stateSource transitionSource)
                (Term.codataUnfold stateTarget transitionTarget)
+  /-- Parallel codata β: observing an unfold applies the developed
+  transition to the developed state. -/
+  | betaCodataDestUnfold {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRawSource stateRawTarget transitionRawSource transitionRawTarget :
+        RawTerm scope}
+      {stateSource : Term context stateType stateRawSource}
+      {stateTarget : Term context stateType stateRawTarget}
+      {transitionSource :
+        Term context (Ty.arrow stateType outputType) transitionRawSource}
+      {transitionTarget :
+        Term context (Ty.arrow stateType outputType) transitionRawTarget} :
+      Step.par stateSource stateTarget →
+      Step.par transitionSource transitionTarget →
+      Step.par
+        (Term.codataDest (Term.codataUnfold stateSource transitionSource))
+        (Term.app transitionTarget stateTarget)
+  /-- Deep codata β: codata value develops to an unfold, then observation fires. -/
+  | betaCodataDestUnfoldDeep {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {codataRawSource stateRawTarget transitionRawTarget : RawTerm scope}
+      {codataSource :
+        Term context (Ty.codata stateType outputType) codataRawSource}
+      {stateTarget : Term context stateType stateRawTarget}
+      {transitionTarget :
+        Term context (Ty.arrow stateType outputType) transitionRawTarget} :
+      Step.par codataSource (Term.codataUnfold stateTarget transitionTarget) →
+      Step.par (Term.codataDest codataSource)
+        (Term.app transitionTarget stateTarget)
   /-- Raw-name parity: codata destruction reduces in its codata value. -/
   | codataDestCong {mode level scope} {context : Ctx mode level scope}
       {stateType outputType : Ty level scope}
@@ -1750,6 +1779,9 @@ theorem Step.toPar
       exact Step.par.codataUnfoldCong (Step.par.refl _) singleStepIH
   | codataDestValue singleStep singleStepIH =>
       exact Step.par.codataDestCong singleStepIH
+  | betaCodataDestUnfold initialState transition =>
+      exact Step.par.betaCodataDestUnfold
+        (Step.par.refl initialState) (Step.par.refl transition)
   | sessionSendChannel singleStep singleStepIH =>
       exact Step.par.sessionSendCong singleStepIH (Step.par.refl _)
   | sessionSendPayload singleStep singleStepIH =>

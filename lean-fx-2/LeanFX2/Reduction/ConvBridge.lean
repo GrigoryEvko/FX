@@ -255,6 +255,8 @@ theorem Step.toConvCumul
       exact ConvCumul.codataUnfoldCong (ConvCumul.refl _) ih
   | codataDestValue _ ih =>
       exact ConvCumul.codataDestCong ih
+  | betaCodataDestUnfold initialState transition =>
+      exact ConvCumul.betaCodataDestUnfoldCumul initialState transition
   | sessionSendChannel _ ih =>
       exact ConvCumul.sessionSendCong ih (ConvCumul.refl _)
   | sessionSendPayload _ ih =>
@@ -536,6 +538,17 @@ theorem ConvCumul.betaRecordProjIntroCumul_toConv
     (firstField : Term context singleFieldType firstRaw) :
     Conv (Term.recordProj (Term.recordIntro firstField)) firstField :=
   Conv.fromStep (Step.betaRecordProjIntro firstField)
+
+theorem ConvCumul.betaCodataDestUnfoldCumul_toConv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+    Conv
+      (Term.codataDest (Term.codataUnfold initialState transition))
+      (Term.app transition initialState) :=
+  Conv.fromStep (Step.betaCodataDestUnfold initialState transition)
 
 theorem ConvCumul.betaFstPairCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}

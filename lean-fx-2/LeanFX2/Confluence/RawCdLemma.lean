@@ -463,8 +463,21 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.codataUnfoldCong stateIH transitionIH
   | codataDestCong _ codataIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.codataDestCong codataIH
+      simp only [RawTerm.cd, RawTerm.cdCodataDestCase]
+      split
+      case _ stateTarget transitionTarget codataEqn =>
+          exact RawStep.par.betaCodataDestUnfoldDeep
+            (codataEqn ▸ codataIH)
+      all_goals exact RawStep.par.codataDestCong codataIH
+  | betaCodataDestUnfold stateStep transitionStep stateIH transitionIH =>
+      simp only [RawTerm.cd, RawTerm.cdCodataDestCase]
+      exact RawStep.par.app transitionIH stateIH
+  | betaCodataDestUnfoldDeep codataStep codataIH =>
+      simp only [RawTerm.cd, RawTerm.cdCodataDestCase]
+      obtain ⟨stateAfter, transitionAfter, cdCodataEq, stateParStep,
+        transitionParStep⟩ := RawStep.par.codataUnfold_inv codataIH
+      rw [cdCodataEq]
+      exact RawStep.par.app transitionParStep stateParStep
   | sessionSendCong _ _ channelIH payloadIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.sessionSendCong channelIH payloadIH

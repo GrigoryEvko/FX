@@ -122,6 +122,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.betaModElimIntro
 #assert_no_axioms LeanFX2.RawStep.par.betaModElimIntroDeep
 #assert_no_axioms LeanFX2.RawTerm.cdModElimCase
+#assert_no_axioms LeanFX2.RawStep.par.betaCodataDestUnfold
+#assert_no_axioms LeanFX2.RawStep.par.betaCodataDestUnfoldDeep
+#assert_no_axioms LeanFX2.RawTerm.cdCodataDestCase
 
 -- Typed D2.5 path-application parity
 #assert_no_axioms LeanFX2.Term.toRaw_interval0
@@ -378,10 +381,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.codataUnfoldState
 #assert_no_axioms LeanFX2.Step.codataUnfoldTransition
 #assert_no_axioms LeanFX2.Step.codataDestValue
+#assert_no_axioms LeanFX2.Step.betaCodataDestUnfold
 #assert_no_axioms LeanFX2.Step.par.codataUnfoldCong
+#assert_no_axioms LeanFX2.Step.par.betaCodataDestUnfold
+#assert_no_axioms LeanFX2.Step.par.betaCodataDestUnfoldDeep
 #assert_no_axioms LeanFX2.Step.par.codataDestCong
 #assert_no_axioms LeanFX2.ConvCumul.codataUnfoldCong
 #assert_no_axioms LeanFX2.ConvCumul.codataDestCong
+#assert_no_axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul
+#assert_no_axioms LeanFX2.ConvCumul.betaCodataDestUnfoldCumul_toConv
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
 
