@@ -1,4 +1,5 @@
 import LeanFX2.Bridge
+import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Cubical.Transport
 import LeanFX2.Tools.DependencyAudit
 
@@ -254,6 +255,43 @@ theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
       (RawTerm.hcomp sidesRawTarget capRawTarget) :=
   Step.par.toRawBridge (Step.par.hcomp sidesStep capStep)
 
+/-- Path/id bridge wiring smoke.
+
+This compiles only if the typed cubical constant-path constructor, typed
+identity reflexivity constructor, the raw projections, and both bridge modules
+agree on the same endpoint raw index. -/
+theorem constantPathIdBridge_fullStackWiring_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {pointRaw : RawTerm scope}
+    (pointTerm : Term context carrierType pointRaw) :
+    And
+      ((Bridge.constantPathToId pointTerm
+        (Cubical.constantPath pointTerm)).toRaw =
+          RawTerm.refl pointRaw)
+      (And
+        ((Bridge.reflIdToConstantPath pointTerm
+          (Term.refl carrierType pointRaw)).toRaw =
+            RawTerm.pathLam pointRaw.weaken)
+        (And
+          ((Bridge.reflIdToConstantPath pointTerm
+            (Bridge.constantPathToId pointTerm
+              (Cubical.constantPath pointTerm))).toRaw =
+              RawTerm.pathLam pointRaw.weaken)
+          ((Bridge.constantPathToId pointTerm
+            (Bridge.reflIdToConstantPath pointTerm
+              (Term.refl carrierType pointRaw))).toRaw =
+              RawTerm.refl pointRaw))) := by
+  exact And.intro
+    (Bridge.constantPathToId_toRaw pointTerm (Cubical.constantPath pointTerm))
+    (And.intro
+      (Bridge.reflIdToConstantPath_toRaw pointTerm
+        (Term.refl carrierType pointRaw))
+      (And.intro
+        (Bridge.constantPath_roundTrip_toRaw pointTerm)
+        (Bridge.reflId_roundTrip_toRaw pointTerm)))
+
 #assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
@@ -262,5 +300,6 @@ theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
 #assert_no_axioms LeanFX2.Smoke.transpCong_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.constantTypeTransport_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.hcompCong_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.constantPathIdBridge_fullStackWiring_smoke
 
 end LeanFX2.Smoke

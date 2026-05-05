@@ -12,6 +12,9 @@ import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.ConvBridge
 import LeanFX2.Confluence.ChurchRosser
+import LeanFX2.Bridge.PathToId
+import LeanFX2.Bridge.IdToPath
+import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
@@ -111,6 +114,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantPath_betaPathApp_toRawEndpoint
 #assert_no_axioms LeanFX2.Cubical.constantTypePath_betaPathApp
 #assert_no_axioms LeanFX2.Cubical.constantTypePath_betaPathApp_toRawEndpoint
+#assert_no_axioms LeanFX2.Bridge.constantPathToId
+#assert_no_axioms LeanFX2.Bridge.constantPathToId_toRaw
+#assert_no_axioms LeanFX2.Bridge.constantPathToId_onCanonical
+#assert_no_axioms LeanFX2.Bridge.reflIdToConstantPath
+#assert_no_axioms LeanFX2.Bridge.reflIdToConstantPath_toRaw
+#assert_no_axioms LeanFX2.Bridge.reflIdToConstantPath_onRefl
+#assert_no_axioms LeanFX2.Bridge.constantPath_roundTrip_onCanonical
+#assert_no_axioms LeanFX2.Bridge.reflId_roundTrip_onRefl
+#assert_no_axioms LeanFX2.Bridge.constantPath_roundTrip_toRaw
+#assert_no_axioms LeanFX2.Bridge.reflId_roundTrip_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized
