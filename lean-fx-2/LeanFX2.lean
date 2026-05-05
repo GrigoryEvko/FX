@@ -148,6 +148,10 @@ import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Instances.Usage
 import LeanFX2.Graded.Instances.Effect
 import LeanFX2.Graded.Instances.Security
+import LeanFX2.Graded.Instances.Observability
+import LeanFX2.Graded.Instances.Reentrancy
+import LeanFX2.Graded.Instances.FPOrder
+import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
 import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Complexity
