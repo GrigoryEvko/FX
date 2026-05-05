@@ -196,75 +196,13 @@ import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
 import LeanFX2.InternalLanguage.Coherence
 
--- Lean kernel meta-verification scaffold
-import LeanFX2.Lean.Kernel.Level
-import LeanFX2.Lean.Kernel.Name
-import LeanFX2.Lean.Kernel.Expr
-import LeanFX2.Lean.Kernel.Substitution
-import LeanFX2.Lean.Kernel.Reduction
-import LeanFX2.Lean.Kernel.Inductive
-import LeanFX2.Lean.Kernel.HasType
-import LeanFX2.Lean.Kernel.Check
-import LeanFX2.Lean.Kernel.Soundness
-import LeanFX2.Lean.Kernel.Audit
-
--- Layer 12 — Tools
-import LeanFX2.Tools.DependencyAudit
-import LeanFX2.Tools.AuditAll
-import LeanFX2.Tools.AuditGen
-import LeanFX2.Tools.Tactics.Cast
-import LeanFX2.Tools.Tactics.HEq
-import LeanFX2.Tools.Tactics.SimpStrip
-
--- Sketch (proof-of-concept)
-import LeanFX2.Sketch.Wave9
-
--- Smoke (per-layer concrete examples)
-import LeanFX2.Smoke.Foundation
-import LeanFX2.Smoke.Term
-import LeanFX2.Smoke.Reduction
-import LeanFX2.Smoke.Confluence
-import LeanFX2.Smoke.Bridge
-import LeanFX2.Smoke.HoTT
-import LeanFX2.Smoke.Modal
-import LeanFX2.Smoke.Graded
-import LeanFX2.Smoke.AuditAll
-import LeanFX2.Smoke.AuditCoverageGap
-import LeanFX2.Smoke.AuditPhase12A1Mode
-import LeanFX2.Smoke.AuditPhase5Bridge
-import LeanFX2.Smoke.AuditPhase6ARawCd
-import LeanFX2.Smoke.AuditPhase6BInversion
-import LeanFX2.Smoke.AuditPhase6BCdDominates
-import LeanFX2.Smoke.AuditPhase6BCompatible
-import LeanFX2.Smoke.AuditPhase6BCdLemma
-import LeanFX2.Smoke.AuditPhase6CDiamond
-import LeanFX2.Smoke.AuditPhase6DTypedConfluence
-import LeanFX2.Smoke.AuditPhase6EStepStarToPar
-import LeanFX2.Smoke.AuditPhase6FConvBridge
-import LeanFX2.Smoke.AuditPhase9ARawWHNF
-import LeanFX2.Smoke.AuditPhase9ARawWHNFInversions
-import LeanFX2.Smoke.AuditPhase9CDecConv
-import LeanFX2.Smoke.AuditPhase9CDecConvTyped
-import LeanFX2.Smoke.AuditPhase9DSynth
-import LeanFX2.Smoke.AuditPhase7ATypeInversions
-import LeanFX2.Smoke.AuditPhase7BConvCanonical
-import LeanFX2.Smoke.AuditPhase7CSubjectReduction
-import LeanFX2.Smoke.AuditPhase9DInfer
-import LeanFX2.Smoke.AuditPhase9DCheck
-import LeanFX2.Smoke.AuditPhase9EEval
-import LeanFX2.Smoke.AuditPhase9FCheckEval
-import LeanFX2.Smoke.AuditPhase79EndToEnd
-import LeanFX2.Smoke.AuditMegaZ4A
-import LeanFX2.Smoke.AuditMegaZ2A1
-import LeanFX2.Smoke.AuditMegaZ5A1
-import LeanFX2.Smoke.AuditMegaZ5A
-import LeanFX2.Smoke.AuditNamespace
-import LeanFX2.Smoke.StrictComposition
-
 /-! # LeanFX2 — umbrella import.
 
-Single-import gateway to the entire lean-fx-2 engine.  Importing
-this pulls in all 13 layers from foundation through tools.
+Single-import gateway to the production lean-fx-2 engine.  Importing
+this deliberately excludes smoke tests, audit tooling, sketches, and
+the legacy `LeanFX2.Lean.Kernel` scaffold.  Lake still builds those
+modules via `.andSubmodules`; they are not part of the public kernel
+surface or trusted-root dependency story.
 
 ## Layered architecture (each depends only on layers below)
 
@@ -282,7 +220,7 @@ this pulls in all 13 layers from foundation through tools.
 |  9    | Algo: WHNF, decConv, infer, check, eval, soundness/completeness |
 | 10    | Surface: lex, parse, print, elab, roundtrip      |
 | 11    | Pipeline: end-to-end compile                     |
-| 12    | Tools: AuditAll, AuditGen, tactic helpers        |
+| 12    | Audit/tooling modules: built by Lake, not imported by this umbrella |
 
 See `ARCHITECTURE.md` for the dependency DAG and per-layer file list.
 See `ROADMAP.md` for the phasing from skeleton to full engine.

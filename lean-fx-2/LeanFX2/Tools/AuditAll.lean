@@ -705,6 +705,18 @@ namespace LeanFX2.Tools
 -- exists and will begin enforcing as soon as FX1 files are imported.
 #assert_fx1_core_host_minimal LeanFX2.FX1
 
+-- FX1 direct-import gate.  FX1/Core may only import FX1/Core;
+-- FX1/LeanKernel may only import FX1/Core or FX1/LeanKernel.  Like the
+-- host-minimal gate, this passes with zero FX1 modules and begins enforcing
+-- as soon as the namespace is loaded.
+#assert_fx1_import_surface_clean
+
+-- Legacy Lean-kernel scaffold isolation.  The pre-FX1
+-- `LeanFX2.Lean.Kernel.*` modules may be built and audited, but rich
+-- production modules and the public umbrella must not depend on them while
+-- Day 8 is retargeted to `LeanFX2.FX1.LeanKernel`.
+#assert_legacy_lean_kernel_scaffold_isolated
+
 -- Raw / typed parity gate.  Every constructor of `RawStep.par` must
 -- have a same-suffix constructor in `Step.par`.  Catches the failure
 -- mode where a raw cubical β rule lands without its typed mirror.

@@ -28,6 +28,10 @@ The FX1 host-minimal gate `#assert_fx1_core_host_minimal` checks that
 the minimal root namespace does not depend on host-heavy Lean modules
 or forbidden host axioms.  It is intentionally stricter than the
 project-wide gate because FX1/Core is the planned trusted root.
+
+The import-surface gates keep public production imports, FX1 imports,
+and the legacy Lean-kernel scaffold from accidentally collapsing into
+one dependency cone.
 -/
 
 namespace LeanFX2.Tools
@@ -237,13 +241,13 @@ elab "#assert_fx1_core_host_minimal " namespaceSyntax:ident : command => do
       s!"{violations.size} of {targetNames.size} decls violate host policy"
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
 
-/-! ## Import-surface gate -/
+/-! ## Import-surface gates -/
 
-/-- Modules that are production-bearing LeanFX2 modules rather than tests,
-tooling, sketches, or the broad public umbrella. -/
+/-- Modules that are public production-bearing LeanFX2 modules rather than
+tests, tooling, or sketches.  This includes the root `LeanFX2` umbrella so
+`import LeanFX2` itself stays clean. -/
 def isProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
   (`LeanFX2).isPrefixOf moduleName &&
-    moduleName != `LeanFX2 &&
     !(`LeanFX2.Smoke).isPrefixOf moduleName &&
     !(`LeanFX2.Tools).isPrefixOf moduleName &&
     !(`LeanFX2.Sketch).isPrefixOf moduleName
@@ -252,8 +256,8 @@ def isProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
 
 `Smoke` and `Tools` are allowed to depend on production code; production code
 must not depend on them.  `Sketch` is proof-of-concept space.  The root
-`LeanFX2` umbrella is intentionally broad and must not be used as an internal
-dependency. -/
+`LeanFX2` umbrella is the public import surface and must not be used as an
+internal dependency. -/
 def isForbiddenProductionImportModuleName (moduleName : Name) : Bool :=
   (`LeanFX2.Smoke).isPrefixOf moduleName ||
     (`LeanFX2.Tools).isPrefixOf moduleName ||
@@ -296,6 +300,135 @@ elab "#assert_production_import_surface_clean" : command => do
     let header :=
       s!"production import surface FAILED: " ++
       s!"{violations.size} of {scannedProductionModules} production modules violate import policy"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
+/-! ## FX1 direct-import discipline -/
+
+/-- FX1/Core modules are the planned minimal root calculus. -/
+def isFX1CoreModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.FX1.Core).isPrefixOf moduleName
+
+/-- FX1/LeanKernel modules encode Lean's kernel over FX1/Core. -/
+def isFX1LeanKernelModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.FX1.LeanKernel).isPrefixOf moduleName
+
+/-- Any module under the future FX1 namespace. -/
+def isFX1ModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.FX1).isPrefixOf moduleName
+
+/-- Direct imports allowed from an FX1 module.
+
+FX1/Core may only import FX1/Core.  FX1/LeanKernel may import FX1/Core and
+FX1/LeanKernel.  Any future FX1 module outside those two namespaces must stay
+inside `LeanFX2.FX1`.  External host imports such as `Lean` or `Std` therefore
+fail at the source-import boundary before dependency-closure audit even runs. -/
+def isAllowedFX1DirectImport
+    (sourceModuleName : Name) (importedModuleName : Name) :
+    Bool :=
+  if isFX1CoreModuleName sourceModuleName then
+    isFX1CoreModuleName importedModuleName
+  else if isFX1LeanKernelModuleName sourceModuleName then
+    isFX1CoreModuleName importedModuleName ||
+      isFX1LeanKernelModuleName importedModuleName
+  else
+    isFX1ModuleName importedModuleName
+
+/-- Forbidden direct imports for one FX1 module. -/
+def forbiddenFX1ImportsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenImports directImport =>
+      if isAllowedFX1DirectImport sourceModuleName directImport.module then
+        forbiddenImports
+      else
+        forbiddenImports.push directImport.module)
+
+/-- Build-failing FX1 direct-import surface gate.  This complements
+`#assert_fx1_core_host_minimal`: the host-minimal gate checks declaration
+dependency closures, while this gate checks source-level module boundaries. -/
+elab "#assert_fx1_import_surface_clean" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedFX1Modules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if isFX1ModuleName moduleName then
+      scannedFX1Modules := scannedFX1Modules + 1
+      let forbiddenImports := forbiddenFX1ImportsForModule moduleName moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (moduleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"FX1 import surface ok: {scannedFX1Modules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: forbidden direct imports [{renderedImports}]"
+    let header :=
+      s!"FX1 import surface FAILED: " ++
+      s!"{violations.size} of {scannedFX1Modules} FX1 modules violate import policy"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
+/-! ## Legacy Lean-kernel scaffold isolation -/
+
+/-- The pre-FX1 Lean-kernel scaffold namespace.  It remains buildable and
+audited, but it is not the planned trusted Lean-in-FX path. -/
+def isLegacyLeanKernelScaffoldModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.Lean.Kernel).isPrefixOf moduleName
+
+/-- Modules allowed to import the legacy Lean-kernel scaffold directly. -/
+def mayImportLegacyLeanKernelScaffold (sourceModuleName : Name) : Bool :=
+  isLegacyLeanKernelScaffoldModuleName sourceModuleName ||
+    (`LeanFX2.Tools).isPrefixOf sourceModuleName ||
+    (`LeanFX2.Smoke).isPrefixOf sourceModuleName
+
+/-- Legacy Lean-kernel direct imports that cross out of the allowed
+audit/scaffold boundary. -/
+def forbiddenLegacyLeanKernelImportsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenImports directImport =>
+      if isLegacyLeanKernelScaffoldModuleName directImport.module &&
+          !mayImportLegacyLeanKernelScaffold sourceModuleName then
+        forbiddenImports.push directImport.module
+      else
+        forbiddenImports)
+
+/-- Build-failing isolation gate for old `LeanFX2.Lean.Kernel.*` modules.
+
+This prevents rich production modules and the public `LeanFX2` umbrella from
+depending on the old scaffold while Day 8 is retargeted to
+`LeanFX2.FX1.LeanKernel`. -/
+elab "#assert_legacy_lean_kernel_scaffold_isolated" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if (`LeanFX2).isPrefixOf moduleName then
+      scannedModules := scannedModules + 1
+      let forbiddenImports :=
+        forbiddenLegacyLeanKernelImportsForModule moduleName moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (moduleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"legacy LeanKernel scaffold isolated: {scannedModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: forbidden legacy LeanKernel imports [{renderedImports}]"
+    let header :=
+      s!"legacy LeanKernel scaffold isolation FAILED: " ++
+      s!"{violations.size} of {scannedModules} modules import the old scaffold"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
 /-! ## Raw/typed parity check -/
