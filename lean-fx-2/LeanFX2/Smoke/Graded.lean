@@ -70,7 +70,70 @@ theorem dimensions21_appRule_zeroProjection_smoke :
   Graded.IsAppCompatible.allZero
     Graded.FXGradeVector21.one.semiringGrades
 
+/-- The D5.4 aggregate semiring projection also feeds App subsumption
+monotonicity.  This compiles only if `FXGradeVector21`'s semiring payload
+still matches the generic attribution/rule surface. -/
+theorem dimensions21_appRule_mono_zeroProjection_smoke :
+    Graded.GradeAttribution.le
+      ((Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0))
+      ((Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0)) :=
+  Graded.IsAppCompatible.mono
+    Graded.FXGradeVector21.one.semiringGrades
+    Graded.FXGradeVector21.one.semiringGrades
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeVector.le_refl Graded.FXGradeVector21.one.semiringGrades)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    dimensions21_appRule_zeroProjection_smoke
+    dimensions21_appRule_zeroProjection_smoke
+
+/-- The D5.4 aggregate semiring projection feeds If/Match subsumption
+monotonicity through the existing rule surface. -/
+theorem dimensions21_ifRule_mono_zeroProjection_smoke :
+    Graded.GradeAttribution.le
+      ((Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0))
+      ((Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0)) :=
+  Graded.IsIfCompatible.mono
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    rfl
+    rfl
+
 #assert_no_axioms LeanFX2.Smoke.dimensions21_lamRule_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_zeroProjection_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_mono_zeroProjection_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_ifRule_mono_zeroProjection_smoke
 
 end LeanFX2.Smoke
