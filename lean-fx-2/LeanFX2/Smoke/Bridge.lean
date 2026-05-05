@@ -1,4 +1,5 @@
 import LeanFX2.Bridge
+import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Cubical.Transport
 import LeanFX2.Tools.DependencyAudit
@@ -292,6 +293,36 @@ theorem constantPathIdBridge_fullStackWiring_smoke
         (Bridge.constantPath_roundTrip_toRaw pointTerm)
         (Bridge.reflId_roundTrip_toRaw pointTerm)))
 
+/-- Observational type-equality bridge wiring smoke.
+
+This checks that the bridge-facing `IdEqType` names consume both the
+reflexive and heterogeneous univalence reductions rather than leaving the
+module as a documentation-only shell. -/
+theorem idEqTypeBridge_fullStackWiring_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (equivWitness :
+      Term context (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    And
+      (Conv (Term.equivReflIdAtId (context := context)
+          innerLevel innerLevelLt carrier carrierRaw)
+        (Term.equivReflId (context := context) carrier))
+      (Conv (Term.uaIntroHet (context := context)
+          innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness)
+        equivWitness) :=
+  And.intro
+    (Bridge.idEqTypeRefl innerLevel innerLevelLt carrier carrierRaw)
+    (Bridge.idEqTypeHet innerLevel innerLevelLt
+      carrierARaw carrierBRaw equivWitness)
+
 #assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
@@ -301,5 +332,6 @@ theorem constantPathIdBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.constantTypeTransport_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.hcompCong_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.constantPathIdBridge_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.idEqTypeBridge_fullStackWiring_smoke
 
 end LeanFX2.Smoke

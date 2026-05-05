@@ -15,6 +15,7 @@ import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Bridge.PathToId
 import LeanFX2.Bridge.IdToPath
 import LeanFX2.Bridge.PathIdInverse
+import LeanFX2.Bridge.IdEqType
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
@@ -124,6 +125,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Bridge.reflId_roundTrip_onRefl
 #assert_no_axioms LeanFX2.Bridge.constantPath_roundTrip_toRaw
 #assert_no_axioms LeanFX2.Bridge.reflId_roundTrip_toRaw
+#assert_no_axioms LeanFX2.Bridge.idEqTypeRefl
+#assert_no_axioms LeanFX2.Bridge.idEqTypeHet
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized
