@@ -1,17 +1,112 @@
-import LeanFX2.HoTT.HIT.Spec
+import LeanFX2.HoTT.HIT.Eliminator
 
 /-! # HoTT/HIT/PropTrunc
 
-Day 0 scaffold for propositional truncation.
+Propositional truncation as an explicit setoid presentation.
 
-## Deliverable
+The carrier is the source type and the path relation is indiscrete:
+any two representatives are related.  This does not make the
+representatives definitionally equal in Lean; every eliminator must
+carry a proof that it respects the squash relation.
 
-Future phases will define the propositional truncation HIT and its eliminator.
+This is the first concrete HIT specialization over the generic
+`HITSetoid` / `HITRecursor` foundation.  It deliberately avoids
+Lean's quotient machinery and therefore avoids `Quot.sound`.
 -/
 
 namespace LeanFX2
 namespace HoTT
 namespace HIT
+
+universe sourceLevel resultLevel
+
+/-- Propositional truncation presentation for a source type.
+
+The current zero-axiom encoding exposes the setoid presentation rather
+than a quotient carrier.  Consumers eliminate through `PropTrunc.rec`,
+which requires a proof that all outputs are equal. -/
+def PropTrunc (sourceType : Type sourceLevel) : HITSetoid.{sourceLevel} :=
+  HITSetoid.indiscrete sourceType
+
+namespace PropTrunc
+
+/-- Introduce a representative into the propositional truncation
+presentation. -/
+def intro {sourceType : Type sourceLevel}
+    (sourceValue : sourceType) :
+    (PropTrunc sourceType).carrier :=
+  sourceValue
+
+/-- Any two representatives are related by the squash path. -/
+theorem squash {sourceType : Type sourceLevel}
+    (leftValue rightValue : (PropTrunc sourceType).carrier) :
+    (PropTrunc sourceType).relation leftValue rightValue :=
+  True.intro
+
+/-- Non-dependent recursion out of propositional truncation.
+
+The caller must prove that the output does not depend on which witness
+of the source type was chosen. -/
+def rec {sourceType : Type sourceLevel}
+    (resultType : Sort resultLevel)
+    (introCase : sourceType → resultType)
+    (squashRespects :
+      ∀ leftValue rightValue : sourceType,
+        introCase leftValue = introCase rightValue) :
+    HITRecursor (PropTrunc sourceType) resultType where
+  apply := introCase
+  respectsRelation := fun {leftValue} {rightValue} _ =>
+    squashRespects leftValue rightValue
+
+/-- Recursion computes on introduced representatives by reflexive
+reduction. -/
+theorem rec_intro {sourceType : Type sourceLevel}
+    (resultType : Sort resultLevel)
+    (introCase : sourceType → resultType)
+    (squashRespects :
+      ∀ leftValue rightValue : sourceType,
+        introCase leftValue = introCase rightValue)
+    (sourceValue : sourceType) :
+    (PropTrunc.rec resultType introCase squashRespects).run
+      (PropTrunc.intro sourceValue) =
+      introCase sourceValue :=
+  rfl
+
+/-- A recursor maps squash-related representatives to equal outputs. -/
+theorem rec_squash {sourceType : Type sourceLevel}
+    (resultType : Sort resultLevel)
+    (introCase : sourceType → resultType)
+    (squashRespects :
+      ∀ leftValue rightValue : sourceType,
+        introCase leftValue = introCase rightValue)
+    (leftValue rightValue : sourceType) :
+    (PropTrunc.rec resultType introCase squashRespects).run
+      (PropTrunc.intro leftValue) =
+      (PropTrunc.rec resultType introCase squashRespects).run
+        (PropTrunc.intro rightValue) :=
+  HITRecursor.run_respects
+    (PropTrunc.rec resultType introCase squashRespects)
+    (PropTrunc.squash leftValue rightValue)
+
+/-- Constant recursion out of propositional truncation. -/
+def recConstant {sourceType : Type sourceLevel}
+    (resultType : Sort resultLevel)
+    (resultValue : resultType) :
+    HITRecursor (PropTrunc sourceType) resultType :=
+  HITRecursor.constant resultType resultValue
+
+/-- Constant recursion computes by reflexive reduction. -/
+theorem recConstant_intro {sourceType : Type sourceLevel}
+    (resultType : Sort resultLevel)
+    (resultValue : resultType)
+    (sourceValue : sourceType) :
+    (PropTrunc.recConstant
+      (sourceType := sourceType) resultType resultValue).run
+      (PropTrunc.intro sourceValue) =
+      resultValue :=
+  rfl
+
+end PropTrunc
 
 end HIT
 end HoTT

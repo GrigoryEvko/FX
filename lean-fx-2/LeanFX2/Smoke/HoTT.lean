@@ -2,6 +2,7 @@ import LeanFX2.HoTT.Identity
 import LeanFX2.HoTT.J
 import LeanFX2.HoTT.Transport
 import LeanFX2.HoTT.HIT.Eliminator
+import LeanFX2.HoTT.HIT.PropTrunc
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
@@ -50,8 +51,35 @@ theorem hitRecursor_constant_run_smoke :
     (encodedHit := HoTT.HIT.HITSetoid.indiscrete Unit)
     Bool true ()
 
+/-- Propositional truncation relates any two introduced witnesses. -/
+theorem propTrunc_squash_smoke :
+    (HoTT.HIT.PropTrunc Unit).relation
+      (HoTT.HIT.PropTrunc.intro ())
+      (HoTT.HIT.PropTrunc.intro ()) :=
+  HoTT.HIT.PropTrunc.squash
+    (HoTT.HIT.PropTrunc.intro ())
+    (HoTT.HIT.PropTrunc.intro ())
+
+/-- Propositional truncation recursion computes on introduced values. -/
+theorem propTrunc_rec_intro_smoke :
+    (HoTT.HIT.PropTrunc.rec
+      (sourceType := Unit)
+      Bool
+      (fun _ => true)
+      (fun _ _ => rfl)).run
+      (HoTT.HIT.PropTrunc.intro ()) =
+      true :=
+  HoTT.HIT.PropTrunc.rec_intro
+    (sourceType := Unit)
+    Bool
+    (fun _ => true)
+    (fun _ _ => rfl)
+    ()
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
+#assert_no_axioms LeanFX2.Smoke.propTrunc_squash_smoke
+#assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
 
 end LeanFX2.Smoke
