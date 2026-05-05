@@ -21,6 +21,9 @@ import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
 import LeanFX2.InternalLanguage.Coherence
+import LeanFX2.Conservativity.HOTTOverMLTT
+import LeanFX2.Conservativity.CubicalOverHOTT
+import LeanFX2.Conservativity.ModalOverObservational
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
@@ -154,6 +157,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Translation.observationalCubicalRoundTripTy_id
 #assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_path
 #assert_no_axioms LeanFX2.InternalLanguage.unitEqualityTranslationCoherence
+#assert_no_axioms LeanFX2.Conservativity.isMLTTOnlyTy
+#assert_no_axioms LeanFX2.Conservativity.hottToMLTTTy
+#assert_no_axioms LeanFX2.Conservativity.hottToMLTTTy_preserves_isMLTTOnlyTy
+#assert_no_axioms LeanFX2.Conservativity.isCubicalFreeTy
+#assert_no_axioms LeanFX2.Conservativity.cubicalToObservationalTy_preserves_isCubicalFreeTy
+#assert_no_axioms LeanFX2.Conservativity.isModalFreeTy
+#assert_no_axioms LeanFX2.Conservativity.modalToObservationalTy
+#assert_no_axioms LeanFX2.Conservativity.modalToObservationalTy_preserves_isModalFreeTy
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized
