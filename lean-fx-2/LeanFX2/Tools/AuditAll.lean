@@ -51,6 +51,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.unweaken?_weaken_var
 #assert_no_axioms LeanFX2.RawTerm.partialRename?_lift_preserves_binder_var
 #assert_no_axioms LeanFX2.PartialRawRenaming.lift_rename_some
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_rename_some
+#assert_no_axioms LeanFX2.RawTerm.unweaken?_weaken
+#assert_no_axioms LeanFX2.RawTerm.constantPathBody?_pathLam_weaken
 #assert_no_axioms LeanFX2.RawTerm.unweaken?_pathLam_binder_var
 #assert_no_axioms LeanFX2.RawTerm.unweaken?_pathLam_dropped_outer_var_none
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?_pathLam_interval_var_none
