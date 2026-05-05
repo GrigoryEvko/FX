@@ -9,6 +9,7 @@ import LeanFX2.Bridge
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Algo.WHNF
+import LeanFX2.Cubical.Path
 
 /-! # AuditPhase12A2Day2 — Day 2 (Phase 12.A.2) zero-axiom audit.
 
@@ -78,6 +79,10 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Term.toRaw_interval1
 #print axioms LeanFX2.Term.toRaw_pathLam
 #print axioms LeanFX2.Term.toRaw_pathApp
+#print axioms LeanFX2.Cubical.constantPath
+#print axioms LeanFX2.Cubical.constantPath_toRaw
+#print axioms LeanFX2.Cubical.constantTypePath
+#print axioms LeanFX2.Cubical.constantTypePath_toRaw
 #print axioms LeanFX2.Term.toRaw_glueIntro
 #print axioms LeanFX2.Term.toRaw_glueElim
 #print axioms LeanFX2.Term.toRaw_transp
