@@ -49,6 +49,16 @@ def unit :
     GradedTerm gradedCtx Ty.unit RawTerm.unit GradeAttribution.zero where
   underlying := Term.unit
 
+/-- Boolean true uses no bindings. -/
+def boolTrue :
+    GradedTerm gradedCtx Ty.bool RawTerm.boolTrue GradeAttribution.zero where
+  underlying := Term.boolTrue
+
+/-- Boolean false uses no bindings. -/
+def boolFalse :
+    GradedTerm gradedCtx Ty.bool RawTerm.boolFalse GradeAttribution.zero where
+  underlying := Term.boolFalse
+
 /-- A variable has the singleton attribution at its de Bruijn position. -/
 def var (position : Fin scope) :
     GradedTerm gradedCtx

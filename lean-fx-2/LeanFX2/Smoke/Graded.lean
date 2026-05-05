@@ -256,6 +256,23 @@ def dimensions21_gradedTerm_app_smoke :
     (Graded.IsAppCompatible.allZero
       Graded.FXGradeVector21.bottom.semiringGrades)
 
+/-- The shadow graded-term layer can type a closed boolean elimination,
+guarded by the If/Match compatibility predicate. -/
+def dimensions21_gradedTerm_boolElim_smoke :
+    Graded.GradedTerm
+      (Graded.GradedCtx.empty
+        (mode := Mode.software) (level := 0)
+        (dimensions := Graded.semiringDimensions21))
+      Ty.unit
+      (RawTerm.boolElim RawTerm.boolTrue RawTerm.unit RawTerm.unit)
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0) :=
+  Graded.GradedTerm.boolElim
+    Graded.GradedTerm.boolTrue
+    dimensions21_gradedTerm_unit_smoke
+    dimensions21_gradedTerm_unit_smoke
+    rfl
+
 /-- Grade-only subsumption preserves the underlying typed term while
 checking the 21-dimension attribution preorder. -/
 def dimensions21_gradedTerm_subsume_smoke :
@@ -283,6 +300,7 @@ def dimensions21_gradedTerm_subsume_smoke :
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_unit_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_lam_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_app_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_boolElim_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_subsume_smoke
 
 end LeanFX2.Smoke

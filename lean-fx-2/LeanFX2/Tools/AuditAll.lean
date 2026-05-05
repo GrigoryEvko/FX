@@ -163,6 +163,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.GradedCtx.toCtx
 #assert_no_axioms LeanFX2.Graded.GradedTerm
 #assert_no_axioms LeanFX2.Graded.GradedTerm.unit
+#assert_no_axioms LeanFX2.Graded.GradedTerm.boolTrue
+#assert_no_axioms LeanFX2.Graded.GradedTerm.boolFalse
 #assert_no_axioms LeanFX2.Graded.GradedTerm.var
 #assert_no_axioms LeanFX2.Graded.GradedTerm.lam
 #assert_no_axioms LeanFX2.Graded.GradedTerm.app
