@@ -1,6 +1,8 @@
 import LeanFX2.HoTT.Identity
 import LeanFX2.HoTT.J
 import LeanFX2.HoTT.Transport
+import LeanFX2.HoTT.HIT.Eliminator
+import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
 
@@ -29,6 +31,27 @@ example (P : ...) (a : ...) (witness : ...) :
 
 namespace LeanFX2.Smoke
 
--- TODO: HoTT smoke examples
+/-- A discrete HIT specification has no path labels. -/
+theorem hitSpec_discrete_noPath_smoke :
+    ¬ (HoTT.HIT.HITSpec.discrete Unit).hasPathBetween () () :=
+  HoTT.HIT.HITSpec.discrete_hasNoPath Unit () ()
+
+/-- The indiscrete HIT setoid relates any two representatives. -/
+theorem hitSetoid_indiscrete_relation_smoke :
+    (HoTT.HIT.HITSetoid.indiscrete Unit).relation () () :=
+  True.intro
+
+/-- Constant HIT recursors compute by reflexive reduction. -/
+theorem hitRecursor_constant_run_smoke :
+    (HoTT.HIT.HITRecursor.constant
+      (encodedHit := HoTT.HIT.HITSetoid.indiscrete Unit)
+      Bool true).run () = true :=
+  HoTT.HIT.HITRecursor.constant_run
+    (encodedHit := HoTT.HIT.HITSetoid.indiscrete Unit)
+    Bool true ()
+
+#assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
+#assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
+#assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
 
 end LeanFX2.Smoke

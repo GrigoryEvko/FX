@@ -18,6 +18,7 @@ import LeanFX2.Algo.WHNF
 import LeanFX2.Cubical.Path
 import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Cubical.Transport
+import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Term
 import LeanFX2.Graded.AtkeyAttack
@@ -144,6 +145,26 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Conv.toRawJoin
 #assert_no_axioms LeanFX2.Conv.canonicalRaw
 #assert_no_axioms LeanFX2.Conv.transRaw
+
+-- HoTT HIT setoid foundation
+#assert_no_axioms LeanFX2.HoTT.HIT.EmptyPathLabel
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSpec
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSpec.hasPathBetween
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSpec.discrete
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSpec.discrete_hasNoPath
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.preservesRelation
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.discrete
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.indiscrete
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.fromEquivalence
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.relation_refl
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.relation_symm
+#assert_no_axioms LeanFX2.HoTT.HIT.HITSetoid.relation_trans
+#assert_no_axioms LeanFX2.HoTT.HIT.HITRecursor
+#assert_no_axioms LeanFX2.HoTT.HIT.HITRecursor.run
+#assert_no_axioms LeanFX2.HoTT.HIT.HITRecursor.run_respects
+#assert_no_axioms LeanFX2.HoTT.HIT.HITRecursor.constant
+#assert_no_axioms LeanFX2.HoTT.HIT.HITRecursor.constant_run
 
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono
