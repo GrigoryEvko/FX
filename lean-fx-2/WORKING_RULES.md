@@ -197,6 +197,41 @@ def RawTerm.whnf (fuel : Nat) (term : RawTerm scope) : RawTerm scope :=
     match term with | .var pos => ... | .app fn arg => ...
 ```
 
+## Discipline #22: β-rule inversion audit
+
+When adding a new elim-form β rule, update the corresponding inversion
+lemma before claiming the slice.  A source such as `RawTerm.someElim
+payload` no longer has only the congruent target shape once
+`RawStep.par.betaSomeElimIntro` exists.
+
+**Required shape**:
+```lean
+(congruent target branch) ∨ (β-fired target branch)
+```
+
+**Rule**: Any new `RawStep.par.beta*` constructor for an eliminator
+must be paired with a disjunctive `*_inv` theorem that exposes both
+the congruence branch and the β-fired branch.  The `glueElim`,
+`refineElim`, and `recordProj` raw cascades are the reference pattern.
+
+## Discipline #23: Raw/typed parity for redex rules
+
+The raw layer is proof-friendly, but it is not the whole typed kernel.
+A raw β/ι rule is only a raw slice until the typed layer can form the
+same source and target and `Step.par.toRawBridge` projects the typed
+rule to the raw rule.
+
+**Rule**: Every new raw `RawStep.par.beta*` or `RawStep.par.iota*`
+redex rule must have one of the following in the same commit or a
+clearly paired follow-up commit:
+
+* the corresponding typed `Term` constructors, typed `Step.par` rule,
+  `Step.toPar` arm, bridge arm, and smoke/audit gates; or
+* an explicit blocked-parity note in the commit body naming the missing
+  typed constructors or subject-reduction prerequisite.
+
+Do not call a D2/D3 redex task closed from raw evidence alone.
+
 ## Audit incantation
 
 After any new function or theorem, run:
