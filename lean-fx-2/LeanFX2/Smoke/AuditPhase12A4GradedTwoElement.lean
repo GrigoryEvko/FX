@@ -9,6 +9,7 @@ import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Representation
 import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
+import LeanFX2.Graded.Instances.Overflow
 import LeanFX2.Graded.Instances.Size
 
 /-! # AuditPhase12A4GradedTwoElement — D5.4 partial: graded semiring
@@ -63,8 +64,9 @@ Remaining D5.4 instances (TBD per-need):
 * `PrecisionGrade` (dim 14)         — Rat (sum-monoid)
 * `SpaceGrade` (dim 15)             — shipped as allocation strategy ×
                                        bounded-or-unbounded byte bound
-* `OverflowGrade` (dim 16)          — `{exact, wrap, trap, sat}`
-                                       partial lattice
+* `OverflowGrade` (dim 16)          — shipped as `GradeJoinSemilattice`
+                                       over exact/wrap/trap/saturate
+                                       with explicit conflict
 * `SizeGrade` (dim 20)              — shipped as bounded-or-unbounded
                                        codata observation-depth semiring
 * `VersionGrade` (dim 21)           — version-label lattice with
@@ -150,6 +152,12 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.SpaceGrade.mul
 #print axioms LeanFX2.Graded.Instances.SpaceGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringSpaceGrade
+
+-- D5.4 Overflow (dim 16, bounded join-semilattice with conflict)
+#print axioms LeanFX2.Graded.Instances.OverflowGrade
+#print axioms LeanFX2.Graded.Instances.OverflowGrade.join
+#print axioms LeanFX2.Graded.Instances.OverflowGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeOverflowGrade
 
 -- D5.4 Size (dim 20, bounded-or-unbounded codata observation depth)
 #print axioms LeanFX2.Graded.Instances.SizeGrade
