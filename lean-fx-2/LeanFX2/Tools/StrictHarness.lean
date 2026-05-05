@@ -508,6 +508,134 @@ elab "#assert_legacy_lean_kernel_scaffold_isolated" : command => do
       s!"{violations.size} of {scannedModules} modules import the old scaffold"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
+/-! ## Production layer-import discipline -/
+
+/-- Subject-reduction modules live under `Term/` for theorem naming, but
+semantically depend on the reduction layer. -/
+def isSubjectReductionMetatheoryModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Term.SubjectReduction ||
+    moduleName == `LeanFX2.Term.SubjectReductionGeneral ||
+    moduleName == `LeanFX2.Term.SubjectReductionUniverse
+
+/-- Reduction modules that are metatheorems about conversion or canonical
+forms, not primitive reduction infrastructure. -/
+def isReductionMetatheoryModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Reduction.ConvCanonical ||
+    moduleName == `LeanFX2.Reduction.ConvCongIsClosedTy
+
+/-- Cross-theory bridge modules depend on HoTT, Cubical, or Modal layers and
+therefore must not be classified with the low-level typed/raw bridge. -/
+def isCrossTheoryBridgeModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Bridge.PathToId ||
+    moduleName == `LeanFX2.Bridge.IdToPath ||
+    moduleName == `LeanFX2.Bridge.PathIdInverse ||
+    moduleName == `LeanFX2.Bridge.PathIdMeta ||
+    moduleName == `LeanFX2.Bridge.IdEqType ||
+    moduleName == `LeanFX2.Bridge.PathEqType ||
+    moduleName == `LeanFX2.Bridge.BoxObservational ||
+    moduleName == `LeanFX2.Bridge.BoxCubical
+
+/-- Semantic import layer for production modules.  The numbering matches the
+public `LeanFX2.lean` umbrella comments after refining path names that carry
+metatheory (`Term.SubjectReduction*`) or cross-theory bridge content.
+
+`none` means the module is outside this production layering contract and is
+checked by a different gate (`FX1`, tooling, smoke, sketches, or legacy
+LeanKernel). -/
+def productionImportLayer? (moduleName : Name) : Option Nat :=
+  if isSubjectReductionMetatheoryModuleName moduleName then
+    some 3
+  else if isReductionMetatheoryModuleName moduleName then
+    some 3
+  else if isCrossTheoryBridgeModuleName moduleName then
+    some 13
+  else if (`LeanFX2.Foundation).isPrefixOf moduleName then
+    some 0
+  else if moduleName == `LeanFX2.Term ||
+      (`LeanFX2.Term).isPrefixOf moduleName then
+    some 1
+  else if (`LeanFX2.Reduction).isPrefixOf moduleName then
+    some 2
+  else if moduleName == `LeanFX2.Bridge then
+    some 3
+  else if (`LeanFX2.Confluence).isPrefixOf moduleName then
+    some 4
+  else if (`LeanFX2.HoTT).isPrefixOf moduleName ||
+      (`LeanFX2.Cubical).isPrefixOf moduleName then
+    some 5
+  else if (`LeanFX2.Modal).isPrefixOf moduleName then
+    some 6
+  else if (`LeanFX2.Effects).isPrefixOf moduleName ||
+      (`LeanFX2.Sessions).isPrefixOf moduleName ||
+      (`LeanFX2.Codata).isPrefixOf moduleName then
+    some 7
+  else if (`LeanFX2.Graded).isPrefixOf moduleName then
+    some 8
+  else if (`LeanFX2.Refine).isPrefixOf moduleName then
+    some 9
+  else if (`LeanFX2.Algo).isPrefixOf moduleName then
+    some 10
+  else if (`LeanFX2.Surface).isPrefixOf moduleName then
+    some 11
+  else if moduleName == `LeanFX2.Pipeline then
+    some 12
+  else if (`LeanFX2.Conservativity).isPrefixOf moduleName ||
+      (`LeanFX2.Translation).isPrefixOf moduleName ||
+      (`LeanFX2.InternalLanguage).isPrefixOf moduleName then
+    some 13
+  else
+    none
+
+/-- Does a direct import point from a lower semantic layer to a higher one? -/
+def isLayerImportViolation
+    (sourceModuleName importedModuleName : Name) : Bool :=
+  match productionImportLayer? sourceModuleName,
+      productionImportLayer? importedModuleName with
+  | some sourceLayer, some importedLayer => sourceLayer < importedLayer
+  | _, _ => false
+
+/-- Direct upward imports for one production module. -/
+def layerImportViolationsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun violations directImport =>
+      if isLayerImportViolation sourceModuleName directImport.module then
+        violations.push directImport.module
+      else
+        violations)
+
+/-- Build-failing gate for semantic production layering.  This complements
+the broad import-surface gates: it does not care whether an import is host or
+tooling, but whether a production module imports a later production layer. -/
+elab "#assert_production_layer_imports_clean" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedLayeredModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if moduleName != `LeanFX2 &&
+        isProductionLeanFX2ModuleName moduleName &&
+        (productionImportLayer? moduleName).isSome then
+      scannedLayeredModules := scannedLayeredModules + 1
+      let upwardImports := layerImportViolationsForModule moduleName moduleData
+      if !upwardImports.isEmpty then
+        violations := violations.push (moduleName, upwardImports)
+  if violations.isEmpty then
+    logInfo m!"production layer imports ok: {scannedLayeredModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, upwardImports) =>
+      let renderedImports :=
+        String.intercalate ", " (upwardImports.toList.map toString)
+      s!"  - {moduleName}: upward imports [{renderedImports}]"
+    let header :=
+      s!"production layer imports FAILED: " ++
+      s!"{violations.size} of {scannedLayeredModules} modules import later layers"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
 /-! ## Raw/typed parity check -/
 
 /-- Get the constructor names of an inductive type. -/
