@@ -30,7 +30,7 @@ def Term.toRaw {mode level scope ctx ty raw} (_ : @Term mode level scope ctx ty 
 * `Term.toRaw_var` — toRaw of `Term.var i` is `RawTerm.var i`
 * `Term.toRaw_unit` — toRaw of `Term.unit` is `RawTerm.unit`
 * `Term.toRaw_lam` — toRaw of `Term.lam body` is `RawTerm.lam body.toRaw`
-* ... (all 29 ctors)
+* ... (all current ctors)
 
 Each lemma is proved by `rfl`.  These lemmas exist as named decls
 (not just inline `rfl`) for:
@@ -290,5 +290,22 @@ theorem Term.toRaw_pathApp {mode : Mode} {level scope : Nat}
     (intervalTerm : Term context Ty.interval intervalRaw) :
     (Term.pathApp pathTerm intervalTerm).toRaw =
       RawTerm.pathApp pathTerm.toRaw intervalTerm.toRaw := rfl
+
+theorem Term.toRaw_glueIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (baseType : Ty level scope) (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    (baseValue : Term context baseType baseRaw)
+    (partialValue : Term context baseType partialRaw) :
+    (Term.glueIntro baseType boundaryWitness baseValue partialValue).toRaw =
+      RawTerm.glueIntro baseValue.toRaw partialValue.toRaw := rfl
+
+theorem Term.toRaw_glueElim {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
+    (Term.glueElim gluedValue).toRaw =
+      RawTerm.glueElim gluedValue.toRaw := rfl
 
 end LeanFX2

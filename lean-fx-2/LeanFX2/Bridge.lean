@@ -118,6 +118,10 @@ theorem Step.par.toRawBridge
   | pathLam _ ihBody => exact RawStep.par.pathLamCong ihBody
   | pathApp _ _ ihPath ihInterval =>
       exact RawStep.par.pathAppCong ihPath ihInterval
+  | glueIntro _ _ ihBase ihPartial =>
+      exact RawStep.par.glueIntroCong ihBase ihPartial
+  | glueElim _ ihGlued =>
+      exact RawStep.par.glueElimCong ihGlued
   -- β shallow (5)
   | betaApp _ _ ihBody ihArgument =>
       exact RawStep.par.betaApp ihBody ihArgument
@@ -125,6 +129,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaApp ihBody ihArgument
   | betaPathApp _ _ ihBody ihInterval =>
       exact RawStep.par.betaPathApp ihBody ihInterval
+  | betaGlueElimIntro _ _ ihBase ihPartial =>
+      exact RawStep.par.betaGlueElimIntro ihBase ihPartial
   | betaFstPair secondValue _ ihFirst =>
       exact RawStep.par.betaFstPair _ ihFirst
   | betaSndPair firstValue _ ihSecond =>
@@ -163,6 +169,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaAppDeep ihFunction ihArgument
   | betaPathAppDeep _ _ ihPath ihInterval =>
       exact RawStep.par.betaPathAppDeep ihPath ihInterval
+  | betaGlueElimIntroDeep _ ihGlued =>
+      exact RawStep.par.betaGlueElimIntroDeep ihGlued
   | betaFstPairDeep _ ihPair =>
       exact RawStep.par.betaFstPairDeep ihPair
   | betaSndPairDeep _ ihPair =>

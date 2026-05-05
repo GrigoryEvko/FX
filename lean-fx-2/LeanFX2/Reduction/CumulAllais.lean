@@ -778,6 +778,52 @@ theorem ConvCumul.subst_compatible_pathApp_allais
               ((Term.pathApp pathTerm intervalTerm).substHet termSubstB) :=
   ConvCumul.pathAppCong pathCompat intervalCompat
 
+/-- Allais arm for `glueIntro`: two-subterm cong via
+`glueIntroCong`. -/
+theorem ConvCumul.subst_compatible_glueIntro_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (baseType : Ty sourceLevel sourceScope)
+    (boundaryWitness : RawTerm sourceScope)
+    {baseRaw partialRaw : RawTerm sourceScope}
+    (baseValue : Term sourceCtx baseType baseRaw)
+    (partialValue : Term sourceCtx baseType partialRaw)
+    (baseCompat :
+      ConvCumul (baseValue.substHet termSubstA)
+                (baseValue.substHet termSubstB))
+    (partialCompat :
+      ConvCumul (partialValue.substHet termSubstA)
+                (partialValue.substHet termSubstB)) :
+    ConvCumul
+      ((Term.glueIntro baseType boundaryWitness baseValue partialValue).substHet
+        termSubstA)
+      ((Term.glueIntro baseType boundaryWitness baseValue partialValue).substHet
+        termSubstB) :=
+  ConvCumul.glueIntroCong baseCompat partialCompat
+
+/-- Allais arm for `glueElim`: single-subterm cong via
+`glueElimCong`. -/
+theorem ConvCumul.subst_compatible_glueElim_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {baseType : Ty sourceLevel sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    (gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw)
+    (gluedCompat :
+      ConvCumul (gluedValue.substHet termSubstA)
+                (gluedValue.substHet termSubstB)) :
+    ConvCumul ((Term.glueElim gluedValue).substHet termSubstA)
+              ((Term.glueElim gluedValue).substHet termSubstB) :=
+  ConvCumul.glueElimCong gluedCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

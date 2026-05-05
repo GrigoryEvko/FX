@@ -219,6 +219,13 @@ def Term.substHet {mode : Mode}
   | _, _, .pathApp pathTerm intervalTerm =>
       Term.pathApp (Term.substHet termSubstHet pathTerm)
                    (Term.substHet termSubstHet intervalTerm)
+  | _, _, .glueIntro baseType boundaryWitness baseValue partialValue =>
+      Term.glueIntro (baseType.substHet sigma)
+        (boundaryWitness.subst sigma.forRaw)
+        (Term.substHet termSubstHet baseValue)
+        (Term.substHet termSubstHet partialValue)
+  | _, _, .glueElim gluedValue =>
+      Term.glueElim (Term.substHet termSubstHet gluedValue)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

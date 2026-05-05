@@ -381,6 +381,33 @@ inductive Step.par :
       Step.par intervalSource intervalTarget →
       Step.par (Term.pathApp pathSource intervalSource)
                (Term.pathApp pathTarget intervalTarget)
+  /-- Parallel-cong: glueIntro reduces in base and partial positions. -/
+  | glueIntro {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+        RawTerm scope}
+      {baseSource : Term context baseType baseRawSource}
+      {baseTarget : Term context baseType baseRawTarget}
+      {partialSource : Term context baseType partialRawSource}
+      {partialTarget : Term context baseType partialRawTarget} :
+      Step.par baseSource baseTarget →
+      Step.par partialSource partialTarget →
+      Step.par
+        (Term.glueIntro baseType boundaryWitness baseSource partialSource)
+        (Term.glueIntro baseType boundaryWitness baseTarget partialTarget)
+  /-- Parallel-cong: glueElim reduces in the glued value. -/
+  | glueElim {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {gluedRawSource gluedRawTarget : RawTerm scope}
+      {gluedSource :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawSource}
+      {gluedTarget :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawTarget} :
+      Step.par gluedSource gluedTarget →
+      Step.par (Term.glueElim gluedSource)
+               (Term.glueElim gluedTarget)
   /-- Shallow β: `(λx. body) arg ⟶ body[arg/x]` with parallel
   reduction in body and arg.  Source has Ty `cod`; target via
   `Term.subst0` has Ty `cod.weaken.subst0 dom argumentRawTarget` —
@@ -435,6 +462,22 @@ inductive Step.par :
           (Term.pathLam carrierType leftEndpoint rightEndpoint bodySource)
           intervalSource)
         (Term.subst0 bodyTarget intervalTarget)
+  /-- Shallow cubical Glue β: `unglue (glue base partial) ⟶ base`. -/
+  | betaGlueElimIntro {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+        RawTerm scope}
+      {baseSource : Term context baseType baseRawSource}
+      {baseTarget : Term context baseType baseRawTarget}
+      {partialSource : Term context baseType partialRawSource}
+      {partialTarget : Term context baseType partialRawTarget} :
+      Step.par baseSource baseTarget →
+      Step.par partialSource partialTarget →
+      Step.par
+        (Term.glueElim
+          (Term.glueIntro baseType boundaryWitness baseSource partialSource))
+        baseTarget
   /-- Shallow β-fst: `fst (pair a b) ⟶ a'` with `Step.par a a'`. -/
   | betaFstPair {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -697,6 +740,19 @@ inductive Step.par :
       Step.par intervalSource intervalTarget →
       Step.par (Term.pathApp pathSource intervalSource)
                (Term.subst0 bodyTarget intervalTarget)
+  /-- Deep cubical Glue β: glued value develops to a `glueIntro`. -/
+  | betaGlueElimIntroDeep {mode level scope}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {gluedRawSource baseRawTarget partialRawTarget : RawTerm scope}
+      {gluedSource :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawSource}
+      {baseTarget : Term context baseType baseRawTarget}
+      {partialTarget : Term context baseType partialRawTarget} :
+      Step.par gluedSource
+        (Term.glueIntro baseType boundaryWitness baseTarget partialTarget) →
+      Step.par (Term.glueElim gluedSource) baseTarget
   /-- Deep β-fst: pair-shaped target. -/
   | betaFstPairDeep {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}

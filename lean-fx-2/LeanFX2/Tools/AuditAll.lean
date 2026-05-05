@@ -12,6 +12,8 @@ import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.ConvBridge
 import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Reduction.Conv
+import LeanFX2.Reduction.CumulAllais
+import LeanFX2.Algo.WHNF
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.AtkeyAttack
 import LeanFX2.Graded.Dimensions21
@@ -24,9 +26,9 @@ This file is intentionally executable: importing it runs
 contains an axiom, including Lean core axioms such as `propext`,
 `Quot.sound`, or `Classical.choice`.
 
-This is not yet a generated whole-namespace audit.  It is the first
-machine-enforced gate for the current coverage-gap list and the typed
-D2.5 path-application parity slice.
+This is not yet a generated whole-namespace audit.  It is a curated
+machine-enforced gate for the current coverage-gap list and typed D2.5
+path / Glue parity slices.
 -/
 
 namespace LeanFX2.Tools
@@ -61,6 +63,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.betaPathApp
 #assert_no_axioms LeanFX2.Step.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.toRawBridge
+
+-- Typed D2.5 Glue-elimination parity
+#assert_no_axioms LeanFX2.Term.toRaw_glueIntro
+#assert_no_axioms LeanFX2.Term.toRaw_glueElim
+#assert_no_axioms LeanFX2.Step.par.glueIntro
+#assert_no_axioms LeanFX2.Step.par.glueElim
+#assert_no_axioms LeanFX2.Step.par.betaGlueElimIntro
+#assert_no_axioms LeanFX2.Step.par.betaGlueElimIntroDeep
+#assert_no_axioms LeanFX2.ConvCumul.glueIntroCong
+#assert_no_axioms LeanFX2.ConvCumul.glueElimCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_glueIntro_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_glueElim_allais
+#assert_no_axioms LeanFX2.Term.headCtor
+#assert_no_axioms LeanFX2.Term.isWHNF
 
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl

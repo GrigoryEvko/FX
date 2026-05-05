@@ -273,6 +273,22 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
         (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
       (intervalTerm : Term context Ty.interval intervalRaw) :
       Term context carrierType (RawTerm.pathApp pathRaw intervalRaw)
+  -- Cubical Glue fragment — typed mirror of the raw D2.5 Glue β rule.
+  | glueIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (baseType : Ty level scope)
+      (boundaryWitness : RawTerm scope)
+      {baseRaw partialRaw : RawTerm scope}
+      (baseValue : Term context baseType baseRaw)
+      (partialValue : Term context baseType partialRaw) :
+      Term context (Ty.glue baseType boundaryWitness)
+        (RawTerm.glueIntro baseRaw partialRaw)
+  | glueElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness gluedRaw : RawTerm scope}
+      (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
+      Term context baseType (RawTerm.glueElim gluedRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

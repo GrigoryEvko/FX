@@ -580,6 +580,39 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (intervalRel : ConvCumul intervalFirst intervalSecond) :
       ConvCumul (Term.pathApp pathFirst intervalFirst)
                 (Term.pathApp pathSecond intervalSecond)
+  /-- Homogeneous glueIntro: ConvCumul-related base and partial values
+  lift to ConvCumul-related Glue introductions. -/
+  | glueIntroCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseFirstRaw baseSecondRaw partialFirstRaw partialSecondRaw :
+        RawTerm scope}
+      {baseFirst : Term context baseType baseFirstRaw}
+      {baseSecond : Term context baseType baseSecondRaw}
+      {partialFirst : Term context baseType partialFirstRaw}
+      {partialSecond : Term context baseType partialSecondRaw}
+      (baseRel : ConvCumul baseFirst baseSecond)
+      (partialRel : ConvCumul partialFirst partialSecond) :
+      ConvCumul
+        (Term.glueIntro baseType boundaryWitness baseFirst partialFirst)
+        (Term.glueIntro baseType boundaryWitness baseSecond partialSecond)
+  /-- Homogeneous glueElim: ConvCumul-related glued values lift to
+  ConvCumul-related Glue eliminations. -/
+  | glueElimCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {gluedFirstRaw gluedSecondRaw : RawTerm scope}
+      {gluedFirst :
+        Term context (Ty.glue baseType boundaryWitness) gluedFirstRaw}
+      {gluedSecond :
+        Term context (Ty.glue baseType boundaryWitness) gluedSecondRaw}
+      (gluedRel : ConvCumul gluedFirst gluedSecond) :
+      ConvCumul (Term.glueElim gluedFirst)
+                (Term.glueElim gluedSecond)
   /-- Homogeneous equivIntroHet: ConvCumul-related forward + backward
   subterms lift to ConvCumul-related equivIntroHet.  Two-subterm cong
   rule mirroring `pairCong` and `listConsCong`.  Phase 12.A.B8.5. -/

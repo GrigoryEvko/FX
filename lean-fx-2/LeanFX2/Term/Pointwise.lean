@@ -185,6 +185,13 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq pathTerm,
           Term.subst_pointwise pointwiseEq intervalTerm]
+  | _, _, .glueIntro _ _ baseValue partialValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq baseValue,
+          Term.subst_pointwise pointwiseEq partialValue]
+  | _, _, .glueElim gluedValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq gluedValue]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl

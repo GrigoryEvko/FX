@@ -303,6 +303,14 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_pathApp_allais pathTerm intervalTerm
         (Term.subst_compatible_pointwise_allais compat pathTerm)
         (Term.subst_compatible_pointwise_allais compat intervalTerm)
+  | _, _, .glueIntro baseType boundaryWitness baseValue partialValue =>
+      ConvCumul.subst_compatible_glueIntro_allais
+        baseType boundaryWitness baseValue partialValue
+        (Term.subst_compatible_pointwise_allais compat baseValue)
+        (Term.subst_compatible_pointwise_allais compat partialValue)
+  | _, _, .glueElim gluedValue =>
+      ConvCumul.subst_compatible_glueElim_allais gluedValue
+        (Term.subst_compatible_pointwise_allais compat gluedValue)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)
