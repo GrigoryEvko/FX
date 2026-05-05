@@ -1037,6 +1037,25 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
         (Term.glueElim
           (Term.glueIntro baseType boundaryWitness baseValue partialValue))
         baseValue
+  /-- Conversion-layer cubical transport β for a syntactically constant
+  type path.  This intentionally lives at `ConvCumul` until raw
+  confluence has the preservation lemma needed for a `Step.par` rule. -/
+  | betaTranspConstantTypeCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType : Ty level scope)
+      {typeRaw sourceRaw : RawTerm scope}
+      (typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            typeRaw typeRaw)
+          (RawTerm.pathLam typeRaw.weaken))
+      (sourceValue : Term context sourceType sourceRaw) :
+      ConvCumul
+        (Term.transp universeLevel universeLevelLt sourceType sourceType
+          typeRaw typeRaw typePath sourceValue)
+        sourceValue
   /-- β-reduction for single-field record projection:
   `recordProj (recordIntro field) ⟶ field`. -/
   | betaRecordProjIntroCumul

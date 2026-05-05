@@ -7,11 +7,11 @@ Transport helpers for cubical paths.
 
 ## Deliverable
 
-This module names the safe constant-type transport redex shape.  It
-does **not** add a transport computation rule; the raw and typed
-parallel reductions still have transport congruence only.  Future
-`transpRefl` work should consume this helper instead of matching every
-`pathLam` as though it were a constant type line.
+This module names the safe constant-type transport redex shape and
+provides its conversion-layer β rule.  The raw and typed parallel
+reductions still have transport congruence only; lifting this β rule to
+`Step.par` needs a raw preservation lemma for weakened constant path
+bodies.
 -/
 
 namespace LeanFX2
@@ -142,6 +142,32 @@ theorem constantTypeTransport_sourceConvCumul
   ConvCumul.transpCong universeLevel universeLevelLt
     sourceType sourceType typeRaw typeRaw
     (ConvCumul.refl _) sourceRel
+
+/-- Conversion-layer β for transport along the named constant type line.
+
+This is the currently safe computation principle for `transp`: it is
+restricted to `constantTypeTransport`, so it cannot collapse arbitrary
+path lambdas whose bodies mention the interval binder.  A future
+`Step.par` β rule needs an additional raw lemma showing that parallel
+reduction preserves weakened constant path bodies. -/
+theorem constantTypeTransport_betaConvCumul
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    ConvCumul
+      (constantTypeTransport universeLevel universeLevelLt
+        sourceType typeCode sourceValue)
+      sourceValue :=
+  ConvCumul.betaTranspConstantTypeCumul
+    universeLevel universeLevelLt sourceType
+    (constantTypePath universeLevel universeLevelLt typeCode)
+    sourceValue
 
 end Cubical
 end LeanFX2

@@ -13,6 +13,7 @@ import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Algo.WHNF
 import LeanFX2.Cubical.Path
 import LeanFX2.Cubical.PathLemmas
+import LeanFX2.Cubical.Transport
 
 /-! # AuditPhase12A2Day2 — Day 2 (Phase 12.A.2) zero-axiom audit.
 
@@ -232,6 +233,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.glueElimCong
 #print axioms LeanFX2.ConvCumul.betaGlueElimIntroCumul
 #print axioms LeanFX2.ConvCumul.transpCong
+#print axioms LeanFX2.ConvCumul.betaTranspConstantTypeCumul
+#print axioms LeanFX2.Cubical.constantTypeTransport_betaConvCumul
 #print axioms LeanFX2.ConvCumul.hcompCong
 #print axioms LeanFX2.ConvCumul.oeqJCong
 #print axioms LeanFX2.ConvCumul.oeqFunextCong

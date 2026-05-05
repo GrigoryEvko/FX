@@ -194,8 +194,8 @@ theorem transpCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
 This theorem intentionally composes the guardrail pieces that keep future
 transport computation honest: typed constant type paths, the raw
 constant-path recognizer, typed transport congruence, the typed-to-raw
-bridge, and `ConvCumul` congruence.  It is still a congruence smoke, not
-a transport β rule. -/
+bridge, `ConvCumul` congruence, and the conversion-layer constant
+transport β rule. -/
 theorem constantTypeTransport_fullStackWiring_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -223,11 +223,16 @@ theorem constantTypeTransport_fullStackWiring_smoke
           (RawStep.par
             (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawSource)
             (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawTarget))
-          (ConvCumul
-            (Cubical.constantTypeTransport universeLevel universeLevelLt
-              sourceType typeCode sourceValueSource)
-            (Cubical.constantTypeTransport universeLevel universeLevelLt
-              sourceType typeCode sourceValueTarget)))) := by
+          (And
+            (ConvCumul
+              (Cubical.constantTypeTransport universeLevel universeLevelLt
+                sourceType typeCode sourceValueSource)
+              (Cubical.constantTypeTransport universeLevel universeLevelLt
+                sourceType typeCode sourceValueTarget))
+            (ConvCumul
+              (Cubical.constantTypeTransport universeLevel universeLevelLt
+                sourceType typeCode sourceValueSource)
+              sourceValueSource)))) := by
   exact And.intro
     (Cubical.constantTypeTransport_typeLineRecognized
       universeLevel universeLevelLt typeCode)
@@ -239,9 +244,13 @@ theorem constantTypeTransport_fullStackWiring_smoke
         (Cubical.constantTypeTransport_sourceCong_toRawBridge
           universeLevel universeLevelLt sourceType typeCode
           sourceStep)
-        (Cubical.constantTypeTransport_sourceConvCumul
-          universeLevel universeLevelLt sourceType typeCode
-          sourceRel)))
+        (And.intro
+          (Cubical.constantTypeTransport_sourceConvCumul
+            universeLevel universeLevelLt sourceType typeCode
+            sourceRel)
+          (Cubical.constantTypeTransport_betaConvCumul
+            universeLevel universeLevelLt sourceType typeCode
+            sourceValueSource))))
 
 /-- Typed hcomp congruence currently has only cong parity; this smoke
 locks that parity to the raw hcomp congruence rule. -/
