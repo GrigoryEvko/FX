@@ -3,10 +3,13 @@ import LeanFX2.Graded.Semiring
 /-! # Graded/Instances/Trust — trust-debt lattice semiring
 
 `TrustGrade` tracks the trust status of a value or proof artifact.
-The order is a five-element chain from fully checked to least trusted:
+The FX spec presents trust as a level ordered from strongest to weakest:
+Verified > Tested > Sorry > Assumed > External.  This file uses the
+dual trust-debt encoding required by `GradeSemiring`, where smaller
+means more restrictive:
 
 ```text
-verified < reviewed < tested < assumed < external
+verified < tested < sorryPlaceholder < assumed < external
 ```
 
 This orientation matches the `GradeSemiring` convention that `0` is
@@ -14,9 +17,9 @@ the restrictive bottom and `1` is the permissive top:
 
 * `0` = `verified` — no trust debt
 * `1` = `external` — maximum trust debt
-* `+` = max/worst trust debt
+* `+` = max/worst trust debt, matching "lower trust dominates"
 * `*` = min/trust-debt scaling, with verified annihilating
-* `≤` = chain order, so better trust fits where worse trust is allowed
+* `≤` = debt order, so better trust fits where worse trust is allowed
 
 Zero-axiom verified per declaration. -/
 
@@ -28,10 +31,10 @@ open LeanFX2.Graded
 inductive TrustGrade : Type
   /-- Fully checked by the kernel; lattice bottom; no trust debt. -/
   | verified
-  /-- Human or agent review accepted the artifact. -/
-  | reviewed
-  /-- Checked by tests but not fully reviewed. -/
+  /-- Checked by tests but not fully verified. -/
   | tested
+  /-- Development placeholder; release builds must reject this rung. -/
+  | sorryPlaceholder
   /-- Assumed locally; must not be treated as a proof. -/
   | assumed
   /-- External or unchecked artifact; lattice top; maximum trust debt. -/
@@ -43,24 +46,24 @@ namespace TrustGrade
 /-- Combining trust grades keeps the worse trust debt. -/
 def add : TrustGrade → TrustGrade → TrustGrade
   | .verified, rightOperand => rightOperand
-  | .reviewed, .verified => .reviewed
-  | .reviewed, .reviewed => .reviewed
-  | .reviewed, .tested => .tested
-  | .reviewed, .assumed => .assumed
-  | .reviewed, .external => .external
   | .tested, .verified => .tested
-  | .tested, .reviewed => .tested
   | .tested, .tested => .tested
+  | .tested, .sorryPlaceholder => .sorryPlaceholder
   | .tested, .assumed => .assumed
   | .tested, .external => .external
+  | .sorryPlaceholder, .verified => .sorryPlaceholder
+  | .sorryPlaceholder, .tested => .sorryPlaceholder
+  | .sorryPlaceholder, .sorryPlaceholder => .sorryPlaceholder
+  | .sorryPlaceholder, .assumed => .assumed
+  | .sorryPlaceholder, .external => .external
   | .assumed, .verified => .assumed
-  | .assumed, .reviewed => .assumed
   | .assumed, .tested => .assumed
+  | .assumed, .sorryPlaceholder => .assumed
   | .assumed, .assumed => .assumed
   | .assumed, .external => .external
   | .external, .verified => .external
-  | .external, .reviewed => .external
   | .external, .tested => .external
+  | .external, .sorryPlaceholder => .external
   | .external, .assumed => .external
   | .external, .external => .external
 
@@ -68,56 +71,56 @@ def add : TrustGrade → TrustGrade → TrustGrade
 `verified` annihilates and `external` is the identity. -/
 def mul : TrustGrade → TrustGrade → TrustGrade
   | .verified, .verified => .verified
-  | .verified, .reviewed => .verified
   | .verified, .tested => .verified
+  | .verified, .sorryPlaceholder => .verified
   | .verified, .assumed => .verified
   | .verified, .external => .verified
-  | .reviewed, .verified => .verified
-  | .reviewed, .reviewed => .reviewed
-  | .reviewed, .tested => .reviewed
-  | .reviewed, .assumed => .reviewed
-  | .reviewed, .external => .reviewed
   | .tested, .verified => .verified
-  | .tested, .reviewed => .reviewed
   | .tested, .tested => .tested
+  | .tested, .sorryPlaceholder => .tested
   | .tested, .assumed => .tested
   | .tested, .external => .tested
+  | .sorryPlaceholder, .verified => .verified
+  | .sorryPlaceholder, .tested => .tested
+  | .sorryPlaceholder, .sorryPlaceholder => .sorryPlaceholder
+  | .sorryPlaceholder, .assumed => .sorryPlaceholder
+  | .sorryPlaceholder, .external => .sorryPlaceholder
   | .assumed, .verified => .verified
-  | .assumed, .reviewed => .reviewed
   | .assumed, .tested => .tested
+  | .assumed, .sorryPlaceholder => .sorryPlaceholder
   | .assumed, .assumed => .assumed
   | .assumed, .external => .assumed
   | .external, .verified => .verified
-  | .external, .reviewed => .reviewed
   | .external, .tested => .tested
+  | .external, .sorryPlaceholder => .sorryPlaceholder
   | .external, .assumed => .assumed
   | .external, .external => .external
 
 /-- Trust subsumption: better trust fits where worse trust is allowed. -/
 def le : TrustGrade → TrustGrade → Prop
   | .verified, .verified => True
-  | .verified, .reviewed => True
   | .verified, .tested => True
+  | .verified, .sorryPlaceholder => True
   | .verified, .assumed => True
   | .verified, .external => True
-  | .reviewed, .verified => False
-  | .reviewed, .reviewed => True
-  | .reviewed, .tested => True
-  | .reviewed, .assumed => True
-  | .reviewed, .external => True
   | .tested, .verified => False
-  | .tested, .reviewed => False
   | .tested, .tested => True
+  | .tested, .sorryPlaceholder => True
   | .tested, .assumed => True
   | .tested, .external => True
+  | .sorryPlaceholder, .verified => False
+  | .sorryPlaceholder, .tested => False
+  | .sorryPlaceholder, .sorryPlaceholder => True
+  | .sorryPlaceholder, .assumed => True
+  | .sorryPlaceholder, .external => True
   | .assumed, .verified => False
-  | .assumed, .reviewed => False
   | .assumed, .tested => False
+  | .assumed, .sorryPlaceholder => False
   | .assumed, .assumed => True
   | .assumed, .external => True
   | .external, .verified => False
-  | .external, .reviewed => False
   | .external, .tested => False
+  | .external, .sorryPlaceholder => False
   | .external, .assumed => False
   | .external, .external => True
 
