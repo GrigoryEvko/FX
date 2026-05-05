@@ -146,6 +146,14 @@ theorem setTrunc_path_smoke :
       (HoTT.HIT.SetTrunc.intro ()) :=
   HoTT.HIT.SetTrunc.path rfl
 
+/-- Set truncation keeps distinct Bool representatives separate at the
+current setoid layer; only reflexive representatives get a path. -/
+theorem setTrunc_bool_reflPath_smoke :
+    (HoTT.HIT.SetTrunc Bool).relation
+      (HoTT.HIT.SetTrunc.intro false)
+      (HoTT.HIT.SetTrunc.intro false) :=
+  HoTT.HIT.SetTrunc.path rfl
+
 /-- Set-truncation recursion computes on introduced representatives. -/
 theorem setTrunc_rec_intro_smoke :
     (HoTT.HIT.SetTrunc.rec
@@ -493,6 +501,7 @@ theorem coequalizer_dependentInductor_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.propTrunc_bool_rec_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_dependentInductor_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_path_smoke
+#assert_no_axioms LeanFX2.Smoke.setTrunc_bool_reflPath_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_dependentInductor_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_equality_relation_smoke

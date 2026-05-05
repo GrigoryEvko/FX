@@ -518,6 +518,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.dependentInductor_squash
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.recConstant
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.recConstant_intro
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTruncRel
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTruncRel.relation_refl
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTruncRel.relation_symm
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTruncRel.relation_trans
 #assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc
 #assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.intro
 #assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.path
