@@ -8,13 +8,15 @@ import LeanFX2.FX1.Core.Context
 import LeanFX2.FX1.Core.Substitution
 import LeanFX2.FX1.Core.Reduction
 import LeanFX2.FX1.Core.HasType
+import LeanFX2.FX1.Core.WellFormed
 
 /-! # FX1/Core
 
 Root status: Root-FX1 syntax scaffold.
 
 Umbrella import for the current minimal FX1 core syntax, M1 environment, M2
-substitution, and the first M3 beta-reduction and typing slices.
+substitution, and the first M3 beta-reduction, typing, and well-formedness
+slices.
 -/
 
 namespace LeanFX2.FX1
