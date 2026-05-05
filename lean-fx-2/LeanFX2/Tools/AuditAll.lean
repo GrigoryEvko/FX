@@ -719,6 +719,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Context.lookup?
 #assert_no_axioms LeanFX2.FX1.Context.hasIndex
 #assert_no_axioms LeanFX2.FX1.Expr.isScopedIn
+#assert_no_axioms LeanFX2.FX1.Renaming
+#assert_no_axioms LeanFX2.FX1.Renaming.identity
+#assert_no_axioms LeanFX2.FX1.Renaming.shift
+#assert_no_axioms LeanFX2.FX1.Renaming.lift
+#assert_no_axioms LeanFX2.FX1.Expr.rename
+#assert_no_axioms LeanFX2.FX1.Expr.weaken
+#assert_no_axioms LeanFX2.FX1.Substitution
+#assert_no_axioms LeanFX2.FX1.Substitution.identity
+#assert_no_axioms LeanFX2.FX1.Substitution.lift
+#assert_no_axioms LeanFX2.FX1.Substitution.singleton
+#assert_no_axioms LeanFX2.FX1.Expr.subst
+#assert_no_axioms LeanFX2.FX1.Expr.subst0
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
