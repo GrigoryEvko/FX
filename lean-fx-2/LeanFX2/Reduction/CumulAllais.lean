@@ -973,7 +973,9 @@ This mirrors the existing `ConvCumul.subst_compatible_cumulUp_term`
 in `Reduction/Cumul.lean` (line ~1289) but takes the source ctor
 fields directly rather than via specialized signature. -/
 
-/-- Allais arm for `cumulUp`: closed cumul-promotion, refl. -/
+/-- Allais arm for `cumulUp` — Phase CUMUL-2.6 Design D.
+The substituted typeCode-pair on each side gives ConvCumul; wrap via
+cumulUpCong to lift over the cumul-promotion. -/
 theorem ConvCumul.subst_compatible_cumulUp_allais
     {mode : Mode}
     {sourceLevel targetLevel sourceScope targetScope : Nat}
@@ -981,26 +983,25 @@ theorem ConvCumul.subst_compatible_cumulUp_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
-    {scopeLow levelLow : Nat}
-    (innerLevel lowerLevel higherLevel : UniverseLevel)
-    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (lowerLevel higherLevel : UniverseLevel)
     (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-    (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ sourceLevel)
     (levelLeHigh : higherLevel.toNat + 1 ≤ sourceLevel)
-    {ctxLow : Ctx mode levelLow scopeLow}
-    (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel levelLeLow)
-                  (RawTerm.universeCode innerLevel.toNat)) :
-    ConvCumul ((Term.cumulUp (ctxHigh := sourceCtx)
-                             innerLevel lowerLevel higherLevel
-                             cumulOkLow cumulOkHigh cumulMonotone
-                             levelLeLow levelLeHigh lowerTerm).substHet termSubstA)
-              ((Term.cumulUp (ctxHigh := sourceCtx)
-                             innerLevel lowerLevel higherLevel
-                             cumulOkLow cumulOkHigh cumulMonotone
-                             levelLeLow levelLeHigh lowerTerm).substHet termSubstB) :=
-  ConvCumul.refl _
+    {codeRaw : RawTerm sourceScope}
+    (typeCode :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (innerCompat :
+      ConvCumul (typeCode.substHet termSubstA) (typeCode.substHet termSubstB)) :
+    ConvCumul ((Term.cumulUp (context := sourceCtx)
+                             lowerLevel higherLevel cumulMonotone
+                             levelLeLow levelLeHigh typeCode).substHet termSubstA)
+              ((Term.cumulUp (context := sourceCtx)
+                             lowerLevel higherLevel cumulMonotone
+                             levelLeLow levelLeHigh typeCode).substHet termSubstB) :=
+  ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone
+                        (Nat.le_trans levelLeLow sigma.cumulOk)
+                        (Nat.le_trans levelLeHigh sigma.cumulOk)
+                        innerCompat
 
 /-! ## Allais kernel-gap note: missing eliminator cong rules
 

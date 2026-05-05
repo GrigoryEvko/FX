@@ -218,18 +218,18 @@ theorem ConvCumulHomo.subst_compatible_paired_allais
   | eitherMatchCong _ _ _ ihScrut ihLeft ihRight =>
       intros _ _ _ _ _ compat
       exact ConvCumul.eitherMatchCong (ihScrut compat) (ihLeft compat) (ihRight compat)
-  | cumulUpCong innerLevel lowerLevel higherLevel
-                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
-      intros _ _ _ _ _ _compat
-      -- substHet on Term.cumulUp: lowerTerm preserved verbatim, ctxHigh
-      -- moves from sourceCtx to targetCtx.  Both sides at same targetCtx.
-      -- ConvCumul.cumulUpCong applied to original lowerRel produces the
-      -- result.  At homogeneous level, the ctxHigh-level constraint
-      -- coincides (both at higherLevel.toNat + 1 = level).
-      -- compat unused: the lowerRel inhabits a separate ConvCumul at
-      -- decoupled scopeLow, untouched by the outer paired-env compat.
-      exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
-              cumulOkLow cumulOkHigh cumulMonotone lowerRel
+  | cumulUpCong lowerLevel higherLevel cumulMonotone
+                levelLeLow levelLeHigh _ ih =>
+      intros _ _ _ _ _ compat
+      -- Phase CUMUL-2.6 Design D: Term.substHet's cumulUp arm recurses
+      -- on inner typeCode (single context throughout).  IH provides
+      -- the substituted inner ConvCumul; cumulUpCong rebuilds at
+      -- target ctx.  Homogeneous level: sigma is `SubstHet level level`
+      -- so level witnesses transport via `Nat.le_refl`.
+      have innerSubstd := ih compat
+      exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone
+              levelLeLow levelLeHigh
+              innerSubstd
 
 /-! # `ConvCumul.subst_compatible`
 

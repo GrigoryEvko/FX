@@ -196,33 +196,28 @@ theorem ConvCumul.rename_compatible_refl_benton
               ((Term.refl (context := sourceCtx) carrier rawWitness).rename termRenaming) :=
   ConvCumul.refl _
 
-/-- Benton rename arm for `cumulUp`: lower term passed unchanged
-through Term.rename (lowerTerm's scope is independent), refl. -/
+/-- Benton rename arm for `cumulUp` — Phase CUMUL-2.6 Design D.
+Term.rename's cumulUp arm recurses on typeCode; result is
+ConvCumul.refl on the substituted shape. -/
 theorem ConvCumul.rename_compatible_cumulUp_benton
     {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level targetScope}
     {rho : RawRenaming sourceScope targetScope}
     (termRenaming : TermRenaming sourceCtx targetCtx rho)
-    {scopeLow levelLow : Nat}
-    (innerLevel lowerLevel higherLevel : UniverseLevel)
-    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    (lowerLevel higherLevel : UniverseLevel)
     (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-    (levelLeLow : lowerLevel.toNat + 1 ≤ levelLow)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
     (levelLeHigh : higherLevel.toNat + 1 ≤ level)
-    {ctxLow : Ctx mode levelLow scopeLow}
-    (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel levelLeLow)
-                  (RawTerm.universeCode innerLevel.toNat)) :
-    ConvCumul ((Term.cumulUp (ctxHigh := sourceCtx)
-                             innerLevel lowerLevel higherLevel
-                             cumulOkLow cumulOkHigh cumulMonotone
-                             levelLeLow levelLeHigh lowerTerm).rename termRenaming)
-              ((Term.cumulUp (ctxHigh := sourceCtx)
-                             innerLevel lowerLevel higherLevel
-                             cumulOkLow cumulOkHigh cumulMonotone
-                             levelLeLow levelLeHigh lowerTerm).rename termRenaming) :=
+    {codeRaw : RawTerm sourceScope}
+    (typeCode :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw) :
+    ConvCumul ((Term.cumulUp (context := sourceCtx)
+                             lowerLevel higherLevel cumulMonotone
+                             levelLeLow levelLeHigh typeCode).rename termRenaming)
+              ((Term.cumulUp (context := sourceCtx)
+                             lowerLevel higherLevel cumulMonotone
+                             levelLeLow levelLeHigh typeCode).rename termRenaming) :=
   ConvCumul.refl _
 
 /-! ## Single-subterm cong rename arms

@@ -352,13 +352,16 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .lamPi body =>
       ConvCumul.subst_compatible_lamPi_allais body
         (Term.subst_compatible_pointwise_allais (compat.lift _) body)
-  | _, _, .cumulUp innerLevel lowerLevel higherLevel
-                   cumulOkLow cumulOkHigh cumulMonotone
-                   levelLeLow levelLeHigh lowerTerm =>
+  | _, _, .cumulUp lowerLevel higherLevel cumulMonotone
+                   levelLeLow levelLeHigh typeCode =>
+      -- Phase CUMUL-2.6 Design D: recurse on inner typeCode via the
+      -- pointwise allais dispatcher (compat is the paired-env's
+      -- per-position compatibility).  Wrap via cumulUpCong (Allais
+      -- arm).
       ConvCumul.subst_compatible_cumulUp_allais _ _
-        innerLevel lowerLevel higherLevel
-        cumulOkLow cumulOkHigh cumulMonotone
-        levelLeLow levelLeHigh lowerTerm
+        lowerLevel higherLevel cumulMonotone
+        levelLeLow levelLeHigh typeCode
+        (Term.subst_compatible_pointwise_allais compat typeCode)
   | _, _, .equivReflId carrier =>
       ConvCumul.subst_compatible_equivReflId_allais _ _ carrier
   | _, _, .funextRefl domainType codomainType applyRaw =>
