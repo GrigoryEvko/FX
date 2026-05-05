@@ -296,6 +296,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordIntro_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordProj_allais
 
+-- Typed D2.7 strict-identity congruence parity
+#assert_no_axioms LeanFX2.Term.toRaw_idStrictRefl
+#assert_no_axioms LeanFX2.Term.toRaw_idStrictRec
+#assert_no_axioms LeanFX2.Step.idStrictRecBase
+#assert_no_axioms LeanFX2.Step.idStrictRecWitness
+#assert_no_axioms LeanFX2.Step.par.idStrictReflCong
+#assert_no_axioms LeanFX2.Step.par.idStrictRecCong
+#assert_no_axioms LeanFX2.ConvCumul.idStrictRecCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRefl_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRec_allais
+
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl
 #assert_no_axioms LeanFX2.Conv.fromStep

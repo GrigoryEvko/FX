@@ -1220,6 +1220,49 @@ theorem ConvCumul.subst_compatible_idJ_allais
               ((Term.idJ baseCase witness).substHet termSubstB) :=
   ConvCumul.idJCong baseCompat witnessCompat
 
+/-- Allais arm for strict identity refl.  The raw witness is substituted
+through the shared `sigma`, so both sides are definitionally equal. -/
+theorem ConvCumul.subst_compatible_idStrictRefl_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (carrier : Ty sourceLevel sourceScope)
+    (rawWitness : RawTerm sourceScope) :
+    ConvCumul ((Term.idStrictRefl (context := sourceCtx)
+                  carrier rawWitness).substHet termSubstA)
+              ((Term.idStrictRefl (context := sourceCtx)
+                  carrier rawWitness).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for strict identity recursor: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_idStrictRec_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrier : Ty sourceLevel sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty sourceLevel sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw)
+    (baseCompat :
+      ConvCumul (baseCase.substHet termSubstA)
+                (baseCase.substHet termSubstB))
+    (witnessCompat :
+      ConvCumul (witness.substHet termSubstA)
+                (witness.substHet termSubstB)) :
+    ConvCumul ((Term.idStrictRec baseCase witness).substHet termSubstA)
+              ((Term.idStrictRec baseCase witness).substHet termSubstB) :=
+  ConvCumul.idStrictRecCong baseCompat witnessCompat
+
 /-- Allais arm for `boolElim`: three-subterm cong via `boolElimCong`. -/
 theorem ConvCumul.subst_compatible_boolElim_allais
     {mode : Mode}

@@ -1,5 +1,6 @@
 import LeanFX2.Reduction.Step
 import LeanFX2.Reduction.StepStar
+import LeanFX2.Reduction.RawPar
 
 /-! # Reduction/ParRed — Tait-Martin-Löf parallel reduction.
 
@@ -326,6 +327,32 @@ inductive Step.par :
       Step.par witnessSource witnessTarget →
       Step.par (Term.idJ baseSource witnessSource)
                (Term.idJ baseTarget witnessTarget)
+  /-- Parallel-cong: strict identity refl reduces in its raw witness. -/
+  | idStrictReflCong {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope}
+      {witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource witnessRawTarget →
+      Step.par
+        (Term.idStrictRefl (context := context) carrier witnessRawSource)
+        (Term.idStrictRefl (context := context) carrier witnessRawTarget)
+  /-- Parallel-cong: strict identity rec reduces in baseCase and witness. -/
+  | idStrictRecCong {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRawSource baseRawTarget
+       witnessRawSource witnessRawTarget : RawTerm scope}
+      {baseSource : Term context motiveType baseRawSource}
+      {baseTarget : Term context motiveType baseRawTarget}
+      {witnessSource :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessRawSource}
+      {witnessTarget :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessRawTarget} :
+      Step.par baseSource baseTarget →
+      Step.par witnessSource witnessTarget →
+      Step.par (Term.idStrictRec baseSource witnessSource)
+               (Term.idStrictRec baseTarget witnessTarget)
   /-- Parallel-cong: modIntro reduces in inner. -/
   | modIntro {mode level scope} {context : Ctx mode level scope}
       {innerType : Ty level scope}
@@ -1465,6 +1492,10 @@ theorem Step.toPar
       exact Step.par.idJ singleStepIH (Step.par.refl _)
   | idJWitness baseCase singleStep singleStepIH =>
       exact Step.par.idJ (Step.par.refl baseCase) singleStepIH
+  | idStrictRecBase singleStep singleStepIH =>
+      exact Step.par.idStrictRecCong singleStepIH (Step.par.refl _)
+  | idStrictRecWitness baseCase singleStep singleStepIH =>
+      exact Step.par.idStrictRecCong (Step.par.refl baseCase) singleStepIH
   | iotaIdJRefl carrier endpoint baseCase =>
       exact Step.par.iotaIdJRefl carrier endpoint (Step.par.refl baseCase)
   | modIntroInner singleStep singleStepIH =>

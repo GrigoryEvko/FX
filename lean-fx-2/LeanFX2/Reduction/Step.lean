@@ -648,6 +648,33 @@ inductive Step :
       Step witnessSource witnessTarget →
       Step (Term.idJ baseCase witnessSource)
            (Term.idJ baseCase witnessTarget)
+  /-- Step inside `idStrictRec`'s baseCase. -/
+  | idStrictRecBase {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRawSource baseRawTarget witnessRaw : RawTerm scope}
+      {baseSource : Term context motiveType baseRawSource}
+      {baseTarget : Term context motiveType baseRawTarget}
+      {witnessTerm :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw} :
+      Step baseSource baseTarget →
+      Step (Term.idStrictRec baseSource witnessTerm)
+           (Term.idStrictRec baseTarget witnessTerm)
+  /-- Step inside `idStrictRec`'s witness. -/
+  | idStrictRecWitness {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRawSource witnessRawTarget : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      {witnessSource :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessRawSource}
+      {witnessTarget :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessRawTarget} :
+      Step witnessSource witnessTarget →
+      Step (Term.idStrictRec baseCase witnessSource)
+           (Term.idStrictRec baseCase witnessTarget)
   /-- ι-reduction `J base (refl rt) ⟶ base`. -/
   | iotaIdJRefl {mode level scope} {context : Ctx mode level scope}
       (carrier : Ty level scope) (endpoint : RawTerm scope)

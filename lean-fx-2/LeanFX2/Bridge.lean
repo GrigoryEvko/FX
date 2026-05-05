@@ -110,6 +110,10 @@ theorem Step.par.toRawBridge
   -- Cong: identity (Term.refl is frozen, so no reflCong; idJ has cong)
   | idJ _ _ ihBase ihWitness =>
       exact RawStep.par.idJ ihBase ihWitness
+  | idStrictReflCong witnessStep =>
+      exact RawStep.par.idStrictReflCong witnessStep
+  | idStrictRecCong _ _ ihBase ihWitness =>
+      exact RawStep.par.idStrictRecCong ihBase ihWitness
   -- Cong: modal
   | modIntro _ ihInner => exact RawStep.par.modIntro ihInner
   | modElim _ ihInner => exact RawStep.par.modElim ihInner

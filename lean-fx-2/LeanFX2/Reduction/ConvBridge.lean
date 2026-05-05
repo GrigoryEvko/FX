@@ -186,6 +186,10 @@ theorem Step.toConvCumul
       exact ConvCumul.idJCong ih (ConvCumul.refl _)
   | idJWitness baseCase _ ih =>
       exact ConvCumul.idJCong (ConvCumul.refl baseCase) ih
+  | idStrictRecBase _ ih =>
+      exact ConvCumul.idStrictRecCong ih (ConvCumul.refl _)
+  | idStrictRecWitness baseCase _ ih =>
+      exact ConvCumul.idStrictRecCong (ConvCumul.refl baseCase) ih
   | iotaIdJRefl carrier endpoint baseCase =>
       exact ConvCumul.iotaIdJReflCumul carrier endpoint baseCase
   | modIntroInner _ ih =>

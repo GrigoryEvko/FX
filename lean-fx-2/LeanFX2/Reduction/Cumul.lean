@@ -510,6 +510,27 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (witnessRel : ConvCumul witnessFirst witnessSecond) :
       ConvCumul (Term.idJ baseFirst witnessFirst)
                 (Term.idJ baseSecond witnessSecond)
+  /-- Homogeneous strict identity recursor: ConvCumul-related base case
+  and witness lift to ConvCumul-related strict recursors. -/
+  | idStrictRecCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseFirstRaw baseSecondRaw witnessFirstRaw witnessSecondRaw : RawTerm scope}
+      {baseFirst : Term context motiveType baseFirstRaw}
+      {baseSecond : Term context motiveType baseSecondRaw}
+      {witnessFirst :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessFirstRaw}
+      {witnessSecond :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessSecondRaw}
+      (baseRel : ConvCumul baseFirst baseSecond)
+      (witnessRel : ConvCumul witnessFirst witnessSecond) :
+      ConvCumul (Term.idStrictRec baseFirst witnessFirst)
+                (Term.idStrictRec baseSecond witnessSecond)
   /-- Homogeneous modIntro: ConvCumul-related inner term lifts to ConvCumul-
   related modIntro. -/
   | modIntroCong

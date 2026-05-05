@@ -166,6 +166,11 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq baseCase,
           Term.subst_pointwise pointwiseEq witness]
+  | _, _, .idStrictRefl _ _ => rfl
+  | _, _, .idStrictRec baseCase witness => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq baseCase,
+          Term.subst_pointwise pointwiseEq witness]
   | _, _, .modIntro innerTerm => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq innerTerm]

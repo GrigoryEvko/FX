@@ -365,6 +365,13 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_idJ_allais baseCase witness
         (Term.subst_compatible_pointwise_allais compat baseCase)
         (Term.subst_compatible_pointwise_allais compat witness)
+  | _, _, .idStrictRefl carrier rawWitness =>
+      ConvCumul.subst_compatible_idStrictRefl_allais _ _
+        carrier rawWitness
+  | _, _, .idStrictRec baseCase witness =>
+      ConvCumul.subst_compatible_idStrictRec_allais baseCase witness
+        (Term.subst_compatible_pointwise_allais compat baseCase)
+        (Term.subst_compatible_pointwise_allais compat witness)
   | _, _, .boolElim scrutinee thenBranch elseBranch =>
       ConvCumul.subst_compatible_boolElim_allais scrutinee thenBranch elseBranch
         (Term.subst_compatible_pointwise_allais compat scrutinee)

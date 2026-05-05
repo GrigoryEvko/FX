@@ -206,6 +206,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .eitherInl _ => none
   | _, _, _, _, .eitherInr _ => none
   | _, _, _, _, .refl _ _ => none
+  | _, _, _, _, .idStrictRefl _ _ => none
   | _, _, _, _, .modIntro _ => none
   | _, _, _, _, .subsume _ => none
   | _, _, _, _, .universeCode _ _ _ _ => none
@@ -310,6 +311,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
         none
   | _, _, _, _, .eitherMatch _ _ _ => none
   | _, _, _, _, .idJ _ _ => none            -- J-on-refl needs witness extraction
+  | _, _, _, _, .idStrictRec _ _ => none     -- strict β not in raw layer yet
   | _, _, _, _, .modElim _ => none          -- needs inner extraction
 
 /-- Fuel-bounded head reducer.  Repeatedly fires head ι-redexes via

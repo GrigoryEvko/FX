@@ -231,6 +231,23 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (baseCase : Term context motiveType baseRaw)
       (witness : Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw) :
       Term context motiveType (RawTerm.idJ baseRaw witnessRaw)
+  -- Strict identity mirrors identity at the typed layer but lives in
+  -- `Ty.idStrict`, keeping definitional identity separate from HoTT `Ty.id`.
+  | idStrictRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+      Term context
+        (Ty.idStrict carrier rawWitness rawWitness)
+        (RawTerm.idStrictRefl rawWitness)
+  | idStrictRec {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      (witness :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw) :
+      Term context motiveType (RawTerm.idStrictRec baseRaw witnessRaw)
   -- Modal — Layer 1 ships RAW-SIDE SCAFFOLDING ONLY.  In Phase 1,
   -- innerType is preserved (no Ty.modal applied) because Ty.modal +
   -- Modality 1-cells are Layer 6 work.  When Layer 6 lands, these

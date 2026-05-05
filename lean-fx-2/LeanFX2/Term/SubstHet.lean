@@ -200,6 +200,12 @@ def Term.substHet {mode : Mode}
   | _, _, .idJ baseCase witness =>
       Term.idJ (Term.substHet termSubstHet baseCase)
                (Term.substHet termSubstHet witness)
+  | _, _, .idStrictRefl carrier rawWitness =>
+      Term.idStrictRefl
+        (carrier.substHet sigma) (rawWitness.subst sigma.forRaw)
+  | _, _, .idStrictRec baseCase witness =>
+      Term.idStrictRec (Term.substHet termSubstHet baseCase)
+                       (Term.substHet termSubstHet witness)
   -- Modal: Layer 1 scaffolding.
   | _, _, .modIntro innerTerm =>
       Term.modIntro (Term.substHet termSubstHet innerTerm)

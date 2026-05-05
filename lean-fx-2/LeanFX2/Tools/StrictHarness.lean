@@ -210,30 +210,26 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "oeqReflCong" ||
   suffix == "oeqJCong" ||
   suffix == "oeqFunextCong" ||
-  -- Section B: strict identity cong rules (typed mirrors pending; the
-  -- strict-identity layer is currently raw-only scaffolding).
-  suffix == "idStrictReflCong" ||
-  suffix == "idStrictRecCong" ||
-  -- Section C: equivalence application has no typed Term constructor yet.
+  -- Section B: equivalence application has no typed Term constructor yet.
   -- `equivIntroCong` is covered by typed `Step.par.equivIntroCong`,
   -- an alias over `Term.equivIntroHet`.
   suffix == "equivAppCong" ||
-  -- Section D: refinement type cong + β rules (typed Term has no refine
+  -- Section C: refinement type cong + β rules (typed Term has no refine
   -- ctor yet; D5.6 refinement types pending).
   suffix == "refineIntroCong" ||
   suffix == "betaRefineElimIntro" ||
   suffix == "betaRefineElimIntroDeep" ||
   suffix == "refineElimCong" ||
-  -- Section E: codata cong rules (typed codata pending D5.13).
+  -- Section D: codata cong rules (typed codata pending D5.13).
   suffix == "codataUnfoldCong" ||
   suffix == "codataDestCong" ||
-  -- Section F: session protocol cong rules (typed sessions pending D5.11).
+  -- Section E: session protocol cong rules (typed sessions pending D5.11).
   suffix == "sessionSendCong" ||
   suffix == "sessionRecvCong" ||
-  -- Section G: effect-perform cong rule (typed effect handlers pending
+  -- Section F: effect-perform cong rule (typed effect handlers pending
   -- D5.10).
   suffix == "effectPerformCong" ||
-  -- Section I: parametric type-code cong rules (CUMUL-2 cumulativity
+  -- Section G: parametric type-code cong rules (CUMUL-2 cumulativity
   -- type-codes ship raw-only; typed cumulativity uses cumulUp directly).
   suffix == "arrowCodeCong" ||
   suffix == "piTyCodeCong" ||
@@ -246,7 +242,7 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "idCodeCong" ||
   suffix == "equivCodeCong" ||
   suffix == "cumulUpMarkerCong" ||
-  -- Section J: refl cong rule (typed Term.refl uses different reduction
+  -- Section H: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong"
 

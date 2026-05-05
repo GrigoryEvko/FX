@@ -131,6 +131,23 @@ theorem Term.toRaw_idJ {mode : Mode} {level scope : Nat}
     (Term.idJ baseCase witness).toRaw =
       RawTerm.idJ baseCase.toRaw witness.toRaw := rfl
 
+theorem Term.toRaw_idStrictRefl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    (Term.idStrictRefl (context := context) carrier rawWitness).toRaw =
+      RawTerm.idStrictRefl rawWitness := rfl
+
+theorem Term.toRaw_idStrictRec {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw) :
+    (Term.idStrictRec baseCase witness).toRaw =
+      RawTerm.idStrictRec baseCase.toRaw witness.toRaw := rfl
+
 /-! ## Booleans, Naturals, Lists, Options, Eithers, Modal -/
 
 theorem Term.toRaw_boolTrue {mode : Mode} {level scope : Nat}

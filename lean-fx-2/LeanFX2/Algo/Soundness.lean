@@ -457,6 +457,8 @@ theorem Term.headStep?_sound
   | snd _ => nomatch firedEq
   | eitherMatch _ _ _ => nomatch firedEq
   | idJ _ _ => nomatch firedEq
+  | idStrictRefl _ _ => nomatch firedEq
+  | idStrictRec _ _ => nomatch firedEq
   | modElim _ => nomatch firedEq
   -- Firing eliminators.  Each dispatches on the scrutinee's
   -- `headCtor` value; the firing ι-rule depends on which canonical
@@ -493,7 +495,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -525,7 +527,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -556,7 +558,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -587,7 +589,7 @@ theorem Term.headStep?_sound
     | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -618,7 +620,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp

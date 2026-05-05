@@ -198,6 +198,11 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .idJ baseCase witness =>
       Term.idJ (Term.rename termRenaming baseCase)
                (Term.rename termRenaming witness)
+  | _, _, .idStrictRefl carrier rawWitness =>
+      Term.idStrictRefl (carrier.rename rho) (rawWitness.rename rho)
+  | _, _, .idStrictRec baseCase witness =>
+      Term.idStrictRec (Term.rename termRenaming baseCase)
+                       (Term.rename termRenaming witness)
   -- Modal: Layer 1 scaffolding preserves innerType.
   | _, _, .modIntro innerTerm =>
       Term.modIntro (Term.rename termRenaming innerTerm)

@@ -184,6 +184,12 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .idJ baseCase witness =>
       Term.idJ (Term.subst termSubst baseCase)
                (Term.subst termSubst witness)
+  | _, _, .idStrictRefl carrier rawWitness =>
+      Term.idStrictRefl
+        (carrier.subst sigma) (rawWitness.subst sigma.forRaw)
+  | _, _, .idStrictRec baseCase witness =>
+      Term.idStrictRec (Term.subst termSubst baseCase)
+                       (Term.subst termSubst witness)
   -- Modal: Layer 1 scaffolding.
   | _, _, .modIntro innerTerm =>
       Term.modIntro (Term.subst termSubst innerTerm)
