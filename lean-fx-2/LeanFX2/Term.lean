@@ -394,6 +394,25 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {refinedRaw : RawTerm scope}
       (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw) :
       Term context baseType (RawTerm.refineElim refinedRaw)
+  /-- Codata unfold packages an initial state with an observation
+      transition.  The current raw kernel carries only the state and
+      transition payloads, so the typed mirror records the transition
+      as a state-to-output function and provides congruence parity. -/
+  | codataUnfold {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRaw transitionRaw : RawTerm scope}
+      (initialState : Term context stateType stateRaw)
+      (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+      Term context (Ty.codata stateType outputType)
+        (RawTerm.codataUnfold stateRaw transitionRaw)
+  /-- Codata destructor observes one output from a codata value. -/
+  | codataDest {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {codataRaw : RawTerm scope}
+      (codataValue : Term context (Ty.codata stateType outputType) codataRaw) :
+      Term context outputType (RawTerm.codataDest codataRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

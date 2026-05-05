@@ -239,6 +239,12 @@ theorem Step.toConvCumul
   | betaRefineElimIntro predicate baseValue predicateProof =>
       exact ConvCumul.betaRefineElimIntroCumul
         predicate baseValue predicateProof
+  | codataUnfoldState _ ih =>
+      exact ConvCumul.codataUnfoldCong ih (ConvCumul.refl _)
+  | codataUnfoldTransition _ ih =>
+      exact ConvCumul.codataUnfoldCong (ConvCumul.refl _) ih
+  | codataDestValue _ ih =>
+      exact ConvCumul.codataDestCong ih
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
       exact ConvCumul.transpCong universeLevel universeLevelLt

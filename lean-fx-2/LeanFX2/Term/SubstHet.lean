@@ -263,6 +263,11 @@ def Term.substHet {mode : Mode}
         (Term.substHet termSubstHet predicateProof)
   | _, _, .refineElim refinedValue =>
       Term.refineElim (Term.substHet termSubstHet refinedValue)
+  | _, _, .codataUnfold initialState transition =>
+      Term.codataUnfold (Term.substHet termSubstHet initialState)
+                        (Term.substHet termSubstHet transition)
+  | _, _, .codataDest codataValue =>
+      Term.codataDest (Term.substHet termSubstHet codataValue)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

@@ -144,6 +144,19 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.refineElimCong
 #print axioms LeanFX2.Step.par.betaRefineElimIntro
 #print axioms LeanFX2.Step.par.betaRefineElimIntroDeep
+
+-- Typed D2.7 codata congruence parity
+#print axioms LeanFX2.Term.toRaw_codataUnfold
+#print axioms LeanFX2.Term.toRaw_codataDest
+#print axioms LeanFX2.Step.codataUnfoldState
+#print axioms LeanFX2.Step.codataUnfoldTransition
+#print axioms LeanFX2.Step.codataDestValue
+#print axioms LeanFX2.Step.par.codataUnfoldCong
+#print axioms LeanFX2.Step.par.codataDestCong
+#print axioms LeanFX2.ConvCumul.codataUnfoldCong
+#print axioms LeanFX2.ConvCumul.codataDestCong
+#print axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
 #print axioms LeanFX2.Step.par.toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong

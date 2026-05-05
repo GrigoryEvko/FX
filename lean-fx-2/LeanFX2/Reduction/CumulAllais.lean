@@ -1046,6 +1046,46 @@ theorem ConvCumul.subst_compatible_refineElim_allais
               ((Term.refineElim refinedValue).substHet termSubstB) :=
   ConvCumul.refineElimCong refinedCompat
 
+/-- Allais arm for `codataUnfold`: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_codataUnfold_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {stateType outputType : Ty sourceLevel sourceScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    (initialState : Term sourceCtx stateType stateRaw)
+    (transition : Term sourceCtx (Ty.arrow stateType outputType) transitionRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (stateCompat :
+      ConvCumul (initialState.substHet termSubstA)
+                (initialState.substHet termSubstB))
+    (transitionCompat :
+      ConvCumul (transition.substHet termSubstA)
+                (transition.substHet termSubstB)) :
+    ConvCumul ((Term.codataUnfold initialState transition).substHet termSubstA)
+              ((Term.codataUnfold initialState transition).substHet termSubstB) :=
+  ConvCumul.codataUnfoldCong stateCompat transitionCompat
+
+/-- Allais arm for `codataDest`: one-subterm congruence. -/
+theorem ConvCumul.subst_compatible_codataDest_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {stateType outputType : Ty sourceLevel sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    (codataValue : Term sourceCtx (Ty.codata stateType outputType) codataRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (codataCompat :
+      ConvCumul (codataValue.substHet termSubstA)
+                (codataValue.substHet termSubstB)) :
+    ConvCumul ((Term.codataDest codataValue).substHet termSubstA)
+              ((Term.codataDest codataValue).substHet termSubstB) :=
+  ConvCumul.codataDestCong codataCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

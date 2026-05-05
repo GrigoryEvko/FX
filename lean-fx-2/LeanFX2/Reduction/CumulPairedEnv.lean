@@ -347,6 +347,13 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .refineElim refinedValue =>
       ConvCumul.subst_compatible_refineElim_allais refinedValue
         (Term.subst_compatible_pointwise_allais compat refinedValue)
+  | _, _, .codataUnfold initialState transition =>
+      ConvCumul.subst_compatible_codataUnfold_allais initialState transition
+        (Term.subst_compatible_pointwise_allais compat initialState)
+        (Term.subst_compatible_pointwise_allais compat transition)
+  | _, _, .codataDest codataValue =>
+      ConvCumul.subst_compatible_codataDest_allais codataValue
+        (Term.subst_compatible_pointwise_allais compat codataValue)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)

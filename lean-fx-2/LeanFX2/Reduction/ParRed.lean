@@ -740,6 +740,32 @@ inductive Step.par :
       Step.par
         (Term.refineElim (Term.refineIntro predicate valueSource proofSource))
         valueTarget
+  /-- Raw-name parity: codata unfold reduces in state and transition. -/
+  | codataUnfoldCong {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRawSource stateRawTarget transitionRawSource transitionRawTarget :
+        RawTerm scope}
+      {stateSource : Term context stateType stateRawSource}
+      {stateTarget : Term context stateType stateRawTarget}
+      {transitionSource :
+        Term context (Ty.arrow stateType outputType) transitionRawSource}
+      {transitionTarget :
+        Term context (Ty.arrow stateType outputType) transitionRawTarget} :
+      Step.par stateSource stateTarget →
+      Step.par transitionSource transitionTarget →
+      Step.par (Term.codataUnfold stateSource transitionSource)
+               (Term.codataUnfold stateTarget transitionTarget)
+  /-- Raw-name parity: codata destruction reduces in its codata value. -/
+  | codataDestCong {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {codataRawSource codataRawTarget : RawTerm scope}
+      {codataSource :
+        Term context (Ty.codata stateType outputType) codataRawSource}
+      {codataTarget :
+        Term context (Ty.codata stateType outputType) codataRawTarget} :
+      Step.par codataSource codataTarget →
+      Step.par (Term.codataDest codataSource)
+               (Term.codataDest codataTarget)
   /-- Shallow β-fst: `fst (pair a b) ⟶ a'` with `Step.par a a'`. -/
   | betaFstPair {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -1612,6 +1638,12 @@ theorem Step.toPar
   | betaRefineElimIntro predicate baseValue predicateProof =>
       exact Step.par.betaRefineElimIntro
         (Step.par.refl baseValue) (Step.par.refl predicateProof)
+  | codataUnfoldState singleStep singleStepIH =>
+      exact Step.par.codataUnfoldCong singleStepIH (Step.par.refl _)
+  | codataUnfoldTransition singleStep singleStepIH =>
+      exact Step.par.codataUnfoldCong (Step.par.refl _) singleStepIH
+  | codataDestValue singleStep singleStepIH =>
+      exact Step.par.codataDestCong singleStepIH
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
       exact Step.par.transpCong universeLevel universeLevelLt

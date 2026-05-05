@@ -229,6 +229,13 @@ theorem Term.subst_pointwise
   | _, _, .refineElim refinedValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq refinedValue]
+  | _, _, .codataUnfold initialState transition => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq initialState,
+          Term.subst_pointwise pointwiseEq transition]
+  | _, _, .codataDest codataValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq codataValue]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl

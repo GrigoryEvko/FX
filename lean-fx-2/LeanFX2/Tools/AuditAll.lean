@@ -332,6 +332,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_refineIntro_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_refineElim_allais
 
+-- Typed D2.7 codata congruence parity
+#assert_no_axioms LeanFX2.Term.toRaw_codataUnfold
+#assert_no_axioms LeanFX2.Term.toRaw_codataDest
+#assert_no_axioms LeanFX2.Step.codataUnfoldState
+#assert_no_axioms LeanFX2.Step.codataUnfoldTransition
+#assert_no_axioms LeanFX2.Step.codataDestValue
+#assert_no_axioms LeanFX2.Step.par.codataUnfoldCong
+#assert_no_axioms LeanFX2.Step.par.codataDestCong
+#assert_no_axioms LeanFX2.ConvCumul.codataUnfoldCong
+#assert_no_axioms LeanFX2.ConvCumul.codataDestCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataUnfold_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_codataDest_allais
+
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl
 #assert_no_axioms LeanFX2.Conv.fromStep

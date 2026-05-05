@@ -148,6 +148,23 @@ theorem Term.toRaw_idStrictRec {mode : Mode} {level scope : Nat}
     (Term.idStrictRec baseCase witness).toRaw =
       RawTerm.idStrictRec baseCase.toRaw witness.toRaw := rfl
 
+theorem Term.toRaw_codataUnfold {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw) :
+    (Term.codataUnfold initialState transition).toRaw =
+      RawTerm.codataUnfold initialState.toRaw transition.toRaw := rfl
+
+theorem Term.toRaw_codataDest {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    (codataValue : Term context (Ty.codata stateType outputType) codataRaw) :
+    (Term.codataDest codataValue).toRaw =
+      RawTerm.codataDest codataValue.toRaw := rfl
+
 /-! ## Booleans, Naturals, Lists, Options, Eithers, Modal -/
 
 theorem Term.toRaw_boolTrue {mode : Mode} {level scope : Nat}

@@ -246,6 +246,11 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         (Term.subst termSubst predicateProof)
   | _, _, .refineElim refinedValue =>
       Term.refineElim (Term.subst termSubst refinedValue)
+  | _, _, .codataUnfold initialState transition =>
+      Term.codataUnfold (Term.subst termSubst initialState)
+                        (Term.subst termSubst transition)
+  | _, _, .codataDest codataValue =>
+      Term.codataDest (Term.subst termSubst codataValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` substitute to
   -- themselves (no scope-dependent payload), so rebuilding the ctor

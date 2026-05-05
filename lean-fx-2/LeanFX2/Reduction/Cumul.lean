@@ -658,6 +658,38 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (refinedRel : ConvCumul refinedFirst refinedSecond) :
       ConvCumul (Term.refineElim refinedFirst)
                 (Term.refineElim refinedSecond)
+  /-- Homogeneous codata unfold: ConvCumul-related state and transition
+  payloads lift to ConvCumul-related codata values. -/
+  | codataUnfoldCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateFirstRaw stateSecondRaw transitionFirstRaw transitionSecondRaw :
+        RawTerm scope}
+      {stateFirst : Term context stateType stateFirstRaw}
+      {stateSecond : Term context stateType stateSecondRaw}
+      {transitionFirst :
+        Term context (Ty.arrow stateType outputType) transitionFirstRaw}
+      {transitionSecond :
+        Term context (Ty.arrow stateType outputType) transitionSecondRaw}
+      (stateRel : ConvCumul stateFirst stateSecond)
+      (transitionRel : ConvCumul transitionFirst transitionSecond) :
+      ConvCumul (Term.codataUnfold stateFirst transitionFirst)
+                (Term.codataUnfold stateSecond transitionSecond)
+  /-- Homogeneous codata destructor: ConvCumul-related codata values lift
+  to ConvCumul-related observations. -/
+  | codataDestCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {codataFirstRaw codataSecondRaw : RawTerm scope}
+      {codataFirst :
+        Term context (Ty.codata stateType outputType) codataFirstRaw}
+      {codataSecond :
+        Term context (Ty.codata stateType outputType) codataSecondRaw}
+      (codataRel : ConvCumul codataFirst codataSecond) :
+      ConvCumul (Term.codataDest codataFirst)
+                (Term.codataDest codataSecond)
   /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
   lift to ConvCumul-related path abstractions. -/
   | pathLamCong

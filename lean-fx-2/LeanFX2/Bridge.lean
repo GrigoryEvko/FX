@@ -168,6 +168,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaRecordProjIntro ihFirst
   | betaRefineElimIntro _ _ ihValue ihProof =>
       exact RawStep.par.betaRefineElimIntro ihValue ihProof
+  | codataUnfoldCong _ _ ihState ihTransition =>
+      exact RawStep.par.codataUnfoldCong ihState ihTransition
+  | codataDestCong _ ihCodata =>
+      exact RawStep.par.codataDestCong ihCodata
   | betaFstPair secondValue _ ihFirst =>
       exact RawStep.par.betaFstPair _ ihFirst
   | betaSndPair firstValue _ ihSecond =>

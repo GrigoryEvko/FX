@@ -923,6 +923,39 @@ inductive Step :
       (predicateProof : Term context Ty.unit proofRaw) :
       Step (Term.refineElim (Term.refineIntro predicate baseValue predicateProof))
            baseValue
+  /-- Step inside codata unfold's initial state. -/
+  | codataUnfoldState {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRawSource stateRawTarget transitionRaw : RawTerm scope}
+      {stateSource : Term context stateType stateRawSource}
+      {stateTarget : Term context stateType stateRawTarget}
+      {transition : Term context (Ty.arrow stateType outputType) transitionRaw} :
+      Step stateSource stateTarget →
+      Step (Term.codataUnfold stateSource transition)
+           (Term.codataUnfold stateTarget transition)
+  /-- Step inside codata unfold's transition. -/
+  | codataUnfoldTransition {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {stateRaw transitionRawSource transitionRawTarget : RawTerm scope}
+      {initialState : Term context stateType stateRaw}
+      {transitionSource :
+        Term context (Ty.arrow stateType outputType) transitionRawSource}
+      {transitionTarget :
+        Term context (Ty.arrow stateType outputType) transitionRawTarget} :
+      Step transitionSource transitionTarget →
+      Step (Term.codataUnfold initialState transitionSource)
+           (Term.codataUnfold initialState transitionTarget)
+  /-- Step inside codata destruction. -/
+  | codataDestValue {mode level scope} {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {codataRawSource codataRawTarget : RawTerm scope}
+      {codataSource :
+        Term context (Ty.codata stateType outputType) codataRawSource}
+      {codataTarget :
+        Term context (Ty.codata stateType outputType) codataRawTarget} :
+      Step codataSource codataTarget →
+      Step (Term.codataDest codataSource)
+           (Term.codataDest codataTarget)
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
       (universeLevel : UniverseLevel)

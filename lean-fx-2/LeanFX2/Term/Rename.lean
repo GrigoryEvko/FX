@@ -259,6 +259,11 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         (Term.rename termRenaming predicateProof)
   | _, _, .refineElim refinedValue =>
       Term.refineElim (Term.rename termRenaming refinedValue)
+  | _, _, .codataUnfold initialState transition =>
+      Term.codataUnfold (Term.rename termRenaming initialState)
+                        (Term.rename termRenaming transition)
+  | _, _, .codataDest codataValue =>
+      Term.codataDest (Term.rename termRenaming codataValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` rename to
   -- themselves (no scope-dependent payload), so the `someType.rename

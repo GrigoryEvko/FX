@@ -429,6 +429,8 @@ theorem Term.headStep?_sound
   | recordProj _ => nomatch firedEq
   | refineIntro _ _ _ => nomatch firedEq
   | refineElim _ => nomatch firedEq
+  | codataUnfold _ _ => nomatch firedEq
+  | codataDest _ => nomatch firedEq
   | universeCode _ _ _ _ => nomatch firedEq
   | cumulUp _ _ _ _ _ _ => nomatch firedEq
   | equivReflId _ => nomatch firedEq
@@ -503,6 +505,7 @@ theorem Term.headStep?_sound
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -535,6 +538,7 @@ theorem Term.headStep?_sound
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -566,6 +570,7 @@ theorem Term.headStep?_sound
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -597,6 +602,7 @@ theorem Term.headStep?_sound
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
@@ -628,6 +634,7 @@ theorem Term.headStep?_sound
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
