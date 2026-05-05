@@ -1,4 +1,5 @@
 import LeanFX2.Cubical.PathLemmas
+import LeanFX2.Reduction.Cumul
 
 /-! # Cubical/Transport
 
@@ -117,6 +118,30 @@ theorem constantTypeTransport_sourceCong_toRawBridge
     using Step.par.toRawBridge
       (constantTypeTransport_sourceCong
         universeLevel universeLevelLt sourceType typeCode sourceStep)
+
+/-- Conversion-level congruence for the named constant-transport redex.
+This keeps future transport work using the named redex shape through
+`ConvCumul`, not just through `Step.par`. -/
+theorem constantTypeTransport_sourceConvCumul
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRawSource sourceRawTarget : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    {sourceValueSource : Term context sourceType sourceRawSource}
+    {sourceValueTarget : Term context sourceType sourceRawTarget}
+    (sourceRel : ConvCumul sourceValueSource sourceValueTarget) :
+    ConvCumul
+      (constantTypeTransport universeLevel universeLevelLt
+        sourceType typeCode sourceValueSource)
+      (constantTypeTransport universeLevel universeLevelLt
+        sourceType typeCode sourceValueTarget) :=
+  ConvCumul.transpCong universeLevel universeLevelLt
+    sourceType sourceType typeRaw typeRaw
+    (ConvCumul.refl _) sourceRel
 
 end Cubical
 end LeanFX2

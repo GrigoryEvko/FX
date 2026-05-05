@@ -106,6 +106,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceCong
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceCong_toRawBridge
+#assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceConvCumul
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathApp
 #assert_no_axioms LeanFX2.Step.par.betaPathApp
