@@ -58,7 +58,7 @@ import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Term
 import LeanFX2.Graded.AtkeyAttack
 import LeanFX2.Graded.Dimensions21
-import LeanFX2.FX1.Core
+import LeanFX2.FX1
 
 /-! # Tools/AuditAll — build-failing zero-axiom gate
 
@@ -825,6 +825,11 @@ namespace LeanFX2.Tools
 -- host-minimal gate, this passes with zero FX1 modules and begins enforcing
 -- as soon as the namespace is loaded.
 #assert_fx1_import_surface_clean
+
+-- Rich production / FX1 separation.  FX1 is the future minimal TCB root;
+-- rich production modules may not import it directly until a deliberate
+-- bridge/certificate boundary exists.
+#assert_rich_production_fx1_import_surface_clean
 
 -- Legacy Lean-kernel scaffold isolation.  The pre-FX1
 -- `LeanFX2.Lean.Kernel.*` modules may be built and audited, but rich

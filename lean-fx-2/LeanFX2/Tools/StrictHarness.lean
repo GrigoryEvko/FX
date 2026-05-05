@@ -30,8 +30,8 @@ or forbidden host axioms.  It is intentionally stricter than the
 project-wide gate because FX1/Core is the planned trusted root.
 
 The import-surface gates keep public production imports, host imports,
-FX1 imports, and the legacy Lean-kernel scaffold from accidentally
-collapsing into one dependency cone.
+FX1 imports, rich-production-to-FX1 imports, and the legacy Lean-kernel
+scaffold from accidentally collapsing into one dependency cone.
 -/
 
 namespace LeanFX2.Tools
@@ -384,6 +384,48 @@ def isFX1LeanKernelModuleName (moduleName : Name) : Bool :=
 /-- Any module under the future FX1 namespace. -/
 def isFX1ModuleName (moduleName : Name) : Bool :=
   (`LeanFX2.FX1).isPrefixOf moduleName
+
+/-! ## Rich production / FX1 separation -/
+
+/-- Direct FX1 imports from one rich production module. -/
+def forbiddenRichProductionFX1ImportsForModule
+    (moduleData : ModuleData) : Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenImports directImport =>
+      if isFX1ModuleName directImport.module then
+        forbiddenImports.push directImport.module
+      else
+        forbiddenImports)
+
+/-- Build-failing gate that keeps the rich production engine from importing
+FX1 directly.  FX1 is the future minimal trusted root, so rich modules must not
+silently depend on it before an explicit bridge/certificate layer exists. -/
+elab "#assert_rich_production_fx1_import_surface_clean" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedRichProductionModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if isRichProductionLeanFX2ModuleName moduleName then
+      scannedRichProductionModules := scannedRichProductionModules + 1
+      let forbiddenImports :=
+        forbiddenRichProductionFX1ImportsForModule moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (moduleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"rich production FX1-import surface ok: {scannedRichProductionModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: forbidden FX1 imports [{renderedImports}]"
+    let header :=
+      s!"rich production FX1-import surface FAILED: " ++
+      s!"{violations.size} of {scannedRichProductionModules} modules import FX1 directly"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
 /-- The only host module FX1 source files may import directly. -/
 def isAllowedFX1PreludeImport (moduleName : Name) : Bool :=

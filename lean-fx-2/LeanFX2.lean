@@ -211,16 +211,14 @@ import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
 import LeanFX2.InternalLanguage.Coherence
 
--- FX1 minimal trust spine
-import LeanFX2.FX1.Core
-
 /-! # LeanFX2 — umbrella import.
 
 Single-import gateway to the production lean-fx-2 engine.  Importing
 this deliberately excludes smoke tests, audit tooling, sketches, and
-the legacy `LeanFX2.Lean.Kernel` scaffold.  Lake still builds those
-modules via `.andSubmodules`; they are not part of the public kernel
-surface or trusted-root dependency story.
+the legacy `LeanFX2.Lean.Kernel` scaffold.  It also excludes the FX1
+minimal trust spine; import `LeanFX2.FX1` explicitly when working on
+that root calculus.  Lake still builds those modules via `.andSubmodules`;
+they are not part of this rich production import surface.
 
 ## Layered architecture (each depends only on layers below)
 
@@ -240,8 +238,7 @@ surface or trusted-root dependency story.
 | 11    | Surface: lex, parse, print, elab, roundtrip      |
 | 12    | Pipeline: end-to-end compile                     |
 | 13    | Cross-theory bridges, conservativity, translation |
-| 14    | FX1: minimal lambda-Pi trust spine, dependency-isolated by harness |
-| 15    | Audit/tooling modules: built by Lake, not imported by this umbrella |
+| 14    | Audit/tooling and FX1 modules: built by Lake, not imported by this umbrella |
 
 See `ARCHITECTURE.md` for the dependency DAG and per-layer file list.
 See `ROADMAP.md` for the phasing from skeleton to full engine.
