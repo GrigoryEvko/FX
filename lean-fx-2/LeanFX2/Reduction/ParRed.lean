@@ -1871,6 +1871,30 @@ theorem Step.par.castTargetType
   cases typeEquality
   exact parallelStep
 
+theorem Step.par.castSourceRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRawOriginal sourceRawReplacement targetRaw : RawTerm scope}
+    (rawEquality : sourceRawOriginal = sourceRawReplacement)
+    {sourceTerm : Term context sourceType sourceRawOriginal}
+    {targetTerm : Term context targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    Step.par (rawEquality ▸ sourceTerm) targetTerm := by
+  cases rawEquality
+  exact parallelStep
+
+theorem Step.par.castTargetRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRawOriginal targetRawReplacement : RawTerm scope}
+    (rawEquality : targetRawOriginal = targetRawReplacement)
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRawOriginal}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    Step.par sourceTerm (rawEquality ▸ targetTerm) := by
+  cases rawEquality
+  exact parallelStep
+
 theorem Step.par.castSourceTerm
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {sourceType targetType : Ty level scope}

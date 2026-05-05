@@ -6,5 +6,7 @@ import LeanFX2.Reduction.ParRed
 #print axioms LeanFX2.Step.toPar
 #print axioms LeanFX2.Step.par.castSourceType
 #print axioms LeanFX2.Step.par.castTargetType
+#print axioms LeanFX2.Step.par.castSourceRaw
+#print axioms LeanFX2.Step.par.castTargetRaw
 #print axioms LeanFX2.Step.par.castSourceTerm
 #print axioms LeanFX2.Step.par.castTargetTerm

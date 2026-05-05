@@ -1426,6 +1426,32 @@ theorem Step.castTargetType
   cases typeEquality
   exact singleStep
 
+/-- Replace the source raw index by a propositionally equal raw term. -/
+theorem Step.castSourceRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRawOriginal sourceRawReplacement targetRaw : RawTerm scope}
+    (rawEquality : sourceRawOriginal = sourceRawReplacement)
+    {sourceTerm : Term context sourceType sourceRawOriginal}
+    {targetTerm : Term context targetType targetRaw}
+    (singleStep : Step sourceTerm targetTerm) :
+    Step (rawEquality ▸ sourceTerm) targetTerm := by
+  cases rawEquality
+  exact singleStep
+
+/-- Replace the target raw index by a propositionally equal raw term. -/
+theorem Step.castTargetRaw
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRawOriginal targetRawReplacement : RawTerm scope}
+    (rawEquality : targetRawOriginal = targetRawReplacement)
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRawOriginal}
+    (singleStep : Step sourceTerm targetTerm) :
+    Step sourceTerm (rawEquality ▸ targetTerm) := by
+  cases rawEquality
+  exact singleStep
+
 /-- Replace the source Term by a propositionally equal Term (same Ty). -/
 theorem Step.castSourceTerm
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}

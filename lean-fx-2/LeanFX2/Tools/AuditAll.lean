@@ -107,6 +107,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.toRaw_subst
 #assert_no_axioms LeanFX2.Term.toRaw_weaken
 #assert_no_axioms LeanFX2.Term.toRaw_subst0
+#assert_no_axioms LeanFX2.Step.castSourceRaw
+#assert_no_axioms LeanFX2.Step.castTargetRaw
+#assert_no_axioms LeanFX2.Step.par.castSourceRaw
+#assert_no_axioms LeanFX2.Step.par.castTargetRaw
 
 -- Confluence core
 #assert_no_axioms LeanFX2.RawStep.par.cd_lemma

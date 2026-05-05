@@ -5,6 +5,8 @@ import LeanFX2.Reduction.Step
 #print axioms LeanFX2.Step
 #print axioms LeanFX2.Step.castSourceType
 #print axioms LeanFX2.Step.castTargetType
+#print axioms LeanFX2.Step.castSourceRaw
+#print axioms LeanFX2.Step.castTargetRaw
 #print axioms LeanFX2.Step.castSourceTerm
 #print axioms LeanFX2.Step.castTargetTerm
 
