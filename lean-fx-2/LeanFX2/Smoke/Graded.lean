@@ -212,7 +212,32 @@ def dimensions21_gradedTerm_unit_smoke :
       RawTerm.unit
       (Graded.GradeAttribution.zero :
         Graded.GradeAttribution Graded.semiringDimensions21 0) :=
-  Graded.GradedTerm.unit
+        Graded.GradedTerm.unit
+
+/-- A one-binding 21-dimension graded context used to exercise variable
+lookup through `GradedCtx.toCtx`. -/
+def dimensions21_singleUnitContext_smoke :
+    Graded.GradedCtx Mode.software 0 Graded.semiringDimensions21 1 :=
+  Graded.GradedCtx.cons
+    (Graded.GradedCtx.empty
+      (mode := Mode.software) (level := 0)
+      (dimensions := Graded.semiringDimensions21))
+    { bindingTy := Ty.unit,
+      grade := Graded.FXGradeVector21.one.semiringGrades }
+
+/-- The shadow graded-term layer can type a variable in a non-empty
+graded context.  This forces graded-context erasure and `varType` lookup
+to agree with the underlying typed `Term.var` constructor. -/
+def dimensions21_gradedTerm_var_smoke :
+    Graded.GradedTerm
+      dimensions21_singleUnitContext_smoke
+      (varType
+        (Graded.GradedCtx.toCtx dimensions21_singleUnitContext_smoke)
+        (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1))
+      (RawTerm.var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1))
+      (Graded.GradeAttribution.singleton
+        (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1)) :=
+  Graded.GradedTerm.var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1)
 
 /-- The shadow graded-term layer can build a closed ignored-argument
 lambda, guarded by the corrected Lam compatibility predicate. -/
@@ -298,6 +323,8 @@ def dimensions21_gradedTerm_subsume_smoke :
 #assert_no_axioms LeanFX2.Smoke.dimensions21_letRule_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_ifRule_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_unit_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_singleUnitContext_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_var_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_lam_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_app_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_boolElim_smoke
