@@ -57,6 +57,15 @@ theorem hitRecursor_constant_run_smoke :
     (encodedHit := HoTT.HIT.HITSetoid.indiscrete Unit)
     Bool true ()
 
+/-- Constant dependent HIT inductors compute by reflexive reduction. -/
+theorem hitInductor_constant_run_smoke :
+    (HoTT.HIT.HITInductor.constant
+      (encodedHit := HoTT.HIT.HITSetoid.indiscrete Unit)
+      Bool true).run () = true :=
+  HoTT.HIT.HITInductor.constant_run
+    (encodedHit := HoTT.HIT.HITSetoid.indiscrete Unit)
+    Bool true ()
+
 /-- Propositional truncation relates any two introduced witnesses. -/
 theorem propTrunc_squash_smoke :
     (HoTT.HIT.PropTrunc Unit).relation
@@ -267,6 +276,7 @@ theorem coequalizer_rec_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
+#assert_no_axioms LeanFX2.Smoke.hitInductor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.setTrunc_path_smoke

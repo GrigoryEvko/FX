@@ -89,6 +89,70 @@ theorem constant_run {encodedHit : HITSetoid.{carrierLevel}}
 
 end HITRecursor
 
+/-! ## Dependent induction over representatives
+
+This is still a representative-level eliminator, not Lean `Quot`-style
+elimination.  The motive is indexed by carrier representatives, and the
+caller supplies the coherence proof that related representatives have
+heterogeneously equal motive values. -/
+
+/-- Dependent inductor out of an explicit HIT setoid presentation.
+
+The result is indexed by representatives.  `respectsRelation` is the
+dependent analogue of `HITRecursor.respectsRelation`: whenever the HIT
+relation connects two representatives, the selected motive witnesses are
+heterogeneously equal.  This avoids quotienting the carrier, so the
+definition cannot depend on `Quot.sound`. -/
+structure HITInductor
+    (encodedHit : HITSetoid.{carrierLevel})
+    (motive : encodedHit.carrier → Sort resultLevel) where
+  /-- Underlying dependent function on point representatives. -/
+  apply : (someValue : encodedHit.carrier) → motive someValue
+  /-- The dependent function respects the HIT path relation. -/
+  respectsRelation :
+    ∀ {leftValue rightValue : encodedHit.carrier},
+      encodedHit.relation leftValue rightValue →
+        HEq (apply leftValue) (apply rightValue)
+
+namespace HITInductor
+
+/-- Apply a dependent HIT inductor to a representative. -/
+def run {encodedHit : HITSetoid.{carrierLevel}}
+    {motive : encodedHit.carrier → Sort resultLevel}
+    (inductor : HITInductor encodedHit motive)
+    (someValue : encodedHit.carrier) : motive someValue :=
+  inductor.apply someValue
+
+/-- A dependent HIT inductor maps related representatives to
+heterogeneously equal motive witnesses. -/
+theorem run_respects {encodedHit : HITSetoid.{carrierLevel}}
+    {motive : encodedHit.carrier → Sort resultLevel}
+    (inductor : HITInductor encodedHit motive)
+    {leftValue rightValue : encodedHit.carrier}
+    (relationWitness : encodedHit.relation leftValue rightValue) :
+    HEq (inductor.run leftValue) (inductor.run rightValue) :=
+  inductor.respectsRelation relationWitness
+
+/-- Build a dependent inductor for a constant motive from a constant
+result. -/
+def constant {encodedHit : HITSetoid.{carrierLevel}}
+    (resultType : Sort resultLevel)
+    (resultValue : resultType) :
+    HITInductor encodedHit (fun _ => resultType) where
+  apply := fun _ => resultValue
+  respectsRelation := fun _ => HEq.rfl
+
+/-- The constant dependent inductor computes by reflexive reduction. -/
+theorem constant_run {encodedHit : HITSetoid.{carrierLevel}}
+    (resultType : Sort resultLevel)
+    (resultValue : resultType)
+    (someValue : encodedHit.carrier) :
+    (HITInductor.constant resultType resultValue).run someValue =
+      resultValue :=
+  rfl
+
+end HITInductor
+
 end HIT
 end HoTT
 end LeanFX2
