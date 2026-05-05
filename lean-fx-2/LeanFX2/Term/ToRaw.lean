@@ -487,4 +487,183 @@ theorem Term.toRaw_equivApp {mode : Mode} {level scope : Nat}
     (Term.equivApp equivTerm argumentTerm).toRaw =
       RawTerm.equivApp equivTerm.toRaw argumentTerm.toRaw := rfl
 
+theorem Term.toRaw_universeCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    (Term.universeCode (context := context)
+      innerLevel outerLevel cumulOk levelLe).toRaw =
+      RawTerm.universeCode innerLevel.toNat := rfl
+
+theorem Term.toRaw_cumulUp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    (typeCode : Term context (Ty.universe lowerLevel levelLeLow) codeRaw) :
+    (Term.cumulUp lowerLevel higherLevel cumulMonotone
+      levelLeLow levelLeHigh typeCode).toRaw =
+      RawTerm.cumulUpMarker typeCode.toRaw := rfl
+
+theorem Term.toRaw_equivReflId {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) :
+    (Term.equivReflId (context := context) carrier).toRaw =
+      RawTerm.equivIntro
+        (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+        (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) := rfl
+
+theorem Term.toRaw_funextRefl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    (Term.funextRefl (context := context)
+      domainType codomainType applyRaw).toRaw =
+      RawTerm.lam (RawTerm.refl applyRaw) := rfl
+
+theorem Term.toRaw_equivReflIdAtId {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope) :
+    (Term.equivReflIdAtId (context := context)
+      innerLevel innerLevelLt carrier carrierRaw).toRaw =
+      RawTerm.equivIntro
+        (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+        (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) := rfl
+
+theorem Term.toRaw_funextReflAtId {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    (Term.funextReflAtId (context := context)
+      domainType codomainType applyRaw).toRaw =
+      RawTerm.lam (RawTerm.refl applyRaw) := rfl
+
+theorem Term.toRaw_equivIntroHet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw) :
+    (Term.equivIntroHet forward backward).toRaw =
+      RawTerm.equivIntro forward.toRaw backward.toRaw := rfl
+
+theorem Term.toRaw_uaIntroHet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (equivWitness : Term context (Ty.equiv carrierA carrierB)
+      (RawTerm.equivIntro forwardRaw backwardRaw)) :
+    (Term.uaIntroHet (context := context)
+      innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness).toRaw =
+      equivWitness.toRaw := rfl
+
+theorem Term.toRaw_funextIntroHet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyARaw applyBRaw : RawTerm (scope + 1)) :
+    (Term.funextIntroHet (context := context)
+      domainType codomainType applyARaw applyBRaw).toRaw =
+      RawTerm.lam (RawTerm.refl applyARaw) := rfl
+
+theorem Term.toRaw_arrowCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm scope) :
+    (Term.arrowCode (context := context)
+      outerLevel levelLe domainCodeRaw codomainCodeRaw).toRaw =
+      RawTerm.arrowCode domainCodeRaw codomainCodeRaw := rfl
+
+theorem Term.toRaw_piTyCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    (Term.piTyCode (context := context)
+      outerLevel levelLe domainCodeRaw codomainCodeRaw).toRaw =
+      RawTerm.piTyCode domainCodeRaw codomainCodeRaw := rfl
+
+theorem Term.toRaw_sigmaTyCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1)) :
+    (Term.sigmaTyCode (context := context)
+      outerLevel levelLe domainCodeRaw codomainCodeRaw).toRaw =
+      RawTerm.sigmaTyCode domainCodeRaw codomainCodeRaw := rfl
+
+theorem Term.toRaw_productCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm scope) :
+    (Term.productCode (context := context)
+      outerLevel levelLe firstCodeRaw secondCodeRaw).toRaw =
+      RawTerm.productCode firstCodeRaw secondCodeRaw := rfl
+
+theorem Term.toRaw_sumCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    (Term.sumCode (context := context)
+      outerLevel levelLe leftCodeRaw rightCodeRaw).toRaw =
+      RawTerm.sumCode leftCodeRaw rightCodeRaw := rfl
+
+theorem Term.toRaw_listCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    (Term.listCode (context := context)
+      outerLevel levelLe elementCodeRaw).toRaw =
+      RawTerm.listCode elementCodeRaw := rfl
+
+theorem Term.toRaw_optionCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope) :
+    (Term.optionCode (context := context)
+      outerLevel levelLe elementCodeRaw).toRaw =
+      RawTerm.optionCode elementCodeRaw := rfl
+
+theorem Term.toRaw_eitherCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope) :
+    (Term.eitherCode (context := context)
+      outerLevel levelLe leftCodeRaw rightCodeRaw).toRaw =
+      RawTerm.eitherCode leftCodeRaw rightCodeRaw := rfl
+
+theorem Term.toRaw_idCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm scope) :
+    (Term.idCode (context := context)
+      outerLevel levelLe typeCodeRaw leftRaw rightRaw).toRaw =
+      RawTerm.idCode typeCodeRaw leftRaw rightRaw := rfl
+
+theorem Term.toRaw_equivCode {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope) :
+    (Term.equivCode (context := context)
+      outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw).toRaw =
+      RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw := rfl
+
 end LeanFX2
