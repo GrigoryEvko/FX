@@ -5,6 +5,7 @@ import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
 import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.S1
+import LeanFX2.HoTT.HIT.Suspension
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
@@ -125,6 +126,26 @@ theorem s1_rec_base_smoke :
     (HoTT.HIT.S1.rec Bool true).run HoTT.HIT.S1.base = true :=
   HoTT.HIT.S1.rec_base Bool true
 
+/-- A suspension meridian relates north and south when a source witness exists. -/
+theorem suspension_meridian_smoke :
+    (HoTT.HIT.Suspension.setoid Unit).relation
+      (HoTT.HIT.Suspension.north (sourceType := Unit))
+      (HoTT.HIT.Suspension.south (sourceType := Unit)) :=
+  HoTT.HIT.Suspension.meridian ()
+
+/-- Suspension recursion computes at north. -/
+theorem suspension_rec_north_smoke :
+    (HoTT.HIT.Suspension.rec
+      (sourceType := Unit)
+      Bool true true
+      (fun _ => rfl)).run
+      (HoTT.HIT.Suspension.north (sourceType := Unit)) =
+      true :=
+  HoTT.HIT.Suspension.rec_north
+    (sourceType := Unit)
+    Bool true true
+    (fun _ => rfl)
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
@@ -134,5 +155,7 @@ theorem s1_rec_base_smoke :
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_loop_spec_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_rec_base_smoke
+#assert_no_axioms LeanFX2.Smoke.suspension_meridian_smoke
+#assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
 
 end LeanFX2.Smoke
