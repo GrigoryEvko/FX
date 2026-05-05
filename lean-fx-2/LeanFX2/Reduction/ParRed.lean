@@ -448,6 +448,104 @@ inductive Step.par :
       Step.par capSource capTarget →
       Step.par (Term.hcomp sidesSource capSource)
                (Term.hcomp sidesTarget capTarget)
+  /-- Raw-name parity alias for `pathLam` congruence. -/
+  | pathLamCong {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+      {bodySource :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+      {bodyTarget :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget} :
+      Step.par bodySource bodyTarget →
+      Step.par
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodySource)
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget)
+  /-- Raw-name parity alias for `pathApp` congruence. -/
+  | pathAppCong {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathRawSource pathRawTarget intervalRawSource intervalRawTarget :
+        RawTerm scope}
+      {pathSource :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawSource}
+      {pathTarget :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawTarget}
+      {intervalSource : Term context Ty.interval intervalRawSource}
+      {intervalTarget : Term context Ty.interval intervalRawTarget} :
+      Step.par pathSource pathTarget →
+      Step.par intervalSource intervalTarget →
+      Step.par (Term.pathApp pathSource intervalSource)
+               (Term.pathApp pathTarget intervalTarget)
+  /-- Raw-name parity alias for `glueIntro` congruence. -/
+  | glueIntroCong {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+        RawTerm scope}
+      {baseSource : Term context baseType baseRawSource}
+      {baseTarget : Term context baseType baseRawTarget}
+      {partialSource : Term context baseType partialRawSource}
+      {partialTarget : Term context baseType partialRawTarget} :
+      Step.par baseSource baseTarget →
+      Step.par partialSource partialTarget →
+      Step.par
+        (Term.glueIntro baseType boundaryWitness baseSource partialSource)
+        (Term.glueIntro baseType boundaryWitness baseTarget partialTarget)
+  /-- Raw-name parity alias for `glueElim` congruence. -/
+  | glueElimCong {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {gluedRawSource gluedRawTarget : RawTerm scope}
+      {gluedSource :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawSource}
+      {gluedTarget :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawTarget} :
+      Step.par gluedSource gluedTarget →
+      Step.par (Term.glueElim gluedSource)
+               (Term.glueElim gluedTarget)
+  /-- Raw-name parity alias for `transp` congruence. -/
+  | transpCong {mode level scope} {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : RawTerm scope)
+      {pathRawSource pathRawTarget sourceRawSource sourceRawTarget :
+        RawTerm scope}
+      {typePathSource :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRawSource}
+      {typePathTarget :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRawTarget}
+      {sourceValueSource : Term context sourceType sourceRawSource}
+      {sourceValueTarget : Term context sourceType sourceRawTarget} :
+      Step.par typePathSource typePathTarget →
+      Step.par sourceValueSource sourceValueTarget →
+      Step.par
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSource sourceValueSource)
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget)
+  /-- Raw-name parity alias for `hcomp` congruence. -/
+  | hcompCong {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {sidesRawSource sidesRawTarget capRawSource capRawTarget :
+        RawTerm scope}
+      {sidesSource : Term context carrierType sidesRawSource}
+      {sidesTarget : Term context carrierType sidesRawTarget}
+      {capSource : Term context carrierType capRawSource}
+      {capTarget : Term context carrierType capRawTarget} :
+      Step.par sidesSource sidesTarget →
+      Step.par capSource capTarget →
+      Step.par (Term.hcomp sidesSource capSource)
+               (Term.hcomp sidesTarget capTarget)
   /-- Shallow β: `(λx. body) arg ⟶ body[arg/x]` with parallel
   reduction in body and arg.  Source has Ty `cod`; target via
   `Term.subst0` has Ty `cod.weaken.subst0 dom argumentRawTarget` —

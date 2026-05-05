@@ -194,7 +194,7 @@ RawStep.par cong/β rule whose typed Step.par mirror has not been
 shipped yet (the raw cubical/HoTT/refine/record/codata/session/effect/
 type-code layers landed before the corresponding typed layer was wired
 up).  Tracking these as documented exceptions means the parity gate
-still catches NEW raw-only ctors going forward, while the 41 existing
+still catches NEW raw-only ctors going forward, while the 35 existing
 gaps are recorded explicitly rather than being silently allowed.
 
 Discipline for moving an entry OUT of this list: add the matching
@@ -204,18 +204,10 @@ Discipline for moving an entry OUT of this list: add the matching
 entry below. -/
 def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   let suffix := Name.lastSegmentString rawCtorName
-  -- Section A: cubical / interval cong rules (typed mirrors pending D2.5
-  -- typed cascade — currently only path-app and Glue-elim β have typed
-  -- mirrors; cong rules and other primitives ship raw-only).
+  -- Section A: interval operations with no typed Term constructors yet.
   suffix == "intervalOppCong" ||
   suffix == "intervalMeetCong" ||
   suffix == "intervalJoinCong" ||
-  suffix == "pathLamCong" ||
-  suffix == "pathAppCong" ||
-  suffix == "glueIntroCong" ||
-  suffix == "glueElimCong" ||
-  suffix == "transpCong" ||
-  suffix == "hcompCong" ||
   -- Section B: HoTT observational-equality cong rules (typed mirrors
   -- pending D2.6 cascade — eqType and eqArrow already have typed Step
   -- counterparts; remaining oeq cong/funext rules ship raw-only).

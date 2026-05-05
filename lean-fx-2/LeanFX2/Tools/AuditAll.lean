@@ -226,7 +226,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceCong_toRawBridge
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_sourceConvCumul
 #assert_no_axioms LeanFX2.Step.par.pathLam
+#assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp
+#assert_no_axioms LeanFX2.Step.par.pathAppCong
 #assert_no_axioms LeanFX2.Step.par.betaPathApp
 #assert_no_axioms LeanFX2.Step.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.toRawBridge
@@ -235,7 +237,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.toRaw_glueIntro
 #assert_no_axioms LeanFX2.Term.toRaw_glueElim
 #assert_no_axioms LeanFX2.Step.par.glueIntro
+#assert_no_axioms LeanFX2.Step.par.glueIntroCong
 #assert_no_axioms LeanFX2.Step.par.glueElim
+#assert_no_axioms LeanFX2.Step.par.glueElimCong
+#assert_no_axioms LeanFX2.Step.par.transpCong
+#assert_no_axioms LeanFX2.Step.par.hcompCong
 #assert_no_axioms LeanFX2.Step.par.betaGlueElimIntro
 #assert_no_axioms LeanFX2.Step.par.betaGlueElimIntroDeep
 #assert_no_axioms LeanFX2.ConvCumul.glueIntroCong
