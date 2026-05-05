@@ -224,6 +224,18 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         (Term.rename termRenaming partialValue)
   | _, _, .glueElim gluedValue =>
       Term.glueElim (Term.rename termRenaming gluedValue)
+  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw typePath sourceValue =>
+      Term.transp universeLevel universeLevelLt
+        (sourceType.rename rho)
+        (targetType.rename rho)
+        (sourceTypeRaw.rename rho)
+        (targetTypeRaw.rename rho)
+        (Term.rename termRenaming typePath)
+        (Term.rename termRenaming sourceValue)
+  | _, _, .hcomp sidesValue capValue =>
+      Term.hcomp (Term.rename termRenaming sidesValue)
+                 (Term.rename termRenaming capValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` rename to
   -- themselves (no scope-dependent payload), so the `someType.rename

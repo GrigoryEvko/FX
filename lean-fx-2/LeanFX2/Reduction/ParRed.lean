@@ -408,6 +408,46 @@ inductive Step.par :
       Step.par gluedSource gluedTarget →
       Step.par (Term.glueElim gluedSource)
                (Term.glueElim gluedTarget)
+  /-- Parallel-cong: transport reduces in its type path and source value. -/
+  | transp {mode level scope} {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : RawTerm scope)
+      {pathRawSource pathRawTarget sourceRawSource sourceRawTarget :
+        RawTerm scope}
+      {typePathSource :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRawSource}
+      {typePathTarget :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRawTarget}
+      {sourceValueSource : Term context sourceType sourceRawSource}
+      {sourceValueTarget : Term context sourceType sourceRawTarget} :
+      Step.par typePathSource typePathTarget →
+      Step.par sourceValueSource sourceValueTarget →
+      Step.par
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSource sourceValueSource)
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget)
+  /-- Parallel-cong: homogeneous composition reduces in sides and cap. -/
+  | hcomp {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {sidesRawSource sidesRawTarget capRawSource capRawTarget :
+        RawTerm scope}
+      {sidesSource : Term context carrierType sidesRawSource}
+      {sidesTarget : Term context carrierType sidesRawTarget}
+      {capSource : Term context carrierType capRawSource}
+      {capTarget : Term context carrierType capRawTarget} :
+      Step.par sidesSource sidesTarget →
+      Step.par capSource capTarget →
+      Step.par (Term.hcomp sidesSource capSource)
+               (Term.hcomp sidesTarget capTarget)
   /-- Shallow β: `(λx. body) arg ⟶ body[arg/x]` with parallel
   reduction in body and arg.  Source has Ty `cod`; target via
   `Term.subst0` has Ty `cod.weaken.subst0 dom argumentRawTarget` —

@@ -824,6 +824,68 @@ theorem ConvCumul.subst_compatible_glueElim_allais
               ((Term.glueElim gluedValue).substHet termSubstB) :=
   ConvCumul.glueElimCong gluedCompat
 
+/-- Allais arm for `transp`: two-subterm cong via `transpCong`. -/
+theorem ConvCumul.subst_compatible_transp_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ sourceLevel)
+    (sourceType targetType : Ty sourceLevel sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    (typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term sourceCtx sourceType sourceRaw)
+    (pathCompat :
+      ConvCumul (typePath.substHet termSubstA)
+                (typePath.substHet termSubstB))
+    (sourceCompat :
+      ConvCumul (sourceValue.substHet termSubstA)
+                (sourceValue.substHet termSubstB)) :
+    ConvCumul
+      ((Term.transp universeLevel universeLevelLt sourceType targetType
+        sourceTypeRaw targetTypeRaw typePath sourceValue).substHet
+        termSubstA)
+      ((Term.transp universeLevel universeLevelLt sourceType targetType
+        sourceTypeRaw targetTypeRaw typePath sourceValue).substHet
+        termSubstB) :=
+  ConvCumul.transpCong universeLevel
+    (Nat.le_trans universeLevelLt sigma.cumulOk)
+    (sourceType.substHet sigma)
+    (targetType.substHet sigma)
+    (sourceTypeRaw.subst sigma.forRaw)
+    (targetTypeRaw.subst sigma.forRaw)
+    pathCompat sourceCompat
+
+/-- Allais arm for `hcomp`: two-subterm cong via `hcompCong`. -/
+theorem ConvCumul.subst_compatible_hcomp_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrierType : Ty sourceLevel sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    (sidesValue : Term sourceCtx carrierType sidesRaw)
+    (capValue : Term sourceCtx carrierType capRaw)
+    (sidesCompat :
+      ConvCumul (sidesValue.substHet termSubstA)
+                (sidesValue.substHet termSubstB))
+    (capCompat :
+      ConvCumul (capValue.substHet termSubstA)
+                (capValue.substHet termSubstB)) :
+    ConvCumul ((Term.hcomp sidesValue capValue).substHet termSubstA)
+              ((Term.hcomp sidesValue capValue).substHet termSubstB) :=
+  ConvCumul.hcompCong sidesCompat capCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

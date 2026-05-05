@@ -289,6 +289,41 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {boundaryWitness gluedRaw : RawTerm scope}
       (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
       Term context baseType (RawTerm.glueElim gluedRaw)
+  /-- Cubical transport fragment over a schematic universe path.
+
+      This mirrors the current raw two-argument `RawTerm.transp path source`
+      without pretending to implement the full type-family transport rules.
+      The raw endpoints are the universe-level codes connected by
+      `typePath`; `sourceType` and `targetType` are the typed carriers used
+      by the source and result.  The relation between the schematic raw codes
+      and these `Ty` values is intentionally explicit data, matching the
+      existing heterogeneous-univalence constructors. -/
+  | transp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : RawTerm scope)
+      {pathRaw sourceRaw : RawTerm scope}
+      (typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRaw)
+      (sourceValue : Term context sourceType sourceRaw) :
+      Term context targetType (RawTerm.transp pathRaw sourceRaw)
+  /-- Homogeneous cubical composition fragment.
+
+      Current raw `hcomp` has only sides and cap payloads.  The typed mirror
+      therefore keeps both payloads in one carrier and adds congruence only;
+      computational hcomp boundary rules remain future work. -/
+  | hcomp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {sidesRaw capRaw : RawTerm scope}
+      (sidesValue : Term context carrierType sidesRaw)
+      (capValue : Term context carrierType capRaw) :
+      Term context carrierType (RawTerm.hcomp sidesRaw capRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

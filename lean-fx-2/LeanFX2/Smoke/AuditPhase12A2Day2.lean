@@ -13,10 +13,11 @@ import LeanFX2.Algo.WHNF
 /-! # AuditPhase12A2Day2 — Day 2 (Phase 12.A.2) zero-axiom audit.
 
 Day 2 of the cubical+2LTT+HOTT sprint shipped:
-* D2.5–D2.7 — raw-level reductions, plus typed path-application and
-  Glue-elimination parity for D2.5.  At the raw level the cong rules for all 27 new
-  ctors landed earlier; this audit also anchors the D2.5 raw
-  betaPathApp / Glue beta increments and the typed beta mirrors.
+* D2.5–D2.7 — raw-level reductions, plus typed path-application,
+  Glue-elimination, transport-cong, and hcomp-cong parity for D2.5.
+  At the raw level the cong rules for all 27 new ctors landed earlier;
+  this audit also anchors the D2.5 raw betaPathApp / Glue beta
+  increments and the typed beta mirrors.
   Remaining raw β/ι rules for new ctors are still paired with their
   cd-extension in Confluence/RawCd.lean before being claimed.
 * D2.9 — RawStep.par 27 new cong rules (DONE in 2afe3493)
@@ -25,8 +26,9 @@ Day 2 of the cubical+2LTT+HOTT sprint shipped:
 * D2.11 — THIS audit, plus 27 new inversion lemmas added in this commit.
 
 Strategic deferral:
-* D2.5 typed transport and hcomp parity still wait for their typed
-  Term shapes.
+* D2.5 transport / hcomp computational rules still wait for their full
+  typed semantics.  The current typed `transp` and `hcomp` slice is
+  congruence parity only.
 * D2.6–D2.7 additional typed rules wait for typed Term ctors to land per-need
   (matches D1.9 deferral).
 
@@ -78,6 +80,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Term.toRaw_pathApp
 #print axioms LeanFX2.Term.toRaw_glueIntro
 #print axioms LeanFX2.Term.toRaw_glueElim
+#print axioms LeanFX2.Term.toRaw_transp
+#print axioms LeanFX2.Term.toRaw_hcomp
 #print axioms LeanFX2.Term.subst_pointwise
 #print axioms LeanFX2.Step.par.pathLam
 #print axioms LeanFX2.Step.par.pathApp
@@ -87,17 +91,23 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.glueElim
 #print axioms LeanFX2.Step.par.betaGlueElimIntro
 #print axioms LeanFX2.Step.par.betaGlueElimIntroDeep
+#print axioms LeanFX2.Step.par.transp
+#print axioms LeanFX2.Step.par.hcomp
 #print axioms LeanFX2.Step.par.toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong
 #print axioms LeanFX2.ConvCumul.glueIntroCong
 #print axioms LeanFX2.ConvCumul.glueElimCong
+#print axioms LeanFX2.ConvCumul.transpCong
+#print axioms LeanFX2.ConvCumul.hcompCong
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval0_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval1_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_pathLam_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_pathApp_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_glueIntro_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_glueElim_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_transp_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_hcomp_allais
 #print axioms LeanFX2.Term.subst_compatible_pointwise_allais
 #print axioms LeanFX2.Term.headCtor
 #print axioms LeanFX2.Term.isWHNF

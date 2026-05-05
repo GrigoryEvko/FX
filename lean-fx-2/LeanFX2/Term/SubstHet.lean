@@ -226,6 +226,19 @@ def Term.substHet {mode : Mode}
         (Term.substHet termSubstHet partialValue)
   | _, _, .glueElim gluedValue =>
       Term.glueElim (Term.substHet termSubstHet gluedValue)
+  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw typePath sourceValue =>
+      Term.transp universeLevel
+        (Nat.le_trans universeLevelLt sigma.cumulOk)
+        (sourceType.substHet sigma)
+        (targetType.substHet sigma)
+        (sourceTypeRaw.subst sigma.forRaw)
+        (targetTypeRaw.subst sigma.forRaw)
+        (Term.substHet termSubstHet typePath)
+        (Term.substHet termSubstHet sourceValue)
+  | _, _, .hcomp sidesValue capValue =>
+      Term.hcomp (Term.substHet termSubstHet sidesValue)
+                 (Term.substHet termSubstHet capValue)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

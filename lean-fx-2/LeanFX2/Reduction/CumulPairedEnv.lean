@@ -311,6 +311,17 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .glueElim gluedValue =>
       ConvCumul.subst_compatible_glueElim_allais gluedValue
         (Term.subst_compatible_pointwise_allais compat gluedValue)
+  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw typePath sourceValue =>
+      ConvCumul.subst_compatible_transp_allais
+        universeLevel universeLevelLt sourceType targetType
+        sourceTypeRaw targetTypeRaw typePath sourceValue
+        (Term.subst_compatible_pointwise_allais compat typePath)
+        (Term.subst_compatible_pointwise_allais compat sourceValue)
+  | _, _, .hcomp sidesValue capValue =>
+      ConvCumul.subst_compatible_hcomp_allais sidesValue capValue
+        (Term.subst_compatible_pointwise_allais compat sidesValue)
+        (Term.subst_compatible_pointwise_allais compat capValue)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)

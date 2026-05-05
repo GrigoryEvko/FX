@@ -78,6 +78,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.headCtor
 #assert_no_axioms LeanFX2.Term.isWHNF
 
+-- Typed D2.5 transport / hcomp congruence parity
+#assert_no_axioms LeanFX2.Term.toRaw_transp
+#assert_no_axioms LeanFX2.Term.toRaw_hcomp
+#assert_no_axioms LeanFX2.Step.par.transp
+#assert_no_axioms LeanFX2.Step.par.hcomp
+#assert_no_axioms LeanFX2.ConvCumul.transpCong
+#assert_no_axioms LeanFX2.ConvCumul.hcompCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_transp_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_hcomp_allais
+
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl
 #assert_no_axioms LeanFX2.Conv.fromStep

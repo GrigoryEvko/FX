@@ -88,6 +88,8 @@ inductive Term.HeadCtor : Type
   | pathApp
   | glueIntro
   | glueElim
+  | transp
+  | hcomp
   | universeCode
   | cumulUp
   | equivReflId
@@ -152,6 +154,8 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .pathApp _ _ => .pathApp
   | .glueIntro _ _ _ _ => .glueIntro
   | .glueElim _ => .glueElim
+  | .transp _ _ _ _ _ _ _ _ => .transp
+  | .hcomp _ _ => .hcomp
   | .universeCode _ _ _ _ => .universeCode
   | .cumulUp _ _ _ _ _ _ => .cumulUp
   | .equivReflId _ => .equivReflId
@@ -205,6 +209,8 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .interval1 => true
   | .pathLam _ _ _ _ => true
   | .glueIntro _ _ _ _ => true
+  | .transp _ _ _ _ _ _ _ _ => true
+  | .hcomp _ _ => true
   -- Universe-code is a value (no β/ι redex possible at this head)
   | .universeCode _ _ _ _ => true
   -- Cumul-up is a value (the inner term is a closed universe-code,
@@ -342,6 +348,8 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -405,6 +413,8 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -468,6 +478,8 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -531,6 +543,8 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -594,6 +608,8 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -668,6 +684,8 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -731,6 +749,8 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -794,6 +814,8 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -857,6 +879,8 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -920,6 +944,8 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -983,6 +1009,8 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
   | glueElim _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq

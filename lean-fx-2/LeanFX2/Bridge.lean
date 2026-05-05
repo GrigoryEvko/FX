@@ -122,6 +122,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.glueIntroCong ihBase ihPartial
   | glueElim _ ihGlued =>
       exact RawStep.par.glueElimCong ihGlued
+  | transp _ _ _ _ _ _ _ _ ihPath ihSource =>
+      exact RawStep.par.transpCong ihPath ihSource
+  | hcomp _ _ ihSides ihCap =>
+      exact RawStep.par.hcompCong ihSides ihCap
   -- β shallow (5)
   | betaApp _ _ ihBody ihArgument =>
       exact RawStep.par.betaApp ihBody ihArgument

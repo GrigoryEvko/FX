@@ -613,6 +613,52 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (gluedRel : ConvCumul gluedFirst gluedSecond) :
       ConvCumul (Term.glueElim gluedFirst)
                 (Term.glueElim gluedSecond)
+  /-- Homogeneous transport: ConvCumul-related type paths and source
+  values lift to ConvCumul-related transport terms. -/
+  | transpCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : RawTerm scope)
+      {pathFirstRaw pathSecondRaw sourceFirstRaw sourceSecondRaw :
+        RawTerm scope}
+      {typePathFirst :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathFirstRaw}
+      {typePathSecond :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathSecondRaw}
+      {sourceFirst : Term context sourceType sourceFirstRaw}
+      {sourceSecond : Term context sourceType sourceSecondRaw}
+      (pathRel : ConvCumul typePathFirst typePathSecond)
+      (sourceRel : ConvCumul sourceFirst sourceSecond) :
+      ConvCumul
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathFirst sourceFirst)
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSecond sourceSecond)
+  /-- Homogeneous hcomp: ConvCumul-related sides and cap values lift to
+  ConvCumul-related homogeneous compositions. -/
+  | hcompCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {sidesFirstRaw sidesSecondRaw capFirstRaw capSecondRaw :
+        RawTerm scope}
+      {sidesFirst : Term context carrierType sidesFirstRaw}
+      {sidesSecond : Term context carrierType sidesSecondRaw}
+      {capFirst : Term context carrierType capFirstRaw}
+      {capSecond : Term context carrierType capSecondRaw}
+      (sidesRel : ConvCumul sidesFirst sidesSecond)
+      (capRel : ConvCumul capFirst capSecond) :
+      ConvCumul (Term.hcomp sidesFirst capFirst)
+                (Term.hcomp sidesSecond capSecond)
   /-- Homogeneous equivIntroHet: ConvCumul-related forward + backward
   subterms lift to ConvCumul-related equivIntroHet.  Two-subterm cong
   rule mirroring `pairCong` and `listConsCong`.  Phase 12.A.B8.5. -/

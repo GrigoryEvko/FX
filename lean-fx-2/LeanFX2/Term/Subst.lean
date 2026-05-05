@@ -210,6 +210,18 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         (Term.subst termSubst partialValue)
   | _, _, .glueElim gluedValue =>
       Term.glueElim (Term.subst termSubst gluedValue)
+  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw typePath sourceValue =>
+      Term.transp universeLevel universeLevelLt
+        (sourceType.subst sigma)
+        (targetType.subst sigma)
+        (sourceTypeRaw.subst sigma.forRaw)
+        (targetTypeRaw.subst sigma.forRaw)
+        (Term.subst termSubst typePath)
+        (Term.subst termSubst sourceValue)
+  | _, _, .hcomp sidesValue capValue =>
+      Term.hcomp (Term.subst termSubst sidesValue)
+                 (Term.subst termSubst capValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` substitute to
   -- themselves (no scope-dependent payload), so rebuilding the ctor

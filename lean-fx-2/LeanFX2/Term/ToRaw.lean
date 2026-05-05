@@ -308,4 +308,30 @@ theorem Term.toRaw_glueElim {mode : Mode} {level scope : Nat}
     (Term.glueElim gluedValue).toRaw =
       RawTerm.glueElim gluedValue.toRaw := rfl
 
+theorem Term.toRaw_transp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    (Term.transp universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw typePath sourceValue).toRaw =
+      RawTerm.transp typePath.toRaw sourceValue.toRaw := rfl
+
+theorem Term.toRaw_hcomp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    (sidesValue : Term context carrierType sidesRaw)
+    (capValue : Term context carrierType capRaw) :
+    (Term.hcomp sidesValue capValue).toRaw =
+      RawTerm.hcomp sidesValue.toRaw capValue.toRaw := rfl
+
 end LeanFX2

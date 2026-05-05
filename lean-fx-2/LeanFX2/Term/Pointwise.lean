@@ -192,6 +192,14 @@ theorem Term.subst_pointwise
   | _, _, .glueElim gluedValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq gluedValue]
+  | _, _, .transp _ _ _ _ _ _ typePath sourceValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq typePath,
+          Term.subst_pointwise pointwiseEq sourceValue]
+  | _, _, .hcomp sidesValue capValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq sidesValue,
+          Term.subst_pointwise pointwiseEq capValue]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl
