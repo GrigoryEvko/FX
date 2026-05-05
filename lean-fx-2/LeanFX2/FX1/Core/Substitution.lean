@@ -8,8 +8,8 @@ Root status: Root-FX1 metatheory scaffold.
 
 Renaming and substitution for the minimal de Bruijn lambda-Pi core.  This file
 contains executable structural operations plus the first M2 identity and
-composition facts.  Full substitution composition, weakening/substitution
-interaction, and beta-substitution lemmas are the remaining M2 obligations.
+composition facts.  Beta-substitution lemmas and preservation-oriented
+well-scopedness facts are the remaining M2 obligations.
 -/
 
 namespace LeanFX2.FX1
@@ -300,6 +300,12 @@ def renameOutput
     Substitution :=
   fun index => Expr.rename variableRenaming (substitution index)
 
+/-- Pre-compose a substitution's variable input with a renaming. -/
+def renameInput
+    (substitution : Substitution) (variableRenaming : Renaming) :
+    Substitution :=
+  fun index => substitution (variableRenaming index)
+
 /-- Lift a substitution under one binder. -/
 def lift (substitution : Substitution) : Substitution :=
   fun
@@ -371,6 +377,33 @@ theorem lift_renameOutput_apply
         variableRenaming
         (substitution smallerIndex)
 
+/-- Lifting commutes with pre-renaming substitution inputs. -/
+theorem lift_renameInput_apply
+    (substitution : Substitution) (variableRenaming : Renaming)
+    (index : Nat) :
+    Eq
+      (lift (renameInput substitution variableRenaming) index)
+      (renameInput (lift substitution) (Renaming.lift variableRenaming)
+        index) :=
+  match index with
+  | Nat.zero =>
+      Eq.refl
+        (renameInput (lift substitution) (Renaming.lift variableRenaming)
+          Nat.zero)
+  | Nat.succ smallerIndex =>
+      Eq.refl
+        (renameInput (lift substitution) (Renaming.lift variableRenaming)
+          (Nat.succ smallerIndex))
+
+/-- Pre-renaming by shift after lifting agrees with post-renaming outputs by
+shift. -/
+theorem renameInput_lift_shift_apply
+    (substitution : Substitution) (index : Nat) :
+    Eq
+      (renameInput (lift substitution) Renaming.shift index)
+      (renameOutput Renaming.shift substitution index) :=
+  Eq.refl (renameOutput Renaming.shift substitution index)
+
 /-- The singleton substitution maps the newest variable to its replacement. -/
 theorem singleton_newest (replacement : Expr) :
     Eq (singleton replacement Nat.zero) replacement :=
@@ -407,6 +440,21 @@ def subst (substitution : Substitution) : Expr -> Expr :=
 /-- Substitute the newest variable in an expression. -/
 def subst0 (replacement expression : Expr) : Expr :=
   Expr.subst (Substitution.singleton replacement) expression
+
+end Expr
+
+namespace Substitution
+
+/-- Compose two substitutions, applying `innerSubstitution` first and then
+substituting the result through `outerSubstitution`. -/
+def compose
+    (outerSubstitution innerSubstitution : Substitution) :
+    Substitution :=
+  fun index => Expr.subst outerSubstitution (innerSubstitution index)
+
+end Substitution
+
+namespace Expr
 
 /-- Substitution respects pointwise equality of variable substitutions. -/
 theorem subst_ext
@@ -549,6 +597,204 @@ theorem rename_subst_commute
       Expr.app_congr
         (rename_subst_commute variableRenaming substitution functionExpr)
         (rename_subst_commute variableRenaming substitution argumentExpr)
+
+/-- Substitution after renaming is substitution with pre-renamed inputs. -/
+theorem subst_rename_commute
+    (substitution : Substitution) (variableRenaming : Renaming) :
+    forall expression : Expr,
+      Eq
+        (subst substitution (rename variableRenaming expression))
+        (subst (Substitution.renameInput substitution variableRenaming)
+          expression)
+  | Expr.bvar index =>
+      Eq.refl
+        (Substitution.renameInput substitution variableRenaming index)
+  | Expr.sort sortLevel =>
+      Eq.refl
+        (subst
+          (Substitution.renameInput substitution variableRenaming)
+          (Expr.sort sortLevel))
+  | Expr.const constName =>
+      Eq.refl
+        (subst
+          (Substitution.renameInput substitution variableRenaming)
+          (Expr.const constName))
+  | Expr.pi domainExpr bodyExpr =>
+      Expr.pi_congr
+        (subst_rename_commute substitution variableRenaming domainExpr)
+        (Eq.trans
+          (subst_rename_commute
+            (Substitution.lift substitution)
+            (Renaming.lift variableRenaming)
+            bodyExpr)
+          (subst_ext
+            (fun index =>
+              Eq.symm
+                (Substitution.lift_renameInput_apply
+                  substitution variableRenaming index))
+            bodyExpr))
+  | Expr.lam domainExpr bodyExpr =>
+      Expr.lam_congr
+        (subst_rename_commute substitution variableRenaming domainExpr)
+        (Eq.trans
+          (subst_rename_commute
+            (Substitution.lift substitution)
+            (Renaming.lift variableRenaming)
+            bodyExpr)
+          (subst_ext
+            (fun index =>
+              Eq.symm
+                (Substitution.lift_renameInput_apply
+                  substitution variableRenaming index))
+            bodyExpr))
+  | Expr.app functionExpr argumentExpr =>
+      Expr.app_congr
+        (subst_rename_commute substitution variableRenaming functionExpr)
+        (subst_rename_commute substitution variableRenaming argumentExpr)
+
+end Expr
+
+namespace Substitution
+
+/-- Lifting distributes over substitution composition, pointwise. -/
+theorem lift_compose_apply
+    (outerSubstitution innerSubstitution : Substitution)
+    (index : Nat) :
+    Eq
+      (lift (compose outerSubstitution innerSubstitution) index)
+      (compose (lift outerSubstitution) (lift innerSubstitution) index) :=
+  match index with
+  | Nat.zero =>
+      show Eq (Expr.bvar Nat.zero) (Expr.bvar Nat.zero) from
+        Eq.refl (Expr.bvar Nat.zero)
+  | Nat.succ smallerIndex =>
+      show
+        Eq
+          (Expr.rename Renaming.shift
+            (Expr.subst outerSubstitution
+              (innerSubstitution smallerIndex)))
+          (Expr.subst
+            (lift outerSubstitution)
+            (Expr.rename Renaming.shift
+              (innerSubstitution smallerIndex))) from
+      let leftToOutputRenamed :
+          Eq
+            (Expr.rename Renaming.shift
+              (Expr.subst outerSubstitution
+                (innerSubstitution smallerIndex)))
+            (Expr.subst
+              (renameOutput Renaming.shift outerSubstitution)
+              (innerSubstitution smallerIndex)) :=
+        Expr.rename_subst_commute
+          Renaming.shift
+          outerSubstitution
+          (innerSubstitution smallerIndex)
+      let rightToInputRenamed :
+          Eq
+            (Expr.subst
+              (lift outerSubstitution)
+              (Expr.rename Renaming.shift
+                (innerSubstitution smallerIndex)))
+            (Expr.subst
+              (renameInput (lift outerSubstitution) Renaming.shift)
+              (innerSubstitution smallerIndex)) :=
+        Expr.subst_rename_commute
+          (lift outerSubstitution)
+          Renaming.shift
+          (innerSubstitution smallerIndex)
+      let rightToOutputRenamed :
+          Eq
+            (Expr.subst
+              (lift outerSubstitution)
+              (Expr.rename Renaming.shift
+                (innerSubstitution smallerIndex)))
+            (Expr.subst
+              (renameOutput Renaming.shift outerSubstitution)
+              (innerSubstitution smallerIndex)) :=
+        Eq.trans
+          rightToInputRenamed
+          (Expr.subst_ext
+            (renameInput_lift_shift_apply outerSubstitution)
+            (innerSubstitution smallerIndex))
+      Eq.trans leftToOutputRenamed (Eq.symm rightToOutputRenamed)
+
+/-- Composing after identity on the left is pointwise identity. -/
+theorem compose_identity_left_apply
+    (substitution : Substitution) (index : Nat) :
+    Eq (compose identity substitution index) (substitution index) :=
+  show Eq (Expr.subst identity (substitution index)) (substitution index) from
+    Expr.subst_identity (substitution index)
+
+/-- Composing after identity on the right is pointwise identity. -/
+theorem compose_identity_right_apply
+    (substitution : Substitution) (index : Nat) :
+    Eq (compose substitution identity index) (substitution index) :=
+  show Eq (Expr.subst substitution (Expr.bvar index)) (substitution index) from
+    Eq.refl (substitution index)
+
+end Substitution
+
+namespace Expr
+
+/-- Sequential substitution is equivalent to substitution by the composed
+substitution. -/
+theorem subst_compose
+    (outerSubstitution innerSubstitution : Substitution) :
+    forall expression : Expr,
+      Eq
+        (subst outerSubstitution (subst innerSubstitution expression))
+        (subst
+          (Substitution.compose outerSubstitution innerSubstitution)
+          expression)
+  | Expr.bvar index =>
+      show
+        Eq
+          (subst outerSubstitution (innerSubstitution index))
+          (subst outerSubstitution (innerSubstitution index)) from
+        Eq.refl
+          (subst outerSubstitution (innerSubstitution index))
+  | Expr.sort sortLevel =>
+      Eq.refl
+        (subst
+          (Substitution.compose outerSubstitution innerSubstitution)
+          (Expr.sort sortLevel))
+  | Expr.const constName =>
+      Eq.refl
+        (subst
+          (Substitution.compose outerSubstitution innerSubstitution)
+          (Expr.const constName))
+  | Expr.pi domainExpr bodyExpr =>
+      Expr.pi_congr
+        (subst_compose outerSubstitution innerSubstitution domainExpr)
+        (Eq.trans
+          (subst_compose
+            (Substitution.lift outerSubstitution)
+            (Substitution.lift innerSubstitution)
+            bodyExpr)
+          (subst_ext
+            (fun index =>
+              Eq.symm
+                (Substitution.lift_compose_apply
+                  outerSubstitution innerSubstitution index))
+            bodyExpr))
+  | Expr.lam domainExpr bodyExpr =>
+      Expr.lam_congr
+        (subst_compose outerSubstitution innerSubstitution domainExpr)
+        (Eq.trans
+          (subst_compose
+            (Substitution.lift outerSubstitution)
+            (Substitution.lift innerSubstitution)
+            bodyExpr)
+          (subst_ext
+            (fun index =>
+              Eq.symm
+                (Substitution.lift_compose_apply
+                  outerSubstitution innerSubstitution index))
+            bodyExpr))
+  | Expr.app functionExpr argumentExpr =>
+      Expr.app_congr
+        (subst_compose outerSubstitution innerSubstitution functionExpr)
+        (subst_compose outerSubstitution innerSubstitution argumentExpr)
 
 /-- `subst0` fires on the newest variable. -/
 theorem subst0_bvar_zero (replacement : Expr) :
