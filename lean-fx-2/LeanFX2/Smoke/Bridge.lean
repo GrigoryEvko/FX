@@ -1,4 +1,5 @@
 import LeanFX2.Bridge
+import LeanFX2.Cubical.Transport
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/Bridge — typed↔raw roundtrip examples.
@@ -181,6 +182,60 @@ theorem transpCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
     (Step.par.transp universeLevel universeLevelLt
       sourceType targetType sourceTypeRaw targetTypeRaw pathStep sourceStep)
 
+/-- Constant-type transport wiring smoke.
+
+This theorem intentionally composes the guardrail pieces that keep future
+transport computation honest: typed constant type paths, the raw
+constant-path recognizer, typed transport congruence, the typed-to-raw
+bridge, and `ConvCumul` congruence.  It is still a congruence smoke, not
+a transport β rule. -/
+theorem constantTypeTransport_fullStackWiring_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {universeLevel : UniverseLevel}
+    {universeLevelLt : universeLevel.toNat + 1 ≤ level}
+    {sourceType : Ty level scope}
+    {typeRaw sourceRawSource sourceRawTarget : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    {sourceValueSource : Term context sourceType sourceRawSource}
+    {sourceValueTarget : Term context sourceType sourceRawTarget}
+    (sourceStep : Step.par sourceValueSource sourceValueTarget)
+    (sourceRel : ConvCumul sourceValueSource sourceValueTarget) :
+    And
+      (RawTerm.constantPathBody?
+        (Cubical.constantTypePath universeLevel universeLevelLt typeCode).toRaw =
+          some typeRaw)
+      (And
+        (Step.par
+          (Cubical.constantTypeTransport universeLevel universeLevelLt
+            sourceType typeCode sourceValueSource)
+          (Cubical.constantTypeTransport universeLevel universeLevelLt
+            sourceType typeCode sourceValueTarget))
+        (And
+          (RawStep.par
+            (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawSource)
+            (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawTarget))
+          (ConvCumul
+            (Cubical.constantTypeTransport universeLevel universeLevelLt
+              sourceType typeCode sourceValueSource)
+            (Cubical.constantTypeTransport universeLevel universeLevelLt
+              sourceType typeCode sourceValueTarget)))) := by
+  exact And.intro
+    (Cubical.constantTypeTransport_typeLineRecognized
+      universeLevel universeLevelLt typeCode)
+    (And.intro
+      (Cubical.constantTypeTransport_sourceCong
+        universeLevel universeLevelLt sourceType typeCode
+        sourceStep)
+      (And.intro
+        (Cubical.constantTypeTransport_sourceCong_toRawBridge
+          universeLevel universeLevelLt sourceType typeCode
+          sourceStep)
+        (Cubical.constantTypeTransport_sourceConvCumul
+          universeLevel universeLevelLt sourceType typeCode
+          sourceRel)))
+
 /-- Typed hcomp congruence currently has only cong parity; this smoke
 locks that parity to the raw hcomp congruence rule. -/
 theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
@@ -205,6 +260,7 @@ theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
 #assert_no_axioms LeanFX2.Smoke.betaGlueElimIntro_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaGlueElimIntroDeep_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.transpCong_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.constantTypeTransport_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.hcompCong_toRawBridge_smoke
 
 end LeanFX2.Smoke
