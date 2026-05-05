@@ -4,6 +4,7 @@ import LeanFX2.HoTT.Transport
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
 import LeanFX2.HoTT.HIT.Quot
+import LeanFX2.HoTT.HIT.S1
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
@@ -112,6 +113,18 @@ theorem quotientHIT_rec_intro_smoke :
       rfl)
     ()
 
+/-- The S1 spec contains the loop path from base to base. -/
+theorem s1_loop_spec_smoke :
+    HoTT.HIT.S1Spec.hasPathBetween
+      HoTT.HIT.S1PointLabel.base
+      HoTT.HIT.S1PointLabel.base :=
+  HoTT.HIT.S1.loopSpec
+
+/-- Setoid-level S1 recursion computes at base. -/
+theorem s1_rec_base_smoke :
+    (HoTT.HIT.S1.rec Bool true).run HoTT.HIT.S1.base = true :=
+  HoTT.HIT.S1.rec_base Bool true
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
@@ -119,5 +132,7 @@ theorem quotientHIT_rec_intro_smoke :
 #assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_equality_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.s1_loop_spec_smoke
+#assert_no_axioms LeanFX2.Smoke.s1_rec_base_smoke
 
 end LeanFX2.Smoke
