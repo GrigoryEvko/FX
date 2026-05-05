@@ -22,6 +22,7 @@ capture linearly-used bindings.
 * Pointwise vector ops at the context level: `add`, `zero`,
   `pointwise sum across bindings`
 * `lookup` retrieving the grade vector at a variable position
+* `le` / `le_refl` / `le_trans` — pointwise context preorder
 
 ## What defers
 
@@ -29,7 +30,6 @@ capture linearly-used bindings.
   `GradeVector.le`, deferred to Phase 12.A.6 alongside concrete
   semiring instances completing the `DecidableGradeSemiring`
   contract for the registered dimensions
-* Sub-typing predicate `GradedCtx.le` — depends on division
 * Integration with kernel's `Term` constructors — depends on
   the typing rules in `Graded/Rules.lean`
 
@@ -155,6 +155,58 @@ def GradedCtx.add :
       .cons (GradedCtx.add restLeft restRight)
             { bindingTy := bindingLeft.bindingTy,
               grade := GradeVector.add bindingLeft.grade bindingRight.grade }
+
+/-! ## Pointwise context preorder -/
+
+/-- Pointwise preorder on graded contexts.
+
+The relation compares corresponding binding grades and ignores binding
+types, which are already aligned by the shared `mode`, `level`,
+`dimensions`, and `scope` indices of the two contexts. -/
+def GradedCtx.le :
+    ∀ {mode : Mode} {level : Nat} {dimensions : List Dimension} {scope : Nat},
+      GradedCtx mode level dimensions scope →
+      GradedCtx mode level dimensions scope →
+      Prop
+  | _, _, _, 0, _, _ => True
+  | _, _, _, _ + 1, firstCtx, secondCtx =>
+      GradeVector.le
+        (GradedCtx.headBinding firstCtx).grade
+        (GradedCtx.headBinding secondCtx).grade ∧
+      GradedCtx.le
+        (GradedCtx.tailCtx firstCtx)
+        (GradedCtx.tailCtx secondCtx)
+
+/-- Pointwise context preorder is reflexive. -/
+theorem GradedCtx.le_refl :
+    ∀ {mode : Mode} {level : Nat} {dimensions : List Dimension} {scope : Nat}
+      (someCtx : GradedCtx mode level dimensions scope),
+      GradedCtx.le someCtx someCtx
+  | _, _, _, 0, _ => True.intro
+  | _, _, _, _ + 1, someCtx =>
+      ⟨GradeVector.le_refl (GradedCtx.headBinding someCtx).grade,
+       GradedCtx.le_refl (GradedCtx.tailCtx someCtx)⟩
+
+/-- Pointwise context preorder is transitive. -/
+theorem GradedCtx.le_trans :
+    ∀ {mode : Mode} {level : Nat} {dimensions : List Dimension} {scope : Nat}
+      (firstCtx secondCtx thirdCtx : GradedCtx mode level dimensions scope),
+      GradedCtx.le firstCtx secondCtx →
+      GradedCtx.le secondCtx thirdCtx →
+      GradedCtx.le firstCtx thirdCtx
+  | _, _, _, 0, _, _, _, _, _ => True.intro
+  | _, _, _, _ + 1, firstCtx, secondCtx, thirdCtx,
+    ⟨firstHeadLe, firstTailLe⟩, ⟨secondHeadLe, secondTailLe⟩ =>
+      ⟨GradeVector.le_trans
+          (GradedCtx.headBinding firstCtx).grade
+          (GradedCtx.headBinding secondCtx).grade
+          (GradedCtx.headBinding thirdCtx).grade
+          firstHeadLe secondHeadLe,
+       GradedCtx.le_trans
+          (GradedCtx.tailCtx firstCtx)
+          (GradedCtx.tailCtx secondCtx)
+          (GradedCtx.tailCtx thirdCtx)
+          firstTailLe secondTailLe⟩
 
 /-! ## Lookup the grade at a position
 
