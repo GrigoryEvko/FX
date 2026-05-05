@@ -20,6 +20,7 @@ import LeanFX2.Bridge.PathEqType
 import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
+import LeanFX2.InternalLanguage.Coherence
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
@@ -152,6 +153,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_nat
 #assert_no_axioms LeanFX2.Translation.observationalCubicalRoundTripTy_id
 #assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_path
+#assert_no_axioms LeanFX2.InternalLanguage.unitEqualityTranslationCoherence
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized
