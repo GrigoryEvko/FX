@@ -119,6 +119,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.RawStep.par.betaGlueElimIntro
 #assert_no_axioms LeanFX2.RawStep.par.betaGlueElimIntroDeep
+#assert_no_axioms LeanFX2.RawStep.par.betaModElimIntro
+#assert_no_axioms LeanFX2.RawStep.par.betaModElimIntroDeep
+#assert_no_axioms LeanFX2.RawTerm.cdModElimCase
 
 -- Typed D2.5 path-application parity
 #assert_no_axioms LeanFX2.Term.toRaw_interval0
@@ -248,6 +251,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp
 #assert_no_axioms LeanFX2.Step.par.pathAppCong
+#assert_no_axioms LeanFX2.Step.betaModElimIntro
+#assert_no_axioms LeanFX2.Step.par.betaModElimIntro
+#assert_no_axioms LeanFX2.Step.par.betaModElimIntroDeep
+#assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul
+#assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul_toConv
+#assert_no_axioms LeanFX2.Step.toConvCumul
 #assert_no_axioms LeanFX2.Step.intervalOppInner
 #assert_no_axioms LeanFX2.Step.intervalMeetLeft
 #assert_no_axioms LeanFX2.Step.intervalMeetRight

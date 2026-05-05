@@ -76,6 +76,10 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.idJ (baseIH _) (witnessIH _)
   | modIntro _ innerIH => exact RawStep.par.modIntro (innerIH _)
   | modElim _ innerIH => exact RawStep.par.modElim (innerIH _)
+  | betaModElimIntro _ innerIH =>
+      exact RawStep.par.betaModElimIntro (innerIH _)
+  | betaModElimIntroDeep _ innerIH =>
+      exact RawStep.par.betaModElimIntroDeep (innerIH _)
   | subsume _ innerIH => exact RawStep.par.subsume (innerIH _)
   -- Shallow β rules: contractum side requires reshape via subst0_rename_commute.
   | betaApp _ _ bodyIH argumentIH =>

@@ -180,16 +180,24 @@ theorem RawStep.par.modIntro_inv {scope : Nat}
   | refl _ => exact ⟨innerTerm, rfl, RawStep.par.refl _⟩
   | modIntro innerStep => exact ⟨_, rfl, innerStep⟩
 
-/-- `RawStep.par (modElim inner) target → target = modElim inner' ∧ par`. -/
+/-- `RawStep.par (modElim inner) target` either stays a congruent
+`modElim`, or fires modal β after the inner value develops to a
+`modIntro`. -/
 theorem RawStep.par.modElim_inv {scope : Nat}
     {innerTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep :
       RawStep.par (RawTerm.modElim innerTerm) target) :
-    ∃ innerTarget, target = RawTerm.modElim innerTarget ∧
-      RawStep.par innerTerm innerTarget := by
+    (∃ innerTarget, target = RawTerm.modElim innerTarget ∧
+      RawStep.par innerTerm innerTarget) ∨
+    (∃ payloadTarget, target = payloadTarget ∧
+      RawStep.par innerTerm (RawTerm.modIntro payloadTarget)) := by
   cases parallelStep with
-  | refl _ => exact ⟨innerTerm, rfl, RawStep.par.refl _⟩
-  | modElim innerStep => exact ⟨_, rfl, innerStep⟩
+  | refl _ => exact Or.inl ⟨innerTerm, rfl, RawStep.par.refl _⟩
+  | modElim innerStep => exact Or.inl ⟨_, rfl, innerStep⟩
+  | betaModElimIntro innerStep =>
+      exact Or.inr ⟨_, rfl, RawStep.par.modIntro innerStep⟩
+  | betaModElimIntroDeep innerStep =>
+      exact Or.inr ⟨_, rfl, innerStep⟩
 
 /-- `RawStep.par (subsume inner) target → target = subsume inner' ∧ par`. -/
 theorem RawStep.par.subsume_inv {scope : Nat}

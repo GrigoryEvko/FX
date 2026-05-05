@@ -590,6 +590,15 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {innerSecond : Term context innerType innerSecondRaw}
       (innerRel : ConvCumul innerFirst innerSecond) :
       ConvCumul (Term.modElim innerFirst) (Term.modElim innerSecond)
+  /-- Modal β-reduction: `modElim (modIntro value) ⟶ value`.
+  Mirror of `Step.betaModElimIntro`. -/
+  | betaModElimIntroCumul
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRaw : RawTerm scope}
+      (innerTerm : Term context innerType innerRaw) :
+      ConvCumul (Term.modElim (Term.modIntro innerTerm)) innerTerm
   /-- Homogeneous subsume: ConvCumul-related inner term lifts to ConvCumul-
   related subsume. -/
   | subsumeCong

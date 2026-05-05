@@ -166,6 +166,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaApp ihBody ihArgument
   | betaAppPi _ _ ihBody ihArgument =>
       exact RawStep.par.betaApp ihBody ihArgument
+  | betaModElimIntro _ ihInner =>
+      exact RawStep.par.betaModElimIntro ihInner
+  | betaModElimIntroDeep _ ihInner =>
+      exact RawStep.par.betaModElimIntroDeep ihInner
   | betaPathApp _ _ ihBody ihInterval =>
       exact RawStep.par.betaPathApp ihBody ihInterval
   | betaGlueElimIntro _ _ ihBase ihPartial =>

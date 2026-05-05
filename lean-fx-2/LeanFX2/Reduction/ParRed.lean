@@ -410,6 +410,24 @@ inductive Step.par :
       {innerTarget : Term context innerType innerRawTarget} :
       Step.par innerSource innerTarget →
       Step.par (Term.modElim innerSource) (Term.modElim innerTarget)
+  /-- Parallel modal β: eliminating a freshly introduced modal value
+  returns the developed payload. -/
+  | betaModElimIntro {mode level scope} {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context innerType innerRawSource}
+      {innerTarget : Term context innerType innerRawTarget} :
+      Step.par innerSource innerTarget →
+      Step.par (Term.modElim (Term.modIntro innerSource)) innerTarget
+  /-- Deep parallel modal β: the eliminated value develops to a modal
+  introduction, then the eliminator fires. -/
+  | betaModElimIntroDeep {mode level scope} {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context innerType innerRawSource}
+      {innerTarget : Term context innerType innerRawTarget} :
+      Step.par innerSource (Term.modIntro innerTarget) →
+      Step.par (Term.modElim innerSource) innerTarget
   /-- Parallel-cong: subsume reduces in inner. -/
   | subsume {mode level scope} {context : Ctx mode level scope}
       {innerType : Ty level scope}
@@ -1679,6 +1697,8 @@ theorem Step.toPar
       exact Step.par.modIntro singleStepIH
   | modElimInner singleStep singleStepIH =>
       exact Step.par.modElim singleStepIH
+  | betaModElimIntro innerTerm =>
+      exact Step.par.betaModElimIntro (Step.par.refl innerTerm)
   | subsumeInner singleStep singleStepIH =>
       exact Step.par.subsume singleStepIH
   | pathLamBody singleStep singleStepIH =>

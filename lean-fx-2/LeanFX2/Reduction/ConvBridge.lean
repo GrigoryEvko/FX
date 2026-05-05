@@ -204,6 +204,8 @@ theorem Step.toConvCumul
       exact ConvCumul.modIntroCong ih
   | modElimInner _ ih =>
       exact ConvCumul.modElimCong ih
+  | betaModElimIntro innerTerm =>
+      exact ConvCumul.betaModElimIntroCumul innerTerm
   | subsumeInner _ ih =>
       exact ConvCumul.subsumeCong ih
   | pathLamBody _ ih =>
@@ -490,6 +492,14 @@ theorem ConvCumul.betaAppPiCumul_toConv
     Conv (Term.appPi (Term.lamPi (domainType := domainType) bodyTerm) argumentTerm)
          (Term.subst0 bodyTerm argumentTerm) :=
   Conv.fromStep (Step.betaAppPi bodyTerm argumentTerm)
+
+theorem ConvCumul.betaModElimIntroCumul_toConv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Conv (Term.modElim (Term.modIntro innerTerm)) innerTerm :=
+  Conv.fromStep (Step.betaModElimIntro innerTerm)
 
 theorem ConvCumul.betaPathAppCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}

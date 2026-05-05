@@ -60,9 +60,8 @@ RawTerm ctor).
   eitherMatch, idJ) → dispatch to per-redex helper, which handles
   canonical-ctor contraction + cong fallback
 
-Modal ctors `modIntro`, `modElim`, `subsume` are pure cong (no
-`iotaModal` rule lives in `RawStep.par` yet; will be added when
-Layer 6 ships its modal reduction rules).
+Modal ctor `modElim` is redex-bearing: `modElim (modIntro value)`
+contracts to `value`; `modIntro` and `subsume` remain pure cong.
 -/
 
 namespace LeanFX2
@@ -285,6 +284,79 @@ def RawTerm.cdGlueElimCase {scope : Nat}
   | RawTerm.idCode _ _ _ => RawTerm.glueElim developedGlued
   | RawTerm.equivCode _ _ => RawTerm.glueElim developedGlued
   | RawTerm.cumulUpMarker _ => RawTerm.glueElim developedGlued
+
+/-- Modal elimination redex: `modElim (modIntro payload) → payload`;
+otherwise rebuild `modElim developedInner`. -/
+def RawTerm.cdModElimCase {scope : Nat}
+    (developedInner : RawTerm scope) : RawTerm scope :=
+  match developedInner with
+  | RawTerm.modIntro payload => payload
+  | RawTerm.var _ => RawTerm.modElim developedInner
+  | RawTerm.unit => RawTerm.modElim developedInner
+  | RawTerm.lam _ => RawTerm.modElim developedInner
+  | RawTerm.app _ _ => RawTerm.modElim developedInner
+  | RawTerm.pair _ _ => RawTerm.modElim developedInner
+  | RawTerm.fst _ => RawTerm.modElim developedInner
+  | RawTerm.snd _ => RawTerm.modElim developedInner
+  | RawTerm.boolTrue => RawTerm.modElim developedInner
+  | RawTerm.boolFalse => RawTerm.modElim developedInner
+  | RawTerm.boolElim _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.natZero => RawTerm.modElim developedInner
+  | RawTerm.natSucc _ => RawTerm.modElim developedInner
+  | RawTerm.natElim _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.natRec _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.listNil => RawTerm.modElim developedInner
+  | RawTerm.listCons _ _ => RawTerm.modElim developedInner
+  | RawTerm.listElim _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.optionNone => RawTerm.modElim developedInner
+  | RawTerm.optionSome _ => RawTerm.modElim developedInner
+  | RawTerm.optionMatch _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.eitherInl _ => RawTerm.modElim developedInner
+  | RawTerm.eitherInr _ => RawTerm.modElim developedInner
+  | RawTerm.eitherMatch _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.refl _ => RawTerm.modElim developedInner
+  | RawTerm.idJ _ _ => RawTerm.modElim developedInner
+  | RawTerm.modElim _ => RawTerm.modElim developedInner
+  | RawTerm.subsume _ => RawTerm.modElim developedInner
+  | RawTerm.interval0 => RawTerm.modElim developedInner
+  | RawTerm.interval1 => RawTerm.modElim developedInner
+  | RawTerm.intervalOpp _ => RawTerm.modElim developedInner
+  | RawTerm.intervalMeet _ _ => RawTerm.modElim developedInner
+  | RawTerm.intervalJoin _ _ => RawTerm.modElim developedInner
+  | RawTerm.pathLam _ => RawTerm.modElim developedInner
+  | RawTerm.pathApp _ _ => RawTerm.modElim developedInner
+  | RawTerm.glueIntro _ _ => RawTerm.modElim developedInner
+  | RawTerm.glueElim _ => RawTerm.modElim developedInner
+  | RawTerm.transp _ _ => RawTerm.modElim developedInner
+  | RawTerm.hcomp _ _ => RawTerm.modElim developedInner
+  | RawTerm.oeqRefl _ => RawTerm.modElim developedInner
+  | RawTerm.oeqJ _ _ => RawTerm.modElim developedInner
+  | RawTerm.oeqFunext _ => RawTerm.modElim developedInner
+  | RawTerm.idStrictRefl _ => RawTerm.modElim developedInner
+  | RawTerm.idStrictRec _ _ => RawTerm.modElim developedInner
+  | RawTerm.equivIntro _ _ => RawTerm.modElim developedInner
+  | RawTerm.equivApp _ _ => RawTerm.modElim developedInner
+  | RawTerm.refineIntro _ _ => RawTerm.modElim developedInner
+  | RawTerm.refineElim _ => RawTerm.modElim developedInner
+  | RawTerm.recordIntro _ => RawTerm.modElim developedInner
+  | RawTerm.recordProj _ => RawTerm.modElim developedInner
+  | RawTerm.codataUnfold _ _ => RawTerm.modElim developedInner
+  | RawTerm.codataDest _ => RawTerm.modElim developedInner
+  | RawTerm.sessionSend _ _ => RawTerm.modElim developedInner
+  | RawTerm.sessionRecv _ => RawTerm.modElim developedInner
+  | RawTerm.effectPerform _ _ => RawTerm.modElim developedInner
+  | RawTerm.universeCode _ => RawTerm.modElim developedInner
+  | RawTerm.arrowCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.piTyCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.sigmaTyCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.productCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.sumCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.listCode _ => RawTerm.modElim developedInner
+  | RawTerm.optionCode _ => RawTerm.modElim developedInner
+  | RawTerm.eitherCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.idCode _ _ _ => RawTerm.modElim developedInner
+  | RawTerm.equivCode _ _ => RawTerm.modElim developedInner
+  | RawTerm.cumulUpMarker _ => RawTerm.modElim developedInner
 
 /-- Refinement elimination redex: `refineElim (refineIntro value proof)
 → value`; otherwise rebuild `refineElim dr`. -/
@@ -1542,7 +1614,7 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   | _, .idJ baseCase witness =>
       RawTerm.cdIdJCase (RawTerm.cd baseCase) (RawTerm.cd witness)
   | _, .modIntro innerTerm => RawTerm.modIntro (RawTerm.cd innerTerm)
-  | _, .modElim innerTerm => RawTerm.modElim (RawTerm.cd innerTerm)
+  | _, .modElim innerTerm => RawTerm.cdModElimCase (RawTerm.cd innerTerm)
   | _, .subsume innerTerm => RawTerm.subsume (RawTerm.cd innerTerm)
   -- D1.6/D2.5: cubical interval + path; pathApp has betaPathApp.
   | _, .interval0 => RawTerm.interval0

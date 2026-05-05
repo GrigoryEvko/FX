@@ -164,8 +164,21 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.modIntro innerIH
   | modElim innerStep innerIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.modElim innerIH
+      simp only [RawTerm.cd, RawTerm.cdModElimCase]
+      split
+      case _ payloadTarget innerEqn =>
+          exact RawStep.par.betaModElimIntroDeep
+            (innerEqn ▸ innerIH)
+      all_goals exact RawStep.par.modElim innerIH
+  | betaModElimIntro innerStep innerIH =>
+      simp only [RawTerm.cd, RawTerm.cdModElimCase]
+      exact innerIH
+  | betaModElimIntroDeep innerStep innerIH =>
+      simp only [RawTerm.cd, RawTerm.cdModElimCase]
+      obtain ⟨payloadAfter, cdInnerEq, payloadParStep⟩ :=
+        RawStep.par.modIntro_inv innerIH
+      rw [cdInnerEq]
+      exact payloadParStep
   | subsume innerStep innerIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.subsume innerIH

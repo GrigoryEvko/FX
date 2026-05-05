@@ -744,6 +744,15 @@ inductive Step :
       {innerTarget : Term context innerType innerRawTarget} :
       Step innerSource innerTarget →
       Step (Term.modElim innerSource) (Term.modElim innerTarget)
+  /-- Modal β-reduction: eliminating a freshly introduced modal value
+  returns the payload.  This is type-preserving in the current Layer 1
+  modal scaffold, where `modIntro` and `modElim` both preserve
+  `innerType`. -/
+  | betaModElimIntro {mode level scope} {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRaw : RawTerm scope}
+      (innerTerm : Term context innerType innerRaw) :
+      Step (Term.modElim (Term.modIntro innerTerm)) innerTerm
   /-- Step inside `subsume`'s payload. -/
   | subsumeInner {mode level scope} {context : Ctx mode level scope}
       {innerType : Ty level scope}

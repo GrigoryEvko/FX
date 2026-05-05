@@ -22,10 +22,9 @@ diamond and confluence follow.
 
 ## Modal cases
 
-`modIntro`/`modElim`/`subsume` are pure cong (no `iotaModal*` rule
-in lean-fx-2's RawStep.par yet — Layer 6 will add modal reductions
-when the modality theory ships).  Each modal arm is a one-line
-`simp + cong rule + recursive call`.
+`modIntro` and `subsume` are pure cong.  `modElim` is now
+redex-bearing: when its developed payload is `modIntro value`, cd
+contracts by the modal β rule; otherwise it rebuilds by congruence.
 -/
 
 -- D1.6 grew RawTerm to 55 ctors and `RawTerm.cd` to a match with
@@ -198,8 +197,15 @@ theorem RawStep.par.cd_dominates :
       all_goals exact RawStep.par.idJ baseParStep witnessParStep
   | _, .modIntro innerTerm =>
       RawStep.par.modIntro (RawStep.par.cd_dominates innerTerm)
-  | _, .modElim innerTerm =>
-      RawStep.par.modElim (RawStep.par.cd_dominates innerTerm)
+  | _, .modElim innerTerm => by
+      let innerParStep := RawStep.par.cd_dominates innerTerm
+      unfold RawTerm.cd
+      unfold RawTerm.cdModElimCase
+      split
+      case _ payloadTarget innerEqn =>
+          exact RawStep.par.betaModElimIntroDeep
+            (innerEqn ▸ innerParStep)
+      all_goals exact RawStep.par.modElim innerParStep
   | _, .subsume innerTerm =>
       RawStep.par.subsume (RawStep.par.cd_dominates innerTerm)
   -- D1.6/D2.5/D2.7: most new ctors are pure cong at raw level;

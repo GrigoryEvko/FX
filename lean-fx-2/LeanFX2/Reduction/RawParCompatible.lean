@@ -371,6 +371,10 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.modIntro (innerIH substsRelated)
   | modElim _ innerIH =>
       exact RawStep.par.modElim (innerIH substsRelated)
+  | betaModElimIntro _ innerIH =>
+      exact RawStep.par.betaModElimIntro (innerIH substsRelated)
+  | betaModElimIntroDeep _ innerIH =>
+      exact RawStep.par.betaModElimIntroDeep (innerIH substsRelated)
   | subsume _ innerIH =>
       exact RawStep.par.subsume (innerIH substsRelated)
   -- Shallow β rules: reshape via subst0_subst_commute.

@@ -196,6 +196,17 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par innerRawSource innerRawTarget →
       RawStep.par (RawTerm.modElim innerRawSource)
                   (RawTerm.modElim innerRawTarget)
+  /-- Modal β: eliminating a freshly introduced modal value returns the payload. -/
+  | betaModElimIntro {scope : Nat}
+      {innerRawSource innerRawTarget : RawTerm scope} :
+      RawStep.par innerRawSource innerRawTarget →
+      RawStep.par (RawTerm.modElim (RawTerm.modIntro innerRawSource))
+                  innerRawTarget
+  /-- Deep modal β: the eliminated value develops to a modal introduction. -/
+  | betaModElimIntroDeep {scope : Nat}
+      {innerRawSource innerRawTarget : RawTerm scope} :
+      RawStep.par innerRawSource (RawTerm.modIntro innerRawTarget) →
+      RawStep.par (RawTerm.modElim innerRawSource) innerRawTarget
   /-- Cong: subsume reduces in inner. -/
   | subsume {scope : Nat}
       {innerRawSource innerRawTarget : RawTerm scope} :

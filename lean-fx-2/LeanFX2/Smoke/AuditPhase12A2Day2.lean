@@ -3,6 +3,7 @@ import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.ParRed
+import LeanFX2.Confluence.RawCd
 import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
 import LeanFX2.Bridge
@@ -49,6 +50,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.par.pathAppCong
 #print axioms LeanFX2.RawStep.par.betaPathApp
 #print axioms LeanFX2.RawStep.par.betaPathAppDeep
+#print axioms LeanFX2.RawStep.par.betaModElimIntro
+#print axioms LeanFX2.RawStep.par.betaModElimIntroDeep
+#print axioms LeanFX2.RawTerm.cdModElimCase
 #print axioms LeanFX2.RawStep.par.glueIntroCong
 #print axioms LeanFX2.RawStep.par.betaGlueElimIntro
 #print axioms LeanFX2.RawStep.par.betaGlueElimIntroDeep
@@ -113,8 +117,11 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.intervalMeetCong
 #print axioms LeanFX2.Step.par.intervalJoinCong
 #print axioms LeanFX2.Step.betaPathApp
+#print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathAppDeep
+#print axioms LeanFX2.Step.par.betaModElimIntro
+#print axioms LeanFX2.Step.par.betaModElimIntroDeep
 #print axioms LeanFX2.Step.par.glueIntro
 #print axioms LeanFX2.Step.par.glueElim
 #print axioms LeanFX2.Step.betaGlueElimIntro
@@ -191,6 +198,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.intervalOppCong
 #print axioms LeanFX2.ConvCumul.intervalMeetCong
 #print axioms LeanFX2.ConvCumul.intervalJoinCong
+#print axioms LeanFX2.ConvCumul.betaModElimIntroCumul
+#print axioms LeanFX2.ConvCumul.betaModElimIntroCumul_toConv
 #print axioms LeanFX2.ConvCumul.betaPathAppCumul
 #print axioms LeanFX2.ConvCumul.glueIntroCong
 #print axioms LeanFX2.ConvCumul.glueElimCong
@@ -243,6 +252,7 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.par.pathApp_inv
 #print axioms LeanFX2.RawStep.par.glueIntro_inv
 #print axioms LeanFX2.RawStep.par.glueElim_inv
+#print axioms LeanFX2.RawStep.par.modElim_inv
 #print axioms LeanFX2.RawStep.par.transp_inv
 #print axioms LeanFX2.RawStep.par.hcomp_inv
 #print axioms LeanFX2.RawStep.par.oeqRefl_inv
