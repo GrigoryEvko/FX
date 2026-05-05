@@ -1,8 +1,14 @@
-import LeanFX2.HoTT.HIT.Eliminator
+import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.SetTrunc
+import LeanFX2.HoTT.HIT.Quot
+import LeanFX2.HoTT.HIT.S1
+import LeanFX2.HoTT.HIT.Suspension
+import LeanFX2.HoTT.HIT.Pushout
+import LeanFX2.HoTT.HIT.Coequalizer
 
 /-! # HoTT/HIT/Examples — concrete HITs
 
-Reference HITs that downstream HoTT proofs use.
+Reference concrete HIT presentations that downstream HoTT proofs use.
 
 ## Circle (S¹)
 
@@ -51,7 +57,7 @@ Use cases: turning data into a proposition (existence).
 
 ## Dependencies
 
-* `HoTT/HIT/Eliminator.lean`
+* `HoTT/HIT/{PropTrunc,SetTrunc,Quot,S1,Suspension,Pushout,Coequalizer}.lean`
 
 ## Downstream consumers
 
@@ -63,8 +69,72 @@ Use cases: turning data into a proposition (existence).
 1. Encode each HIT via the setoid encoding from `HIT/Setoid.lean`
 2. Provide eliminators per `HIT/Eliminator.lean`
 3. Smoke: compute on `S¹.base`, transport along `loop`, etc.
+
+This file is intentionally modest: it checks that all seven concrete
+presentations are importable together and gives small representative
+values over `Unit`.  The mathematical content lives in the per-HIT
+modules; this module is the load-bearing examples surface named by the
+sprint plan.
 -/
 
 namespace LeanFX2
+namespace HoTT
+namespace HIT
+namespace Examples
 
+/-- Unit equality quotient example. -/
+def quotientUnit : (QuotientHIT.equality Unit).carrier :=
+  QuotientHIT.intro ()
+
+/-- Unit propositional-truncation example. -/
+def propTruncUnit : (PropTrunc Unit).carrier :=
+  PropTrunc.intro ()
+
+/-- Unit set-truncation example. -/
+def setTruncUnit : (SetTrunc Unit).carrier :=
+  SetTrunc.intro ()
+
+/-- Circle base-point example. -/
+def s1BaseUnit : S1.setoid.carrier :=
+  S1.base
+
+/-- Unit suspension north-point example. -/
+def suspensionNorthUnit : (Suspension.setoid Unit).carrier :=
+  Suspension.north (sourceType := Unit)
+
+/-- Unit pushout presentation used by the examples surface. -/
+def pushoutUnit : HITSetoid :=
+  PushoutHIT
+    Unit Unit Unit
+    (fun sourceValue => sourceValue)
+    (fun sourceValue => sourceValue)
+    (fun _ _ => True)
+    (fun _ => True.intro)
+    (fun _ => True.intro)
+    (fun _ _ => True.intro)
+    (fun _ => True.intro)
+
+/-- Unit pushout left-point example. -/
+def pushoutLeftUnit : pushoutUnit.carrier :=
+  PushoutHIT.left ()
+
+/-- Unit coequalizer presentation used by the examples surface. -/
+def coequalizerUnit : HITSetoid :=
+  CoequalizerHIT
+    Unit Unit
+    (fun sourceValue => sourceValue)
+    (fun sourceValue => sourceValue)
+    (fun _ _ => True)
+    (fun _ => True.intro)
+    (fun _ => True.intro)
+    (fun _ _ => True.intro)
+    (fun _ => True.intro)
+
+/-- Unit coequalizer point example. -/
+def coequalizerPointUnit : coequalizerUnit.carrier :=
+  CoequalizerHIT.point ()
+
+end Examples
+end HIT
+end HoTT
 end LeanFX2
