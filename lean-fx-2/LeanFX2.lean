@@ -65,8 +65,12 @@ import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.Cumul
-import LeanFX2.Reduction.CumulSubstCompat
 import LeanFX2.Reduction.ConvCumulHomo
+import LeanFX2.Reduction.CumulCastElim
+import LeanFX2.Reduction.CumulBenton
+import LeanFX2.Reduction.CumulAllais
+import LeanFX2.Reduction.CumulPairedEnv
+import LeanFX2.Reduction.CumulSubstCompat
 
 -- Layer 3 — Confluence
 import LeanFX2.Confluence.Cd
