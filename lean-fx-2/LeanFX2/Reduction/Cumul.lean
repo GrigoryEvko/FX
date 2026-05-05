@@ -543,6 +543,47 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {innerSecond : Term context innerType innerSecondRaw}
       (innerRel : ConvCumul innerFirst innerSecond) :
       ConvCumul (Term.subsume innerFirst) (Term.subsume innerSecond)
+  /-- Homogeneous interval negation: ConvCumul-related interval values
+  lift to ConvCumul-related interval negations. -/
+  | intervalOppCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerFirstRaw innerSecondRaw : RawTerm scope}
+      {innerFirst : Term context Ty.interval innerFirstRaw}
+      {innerSecond : Term context Ty.interval innerSecondRaw}
+      (innerRel : ConvCumul innerFirst innerSecond) :
+      ConvCumul (Term.intervalOpp innerFirst)
+                (Term.intervalOpp innerSecond)
+  /-- Homogeneous interval meet: ConvCumul-related interval values
+  lift to ConvCumul-related interval meets. -/
+  | intervalMeetCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftFirstRaw leftSecondRaw rightFirstRaw rightSecondRaw :
+        RawTerm scope}
+      {leftFirst : Term context Ty.interval leftFirstRaw}
+      {leftSecond : Term context Ty.interval leftSecondRaw}
+      {rightFirst : Term context Ty.interval rightFirstRaw}
+      {rightSecond : Term context Ty.interval rightSecondRaw}
+      (leftRel : ConvCumul leftFirst leftSecond)
+      (rightRel : ConvCumul rightFirst rightSecond) :
+      ConvCumul (Term.intervalMeet leftFirst rightFirst)
+                (Term.intervalMeet leftSecond rightSecond)
+  /-- Homogeneous interval join: ConvCumul-related interval values
+  lift to ConvCumul-related interval joins. -/
+  | intervalJoinCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftFirstRaw leftSecondRaw rightFirstRaw rightSecondRaw :
+        RawTerm scope}
+      {leftFirst : Term context Ty.interval leftFirstRaw}
+      {leftSecond : Term context Ty.interval leftSecondRaw}
+      {rightFirst : Term context Ty.interval rightFirstRaw}
+      {rightSecond : Term context Ty.interval rightSecondRaw}
+      (leftRel : ConvCumul leftFirst leftSecond)
+      (rightRel : ConvCumul rightFirst rightSecond) :
+      ConvCumul (Term.intervalJoin leftFirst rightFirst)
+                (Term.intervalJoin leftSecond rightSecond)
   /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
   lift to ConvCumul-related path abstractions. -/
   | pathLamCong

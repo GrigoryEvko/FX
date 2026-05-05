@@ -210,6 +210,14 @@ def Term.substHet {mode : Mode}
   -- Cubical path fragment.
   | _, _, .interval0 => Term.interval0
   | _, _, .interval1 => Term.interval1
+  | _, _, .intervalOpp innerValue =>
+      Term.intervalOpp (Term.substHet termSubstHet innerValue)
+  | _, _, .intervalMeet leftValue rightValue =>
+      Term.intervalMeet (Term.substHet termSubstHet leftValue)
+                        (Term.substHet termSubstHet rightValue)
+  | _, _, .intervalJoin leftValue rightValue =>
+      Term.intervalJoin (Term.substHet termSubstHet leftValue)
+                        (Term.substHet termSubstHet rightValue)
   | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
       Term.pathLam (carrierType.substHet sigma)
         (leftEndpoint.subst sigma.forRaw)

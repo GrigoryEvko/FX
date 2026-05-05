@@ -194,7 +194,7 @@ RawStep.par cong/β rule whose typed Step.par mirror has not been
 shipped yet (the raw cubical/HoTT/refine/record/codata/session/effect/
 type-code layers landed before the corresponding typed layer was wired
 up).  Tracking these as documented exceptions means the parity gate
-still catches NEW raw-only ctors going forward, while the 35 existing
+still catches NEW raw-only ctors going forward, while the 32 existing
 gaps are recorded explicitly rather than being silently allowed.
 
 Discipline for moving an entry OUT of this list: add the matching
@@ -204,45 +204,41 @@ Discipline for moving an entry OUT of this list: add the matching
 entry below. -/
 def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   let suffix := Name.lastSegmentString rawCtorName
-  -- Section A: interval operations with no typed Term constructors yet.
-  suffix == "intervalOppCong" ||
-  suffix == "intervalMeetCong" ||
-  suffix == "intervalJoinCong" ||
-  -- Section B: HoTT observational-equality cong rules (typed mirrors
+  -- Section A: HoTT observational-equality cong rules (typed mirrors
   -- pending D2.6 cascade — eqType and eqArrow already have typed Step
   -- counterparts; remaining oeq cong/funext rules ship raw-only).
   suffix == "oeqReflCong" ||
   suffix == "oeqJCong" ||
   suffix == "oeqFunextCong" ||
-  -- Section C: strict identity cong rules (typed mirrors pending; the
+  -- Section B: strict identity cong rules (typed mirrors pending; the
   -- strict-identity layer is currently raw-only scaffolding).
   suffix == "idStrictReflCong" ||
   suffix == "idStrictRecCong" ||
-  -- Section D: equivalence application has no typed Term constructor yet.
+  -- Section C: equivalence application has no typed Term constructor yet.
   -- `equivIntroCong` is covered by typed `Step.par.equivIntroCong`,
   -- an alias over `Term.equivIntroHet`.
   suffix == "equivAppCong" ||
-  -- Section E: refinement type cong + β rules (typed Term has no refine
+  -- Section D: refinement type cong + β rules (typed Term has no refine
   -- ctor yet; D5.6 refinement types pending).
   suffix == "refineIntroCong" ||
   suffix == "betaRefineElimIntro" ||
   suffix == "betaRefineElimIntroDeep" ||
   suffix == "refineElimCong" ||
-  -- Section F: record cong + β rules (typed records pending).
+  -- Section E: record cong + β rules (typed records pending).
   suffix == "recordIntroCong" ||
   suffix == "betaRecordProjIntro" ||
   suffix == "betaRecordProjIntroDeep" ||
   suffix == "recordProjCong" ||
-  -- Section G: codata cong rules (typed codata pending D5.13).
+  -- Section F: codata cong rules (typed codata pending D5.13).
   suffix == "codataUnfoldCong" ||
   suffix == "codataDestCong" ||
-  -- Section H: session protocol cong rules (typed sessions pending D5.11).
+  -- Section G: session protocol cong rules (typed sessions pending D5.11).
   suffix == "sessionSendCong" ||
   suffix == "sessionRecvCong" ||
-  -- Section I: effect-perform cong rule (typed effect handlers pending
+  -- Section H: effect-perform cong rule (typed effect handlers pending
   -- D5.10).
   suffix == "effectPerformCong" ||
-  -- Section J: parametric type-code cong rules (CUMUL-2 cumulativity
+  -- Section I: parametric type-code cong rules (CUMUL-2 cumulativity
   -- type-codes ship raw-only; typed cumulativity uses cumulUp directly).
   suffix == "arrowCodeCong" ||
   suffix == "piTyCodeCong" ||
@@ -255,7 +251,7 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "idCodeCong" ||
   suffix == "equivCodeCong" ||
   suffix == "cumulUpMarkerCong" ||
-  -- Section K: refl cong rule (typed Term.refl uses different reduction
+  -- Section J: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong"
 

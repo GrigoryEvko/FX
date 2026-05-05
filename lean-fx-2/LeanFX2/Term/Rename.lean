@@ -208,6 +208,14 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- Cubical path fragment.
   | _, _, .interval0 => Term.interval0
   | _, _, .interval1 => Term.interval1
+  | _, _, .intervalOpp innerValue =>
+      Term.intervalOpp (Term.rename termRenaming innerValue)
+  | _, _, .intervalMeet leftValue rightValue =>
+      Term.intervalMeet (Term.rename termRenaming leftValue)
+                        (Term.rename termRenaming rightValue)
+  | _, _, .intervalJoin leftValue rightValue =>
+      Term.intervalJoin (Term.rename termRenaming leftValue)
+                        (Term.rename termRenaming rightValue)
   | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
       Term.pathLam (carrierType.rename rho)
         (leftEndpoint.rename rho)

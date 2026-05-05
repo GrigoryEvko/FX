@@ -177,6 +177,17 @@ theorem Term.subst_pointwise
       rw [Term.subst_pointwise pointwiseEq innerTerm]
   | _, _, .interval0 => rfl
   | _, _, .interval1 => rfl
+  | _, _, .intervalOpp innerValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq innerValue]
+  | _, _, .intervalMeet leftValue rightValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq leftValue,
+          Term.subst_pointwise pointwiseEq rightValue]
+  | _, _, .intervalJoin leftValue rightValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq leftValue,
+          Term.subst_pointwise pointwiseEq rightValue]
   | _, _, .pathLam _ _ _ body => by
       simp only [Term.subst]
       rw [Term.subst_pointwise

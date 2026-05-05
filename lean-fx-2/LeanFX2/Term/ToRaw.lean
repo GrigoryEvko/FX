@@ -271,6 +271,28 @@ theorem Term.toRaw_interval1 {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope} :
     (Term.interval1 (context := context)).toRaw = RawTerm.interval1 := rfl
 
+theorem Term.toRaw_intervalOpp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {innerRaw : RawTerm scope}
+    (innerValue : Term context Ty.interval innerRaw) :
+    (Term.intervalOpp innerValue).toRaw =
+      RawTerm.intervalOpp innerValue.toRaw := rfl
+
+theorem Term.toRaw_intervalMeet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw) :
+    (Term.intervalMeet leftValue rightValue).toRaw =
+      RawTerm.intervalMeet leftValue.toRaw rightValue.toRaw := rfl
+
+theorem Term.toRaw_intervalJoin {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw) :
+    (Term.intervalJoin leftValue rightValue).toRaw =
+      RawTerm.intervalJoin leftValue.toRaw rightValue.toRaw := rfl
+
 theorem Term.toRaw_pathLam {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     (carrierType : Ty level scope)

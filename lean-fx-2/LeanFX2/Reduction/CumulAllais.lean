@@ -729,6 +729,65 @@ theorem ConvCumul.subst_compatible_interval1_allais
               ((Term.interval1 (context := sourceCtx)).substHet termSubstB) :=
   ConvCumul.refl _
 
+/-- Allais arm for interval negation: one-subterm congruence. -/
+theorem ConvCumul.subst_compatible_intervalOpp_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {innerRaw : RawTerm sourceScope}
+    (innerValue : Term sourceCtx Ty.interval innerRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (innerCompat :
+      ConvCumul (innerValue.substHet termSubstA)
+                (innerValue.substHet termSubstB)) :
+    ConvCumul ((Term.intervalOpp innerValue).substHet termSubstA)
+              ((Term.intervalOpp innerValue).substHet termSubstB) :=
+  ConvCumul.intervalOppCong innerCompat
+
+/-- Allais arm for interval meet: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_intervalMeet_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (leftValue : Term sourceCtx Ty.interval leftRaw)
+    (rightValue : Term sourceCtx Ty.interval rightRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (leftCompat :
+      ConvCumul (leftValue.substHet termSubstA)
+                (leftValue.substHet termSubstB))
+    (rightCompat :
+      ConvCumul (rightValue.substHet termSubstA)
+                (rightValue.substHet termSubstB)) :
+    ConvCumul ((Term.intervalMeet leftValue rightValue).substHet termSubstA)
+              ((Term.intervalMeet leftValue rightValue).substHet termSubstB) :=
+  ConvCumul.intervalMeetCong leftCompat rightCompat
+
+/-- Allais arm for interval join: two-subterm congruence. -/
+theorem ConvCumul.subst_compatible_intervalJoin_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    (leftValue : Term sourceCtx Ty.interval leftRaw)
+    (rightValue : Term sourceCtx Ty.interval rightRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (leftCompat :
+      ConvCumul (leftValue.substHet termSubstA)
+                (leftValue.substHet termSubstB))
+    (rightCompat :
+      ConvCumul (rightValue.substHet termSubstA)
+                (rightValue.substHet termSubstB)) :
+    ConvCumul ((Term.intervalJoin leftValue rightValue).substHet termSubstA)
+              ((Term.intervalJoin leftValue rightValue).substHet termSubstB) :=
+  ConvCumul.intervalJoinCong leftCompat rightCompat
+
 /-- Allais arm for `pathLam`: interval-binder cong via
 `pathLamCong`. -/
 theorem ConvCumul.subst_compatible_pathLam_allais

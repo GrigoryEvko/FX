@@ -194,6 +194,14 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- Cubical path fragment.
   | _, _, .interval0 => Term.interval0
   | _, _, .interval1 => Term.interval1
+  | _, _, .intervalOpp innerValue =>
+      Term.intervalOpp (Term.subst termSubst innerValue)
+  | _, _, .intervalMeet leftValue rightValue =>
+      Term.intervalMeet (Term.subst termSubst leftValue)
+                        (Term.subst termSubst rightValue)
+  | _, _, .intervalJoin leftValue rightValue =>
+      Term.intervalJoin (Term.subst termSubst leftValue)
+                        (Term.subst termSubst rightValue)
   | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
       Term.pathLam (carrierType.subst sigma)
         (leftEndpoint.subst sigma.forRaw)

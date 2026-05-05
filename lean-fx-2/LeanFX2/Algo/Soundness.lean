@@ -418,6 +418,9 @@ theorem Term.headStep?_sound
   | subsume _ => nomatch firedEq
   | interval0 => nomatch firedEq
   | interval1 => nomatch firedEq
+  | intervalOpp _ => nomatch firedEq
+  | intervalMeet _ _ => nomatch firedEq
+  | intervalJoin _ _ => nomatch firedEq
   | pathLam _ _ _ _ => nomatch firedEq
   | glueIntro _ _ _ _ => nomatch firedEq
   | transp _ _ _ _ _ _ _ _ => nomatch firedEq
@@ -489,7 +492,8 @@ theorem Term.headStep?_sound
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume
-    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
@@ -519,7 +523,8 @@ theorem Term.headStep?_sound
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume
-    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
@@ -548,7 +553,8 @@ theorem Term.headStep?_sound
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume
-    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
@@ -577,7 +583,8 @@ theorem Term.headStep?_sound
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume
-    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
@@ -606,7 +613,8 @@ theorem Term.headStep?_sound
     | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .modIntro | .modElim | .subsume
-    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId

@@ -251,6 +251,9 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- β-app above.
   | _, _, _, _, .interval0 => none
   | _, _, _, _, .interval1 => none
+  | _, _, _, _, .intervalOpp _ => none
+  | _, _, _, _, .intervalMeet _ _ => none
+  | _, _, _, _, .intervalJoin _ _ => none
   | _, _, _, _, .pathLam _ _ _ _ => none
   | _, _, _, _, .glueIntro _ _ _ _ => none
   | _, _, _, _, .transp _ _ _ _ _ _ _ _ => none

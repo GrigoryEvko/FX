@@ -210,6 +210,16 @@ theorem Step.toConvCumul
       exact ConvCumul.glueElimCong ih
   | betaGlueElimIntro baseValue partialValue =>
       exact ConvCumul.betaGlueElimIntroCumul baseValue partialValue
+  | intervalOppInner _ ih =>
+      exact ConvCumul.intervalOppCong ih
+  | intervalMeetLeft _ ih =>
+      exact ConvCumul.intervalMeetCong ih (ConvCumul.refl _)
+  | intervalMeetRight _ ih =>
+      exact ConvCumul.intervalMeetCong (ConvCumul.refl _) ih
+  | intervalJoinLeft _ ih =>
+      exact ConvCumul.intervalJoinCong ih (ConvCumul.refl _)
+  | intervalJoinRight _ ih =>
+      exact ConvCumul.intervalJoinCong (ConvCumul.refl _) ih
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
       exact ConvCumul.transpCong universeLevel universeLevelLt

@@ -785,6 +785,50 @@ inductive Step :
         (Term.glueElim
           (Term.glueIntro baseType boundaryWitness baseValue partialValue))
         baseValue
+  /-- Step inside interval negation. -/
+  | intervalOppInner {mode level scope} {context : Ctx mode level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context Ty.interval innerRawSource}
+      {innerTarget : Term context Ty.interval innerRawTarget} :
+      Step innerSource innerTarget →
+      Step (Term.intervalOpp innerSource)
+           (Term.intervalOpp innerTarget)
+  /-- Step inside the left argument of interval meet. -/
+  | intervalMeetLeft {mode level scope} {context : Ctx mode level scope}
+      {leftRawSource leftRawTarget rightRaw : RawTerm scope}
+      {leftSource : Term context Ty.interval leftRawSource}
+      {leftTarget : Term context Ty.interval leftRawTarget}
+      {rightValue : Term context Ty.interval rightRaw} :
+      Step leftSource leftTarget →
+      Step (Term.intervalMeet leftSource rightValue)
+           (Term.intervalMeet leftTarget rightValue)
+  /-- Step inside the right argument of interval meet. -/
+  | intervalMeetRight {mode level scope} {context : Ctx mode level scope}
+      {leftRaw rightRawSource rightRawTarget : RawTerm scope}
+      {leftValue : Term context Ty.interval leftRaw}
+      {rightSource : Term context Ty.interval rightRawSource}
+      {rightTarget : Term context Ty.interval rightRawTarget} :
+      Step rightSource rightTarget →
+      Step (Term.intervalMeet leftValue rightSource)
+           (Term.intervalMeet leftValue rightTarget)
+  /-- Step inside the left argument of interval join. -/
+  | intervalJoinLeft {mode level scope} {context : Ctx mode level scope}
+      {leftRawSource leftRawTarget rightRaw : RawTerm scope}
+      {leftSource : Term context Ty.interval leftRawSource}
+      {leftTarget : Term context Ty.interval leftRawTarget}
+      {rightValue : Term context Ty.interval rightRaw} :
+      Step leftSource leftTarget →
+      Step (Term.intervalJoin leftSource rightValue)
+           (Term.intervalJoin leftTarget rightValue)
+  /-- Step inside the right argument of interval join. -/
+  | intervalJoinRight {mode level scope} {context : Ctx mode level scope}
+      {leftRaw rightRawSource rightRawTarget : RawTerm scope}
+      {leftValue : Term context Ty.interval leftRaw}
+      {rightSource : Term context Ty.interval rightRawSource}
+      {rightTarget : Term context Ty.interval rightRawTarget} :
+      Step rightSource rightTarget →
+      Step (Term.intervalJoin leftValue rightSource)
+           (Term.intervalJoin leftValue rightTarget)
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
       (universeLevel : UniverseLevel)

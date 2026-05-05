@@ -256,6 +256,23 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
   | interval1 {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope} :
       Term context Ty.interval RawTerm.interval1
+  | intervalOpp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerRaw : RawTerm scope}
+      (innerValue : Term context Ty.interval innerRaw) :
+      Term context Ty.interval (RawTerm.intervalOpp innerRaw)
+  | intervalMeet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftRaw rightRaw : RawTerm scope}
+      (leftValue : Term context Ty.interval leftRaw)
+      (rightValue : Term context Ty.interval rightRaw) :
+      Term context Ty.interval (RawTerm.intervalMeet leftRaw rightRaw)
+  | intervalJoin {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftRaw rightRaw : RawTerm scope}
+      (leftValue : Term context Ty.interval leftRaw)
+      (rightValue : Term context Ty.interval rightRaw) :
+      Term context Ty.interval (RawTerm.intervalJoin leftRaw rightRaw)
   | pathLam {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       (carrierType : Ty level scope)

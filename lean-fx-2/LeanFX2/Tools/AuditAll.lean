@@ -114,6 +114,9 @@ namespace LeanFX2.Tools
 -- Typed D2.5 path-application parity
 #assert_no_axioms LeanFX2.Term.toRaw_interval0
 #assert_no_axioms LeanFX2.Term.toRaw_interval1
+#assert_no_axioms LeanFX2.Term.toRaw_intervalOpp
+#assert_no_axioms LeanFX2.Term.toRaw_intervalMeet
+#assert_no_axioms LeanFX2.Term.toRaw_intervalJoin
 #assert_no_axioms LeanFX2.Term.toRaw_pathLam
 #assert_no_axioms LeanFX2.Term.toRaw_pathApp
 #assert_no_axioms LeanFX2.Cubical.constantPath
@@ -229,6 +232,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp
 #assert_no_axioms LeanFX2.Step.par.pathAppCong
+#assert_no_axioms LeanFX2.Step.intervalOppInner
+#assert_no_axioms LeanFX2.Step.intervalMeetLeft
+#assert_no_axioms LeanFX2.Step.intervalMeetRight
+#assert_no_axioms LeanFX2.Step.intervalJoinLeft
+#assert_no_axioms LeanFX2.Step.intervalJoinRight
+#assert_no_axioms LeanFX2.Step.par.intervalOppCong
+#assert_no_axioms LeanFX2.Step.par.intervalMeetCong
+#assert_no_axioms LeanFX2.Step.par.intervalJoinCong
+#assert_no_axioms LeanFX2.ConvCumul.intervalOppCong
+#assert_no_axioms LeanFX2.ConvCumul.intervalMeetCong
+#assert_no_axioms LeanFX2.ConvCumul.intervalJoinCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_intervalOpp_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_intervalMeet_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_intervalJoin_allais
 #assert_no_axioms LeanFX2.Step.par.betaPathApp
 #assert_no_axioms LeanFX2.Step.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.toRawBridge

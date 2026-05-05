@@ -78,6 +78,9 @@ Every declaration listed must report "does not depend on any axioms".
 -- Typed D2.5 path-application parity
 #print axioms LeanFX2.Term.toRaw_interval0
 #print axioms LeanFX2.Term.toRaw_interval1
+#print axioms LeanFX2.Term.toRaw_intervalOpp
+#print axioms LeanFX2.Term.toRaw_intervalMeet
+#print axioms LeanFX2.Term.toRaw_intervalJoin
 #print axioms LeanFX2.Term.toRaw_pathLam
 #print axioms LeanFX2.Term.toRaw_pathApp
 #print axioms LeanFX2.Cubical.constantPath
@@ -93,6 +96,14 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Term.subst_pointwise
 #print axioms LeanFX2.Step.par.pathLam
 #print axioms LeanFX2.Step.par.pathApp
+#print axioms LeanFX2.Step.intervalOppInner
+#print axioms LeanFX2.Step.intervalMeetLeft
+#print axioms LeanFX2.Step.intervalMeetRight
+#print axioms LeanFX2.Step.intervalJoinLeft
+#print axioms LeanFX2.Step.intervalJoinRight
+#print axioms LeanFX2.Step.par.intervalOppCong
+#print axioms LeanFX2.Step.par.intervalMeetCong
+#print axioms LeanFX2.Step.par.intervalJoinCong
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathAppDeep
@@ -106,6 +117,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong
+#print axioms LeanFX2.ConvCumul.intervalOppCong
+#print axioms LeanFX2.ConvCumul.intervalMeetCong
+#print axioms LeanFX2.ConvCumul.intervalJoinCong
 #print axioms LeanFX2.ConvCumul.betaPathAppCumul
 #print axioms LeanFX2.ConvCumul.glueIntroCong
 #print axioms LeanFX2.ConvCumul.glueElimCong
@@ -114,6 +128,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.hcompCong
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval0_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_interval1_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_intervalOpp_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_intervalMeet_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_intervalJoin_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_pathLam_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_pathApp_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_glueIntro_allais

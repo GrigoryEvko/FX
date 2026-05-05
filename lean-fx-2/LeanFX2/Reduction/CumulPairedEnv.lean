@@ -268,6 +268,17 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_interval0_allais _ _
   | _, _, .interval1 =>
       ConvCumul.subst_compatible_interval1_allais _ _
+  | _, _, .intervalOpp innerValue =>
+      ConvCumul.subst_compatible_intervalOpp_allais innerValue
+        (Term.subst_compatible_pointwise_allais compat innerValue)
+  | _, _, .intervalMeet leftValue rightValue =>
+      ConvCumul.subst_compatible_intervalMeet_allais leftValue rightValue
+        (Term.subst_compatible_pointwise_allais compat leftValue)
+        (Term.subst_compatible_pointwise_allais compat rightValue)
+  | _, _, .intervalJoin leftValue rightValue =>
+      ConvCumul.subst_compatible_intervalJoin_allais leftValue rightValue
+        (Term.subst_compatible_pointwise_allais compat leftValue)
+        (Term.subst_compatible_pointwise_allais compat rightValue)
   | _, _, .universeCode innerLevel outerLevel cumulOk levelLe =>
       ConvCumul.subst_compatible_universeCode_allais _ _
         innerLevel outerLevel cumulOk levelLe

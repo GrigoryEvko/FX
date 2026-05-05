@@ -84,6 +84,9 @@ inductive Term.HeadCtor : Type
   | subsume
   | interval0
   | interval1
+  | intervalOpp
+  | intervalMeet
+  | intervalJoin
   | pathLam
   | pathApp
   | glueIntro
@@ -150,6 +153,9 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .subsume _ => .subsume
   | .interval0 => .interval0
   | .interval1 => .interval1
+  | .intervalOpp _ => .intervalOpp
+  | .intervalMeet _ _ => .intervalMeet
+  | .intervalJoin _ _ => .intervalJoin
   | .pathLam _ _ _ _ => .pathLam
   | .pathApp _ _ => .pathApp
   | .glueIntro _ _ _ _ => .glueIntro
@@ -207,6 +213,9 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .subsume _ => true
   | .interval0 => true
   | .interval1 => true
+  | .intervalOpp _ => true
+  | .intervalMeet _ _ => true
+  | .intervalJoin _ _ => true
   | .pathLam _ _ _ _ => true
   | .glueIntro _ _ _ _ => true
   | .transp _ _ _ _ _ _ _ _ => true
@@ -344,6 +353,9 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -409,6 +421,9 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -474,6 +489,9 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -539,6 +557,9 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -604,6 +625,9 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -680,6 +704,9 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -745,6 +772,9 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -810,6 +840,9 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -875,6 +908,9 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -940,6 +976,9 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq
@@ -1005,6 +1044,9 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | subsume _ => nomatch headEq
   | interval0 => nomatch headEq
   | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
   | pathLam _ _ _ _ => nomatch headEq
   | pathApp _ _ => nomatch headEq
   | glueIntro _ _ _ _ => nomatch headEq

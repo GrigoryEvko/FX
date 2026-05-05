@@ -126,6 +126,12 @@ theorem Step.par.toRawBridge
       exact RawStep.par.transpCong ihPath ihSource
   | hcomp _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
+  | intervalOppCong _ ihInner =>
+      exact RawStep.par.intervalOppCong ihInner
+  | intervalMeetCong _ _ ihLeft ihRight =>
+      exact RawStep.par.intervalMeetCong ihLeft ihRight
+  | intervalJoinCong _ _ ihLeft ihRight =>
+      exact RawStep.par.intervalJoinCong ihLeft ihRight
   | pathLamCong _ ihBody => exact RawStep.par.pathLamCong ihBody
   | pathAppCong _ _ ihPath ihInterval =>
       exact RawStep.par.pathAppCong ihPath ihInterval

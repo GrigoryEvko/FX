@@ -448,6 +448,38 @@ inductive Step.par :
       Step.par capSource capTarget →
       Step.par (Term.hcomp sidesSource capSource)
                (Term.hcomp sidesTarget capTarget)
+  /-- Raw-name parity: interval negation reduces in its inner value. -/
+  | intervalOppCong {mode level scope} {context : Ctx mode level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context Ty.interval innerRawSource}
+      {innerTarget : Term context Ty.interval innerRawTarget} :
+      Step.par innerSource innerTarget →
+      Step.par (Term.intervalOpp innerSource)
+               (Term.intervalOpp innerTarget)
+  /-- Raw-name parity: interval meet reduces in both arguments. -/
+  | intervalMeetCong {mode level scope} {context : Ctx mode level scope}
+      {leftRawSource leftRawTarget rightRawSource rightRawTarget :
+        RawTerm scope}
+      {leftSource : Term context Ty.interval leftRawSource}
+      {leftTarget : Term context Ty.interval leftRawTarget}
+      {rightSource : Term context Ty.interval rightRawSource}
+      {rightTarget : Term context Ty.interval rightRawTarget} :
+      Step.par leftSource leftTarget →
+      Step.par rightSource rightTarget →
+      Step.par (Term.intervalMeet leftSource rightSource)
+               (Term.intervalMeet leftTarget rightTarget)
+  /-- Raw-name parity: interval join reduces in both arguments. -/
+  | intervalJoinCong {mode level scope} {context : Ctx mode level scope}
+      {leftRawSource leftRawTarget rightRawSource rightRawTarget :
+        RawTerm scope}
+      {leftSource : Term context Ty.interval leftRawSource}
+      {leftTarget : Term context Ty.interval leftRawTarget}
+      {rightSource : Term context Ty.interval rightRawSource}
+      {rightTarget : Term context Ty.interval rightRawTarget} :
+      Step.par leftSource leftTarget →
+      Step.par rightSource rightTarget →
+      Step.par (Term.intervalJoin leftSource rightSource)
+               (Term.intervalJoin leftTarget rightTarget)
   /-- Raw-name parity alias for `pathLam` congruence. -/
   | pathLamCong {mode level scope} {context : Ctx mode level scope}
       {carrierType : Ty level scope}
@@ -1424,6 +1456,16 @@ theorem Step.toPar
   | betaGlueElimIntro baseValue partialValue =>
       exact Step.par.betaGlueElimIntro
         (Step.par.refl baseValue) (Step.par.refl partialValue)
+  | intervalOppInner singleStep singleStepIH =>
+      exact Step.par.intervalOppCong singleStepIH
+  | intervalMeetLeft singleStep singleStepIH =>
+      exact Step.par.intervalMeetCong singleStepIH (Step.par.refl _)
+  | intervalMeetRight singleStep singleStepIH =>
+      exact Step.par.intervalMeetCong (Step.par.refl _) singleStepIH
+  | intervalJoinLeft singleStep singleStepIH =>
+      exact Step.par.intervalJoinCong singleStepIH (Step.par.refl _)
+  | intervalJoinRight singleStep singleStepIH =>
+      exact Step.par.intervalJoinCong (Step.par.refl _) singleStepIH
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
       exact Step.par.transpCong universeLevel universeLevelLt
