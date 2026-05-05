@@ -466,7 +466,6 @@ theorem Term.headStep?_sound
   | glueElim _ => nomatch firedEq
   | fst _ => nomatch firedEq
   | snd _ => nomatch firedEq
-  | eitherMatch _ _ _ => nomatch firedEq
   | idJ _ _ => nomatch firedEq
   | idStrictRefl _ _ => nomatch firedEq
   | idStrictRec _ _ => nomatch firedEq
@@ -530,13 +529,37 @@ theorem Term.headStep?_sound
       rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else if scrutineeHead == .natSucc then
+                 match Term.tryDestructNatSucc scrutinee with
+                 | some ⟨_, predTerm, _⟩ => some ⟨_, Term.app succBranch predTerm⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       cases firedEq
       exact Term.headStep?_sound_natElimZero scrutinee zeroBranch succBranch headEq
+    | .natSucc =>
+      rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else if scrutineeHead == .natSucc then
+                 match Term.tryDestructNatSucc scrutinee with
+                 | some ⟨_, predTerm, _⟩ => some ⟨_, Term.app succBranch predTerm⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructNatSucc scrutinee with
+      | some ⟨_, predTerm, ⟨rawEq, scrutineeHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have scrutEq : scrutinee = Term.natSucc predTerm := eq_of_heq scrutineeHEq
+        rw [scrutEq]
+        exact Step.iotaNatElimSucc predTerm zeroBranch succBranch
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
     | .var | .unit | .lam | .app | .lamPi | .appPi
     | .pair | .fst | .snd
     | .boolTrue | .boolFalse | .boolElim
-    | .natSucc | .natElim | .natRec
+    | .natElim | .natRec
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
@@ -555,6 +578,10 @@ theorem Term.headStep?_sound
       rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else if scrutineeHead == .natSucc then
+                 match Term.tryDestructNatSucc scrutinee with
+                 | some ⟨_, predTerm, _⟩ => some ⟨_, Term.app succBranch predTerm⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       nomatch firedEq
   | natRec scrutinee zeroBranch succBranch =>
@@ -563,13 +590,41 @@ theorem Term.headStep?_sound
       rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else if scrutineeHead == .natSucc then
+                 match Term.tryDestructNatSucc scrutinee with
+                 | some ⟨_, predTerm, _⟩ =>
+                     some ⟨_, Term.app (Term.app succBranch predTerm)
+                                        (Term.natRec predTerm zeroBranch succBranch)⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       cases firedEq
       exact Term.headStep?_sound_natRecZero scrutinee zeroBranch succBranch headEq
+    | .natSucc =>
+      rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else if scrutineeHead == .natSucc then
+                 match Term.tryDestructNatSucc scrutinee with
+                 | some ⟨_, predTerm, _⟩ =>
+                     some ⟨_, Term.app (Term.app succBranch predTerm)
+                                        (Term.natRec predTerm zeroBranch succBranch)⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructNatSucc scrutinee with
+      | some ⟨_, predTerm, ⟨rawEq, scrutineeHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have scrutEq : scrutinee = Term.natSucc predTerm := eq_of_heq scrutineeHEq
+        rw [scrutEq]
+        exact Step.iotaNatRecSucc predTerm zeroBranch succBranch
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
     | .var | .unit | .lam | .app | .lamPi | .appPi
     | .pair | .fst | .snd
     | .boolTrue | .boolFalse | .boolElim
-    | .natSucc | .natElim | .natRec
+    | .natElim | .natRec
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
@@ -588,6 +643,12 @@ theorem Term.headStep?_sound
       rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .natZero then some ⟨_, zeroBranch⟩
+               else if scrutineeHead == .natSucc then
+                 match Term.tryDestructNatSucc scrutinee with
+                 | some ⟨_, predTerm, _⟩ =>
+                     some ⟨_, Term.app (Term.app succBranch predTerm)
+                                        (Term.natRec predTerm zeroBranch succBranch)⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       nomatch firedEq
   | listElim scrutinee nilBranch consBranch =>
@@ -596,14 +657,41 @@ theorem Term.headStep?_sound
       rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .listNil then some ⟨_, nilBranch⟩
+               else if scrutineeHead == .listCons then
+                 match Term.tryDestructListCons scrutinee with
+                 | some ⟨_, _, headTerm, tailTerm, _⟩ =>
+                     some ⟨_, Term.app (Term.app consBranch headTerm) tailTerm⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       cases firedEq
       exact Term.headStep?_sound_listElimNil scrutinee nilBranch consBranch headEq
+    | .listCons =>
+      rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .listNil then some ⟨_, nilBranch⟩
+               else if scrutineeHead == .listCons then
+                 match Term.tryDestructListCons scrutinee with
+                 | some ⟨_, _, headTerm, tailTerm, _⟩ =>
+                     some ⟨_, Term.app (Term.app consBranch headTerm) tailTerm⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructListCons scrutinee with
+      | some ⟨_, _, headTerm, tailTerm, ⟨rawEq, scrutineeHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have scrutEq : scrutinee = Term.listCons headTerm tailTerm :=
+          eq_of_heq scrutineeHEq
+        rw [scrutEq]
+        exact Step.iotaListElimCons headTerm tailTerm nilBranch consBranch
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
     | .var | .unit | .lam | .app | .lamPi | .appPi
     | .pair | .fst | .snd
     | .boolTrue | .boolFalse | .boolElim
     | .natZero | .natSucc | .natElim | .natRec
-    | .listCons | .listElim
+    | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
@@ -621,6 +709,11 @@ theorem Term.headStep?_sound
       rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .listNil then some ⟨_, nilBranch⟩
+               else if scrutineeHead == .listCons then
+                 match Term.tryDestructListCons scrutinee with
+                 | some ⟨_, _, headTerm, tailTerm, _⟩ =>
+                     some ⟨_, Term.app (Term.app consBranch headTerm) tailTerm⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       nomatch firedEq
   | optionMatch scrutinee noneBranch someBranch =>
@@ -629,15 +722,40 @@ theorem Term.headStep?_sound
       rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .optionNone then some ⟨_, noneBranch⟩
+               else if scrutineeHead == .optionSome then
+                 match Term.tryDestructOptionSome scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app someBranch valueTerm⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       cases firedEq
       exact Term.headStep?_sound_optionMatchNone scrutinee noneBranch someBranch headEq
+    | .optionSome =>
+      rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .optionNone then some ⟨_, noneBranch⟩
+               else if scrutineeHead == .optionSome then
+                 match Term.tryDestructOptionSome scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app someBranch valueTerm⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructOptionSome scrutinee with
+      | some ⟨_, valueTerm, ⟨rawEq, scrutineeHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have scrutEq : scrutinee = Term.optionSome valueTerm :=
+          eq_of_heq scrutineeHEq
+        rw [scrutEq]
+        exact Step.iotaOptionMatchSome valueTerm noneBranch someBranch
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
     | .var | .unit | .lam | .app | .lamPi | .appPi
     | .pair | .fst | .snd
     | .boolTrue | .boolFalse | .boolElim
     | .natZero | .natSucc | .natElim | .natRec
     | .listNil | .listCons | .listElim
-    | .optionSome | .optionMatch
+    | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
     | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
@@ -654,6 +772,93 @@ theorem Term.headStep?_sound
       rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
             = (let scrutineeHead := scrutinee.headCtor
                if scrutineeHead == .optionNone then some ⟨_, noneBranch⟩
+               else if scrutineeHead == .optionSome then
+                 match Term.tryDestructOptionSome scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app someBranch valueTerm⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      nomatch firedEq
+  | eitherMatch scrutinee leftBranch rightBranch =>
+    match headEq : scrutinee.headCtor with
+    | .eitherInl =>
+      rw [show (Term.eitherMatch scrutinee leftBranch rightBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .eitherInl then
+                 match Term.tryDestructEitherInl scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app leftBranch valueTerm⟩
+                 | none => none
+               else if scrutineeHead == .eitherInr then
+                 match Term.tryDestructEitherInr scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app rightBranch valueTerm⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructEitherInl scrutinee with
+      | some ⟨_, valueTerm, ⟨rawEq, scrutineeHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have scrutEq :
+            scrutinee = Term.eitherInl (rightType := _) valueTerm :=
+          eq_of_heq scrutineeHEq
+        rw [scrutEq]
+        exact Step.iotaEitherMatchInl valueTerm leftBranch rightBranch
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
+    | .eitherInr =>
+      rw [show (Term.eitherMatch scrutinee leftBranch rightBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .eitherInl then
+                 match Term.tryDestructEitherInl scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app leftBranch valueTerm⟩
+                 | none => none
+               else if scrutineeHead == .eitherInr then
+                 match Term.tryDestructEitherInr scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app rightBranch valueTerm⟩
+                 | none => none
+               else none) from rfl, headEq] at firedEq
+      match destructEq : Term.tryDestructEitherInr scrutinee with
+      | some ⟨_, valueTerm, ⟨rawEq, scrutineeHEq⟩⟩ =>
+        rw [destructEq] at firedEq
+        cases firedEq
+        cases rawEq
+        have scrutEq :
+            scrutinee = Term.eitherInr (leftType := _) valueTerm :=
+          eq_of_heq scrutineeHEq
+        rw [scrutEq]
+        exact Step.iotaEitherMatchInr valueTerm leftBranch rightBranch
+      | none =>
+        rw [destructEq] at firedEq
+        nomatch firedEq
+    | .var | .unit | .lam | .app | .lamPi | .appPi
+    | .pair | .fst | .snd
+    | .boolTrue | .boolFalse | .boolElim
+    | .natZero | .natSucc | .natElim | .natRec
+    | .listNil | .listCons | .listElim
+    | .optionNone | .optionSome | .optionMatch
+    | .eitherMatch
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
+    | .pathLam | .pathApp
+    | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj | .refineIntro | .refineElim
+    | .codataUnfold | .codataDest
+    | .sessionSend | .sessionRecv | .effectPerform
+    | .universeCode | .cumulUp
+    | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
+    | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
+    | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
+    | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
+      rw [show (Term.eitherMatch scrutinee leftBranch rightBranch).headStep?
+            = (let scrutineeHead := scrutinee.headCtor
+               if scrutineeHead == .eitherInl then
+                 match Term.tryDestructEitherInl scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app leftBranch valueTerm⟩
+                 | none => none
+               else if scrutineeHead == .eitherInr then
+                 match Term.tryDestructEitherInr scrutinee with
+                 | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app rightBranch valueTerm⟩
+                 | none => none
                else none) from rfl, headEq] at firedEq
       nomatch firedEq
 

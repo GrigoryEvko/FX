@@ -2,15 +2,10 @@ import LeanFX2.Algo.Soundness
 
 /-! # Phase 12.A.3 audit: M08 infrastructure composition
 
-End-to-end demonstration that the 11 zero-axiom helpers + 6
-soundness theorems compose to deliver typed Step witnesses for
-all 6 payload-bearing β/ι rules.
-
-The integration into `Term.headStep?` itself is mechanical
-wiring (deferred — requires updating the closure proof's
-`show ... from rfl` patterns to match the new shape).  This
-file documents that the BUILDING BLOCKS are zero-axiom and
-sufficient for that integration.
+End-to-end demonstration that the zero-axiom destruct helpers,
+payload soundness theorems, and `Term.headStep?_sound` closure
+compose to deliver typed Step witnesses for all 6 payload-bearing
+β/ι rules.
 
 ## The composition recipe (per payload-bearing β/ι case)
 
@@ -19,16 +14,14 @@ Given:
 * `headEq : scrutinee.headCtor = .<canonicalHead>`
 
 Steps:
-1. `Term.headStep?_sound_<rule>` gives us the existential witness
-   (∃ payload, Step source <reduct>) zero-axiom.
-2. The destructor `Term.<ctor>Destruct` extracts the typed payload
-   from the scrutinee, bundled with HEq.
-3. `eq_of_heq` collapses HEq → Eq for substitution.
-4. `Step.iota<rule>` is the kernel reduction rule fired.
+1. `Term.tryDestruct<Ctor>` extracts the typed payload plus raw-shape
+   equality and canonical-form HEq.
+2. `Term.headStep?` builds the payload reduct from that exact payload.
+3. `Term.headStep?_sound` narrows the raw index, converts HEq to Eq,
+   and emits the matching `Step.iota<rule>` witness.
 
-All 11 helpers + 6 sound theorems verified zero-axiom in this
-audit.  The composition is sound — any `Term.headStep?` extension
-using the helpers + theorems inherits zero-axiomness. -/
+All destruct helpers, payload soundness theorems, and closure gates
+are verified zero-axiom in this audit. -/
 
 #print axioms LeanFX2.Term.tryDestructNatSucc
 #print axioms LeanFX2.Term.tryDestructListCons

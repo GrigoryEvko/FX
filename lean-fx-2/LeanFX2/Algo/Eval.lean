@@ -25,12 +25,17 @@ Coverage (zero-axiom subset):
 | `boolElim true t e   → t`            | yes    | `t` already destructured        |
 | `boolElim false t e  → e`            | yes    | `e` already destructured        |
 | `natElim zero z s    → z`            | yes    | `z` already destructured        |
+| `natElim succ z s    → s n`          | yes    | typed destructor extracts `n`   |
 | `natRec zero z s     → z`            | yes    | `z` already destructured        |
+| `natRec succ z s     → s n (rec n)`  | yes    | typed destructor extracts `n`   |
 | `listElim nil n c    → n`            | yes    | `n` already destructured        |
+| `listElim cons n c   → c h t`        | yes    | typed destructor extracts h/t   |
 | `optionMatch none n s → n`           | yes    | `n` already destructured        |
+| `optionMatch some n s → s v`         | yes    | typed destructor extracts `v`   |
+| `eitherMatch inl l r → l v`          | yes    | typed destructor extracts `v`   |
+| `eitherMatch inr l r → r v`          | yes    | typed destructor extracts `v`   |
 
-The remaining redex rules (β-app, β-Π, β-pair, succ-elim, cons-elim,
-some-match, inl/inr-match, path-app beta) require **inner Term
+The remaining redex rules (β-app, β-Π, β-pair, path-app beta) require **inner Term
 destructuring** — e.g., `app (lam body) arg ⟶ body[arg/x]` and
 `pathApp (pathLam body) interval ⟶ body[interval/i]` need to extract
 `body` from the canonical head.  In Lean 4 v4.29.1, that triggers
@@ -93,16 +98,18 @@ raw + typed payload, or `none` if the raw isn't natSucc-shaped. -/
 def Term.tryDestructNatSucc
     {scope : Nat} {context : Ctx mode level scope} {raw : RawTerm scope}
     (someTerm : Term context Ty.nat raw) :
-    Option (Σ' (predRaw : RawTerm scope), Term context Ty.nat predRaw) :=
+    Option (Σ' (predRaw : RawTerm scope)
+              (predTerm : Term context Ty.nat predRaw),
+              raw = RawTerm.natSucc predRaw ∧
+              HEq someTerm (Term.natSucc predTerm)) := by
   match witnessPred : raw.natSuccPred? with
   | some predRaw =>
       have rawIsNatSucc : raw = RawTerm.natSucc predRaw :=
         RawTerm.natSuccPred?_eq_some witnessPred
-      let scrutineeAtRaw : Term context Ty.nat (RawTerm.natSucc predRaw) :=
-        rawIsNatSucc ▸ someTerm
-      let ⟨predTerm, _⟩ := Term.natSuccDestruct scrutineeAtRaw
-      some ⟨predRaw, predTerm⟩
-  | none => none
+      cases rawIsNatSucc
+      obtain ⟨predTerm, scrutineeHEq⟩ := Term.natSuccDestruct someTerm
+      exact some ⟨predRaw, predTerm, ⟨rfl, scrutineeHEq⟩⟩
+  | none => exact none
 
 /-- Try to destruct a typed list term as a `Term.listCons` of
 head + tail.  Returns the typed parts on success. -/
@@ -111,18 +118,19 @@ def Term.tryDestructListCons
     {elementType : Ty level scope} {raw : RawTerm scope}
     (someTerm : Term context (Ty.listType elementType) raw) :
     Option (Σ' (headRaw tailRaw : RawTerm scope)
-              (_ : Term context elementType headRaw),
-              Term context (Ty.listType elementType) tailRaw) :=
+              (headTerm : Term context elementType headRaw)
+              (tailTerm : Term context (Ty.listType elementType) tailRaw),
+              raw = RawTerm.listCons headRaw tailRaw ∧
+              HEq someTerm (Term.listCons headTerm tailTerm)) := by
   match witnessParts : raw.listConsParts? with
   | some (headRaw, tailRaw) =>
       have rawIsListCons : raw = RawTerm.listCons headRaw tailRaw :=
         RawTerm.listConsParts?_eq_some witnessParts
-      let scrutineeAtRaw : Term context (Ty.listType elementType)
-                                         (RawTerm.listCons headRaw tailRaw) :=
-        rawIsListCons ▸ someTerm
-      let ⟨headTerm, tailTerm, _⟩ := Term.listConsDestruct scrutineeAtRaw
-      some ⟨headRaw, tailRaw, headTerm, tailTerm⟩
-  | none => none
+      cases rawIsListCons
+      obtain ⟨headTerm, tailTerm, scrutineeHEq⟩ :=
+        Term.listConsDestruct someTerm
+      exact some ⟨headRaw, tailRaw, headTerm, tailTerm, ⟨rfl, scrutineeHEq⟩⟩
+  | none => exact none
 
 /-- Try to destruct a typed option term as a `Term.optionSome`. -/
 def Term.tryDestructOptionSome
@@ -130,17 +138,17 @@ def Term.tryDestructOptionSome
     {elementType : Ty level scope} {raw : RawTerm scope}
     (someTerm : Term context (Ty.optionType elementType) raw) :
     Option (Σ' (valueRaw : RawTerm scope),
-              Term context elementType valueRaw) :=
+              Σ' (valueTerm : Term context elementType valueRaw),
+              raw = RawTerm.optionSome valueRaw ∧
+              HEq someTerm (Term.optionSome valueTerm)) := by
   match witnessValue : raw.optionSomeValue? with
   | some valueRaw =>
       have rawIsOptionSome : raw = RawTerm.optionSome valueRaw :=
         RawTerm.optionSomeValue?_eq_some witnessValue
-      let scrutineeAtRaw : Term context (Ty.optionType elementType)
-                                         (RawTerm.optionSome valueRaw) :=
-        rawIsOptionSome ▸ someTerm
-      let ⟨valueTerm, _⟩ := Term.optionSomeDestruct scrutineeAtRaw
-      some ⟨valueRaw, valueTerm⟩
-  | none => none
+      cases rawIsOptionSome
+      obtain ⟨valueTerm, scrutineeHEq⟩ := Term.optionSomeDestruct someTerm
+      exact some ⟨valueRaw, valueTerm, ⟨rfl, scrutineeHEq⟩⟩
+  | none => exact none
 
 /-- Try to destruct a typed either term as a `Term.eitherInl`. -/
 def Term.tryDestructEitherInl
@@ -148,17 +156,17 @@ def Term.tryDestructEitherInl
     {leftType rightType : Ty level scope} {raw : RawTerm scope}
     (someTerm : Term context (Ty.eitherType leftType rightType) raw) :
     Option (Σ' (valueRaw : RawTerm scope),
-              Term context leftType valueRaw) :=
+              Σ' (valueTerm : Term context leftType valueRaw),
+              raw = RawTerm.eitherInl valueRaw ∧
+              HEq someTerm (Term.eitherInl (rightType := rightType) valueTerm)) := by
   match witnessValue : raw.eitherInlValue? with
   | some valueRaw =>
       have rawIsEitherInl : raw = RawTerm.eitherInl valueRaw :=
         RawTerm.eitherInlValue?_eq_some witnessValue
-      let scrutineeAtRaw : Term context (Ty.eitherType leftType rightType)
-                                         (RawTerm.eitherInl valueRaw) :=
-        rawIsEitherInl ▸ someTerm
-      let ⟨valueTerm, _⟩ := Term.eitherInlDestruct scrutineeAtRaw
-      some ⟨valueRaw, valueTerm⟩
-  | none => none
+      cases rawIsEitherInl
+      obtain ⟨valueTerm, scrutineeHEq⟩ := Term.eitherInlDestruct someTerm
+      exact some ⟨valueRaw, valueTerm, ⟨rfl, scrutineeHEq⟩⟩
+  | none => exact none
 
 /-- Try to destruct a typed either term as a `Term.eitherInr`. -/
 def Term.tryDestructEitherInr
@@ -166,17 +174,17 @@ def Term.tryDestructEitherInr
     {leftType rightType : Ty level scope} {raw : RawTerm scope}
     (someTerm : Term context (Ty.eitherType leftType rightType) raw) :
     Option (Σ' (valueRaw : RawTerm scope),
-              Term context rightType valueRaw) :=
+              Σ' (valueTerm : Term context rightType valueRaw),
+              raw = RawTerm.eitherInr valueRaw ∧
+              HEq someTerm (Term.eitherInr (leftType := leftType) valueTerm)) := by
   match witnessValue : raw.eitherInrValue? with
   | some valueRaw =>
       have rawIsEitherInr : raw = RawTerm.eitherInr valueRaw :=
         RawTerm.eitherInrValue?_eq_some witnessValue
-      let scrutineeAtRaw : Term context (Ty.eitherType leftType rightType)
-                                         (RawTerm.eitherInr valueRaw) :=
-        rawIsEitherInr ▸ someTerm
-      let ⟨valueTerm, _⟩ := Term.eitherInrDestruct scrutineeAtRaw
-      some ⟨valueRaw, valueTerm⟩
-  | none => none
+      cases rawIsEitherInr
+      obtain ⟨valueTerm, scrutineeHEq⟩ := Term.eitherInrDestruct someTerm
+      exact some ⟨valueRaw, valueTerm, ⟨rfl, scrutineeHEq⟩⟩
+  | none => exact none
 
 /-- Fire a single ι-redex at the head of a typed term, restricted to
 the cases where the reduct does not require inner-Term destructuring
@@ -287,40 +295,61 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
         some ⟨_, elseBranch⟩
       else
         none
-  -- Eliminator cases: fire only no-payload canonical cases for
-  -- compatibility with the existing `Term.headStep?_sound` closure
-  -- proof (whose `show ... from rfl` patterns expect this shape).
-  -- Payload firings are SHIPPED as standalone theorems
-  -- (`Term.headStep?_sound_<rule>` for natElimSucc / natRecSucc /
-  -- listElimCons / optionMatchSome / eitherMatchInl / eitherMatchInr)
-  -- in `Algo/Soundness.lean`.  Future work: rewrite the closure
-  -- proof to dispatch via per-firing sound theorems, unblocking
-  -- the full headStep? extension.
-  | _, _, _, _, .natElim scrutinee zeroBranch _ =>
+  | _, _, _, _, .natElim scrutinee zeroBranch succBranch =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then
         some ⟨_, zeroBranch⟩
+      else if scrutineeHead == .natSucc then
+        match Term.tryDestructNatSucc scrutinee with
+        | some ⟨_, predTerm, _⟩ => some ⟨_, Term.app succBranch predTerm⟩
+        | none => none
       else
         none
-  | _, _, _, _, .natRec scrutinee zeroBranch _ =>
+  | _, _, _, _, .natRec scrutinee zeroBranch succBranch =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then
         some ⟨_, zeroBranch⟩
+      else if scrutineeHead == .natSucc then
+        match Term.tryDestructNatSucc scrutinee with
+        | some ⟨_, predTerm, _⟩ =>
+            some ⟨_, Term.app (Term.app succBranch predTerm)
+                               (Term.natRec predTerm zeroBranch succBranch)⟩
+        | none => none
       else
         none
-  | _, _, _, _, .listElim scrutinee nilBranch _ =>
+  | _, _, _, _, .listElim scrutinee nilBranch consBranch =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .listNil then
         some ⟨_, nilBranch⟩
+      else if scrutineeHead == .listCons then
+        match Term.tryDestructListCons scrutinee with
+        | some ⟨_, _, headTerm, tailTerm, _⟩ =>
+            some ⟨_, Term.app (Term.app consBranch headTerm) tailTerm⟩
+        | none => none
       else
         none
-  | _, _, _, _, .optionMatch scrutinee noneBranch _ =>
+  | _, _, _, _, .optionMatch scrutinee noneBranch someBranch =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .optionNone then
         some ⟨_, noneBranch⟩
+      else if scrutineeHead == .optionSome then
+        match Term.tryDestructOptionSome scrutinee with
+        | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app someBranch valueTerm⟩
+        | none => none
       else
         none
-  | _, _, _, _, .eitherMatch _ _ _ => none
+  | _, _, _, _, .eitherMatch scrutinee leftBranch rightBranch =>
+      let scrutineeHead := scrutinee.headCtor
+      if scrutineeHead == .eitherInl then
+        match Term.tryDestructEitherInl scrutinee with
+        | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app leftBranch valueTerm⟩
+        | none => none
+      else if scrutineeHead == .eitherInr then
+        match Term.tryDestructEitherInr scrutinee with
+        | some ⟨_, valueTerm, _⟩ => some ⟨_, Term.app rightBranch valueTerm⟩
+        | none => none
+      else
+        none
   | _, _, _, _, .idJ _ _ => none            -- J-on-refl needs witness extraction
   | _, _, _, _, .idStrictRec _ _ => none     -- strict β not in raw layer yet
   | _, _, _, _, .modElim _ => none          -- needs inner extraction
