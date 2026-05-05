@@ -100,6 +100,52 @@ theorem dimensions21_appRule_mono_zeroProjection_smoke :
     dimensions21_appRule_zeroProjection_smoke
     dimensions21_appRule_zeroProjection_smoke
 
+/-- The D5.4 aggregate semiring projection feeds the Let rule. -/
+theorem dimensions21_letRule_zeroProjection_smoke :
+    Graded.IsLetCompatible
+      Graded.FXGradeVector21.bottom.semiringGrades
+      (boundAttr :=
+        (Graded.GradeAttribution.zero :
+          Graded.GradeAttribution Graded.semiringDimensions21 0))
+      (bodyAttr :=
+        (Graded.GradeAttribution.zero :
+          Graded.GradeAttribution Graded.semiringDimensions21 1))
+      (resultAttr :=
+        (Graded.GradeAttribution.zero :
+          Graded.GradeAttribution Graded.semiringDimensions21 0)) := by
+  constructor
+  · rfl
+  · rfl
+
+/-- The D5.4 aggregate semiring projection feeds Let subsumption
+monotonicity through the existing rule surface. -/
+theorem dimensions21_letRule_mono_zeroProjection_smoke :
+    Graded.GradeAttribution.le
+      ((Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0))
+      ((Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0)) :=
+  Graded.IsLetCompatible.mono
+    Graded.FXGradeVector21.bottom.semiringGrades
+    Graded.FXGradeVector21.bottom.semiringGrades
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 1)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 1)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeVector.le_refl Graded.FXGradeVector21.bottom.semiringGrades)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    dimensions21_letRule_zeroProjection_smoke
+    dimensions21_letRule_zeroProjection_smoke
+
 /-- The D5.4 aggregate semiring projection feeds If/Match subsumption
 monotonicity through the existing rule surface. -/
 theorem dimensions21_ifRule_mono_zeroProjection_smoke :
@@ -134,6 +180,8 @@ theorem dimensions21_ifRule_mono_zeroProjection_smoke :
 #assert_no_axioms LeanFX2.Smoke.dimensions21_lamRule_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_mono_zeroProjection_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_letRule_zeroProjection_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_letRule_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_ifRule_mono_zeroProjection_smoke
 
 end LeanFX2.Smoke
