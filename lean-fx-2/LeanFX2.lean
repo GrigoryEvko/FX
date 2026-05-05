@@ -154,6 +154,7 @@ import LeanFX2.Graded.Instances.FPOrder
 import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
 import LeanFX2.Graded.Instances.Lifetime
+import LeanFX2.Graded.Instances.Provenance
 import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Representation
 import LeanFX2.Graded.Instances.ClockDomain

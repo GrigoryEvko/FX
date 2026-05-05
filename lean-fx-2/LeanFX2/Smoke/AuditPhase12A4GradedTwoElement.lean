@@ -6,6 +6,7 @@ import LeanFX2.Graded.Instances.FPOrder
 import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
 import LeanFX2.Graded.Instances.Lifetime
+import LeanFX2.Graded.Instances.Provenance
 import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Representation
 import LeanFX2.Graded.Instances.ClockDomain
@@ -55,7 +56,9 @@ Remaining D5.4 instances (TBD per-need):
                                        annihilation
 * `LifetimeGrade` (dim 7)           — shipped as `GradeJoinSemilattice`
                                        over named-region obligation rows
-* `ProvenanceGrade` (dim 8)         — origin-label lattice
+* `ProvenanceGrade` (dim 8)         — shipped as `GradeJoinSemilattice`
+                                       over known provenance rows plus
+                                       unknown top
 * `TrustGrade` (dim 9)              — shipped as 5-chain trust-debt
                                        lattice
 * `RepresentationGrade` (dim 10)    — shipped as 5-chain
@@ -134,6 +137,20 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.LifetimeGrade.member_append_right
 #print axioms LeanFX2.Graded.Instances.LifetimeGrade.member_append_inv
 #print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeLifetimeGrade
+
+-- D5.4 Provenance (dim 8, known provenance rows plus unknown top)
+#print axioms LeanFX2.Graded.Instances.ProvenanceFact
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow.Member
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow.subset
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow.join
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow.member_append_left
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow.member_append_right
+#print axioms LeanFX2.Graded.Instances.ProvenanceRow.member_append_inv
+#print axioms LeanFX2.Graded.Instances.ProvenanceGrade
+#print axioms LeanFX2.Graded.Instances.ProvenanceGrade.join
+#print axioms LeanFX2.Graded.Instances.ProvenanceGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeProvenanceGrade
 
 -- D5.4 Trust (dim 9, 5-chain trust-debt lattice)
 #print axioms LeanFX2.Graded.Instances.TrustGrade
