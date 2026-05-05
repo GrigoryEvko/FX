@@ -3,6 +3,10 @@ import LeanFX2.Graded.Instances.Observability
 import LeanFX2.Graded.Instances.Reentrancy
 import LeanFX2.Graded.Instances.FPOrder
 import LeanFX2.Graded.Instances.Mutation
+import LeanFX2.Graded.Instances.NatResource
+import LeanFX2.Graded.Instances.Complexity
+import LeanFX2.Graded.Instances.Space
+import LeanFX2.Graded.Instances.Size
 
 /-! # AuditPhase12A4GradedTwoElement — D5.4 partial: graded semiring
 instances along chains of size 2 and 4.
@@ -50,17 +54,25 @@ Remaining D5.4 instances (TBD per-need):
 * `RepresentationGrade` (dim 10)    — preorder over layout attrs
 * `ClockDomainGrade` (dim 12)       — `combinational + sync(c)`
                                        partial structure
-* `ComplexityGrade` (dim 13)        — Nat (real semiring)
+* `ComplexityGrade` (dim 13)        — shipped as a `Nat`-backed
+                                       real semiring
 * `PrecisionGrade` (dim 14)         — Rat (sum-monoid)
-* `SpaceGrade` (dim 15)             — Nat (like Complexity)
+* `SpaceGrade` (dim 15)             — shipped as a `Nat`-backed
+                                       real semiring
 * `OverflowGrade` (dim 16)          — `{exact, wrap, trap, sat}`
                                        partial lattice
-* `SizeGrade` (dim 20)              — codata observation depth
+* `SizeGrade` (dim 20)              — shipped as a `Nat`-backed
+                                       codata observation-depth
+                                       semiring
 * `VersionGrade` (dim 21)           — version-label lattice with
                                        adapter edges
 
 Every declaration listed must report "does not depend on any axioms".
 -/
+
+-- D5.4 numeric-resource clean Nat lemmas
+#print axioms LeanFX2.Graded.Instances.NatResource.mulRightDistribClean
+#print axioms LeanFX2.Graded.Instances.NatResource.mulAssocClean
 
 -- D5.4 Security (dim 5)
 #print axioms LeanFX2.Graded.Instances.SecurityGrade
@@ -96,3 +108,24 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.MutationGrade.mul
 #print axioms LeanFX2.Graded.Instances.MutationGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringMutationGrade
+
+-- D5.4 Complexity (dim 13, Nat-backed semiring)
+#print axioms LeanFX2.Graded.Instances.ComplexityGrade
+#print axioms LeanFX2.Graded.Instances.ComplexityGrade.add
+#print axioms LeanFX2.Graded.Instances.ComplexityGrade.mul
+#print axioms LeanFX2.Graded.Instances.ComplexityGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeSemiringComplexityGrade
+
+-- D5.4 Space (dim 15, Nat-backed semiring)
+#print axioms LeanFX2.Graded.Instances.SpaceGrade
+#print axioms LeanFX2.Graded.Instances.SpaceGrade.add
+#print axioms LeanFX2.Graded.Instances.SpaceGrade.mul
+#print axioms LeanFX2.Graded.Instances.SpaceGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeSemiringSpaceGrade
+
+-- D5.4 Size (dim 20, Nat-backed codata observation depth)
+#print axioms LeanFX2.Graded.Instances.SizeGrade
+#print axioms LeanFX2.Graded.Instances.SizeGrade.add
+#print axioms LeanFX2.Graded.Instances.SizeGrade.mul
+#print axioms LeanFX2.Graded.Instances.SizeGrade.le
+#print axioms LeanFX2.Graded.Instances.instGradeSemiringSizeGrade
