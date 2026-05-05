@@ -159,6 +159,12 @@ theorem s1_rec_base_smoke :
     (HoTT.HIT.S1.rec Bool true).run HoTT.HIT.S1.base = true :=
   HoTT.HIT.S1.rec_base Bool true
 
+/-- Setoid-level S1 dependent induction computes at base. -/
+theorem s1_dependentInductor_base_smoke :
+    (HoTT.HIT.S1.dependentInductor (fun _ => Bool) true).run
+      HoTT.HIT.S1.base = true :=
+  HoTT.HIT.S1.dependentInductor_base (fun _ => Bool) true
+
 /-- A suspension meridian relates north and south when a source witness exists. -/
 theorem suspension_meridian_smoke :
     (HoTT.HIT.Suspension.setoid Unit).relation
@@ -285,6 +291,7 @@ theorem coequalizer_rec_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_loop_spec_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_rec_base_smoke
+#assert_no_axioms LeanFX2.Smoke.s1_dependentInductor_base_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_meridian_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_glue_smoke

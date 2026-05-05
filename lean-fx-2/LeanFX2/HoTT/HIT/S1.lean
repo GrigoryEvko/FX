@@ -84,6 +84,37 @@ theorem rec_loop (resultType : Sort resultLevel)
       (S1.rec resultType baseCase).run S1.base :=
   HITRecursor.run_respects (S1.rec resultType baseCase) S1.loop
 
+/-- Dependent induction out of the current setoid-level circle.
+
+Because this presentation is 0-truncated with a single carrier
+representative, the dependent motive is discharged by the base case.
+The relation-respect proof is reflexive after case analysis on the
+single `Unit` representative. -/
+def dependentInductor (motive : setoid.carrier → Sort resultLevel)
+    (baseCase : motive S1.base) :
+    HITInductor setoid motive where
+  apply := fun
+    | () => baseCase
+  respectsRelation := by
+    intro leftValue rightValue _relationWitness
+    cases leftValue
+    cases rightValue
+    exact HEq.rfl
+
+/-- Circle dependent induction computes at the base representative by
+reflexive reduction. -/
+theorem dependentInductor_base (motive : setoid.carrier → Sort resultLevel)
+    (baseCase : motive S1.base) :
+    (S1.dependentInductor motive baseCase).run S1.base = baseCase :=
+  rfl
+
+/-- The circle dependent inductor respects the loop relation. -/
+theorem dependentInductor_loop (motive : setoid.carrier → Sort resultLevel)
+    (baseCase : motive S1.base) :
+    HEq ((S1.dependentInductor motive baseCase).run S1.base)
+      ((S1.dependentInductor motive baseCase).run S1.base) :=
+  HITInductor.run_respects (S1.dependentInductor motive baseCase) S1.loop
+
 end S1
 
 end HIT

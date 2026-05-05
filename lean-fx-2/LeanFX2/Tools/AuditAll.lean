@@ -444,6 +444,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.S1.rec
 #assert_no_axioms LeanFX2.HoTT.HIT.S1.rec_base
 #assert_no_axioms LeanFX2.HoTT.HIT.S1.rec_loop
+#assert_no_axioms LeanFX2.HoTT.HIT.S1.dependentInductor
+#assert_no_axioms LeanFX2.HoTT.HIT.S1.dependentInductor_base
+#assert_no_axioms LeanFX2.HoTT.HIT.S1.dependentInductor_loop
 #assert_no_axioms LeanFX2.HoTT.HIT.SuspensionPoint
 #assert_no_axioms LeanFX2.HoTT.HIT.Suspension.relation
 #assert_no_axioms LeanFX2.HoTT.HIT.Suspension.relation_refl
