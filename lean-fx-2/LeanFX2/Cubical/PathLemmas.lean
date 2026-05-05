@@ -46,6 +46,32 @@ theorem constantTypePath_rawRecognized {mode : Mode} {level scope : Nat}
   rw [constantTypePath_toRaw]
   exact RawTerm.constantPathBody?_pathLam_weaken typeRaw
 
+/-- The interval identity path mentions the interval binder, so it is
+not a constant path.  This typed term is the small counterexample that
+blocks the unsound shortcut "every `pathLam` is transport-constant". -/
+def intervalBinderPath {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Term context (Ty.path Ty.interval RawTerm.interval0 RawTerm.interval1)
+      (RawTerm.pathLam
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) :=
+  Term.pathLam Ty.interval RawTerm.interval0 RawTerm.interval1
+    (Term.var (context := context.cons Ty.interval)
+      ⟨0, Nat.zero_lt_succ scope⟩)
+
+/-- The raw constant-path recognizer rejects `intervalBinderPath`.
+This is the typed counterpart to
+`RawTerm.constantPathBody?_pathLam_interval_var_none`. -/
+theorem intervalBinderPath_rawRejected
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    RawTerm.constantPathBody?
+      (intervalBinderPath (context := context)).toRaw =
+      none := by
+  change RawTerm.constantPathBody?
+    (RawTerm.pathLam
+      (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) = none
+  exact RawTerm.constantPathBody?_pathLam_interval_var_none
+
 /-- Raw constant-path application contracts to the endpoint.  This is a
 derived theorem over the existing `betaPathApp` rule plus the established
 `weaken_subst_singleton` cancellation; it does not add a new reduction rule. -/
