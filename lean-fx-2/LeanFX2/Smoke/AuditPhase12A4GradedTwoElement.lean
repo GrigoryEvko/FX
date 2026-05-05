@@ -7,6 +7,7 @@ import LeanFX2.Graded.Instances.Mutation
 import LeanFX2.Graded.Instances.NatResource
 import LeanFX2.Graded.Instances.Trust
 import LeanFX2.Graded.Instances.Representation
+import LeanFX2.Graded.Instances.ClockDomain
 import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Overflow
@@ -57,8 +58,9 @@ Remaining D5.4 instances (TBD per-need):
                                        lattice
 * `RepresentationGrade` (dim 10)    — shipped as 5-chain
                                        layout-exposure lattice
-* `ClockDomainGrade` (dim 12)       — `combinational + sync(c)`
-                                       partial structure
+* `ClockDomainGrade` (dim 12)       — shipped as `GradeJoinSemilattice`
+                                       over combinational/sync(name)
+                                       with conflict predicate
 * `ComplexityGrade` (dim 13)        — shipped as bounded-or-unbounded
                                        cost semiring
 * `PrecisionGrade` (dim 14)         — Rat (sum-monoid)
@@ -134,6 +136,17 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.RepresentationGrade.mul
 #print axioms LeanFX2.Graded.Instances.RepresentationGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringRepresentationGrade
+
+-- D5.4 Clock domain (dim 12, bounded join-semilattice with conflict)
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.Member
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.subset
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.hasConflict
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.join
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.member_append_left
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.member_append_right
+#print axioms LeanFX2.Graded.Instances.ClockDomainGrade.member_append_inv
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeClockDomainGrade
 
 -- D5.4 Complexity (dim 13, bounded-or-unbounded cost semiring)
 #print axioms LeanFX2.Graded.Instances.ComplexityGrade
