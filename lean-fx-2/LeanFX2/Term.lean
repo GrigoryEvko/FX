@@ -52,13 +52,13 @@ Foundational + dependent + Identity + Modal:
 * `refl, idJ` — Identity
 * `modIntro, modElim, subsume` — Modal (Layer 6 references; ship raw-side from day 1)
 
-## D1.9 typed Term ctors — DEFERRED to per-need addition
+## D1.9 typed Term ctors — per-need addition
 
 The 27 raw ctors added in D1.6 (cubical/HOTT/refine/record/codata/session/
-effect/strict) deliberately do NOT have typed Term mirrors yet.  The
-math work for D2.5–D2.7 (cubical β, HOTT OEq, modal/refine/etc. β) lives
-at the RAW level (RawTerm.cd, Step.par); typed reduction lifts via the
-rfl bridge once the raw rules ship.
+effect/strict) deliberately do NOT land as one bulk typed-Term refactor.
+They are mirrored at the typed layer only when a specific reduction rule
+needs them.  The first such mirror is the typed cubical path fragment:
+`interval0`, `interval1`, `pathLam`, and `pathApp`.
 
 A bulk addition of 27 typed ctors would cascade ~6000 lines of mechanical
 extensions through Term/{Rename,Subst,Pointwise,HEqCongr,Inversion,
@@ -249,6 +249,30 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {innerType : Ty level scope} {innerRaw : RawTerm scope}
       (innerTerm : Term context innerType innerRaw) :
       Term context innerType (RawTerm.subsume innerRaw)
+  -- Cubical path fragment — typed mirror of the raw D2.5 path β rule.
+  | interval0 {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope} :
+      Term context Ty.interval RawTerm.interval0
+  | interval1 {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope} :
+      Term context Ty.interval RawTerm.interval1
+  | pathLam {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (carrierType : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {bodyRaw : RawTerm (scope + 1)}
+      (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw) :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+        (RawTerm.pathLam bodyRaw)
+  | pathApp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathRaw intervalRaw : RawTerm scope}
+      (pathTerm : Term context
+        (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+      (intervalTerm : Term context Ty.interval intervalRaw) :
+      Term context carrierType (RawTerm.pathApp pathRaw intervalRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

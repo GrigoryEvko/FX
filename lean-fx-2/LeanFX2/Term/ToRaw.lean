@@ -263,4 +263,32 @@ theorem Term.toRaw_subsume {mode : Mode} {level scope : Nat}
     (innerTerm : Term context innerType innerRaw) :
     (Term.subsume innerTerm).toRaw = RawTerm.subsume innerTerm.toRaw := rfl
 
+theorem Term.toRaw_interval0 {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    (Term.interval0 (context := context)).toRaw = RawTerm.interval0 := rfl
+
+theorem Term.toRaw_interval1 {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    (Term.interval1 (context := context)).toRaw = RawTerm.interval1 := rfl
+
+theorem Term.toRaw_pathLam {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw) :
+    (Term.pathLam carrierType leftEndpoint rightEndpoint body).toRaw =
+      RawTerm.pathLam body.toRaw := rfl
+
+theorem Term.toRaw_pathApp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    (pathTerm : Term context
+      (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    (Term.pathApp pathTerm intervalTerm).toRaw =
+      RawTerm.pathApp pathTerm.toRaw intervalTerm.toRaw := rfl
+
 end LeanFX2

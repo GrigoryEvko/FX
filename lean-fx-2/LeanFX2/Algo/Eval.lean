@@ -30,14 +30,15 @@ Coverage (zero-axiom subset):
 | `optionMatch none n s → n`           | yes    | `n` already destructured        |
 
 The remaining redex rules (β-app, β-Π, β-pair, succ-elim, cons-elim,
-some-match, inl/inr-match) require **inner Term destructuring** —
-e.g., `app (lam body) arg ⟶ body[arg/x]` needs to extract `body`
-from `lam body`.  In Lean 4 v4.29.1, that triggers `propext` via
-the dep-pattern matcher (Discipline #2 Rule 5 from `WORKING_RULES.md`:
-"full enum on dep+restricted-index FAILS").  These rules are deferred
-to a future revision that uses Step-witness construction or
-RawTerm-level reduction + subject reduction lifting (the latter
-blocked on Phase 7.D — SR for arrow / non-closed types).
+some-match, inl/inr-match, path-app beta) require **inner Term
+destructuring** — e.g., `app (lam body) arg ⟶ body[arg/x]` and
+`pathApp (pathLam body) interval ⟶ body[interval/i]` need to extract
+`body` from the canonical head.  In Lean 4 v4.29.1, that triggers
+`propext` via the dep-pattern matcher (Discipline #2 Rule 5 from
+`WORKING_RULES.md`: "full enum on dep+restricted-index FAILS").
+These rules are deferred to a future revision that uses Step-witness
+construction or RawTerm-level reduction + subject reduction lifting
+(the latter blocked on Phase 7.D — SR for arrow / non-closed types).
 
 `headStep?` returning `none` does not mean WHNF.  It means *this
 implementation cannot fire the redex zero-axiom*.  Use `Term.isWHNF`
@@ -243,9 +244,18 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .eitherCode _ _ _ _ => none
   | _, _, _, _, .idCode _ _ _ _ _ => none
   | _, _, _, _, .equivCode _ _ _ _ => none
+  -- Cubical interval endpoints and path lambdas are canonical values.
+  -- `pathApp (pathLam body) interval` has a semantic Step.par beta
+  -- rule, but headStep? does not yet fire it because extracting the
+  -- typed `body` payload is the same dependent-destructor problem as
+  -- β-app above.
+  | _, _, _, _, .interval0 => none
+  | _, _, _, _, .interval1 => none
+  | _, _, _, _, .pathLam _ _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction
+  | _, _, _, _, .pathApp _ _ => none        -- path β needs body extraction
   | _, _, _, _, .fst _ => none              -- β-pair-fst needs first extraction
   | _, _, _, _, .snd _ => none              -- β-pair-snd needs second extraction
   | _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>

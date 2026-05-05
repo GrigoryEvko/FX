@@ -205,6 +205,18 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.modElim (Term.rename termRenaming innerTerm)
   | _, _, .subsume innerTerm =>
       Term.subsume (Term.rename termRenaming innerTerm)
+  -- Cubical path fragment.
+  | _, _, .interval0 => Term.interval0
+  | _, _, .interval1 => Term.interval1
+  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
+      Term.pathLam (carrierType.rename rho)
+        (leftEndpoint.rename rho)
+        (rightEndpoint.rename rho)
+        (Ty.weaken_rename_commute rho carrierType ▸
+          Term.rename (termRenaming.lift Ty.interval) body)
+  | _, _, .pathApp pathTerm intervalTerm =>
+      Term.pathApp (Term.rename termRenaming pathTerm)
+                   (Term.rename termRenaming intervalTerm)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` rename to
   -- themselves (no scope-dependent payload), so the `someType.rename

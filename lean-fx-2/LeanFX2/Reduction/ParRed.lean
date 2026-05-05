@@ -350,6 +350,37 @@ inductive Step.par :
       {innerTarget : Term context innerType innerRawTarget} :
       Step.par innerSource innerTarget →
       Step.par (Term.subsume innerSource) (Term.subsume innerTarget)
+  /-- Parallel-cong: pathLam reduces in its interval-indexed body. -/
+  | pathLam {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+      {bodySource :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+      {bodyTarget :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget} :
+      Step.par bodySource bodyTarget →
+      Step.par
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodySource)
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget)
+  /-- Parallel-cong: pathApp reduces in path and interval positions. -/
+  | pathApp {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathRawSource pathRawTarget intervalRawSource intervalRawTarget :
+        RawTerm scope}
+      {pathSource :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawSource}
+      {pathTarget :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawTarget}
+      {intervalSource : Term context Ty.interval intervalRawSource}
+      {intervalTarget : Term context Ty.interval intervalRawTarget} :
+      Step.par pathSource pathTarget →
+      Step.par intervalSource intervalTarget →
+      Step.par (Term.pathApp pathSource intervalSource)
+               (Term.pathApp pathTarget intervalTarget)
   /-- Shallow β: `(λx. body) arg ⟶ body[arg/x]` with parallel
   reduction in body and arg.  Source has Ty `cod`; target via
   `Term.subst0` has Ty `cod.weaken.subst0 dom argumentRawTarget` —
@@ -385,6 +416,25 @@ inductive Step.par :
       Step.par (Term.appPi (Term.lamPi (domainType := domainType) bodySource)
                             argumentSource)
                (Term.subst0 bodyTarget argumentTarget)
+  /-- Shallow cubical β: `(pathLam body) @ interval ⟶ body[interval]`. -/
+  | betaPathApp {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+      {intervalRawSource intervalRawTarget : RawTerm scope}
+      {bodySource :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+      {bodyTarget :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+      {intervalSource : Term context Ty.interval intervalRawSource}
+      {intervalTarget : Term context Ty.interval intervalRawTarget} :
+      Step.par bodySource bodyTarget →
+      Step.par intervalSource intervalTarget →
+      Step.par
+        (Term.pathApp
+          (Term.pathLam carrierType leftEndpoint rightEndpoint bodySource)
+          intervalSource)
+        (Term.subst0 bodyTarget intervalTarget)
   /-- Shallow β-fst: `fst (pair a b) ⟶ a'` with `Step.par a a'`. -/
   | betaFstPair {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -629,6 +679,24 @@ inductive Step.par :
       Step.par argumentSource argumentTarget →
       Step.par (Term.appPi functionTermSource argumentSource)
                (Term.subst0 bodyTarget argumentTarget)
+  /-- Deep cubical β: path term develops to a `pathLam`, then applies. -/
+  | betaPathAppDeep {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathRawSource intervalRawSource intervalRawTarget : RawTerm scope}
+      {bodyRawTarget : RawTerm (scope + 1)}
+      {pathSource :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawSource}
+      {bodyTarget :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+      {intervalSource : Term context Ty.interval intervalRawSource}
+      {intervalTarget : Term context Ty.interval intervalRawTarget} :
+      Step.par pathSource
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget) →
+      Step.par intervalSource intervalTarget →
+      Step.par (Term.pathApp pathSource intervalSource)
+               (Term.subst0 bodyTarget intervalTarget)
   /-- Deep β-fst: pair-shaped target. -/
   | betaFstPairDeep {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}

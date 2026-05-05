@@ -264,6 +264,10 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_listNil_allais _ _ _
   | _, _, .optionNone =>
       ConvCumul.subst_compatible_optionNone_allais _ _ _
+  | _, _, .interval0 =>
+      ConvCumul.subst_compatible_interval0_allais _ _
+  | _, _, .interval1 =>
+      ConvCumul.subst_compatible_interval1_allais _ _
   | _, _, .universeCode innerLevel outerLevel cumulOk levelLe =>
       ConvCumul.subst_compatible_universeCode_allais _ _
         innerLevel outerLevel cumulOk levelLe
@@ -290,6 +294,15 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .subsume inner =>
       ConvCumul.subst_compatible_subsume_allais inner
         (Term.subst_compatible_pointwise_allais compat inner)
+  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
+      ConvCumul.subst_compatible_pathLam_allais
+        carrierType leftEndpoint rightEndpoint body
+        (Term.subst_compatible_pointwise_allais
+          (compat.lift Ty.interval) body)
+  | _, _, .pathApp pathTerm intervalTerm =>
+      ConvCumul.subst_compatible_pathApp_allais pathTerm intervalTerm
+        (Term.subst_compatible_pointwise_allais compat pathTerm)
+        (Term.subst_compatible_pointwise_allais compat intervalTerm)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)

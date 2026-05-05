@@ -543,6 +543,43 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {innerSecond : Term context innerType innerSecondRaw}
       (innerRel : ConvCumul innerFirst innerSecond) :
       ConvCumul (Term.subsume innerFirst) (Term.subsume innerSecond)
+  /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
+  lift to ConvCumul-related path abstractions. -/
+  | pathLamCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyFirstRaw bodySecondRaw : RawTerm (scope + 1)}
+      {bodyFirst :
+        Term (context.cons Ty.interval) carrierType.weaken bodyFirstRaw}
+      {bodySecond :
+        Term (context.cons Ty.interval) carrierType.weaken bodySecondRaw}
+      (bodyRel : ConvCumul bodyFirst bodySecond) :
+      ConvCumul
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyFirst)
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodySecond)
+  /-- Homogeneous pathApp: ConvCumul-related path and interval inputs
+  lift to ConvCumul-related path applications. -/
+  | pathAppCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathFirstRaw pathSecondRaw intervalFirstRaw intervalSecondRaw :
+        RawTerm scope}
+      {pathFirst :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathFirstRaw}
+      {pathSecond :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathSecondRaw}
+      {intervalFirst : Term context Ty.interval intervalFirstRaw}
+      {intervalSecond : Term context Ty.interval intervalSecondRaw}
+      (pathRel : ConvCumul pathFirst pathSecond)
+      (intervalRel : ConvCumul intervalFirst intervalSecond) :
+      ConvCumul (Term.pathApp pathFirst intervalFirst)
+                (Term.pathApp pathSecond intervalSecond)
   /-- Homogeneous equivIntroHet: ConvCumul-related forward + backward
   subterms lift to ConvCumul-related equivIntroHet.  Two-subterm cong
   rule mirroring `pairCong` and `listConsCong`.  Phase 12.A.B8.5. -/
@@ -1471,4 +1508,3 @@ theorem ConvCumul.subst_compatible_cumulUp_term
                         innerCompat
 
 end LeanFX2
-

@@ -42,7 +42,7 @@ The forward bridge collapses to a one-liner per ctor.
 
 ## Constructors covered
 
-54 total: refl + 21 cong + 4 shallow β + 13 shallow ι + 4 deep β
+58 total: refl + 23 cong + 5 shallow β + 13 shallow ι + 5 deep β
 + 12 deep ι.  Modal cong cases (`modIntro`, `modElim`, `subsume`)
 included for forward compatibility with Layer 6.
 
@@ -114,11 +114,17 @@ theorem Step.par.toRawBridge
   | modIntro _ ihInner => exact RawStep.par.modIntro ihInner
   | modElim _ ihInner => exact RawStep.par.modElim ihInner
   | subsume _ ihInner => exact RawStep.par.subsume ihInner
-  -- β shallow (4)
+  -- Cong: cubical path fragment
+  | pathLam _ ihBody => exact RawStep.par.pathLamCong ihBody
+  | pathApp _ _ ihPath ihInterval =>
+      exact RawStep.par.pathAppCong ihPath ihInterval
+  -- β shallow (5)
   | betaApp _ _ ihBody ihArgument =>
       exact RawStep.par.betaApp ihBody ihArgument
   | betaAppPi _ _ ihBody ihArgument =>
       exact RawStep.par.betaApp ihBody ihArgument
+  | betaPathApp _ _ ihBody ihInterval =>
+      exact RawStep.par.betaPathApp ihBody ihInterval
   | betaFstPair secondValue _ ihFirst =>
       exact RawStep.par.betaFstPair _ ihFirst
   | betaSndPair firstValue _ ihSecond =>
@@ -150,11 +156,13 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInr _ ihValue ihRight
   | iotaIdJRefl carrier endpoint _ ihBase =>
       exact RawStep.par.iotaIdJRefl _ ihBase
-  -- β deep (4)
+  -- β deep (5)
   | betaAppDeep _ _ ihFunction ihArgument =>
       exact RawStep.par.betaAppDeep ihFunction ihArgument
   | betaAppPiDeep _ _ ihFunction ihArgument =>
       exact RawStep.par.betaAppDeep ihFunction ihArgument
+  | betaPathAppDeep _ _ ihPath ihInterval =>
+      exact RawStep.par.betaPathAppDeep ihPath ihInterval
   | betaFstPairDeep _ ihPair =>
       exact RawStep.par.betaFstPairDeep ihPair
   | betaSndPairDeep _ ihPair =>

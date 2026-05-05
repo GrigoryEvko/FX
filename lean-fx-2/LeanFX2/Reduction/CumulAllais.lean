@@ -697,6 +697,87 @@ theorem ConvCumul.subst_compatible_subsume_allais
               ((Term.subsume innerTerm).substHet termSubstB) :=
   ConvCumul.subsumeCong innerCompat
 
+/-! ### Cubical path-fragment Allais arms
+
+The typed D2.5 path mirror adds the same two shapes as ordinary
+application/lambda: `pathLam` is a binder over `Ty.interval`, while
+`pathApp` is a two-subterm eliminator.  The `pathLam` substitution arm
+uses `Ty.weaken_substHet_commute`, so the body relation peels the same
+cast on both sides before applying `ConvCumul.pathLamCong`. -/
+
+/-- Allais arm for `interval0`: closed-payload, refl. -/
+theorem ConvCumul.subst_compatible_interval0_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma) :
+    ConvCumul ((Term.interval0 (context := sourceCtx)).substHet termSubstA)
+              ((Term.interval0 (context := sourceCtx)).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `interval1`: closed-payload, refl. -/
+theorem ConvCumul.subst_compatible_interval1_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma) :
+    ConvCumul ((Term.interval1 (context := sourceCtx)).substHet termSubstA)
+              ((Term.interval1 (context := sourceCtx)).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `pathLam`: interval-binder cong via
+`pathLamCong`. -/
+theorem ConvCumul.subst_compatible_pathLam_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (carrierType : Ty sourceLevel sourceScope)
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    (body : Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw)
+    (bodyCompat :
+      ConvCumul (body.substHet (termSubstA.lift Ty.interval))
+                (body.substHet (termSubstB.lift Ty.interval))) :
+    ConvCumul
+      ((Term.pathLam carrierType leftEndpoint rightEndpoint body).substHet
+        termSubstA)
+      ((Term.pathLam carrierType leftEndpoint rightEndpoint body).substHet
+        termSubstB) :=
+  ConvCumul.pathLamCong
+    (ConvCumul.cast_eq_both_benton _ bodyCompat)
+
+/-- Allais arm for `pathApp`: two-subterm cong via `pathAppCong`. -/
+theorem ConvCumul.subst_compatible_pathApp_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrierType : Ty sourceLevel sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    (pathTerm :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRaw)
+    (intervalTerm : Term sourceCtx Ty.interval intervalRaw)
+    (pathCompat :
+      ConvCumul (pathTerm.substHet termSubstA)
+                (pathTerm.substHet termSubstB))
+    (intervalCompat :
+      ConvCumul (intervalTerm.substHet termSubstA)
+                (intervalTerm.substHet termSubstB)) :
+    ConvCumul ((Term.pathApp pathTerm intervalTerm).substHet termSubstA)
+              ((Term.pathApp pathTerm intervalTerm).substHet termSubstB) :=
+  ConvCumul.pathAppCong pathCompat intervalCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

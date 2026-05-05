@@ -191,6 +191,18 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       Term.modElim (Term.subst termSubst innerTerm)
   | _, _, .subsume innerTerm =>
       Term.subsume (Term.subst termSubst innerTerm)
+  -- Cubical path fragment.
+  | _, _, .interval0 => Term.interval0
+  | _, _, .interval1 => Term.interval1
+  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
+      Term.pathLam (carrierType.subst sigma)
+        (leftEndpoint.subst sigma.forRaw)
+        (rightEndpoint.subst sigma.forRaw)
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) body)
+  | _, _, .pathApp pathTerm intervalTerm =>
+      Term.pathApp (Term.subst termSubst pathTerm)
+                   (Term.subst termSubst intervalTerm)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` substitute to
   -- themselves (no scope-dependent payload), so rebuilding the ctor

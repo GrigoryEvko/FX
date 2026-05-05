@@ -207,6 +207,18 @@ def Term.substHet {mode : Mode}
       Term.modElim (Term.substHet termSubstHet innerTerm)
   | _, _, .subsume innerTerm =>
       Term.subsume (Term.substHet termSubstHet innerTerm)
+  -- Cubical path fragment.
+  | _, _, .interval0 => Term.interval0
+  | _, _, .interval1 => Term.interval1
+  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
+      Term.pathLam (carrierType.substHet sigma)
+        (leftEndpoint.subst sigma.forRaw)
+        (rightEndpoint.subst sigma.forRaw)
+        (Ty.weaken_substHet_commute sigma carrierType ▸
+          Term.substHet (termSubstHet.lift Ty.interval) body)
+  | _, _, .pathApp pathTerm intervalTerm =>
+      Term.pathApp (Term.substHet termSubstHet pathTerm)
+                   (Term.substHet termSubstHet intervalTerm)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

@@ -175,6 +175,16 @@ theorem Term.subst_pointwise
   | _, _, .subsume innerTerm => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq innerTerm]
+  | _, _, .interval0 => rfl
+  | _, _, .interval1 => rfl
+  | _, _, .pathLam _ _ _ body => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise
+            (TermSubst.lift_pointwise pointwiseEq Ty.interval) body]
+  | _, _, .pathApp pathTerm intervalTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq pathTerm,
+          Term.subst_pointwise pointwiseEq intervalTerm]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl

@@ -379,7 +379,8 @@ the typed evaluator never produces a result that disagrees with
 the kernel's reduction relation.
 
 The proof case-analyses on the source term's outer constructor:
-* 24 ctors have `headStep? = none` definitionally; the
+* Value, neutral, and deferred redex ctors have `headStep? = none`
+  definitionally; the
   `firedEq : none = some _` hypothesis is closed by `simp` /
   `nomatch`.
 * 5 eliminator ctors (boolElim, natElim, natRec, listElim,
@@ -415,6 +416,9 @@ theorem Term.headStep?_sound
   | refl _ _ => nomatch firedEq
   | modIntro _ => nomatch firedEq
   | subsume _ => nomatch firedEq
+  | interval0 => nomatch firedEq
+  | interval1 => nomatch firedEq
+  | pathLam _ _ _ _ => nomatch firedEq
   | universeCode _ _ _ _ => nomatch firedEq
   | cumulUp _ _ _ _ _ _ => nomatch firedEq
   | equivReflId _ => nomatch firedEq
@@ -439,6 +443,7 @@ theorem Term.headStep?_sound
   -- Eliminators not yet handled by headStep? (return none)
   | app _ _ => nomatch firedEq
   | appPi _ _ => nomatch firedEq
+  | pathApp _ _ => nomatch firedEq
   | fst _ => nomatch firedEq
   | snd _ => nomatch firedEq
   | eitherMatch _ _ _ => nomatch firedEq
@@ -479,7 +484,9 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
+    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
@@ -506,7 +513,9 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
+    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
@@ -532,7 +541,9 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
+    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
@@ -558,7 +569,9 @@ theorem Term.headStep?_sound
     | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
+    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
@@ -584,7 +597,9 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .modIntro | .modElim | .subsume | .universeCode | .cumulUp
+    | .refl | .idJ | .modIntro | .modElim | .subsume
+    | .interval0 | .interval1 | .pathLam | .pathApp
+    | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
