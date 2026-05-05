@@ -186,6 +186,14 @@ theorem Step.toConvCumul
       exact ConvCumul.idJCong ih (ConvCumul.refl _)
   | idJWitness baseCase _ ih =>
       exact ConvCumul.idJCong (ConvCumul.refl baseCase) ih
+  | oeqJBase _ ih =>
+      exact ConvCumul.oeqJCong ih (ConvCumul.refl _)
+  | oeqJWitness baseCase _ ih =>
+      exact ConvCumul.oeqJCong (ConvCumul.refl baseCase) ih
+  | oeqFunextPointwise domainType codomainType
+      leftFunctionRaw rightFunctionRaw _ ih =>
+      exact ConvCumul.oeqFunextCong domainType codomainType
+        leftFunctionRaw rightFunctionRaw ih
   | idStrictRecBase _ ih =>
       exact ConvCumul.idStrictRecCong ih (ConvCumul.refl _)
   | idStrictRecWitness baseCase _ ih =>

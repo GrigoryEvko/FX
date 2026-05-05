@@ -414,6 +414,9 @@ theorem Term.headStep?_sound
   | eitherInl _ => nomatch firedEq
   | eitherInr _ => nomatch firedEq
   | refl _ _ => nomatch firedEq
+  | oeqRefl _ _ => nomatch firedEq
+  | oeqJ _ _ => nomatch firedEq
+  | oeqFunext _ _ _ _ _ => nomatch firedEq
   | modIntro _ => nomatch firedEq
   | subsume _ => nomatch firedEq
   | interval0 => nomatch firedEq
@@ -503,7 +506,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -537,7 +540,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -570,7 +573,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -603,7 +606,7 @@ theorem Term.headStep?_sound
     | .listCons | .listElim
     | .optionNone | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
@@ -636,7 +639,7 @@ theorem Term.headStep?_sound
     | .listNil | .listCons | .listElim
     | .optionSome | .optionMatch
     | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
+    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp

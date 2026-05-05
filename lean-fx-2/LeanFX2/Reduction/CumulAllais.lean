@@ -1389,6 +1389,76 @@ theorem ConvCumul.subst_compatible_idJ_allais
               ((Term.idJ baseCase witness).substHet termSubstB) :=
   ConvCumul.idJCong baseCompat witnessCompat
 
+/-- Allais arm for OEq refl.  The raw witness is substituted through
+the shared `sigma`, so both sides are definitionally equal. -/
+theorem ConvCumul.subst_compatible_oeqRefl_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
+    (carrier : Ty sourceLevel sourceScope)
+    (rawWitness : RawTerm sourceScope) :
+    ConvCumul ((Term.oeqRefl (context := sourceCtx)
+                  carrier rawWitness).substHet termSubstA)
+              ((Term.oeqRefl (context := sourceCtx)
+                  carrier rawWitness).substHet termSubstB) :=
+  ConvCumul.refl _
+
+/-- Allais arm for `oeqJ`: two-subterm cong via `oeqJCong`. -/
+theorem ConvCumul.subst_compatible_oeqJ_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrier : Ty sourceLevel sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty sourceLevel sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+        witnessRaw)
+    (baseCompat :
+      ConvCumul (baseCase.substHet termSubstA)
+                (baseCase.substHet termSubstB))
+    (witnessCompat :
+      ConvCumul (witness.substHet termSubstA)
+                (witness.substHet termSubstB)) :
+    ConvCumul ((Term.oeqJ baseCase witness).substHet termSubstA)
+              ((Term.oeqJ baseCase witness).substHet termSubstB) :=
+  ConvCumul.oeqJCong baseCompat witnessCompat
+
+/-- Allais arm for OEq funext: one-subterm cong through the
+proof-erased pointwise certificate. -/
+theorem ConvCumul.subst_compatible_oeqFunext_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (domainType codomainType : Ty sourceLevel sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    (pointwiseProof : Term sourceCtx Ty.unit pointwiseRaw)
+    (pointwiseCompat :
+      ConvCumul (pointwiseProof.substHet termSubstA)
+                (pointwiseProof.substHet termSubstB)) :
+    ConvCumul
+      ((Term.oeqFunext domainType codomainType
+        leftFunctionRaw rightFunctionRaw pointwiseProof).substHet termSubstA)
+      ((Term.oeqFunext domainType codomainType
+        leftFunctionRaw rightFunctionRaw pointwiseProof).substHet termSubstB) :=
+  ConvCumul.oeqFunextCong
+    (domainType.substHet sigma) (codomainType.substHet sigma)
+    (leftFunctionRaw.subst sigma.forRaw)
+    (rightFunctionRaw.subst sigma.forRaw)
+    pointwiseCompat
+
 /-- Allais arm for strict identity refl.  The raw witness is substituted
 through the shared `sigma`, so both sides are definitionally equal. -/
 theorem ConvCumul.subst_compatible_idStrictRefl_allais

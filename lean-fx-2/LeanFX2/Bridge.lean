@@ -110,6 +110,12 @@ theorem Step.par.toRawBridge
   -- Cong: identity (Term.refl is frozen, so no reflCong; idJ has cong)
   | idJ _ _ ihBase ihWitness =>
       exact RawStep.par.idJ ihBase ihWitness
+  | oeqReflCong witnessStep =>
+      exact RawStep.par.oeqReflCong witnessStep
+  | oeqJCong _ _ ihBase ihWitness =>
+      exact RawStep.par.oeqJCong ihBase ihWitness
+  | oeqFunextCong _ _ _ _ _ ihPointwise =>
+      exact RawStep.par.oeqFunextCong ihPointwise
   | idStrictReflCong witnessStep =>
       exact RawStep.par.idStrictReflCong witnessStep
   | idStrictRecCong _ _ ihBase ihWitness =>

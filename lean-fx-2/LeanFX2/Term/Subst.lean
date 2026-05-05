@@ -184,6 +184,17 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .idJ baseCase witness =>
       Term.idJ (Term.subst termSubst baseCase)
                (Term.subst termSubst witness)
+  | _, _, .oeqRefl carrier rawWitness =>
+      Term.oeqRefl (carrier.subst sigma) (rawWitness.subst sigma.forRaw)
+  | _, _, .oeqJ baseCase witness =>
+      Term.oeqJ (Term.subst termSubst baseCase)
+                (Term.subst termSubst witness)
+  | _, _, .oeqFunext domainType codomainType
+      leftFunctionRaw rightFunctionRaw pointwiseProof =>
+      Term.oeqFunext (domainType.subst sigma) (codomainType.subst sigma)
+        (leftFunctionRaw.subst sigma.forRaw)
+        (rightFunctionRaw.subst sigma.forRaw)
+        (Term.subst termSubst pointwiseProof)
   | _, _, .idStrictRefl carrier rawWitness =>
       Term.idStrictRefl
         (carrier.subst sigma) (rawWitness.subst sigma.forRaw)

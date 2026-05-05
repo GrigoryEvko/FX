@@ -79,6 +79,9 @@ inductive Term.HeadCtor : Type
   | eitherMatch
   | refl
   | idJ
+  | oeqRefl
+  | oeqJ
+  | oeqFunext
   | idStrictRefl
   | idStrictRec
   | modIntro
@@ -160,6 +163,9 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .eitherMatch _ _ _ => .eitherMatch
   | .refl _ _ => .refl
   | .idJ _ _ => .idJ
+  | .oeqRefl _ _ => .oeqRefl
+  | .oeqJ _ _ => .oeqJ
+  | .oeqFunext _ _ _ _ _ => .oeqFunext
   | .idStrictRefl _ _ => .idStrictRefl
   | .idStrictRec _ _ => .idStrictRec
   | .modIntro _ => .modIntro
@@ -228,6 +234,8 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .lamPi _ => true
   | .pair _ _ => true
   | .refl _ _ => true
+  | .oeqRefl _ _ => true
+  | .oeqFunext _ _ _ _ _ => true
   | .idStrictRefl _ _ => true
   | .natSucc _ => true
   | .listCons _ _ => true
@@ -327,6 +335,8 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   -- Identity J: WHNF iff witness head is NOT .refl
   | .idJ _ witness =>
       !(witness.headCtor == .refl)
+  -- OEq J has congruence parity only in the current typed layer.
+  | .oeqJ _ _ => true
   -- Strict identity recursor currently has cong parity only; no strict
   -- β-rule is present in the raw layer, so it is neutral at WHNF.
   | .idStrictRec _ _ => true
@@ -393,6 +403,9 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -473,6 +486,9 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -553,6 +569,9 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -633,6 +652,9 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -713,6 +735,9 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -804,6 +829,9 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -884,6 +912,9 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -964,6 +995,9 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -1044,6 +1078,9 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -1124,6 +1161,9 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq
@@ -1204,6 +1244,9 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | eitherMatch _ _ _ => nomatch headEq
   | refl _ _ => nomatch headEq
   | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
   | idStrictRefl _ _ => nomatch headEq
   | idStrictRec _ _ => nomatch headEq
   | modIntro _ => nomatch headEq

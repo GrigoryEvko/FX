@@ -198,6 +198,16 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .idJ baseCase witness =>
       Term.idJ (Term.rename termRenaming baseCase)
                (Term.rename termRenaming witness)
+  | _, _, .oeqRefl carrier rawWitness =>
+      Term.oeqRefl (carrier.rename rho) (rawWitness.rename rho)
+  | _, _, .oeqJ baseCase witness =>
+      Term.oeqJ (Term.rename termRenaming baseCase)
+                (Term.rename termRenaming witness)
+  | _, _, .oeqFunext domainType codomainType
+      leftFunctionRaw rightFunctionRaw pointwiseProof =>
+      Term.oeqFunext (domainType.rename rho) (codomainType.rename rho)
+        (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho)
+        (Term.rename termRenaming pointwiseProof)
   | _, _, .idStrictRefl carrier rawWitness =>
       Term.idStrictRefl (carrier.rename rho) (rawWitness.rename rho)
   | _, _, .idStrictRec baseCase witness =>

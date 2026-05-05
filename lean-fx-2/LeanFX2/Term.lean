@@ -231,6 +231,32 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (baseCase : Term context motiveType baseRaw)
       (witness : Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw) :
       Term context motiveType (RawTerm.idJ baseRaw witnessRaw)
+  -- Observational equality mirrors HoTT set-level equality in `Ty.oeq`.
+  | oeqRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+      Term context
+        (Ty.oeq carrier rawWitness rawWitness)
+        (RawTerm.oeqRefl rawWitness)
+  | oeqJ {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      (witness :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw) :
+      Term context motiveType (RawTerm.oeqJ baseRaw witnessRaw)
+  | oeqFunext {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+      {pointwiseRaw : RawTerm scope}
+      (pointwiseProof : Term context Ty.unit pointwiseRaw) :
+      Term context
+        (Ty.oeq (Ty.arrow domainType codomainType)
+          leftFunctionRaw rightFunctionRaw)
+        (RawTerm.oeqFunext pointwiseRaw)
   -- Strict identity mirrors identity at the typed layer but lives in
   -- `Ty.idStrict`, keeping definitional identity separate from HoTT `Ty.id`.
   | idStrictRefl {mode : Mode} {level scope : Nat}

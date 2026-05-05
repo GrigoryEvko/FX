@@ -206,6 +206,9 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .eitherInl _ => none
   | _, _, _, _, .eitherInr _ => none
   | _, _, _, _, .refl _ _ => none
+  | _, _, _, _, .oeqRefl _ _ => none
+  | _, _, _, _, .oeqJ _ _ => none
+  | _, _, _, _, .oeqFunext _ _ _ _ _ => none
   | _, _, _, _, .idStrictRefl _ _ => none
   | _, _, _, _, .modIntro _ => none
   | _, _, _, _, .subsume _ => none

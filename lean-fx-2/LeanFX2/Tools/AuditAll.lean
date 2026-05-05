@@ -279,6 +279,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_transp_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_hcomp_allais
 
+-- Typed D2.6 OEq congruence parity
+#assert_no_axioms LeanFX2.Term.toRaw_oeqRefl
+#assert_no_axioms LeanFX2.Term.toRaw_oeqJ
+#assert_no_axioms LeanFX2.Term.toRaw_oeqFunext
+#assert_no_axioms LeanFX2.Step.oeqJBase
+#assert_no_axioms LeanFX2.Step.oeqJWitness
+#assert_no_axioms LeanFX2.Step.oeqFunextPointwise
+#assert_no_axioms LeanFX2.Step.par.oeqReflCong
+#assert_no_axioms LeanFX2.Step.par.oeqJCong
+#assert_no_axioms LeanFX2.Step.par.oeqFunextCong
+#assert_no_axioms LeanFX2.ConvCumul.oeqJCong
+#assert_no_axioms LeanFX2.ConvCumul.oeqFunextCong
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_oeqRefl_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_oeqJ_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_oeqFunext_allais
+
 -- Typed D2.7 single-field record parity
 #assert_no_axioms LeanFX2.Term.toRaw_recordIntro
 #assert_no_axioms LeanFX2.Term.toRaw_recordProj

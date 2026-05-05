@@ -189,13 +189,12 @@ def Name.lastSegmentString (someName : Name) : String :=
   | .num _ index => toString index
 
 /-- Documented raw-only constructors that intentionally have no typed
-counterpart in the current snapshot.  Each entry corresponds to a
-RawStep.par cong/β rule whose typed Step.par mirror has not been
-shipped yet (the raw cubical/HoTT/refine/record/codata/session/effect/
-type-code layers landed before the corresponding typed layer was wired
-up).  Tracking these as documented exceptions means the parity gate
-still catches NEW raw-only ctors going forward, while the 32 existing
-gaps are recorded explicitly rather than being silently allowed.
+counterpart in the current snapshot.  The remaining entries are
+structural raw rules whose typed layer intentionally represents the same
+operation through a different constructor family.  Tracking them as
+documented exceptions means the parity gate still catches NEW raw-only
+ctors going forward, while the remaining gaps are recorded explicitly
+rather than being silently allowed.
 
 Discipline for moving an entry OUT of this list: add the matching
 `Step.par.X` constructor in `Reduction/ParRed.lean`, mirror the
@@ -204,13 +203,7 @@ Discipline for moving an entry OUT of this list: add the matching
 entry below. -/
 def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   let suffix := Name.lastSegmentString rawCtorName
-  -- Section A: HoTT observational-equality cong rules (typed mirrors
-  -- pending D2.6 cascade — eqType and eqArrow already have typed Step
-  -- counterparts; remaining oeq cong/funext rules ship raw-only).
-  suffix == "oeqReflCong" ||
-  suffix == "oeqJCong" ||
-  suffix == "oeqFunextCong" ||
-  -- Section B: parametric type-code cong rules (CUMUL-2 cumulativity
+  -- Section A: parametric type-code cong rules (CUMUL-2 cumulativity
   -- type-codes ship raw-only; typed cumulativity uses cumulUp directly).
   suffix == "arrowCodeCong" ||
   suffix == "piTyCodeCong" ||
@@ -223,7 +216,7 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "idCodeCong" ||
   suffix == "equivCodeCong" ||
   suffix == "cumulUpMarkerCong" ||
-  -- Section C: refl cong rule (typed Term.refl uses different reduction
+  -- Section B: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong"
 

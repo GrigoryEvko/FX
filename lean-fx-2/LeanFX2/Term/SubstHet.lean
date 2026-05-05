@@ -200,6 +200,18 @@ def Term.substHet {mode : Mode}
   | _, _, .idJ baseCase witness =>
       Term.idJ (Term.substHet termSubstHet baseCase)
                (Term.substHet termSubstHet witness)
+  | _, _, .oeqRefl carrier rawWitness =>
+      Term.oeqRefl
+        (carrier.substHet sigma) (rawWitness.subst sigma.forRaw)
+  | _, _, .oeqJ baseCase witness =>
+      Term.oeqJ (Term.substHet termSubstHet baseCase)
+                (Term.substHet termSubstHet witness)
+  | _, _, .oeqFunext domainType codomainType
+      leftFunctionRaw rightFunctionRaw pointwiseProof =>
+      Term.oeqFunext (domainType.substHet sigma) (codomainType.substHet sigma)
+        (leftFunctionRaw.subst sigma.forRaw)
+        (rightFunctionRaw.subst sigma.forRaw)
+        (Term.substHet termSubstHet pointwiseProof)
   | _, _, .idStrictRefl carrier rawWitness =>
       Term.idStrictRefl
         (carrier.substHet sigma) (rawWitness.subst sigma.forRaw)

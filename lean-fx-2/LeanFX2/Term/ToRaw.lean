@@ -131,6 +131,33 @@ theorem Term.toRaw_idJ {mode : Mode} {level scope : Nat}
     (Term.idJ baseCase witness).toRaw =
       RawTerm.idJ baseCase.toRaw witness.toRaw := rfl
 
+theorem Term.toRaw_oeqRefl {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    (Term.oeqRefl (context := context) carrier rawWitness).toRaw =
+      RawTerm.oeqRefl rawWitness := rfl
+
+theorem Term.toRaw_oeqJ {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw) :
+    (Term.oeqJ baseCase witness).toRaw =
+      RawTerm.oeqJ baseCase.toRaw witness.toRaw := rfl
+
+theorem Term.toRaw_oeqFunext {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+    {pointwiseRaw : RawTerm scope}
+    (pointwiseProof : Term context Ty.unit pointwiseRaw) :
+    (Term.oeqFunext domainType codomainType
+      leftFunctionRaw rightFunctionRaw pointwiseProof).toRaw =
+      RawTerm.oeqFunext pointwiseProof.toRaw := rfl
+
 theorem Term.toRaw_idStrictRefl {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     (carrier : Ty level scope) (rawWitness : RawTerm scope) :

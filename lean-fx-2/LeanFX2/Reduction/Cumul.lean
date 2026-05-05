@@ -510,6 +510,43 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (witnessRel : ConvCumul witnessFirst witnessSecond) :
       ConvCumul (Term.idJ baseFirst witnessFirst)
                 (Term.idJ baseSecond witnessSecond)
+  /-- Homogeneous OEq J: ConvCumul-related base case and witness lift to
+  ConvCumul-related OEq eliminators. -/
+  | oeqJCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseFirstRaw baseSecondRaw witnessFirstRaw witnessSecondRaw : RawTerm scope}
+      {baseFirst : Term context motiveType baseFirstRaw}
+      {baseSecond : Term context motiveType baseSecondRaw}
+      {witnessFirst :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessFirstRaw}
+      {witnessSecond :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessSecondRaw}
+      (baseRel : ConvCumul baseFirst baseSecond)
+      (witnessRel : ConvCumul witnessFirst witnessSecond) :
+      ConvCumul (Term.oeqJ baseFirst witnessFirst)
+                (Term.oeqJ baseSecond witnessSecond)
+  /-- Homogeneous OEq funext: ConvCumul-related pointwise certificates
+  lift to ConvCumul-related OEq funext witnesses. -/
+  | oeqFunextCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+      {pointwiseFirstRaw pointwiseSecondRaw : RawTerm scope}
+      {pointwiseFirst : Term context Ty.unit pointwiseFirstRaw}
+      {pointwiseSecond : Term context Ty.unit pointwiseSecondRaw}
+      (pointwiseRel : ConvCumul pointwiseFirst pointwiseSecond) :
+      ConvCumul
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseFirst)
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseSecond)
   /-- Homogeneous strict identity recursor: ConvCumul-related base case
   and witness lift to ConvCumul-related strict recursors. -/
   | idStrictRecCong

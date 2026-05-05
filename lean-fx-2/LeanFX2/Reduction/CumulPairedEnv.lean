@@ -392,6 +392,19 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_idJ_allais baseCase witness
         (Term.subst_compatible_pointwise_allais compat baseCase)
         (Term.subst_compatible_pointwise_allais compat witness)
+  | _, _, .oeqRefl carrier rawWitness =>
+      ConvCumul.subst_compatible_oeqRefl_allais _ _
+        carrier rawWitness
+  | _, _, .oeqJ baseCase witness =>
+      ConvCumul.subst_compatible_oeqJ_allais baseCase witness
+        (Term.subst_compatible_pointwise_allais compat baseCase)
+        (Term.subst_compatible_pointwise_allais compat witness)
+  | _, _, .oeqFunext domainType codomainType
+      leftFunctionRaw rightFunctionRaw pointwiseProof =>
+      ConvCumul.subst_compatible_oeqFunext_allais
+        domainType codomainType leftFunctionRaw rightFunctionRaw
+        pointwiseProof
+        (Term.subst_compatible_pointwise_allais compat pointwiseProof)
   | _, _, .idStrictRefl carrier rawWitness =>
       ConvCumul.subst_compatible_idStrictRefl_allais _ _
         carrier rawWitness

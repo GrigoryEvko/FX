@@ -327,6 +327,47 @@ inductive Step.par :
       Step.par witnessSource witnessTarget →
       Step.par (Term.idJ baseSource witnessSource)
                (Term.idJ baseTarget witnessTarget)
+  /-- Parallel-cong: OEq refl reduces in its raw witness. -/
+  | oeqReflCong {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope}
+      {witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource witnessRawTarget →
+      Step.par
+        (Term.oeqRefl (context := context) carrier witnessRawSource)
+        (Term.oeqRefl (context := context) carrier witnessRawTarget)
+  /-- Parallel-cong: OEq J reduces in baseCase and witness. -/
+  | oeqJCong {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRawSource baseRawTarget
+       witnessRawSource witnessRawTarget : RawTerm scope}
+      {baseSource : Term context motiveType baseRawSource}
+      {baseTarget : Term context motiveType baseRawTarget}
+      {witnessSource :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessRawSource}
+      {witnessTarget :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessRawTarget} :
+      Step.par baseSource baseTarget →
+      Step.par witnessSource witnessTarget →
+      Step.par (Term.oeqJ baseSource witnessSource)
+               (Term.oeqJ baseTarget witnessTarget)
+  /-- Parallel-cong: OEq funext reduces in its proof-erased pointwise
+      certificate. -/
+  | oeqFunextCong {mode level scope}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+      {pointwiseRawSource pointwiseRawTarget : RawTerm scope}
+      {pointwiseSource : Term context Ty.unit pointwiseRawSource}
+      {pointwiseTarget : Term context Ty.unit pointwiseRawTarget} :
+      Step.par pointwiseSource pointwiseTarget →
+      Step.par
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseSource)
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseTarget)
   /-- Parallel-cong: strict identity refl reduces in its raw witness. -/
   | idStrictReflCong {mode level scope} {context : Ctx mode level scope}
       {carrier : Ty level scope}
@@ -1620,6 +1661,14 @@ theorem Step.toPar
       exact Step.par.idJ singleStepIH (Step.par.refl _)
   | idJWitness baseCase singleStep singleStepIH =>
       exact Step.par.idJ (Step.par.refl baseCase) singleStepIH
+  | oeqJBase singleStep singleStepIH =>
+      exact Step.par.oeqJCong singleStepIH (Step.par.refl _)
+  | oeqJWitness baseCase singleStep singleStepIH =>
+      exact Step.par.oeqJCong (Step.par.refl baseCase) singleStepIH
+  | oeqFunextPointwise domainType codomainType
+      leftFunctionRaw rightFunctionRaw singleStep singleStepIH =>
+      exact Step.par.oeqFunextCong domainType codomainType
+        leftFunctionRaw rightFunctionRaw singleStepIH
   | idStrictRecBase singleStep singleStepIH =>
       exact Step.par.idStrictRecCong singleStepIH (Step.par.refl _)
   | idStrictRecWitness baseCase singleStep singleStepIH =>

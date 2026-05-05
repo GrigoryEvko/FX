@@ -122,6 +122,15 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.betaGlueElimIntroDeep
 #print axioms LeanFX2.Step.par.transp
 #print axioms LeanFX2.Step.par.hcomp
+#print axioms LeanFX2.Term.toRaw_oeqRefl
+#print axioms LeanFX2.Term.toRaw_oeqJ
+#print axioms LeanFX2.Term.toRaw_oeqFunext
+#print axioms LeanFX2.Step.oeqJBase
+#print axioms LeanFX2.Step.oeqJWitness
+#print axioms LeanFX2.Step.oeqFunextPointwise
+#print axioms LeanFX2.Step.par.oeqReflCong
+#print axioms LeanFX2.Step.par.oeqJCong
+#print axioms LeanFX2.Step.par.oeqFunextCong
 #print axioms LeanFX2.Step.recordIntroField
 #print axioms LeanFX2.Step.recordProjRecord
 #print axioms LeanFX2.Step.betaRecordProjIntro
@@ -188,6 +197,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.betaGlueElimIntroCumul
 #print axioms LeanFX2.ConvCumul.transpCong
 #print axioms LeanFX2.ConvCumul.hcompCong
+#print axioms LeanFX2.ConvCumul.oeqJCong
+#print axioms LeanFX2.ConvCumul.oeqFunextCong
 #print axioms LeanFX2.ConvCumul.recordIntroCong
 #print axioms LeanFX2.ConvCumul.recordProjCong
 #print axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul
@@ -208,6 +219,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.subst_compatible_glueElim_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_transp_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_hcomp_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_oeqRefl_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_oeqJ_allais
+#print axioms LeanFX2.ConvCumul.subst_compatible_oeqFunext_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_recordIntro_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_recordProj_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_idStrictRefl_allais

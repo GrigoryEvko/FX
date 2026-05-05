@@ -648,6 +648,47 @@ inductive Step :
       Step witnessSource witnessTarget →
       Step (Term.idJ baseCase witnessSource)
            (Term.idJ baseCase witnessTarget)
+  /-- Step inside `oeqJ`'s baseCase. -/
+  | oeqJBase {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRawSource baseRawTarget witnessRaw : RawTerm scope}
+      {baseSource : Term context motiveType baseRawSource}
+      {baseTarget : Term context motiveType baseRawTarget}
+      {witnessTerm :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw} :
+      Step baseSource baseTarget →
+      Step (Term.oeqJ baseSource witnessTerm)
+           (Term.oeqJ baseTarget witnessTerm)
+  /-- Step inside `oeqJ`'s witness. -/
+  | oeqJWitness {mode level scope} {context : Ctx mode level scope}
+      {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRaw witnessRawSource witnessRawTarget : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw)
+      {witnessSource :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessRawSource}
+      {witnessTarget :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessRawTarget} :
+      Step witnessSource witnessTarget →
+      Step (Term.oeqJ baseCase witnessSource)
+           (Term.oeqJ baseCase witnessTarget)
+  /-- Step inside OEq funext's proof-erased pointwise certificate. -/
+  | oeqFunextPointwise {mode level scope}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+      {pointwiseRawSource pointwiseRawTarget : RawTerm scope}
+      {pointwiseSource : Term context Ty.unit pointwiseRawSource}
+      {pointwiseTarget : Term context Ty.unit pointwiseRawTarget} :
+      Step pointwiseSource pointwiseTarget →
+      Step
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseSource)
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseTarget)
   /-- Step inside `idStrictRec`'s baseCase. -/
   | idStrictRecBase {mode level scope} {context : Ctx mode level scope}
       {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
