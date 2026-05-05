@@ -24,6 +24,7 @@ import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.S1
 import LeanFX2.HoTT.HIT.Suspension
 import LeanFX2.HoTT.HIT.Pushout
+import LeanFX2.HoTT.HIT.Coequalizer
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Term
 import LeanFX2.Graded.AtkeyAttack
@@ -220,6 +221,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.PushoutHIT.rec_left
 #assert_no_axioms LeanFX2.HoTT.HIT.PushoutHIT.rec_right
 #assert_no_axioms LeanFX2.HoTT.HIT.PushoutHIT.rec_glue
+#assert_no_axioms LeanFX2.HoTT.HIT.CoequalizerHIT
+#assert_no_axioms LeanFX2.HoTT.HIT.CoequalizerHIT.point
+#assert_no_axioms LeanFX2.HoTT.HIT.CoequalizerHIT.equalize
+#assert_no_axioms LeanFX2.HoTT.HIT.CoequalizerHIT.rec
+#assert_no_axioms LeanFX2.HoTT.HIT.CoequalizerHIT.rec_point
+#assert_no_axioms LeanFX2.HoTT.HIT.CoequalizerHIT.rec_equalize
 
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono

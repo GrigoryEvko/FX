@@ -7,6 +7,7 @@ import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.S1
 import LeanFX2.HoTT.HIT.Suspension
 import LeanFX2.HoTT.HIT.Pushout
+import LeanFX2.HoTT.HIT.Coequalizer
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
@@ -196,6 +197,51 @@ theorem pushout_rec_left_smoke :
       cases leftValue <;> cases rightValue <;> rfl)
     ()
 
+/-- A coequalizer path witness relates the two map images. -/
+theorem coequalizer_equalize_smoke :
+    (HoTT.HIT.CoequalizerHIT
+      Unit Unit
+      (fun sourceValue => sourceValue)
+      (fun sourceValue => sourceValue)
+      (fun _ _ => True)
+      (fun _ => True.intro)
+      (fun _ => True.intro)
+      (fun _ _ => True.intro)
+      (fun _ => True.intro)).relation
+      (HoTT.HIT.CoequalizerHIT.point ())
+      (HoTT.HIT.CoequalizerHIT.point ()) :=
+  HoTT.HIT.CoequalizerHIT.equalize ()
+
+/-- Coequalizer recursion computes on point representatives. -/
+theorem coequalizer_rec_point_smoke :
+    (HoTT.HIT.CoequalizerHIT.rec
+      (sourceType := Unit)
+      (leftMap := fun sourceValue => sourceValue)
+      (rightMap := fun sourceValue => sourceValue)
+      (relation := fun _ _ => True)
+      (isRefl := fun _ => True.intro)
+      (isSymm := fun _ => True.intro)
+      (isTrans := fun _ _ => True.intro)
+      (equalizeRespects := fun _ => True.intro)
+      Bool
+      (fun _ => true)
+      (fun _ => rfl)).run
+      (HoTT.HIT.CoequalizerHIT.point ()) =
+      true :=
+  HoTT.HIT.CoequalizerHIT.rec_point
+    (sourceType := Unit)
+    (leftMap := fun sourceValue => sourceValue)
+    (rightMap := fun sourceValue => sourceValue)
+    (relation := fun _ _ => True)
+    (isRefl := fun _ => True.intro)
+    (isSymm := fun _ => True.intro)
+    (isTrans := fun _ _ => True.intro)
+    (equalizeRespects := fun _ => True.intro)
+    Bool
+    (fun _ => true)
+    (fun _ => rfl)
+    ()
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
@@ -209,5 +255,7 @@ theorem pushout_rec_left_smoke :
 #assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_glue_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_rec_left_smoke
+#assert_no_axioms LeanFX2.Smoke.coequalizer_equalize_smoke
+#assert_no_axioms LeanFX2.Smoke.coequalizer_rec_point_smoke
 
 end LeanFX2.Smoke
