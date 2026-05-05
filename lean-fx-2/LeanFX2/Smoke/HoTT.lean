@@ -305,6 +305,15 @@ theorem suspension_meridian_smoke :
       (HoTT.HIT.Suspension.south (sourceType := Unit)) :=
   HoTT.HIT.Suspension.meridian ()
 
+/-- Empty suspension has no meridian witness between north and south. -/
+theorem suspension_empty_hasNoMeridian_smoke :
+    ¬ (HoTT.HIT.Suspension.setoid Empty).relation
+      (HoTT.HIT.Suspension.north (sourceType := Empty))
+      (HoTT.HIT.Suspension.south (sourceType := Empty)) := by
+  intro relationWitness
+  cases relationWitness with
+  | meridian emptyWitness => cases emptyWitness
+
 /-- Suspension recursion computes at north. -/
 theorem suspension_rec_north_smoke :
     (HoTT.HIT.Suspension.rec
@@ -332,6 +341,28 @@ theorem suspension_dependentInductor_north_smoke :
     (fun _ => Bool)
     true true
     (fun _ => HEq.rfl)
+
+/-- Suspension dependent induction must respect the meridian coherence. -/
+theorem suspension_dependentInductor_meridian_smoke :
+    HEq
+      ((HoTT.HIT.Suspension.dependentInductor
+        (sourceType := Unit)
+        (fun _ => Bool)
+        true true
+        (fun _ => HEq.rfl)).run
+        (HoTT.HIT.Suspension.north (sourceType := Unit)))
+      ((HoTT.HIT.Suspension.dependentInductor
+        (sourceType := Unit)
+        (fun _ => Bool)
+        true true
+        (fun _ => HEq.rfl)).run
+        (HoTT.HIT.Suspension.south (sourceType := Unit))) :=
+  HoTT.HIT.Suspension.dependentInductor_meridian
+    (sourceType := Unit)
+    (fun _ => Bool)
+    true true
+    (fun _ => HEq.rfl)
+    ()
 
 /-- A pushout glue witness relates the left and right images. -/
 theorem pushout_glue_smoke :
@@ -513,8 +544,10 @@ theorem coequalizer_dependentInductor_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.s1_forwardLoop_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_dependentInductor_loopBetween_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_meridian_smoke
+#assert_no_axioms LeanFX2.Smoke.suspension_empty_hasNoMeridian_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_dependentInductor_north_smoke
+#assert_no_axioms LeanFX2.Smoke.suspension_dependentInductor_meridian_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_glue_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_rec_left_smoke
 #assert_no_axioms LeanFX2.Smoke.pushout_dependentInductor_left_smoke
