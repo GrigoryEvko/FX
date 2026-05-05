@@ -127,5 +127,48 @@ theorem constantPath_betaPathApp_toRawEndpoint
         (constantPath_betaPathApp pointTerm intervalTerm)
   simpa [RawTerm.subst0, RawTerm.weaken_subst_singleton] using bridgeStep
 
+/-- Universe-code specialization of `constantPath_betaPathApp`.  This
+is the typed redex shape future constant-transport computation will
+consume: a path application over a constant type line. -/
+theorem constantTypePath_betaPathApp {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    {typeRaw intervalRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    Step.par
+      (Term.pathApp
+        (constantTypePath universeLevel universeLevelLt typeCode)
+        intervalTerm)
+      (Term.subst0 (Term.weaken Ty.interval typeCode) intervalTerm) :=
+  Step.par.betaPathApp (Step.par.refl _) (Step.par.refl _)
+
+/-- Universe-code constant-path β projects through the typed-to-raw
+bridge to the original universe code.  This is the load-bearing
+type-line guardrail for future constant-transport rules. -/
+theorem constantTypePath_betaPathApp_toRawEndpoint
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    {typeRaw intervalRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    RawStep.par
+      (RawTerm.pathApp (RawTerm.pathLam typeRaw.weaken) intervalRaw)
+      typeRaw := by
+  have bridgeStep :
+      RawStep.par
+        (RawTerm.pathApp (RawTerm.pathLam typeRaw.weaken) intervalRaw)
+        (typeRaw.weaken.subst0 intervalRaw) := by
+    simpa [constantTypePath_toRaw, Term.toRaw_weaken, Term.toRaw_subst0]
+      using Step.par.toRawBridge
+        (constantTypePath_betaPathApp
+          universeLevel universeLevelLt typeCode intervalTerm)
+  simpa [RawTerm.subst0, RawTerm.weaken_subst_singleton] using bridgeStep
+
 end Cubical
 end LeanFX2
