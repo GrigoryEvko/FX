@@ -23,7 +23,6 @@ import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Bridge
 import LeanFX2.Term.ProofIrrel
 import LeanFX2.Term.Inversion
-import LeanFX2.Term.SubjectReduction
 
 -- Layer 2 — Reduction
 import LeanFX2.Reduction.Step
@@ -46,7 +45,11 @@ import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Reduction.CumulSubstCompat
 
--- Layer 3 — Confluence
+-- Layer 3 — Reduction-facing metatheory and typed/raw bridge
+import LeanFX2.Term.SubjectReduction
+import LeanFX2.Bridge
+
+-- Layer 4 — Confluence
 import LeanFX2.Confluence.Cd
 import LeanFX2.Confluence.CdLemma
 import LeanFX2.Confluence.Diamond
@@ -59,17 +62,6 @@ import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.RawParStarCong
 import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.ConvBridge
-
--- Layer 4 — Bridge
-import LeanFX2.Bridge
-import LeanFX2.Bridge.PathToId
-import LeanFX2.Bridge.IdToPath
-import LeanFX2.Bridge.PathIdInverse
-import LeanFX2.Bridge.PathIdMeta
-import LeanFX2.Bridge.IdEqType
-import LeanFX2.Bridge.PathEqType
-import LeanFX2.Bridge.BoxObservational
-import LeanFX2.Bridge.BoxCubical
 
 -- Layer 5 — HoTT
 import LeanFX2.HoTT.OEq
@@ -116,7 +108,18 @@ import LeanFX2.Modal.BoxPath
 import LeanFX2.Modal.Cohesive
 import LeanFX2.Modal.Adjunction
 
--- Layer 7 — Graded
+-- Layer 7 — Effects, sessions, codata
+import LeanFX2.Effects.Foundation
+import LeanFX2.Effects.Handlers
+import LeanFX2.Effects.Step
+import LeanFX2.Sessions.Foundation
+import LeanFX2.Sessions.Duality
+import LeanFX2.Sessions.Step
+import LeanFX2.Codata.Foundation
+import LeanFX2.Codata.Productivity
+import LeanFX2.Codata.Step
+
+-- Layer 8 — Graded
 import LeanFX2.Graded.Semiring
 import LeanFX2.Graded.GradeVector
 import LeanFX2.Graded.Ctx
@@ -143,25 +146,14 @@ import LeanFX2.Graded.Instances.Size
 import LeanFX2.Graded.Instances.Version
 import LeanFX2.Graded.Dimensions21
 
--- Layer 8 — Refine
+-- Layer 9 — Refine
 import LeanFX2.Refine.Ty
 import LeanFX2.Refine.Term
 import LeanFX2.Refine.Decidable
 import LeanFX2.Refine.SMTCert
 import LeanFX2.Refine.SMTRecheck
 
--- Effects, sessions, codata
-import LeanFX2.Effects.Foundation
-import LeanFX2.Effects.Handlers
-import LeanFX2.Effects.Step
-import LeanFX2.Sessions.Foundation
-import LeanFX2.Sessions.Duality
-import LeanFX2.Sessions.Step
-import LeanFX2.Codata.Foundation
-import LeanFX2.Codata.Productivity
-import LeanFX2.Codata.Step
-
--- Layer 9 — Algo
+-- Layer 10 — Algo
 import LeanFX2.Algo.RawWHNF
 import LeanFX2.Algo.RawWHNFCorrect
 import LeanFX2.Algo.WHNF
@@ -173,7 +165,7 @@ import LeanFX2.Algo.Eval
 import LeanFX2.Algo.Soundness
 import LeanFX2.Algo.Completeness
 
--- Layer 10 — Surface
+-- Layer 11 — Surface
 import LeanFX2.Surface.Token
 import LeanFX2.Surface.Lex
 import LeanFX2.Surface.AST
@@ -184,10 +176,18 @@ import LeanFX2.Surface.Elab
 import LeanFX2.Surface.ElabSoundness
 import LeanFX2.Surface.ElabCompleteness
 
--- Layer 11 — Pipeline
+-- Layer 12 — Pipeline
 import LeanFX2.Pipeline
 
--- Cross-theory conservativity and translation scaffolds
+-- Layer 13 — Cross-theory bridges, conservativity, translation
+import LeanFX2.Bridge.PathToId
+import LeanFX2.Bridge.IdToPath
+import LeanFX2.Bridge.PathIdInverse
+import LeanFX2.Bridge.PathIdMeta
+import LeanFX2.Bridge.IdEqType
+import LeanFX2.Bridge.PathEqType
+import LeanFX2.Bridge.BoxObservational
+import LeanFX2.Bridge.BoxCubical
 import LeanFX2.Conservativity.HOTTOverMLTT
 import LeanFX2.Conservativity.CubicalOverHOTT
 import LeanFX2.Conservativity.ModalOverObservational
@@ -212,19 +212,21 @@ surface or trusted-root dependency story.
 | Layer | Scope                                            |
 | ----- | ------------------------------------------------ |
 |  0    | Foundation: Mode, RawTerm, RawSubst, Ty, Subst, Context |
-|  1    | Term: raw-aware typed Term inductive             |
+|  1    | Term core: raw-aware typed Term inductive        |
 |  2    | Reduction: Step, StepStar, Conv (∃-StepStar), ParRed, RawPar, Compat |
-|  3    | Confluence: Tait-Martin-Löf chain (Cd, Diamond, Church-Rosser) |
-|  4    | Bridge: typed↔raw correspondence (rfl-driven)    |
+|  3    | Reduction-facing Term metatheory + typed↔raw bridge |
+|  4    | Confluence: Tait-Martin-Löf chain (Cd, Diamond, Church-Rosser) |
 |  5    | HoTT: Identity, J, Path, Transport, Equivalence, NTypes, HIT |
 |  6    | Modal: MTT (modal foundation, Later, Bridge, Cap, Ghost, 2LTT) |
-|  7    | Graded: semiring framework + dimension instances |
-|  8    | Refine: refinement types + decidable + SMT cert  |
-|  9    | Algo: WHNF, decConv, infer, check, eval, soundness/completeness |
-| 10    | Surface: lex, parse, print, elab, roundtrip      |
-| 11    | Pipeline: end-to-end compile                     |
-| 12    | FX1: minimal lambda-Pi trust-spine syntax        |
-| 13    | Audit/tooling modules: built by Lake, not imported by this umbrella |
+|  7    | Effects, sessions, codata                        |
+|  8    | Graded: semiring framework + dimension instances |
+|  9    | Refine: refinement types + decidable + SMT cert  |
+| 10    | Algo: WHNF, decConv, infer, check, eval, soundness/completeness |
+| 11    | Surface: lex, parse, print, elab, roundtrip      |
+| 12    | Pipeline: end-to-end compile                     |
+| 13    | Cross-theory bridges, conservativity, translation |
+| 14    | FX1: minimal lambda-Pi trust spine, dependency-isolated by harness |
+| 15    | Audit/tooling modules: built by Lake, not imported by this umbrella |
 
 See `ARCHITECTURE.md` for the dependency DAG and per-layer file list.
 See `ROADMAP.md` for the phasing from skeleton to full engine.
