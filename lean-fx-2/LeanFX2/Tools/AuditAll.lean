@@ -1,6 +1,7 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Term
+import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
 import LeanFX2.Term.Bridge
@@ -34,6 +35,20 @@ path / Glue parity slices.
 -/
 
 namespace LeanFX2.Tools
+
+-- Raw partial-renaming foundation for safe weakening recognition
+#assert_no_axioms LeanFX2.PartialRawRenaming
+#assert_no_axioms LeanFX2.PartialRawRenaming.lift
+#assert_no_axioms LeanFX2.PartialRawRenaming.dropNewest
+#assert_no_axioms LeanFX2.PartialRawRenaming.dropNewest_weaken
+#assert_no_axioms LeanFX2.PartialRawRenaming.lift_dropNewest_weaken_lift
+#assert_no_axioms LeanFX2.Option.mapTwo
+#assert_no_axioms LeanFX2.Option.mapThree
+#assert_no_axioms LeanFX2.RawTerm.partialRename?
+#assert_no_axioms LeanFX2.RawTerm.unweaken?
+#assert_no_axioms LeanFX2.RawTerm.unweaken?_newest_var_none
+#assert_no_axioms LeanFX2.RawTerm.unweaken?_weaken_var
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_lift_preserves_binder_var
 
 -- Term core
 #assert_no_axioms LeanFX2.Term.subst
