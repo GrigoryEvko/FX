@@ -398,6 +398,21 @@ theorem IsLamCompatibleWithAvailable.allZeroAtZero {dims : List Dimension} {scop
       (bodyAttr := (GradeAttribution.zero : GradeAttribution dims (scope + 1))) :=
   ⟨rfl, GradeAttribution.le_refl GradeAttribution.zero⟩
 
+/-- Lam compatibility against divided availability is monotone in the
+available inherited context. -/
+theorem IsLamCompatibleWithAvailable.available_mono
+    {dims : List Dimension} {scope : Nat}
+    (paramGrade : GradeVector dims)
+    (availableLow availableHigh : GradeAttribution dims scope)
+    (bodyAttr : GradeAttribution dims (scope + 1))
+    (availableLe : GradeAttribution.le availableLow availableHigh)
+    (lowCompat :
+      IsLamCompatibleWithAvailable paramGrade availableLow bodyAttr) :
+    IsLamCompatibleWithAvailable paramGrade availableHigh bodyAttr :=
+  ⟨lowCompat.left,
+   GradeAttribution.le_trans bodyAttr.2 availableLow availableHigh
+      lowCompat.right availableLe⟩
+
 /-! ## Var rule
 
 `Γ, x :_r A |- x : A` produces a singleton attribution: `1` at

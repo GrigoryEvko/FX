@@ -154,6 +154,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.GradedCtx.le_trans
 #assert_no_axioms LeanFX2.Graded.IsLamCompatible
 #assert_no_axioms LeanFX2.Graded.IsLamCompatibleWithAvailable
+#assert_no_axioms LeanFX2.Graded.IsLamCompatibleWithAvailable.available_mono
 #assert_no_axioms LeanFX2.Graded.GradeAttribution.scaleBy
 #assert_no_axioms LeanFX2.Graded.IsAppCompatible.mono
 #assert_no_axioms LeanFX2.Graded.IsLetCompatible.mono
