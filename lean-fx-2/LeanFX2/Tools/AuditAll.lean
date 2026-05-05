@@ -722,9 +722,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Renaming
 #assert_no_axioms LeanFX2.FX1.Renaming.identity
 #assert_no_axioms LeanFX2.FX1.Renaming.shift
+#assert_no_axioms LeanFX2.FX1.Renaming.compose
 #assert_no_axioms LeanFX2.FX1.Renaming.lift
 #assert_no_axioms LeanFX2.FX1.Renaming.lift_ext
 #assert_no_axioms LeanFX2.FX1.Renaming.lift_identity_apply
+#assert_no_axioms LeanFX2.FX1.Renaming.compose_identity_left_apply
+#assert_no_axioms LeanFX2.FX1.Renaming.compose_identity_right_apply
+#assert_no_axioms LeanFX2.FX1.Renaming.compose_lift_apply
 #assert_no_axioms LeanFX2.FX1.Expr.rename
 #assert_no_axioms LeanFX2.FX1.Expr.weaken
 #assert_no_axioms LeanFX2.FX1.Expr.pi_congr
@@ -732,18 +736,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.app_congr
 #assert_no_axioms LeanFX2.FX1.Expr.rename_ext
 #assert_no_axioms LeanFX2.FX1.Expr.rename_identity
+#assert_no_axioms LeanFX2.FX1.Expr.rename_compose
 #assert_no_axioms LeanFX2.FX1.Substitution
 #assert_no_axioms LeanFX2.FX1.Substitution.identity
+#assert_no_axioms LeanFX2.FX1.Substitution.ofRenaming
 #assert_no_axioms LeanFX2.FX1.Substitution.lift
 #assert_no_axioms LeanFX2.FX1.Substitution.singleton
 #assert_no_axioms LeanFX2.FX1.Substitution.lift_ext
 #assert_no_axioms LeanFX2.FX1.Substitution.lift_identity_apply
+#assert_no_axioms LeanFX2.FX1.Substitution.ofRenaming_identity_apply
+#assert_no_axioms LeanFX2.FX1.Substitution.lift_ofRenaming_apply
 #assert_no_axioms LeanFX2.FX1.Substitution.singleton_newest
 #assert_no_axioms LeanFX2.FX1.Substitution.singleton_older
 #assert_no_axioms LeanFX2.FX1.Expr.subst
 #assert_no_axioms LeanFX2.FX1.Expr.subst0
 #assert_no_axioms LeanFX2.FX1.Expr.subst_ext
 #assert_no_axioms LeanFX2.FX1.Expr.subst_identity
+#assert_no_axioms LeanFX2.FX1.Expr.subst_ofRenaming
 #assert_no_axioms LeanFX2.FX1.Expr.subst0_bvar_zero
 #assert_no_axioms LeanFX2.FX1.Expr.subst0_bvar_succ
 

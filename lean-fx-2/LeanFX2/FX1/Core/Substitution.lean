@@ -7,8 +7,9 @@ import LeanFX2.FX1.Core.Expr
 Root status: Root-FX1 metatheory scaffold.
 
 Renaming and substitution for the minimal de Bruijn lambda-Pi core.  This file
-contains executable structural operations only; identity, composition,
-interaction, and beta-substitution lemmas are the next M2 obligations.
+contains executable structural operations plus the first M2 identity and
+composition facts.  Full substitution composition, weakening/substitution
+interaction, and beta-substitution lemmas are the remaining M2 obligations.
 -/
 
 namespace LeanFX2.FX1
@@ -26,6 +27,11 @@ def identity : Renaming :=
 /-- Weakening renaming that shifts every variable through one new binder. -/
 def shift : Renaming :=
   fun index => Nat.succ index
+
+/-- Compose two renamings, applying `innerRenaming` first and then
+`outerRenaming`. -/
+def compose (outerRenaming innerRenaming : Renaming) : Renaming :=
+  fun index => outerRenaming (innerRenaming index)
 
 /-- Lift a renaming under one binder. -/
 def lift (variableRenaming : Renaming) : Renaming :=
@@ -51,6 +57,33 @@ theorem lift_identity_apply (index : Nat) :
   match index with
   | Nat.zero => Eq.refl (identity Nat.zero)
   | Nat.succ smallerIndex => Eq.refl (identity (Nat.succ smallerIndex))
+
+/-- Left identity for renaming composition, pointwise. -/
+theorem compose_identity_left_apply
+    (variableRenaming : Renaming) (index : Nat) :
+    Eq (compose identity variableRenaming index) (variableRenaming index) :=
+  Eq.refl (variableRenaming index)
+
+/-- Right identity for renaming composition, pointwise. -/
+theorem compose_identity_right_apply
+    (variableRenaming : Renaming) (index : Nat) :
+    Eq (compose variableRenaming identity index) (variableRenaming index) :=
+  Eq.refl (variableRenaming index)
+
+/-- Lifting distributes over renaming composition, pointwise. -/
+theorem compose_lift_apply
+    (outerRenaming innerRenaming : Renaming) (index : Nat) :
+    Eq
+      (compose (lift outerRenaming) (lift innerRenaming) index)
+      (lift (compose outerRenaming innerRenaming) index) :=
+  match index with
+  | Nat.zero =>
+      Eq.refl
+        (lift (compose outerRenaming innerRenaming) Nat.zero)
+  | Nat.succ smallerIndex =>
+      Eq.refl
+        (lift (compose outerRenaming innerRenaming)
+          (Nat.succ smallerIndex))
 
 end Renaming
 
@@ -166,6 +199,54 @@ theorem rename_identity : forall expression : Expr,
         (rename_identity functionExpr)
         (rename_identity argumentExpr)
 
+/-- Sequential renaming is equivalent to renaming by the composed variable
+map. -/
+theorem rename_compose
+    (outerRenaming innerRenaming : Renaming) :
+    forall expression : Expr,
+      Eq
+        (rename outerRenaming (rename innerRenaming expression))
+        (rename (Renaming.compose outerRenaming innerRenaming) expression)
+  | Expr.bvar index =>
+      Eq.refl
+        (Expr.bvar (Renaming.compose outerRenaming innerRenaming index))
+  | Expr.sort sortLevel =>
+      Eq.refl
+        (rename
+          (Renaming.compose outerRenaming innerRenaming)
+          (Expr.sort sortLevel))
+  | Expr.const constName =>
+      Eq.refl
+        (rename
+          (Renaming.compose outerRenaming innerRenaming)
+          (Expr.const constName))
+  | Expr.pi domainExpr bodyExpr =>
+      Expr.pi_congr
+        (rename_compose outerRenaming innerRenaming domainExpr)
+        (Eq.trans
+          (rename_compose
+            (Renaming.lift outerRenaming)
+            (Renaming.lift innerRenaming)
+            bodyExpr)
+          (rename_ext
+            (Renaming.compose_lift_apply outerRenaming innerRenaming)
+            bodyExpr))
+  | Expr.lam domainExpr bodyExpr =>
+      Expr.lam_congr
+        (rename_compose outerRenaming innerRenaming domainExpr)
+        (Eq.trans
+          (rename_compose
+            (Renaming.lift outerRenaming)
+            (Renaming.lift innerRenaming)
+            bodyExpr)
+          (rename_ext
+            (Renaming.compose_lift_apply outerRenaming innerRenaming)
+            bodyExpr))
+  | Expr.app functionExpr argumentExpr =>
+      Expr.app_congr
+        (rename_compose outerRenaming innerRenaming functionExpr)
+        (rename_compose outerRenaming innerRenaming argumentExpr)
+
 end Expr
 
 /-- De Bruijn substitution for FX1 expressions. -/
@@ -177,6 +258,10 @@ namespace Substitution
 /-- Identity substitution. -/
 def identity : Substitution :=
   fun index => Expr.bvar index
+
+/-- Embed a renaming as a substitution that maps each variable to a variable. -/
+def ofRenaming (variableRenaming : Renaming) : Substitution :=
+  fun index => Expr.bvar (variableRenaming index)
 
 /-- Lift a substitution under one binder. -/
 def lift (substitution : Substitution) : Substitution :=
@@ -209,6 +294,27 @@ theorem lift_identity_apply (index : Nat) :
   match index with
   | Nat.zero => Eq.refl (identity Nat.zero)
   | Nat.succ smallerIndex => Eq.refl (identity (Nat.succ smallerIndex))
+
+/-- The identity renaming embeds as the identity substitution, pointwise. -/
+theorem ofRenaming_identity_apply (index : Nat) :
+    Eq (ofRenaming Renaming.identity index) (identity index) :=
+  Eq.refl (identity index)
+
+/-- Lifting an embedded renaming agrees with embedding the lifted renaming,
+pointwise. -/
+theorem lift_ofRenaming_apply
+    (variableRenaming : Renaming) (index : Nat) :
+    Eq
+      (lift (ofRenaming variableRenaming) index)
+      (ofRenaming (Renaming.lift variableRenaming) index) :=
+  match index with
+  | Nat.zero =>
+      Eq.refl (ofRenaming (Renaming.lift variableRenaming) Nat.zero)
+  | Nat.succ smallerIndex =>
+      Eq.refl
+        (ofRenaming
+          (Renaming.lift variableRenaming)
+          (Nat.succ smallerIndex))
 
 /-- The singleton substitution maps the newest variable to its replacement. -/
 theorem singleton_newest (replacement : Expr) :
@@ -296,6 +402,44 @@ theorem subst_identity : forall expression : Expr,
       Expr.app_congr
         (subst_identity functionExpr)
         (subst_identity argumentExpr)
+
+/-- Substitution by the variable embedding of a renaming is exactly renaming. -/
+theorem subst_ofRenaming
+    (variableRenaming : Renaming) :
+    forall expression : Expr,
+      Eq
+        (subst (Substitution.ofRenaming variableRenaming) expression)
+        (rename variableRenaming expression)
+  | Expr.bvar index =>
+      Eq.refl (rename variableRenaming (Expr.bvar index))
+  | Expr.sort sortLevel =>
+      Eq.refl (rename variableRenaming (Expr.sort sortLevel))
+  | Expr.const constName =>
+      Eq.refl (rename variableRenaming (Expr.const constName))
+  | Expr.pi domainExpr bodyExpr =>
+      Expr.pi_congr
+        (subst_ofRenaming variableRenaming domainExpr)
+        (Eq.trans
+          (subst_ext
+            (Substitution.lift_ofRenaming_apply variableRenaming)
+            bodyExpr)
+          (subst_ofRenaming
+            (Renaming.lift variableRenaming)
+            bodyExpr))
+  | Expr.lam domainExpr bodyExpr =>
+      Expr.lam_congr
+        (subst_ofRenaming variableRenaming domainExpr)
+        (Eq.trans
+          (subst_ext
+            (Substitution.lift_ofRenaming_apply variableRenaming)
+            bodyExpr)
+          (subst_ofRenaming
+            (Renaming.lift variableRenaming)
+            bodyExpr))
+  | Expr.app functionExpr argumentExpr =>
+      Expr.app_congr
+        (subst_ofRenaming variableRenaming functionExpr)
+        (subst_ofRenaming variableRenaming argumentExpr)
 
 /-- `subst0` fires on the newest variable. -/
 theorem subst0_bvar_zero (replacement : Expr) :
