@@ -405,4 +405,45 @@ theorem RawTerm.partialRename?_lift_preserves_binder_var
       partialRenaming.lift =
       some (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩) := rfl
 
+/-- Lifting preserves the pointwise "this source variable survives"
+condition used by `partialRename?_rename_some`. -/
+theorem PartialRawRenaming.lift_rename_some
+    {sourceScope middleScope targetScope : Nat}
+    {sourceRenaming : RawRenaming sourceScope middleScope}
+    {targetRenaming : RawRenaming sourceScope targetScope}
+    {partialRenaming : PartialRawRenaming middleScope targetScope}
+    (renamingSurvives :
+      ∀ position, partialRenaming (sourceRenaming position) =
+        some (targetRenaming position)) :
+    ∀ position,
+      partialRenaming.lift (sourceRenaming.lift position) =
+        some (targetRenaming.lift position)
+  | ⟨0, _⟩ => rfl
+  | ⟨index + 1, indexLt⟩ => by
+      cases sourceRenaming ⟨index, Nat.lt_of_succ_lt_succ indexLt⟩ with
+      | mk middleIndex middleLt =>
+          simp only [PartialRawRenaming.lift, RawRenaming.lift, Fin.succ]
+          rw [renamingSurvives ⟨index, Nat.lt_of_succ_lt_succ indexLt⟩]
+
+/-- Compile-time guardrail: under `pathLam`, the path binder itself must
+survive `unweaken?`.  If binder lifting is wired incorrectly, this stops
+being definitional. -/
+theorem RawTerm.unweaken?_pathLam_binder_var {scope : Nat} :
+    RawTerm.unweaken?
+      (RawTerm.pathLam
+        (RawTerm.var ⟨0, Nat.zero_lt_succ (scope + 1)⟩)) =
+      some
+        (RawTerm.pathLam
+          (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) := rfl
+
+/-- Compile-time guardrail: under `pathLam`, the dropped outer variable is
+index 1 and must be rejected.  This is the shape that blocks an unsound
+"constant path" transport rule from accepting a captured variable. -/
+theorem RawTerm.unweaken?_pathLam_dropped_outer_var_none {scope : Nat} :
+    RawTerm.unweaken?
+      (RawTerm.pathLam
+        (RawTerm.var
+          ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩)) =
+      none := rfl
+
 end LeanFX2
