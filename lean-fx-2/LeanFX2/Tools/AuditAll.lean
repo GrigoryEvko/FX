@@ -20,6 +20,7 @@ import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Cubical.Transport
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.SetTrunc
 import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.S1
 import LeanFX2.HoTT.HIT.Suspension
@@ -179,6 +180,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.rec_squash
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.recConstant
 #assert_no_axioms LeanFX2.HoTT.HIT.PropTrunc.recConstant_intro
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.intro
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.path
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.rec
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.rec_intro
+#assert_no_axioms LeanFX2.HoTT.HIT.SetTrunc.rec_path
 #assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT
 #assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.equality
 #assert_no_axioms LeanFX2.HoTT.HIT.QuotientHIT.intro

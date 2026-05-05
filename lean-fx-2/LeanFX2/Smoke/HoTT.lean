@@ -3,6 +3,7 @@ import LeanFX2.HoTT.J
 import LeanFX2.HoTT.Transport
 import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.SetTrunc
 import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.S1
 import LeanFX2.HoTT.HIT.Suspension
@@ -79,6 +80,27 @@ theorem propTrunc_rec_intro_smoke :
     Bool
     (fun _ => true)
     (fun _ _ => rfl)
+    ()
+
+/-- Set truncation relates equal introduced representatives. -/
+theorem setTrunc_path_smoke :
+    (HoTT.HIT.SetTrunc Unit).relation
+      (HoTT.HIT.SetTrunc.intro ())
+      (HoTT.HIT.SetTrunc.intro ()) :=
+  HoTT.HIT.SetTrunc.path rfl
+
+/-- Set-truncation recursion computes on introduced representatives. -/
+theorem setTrunc_rec_intro_smoke :
+    (HoTT.HIT.SetTrunc.rec
+      (sourceType := Unit)
+      Bool
+      (fun _ => true)).run
+      (HoTT.HIT.SetTrunc.intro ()) =
+      true :=
+  HoTT.HIT.SetTrunc.rec_intro
+    (sourceType := Unit)
+    Bool
+    (fun _ => true)
     ()
 
 /-- The equality quotient presentation keeps equality as its relation. -/
@@ -247,6 +269,8 @@ theorem coequalizer_rec_point_smoke :
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_squash_smoke
 #assert_no_axioms LeanFX2.Smoke.propTrunc_rec_intro_smoke
+#assert_no_axioms LeanFX2.Smoke.setTrunc_path_smoke
+#assert_no_axioms LeanFX2.Smoke.setTrunc_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_equality_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.quotientHIT_rec_intro_smoke
 #assert_no_axioms LeanFX2.Smoke.s1_loop_spec_smoke

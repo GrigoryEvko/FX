@@ -114,6 +114,7 @@ import LeanFX2.HoTT.HIT.Eliminator
 import LeanFX2.HoTT.HIT.Examples
 import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.PropTrunc
+import LeanFX2.HoTT.HIT.SetTrunc
 import LeanFX2.HoTT.HIT.S1
 import LeanFX2.HoTT.HIT.Suspension
 import LeanFX2.HoTT.HIT.Pushout
