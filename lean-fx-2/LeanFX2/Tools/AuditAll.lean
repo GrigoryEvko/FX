@@ -170,6 +170,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.GradedTerm.app
 #assert_no_axioms LeanFX2.Graded.GradedTerm.boolElim
 #assert_no_axioms LeanFX2.Graded.GradedTerm.subsumeGrade
+#assert_no_axioms LeanFX2.Graded.GradedTerm.underlying_toRaw
 
 -- Dimensions21 registry and aggregate carrier operations
 #assert_no_axioms LeanFX2.Graded.allDimensionSlots_length

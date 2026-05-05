@@ -1,5 +1,5 @@
 import LeanFX2.Graded.Rules
-import LeanFX2.Term
+import LeanFX2.Term.ToRaw
 
 /-! # Graded/Term — shadow graded wrapper over typed Terms
 
@@ -148,6 +148,15 @@ def subsumeGrade
     (_compat : IsSubsumptionCompatible tightAttr looseAttr) :
     GradedTerm gradedCtx termTy rawTerm looseAttr where
   underlying := someTerm.underlying
+
+/-- The underlying typed term erases to the same raw term carried by the
+graded wrapper's index. -/
+theorem underlying_toRaw
+    {termTy : Ty level scope}
+    {rawTerm : RawTerm scope}
+    {attribution : GradeAttribution dimensions scope}
+    (someTerm : GradedTerm gradedCtx termTy rawTerm attribution) :
+    Term.toRaw someTerm.underlying = rawTerm := rfl
 
 end GradedTerm
 

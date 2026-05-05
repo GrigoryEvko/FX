@@ -281,6 +281,14 @@ def dimensions21_gradedTerm_app_smoke :
     (Graded.IsAppCompatible.allZero
       Graded.FXGradeVector21.bottom.semiringGrades)
 
+/-- The underlying typed term of a graded application has the same raw
+index carried by the graded wrapper. -/
+theorem dimensions21_gradedTerm_app_toRaw_smoke :
+    Term.toRaw dimensions21_gradedTerm_app_smoke.underlying =
+      RawTerm.app (RawTerm.lam RawTerm.unit) RawTerm.unit :=
+  Graded.GradedTerm.underlying_toRaw
+    dimensions21_gradedTerm_app_smoke
+
 /-- The shadow graded-term layer can type a closed boolean elimination,
 guarded by the If/Match compatibility predicate. -/
 def dimensions21_gradedTerm_boolElim_smoke :
@@ -327,6 +335,7 @@ def dimensions21_gradedTerm_subsume_smoke :
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_var_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_lam_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_app_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_app_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_boolElim_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_subsume_smoke
 
