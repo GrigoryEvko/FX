@@ -71,5 +71,52 @@ theorem constantTypeTransport_typeLineRecognized
       some typeRaw :=
   constantTypePath_rawRecognized universeLevel universeLevelLt typeCode
 
+/-- The named constant-transport redex is stable under parallel
+reduction of its source value.  This is still transport congruence, not
+transport β. -/
+theorem constantTypeTransport_sourceCong
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRawSource sourceRawTarget : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    {sourceValueSource : Term context sourceType sourceRawSource}
+    {sourceValueTarget : Term context sourceType sourceRawTarget}
+    (sourceStep : Step.par sourceValueSource sourceValueTarget) :
+    Step.par
+      (constantTypeTransport universeLevel universeLevelLt
+        sourceType typeCode sourceValueSource)
+      (constantTypeTransport universeLevel universeLevelLt
+        sourceType typeCode sourceValueTarget) :=
+  Step.par.transp universeLevel universeLevelLt
+    sourceType sourceType typeRaw typeRaw
+    (Step.par.refl _) sourceStep
+
+/-- Source congruence for the named constant-transport redex projects
+through the typed-to-raw bridge to raw transport congruence on the exact
+constant type line. -/
+theorem constantTypeTransport_sourceCong_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRawSource sourceRawTarget : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    {sourceValueSource : Term context sourceType sourceRawSource}
+    {sourceValueTarget : Term context sourceType sourceRawTarget}
+    (sourceStep : Step.par sourceValueSource sourceValueTarget) :
+    RawStep.par
+      (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawSource)
+      (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawTarget) := by
+  simpa [constantTypeTransport_toRaw]
+    using Step.par.toRawBridge
+      (constantTypeTransport_sourceCong
+        universeLevel universeLevelLt sourceType typeCode sourceStep)
+
 end Cubical
 end LeanFX2
