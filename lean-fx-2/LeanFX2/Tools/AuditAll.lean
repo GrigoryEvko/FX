@@ -147,6 +147,8 @@ namespace LeanFX2.Tools
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono
 #assert_no_axioms LeanFX2.Graded.GradeVector.mul_mono
+#assert_no_axioms LeanFX2.Graded.GradeAttribution.add_mono
+#assert_no_axioms LeanFX2.Graded.GradeAttribution.scaleBy_mono
 #assert_no_axioms LeanFX2.Graded.IsLamCompatible
 #assert_no_axioms LeanFX2.Graded.IsLamCompatibleWithAvailable
 #assert_no_axioms LeanFX2.Graded.GradeAttribution.scaleBy

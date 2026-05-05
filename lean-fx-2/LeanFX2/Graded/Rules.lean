@@ -270,6 +270,40 @@ theorem le_trans :
       ⟨GradeVector.le_trans firstHead secondHead thirdHead headLe1 headLe2,
        le_trans firstTail secondTail thirdTail tailLe1 tailLe2⟩
 
+/-- Pointwise attribution addition is monotone in both operands. -/
+theorem add_mono :
+    ∀ {scope : Nat}
+      (leftLow leftHigh rightLow rightHigh : GradeAttribution dims scope),
+      le leftLow leftHigh →
+      le rightLow rightHigh →
+      le (add leftLow rightLow) (add leftHigh rightHigh)
+  | 0, _, _, _, _, _, _ => True.intro
+  | _ + 1,
+    (leftLowHead, leftLowTail), (leftHighHead, leftHighTail),
+    (rightLowHead, rightLowTail), (rightHighHead, rightHighTail),
+    ⟨leftHeadLe, leftTailLe⟩, ⟨rightHeadLe, rightTailLe⟩ =>
+      ⟨GradeVector.add_mono leftLowHead leftHighHead
+          rightLowHead rightHighHead leftHeadLe rightHeadLe,
+       add_mono leftLowTail leftHighTail
+          rightLowTail rightHighTail leftTailLe rightTailLe⟩
+
+/-- Scaling an attribution is monotone in both the scalar and payload. -/
+theorem scaleBy_mono :
+    ∀ {scope : Nat}
+      (scalarLow scalarHigh : GradeVector dims)
+      (attrLow attrHigh : GradeAttribution dims scope),
+      GradeVector.le scalarLow scalarHigh →
+      le attrLow attrHigh →
+      le (scaleBy scalarLow attrLow) (scaleBy scalarHigh attrHigh)
+  | 0, _, _, _, _, _, _ => True.intro
+  | _ + 1, scalarLow, scalarHigh,
+    (attrLowHead, attrLowTail), (attrHighHead, attrHighTail),
+    scalarLe, ⟨headLe, tailLe⟩ =>
+      ⟨GradeVector.mul_mono scalarLow scalarHigh
+          attrLowHead attrHighHead scalarLe headLe,
+       scaleBy_mono scalarLow scalarHigh
+          attrLowTail attrHighTail scalarLe tailLe⟩
+
 end GradeAttribution
 
 /-! ## Wood/Atkey 2022 corrected Lam rule
