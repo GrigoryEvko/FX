@@ -145,6 +145,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Conv.transRaw
 
 -- Graded core
+#assert_no_axioms LeanFX2.Graded.GradeVector.add_mono
+#assert_no_axioms LeanFX2.Graded.GradeVector.mul_mono
 #assert_no_axioms LeanFX2.Graded.IsLamCompatible
 #assert_no_axioms LeanFX2.Graded.IsLamCompatibleWithAvailable
 #assert_no_axioms LeanFX2.Graded.GradeAttribution.scaleBy
@@ -177,6 +179,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_semiring_one_right
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_join_left_le
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_join_right_le
+#assert_no_axioms LeanFX2.Graded.JoinGradeVector.join_mono
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.join_mono
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_mono
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast

@@ -28,6 +28,7 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.JoinGradeVector.bottom_le
 #print axioms LeanFX2.Graded.JoinGradeVector.le_join_left
 #print axioms LeanFX2.Graded.JoinGradeVector.le_join_right
+#print axioms LeanFX2.Graded.JoinGradeVector.join_mono
 
 #print axioms LeanFX2.Graded.SemiringDimensionEntry
 #print axioms LeanFX2.Graded.JoinDimensionEntry
@@ -85,3 +86,5 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.FXGradeVector21.compose_semiring_one_right
 #print axioms LeanFX2.Graded.FXGradeVector21.compose_join_left_le
 #print axioms LeanFX2.Graded.FXGradeVector21.compose_join_right_le
+#print axioms LeanFX2.Graded.FXGradeVector21.join_mono
+#print axioms LeanFX2.Graded.FXGradeVector21.compose_mono

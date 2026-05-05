@@ -197,8 +197,9 @@ theorem GradeVector.le_refl :
     ∀ {dimensions : List Dimension} (someVec : GradeVector dimensions),
       GradeVector.le someVec someVec
   | [], () => True.intro
-  | head :: tail, (someHead, someTail) =>
-      ⟨head.semiring.le_refl someHead, GradeVector.le_refl someTail⟩
+  | head :: remainingDimensions, (someHead, someTail) =>
+      ⟨head.semiring.le_refl someHead,
+       GradeVector.le_refl (dimensions := remainingDimensions) someTail⟩
 
 /-- Pointwise preorder is transitive. -/
 theorem GradeVector.le_trans :
@@ -207,10 +208,49 @@ theorem GradeVector.le_trans :
       GradeVector.le firstVec secondVec → GradeVector.le secondVec thirdVec →
       GradeVector.le firstVec thirdVec
   | [], _, _, _, _, _ => True.intro
-  | head :: tail, (firstHead, firstTail), (secondHead, secondTail),
+  | head :: remainingDimensions, (firstHead, firstTail), (secondHead, secondTail),
                   (thirdHead, thirdTail), ⟨headLe1, tailLe1⟩, ⟨headLe2, tailLe2⟩ =>
       ⟨head.semiring.le_trans firstHead secondHead thirdHead headLe1 headLe2,
-       GradeVector.le_trans firstTail secondTail thirdTail tailLe1 tailLe2⟩
+       GradeVector.le_trans (dimensions := remainingDimensions)
+          firstTail secondTail thirdTail tailLe1 tailLe2⟩
+
+/-- Pointwise addition is monotone in both operands. -/
+theorem GradeVector.add_mono :
+    ∀ {dimensions : List Dimension}
+      (leftLow leftHigh rightLow rightHigh : GradeVector dimensions),
+      GradeVector.le leftLow leftHigh →
+      GradeVector.le rightLow rightHigh →
+      GradeVector.le
+        (GradeVector.add leftLow rightLow)
+        (GradeVector.add leftHigh rightHigh)
+  | [], _, _, _, _, _, _ => True.intro
+  | head :: _, (leftLowHead, leftLowTail),
+      (leftHighHead, leftHighTail), (rightLowHead, rightLowTail),
+      (rightHighHead, rightHighTail), ⟨leftHeadLe, leftTailLe⟩,
+      ⟨rightHeadLe, rightTailLe⟩ =>
+      ⟨head.semiring.add_mono leftLowHead leftHighHead
+          rightLowHead rightHighHead leftHeadLe rightHeadLe,
+       GradeVector.add_mono leftLowTail leftHighTail
+          rightLowTail rightHighTail leftTailLe rightTailLe⟩
+
+/-- Pointwise multiplication is monotone in both operands. -/
+theorem GradeVector.mul_mono :
+    ∀ {dimensions : List Dimension}
+      (leftLow leftHigh rightLow rightHigh : GradeVector dimensions),
+      GradeVector.le leftLow leftHigh →
+      GradeVector.le rightLow rightHigh →
+      GradeVector.le
+        (GradeVector.mul leftLow rightLow)
+        (GradeVector.mul leftHigh rightHigh)
+  | [], _, _, _, _, _, _ => True.intro
+  | head :: _, (leftLowHead, leftLowTail),
+      (leftHighHead, leftHighTail), (rightLowHead, rightLowTail),
+      (rightHighHead, rightHighTail), ⟨leftHeadLe, leftTailLe⟩,
+      ⟨rightHeadLe, rightTailLe⟩ =>
+      ⟨head.semiring.mul_mono leftLowHead leftHighHead
+          rightLowHead rightHighHead leftHeadLe rightHeadLe,
+       GradeVector.mul_mono leftLowTail leftHighTail
+          rightLowTail rightHighTail leftTailLe rightTailLe⟩
 
 /-! ## Smoke: trivial 0-dimension vector
 

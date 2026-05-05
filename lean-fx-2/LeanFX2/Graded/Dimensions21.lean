@@ -272,6 +272,33 @@ theorem JoinGradeVector.le_join_right :
       ⟨head.semilattice.le_join_right leftHead rightHead,
        JoinGradeVector.le_join_right leftTail rightTail⟩
 
+/-- Pointwise join is monotone in both operands. -/
+theorem JoinGradeVector.join_mono :
+    ∀ {dimensions : List JoinDimension}
+      (leftLow leftHigh rightLow rightHigh : JoinGradeVector dimensions),
+      JoinGradeVector.le leftLow leftHigh →
+      JoinGradeVector.le rightLow rightHigh →
+      JoinGradeVector.le
+        (JoinGradeVector.join leftLow rightLow)
+        (JoinGradeVector.join leftHigh rightHigh)
+  | [], _, _, _, _, _, _ => True.intro
+  | head :: _, (leftLowHead, leftLowTail),
+      (leftHighHead, leftHighTail), (rightLowHead, rightLowTail),
+      (rightHighHead, rightHighTail), ⟨leftHeadLe, leftTailLe⟩,
+      ⟨rightHeadLe, rightTailLe⟩ =>
+      ⟨head.semilattice.join_least_upper_bound leftLowHead rightLowHead
+          (head.semilattice.join leftHighHead rightHighHead)
+          (head.semilattice.le_trans leftLowHead leftHighHead
+            (head.semilattice.join leftHighHead rightHighHead)
+            leftHeadLe
+            (head.semilattice.le_join_left leftHighHead rightHighHead))
+          (head.semilattice.le_trans rightLowHead rightHighHead
+            (head.semilattice.join leftHighHead rightHighHead)
+            rightHeadLe
+            (head.semilattice.le_join_right leftHighHead rightHighHead)),
+       JoinGradeVector.join_mono leftLowTail leftHighTail
+          rightLowTail rightHighTail leftTailLe rightTailLe⟩
+
 /-! ## Registry entries with algebra-kind witnesses -/
 
 /-- Semiring registry entry tying a dimension slot to its carrier and
@@ -576,6 +603,36 @@ theorem compose_join_right_le
     JoinGradeVector.le secondVector.joinGrades
       (compose firstVector secondVector).joinGrades :=
   JoinGradeVector.le_join_right firstVector.joinGrades secondVector.joinGrades
+
+/-- Pointwise `join` is monotone for the aggregate D5.4 payload. -/
+theorem join_mono
+    (firstLow firstHigh secondLow secondHigh : FXGradeVector21)
+    (firstLe : le firstLow firstHigh)
+    (secondLe : le secondLow secondHigh) :
+    le (join firstLow secondLow) (join firstHigh secondHigh) :=
+  ⟨GradeVector.add_mono
+      firstLow.semiringGrades firstHigh.semiringGrades
+      secondLow.semiringGrades secondHigh.semiringGrades
+      firstLe.left secondLe.left,
+   JoinGradeVector.join_mono
+      firstLow.joinGrades firstHigh.joinGrades
+      secondLow.joinGrades secondHigh.joinGrades
+      firstLe.right secondLe.right⟩
+
+/-- Pointwise `compose` is monotone for the aggregate D5.4 payload. -/
+theorem compose_mono
+    (firstLow firstHigh secondLow secondHigh : FXGradeVector21)
+    (firstLe : le firstLow firstHigh)
+    (secondLe : le secondLow secondHigh) :
+    le (compose firstLow secondLow) (compose firstHigh secondHigh) :=
+  ⟨GradeVector.mul_mono
+      firstLow.semiringGrades firstHigh.semiringGrades
+      secondLow.semiringGrades secondHigh.semiringGrades
+      firstLe.left secondLe.left,
+   JoinGradeVector.join_mono
+      firstLow.joinGrades firstHigh.joinGrades
+      secondLow.joinGrades secondHigh.joinGrades
+      firstLe.right secondLe.right⟩
 
 end FXGradeVector21
 

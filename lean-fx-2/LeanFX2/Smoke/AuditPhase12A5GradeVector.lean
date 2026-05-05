@@ -3,11 +3,10 @@ import LeanFX2.Graded.GradeVector
 /-! # Phase 12.A.5 audit: GradeVector zero-axiom
 
 GradeVector implements pointwise composition of FX's graded
-dimensions.  Verifies all 11 lifted laws (add: assoc/comm/identity
-left+right, mul: assoc/identity left+right/annihilation left+right,
-le: refl/trans) plus the 2 base operations (zero/one) plus the
-helper (prodMkEq) plus the type itself.  All zero-axiom under
-strict policy. -/
+dimensions.  Verifies the lifted algebra laws (add:
+assoc/comm/identity/monotone, mul: assoc/identity/annihilation/monotone,
+le: refl/trans) plus the base operations (zero/one) plus the helper
+(prodMkEq) plus the type itself.  All zero-axiom under strict policy. -/
 
 #print axioms LeanFX2.Graded.Dimension
 #print axioms LeanFX2.Graded.GradeVector
@@ -28,3 +27,5 @@ strict policy. -/
 #print axioms LeanFX2.Graded.GradeVector.mul_zero_right
 #print axioms LeanFX2.Graded.GradeVector.le_refl
 #print axioms LeanFX2.Graded.GradeVector.le_trans
+#print axioms LeanFX2.Graded.GradeVector.add_mono
+#print axioms LeanFX2.Graded.GradeVector.mul_mono
