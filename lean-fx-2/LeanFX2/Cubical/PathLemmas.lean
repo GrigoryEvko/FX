@@ -2,6 +2,7 @@ import LeanFX2.Cubical.Path
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.ParRed
+import LeanFX2.Bridge
 
 /-! # Cubical/PathLemmas
 
@@ -101,6 +102,30 @@ theorem constantPath_betaPathApp {mode : Mode} {level scope : Nat}
       (Term.pathApp (constantPath pointTerm) intervalTerm)
       (Term.subst0 (Term.weaken Ty.interval pointTerm) intervalTerm) :=
   Step.par.betaPathApp (Step.par.refl _) (Step.par.refl _)
+
+/-- Typed constant-path β projects through the typed-to-raw bridge to
+the endpoint-level raw β fact.  This is a load-bearing wiring smoke:
+it uses the typed `constantPath`, typed `Step.par.betaPathApp`,
+`Step.par.toRawBridge`, `Term.toRaw_weaken`, `Term.toRaw_subst0`, and
+the raw weakening/substitution cancellation together. -/
+theorem constantPath_betaPathApp_toRawEndpoint
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {pointRaw intervalRaw : RawTerm scope}
+    (pointTerm : Term context carrierType pointRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    RawStep.par
+      (RawTerm.pathApp (RawTerm.pathLam pointRaw.weaken) intervalRaw)
+      pointRaw := by
+  have bridgeStep :
+      RawStep.par
+        (RawTerm.pathApp (RawTerm.pathLam pointRaw.weaken) intervalRaw)
+        (pointRaw.weaken.subst0 intervalRaw) := by
+    simpa [constantPath_toRaw, Term.toRaw_weaken, Term.toRaw_subst0]
+      using Step.par.toRawBridge
+        (constantPath_betaPathApp pointTerm intervalTerm)
+  simpa [RawTerm.subst0, RawTerm.weaken_subst_singleton] using bridgeStep
 
 end Cubical
 end LeanFX2
