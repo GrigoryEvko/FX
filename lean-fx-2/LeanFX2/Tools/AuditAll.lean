@@ -168,9 +168,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.semiringDimensions21_slots_length_match
 #assert_no_axioms LeanFX2.Graded.joinDimensions21_slots_length_match
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.bottom
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.one
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.le_refl
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.le_trans
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.joinGrades_bottom_le
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_semiring_one_left
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_semiring_one_right
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_join_left_le
+#assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_join_right_le
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast

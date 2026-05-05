@@ -493,11 +493,30 @@ def bottom : FXGradeVector21 where
   semiringGrades := GradeVector.zero
   joinGrades := JoinGradeVector.bottom
 
+/-- Multiplicative identity for semiring-backed dimensions, paired with
+bottom for join-only dimensions.  This is an identity for the semiring
+projection of `compose`; join-only identities are intentionally stated by
+preorder lemmas because `GradeJoinSemilattice` does not require equality
+normalization laws. -/
+def one : FXGradeVector21 where
+  semiringGrades := GradeVector.one
+  joinGrades := JoinGradeVector.bottom
+
 /-- Pointwise composition for D5.4 algebraic grade payloads.  Semiring
 slots use `GradeVector.add`; join-only slots use `JoinGradeVector.join`. -/
 def join (firstVector secondVector : FXGradeVector21) : FXGradeVector21 where
   semiringGrades :=
     GradeVector.add firstVector.semiringGrades secondVector.semiringGrades
+  joinGrades :=
+    JoinGradeVector.join firstVector.joinGrades secondVector.joinGrades
+
+/-- Sequential / closure composition for D5.4 algebraic grade payloads.
+Semiring-backed dimensions use `GradeVector.mul`; join-only dimensions
+accumulate by join because their carriers deliberately do not satisfy
+annihilating semiring multiplication. -/
+def compose (firstVector secondVector : FXGradeVector21) : FXGradeVector21 where
+  semiringGrades :=
+    GradeVector.mul firstVector.semiringGrades secondVector.semiringGrades
   joinGrades :=
     JoinGradeVector.join firstVector.joinGrades secondVector.joinGrades
 
@@ -531,6 +550,32 @@ does not state that zero is the least element. -/
 theorem joinGrades_bottom_le (someVector : FXGradeVector21) :
     JoinGradeVector.le bottom.joinGrades someVector.joinGrades :=
   JoinGradeVector.bottom_le someVector.joinGrades
+
+/-- The semiring projection of `compose` has `one` as a left identity. -/
+theorem compose_semiring_one_left (someVector : FXGradeVector21) :
+    (compose one someVector).semiringGrades = someVector.semiringGrades :=
+  GradeVector.mul_one_left someVector.semiringGrades
+
+/-- The semiring projection of `compose` has `one` as a right identity. -/
+theorem compose_semiring_one_right (someVector : FXGradeVector21) :
+    (compose someVector one).semiringGrades = someVector.semiringGrades :=
+  GradeVector.mul_one_right someVector.semiringGrades
+
+/-- The left join-only payload is below the join-only payload of
+`compose`. -/
+theorem compose_join_left_le
+    (firstVector secondVector : FXGradeVector21) :
+    JoinGradeVector.le firstVector.joinGrades
+      (compose firstVector secondVector).joinGrades :=
+  JoinGradeVector.le_join_left firstVector.joinGrades secondVector.joinGrades
+
+/-- The right join-only payload is below the join-only payload of
+`compose`. -/
+theorem compose_join_right_le
+    (firstVector secondVector : FXGradeVector21) :
+    JoinGradeVector.le secondVector.joinGrades
+      (compose firstVector secondVector).joinGrades :=
+  JoinGradeVector.le_join_right firstVector.joinGrades secondVector.joinGrades
 
 end FXGradeVector21
 
