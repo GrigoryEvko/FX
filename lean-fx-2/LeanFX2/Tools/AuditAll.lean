@@ -9,6 +9,7 @@ import LeanFX2.Term.Bridge
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
 import LeanFX2.Confluence.ConvBridge
@@ -277,6 +278,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.hcompCong
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_transp_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_hcomp_allais
+
+-- Typed D2.7 single-field record parity
+#assert_no_axioms LeanFX2.Term.toRaw_recordIntro
+#assert_no_axioms LeanFX2.Term.toRaw_recordProj
+#assert_no_axioms LeanFX2.Step.recordIntroField
+#assert_no_axioms LeanFX2.Step.recordProjRecord
+#assert_no_axioms LeanFX2.Step.betaRecordProjIntro
+#assert_no_axioms LeanFX2.Step.par.recordIntroCong
+#assert_no_axioms LeanFX2.Step.par.recordProjCong
+#assert_no_axioms LeanFX2.Step.par.betaRecordProjIntro
+#assert_no_axioms LeanFX2.Step.par.betaRecordProjIntroDeep
+#assert_no_axioms LeanFX2.ConvCumul.recordIntroCong
+#assert_no_axioms LeanFX2.ConvCumul.recordProjCong
+#assert_no_axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul
+#assert_no_axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul_toConv
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordIntro_allais
+#assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordProj_allais
 
 -- Conv core
 #assert_no_axioms LeanFX2.Conv.refl

@@ -230,6 +230,10 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .hcomp sidesValue capValue =>
       Term.hcomp (Term.subst termSubst sidesValue)
                  (Term.subst termSubst capValue)
+  | _, _, .recordIntro firstField =>
+      Term.recordIntro (Term.subst termSubst firstField)
+  | _, _, .recordProj recordValue =>
+      Term.recordProj (Term.subst termSubst recordValue)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
   -- levelLe` and `RawTerm.universeCode innerLevel.toNat` substitute to
   -- themselves (no scope-dependent payload), so rebuilding the ctor

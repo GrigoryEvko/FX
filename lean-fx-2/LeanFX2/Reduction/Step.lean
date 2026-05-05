@@ -829,6 +829,31 @@ inductive Step :
       Step rightSource rightTarget →
       Step (Term.intervalJoin leftValue rightSource)
            (Term.intervalJoin leftValue rightTarget)
+  /-- Step inside a single-field record introduction. -/
+  | recordIntroField {mode level scope} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRawSource firstRawTarget : RawTerm scope}
+      {firstSource : Term context singleFieldType firstRawSource}
+      {firstTarget : Term context singleFieldType firstRawTarget} :
+      Step firstSource firstTarget →
+      Step (Term.recordIntro firstSource)
+           (Term.recordIntro firstTarget)
+  /-- Step inside a single-field record projection. -/
+  | recordProjRecord {mode level scope} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {recordRawSource recordRawTarget : RawTerm scope}
+      {recordSource : Term context (Ty.record singleFieldType) recordRawSource}
+      {recordTarget : Term context (Ty.record singleFieldType) recordRawTarget} :
+      Step recordSource recordTarget →
+      Step (Term.recordProj recordSource)
+           (Term.recordProj recordTarget)
+  /-- Single-field record β-reduction: projecting an introduced field yields
+  that field. -/
+  | betaRecordProjIntro {mode level scope} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRaw : RawTerm scope}
+      (firstField : Term context singleFieldType firstRaw) :
+      Step (Term.recordProj (Term.recordIntro firstField)) firstField
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
       (universeLevel : UniverseLevel)

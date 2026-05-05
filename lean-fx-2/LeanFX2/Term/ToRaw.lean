@@ -356,4 +356,20 @@ theorem Term.toRaw_hcomp {mode : Mode} {level scope : Nat}
     (Term.hcomp sidesValue capValue).toRaw =
       RawTerm.hcomp sidesValue.toRaw capValue.toRaw := rfl
 
+theorem Term.toRaw_recordIntro {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (firstField : Term context singleFieldType firstRaw) :
+    (Term.recordIntro firstField).toRaw =
+      RawTerm.recordIntro firstField.toRaw := rfl
+
+theorem Term.toRaw_recordProj {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    (recordValue : Term context (Ty.record singleFieldType) recordRaw) :
+    (Term.recordProj recordValue).toRaw =
+      RawTerm.recordProj recordValue.toRaw := rfl
+
 end LeanFX2

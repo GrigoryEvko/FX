@@ -224,18 +224,13 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "betaRefineElimIntro" ||
   suffix == "betaRefineElimIntroDeep" ||
   suffix == "refineElimCong" ||
-  -- Section E: record cong + β rules (typed records pending).
-  suffix == "recordIntroCong" ||
-  suffix == "betaRecordProjIntro" ||
-  suffix == "betaRecordProjIntroDeep" ||
-  suffix == "recordProjCong" ||
-  -- Section F: codata cong rules (typed codata pending D5.13).
+  -- Section E: codata cong rules (typed codata pending D5.13).
   suffix == "codataUnfoldCong" ||
   suffix == "codataDestCong" ||
-  -- Section G: session protocol cong rules (typed sessions pending D5.11).
+  -- Section F: session protocol cong rules (typed sessions pending D5.11).
   suffix == "sessionSendCong" ||
   suffix == "sessionRecvCong" ||
-  -- Section H: effect-perform cong rule (typed effect handlers pending
+  -- Section G: effect-perform cong rule (typed effect handlers pending
   -- D5.10).
   suffix == "effectPerformCong" ||
   -- Section I: parametric type-code cong rules (CUMUL-2 cumulativity

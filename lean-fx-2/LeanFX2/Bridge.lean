@@ -126,6 +126,10 @@ theorem Step.par.toRawBridge
       exact RawStep.par.transpCong ihPath ihSource
   | hcomp _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
+  | recordIntroCong _ ihFirst =>
+      exact RawStep.par.recordIntroCong ihFirst
+  | recordProjCong _ ihRecord =>
+      exact RawStep.par.recordProjCong ihRecord
   | intervalOppCong _ ihInner =>
       exact RawStep.par.intervalOppCong ihInner
   | intervalMeetCong _ _ ihLeft ihRight =>
@@ -152,6 +156,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaPathApp ihBody ihInterval
   | betaGlueElimIntro _ _ ihBase ihPartial =>
       exact RawStep.par.betaGlueElimIntro ihBase ihPartial
+  | betaRecordProjIntro _ ihFirst =>
+      exact RawStep.par.betaRecordProjIntro ihFirst
   | betaFstPair secondValue _ ihFirst =>
       exact RawStep.par.betaFstPair _ ihFirst
   | betaSndPair firstValue _ ihSecond =>
@@ -192,6 +198,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaPathAppDeep ihPath ihInterval
   | betaGlueElimIntroDeep _ ihGlued =>
       exact RawStep.par.betaGlueElimIntroDeep ihGlued
+  | betaRecordProjIntroDeep _ ihRecord =>
+      exact RawStep.par.betaRecordProjIntroDeep ihRecord
   | betaFstPairDeep _ ihPair =>
       exact RawStep.par.betaFstPairDeep ihPair
   | betaSndPairDeep _ ihPair =>

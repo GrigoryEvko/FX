@@ -247,6 +247,10 @@ def Term.substHet {mode : Mode}
   | _, _, .hcomp sidesValue capValue =>
       Term.hcomp (Term.substHet termSubstHet sidesValue)
                  (Term.substHet termSubstHet capValue)
+  | _, _, .recordIntro firstField =>
+      Term.recordIntro (Term.substHet termSubstHet firstField)
+  | _, _, .recordProj recordValue =>
+      Term.recordProj (Term.substHet termSubstHet recordValue)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
   -- proof.  Both `Ty.universe outerLevel levelLe` (lifted via Nat.le_trans
   -- with sigma.cumulOk) and `RawTerm.universeCode innerLevel.toNat`

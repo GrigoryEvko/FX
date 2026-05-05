@@ -584,6 +584,30 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (rightRel : ConvCumul rightFirst rightSecond) :
       ConvCumul (Term.intervalJoin leftFirst rightFirst)
                 (Term.intervalJoin leftSecond rightSecond)
+  /-- Homogeneous single-field record intro: ConvCumul-related fields lift to
+  ConvCumul-related record introductions. -/
+  | recordIntroCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRaw firstSecondRaw : RawTerm scope}
+      {firstField : Term context singleFieldType firstRaw}
+      {secondField : Term context singleFieldType firstSecondRaw}
+      (fieldRel : ConvCumul firstField secondField) :
+      ConvCumul (Term.recordIntro firstField)
+                (Term.recordIntro secondField)
+  /-- Homogeneous single-field record projection: ConvCumul-related records
+  lift to ConvCumul-related projections. -/
+  | recordProjCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {recordFirstRaw recordSecondRaw : RawTerm scope}
+      {recordFirst : Term context (Ty.record singleFieldType) recordFirstRaw}
+      {recordSecond : Term context (Ty.record singleFieldType) recordSecondRaw}
+      (recordRel : ConvCumul recordFirst recordSecond) :
+      ConvCumul (Term.recordProj recordFirst)
+                (Term.recordProj recordSecond)
   /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
   lift to ConvCumul-related path abstractions. -/
   | pathLamCong
@@ -823,6 +847,14 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
         (Term.glueElim
           (Term.glueIntro baseType boundaryWitness baseValue partialValue))
         baseValue
+  /-- β-reduction for single-field record projection:
+  `recordProj (recordIntro field) ⟶ field`. -/
+  | betaRecordProjIntroCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRaw : RawTerm scope}
+      (firstField : Term context singleFieldType firstRaw) :
+      ConvCumul (Term.recordProj (Term.recordIntro firstField)) firstField
   /-- β-reduction Σ first projection: `fst (pair a b) ⟶ a`.
   Mirror of `Step.betaFstPair`. -/
   | betaFstPairCumul

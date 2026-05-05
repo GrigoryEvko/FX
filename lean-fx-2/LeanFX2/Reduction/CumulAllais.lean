@@ -945,6 +945,42 @@ theorem ConvCumul.subst_compatible_hcomp_allais
               ((Term.hcomp sidesValue capValue).substHet termSubstB) :=
   ConvCumul.hcompCong sidesCompat capCompat
 
+/-- Allais arm for single-field `recordIntro`: one-subterm congruence. -/
+theorem ConvCumul.subst_compatible_recordIntro_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {singleFieldType : Ty sourceLevel sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    (firstField : Term sourceCtx singleFieldType firstRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (fieldCompat :
+      ConvCumul (firstField.substHet termSubstA)
+                (firstField.substHet termSubstB)) :
+    ConvCumul ((Term.recordIntro firstField).substHet termSubstA)
+              ((Term.recordIntro firstField).substHet termSubstB) :=
+  ConvCumul.recordIntroCong fieldCompat
+
+/-- Allais arm for single-field `recordProj`: one-subterm congruence. -/
+theorem ConvCumul.subst_compatible_recordProj_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {singleFieldType : Ty sourceLevel sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    (recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw)
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (recordCompat :
+      ConvCumul (recordValue.substHet termSubstA)
+                (recordValue.substHet termSubstB)) :
+    ConvCumul ((Term.recordProj recordValue).substHet termSubstA)
+              ((Term.recordProj recordValue).substHet termSubstB) :=
+  ConvCumul.recordProjCong recordCompat
+
 /-! ### Allais closed-payload arms (parametric data + refl)
 
 Like `unit` / `boolTrue`, these ctors carry no scope-dependent

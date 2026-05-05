@@ -93,6 +93,8 @@ inductive Term.HeadCtor : Type
   | glueElim
   | transp
   | hcomp
+  | recordIntro
+  | recordProj
   | universeCode
   | cumulUp
   | equivReflId
@@ -162,6 +164,8 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .glueElim _ => .glueElim
   | .transp _ _ _ _ _ _ _ _ => .transp
   | .hcomp _ _ => .hcomp
+  | .recordIntro _ => .recordIntro
+  | .recordProj _ => .recordProj
   | .universeCode _ _ _ _ => .universeCode
   | .cumulUp _ _ _ _ _ _ => .cumulUp
   | .equivReflId _ => .equivReflId
@@ -220,6 +224,7 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .glueIntro _ _ _ _ => true
   | .transp _ _ _ _ _ _ _ _ => true
   | .hcomp _ _ => true
+  | .recordIntro _ => true
   -- Universe-code is a value (no β/ι redex possible at this head)
   | .universeCode _ _ _ _ => true
   -- Cumul-up is a value (the inner term is a closed universe-code,
@@ -302,6 +307,9 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   -- Glue elimination is WHNF iff the glued value head is NOT .glueIntro.
   | .glueElim gluedValue =>
       !(gluedValue.headCtor == .glueIntro)
+  -- Record projection is WHNF iff the record head is NOT .recordIntro.
+  | .recordProj recordValue =>
+      !(recordValue.headCtor == .recordIntro)
 
 /-! ## headCtor inversion bridges
 
@@ -362,6 +370,8 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -430,6 +440,8 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -498,6 +510,8 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -566,6 +580,8 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -634,6 +650,8 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -713,6 +731,8 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -781,6 +801,8 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -849,6 +871,8 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -917,6 +941,8 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -985,6 +1011,8 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq
@@ -1053,6 +1081,8 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | glueElim _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
   | universeCode _ _ _ _ => nomatch headEq
   | cumulUp _ _ _ _ _ _ => nomatch headEq
   | equivReflId _ => nomatch headEq

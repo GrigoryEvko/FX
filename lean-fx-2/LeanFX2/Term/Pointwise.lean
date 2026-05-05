@@ -211,6 +211,12 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq sidesValue,
           Term.subst_pointwise pointwiseEq capValue]
+  | _, _, .recordIntro firstField => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq firstField]
+  | _, _, .recordProj recordValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq recordValue]
   -- Universe-code: scope-polymorphic; both sides definitionally
   -- equal regardless of substitution (no var dependencies).
   | _, _, .universeCode _ _ _ _ => rfl

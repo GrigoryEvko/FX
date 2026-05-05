@@ -220,6 +220,12 @@ theorem Step.toConvCumul
       exact ConvCumul.intervalJoinCong ih (ConvCumul.refl _)
   | intervalJoinRight _ ih =>
       exact ConvCumul.intervalJoinCong (ConvCumul.refl _) ih
+  | recordIntroField _ ih =>
+      exact ConvCumul.recordIntroCong ih
+  | recordProjRecord _ ih =>
+      exact ConvCumul.recordProjCong ih
+  | betaRecordProjIntro firstField =>
+      exact ConvCumul.betaRecordProjIntroCumul firstField
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
       exact ConvCumul.transpCong universeLevel universeLevelLt
@@ -471,6 +477,14 @@ theorem ConvCumul.betaGlueElimIntroCumul_toConv
         (Term.glueIntro baseType boundaryWitness baseValue partialValue))
       baseValue :=
   Conv.fromStep (Step.betaGlueElimIntro baseValue partialValue)
+
+theorem ConvCumul.betaRecordProjIntroCumul_toConv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (firstField : Term context singleFieldType firstRaw) :
+    Conv (Term.recordProj (Term.recordIntro firstField)) firstField :=
+  Conv.fromStep (Step.betaRecordProjIntro firstField)
 
 theorem ConvCumul.betaFstPairCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}

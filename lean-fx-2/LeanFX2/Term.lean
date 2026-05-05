@@ -341,6 +341,21 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (sidesValue : Term context carrierType sidesRaw)
       (capValue : Term context carrierType capRaw) :
       Term context carrierType (RawTerm.hcomp sidesRaw capRaw)
+  /-- Single-field record introduction.  Multi-field surface records elaborate
+      to nested single-field records until the schema layer lands. -/
+  | recordIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRaw : RawTerm scope}
+      (firstField : Term context singleFieldType firstRaw) :
+      Term context (Ty.record singleFieldType) (RawTerm.recordIntro firstRaw)
+  /-- Single-field record projection. -/
+  | recordProj {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {recordRaw : RawTerm scope}
+      (recordValue : Term context (Ty.record singleFieldType) recordRaw) :
+      Term context singleFieldType (RawTerm.recordProj recordRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
       The cumulativity witness `cumulOk : innerLevel.toNat ≤ outerLevel.toNat`

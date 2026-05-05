@@ -578,6 +578,24 @@ inductive Step.par :
       Step.par capSource capTarget →
       Step.par (Term.hcomp sidesSource capSource)
                (Term.hcomp sidesTarget capTarget)
+  /-- Raw-name parity: single-field record intro reduces in its field. -/
+  | recordIntroCong {mode level scope} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRawSource firstRawTarget : RawTerm scope}
+      {firstSource : Term context singleFieldType firstRawSource}
+      {firstTarget : Term context singleFieldType firstRawTarget} :
+      Step.par firstSource firstTarget →
+      Step.par (Term.recordIntro firstSource)
+               (Term.recordIntro firstTarget)
+  /-- Raw-name parity: single-field record projection reduces in its record. -/
+  | recordProjCong {mode level scope} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {recordRawSource recordRawTarget : RawTerm scope}
+      {recordSource : Term context (Ty.record singleFieldType) recordRawSource}
+      {recordTarget : Term context (Ty.record singleFieldType) recordRawTarget} :
+      Step.par recordSource recordTarget →
+      Step.par (Term.recordProj recordSource)
+               (Term.recordProj recordTarget)
   /-- Shallow β: `(λx. body) arg ⟶ body[arg/x]` with parallel
   reduction in body and arg.  Source has Ty `cod`; target via
   `Term.subst0` has Ty `cod.weaken.subst0 dom argumentRawTarget` —
@@ -648,6 +666,14 @@ inductive Step.par :
         (Term.glueElim
           (Term.glueIntro baseType boundaryWitness baseSource partialSource))
         baseTarget
+  /-- Shallow single-field record β: `recordProj (recordIntro field) ⟶ field'`. -/
+  | betaRecordProjIntro {mode level scope} {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstRawSource firstRawTarget : RawTerm scope}
+      {firstSource : Term context singleFieldType firstRawSource}
+      {firstTarget : Term context singleFieldType firstRawTarget} :
+      Step.par firstSource firstTarget →
+      Step.par (Term.recordProj (Term.recordIntro firstSource)) firstTarget
   /-- Shallow β-fst: `fst (pair a b) ⟶ a'` with `Step.par a a'`. -/
   | betaFstPair {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -923,6 +949,15 @@ inductive Step.par :
       Step.par gluedSource
         (Term.glueIntro baseType boundaryWitness baseTarget partialTarget) →
       Step.par (Term.glueElim gluedSource) baseTarget
+  /-- Deep single-field record β: record value develops to a record intro. -/
+  | betaRecordProjIntroDeep {mode level scope}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {recordRawSource firstRawTarget : RawTerm scope}
+      {recordSource : Term context (Ty.record singleFieldType) recordRawSource}
+      {firstTarget : Term context singleFieldType firstRawTarget} :
+      Step.par recordSource (Term.recordIntro firstTarget) →
+      Step.par (Term.recordProj recordSource) firstTarget
   /-- Deep β-fst: pair-shaped target. -/
   | betaFstPairDeep {mode level scope} {context : Ctx mode level scope}
       {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
@@ -1466,6 +1501,12 @@ theorem Step.toPar
       exact Step.par.intervalJoinCong singleStepIH (Step.par.refl _)
   | intervalJoinRight singleStep singleStepIH =>
       exact Step.par.intervalJoinCong (Step.par.refl _) singleStepIH
+  | recordIntroField singleStep singleStepIH =>
+      exact Step.par.recordIntroCong singleStepIH
+  | recordProjRecord singleStep singleStepIH =>
+      exact Step.par.recordProjCong singleStepIH
+  | betaRecordProjIntro firstField =>
+      exact Step.par.betaRecordProjIntro (Step.par.refl firstField)
   | transpPath universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
       exact Step.par.transpCong universeLevel universeLevelLt

@@ -425,6 +425,8 @@ theorem Term.headStep?_sound
   | glueIntro _ _ _ _ => nomatch firedEq
   | transp _ _ _ _ _ _ _ _ => nomatch firedEq
   | hcomp _ _ => nomatch firedEq
+  | recordIntro _ => nomatch firedEq
+  | recordProj _ => nomatch firedEq
   | universeCode _ _ _ _ => nomatch firedEq
   | cumulUp _ _ _ _ _ _ => nomatch firedEq
   | equivReflId _ => nomatch firedEq
@@ -495,6 +497,7 @@ theorem Term.headStep?_sound
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
@@ -526,6 +529,7 @@ theorem Term.headStep?_sound
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
@@ -556,6 +560,7 @@ theorem Term.headStep?_sound
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
@@ -586,6 +591,7 @@ theorem Term.headStep?_sound
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet
@@ -616,6 +622,7 @@ theorem Term.headStep?_sound
     | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
     | .pathLam | .pathApp
     | .glueIntro | .glueElim | .transp | .hcomp
+    | .recordIntro | .recordProj
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .uaIntroHet | .funextIntroHet

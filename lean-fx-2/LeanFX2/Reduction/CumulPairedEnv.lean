@@ -333,6 +333,12 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_hcomp_allais sidesValue capValue
         (Term.subst_compatible_pointwise_allais compat sidesValue)
         (Term.subst_compatible_pointwise_allais compat capValue)
+  | _, _, .recordIntro firstField =>
+      ConvCumul.subst_compatible_recordIntro_allais firstField
+        (Term.subst_compatible_pointwise_allais compat firstField)
+  | _, _, .recordProj recordValue =>
+      ConvCumul.subst_compatible_recordProj_allais recordValue
+        (Term.subst_compatible_pointwise_allais compat recordValue)
   | _, _, .fst pairTerm =>
       ConvCumul.subst_compatible_fst_allais pairTerm
         (Term.subst_compatible_pointwise_allais compat pairTerm)
