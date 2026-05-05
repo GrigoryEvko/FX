@@ -188,10 +188,10 @@ theorem Step.toConvCumul
       exact ConvCumul.idJCong (ConvCumul.refl baseCase) ih
   | iotaIdJRefl carrier endpoint baseCase =>
       exact ConvCumul.iotaIdJReflCumul carrier endpoint baseCase
-  | cumulUpInner innerLevel lowerLevel higherLevel
-                  cumulOkLow cumulOkHigh cumulMonotone _ ih =>
-      exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
-                                  cumulOkLow cumulOkHigh cumulMonotone ih
+  | cumulUpInner lowerLevel higherLevel cumulMonotone
+                  levelLeLow levelLeHigh _ ih =>
+      exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone
+                                  levelLeLow levelLeHigh ih
   -- Univalence rfl-fragment lifts to ConvCumul.iotaEqTypeCumul.
   | eqType innerLevel innerLevelLt carrier carrierRaw =>
       exact ConvCumul.iotaEqTypeCumul innerLevel innerLevelLt carrier carrierRaw

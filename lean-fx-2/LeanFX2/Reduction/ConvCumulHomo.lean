@@ -408,26 +408,25 @@ inductive ConvCumulHomo : ∀ {mode : Mode} {level scope : Nat}
   same `ctxHigh`), so this ctor fits ConvCumulHomo's discipline
   even though the inner lowerRel is full ConvCumul. -/
   | cumulUpCong
-      {mode : Mode} {scopeLow scope : Nat}
-      (innerLevel lowerLevel higherLevel : UniverseLevel)
-      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (lowerLevel higherLevel : UniverseLevel)
       (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-      {lowerFirst lowerSecond :
-        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                    (RawTerm.universeCode innerLevel.toNat)}
-      (lowerRel : ConvCumul lowerFirst lowerSecond) :
+      (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+      (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+      {codeFirstRaw codeSecondRaw : RawTerm scope}
+      {typeCodeFirst :
+        Term context (Ty.universe lowerLevel levelLeLow) codeFirstRaw}
+      {typeCodeSecond :
+        Term context (Ty.universe lowerLevel levelLeLow) codeSecondRaw}
+      (innerHomoRel : ConvCumulHomo typeCodeFirst typeCodeSecond) :
       ConvCumulHomo
-        (Term.cumulUp (ctxHigh := ctxHigh)
-                      innerLevel lowerLevel higherLevel
-                      cumulOkLow cumulOkHigh cumulMonotone
-                      (Nat.le_refl _) (Nat.le_refl _) lowerFirst)
-        (Term.cumulUp (ctxHigh := ctxHigh)
-                      innerLevel lowerLevel higherLevel
-                      cumulOkLow cumulOkHigh cumulMonotone
-                      (Nat.le_refl _) (Nat.le_refl _) lowerSecond)
+        (Term.cumulUp (context := context)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCodeFirst)
+        (Term.cumulUp (context := context)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCodeSecond)
 
 /-! # Bridge: ConvCumulHomo → ConvCumul -/
 
@@ -467,10 +466,11 @@ theorem ConvCumulHomo.toCumul {mode : Mode} {level scope : Nat}
   | modIntroCong _ ih               => exact ConvCumul.modIntroCong ih
   | modElimCong _ ih                => exact ConvCumul.modElimCong ih
   | subsumeCong _ ih                => exact ConvCumul.subsumeCong ih
-  | cumulUpCong innerLevel lowerLevel higherLevel
-                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
-      exact ConvCumul.cumulUpCong innerLevel lowerLevel higherLevel
-                                  cumulOkLow cumulOkHigh cumulMonotone lowerRel
+  | cumulUpCong lowerLevel higherLevel cumulMonotone
+                levelLeLow levelLeHigh _ ih =>
+      -- ih : ConvCumul typeCodeFirst typeCodeSecond (recursed)
+      exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone
+                                  levelLeLow levelLeHigh ih
 
 /-! # BHKM cast-elim primitives (for ConvCumulHomo)
 
@@ -582,17 +582,15 @@ theorem ConvCumulHomo.rename_compatible_benton
   | modIntroCong _ ih => intros; exact ConvCumulHomo.modIntroCong (ih _)
   | modElimCong _ ih => intros; exact ConvCumulHomo.modElimCong (ih _)
   | subsumeCong _ ih => intros; exact ConvCumulHomo.subsumeCong (ih _)
-  | cumulUpCong innerLevel lowerLevel higherLevel
-                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
-      -- Term.{rename,subst}'s cumulUp arm preserves lowerTerm verbatim
-      -- (scopeLow decoupled from outer scope per Phase 12.A.B1.5).
-      -- ConvCumulHomo.cumulUpCong reapplies at target ctx with the
-      -- same lowerRel — substantive use: lowerRel is consumed as a
-      -- ctor argument and rebuilt in the result.
-      intros
-      exact ConvCumulHomo.cumulUpCong innerLevel lowerLevel higherLevel
-                                      cumulOkLow cumulOkHigh cumulMonotone
-                                      lowerRel
+  | cumulUpCong lowerLevel higherLevel cumulMonotone
+                levelLeLow levelLeHigh _ ih =>
+      -- Phase CUMUL-2.6 Design D: Term.{rename,subst}'s cumulUp arm
+      -- recurses on typeCode.  IH provides the substituted inner
+      -- relation; ConvCumulHomo.cumulUpCong rebuilds at target ctx.
+      intros _ _ _ context4
+      exact ConvCumulHomo.cumulUpCong lowerLevel higherLevel cumulMonotone
+                                      levelLeLow levelLeHigh
+                                      (ih context4)
 
 /-! # Pattern 2 (BHKM JAR'12): subst_compatible — recursive headline (the SUBST rung)
 
@@ -669,17 +667,15 @@ theorem ConvCumulHomo.subst_compatible_benton
   | modIntroCong _ ih => intros; exact ConvCumulHomo.modIntroCong (ih _)
   | modElimCong _ ih => intros; exact ConvCumulHomo.modElimCong (ih _)
   | subsumeCong _ ih => intros; exact ConvCumulHomo.subsumeCong (ih _)
-  | cumulUpCong innerLevel lowerLevel higherLevel
-                cumulOkLow cumulOkHigh cumulMonotone lowerRel =>
-      -- Term.{rename,subst}'s cumulUp arm preserves lowerTerm verbatim
-      -- (scopeLow decoupled from outer scope per Phase 12.A.B1.5).
-      -- ConvCumulHomo.cumulUpCong reapplies at target ctx with the
-      -- same lowerRel — substantive use: lowerRel is consumed as a
-      -- ctor argument and rebuilt in the result.
-      intros
-      exact ConvCumulHomo.cumulUpCong innerLevel lowerLevel higherLevel
-                                      cumulOkLow cumulOkHigh cumulMonotone
-                                      lowerRel
+  | cumulUpCong lowerLevel higherLevel cumulMonotone
+                levelLeLow levelLeHigh _ ih =>
+      -- Phase CUMUL-2.6 Design D: Term.{rename,subst}'s cumulUp arm
+      -- recurses on typeCode.  IH provides the substituted inner
+      -- relation; ConvCumulHomo.cumulUpCong rebuilds at target ctx.
+      intros _ _ _ context4
+      exact ConvCumulHomo.cumulUpCong lowerLevel higherLevel cumulMonotone
+                                      levelLeLow levelLeHigh
+                                      (ih context4)
 
 /-! # Bridge: ConvCumul → ConvCumulHomo for the homogeneous fragment
 
@@ -789,60 +785,54 @@ Phase 12.A.B1.5 decoupled `scopeLow` from outer `scope`; this is
 the general statement.  Substituting the outer side of a `viaUp`
 witness produces a new `viaUp` at the substituted target. -/
 theorem ConvCumul.subst_compatible_viaUp
-    {mode : Mode} {scopeLow scope targetScope : Nat}
-    (innerLevel lowerLevel higherLevel : UniverseLevel)
-    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    {mode : Mode} {level scope targetScope : Nat}
+    (lowerLevel higherLevel : UniverseLevel)
     (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
-    (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                  (RawTerm.universeCode innerLevel.toNat))
-    (sigma : Subst (higherLevel.toNat + 1) scope targetScope)
-    (termSubst : TermSubst ctxHigh targetCtxHigh sigma) :
-    ConvCumul lowerTerm
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {context : Ctx mode level scope}
+    {targetContext : Ctx mode level targetScope}
+    {codeRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (sigma : Subst level scope targetScope)
+    (termSubst : TermSubst context targetContext sigma) :
+    ConvCumul (Term.subst termSubst typeCode)
               (Term.subst termSubst
-                (Term.cumulUp (ctxHigh := ctxHigh)
-                              innerLevel lowerLevel higherLevel
-                              cumulOkLow cumulOkHigh cumulMonotone
-                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
-  -- Term.subst's cumulUp arm preserves lowerTerm verbatim (its
-  -- scopeLow is decoupled from the outer scope being substituted)
-  -- and rebuilds Term.cumulUp at the new target scope.
-  -- ConvCumul.viaUp witnesses the result at arbitrary scopeLow.
-  ConvCumul.viaUp innerLevel lowerLevel higherLevel
-                  cumulOkLow cumulOkHigh cumulMonotone lowerTerm
+                (Term.cumulUp (context := context)
+                              lowerLevel higherLevel cumulMonotone
+                              levelLeLow levelLeHigh typeCode)) :=
+  -- Phase CUMUL-2.6 Design D: Term.subst's cumulUp arm recurses on
+  -- typeCode.  The output is `Term.cumulUp ... (Term.subst typeCode)`,
+  -- so ConvCumul.viaUp witnesses on the substituted typeCode directly.
+  ConvCumul.viaUp lowerLevel higherLevel cumulMonotone
+                  levelLeLow levelLeHigh (Term.subst termSubst typeCode)
 
 /-- **Rename preservation through viaUp at arbitrary scopeLow**.
 Mirror of `subst_compatible_viaUp` for the rename direction.
 Renaming the outer side preserves the relation. -/
 theorem ConvCumul.rename_compatible_viaUp
-    {mode : Mode} {scopeLow scope targetScope : Nat}
-    (innerLevel lowerLevel higherLevel : UniverseLevel)
-    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    {mode : Mode} {level scope targetScope : Nat}
+    (lowerLevel higherLevel : UniverseLevel)
     (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
-    (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                  (RawTerm.universeCode innerLevel.toNat))
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {context : Ctx mode level scope}
+    {targetContext : Ctx mode level targetScope}
+    {codeRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
     (rho : RawRenaming scope targetScope)
-    (termRenaming : TermRenaming ctxHigh targetCtxHigh rho) :
-    ConvCumul lowerTerm
+    (termRenaming : TermRenaming context targetContext rho) :
+    ConvCumul (Term.rename termRenaming typeCode)
               (Term.rename termRenaming
-                (Term.cumulUp (ctxHigh := ctxHigh)
-                              innerLevel lowerLevel higherLevel
-                              cumulOkLow cumulOkHigh cumulMonotone
-                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
-  -- Term.rename's cumulUp arm: same structure as subst, lowerTerm
-  -- preserved verbatim, rebuilt at new target scope.  ConvCumul.viaUp
-  -- witnesses the result.
-  ConvCumul.viaUp innerLevel lowerLevel higherLevel
-                  cumulOkLow cumulOkHigh cumulMonotone lowerTerm
+                (Term.cumulUp (context := context)
+                              lowerLevel higherLevel cumulMonotone
+                              levelLeLow levelLeHigh typeCode)) :=
+  -- Phase CUMUL-2.6 Design D: Term.rename's cumulUp arm recurses on
+  -- typeCode.  Same shape as subst case.
+  ConvCumul.viaUp lowerLevel higherLevel cumulMonotone
+                  levelLeLow levelLeHigh (Term.rename termRenaming typeCode)
 
 /-! # Unified dispatch adapter (caller-evidence pattern)
 
@@ -899,24 +889,23 @@ inductive ConvCumul.SubstDispatch :
       {secondTerm : Term context secondType secondRaw}
       (homoRel : ConvCumulHomo firstTerm secondTerm) :
       ConvCumul.SubstDispatch firstTerm secondTerm
-  /-- viaUp branch: caller supplies the lower term and cumul
-  witnesses; the dispatch is over the resulting viaUp shape. -/
+  /-- viaUp branch — Phase CUMUL-2.6 Design D: caller supplies the
+  inner typeCode and cumul witnesses; dispatch over the resulting
+  viaUp shape. -/
   | viaUp
-      {mode : Mode} {scopeLow scope : Nat}
-      (innerLevel lowerLevel higherLevel : UniverseLevel)
-      (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-      (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (lowerLevel higherLevel : UniverseLevel)
       (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-      {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-      {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-      (lowerTerm :
-        Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                    (RawTerm.universeCode innerLevel.toNat)) :
-      ConvCumul.SubstDispatch lowerTerm
-        (Term.cumulUp (ctxHigh := ctxHigh)
-                      innerLevel lowerLevel higherLevel
-                      cumulOkLow cumulOkHigh cumulMonotone
-                      (Nat.le_refl _) (Nat.le_refl _) lowerTerm)
+      (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+      (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+      {codeRaw : RawTerm scope}
+      (typeCode :
+        Term context (Ty.universe lowerLevel levelLeLow) codeRaw) :
+      ConvCumul.SubstDispatch typeCode
+        (Term.cumulUp (context := context)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCode)
 
 /-- The dispatcher-as-elimination converts a `SubstDispatch` to
 its underlying ConvCumul (a sanity check that dispatch evidence
@@ -936,10 +925,8 @@ theorem ConvCumul.SubstDispatch.toCumul
     ConvCumul firstTerm secondTerm := by
   cases dispatch with
   | homo homoRel => exact homoRel.toCumul
-  | viaUp innerLevel lowerLevel higherLevel
-          cumulOkLow cumulOkHigh cumulMonotone lowerTerm =>
-      exact ConvCumul.viaUp innerLevel lowerLevel higherLevel
-                            cumulOkLow cumulOkHigh cumulMonotone lowerTerm
+  | viaUp _ _ _ _ _ typeCd =>
+      apply ConvCumul.viaUp <;> first | exact typeCd | assumption
 
 /-! ## Branch-dependent output types via dependent Pi
 
@@ -998,55 +985,51 @@ theorem ConvCumul.SubstDispatch.subst_compatible_homo_route
               (secondTerm.subst termSubst) :=
   ConvCumul.subst_compatible_homo_benton termSubst homoRel
 
-/-- viaUp branch's rename route. -/
+/-- viaUp branch's rename route — Phase CUMUL-2.6 Design D. -/
 theorem ConvCumul.SubstDispatch.rename_compatible_viaUp_route
-    {mode : Mode} {scopeLow scope targetScope : Nat}
-    (innerLevel lowerLevel higherLevel : UniverseLevel)
-    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    {mode : Mode} {level scope targetScope : Nat}
+    (lowerLevel higherLevel : UniverseLevel)
     (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
-    (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                  (RawTerm.universeCode innerLevel.toNat))
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {context : Ctx mode level scope}
+    {targetContext : Ctx mode level targetScope}
+    {codeRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
     (rho : RawRenaming scope targetScope)
-    (termRenaming : TermRenaming ctxHigh targetCtxHigh rho) :
-    ConvCumul lowerTerm
+    (termRenaming : TermRenaming context targetContext rho) :
+    ConvCumul (Term.rename termRenaming typeCode)
               (Term.rename termRenaming
-                (Term.cumulUp (ctxHigh := ctxHigh)
-                              innerLevel lowerLevel higherLevel
-                              cumulOkLow cumulOkHigh cumulMonotone
-                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
-  ConvCumul.rename_compatible_viaUp innerLevel lowerLevel higherLevel
-                                    cumulOkLow cumulOkHigh cumulMonotone
-                                    lowerTerm rho termRenaming
+                (Term.cumulUp (context := context)
+                              lowerLevel higherLevel cumulMonotone
+                              levelLeLow levelLeHigh typeCode)) :=
+  ConvCumul.rename_compatible_viaUp lowerLevel higherLevel cumulMonotone
+                                    levelLeLow levelLeHigh
+                                    typeCode rho termRenaming
 
-/-- viaUp branch's subst route. -/
+/-- viaUp branch's subst route — Phase CUMUL-2.6 Design D. -/
 theorem ConvCumul.SubstDispatch.subst_compatible_viaUp_route
-    {mode : Mode} {scopeLow scope targetScope : Nat}
-    (innerLevel lowerLevel higherLevel : UniverseLevel)
-    (cumulOkLow : innerLevel.toNat ≤ lowerLevel.toNat)
-    (cumulOkHigh : innerLevel.toNat ≤ higherLevel.toNat)
+    {mode : Mode} {level scope targetScope : Nat}
+    (lowerLevel higherLevel : UniverseLevel)
     (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
-    {ctxLow : Ctx mode (lowerLevel.toNat + 1) scopeLow}
-    {ctxHigh : Ctx mode (higherLevel.toNat + 1) scope}
-    {targetCtxHigh : Ctx mode (higherLevel.toNat + 1) targetScope}
-    (lowerTerm :
-      Term ctxLow (Ty.universe lowerLevel (Nat.le_refl _))
-                  (RawTerm.universeCode innerLevel.toNat))
-    (sigma : Subst (higherLevel.toNat + 1) scope targetScope)
-    (termSubst : TermSubst ctxHigh targetCtxHigh sigma) :
-    ConvCumul lowerTerm
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {context : Ctx mode level scope}
+    {targetContext : Ctx mode level targetScope}
+    {codeRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (sigma : Subst level scope targetScope)
+    (termSubst : TermSubst context targetContext sigma) :
+    ConvCumul (Term.subst termSubst typeCode)
               (Term.subst termSubst
-                (Term.cumulUp (ctxHigh := ctxHigh)
-                              innerLevel lowerLevel higherLevel
-                              cumulOkLow cumulOkHigh cumulMonotone
-                              (Nat.le_refl _) (Nat.le_refl _) lowerTerm)) :=
-  ConvCumul.subst_compatible_viaUp innerLevel lowerLevel higherLevel
-                                   cumulOkLow cumulOkHigh cumulMonotone
-                                   lowerTerm sigma termSubst
+                (Term.cumulUp (context := context)
+                              lowerLevel higherLevel cumulMonotone
+                              levelLeLow levelLeHigh typeCode)) :=
+  ConvCumul.subst_compatible_viaUp lowerLevel higherLevel cumulMonotone
+                                   levelLeLow levelLeHigh
+                                   typeCode sigma termSubst
 
 /-! # The unified interface — caller-evidence dispatcher with routes
 
