@@ -14,6 +14,7 @@ import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Overflow
 import LeanFX2.Graded.Instances.Size
+import LeanFX2.Graded.Instances.Version
 
 /-! # AuditPhase12A4GradedTwoElement — D5.4 partial: graded semiring
 instances for finite chains and bounded resource dimensions.
@@ -76,8 +77,9 @@ Remaining D5.4 instances (TBD per-need):
                                        with explicit conflict
 * `SizeGrade` (dim 20)              — shipped as bounded-or-unbounded
                                        codata observation-depth semiring
-* `VersionGrade` (dim 21)           — version-label lattice with
-                                       adapter edges
+* `VersionGrade` (dim 21)           — shipped as `GradeJoinSemilattice`
+                                       over version labels and adapter
+                                       edges
 
 Every declaration listed must report "does not depend on any axioms".
 -/
@@ -207,3 +209,14 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.Instances.SizeGrade.mul
 #print axioms LeanFX2.Graded.Instances.SizeGrade.le
 #print axioms LeanFX2.Graded.Instances.instGradeSemiringSizeGrade
+
+-- D5.4 Version (dim 21, bounded join-semilattice over adapter evidence)
+#print axioms LeanFX2.Graded.Instances.VersionFact
+#print axioms LeanFX2.Graded.Instances.VersionGrade
+#print axioms LeanFX2.Graded.Instances.VersionGrade.Member
+#print axioms LeanFX2.Graded.Instances.VersionGrade.subset
+#print axioms LeanFX2.Graded.Instances.VersionGrade.join
+#print axioms LeanFX2.Graded.Instances.VersionGrade.member_append_left
+#print axioms LeanFX2.Graded.Instances.VersionGrade.member_append_right
+#print axioms LeanFX2.Graded.Instances.VersionGrade.member_append_inv
+#print axioms LeanFX2.Graded.Instances.instGradeJoinSemilatticeVersionGrade

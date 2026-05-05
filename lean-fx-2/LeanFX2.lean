@@ -162,6 +162,7 @@ import LeanFX2.Graded.Instances.Complexity
 import LeanFX2.Graded.Instances.Space
 import LeanFX2.Graded.Instances.Overflow
 import LeanFX2.Graded.Instances.Size
+import LeanFX2.Graded.Instances.Version
 
 -- Layer 8 — Refine
 import LeanFX2.Refine.Ty
