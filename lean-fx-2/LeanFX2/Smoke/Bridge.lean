@@ -1,4 +1,5 @@
 import LeanFX2.Bridge
+import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/Bridge — typed↔raw roundtrip examples.
 
@@ -46,6 +47,164 @@ example {arg : Term ctx ty argRaw} :
 
 namespace LeanFX2.Smoke
 
--- TODO: bridge smoke examples — including the refl-bearing β-redex case
+/-- Typed path application must project to the exact raw path-app shape. -/
+theorem pathApp_toRaw_smoke {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint intervalRaw : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (bodyTerm :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw) :
+    (Term.pathApp
+      (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+      intervalTerm).toRaw =
+      RawTerm.pathApp (RawTerm.pathLam bodyRaw) intervalRaw := rfl
+
+/-- Typed path β must bridge to the raw `betaPathApp` target, not merely
+to some raw congruence fallback. -/
+theorem betaPathApp_toRawBridge_smoke {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+    {intervalRawSource intervalRawTarget : RawTerm scope}
+    {bodySource :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    {intervalSource : Term context Ty.interval intervalRawSource}
+    {intervalTarget : Term context Ty.interval intervalRawTarget}
+    (bodyStep : Step.par bodySource bodyTarget)
+    (intervalStep : Step.par intervalSource intervalTarget) :
+    RawStep.par
+      (RawTerm.pathApp (RawTerm.pathLam bodyRawSource) intervalRawSource)
+      (bodyRawTarget.subst0 intervalRawTarget) :=
+  Step.par.toRawBridge
+    (Step.par.betaPathApp
+      (leftEndpoint := leftEndpoint)
+      (rightEndpoint := rightEndpoint)
+      bodyStep intervalStep)
+
+/-- Deep typed path β must bridge to the raw deep path β rule. -/
+theorem betaPathAppDeep_toRawBridge_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRawSource intervalRawSource intervalRawTarget : RawTerm scope}
+    {bodyRawTarget : RawTerm (scope + 1)}
+    {pathSource :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRawSource}
+    {bodyTarget :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    {intervalSource : Term context Ty.interval intervalRawSource}
+    {intervalTarget : Term context Ty.interval intervalRawTarget}
+    (pathStep :
+      Step.par pathSource
+        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget))
+    (intervalStep : Step.par intervalSource intervalTarget) :
+    RawStep.par
+      (RawTerm.pathApp pathRawSource intervalRawSource)
+      (bodyRawTarget.subst0 intervalRawTarget) :=
+  Step.par.toRawBridge (Step.par.betaPathAppDeep pathStep intervalStep)
+
+/-- Typed Glue β must bridge to the raw `betaGlueElimIntro` target. -/
+theorem betaGlueElimIntro_toRawBridge_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+      RawTerm scope}
+    {baseSource : Term context baseType baseRawSource}
+    {baseTarget : Term context baseType baseRawTarget}
+    {partialSource : Term context baseType partialRawSource}
+    {partialTarget : Term context baseType partialRawTarget}
+    (baseStep : Step.par baseSource baseTarget)
+    (partialStep : Step.par partialSource partialTarget) :
+    RawStep.par
+      (RawTerm.glueElim
+        (RawTerm.glueIntro baseRawSource partialRawSource))
+      baseRawTarget :=
+  Step.par.toRawBridge
+    (Step.par.betaGlueElimIntro
+      (boundaryWitness := boundaryWitness) baseStep partialStep)
+
+/-- Deep typed Glue β must bridge to the raw deep Glue β rule. -/
+theorem betaGlueElimIntroDeep_toRawBridge_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRawSource baseRawTarget partialRawTarget :
+      RawTerm scope}
+    {gluedSource :
+      Term context (Ty.glue baseType boundaryWitness) gluedRawSource}
+    {baseTarget : Term context baseType baseRawTarget}
+    {partialTarget : Term context baseType partialRawTarget}
+    (gluedStep :
+      Step.par gluedSource
+        (Term.glueIntro baseType boundaryWitness baseTarget partialTarget)) :
+    RawStep.par (RawTerm.glueElim gluedRawSource) baseRawTarget :=
+  Step.par.toRawBridge
+    (Step.par.betaGlueElimIntroDeep gluedStep)
+
+/-- Typed transport congruence currently has only cong parity; this smoke
+locks that parity to the raw transport congruence rule. -/
+theorem transpCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {universeLevel : UniverseLevel}
+    {universeLevelLt : universeLevel.toNat + 1 ≤ level}
+    {sourceType targetType : Ty level scope}
+    {sourceTypeRaw targetTypeRaw : RawTerm scope}
+    {pathRawSource pathRawTarget sourceRawSource sourceRawTarget :
+      RawTerm scope}
+    {pathSource :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRawSource}
+    {pathTarget :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRawTarget}
+    {sourceTerm : Term context sourceType sourceRawSource}
+    {targetTerm : Term context sourceType sourceRawTarget}
+    (pathStep : Step.par pathSource pathTarget)
+    (sourceStep : Step.par sourceTerm targetTerm) :
+    RawStep.par
+      (RawTerm.transp pathRawSource sourceRawSource)
+      (RawTerm.transp pathRawTarget sourceRawTarget) :=
+  Step.par.toRawBridge
+    (Step.par.transp universeLevel universeLevelLt
+      sourceType targetType sourceTypeRaw targetTypeRaw pathStep sourceStep)
+
+/-- Typed hcomp congruence currently has only cong parity; this smoke
+locks that parity to the raw hcomp congruence rule. -/
+theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {sidesRawSource sidesRawTarget capRawSource capRawTarget :
+      RawTerm scope}
+    {sidesSource : Term context carrierType sidesRawSource}
+    {sidesTarget : Term context carrierType sidesRawTarget}
+    {capSource : Term context carrierType capRawSource}
+    {capTarget : Term context carrierType capRawTarget}
+    (sidesStep : Step.par sidesSource sidesTarget)
+    (capStep : Step.par capSource capTarget) :
+    RawStep.par
+      (RawTerm.hcomp sidesRawSource capRawSource)
+      (RawTerm.hcomp sidesRawTarget capRawTarget) :=
+  Step.par.toRawBridge (Step.par.hcomp sidesStep capStep)
+
+#assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
+#assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.betaGlueElimIntro_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.betaGlueElimIntroDeep_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.transpCong_toRawBridge_smoke
+#assert_no_axioms LeanFX2.Smoke.hcompCong_toRawBridge_smoke
 
 end LeanFX2.Smoke
