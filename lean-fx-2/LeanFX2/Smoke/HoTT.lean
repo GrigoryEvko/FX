@@ -6,6 +6,7 @@ import LeanFX2.HoTT.HIT.PropTrunc
 import LeanFX2.HoTT.HIT.Quot
 import LeanFX2.HoTT.HIT.S1
 import LeanFX2.HoTT.HIT.Suspension
+import LeanFX2.HoTT.HIT.Pushout
 import LeanFX2.Tools.DependencyAudit
 
 /-! # Smoke/HoTT — Identity types, J, transport, HIT examples.
@@ -146,6 +147,55 @@ theorem suspension_rec_north_smoke :
     Bool true true
     (fun _ => rfl)
 
+/-- A pushout glue witness relates the left and right images. -/
+theorem pushout_glue_smoke :
+    (HoTT.HIT.PushoutHIT
+      Unit Unit Unit
+      (fun sourceValue => sourceValue)
+      (fun sourceValue => sourceValue)
+      (fun _ _ => True)
+      (fun _ => True.intro)
+      (fun _ => True.intro)
+      (fun _ _ => True.intro)
+      (fun _ => True.intro)).relation
+      (HoTT.HIT.PushoutHIT.left ())
+      (HoTT.HIT.PushoutHIT.right ()) :=
+  HoTT.HIT.PushoutHIT.glue ()
+
+/-- Pushout recursion computes on left representatives. -/
+theorem pushout_rec_left_smoke :
+    (HoTT.HIT.PushoutHIT.rec
+      (sourceType := Unit)
+      (leftMap := fun sourceValue => sourceValue)
+      (rightMap := fun sourceValue => sourceValue)
+      (relation := fun _ _ => True)
+      (isRefl := fun _ => True.intro)
+      (isSymm := fun _ => True.intro)
+      (isTrans := fun _ _ => True.intro)
+      (glueRespects := fun _ => True.intro)
+      Bool
+      (fun _ => true)
+      (fun _ => true)
+      (fun {leftValue} {rightValue} _ => by
+        cases leftValue <;> cases rightValue <;> rfl)).run
+      (Sum.inl ()) =
+      true :=
+  HoTT.HIT.PushoutHIT.rec_left
+    (sourceType := Unit)
+    (leftMap := fun sourceValue => sourceValue)
+    (rightMap := fun sourceValue => sourceValue)
+    (relation := fun _ _ => True)
+    (isRefl := fun _ => True.intro)
+    (isSymm := fun _ => True.intro)
+    (isTrans := fun _ _ => True.intro)
+    (glueRespects := fun _ => True.intro)
+    Bool
+    (fun _ => true)
+    (fun _ => true)
+    (fun {leftValue} {rightValue} _ => by
+      cases leftValue <;> cases rightValue <;> rfl)
+    ()
+
 #assert_no_axioms LeanFX2.Smoke.hitSpec_discrete_noPath_smoke
 #assert_no_axioms LeanFX2.Smoke.hitSetoid_indiscrete_relation_smoke
 #assert_no_axioms LeanFX2.Smoke.hitRecursor_constant_run_smoke
@@ -157,5 +207,7 @@ theorem suspension_rec_north_smoke :
 #assert_no_axioms LeanFX2.Smoke.s1_rec_base_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_meridian_smoke
 #assert_no_axioms LeanFX2.Smoke.suspension_rec_north_smoke
+#assert_no_axioms LeanFX2.Smoke.pushout_glue_smoke
+#assert_no_axioms LeanFX2.Smoke.pushout_rec_left_smoke
 
 end LeanFX2.Smoke
