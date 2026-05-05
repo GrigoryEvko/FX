@@ -28,6 +28,7 @@ import LeanFX2.Term.Inversion
 import LeanFX2.Reduction.Step
 import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
+import LeanFX2.Reduction.ConvBridge
 import LeanFX2.Reduction.ConvCanonical
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawPar
@@ -44,9 +45,11 @@ import LeanFX2.Reduction.CumulBenton
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Reduction.CumulSubstCompat
+import LeanFX2.Reduction.CumulPattern23Bridge
 
 -- Layer 3 — Reduction-facing metatheory and typed/raw bridge
 import LeanFX2.Term.SubjectReduction
+import LeanFX2.Term.SubjectReductionUniverse
 import LeanFX2.Bridge
 
 -- Layer 4 — Confluence
@@ -74,6 +77,11 @@ import LeanFX2.HoTT.Transport
 import LeanFX2.HoTT.Equivalence
 import LeanFX2.HoTT.NTypes
 import LeanFX2.HoTT.Univalence
+import LeanFX2.HoTT.Funext
+import LeanFX2.HoTT.UnivalenceFull
+import LeanFX2.HoTT.FunextFull
+import LeanFX2.HoTT.UnivalenceTransport
+import LeanFX2.HoTT.Observational
 import LeanFX2.HoTT.HIT.Spec
 import LeanFX2.HoTT.HIT.Setoid
 import LeanFX2.HoTT.HIT.Eliminator
@@ -126,6 +134,7 @@ import LeanFX2.Graded.Ctx
 import LeanFX2.Graded.Rules
 import LeanFX2.Graded.Term
 import LeanFX2.Graded.Instances.Usage
+import LeanFX2.Graded.AtkeyAttack
 import LeanFX2.Graded.Instances.Effect
 import LeanFX2.Graded.Instances.Security
 import LeanFX2.Graded.Instances.Observability
@@ -169,6 +178,12 @@ import LeanFX2.Algo.Completeness
 import LeanFX2.Surface.Token
 import LeanFX2.Surface.Lex
 import LeanFX2.Surface.AST
+import LeanFX2.Surface.SchemaAudit
+import LeanFX2.Surface.StdNames
+import LeanFX2.Surface.KernelBridge
+import LeanFX2.Surface.KernelBridgeReduction
+import LeanFX2.Surface.KernelEnv
+import LeanFX2.Surface.KernelEnvCorrespondence
 import LeanFX2.Surface.Parse
 import LeanFX2.Surface.Print
 import LeanFX2.Surface.Roundtrip
