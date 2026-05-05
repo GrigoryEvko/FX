@@ -29,6 +29,10 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.JoinGradeVector.le_join_left
 #print axioms LeanFX2.Graded.JoinGradeVector.le_join_right
 
+#print axioms LeanFX2.Graded.SemiringDimensionEntry
+#print axioms LeanFX2.Graded.JoinDimensionEntry
+#print axioms LeanFX2.Graded.StructuralDimensionEntry
+
 #print axioms LeanFX2.Graded.usageDimension
 #print axioms LeanFX2.Graded.securityDimension
 #print axioms LeanFX2.Graded.trustDimension
@@ -49,12 +53,24 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Graded.overflowJoinDimension
 #print axioms LeanFX2.Graded.versionJoinDimension
 
+#print axioms LeanFX2.Graded.semiringDimensionEntries21
+#print axioms LeanFX2.Graded.joinDimensionEntries21
+#print axioms LeanFX2.Graded.structuralDimensionEntries21
 #print axioms LeanFX2.Graded.semiringDimensions21
+#print axioms LeanFX2.Graded.semiringDimensionSlots21
 #print axioms LeanFX2.Graded.joinDimensions21
+#print axioms LeanFX2.Graded.joinDimensionSlots21
 #print axioms LeanFX2.Graded.structuralDimensionSlots21
+#print axioms LeanFX2.Graded.semiringDimensionEntries21_length
+#print axioms LeanFX2.Graded.joinDimensionEntries21_length
+#print axioms LeanFX2.Graded.structuralDimensionEntries21_length
 #print axioms LeanFX2.Graded.semiringDimensions21_length
+#print axioms LeanFX2.Graded.semiringDimensionSlots21_length
 #print axioms LeanFX2.Graded.joinDimensions21_length
+#print axioms LeanFX2.Graded.joinDimensionSlots21_length
 #print axioms LeanFX2.Graded.structuralDimensionSlots21_length
+#print axioms LeanFX2.Graded.semiringDimensions21_slots_length_match
+#print axioms LeanFX2.Graded.joinDimensions21_slots_length_match
 
 #print axioms LeanFX2.Graded.FXGradeVector21
 #print axioms LeanFX2.Graded.FXGradeVector21.bottom

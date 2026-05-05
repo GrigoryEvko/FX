@@ -272,6 +272,28 @@ theorem JoinGradeVector.le_join_right :
       ⟨head.semilattice.le_join_right leftHead rightHead,
        JoinGradeVector.le_join_right leftTail rightTail⟩
 
+/-! ## Registry entries with algebra-kind witnesses -/
+
+/-- Semiring registry entry tying a dimension slot to its carrier and
+proving that the slot is classified as semiring-backed. -/
+structure SemiringDimensionEntry : Type 1 where
+  slot : DimensionSlot
+  dimension : Dimension
+  isSemiringSlot : slot.algebraKind = .semiring
+
+/-- Join-semilattice registry entry tying a dimension slot to its carrier
+and proving that the slot is classified as join-backed. -/
+structure JoinDimensionEntry : Type 1 where
+  slot : DimensionSlot
+  dimension : JoinDimension
+  isJoinSemilatticeSlot : slot.algebraKind = .joinSemilattice
+
+/-- Structural registry entry for dimensions tracked by kernel syntax or
+typing objects rather than by D5.4 grade payloads. -/
+structure StructuralDimensionEntry : Type where
+  slot : DimensionSlot
+  isStructuralSlot : slot.algebraKind = .structural
+
 /-! ## Concrete D5.4 registry -/
 
 def usageDimension : Dimension :=
@@ -328,49 +350,133 @@ def overflowJoinDimension : JoinDimension :=
 def versionJoinDimension : JoinDimension :=
   { carrier := VersionGrade, semilattice := inferInstance }
 
+/-- Semiring dimensions in specification order, paired with their slots
+and algebra-kind witnesses. -/
+def semiringDimensionEntries21 : List SemiringDimensionEntry :=
+  [ { slot := .usage
+    , dimension := usageDimension
+    , isSemiringSlot := rfl }
+  , { slot := .security
+    , dimension := securityDimension
+    , isSemiringSlot := rfl }
+  , { slot := .trust
+    , dimension := trustDimension
+    , isSemiringSlot := rfl }
+  , { slot := .representation
+    , dimension := representationDimension
+    , isSemiringSlot := rfl }
+  , { slot := .observability
+    , dimension := observabilityDimension
+    , isSemiringSlot := rfl }
+  , { slot := .complexity
+    , dimension := complexityDimension
+    , isSemiringSlot := rfl }
+  , { slot := .space
+    , dimension := spaceDimension
+    , isSemiringSlot := rfl }
+  , { slot := .fpOrder
+    , dimension := fpOrderDimension
+    , isSemiringSlot := rfl }
+  , { slot := .mutation
+    , dimension := mutationDimension
+    , isSemiringSlot := rfl }
+  , { slot := .reentrancy
+    , dimension := reentrancyDimension
+    , isSemiringSlot := rfl }
+  , { slot := .size
+    , dimension := sizeDimension
+    , isSemiringSlot := rfl }
+  ]
+
+/-- Join-semilattice dimensions in specification order, paired with
+their slots and algebra-kind witnesses. -/
+def joinDimensionEntries21 : List JoinDimensionEntry :=
+  [ { slot := .effect
+    , dimension := effectJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  , { slot := .lifetime
+    , dimension := lifetimeJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  , { slot := .provenance
+    , dimension := provenanceJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  , { slot := .clockDomain
+    , dimension := clockDomainJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  , { slot := .precision
+    , dimension := precisionJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  , { slot := .overflow
+    , dimension := overflowJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  , { slot := .version
+    , dimension := versionJoinDimension
+    , isJoinSemilatticeSlot := rfl }
+  ]
+
+/-- Structural dimensions that are registered but not D5.4 algebra
+carriers, paired with algebra-kind witnesses. -/
+def structuralDimensionEntries21 : List StructuralDimensionEntry :=
+  [ { slot := .typeKind
+    , isStructuralSlot := rfl }
+  , { slot := .refinement
+    , isStructuralSlot := rfl }
+  , { slot := .protocol
+    , isStructuralSlot := rfl }
+  ]
+
 /-- Semiring dimensions in specification order, excluding structural
 and join-only slots. -/
 def semiringDimensions21 : List Dimension :=
-  [ usageDimension
-  , securityDimension
-  , trustDimension
-  , representationDimension
-  , observabilityDimension
-  , complexityDimension
-  , spaceDimension
-  , fpOrderDimension
-  , mutationDimension
-  , reentrancyDimension
-  , sizeDimension
-  ]
+  semiringDimensionEntries21.map SemiringDimensionEntry.dimension
+
+/-- Semiring dimension slots in the same order as `semiringDimensions21`. -/
+def semiringDimensionSlots21 : List DimensionSlot :=
+  semiringDimensionEntries21.map SemiringDimensionEntry.slot
 
 /-- Join-semilattice dimensions in specification order. -/
 def joinDimensions21 : List JoinDimension :=
-  [ effectJoinDimension
-  , lifetimeJoinDimension
-  , provenanceJoinDimension
-  , clockDomainJoinDimension
-  , precisionJoinDimension
-  , overflowJoinDimension
-  , versionJoinDimension
-  ]
+  joinDimensionEntries21.map JoinDimensionEntry.dimension
+
+/-- Join-semilattice dimension slots in the same order as
+`joinDimensions21`. -/
+def joinDimensionSlots21 : List DimensionSlot :=
+  joinDimensionEntries21.map JoinDimensionEntry.slot
 
 /-- Structural dimensions that are registered but not D5.4 algebra
 carriers. -/
 def structuralDimensionSlots21 : List DimensionSlot :=
-  [ .typeKind
-  , .refinement
-  , .protocol
-  ]
+  structuralDimensionEntries21.map StructuralDimensionEntry.slot
 
 theorem semiringDimensions21_length :
     semiringDimensions21.length = 11 := rfl
 
+theorem semiringDimensionSlots21_length :
+    semiringDimensionSlots21.length = 11 := rfl
+
 theorem joinDimensions21_length :
     joinDimensions21.length = 7 := rfl
 
+theorem joinDimensionSlots21_length :
+    joinDimensionSlots21.length = 7 := rfl
+
 theorem structuralDimensionSlots21_length :
     structuralDimensionSlots21.length = 3 := rfl
+
+theorem structuralDimensionEntries21_length :
+    structuralDimensionEntries21.length = 3 := rfl
+
+theorem semiringDimensionEntries21_length :
+    semiringDimensionEntries21.length = 11 := rfl
+
+theorem joinDimensionEntries21_length :
+    joinDimensionEntries21.length = 7 := rfl
+
+theorem semiringDimensions21_slots_length_match :
+    semiringDimensions21.length = semiringDimensionSlots21.length := rfl
+
+theorem joinDimensions21_slots_length_match :
+    joinDimensions21.length = joinDimensionSlots21.length := rfl
 
 /-- D5.4 FX grade vector: semiring grades plus join-semilattice grades.
 Structural dimensions live in the kernel typing objects and are tracked

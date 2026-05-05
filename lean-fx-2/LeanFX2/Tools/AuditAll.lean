@@ -151,8 +151,22 @@ namespace LeanFX2.Tools
 
 -- Dimensions21 registry and aggregate carrier operations
 #assert_no_axioms LeanFX2.Graded.allDimensionSlots_length
+#assert_no_axioms LeanFX2.Graded.semiringDimensionEntries21
+#assert_no_axioms LeanFX2.Graded.joinDimensionEntries21
+#assert_no_axioms LeanFX2.Graded.structuralDimensionEntries21
+#assert_no_axioms LeanFX2.Graded.semiringDimensionSlots21
+#assert_no_axioms LeanFX2.Graded.joinDimensionSlots21
+#assert_no_axioms LeanFX2.Graded.structuralDimensionSlots21
+#assert_no_axioms LeanFX2.Graded.semiringDimensionEntries21_length
+#assert_no_axioms LeanFX2.Graded.joinDimensionEntries21_length
+#assert_no_axioms LeanFX2.Graded.structuralDimensionEntries21_length
 #assert_no_axioms LeanFX2.Graded.semiringDimensions21_length
+#assert_no_axioms LeanFX2.Graded.semiringDimensionSlots21_length
 #assert_no_axioms LeanFX2.Graded.joinDimensions21_length
+#assert_no_axioms LeanFX2.Graded.joinDimensionSlots21_length
+#assert_no_axioms LeanFX2.Graded.structuralDimensionSlots21_length
+#assert_no_axioms LeanFX2.Graded.semiringDimensions21_slots_length_match
+#assert_no_axioms LeanFX2.Graded.joinDimensions21_slots_length_match
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.bottom
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.le_refl
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.le_trans
