@@ -723,14 +723,29 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Renaming.identity
 #assert_no_axioms LeanFX2.FX1.Renaming.shift
 #assert_no_axioms LeanFX2.FX1.Renaming.lift
+#assert_no_axioms LeanFX2.FX1.Renaming.lift_ext
+#assert_no_axioms LeanFX2.FX1.Renaming.lift_identity_apply
 #assert_no_axioms LeanFX2.FX1.Expr.rename
 #assert_no_axioms LeanFX2.FX1.Expr.weaken
+#assert_no_axioms LeanFX2.FX1.Expr.pi_congr
+#assert_no_axioms LeanFX2.FX1.Expr.lam_congr
+#assert_no_axioms LeanFX2.FX1.Expr.app_congr
+#assert_no_axioms LeanFX2.FX1.Expr.rename_ext
+#assert_no_axioms LeanFX2.FX1.Expr.rename_identity
 #assert_no_axioms LeanFX2.FX1.Substitution
 #assert_no_axioms LeanFX2.FX1.Substitution.identity
 #assert_no_axioms LeanFX2.FX1.Substitution.lift
 #assert_no_axioms LeanFX2.FX1.Substitution.singleton
+#assert_no_axioms LeanFX2.FX1.Substitution.lift_ext
+#assert_no_axioms LeanFX2.FX1.Substitution.lift_identity_apply
+#assert_no_axioms LeanFX2.FX1.Substitution.singleton_newest
+#assert_no_axioms LeanFX2.FX1.Substitution.singleton_older
 #assert_no_axioms LeanFX2.FX1.Expr.subst
 #assert_no_axioms LeanFX2.FX1.Expr.subst0
+#assert_no_axioms LeanFX2.FX1.Expr.subst_ext
+#assert_no_axioms LeanFX2.FX1.Expr.subst_identity
+#assert_no_axioms LeanFX2.FX1.Expr.subst0_bvar_zero
+#assert_no_axioms LeanFX2.FX1.Expr.subst0_bvar_succ
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
