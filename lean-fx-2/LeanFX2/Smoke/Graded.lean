@@ -1,4 +1,5 @@
 import LeanFX2.Graded.Rules
+import LeanFX2.Graded.Term
 import LeanFX2.Graded.Instances.Usage
 import LeanFX2.Graded.Dimensions21
 import LeanFX2.Tools.DependencyAudit
@@ -199,6 +200,79 @@ theorem dimensions21_ifRule_mono_zeroProjection_smoke :
     rfl
     rfl
 
+/-- The shadow graded-term layer can build a closed unit value over the
+21-dimension semiring registry.  This forces the aggregate registry,
+graded context erasure, and the typed `Term.unit` constructor to agree. -/
+def dimensions21_gradedTerm_unit_smoke :
+    Graded.GradedTerm
+      (Graded.GradedCtx.empty
+        (mode := Mode.software) (level := 0)
+        (dimensions := Graded.semiringDimensions21))
+      Ty.unit
+      RawTerm.unit
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0) :=
+  Graded.GradedTerm.unit
+
+/-- The shadow graded-term layer can build a closed ignored-argument
+lambda, guarded by the corrected Lam compatibility predicate. -/
+def dimensions21_gradedTerm_lam_smoke :
+    Graded.GradedTerm
+      (Graded.GradedCtx.empty
+        (mode := Mode.software) (level := 0)
+        (dimensions := Graded.semiringDimensions21))
+      (Ty.arrow Ty.unit Ty.unit)
+      (RawTerm.lam RawTerm.unit)
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0) :=
+  Graded.GradedTerm.lam
+    (paramGrade := Graded.FXGradeVector21.bottom.semiringGrades)
+    (closureGrade := Graded.FXGradeVector21.one.semiringGrades)
+    (bodyAttr :=
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 1))
+    (lamAttr :=
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0))
+    Graded.GradedTerm.unit
+    (Graded.IsLamCompatible.allZero
+      Graded.FXGradeVector21.one.semiringGrades)
+
+/-- The shadow graded-term layer can apply a graded closed function to a
+graded closed argument, guarded by the App compatibility predicate. -/
+def dimensions21_gradedTerm_app_smoke :
+    Graded.GradedTerm
+      (Graded.GradedCtx.empty
+        (mode := Mode.software) (level := 0)
+        (dimensions := Graded.semiringDimensions21))
+      Ty.unit
+      (RawTerm.app (RawTerm.lam RawTerm.unit) RawTerm.unit)
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0) :=
+  Graded.GradedTerm.app
+    Graded.FXGradeVector21.bottom.semiringGrades
+    dimensions21_gradedTerm_lam_smoke
+    dimensions21_gradedTerm_unit_smoke
+    (Graded.IsAppCompatible.allZero
+      Graded.FXGradeVector21.bottom.semiringGrades)
+
+/-- Grade-only subsumption preserves the underlying typed term while
+checking the 21-dimension attribution preorder. -/
+def dimensions21_gradedTerm_subsume_smoke :
+    Graded.GradedTerm
+      (Graded.GradedCtx.empty
+        (mode := Mode.software) (level := 0)
+        (dimensions := Graded.semiringDimensions21))
+      Ty.unit
+      RawTerm.unit
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0) :=
+  Graded.GradedTerm.subsumeGrade
+    dimensions21_gradedTerm_unit_smoke
+    (Graded.IsSubsumptionCompatible.refl
+      (Graded.GradeAttribution.zero :
+        Graded.GradeAttribution Graded.semiringDimensions21 0))
+
 #assert_no_axioms LeanFX2.Smoke.dimensions21_lamRule_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_lamAvailable_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_zeroProjection_smoke
@@ -206,5 +280,9 @@ theorem dimensions21_ifRule_mono_zeroProjection_smoke :
 #assert_no_axioms LeanFX2.Smoke.dimensions21_letRule_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_letRule_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_ifRule_mono_zeroProjection_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_unit_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_lam_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_app_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_gradedTerm_subsume_smoke
 
 end LeanFX2.Smoke

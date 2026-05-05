@@ -19,6 +19,7 @@ import LeanFX2.Cubical.Path
 import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Cubical.Transport
 import LeanFX2.Graded.Rules
+import LeanFX2.Graded.Term
 import LeanFX2.Graded.AtkeyAttack
 import LeanFX2.Graded.Dimensions21
 
@@ -159,6 +160,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.IsAppCompatible.mono
 #assert_no_axioms LeanFX2.Graded.IsLetCompatible.mono
 #assert_no_axioms LeanFX2.Graded.IsIfCompatible.mono
+#assert_no_axioms LeanFX2.Graded.GradedCtx.toCtx
+#assert_no_axioms LeanFX2.Graded.GradedTerm
+#assert_no_axioms LeanFX2.Graded.GradedTerm.unit
+#assert_no_axioms LeanFX2.Graded.GradedTerm.var
+#assert_no_axioms LeanFX2.Graded.GradedTerm.lam
+#assert_no_axioms LeanFX2.Graded.GradedTerm.app
+#assert_no_axioms LeanFX2.Graded.GradedTerm.boolElim
+#assert_no_axioms LeanFX2.Graded.GradedTerm.subsumeGrade
 
 -- Dimensions21 registry and aggregate carrier operations
 #assert_no_axioms LeanFX2.Graded.allDimensionSlots_length

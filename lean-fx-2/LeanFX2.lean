@@ -146,6 +146,7 @@ import LeanFX2.Graded.Semiring
 import LeanFX2.Graded.GradeVector
 import LeanFX2.Graded.Ctx
 import LeanFX2.Graded.Rules
+import LeanFX2.Graded.Term
 import LeanFX2.Graded.Instances.Usage
 import LeanFX2.Graded.Instances.Effect
 import LeanFX2.Graded.Instances.Security
