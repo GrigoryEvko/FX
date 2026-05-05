@@ -54,6 +54,28 @@ theorem dimensions21_lamRule_zeroProjection_smoke :
   Graded.IsLamCompatible.allZero
     Graded.FXGradeVector21.one.semiringGrades
 
+/-- The D5.4 aggregate semiring projection feeds Lam divided-availability
+monotonicity. -/
+theorem dimensions21_lamAvailable_mono_zeroProjection_smoke :
+    Graded.IsLamCompatibleWithAvailable
+      (paramGrade := Graded.FXGradeVector21.bottom.semiringGrades)
+      (availableAttr :=
+        (Graded.GradeAttribution.zero :
+          Graded.GradeAttribution Graded.semiringDimensions21 0))
+      (bodyAttr :=
+        (Graded.GradeAttribution.zero :
+          Graded.GradeAttribution Graded.semiringDimensions21 1)) :=
+  Graded.IsLamCompatibleWithAvailable.available_mono
+    Graded.FXGradeVector21.bottom.semiringGrades
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 0)
+    (Graded.GradeAttribution.zero :
+      Graded.GradeAttribution Graded.semiringDimensions21 1)
+    (Graded.GradeAttribution.le_refl Graded.GradeAttribution.zero)
+    Graded.IsLamCompatibleWithAvailable.allZeroAtZero
+
 /-- The D5.4 aggregate semiring projection feeds the App rule. -/
 theorem dimensions21_appRule_zeroProjection_smoke :
     Graded.IsAppCompatible
@@ -178,6 +200,7 @@ theorem dimensions21_ifRule_mono_zeroProjection_smoke :
     rfl
 
 #assert_no_axioms LeanFX2.Smoke.dimensions21_lamRule_zeroProjection_smoke
+#assert_no_axioms LeanFX2.Smoke.dimensions21_lamAvailable_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_appRule_mono_zeroProjection_smoke
 #assert_no_axioms LeanFX2.Smoke.dimensions21_letRule_zeroProjection_smoke
