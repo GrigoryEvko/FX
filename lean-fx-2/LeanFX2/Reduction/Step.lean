@@ -660,6 +660,167 @@ inductive Step :
               baseCase
               (Term.refl carrier endpoint))
            baseCase
+  /-- Step inside `modIntro`'s payload. -/
+  | modIntroInner {mode level scope} {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context innerType innerRawSource}
+      {innerTarget : Term context innerType innerRawTarget} :
+      Step innerSource innerTarget →
+      Step (Term.modIntro innerSource) (Term.modIntro innerTarget)
+  /-- Step inside `modElim`'s payload. -/
+  | modElimInner {mode level scope} {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context innerType innerRawSource}
+      {innerTarget : Term context innerType innerRawTarget} :
+      Step innerSource innerTarget →
+      Step (Term.modElim innerSource) (Term.modElim innerTarget)
+  /-- Step inside `subsume`'s payload. -/
+  | subsumeInner {mode level scope} {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerRawSource innerRawTarget : RawTerm scope}
+      {innerSource : Term context innerType innerRawSource}
+      {innerTarget : Term context innerType innerRawTarget} :
+      Step innerSource innerTarget →
+      Step (Term.subsume innerSource) (Term.subsume innerTarget)
+  /-- Step inside a cubical path lambda body. -/
+  | pathLamBody {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
+      {bodySource :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawSource}
+      {bodyTarget :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget} :
+      Step bodySource bodyTarget →
+      Step (Term.pathLam carrierType leftEndpoint rightEndpoint bodySource)
+           (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget)
+  /-- Step inside the path position of cubical path application. -/
+  | pathAppPath {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : RawTerm scope}
+      {pathRawSource pathRawTarget intervalRaw : RawTerm scope}
+      {pathSource :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawSource}
+      {pathTarget :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRawTarget}
+      {intervalTerm : Term context Ty.interval intervalRaw} :
+      Step pathSource pathTarget →
+      Step (Term.pathApp pathSource intervalTerm)
+           (Term.pathApp pathTarget intervalTerm)
+  /-- Step inside the interval argument of cubical path application. -/
+  | pathAppInterval {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint pathRaw : RawTerm scope}
+      {intervalRawSource intervalRawTarget : RawTerm scope}
+      {pathTerm :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathRaw}
+      {intervalSource : Term context Ty.interval intervalRawSource}
+      {intervalTarget : Term context Ty.interval intervalRawTarget} :
+      Step intervalSource intervalTarget →
+      Step (Term.pathApp pathTerm intervalSource)
+           (Term.pathApp pathTerm intervalTarget)
+  /-- Step inside `glueIntro`'s base value. -/
+  | glueIntroBase {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRawSource baseRawTarget partialRaw : RawTerm scope}
+      {baseSource : Term context baseType baseRawSource}
+      {baseTarget : Term context baseType baseRawTarget}
+      {partialValue : Term context baseType partialRaw} :
+      Step baseSource baseTarget →
+      Step (Term.glueIntro baseType boundaryWitness baseSource partialValue)
+           (Term.glueIntro baseType boundaryWitness baseTarget partialValue)
+  /-- Step inside `glueIntro`'s partial value. -/
+  | glueIntroPartial {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {baseRaw partialRawSource partialRawTarget : RawTerm scope}
+      {baseValue : Term context baseType baseRaw}
+      {partialSource : Term context baseType partialRawSource}
+      {partialTarget : Term context baseType partialRawTarget} :
+      Step partialSource partialTarget →
+      Step (Term.glueIntro baseType boundaryWitness baseValue partialSource)
+           (Term.glueIntro baseType boundaryWitness baseValue partialTarget)
+  /-- Step inside `glueElim`'s glued value. -/
+  | glueElimValue {mode level scope} {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {boundaryWitness : RawTerm scope}
+      {gluedRawSource gluedRawTarget : RawTerm scope}
+      {gluedSource :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawSource}
+      {gluedTarget :
+        Term context (Ty.glue baseType boundaryWitness) gluedRawTarget} :
+      Step gluedSource gluedTarget →
+      Step (Term.glueElim gluedSource) (Term.glueElim gluedTarget)
+  /-- Step inside cubical transport's type path. -/
+  | transpPath {mode level scope} {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : RawTerm scope)
+      {pathRawSource pathRawTarget sourceRaw : RawTerm scope}
+      {typePathSource :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRawSource}
+      {typePathTarget :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRawTarget}
+      {sourceValue : Term context sourceType sourceRaw} :
+      Step typePathSource typePathTarget →
+      Step
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSource sourceValue)
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathTarget sourceValue)
+  /-- Step inside cubical transport's source value. -/
+  | transpSource {mode level scope} {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : RawTerm scope)
+      {pathRaw sourceRawSource sourceRawTarget : RawTerm scope}
+      {typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathRaw}
+      {sourceValueSource : Term context sourceType sourceRawSource}
+      {sourceValueTarget : Term context sourceType sourceRawTarget} :
+      Step sourceValueSource sourceValueTarget →
+      Step
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePath sourceValueSource)
+        (Term.transp universeLevel universeLevelLt sourceType targetType
+          sourceTypeRaw targetTypeRaw typePath sourceValueTarget)
+  /-- Step inside homogeneous composition's side system. -/
+  | hcompSides {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {sidesRawSource sidesRawTarget capRaw : RawTerm scope}
+      {sidesSource : Term context carrierType sidesRawSource}
+      {sidesTarget : Term context carrierType sidesRawTarget}
+      {capValue : Term context carrierType capRaw} :
+      Step sidesSource sidesTarget →
+      Step (Term.hcomp sidesSource capValue)
+           (Term.hcomp sidesTarget capValue)
+  /-- Step inside homogeneous composition's cap. -/
+  | hcompCap {mode level scope} {context : Ctx mode level scope}
+      {carrierType : Ty level scope}
+      {sidesRaw capRawSource capRawTarget : RawTerm scope}
+      {sidesValue : Term context carrierType sidesRaw}
+      {capSource : Term context carrierType capRawSource}
+      {capTarget : Term context carrierType capRawTarget} :
+      Step capSource capTarget →
+      Step (Term.hcomp sidesValue capSource)
+           (Term.hcomp sidesValue capTarget)
   /-- Cong rule for `Term.cumulUp`: a Step inside the lower payload
   lifts to a Step on the wrapping `cumulUp`.  The lower payload sits
   at its own context `ctxLow` and scope `scopeLow` (decoupled per

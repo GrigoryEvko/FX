@@ -188,6 +188,38 @@ theorem Step.toConvCumul
       exact ConvCumul.idJCong (ConvCumul.refl baseCase) ih
   | iotaIdJRefl carrier endpoint baseCase =>
       exact ConvCumul.iotaIdJReflCumul carrier endpoint baseCase
+  | modIntroInner _ ih =>
+      exact ConvCumul.modIntroCong ih
+  | modElimInner _ ih =>
+      exact ConvCumul.modElimCong ih
+  | subsumeInner _ ih =>
+      exact ConvCumul.subsumeCong ih
+  | pathLamBody _ ih =>
+      exact ConvCumul.pathLamCong ih
+  | pathAppPath _ ih =>
+      exact ConvCumul.pathAppCong ih (ConvCumul.refl _)
+  | pathAppInterval _ ih =>
+      exact ConvCumul.pathAppCong (ConvCumul.refl _) ih
+  | glueIntroBase _ ih =>
+      exact ConvCumul.glueIntroCong ih (ConvCumul.refl _)
+  | glueIntroPartial _ ih =>
+      exact ConvCumul.glueIntroCong (ConvCumul.refl _) ih
+  | glueElimValue _ ih =>
+      exact ConvCumul.glueElimCong ih
+  | transpPath universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw _ ih =>
+      exact ConvCumul.transpCong universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        ih (ConvCumul.refl _)
+  | transpSource universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw _ ih =>
+      exact ConvCumul.transpCong universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        (ConvCumul.refl _) ih
+  | hcompSides _ ih =>
+      exact ConvCumul.hcompCong ih (ConvCumul.refl _)
+  | hcompCap _ ih =>
+      exact ConvCumul.hcompCong (ConvCumul.refl _) ih
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ ih =>
       exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone

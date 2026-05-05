@@ -1380,6 +1380,38 @@ theorem Step.toPar
       exact Step.par.idJ (Step.par.refl baseCase) singleStepIH
   | iotaIdJRefl carrier endpoint baseCase =>
       exact Step.par.iotaIdJRefl carrier endpoint (Step.par.refl baseCase)
+  | modIntroInner singleStep singleStepIH =>
+      exact Step.par.modIntro singleStepIH
+  | modElimInner singleStep singleStepIH =>
+      exact Step.par.modElim singleStepIH
+  | subsumeInner singleStep singleStepIH =>
+      exact Step.par.subsume singleStepIH
+  | pathLamBody singleStep singleStepIH =>
+      exact Step.par.pathLamCong singleStepIH
+  | pathAppPath singleStep singleStepIH =>
+      exact Step.par.pathAppCong singleStepIH (Step.par.refl _)
+  | pathAppInterval singleStep singleStepIH =>
+      exact Step.par.pathAppCong (Step.par.refl _) singleStepIH
+  | glueIntroBase singleStep singleStepIH =>
+      exact Step.par.glueIntroCong singleStepIH (Step.par.refl _)
+  | glueIntroPartial singleStep singleStepIH =>
+      exact Step.par.glueIntroCong (Step.par.refl _) singleStepIH
+  | glueElimValue singleStep singleStepIH =>
+      exact Step.par.glueElimCong singleStepIH
+  | transpPath universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
+      exact Step.par.transpCong universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        singleStepIH (Step.par.refl _)
+  | transpSource universeLevel universeLevelLt sourceType targetType
+      sourceTypeRaw targetTypeRaw singleStep singleStepIH =>
+      exact Step.par.transpCong universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        (Step.par.refl _) singleStepIH
+  | hcompSides singleStep singleStepIH =>
+      exact Step.par.hcompCong singleStepIH (Step.par.refl _)
+  | hcompCap singleStep singleStepIH =>
+      exact Step.par.hcompCong (Step.par.refl _) singleStepIH
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ singleStepIH =>
       exact Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone
