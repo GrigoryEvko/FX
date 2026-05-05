@@ -1,6 +1,7 @@
 import LeanFX2.Bridge
 import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathIdInverse
+import LeanFX2.Bridge.PathIdMeta
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Cubical.Transport
 import LeanFX2.Translation.CubicalToObservational
@@ -433,6 +434,15 @@ theorem translationInverseTy_fullStackWiring_smoke
       Ty.unit leftEndpoint rightEndpoint
       Translation.cubicalObservationalRoundTripTy_unit)
 
+/-- Set-level Path/Id equivalence computes as identity in both directions. -/
+theorem pathIdEquivMeta_fullStackWiring_smoke :
+    And
+      ((Bridge.pathIdEquivMeta (true : Bool) true).toFun (Path.refl true) =
+        (rfl : true = true))
+      ((Bridge.pathIdEquivMeta (true : Bool) true).invFun
+        (rfl : true = true) = Path.refl true) :=
+  And.intro rfl rfl
+
 #assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
@@ -447,5 +457,6 @@ theorem translationInverseTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.cubicalToObservationalTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.observationalToCubicalTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.translationInverseTy_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.pathIdEquivMeta_fullStackWiring_smoke
 
 end LeanFX2.Smoke

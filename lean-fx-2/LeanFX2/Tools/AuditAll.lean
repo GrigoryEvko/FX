@@ -17,6 +17,7 @@ import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Bridge.PathToId
 import LeanFX2.Bridge.IdToPath
 import LeanFX2.Bridge.PathIdInverse
+import LeanFX2.Bridge.PathIdMeta
 import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Translation.CubicalToObservational
@@ -150,6 +151,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Bridge.reflId_roundTrip_onRefl
 #assert_no_axioms LeanFX2.Bridge.constantPath_roundTrip_toRaw
 #assert_no_axioms LeanFX2.Bridge.reflId_roundTrip_toRaw
+#assert_no_axioms LeanFX2.Bridge.pathToIdMeta
+#assert_no_axioms LeanFX2.Bridge.idToPathMeta
+#assert_no_axioms LeanFX2.Bridge.idToPathMeta_pathToIdMeta
+#assert_no_axioms LeanFX2.Bridge.pathToIdMeta_idToPathMeta
+#assert_no_axioms LeanFX2.Bridge.pathIdEquivMeta
+#assert_no_axioms LeanFX2.Bridge.pathIdEquivMeta_toFun
+#assert_no_axioms LeanFX2.Bridge.pathIdEquivMeta_invFun
 #assert_no_axioms LeanFX2.Bridge.idEqTypeRefl
 #assert_no_axioms LeanFX2.Bridge.idEqTypeHet
 #assert_no_axioms LeanFX2.Bridge.constantTypePathToEquivRefl

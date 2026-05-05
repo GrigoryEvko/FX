@@ -92,6 +92,7 @@ import LeanFX2.Bridge
 import LeanFX2.Bridge.PathToId
 import LeanFX2.Bridge.IdToPath
 import LeanFX2.Bridge.PathIdInverse
+import LeanFX2.Bridge.PathIdMeta
 import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Bridge.BoxObservational
