@@ -9,3 +9,12 @@ import LeanFX2.Graded.AtkeyAttack
 #print axioms LeanFX2.Graded.Instances.UsageRequiredForDoubleApply
 #print axioms LeanFX2.Graded.Instances.UsageRequiredForDoubleApply.eqOmega
 #print axioms LeanFX2.Graded.Instances.AtkeyAttack.rejected_even_without_division
+#print axioms LeanFX2.Graded.Instances.AttackExpr
+#print axioms LeanFX2.Graded.Instances.AttackExpr.capturedFunctionUsage
+#print axioms LeanFX2.Graded.Instances.AttackExpr.argumentUsage
+#print axioms LeanFX2.Graded.Instances.HigherOrderAttackBody
+#print axioms LeanFX2.Graded.Instances.HigherOrderAttackBody.capturedFunctionUsage_eqOmega
+#print axioms LeanFX2.Graded.Instances.HigherOrderAttackBody.argumentUsage_eqOne
+#print axioms LeanFX2.Graded.Instances.CorrectedLamAvailableCapturedFunctionGrade
+#print axioms LeanFX2.Graded.Instances.CorrectedLamAvailableCapturedFunctionGrade.eqZero
+#print axioms LeanFX2.Graded.Instances.HigherOrderAttackBody.rejectedByCorrectedLam

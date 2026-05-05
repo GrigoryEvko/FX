@@ -52,20 +52,17 @@ grade check.
 * `OuterLamGrade` = omega (the captured-multiplicity-omega closure)
 * `InnerVarGrade` = one (the linearly-typed captured variable)
 * Computation: `divides one omega = zero`
-* The "attack rejection theorem": grade required to use `f`
-  inside the closure is one, but available is zero.
+* A tiny syntax tree for the actual inner attack body `f (f x)`
+* Recursive grade accounting proving the body requires two uses of
+  the captured linear function, hence grade omega
+* The rejection theorem: the corrected Lam rule makes the captured
+  function available at zero inside an omega closure, while the
+  actual body requires omega.
 
-## Why we don't model the actual term
-
-Modelling the syntactic attack term requires either:
-1. The full FX surface AST + grade-checker (too big for v1.0)
-2. A toy lambda calculus with grades (also non-trivial)
-
-Both are deferred to v1.1+ in favor of focusing on the
-**arithmetic core** of the attack: the `1/omega = 0` entry.
-The arithmetic IS the proof — every grade-checker that uses
-this division will reject the attack regardless of its
-syntactic shape.
+This is intentionally not the full FX surface elaborator.  It is the
+smallest syntactic model that names the historical attack term and
+checks the precise grade computation that any full elaborator must
+reproduce.
 
 ## Dependencies
 
@@ -156,12 +153,96 @@ theorem AtkeyAttack.rejected_even_without_division :
   -- UsageRequiredForDoubleApply = omega; le omega one = False by def
   exact absurdLe.elim
 
+/-! ## Minimal syntax for the historical attack body
+
+The full FX surface term is:
+
+```text
+fn higher_order(f) = fn(x) => f(f(x))
+```
+
+For the Wood/Atkey check, the only relevant inner-body structure is
+the syntax tree `f (f x)`: the captured function `f` appears twice,
+and the newly-bound argument `x` appears once.  The following
+three-constructor syntax records exactly that fragment and computes
+usage grades structurally.
+-/
+
+/-- Minimal expression syntax for the inner body of the Atkey attack.
+It distinguishes only the captured function, the lambda argument, and
+application. -/
+inductive AttackExpr : Type
+  | capturedFunction : AttackExpr
+  | argumentValue : AttackExpr
+  | applyExpr (functionExpr argumentExpr : AttackExpr) : AttackExpr
+  deriving DecidableEq, Repr
+
+namespace AttackExpr
+
+/-- Usage of the captured outer function in an attack expression. -/
+def capturedFunctionUsage : AttackExpr → UsageGrade
+  | .capturedFunction => UsageGrade.one
+  | .argumentValue => UsageGrade.zero
+  | .applyExpr functionExpr argumentExpr =>
+      UsageGrade.add
+        (capturedFunctionUsage functionExpr)
+        (capturedFunctionUsage argumentExpr)
+
+/-- Usage of the inner lambda argument in an attack expression. -/
+def argumentUsage : AttackExpr → UsageGrade
+  | .capturedFunction => UsageGrade.zero
+  | .argumentValue => UsageGrade.one
+  | .applyExpr functionExpr argumentExpr =>
+      UsageGrade.add
+        (argumentUsage functionExpr)
+        (argumentUsage argumentExpr)
+
+end AttackExpr
+
+/-- The actual Atkey 2018 inner body: `f (f x)`. -/
+def HigherOrderAttackBody : AttackExpr :=
+  AttackExpr.applyExpr
+    AttackExpr.capturedFunction
+    (AttackExpr.applyExpr AttackExpr.capturedFunction AttackExpr.argumentValue)
+
+/-- The actual body uses the captured function twice, so its captured
+function usage is omega. -/
+theorem HigherOrderAttackBody.capturedFunctionUsage_eqOmega :
+    AttackExpr.capturedFunctionUsage HigherOrderAttackBody = UsageGrade.omega := rfl
+
+/-- The actual body uses the inner argument once. -/
+theorem HigherOrderAttackBody.argumentUsage_eqOne :
+    AttackExpr.argumentUsage HigherOrderAttackBody = UsageGrade.one := rfl
+
+/-- Corrected Wood/Atkey availability for a linear captured function
+inside an omega-multiplicity closure: `one / omega = zero`. -/
+def CorrectedLamAvailableCapturedFunctionGrade : UsageGrade :=
+  UsageGrade.divides InnerVarGrade OuterLamGrade
+
+/-- The corrected Lam rule makes the captured linear function
+unavailable inside the omega closure. -/
+theorem CorrectedLamAvailableCapturedFunctionGrade.eqZero :
+    CorrectedLamAvailableCapturedFunctionGrade = UsageGrade.zero := rfl
+
+/-- Syntactic rejection of the historical Atkey body.
+
+The recursive grade accounting for `f (f x)` requires omega usage of
+the captured function, but the corrected Lam rule provides only zero
+usage for a linear variable captured by an omega closure. -/
+theorem HigherOrderAttackBody.rejectedByCorrectedLam :
+    ¬ UsageGrade.le
+        (AttackExpr.capturedFunctionUsage HigherOrderAttackBody)
+        CorrectedLamAvailableCapturedFunctionGrade := by
+  intro impossibleLe
+  exact impossibleLe.elim
+
 /-! ## Concrete witnesses
 
 The arithmetic above translates the attack rejection from
-"complicated grade-checker bookkeeping" to "two finite-table
-computations".  The Wood/Atkey 2022 correction is just the
-`divides` table; without it (Atkey 2018), the attack
-type-checks. -/
+"complicated grade-checker bookkeeping" to a syntactic finite-table
+computation over `f (f x)`.  The Wood/Atkey 2022 correction is the
+`divides` table plus the recursive usage accounting above; without
+context division, the captured function would be checked at grade one
+and the omega-closure capture bug reappears. -/
 
 end LeanFX2.Graded.Instances
