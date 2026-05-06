@@ -250,6 +250,8 @@ block at the top of `TokenSchema.lean`, `TokenInvariants.lean`,
 #print axioms Keyword.toToken_asKeyword
 #print axioms KeywordKind.fromCharsExact
 #print axioms Keyword.fromCharsExact_toLexemeChars
+#print axioms Keyword.toLexemeChars_injective
+#print axioms Keyword.fromCharsExact_injective
 #print axioms KeywordKind.toLexemeChars
 #print axioms KeywordKind.toLexeme
 #print axioms KeywordKind.category

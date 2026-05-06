@@ -25,8 +25,20 @@ operator/bracket/category enums.
 
 Already-shipped (closed via existing theorems):
 
-* C02 + C03: `Keyword.toToken_asKeyword` (TokenSchema:449) +
-  `Keyword.fromCharsExact_toLexemeChars` (TokenSchema:562).
+* C02 (full bijection — both directions):
+  - Surjective:
+    `Keyword.fromCharsExact_toLexemeChars` (TokenSchema:562) —
+    every keyword's canonical char list round-trips back to
+    the same `KeywordKind` via `fromCharsExact`.
+  - Injective:
+    `Keyword.toLexemeChars_injective` (TokenSchema:577) +
+    `Keyword.fromCharsExact_injective` (TokenSchema:600) —
+    distinct keyword kinds yield distinct char lists.  Proof
+    piggybacks on the surjective companion to avoid the
+    92 × 92 = 8464-case explosion.
+  Together these establish `KeywordKind ≃ image(toLexemeChars)`.
+* C03: `Keyword.toToken_asKeyword` (TokenSchema:449) — round-trip
+  between `KeywordKind` and `Token` via `toToken` / `asKeyword`.
 * C08: `BracketKind.opener_asBracketOpener` (GrammarToken:465)
   + `BracketKind.closer_asBracketCloser` (GrammarToken:471).
 

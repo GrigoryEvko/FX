@@ -563,6 +563,45 @@ theorem Keyword.fromCharsExact_toLexemeChars (kind : KeywordKind) :
     KeywordKind.fromCharsExact kind.toLexemeChars = some kind := by
   cases kind <;> rfl
 
+/-- **Injectivity of `toLexemeChars`** — distinct keyword kinds
+have distinct canonical char-list spellings.  Combined with
+`Keyword.fromCharsExact_toLexemeChars` (the surjective companion),
+this establishes the full bijection between `KeywordKind` and the
+set of canonical keyword lexeme char-lists.
+
+Proof strategy: piggyback on `fromCharsExact_toLexemeChars`.  If
+`firstKind.toLexemeChars = secondKind.toLexemeChars`, then applying
+`KeywordKind.fromCharsExact` to both sides yields
+`some firstKind = some secondKind` (each side reduces by the
+surjective lemma), and `Option.some.inj` finishes.
+
+Avoids the 92 × 92 = 8464-case explosion that a direct
+`cases firstKind <;> cases secondKind` would entail. -/
+theorem Keyword.toLexemeChars_injective
+    (firstKind secondKind : KeywordKind)
+    (charsAgree : firstKind.toLexemeChars = secondKind.toLexemeChars) :
+    firstKind = secondKind := by
+  have firstReturn := Keyword.fromCharsExact_toLexemeChars firstKind
+  have secondReturn := Keyword.fromCharsExact_toLexemeChars secondKind
+  have rewrittenFirst :
+      KeywordKind.fromCharsExact secondKind.toLexemeChars = some firstKind := by
+    rw [← charsAgree]; exact firstReturn
+  have someAgree : some firstKind = some secondKind :=
+    rewrittenFirst.symm.trans secondReturn
+  exact Option.some.inj someAgree
+
+/-- **Bijection corollary** — `KeywordKind.fromCharsExact` is the
+inverse of `KeywordKind.toLexemeChars` on the image of the latter.
+This is the C02 closure: combined with
+`Keyword.fromCharsExact_toLexemeChars` (surjective half) and
+`Keyword.toLexemeChars_injective` (injective half), the keyword-
+lexeme correspondence is fully bijective. -/
+theorem Keyword.fromCharsExact_injective
+    (firstKind secondKind : KeywordKind)
+    (lexemeAgree : firstKind.toLexemeChars = secondKind.toLexemeChars) :
+    firstKind = secondKind :=
+  Keyword.toLexemeChars_injective firstKind secondKind lexemeAgree
+
 /-- Semantic categorization of keywords per `fx_design.md` §2.3.
 Used by tooling (syntax highlighting, doc generation, error
 hint heuristics).  Not load-bearing for the parser. -/
