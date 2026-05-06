@@ -3,6 +3,7 @@ import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.Compat
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Term.ToRaw
 import LeanFX2.Term.Pointwise
@@ -128,6 +129,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathAppDeep
+#print axioms LeanFX2.RawStep.par.rename_compatible
+#print axioms LeanFX2.RawStep.par.subst_compatible
+#print axioms LeanFX2.RawStep.par.subst_compatible_same
 #print axioms LeanFX2.Step.par.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaModElimIntroDeep
 #print axioms LeanFX2.Step.par.glueIntro
