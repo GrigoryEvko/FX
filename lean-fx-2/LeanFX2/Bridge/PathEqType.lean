@@ -1,4 +1,3 @@
-import LeanFX2.Bridge
 import LeanFX2.Cubical.Path
 import LeanFX2.Term.ToRaw
 

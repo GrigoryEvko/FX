@@ -1,4 +1,3 @@
-import LeanFX2.Bridge
 import LeanFX2.HoTT.Univalence
 
 /-! # Bridge/IdEqType
