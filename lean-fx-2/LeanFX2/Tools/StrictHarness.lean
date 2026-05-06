@@ -2191,6 +2191,80 @@ elab "#assert_no_postulate_hypothesis " namespaceSyntax:ident : command => do
       s!"{violations.size} of {targetNames.size} decls violate discipline"
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
 
+/-! ## Headline refl-fragment detector
+
+This detector tracks the specific anti-pattern where a headline principle name
+(`Univalence`, `funext`, and heterogeneous variants) is backed by one of the
+manufactured raw-alignment reduction rules.  Current debt is budgeted so the
+build stays green, but new headline refl-fragment claims cannot accumulate
+silently.
+-/
+
+/-- Names of manufactured Step rules used to turn canonical/raw-aligned
+witnesses into headline HoTT principles. -/
+def isManufacturedWitnessStepRule (dependencyName : Name) : Bool :=
+  dependencyName == `LeanFX2.Step.eqType ||
+    dependencyName == `LeanFX2.Step.eqArrow ||
+    dependencyName == `LeanFX2.Step.eqTypeHet ||
+    dependencyName == `LeanFX2.Step.eqArrowHet ||
+    dependencyName == `LeanFX2.Step.par.eqType ||
+    dependencyName == `LeanFX2.Step.par.eqArrow ||
+    dependencyName == `LeanFX2.Step.par.eqTypeHet ||
+    dependencyName == `LeanFX2.Step.par.eqArrowHet
+
+/-- Headline theorem names that must not pretend a manufactured/rfl-fragment
+rule is the full mathematical principle without being counted by the harness. -/
+def isHeadlinePrincipleClaimName (declarationName : Name) : Bool :=
+  let lastSegment := Name.lastSegmentString declarationName
+  lastSegment == "Univalence" ||
+    lastSegment == "UnivalenceHet" ||
+    lastSegment == "funext" ||
+    lastSegment == "FunextHet"
+
+/-- Manufactured Step dependencies in one declaration's transitive closure. -/
+def collectManufacturedWitnessStepDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames := collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun manufacturedDependencies dependencyName =>
+      if isManufacturedWitnessStepRule dependencyName then
+        manufacturedDependencies.push dependencyName
+      else
+        manufacturedDependencies)
+
+/-- Build-failing budget gate for headline principles backed by manufactured
+Step rules.  The budget counts declarations, not individual dependencies. -/
+elab "#assert_headline_refl_fragment_budget " namespaceSyntax:ident
+    claimBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let claimBudget := claimBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array (Name × Array Name) := #[]
+  for targetName in targetNames do
+    if isHeadlinePrincipleClaimName targetName then
+      let manufacturedDependencies :=
+        collectManufacturedWitnessStepDependencies environment targetName
+      if !manufacturedDependencies.isEmpty then
+        violations := violations.push (targetName, manufacturedDependencies)
+  if violations.size <= claimBudget then
+    let successMessage :=
+      s!"headline refl-fragment budget ok: {namespaceName} " ++
+      s!"({violations.size}/{claimBudget} headline claims depend on " ++
+      "manufactured Step rules)"
+    logInfo successMessage
+  else
+    let perDeclLines := violations.toList.map fun (declName, dependencies) =>
+      let renderedDependencies :=
+        String.intercalate ", " (dependencies.toList.map toString)
+      s!"  - {declName}: manufactured Step dependencies [{renderedDependencies}]"
+    let header :=
+      s!"headline refl-fragment budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} claims exceed budget {claimBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
 /-! ## Staged FX1 axiom leak detector
 
 FX1Bridge modules may use object-level `Declaration.axiomDecl` entries while a

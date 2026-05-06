@@ -1525,6 +1525,11 @@ namespace LeanFX2.Tools
 -- semantically identical to adding an axiom).
 #assert_no_postulate_hypothesis LeanFX2
 
+-- Headline refl-fragment budget.  The current `Univalence` / `funext`
+-- headline family still depends on manufactured raw-alignment Step rules.
+-- This pins that debt to four claims and rejects future growth.
+#assert_headline_refl_fragment_budget LeanFX2 4
+
 -- Staged FX1 axiom leak detector.  Object-level `axiomDecl` placeholders are
 -- allowed inside FX1 itself and the explicit FX1Bridge staging boundary only;
 -- regular rich/root production declarations must not depend on them.
