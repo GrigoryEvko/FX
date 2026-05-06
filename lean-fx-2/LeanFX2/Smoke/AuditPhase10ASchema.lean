@@ -253,6 +253,7 @@ block at the top of `TokenSchema.lean`, `TokenInvariants.lean`,
 #print axioms Keyword.toLexemeChars_injective
 #print axioms Keyword.fromCharsExact_injective
 #print axioms KeywordKind.toLexemeChars
+#print axioms KeywordKind.toLexemeChars_isLowerIdent
 #print axioms KeywordKind.toLexeme
 #print axioms KeywordKind.category
 #print axioms BlockOpener.expectedClosers

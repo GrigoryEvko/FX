@@ -133,27 +133,24 @@ example : IsAllIdentTail ['a', 'b', '0', '_', 'Z'] = true := by decide
 example : IsAllIdentTail ['a', '-', 'b'] = false := by decide      -- hyphen
 example : IsAsciiChars ['a', 'B', '0'] = true := by decide
 
-/-- **Sanity invariant** (deferred proof) — every keyword's
-canonical lexeme satisfies the lowercase identifier shape.  Proof
-is a 92-case `decide`/`rfl` discharge that hits Lean's kernel
-reduction budget; left as `Decidable` instance check via per-case
-spot lemmas in `TokenInvariantsCheck.lean` (a separate audit
-module).  Not load-bearing — the bijection lemmas in
-`TokenSchema.lean` are sufficient for parser correctness.
+/-- **Sanity invariant** — every keyword's canonical lexeme
+satisfies the lowercase identifier shape.  Equivalent to: every
+FX keyword spelling is itself a syntactically valid `lower_ident`
+per fx_grammar.md §2.1, which is exactly what makes the
+keyword/identifier disambiguator load-bearing (an identifier-
+shaped lexeme must be checked against the keyword table to
+distinguish them).
 
-The reason a single `<;> rfl` proof gets stuck: `IsAllIdentTail`
-recurses through the char list, and Lean's kernel only does
-WHNF reduction by default — pushing through 12 chars of
-`bisimulation` × 92 keywords exhausts the budget.  Sound proof
-strategies:
-* spot-check three representatives per category (declaration /
-  control flow / mode / spec / ...) — see
-  `TokenInvariantsCheck.lean`
-* invoke `decide +kernel` per-case with a bumped recursion budget
-* prove via structural induction on `IsAllIdentTail` and a
-  uniform `IsAsciiLowerLetter`-on-each-char lemma per keyword. -/
-theorem KeywordKind.toLexemeChars_isLowerIdent_deferred :
-    True := True.intro
+Proof: `cases` enumerates the 92 keyword constructors, then
+`rfl` discharges each because both sides reduce to `true` via
+the literal char lists in `KeywordKind.toLexemeChars`.  Each arm
+is a concrete `IsLowerIdentChars [literal chars] = true` check
+and reduces fully in WHNF.
+
+Zero-axiom under `#print axioms`. -/
+theorem KeywordKind.toLexemeChars_isLowerIdent (kind : KeywordKind) :
+    IsLowerIdentChars kind.toLexemeChars = true := by
+  cases kind <;> rfl
 
 /-! ## Token-level well-formedness predicate -/
 

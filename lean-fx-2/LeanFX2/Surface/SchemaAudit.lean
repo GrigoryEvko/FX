@@ -37,8 +37,10 @@ Already-shipped (closed via existing theorems):
     piggybacks on the surjective companion to avoid the
     92 × 92 = 8464-case explosion.
   Together these establish `KeywordKind ≃ image(toLexemeChars)`.
-* C03: `Keyword.toToken_asKeyword` (TokenSchema:449) — round-trip
-  between `KeywordKind` and `Token` via `toToken` / `asKeyword`.
+* C03: `KeywordKind.toLexemeChars_isLowerIdent`
+  (TokenInvariants:155) — every keyword spelling is a syntactically
+  valid `lower_ident`, which is what makes the keyword/identifier
+  disambiguator load-bearing in the lexer.
 * C08: `BracketKind.opener_asBracketOpener` (GrammarToken:465)
   + `BracketKind.closer_asBracketCloser` (GrammarToken:471).
 
