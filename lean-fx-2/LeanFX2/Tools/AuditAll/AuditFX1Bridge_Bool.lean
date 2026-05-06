@@ -1,0 +1,60 @@
+import LeanFX2.Tools.DependencyAudit
+import LeanFX2.Tools.AuditGen
+import LeanFX2.Tools.StrictHarness
+import LeanFX2
+import LeanFX2.FX1.LeanKernel.Name
+import LeanFX2.FX1.LeanKernel.Level
+import LeanFX2.FX1.LeanKernel.Expr
+import LeanFX2.FX1.LeanKernel.Substitution
+import LeanFX2.FX1.LeanKernel.Reduction
+import LeanFX2.FX1.LeanKernel.Inductive
+import LeanFX2.FX1.LeanKernel.HasType
+import LeanFX2.FX1.LeanKernel.Check
+import LeanFX2.FX1.LeanKernel.Soundness
+import LeanFX2.FX1.LeanKernel.Audit
+import LeanFX2.FX1
+import LeanFX2.FX1Bridge
+
+namespace LeanFX2.Tools
+
+/-! ## AuditFX1Bridge_Bool — 37 `#assert_no_axioms` checks. -/
+
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueName
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseName
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueExpr
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseExpr
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.boolEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_bool
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_boolTrue
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_boolFalse
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_bool_eq_boolTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_boolTrue_eq_boolTrueExpr
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_boolFalse_eq_boolFalseExpr
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueName_ne_boolTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseName_ne_boolTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseName_ne_boolTrueName
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.boolFalseName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.boolTrueEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.boolEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.boolTypeExpr_has_sort_in_boolEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodedBoolTrue_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodedBoolFalse_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolTrue
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolFalse
+
+end LeanFX2.Tools

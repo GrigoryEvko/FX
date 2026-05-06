@@ -1,0 +1,50 @@
+import LeanFX2.Tools.DependencyAudit
+import LeanFX2.Tools.AuditGen
+import LeanFX2.Tools.StrictHarness
+import LeanFX2
+import LeanFX2.FX1.LeanKernel.Name
+import LeanFX2.FX1.LeanKernel.Level
+import LeanFX2.FX1.LeanKernel.Expr
+import LeanFX2.FX1.LeanKernel.Substitution
+import LeanFX2.FX1.LeanKernel.Reduction
+import LeanFX2.FX1.LeanKernel.Inductive
+import LeanFX2.FX1.LeanKernel.HasType
+import LeanFX2.FX1.LeanKernel.Check
+import LeanFX2.FX1.LeanKernel.Soundness
+import LeanFX2.FX1.LeanKernel.Audit
+import LeanFX2.FX1
+import LeanFX2.FX1Bridge
+
+namespace LeanFX2.Tools
+
+/-! ## AuditTranslation — 27 `#assert_no_axioms` checks. -/
+
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_interval
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_path
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_glue
+#assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_id
+#assert_no_axioms LeanFX2.Translation.observationalToCubicalTy
+#assert_no_axioms LeanFX2.Translation.observationalToCubicalTy_id
+#assert_no_axioms LeanFX2.Translation.observationalToCubicalTy_oeq
+#assert_no_axioms LeanFX2.Translation.observationalToCubicalTy_idStrict
+#assert_no_axioms LeanFX2.Translation.observationalToCubicalTy_path
+#assert_no_axioms LeanFX2.Translation.observationalCubicalRoundTripTy_unit
+#assert_no_axioms LeanFX2.Translation.observationalCubicalRoundTripTy_bool
+#assert_no_axioms LeanFX2.Translation.observationalCubicalRoundTripTy_nat
+#assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_unit
+#assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_bool
+#assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_nat
+#assert_no_axioms LeanFX2.Translation.observationalCubicalRoundTripTy_id
+#assert_no_axioms LeanFX2.Translation.cubicalObservationalRoundTripTy_path
+#assert_no_axioms LeanFX2.InternalLanguage.unitEqualityTranslationCoherence
+#assert_no_axioms LeanFX2.Conservativity.isMLTTOnlyTy
+#assert_no_axioms LeanFX2.Conservativity.hottToMLTTTy
+#assert_no_axioms LeanFX2.Conservativity.hottToMLTTTy_preserves_isMLTTOnlyTy
+#assert_no_axioms LeanFX2.Conservativity.isCubicalFreeTy
+#assert_no_axioms LeanFX2.Conservativity.cubicalToObservationalTy_preserves_isCubicalFreeTy
+#assert_no_axioms LeanFX2.Conservativity.isModalFreeTy
+#assert_no_axioms LeanFX2.Conservativity.modalToObservationalTy
+#assert_no_axioms LeanFX2.Conservativity.modalToObservationalTy_preserves_isModalFreeTy
+
+end LeanFX2.Tools

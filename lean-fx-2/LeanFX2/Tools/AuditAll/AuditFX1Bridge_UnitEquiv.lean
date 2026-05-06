@@ -1,0 +1,54 @@
+import LeanFX2.Tools.DependencyAudit
+import LeanFX2.Tools.AuditGen
+import LeanFX2.Tools.StrictHarness
+import LeanFX2
+import LeanFX2.FX1.LeanKernel.Name
+import LeanFX2.FX1.LeanKernel.Level
+import LeanFX2.FX1.LeanKernel.Expr
+import LeanFX2.FX1.LeanKernel.Substitution
+import LeanFX2.FX1.LeanKernel.Reduction
+import LeanFX2.FX1.LeanKernel.Inductive
+import LeanFX2.FX1.LeanKernel.HasType
+import LeanFX2.FX1.LeanKernel.Check
+import LeanFX2.FX1.LeanKernel.Soundness
+import LeanFX2.FX1.LeanKernel.Audit
+import LeanFX2.FX1
+import LeanFX2.FX1Bridge
+
+namespace LeanFX2.Tools
+
+/-! ## AuditFX1Bridge_UnitEquiv — 31 `#assert_no_axioms` checks. -/
+
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivType
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflRaw
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflTerm
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unitEquiv
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitEquivRefl
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unitEquiv_eq_unitEquivTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitEquivRefl_eq_unitEquivReflExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName_ne_unitTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName_ne_unitValueName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_ne_unitTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_ne_unitValueName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_ne_unitEquivTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeExpr_has_sort_in_unitEquivEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitEquivRefl_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitEquivRefl
+
+end LeanFX2.Tools

@@ -17,48 +17,33 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## Audit chunk 10 (lines 1042-1153 of original AuditAll). -/
+/-! ## AuditFX1_Expr — 89 `#assert_no_axioms` checks. -/
 
-#assert_no_axioms LeanFX2.FX1.Level.checkerBeq
-#assert_no_axioms LeanFX2.FX1.Level.checkerBeq_sound
+#assert_no_axioms LeanFX2.FX1.Expr
+#assert_no_axioms LeanFX2.FX1.Expr.beq
+#assert_no_axioms LeanFX2.FX1.Expr.nodeCount
+#assert_no_axioms LeanFX2.FX1.Expr.isScopedIn
+#assert_no_axioms LeanFX2.FX1.Expr.rename
+#assert_no_axioms LeanFX2.FX1.Expr.weaken
+#assert_no_axioms LeanFX2.FX1.Expr.pi_congr
+#assert_no_axioms LeanFX2.FX1.Expr.lam_congr
+#assert_no_axioms LeanFX2.FX1.Expr.app_congr
+#assert_no_axioms LeanFX2.FX1.Expr.rename_ext
+#assert_no_axioms LeanFX2.FX1.Expr.rename_identity
+#assert_no_axioms LeanFX2.FX1.Expr.rename_compose
+#assert_no_axioms LeanFX2.FX1.Expr.rename_shift_lift_commute
+#assert_no_axioms LeanFX2.FX1.Expr.subst
+#assert_no_axioms LeanFX2.FX1.Expr.subst0
+#assert_no_axioms LeanFX2.FX1.Expr.subst_ext
+#assert_no_axioms LeanFX2.FX1.Expr.subst_identity
+#assert_no_axioms LeanFX2.FX1.Expr.subst_ofRenaming
+#assert_no_axioms LeanFX2.FX1.Expr.rename_subst_commute
+#assert_no_axioms LeanFX2.FX1.Expr.subst_rename_commute
+#assert_no_axioms LeanFX2.FX1.Expr.subst_compose
+#assert_no_axioms LeanFX2.FX1.Expr.subst0_bvar_zero
+#assert_no_axioms LeanFX2.FX1.Expr.subst0_bvar_succ
 #assert_no_axioms LeanFX2.FX1.Expr.checkerBeq
 #assert_no_axioms LeanFX2.FX1.Expr.checkerBeq_sound
-#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult
-#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult.declaration
-#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult.declarationMember
-#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult.rewriteQueryName
-#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult
-#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult.declaration
-#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult.declarationMember
-#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult.typeEquality
-#assert_no_axioms LeanFX2.FX1.Environment.findByNameResultInDeclarations?
-#assert_no_axioms LeanFX2.FX1.Environment.findByNameResult?
-#assert_no_axioms LeanFX2.FX1.Environment.findTypeByNameFromResult?
-#assert_no_axioms LeanFX2.FX1.Environment.findTypeByName?
-#assert_no_axioms LeanFX2.FX1.Environment.findTypeByName_sound
-#assert_no_axioms LeanFX2.FX1.Environment.TransparentLookupResult
-#assert_no_axioms LeanFX2.FX1.Environment.TransparentLookupResult.typeExpr
-#assert_no_axioms LeanFX2.FX1.Environment.TransparentLookupResult.valueExpr
-#assert_no_axioms LeanFX2.FX1.Environment.TransparentLookupResult.transparentDefinition
-#assert_no_axioms LeanFX2.FX1.Environment.TransparentLookupResult.rewriteQueryName
-#assert_no_axioms LeanFX2.FX1.Environment.FindTransparentValueSoundResult
-#assert_no_axioms LeanFX2.FX1.Environment.FindTransparentValueSoundResult.typeExpr
-#assert_no_axioms LeanFX2.FX1.Environment.FindTransparentValueSoundResult.transparentDefinition
-#assert_no_axioms LeanFX2.FX1.Environment.TransparentLookupResult.weakenOlder
-#assert_no_axioms LeanFX2.FX1.Environment.findTransparentDefinitionResultInDeclarations?
-#assert_no_axioms LeanFX2.FX1.Environment.findTransparentDefinitionResult?
-#assert_no_axioms LeanFX2.FX1.Environment.findTransparentValueFromResult?
-#assert_no_axioms LeanFX2.FX1.Environment.findTransparentValue?
-#assert_no_axioms LeanFX2.FX1.Environment.findTransparentValue_sound
-#assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult
-#assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeExpr
-#assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeAtIndex
-#assert_no_axioms LeanFX2.FX1.Context.lookupTypeResultInEntries?
-#assert_no_axioms LeanFX2.FX1.Context.lookupTypeFromResult?
-#assert_no_axioms LeanFX2.FX1.Context.lookupTypeInEntries?
-#assert_no_axioms LeanFX2.FX1.Context.lookupType?
-#assert_no_axioms LeanFX2.FX1.Context.lookupTypeResult?
-#assert_no_axioms LeanFX2.FX1.Context.lookupType_sound
 #assert_no_axioms LeanFX2.FX1.Expr.HeadStepResult
 #assert_no_axioms LeanFX2.FX1.Expr.HeadStepResult.targetExpr
 #assert_no_axioms LeanFX2.FX1.Expr.HeadStepResult.reductionStep
@@ -123,13 +108,5 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore_accepts_betaConvertibleExpectedType
 #assert_no_axioms LeanFX2.FX1.Expr.infer_accepts_betaConvertibleArgumentDomain
 #assert_no_axioms LeanFX2.FX1.Expr.check_accepts_betaConvertibleExpectedType
-#assert_no_axioms LeanFX2.FX1.check_sound
-#assert_no_axioms LeanFX2.FX1.checkCore_sound
-
--- FX1Bridge staged rich-to-FX1 unit fragment.  These proofs make only a
--- Bridge-status claim: the staged FX1 environment contains object-level
--- axiom declarations, so this is not Root-FX1 release evidence.
-#assert_no_axioms LeanFX2.FX1Bridge.unitTypeAtomId
-#assert_no_axioms LeanFX2.FX1Bridge.unitValueAtomId
 
 end LeanFX2.Tools
