@@ -3,6 +3,7 @@ import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathIdInverse
 import LeanFX2.Bridge.PathIdMeta
 import LeanFX2.Bridge.PathEqType
+import LeanFX2.Cubical.Bridge
 import LeanFX2.Cubical.Transport
 import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Translation.ObservationalToCubical
@@ -367,6 +368,46 @@ theorem pathEqTypeBridge_fullStackWiring_smoke
     (Bridge.constantTypePathToEquivRefl_onCanonical innerLevel innerLevelLt
       carrier typeCode)
 
+/-- Cubical-facing bridge façade smoke.
+
+This exercises `Cubical.Bridge` names rather than the underlying
+`Bridge.*` names, so the cubical bridge module is load-bearing in the import
+surface. -/
+theorem cubicalBridgeFacade_fullStackWiring_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {pointRaw : RawTerm scope}
+    (pointTerm : Term context carrierType pointRaw) :
+    And
+      ((Cubical.constantPathToObservationalId pointTerm
+        (Cubical.constantPath pointTerm)).toRaw =
+          RawTerm.refl pointRaw)
+      ((Cubical.observationalReflToConstantPath pointTerm
+        (Term.refl carrierType pointRaw)).toRaw =
+          RawTerm.pathLam pointRaw.weaken) :=
+  And.intro
+    (Cubical.constantPathToObservationalId_toRaw pointTerm
+      (Cubical.constantPath pointTerm))
+    (Cubical.observationalReflToConstantPath_toRaw pointTerm
+      (Term.refl carrierType pointRaw))
+
+/-- Cubical-facing type-path/equivalence façade smoke. -/
+theorem cubicalTypeBridgeFacade_fullStackWiring_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    {typeRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe innerLevel innerLevelLt) typeRaw) :
+    Cubical.constantCubicalTypePathToEquiv innerLevel innerLevelLt carrier
+      typeCode (Cubical.constantTypePath innerLevel innerLevelLt typeCode) =
+      Term.equivReflId carrier :=
+  Cubical.constantCubicalTypePathToEquiv_onCanonical
+    innerLevel innerLevelLt carrier typeCode
+
 /-- Type-level cubical-to-observational translation smoke. -/
 theorem cubicalToObservationalTy_fullStackWiring_smoke
     {level scope : Nat}
@@ -463,6 +504,8 @@ theorem pathIdEquivMeta_fullStackWiring_smoke :
 #assert_no_axioms LeanFX2.Smoke.constantPathIdBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.idEqTypeBridge_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.pathEqTypeBridge_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.cubicalBridgeFacade_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.cubicalTypeBridgeFacade_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.cubicalToObservationalTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.observationalToCubicalTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.translationInverseTy_fullStackWiring_smoke

@@ -936,7 +936,8 @@ def isReductionMetatheoryModuleName (moduleName : Name) : Bool :=
 /-- Cross-theory bridge modules depend on HoTT, Cubical, or Modal layers and
 therefore must not be classified with the low-level typed/raw bridge. -/
 def isCrossTheoryBridgeModuleName (moduleName : Name) : Bool :=
-  moduleName == `LeanFX2.Bridge.PathToId ||
+  moduleName == `LeanFX2.Cubical.Bridge ||
+    moduleName == `LeanFX2.Bridge.PathToId ||
     moduleName == `LeanFX2.Bridge.IdToPath ||
     moduleName == `LeanFX2.Bridge.PathIdInverse ||
     moduleName == `LeanFX2.Bridge.PathIdMeta ||
