@@ -1611,6 +1611,39 @@ namespace LeanFX2.Tools
 -- the diamond cascade breaks.  Tight ratchet at current count.
 #assert_reduction_compat_coverage_budget LeanFX2.Step.par 28
 
+-- Inhabited / Nonempty / Classical.choice dependent census.  These
+-- typeclasses summon Classical.choice internally on certain constructions;
+-- counting kernel-tier dependents catches inadvertent uses.  Tight
+-- ratchet at zero — nothing in the kernel currently depends on these.
+#assert_inhabited_dependent_budget LeanFX2 0
+
+-- HEq result-type theorem census.  Theorems whose claimed result type
+-- mentions `HEq` are propext-adjacent — heterogeneous equality cannot
+-- generally reduce.  Tight ratchet at current count.
+#assert_heq_result_type_budget LeanFX2 91
+
+-- Decidable.decide dependent census.  `decide` invokes the kernel
+-- reducer on Decidable instances; can hide propext through Decidable
+-- on Eq.  Tight ratchet at current count.
+#assert_decide_dependent_budget LeanFX2 383
+
+-- Subsingleton.elim dependent census.  This is the canonical way to
+-- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions
+-- that can't reduce through the elision.  Tight ratchet at zero.
+#assert_subsingleton_dependent_budget LeanFX2 0
+
+-- Match-compiler equation lemma census.  Auto-generated `_eq_<n>` and
+-- `match_<n>` lemmas in kernel-tier namespaces are propext-suspect on
+-- indexed inductive families.  Tight ratchet at zero.
+#assert_match_compiler_equation_budget LeanFX2 0
+
+-- rfl-only on non-trivial-name theorem census.  Theorems whose name
+-- ends in `_inj` / `_unique` / `_iff` / `_def` / `_eq` / `_uniqueProof`
+-- with `Eq.refl _` body are heuristic flags for definitionally-trivial
+-- restatements masquerading as substantive claims.  Tight ratchet at
+-- current count of 1.
+#assert_rfl_on_nontrivial_name_budget LeanFX2 1
+
 -- Naming discipline gate.  Bans non-ASCII identifiers and short
 -- identifiers (< 4 chars) outside the documented whitelist.  Catches
 -- regressions like `def f (x) := ...` or pasted Greek-letter names
