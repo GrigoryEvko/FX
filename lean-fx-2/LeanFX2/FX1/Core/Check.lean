@@ -917,6 +917,132 @@ theorem whnf_sound
     (Expr.weakHeadFuel sourceExpr)
     sourceExpr
 
+/-- A definitional equality witness produced by reducing both sides to a common
+weak-head expression. -/
+structure DefEqResult
+    (environment : Environment) (leftExpr rightExpr : Expr) : Type where
+  commonExpr : Expr
+  leftReductions : EnvStepStar environment leftExpr commonExpr
+  rightReductions : EnvStepStar environment rightExpr commonExpr
+
+/-- Extern-clean addition for fuel budgets.
+
+This deliberately avoids host `Nat.add`, which the strict executable audit
+flags as an extern dependency. -/
+def weakHeadFuelAdd : Nat -> Nat -> Nat
+  | Nat.zero, rightFuel => rightFuel
+  | Nat.succ leftFuel, rightFuel =>
+      Nat.succ (Expr.weakHeadFuelAdd leftFuel rightFuel)
+
+/-- Default fuel for binary weak-head definitional equality. -/
+def defEqFuel (leftExpr rightExpr : Expr) : Nat :=
+  Expr.weakHeadFuelAdd
+    (Expr.weakHeadFuel leftExpr)
+    (Expr.weakHeadFuel rightExpr)
+
+/-- Fuel-bounded WHNF-based definitional equality with proof payload.
+
+The executable comparison is structural equality on the two weak-head forms;
+the result stores the reduction sequences that justify the common reduct. -/
+def defEqResultWithFuel?
+    (environment : Environment) (fuel : Nat)
+    (leftExpr rightExpr : Expr) :
+    Option (DefEqResult environment leftExpr rightExpr) :=
+  let leftResult :=
+    Expr.whnfResultWithFuel environment fuel leftExpr
+  let rightResult :=
+    Expr.whnfResultWithFuel environment fuel rightExpr
+  match equalityIsTrue :
+      Expr.checkerBeq leftResult.targetExpr rightResult.targetExpr with
+  | true =>
+      let targetEquality :
+          Eq leftResult.targetExpr rightResult.targetExpr :=
+        Expr.checkerBeq_sound
+          leftResult.targetExpr
+          rightResult.targetExpr
+          equalityIsTrue
+      let rewrittenRightReductions :
+          EnvStepStar environment rightExpr leftResult.targetExpr :=
+        Eq.ndrec
+          (motive := fun currentTargetExpr =>
+            EnvStepStar environment rightExpr currentTargetExpr)
+          rightResult.reductions
+          (Eq.symm targetEquality)
+      some {
+        commonExpr := leftResult.targetExpr
+        leftReductions := leftResult.reductions
+        rightReductions := rewrittenRightReductions
+      }
+  | false => none
+
+/-- Runtime-facing fuel-bounded weak-head definitional equality. -/
+def isDefEqWithFuel
+    (environment : Environment) (fuel : Nat)
+    (leftExpr rightExpr : Expr) : Bool :=
+  Expr.checkerBeq
+    (Expr.whnfWithFuel environment fuel leftExpr)
+    (Expr.whnfWithFuel environment fuel rightExpr)
+
+/-- Runtime-facing default weak-head definitional equality.
+
+This is bounded by an FX1-local fuel calculation.  It is intentionally a
+conservative decision procedure; callers that need more unfolding should use
+`isDefEqWithFuel`. -/
+def isDefEq
+    (environment : Environment) (leftExpr rightExpr : Expr) : Bool :=
+  Expr.isDefEqWithFuel
+    environment
+    (Expr.defEqFuel leftExpr rightExpr)
+    leftExpr
+    rightExpr
+
+/-- Soundness of fuel-bounded weak-head definitional equality. -/
+def isDefEqWithFuel_sound
+    {environment : Environment}
+    {fuel : Nat}
+    {leftExpr rightExpr : Expr}
+    (defEqSucceeded :
+      Eq
+        (Expr.isDefEqWithFuel environment fuel leftExpr rightExpr)
+        true) :
+    DefEqResult environment leftExpr rightExpr :=
+  let leftResult :=
+    Expr.whnfResultWithFuel environment fuel leftExpr
+  let rightResult :=
+    Expr.whnfResultWithFuel environment fuel rightExpr
+  let targetEquality :
+      Eq leftResult.targetExpr rightResult.targetExpr :=
+    Expr.checkerBeq_sound
+      leftResult.targetExpr
+      rightResult.targetExpr
+      defEqSucceeded
+  let rewrittenRightReductions :
+      EnvStepStar environment rightExpr leftResult.targetExpr :=
+    Eq.ndrec
+      (motive := fun currentTargetExpr =>
+        EnvStepStar environment rightExpr currentTargetExpr)
+      rightResult.reductions
+      (Eq.symm targetEquality)
+  {
+    commonExpr := leftResult.targetExpr
+    leftReductions := leftResult.reductions
+    rightReductions := rewrittenRightReductions
+  }
+
+/-- Soundness of default weak-head definitional equality. -/
+def isDefEq_sound
+    {environment : Environment}
+    {leftExpr rightExpr : Expr}
+    (defEqSucceeded :
+      Eq (Expr.isDefEq environment leftExpr rightExpr) true) :
+    DefEqResult environment leftExpr rightExpr :=
+  Expr.isDefEqWithFuel_sound
+    (environment := environment)
+    (fuel := Expr.defEqFuel leftExpr rightExpr)
+    (leftExpr := leftExpr)
+    (rightExpr := rightExpr)
+    defEqSucceeded
+
 /-- A successful checker inference paired with the relational typing
 derivation it justifies. -/
 structure InferResult
