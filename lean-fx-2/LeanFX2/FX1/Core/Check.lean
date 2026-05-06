@@ -372,6 +372,80 @@ def checkBoolFromResult?
       Expr.checkerBeq inferenceResult.typeExpr expectedTypeExpr
   | none => false
 
+/-- Executable inference without proof payloads.
+
+This is the runtime-facing checker path: it is intentionally separate from
+`inferResult?`, whose dependent result carries typing derivations and currently
+uses Lean-generated dependent-recursion infrastructure. -/
+def inferCore? (environment : Environment) (context : Context) :
+    Expr -> Option Expr
+  | Expr.bvar index =>
+      Context.lookupType? context index
+  | Expr.sort sortLevel =>
+      some (Expr.sort (Level.succ sortLevel))
+  | Expr.const _ =>
+      none
+  | Expr.pi domainExpr bodyExpr =>
+      match Expr.inferCore? environment context domainExpr with
+      | some (Expr.sort domainLevel) =>
+          match Expr.inferCore?
+              environment
+              (Context.extend context domainExpr)
+              bodyExpr with
+          | some (Expr.sort bodyLevel) =>
+              some (Expr.sort (Level.max domainLevel bodyLevel))
+          | some (Expr.bvar _) => none
+          | some (Expr.const _) => none
+          | some (Expr.pi _ _) => none
+          | some (Expr.lam _ _) => none
+          | some (Expr.app _ _) => none
+          | none => none
+      | some (Expr.bvar _) => none
+      | some (Expr.const _) => none
+      | some (Expr.pi _ _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+  | Expr.lam domainExpr bodyExpr =>
+      match Expr.inferCore? environment context domainExpr with
+      | some (Expr.sort _) =>
+          match Expr.inferCore?
+              environment
+              (Context.extend context domainExpr)
+              bodyExpr with
+          | some bodyTypeExpr =>
+              some (Expr.pi domainExpr bodyTypeExpr)
+          | none => none
+      | some (Expr.bvar _) => none
+      | some (Expr.const _) => none
+      | some (Expr.pi _ _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+  | Expr.app functionExpr argumentExpr =>
+      match Expr.inferCore? environment context functionExpr with
+      | some (Expr.pi domainExpr bodyTypeExpr) =>
+          match Expr.inferCore? environment context argumentExpr with
+          | some argumentTypeExpr =>
+              match Expr.checkerBeq argumentTypeExpr domainExpr with
+              | true => some (Expr.subst0 argumentExpr bodyTypeExpr)
+              | false => none
+          | none => none
+      | some (Expr.bvar _) => none
+      | some (Expr.sort _) => none
+      | some (Expr.const _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+
+/-- Executable checking against an expected type without proof payloads. -/
+def checkCore? (environment : Environment) (context : Context)
+    (expression expectedTypeExpr : Expr) : Bool :=
+  match Expr.inferCore? environment context expression with
+  | some inferredTypeExpr =>
+      Expr.checkerBeq inferredTypeExpr expectedTypeExpr
+  | none => false
+
 /-- Proof-carrying inference for the initial no-constant checker fragment. -/
 def inferResult?
     (environment : Environment) (context : Context) :

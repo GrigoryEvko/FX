@@ -823,6 +823,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeDerivation
 #assert_no_axioms LeanFX2.FX1.Expr.inferTypeFromResult?
 #assert_no_axioms LeanFX2.FX1.Expr.checkBoolFromResult?
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore?
+#assert_no_axioms LeanFX2.FX1.Expr.checkCore?
 #assert_no_axioms LeanFX2.FX1.Expr.inferResult?
 #assert_no_axioms LeanFX2.FX1.Expr.infer?
 #assert_no_axioms LeanFX2.FX1.Expr.infer?_sound
@@ -841,6 +843,8 @@ namespace LeanFX2.Tools
 #assert_no_extern_dependencies LeanFX2.FX1.Level.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkBoolFromResult?
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.inferCore?
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.checkCore?
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
