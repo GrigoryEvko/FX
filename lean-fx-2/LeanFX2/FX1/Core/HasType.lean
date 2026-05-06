@@ -1,5 +1,4 @@
 prelude
-import LeanFX2.FX1.Core.Environment
 import LeanFX2.FX1.Core.Context
 import LeanFX2.FX1.Core.Reduction
 

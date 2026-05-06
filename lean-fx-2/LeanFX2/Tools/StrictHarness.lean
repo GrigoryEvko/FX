@@ -754,10 +754,10 @@ def isAllowedFX1CoreExactDirectImport
   else if sourceModuleName == `LeanFX2.FX1.Core.Substitution then
     importedModuleName == `LeanFX2.FX1.Core.Expr
   else if sourceModuleName == `LeanFX2.FX1.Core.Reduction then
-    importedModuleName == `LeanFX2.FX1.Core.Substitution
-  else if sourceModuleName == `LeanFX2.FX1.Core.HasType then
     importedModuleName == `LeanFX2.FX1.Core.Environment ||
-      importedModuleName == `LeanFX2.FX1.Core.Context ||
+      importedModuleName == `LeanFX2.FX1.Core.Substitution
+  else if sourceModuleName == `LeanFX2.FX1.Core.HasType then
+    importedModuleName == `LeanFX2.FX1.Core.Context ||
       importedModuleName == `LeanFX2.FX1.Core.Reduction
   else if sourceModuleName == `LeanFX2.FX1.Core.WellFormed then
     importedModuleName == `LeanFX2.FX1.Core.HasType
