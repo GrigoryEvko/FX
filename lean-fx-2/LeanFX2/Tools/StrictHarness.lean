@@ -937,6 +937,7 @@ def isReductionMetatheoryModuleName (moduleName : Name) : Bool :=
 therefore must not be classified with the low-level typed/raw bridge. -/
 def isCrossTheoryBridgeModuleName (moduleName : Name) : Bool :=
   moduleName == `LeanFX2.Cubical.Bridge ||
+    moduleName == `LeanFX2.Cubical.Ua ||
     moduleName == `LeanFX2.Bridge.PathToId ||
     moduleName == `LeanFX2.Bridge.IdToPath ||
     moduleName == `LeanFX2.Bridge.PathIdInverse ||

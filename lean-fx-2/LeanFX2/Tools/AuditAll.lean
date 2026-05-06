@@ -156,6 +156,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Cubical.constantCubicalTypePathToEquiv_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantCubicalTypePathToEquiv_onCanonical
 #assert_no_axioms LeanFX2.Cubical.pathIdMetaEquiv
+#assert_no_axioms LeanFX2.Cubical.uaReflConv
+#assert_no_axioms LeanFX2.Cubical.uaHetConv
+#assert_no_axioms LeanFX2.Cubical.uaConstantTypePathToEquiv
+#assert_no_axioms LeanFX2.Cubical.uaConstantTypePathToEquiv_toRaw
+#assert_no_axioms LeanFX2.Cubical.uaConstantTypePathToEquiv_onCanonical
+#assert_no_axioms LeanFX2.Cubical.uaBetaMeta
+#assert_no_axioms LeanFX2.Cubical.uaBetaMetaRefl
+#assert_no_axioms LeanFX2.Cubical.uaBetaMetaSymm
+#assert_no_axioms LeanFX2.Cubical.uaTransportViaReflEquiv
+#assert_no_axioms LeanFX2.Cubical.uaKernelRflAlignsWithMeta
 #assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy
 #assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_interval
 #assert_no_axioms LeanFX2.Translation.cubicalToObservationalTy_path

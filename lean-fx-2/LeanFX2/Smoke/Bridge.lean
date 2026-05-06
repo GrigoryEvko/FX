@@ -5,6 +5,7 @@ import LeanFX2.Bridge.PathIdMeta
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Cubical.Bridge
 import LeanFX2.Cubical.Transport
+import LeanFX2.Cubical.Ua
 import LeanFX2.Translation.CubicalToObservational
 import LeanFX2.Translation.ObservationalToCubical
 import LeanFX2.Translation.Inverse
@@ -493,6 +494,26 @@ theorem pathIdEquivMeta_fullStackWiring_smoke :
         (rfl : true = true) = Path.refl true) :=
   And.intro rfl rfl
 
+/-- Cubical `ua` facade smoke for the reflexive kernel conversion. -/
+theorem cubicalUaReflConv_fullStackWiring_smoke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope) :
+    Conv (Term.equivReflIdAtId (context := context)
+        innerLevel innerLevelLt carrier carrierRaw)
+      (Term.equivReflId (context := context) carrier) :=
+  Cubical.uaReflConv innerLevel innerLevelLt carrier carrierRaw
+
+/-- Cubical `ua_beta` facade smoke at the reflexive meta fragment. -/
+theorem cubicalUaBetaMetaRefl_fullStackWiring_smoke
+    (leftValue : Bool) :
+    (Eq.refl Bool) ▸ leftValue
+      = (Univalence.idToEquivMeta (Eq.refl Bool)).toFun leftValue :=
+  Cubical.uaBetaMetaRefl Bool leftValue
+
 #assert_no_axioms LeanFX2.Smoke.pathApp_toRaw_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathApp_toRawBridge_smoke
 #assert_no_axioms LeanFX2.Smoke.betaPathAppDeep_toRawBridge_smoke
@@ -510,5 +531,7 @@ theorem pathIdEquivMeta_fullStackWiring_smoke :
 #assert_no_axioms LeanFX2.Smoke.observationalToCubicalTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.translationInverseTy_fullStackWiring_smoke
 #assert_no_axioms LeanFX2.Smoke.pathIdEquivMeta_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.cubicalUaReflConv_fullStackWiring_smoke
+#assert_no_axioms LeanFX2.Smoke.cubicalUaBetaMetaRefl_fullStackWiring_smoke
 
 end LeanFX2.Smoke
