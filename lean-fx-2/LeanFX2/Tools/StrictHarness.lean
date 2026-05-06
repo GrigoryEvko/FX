@@ -788,10 +788,14 @@ elab "#audit_import_surface_summary" : command => do
   let mut fx1ModuleCount : Nat := 0
   let mut toolsModuleCount : Nat := 0
   let mut smokeModuleCount : Nat := 0
+  let mut sketchModuleCount : Nat := 0
+  let mut legacyLeanKernelModuleCount : Nat := 0
+  let mut publicUmbrellaHeaderImportCount : Nat := 0
   let mut directImportCount : Nat := 0
   let mut hostHeavyDirectImports : Array DirectImportRecord := #[]
   let mut richProductionFX1Imports : Array DirectImportRecord := #[]
   let mut richProductionHostImports : Array DirectImportRecord := #[]
+  let mut legacyLeanKernelImports : Array DirectImportRecord := #[]
   let mut fx1ForbiddenImports : Array DirectImportRecord := #[]
   let mut fx1PreludeImports : Array DirectImportRecord := #[]
   for (effectiveImport, moduleData) in moduleEntries do
@@ -808,8 +812,14 @@ elab "#audit_import_surface_summary" : command => do
         toolsModuleCount := toolsModuleCount + 1
       if (`LeanFX2.Smoke).isPrefixOf sourceModuleName then
         smokeModuleCount := smokeModuleCount + 1
+      if (`LeanFX2.Sketch).isPrefixOf sourceModuleName then
+        sketchModuleCount := sketchModuleCount + 1
+      if isLegacyLeanKernelScaffoldModuleName sourceModuleName then
+        legacyLeanKernelModuleCount := legacyLeanKernelModuleCount + 1
       for directImport in moduleData.imports do
         let importedModuleName := directImport.module
+        if sourceModuleName == `LeanFX2 then
+          publicUmbrellaHeaderImportCount := publicUmbrellaHeaderImportCount + 1
         directImportCount := directImportCount + 1
         let directImportRecord : DirectImportRecord := {
           sourceModuleName := sourceModuleName
@@ -826,6 +836,9 @@ elab "#audit_import_surface_summary" : command => do
             isHostHeavyDirectImportModuleName importedModuleName then
           richProductionHostImports :=
             richProductionHostImports.push directImportRecord
+        if isLegacyLeanKernelScaffoldModuleName importedModuleName then
+          legacyLeanKernelImports :=
+            legacyLeanKernelImports.push directImportRecord
         if isFX1ModuleName sourceModuleName &&
             !isAllowedFX1DirectImport sourceModuleName importedModuleName then
           fx1ForbiddenImports :=
@@ -843,6 +856,9 @@ elab "#audit_import_surface_summary" : command => do
       s!"  FX1 modules:                      {fx1ModuleCount}",
       s!"  Tool modules:                     {toolsModuleCount}",
       s!"  Smoke modules:                    {smokeModuleCount}",
+      s!"  Sketch modules:                   {sketchModuleCount}",
+      s!"  Legacy LeanKernel modules:        {legacyLeanKernelModuleCount}",
+      s!"  Public umbrella header imports:   {publicUmbrellaHeaderImportCount}",
       s!"  Direct import edges scanned:      {directImportCount}",
       s!"  Host-heavy direct imports:        {hostHeavyDirectImports.size}",
       s!"    {formatDirectImportRecords hostHeavyDirectImports}",
@@ -850,6 +866,8 @@ elab "#audit_import_surface_summary" : command => do
       s!"    {formatDirectImportRecords richProductionFX1Imports}",
       s!"  Rich-production host imports:     {richProductionHostImports.size}",
       s!"    {formatDirectImportRecords richProductionHostImports}",
+      s!"  Legacy LeanKernel direct imports: {legacyLeanKernelImports.size}",
+      s!"    {formatDirectImportRecords legacyLeanKernelImports}",
       s!"  FX1 forbidden direct imports:     {fx1ForbiddenImports.size}",
       s!"    {formatDirectImportRecords fx1ForbiddenImports}",
       s!"  FX1 direct Init.Prelude imports:  {fx1PreludeImports.size}",

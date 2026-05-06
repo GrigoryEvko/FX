@@ -32,6 +32,11 @@ import LeanFX2.Lean.Kernel.Level
 import LeanFX2.Lean.Kernel.Expr
 import LeanFX2.Lean.Kernel.Substitution
 import LeanFX2.Lean.Kernel.Reduction
+import LeanFX2.Lean.Kernel.Inductive
+import LeanFX2.Lean.Kernel.HasType
+import LeanFX2.Lean.Kernel.Check
+import LeanFX2.Lean.Kernel.Soundness
+import LeanFX2.Lean.Kernel.Audit
 import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.CumulAllais
 import LeanFX2.Algo.WHNF
@@ -268,6 +273,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.LeanKernel.Step.betaStep_newest_bvar
 #assert_no_axioms LeanFX2.LeanKernel.Step.betaStep_succ_bvar
 #assert_no_axioms LeanFX2.LeanKernel.Step.zetaStep_newest_bvar
+#assert_no_axioms LeanFX2.LeanKernel.ConstantSpec
+#assert_no_axioms LeanFX2.LeanKernel.ConstructorSpec
+#assert_no_axioms LeanFX2.LeanKernel.InductiveSpec
+#assert_no_axioms LeanFX2.LeanKernel.Environment
+#assert_no_axioms LeanFX2.LeanKernel.Environment.empty
+#assert_no_axioms LeanFX2.LeanKernel.Environment.findConstant?
+#assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?
+#assert_no_axioms LeanFX2.LeanKernel.Environment.findConstant?_empty
+#assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?_empty
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized
