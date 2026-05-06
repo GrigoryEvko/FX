@@ -21,7 +21,14 @@ operator/bracket/category enums.
   This audit checks every level has a witness.
 * C07: `Token.asInfixOperator` round-trip with
   `OperatorKind.toToken` (modulo prefix-shared tokens like
-  `minus` → `negate` prefix vs `minus` infix).
+  `minus` → `negate` prefix vs `minus` infix).  Plus the
+  load-bearing COMPLETENESS direction
+  `Token.asOperator_complete` — every token in the image of
+  `OperatorKind.toToken` is classified by at least one of
+  `Token.asInfixOperator` / `Token.asPrefixOperator`.  Without
+  it, a new `OperatorKind` ctor could land without matching
+  recognizer clauses and neither round-trip would catch the
+  drift.
 
 Already-shipped (closed via existing theorems):
 
@@ -248,5 +255,67 @@ theorem TokenCategory.surjective (category : TokenCategory) :
   | delimiterClose => exact ⟨Token.rparen, rfl⟩
   | punctuation => exact ⟨Token.comma, rfl⟩
   | special => exact ⟨Token.eof, rfl⟩
+
+/-! ## C07 completeness: no operator-class drift
+
+Headline theorem: every Token in the image of `OperatorKind.toToken`
+is classified by at least one of `Token.asInfixOperator` /
+`Token.asPrefixOperator`.  Equivalently: if a token is unclassified
+by both partial recognizers, it cannot be the image of any
+`OperatorKind`.
+
+This is the load-bearing direction the existing round-trip lemmas
+(`toToken_asInfixOperator_infix`, `toToken_asPrefixOperator_prefix`)
+do NOT cover by themselves.  Without this completeness theorem, a
+new `OperatorKind` constructor could silently land without
+corresponding clauses in `asInfixOperator` / `asPrefixOperator`, and
+neither round-trip would catch it (each round-trip is conditional on
+the prefix/infix split, neither asserts the split is exhaustive).
+
+Proof strategy: forward case split on the witness `OperatorKind`.
+Each constructor concretely reduces to a token whose
+`asInfixOperator` or `asPrefixOperator` is decidably `some _`.  The
+27 `OperatorKind` ctors split as 24 infix + 3 prefix-only
+(`logicalNot`, `negate`, `bitNot`).  Note `negate` maps to
+`Token.minus` whose `asInfixOperator = some .minus` (the parser
+disambiguates by context per `GrammarToken.lean:209-211`); so the
+infix branch fires for `negate`. -/
+theorem Token.asOperator_complete (tok : Token)
+    (existsOperator : ∃ operator : OperatorKind, tok = operator.toToken) :
+    (∃ infixOperator : OperatorKind,
+        tok.asInfixOperator = some infixOperator) ∨
+    (∃ prefixOperator : OperatorKind,
+        tok.asPrefixOperator = some prefixOperator) := by
+  obtain ⟨operator, eqWitness⟩ := existsOperator
+  subst eqWitness
+  cases operator with
+  | arrow => exact Or.inl ⟨.arrow, rfl⟩
+  | pipe => exact Or.inl ⟨.pipe, rfl⟩
+  | iff => exact Or.inl ⟨.iff, rfl⟩
+  | implies => exact Or.inl ⟨.implies, rfl⟩
+  | logicalOr => exact Or.inl ⟨.logicalOr, rfl⟩
+  | logicalAnd => exact Or.inl ⟨.logicalAnd, rfl⟩
+  | logicalNot => exact Or.inr ⟨.logicalNot, rfl⟩
+  | eqEq => exact Or.inl ⟨.eqEq, rfl⟩
+  | notEq => exact Or.inl ⟨.notEq, rfl⟩
+  | lt => exact Or.inl ⟨.lt, rfl⟩
+  | gt => exact Or.inl ⟨.gt, rfl⟩
+  | le => exact Or.inl ⟨.le, rfl⟩
+  | ge => exact Or.inl ⟨.ge, rfl⟩
+  | isCtor => exact Or.inl ⟨.isCtor, rfl⟩
+  | bitOr => exact Or.inl ⟨.bitOr, rfl⟩
+  | bitXor => exact Or.inl ⟨.bitXor, rfl⟩
+  | bitAnd => exact Or.inl ⟨.bitAnd, rfl⟩
+  | shiftLeft => exact Or.inl ⟨.shiftLeft, rfl⟩
+  | shiftRight => exact Or.inl ⟨.shiftRight, rfl⟩
+  | rangeExcl => exact Or.inl ⟨.rangeExcl, rfl⟩
+  | rangeIncl => exact Or.inl ⟨.rangeIncl, rfl⟩
+  | plus => exact Or.inl ⟨.plus, rfl⟩
+  | minus => exact Or.inl ⟨.minus, rfl⟩
+  | star => exact Or.inl ⟨.star, rfl⟩
+  | slash => exact Or.inl ⟨.slash, rfl⟩
+  | percent => exact Or.inl ⟨.percent, rfl⟩
+  | negate => exact Or.inl ⟨.minus, rfl⟩
+  | bitNot => exact Or.inr ⟨.bitNot, rfl⟩
 
 end LeanFX2.Surface
