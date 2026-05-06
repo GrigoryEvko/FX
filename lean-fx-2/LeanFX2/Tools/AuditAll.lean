@@ -1198,6 +1198,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentityApp_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentityApp_betaStep
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdentityApp
+#assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityRaw
+#assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityType
+#assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityTerm
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unitPiIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitPiIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentityType_has_sort
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentity_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitPiIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityAppRaw
+#assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityAppTerm
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitPiIdentityApp
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentityApp_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentityApp_betaStep
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitPiIdentityApp
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to

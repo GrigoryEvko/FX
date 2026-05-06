@@ -2,6 +2,7 @@ import LeanFX2.FX1Bridge.Unit
 import LeanFX2.FX1Bridge.Var
 import LeanFX2.FX1Bridge.Lambda
 import LeanFX2.FX1Bridge.Application
+import LeanFX2.FX1Bridge.Pi
 
 /-! # FX1Bridge
 
