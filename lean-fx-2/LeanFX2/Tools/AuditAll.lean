@@ -839,10 +839,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Environment.WellFormed
 #assert_no_axioms LeanFX2.FX1.Environment.WellFormed.empty
 #assert_no_axioms LeanFX2.FX1.Environment.WellFormed.extend
+#assert_no_axioms LeanFX2.FX1.Environment.hasAxiomDeclaration_extend_defDecl
+#assert_no_axioms LeanFX2.FX1.Environment.hasAxiomDeclaration_extend_theoremDecl
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.empty
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.extend
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.toWellFormed
+#assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.hasAxiomDeclaration_false
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast

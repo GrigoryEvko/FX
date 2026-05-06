@@ -210,6 +210,32 @@ inductive WellFormed : Environment -> Prop
         Declaration.WellTyped environment declaration) :
       WellFormed (Environment.extend environment declaration)
 
+/-- Extending an environment with a transparent definition does not add an
+executable axiom placeholder. -/
+theorem hasAxiomDeclaration_extend_defDecl
+    (environment : Environment)
+    (declName : Name)
+    (typeExpr valueExpr : Expr) :
+    Eq
+      (Environment.hasAxiomDeclaration
+        (Environment.extend environment
+          (Declaration.defDecl declName typeExpr valueExpr)))
+      (Environment.hasAxiomDeclaration environment) :=
+  Eq.refl (Environment.hasAxiomDeclaration environment)
+
+/-- Extending an environment with a checked theorem does not add an executable
+axiom placeholder. -/
+theorem hasAxiomDeclaration_extend_theoremDecl
+    (environment : Environment)
+    (declName : Name)
+    (typeExpr proofExpr : Expr) :
+    Eq
+      (Environment.hasAxiomDeclaration
+        (Environment.extend environment
+          (Declaration.theoremDecl declName typeExpr proofExpr)))
+      (Environment.hasAxiomDeclaration environment) :=
+  Eq.refl (Environment.hasAxiomDeclaration environment)
+
 /-- A release environment is a staged well-formed environment whose declarations
 are all release declarations. -/
 inductive ReleaseWellFormed : Environment -> Prop
@@ -243,6 +269,30 @@ theorem toWellFormed
         (toWellFormed precedingReleaseWellFormed)
         nameFresh
         declarationWellTyped
+
+/-- Release well-formed environments contain no executable axiom
+placeholders.  This connects the propositional release predicate to the
+environment-level Boolean gate used by future checker entry points. -/
+theorem hasAxiomDeclaration_false
+    {environment : Environment}
+    (environmentReleaseWellFormed : ReleaseWellFormed environment) :
+    Eq (Environment.hasAxiomDeclaration environment) false :=
+  match environmentReleaseWellFormed with
+  | ReleaseWellFormed.empty => Eq.refl false
+  | ReleaseWellFormed.extend
+      precedingReleaseWellFormed _ _
+      (Declaration.IsReleaseDeclaration.defDecl declName typeExpr valueExpr) =>
+      Eq.trans
+        (Environment.hasAxiomDeclaration_extend_defDecl
+          _ declName typeExpr valueExpr)
+        (hasAxiomDeclaration_false precedingReleaseWellFormed)
+  | ReleaseWellFormed.extend
+      precedingReleaseWellFormed _ _
+      (Declaration.IsReleaseDeclaration.theoremDecl declName typeExpr proofExpr) =>
+      Eq.trans
+        (Environment.hasAxiomDeclaration_extend_theoremDecl
+          _ declName typeExpr proofExpr)
+        (hasAxiomDeclaration_false precedingReleaseWellFormed)
 
 end ReleaseWellFormed
 
