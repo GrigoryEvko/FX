@@ -2462,6 +2462,84 @@ theorem check?_sound
           checkingSucceeded
       nomatch falseEqualsTrue
 
+/-- A closed type-level beta-redex reducing to `Sort 0`.
+
+This fixture is intentionally syntactically different from `Sort 0`, so it
+detects accidental fallback to structural equality in checker conversion. -/
+def betaConvertibleSortZeroType : Expr :=
+  Expr.app
+    (Expr.lam
+      (Expr.sort (Level.succ Level.zero))
+      (Expr.bvar Nat.zero))
+    (Expr.sort Level.zero)
+
+/-- A one-variable context whose newest variable has a beta-convertible type. -/
+def betaConvertibleArgumentContext : Context :=
+  Context.extend Context.empty Expr.betaConvertibleSortZeroType
+
+/-- Identity application whose argument type is beta-convertible to the
+function domain but not syntactically equal to it. -/
+def betaConvertibleIdentityApp : Expr :=
+  Expr.app
+    (Expr.lam (Expr.sort Level.zero) (Expr.bvar Nat.zero))
+    (Expr.bvar Nat.zero)
+
+/-- The WHNF equality procedure recognizes the beta-redex fixture as `Sort 0`.
+-/
+theorem isDefEq_betaConvertibleSortZeroType :
+    Eq
+      (Expr.isDefEq
+        Environment.empty
+        Expr.betaConvertibleSortZeroType
+        (Expr.sort Level.zero))
+      true :=
+  Eq.refl true
+
+/-- Runtime inference accepts an application whose argument type is only
+beta-convertible to the function domain. -/
+theorem inferCore_accepts_betaConvertibleArgumentDomain :
+    Eq
+      (Expr.inferCore?
+        Environment.empty
+        Expr.betaConvertibleArgumentContext
+        Expr.betaConvertibleIdentityApp)
+      (some (Expr.sort Level.zero)) :=
+  Eq.refl (some (Expr.sort Level.zero))
+
+/-- Runtime checking accepts a beta-convertible expected type. -/
+theorem checkCore_accepts_betaConvertibleExpectedType :
+    Eq
+      (Expr.checkCore?
+        Environment.empty
+        Expr.betaConvertibleArgumentContext
+        Expr.betaConvertibleIdentityApp
+        Expr.betaConvertibleSortZeroType)
+      true :=
+  Eq.refl true
+
+/-- Proof-carrying inference accepts the same beta-convertible app-domain
+case. -/
+theorem infer_accepts_betaConvertibleArgumentDomain :
+    Eq
+      (Expr.infer?
+        Environment.empty
+        Expr.betaConvertibleArgumentContext
+        Expr.betaConvertibleIdentityApp)
+      (some (Expr.sort Level.zero)) :=
+  Eq.refl (some (Expr.sort Level.zero))
+
+/-- Proof-carrying checking accepts the same beta-convertible expected type
+case. -/
+theorem check_accepts_betaConvertibleExpectedType :
+    Eq
+      (Expr.check?
+        Environment.empty
+        Expr.betaConvertibleArgumentContext
+        Expr.betaConvertibleIdentityApp
+        Expr.betaConvertibleSortZeroType)
+      true :=
+  Eq.refl true
+
 end Expr
 
 end LeanFX2.FX1

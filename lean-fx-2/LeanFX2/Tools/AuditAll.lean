@@ -1129,6 +1129,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.infer?_sound
 #assert_no_axioms LeanFX2.FX1.Expr.check?
 #assert_no_axioms LeanFX2.FX1.Expr.check?_sound
+#assert_no_axioms LeanFX2.FX1.Expr.betaConvertibleSortZeroType
+#assert_no_axioms LeanFX2.FX1.Expr.betaConvertibleArgumentContext
+#assert_no_axioms LeanFX2.FX1.Expr.betaConvertibleIdentityApp
+#assert_no_axioms LeanFX2.FX1.Expr.isDefEq_betaConvertibleSortZeroType
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_accepts_betaConvertibleArgumentDomain
+#assert_no_axioms LeanFX2.FX1.Expr.checkCore_accepts_betaConvertibleExpectedType
+#assert_no_axioms LeanFX2.FX1.Expr.infer_accepts_betaConvertibleArgumentDomain
+#assert_no_axioms LeanFX2.FX1.Expr.check_accepts_betaConvertibleExpectedType
 #assert_no_axioms LeanFX2.FX1.check_sound
 #assert_no_axioms LeanFX2.FX1.checkCore_sound
 
