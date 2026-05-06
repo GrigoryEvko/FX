@@ -192,6 +192,59 @@ theorem sortZeroIdentity
     (HasType.var
       (Context.HasTypeAt.newest Context.empty (Expr.sort Level.zero)))
 
+/-- In a one-variable context, the identity function over `Sort 0` applied to
+the newest variable has type `Sort 0`.
+
+This is a small beta-preservation regression for the M3 spine: the source term
+uses lambda introduction, application elimination, de Bruijn lookup, and the
+`subst0` codomain computation. -/
+theorem identityAppNewestVar_sourceHasType
+    (environment : Environment) :
+    HasType
+      environment
+      (Context.extend Context.empty (Expr.sort Level.zero))
+      (Expr.app
+        (Expr.lam (Expr.sort Level.zero) (Expr.bvar Nat.zero))
+        (Expr.bvar Nat.zero))
+      (Expr.sort Level.zero) :=
+  HasType.app
+    (functionHasPi :=
+      HasType.lam
+        (HasType.sort
+          (Context.extend Context.empty (Expr.sort Level.zero))
+          Level.zero)
+        (HasType.var
+          (Context.HasTypeAt.newest
+            (Context.extend Context.empty (Expr.sort Level.zero))
+            (Expr.sort Level.zero))))
+    (argumentHasDomain :=
+      HasType.var
+        (Context.HasTypeAt.newest Context.empty (Expr.sort Level.zero)))
+
+/-- The beta target of `identityAppNewestVar_sourceHasType` has the same
+`Sort 0` type in the same context. -/
+theorem identityAppNewestVar_targetHasType
+    (environment : Environment) :
+    HasType
+      environment
+      (Context.extend Context.empty (Expr.sort Level.zero))
+      (Expr.bvar Nat.zero)
+      (Expr.sort Level.zero) :=
+  HasType.var
+    (Context.HasTypeAt.newest Context.empty (Expr.sort Level.zero))
+
+/-- The source term in `identityAppNewestVar_sourceHasType` beta-reduces to
+the target term in `identityAppNewestVar_targetHasType`. -/
+theorem identityAppNewestVar_betaStep :
+    Step
+      (Expr.app
+        (Expr.lam (Expr.sort Level.zero) (Expr.bvar Nat.zero))
+        (Expr.bvar Nat.zero))
+      (Expr.bvar Nat.zero) :=
+  Step.beta_newest_bvar
+    (Expr.sort Level.zero)
+    (Expr.bvar Nat.zero)
+
 end HasType
 
 end LeanFX2.FX1
