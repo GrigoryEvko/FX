@@ -40,7 +40,11 @@ namespace LeanFX2.Tools
 -- Semantic-signature debt gates.  These do not claim the current signatures
 -- are sound; they pin the known fake-typing shapes so new ctors cannot repeat
 -- them silently and repaired ctors ratchet the budgets downward.
-#assert_dependent_eliminator_motive_budget LeanFX2.Term 9
+-- `Term.boolElim` was refactored to a dependent motive `Ty level (scope + 1)`
+-- in commit db1b88d; the Census heuristic in `hasFixedMotiveTypeBinder` now
+-- recognises extended-scope motives and excludes them from the debt count,
+-- ratcheting this budget from 9 to 8 (load-bearing fixed-motive eliminators).
+#assert_dependent_eliminator_motive_budget LeanFX2.Term 8
 #assert_unit_placeholder_budget LeanFX2.Term 1
 #assert_modal_noop_budget LeanFX2.Term 3
 #assert_session_no_advance_budget LeanFX2.Term 2

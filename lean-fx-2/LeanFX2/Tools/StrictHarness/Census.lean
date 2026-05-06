@@ -328,14 +328,47 @@ def isDependentEliminatorConstructorName (constructorName : Name) : Bool :=
     suffix == "oeqJ" ||
     suffix == "idStrictRec"
 
-/-- Whether a constructor type still binds a fixed `motiveType : Ty ...`.
-This is the current marker for non-dependent eliminator debt. -/
+/-- Whether the second argument applied to `LeanFX2.Ty` extends the surrounding
+scope (i.e. the motive family lives in `scope + 1`).  A genuinely dependent
+eliminator's motive is parameterised over an extra context entry, so its scope
+index is no longer a bare variable: it is `Nat.succ <scope>`, `<scope> + 1`,
+`<scope>.succ`, or any other expression that wraps the scope variable in
+additional structure.
+
+Returns `true` when the motive parameter type is `Ty <level> (<scope> + 1)`
+or any equivalent shape; `false` when it is the bare-variable form
+`Ty <level> <scope>` that still characterises a fixed-motive eliminator. -/
+def hasExtendedScopeMotiveArg (parameterType : Expr) : Bool :=
+  match parameterType with
+  | .app (.app (.const tyName _) _levelArg) scopeArg =>
+      if tyName != `LeanFX2.Ty then false
+      else
+        match scopeArg with
+        | .bvar _ => false
+        | .fvar _ => false
+        | .mvar _ => false
+        | _ => true
+  | _ => false
+
+/-- Whether a constructor type still binds a fixed `motiveType : Ty level scope`
+parameter, indicating non-dependent eliminator debt.  Refactored eliminators
+whose motive parameter has type `Ty level (scope + 1)` -- a genuine dependent
+motive family -- are NOT flagged: the extended-scope index is the marker that
+the eliminator already accepts a motive family parameterised over the
+scrutinee's value, which is the desired shape.
+
+Heuristic: traverse the constructor's pi-telescope.  For each binder named
+`motiveType` whose parameter type mentions `LeanFX2.Ty`, classify the parameter
+type via `hasExtendedScopeMotiveArg`.  Bare-scope-index motives are debt;
+extended-scope motives are correctly dependent and produce `false` here. -/
 partial def hasFixedMotiveTypeBinder (constructorType : Expr) : Bool :=
   match constructorType with
   | .forallE binderName parameterType bodyType _ =>
-      (Name.lastSegmentString binderName == "motiveType" &&
-        doesExprMentionConst `LeanFX2.Ty parameterType) ||
-        hasFixedMotiveTypeBinder bodyType
+      let isFixedMotiveBinder :=
+        Name.lastSegmentString binderName == "motiveType" &&
+          doesExprMentionConst `LeanFX2.Ty parameterType &&
+          !hasExtendedScopeMotiveArg parameterType
+      isFixedMotiveBinder || hasFixedMotiveTypeBinder bodyType
   | _ => false
 
 /-- Report dependent-eliminator motive debt for one constructor. -/
@@ -1260,9 +1293,12 @@ def assertExactDebtSnapshot
 /-- Expected current Term constructors with missing mode premises. -/
 def expectedTermModeDebtNames : Array Name := #[]
 
-/-- Expected current fixed-motive eliminator constructors. -/
+/-- Expected current fixed-motive eliminator constructors.  `Term.boolElim`
+was refactored to a dependent motive family `Ty level (scope + 1)` in commit
+db1b88d ("Restore LeanFX2 build and strict audit"); the heuristic in
+`hasFixedMotiveTypeBinder` recognises the extended-scope motive shape and
+excludes it from this debt list. -/
 def expectedTermDependentMotiveDebtNames : Array Name := #[
-  `LeanFX2.Term.boolElim,
   `LeanFX2.Term.natElim,
   `LeanFX2.Term.natRec,
   `LeanFX2.Term.listElim,
