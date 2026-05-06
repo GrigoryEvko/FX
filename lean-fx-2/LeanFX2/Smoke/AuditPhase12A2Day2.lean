@@ -13,6 +13,7 @@ import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Algo.WHNF
 import LeanFX2.Cubical.Path
 import LeanFX2.Cubical.PathLemmas
+import LeanFX2.Cubical.Glue
 import LeanFX2.Cubical.Composition
 import LeanFX2.Cubical.Transport
 
@@ -132,6 +133,16 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.betaGlueElimIntro
 #print axioms LeanFX2.Step.par.betaGlueElimIntro
 #print axioms LeanFX2.Step.par.betaGlueElimIntroDeep
+#print axioms LeanFX2.Cubical.glueIntroduction
+#print axioms LeanFX2.Cubical.glueIntroduction_toRaw
+#print axioms LeanFX2.Cubical.glueElimination
+#print axioms LeanFX2.Cubical.glueElimination_toRaw
+#print axioms LeanFX2.Cubical.glueIntroduction_parCong
+#print axioms LeanFX2.Cubical.glueElimination_parCong
+#print axioms LeanFX2.Cubical.glueIntroduction_convCumul
+#print axioms LeanFX2.Cubical.glueElimination_convCumul
+#print axioms LeanFX2.Cubical.glueElimIntro_parBeta
+#print axioms LeanFX2.Cubical.glueElimIntro_convCumulBeta
 #print axioms LeanFX2.Step.par.transp
 #print axioms LeanFX2.Step.par.hcomp
 #print axioms LeanFX2.Cubical.homogeneousComposition

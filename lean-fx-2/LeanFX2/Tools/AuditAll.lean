@@ -231,6 +231,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?
 #assert_no_axioms LeanFX2.LeanKernel.Environment.findConstant?_empty
 #assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?_empty
+#assert_no_axioms LeanFX2.Cubical.glueIntroduction
+#assert_no_axioms LeanFX2.Cubical.glueIntroduction_toRaw
+#assert_no_axioms LeanFX2.Cubical.glueElimination
+#assert_no_axioms LeanFX2.Cubical.glueElimination_toRaw
+#assert_no_axioms LeanFX2.Cubical.glueIntroduction_parCong
+#assert_no_axioms LeanFX2.Cubical.glueElimination_parCong
+#assert_no_axioms LeanFX2.Cubical.glueIntroduction_convCumul
+#assert_no_axioms LeanFX2.Cubical.glueElimination_convCumul
+#assert_no_axioms LeanFX2.Cubical.glueElimIntro_parBeta
+#assert_no_axioms LeanFX2.Cubical.glueElimIntro_convCumulBeta
 #assert_no_axioms LeanFX2.Cubical.homogeneousComposition
 #assert_no_axioms LeanFX2.Cubical.homogeneousComposition_toRaw
 #assert_no_axioms LeanFX2.Cubical.homogeneousComposition_parCong
