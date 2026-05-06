@@ -872,6 +872,521 @@ theorem inferCore_app_from_branch_sound
   match typeEquality with
   | Eq.refl _ => HasType.app functionHasPi argumentHasDomain
 
+/-- Turn an impossible runtime-facing inference failure into the requested
+typing result.  All callers must provide both the computed `none` branch and
+the contradictory accepted `some` result. -/
+theorem inferCore_none_absurd
+    {environment : Environment}
+    {context : Context}
+    {expression inferredTypeExpr : Expr}
+    (inferenceFailed :
+      Eq (Expr.inferCore? environment context expression) none)
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore? environment context expression)
+        (some inferredTypeExpr)) :
+    HasType environment context expression inferredTypeExpr :=
+  let noneEqualsSome :=
+    Eq.trans (Eq.symm inferenceFailed) inferenceSucceeded
+  nomatch noneEqualsSome
+
+/-- Soundness of runtime-facing core inference for the accepted no-constant
+fragment. -/
+theorem inferCore_sound
+    {environment : Environment}
+    {context : Context} :
+    (expression : Expr) -> {inferredTypeExpr : Expr} ->
+      Eq
+        (Expr.inferCore? environment context expression)
+        (some inferredTypeExpr) ->
+      HasType environment context expression inferredTypeExpr
+  | Expr.bvar _, _, inferenceSucceeded =>
+      inferCore_bvar_sound inferenceSucceeded
+  | Expr.sort _, _, inferenceSucceeded =>
+      inferCore_sort_sound inferenceSucceeded
+  | Expr.const _, _, inferenceSucceeded =>
+      nomatch inferenceSucceeded
+  | Expr.pi domainExpr bodyExpr, inferredTypeExpr, inferenceSucceeded =>
+      let piBodyCase (domainLevel : Level) : Option Expr -> Option Expr
+        | some (Expr.sort currentBodyLevel) =>
+            some (Expr.sort (Level.max domainLevel currentBodyLevel))
+        | some (Expr.bvar _) => none
+        | some (Expr.const _) => none
+        | some (Expr.pi _ _) => none
+        | some (Expr.lam _ _) => none
+        | some (Expr.app _ _) => none
+        | none => none
+      let piDomainCase : Option Expr -> Option Expr
+        | some (Expr.sort currentDomainLevel) =>
+            piBodyCase currentDomainLevel
+              (Expr.inferCore?
+                environment
+                (Context.extend context domainExpr)
+                bodyExpr)
+        | some (Expr.bvar _) => none
+        | some (Expr.const _) => none
+        | some (Expr.pi _ _) => none
+        | some (Expr.lam _ _) => none
+        | some (Expr.app _ _) => none
+        | none => none
+      let piDomainCaseEquality :
+          Eq
+            (Expr.inferCore?
+              environment
+              context
+              (Expr.pi domainExpr bodyExpr))
+            (piDomainCase
+              (Expr.inferCore? environment context domainExpr)) :=
+        Eq.refl
+          (Expr.inferCore?
+            environment
+            context
+            (Expr.pi domainExpr bodyExpr))
+      let failFromDomainCase
+          {domainResult : Option Expr}
+          (domainInference :
+            Eq
+              (Expr.inferCore? environment context domainExpr)
+              domainResult)
+          (domainCaseFailed : Eq (piDomainCase domainResult) none) :
+          HasType
+            environment
+            context
+            (Expr.pi domainExpr bodyExpr)
+            inferredTypeExpr :=
+        inferCore_none_absurd
+          (Eq.trans
+            piDomainCaseEquality
+            (Eq.trans
+              (congrArg piDomainCase domainInference)
+              domainCaseFailed))
+          inferenceSucceeded
+      match domainInference :
+          Expr.inferCore? environment context domainExpr with
+      | some (Expr.sort domainLevel) =>
+          let domainHasSort :
+              HasType environment context domainExpr (Expr.sort domainLevel) :=
+            inferCore_sound
+              (environment := environment)
+              (context := context)
+              domainExpr
+              domainInference
+          let bodyCaseEquality :
+              Eq
+                (piDomainCase (some (Expr.sort domainLevel)))
+                (piBodyCase domainLevel
+                  (Expr.inferCore?
+                    environment
+                    (Context.extend context domainExpr)
+                    bodyExpr)) :=
+            Eq.refl
+              (piBodyCase domainLevel
+                (Expr.inferCore?
+                  environment
+                  (Context.extend context domainExpr)
+                  bodyExpr))
+          let failFromBodyCase
+              {bodyResult : Option Expr}
+              (bodyInference :
+                Eq
+                  (Expr.inferCore?
+                    environment
+                    (Context.extend context domainExpr)
+                    bodyExpr)
+                  bodyResult)
+              (bodyCaseFailed :
+                Eq (piBodyCase domainLevel bodyResult) none) :
+              HasType
+                environment
+                context
+                (Expr.pi domainExpr bodyExpr)
+                inferredTypeExpr :=
+            inferCore_none_absurd
+              (Eq.trans
+                piDomainCaseEquality
+                (Eq.trans
+                  (congrArg piDomainCase domainInference)
+                  (Eq.trans
+                    bodyCaseEquality
+                    (Eq.trans
+                      (congrArg (piBodyCase domainLevel) bodyInference)
+                      bodyCaseFailed))))
+              inferenceSucceeded
+          match bodyInference :
+              Expr.inferCore?
+                environment
+                (Context.extend context domainExpr)
+                bodyExpr with
+          | some (Expr.sort bodyLevel) =>
+              let bodyHasSort :
+                  HasType
+                    environment
+                    (Context.extend context domainExpr)
+                    bodyExpr
+                    (Expr.sort bodyLevel) :=
+                inferCore_sound
+                  (environment := environment)
+                  (context := Context.extend context domainExpr)
+                  bodyExpr
+                  bodyInference
+              inferCore_pi_from_branch_sound
+                domainInference
+                bodyInference
+                domainHasSort
+                bodyHasSort
+                inferenceSucceeded
+          | some (Expr.bvar _) =>
+              failFromBodyCase bodyInference (Eq.refl none)
+          | some (Expr.const _) =>
+              failFromBodyCase bodyInference (Eq.refl none)
+          | some (Expr.pi _ _) =>
+              failFromBodyCase bodyInference (Eq.refl none)
+          | some (Expr.lam _ _) =>
+              failFromBodyCase bodyInference (Eq.refl none)
+          | some (Expr.app _ _) =>
+              failFromBodyCase bodyInference (Eq.refl none)
+          | none =>
+              failFromBodyCase bodyInference (Eq.refl none)
+      | some (Expr.bvar _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.const _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.pi _ _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.lam _ _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.app _ _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | none =>
+          failFromDomainCase domainInference (Eq.refl none)
+  | Expr.lam domainExpr bodyExpr, inferredTypeExpr, inferenceSucceeded =>
+      let lamBodyCase : Option Expr -> Option Expr
+        | some currentBodyTypeExpr =>
+            some (Expr.pi domainExpr currentBodyTypeExpr)
+        | none => none
+      let lamDomainCase : Option Expr -> Option Expr
+        | some (Expr.sort _) =>
+            lamBodyCase
+              (Expr.inferCore?
+                environment
+                (Context.extend context domainExpr)
+                bodyExpr)
+        | some (Expr.bvar _) => none
+        | some (Expr.const _) => none
+        | some (Expr.pi _ _) => none
+        | some (Expr.lam _ _) => none
+        | some (Expr.app _ _) => none
+        | none => none
+      let lamDomainCaseEquality :
+          Eq
+            (Expr.inferCore?
+              environment
+              context
+              (Expr.lam domainExpr bodyExpr))
+            (lamDomainCase
+              (Expr.inferCore? environment context domainExpr)) :=
+        Eq.refl
+          (Expr.inferCore?
+            environment
+            context
+            (Expr.lam domainExpr bodyExpr))
+      let failFromDomainCase
+          {domainResult : Option Expr}
+          (domainInference :
+            Eq
+              (Expr.inferCore? environment context domainExpr)
+              domainResult)
+          (domainCaseFailed : Eq (lamDomainCase domainResult) none) :
+          HasType
+            environment
+            context
+            (Expr.lam domainExpr bodyExpr)
+            inferredTypeExpr :=
+        inferCore_none_absurd
+          (Eq.trans
+            lamDomainCaseEquality
+            (Eq.trans
+              (congrArg lamDomainCase domainInference)
+              domainCaseFailed))
+          inferenceSucceeded
+      match domainInference :
+          Expr.inferCore? environment context domainExpr with
+      | some (Expr.sort domainLevel) =>
+          let domainHasSort :
+              HasType environment context domainExpr (Expr.sort domainLevel) :=
+            inferCore_sound
+              (environment := environment)
+              (context := context)
+              domainExpr
+              domainInference
+          let bodyCaseEquality :
+              Eq
+                (lamDomainCase (some (Expr.sort domainLevel)))
+                (lamBodyCase
+                  (Expr.inferCore?
+                    environment
+                    (Context.extend context domainExpr)
+                    bodyExpr)) :=
+            Eq.refl
+              (lamBodyCase
+                (Expr.inferCore?
+                  environment
+                  (Context.extend context domainExpr)
+                  bodyExpr))
+          let failFromBodyCase
+              {bodyResult : Option Expr}
+              (bodyInference :
+                Eq
+                  (Expr.inferCore?
+                    environment
+                    (Context.extend context domainExpr)
+                    bodyExpr)
+                  bodyResult)
+              (bodyCaseFailed : Eq (lamBodyCase bodyResult) none) :
+              HasType
+                environment
+                context
+                (Expr.lam domainExpr bodyExpr)
+                inferredTypeExpr :=
+            inferCore_none_absurd
+              (Eq.trans
+                lamDomainCaseEquality
+                (Eq.trans
+                  (congrArg lamDomainCase domainInference)
+                  (Eq.trans
+                    bodyCaseEquality
+                    (Eq.trans
+                      (congrArg lamBodyCase bodyInference)
+                      bodyCaseFailed))))
+              inferenceSucceeded
+          match bodyInference :
+              Expr.inferCore?
+                environment
+                (Context.extend context domainExpr)
+                bodyExpr with
+          | some bodyTypeExpr =>
+              let bodyHasType :
+                  HasType
+                    environment
+                    (Context.extend context domainExpr)
+                    bodyExpr
+                    bodyTypeExpr :=
+                inferCore_sound
+                  (environment := environment)
+                  (context := Context.extend context domainExpr)
+                  bodyExpr
+                  bodyInference
+              inferCore_lam_from_branch_sound
+                domainInference
+                bodyInference
+                domainHasSort
+                bodyHasType
+                inferenceSucceeded
+          | none =>
+              failFromBodyCase bodyInference (Eq.refl none)
+      | some (Expr.bvar _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.const _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.pi _ _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.lam _ _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | some (Expr.app _ _) =>
+          failFromDomainCase domainInference (Eq.refl none)
+      | none =>
+          failFromDomainCase domainInference (Eq.refl none)
+  | Expr.app functionExpr argumentExpr, inferredTypeExpr, inferenceSucceeded =>
+      let appCheckCase (bodyTypeExpr : Expr) : Bool -> Option Expr
+        | true => some (Expr.subst0 argumentExpr bodyTypeExpr)
+        | false => none
+      let appArgumentCase
+          (domainExpr bodyTypeExpr : Expr) :
+          Option Expr -> Option Expr
+        | some argumentTypeExpr =>
+            appCheckCase bodyTypeExpr
+              (Expr.checkerBeq argumentTypeExpr domainExpr)
+        | none => none
+      let appFunctionCase : Option Expr -> Option Expr
+        | some (Expr.pi domainExpr bodyTypeExpr) =>
+            appArgumentCase domainExpr bodyTypeExpr
+              (Expr.inferCore? environment context argumentExpr)
+        | some (Expr.bvar _) => none
+        | some (Expr.sort _) => none
+        | some (Expr.const _) => none
+        | some (Expr.lam _ _) => none
+        | some (Expr.app _ _) => none
+        | none => none
+      let appFunctionCaseEquality :
+          Eq
+            (Expr.inferCore?
+              environment
+              context
+              (Expr.app functionExpr argumentExpr))
+            (appFunctionCase
+              (Expr.inferCore? environment context functionExpr)) :=
+        Eq.refl
+          (Expr.inferCore?
+            environment
+            context
+            (Expr.app functionExpr argumentExpr))
+      let failFromFunctionCase
+          {functionResult : Option Expr}
+          (functionInference :
+            Eq
+              (Expr.inferCore? environment context functionExpr)
+              functionResult)
+          (functionCaseFailed :
+            Eq (appFunctionCase functionResult) none) :
+          HasType
+            environment
+            context
+            (Expr.app functionExpr argumentExpr)
+            inferredTypeExpr :=
+        inferCore_none_absurd
+          (Eq.trans
+            appFunctionCaseEquality
+            (Eq.trans
+              (congrArg appFunctionCase functionInference)
+              functionCaseFailed))
+          inferenceSucceeded
+      match functionInference :
+          Expr.inferCore? environment context functionExpr with
+      | some (Expr.pi domainExpr bodyTypeExpr) =>
+          let functionHasPi :
+              HasType
+                environment
+                context
+                functionExpr
+                (Expr.pi domainExpr bodyTypeExpr) :=
+            inferCore_sound
+              (environment := environment)
+              (context := context)
+              functionExpr
+              functionInference
+          let argumentCaseEquality :
+              Eq
+                (appFunctionCase (some (Expr.pi domainExpr bodyTypeExpr)))
+                (appArgumentCase domainExpr bodyTypeExpr
+                  (Expr.inferCore? environment context argumentExpr)) :=
+            Eq.refl
+              (appArgumentCase domainExpr bodyTypeExpr
+                (Expr.inferCore? environment context argumentExpr))
+          let failFromArgumentCase
+              {argumentResult : Option Expr}
+              (argumentInference :
+                Eq
+                  (Expr.inferCore? environment context argumentExpr)
+                  argumentResult)
+              (argumentCaseFailed :
+                Eq (appArgumentCase domainExpr bodyTypeExpr argumentResult)
+                  none) :
+              HasType
+                environment
+                context
+                (Expr.app functionExpr argumentExpr)
+                inferredTypeExpr :=
+            inferCore_none_absurd
+              (Eq.trans
+                appFunctionCaseEquality
+                (Eq.trans
+                  (congrArg appFunctionCase functionInference)
+                  (Eq.trans
+                    argumentCaseEquality
+                    (Eq.trans
+                      (congrArg
+                        (appArgumentCase domainExpr bodyTypeExpr)
+                        argumentInference)
+                      argumentCaseFailed))))
+              inferenceSucceeded
+          match argumentInference :
+              Expr.inferCore? environment context argumentExpr with
+          | some argumentTypeExpr =>
+              let argumentHasInferredType :
+                  HasType
+                    environment
+                    context
+                    argumentExpr
+                    argumentTypeExpr :=
+                inferCore_sound
+                  (environment := environment)
+                  (context := context)
+                  argumentExpr
+                  argumentInference
+              let checkCaseEquality :
+                  Eq
+                    (appArgumentCase
+                      domainExpr
+                      bodyTypeExpr
+                      (some argumentTypeExpr))
+                    (appCheckCase
+                      bodyTypeExpr
+                      (Expr.checkerBeq argumentTypeExpr domainExpr)) :=
+                Eq.refl
+                  (appCheckCase
+                    bodyTypeExpr
+                    (Expr.checkerBeq argumentTypeExpr domainExpr))
+              let failFromCheckCase
+                  {checkResult : Bool}
+                  (argumentTypeCheck :
+                    Eq
+                      (Expr.checkerBeq argumentTypeExpr domainExpr)
+                      checkResult)
+                  (checkCaseFailed :
+                    Eq
+                      (appCheckCase bodyTypeExpr checkResult)
+                      none) :
+                  HasType
+                    environment
+                    context
+                    (Expr.app functionExpr argumentExpr)
+                    inferredTypeExpr :=
+                inferCore_none_absurd
+                  (Eq.trans
+                    appFunctionCaseEquality
+                    (Eq.trans
+                      (congrArg appFunctionCase functionInference)
+                      (Eq.trans
+                        argumentCaseEquality
+                        (Eq.trans
+                          (congrArg
+                            (appArgumentCase domainExpr bodyTypeExpr)
+                            argumentInference)
+                          (Eq.trans
+                            checkCaseEquality
+                            (Eq.trans
+                              (congrArg
+                                (appCheckCase bodyTypeExpr)
+                                argumentTypeCheck)
+                              checkCaseFailed))))))
+                  inferenceSucceeded
+              match argumentTypeCheck :
+                  Expr.checkerBeq argumentTypeExpr domainExpr with
+              | true =>
+                  inferCore_app_from_branch_sound
+                    functionInference
+                    argumentInference
+                    argumentTypeCheck
+                    functionHasPi
+                    argumentHasInferredType
+                    inferenceSucceeded
+              | false =>
+                  failFromCheckCase argumentTypeCheck (Eq.refl none)
+          | none =>
+              failFromArgumentCase argumentInference (Eq.refl none)
+      | some (Expr.bvar _) =>
+          failFromFunctionCase functionInference (Eq.refl none)
+      | some (Expr.sort _) =>
+          failFromFunctionCase functionInference (Eq.refl none)
+      | some (Expr.const _) =>
+          failFromFunctionCase functionInference (Eq.refl none)
+      | some (Expr.lam _ _) =>
+          failFromFunctionCase functionInference (Eq.refl none)
+      | some (Expr.app _ _) =>
+          failFromFunctionCase functionInference (Eq.refl none)
+      | none =>
+          failFromFunctionCase functionInference (Eq.refl none)
+
 /-- Executable checking against an expected type without proof payloads. -/
 def checkCore? (environment : Environment) (context : Context)
     (expression expectedTypeExpr : Expr) : Bool :=
@@ -915,6 +1430,42 @@ theorem checkCore_of_inferCore_sound
       projectedEquality
   match inferredTypeEquality with
   | Eq.refl _ => inferredTypeDerivation
+
+/-- Soundness of runtime-facing checking for the accepted no-constant
+fragment. -/
+theorem checkCore_sound
+    {environment : Environment}
+    {context : Context}
+    {expression expectedTypeExpr : Expr}
+    (checkingSucceeded :
+      Eq
+        (Expr.checkCore?
+          environment
+          context
+          expression
+          expectedTypeExpr)
+        true) :
+    HasType environment context expression expectedTypeExpr :=
+  match inferenceSucceeded :
+      Expr.inferCore? environment context expression with
+  | some _ =>
+      Expr.checkCore_of_inferCore_sound
+        inferenceSucceeded
+        (Expr.inferCore_sound
+          (environment := environment)
+          (context := context)
+          expression
+          inferenceSucceeded)
+        checkingSucceeded
+  | none =>
+      let falseEqualsTrue : Eq false true :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Expr.checkBoolFromCoreType? expectedTypeExpr)
+              inferenceSucceeded))
+          checkingSucceeded
+      nomatch falseEqualsTrue
 
 /-- Direct soundness for runtime-facing variable checking. -/
 theorem checkCore_bvar_sound

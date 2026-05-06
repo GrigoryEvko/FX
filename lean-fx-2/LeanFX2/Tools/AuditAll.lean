@@ -832,8 +832,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_pi_from_branch_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_lam_from_branch_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_app_from_branch_sound
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_none_absurd
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore?
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore_of_inferCore_sound
+#assert_no_axioms LeanFX2.FX1.Expr.checkCore_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore_bvar_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore_sort_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferResult?
@@ -842,6 +845,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.check?
 #assert_no_axioms LeanFX2.FX1.Expr.check?_sound
 #assert_no_axioms LeanFX2.FX1.check_sound
+#assert_no_axioms LeanFX2.FX1.checkCore_sound
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to
