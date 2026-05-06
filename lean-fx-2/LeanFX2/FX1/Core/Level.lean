@@ -23,6 +23,47 @@ inductive Level : Type
 
 namespace Level
 
+/-- Structural executable equality for FX1 universe levels.
+
+This is intentionally a full constructor-pair table rather than a wildcard
+fallback, matching the project's zero-axiom match discipline. -/
+def beq : Level -> Level -> Bool
+  | Level.zero, Level.zero => true
+  | Level.zero, Level.succ _ => false
+  | Level.zero, Level.max _ _ => false
+  | Level.zero, Level.imax _ _ => false
+  | Level.zero, Level.param _ => false
+  | Level.succ _, Level.zero => false
+  | Level.succ leftBaseLevel, Level.succ rightBaseLevel =>
+      Level.beq leftBaseLevel rightBaseLevel
+  | Level.succ _, Level.max _ _ => false
+  | Level.succ _, Level.imax _ _ => false
+  | Level.succ _, Level.param _ => false
+  | Level.max _ _, Level.zero => false
+  | Level.max _ _, Level.succ _ => false
+  | Level.max leftLeftLevel leftRightLevel,
+      Level.max rightLeftLevel rightRightLevel =>
+      Bool.and
+        (Level.beq leftLeftLevel rightLeftLevel)
+        (Level.beq leftRightLevel rightRightLevel)
+  | Level.max _ _, Level.imax _ _ => false
+  | Level.max _ _, Level.param _ => false
+  | Level.imax _ _, Level.zero => false
+  | Level.imax _ _, Level.succ _ => false
+  | Level.imax _ _, Level.max _ _ => false
+  | Level.imax leftLeftLevel leftRightLevel,
+      Level.imax rightLeftLevel rightRightLevel =>
+      Bool.and
+        (Level.beq leftLeftLevel rightLeftLevel)
+        (Level.beq leftRightLevel rightRightLevel)
+  | Level.imax _ _, Level.param _ => false
+  | Level.param _, Level.zero => false
+  | Level.param _, Level.succ _ => false
+  | Level.param _, Level.max _ _ => false
+  | Level.param _, Level.imax _ _ => false
+  | Level.param leftName, Level.param rightName =>
+      Name.beq leftName rightName
+
 /-- Structural size of an FX1 universe level. -/
 def nodeCount : Level -> Nat
   | Level.zero => 1

@@ -707,8 +707,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Name.beq
 #assert_no_axioms LeanFX2.FX1.Name.nodeCount
 #assert_no_axioms LeanFX2.FX1.Level
+#assert_no_axioms LeanFX2.FX1.Level.beq
 #assert_no_axioms LeanFX2.FX1.Level.nodeCount
 #assert_no_axioms LeanFX2.FX1.Expr
+#assert_no_axioms LeanFX2.FX1.Expr.beq
 #assert_no_axioms LeanFX2.FX1.Expr.nodeCount
 #assert_no_axioms LeanFX2.FX1.Declaration
 #assert_no_axioms LeanFX2.FX1.Declaration.name

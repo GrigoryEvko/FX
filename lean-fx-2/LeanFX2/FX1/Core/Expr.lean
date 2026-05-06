@@ -27,6 +27,62 @@ inductive Expr : Type
 
 namespace Expr
 
+/-- Structural executable equality for FX1 expressions.
+
+The checker uses this as the first exact-syntax comparison before richer
+conversion is introduced.  The constructor-pair table is fully enumerated to
+avoid wildcard-generated proof artifacts. -/
+def beq : Expr -> Expr -> Bool
+  | Expr.bvar leftIndex, Expr.bvar rightIndex =>
+      Nat.beq leftIndex rightIndex
+  | Expr.bvar _, Expr.sort _ => false
+  | Expr.bvar _, Expr.const _ => false
+  | Expr.bvar _, Expr.pi _ _ => false
+  | Expr.bvar _, Expr.lam _ _ => false
+  | Expr.bvar _, Expr.app _ _ => false
+  | Expr.sort _, Expr.bvar _ => false
+  | Expr.sort leftLevel, Expr.sort rightLevel =>
+      Level.beq leftLevel rightLevel
+  | Expr.sort _, Expr.const _ => false
+  | Expr.sort _, Expr.pi _ _ => false
+  | Expr.sort _, Expr.lam _ _ => false
+  | Expr.sort _, Expr.app _ _ => false
+  | Expr.const _, Expr.bvar _ => false
+  | Expr.const _, Expr.sort _ => false
+  | Expr.const leftName, Expr.const rightName =>
+      Name.beq leftName rightName
+  | Expr.const _, Expr.pi _ _ => false
+  | Expr.const _, Expr.lam _ _ => false
+  | Expr.const _, Expr.app _ _ => false
+  | Expr.pi _ _, Expr.bvar _ => false
+  | Expr.pi _ _, Expr.sort _ => false
+  | Expr.pi _ _, Expr.const _ => false
+  | Expr.pi leftDomain leftBody, Expr.pi rightDomain rightBody =>
+      Bool.and
+        (Expr.beq leftDomain rightDomain)
+        (Expr.beq leftBody rightBody)
+  | Expr.pi _ _, Expr.lam _ _ => false
+  | Expr.pi _ _, Expr.app _ _ => false
+  | Expr.lam _ _, Expr.bvar _ => false
+  | Expr.lam _ _, Expr.sort _ => false
+  | Expr.lam _ _, Expr.const _ => false
+  | Expr.lam _ _, Expr.pi _ _ => false
+  | Expr.lam leftDomain leftBody, Expr.lam rightDomain rightBody =>
+      Bool.and
+        (Expr.beq leftDomain rightDomain)
+        (Expr.beq leftBody rightBody)
+  | Expr.lam _ _, Expr.app _ _ => false
+  | Expr.app _ _, Expr.bvar _ => false
+  | Expr.app _ _, Expr.sort _ => false
+  | Expr.app _ _, Expr.const _ => false
+  | Expr.app _ _, Expr.pi _ _ => false
+  | Expr.app _ _, Expr.lam _ _ => false
+  | Expr.app leftFunction leftArgument,
+      Expr.app rightFunction rightArgument =>
+      Bool.and
+        (Expr.beq leftFunction rightFunction)
+        (Expr.beq leftArgument rightArgument)
+
 /-- Structural size of an FX1 expression. -/
 def nodeCount : Expr -> Nat
   | Expr.bvar _ => 1
