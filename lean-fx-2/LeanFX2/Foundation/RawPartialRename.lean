@@ -1,5 +1,4 @@
 import LeanFX2.Foundation.RenameIdentity
-import LeanFX2.Foundation.RawSubst
 
 /-! # Foundation/RawPartialRename
 

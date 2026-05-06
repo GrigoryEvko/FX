@@ -1,5 +1,4 @@
 import LeanFX2.Foundation.RawTerm
-import LeanFX2.Foundation.Action
 
 /-! # RawSubst — Layer 0 raw substitution algebra.
 

@@ -1,5 +1,4 @@
 import LeanFX2.Cubical.Path
-import LeanFX2.Term.ToRaw
 
 /-! # Bridge/PathToId
 

@@ -1,5 +1,4 @@
 import LeanFX2.Foundation.Ty
-import LeanFX2.Foundation.Action
 
 /-! # Subst — Layer 0 joint type/raw substitution.
 

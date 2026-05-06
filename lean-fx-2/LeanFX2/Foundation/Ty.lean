@@ -1,4 +1,3 @@
-import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.Universe
 import LeanFX2.Foundation.RawSubst
 

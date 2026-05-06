@@ -1,4 +1,3 @@
-import LeanFX2.Term
 import LeanFX2.Algo.DecConv
 
 /-! # Algo/Infer — type inference for synthesizable Term forms
