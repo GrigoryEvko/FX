@@ -51,13 +51,16 @@ The older-variable rule weakens the stored type as it passes through a newer
 binder.  This is the dependent-context behavior missing from plain
 `Context.lookup?`, which is intentionally only a syntactic index probe. -/
 inductive HasTypeAt : Context -> Nat -> Expr -> Prop
-  /-- The newest binder has exactly the type used to extend the context. -/
+  /-- The newest binder has the extending type weakened into the extended
+  context.  Without this shift, a dependent binder type such as `bvar 0` would
+  incorrectly point at the new variable itself rather than the previous
+  binder. -/
   | newest
       (context : Context) (typeExpr : Expr) :
       HasTypeAt
         (Context.extend context typeExpr)
         Nat.zero
-        typeExpr
+        (Expr.weaken typeExpr)
   /-- An older binder's type is weakened through the newer binder. -/
   | older
       {context : Context}
@@ -69,6 +72,24 @@ inductive HasTypeAt : Context -> Nat -> Expr -> Prop
         (Context.extend context newTypeExpr)
         (Nat.succ index)
         (Expr.weaken typeExpr)
+
+namespace HasTypeAt
+
+/-- Regression check for dependent context lookup: if the newest binder's type
+refers to the previous binder, lookup must shift that reference from `bvar 0`
+to `bvar 1` under the new binder. -/
+theorem newest_weakened_dependency :
+    HasTypeAt
+      (Context.extend
+        (Context.extend Context.empty (Expr.sort Level.zero))
+        (Expr.bvar Nat.zero))
+      Nat.zero
+      (Expr.bvar (Nat.succ Nat.zero)) :=
+  HasTypeAt.newest
+    (Context.extend Context.empty (Expr.sort Level.zero))
+    (Expr.bvar Nat.zero)
+
+end HasTypeAt
 
 end Context
 
