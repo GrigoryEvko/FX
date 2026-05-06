@@ -1,4 +1,3 @@
-import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawSubst
 
 /-! # Reduction/RawPar — raw-side parallel reduction.

@@ -1,5 +1,4 @@
 import LeanFX2.Surface.GrammarToken
-import LeanFX2.Surface.TokenSchema
 
 /-! # Surface/SchemaAudit — operator + bracket round-trip lemmas
 

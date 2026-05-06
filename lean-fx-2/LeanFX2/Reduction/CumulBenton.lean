@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.CumulCastElim
-import LeanFX2.Term.Rename
 
 /-! # Reduction/CumulBenton — BHKM per-Term-ctor rename arms (Pattern 2)
 

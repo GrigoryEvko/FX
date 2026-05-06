@@ -1,5 +1,4 @@
 import LeanFX2.HoTT.Identity
-import LeanFX2.HoTT.Path.Composition
 import LeanFX2.HoTT.Path.Inverse
 
 /-! # HoTT/Transport — transport along paths (constant motive)

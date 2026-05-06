@@ -1,4 +1,3 @@
-import LeanFX2.Reduction.Step
 import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.RawPar
 

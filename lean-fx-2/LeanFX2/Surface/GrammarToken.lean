@@ -1,4 +1,3 @@
-import LeanFX2.Surface.Token
 import LeanFX2.Surface.TokenSchema
 
 /-! # Surface/GrammarToken — parser-level token dispatch

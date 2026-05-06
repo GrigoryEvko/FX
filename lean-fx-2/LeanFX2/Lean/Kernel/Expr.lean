@@ -1,4 +1,3 @@
-import LeanFX2.Lean.Kernel.Name
 import LeanFX2.Lean.Kernel.Level
 
 /-! # Lean/Kernel/Expr

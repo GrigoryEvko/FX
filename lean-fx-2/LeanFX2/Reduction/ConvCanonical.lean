@@ -1,6 +1,5 @@
 import LeanFX2.Term.Inversion
 import LeanFX2.Term.SubjectReduction
-import LeanFX2.Reduction.Conv
 import LeanFX2.Reduction.ConvCongIsClosedTy
 
 /-! # Reduction/ConvCanonical — Conv between canonical-head terms

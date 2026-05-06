@@ -1,4 +1,3 @@
-import LeanFX2.HoTT.Path.Composition
 import LeanFX2.HoTT.Path.Inverse
 
 /-! # HoTT/Path/Groupoid — paths form a strict groupoid

@@ -1,4 +1,3 @@
-import LeanFX2.Surface.AST
 import LeanFX2.Surface.KernelBridge
 import LeanFX2.Surface.StdNames
 

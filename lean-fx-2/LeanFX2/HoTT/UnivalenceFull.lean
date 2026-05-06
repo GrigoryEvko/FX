@@ -1,4 +1,3 @@
-import LeanFX2.HoTT.Univalence
 import LeanFX2.HoTT.Funext
 
 /-! # HoTT/UnivalenceFull — Maximal kernel-internal Univalence at zero axioms.

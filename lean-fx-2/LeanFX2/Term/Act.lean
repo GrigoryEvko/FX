@@ -1,6 +1,4 @@
-import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
-import LeanFX2.Foundation.SubstActsOnTy
 import LeanFX2.Foundation.TyActBridge
 
 /-! # Term/Act — Tier 3 / MEGA-Z5.A.

@@ -1,6 +1,3 @@
-import LeanFX2.Term
-import LeanFX2.Reduction.Step
-import LeanFX2.Reduction.StepStar
 import LeanFX2.Reduction.Conv
 import LeanFX2.Term.SubjectReductionGeneral
 

@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.Cumul
-import LeanFX2.Term.Subst
 
 /-! # Reduction/ConvCumulHomo — homogeneous-context-only ConvCumul
 

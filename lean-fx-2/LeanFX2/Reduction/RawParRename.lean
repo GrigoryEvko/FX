@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.RawPar
-import LeanFX2.Foundation.RawSubst
 
 /-! # Reduction/RawParRename — RawStep.par closed under renaming
 

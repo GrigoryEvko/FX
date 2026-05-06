@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.Conv
-import LeanFX2.Foundation.Universe
 import LeanFX2.Term.SubstHet
 
 /-! # Reduction/Cumul — REAL cross-level universe cumulativity (Option C)

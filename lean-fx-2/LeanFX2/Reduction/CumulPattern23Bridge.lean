@@ -1,5 +1,4 @@
 import LeanFX2.Reduction.CumulSubstCompat
-import LeanFX2.Reduction.ConvCumulHomo
 
 /-! # Reduction/CumulPattern23Bridge — Pattern 2 ⇔ Pattern 3 bridge (forward + var-link skeleton)
 

@@ -1,5 +1,3 @@
-import LeanFX2.Surface.Token
-import LeanFX2.Surface.TokenSchema
 import LeanFX2.Surface.TokenInvariants
 import LeanFX2.Surface.GrammarToken
 

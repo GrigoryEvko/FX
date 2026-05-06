@@ -1,5 +1,4 @@
 import LeanFX2.HoTT.NTypes
-import LeanFX2.Reduction.Conv
 
 /-! # HoTT/Univalence — Univalence as a derivable theorem (NEVER an axiom)
 

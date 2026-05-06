@@ -1,5 +1,4 @@
 import LeanFX2.Modal.Foundation
-import LeanFX2.Foundation.Mode
 
 /-! # Modal/TwoLevel — Two-Level Type Theory (2LTT)
 
