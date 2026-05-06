@@ -25,4 +25,23 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Expr.denote_eq_toRawTerm?
 #assert_no_axioms LeanFX2.Surface.Expr.denote_eq_RawExpr_denote
 
+/-! ### Per-ctor denotation corollaries (B02-B07 collapse) -/
+
+#assert_no_axioms LeanFX2.Surface.Expr.denote_boundExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_freeNameExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_unitExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_litExpr_unitLit
+#assert_no_axioms LeanFX2.Surface.Expr.denote_litExpr_boolTrue
+#assert_no_axioms LeanFX2.Surface.Expr.denote_litExpr_boolFalse
+#assert_no_axioms LeanFX2.Surface.Expr.denote_litExpr_intLit_zero
+#assert_no_axioms LeanFX2.Surface.Expr.denote_litExpr_strLit
+#assert_no_axioms LeanFX2.Surface.Expr.denote_appExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_lamExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_ifExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_blockExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_parenExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_dotExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_binopExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denote_unopExpr
+
 end LeanFX2.Tools
