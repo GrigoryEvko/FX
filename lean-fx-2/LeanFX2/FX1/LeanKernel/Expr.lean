@@ -1,29 +1,27 @@
-import LeanFX2.Lean.Kernel.Level
+prelude
+import LeanFX2.FX1.LeanKernel.Level
 
-/-! # Lean/Kernel/Expr
+/-! # FX1/LeanKernel/Expr
 
 Lean kernel expressions.
 
 ## Deliverable
 
 This module encodes the twelve kernel expression constructors used by Lean 4.
-The encoding strengthens bound variables from raw `Nat` indices to
-`Fin scope`, making malformed de Bruijn references unrepresentable in this
-mechanization.
+Bound variables use Lean's actual `Nat` representation; scope validity is a
+typing/checker obligation rather than a dependency on host `Fin` helper lemmas.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
 /-- Free-variable identifiers in the encoded Lean kernel. -/
 inductive FVarId : Type
   | mk (name : Name) : FVarId
-  deriving DecidableEq, Repr
 
 /-- Metavariable identifiers in the encoded Lean kernel. -/
 inductive MVarId : Type
   | mk (name : Name) : MVarId
-  deriving DecidableEq, Repr
 
 /-- Lean binder information. -/
 inductive BinderInfo : Type
@@ -31,13 +29,16 @@ inductive BinderInfo : Type
   | implicit : BinderInfo
   | strictImplicit : BinderInfo
   | instImplicit : BinderInfo
-  deriving DecidableEq, Repr
 
 /-- Literal payloads accepted by Lean expressions. -/
 inductive Literal : Type
   | natVal (value : Nat) : Literal
-  | strVal (value : String) : Literal
-  deriving DecidableEq, Repr
+  | strAtomVal (atomId : Nat) : Literal
+
+/-- One metadata entry.  Payloads are atom ids, not host strings. -/
+structure MDataEntry : Type where
+  keyName : Name
+  valueAtomId : Nat
 
 /-- Minimal metadata representation for `Expr.mdata`.
 
@@ -45,8 +46,7 @@ Lean's runtime metadata map is richer; this syntax layer only needs a
 deterministic, inspectable payload so metadata nodes can be represented and
 ignored by later kernel rules. -/
 structure MData : Type where
-  entries : List (Name × String)
-  deriving DecidableEq, Repr
+  entries : List MDataEntry
 
 /-- Lean kernel expression syntax, indexed by universe-level budget and local
 bound-variable scope.
@@ -54,9 +54,9 @@ bound-variable scope.
 The constructor set matches Lean's expression kind enum:
 `bvar`, `fvar`, `mvar`, `sort`, `const`, `app`, `lam`, `forallE`, `letE`,
 `lit`, `mdata`, and `proj`. -/
-inductive Expr : Nat → Nat → Type
+inductive Expr : Nat -> Nat -> Type
   | bvar {level scope : Nat}
-      (position : Fin scope) : Expr level scope
+      (position : Nat) : Expr level scope
   | fvar {level scope : Nat}
       (fvarId : FVarId) : Expr level scope
   | mvar {level scope : Nat}
@@ -71,17 +71,17 @@ inductive Expr : Nat → Nat → Type
   | lam {level scope : Nat}
       (binderName : Name)
       (domainExpr : Expr level scope)
-      (bodyExpr : Expr level (scope + 1))
+      (bodyExpr : Expr level (Nat.succ scope))
       (binderInfo : BinderInfo) : Expr level scope
   | forallE {level scope : Nat}
       (binderName : Name)
       (domainExpr : Expr level scope)
-      (bodyExpr : Expr level (scope + 1))
+      (bodyExpr : Expr level (Nat.succ scope))
       (binderInfo : BinderInfo) : Expr level scope
   | letE {level scope : Nat}
       (declName : Name)
       (typeExpr valueExpr : Expr level scope)
-      (bodyExpr : Expr level (scope + 1))
+      (bodyExpr : Expr level (Nat.succ scope))
       (nondep : Bool) : Expr level scope
   | lit {level scope : Nat}
       (literal : Literal) : Expr level scope
@@ -97,39 +97,48 @@ namespace Expr
 
 /-- Count expression nodes.  This is a structural sanity check used by early
 kernel tooling before substitution and typing are populated. -/
-def nodeCount {level : Nat} : ∀ {scope : Nat}, Expr level scope → Nat
-  | _, bvar _position => 1
-  | _, fvar _fvarId => 1
-  | _, mvar _mvarId => 1
-  | _, sort _sortLevel => 1
-  | _, const _constName _levels => 1
-  | _, app functionExpr argumentExpr =>
-      1 + nodeCount functionExpr + nodeCount argumentExpr
-  | _, lam _binderName domainExpr bodyExpr _binderInfo =>
-      1 + nodeCount domainExpr + nodeCount bodyExpr
-  | _, forallE _binderName domainExpr bodyExpr _binderInfo =>
-      1 + nodeCount domainExpr + nodeCount bodyExpr
-  | _, letE _declName typeExpr valueExpr bodyExpr _nondep =>
-      1 + nodeCount typeExpr + nodeCount valueExpr + nodeCount bodyExpr
-  | _, lit _literal => 1
-  | _, mdata _metadata bodyExpr =>
-      1 + nodeCount bodyExpr
-  | _, proj _structName _fieldIndex targetExpr =>
-      1 + nodeCount targetExpr
+def nodeCount {level : Nat} : {scope : Nat} -> Expr level scope -> Nat
+  | _, Expr.bvar _position => 1
+  | _, Expr.fvar _fvarId => 1
+  | _, Expr.mvar _mvarId => 1
+  | _, Expr.sort _sortLevel => 1
+  | _, Expr.const _constName _levels => 1
+  | _, Expr.app functionExpr argumentExpr =>
+      Nat.succ (Nat.add (nodeCount functionExpr) (nodeCount argumentExpr))
+  | _, Expr.lam _binderName domainExpr bodyExpr _binderInfo =>
+      Nat.succ (Nat.add (nodeCount domainExpr) (nodeCount bodyExpr))
+  | _, Expr.forallE _binderName domainExpr bodyExpr _binderInfo =>
+      Nat.succ (Nat.add (nodeCount domainExpr) (nodeCount bodyExpr))
+  | _, Expr.letE _declName typeExpr valueExpr bodyExpr _nondep =>
+      Nat.succ
+        (Nat.add
+          (nodeCount typeExpr)
+          (Nat.add (nodeCount valueExpr) (nodeCount bodyExpr)))
+  | _, Expr.lit _literal => 1
+  | _, Expr.mdata _metadata bodyExpr =>
+      Nat.succ (nodeCount bodyExpr)
+  | _, Expr.proj _structName _fieldIndex targetExpr =>
+      Nat.succ (nodeCount targetExpr)
 
 /-- Applications have at least three nodes when both sides are atomic. -/
 theorem nodeCount_app {level scope : Nat}
     (functionExpr argumentExpr : Expr level scope) :
-    nodeCount (app functionExpr argumentExpr) =
-      1 + nodeCount functionExpr + nodeCount argumentExpr := rfl
+    Eq
+      (nodeCount (Expr.app functionExpr argumentExpr))
+      (Nat.succ (Nat.add (nodeCount functionExpr) (nodeCount argumentExpr))) :=
+  Eq.refl
+    (Nat.succ (Nat.add (nodeCount functionExpr) (nodeCount argumentExpr)))
 
 /-- Metadata contributes one wrapper node. -/
 theorem nodeCount_mdata {level scope : Nat}
     (metadata : MData)
     (bodyExpr : Expr level scope) :
-    nodeCount (mdata metadata bodyExpr) = 1 + nodeCount bodyExpr := rfl
+    Eq
+      (nodeCount (Expr.mdata metadata bodyExpr))
+      (Nat.succ (nodeCount bodyExpr)) :=
+  Eq.refl (Nat.succ (nodeCount bodyExpr))
 
 end Expr
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2

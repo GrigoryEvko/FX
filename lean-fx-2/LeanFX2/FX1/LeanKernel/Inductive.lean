@@ -1,6 +1,7 @@
-import LeanFX2.Lean.Kernel.Reduction
+prelude
+import LeanFX2.FX1.LeanKernel.Reduction
 
-/-! # Lean/Kernel/Inductive
+/-! # FX1/LeanKernel/Inductive
 
 Lean kernel declaration and inductive specifications.
 
@@ -19,7 +20,7 @@ not claimed in this slice.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
 /-- A Lean constant declaration in the encoded environment. -/
 structure ConstantSpec (level : Nat) : Type where
@@ -53,32 +54,50 @@ namespace Environment
 
 /-- Empty environment. -/
 def empty {level : Nat} : Environment level where
-  constants := []
-  inductives := []
+  constants := List.nil
+  inductives := List.nil
+
+/-- Find a constant declaration in a declaration list. -/
+def findConstantInList? {level : Nat}
+    (targetName : Name) : List (ConstantSpec level) -> Option (ConstantSpec level)
+  | List.nil => Option.none
+  | List.cons constantSpec remainingConstants =>
+      match Name.beq constantSpec.constantName targetName with
+      | true => Option.some constantSpec
+      | false => findConstantInList? targetName remainingConstants
+
+/-- Find an inductive declaration in a declaration list. -/
+def findInductiveInList? {level : Nat}
+    (targetName : Name) : List (InductiveSpec level) -> Option (InductiveSpec level)
+  | List.nil => Option.none
+  | List.cons inductiveSpec remainingInductives =>
+      match Name.beq inductiveSpec.inductiveName targetName with
+      | true => Option.some inductiveSpec
+      | false => findInductiveInList? targetName remainingInductives
 
 /-- Find a constant declaration by name. -/
 def findConstant? {level : Nat}
     (environment : Environment level)
     (targetName : Name) : Option (ConstantSpec level) :=
-  environment.constants.find? fun constantSpec =>
-    decide (constantSpec.constantName = targetName)
+  findConstantInList? targetName environment.constants
 
 /-- Find an inductive declaration by name. -/
 def findInductive? {level : Nat}
     (environment : Environment level)
     (targetName : Name) : Option (InductiveSpec level) :=
-  environment.inductives.find? fun inductiveSpec =>
-    decide (inductiveSpec.inductiveName = targetName)
+  findInductiveInList? targetName environment.inductives
 
 /-- The empty environment contains no constants. -/
 theorem findConstant?_empty {level : Nat} (targetName : Name) :
-    findConstant? (empty (level := level)) targetName = none := rfl
+    Eq (findConstant? (empty (level := level)) targetName) Option.none :=
+  Eq.refl Option.none
 
 /-- The empty environment contains no inductives. -/
 theorem findInductive?_empty {level : Nat} (targetName : Name) :
-    findInductive? (empty (level := level)) targetName = none := rfl
+    Eq (findInductive? (empty (level := level)) targetName) Option.none :=
+  Eq.refl Option.none
 
 end Environment
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2

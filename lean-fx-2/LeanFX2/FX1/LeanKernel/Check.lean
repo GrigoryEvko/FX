@@ -1,4 +1,5 @@
-/-! # Lean/Kernel/Check
+prelude
+/-! # FX1/LeanKernel/Check
 
 Day 0 scaffold for the executable Lean kernel checker.
 
@@ -9,7 +10,7 @@ is proved in `Soundness.lean`.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2

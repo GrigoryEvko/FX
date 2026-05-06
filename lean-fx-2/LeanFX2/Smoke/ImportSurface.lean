@@ -10,9 +10,9 @@ module.  Production modules may not depend directly on `Smoke`, `Tools`,
 `Sketch`, the broad `LeanFX2` root, or host-heavy modules such as `Lean` and
 `Std`; Lean's ambient `Init` prelude is handled by declaration-dependency
 audits.  The same broad environment also checks FX1 source imports, prevents
-the legacy `LeanFX2.Lean.Kernel` scaffold from leaking into rich production
-modules, prevents rich production modules from depending on FX1, and verifies
-that production modules do not import later semantic layers.
+the legacy `LeanFX2.Lean.Kernel` scaffold path from leaking into rich
+production modules, prevents rich production modules from depending on FX1, and
+verifies that production modules do not import later semantic layers.
 It also fails on redundant direct project imports, except for the small
 documented set of semantic core edges.
 -/
@@ -25,6 +25,7 @@ namespace LeanFX2.Smoke.ImportSurface
 #assert_host_boundary_isolated
 #assert_fx1_import_surface_clean
 #assert_fx1_core_exact_import_shape
+#assert_fx1_lean_kernel_exact_import_shape
 #assert_rich_production_fx1_import_surface_clean
 #assert_legacy_lean_kernel_scaffold_isolated
 #assert_production_layer_imports_clean

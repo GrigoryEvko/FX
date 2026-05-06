@@ -1,4 +1,5 @@
-/-! # Lean/Kernel/Audit
+prelude
+/-! # FX1/LeanKernel/Audit
 
 Day 0 scaffold for Lean kernel meta-verification audits.
 
@@ -9,7 +10,7 @@ soundness theorem.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2

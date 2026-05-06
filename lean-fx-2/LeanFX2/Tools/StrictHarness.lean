@@ -721,7 +721,8 @@ def isAllowedFX1CoreExactDirectImport
     (sourceModuleName importedModuleName : Name) :
     Bool :=
   if sourceModuleName == `LeanFX2.FX1 then
-    importedModuleName == `LeanFX2.FX1.Core
+    importedModuleName == `LeanFX2.FX1.Core ||
+      importedModuleName == `LeanFX2.FX1.LeanKernel
   else if sourceModuleName == `LeanFX2.FX1.Core then
     importedModuleName == `LeanFX2.FX1.Core.Primitive ||
       importedModuleName == `LeanFX2.FX1.Core.Name ||
@@ -782,9 +783,8 @@ def fx1CoreExactImportViolationsForModule
 /-- Build-failing gate for the exact FX1/Core root import DAG.
 
 This checks only the current minimal root umbrella and `FX1/Core` modules.  It
-does not police future `FX1/LeanKernel` files; those have a separate policy in
-`isAllowedFX1DirectImport` and should receive their own exact-DAG gate when
-the Lean-in-FX implementation starts. -/
+does not police `FX1/LeanKernel` files; those are checked by
+`#assert_fx1_lean_kernel_exact_import_shape`. -/
 elab "#assert_fx1_core_exact_import_shape" : command => do
   let environment ← getEnv
   let moduleEntries :=
@@ -811,6 +811,88 @@ elab "#assert_fx1_core_exact_import_shape" : command => do
     let header :=
       s!"FX1/Core exact import shape FAILED: " ++
       s!"{violations.size} of {scannedRootModules} root modules violate the DAG"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
+/-! ## FX1/LeanKernel exact import discipline -/
+
+/-- Exact direct imports allowed for the current FX1/LeanKernel DAG.
+
+The Lean-kernel model is allowed to depend on FX1/Core through the broader FX1
+source-import gate, but the current migrated scaffold does not need that edge
+yet.  Keeping this table exact makes the first future dependency on FX1/Core
+an explicit policy change in the same commit as the checker theorem work. -/
+def isAllowedFX1LeanKernelExactDirectImport
+    (sourceModuleName importedModuleName : Name) :
+    Bool :=
+  if sourceModuleName == `LeanFX2.FX1.LeanKernel then
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Inductive ||
+      importedModuleName == `LeanFX2.FX1.LeanKernel.HasType ||
+      importedModuleName == `LeanFX2.FX1.LeanKernel.Check ||
+      importedModuleName == `LeanFX2.FX1.LeanKernel.Soundness ||
+      importedModuleName == `LeanFX2.FX1.LeanKernel.Audit
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Name then
+    importedModuleName == `LeanFX2.FX1.Core.Primitive
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Level then
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Name
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Expr then
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Level
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Substitution then
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Expr
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Reduction then
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Substitution
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Inductive then
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Reduction
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.HasType then
+    false
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Check then
+    false
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Soundness then
+    false
+  else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Audit then
+    false
+  else
+    false
+
+/-- Direct imports that violate the exact FX1/LeanKernel DAG. -/
+def fx1LeanKernelExactImportViolationsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun violations directImport =>
+      if isAllowedFX1LeanKernelExactDirectImport
+          sourceModuleName directImport.module then
+        violations
+      else
+        violations.push directImport.module)
+
+/-- Build-failing gate for the exact FX1/LeanKernel import DAG. -/
+elab "#assert_fx1_lean_kernel_exact_import_shape" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedLeanKernelModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let sourceModuleName := effectiveImport.module
+    if sourceModuleName == `LeanFX2.FX1.LeanKernel ||
+        isFX1LeanKernelModuleName sourceModuleName then
+      scannedLeanKernelModules := scannedLeanKernelModules + 1
+      let forbiddenImports :=
+        fx1LeanKernelExactImportViolationsForModule sourceModuleName moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (sourceModuleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo
+      m!"FX1/LeanKernel exact import shape ok: {scannedLeanKernelModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: unexpected direct imports [{renderedImports}]"
+    let header :=
+      s!"FX1/LeanKernel exact import shape FAILED: " ++
+      s!"{violations.size} of {scannedLeanKernelModules} modules violate the DAG"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
 /-! ## Legacy Lean-kernel scaffold isolation -/

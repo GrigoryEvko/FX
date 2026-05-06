@@ -1,4 +1,5 @@
-/-! # Lean/Kernel/HasType
+prelude
+/-! # FX1/LeanKernel/HasType
 
 Day 0 scaffold for the Lean kernel typing relation.
 
@@ -8,7 +9,7 @@ This module will define the encoded `HasType` judgment for Lean expressions.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2

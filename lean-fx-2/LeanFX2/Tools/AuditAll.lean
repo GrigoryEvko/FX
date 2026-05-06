@@ -2,16 +2,16 @@ import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
 import LeanFX2
-import LeanFX2.Lean.Kernel.Name
-import LeanFX2.Lean.Kernel.Level
-import LeanFX2.Lean.Kernel.Expr
-import LeanFX2.Lean.Kernel.Substitution
-import LeanFX2.Lean.Kernel.Reduction
-import LeanFX2.Lean.Kernel.Inductive
-import LeanFX2.Lean.Kernel.HasType
-import LeanFX2.Lean.Kernel.Check
-import LeanFX2.Lean.Kernel.Soundness
-import LeanFX2.Lean.Kernel.Audit
+import LeanFX2.FX1.LeanKernel.Name
+import LeanFX2.FX1.LeanKernel.Level
+import LeanFX2.FX1.LeanKernel.Expr
+import LeanFX2.FX1.LeanKernel.Substitution
+import LeanFX2.FX1.LeanKernel.Reduction
+import LeanFX2.FX1.LeanKernel.Inductive
+import LeanFX2.FX1.LeanKernel.HasType
+import LeanFX2.FX1.LeanKernel.Check
+import LeanFX2.FX1.LeanKernel.Soundness
+import LeanFX2.FX1.LeanKernel.Audit
 import LeanFX2.FX1
 
 /-! # Tools/AuditAll — build-failing zero-axiom gate
@@ -193,63 +193,63 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Conservativity.isModalFreeTy
 #assert_no_axioms LeanFX2.Conservativity.modalToObservationalTy
 #assert_no_axioms LeanFX2.Conservativity.modalToObservationalTy_preserves_isModalFreeTy
-#assert_no_axioms LeanFX2.LeanKernel.Name
-#assert_no_axioms LeanFX2.LeanKernel.Name.appendStr
-#assert_no_axioms LeanFX2.LeanKernel.Name.appendNum
-#assert_no_axioms LeanFX2.LeanKernel.Name.isAnonymous
-#assert_no_axioms LeanFX2.LeanKernel.Name.isAnonymous_anonymous
-#assert_no_axioms LeanFX2.LeanKernel.Name.isAnonymous_str
-#assert_no_axioms LeanFX2.LeanKernel.Name.isAnonymous_num
-#assert_no_axioms LeanFX2.LeanKernel.Level
-#assert_no_axioms LeanFX2.LeanKernel.Level.beq
-#assert_no_axioms LeanFX2.LeanKernel.Level.normalize
-#assert_no_axioms LeanFX2.LeanKernel.Level.nodeCount
-#assert_no_axioms LeanFX2.LeanKernel.Level.leBoolWithFuel
-#assert_no_axioms LeanFX2.LeanKernel.Level.leBool
-#assert_no_axioms LeanFX2.LeanKernel.Level.le
-#assert_no_axioms LeanFX2.LeanKernel.Level.normalize_zero
-#assert_no_axioms LeanFX2.LeanKernel.FVarId
-#assert_no_axioms LeanFX2.LeanKernel.MVarId
-#assert_no_axioms LeanFX2.LeanKernel.BinderInfo
-#assert_no_axioms LeanFX2.LeanKernel.Literal
-#assert_no_axioms LeanFX2.LeanKernel.MData
-#assert_no_axioms LeanFX2.LeanKernel.Expr
-#assert_no_axioms LeanFX2.LeanKernel.Expr.nodeCount
-#assert_no_axioms LeanFX2.LeanKernel.Expr.nodeCount_app
-#assert_no_axioms LeanFX2.LeanKernel.Expr.nodeCount_mdata
-#assert_no_axioms LeanFX2.LeanKernel.ExprRenaming
-#assert_no_axioms LeanFX2.LeanKernel.ExprRenaming.lift
-#assert_no_axioms LeanFX2.LeanKernel.ExprRenaming.weaken
-#assert_no_axioms LeanFX2.LeanKernel.ExprRenaming.lift_newest
-#assert_no_axioms LeanFX2.LeanKernel.ExprRenaming.lift_succ
-#assert_no_axioms LeanFX2.LeanKernel.Expr.renameWith
-#assert_no_axioms LeanFX2.LeanKernel.Expr.weaken
-#assert_no_axioms LeanFX2.LeanKernel.ExprSubstitution
-#assert_no_axioms LeanFX2.LeanKernel.ExprSubstitution.lift
-#assert_no_axioms LeanFX2.LeanKernel.ExprSubstitution.singleton
-#assert_no_axioms LeanFX2.LeanKernel.ExprSubstitution.singleton_newest
-#assert_no_axioms LeanFX2.LeanKernel.ExprSubstitution.singleton_succ
-#assert_no_axioms LeanFX2.LeanKernel.Expr.subst
-#assert_no_axioms LeanFX2.LeanKernel.Expr.instantiate
-#assert_no_axioms LeanFX2.LeanKernel.Expr.instantiate_bvar_zero
-#assert_no_axioms LeanFX2.LeanKernel.Expr.instantiate_bvar_succ
-#assert_no_axioms LeanFX2.LeanKernel.Expr.weaken_bvar
-#assert_no_axioms LeanFX2.LeanKernel.Step
-#assert_no_axioms LeanFX2.LeanKernel.Step.betaStep
-#assert_no_axioms LeanFX2.LeanKernel.Step.zetaStep
-#assert_no_axioms LeanFX2.LeanKernel.Step.metadataStep
-#assert_no_axioms LeanFX2.LeanKernel.Step.betaStep_newest_bvar
-#assert_no_axioms LeanFX2.LeanKernel.Step.betaStep_succ_bvar
-#assert_no_axioms LeanFX2.LeanKernel.Step.zetaStep_newest_bvar
-#assert_no_axioms LeanFX2.LeanKernel.ConstantSpec
-#assert_no_axioms LeanFX2.LeanKernel.ConstructorSpec
-#assert_no_axioms LeanFX2.LeanKernel.InductiveSpec
-#assert_no_axioms LeanFX2.LeanKernel.Environment
-#assert_no_axioms LeanFX2.LeanKernel.Environment.empty
-#assert_no_axioms LeanFX2.LeanKernel.Environment.findConstant?
-#assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?
-#assert_no_axioms LeanFX2.LeanKernel.Environment.findConstant?_empty
-#assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?_empty
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name.appendStr
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name.appendNum
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name.isAnonymous
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name.isAnonymous_anonymous
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name.isAnonymous_str
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Name.isAnonymous_num
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.beq
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.normalize
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.nodeCount
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.leBoolWithFuel
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.leBool
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.le
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Level.normalize_zero
+#assert_no_axioms LeanFX2.FX1.LeanKernel.FVarId
+#assert_no_axioms LeanFX2.FX1.LeanKernel.MVarId
+#assert_no_axioms LeanFX2.FX1.LeanKernel.BinderInfo
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Literal
+#assert_no_axioms LeanFX2.FX1.LeanKernel.MData
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.nodeCount
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.nodeCount_app
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.nodeCount_mdata
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprRenaming
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprRenaming.lift
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprRenaming.weaken
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprRenaming.lift_newest
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprRenaming.lift_succ
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.renameWith
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.weaken
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprSubstitution
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprSubstitution.lift
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprSubstitution.singleton
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprSubstitution.singleton_newest
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ExprSubstitution.singleton_succ
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.subst
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.instantiate
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.instantiate_bvar_zero
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.instantiate_bvar_succ
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.weaken_bvar
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step.betaStep
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step.zetaStep
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step.metadataStep
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step.betaStep_newest_bvar
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step.betaStep_succ_bvar
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Step.zetaStep_newest_bvar
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ConstantSpec
+#assert_no_axioms LeanFX2.FX1.LeanKernel.ConstructorSpec
+#assert_no_axioms LeanFX2.FX1.LeanKernel.InductiveSpec
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Environment
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.empty
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.findConstant?
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.findInductive?
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.findConstant?_empty
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.findInductive?_empty
 #assert_no_axioms LeanFX2.Cubical.glueIntroduction
 #assert_no_axioms LeanFX2.Cubical.glueIntroduction_toRaw
 #assert_no_axioms LeanFX2.Cubical.glueElimination
@@ -986,15 +986,18 @@ namespace LeanFX2.Tools
 -- later metatheory module without an explicit policy update.
 #assert_fx1_core_exact_import_shape
 
+-- Exact FX1/LeanKernel DAG gate.  The Lean-kernel model over FX1 is allowed
+-- to exist, but every direct dependency edge must be intentional.
+#assert_fx1_lean_kernel_exact_import_shape
+
 -- Rich production / FX1 separation.  FX1 is the future minimal TCB root;
 -- rich production modules may not import it directly until a deliberate
 -- bridge/certificate boundary exists.
 #assert_rich_production_fx1_import_surface_clean
 
--- Legacy Lean-kernel scaffold isolation.  The pre-FX1
--- `LeanFX2.Lean.Kernel.*` modules may be built and audited, but rich
--- production modules and the public umbrella must not depend on them while
--- Day 8 is retargeted to `LeanFX2.FX1.LeanKernel`.
+-- Legacy Lean-kernel scaffold isolation.  The old pre-FX1
+-- `LeanFX2.Lean.Kernel.*` module path must stay absent or quarantined while
+-- Day 8 targets `LeanFX2.FX1.LeanKernel`.
 #assert_legacy_lean_kernel_scaffold_isolated
 
 -- Explicit host-boundary isolation.  Host shims such as `Surface.HostLex`

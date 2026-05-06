@@ -10,9 +10,8 @@ now delegates to `LeanFX2.Rich`, so users can choose narrower public surfaces:
 * `LeanFX2.FX1` for the separate minimal trusted-root spine.
 
 Importing this deliberately excludes smoke tests, audit tooling, sketches,
-explicit host-boundary shims, FX1, and the legacy `LeanFX2.Lean.Kernel`
-scaffold.  Lake still builds those modules via `.andSubmodules`; they are not
-part of this compatibility import surface.
+explicit host-boundary shims, and FX1.  Lake still builds those modules via
+`.andSubmodules`; they are not part of this compatibility import surface.
 
 ## Layered architecture
 

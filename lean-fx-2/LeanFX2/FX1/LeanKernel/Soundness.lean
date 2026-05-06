@@ -1,4 +1,5 @@
-/-! # Lean/Kernel/Soundness
+prelude
+/-! # FX1/LeanKernel/Soundness
 
 Day 0 scaffold for the Lean kernel checker soundness theorem.
 
@@ -9,7 +10,7 @@ encoding.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2

@@ -1,6 +1,7 @@
-import LeanFX2.Lean.Kernel.Substitution
+prelude
+import LeanFX2.FX1.LeanKernel.Substitution
 
-/-! # Lean/Kernel/Reduction
+/-! # FX1/LeanKernel/Reduction
 
 Lean kernel expression reduction.
 
@@ -19,7 +20,7 @@ are intentionally left to later slices.
 -/
 
 namespace LeanFX2
-namespace LeanKernel
+namespace FX1.LeanKernel
 
 /-- One-step reduction for the encoded Lean kernel expression fragment. -/
 inductive Step {level scope : Nat} :
@@ -28,7 +29,7 @@ inductive Step {level scope : Nat} :
   | betaStep
       {binderName : Name}
       {domainExpr argumentExpr : Expr level scope}
-      {bodyExpr : Expr level (scope + 1)}
+      {bodyExpr : Expr level (Nat.succ scope)}
       {binderInfo : BinderInfo} :
       Step
         (Expr.app
@@ -39,7 +40,7 @@ inductive Step {level scope : Nat} :
   | zetaStep
       {declName : Name}
       {typeExpr valueExpr : Expr level scope}
-      {bodyExpr : Expr level (scope + 1)}
+      {bodyExpr : Expr level (Nat.succ scope)}
       {nondep : Bool} :
       Step
         (Expr.letE declName typeExpr valueExpr bodyExpr nondep)
@@ -63,20 +64,11 @@ theorem betaStep_newest_bvar {level scope : Nat}
     Step
       (Expr.app
         (Expr.lam binderName domainExpr
-          (Expr.bvar ⟨0, Nat.zero_lt_succ scope⟩)
+          (Expr.bvar (level := level) (scope := Nat.succ scope) Nat.zero)
           binderInfo)
         argumentExpr)
-      argumentExpr := by
-  change Step
-    (Expr.app
-      (Expr.lam binderName domainExpr
-        (Expr.bvar ⟨0, Nat.zero_lt_succ scope⟩)
-        binderInfo)
-      argumentExpr)
-    (Expr.instantiate
-      (Expr.bvar ⟨0, Nat.zero_lt_succ scope⟩)
-      argumentExpr)
-  exact Step.betaStep
+      argumentExpr :=
+  Step.betaStep
 
 /-- Beta against an older bound variable lowers that variable by one binder.
 
@@ -86,26 +78,16 @@ theorem betaStep_succ_bvar {level scope : Nat}
     {binderName : Name}
     {domainExpr argumentExpr : Expr level scope}
     {binderInfo : BinderInfo}
-    (position : Fin scope) :
+    (position : Nat) :
     Step
       (Expr.app
         (Expr.lam binderName domainExpr
-          (Expr.bvar (Fin.succ position))
+          (Expr.bvar (level := level) (scope := Nat.succ scope)
+            (Nat.succ position))
           binderInfo)
         argumentExpr)
-      (Expr.bvar position) := by
-  cases position with
-  | mk index isLt =>
-      change Step
-        (Expr.app
-          (Expr.lam binderName domainExpr
-            (Expr.bvar (Fin.succ ⟨index, isLt⟩))
-            binderInfo)
-          argumentExpr)
-        (Expr.instantiate
-          (Expr.bvar (Fin.succ ⟨index, isLt⟩))
-          argumentExpr)
-      exact Step.betaStep
+      (Expr.bvar (level := level) (scope := scope) position) :=
+  Step.betaStep
 
 /-- Zeta against the newest bound variable reduces exactly to the let value. -/
 theorem zetaStep_newest_bvar {level scope : Nat}
@@ -114,19 +96,12 @@ theorem zetaStep_newest_bvar {level scope : Nat}
     {nondep : Bool} :
     Step
       (Expr.letE declName typeExpr valueExpr
-        (Expr.bvar ⟨0, Nat.zero_lt_succ scope⟩)
+        (Expr.bvar (level := level) (scope := Nat.succ scope) Nat.zero)
         nondep)
-      valueExpr := by
-  change Step
-    (Expr.letE declName typeExpr valueExpr
-      (Expr.bvar ⟨0, Nat.zero_lt_succ scope⟩)
-      nondep)
-    (Expr.instantiate
-      (Expr.bvar ⟨0, Nat.zero_lt_succ scope⟩)
-      valueExpr)
-  exact Step.zetaStep
+      valueExpr :=
+  Step.zetaStep
 
 end Step
 
-end LeanKernel
+end FX1.LeanKernel
 end LeanFX2
