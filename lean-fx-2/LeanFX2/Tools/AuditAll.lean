@@ -840,6 +840,22 @@ namespace LeanFX2.Tools
 -- looks at axioms) but kept side-by-side as defense in depth.
 #audit_namespace_strict LeanFX2
 
+-- Production import-surface gate.  No production module may import
+-- `LeanFX2.Tools`, `LeanFX2.Smoke`, `LeanFX2.Sketch`, or the broad
+-- `LeanFX2` root as an internal dependency.
+#assert_production_import_surface_clean
+
+-- Rich production host-import gate.  Regular production modules must not
+-- import host-heavy modules such as `Lean`, `Std`, `Lake`, `Mathlib`,
+-- `Classical`, or host `Quot` directly.  FX1 and tooling are checked by
+-- narrower gates below.
+#assert_rich_production_host_import_surface_clean
+
+-- Semantic layer gate.  Foundation/Term/Reduction/etc. modules may only
+-- import their own layer or earlier layers, so later metatheory cannot leak
+-- downward through a convenience import.
+#assert_production_layer_imports_clean
+
 -- FX1/Core host-minimal gate.  This is intentionally scoped to the
 -- future minimal-root namespace, not the rich kernel: FX1 declarations
 -- must not depend on host-heavy `Lean`, `Std`, `Classical`, host `Quot`,
@@ -878,6 +894,12 @@ namespace LeanFX2.Tools
 -- Global host-heavy import allowlist.  The only allowed direct host-heavy
 -- edge is the audit implementation importing Lean elaborator APIs.
 #assert_host_heavy_import_surface_allowlisted
+
+-- Import census.  These two commands are informational, but keeping them in
+-- `AuditAll` makes dependency mass visible in the canonical audit target
+-- instead of only in smoke import-surface builds.
+#audit_import_family_summary
+#audit_import_surface_summary
 
 -- Raw / typed parity gate.  Every constructor of `RawStep.par` must
 -- have a same-suffix constructor in `Step.par`.  Catches the failure
