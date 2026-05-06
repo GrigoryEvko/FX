@@ -425,6 +425,216 @@ def findTypeByName_sound
           lookupSucceeded
       nomatch noneEqualsSome
 
+/-- A successful executable transparent-definition lookup paired with the
+propositional transparent-definition witness it justifies. -/
+structure TransparentLookupResult
+    (environment : Environment) (queryName : Name) : Type where
+  typeExpr : Expr
+  valueExpr : Expr
+  transparentDefinition :
+    Environment.TransparentDefinition environment queryName typeExpr valueExpr
+
+/-- Transport a proof-carrying transparent lookup across a proved query-name
+equality. -/
+def TransparentLookupResult.rewriteQueryName
+    {environment : Environment}
+    {leftQueryName rightQueryName : Name}
+    (queryNamesEqual : Eq leftQueryName rightQueryName)
+    (lookupResult : TransparentLookupResult environment rightQueryName) :
+    TransparentLookupResult environment leftQueryName :=
+  match queryNamesEqual with
+  | Eq.refl _ => lookupResult
+
+/-- Soundness payload for executable transparent-value lookup. -/
+structure FindTransparentValueSoundResult
+    (environment : Environment) (queryName : Name) (valueExpr : Expr) :
+    Type where
+  typeExpr : Expr
+  transparentDefinition :
+    Environment.TransparentDefinition environment queryName typeExpr valueExpr
+
+/-- Lift an older transparent lookup through one newer declaration. -/
+def TransparentLookupResult.weakenOlder
+    {remainingDeclarations : List Declaration}
+    {queryName : Name}
+    (newDeclaration : Declaration)
+    (olderLookup :
+      TransparentLookupResult
+        { declarations := remainingDeclarations }
+        queryName) :
+    TransparentLookupResult
+      { declarations := List.cons newDeclaration remainingDeclarations }
+      queryName := {
+  typeExpr := olderLookup.typeExpr
+  valueExpr := olderLookup.valueExpr
+  transparentDefinition :=
+    Environment.TransparentDefinition.older
+      newDeclaration
+      olderLookup.transparentDefinition
+}
+
+/-- Witness-producing transparent-definition lookup over the raw declaration
+list.
+
+Newest declarations win.  If the newest matching declaration is an axiom
+placeholder, lookup fails rather than searching older declarations with the
+same name.  This matches executable environment shadowing while ensuring that
+delta never unfolds an axiom declaration. -/
+def findTransparentDefinitionResultInDeclarations? :
+    (declarations : List Declaration) -> (queryName : Name) ->
+      Option
+        (TransparentLookupResult
+          { declarations := declarations }
+          queryName)
+  | List.nil, _ => none
+  | List.cons (Declaration.axiomDecl declName typeExpr)
+      remainingDeclarations, queryName =>
+      match Name.eqResult queryName declName with
+      | EqualityResult.equal _ => none
+      | EqualityResult.notEqual =>
+          match Environment.findTransparentDefinitionResultInDeclarations?
+              remainingDeclarations
+              queryName with
+          | some olderLookup =>
+              some
+                (TransparentLookupResult.weakenOlder
+                  (Declaration.axiomDecl declName typeExpr)
+                  olderLookup)
+          | none => none
+  | List.cons (Declaration.defDecl declName typeExpr valueExpr)
+      remainingDeclarations, queryName =>
+      match Name.eqResult queryName declName with
+      | EqualityResult.equal nameEquality =>
+          let newestLookup :
+              TransparentLookupResult
+                { declarations :=
+                    List.cons
+                      (Declaration.defDecl declName typeExpr valueExpr)
+                      remainingDeclarations }
+                declName := {
+            typeExpr := typeExpr
+            valueExpr := valueExpr
+            transparentDefinition :=
+              Environment.TransparentDefinition.newestDef
+                { declarations := remainingDeclarations }
+                declName
+                typeExpr
+                valueExpr
+          }
+          some
+            (TransparentLookupResult.rewriteQueryName
+              nameEquality
+              newestLookup)
+      | EqualityResult.notEqual =>
+          match Environment.findTransparentDefinitionResultInDeclarations?
+              remainingDeclarations
+              queryName with
+          | some olderLookup =>
+              some
+                (TransparentLookupResult.weakenOlder
+                  (Declaration.defDecl declName typeExpr valueExpr)
+                  olderLookup)
+          | none => none
+  | List.cons (Declaration.theoremDecl declName typeExpr proofExpr)
+      remainingDeclarations, queryName =>
+      match Name.eqResult queryName declName with
+      | EqualityResult.equal nameEquality =>
+          let newestLookup :
+              TransparentLookupResult
+                { declarations :=
+                    List.cons
+                      (Declaration.theoremDecl declName typeExpr proofExpr)
+                      remainingDeclarations }
+                declName := {
+            typeExpr := typeExpr
+            valueExpr := proofExpr
+            transparentDefinition :=
+              Environment.TransparentDefinition.newestTheorem
+                { declarations := remainingDeclarations }
+                declName
+                typeExpr
+                proofExpr
+          }
+          some
+            (TransparentLookupResult.rewriteQueryName
+              nameEquality
+              newestLookup)
+      | EqualityResult.notEqual =>
+          match Environment.findTransparentDefinitionResultInDeclarations?
+              remainingDeclarations
+              queryName with
+          | some olderLookup =>
+              some
+                (TransparentLookupResult.weakenOlder
+                  (Declaration.theoremDecl declName typeExpr proofExpr)
+                  olderLookup)
+          | none => none
+
+/-- Environment-level wrapper for proof-carrying transparent-definition
+lookup. -/
+def findTransparentDefinitionResult?
+    (environment : Environment) (queryName : Name) :
+    Option (TransparentLookupResult environment queryName) :=
+  Environment.findTransparentDefinitionResultInDeclarations?
+    environment.declarations
+    queryName
+
+/-- Project a transparent lookup result to its value expression. -/
+def findTransparentValueFromResult?
+    {environment : Environment} {queryName : Name} :
+    Option (TransparentLookupResult environment queryName) -> Option Expr
+  | some lookupResult => some lookupResult.valueExpr
+  | none => none
+
+/-- Find the transparent value for a constant name, if the newest matching
+declaration is transparent. -/
+def findTransparentValue?
+    (environment : Environment) (queryName : Name) : Option Expr :=
+  Environment.findTransparentValueFromResult?
+    (Environment.findTransparentDefinitionResult? environment queryName)
+
+/-- Soundness of executable transparent-value lookup. -/
+def findTransparentValue_sound
+    {environment : Environment}
+    {queryName : Name}
+    {valueExpr : Expr}
+    (lookupSucceeded :
+      Eq
+        (Environment.findTransparentValue? environment queryName)
+        (some valueExpr)) :
+    FindTransparentValueSoundResult environment queryName valueExpr :=
+  match h : Environment.findTransparentDefinitionResult? environment queryName with
+  | some lookupResult =>
+      let projectedEquality :
+          Eq (some lookupResult.valueExpr) (some valueExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Environment.findTransparentValueFromResult?
+                (environment := environment)
+                (queryName := queryName))
+              h))
+          lookupSucceeded
+      let valueEquality :=
+        CheckOption.some_injective projectedEquality
+      match valueEquality with
+      | Eq.refl _ => {
+          typeExpr := lookupResult.typeExpr
+          transparentDefinition := lookupResult.transparentDefinition
+        }
+  | none =>
+      let noneEqualsSome :
+          Eq (none : Option Expr) (some valueExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Environment.findTransparentValueFromResult?
+                (environment := environment)
+                (queryName := queryName))
+              h))
+          lookupSucceeded
+      nomatch noneEqualsSome
+
 end Environment
 
 namespace Context
@@ -525,6 +735,92 @@ theorem lookupType_sound
 end Context
 
 namespace Expr
+
+/-- A successful executable head reduction paired with its `EnvStep`
+certificate. -/
+structure HeadStepResult
+    (environment : Environment) (sourceExpr : Expr) : Type where
+  targetExpr : Expr
+  reductionStep : EnvStep environment sourceExpr targetExpr
+
+/-- Executable head-step search with proof payload.
+
+This is deliberately tiny: beta at the head of an application and delta for a
+transparent constant.  Congruence/recursive closure belongs to WHNF and
+conversion, which can be layered on this proof-carrying primitive. -/
+def headStepResult? (environment : Environment) :
+    (sourceExpr : Expr) -> Option (HeadStepResult environment sourceExpr)
+  | Expr.const constName =>
+      match Environment.findTransparentDefinitionResult? environment constName with
+      | some lookupResult =>
+          some {
+            targetExpr := lookupResult.valueExpr
+            reductionStep :=
+              EnvStep.delta lookupResult.transparentDefinition
+          }
+      | none => none
+  | Expr.app (Expr.lam domainExpr bodyExpr) argumentExpr =>
+      some {
+        targetExpr := Expr.subst0 argumentExpr bodyExpr
+        reductionStep := EnvStep.beta domainExpr bodyExpr argumentExpr
+      }
+  | Expr.bvar _ => none
+  | Expr.sort _ => none
+  | Expr.pi _ _ => none
+  | Expr.lam _ _ => none
+  | Expr.app (Expr.bvar _) _ => none
+  | Expr.app (Expr.sort _) _ => none
+  | Expr.app (Expr.const _) _ => none
+  | Expr.app (Expr.pi _ _) _ => none
+  | Expr.app (Expr.app _ _) _ => none
+
+/-- Project a proof-carrying head-step result to the executable target. -/
+def headStepFromResult?
+    {environment : Environment} {sourceExpr : Expr} :
+    Option (HeadStepResult environment sourceExpr) -> Option Expr
+  | some stepResult => some stepResult.targetExpr
+  | none => none
+
+/-- Runtime-facing executable head-step search. -/
+def headStep? (environment : Environment) (sourceExpr : Expr) : Option Expr :=
+  Expr.headStepFromResult?
+    (Expr.headStepResult? environment sourceExpr)
+
+/-- Soundness of executable head-step search. -/
+def headStep?_sound
+    {environment : Environment}
+    {sourceExpr targetExpr : Expr}
+    (headStepSucceeded :
+      Eq (Expr.headStep? environment sourceExpr) (some targetExpr)) :
+    EnvStep environment sourceExpr targetExpr :=
+  match h : Expr.headStepResult? environment sourceExpr with
+  | some stepResult =>
+      let projectedEquality :
+          Eq (some stepResult.targetExpr) (some targetExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Expr.headStepFromResult?
+                (environment := environment)
+                (sourceExpr := sourceExpr))
+              h))
+          headStepSucceeded
+      let targetEquality :=
+        CheckOption.some_injective projectedEquality
+      match targetEquality with
+      | Eq.refl _ => stepResult.reductionStep
+  | none =>
+      let noneEqualsSome :
+          Eq (none : Option Expr) (some targetExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Expr.headStepFromResult?
+                (environment := environment)
+                (sourceExpr := sourceExpr))
+              h))
+          headStepSucceeded
+      nomatch noneEqualsSome
 
 /-- A successful checker inference paired with the relational typing
 derivation it justifies. -/
