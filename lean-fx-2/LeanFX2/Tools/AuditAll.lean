@@ -829,6 +829,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore?
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_bvar_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_sort_sound
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_pi_from_branch_sound
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_lam_from_branch_sound
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_app_from_branch_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore?
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore_of_inferCore_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore_bvar_sound

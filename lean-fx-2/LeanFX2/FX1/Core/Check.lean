@@ -520,6 +520,358 @@ theorem inferCore_sort_sound
   match typeEquality with
   | Eq.refl _ => HasType.sort context sortLevel
 
+/-- Branch soundness for runtime-facing Pi inference.
+
+This is the constructor-local part of full `inferCore?` soundness: the caller
+must still provide soundness for the recursive domain and body inferences. -/
+theorem inferCore_pi_from_branch_sound
+    {environment : Environment}
+    {context : Context}
+    {domainExpr bodyExpr inferredTypeExpr : Expr}
+    {domainLevel bodyLevel : Level}
+    (domainInference :
+      Eq
+        (Expr.inferCore? environment context domainExpr)
+        (some (Expr.sort domainLevel)))
+    (bodyInference :
+      Eq
+        (Expr.inferCore?
+          environment
+          (Context.extend context domainExpr)
+          bodyExpr)
+        (some (Expr.sort bodyLevel)))
+    (domainHasSort :
+      HasType environment context domainExpr (Expr.sort domainLevel))
+    (bodyHasSort :
+      HasType
+        environment
+        (Context.extend context domainExpr)
+        bodyExpr
+        (Expr.sort bodyLevel))
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.pi domainExpr bodyExpr))
+        (some inferredTypeExpr)) :
+    HasType
+      environment
+      context
+      (Expr.pi domainExpr bodyExpr)
+      inferredTypeExpr :=
+  let branchEquality :
+      Eq
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.pi domainExpr bodyExpr))
+        (some (Expr.sort (Level.max domainLevel bodyLevel))) :=
+    let bodyCase : Option Expr -> Option Expr
+      | some (Expr.sort currentBodyLevel) =>
+          some (Expr.sort (Level.max domainLevel currentBodyLevel))
+      | some (Expr.bvar _) => none
+      | some (Expr.const _) => none
+      | some (Expr.pi _ _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+    let domainCase : Option Expr -> Option Expr
+      | some (Expr.sort currentDomainLevel) =>
+          match Expr.inferCore?
+              environment
+              (Context.extend context domainExpr)
+              bodyExpr with
+          | some (Expr.sort currentBodyLevel) =>
+              some
+                (Expr.sort
+                  (Level.max currentDomainLevel currentBodyLevel))
+          | some (Expr.bvar _) => none
+          | some (Expr.const _) => none
+          | some (Expr.pi _ _) => none
+          | some (Expr.lam _ _) => none
+          | some (Expr.app _ _) => none
+          | none => none
+      | some (Expr.bvar _) => none
+      | some (Expr.const _) => none
+      | some (Expr.pi _ _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+    let domainCaseEquality :
+        Eq
+          (Expr.inferCore?
+            environment
+            context
+            (Expr.pi domainExpr bodyExpr))
+          (domainCase
+            (Expr.inferCore? environment context domainExpr)) :=
+      Eq.refl
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.pi domainExpr bodyExpr))
+    let domainCaseProjected :=
+      congrArg domainCase domainInference
+    let bodyCaseEquality :
+        Eq
+          (domainCase (some (Expr.sort domainLevel)))
+          (bodyCase
+            (Expr.inferCore?
+              environment
+              (Context.extend context domainExpr)
+              bodyExpr)) :=
+      Eq.refl
+        (bodyCase
+          (Expr.inferCore?
+            environment
+            (Context.extend context domainExpr)
+            bodyExpr))
+    let bodyCaseProjected :=
+      congrArg bodyCase bodyInference
+    Eq.trans
+      domainCaseEquality
+      (Eq.trans
+        domainCaseProjected
+        (Eq.trans bodyCaseEquality bodyCaseProjected))
+  let typeEquality :=
+    CheckOption.some_injective
+      (Eq.trans (Eq.symm branchEquality) inferenceSucceeded)
+  match typeEquality with
+  | Eq.refl _ => HasType.pi domainHasSort bodyHasSort
+
+/-- Branch soundness for runtime-facing lambda inference.
+
+This proves the lambda branch once the domain sort and body type recursive
+inferences have already been justified. -/
+theorem inferCore_lam_from_branch_sound
+    {environment : Environment}
+    {context : Context}
+    {domainExpr bodyExpr bodyTypeExpr inferredTypeExpr : Expr}
+    {domainLevel : Level}
+    (domainInference :
+      Eq
+        (Expr.inferCore? environment context domainExpr)
+        (some (Expr.sort domainLevel)))
+    (bodyInference :
+      Eq
+        (Expr.inferCore?
+          environment
+          (Context.extend context domainExpr)
+          bodyExpr)
+        (some bodyTypeExpr))
+    (domainHasSort :
+      HasType environment context domainExpr (Expr.sort domainLevel))
+    (bodyHasType :
+      HasType
+        environment
+        (Context.extend context domainExpr)
+        bodyExpr
+        bodyTypeExpr)
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.lam domainExpr bodyExpr))
+        (some inferredTypeExpr)) :
+    HasType
+      environment
+      context
+      (Expr.lam domainExpr bodyExpr)
+      inferredTypeExpr :=
+  let branchEquality :
+      Eq
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.lam domainExpr bodyExpr))
+        (some (Expr.pi domainExpr bodyTypeExpr)) :=
+    let bodyCase : Option Expr -> Option Expr
+      | some currentBodyTypeExpr =>
+          some (Expr.pi domainExpr currentBodyTypeExpr)
+      | none => none
+    let domainCase : Option Expr -> Option Expr
+      | some (Expr.sort _) =>
+          bodyCase
+            (Expr.inferCore?
+              environment
+              (Context.extend context domainExpr)
+              bodyExpr)
+      | some (Expr.bvar _) => none
+      | some (Expr.const _) => none
+      | some (Expr.pi _ _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+    let domainCaseEquality :
+        Eq
+          (Expr.inferCore?
+            environment
+            context
+            (Expr.lam domainExpr bodyExpr))
+          (domainCase
+            (Expr.inferCore? environment context domainExpr)) :=
+      Eq.refl
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.lam domainExpr bodyExpr))
+    let domainCaseProjected :=
+      congrArg domainCase domainInference
+    let bodyCaseEquality :
+        Eq
+          (domainCase (some (Expr.sort domainLevel)))
+          (bodyCase
+            (Expr.inferCore?
+              environment
+              (Context.extend context domainExpr)
+              bodyExpr)) :=
+      Eq.refl
+        (bodyCase
+          (Expr.inferCore?
+            environment
+            (Context.extend context domainExpr)
+            bodyExpr))
+    let bodyCaseProjected :=
+      congrArg bodyCase bodyInference
+    Eq.trans
+      domainCaseEquality
+      (Eq.trans
+        domainCaseProjected
+        (Eq.trans bodyCaseEquality bodyCaseProjected))
+  let typeEquality :=
+    CheckOption.some_injective
+      (Eq.trans (Eq.symm branchEquality) inferenceSucceeded)
+  match typeEquality with
+  | Eq.refl _ => HasType.lam domainHasSort bodyHasType
+
+/-- Branch soundness for runtime-facing application inference.
+
+This proves the application branch once recursive inference has established a
+Pi-typed function and a checker-equal argument type. -/
+theorem inferCore_app_from_branch_sound
+    {environment : Environment}
+    {context : Context}
+    {functionExpr argumentExpr domainExpr bodyTypeExpr argumentTypeExpr
+      inferredTypeExpr : Expr}
+    (functionInference :
+      Eq
+        (Expr.inferCore? environment context functionExpr)
+        (some (Expr.pi domainExpr bodyTypeExpr)))
+    (argumentInference :
+      Eq
+        (Expr.inferCore? environment context argumentExpr)
+        (some argumentTypeExpr))
+    (argumentTypeCheck :
+      Eq (Expr.checkerBeq argumentTypeExpr domainExpr) true)
+    (functionHasPi :
+      HasType
+        environment
+        context
+        functionExpr
+        (Expr.pi domainExpr bodyTypeExpr))
+    (argumentHasInferredType :
+      HasType environment context argumentExpr argumentTypeExpr)
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.app functionExpr argumentExpr))
+        (some inferredTypeExpr)) :
+    HasType
+      environment
+      context
+      (Expr.app functionExpr argumentExpr)
+      inferredTypeExpr :=
+  let argumentTypeEquality :=
+    Expr.checkerBeq_sound
+      argumentTypeExpr
+      domainExpr
+      argumentTypeCheck
+  let argumentHasDomain :
+      HasType environment context argumentExpr domainExpr :=
+    match argumentTypeEquality with
+    | Eq.refl _ => argumentHasInferredType
+  let branchEquality :
+      Eq
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.app functionExpr argumentExpr))
+        (some (Expr.subst0 argumentExpr bodyTypeExpr)) :=
+    let checkCase : Bool -> Option Expr
+      | true => some (Expr.subst0 argumentExpr bodyTypeExpr)
+      | false => none
+    let argumentCase : Option Expr -> Option Expr
+      | some currentArgumentTypeExpr =>
+          checkCase (Expr.checkerBeq currentArgumentTypeExpr domainExpr)
+      | none => none
+    let functionCase : Option Expr -> Option Expr
+      | some (Expr.pi currentDomainExpr currentBodyTypeExpr) =>
+          match Expr.inferCore? environment context argumentExpr with
+          | some currentArgumentTypeExpr =>
+              match Expr.checkerBeq
+                  currentArgumentTypeExpr
+                  currentDomainExpr with
+              | true =>
+                  some (Expr.subst0 argumentExpr currentBodyTypeExpr)
+              | false => none
+          | none => none
+      | some (Expr.bvar _) => none
+      | some (Expr.sort _) => none
+      | some (Expr.const _) => none
+      | some (Expr.lam _ _) => none
+      | some (Expr.app _ _) => none
+      | none => none
+    let functionCaseEquality :
+        Eq
+          (Expr.inferCore?
+            environment
+            context
+            (Expr.app functionExpr argumentExpr))
+          (functionCase
+            (Expr.inferCore? environment context functionExpr)) :=
+      Eq.refl
+        (Expr.inferCore?
+          environment
+          context
+          (Expr.app functionExpr argumentExpr))
+    let functionCaseProjected :=
+      congrArg functionCase functionInference
+    let argumentCaseEquality :
+        Eq
+          (functionCase (some (Expr.pi domainExpr bodyTypeExpr)))
+          (argumentCase
+            (Expr.inferCore? environment context argumentExpr)) :=
+      Eq.refl
+        (argumentCase
+          (Expr.inferCore? environment context argumentExpr))
+    let argumentCaseProjected :=
+      congrArg argumentCase argumentInference
+    let checkCaseEquality :
+        Eq
+          (argumentCase (some argumentTypeExpr))
+          (checkCase (Expr.checkerBeq argumentTypeExpr domainExpr)) :=
+      Eq.refl
+        (checkCase (Expr.checkerBeq argumentTypeExpr domainExpr))
+    let checkCaseProjected :=
+      congrArg checkCase argumentTypeCheck
+    Eq.trans
+      functionCaseEquality
+      (Eq.trans
+        functionCaseProjected
+        (Eq.trans
+          argumentCaseEquality
+          (Eq.trans argumentCaseProjected
+            (Eq.trans checkCaseEquality checkCaseProjected))))
+  let typeEquality :=
+    CheckOption.some_injective
+      (Eq.trans (Eq.symm branchEquality) inferenceSucceeded)
+  match typeEquality with
+  | Eq.refl _ => HasType.app functionHasPi argumentHasDomain
+
 /-- Executable checking against an expected type without proof payloads. -/
 def checkCore? (environment : Environment) (context : Context)
     (expression expectedTypeExpr : Expr) : Bool :=
