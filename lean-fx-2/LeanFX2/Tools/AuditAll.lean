@@ -13,6 +13,7 @@ import LeanFX2.FX1.LeanKernel.Check
 import LeanFX2.FX1.LeanKernel.Soundness
 import LeanFX2.FX1.LeanKernel.Audit
 import LeanFX2.FX1
+import LeanFX2.FX1Bridge
 
 /-! # Tools/AuditAll — build-failing zero-axiom gate
 
@@ -1145,6 +1146,33 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.check_sound
 #assert_no_axioms LeanFX2.FX1.checkCore_sound
 
+-- FX1Bridge staged rich-to-FX1 unit fragment.  These proofs make only a
+-- Bridge-status claim: the staged FX1 environment contains object-level
+-- axiom declarations, so this is not Root-FX1 release evidence.
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueName
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.unitEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodeEmptyCtx
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unit
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unit
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unit_eq_unitTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unit_eq_unitValueExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueName_ne_unitTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitValueName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.unitEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnit_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unit
+
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to
 -- Lean host runtime code such as `String.decEq` or host `Nat.beq`.
@@ -1201,8 +1229,9 @@ namespace LeanFX2.Tools
 #assert_production_import_surface_clean
 
 -- Public umbrella isolation.  Broad entrypoints (`LeanFX2`, `LeanFX2.Kernel`,
--- `LeanFX2.Rich`, `LeanFX2.FX1`, `LeanFX2.FX1.Core`) may appear only in the
--- deliberate public-entrypoint chain or in smoke/tooling audits.
+-- `LeanFX2.Rich`, `LeanFX2.FX1Bridge`, `LeanFX2.FX1`, `LeanFX2.FX1.Core`) may
+-- appear only in the deliberate public-entrypoint chain or in smoke/tooling
+-- audits.
 #assert_public_umbrella_imports_isolated
 
 -- Rich production host-import gate.  Regular production modules must not

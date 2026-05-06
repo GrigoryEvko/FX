@@ -284,6 +284,12 @@ audited, but it is not the planned trusted Lean-in-FX path. -/
 def isLegacyLeanKernelScaffoldModuleName (moduleName : Name) : Bool :=
   (`LeanFX2.Lean.Kernel).isPrefixOf moduleName
 
+/-- Rich-to-FX1 bridge modules translate expressive LeanFX2 fragments into the
+FX1 checker/metatheory cone.  They are production-bearing bridge code, but not
+part of rich production and not part of the FX1 root itself. -/
+def isFX1BridgeModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.FX1Bridge).isPrefixOf moduleName
+
 /-- Deliberate host-boundary modules.  These are buildable and visible to
 the broad import census, but they are outside the zero-axiom production
 umbrella because their job is to cross host APIs explicitly. -/
@@ -365,6 +371,7 @@ source-import policy below, because it intentionally permits `Init.Prelude` as
 the only host import during the bootstrap phase. -/
 def isRichProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
   isProductionLeanFX2ModuleName moduleName &&
+    !isFX1BridgeModuleName moduleName &&
     !(`LeanFX2.FX1).isPrefixOf moduleName
 
 /-- Host-heavy modules that rich production source files must not import
@@ -528,6 +535,7 @@ def isPublicUmbrellaImportModuleName (moduleName : Name) : Bool :=
   moduleName == `LeanFX2 ||
     moduleName == `LeanFX2.Kernel ||
     moduleName == `LeanFX2.Rich ||
+    moduleName == `LeanFX2.FX1Bridge ||
     moduleName == `LeanFX2.FX1 ||
     moduleName == `LeanFX2.FX1.Core
 
@@ -540,6 +548,8 @@ def isAllowedPublicUmbrellaImport
       directImportRecord.importedModuleName == `LeanFX2.Rich) ||
     (directImportRecord.sourceModuleName == `LeanFX2.Rich &&
       directImportRecord.importedModuleName == `LeanFX2.Kernel) ||
+    (directImportRecord.sourceModuleName == `LeanFX2.FX1Bridge &&
+      (`LeanFX2.FX1Bridge).isPrefixOf directImportRecord.importedModuleName) ||
     (directImportRecord.sourceModuleName == `LeanFX2.FX1 &&
       directImportRecord.importedModuleName == `LeanFX2.FX1.Core) ||
     (`LeanFX2.Tools).isPrefixOf directImportRecord.sourceModuleName ||
@@ -1041,6 +1051,8 @@ def productionImportLayer? (moduleName : Name) : Option Nat :=
     some 4
   else if moduleName == `LeanFX2.Rich then
     some 13
+  else if isFX1BridgeModuleName moduleName then
+    some 14
   else if isSubjectReductionMetatheoryModuleName moduleName then
     some 3
   else if isReductionMetatheoryModuleName moduleName then
@@ -1317,10 +1329,12 @@ def isAllowedHostHeavyDirectImport
 /-! ## Public umbrella reachability -/
 
 /-- Whether a module is one of the public roots that should reach all
-production modules.  `LeanFX2` intentionally does not import FX1 directly,
-so the reachability root set has two entries. -/
+production modules.  `LeanFX2` intentionally imports neither FX1 nor the
+FX1Bridge layer directly, so the reachability root set has three entries. -/
 def isPublicProductionRootModuleName (moduleName : Name) : Bool :=
-  moduleName == `LeanFX2 || moduleName == `LeanFX2.FX1
+  moduleName == `LeanFX2 ||
+    moduleName == `LeanFX2.FX1 ||
+    moduleName == `LeanFX2.FX1Bridge
 
 /-- Is a project module already present in a small name set? -/
 def containsModuleName (moduleNames : Array Name) (moduleName : Name) :
@@ -1338,7 +1352,8 @@ elab "#assert_public_production_umbrella_reaches_all" : command => do
   let environment ← getEnv
   let moduleEntries :=
     Array.zip environment.header.modules environment.header.moduleData
-  let mut reachableModuleNames : Array Name := #[`LeanFX2, `LeanFX2.FX1]
+  let mut reachableModuleNames : Array Name :=
+    #[`LeanFX2, `LeanFX2.FX1, `LeanFX2.FX1Bridge]
   for _iteration in List.range moduleEntries.size do
     for (effectiveImport, moduleData) in moduleEntries do
       let sourceModuleName := effectiveImport.module
@@ -1377,6 +1392,8 @@ def importFamilyLabel (moduleName : Name) : String :=
     "LeanFX2.Kernel"
   else if moduleName == `LeanFX2.Rich then
     "LeanFX2.Rich"
+  else if isFX1BridgeModuleName moduleName then
+    "LeanFX2.FX1Bridge"
   else if (`LeanFX2.FX1).isPrefixOf moduleName then
     "LeanFX2.FX1"
   else if isLegacyLeanKernelScaffoldModuleName moduleName then
@@ -1536,6 +1553,7 @@ elab "#audit_import_surface_summary" : command => do
   let mut leanFX2ModuleCount : Nat := 0
   let mut productionModuleCount : Nat := 0
   let mut richProductionModuleCount : Nat := 0
+  let mut fx1BridgeModuleCount : Nat := 0
   let mut fx1ModuleCount : Nat := 0
   let mut toolsModuleCount : Nat := 0
   let mut smokeModuleCount : Nat := 0
@@ -1559,6 +1577,8 @@ elab "#audit_import_surface_summary" : command => do
         productionModuleCount := productionModuleCount + 1
       if isRichProductionLeanFX2ModuleName sourceModuleName then
         richProductionModuleCount := richProductionModuleCount + 1
+      if isFX1BridgeModuleName sourceModuleName then
+        fx1BridgeModuleCount := fx1BridgeModuleCount + 1
       if isFX1ModuleName sourceModuleName then
         fx1ModuleCount := fx1ModuleCount + 1
       if (`LeanFX2.Tools).isPrefixOf sourceModuleName then
@@ -1614,6 +1634,7 @@ elab "#audit_import_surface_summary" : command => do
       s!"  LeanFX2 modules visible:          {leanFX2ModuleCount}",
       s!"  Production modules:               {productionModuleCount}",
       s!"  Rich production modules:          {richProductionModuleCount}",
+      s!"  FX1Bridge modules:                {fx1BridgeModuleCount}",
       s!"  FX1 modules:                      {fx1ModuleCount}",
       s!"  Tool modules:                     {toolsModuleCount}",
       s!"  Smoke modules:                    {smokeModuleCount}",
