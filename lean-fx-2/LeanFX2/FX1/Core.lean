@@ -9,6 +9,7 @@ import LeanFX2.FX1.Core.Substitution
 import LeanFX2.FX1.Core.Reduction
 import LeanFX2.FX1.Core.HasType
 import LeanFX2.FX1.Core.WellFormed
+import LeanFX2.FX1.Core.Check
 
 /-! # FX1/Core
 
