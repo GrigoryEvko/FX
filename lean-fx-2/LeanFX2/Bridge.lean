@@ -220,6 +220,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInr _ ihValue ihRight
   | iotaIdJRefl carrier endpoint _ ihBase =>
       exact RawStep.par.iotaIdJRefl _ ihBase
+  | iotaIdStrictRecRefl carrier endpoint _ ihBase =>
+      exact RawStep.par.iotaIdStrictRecRefl _ ihBase
   -- β deep (5)
   | betaAppDeep _ _ ihFunction ihArgument =>
       exact RawStep.par.betaAppDeep ihFunction ihArgument
@@ -264,6 +266,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInrDeep _ ihScrutinee ihRight
   | iotaIdJReflDeep _ _ ihWitness ihBase =>
       exact RawStep.par.iotaIdJReflDeep ihWitness ihBase
+  | iotaIdStrictRecReflDeep _ _ ihWitness ihBase =>
+      exact RawStep.par.iotaIdStrictRecReflDeep ihWitness ihBase
   -- cumulUpInnerCong — Phase CUMUL-2.6 Design D: source projects to
   -- `RawTerm.cumulUpMarker codeSourceRaw`, target to
   -- `RawTerm.cumulUpMarker codeTargetRaw`.  The inner-step IH is a

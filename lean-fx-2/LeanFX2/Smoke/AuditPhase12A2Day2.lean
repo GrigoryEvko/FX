@@ -67,6 +67,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.par.oeqFunextCong
 #print axioms LeanFX2.RawStep.par.idStrictReflCong
 #print axioms LeanFX2.RawStep.par.idStrictRecCong
+#print axioms LeanFX2.RawStep.par.iotaIdStrictRecRefl
+#print axioms LeanFX2.RawStep.par.iotaIdStrictRecReflDeep
 #print axioms LeanFX2.RawStep.par.equivIntroCong
 #print axioms LeanFX2.RawStep.par.equivAppCong
 #print axioms LeanFX2.RawStep.par.refineIntroCong
@@ -171,8 +173,11 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.betaRecordProjIntroDeep
 #print axioms LeanFX2.Step.idStrictRecBase
 #print axioms LeanFX2.Step.idStrictRecWitness
+#print axioms LeanFX2.Step.iotaIdStrictRecRefl
 #print axioms LeanFX2.Step.par.idStrictReflCong
 #print axioms LeanFX2.Step.par.idStrictRecCong
+#print axioms LeanFX2.Step.par.iotaIdStrictRecRefl
+#print axioms LeanFX2.Step.par.iotaIdStrictRecReflDeep
 #print axioms LeanFX2.Step.equivAppEquiv
 #print axioms LeanFX2.Step.equivAppArgument
 #print axioms LeanFX2.Step.par.equivAppCong
@@ -263,6 +268,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul
 #print axioms LeanFX2.ConvCumul.betaRecordProjIntroCumul_toConv
 #print axioms LeanFX2.ConvCumul.idStrictRecCong
+#print axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul
+#print axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul_toConv
 #print axioms LeanFX2.ConvCumul.equivAppCong
 #print axioms LeanFX2.ConvCumul.refineIntroCong
 #print axioms LeanFX2.ConvCumul.refineElimCong

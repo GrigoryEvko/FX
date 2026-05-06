@@ -427,20 +427,29 @@ theorem RawStep.par.idStrictRefl_inv {scope : Nat}
   | refl _ => exact ⟨witness, rfl, RawStep.par.refl _⟩
   | idStrictReflCong witnessStep => exact ⟨_, rfl, witnessStep⟩
 
-/-- `RawStep.par (idStrictRec b w) target → target = idStrictRec b' w' ∧ pars`. -/
+/-- `RawStep.par (idStrictRec b w) target` either remains a strict recursor
+or fires the strict-id ι rule. -/
 theorem RawStep.par.idStrictRec_inv {scope : Nat}
     {baseCase witness : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.idStrictRec baseCase witness) target) :
-    ∃ baseTarget witnessTarget,
+    (∃ baseTarget witnessTarget,
       target = RawTerm.idStrictRec baseTarget witnessTarget ∧
         RawStep.par baseCase baseTarget ∧
-        RawStep.par witness witnessTarget := by
+        RawStep.par witness witnessTarget) ∨
+    (∃ reflRawArgument baseTarget,
+      target = baseTarget ∧
+        RawStep.par witness (RawTerm.idStrictRefl reflRawArgument) ∧
+        RawStep.par baseCase baseTarget) := by
   cases parallelStep with
   | refl _ =>
-      exact ⟨baseCase, witness, rfl,
+      exact Or.inl ⟨baseCase, witness, rfl,
         RawStep.par.refl _, RawStep.par.refl _⟩
   | idStrictRecCong baseStep witnessStep =>
-      exact ⟨_, _, rfl, baseStep, witnessStep⟩
+      exact Or.inl ⟨_, _, rfl, baseStep, witnessStep⟩
+  | iotaIdStrictRecRefl witnessRaw baseStep =>
+      exact Or.inr ⟨witnessRaw, _, rfl, RawStep.par.refl _, baseStep⟩
+  | iotaIdStrictRecReflDeep witnessStep baseStep =>
+      exact Or.inr ⟨_, _, rfl, witnessStep, baseStep⟩
 
 /-- `RawStep.par (equivIntro f b) target → target = equivIntro f' b' ∧ pars`. -/
 theorem RawStep.par.equivIntro_inv {scope : Nat}

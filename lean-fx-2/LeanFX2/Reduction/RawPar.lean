@@ -361,6 +361,14 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par
         (RawTerm.idJ baseRawSource (RawTerm.refl witnessRaw))
         baseRawTarget
+  /-- Shallow ι: `idStrictRec base (idStrictRefl rt) ⟶ base'`. -/
+  | iotaIdStrictRecRefl {scope : Nat}
+      {baseRawSource baseRawTarget : RawTerm scope}
+      (witnessRaw : RawTerm scope) :
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par
+        (RawTerm.idStrictRec baseRawSource (RawTerm.idStrictRefl witnessRaw))
+        baseRawTarget
   /-- Deep β: `function ⟶ λ. body` then app fires. -/
   | betaAppDeep {scope : Nat}
       {functionRawSource : RawTerm scope}
@@ -505,6 +513,15 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par witnessRawSource (RawTerm.refl reflRawArgument) →
       RawStep.par baseRawSource baseRawTarget →
       RawStep.par (RawTerm.idJ baseRawSource witnessRawSource)
+                  baseRawTarget
+  /-- Deep ι: `witness ⟶ idStrictRefl rt` then strict rec fires. -/
+  | iotaIdStrictRecReflDeep {scope : Nat}
+      {witnessRawSource : RawTerm scope}
+      {reflRawArgument : RawTerm scope}
+      {baseRawSource baseRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource (RawTerm.idStrictRefl reflRawArgument) →
+      RawStep.par baseRawSource baseRawTarget →
+      RawStep.par (RawTerm.idStrictRec baseRawSource witnessRawSource)
                   baseRawTarget
   -- D1.6 / D2.5–D2.7 extension layer: structural cong rules for
   -- the new RawTerm ctors, plus the D2.5 cubical β rule for

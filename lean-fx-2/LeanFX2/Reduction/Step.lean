@@ -728,6 +728,19 @@ inductive Step :
               baseCase
               (Term.refl carrier endpoint))
            baseCase
+  /-- Strict-identity ι-reduction
+      `idStrictRec base (idStrictRefl rt) ⟶ base`. -/
+  | iotaIdStrictRecRefl {mode level scope} {context : Ctx mode level scope}
+      (carrier : Ty level scope) (endpoint : RawTerm scope)
+      {motiveType : Ty level scope}
+      {baseRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw) :
+      Step (Term.idStrictRec (carrier := carrier)
+                             (leftEndpoint := endpoint)
+                             (rightEndpoint := endpoint)
+              baseCase
+              (Term.idStrictRefl carrier endpoint))
+           baseCase
   /-- Step inside `modIntro`'s payload. -/
   | modIntroInner {mode level scope} {context : Ctx mode level scope}
       {innerType : Ty level scope}

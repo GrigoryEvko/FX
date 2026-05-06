@@ -146,6 +146,10 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJRefl
         (RawTerm.rename witnessRaw rawRenaming) (baseIH _)
+  | iotaIdStrictRecRefl witnessRaw _ baseIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.iotaIdStrictRecRefl
+        (RawTerm.rename witnessRaw rawRenaming) (baseIH _)
   -- Deep β rules.
   | betaAppDeep _ _ functionIH argumentIH =>
       simp only [RawTerm.rename]
@@ -209,6 +213,9 @@ theorem RawStep.par.rename {scope targetScope : Nat}
   | iotaIdJReflDeep _ _ witnessIH baseIH =>
       simp only [RawTerm.rename]
       exact RawStep.par.iotaIdJReflDeep (witnessIH _) (baseIH _)
+  | iotaIdStrictRecReflDeep _ _ witnessIH baseIH =>
+      simp only [RawTerm.rename]
+      exact RawStep.par.iotaIdStrictRecReflDeep (witnessIH _) (baseIH _)
   -- D1.6 cong rules for the 27 new RawTerm ctors (pure cong; no β/ι).
   | intervalOppCong _ intervalIH =>
       exact RawStep.par.intervalOppCong (intervalIH _)

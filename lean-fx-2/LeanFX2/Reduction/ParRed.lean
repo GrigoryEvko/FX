@@ -1098,6 +1098,20 @@ inductive Step.par :
                           (rightEndpoint := endpoint)
                           baseSource (Term.refl carrier endpoint))
                baseTarget
+  /-- Shallow strict-id ι: `idStrictRec base (idStrictRefl rt) ⟶ base'`. -/
+  | iotaIdStrictRecRefl {mode level scope} {context : Ctx mode level scope}
+      (carrier : Ty level scope) (endpoint : RawTerm scope)
+      {motiveType : Ty level scope}
+      {baseRawSource baseRawTarget : RawTerm scope}
+      {baseSource : Term context motiveType baseRawSource}
+      {baseTarget : Term context motiveType baseRawTarget} :
+      Step.par baseSource baseTarget →
+      Step.par (Term.idStrictRec (carrier := carrier)
+                                  (leftEndpoint := endpoint)
+                                  (rightEndpoint := endpoint)
+                                  baseSource
+                                  (Term.idStrictRefl carrier endpoint))
+               baseTarget
   /-- Deep β-app: function parallel-reduces *to* a literal lam, then
   the outer application contracts. -/
   | betaAppDeep {mode level scope} {context : Ctx mode level scope}
@@ -1397,6 +1411,23 @@ inductive Step.par :
                           (leftEndpoint := endpoint)
                           (rightEndpoint := endpoint)
                           baseSource witnessSource)
+               baseTarget
+  /-- Deep strict-id ι: witness reaches `idStrictRefl`, then strict rec fires. -/
+  | iotaIdStrictRecReflDeep {mode level scope}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope} {endpoint : RawTerm scope}
+      {motiveType : Ty level scope}
+      {baseRawSource baseRawTarget witnessRawSource : RawTerm scope}
+      {baseSource : Term context motiveType baseRawSource}
+      {baseTarget : Term context motiveType baseRawTarget}
+      {witnessSource :
+        Term context (Ty.idStrict carrier endpoint endpoint) witnessRawSource} :
+      Step.par witnessSource (Term.idStrictRefl carrier endpoint) →
+      Step.par baseSource baseTarget →
+      Step.par (Term.idStrictRec (carrier := carrier)
+                                  (leftEndpoint := endpoint)
+                                  (rightEndpoint := endpoint)
+                                  baseSource witnessSource)
                baseTarget
   /-- Parallel-cong for `Term.cumulUp` — Phase CUMUL-2.6 Design D.
   A `Step.par` on the inner typed code lifts to a `Step.par` on the
@@ -1721,6 +1752,8 @@ theorem Step.toPar
       exact Step.par.idStrictRecCong (Step.par.refl baseCase) singleStepIH
   | iotaIdJRefl carrier endpoint baseCase =>
       exact Step.par.iotaIdJRefl carrier endpoint (Step.par.refl baseCase)
+  | iotaIdStrictRecRefl carrier endpoint baseCase =>
+      exact Step.par.iotaIdStrictRecRefl carrier endpoint (Step.par.refl baseCase)
   | modIntroInner singleStep singleStepIH =>
       exact Step.par.modIntro singleStepIH
   | modElimInner singleStep singleStepIH =>

@@ -445,6 +445,10 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]
       exact RawStep.par.iotaIdJRefl (witnessRaw.subst firstSubst)
         (baseIH substsRelated)
+  | iotaIdStrictRecRefl witnessRaw _ baseIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaIdStrictRecRefl (witnessRaw.subst firstSubst)
+        (baseIH substsRelated)
   -- Deep β rules.
   | betaAppDeep _ _ functionIH argumentIH =>
       simp only [RawTerm.subst]
@@ -510,6 +514,10 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
   | iotaIdJReflDeep _ _ witnessIH baseIH =>
       simp only [RawTerm.subst]
       exact RawStep.par.iotaIdJReflDeep
+        (witnessIH substsRelated) (baseIH substsRelated)
+  | iotaIdStrictRecReflDeep _ _ witnessIH baseIH =>
+      simp only [RawTerm.subst]
+      exact RawStep.par.iotaIdStrictRecReflDeep
         (witnessIH substsRelated) (baseIH substsRelated)
   -- D1.6: cong cases for the 27 new RawTerm ctors.
   | intervalOppCong _ intervalIH =>

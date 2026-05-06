@@ -327,6 +327,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul
 #assert_no_axioms LeanFX2.ConvCumul.betaModElimIntroCumul_toConv
 #assert_no_axioms LeanFX2.Step.toConvCumul
+#assert_no_axioms LeanFX2.RawStep.par.iotaIdStrictRecRefl
+#assert_no_axioms LeanFX2.RawStep.par.iotaIdStrictRecReflDeep
 #assert_no_axioms LeanFX2.Step.intervalOppInner
 #assert_no_axioms LeanFX2.Step.intervalMeetLeft
 #assert_no_axioms LeanFX2.Step.intervalMeetRight
@@ -407,14 +409,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordIntro_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_recordProj_allais
 
--- Typed D2.7 strict-identity congruence parity
+-- Typed D2.7 strict-identity congruence parity plus strict-refl ι-reduction
 #assert_no_axioms LeanFX2.Term.toRaw_idStrictRefl
 #assert_no_axioms LeanFX2.Term.toRaw_idStrictRec
 #assert_no_axioms LeanFX2.Step.idStrictRecBase
 #assert_no_axioms LeanFX2.Step.idStrictRecWitness
+#assert_no_axioms LeanFX2.Step.iotaIdStrictRecRefl
 #assert_no_axioms LeanFX2.Step.par.idStrictReflCong
 #assert_no_axioms LeanFX2.Step.par.idStrictRecCong
+#assert_no_axioms LeanFX2.Step.par.iotaIdStrictRecRefl
+#assert_no_axioms LeanFX2.Step.par.iotaIdStrictRecReflDeep
 #assert_no_axioms LeanFX2.ConvCumul.idStrictRecCong
+#assert_no_axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul
+#assert_no_axioms LeanFX2.ConvCumul.iotaIdStrictRecReflCumul_toConv
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRefl_allais
 #assert_no_axioms LeanFX2.ConvCumul.subst_compatible_idStrictRec_allais
 

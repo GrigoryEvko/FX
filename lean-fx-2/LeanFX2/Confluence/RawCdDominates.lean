@@ -272,10 +272,16 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.oeqFunextCong (RawStep.par.cd_dominates pointwiseEquality)
   | _, .idStrictRefl witnessTerm =>
       RawStep.par.idStrictReflCong (RawStep.par.cd_dominates witnessTerm)
-  | _, .idStrictRec baseCase witness =>
-      RawStep.par.idStrictRecCong
-        (RawStep.par.cd_dominates baseCase)
-        (RawStep.par.cd_dominates witness)
+  | _, .idStrictRec baseCase witness => by
+      let baseParStep := RawStep.par.cd_dominates baseCase
+      let witnessParStep := RawStep.par.cd_dominates witness
+      unfold RawTerm.cd
+      unfold RawTerm.cdIdStrictRecCase
+      split
+      case _ rawTerm witnessEqn =>
+          exact RawStep.par.iotaIdStrictRecReflDeep
+            (witnessEqn ▸ witnessParStep) baseParStep
+      all_goals exact RawStep.par.idStrictRecCong baseParStep witnessParStep
   | _, .equivIntro forwardFn backwardFn =>
       RawStep.par.equivIntroCong
         (RawStep.par.cd_dominates forwardFn)

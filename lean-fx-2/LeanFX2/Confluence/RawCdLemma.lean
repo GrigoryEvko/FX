@@ -237,6 +237,9 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | iotaIdJRefl rawTerm baseStep baseIH =>
       simp only [RawTerm.cd]
       exact baseIH
+  | iotaIdStrictRecRefl rawTerm baseStep baseIH =>
+      simp only [RawTerm.cd, RawTerm.cdIdStrictRecCase]
+      exact baseIH
   -- Deep β: invert IH on deep premise to extract redex shape.
   | betaAppDeep functionStep argumentStep functionIH argumentIH =>
       simp only [RawTerm.cd]
@@ -353,6 +356,12 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.refl_inv witnessIH
       rw [cdWitnessEq]
       exact baseIH
+  | iotaIdStrictRecReflDeep witnessStep baseStep witnessIH baseIH =>
+      simp only [RawTerm.cd, RawTerm.cdIdStrictRecCase]
+      obtain ⟨witnessAfter, cdWitnessEq, _⟩ :=
+        RawStep.par.idStrictRefl_inv witnessIH
+      rw [cdWitnessEq]
+      exact baseIH
   -- D1.6/D2.5/D2.7: most new raw ctors are pure cong. pathApp,
   -- glueElim, and refineElim also have β, so their cong proofs split
   -- on the developed head.
@@ -413,8 +422,12 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       simp only [RawTerm.cd]
       exact RawStep.par.idStrictReflCong witnessIH
   | idStrictRecCong _ _ baseIH witnessIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.idStrictRecCong baseIH witnessIH
+      simp only [RawTerm.cd, RawTerm.cdIdStrictRecCase]
+      split
+      case _ rawTerm cdWitnessEq =>
+          exact RawStep.par.iotaIdStrictRecReflDeep
+            (cdWitnessEq ▸ witnessIH) baseIH
+      all_goals exact RawStep.par.idStrictRecCong baseIH witnessIH
   | equivIntroCong _ _ forwardIH backwardIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.equivIntroCong forwardIH backwardIH

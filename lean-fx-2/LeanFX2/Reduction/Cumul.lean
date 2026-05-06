@@ -1257,6 +1257,21 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                   baseCase
                   (Term.refl carrier endpoint))
                 baseCase
+  /-- Strict-identity ι-reduction
+  `idStrictRec base (idStrictRefl rt) ⟶ base`.  Mirror of
+  `Step.iotaIdStrictRecRefl`. -/
+  | iotaIdStrictRecReflCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (carrier : Ty level scope) (endpoint : RawTerm scope)
+      {motiveType : Ty level scope}
+      {baseRaw : RawTerm scope}
+      (baseCase : Term context motiveType baseRaw) :
+      ConvCumul (Term.idStrictRec (carrier := carrier)
+                                   (leftEndpoint := endpoint)
+                                   (rightEndpoint := endpoint)
+                  baseCase
+                  (Term.idStrictRefl carrier endpoint))
+                baseCase
   /-- **Univalence rfl-fragment at the ConvCumul level.**  Mirror of
   `Step.eqType`: the canonical Id-typed identity-equivalence proof
   at the universe is ConvCumul-related to the canonical identity

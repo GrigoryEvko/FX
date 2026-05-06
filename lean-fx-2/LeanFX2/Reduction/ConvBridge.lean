@@ -200,6 +200,8 @@ theorem Step.toConvCumul
       exact ConvCumul.idStrictRecCong (ConvCumul.refl baseCase) ih
   | iotaIdJRefl carrier endpoint baseCase =>
       exact ConvCumul.iotaIdJReflCumul carrier endpoint baseCase
+  | iotaIdStrictRecRefl carrier endpoint baseCase =>
+      exact ConvCumul.iotaIdStrictRecReflCumul carrier endpoint baseCase
   | modIntroInner _ ih =>
       exact ConvCumul.modIntroCong ih
   | modElimInner _ ih =>
@@ -719,6 +721,20 @@ theorem ConvCumul.iotaIdJReflCumul_toConv
             (Term.refl carrier endpoint))
          baseCase :=
   Conv.fromStep (Step.iotaIdJRefl carrier endpoint baseCase)
+
+theorem ConvCumul.iotaIdStrictRecReflCumul_toConv
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (carrier : Ty level scope) (endpoint : RawTerm scope)
+    {motiveType : Ty level scope}
+    {baseRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw) :
+    Conv (Term.idStrictRec (carrier := carrier)
+                            (leftEndpoint := endpoint)
+                            (rightEndpoint := endpoint)
+            baseCase
+            (Term.idStrictRefl carrier endpoint))
+         baseCase :=
+  Conv.fromStep (Step.iotaIdStrictRecRefl carrier endpoint baseCase)
 
 /-! ## Step-witness ConvCumul → Conv
 

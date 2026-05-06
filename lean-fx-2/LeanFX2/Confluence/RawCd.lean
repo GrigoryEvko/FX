@@ -43,7 +43,7 @@ into a dedicated helper definition — `cdAppCase`, `cdFstCase`,
 `cdPathAppCase`, `cdGlueElimCase`, `cdRefineElimCase`,
 `cdRecordProjCase`, `cdSndCase`, `cdBoolElimCase`, `cdNatElimCase`,
 `cdNatRecCase`, `cdListElimCase`, `cdOptionMatchCase`,
-`cdEitherMatchCase`, `cdIdJCase`.  Each helper carries its own 55-arm
+`cdEitherMatchCase`, `cdIdJCase`, `cdIdStrictRecCase`.  Each helper carries its own 55-arm
 match in its own elaboration scope, so `unfold cdAppCase; split`
 inside cd_dominates only walks ~55 branches instead of ~3000.
 `RawTerm.cd` itself becomes a thin dispatcher (one short arm per
@@ -1634,13 +1634,86 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.cumulUpMarker _ => RawTerm.idJ developedBase developedWitness
 
+/-- Strict identity recursor redex: `idStrictRec b (idStrictRefl _) → b`;
+otherwise rebuild. -/
+def RawTerm.cdIdStrictRecCase {scope : Nat}
+    (developedBase developedWitness : RawTerm scope) : RawTerm scope :=
+  match developedWitness with
+  | RawTerm.idStrictRefl _ => developedBase
+  | RawTerm.var _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.unit => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.lam _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.app _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.pair _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.fst _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.snd _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.boolTrue => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.boolFalse => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.boolElim _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.natZero => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.natSucc _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.natElim _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.natRec _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.listNil => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.listCons _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.listElim _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.optionNone => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.optionSome _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.optionMatch _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.eitherInl _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.eitherInr _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.eitherMatch _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.refl _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.idJ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.modIntro _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.modElim _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.subsume _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.interval0 => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.interval1 => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.intervalOpp _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.intervalMeet _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.intervalJoin _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.pathLam _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.pathApp _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.glueIntro _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.glueElim _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.transp _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.hcomp _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.oeqRefl _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.oeqJ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.oeqFunext _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.idStrictRec _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.equivIntro _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.equivApp _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.refineIntro _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.refineElim _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.recordIntro _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.recordProj _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.codataUnfold _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.codataDest _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.sessionSend _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.sessionRecv _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.effectPerform _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.universeCode _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.arrowCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.piTyCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.sigmaTyCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.productCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.sumCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.listCode _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.optionCode _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.eitherCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.idCode _ _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.equivCode _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.cumulUpMarker _ => RawTerm.idStrictRec developedBase developedWitness
+
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
 developed.  Zero axioms: full enumeration in every inner match
 keeps Lean's match compiler from leaking propext.
 
 Each redex-bearing case dispatches to a per-redex helper
-(`cdAppCase`, `cdFstCase`, ..., `cdIdJCase`) — see comment at top.
+(`cdAppCase`, `cdFstCase`, ..., `cdIdStrictRecCase`) — see comment at top.
 This factoring keeps `unfold RawTerm.cd` cheap and confines the
 55-arm inner match to one helper definition at a time, fitting the
 200K-heartbeat budget enforced by simp's nested whnf. -/
@@ -1717,7 +1790,7 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.oeqFunext (RawTerm.cd pointwiseEquality)
   | _, .idStrictRefl witnessTerm => RawTerm.idStrictRefl (RawTerm.cd witnessTerm)
   | _, .idStrictRec baseCase witness =>
-      RawTerm.idStrictRec (RawTerm.cd baseCase) (RawTerm.cd witness)
+      RawTerm.cdIdStrictRecCase (RawTerm.cd baseCase) (RawTerm.cd witness)
   -- D1.6: type equivalence (pure cong)
   | _, .equivIntro forwardFn backwardFn =>
       RawTerm.equivIntro (RawTerm.cd forwardFn) (RawTerm.cd backwardFn)
