@@ -1,14 +1,22 @@
 import LeanFX2.Tools.AuditAll
+import LeanFX2.Smoke.AuditNamespace
+import LeanFX2.Smoke.ImportSurface
 
-/-! # Smoke/AuditAll
+/-! # Smoke/AuditAll - reviewer-facing audit entrypoint
 
-Day 0 scaffold for the comprehensive smoke audit entrypoint.
+Importing this module runs the same production zero-axiom gate as
+`LeanFX2.Tools.AuditAll`, then loads the smoke audit suite and import-surface
+checks.  It exists as the reviewer-facing target for the release smoke log:
 
-## Deliverable
+* `LeanFX2.Tools.AuditAll` blocks on production axiom leaks, naming drift,
+  import-family drift, raw/typed parity, and postulate-shaped hypotheses.
+* `LeanFX2.Smoke.AuditNamespace` imports the smoke files and runs the
+  build-failing namespace audit over `LeanFX2.Smoke`.
+* `LeanFX2.Smoke.ImportSurface` keeps production import policy visible without
+  requiring the broader `Smoke.ImportEverywhere` cone.
 
-Future phases will expand this module with project-wide audit imports and
-assertions.  The canonical implementation support lives in
-`LeanFX2.Tools.AuditAll`.
+This file deliberately contains no hand-maintained duplicate assertion list;
+the authoritative declaration gates live in the imported audit modules.
 -/
 
 namespace LeanFX2
