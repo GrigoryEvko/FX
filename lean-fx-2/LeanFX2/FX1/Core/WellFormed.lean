@@ -264,6 +264,37 @@ theorem newestTheorem_proof_has_type
 
 end TransparentDefinition
 
+namespace TransparentDefinition
+
+/-- The constant exposed by a transparent definition/theorem has the declaration
+type carried by the transparent-definition witness. -/
+theorem source_has_type
+    {environment : Environment}
+    {declName : Name}
+    {typeExpr valueExpr : Expr}
+    (transparentDefinition :
+      TransparentDefinition environment declName typeExpr valueExpr) :
+    HasType environment Context.empty (Expr.const declName) typeExpr :=
+  match transparentDefinition with
+  | TransparentDefinition.newestDef
+      precedingEnvironment declName typeExpr valueExpr =>
+      HasType.const
+        (Environment.HasDeclaration.newest
+          precedingEnvironment
+          (Declaration.defDecl declName typeExpr valueExpr))
+  | TransparentDefinition.newestTheorem
+      precedingEnvironment declName typeExpr proofExpr =>
+      HasType.const
+        (Environment.HasDeclaration.newest
+          precedingEnvironment
+          (Declaration.theoremDecl declName typeExpr proofExpr))
+  | TransparentDefinition.older newDeclaration olderDefinition =>
+      HasType.weaken_environment
+        newDeclaration
+        (source_has_type olderDefinition)
+
+end TransparentDefinition
+
 /-- Extending an environment with a transparent definition does not add an
 executable axiom placeholder. -/
 theorem hasAxiomDeclaration_extend_defDecl
@@ -351,5 +382,49 @@ theorem hasAxiomDeclaration_false
 end ReleaseWellFormed
 
 end Environment
+
+namespace EnvStep
+
+/-- Newest checked transparent definitions preserve the constant type under
+delta unfolding in the empty context.  This is a deliberately narrow
+preservation slice: general beta/congruence preservation still requires the
+context and substitution preservation spine. -/
+theorem deltaNewestDef_preserves_empty_type
+    {environment : Environment}
+    {declName : Name}
+    {typeExpr valueExpr : Expr}
+    (definitionWellTyped :
+      Declaration.WellTyped
+        environment
+        (Declaration.defDecl declName typeExpr valueExpr)) :
+    HasType
+      (Environment.extend environment
+        (Declaration.defDecl declName typeExpr valueExpr))
+      Context.empty
+      valueExpr
+      typeExpr :=
+  Environment.TransparentDefinition.newestDef_value_has_type
+    definitionWellTyped
+
+/-- Newest checked theorem declarations preserve the constant type under
+delta unfolding in the empty context. -/
+theorem deltaNewestTheorem_preserves_empty_type
+    {environment : Environment}
+    {declName : Name}
+    {typeExpr proofExpr : Expr}
+    (theoremWellTyped :
+      Declaration.WellTyped
+        environment
+        (Declaration.theoremDecl declName typeExpr proofExpr)) :
+    HasType
+      (Environment.extend environment
+        (Declaration.theoremDecl declName typeExpr proofExpr))
+      Context.empty
+      proofExpr
+      typeExpr :=
+  Environment.TransparentDefinition.newestTheorem_proof_has_type
+    theoremWellTyped
+
+end EnvStep
 
 end LeanFX2.FX1

@@ -1020,6 +1020,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Declaration.WellTyped.weaken_environment
 #assert_no_axioms LeanFX2.FX1.Environment.TransparentDefinition.newestDef_value_has_type
 #assert_no_axioms LeanFX2.FX1.Environment.TransparentDefinition.newestTheorem_proof_has_type
+#assert_no_axioms LeanFX2.FX1.Environment.TransparentDefinition.source_has_type
+#assert_no_axioms LeanFX2.FX1.EnvStep.deltaNewestDef_preserves_empty_type
+#assert_no_axioms LeanFX2.FX1.EnvStep.deltaNewestTheorem_preserves_empty_type
 #assert_no_axioms LeanFX2.FX1.Declaration.IsReleaseDeclaration
 #assert_no_axioms LeanFX2.FX1.Declaration.IsReleaseDeclaration.defDecl
 #assert_no_axioms LeanFX2.FX1.Declaration.IsReleaseDeclaration.theoremDecl
