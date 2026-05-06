@@ -787,10 +787,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration
 #assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.newest
 #assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.older
+#assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.weaken
 #assert_no_axioms LeanFX2.FX1.Context.HasTypeAt
 #assert_no_axioms LeanFX2.FX1.Context.HasTypeAt.newest
 #assert_no_axioms LeanFX2.FX1.Context.HasTypeAt.newest_weakened_dependency
 #assert_no_axioms LeanFX2.FX1.Context.HasTypeAt.older
+#assert_no_axioms LeanFX2.FX1.Context.HasTypeAt.weaken
 #assert_no_axioms LeanFX2.FX1.HasType
 #assert_no_axioms LeanFX2.FX1.HasType.sort
 #assert_no_axioms LeanFX2.FX1.HasType.var

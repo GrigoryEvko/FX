@@ -41,6 +41,24 @@ inductive HasDeclaration : Environment -> Name -> Declaration -> Prop
         queryName
         declaration
 
+namespace HasDeclaration
+
+/-- Environment weakening: an existing declaration remains available after
+adding one newer declaration. -/
+theorem weaken
+    {environment : Environment}
+    {queryName : Name}
+    {declaration : Declaration}
+    (newDeclaration : Declaration)
+    (olderDeclaration : HasDeclaration environment queryName declaration) :
+    HasDeclaration
+      (Environment.extend environment newDeclaration)
+      queryName
+      declaration :=
+  HasDeclaration.older newDeclaration olderDeclaration
+
+end HasDeclaration
+
 end Environment
 
 namespace Context
@@ -88,6 +106,20 @@ theorem newest_weakened_dependency :
   HasTypeAt.newest
     (Context.extend Context.empty (Expr.sort Level.zero))
     (Expr.bvar Nat.zero)
+
+/-- Context weakening for lookup witnesses: an older binder remains available
+under a newly added binder, and its type is shifted into the extended context. -/
+theorem weaken
+    {context : Context}
+    {index : Nat}
+    {typeExpr : Expr}
+    (newTypeExpr : Expr)
+    (olderType : HasTypeAt context index typeExpr) :
+    HasTypeAt
+      (Context.extend context newTypeExpr)
+      (Nat.succ index)
+      (Expr.weaken typeExpr) :=
+  HasTypeAt.older newTypeExpr olderType
 
 end HasTypeAt
 
