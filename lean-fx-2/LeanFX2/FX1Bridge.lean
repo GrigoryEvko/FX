@@ -1,4 +1,5 @@
 import LeanFX2.FX1Bridge.Unit
+import LeanFX2.FX1Bridge.Var
 
 /-! # FX1Bridge
 
