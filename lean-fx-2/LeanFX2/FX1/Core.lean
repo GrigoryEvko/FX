@@ -11,6 +11,7 @@ import LeanFX2.FX1.Core.Reduction
 import LeanFX2.FX1.Core.HasType
 import LeanFX2.FX1.Core.WellFormed
 import LeanFX2.FX1.Core.Check
+import LeanFX2.FX1.Core.Soundness
 
 /-! # FX1/Core
 

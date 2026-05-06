@@ -830,6 +830,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.infer?_sound
 #assert_no_axioms LeanFX2.FX1.Expr.check?
 #assert_no_axioms LeanFX2.FX1.Expr.check?_sound
+#assert_no_axioms LeanFX2.FX1.check_sound
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to

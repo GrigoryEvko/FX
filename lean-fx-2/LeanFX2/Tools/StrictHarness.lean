@@ -734,7 +734,8 @@ def isAllowedFX1CoreExactDirectImport
       importedModuleName == `LeanFX2.FX1.Core.Reduction ||
       importedModuleName == `LeanFX2.FX1.Core.HasType ||
       importedModuleName == `LeanFX2.FX1.Core.WellFormed ||
-      importedModuleName == `LeanFX2.FX1.Core.Check
+      importedModuleName == `LeanFX2.FX1.Core.Check ||
+      importedModuleName == `LeanFX2.FX1.Core.Soundness
   else if sourceModuleName == `LeanFX2.FX1.Core.Primitive then
     importedModuleName == `Init.Prelude
   else if sourceModuleName == `LeanFX2.FX1.Core.Name then
@@ -761,6 +762,8 @@ def isAllowedFX1CoreExactDirectImport
     importedModuleName == `LeanFX2.FX1.Core.HasType
   else if sourceModuleName == `LeanFX2.FX1.Core.Check then
     importedModuleName == `LeanFX2.FX1.Core.HasType
+  else if sourceModuleName == `LeanFX2.FX1.Core.Soundness then
+    importedModuleName == `LeanFX2.FX1.Core.Check
   else
     false
 
