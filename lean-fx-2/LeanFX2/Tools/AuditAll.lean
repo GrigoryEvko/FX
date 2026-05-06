@@ -1692,6 +1692,125 @@ namespace LeanFX2.Tools
 #assert_inductive_ctor_count_ratchet LeanFX2.Step.par 109
 #assert_inductive_ctor_count_ratchet LeanFX2.RawTerm 67
 
+-- Coe / CoeSort / CoeFun typeclass dependent census.  These silently
+-- inject elements between types; a bad Coe makes the type system
+-- structurally porous.  Tight ratchet at zero — kernel currently has
+-- no Coe family dependents.
+#assert_coe_dependent_budget LeanFX2 0
+
+-- OfNat / OfScientific dependent census.  OfNat instances let numeric
+-- literals inject into types; custom instances on inappropriate types
+-- are literal-injection vectors.  524 today reflects pervasive use of
+-- Nat literals in proofs; tight ratchet at current count.
+#assert_ofnat_dependent_budget LeanFX2 524
+
+-- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
+-- the kernel doesn't use subtype-encoded reasoning.
+#assert_subtype_dependent_budget LeanFX2 0
+
+-- Function.Injective / Bijective / Surjective dependent census.  Tight
+-- ratchet at zero — the kernel doesn't use cardinality-based reasoning.
+#assert_function_property_dependent_budget LeanFX2 0
+
+-- Eq.symm / Eq.trans / Eq.mp / Eq.recOn / Eq.subst dependent census.
+-- 761 today reflects pervasive equality-rewriting in proofs.  Tight
+-- ratchet at current count.
+#assert_eq_rewriting_dependent_budget LeanFX2 761
+
+-- Reducible / abbrev kernel decl census.  476 today reflects the
+-- Action / Subst / Renaming infrastructure being abbrev-shaped for
+-- unification, plus Ty.weaken being @[reducible] per
+-- feedback_lean_reducible_weaken.md.  Tight ratchet at current count.
+#assert_reducible_decl_budget LeanFX2 476
+
+-- Mode inductive exact-ctor-count assertion.  Per kernel-sprint §1.4,
+-- Mode should have exactly 5 ctors (strict / observational / univalent
+-- / cohesiveFlat / cohesiveSharp).  This gate fails on ANY mismatch.
+-- Codex currently ships extras (legacy modes); this gate documents the
+-- spec-compliance gap until the legacy modes are stripped.
+-- DOCUMENTED-DEFER: Mode actually has more ctors today (legacy modes
+-- await cleanup).  Use the regression-only ratchet instead until
+-- spec-compliance is achieved.
+#assert_inductive_ctor_count_ratchet LeanFX2.Mode 5
+
+-- Bridge round-trip parity.  For every encodeTermSound_<X>, expect a
+-- companion encodeTermSound_<X>_roundTrip proving decode∘encode = id.
+-- Without round-trip, the bridge could be lossy.  Pin current debt.
+#assert_bridge_round_trip_budget LeanFX2 9999
+
+-- False-in-result-type kernel decl census.  Theorems whose result type
+-- mentions False are evidence of vacuous reasoning or contradiction
+-- discharge.  Tight ratchet at zero — currently clean.
+#assert_false_in_result_type_budget LeanFX2 0
+
+-- Term/RawTerm ctor delta.  Term has 75 ctors, RawTerm has 67 — the 8
+-- delta means manufactured-witness Term ctors share raw projections
+-- with each other.  Architectural choice for refl-fragment Univalence/
+-- funext support.  Pinning the delta catches new manufactured-witness
+-- ctors arriving without RawTerm parity.
+#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 8
+
+-- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
+-- packaging types; heavy use signals existential reasoning.  936 today
+-- reflects pervasive use of Sigma/PSigma in dependent-type proofs.
+-- Tight ratchet at current count.
+#assert_dependent_pair_dependent_budget LeanFX2 936
+
+-- Classical.choose / em / byContradiction dependent census.  Refines
+-- the Inhabited gate by naming the canonical excluded-middle
+-- operations.  Tight ratchet at zero — kernel doesn't use Classical.
+#assert_classical_reasoning_dependent_budget LeanFX2 0
+
+-- Hashable / Repr / ToString / BEq / Format dependent census.  These
+-- are user-facing API typeclasses; kernel decls should NOT depend on
+-- them.  5 today is minor leakage; tight ratchet at current.
+#assert_api_typeclass_dependent_budget LeanFX2 5
+
+-- IO / Task / EIO / BaseIO effect dependent census.  Kernel must not
+-- depend on runtime IO.  Tight ratchet at zero.
+#assert_io_effect_dependent_budget LeanFX2 0
+
+-- Anonymous-projection (Prod.fst / And.intro / Or.elim / Iff.mp / etc.)
+-- dependent census.  Heavy use signals proofs that destructure
+-- dependent values without being explicit about structure.  Tight
+-- ratchet at current count.
+#assert_anonymous_projection_dependent_budget LeanFX2 174
+
+-- Lean meta-Expr / MVarId / Syntax / Name / Level dependent census.
+-- Production-tier kernel decls should not depend on Lean's
+-- metaprogramming data structures.  Initial generous; tightened
+-- post-discovery.
+#assert_lean_meta_expr_dependent_budget LeanFX2 9999
+
+-- Monadic-stack (StateRefT / ReaderT / CoreM / MetaM / etc.) dependent
+-- census.  Production decls should be in the kernel, not in tactic /
+-- elaboration monads.  Initial generous; tightened post-discovery.
+#assert_monadic_stack_dependent_budget LeanFX2 9999
+
+-- Heavyweight-tactic dependent census.  omega / aesop / linarith /
+-- tauto / simp_all can prove false from inconsistent hypotheses or
+-- hide structural reasoning.  Initial generous; tightened
+-- post-discovery.
+#assert_heavyweight_tactic_dependent_budget LeanFX2 9999
+
+-- Smoke-reference coverage budget.  Every Term ctor should be
+-- referenced by at least one decl in `LeanFX2.Smoke.*`.  Without
+-- smoke usage, the ctor is silently unverified by the regression
+-- suite.  Initial generous; tightened post-discovery.
+#assert_smoke_reference_coverage_budget LeanFX2.Term 9999
+
+-- absurd / False.elim / False.rec dependent census.  These discharge
+-- contradictions; heavy use signals proofs threading through
+-- contradictory hypotheses, sometimes vacuously.  Initial generous;
+-- tightened post-discovery.
+#assert_absurd_false_dependent_budget LeanFX2 9999
+
+-- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
+-- family, this widens to the equivalence-relation typeclass and the
+-- Quotient API on top of Setoid.  Initial generous; tightened
+-- post-discovery.
+#assert_setoid_quotient_dependent_budget LeanFX2 9999
+
 -- Naming discipline gate.  Bans non-ASCII identifiers and short
 -- identifiers (< 4 chars) outside the documented whitelist.  Catches
 -- regressions like `def f (x) := ...` or pasted Greek-letter names

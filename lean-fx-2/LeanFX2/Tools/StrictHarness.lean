@@ -4352,6 +4352,1164 @@ elab "#assert_inductive_ctor_count_ratchet " inductiveSyntax:ident
       s!"{actualCtorCount} ctors, expected at least {expectedCtorCount}"
     throwError header
 
+/-! ## Coe family dependent gate
+
+Coe / CoeSort / CoeFun typeclass instances silently inject elements
+between types.  A bad Coe makes the type system structurally porous.
+This gate counts kernel-tier decls whose closure references the Coe
+typeclass family.
+-/
+
+/-- Whether a name is in the Coe coercion family. -/
+def isCoeFamilyName (someName : Name) : Bool :=
+  someName == `Coe ||
+    someName == `Coe.coe ||
+    someName == `CoeSort ||
+    someName == `CoeSort.coe ||
+    someName == `CoeFun ||
+    someName == `CoeFun.coe ||
+    someName == `CoeHead ||
+    someName == `CoeTail ||
+    someName == `CoeOut ||
+    someName == `CoeOut.coe ||
+    someName == `CoeOTC ||
+    someName == `CoeTC ||
+    someName == `CoeDep
+
+/-- Closure dependents on Coe family. -/
+def collectCoeDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun coeDependencies dependencyName =>
+      if isCoeFamilyName dependencyName then
+        coeDependencies.push dependencyName
+      else
+        coeDependencies)
+
+elab "#assert_coe_dependent_budget " namespaceSyntax:ident
+    coeBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let coeBudget := coeBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectCoeDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= coeBudget then
+    logInfo
+      (s!"Coe dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{coeBudget} kernel decls reference Coe family)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Coe dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {coeBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## OfNat literal-injection dependent gate
+
+`OfNat T n` instances let numeric literals inject into T.  A custom
+OfNat for inappropriate T types is a literal-injection vector.  This
+gate counts kernel-tier decls whose closure references OfNat (any
+type).
+-/
+
+/-- Whether a name is in the OfNat literal family. -/
+def isOfNatFamilyName (someName : Name) : Bool :=
+  someName == `OfNat ||
+    someName == `OfNat.ofNat ||
+    someName == `OfNat.mk ||
+    someName == `OfScientific ||
+    someName == `OfScientific.ofScientific
+
+def collectOfNatDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun ofNatDependencies dependencyName =>
+      if isOfNatFamilyName dependencyName then
+        ofNatDependencies.push dependencyName
+      else
+        ofNatDependencies)
+
+elab "#assert_ofnat_dependent_budget " namespaceSyntax:ident
+    ofNatBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let ofNatBudget := ofNatBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectOfNatDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= ofNatBudget then
+    logInfo
+      (s!"OfNat dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{ofNatBudget} kernel decls reference OfNat family)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"OfNat dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {ofNatBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Subtype dependent gate
+
+`Subtype` packages a value with a refinement proof.  `Subtype.mk` /
+`Subtype.val` mediate between the bare type and the refined view.
+Heavy use signals subtype-encoded reasoning that may be hiding
+structural complexity.  Pin current count.
+-/
+
+def isSubtypeFamilyName (someName : Name) : Bool :=
+  someName == `Subtype ||
+    someName == `Subtype.mk ||
+    someName == `Subtype.val ||
+    someName == `Subtype.property ||
+    someName == `Subtype.rec
+
+def collectSubtypeDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun subtypeDependencies dependencyName =>
+      if isSubtypeFamilyName dependencyName then
+        subtypeDependencies.push dependencyName
+      else
+        subtypeDependencies)
+
+elab "#assert_subtype_dependent_budget " namespaceSyntax:ident
+    subtypeBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let subtypeBudget := subtypeBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectSubtypeDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= subtypeBudget then
+    logInfo
+      (s!"Subtype dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{subtypeBudget} kernel decls reference Subtype family)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Subtype dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {subtypeBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Function-property dependent gate
+
+`Function.Injective`, `Function.Bijective`, `Function.Surjective`,
+`Function.LeftInverse`, `Function.RightInverse` encode mathematical
+properties of functions.  Heavy kernel-tier usage signals
+typing-by-cardinality reasoning that may not transport across the
+trust spine.  Pin current count.
+-/
+
+def isFunctionPropertyName (someName : Name) : Bool :=
+  someName == `Function.Injective ||
+    someName == `Function.Bijective ||
+    someName == `Function.Surjective ||
+    someName == `Function.LeftInverse ||
+    someName == `Function.RightInverse ||
+    someName == `Function.HasLeftInverse ||
+    someName == `Function.HasRightInverse ||
+    someName == `Function.invFun
+
+def collectFunctionPropertyDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun functionDependencies dependencyName =>
+      if isFunctionPropertyName dependencyName then
+        functionDependencies.push dependencyName
+      else
+        functionDependencies)
+
+elab "#assert_function_property_dependent_budget " namespaceSyntax:ident
+    functionBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let functionBudget := functionBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectFunctionPropertyDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= functionBudget then
+    logInfo
+      (s!"Function-property dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{functionBudget} kernel decls reference " ++
+      "Function.Injective / Bijective / etc.)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Function-property dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {functionBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Reducibility-status decl-shape gate
+
+Decls marked `@[reducible]` or shipped via `abbrev` have reducibility
+hint `.abbrev`.  These let the kernel reducer unfold them eagerly,
+which can mask structural reasoning and cause unification loops.  This
+gate pins the count of reducible / abbrev decls in kernel namespaces.
+-/
+
+/-- Whether a constant info has reducibility hint indicating abbrev /
+reducible.  Default reducibility is `.regular`, abbrev is `.abbrev`,
+opaque is `.opaque`. -/
+def hasAbbrevReducibilityHint
+    (environment : Environment) (declName : Name) : Bool :=
+  match environment.find? declName with
+  | some (.defnInfo defnInfo) =>
+      match defnInfo.hints with
+      | .abbrev => true
+      | _ => false
+  | _ => false
+
+elab "#assert_reducible_decl_budget " namespaceSyntax:ident
+    reducibleBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let reducibleBudget := reducibleBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut reducibleCount : Nat := 0
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if hasAbbrevReducibilityHint environment targetName then
+      reducibleCount := reducibleCount + 1
+      violations := violations.push targetName
+  if reducibleCount <= reducibleBudget then
+    logInfo
+      (s!"reducible decl budget ok: {namespaceName} " ++
+      s!"({reducibleCount}/{reducibleBudget} kernel decls are reducible/abbrev)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"reducible decl budget FAILED for {namespaceName}: " ++
+      s!"{reducibleCount} reducible decls exceed budget {reducibleBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Inductive ctor exact-count assertion gate
+
+For inductives whose ctor count is fixed by spec (e.g., Mode = exactly
+5 ctors per kernel-sprint §1.4), this gate fails on ANY mismatch
+(growth or shrinkage).  Stricter than the regression-only ratchet.
+-/
+
+elab "#assert_inductive_ctor_count_exact " inductiveSyntax:ident
+    expectedCtorCountSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let expectedCtorCount := expectedCtorCountSyntax.getNat
+  let actualCtorCount :=
+    (getInductiveConstructorNames environment inductiveName).size
+  if actualCtorCount == expectedCtorCount then
+    logInfo
+      (s!"inductive ctor-count exact ok: {inductiveName} " ++
+      s!"({actualCtorCount} ctors, matches expected)")
+  else
+    let header :=
+      s!"inductive ctor-count exact MISMATCH for {inductiveName}: " ++
+      s!"{actualCtorCount} ctors, expected EXACTLY {expectedCtorCount}"
+    throwError header
+
+/-! ## Bridge round-trip parity gate
+
+For every `FX1Bridge.encodeTermSound_<X>` (the bridge soundness theorem
+for ctor X), there should be a companion `FX1Bridge.encodeTermSound_<X>_roundTrip`
+proving `decode (encode t) = t`.  Without round-trip, the bridge could
+be lossy — encoding might collapse distinct typed terms.
+
+This gate scans the FX1Bridge namespace for `encodeTermSound_*` decls
+and checks each has a companion round-trip.  Pin current debt.
+-/
+
+/-- Whether a name is the soundness theorem for a Term ctor encoding. -/
+def isEncodeTermSoundName (someName : Name) : Bool :=
+  let lastSegment := Name.lastSegmentString someName
+  (`LeanFX2.FX1Bridge).isPrefixOf someName &&
+    lastSegment.startsWith "encodeTermSound_" &&
+    !lastSegment.endsWith "_roundTrip"
+
+/-- Expected round-trip companion name. -/
+def expectedRoundTripCompanionName (soundnessName : Name) : Name :=
+  Name.str
+    (`LeanFX2.FX1Bridge)
+    (Name.lastSegmentString soundnessName ++ "_roundTrip")
+
+elab "#assert_bridge_round_trip_budget " namespaceSyntax:ident
+    roundTripBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let roundTripBudget := roundTripBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut soundnessCount : Nat := 0
+  let mut missingRoundTrips : Array Name := #[]
+  for targetName in targetNames do
+    if isEncodeTermSoundName targetName then
+      soundnessCount := soundnessCount + 1
+      let companionName := expectedRoundTripCompanionName targetName
+      if !environment.contains companionName then
+        missingRoundTrips := missingRoundTrips.push targetName
+  if missingRoundTrips.size <= roundTripBudget then
+    logInfo
+      (s!"bridge round-trip parity budget ok: {namespaceName} " ++
+      s!"({soundnessCount - missingRoundTrips.size}/{soundnessCount} " ++
+      s!"soundness theorems have round-trip companions; " ++
+      s!"debt {missingRoundTrips.size}/{roundTripBudget})")
+  else
+    let perDeclLines := missingRoundTrips.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}: missing _roundTrip companion"
+    let header :=
+      s!"bridge round-trip parity budget FAILED for {namespaceName}: " ++
+      s!"{missingRoundTrips.size} soundness theorems lack round-trip, " ++
+      s!"exceeds budget {roundTripBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Equality-rewriting dependent gate
+
+`Eq.symm`, `Eq.trans`, `Eq.mp`, `Eq.mpr`, `Eq.rec`, `Eq.recOn` are the
+core equality-rewriting primitives.  Heavy use signals chain-rewriting
+proofs that obscure structural reasoning.  Note: `Eq.mpr` is already
+counted in cast-operator gate; this gate widens to the full eq-rewrite
+family.
+-/
+
+/-- Whether a name is in the Eq-rewriting family.  Subset that's not
+already counted by cast-operator gate. -/
+def isEqRewritingName (someName : Name) : Bool :=
+  someName == `Eq.symm ||
+    someName == `Eq.trans ||
+    someName == `Eq.mp ||
+    someName == `Eq.recOn ||
+    someName == `Eq.casesOn ||
+    someName == `Eq.elim ||
+    someName == `Eq.subst
+
+def collectEqRewritingDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun eqDependencies dependencyName =>
+      if isEqRewritingName dependencyName then
+        eqDependencies.push dependencyName
+      else
+        eqDependencies)
+
+elab "#assert_eq_rewriting_dependent_budget " namespaceSyntax:ident
+    eqBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let eqBudget := eqBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectEqRewritingDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= eqBudget then
+    logInfo
+      (s!"Eq-rewriting dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{eqBudget} kernel decls reference Eq.symm/trans/mp/etc.)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Eq-rewriting dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {eqBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## True / False / Unit empty-result gates
+
+Theorems whose claimed result type is `True` are vacuous; `False` is
+evidence of inconsistency.  Decls with these as result types should be
+budgeted carefully.  `Unit`-result decls are non-suspicious but
+counted.
+-/
+
+def claimsTrueResultType (constantInfo : ConstantInfo) : Bool :=
+  match constantInfo.type with
+  | .const `True _ => true
+  | _ => doesExprMentionConst `True constantInfo.type
+
+def claimsFalseResultType (constantInfo : ConstantInfo) : Bool :=
+  match constantInfo.type with
+  | .const `False _ => true
+  | _ => doesExprMentionConst `False constantInfo.type
+
+elab "#assert_false_in_result_type_budget " namespaceSyntax:ident
+    falseBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let falseBudget := falseBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    match environment.find? targetName with
+    | some constantInfo =>
+        if claimsFalseResultType constantInfo then
+          violations := violations.push targetName
+    | none => pure ()
+  if violations.size <= falseBudget then
+    logInfo
+      (s!"False-in-result-type budget ok: {namespaceName} " ++
+      s!"({violations.size}/{falseBudget} kernel decls mention False " ++
+      "in result type)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"False-in-result-type budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {falseBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Term ctor → RawTerm projection-shape audit
+
+Term has 75 constructors but RawTerm has 67.  The 8-decl gap means
+some Term ctors share raw projections — typing is NOT a function from
+RawTerm to Term.  This gate counts the shared-raw-projection delta:
+`Term ctors - RawTerm ctors`.  When the delta is positive, manufactured-
+witness ctors with shared raw projections exist (architectural choice
+for refl-fragment Univalence/funext).
+-/
+
+elab "#assert_term_raw_ctor_delta " termInductiveSyntax:ident
+    rawTermInductiveSyntax:ident expectedDeltaSyntax:num : command => do
+  let environment ← getEnv
+  let termInductiveName := termInductiveSyntax.getId
+  let rawTermInductiveName := rawTermInductiveSyntax.getId
+  let expectedDelta := expectedDeltaSyntax.getNat
+  let termCtorCount :=
+    (getInductiveConstructorNames environment termInductiveName).size
+  let rawTermCtorCount :=
+    (getInductiveConstructorNames environment rawTermInductiveName).size
+  let actualDelta :=
+    if termCtorCount >= rawTermCtorCount then
+      termCtorCount - rawTermCtorCount
+    else 0
+  if actualDelta == expectedDelta then
+    logInfo
+      (s!"Term/RawTerm ctor delta ok: " ++
+      s!"Term={termCtorCount} RawTerm={rawTermCtorCount} delta={actualDelta} " ++
+      "(matches expected; manufactured-witness sharing intact)")
+  else if actualDelta > expectedDelta then
+    let header :=
+      s!"Term/RawTerm ctor delta GREW: " ++
+      s!"Term={termCtorCount} RawTerm={rawTermCtorCount} actual={actualDelta} " ++
+      s!"expected={expectedDelta} — new manufactured-witness Term ctor was " ++
+      "added without RawTerm parity (or RawTerm shrank)"
+    throwError header
+  else
+    logInfo
+      (s!"Term/RawTerm ctor delta SHRANK: " ++
+      s!"Term={termCtorCount} RawTerm={rawTermCtorCount} actual={actualDelta} " ++
+      s!"expected={expectedDelta} — bump expected count")
+
+/-! ## Sigma / PSigma / dependent-pair dependent gate
+
+`Sigma`, `PSigma`, `Sum`, `PSum`, `PProd` are dependent / heterogeneous
+packaging types.  Heavy use signals existential reasoning that may
+hide non-canonical inhabitants.  `PSigma` in particular is propext-
+adjacent on Prop-typed second components.
+-/
+
+def isDependentPairFamilyName (someName : Name) : Bool :=
+  someName == `Sigma ||
+    someName == `Sigma.mk ||
+    someName == `Sigma.fst ||
+    someName == `Sigma.snd ||
+    someName == `PSigma ||
+    someName == `PSigma.mk ||
+    someName == `PSigma.fst ||
+    someName == `PSigma.snd ||
+    someName == `Sum ||
+    someName == `Sum.inl ||
+    someName == `Sum.inr ||
+    someName == `PSum ||
+    someName == `PSum.inl ||
+    someName == `PSum.inr ||
+    someName == `PProd ||
+    someName == `PProd.mk
+
+def collectDependentPairDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun pairDependencies dependencyName =>
+      if isDependentPairFamilyName dependencyName then
+        pairDependencies.push dependencyName
+      else
+        pairDependencies)
+
+elab "#assert_dependent_pair_dependent_budget " namespaceSyntax:ident
+    pairBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let pairBudget := pairBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectDependentPairDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= pairBudget then
+    logInfo
+      (s!"dependent-pair dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{pairBudget} kernel decls reference " ++
+      "Sigma / PSigma / Sum / PSum / PProd)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"dependent-pair dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {pairBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Classical.X direct dependent gate
+
+Refines the existing Inhabited gate to specifically count uses of
+`Classical.choice`, `Classical.choose`, `Classical.choose_spec`,
+`Classical.byContradiction`, `Classical.em`, `Classical.byCases`.
+These are the genuine excluded-middle / choice operations that
+silently summon Classical reasoning.  The Inhabited gate counts them
+collectively; this one names them directly.
+-/
+
+def isClassicalReasoningName (someName : Name) : Bool :=
+  someName == `Classical.choice ||
+    someName == `Classical.choose ||
+    someName == `Classical.choose_spec ||
+    someName == `Classical.indefiniteDescription ||
+    someName == `Classical.byContradiction ||
+    someName == `Classical.byCases ||
+    someName == `Classical.em ||
+    someName == `Classical.not_not ||
+    someName == `Classical.dec ||
+    someName == `Classical.propDecidable
+
+def collectClassicalReasoningDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun classicalDependencies dependencyName =>
+      if isClassicalReasoningName dependencyName then
+        classicalDependencies.push dependencyName
+      else
+        classicalDependencies)
+
+elab "#assert_classical_reasoning_dependent_budget " namespaceSyntax:ident
+    classicalBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let classicalBudget := classicalBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectClassicalReasoningDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= classicalBudget then
+    logInfo
+      (s!"Classical-reasoning dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{classicalBudget} kernel decls reference " ++
+      "Classical.choose / em / byContradiction / etc.)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Classical-reasoning dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {classicalBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## API typeclass dependent gate (Hash / Repr / ToString / BEq)
+
+`Hash`, `Repr`, `ToString`, `BEq` are user-facing API typeclasses for
+hashing / printing / comparison.  Kernel theorems should NOT depend
+on these — they're for humans, not metatheory.  Pinning the count
+catches kernel-tier decls that drift toward API-coupling.
+-/
+
+def isApiTypeclassName (someName : Name) : Bool :=
+  someName == `Hashable ||
+    someName == `Hashable.hash ||
+    someName == `Repr ||
+    someName == `Repr.reprPrec ||
+    someName == `ToString ||
+    someName == `ToString.toString ||
+    someName == `BEq ||
+    someName == `BEq.beq ||
+    someName == `LawfulBEq ||
+    someName == `Format ||
+    someName == `Std.Format ||
+    someName == `Std.ToFormat
+
+def collectApiTypeclassDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun apiDependencies dependencyName =>
+      if isApiTypeclassName dependencyName then
+        apiDependencies.push dependencyName
+      else
+        apiDependencies)
+
+elab "#assert_api_typeclass_dependent_budget " namespaceSyntax:ident
+    apiBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let apiBudget := apiBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectApiTypeclassDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= apiBudget then
+    logInfo
+      (s!"API typeclass dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{apiBudget} kernel decls reference " ++
+      "Hashable / Repr / ToString / BEq)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"API typeclass dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {apiBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## IO / Task / Ref dependent gate
+
+Kernel decls should not depend on IO / Task / IO.Ref / IO.FS / etc.
+These are runtime-effect operations belonging to the executable
+boundary, not the kernel.  Pin current count.
+-/
+
+def isIOEffectName (someName : Name) : Bool :=
+  (`IO).isPrefixOf someName ||
+    (`Task).isPrefixOf someName ||
+    someName == `EIO ||
+    someName == `BaseIO ||
+    someName == `IO.Ref ||
+    someName == `IO.FS.IO ||
+    (`System.IO).isPrefixOf someName
+
+def collectIOEffectDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun ioDependencies dependencyName =>
+      if isIOEffectName dependencyName then
+        ioDependencies.push dependencyName
+      else
+        ioDependencies)
+
+elab "#assert_io_effect_dependent_budget " namespaceSyntax:ident
+    ioBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let ioBudget := ioBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectIOEffectDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= ioBudget then
+    logInfo
+      (s!"IO effect dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{ioBudget} kernel decls reference " ++
+      "IO / Task / EIO / BaseIO)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"IO effect dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {ioBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Subterm-projection (anonymous .1 / .2 / .fst / .snd) gate
+
+Kernel theorems that use `.fst`/`.snd`/`.1`/`.2` projections on dependent
+pairs without naming the field can hide structural reasoning.  These
+project from `Sigma`/`Prod`/`PSigma`/`Subtype`/etc.  Heavy use signals
+proofs that destructure dependent values without being explicit about
+the structure.
+-/
+
+def isAnonymousProjectionName (someName : Name) : Bool :=
+  someName == `Prod.fst ||
+    someName == `Prod.snd ||
+    someName == `Prod.mk ||
+    someName == `And.intro ||
+    someName == `And.left ||
+    someName == `And.right ||
+    someName == `And.elim ||
+    someName == `Or.intro_left ||
+    someName == `Or.intro_right ||
+    someName == `Or.elim ||
+    someName == `Iff.intro ||
+    someName == `Iff.mp ||
+    someName == `Iff.mpr ||
+    someName == `Iff.elim
+
+def collectAnonymousProjectionDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun projDependencies dependencyName =>
+      if isAnonymousProjectionName dependencyName then
+        projDependencies.push dependencyName
+      else
+        projDependencies)
+
+elab "#assert_anonymous_projection_dependent_budget " namespaceSyntax:ident
+    projBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let projBudget := projBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectAnonymousProjectionDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= projBudget then
+    logInfo
+      (s!"Anonymous-projection dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{projBudget} kernel decls reference " ++
+      "Prod.fst / And.intro / Or.elim / Iff.mp / etc.)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Anonymous-projection dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {projBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Lean meta-level Expr manipulation gate
+
+Production-tier kernel decls should not depend on `Lean.Expr`,
+`Lean.MVarId`, `Lean.Syntax`, `Lean.Name`, or other metaprogramming
+data structures.  These are for tactic mode and elaboration; their
+appearance in a kernel theorem signals that the theorem is reasoning
+about Lean syntax rather than mathematical content.
+-/
+
+def isLeanMetaExprName (someName : Name) : Bool :=
+  someName == `Lean.Expr ||
+    someName == `Lean.Expr.app ||
+    someName == `Lean.Expr.lam ||
+    someName == `Lean.Expr.forallE ||
+    someName == `Lean.Expr.const ||
+    someName == `Lean.Expr.fvar ||
+    someName == `Lean.Expr.bvar ||
+    someName == `Lean.Expr.mvar ||
+    someName == `Lean.MVarId ||
+    someName == `Lean.LMVarId ||
+    someName == `Lean.Syntax ||
+    someName == `Lean.Name ||
+    someName == `Lean.Level ||
+    someName == `Lean.LocalContext ||
+    someName == `Lean.MetavarContext ||
+    someName == `Lean.Environment ||
+    someName == `Lean.ConstantInfo
+
+def collectLeanMetaExprDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun metaDependencies dependencyName =>
+      if isLeanMetaExprName dependencyName then
+        metaDependencies.push dependencyName
+      else
+        metaDependencies)
+
+elab "#assert_lean_meta_expr_dependent_budget " namespaceSyntax:ident
+    metaExprBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let metaExprBudget := metaExprBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectLeanMetaExprDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= metaExprBudget then
+    logInfo
+      (s!"Lean meta-Expr dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{metaExprBudget} kernel decls reference " ++
+      "Lean.Expr / MVarId / Syntax / Name / Level)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Lean meta-Expr dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {metaExprBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Monadic-stack dependent gate
+
+Production kernel decls should not depend on monad transformers
+(`StateRefT`, `ReaderT`, `StateT`, `ExceptT`, `OptionT`).  These are
+for elaboration / tactic infrastructure.  In a kernel theorem they
+indicate stateful reasoning that's not first-class mathematics.
+-/
+
+def isMonadicStackName (someName : Name) : Bool :=
+  someName == `StateT ||
+    someName == `StateRefT ||
+    someName == `ReaderT ||
+    someName == `ExceptT ||
+    someName == `OptionT ||
+    someName == `WriterT ||
+    someName == `Lean.CoreM ||
+    someName == `Lean.MetaM ||
+    someName == `Lean.Elab.TermElabM ||
+    someName == `Lean.Elab.Term.TermElabM ||
+    someName == `Lean.Elab.Tactic.TacticM ||
+    someName == `Lean.Elab.Command.CommandElabM
+
+def collectMonadicStackDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun monadDependencies dependencyName =>
+      if isMonadicStackName dependencyName then
+        monadDependencies.push dependencyName
+      else
+        monadDependencies)
+
+elab "#assert_monadic_stack_dependent_budget " namespaceSyntax:ident
+    monadBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let monadBudget := monadBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectMonadicStackDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= monadBudget then
+    logInfo
+      (s!"Monadic-stack dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{monadBudget} kernel decls reference " ++
+      "StateRefT / ReaderT / CoreM / MetaM / etc.)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Monadic-stack dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {monadBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Heavyweight-tactic dependent gate
+
+Beyond `decide`, several tactics introduce heavy reasoning machinery:
+`omega`, `linarith`, `nlinarith`, `polyrith`, `aesop`, `tauto`,
+`exact?`, `apply?`, `simp_all`, `simp_rw`.  These can prove false
+from inconsistent hypotheses or hide structural reasoning.  Pin
+current count.
+-/
+
+def isHeavyweightTacticName (someName : Name) : Bool :=
+  someName == `Mathlib.Tactic.omega ||
+    someName == `Lean.Elab.Tactic.Omega.evalOmega ||
+    someName == `Lean.Elab.Tactic.evalAesop ||
+    someName == `Aesop ||
+    someName == `Lean.Elab.Tactic.evalLinarith ||
+    someName == `Mathlib.Tactic.linarith ||
+    someName == `Mathlib.Tactic.polyrith ||
+    someName == `Lean.Elab.Tactic.evalSimpAll ||
+    someName == `Lean.Parser.Tactic.simpAll ||
+    someName == `Lean.Elab.Tactic.evalDecide ||
+    someName == `Lean.Parser.Tactic.tacticDecide_ ||
+    someName == `Lean.Elab.Tactic.evalTautology
+
+def collectHeavyweightTacticDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun tacticDependencies dependencyName =>
+      if isHeavyweightTacticName dependencyName then
+        tacticDependencies.push dependencyName
+      else
+        tacticDependencies)
+
+elab "#assert_heavyweight_tactic_dependent_budget " namespaceSyntax:ident
+    tacticBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let tacticBudget := tacticBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectHeavyweightTacticDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= tacticBudget then
+    logInfo
+      (s!"Heavyweight-tactic dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{tacticBudget} kernel decls reference " ++
+      "omega / aesop / linarith / tauto / simp_all)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Heavyweight-tactic dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {tacticBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Term ctor → Smoke namespace usage parity
+
+Every Term constructor should be referenced by at least one declaration
+in `LeanFX2.Smoke.*` — without smoke usage, the ctor is silently
+unverified by the regression suite.  This gate scans for the existence
+of any decl in the Smoke namespace whose body mentions the Term ctor's
+constant by name.
+-/
+
+/-- Whether any decl in the LeanFX2.Smoke.* namespace mentions the
+given Term constructor.  Heuristic: walk every Smoke decl's value
+Expr looking for a const reference. -/
+def hasAnySmokeReference
+    (environment : Environment) (constructorName : Name) : Bool :=
+  let smokeMatches :=
+    environment.constants.toList.filter fun (declName, _) =>
+      Name.isWithinNamespace `LeanFX2.Smoke declName
+  let smokeDeclNames := smokeMatches.map (·.1)
+  smokeDeclNames.any fun smokeDeclName =>
+    match environment.find? smokeDeclName with
+    | some constantInfo =>
+        match constantInfo.value? with
+        | some bodyExpr => doesExprMentionConst constructorName bodyExpr
+        | none => false
+    | none => false
+
+/-- Term ctors lacking any reference from the Smoke namespace. -/
+def smokeReferenceDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array Name :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array Name))
+    (fun records constructorName =>
+      if hasAnySmokeReference environment constructorName then
+        records
+      else
+        records.push constructorName)
+
+elab "#assert_smoke_reference_coverage_budget " inductiveSyntax:ident
+    smokeRefBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let smokeRefBudget := smokeRefBudgetSyntax.getNat
+  let unreferencedCtors :=
+    smokeReferenceDebtRecordsForInductive environment inductiveName
+  let totalCtors :=
+    (getInductiveConstructorNames environment inductiveName).size
+  let referencedCtors :=
+    if totalCtors >= unreferencedCtors.size then
+      totalCtors - unreferencedCtors.size
+    else 0
+  if unreferencedCtors.size <= smokeRefBudget then
+    logInfo
+      (s!"smoke reference coverage budget ok: {inductiveName} " ++
+      s!"({referencedCtors}/{totalCtors} ctors referenced from Smoke; " ++
+      s!"unreferenced {unreferencedCtors.size}/{smokeRefBudget})")
+  else
+    let perCtorLines := unreferencedCtors.toList.take 20 |>.map fun ctorName =>
+      s!"  - {ctorName}"
+    let header :=
+      s!"smoke reference coverage budget FAILED for {inductiveName}: " ++
+      s!"{unreferencedCtors.size} ctors lack Smoke reference, " ++
+      s!"exceeds budget {smokeRefBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-! ## absurd / False.elim direct dependent gate
+
+`absurd : a → ¬a → b` and `False.elim : False → C` discharge
+contradictions.  Heavy use signals proofs that thread through
+contradictory hypotheses — usually fine but worth tracking.  The
+distinguishing concern: `absurd` / `False.elim` on a hypothesis that
+might itself be vacuous can mask issues.
+-/
+
+def isAbsurdFalseFamilyName (someName : Name) : Bool :=
+  someName == `absurd ||
+    someName == `False.elim ||
+    someName == `False.rec ||
+    someName == `False.recOn ||
+    someName == `False.casesOn
+
+def collectAbsurdFalseDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun absurdDependencies dependencyName =>
+      if isAbsurdFalseFamilyName dependencyName then
+        absurdDependencies.push dependencyName
+      else
+        absurdDependencies)
+
+elab "#assert_absurd_false_dependent_budget " namespaceSyntax:ident
+    absurdBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let absurdBudget := absurdBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectAbsurdFalseDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= absurdBudget then
+    logInfo
+      (s!"absurd / False.elim dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{absurdBudget} kernel decls reference " ++
+      "absurd / False.elim / False.rec)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"absurd / False.elim dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {absurdBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## `Setoid` / `Quotient` / `Quot` extended dependent gate
+
+Beyond the existing Quot family gate, this widens to `Setoid`
+(equivalence-relation typeclass) and the `Quotient` API on top of
+`Setoid`.  These let users build quotient types beyond the kernel
+primitive `Quot`; uses signal classical-style mathematical reasoning.
+-/
+
+def isSetoidQuotientFamilyName (someName : Name) : Bool :=
+  someName == `Setoid ||
+    someName == `Setoid.r ||
+    someName == `Setoid.refl ||
+    someName == `Setoid.symm ||
+    someName == `Setoid.trans ||
+    someName == `Setoid.iseqv ||
+    someName == `Quotient.mk' ||
+    someName == `Quotient.lift' ||
+    someName == `Quotient.exact ||
+    someName == `Quotient.sound
+
+def collectSetoidQuotientDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun setoidDependencies dependencyName =>
+      if isSetoidQuotientFamilyName dependencyName then
+        setoidDependencies.push dependencyName
+      else
+        setoidDependencies)
+
+elab "#assert_setoid_quotient_dependent_budget " namespaceSyntax:ident
+    setoidBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let setoidBudget := setoidBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectSetoidQuotientDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= setoidBudget then
+    logInfo
+      (s!"Setoid / Quotient dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{setoidBudget} kernel decls reference " ++
+      "Setoid / Quotient.mk' / Quotient.sound)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Setoid / Quotient dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} dependents exceed budget {setoidBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
 /-! ## End-of-build summary reporter -/
 
 /-- Aggregate audit summary across one namespace.  Logs total / clean /
@@ -5144,6 +6302,19 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
   let mut quotDependentCount : Nat := 0
   let mut accDependentCount : Nat := 0
   let mut leanMetaDependentCount : Nat := 0
+  -- Lean-trust-escape and shape detectors (this batch).
+  let mut coeDependentCount : Nat := 0
+  let mut ofNatDependentCount : Nat := 0
+  let mut subtypeDependentCount : Nat := 0
+  let mut functionPropertyDependentCount : Nat := 0
+  let mut eqRewritingDependentCount : Nat := 0
+  let mut reducibleDeclCount : Nat := 0
+  let mut falseResultTypeCount : Nat := 0
+  let mut dependentPairDependentCount : Nat := 0
+  let mut classicalReasoningDependentCount : Nat := 0
+  let mut apiTypeclassDependentCount : Nat := 0
+  let mut ioEffectDependentCount : Nat := 0
+  let mut anonymousProjectionDependentCount : Nat := 0
   for targetName in targetNames do
     if !isKernelTierProductionDecl targetName then
       continue
@@ -5172,10 +6343,34 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       accDependentCount := accDependentCount + 1
     if !(collectLeanMetaDependencies environment targetName).isEmpty then
       leanMetaDependentCount := leanMetaDependentCount + 1
+    if !(collectCoeDependencies environment targetName).isEmpty then
+      coeDependentCount := coeDependentCount + 1
+    if !(collectOfNatDependencies environment targetName).isEmpty then
+      ofNatDependentCount := ofNatDependentCount + 1
+    if !(collectSubtypeDependencies environment targetName).isEmpty then
+      subtypeDependentCount := subtypeDependentCount + 1
+    if !(collectFunctionPropertyDependencies environment targetName).isEmpty then
+      functionPropertyDependentCount := functionPropertyDependentCount + 1
+    if !(collectEqRewritingDependencies environment targetName).isEmpty then
+      eqRewritingDependentCount := eqRewritingDependentCount + 1
+    if hasAbbrevReducibilityHint environment targetName then
+      reducibleDeclCount := reducibleDeclCount + 1
+    if !(collectDependentPairDependencies environment targetName).isEmpty then
+      dependentPairDependentCount := dependentPairDependentCount + 1
+    if !(collectClassicalReasoningDependencies environment targetName).isEmpty then
+      classicalReasoningDependentCount := classicalReasoningDependentCount + 1
+    if !(collectApiTypeclassDependencies environment targetName).isEmpty then
+      apiTypeclassDependentCount := apiTypeclassDependentCount + 1
+    if !(collectIOEffectDependencies environment targetName).isEmpty then
+      ioEffectDependentCount := ioEffectDependentCount + 1
+    if !(collectAnonymousProjectionDependencies environment targetName).isEmpty then
+      anonymousProjectionDependentCount := anonymousProjectionDependentCount + 1
     match environment.find? targetName with
     | some constantInfo =>
         if hasUniversePolymorphicSort constantInfo.type then
           universePolymorphicCount := universePolymorphicCount + 1
+        if claimsFalseResultType constantInfo then
+          falseResultTypeCount := falseResultTypeCount + 1
     | none => pure ()
   -- Strict-audit totals across the namespace.
   let mut auditTotalCount : Nat := 0
@@ -5329,6 +6524,32 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       s!"{accDependentCount}",
     s!"    Lean.Elab/Meta/Parser deps in production:      " ++
       s!"{leanMetaDependentCount}",
+    "  ──────────────────────────────────────────────────────────",
+    "  LEAN-TRUST-ESCAPE / DECL-SHAPE CENSUS (this batch)",
+    s!"    Coe / CoeSort / CoeFun deps:                   " ++
+      s!"{coeDependentCount}",
+    s!"    OfNat / OfScientific deps:                     " ++
+      s!"{ofNatDependentCount}",
+    s!"    Subtype.mk / Subtype.val deps:                 " ++
+      s!"{subtypeDependentCount}",
+    s!"    Function.Injective/Bijective/Surjective deps:  " ++
+      s!"{functionPropertyDependentCount}",
+    s!"    Eq.symm/trans/mp/recOn/subst deps:             " ++
+      s!"{eqRewritingDependentCount}",
+    s!"    Reducible / abbrev kernel decls:               " ++
+      s!"{reducibleDeclCount}",
+    s!"    False-in-result-type kernel decls:             " ++
+      s!"{falseResultTypeCount}",
+    s!"    Sigma / PSigma / Sum / PSum / PProd deps:      " ++
+      s!"{dependentPairDependentCount}",
+    s!"    Classical.choose/em/byContradiction deps:      " ++
+      s!"{classicalReasoningDependentCount}",
+    s!"    Hashable / Repr / ToString / BEq deps:         " ++
+      s!"{apiTypeclassDependentCount}",
+    s!"    IO / Task / EIO effect deps:                   " ++
+      s!"{ioEffectDependentCount}",
+    s!"    And/Or/Iff/Prod anonymous-projection deps:     " ++
+      s!"{anonymousProjectionDependentCount}",
     bannerEdge,
     "  Notes:",
     "    * All counts read live from current environment.",
