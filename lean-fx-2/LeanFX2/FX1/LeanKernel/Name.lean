@@ -77,6 +77,102 @@ def beq : Name -> Name -> Bool
   | Name.num _ _, Name.anonymous => false
   | Name.num _ _, Name.str _ _ => false
 
+/-- Soundness of structural executable equality for Lean-kernel names. -/
+theorem beq_sound :
+    (leftName rightName : Name) ->
+      Eq (beq leftName rightName) true ->
+      Eq leftName rightName
+  | Name.anonymous, Name.anonymous, _ => Eq.refl Name.anonymous
+  | Name.anonymous, Name.str _ _, equalityIsTrue => nomatch equalityIsTrue
+  | Name.anonymous, Name.num _ _, equalityIsTrue => nomatch equalityIsTrue
+  | Name.str _ _, Name.anonymous, equalityIsTrue => nomatch equalityIsTrue
+  | Name.str leftPrefix leftAtomId, Name.str rightPrefix rightAtomId,
+      equalityIsTrue =>
+      let prefixEquality :=
+        beq_sound
+          leftPrefix
+          rightPrefix
+          (Boolean.and_true_left equalityIsTrue)
+      let atomEquality :=
+        NaturalNumber.beq_sound
+          leftAtomId
+          rightAtomId
+          (Boolean.and_true_right equalityIsTrue)
+      Eq.trans
+        (congrArg
+          (fun rewrittenPrefix => Name.str rewrittenPrefix leftAtomId)
+          prefixEquality)
+        (congrArg
+          (fun rewrittenAtomId => Name.str rightPrefix rewrittenAtomId)
+          atomEquality)
+  | Name.str _ _, Name.num _ _, equalityIsTrue => nomatch equalityIsTrue
+  | Name.num _ _, Name.anonymous, equalityIsTrue => nomatch equalityIsTrue
+  | Name.num _ _, Name.str _ _, equalityIsTrue => nomatch equalityIsTrue
+  | Name.num leftPrefix leftIndex, Name.num rightPrefix rightIndex,
+      equalityIsTrue =>
+      let prefixEquality :=
+        beq_sound
+          leftPrefix
+          rightPrefix
+          (Boolean.and_true_left equalityIsTrue)
+      let indexEquality :=
+        NaturalNumber.beq_sound
+          leftIndex
+          rightIndex
+          (Boolean.and_true_right equalityIsTrue)
+      Eq.trans
+        (congrArg
+          (fun rewrittenPrefix => Name.num rewrittenPrefix leftIndex)
+          prefixEquality)
+        (congrArg
+          (fun rewrittenIndex => Name.num rightPrefix rewrittenIndex)
+          indexEquality)
+
+/-- Proof-carrying comparison for Lean-kernel names. -/
+def eqResult : (leftName rightName : Name) -> EqualityResult leftName rightName
+  | Name.anonymous, Name.anonymous =>
+      EqualityResult.equal (Eq.refl Name.anonymous)
+  | Name.anonymous, Name.str _ _ => EqualityResult.notEqual
+  | Name.anonymous, Name.num _ _ => EqualityResult.notEqual
+  | Name.str _ _, Name.anonymous => EqualityResult.notEqual
+  | Name.str leftPrefix leftAtomId, Name.str rightPrefix rightAtomId =>
+      match eqResult leftPrefix rightPrefix with
+      | EqualityResult.equal prefixEquality =>
+          match NaturalNumber.eqResult leftAtomId rightAtomId with
+          | EqualityResult.equal atomEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenPrefix =>
+                      Name.str rewrittenPrefix leftAtomId)
+                    prefixEquality)
+                  (congrArg
+                    (fun rewrittenAtomId =>
+                      Name.str rightPrefix rewrittenAtomId)
+                    atomEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Name.str _ _, Name.num _ _ => EqualityResult.notEqual
+  | Name.num _ _, Name.anonymous => EqualityResult.notEqual
+  | Name.num _ _, Name.str _ _ => EqualityResult.notEqual
+  | Name.num leftPrefix leftIndex, Name.num rightPrefix rightIndex =>
+      match eqResult leftPrefix rightPrefix with
+      | EqualityResult.equal prefixEquality =>
+          match NaturalNumber.eqResult leftIndex rightIndex with
+          | EqualityResult.equal indexEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenPrefix =>
+                      Name.num rewrittenPrefix leftIndex)
+                    prefixEquality)
+                  (congrArg
+                    (fun rewrittenIndex =>
+                      Name.num rightPrefix rewrittenIndex)
+                    indexEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
 end Name
 
 end FX1.LeanKernel

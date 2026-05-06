@@ -95,6 +95,54 @@ inductive Expr : Nat -> Nat -> Type
 
 namespace Expr
 
+/-- Copy an expression into another local-scope index.
+
+This operation preserves the raw de Bruijn positions.  It is used only for
+closed payloads whose source type already lives at scope zero, such as constant
+declaration types.  A later environment well-formedness pass must reject
+ill-scoped declaration payloads; this helper does not by itself prove closure. -/
+def recontextualize {level sourceScope targetScope : Nat} :
+    Expr level sourceScope -> Expr level targetScope
+  | Expr.bvar position => Expr.bvar position
+  | Expr.fvar fvarId => Expr.fvar fvarId
+  | Expr.mvar mvarId => Expr.mvar mvarId
+  | Expr.sort sortLevel => Expr.sort sortLevel
+  | Expr.const constName levels => Expr.const constName levels
+  | Expr.app functionExpr argumentExpr =>
+      Expr.app
+        (recontextualize functionExpr)
+        (recontextualize argumentExpr)
+  | Expr.lam binderName domainExpr bodyExpr binderInfo =>
+      Expr.lam binderName
+        (recontextualize domainExpr)
+        (recontextualize
+          (sourceScope := Nat.succ sourceScope)
+          (targetScope := Nat.succ targetScope)
+          bodyExpr)
+        binderInfo
+  | Expr.forallE binderName domainExpr bodyExpr binderInfo =>
+      Expr.forallE binderName
+        (recontextualize domainExpr)
+        (recontextualize
+          (sourceScope := Nat.succ sourceScope)
+          (targetScope := Nat.succ targetScope)
+          bodyExpr)
+        binderInfo
+  | Expr.letE declName typeExpr valueExpr bodyExpr nondep =>
+      Expr.letE declName
+        (recontextualize typeExpr)
+        (recontextualize valueExpr)
+        (recontextualize
+          (sourceScope := Nat.succ sourceScope)
+          (targetScope := Nat.succ targetScope)
+          bodyExpr)
+        nondep
+  | Expr.lit literal => Expr.lit literal
+  | Expr.mdata metadata bodyExpr =>
+      Expr.mdata metadata (recontextualize bodyExpr)
+  | Expr.proj structName fieldIndex targetExpr =>
+      Expr.proj structName fieldIndex (recontextualize targetExpr)
+
 /-- Count expression nodes.  This is a structural sanity check used by early
 kernel tooling before substitution and typing are populated. -/
 def nodeCount {level : Nat} : {scope : Nat} -> Expr level scope -> Nat

@@ -1,5 +1,4 @@
 prelude
-import LeanFX2.FX1.LeanKernel.Inductive
 import LeanFX2.FX1.LeanKernel.HasType
 import LeanFX2.FX1.LeanKernel.Check
 import LeanFX2.FX1.LeanKernel.Soundness
