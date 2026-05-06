@@ -11,7 +11,8 @@ lambda-Pi core.  It is intentionally conservative:
 * variables, sorts, Pi types, lambdas, and applications are checked;
 * constants are accepted only when executable environment lookup returns a
   proof-carrying declaration membership witness;
-* equality used by application checking is structural and FX1-native.
+* application domains and explicit expected types are compared by bounded
+  weak-head common-reduct conversion.
 
 The checker is sound for the fragment it accepts.  Accepting fewer programs is
 the conservative direction; each accepted branch must carry its own zero-axiom
@@ -925,6 +926,22 @@ structure DefEqResult
   leftReductions : EnvStepStar environment leftExpr commonExpr
   rightReductions : EnvStepStar environment rightExpr commonExpr
 
+namespace DefEqResult
+
+/-- Forget the executable payload wrapper into the typing-side common-reduct
+definitional equality relation. -/
+def toDefEq
+    {environment : Environment}
+    {leftExpr rightExpr : Expr}
+    (result : DefEqResult environment leftExpr rightExpr) :
+    DefEq environment leftExpr rightExpr :=
+  DefEq.common
+    result.commonExpr
+    result.leftReductions
+    result.rightReductions
+
+end DefEqResult
+
 /-- Extern-clean addition for fuel budgets.
 
 This deliberately avoids host `Nat.add`, which the strict executable audit
@@ -1043,6 +1060,30 @@ def isDefEq_sound
     (rightExpr := rightExpr)
     defEqSucceeded
 
+/-- Fuel-bounded weak-head definitional equality is sound for typing
+conversion. -/
+def isDefEqWithFuel_sound_defEq
+    {environment : Environment}
+    {fuel : Nat}
+    {leftExpr rightExpr : Expr}
+    (defEqSucceeded :
+      Eq
+        (Expr.isDefEqWithFuel environment fuel leftExpr rightExpr)
+        true) :
+    DefEq environment leftExpr rightExpr :=
+  Expr.DefEqResult.toDefEq
+    (Expr.isDefEqWithFuel_sound defEqSucceeded)
+
+/-- Default weak-head definitional equality is sound for typing conversion. -/
+def isDefEq_sound_defEq
+    {environment : Environment}
+    {leftExpr rightExpr : Expr}
+    (defEqSucceeded :
+      Eq (Expr.isDefEq environment leftExpr rightExpr) true) :
+    DefEq environment leftExpr rightExpr :=
+  Expr.DefEqResult.toDefEq
+    (Expr.isDefEq_sound defEqSucceeded)
+
 /-- A successful checker inference paired with the relational typing
 derivation it justifies. -/
 structure InferResult
@@ -1066,15 +1107,16 @@ def checkBoolFromResult?
     (expectedTypeExpr : Expr) :
     Option (InferResult environment context expression) -> Bool
   | some inferenceResult =>
-      Expr.checkerBeq inferenceResult.typeExpr expectedTypeExpr
+      Expr.isDefEq environment inferenceResult.typeExpr expectedTypeExpr
   | none => false
 
 /-- Project a runtime-facing optional inferred type to the executable check
 result against an expected type. -/
-def checkBoolFromCoreType? (expectedTypeExpr : Expr) :
+def checkBoolFromCoreType?
+    (environment : Environment) (expectedTypeExpr : Expr) :
     Option Expr -> Bool
   | some inferredTypeExpr =>
-      Expr.checkerBeq inferredTypeExpr expectedTypeExpr
+      Expr.isDefEq environment inferredTypeExpr expectedTypeExpr
   | none => false
 
 /-- Executable inference without proof payloads.
@@ -1132,7 +1174,7 @@ def inferCore? (environment : Environment) (context : Context) :
       | some (Expr.pi domainExpr bodyTypeExpr) =>
           match Expr.inferCore? environment context argumentExpr with
           | some argumentTypeExpr =>
-              match Expr.checkerBeq argumentTypeExpr domainExpr with
+              match Expr.isDefEq environment argumentTypeExpr domainExpr with
               | true => some (Expr.subst0 argumentExpr bodyTypeExpr)
               | false => none
           | none => none
@@ -1442,7 +1484,7 @@ theorem inferCore_app_from_branch_sound
         (Expr.inferCore? environment context argumentExpr)
         (some argumentTypeExpr))
     (argumentTypeCheck :
-      Eq (Expr.checkerBeq argumentTypeExpr domainExpr) true)
+      Eq (Expr.isDefEq environment argumentTypeExpr domainExpr) true)
     (functionHasPi :
       HasType
         environment
@@ -1463,15 +1505,11 @@ theorem inferCore_app_from_branch_sound
       context
       (Expr.app functionExpr argumentExpr)
       inferredTypeExpr :=
-  let argumentTypeEquality :=
-    Expr.checkerBeq_sound
-      argumentTypeExpr
-      domainExpr
-      argumentTypeCheck
   let argumentHasDomain :
       HasType environment context argumentExpr domainExpr :=
-    match argumentTypeEquality with
-    | Eq.refl _ => argumentHasInferredType
+    HasType.conv
+      argumentHasInferredType
+      (Expr.isDefEq_sound_defEq argumentTypeCheck)
   let branchEquality :
       Eq
         (Expr.inferCore?
@@ -1484,13 +1522,15 @@ theorem inferCore_app_from_branch_sound
       | false => none
     let argumentCase : Option Expr -> Option Expr
       | some currentArgumentTypeExpr =>
-          checkCase (Expr.checkerBeq currentArgumentTypeExpr domainExpr)
+          checkCase
+            (Expr.isDefEq environment currentArgumentTypeExpr domainExpr)
       | none => none
     let functionCase : Option Expr -> Option Expr
       | some (Expr.pi currentDomainExpr currentBodyTypeExpr) =>
           match Expr.inferCore? environment context argumentExpr with
           | some currentArgumentTypeExpr =>
-              match Expr.checkerBeq
+              match Expr.isDefEq
+                  environment
                   currentArgumentTypeExpr
                   currentDomainExpr with
               | true =>
@@ -1531,9 +1571,11 @@ theorem inferCore_app_from_branch_sound
     let checkCaseEquality :
         Eq
           (argumentCase (some argumentTypeExpr))
-          (checkCase (Expr.checkerBeq argumentTypeExpr domainExpr)) :=
+          (checkCase
+            (Expr.isDefEq environment argumentTypeExpr domainExpr)) :=
       Eq.refl
-        (checkCase (Expr.checkerBeq argumentTypeExpr domainExpr))
+        (checkCase
+          (Expr.isDefEq environment argumentTypeExpr domainExpr))
     let checkCaseProjected :=
       congrArg checkCase argumentTypeCheck
     Eq.trans
@@ -1883,7 +1925,7 @@ theorem inferCore_sound
           Option Expr -> Option Expr
         | some argumentTypeExpr =>
             appCheckCase bodyTypeExpr
-              (Expr.checkerBeq argumentTypeExpr domainExpr)
+              (Expr.isDefEq environment argumentTypeExpr domainExpr)
         | none => none
       let appFunctionCase : Option Expr -> Option Expr
         | some (Expr.pi domainExpr bodyTypeExpr) =>
@@ -1999,16 +2041,16 @@ theorem inferCore_sound
                       (some argumentTypeExpr))
                     (appCheckCase
                       bodyTypeExpr
-                      (Expr.checkerBeq argumentTypeExpr domainExpr)) :=
+                      (Expr.isDefEq environment argumentTypeExpr domainExpr)) :=
                 Eq.refl
                   (appCheckCase
                     bodyTypeExpr
-                    (Expr.checkerBeq argumentTypeExpr domainExpr))
+                    (Expr.isDefEq environment argumentTypeExpr domainExpr))
               let failFromCheckCase
                   {checkResult : Bool}
                   (argumentTypeCheck :
                     Eq
-                      (Expr.checkerBeq argumentTypeExpr domainExpr)
+                      (Expr.isDefEq environment argumentTypeExpr domainExpr)
                       checkResult)
                   (checkCaseFailed :
                     Eq
@@ -2039,7 +2081,7 @@ theorem inferCore_sound
                               checkCaseFailed))))))
                   inferenceSucceeded
               match argumentTypeCheck :
-                  Expr.checkerBeq argumentTypeExpr domainExpr with
+                  Expr.isDefEq environment argumentTypeExpr domainExpr with
               | true =>
                   inferCore_app_from_branch_sound
                     functionInference
@@ -2069,6 +2111,7 @@ theorem inferCore_sound
 def checkCore? (environment : Environment) (context : Context)
     (expression expectedTypeExpr : Expr) : Bool :=
   Expr.checkBoolFromCoreType?
+    environment
     expectedTypeExpr
     (Expr.inferCore? environment context expression)
 
@@ -2094,20 +2137,16 @@ theorem checkCore_of_inferCore_sound
         true) :
     HasType environment context expression expectedTypeExpr :=
   let projectedEquality :
-      Eq (Expr.checkerBeq inferredTypeExpr expectedTypeExpr) true :=
+      Eq (Expr.isDefEq environment inferredTypeExpr expectedTypeExpr) true :=
     Eq.trans
       (Eq.symm
         (congrArg
-          (Expr.checkBoolFromCoreType? expectedTypeExpr)
+          (Expr.checkBoolFromCoreType? environment expectedTypeExpr)
           inferenceSucceeded))
       checkingSucceeded
-  let inferredTypeEquality :=
-    Expr.checkerBeq_sound
-      inferredTypeExpr
-      expectedTypeExpr
-      projectedEquality
-  match inferredTypeEquality with
-  | Eq.refl _ => inferredTypeDerivation
+  HasType.conv
+    inferredTypeDerivation
+    (Expr.isDefEq_sound_defEq projectedEquality)
 
 /-- Soundness of runtime-facing checking for the accepted no-constant
 fragment. -/
@@ -2140,7 +2179,7 @@ theorem checkCore_sound
         Eq.trans
           (Eq.symm
             (congrArg
-              (Expr.checkBoolFromCoreType? expectedTypeExpr)
+              (Expr.checkBoolFromCoreType? environment expectedTypeExpr)
               inferenceSucceeded))
           checkingSucceeded
       nomatch falseEqualsTrue
@@ -2171,7 +2210,7 @@ theorem checkCore_bvar_sound
         Eq.trans
           (Eq.symm
             (congrArg
-              (Expr.checkBoolFromCoreType? expectedTypeExpr)
+              (Expr.checkBoolFromCoreType? environment expectedTypeExpr)
               lookupSucceeded))
           checkingSucceeded
       nomatch falseEqualsTrue
@@ -2302,21 +2341,20 @@ def inferResult?
               match Expr.inferResult? environment context argumentExpr with
               | some argumentResult =>
                   match h :
-                      Expr.checkerBeq argumentResult.typeExpr domainExpr with
+                      Expr.isDefEq
+                        environment
+                        argumentResult.typeExpr
+                        domainExpr with
                   | true =>
-                      let argumentTypeEquality :=
-                        Expr.checkerBeq_sound
-                          argumentResult.typeExpr
-                          domainExpr
-                          h
                       let argumentHasDomain :
                           HasType
                             environment
                             context
                             argumentExpr
                             domainExpr :=
-                        match argumentTypeEquality with
-                        | Eq.refl _ => argumentResult.typeDerivation
+                        HasType.conv
+                          argumentResult.typeDerivation
+                          (Expr.isDefEq_sound_defEq h)
                       some {
                         typeExpr :=
                           Expr.subst0 argumentExpr bodyTypeExpr
@@ -2377,7 +2415,8 @@ theorem infer?_sound
           inferenceSucceeded
       nomatch noneEqualsSome
 
-/-- Check an expression against an expected type using checker equality. -/
+/-- Check an expression against an expected type using weak-head
+definitional equality. -/
 def check? (environment : Environment) (context : Context)
     (expression expectedTypeExpr : Expr) : Bool :=
   Expr.checkBoolFromResult?
@@ -2399,7 +2438,10 @@ theorem check?_sound
   | some inferenceResult =>
       let projectedEquality :
           Eq
-            (Expr.checkerBeq inferenceResult.typeExpr expectedTypeExpr)
+            (Expr.isDefEq
+              environment
+              inferenceResult.typeExpr
+              expectedTypeExpr)
             true :=
         Eq.trans
           (Eq.symm
@@ -2407,13 +2449,9 @@ theorem check?_sound
               (Expr.checkBoolFromResult? expectedTypeExpr)
               h))
           checkingSucceeded
-      let inferredTypeEquality :=
-        Expr.checkerBeq_sound
-          inferenceResult.typeExpr
-          expectedTypeExpr
-          projectedEquality
-      match inferredTypeEquality with
-      | Eq.refl _ => inferenceResult.typeDerivation
+      HasType.conv
+        inferenceResult.typeDerivation
+        (Expr.isDefEq_sound_defEq projectedEquality)
   | none =>
       let falseEqualsTrue : Eq false true :=
         Eq.trans

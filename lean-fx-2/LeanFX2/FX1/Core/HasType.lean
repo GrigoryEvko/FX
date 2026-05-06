@@ -8,8 +8,8 @@ Root status: Root-FX1 metatheory scaffold.
 
 Typing relation for the minimal FX1 lambda-Pi core.  This file uses relational
 environment and context membership instead of host maps or decidable name
-equality.  Environment well-formedness, duplicate-name rejection, conversion,
-and preservation are subsequent M3/M4 obligations.
+equality.  Environment well-formedness, duplicate-name rejection, and
+preservation are subsequent M3/M4 obligations.
 -/
 
 namespace LeanFX2.FX1
@@ -207,6 +207,19 @@ inductive HasType (environment : Environment) : Context -> Expr -> Expr -> Prop
         context
         (Expr.app functionExpr argumentExpr)
         (Expr.subst0 argumentExpr bodyTypeExpr)
+  /-- Conversion changes the target type along common-reduct definitional
+  equality. -/
+  | conv
+      {context : Context}
+      {expression sourceTypeExpr targetTypeExpr : Expr}
+      (expressionHasSourceType :
+        HasType environment context expression sourceTypeExpr)
+      (typesDefEq : DefEq environment sourceTypeExpr targetTypeExpr) :
+      HasType
+        environment
+        context
+        expression
+        targetTypeExpr
 
 namespace HasType
 
@@ -244,6 +257,10 @@ theorem weaken_environment
       HasType.app
         (weaken_environment newDeclaration functionHasPi)
         (weaken_environment newDeclaration argumentHasDomain)
+  | HasType.conv expressionHasSourceType typesDefEq =>
+      HasType.conv
+        (weaken_environment newDeclaration expressionHasSourceType)
+        (DefEq.weaken_environment newDeclaration typesDefEq)
 
 /-- The empty-context identity over `Sort 0` has the expected Pi type. -/
 theorem sortZeroIdentity

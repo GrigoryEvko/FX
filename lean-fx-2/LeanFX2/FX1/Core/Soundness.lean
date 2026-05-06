@@ -22,8 +22,8 @@ namespace LeanFX2.FX1
 
 Coverage: de Bruijn variables, universes, Pi, lambda, and application.
 Constants are accepted only when executable environment lookup returns a
-proof-carrying declaration membership witness.  Conversion remains structural
-in this root slice.
+proof-carrying declaration membership witness.  Conversion is bounded
+weak-head common-reduct equality over transparent delta and beta head steps.
 -/
 theorem check_sound
     {environment : Environment}

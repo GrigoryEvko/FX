@@ -961,6 +961,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.EnvStep.appFunction
 #assert_no_axioms LeanFX2.FX1.EnvStep.appArgument
 #assert_no_axioms LeanFX2.FX1.EnvStep.fromStep
+#assert_no_axioms LeanFX2.FX1.EnvStep.weaken_environment
 #assert_no_axioms LeanFX2.FX1.EnvStep.deltaNewestDef
 #assert_no_axioms LeanFX2.FX1.EnvStep.deltaNewestTheorem
 #assert_no_axioms LeanFX2.FX1.EnvStep.betaNewestBvar
@@ -975,7 +976,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.EnvStepStar.step
 #assert_no_axioms LeanFX2.FX1.EnvStepStar.single
 #assert_no_axioms LeanFX2.FX1.EnvStepStar.trans
+#assert_no_axioms LeanFX2.FX1.EnvStepStar.weaken_environment
 #assert_no_axioms LeanFX2.FX1.EnvStepStar.fromStepStar
+#assert_no_axioms LeanFX2.FX1.DefEq
+#assert_no_axioms LeanFX2.FX1.DefEq.common
+#assert_no_axioms LeanFX2.FX1.DefEq.refl
+#assert_no_axioms LeanFX2.FX1.DefEq.symm
+#assert_no_axioms LeanFX2.FX1.DefEq.weaken_environment
 #assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration
 #assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.newest
 #assert_no_axioms LeanFX2.FX1.Environment.HasDeclaration.older
@@ -992,6 +999,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.HasType.pi
 #assert_no_axioms LeanFX2.FX1.HasType.lam
 #assert_no_axioms LeanFX2.FX1.HasType.app
+#assert_no_axioms LeanFX2.FX1.HasType.conv
 #assert_no_axioms LeanFX2.FX1.HasType.weaken_environment
 #assert_no_axioms LeanFX2.FX1.HasType.sortZeroIdentity
 #assert_no_axioms LeanFX2.FX1.HasType.identityAppNewestVar_sourceHasType
@@ -1086,6 +1094,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.DefEqResult.commonExpr
 #assert_no_axioms LeanFX2.FX1.Expr.DefEqResult.leftReductions
 #assert_no_axioms LeanFX2.FX1.Expr.DefEqResult.rightReductions
+#assert_no_axioms LeanFX2.FX1.Expr.DefEqResult.toDefEq
 #assert_no_axioms LeanFX2.FX1.Expr.weakHeadFuelAdd
 #assert_no_axioms LeanFX2.FX1.Expr.defEqFuel
 #assert_no_axioms LeanFX2.FX1.Expr.defEqResultWithFuel?
@@ -1093,6 +1102,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.isDefEq
 #assert_no_axioms LeanFX2.FX1.Expr.isDefEqWithFuel_sound
 #assert_no_axioms LeanFX2.FX1.Expr.isDefEq_sound
+#assert_no_axioms LeanFX2.FX1.Expr.isDefEqWithFuel_sound_defEq
+#assert_no_axioms LeanFX2.FX1.Expr.isDefEq_sound_defEq
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeExpr
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeDerivation

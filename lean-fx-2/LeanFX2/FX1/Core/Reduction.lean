@@ -256,6 +256,43 @@ theorem fromStep
   | Step.appArgument argumentStep =>
       EnvStep.appArgument (fromStep environment argumentStep)
 
+/-- Environment weakening for one-step environment-indexed reduction. -/
+theorem weaken_environment
+    {environment : Environment}
+    {sourceExpr targetExpr : Expr}
+    (newDeclaration : Declaration)
+    (singleStep : EnvStep environment sourceExpr targetExpr) :
+    EnvStep
+      (Environment.extend environment newDeclaration)
+      sourceExpr
+      targetExpr :=
+  match singleStep with
+  | EnvStep.beta domainExpr bodyExpr argumentExpr =>
+      EnvStep.beta domainExpr bodyExpr argumentExpr
+  | EnvStep.delta transparentDefinition =>
+      EnvStep.delta
+        (Environment.TransparentDefinition.weaken
+          newDeclaration
+          transparentDefinition)
+  | EnvStep.piDomain domainStep =>
+      EnvStep.piDomain
+        (weaken_environment newDeclaration domainStep)
+  | EnvStep.piBody bodyStep =>
+      EnvStep.piBody
+        (weaken_environment newDeclaration bodyStep)
+  | EnvStep.lamDomain domainStep =>
+      EnvStep.lamDomain
+        (weaken_environment newDeclaration domainStep)
+  | EnvStep.lamBody bodyStep =>
+      EnvStep.lamBody
+        (weaken_environment newDeclaration bodyStep)
+  | EnvStep.appFunction functionStep =>
+      EnvStep.appFunction
+        (weaken_environment newDeclaration functionStep)
+  | EnvStep.appArgument argumentStep =>
+      EnvStep.appArgument
+        (weaken_environment newDeclaration argumentStep)
+
 /-- The newest transparent definition delta-reduces to its value. -/
 theorem deltaNewestDef
     (environment : Environment)
@@ -385,6 +422,24 @@ theorem trans
   | EnvStepStar.step firstStep remainingSteps =>
       EnvStepStar.step firstStep (trans remainingSteps rightSteps)
 
+/-- Environment weakening for environment-indexed multi-step reduction. -/
+theorem weaken_environment
+    {environment : Environment}
+    {sourceExpr targetExpr : Expr}
+    (newDeclaration : Declaration)
+    (multiStep : EnvStepStar environment sourceExpr targetExpr) :
+    EnvStepStar
+      (Environment.extend environment newDeclaration)
+      sourceExpr
+      targetExpr :=
+  match multiStep with
+  | EnvStepStar.refl expression =>
+      EnvStepStar.refl expression
+  | EnvStepStar.step firstStep remainingSteps =>
+      EnvStepStar.step
+        (EnvStep.weaken_environment newDeclaration firstStep)
+        (weaken_environment newDeclaration remainingSteps)
+
 /-- Environment-free multi-step reduction embeds into the environment-indexed
 multi-step relation. -/
 theorem fromStepStar
@@ -400,5 +455,62 @@ theorem fromStepStar
         (fromStepStar environment remainingSteps)
 
 end EnvStepStar
+
+/-- Definitional equality as a common environment-indexed reduct.
+
+This is the typing-side relation consumed by conversion.  Executable checkers
+can produce witnesses through `Expr.isDefEq*_sound`; the relation itself lives
+in the reduction layer so `HasType` can depend on it without importing the
+checker. -/
+inductive DefEq
+    (environment : Environment) : Expr -> Expr -> Prop
+  /-- Two expressions are definitionally equal when they reduce to a shared
+  environment-indexed reduct. -/
+  | common
+      {leftExpr rightExpr : Expr}
+      (commonExpr : Expr)
+      (leftReductions : EnvStepStar environment leftExpr commonExpr)
+      (rightReductions : EnvStepStar environment rightExpr commonExpr) :
+      DefEq environment leftExpr rightExpr
+
+namespace DefEq
+
+/-- Reflexivity of definitional equality. -/
+theorem refl
+    (environment : Environment) (expression : Expr) :
+    DefEq environment expression expression :=
+  DefEq.common
+    expression
+    (EnvStepStar.refl expression)
+    (EnvStepStar.refl expression)
+
+/-- Symmetry of common-reduct definitional equality. -/
+theorem symm
+    {environment : Environment}
+    {leftExpr rightExpr : Expr}
+    (defEqWitness : DefEq environment leftExpr rightExpr) :
+    DefEq environment rightExpr leftExpr :=
+  match defEqWitness with
+  | DefEq.common commonExpr leftReductions rightReductions =>
+      DefEq.common commonExpr rightReductions leftReductions
+
+/-- Environment weakening for common-reduct definitional equality. -/
+theorem weaken_environment
+    {environment : Environment}
+    {leftExpr rightExpr : Expr}
+    (newDeclaration : Declaration)
+    (defEqWitness : DefEq environment leftExpr rightExpr) :
+    DefEq
+      (Environment.extend environment newDeclaration)
+      leftExpr
+      rightExpr :=
+  match defEqWitness with
+  | DefEq.common commonExpr leftReductions rightReductions =>
+      DefEq.common
+        commonExpr
+        (EnvStepStar.weaken_environment newDeclaration leftReductions)
+        (EnvStepStar.weaken_environment newDeclaration rightReductions)
+
+end DefEq
 
 end LeanFX2.FX1
