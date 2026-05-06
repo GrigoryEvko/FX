@@ -117,6 +117,47 @@ theorem beq_sound
           (fun rewrittenIndex => Name.num rightPrefix rewrittenIndex)
           indexEquality)
 
+/-- Proof-carrying structural comparison for FX1 names.
+
+Unlike `Name.beq_sound`, this comparator never eliminates an impossible Boolean
+equality case.  It is therefore suitable for executable proof-carrying lookup
+paths that are also audited for extern dependencies. -/
+def eqResult : (leftName rightName : Name) -> EqualityResult leftName rightName
+  | Name.anonymous, Name.anonymous =>
+      EqualityResult.equal (Eq.refl Name.anonymous)
+  | Name.anonymous, Name.str _ _ => EqualityResult.notEqual
+  | Name.anonymous, Name.num _ _ => EqualityResult.notEqual
+  | Name.str _ _, Name.anonymous => EqualityResult.notEqual
+  | Name.str leftPrefix leftAtomId, Name.str rightPrefix rightAtomId =>
+      match Name.eqResult leftPrefix rightPrefix with
+      | EqualityResult.equal prefixEquality =>
+          match NaturalNumber.eqResult leftAtomId rightAtomId with
+          | EqualityResult.equal atomEquality =>
+              match prefixEquality with
+              | Eq.refl _ =>
+                  match atomEquality with
+                  | Eq.refl _ =>
+                      EqualityResult.equal
+                        (Eq.refl (Name.str leftPrefix leftAtomId))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Name.str _ _, Name.num _ _ => EqualityResult.notEqual
+  | Name.num _ _, Name.anonymous => EqualityResult.notEqual
+  | Name.num _ _, Name.str _ _ => EqualityResult.notEqual
+  | Name.num leftPrefix leftIndex, Name.num rightPrefix rightIndex =>
+      match Name.eqResult leftPrefix rightPrefix with
+      | EqualityResult.equal prefixEquality =>
+          match NaturalNumber.eqResult leftIndex rightIndex with
+          | EqualityResult.equal indexEquality =>
+              match prefixEquality with
+              | Eq.refl _ =>
+                  match indexEquality with
+                  | Eq.refl _ =>
+                      EqualityResult.equal
+                        (Eq.refl (Name.num leftPrefix leftIndex))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
 end Name
 
 end LeanFX2.FX1

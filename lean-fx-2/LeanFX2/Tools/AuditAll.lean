@@ -651,8 +651,12 @@ namespace LeanFX2.Tools
 -- FX1/Core minimal syntax and M1 environment scaffold
 #assert_no_axioms LeanFX2.FX1.Boolean.and_true_left
 #assert_no_axioms LeanFX2.FX1.Boolean.and_true_right
+#assert_no_axioms LeanFX2.FX1.EqualityResult
+#assert_no_axioms LeanFX2.FX1.EqualityResult.equal
+#assert_no_axioms LeanFX2.FX1.EqualityResult.notEqual
 #assert_no_axioms LeanFX2.FX1.NaturalNumber.beq
 #assert_no_axioms LeanFX2.FX1.NaturalNumber.beq_sound
+#assert_no_axioms LeanFX2.FX1.NaturalNumber.eqResult
 #assert_no_axioms LeanFX2.FX1.Name
 #assert_no_axioms LeanFX2.FX1.Name.appendAtom
 #assert_no_axioms LeanFX2.FX1.Name.appendNumber
@@ -660,6 +664,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Name.beq
 #assert_no_axioms LeanFX2.FX1.Name.nodeCount
 #assert_no_axioms LeanFX2.FX1.Name.beq_sound
+#assert_no_axioms LeanFX2.FX1.Name.eqResult
 #assert_no_axioms LeanFX2.FX1.Level
 #assert_no_axioms LeanFX2.FX1.Level.beq
 #assert_no_axioms LeanFX2.FX1.Level.nodeCount
@@ -811,6 +816,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Level.checkerBeq_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkerBeq
 #assert_no_axioms LeanFX2.FX1.Expr.checkerBeq_sound
+#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult
+#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult.declaration
+#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult.declarationMember
+#assert_no_axioms LeanFX2.FX1.Environment.LookupDeclarationResult.rewriteQueryName
+#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult
+#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult.declaration
+#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult.declarationMember
+#assert_no_axioms LeanFX2.FX1.Environment.FindTypeByNameSoundResult.typeEquality
+#assert_no_axioms LeanFX2.FX1.Environment.findByNameResultInDeclarations?
+#assert_no_axioms LeanFX2.FX1.Environment.findByNameResult?
+#assert_no_axioms LeanFX2.FX1.Environment.findTypeByNameFromResult?
+#assert_no_axioms LeanFX2.FX1.Environment.findTypeByName?
+#assert_no_axioms LeanFX2.FX1.Environment.findTypeByName_sound
 #assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult
 #assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeExpr
 #assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeAtIndex
@@ -829,6 +847,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore?
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_bvar_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_sort_sound
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_const_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_pi_from_branch_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_lam_from_branch_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore_app_from_branch_sound
@@ -851,11 +870,17 @@ namespace LeanFX2.Tools
 -- gates: they fail if a checker-critical executable primitive delegates to
 -- Lean host runtime code such as `String.decEq` or host `Nat.beq`.
 #assert_no_extern_dependencies LeanFX2.FX1.NaturalNumber.beq
+#assert_no_extern_dependencies LeanFX2.FX1.NaturalNumber.eqResult
 #assert_no_extern_dependencies LeanFX2.FX1.Name.beq
+#assert_no_extern_dependencies LeanFX2.FX1.Name.eqResult
 #assert_no_extern_dependencies LeanFX2.FX1.Level.beq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.beq
 #assert_no_extern_dependencies LeanFX2.FX1.Declaration.hasName
 #assert_no_extern_dependencies LeanFX2.FX1.Environment.findByName?
+#assert_no_extern_dependencies LeanFX2.FX1.Environment.findByNameResultInDeclarations?
+#assert_no_extern_dependencies LeanFX2.FX1.Environment.findByNameResult?
+#assert_no_extern_dependencies LeanFX2.FX1.Environment.findTypeByNameFromResult?
+#assert_no_extern_dependencies LeanFX2.FX1.Environment.findTypeByName?
 #assert_no_extern_dependencies LeanFX2.FX1.Context.lookupTypeFromResult?
 #assert_no_extern_dependencies LeanFX2.FX1.Context.lookupTypeInEntries?
 #assert_no_extern_dependencies LeanFX2.FX1.Context.lookupType?

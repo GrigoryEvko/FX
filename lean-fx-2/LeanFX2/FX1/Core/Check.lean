@@ -6,17 +6,16 @@ import LeanFX2.FX1.Core.HasType
 Root status: Root-FX1 checker slice.
 
 This module adds the first executable checker slice for the minimal FX1
-lambda-Pi core.  It is intentionally incomplete:
+lambda-Pi core.  It is intentionally conservative:
 
 * variables, sorts, Pi types, lambdas, and applications are checked;
-* constants return `none` until executable environment lookup has a proved
-  zero-axiom membership theorem;
+* constants are accepted only when executable environment lookup returns a
+  proof-carrying declaration membership witness;
 * equality used by application checking is structural and FX1-native.
 
-The incompleteness is deliberate.  The executable checker is sound for the
-fragment it accepts.  Accepting fewer programs is the conservative direction;
-accepting constants before executable environment lookup is proved would widen
-the TCB.
+The checker is sound for the fragment it accepts.  Accepting fewer programs is
+the conservative direction; each accepted branch must carry its own zero-axiom
+typing derivation.
 -/
 
 namespace LeanFX2.FX1
@@ -291,6 +290,143 @@ theorem checkerBeq_sound
 
 end Expr
 
+namespace Environment
+
+/-- A successful executable declaration lookup paired with the relational
+membership witness it justifies. -/
+structure LookupDeclarationResult
+    (environment : Environment) (queryName : Name) : Type where
+  declaration : Declaration
+  declarationMember :
+    Environment.HasDeclaration environment queryName declaration
+
+/-- Transport a proof-carrying declaration lookup across a proved query-name
+equality. -/
+def LookupDeclarationResult.rewriteQueryName
+    {environment : Environment}
+    {leftQueryName rightQueryName : Name}
+    (queryNamesEqual : Eq leftQueryName rightQueryName)
+    (lookupResult : LookupDeclarationResult environment rightQueryName) :
+    LookupDeclarationResult environment leftQueryName :=
+  match queryNamesEqual with
+  | Eq.refl _ => lookupResult
+
+/-- Soundness payload for executable constant-type lookup. -/
+structure FindTypeByNameSoundResult
+    (environment : Environment) (queryName : Name) (typeExpr : Expr) :
+    Type where
+  declaration : Declaration
+  declarationMember :
+    Environment.HasDeclaration environment queryName declaration
+  typeEquality :
+    Eq (Declaration.typeExpr declaration) typeExpr
+
+/-- Witness-producing declaration lookup over the raw declaration list.
+
+The recursion follows the executable environment convention: newest
+declarations live at the head, so the first matching name wins. -/
+def findByNameResultInDeclarations? :
+    (declarations : List Declaration) -> (queryName : Name) ->
+      Option (LookupDeclarationResult { declarations := declarations } queryName)
+  | List.nil, _ => none
+  | List.cons declaration remainingDeclarations, queryName =>
+      match Name.eqResult queryName (Declaration.name declaration) with
+      | EqualityResult.equal nameEquality =>
+          let newestLookup :
+              LookupDeclarationResult
+                { declarations := List.cons declaration remainingDeclarations }
+                (Declaration.name declaration) := {
+            declaration := declaration
+            declarationMember :=
+              Environment.HasDeclaration.newest
+                { declarations := remainingDeclarations }
+                declaration
+          }
+          some
+            (LookupDeclarationResult.rewriteQueryName
+              nameEquality
+              newestLookup)
+      | EqualityResult.notEqual =>
+          match Environment.findByNameResultInDeclarations?
+              remainingDeclarations
+              queryName with
+          | some olderLookup =>
+              some {
+                declaration := olderLookup.declaration
+                declarationMember :=
+                  Environment.HasDeclaration.older
+                    declaration
+                    olderLookup.declarationMember
+              }
+          | none => none
+
+/-- Environment-level wrapper for witness-producing declaration lookup. -/
+def findByNameResult? (environment : Environment) (queryName : Name) :
+    Option (LookupDeclarationResult environment queryName) :=
+  Environment.findByNameResultInDeclarations?
+    environment.declarations
+    queryName
+
+/-- Project a proof-carrying declaration lookup result to its declared type. -/
+def findTypeByNameFromResult?
+    {environment : Environment} {queryName : Name} :
+    Option (LookupDeclarationResult environment queryName) -> Option Expr
+  | some lookupResult => some (Declaration.typeExpr lookupResult.declaration)
+  | none => none
+
+/-- Find the declared type for a constant name, if the environment contains
+one. -/
+def findTypeByName? (environment : Environment) (queryName : Name) :
+    Option Expr :=
+  Environment.findTypeByNameFromResult?
+    (Environment.findByNameResult? environment queryName)
+
+/-- Soundness of executable constant-type lookup. -/
+def findTypeByName_sound
+    {environment : Environment}
+    {queryName : Name}
+    {typeExpr : Expr}
+    (lookupSucceeded :
+      Eq
+        (Environment.findTypeByName? environment queryName)
+        (some typeExpr)) :
+    FindTypeByNameSoundResult environment queryName typeExpr :=
+  match h : Environment.findByNameResult? environment queryName with
+  | some lookupResult =>
+      let projectedEquality :
+          Eq
+            (some (Declaration.typeExpr lookupResult.declaration))
+            (some typeExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Environment.findTypeByNameFromResult?
+                (environment := environment)
+                (queryName := queryName))
+              h))
+          lookupSucceeded
+      let typeEquality :=
+        CheckOption.some_injective projectedEquality
+      {
+        declaration := lookupResult.declaration
+        declarationMember := lookupResult.declarationMember
+        typeEquality := typeEquality
+      }
+  | none =>
+      let noneEqualsSome :
+          Eq (none : Option Expr) (some typeExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Environment.findTypeByNameFromResult?
+                (environment := environment)
+                (queryName := queryName))
+              h))
+          lookupSucceeded
+      nomatch noneEqualsSome
+
+end Environment
+
 namespace Context
 
 /-- A successful executable lookup paired with the relational lookup witness
@@ -435,8 +571,8 @@ def inferCore? (environment : Environment) (context : Context) :
       Context.lookupType? context index
   | Expr.sort sortLevel =>
       some (Expr.sort (Level.succ sortLevel))
-  | Expr.const _ =>
-      none
+  | Expr.const constName =>
+      Environment.findTypeByName? environment constName
   | Expr.pi domainExpr bodyExpr =>
       match Expr.inferCore? environment context domainExpr with
       | some (Expr.sort domainLevel) =>
@@ -519,6 +655,31 @@ theorem inferCore_sort_sound
     CheckOption.some_injective inferenceSucceeded
   match typeEquality with
   | Eq.refl _ => HasType.sort context sortLevel
+
+/-- Direct soundness for runtime-facing constant inference. -/
+theorem inferCore_const_sound
+    {environment : Environment}
+    {context : Context}
+    {constName : Name}
+    {inferredTypeExpr : Expr}
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore? environment context (Expr.const constName))
+        (some inferredTypeExpr)) :
+    HasType environment context (Expr.const constName) inferredTypeExpr :=
+  let lookupSound :=
+    Environment.findTypeByName_sound inferenceSucceeded
+  let declaredTypeExpr := Declaration.typeExpr lookupSound.declaration
+  let constHasDeclaredType :
+      HasType environment context (Expr.const constName) declaredTypeExpr :=
+    HasType.const lookupSound.declarationMember
+  let typeEquality : Eq declaredTypeExpr inferredTypeExpr :=
+    lookupSound.typeEquality
+  Eq.ndrec
+    (motive := fun currentTypeExpr =>
+      HasType environment context (Expr.const constName) currentTypeExpr)
+    constHasDeclaredType
+    typeEquality
 
 /-- Branch soundness for runtime-facing Pi inference.
 
@@ -905,7 +1066,7 @@ theorem inferCore_sound
   | Expr.sort _, _, inferenceSucceeded =>
       inferCore_sort_sound inferenceSucceeded
   | Expr.const _, _, inferenceSucceeded =>
-      nomatch inferenceSucceeded
+      inferCore_const_sound inferenceSucceeded
   | Expr.pi domainExpr bodyExpr, inferredTypeExpr, inferenceSucceeded =>
       let piBodyCase (domainLevel : Level) : Option Expr -> Option Expr
         | some (Expr.sort currentBodyLevel) =>
@@ -1523,7 +1684,7 @@ theorem checkCore_sort_sound
     (Expr.inferCore_sort_sound inferenceSucceeded)
     checkingSucceeded
 
-/-- Proof-carrying inference for the initial no-constant checker fragment. -/
+/-- Proof-carrying inference for the initial checker fragment. -/
 def inferResult?
     (environment : Environment) (context : Context) :
     (expression : Expr) -> Option (InferResult environment context expression)
@@ -1540,7 +1701,14 @@ def inferResult?
         typeExpr := Expr.sort (Level.succ sortLevel)
         typeDerivation := HasType.sort context sortLevel
       }
-  | Expr.const _ => none
+  | Expr.const constName =>
+      match Environment.findByNameResult? environment constName with
+      | some lookupResult =>
+          some {
+            typeExpr := Declaration.typeExpr lookupResult.declaration
+            typeDerivation := HasType.const lookupResult.declarationMember
+          }
+      | none => none
   | Expr.pi domainExpr bodyExpr =>
       match Expr.inferResult? environment context domainExpr with
       | some {

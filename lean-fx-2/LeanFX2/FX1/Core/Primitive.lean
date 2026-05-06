@@ -13,6 +13,16 @@ decidable-equality machinery.
 
 namespace LeanFX2.FX1
 
+/-- Result of structural equality comparison with a proof payload in the equal
+case. -/
+inductive EqualityResult {valueType : Type} (leftValue rightValue : valueType) :
+    Type
+  /-- The compared values are equal. -/
+  | equal (valuesEqual : Eq leftValue rightValue) :
+      EqualityResult leftValue rightValue
+  /-- The compared values are structurally different. -/
+  | notEqual : EqualityResult leftValue rightValue
+
 namespace Boolean
 
 /-- If a Boolean conjunction is true, its left side is true. -/
@@ -21,6 +31,9 @@ theorem and_true_left {leftBool rightBool : Bool}
     Eq leftBool true :=
   match leftBool, rightBool with
   | true, true => Eq.refl true
+  | true, false => Eq.refl true
+  | false, true => nomatch andIsTrue
+  | false, false => nomatch andIsTrue
 
 /-- If a Boolean conjunction is true, its right side is true. -/
 theorem and_true_right {leftBool rightBool : Bool}
@@ -28,6 +41,9 @@ theorem and_true_right {leftBool rightBool : Bool}
     Eq rightBool true :=
   match leftBool, rightBool with
   | true, true => Eq.refl true
+  | true, false => nomatch andIsTrue
+  | false, true => Eq.refl true
+  | false, false => nomatch andIsTrue
 
 end Boolean
 
@@ -58,6 +74,19 @@ theorem beq_sound
           leftSmallerIndex
           rightSmallerIndex
           equalityIsTrue)
+
+/-- Proof-carrying natural-number comparison for executable checkers that need
+an equality witness without passing through Boolean contradiction lemmas. -/
+def eqResult : (leftIndex rightIndex : Nat) ->
+    EqualityResult leftIndex rightIndex
+  | Nat.zero, Nat.zero => EqualityResult.equal (Eq.refl Nat.zero)
+  | Nat.zero, Nat.succ _ => EqualityResult.notEqual
+  | Nat.succ _, Nat.zero => EqualityResult.notEqual
+  | Nat.succ leftSmallerIndex, Nat.succ rightSmallerIndex =>
+      match NaturalNumber.eqResult leftSmallerIndex rightSmallerIndex with
+      | EqualityResult.equal smallerEquality =>
+          EqualityResult.equal (congrArg Nat.succ smallerEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
 
 end NaturalNumber
 
