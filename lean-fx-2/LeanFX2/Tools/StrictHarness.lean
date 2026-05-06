@@ -3896,6 +3896,462 @@ elab "#assert_rfl_on_nontrivial_name_budget " namespaceSyntax:ident
       else ""
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines ++ suffix)
 
+/-! ## Universe-polymorphism leak gate
+
+Kernel-tier decls should pin universe levels.  A decl whose type
+contains `.sort (.param _)` / `.sort (.max ...)` / `.sort (.imax ...)`
+is universe-polymorphic and can interact badly with cumulativity in
+ways that are hard to audit.  This gate counts kernel-tier decls
+whose type Expr contains a non-concrete universe, pinning the count.
+-/
+
+/-- Whether a Level value is universe-polymorphic (mentions a param
+or mvar, or composes through max/imax of polymorphic levels). -/
+partial def isUniversePolymorphicLevel (universeLevel : Level) : Bool :=
+  match universeLevel with
+  | .zero => false
+  | .succ innerLevel => isUniversePolymorphicLevel innerLevel
+  | .max leftLevel rightLevel =>
+      isUniversePolymorphicLevel leftLevel ||
+        isUniversePolymorphicLevel rightLevel
+  | .imax leftLevel rightLevel =>
+      isUniversePolymorphicLevel leftLevel ||
+        isUniversePolymorphicLevel rightLevel
+  | .param _ => true
+  | .mvar _ => true
+
+/-- Whether an Expr contains a `.sort` with a polymorphic level. -/
+partial def hasUniversePolymorphicSort (expr : Expr) : Bool :=
+  match expr with
+  | .sort universeLevel => isUniversePolymorphicLevel universeLevel
+  | .forallE _ parameterType bodyType _ =>
+      hasUniversePolymorphicSort parameterType ||
+        hasUniversePolymorphicSort bodyType
+  | .lam _ parameterType bodyType _ =>
+      hasUniversePolymorphicSort parameterType ||
+        hasUniversePolymorphicSort bodyType
+  | .app functionExpr argumentExpr =>
+      hasUniversePolymorphicSort functionExpr ||
+        hasUniversePolymorphicSort argumentExpr
+  | .letE _ typeExpr valueExpr bodyExpr _ =>
+      hasUniversePolymorphicSort typeExpr ||
+        hasUniversePolymorphicSort valueExpr ||
+        hasUniversePolymorphicSort bodyExpr
+  | .mdata _ innerExpr => hasUniversePolymorphicSort innerExpr
+  | .proj _ _ innerExpr => hasUniversePolymorphicSort innerExpr
+  | _ => false
+
+/-- Build-failing budget gate counting kernel-tier decls whose type
+contains a universe-polymorphic sort.  Pins current count. -/
+elab "#assert_universe_polymorphism_budget " namespaceSyntax:ident
+    universeBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let universeBudget := universeBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    match environment.find? targetName with
+    | some constantInfo =>
+        if hasUniversePolymorphicSort constantInfo.type then
+          violations := violations.push targetName
+    | none => pure ()
+  if violations.size <= universeBudget then
+    logInfo
+      (s!"universe polymorphism budget ok: {namespaceName} " ++
+      s!"({violations.size}/{universeBudget} kernel decls have " ++
+      "universe-polymorphic sorts)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"universe polymorphism budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} kernel decls exceed budget {universeBudget}"
+    let suffix :=
+      if violations.size > 20 then
+        s!"\n  ... and {violations.size - 20} more"
+      else ""
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines ++ suffix)
+
+/-! ## Quotient / well-founded usage gates
+
+Two related dependency censuses: Quot and Acc / WellFounded.
+
+`Quot` is the kernel's propositional truncation — `Quot.lift` and
+`Quot.ind` don't trigger axioms by themselves but are
+Classical-adjacent.  `Quot.sound` IS an axiom (already caught), but
+the surrounding family deserves visibility.
+
+`Acc` / `WellFounded` is the kernel's well-founded recursion — used
+to encode termination for non-structurally-recursive defs.  Heavy
+use signals deviation from structural-recursion discipline.
+-/
+
+/-- Whether a name is in the Quot quotient family. -/
+def isQuotFamilyName (someName : Name) : Bool :=
+  someName == `Quot ||
+    someName == `Quot.mk ||
+    someName == `Quot.lift ||
+    someName == `Quot.lift₂ ||
+    someName == `Quot.ind ||
+    someName == `Quot.rec ||
+    someName == `Quot.recOn ||
+    someName == `Quotient ||
+    someName == `Quotient.mk ||
+    someName == `Quotient.lift ||
+    someName == `Quotient.ind ||
+    someName == `Quotient.rec
+
+/-- Whether a name is in the Acc / WellFounded family. -/
+def isAccFamilyName (someName : Name) : Bool :=
+  someName == `Acc ||
+    someName == `Acc.intro ||
+    someName == `Acc.rec ||
+    someName == `Acc.recOn ||
+    someName == `WellFounded ||
+    someName == `WellFounded.fix ||
+    someName == `WellFounded.recursion ||
+    someName == `WellFoundedRecursion ||
+    someName == `Nat.lt_wfRel ||
+    someName == `WellFoundedRelation
+
+/-- Closure dependents on Quot family. -/
+def collectQuotDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun quotDependencies dependencyName =>
+      if isQuotFamilyName dependencyName then
+        quotDependencies.push dependencyName
+      else
+        quotDependencies)
+
+/-- Closure dependents on Acc / WellFounded family. -/
+def collectAccDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun accDependencies dependencyName =>
+      if isAccFamilyName dependencyName then
+        accDependencies.push dependencyName
+      else
+        accDependencies)
+
+/-- Build-failing budget gate for Quot family dependents. -/
+elab "#assert_quot_dependent_budget " namespaceSyntax:ident
+    quotBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let quotBudget := quotBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectQuotDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= quotBudget then
+    logInfo
+      (s!"Quot dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{quotBudget} kernel decls reference Quot/Quotient family)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Quot dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} kernel-tier dependents exceed budget {quotBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-- Build-failing budget gate for Acc / WellFounded family dependents. -/
+elab "#assert_acc_dependent_budget " namespaceSyntax:ident
+    accBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let accBudget := accBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectAccDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= accBudget then
+    logInfo
+      (s!"Acc dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{accBudget} kernel decls reference Acc/WellFounded family)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Acc dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} kernel-tier dependents exceed budget {accBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## Lean elaboration / metaprogramming dependency gate
+
+Production-tier kernel decls should not depend on Lean's Elab / Meta /
+Parser machinery.  Those layers are for tactic mode, custom
+elaborators, and parser extensions — none of which belong in
+mathematical content.  This gate counts decls whose closure mentions
+`Lean.Elab.*`, `Lean.Meta.*`, `Lean.Parser.*`, `Lean.Macro.*`, etc.
+-/
+
+/-- Whether a name lives inside Lean's elaboration / metaprogramming
+infrastructure namespaces. -/
+def isLeanMetaprogrammingName (someName : Name) : Bool :=
+  (`Lean.Elab).isPrefixOf someName ||
+    (`Lean.Meta).isPrefixOf someName ||
+    (`Lean.Parser).isPrefixOf someName ||
+    (`Lean.Macro).isPrefixOf someName ||
+    (`Lean.Syntax).isPrefixOf someName ||
+    (`Lean.PrettyPrinter).isPrefixOf someName ||
+    (`Lean.Server).isPrefixOf someName ||
+    (`Lean.IR).isPrefixOf someName
+
+/-- Closure dependents on Lean metaprogramming namespaces. -/
+def collectLeanMetaDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames :=
+    collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun leanDependencies dependencyName =>
+      if isLeanMetaprogrammingName dependencyName then
+        leanDependencies.push dependencyName
+      else
+        leanDependencies)
+
+/-- Build-failing budget gate for kernel-tier decls depending on Lean
+elaboration / metaprogramming. -/
+elab "#assert_lean_meta_dependent_budget " namespaceSyntax:ident
+    leanBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let leanBudget := leanBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array Name := #[]
+  for targetName in targetNames do
+    if !isKernelTierProductionDecl targetName then
+      continue
+    if !(collectLeanMetaDependencies environment targetName).isEmpty then
+      violations := violations.push targetName
+  if violations.size <= leanBudget then
+    logInfo
+      (s!"Lean meta dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{leanBudget} kernel decls reference " ++
+      "Lean.Elab/Meta/Parser/etc.)")
+  else
+    let perDeclLines := violations.toList.take 20 |>.map fun declName =>
+      s!"  - {declName}"
+    let header :=
+      s!"Lean meta dependent budget FAILED for {namespaceName}: " ++
+      s!"{violations.size} kernel-tier dependents exceed budget {leanBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
+/-! ## toRaw projection coverage gate
+
+For every constructor `LeanFX2.Term.<X>`, the kernel should ship
+`LeanFX2.Term.toRaw_<X>` proving the raw projection is the index.
+This is the core discipline that makes raw-aware Term work.  The
+gate counts Term ctors lacking the corresponding `toRaw_<name>`. -/
+
+/-- Exact `Term.toRaw_<name>` theorem expected for a Term ctor. -/
+def expectedToRawTheoremName (constructorName : Name) : Name :=
+  Name.str
+    `LeanFX2.Term
+    ("toRaw_" ++ Name.lastSegmentString constructorName)
+
+/-- Whether a Term ctor has the corresponding `toRaw_<name>` theorem. -/
+def hasToRawTheorem
+    (environment : Environment) (constructorName : Name) : Bool :=
+  environment.contains (expectedToRawTheoremName constructorName)
+
+/-- Report toRaw projection coverage debt for one Term ctor. -/
+def toRawCoverageDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if hasToRawTheorem environment constructorName then
+    none
+  else
+    let expectedTheoremName :=
+      expectedToRawTheoremName constructorName
+    some {
+      constructorName := constructorName
+      detail := s!"missing {expectedTheoremName}"
+    }
+
+/-- Collect toRaw coverage debt across the Term inductive. -/
+def toRawCoverageDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match toRawCoverageDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for Term ctors lacking `Term.toRaw_<name>`. -/
+elab "#assert_toraw_coverage_budget " inductiveSyntax:ident
+    toRawDebtBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let toRawDebtBudget := toRawDebtBudgetSyntax.getNat
+  let records :=
+    toRawCoverageDebtRecordsForInductive environment inductiveName
+  let constructorCount :=
+    (getInductiveConstructorNames environment inductiveName).size
+  let coveredCount :=
+    if constructorCount >= records.size then
+      constructorCount - records.size
+    else 0
+  if records.size <= toRawDebtBudget then
+    logInfo
+      (s!"toRaw coverage budget ok: {inductiveName} " ++
+      s!"({coveredCount}/{constructorCount} ctors have toRaw_X theorem; " ++
+      s!"debt {records.size}/{toRawDebtBudget})")
+  else
+    let perCtorLines := records.toList.take 20 |>.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"toRaw coverage budget FAILED for {inductiveName}: " ++
+      s!"{records.size} ctors lack toRaw_X theorem, exceeds budget " ++
+      s!"{toRawDebtBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-! ## IsClosedTy parity gate for scope-independent Ty constructors
+
+For every Ty constructor whose every parameter is also at scope `_`
+(i.e., scope-independent — `unit`, `bool`, `nat`, `arrow A B`,
+`listType A`, `optionType A`, `eitherType A B`, `universe lvl`,
+`empty`, `interval`, `equiv A B`, `record A`, `codata A B`, `modal _ A`),
+the IsClosedTy inductive should have a same-suffix constructor.
+
+Scope-dependent Ty ctors (`tyVar`, `id`, `piTy`, `sigmaTy`, `path`,
+`glue`, `oeq`, `idStrict`, `refine`, `session`, `effect`) are excluded
+because their inhabitants depend on context binders.
+-/
+
+/-- Names of scope-independent Ty constructors that should have an
+IsClosedTy parity ctor. -/
+def isScopeIndependentTyCtorName (constructorName : Name) : Bool :=
+  let suffix := Name.lastSegmentString constructorName
+  suffix == "unit" ||
+    suffix == "bool" ||
+    suffix == "nat" ||
+    suffix == "arrow" ||
+    suffix == "listType" ||
+    suffix == "optionType" ||
+    suffix == "eitherType" ||
+    suffix == "universe" ||
+    suffix == "empty" ||
+    suffix == "interval" ||
+    suffix == "equiv" ||
+    suffix == "record" ||
+    suffix == "codata" ||
+    suffix == "modal"
+
+/-- Expected `IsClosedTy.<name>` ctor name for a Ty ctor. -/
+def expectedIsClosedTyCtorName (constructorName : Name) : Name :=
+  Name.str `LeanFX2.IsClosedTy (Name.lastSegmentString constructorName)
+
+/-- Report IsClosedTy parity debt for one scope-independent Ty ctor. -/
+def isClosedTyParityDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isScopeIndependentTyCtorName constructorName then
+    none
+  else
+    let expectedCtorName := expectedIsClosedTyCtorName constructorName
+    if environment.contains expectedCtorName then
+      none
+    else
+      some {
+        constructorName := constructorName
+        detail := s!"missing {expectedCtorName}"
+      }
+
+/-- Collect IsClosedTy parity debt records across a Ty inductive. -/
+def isClosedTyParityDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match isClosedTyParityDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for IsClosedTy parity. -/
+elab "#assert_is_closed_ty_parity_budget " inductiveSyntax:ident
+    parityBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let parityBudget := parityBudgetSyntax.getNat
+  let records :=
+    isClosedTyParityDebtRecordsForInductive environment inductiveName
+  if records.size <= parityBudget then
+    logInfo
+      (s!"IsClosedTy parity budget ok: {inductiveName} " ++
+      s!"({records.size}/{parityBudget} scope-independent Ty ctors lack " ++
+      "IsClosedTy mirror)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"IsClosedTy parity budget FAILED for {inductiveName}: " ++
+      s!"{records.size} parity gaps exceed budget {parityBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-! ## Inductive ctor-count regression gate
+
+Pin the current ctor count for each load-bearing inductive (Term, Ty,
+Step, Step.par, RawTerm, RawStep.par, Conv, Mode, Ctx).  The gate
+fails on SHRINKAGE only — growth is logged informationally because
+codex / the user legitimately add new ctors all the time.
+
+Catches accidental code deletion: if a refactor removes a ctor by
+mistake, this gate fires before the broader build can collapse around
+the missing case.
+-/
+
+/-- Build-failing budget gate for inductive ctor-count regression.
+Fails if `actualCtorCount < expectedCtorCount` (regression).  Logs
+INFORMATIONALLY if `actualCtorCount > expectedCtorCount` (growth).
+Logs OK if equal. -/
+elab "#assert_inductive_ctor_count_ratchet " inductiveSyntax:ident
+    expectedCtorCountSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let expectedCtorCount := expectedCtorCountSyntax.getNat
+  let actualCtorCount :=
+    (getInductiveConstructorNames environment inductiveName).size
+  if actualCtorCount == expectedCtorCount then
+    logInfo
+      (s!"inductive ctor-count ratchet ok: {inductiveName} " ++
+      s!"({actualCtorCount} ctors, matches pinned)")
+  else if actualCtorCount > expectedCtorCount then
+    logInfo
+      (s!"inductive ctor-count GROWTH: {inductiveName} " ++
+      s!"({actualCtorCount} ctors, was pinned at {expectedCtorCount}; " ++
+      "consider bumping expected count)")
+  else
+    let header :=
+      s!"inductive ctor-count REGRESSION for {inductiveName}: " ++
+      s!"{actualCtorCount} ctors, expected at least {expectedCtorCount}"
+    throwError header
+
 /-! ## End-of-build summary reporter -/
 
 /-- Aggregate audit summary across one namespace.  Logs total / clean /
@@ -4654,6 +5110,29 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
   let reductionCompatUncoveredCount :=
     (reductionCompatCoverageDebtRecordsForInductive
       environment `LeanFX2.Step.par).size
+  -- toRaw projection coverage.
+  let toRawUncoveredCount :=
+    (toRawCoverageDebtRecordsForInductive
+      environment termInductiveName).size
+  let toRawCoveredCount :=
+    if totalCtorCount >= toRawUncoveredCount then
+      totalCtorCount - toRawUncoveredCount
+    else 0
+  -- IsClosedTy parity for scope-independent Ty ctors.
+  let isClosedTyParityUncoveredCount :=
+    (isClosedTyParityDebtRecordsForInductive
+      environment tyInductiveName).size
+  -- Inductive ctor count snapshots.
+  let termCtorCount :=
+    (getInductiveConstructorNames environment termInductiveName).size
+  let tyCtorCount :=
+    (getInductiveConstructorNames environment tyInductiveName).size
+  let stepCtorCount :=
+    (getInductiveConstructorNames environment `LeanFX2.Step).size
+  let stepParCtorCount :=
+    (getInductiveConstructorNames environment `LeanFX2.Step.par).size
+  let rawTermCtorCount :=
+    (getInductiveConstructorNames environment `LeanFX2.RawTerm).size
   -- Axiom-adjacent dependency censuses.
   let mut inhabitedDependentCount : Nat := 0
   let mut heqResultTypeCount : Nat := 0
@@ -4661,6 +5140,10 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
   let mut subsingletonDependentCount : Nat := 0
   let mut matchCompilerEquationCount : Nat := 0
   let mut rflOnNonTrivialNameCount : Nat := 0
+  let mut universePolymorphicCount : Nat := 0
+  let mut quotDependentCount : Nat := 0
+  let mut accDependentCount : Nat := 0
+  let mut leanMetaDependentCount : Nat := 0
   for targetName in targetNames do
     if !isKernelTierProductionDecl targetName then
       continue
@@ -4683,6 +5166,17 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       subsingletonDependentCount := subsingletonDependentCount + 1
     if isMatchCompilerEquationName targetName then
       matchCompilerEquationCount := matchCompilerEquationCount + 1
+    if !(collectQuotDependencies environment targetName).isEmpty then
+      quotDependentCount := quotDependentCount + 1
+    if !(collectAccDependencies environment targetName).isEmpty then
+      accDependentCount := accDependentCount + 1
+    if !(collectLeanMetaDependencies environment targetName).isEmpty then
+      leanMetaDependentCount := leanMetaDependentCount + 1
+    match environment.find? targetName with
+    | some constantInfo =>
+        if hasUniversePolymorphicSort constantInfo.type then
+          universePolymorphicCount := universePolymorphicCount + 1
+    | none => pure ()
   -- Strict-audit totals across the namespace.
   let mut auditTotalCount : Nat := 0
   let mut auditCleanCount : Nat := 0
@@ -4782,6 +5276,18 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     s!"    Conv cong (Conv.*Cong / Conv.*_cong):        " ++
       s!"{convCongCoveredCount}/{totalCtorCount} " ++
       s!"({totalCtorCount - convCongCoveredCount} uncovered)",
+    s!"    toRaw projection (Term.toRaw_*):             " ++
+      s!"{toRawCoveredCount}/{totalCtorCount} " ++
+      s!"({totalCtorCount - toRawCoveredCount} uncovered)",
+    s!"    IsClosedTy parity (scope-indep Ty → IsClosedTy):  " ++
+      s!"{isClosedTyParityUncoveredCount} gaps",
+    "  ──────────────────────────────────────────────────────────",
+    "  INDUCTIVE CTOR-COUNT SNAPSHOTS  (regression-prevention)",
+    s!"    Term:        {termCtorCount}",
+    s!"    Ty:          {tyCtorCount}",
+    s!"    Step:        {stepCtorCount}",
+    s!"    Step.par:    {stepParCtorCount}",
+    s!"    RawTerm:     {rawTermCtorCount}",
     "  ──────────────────────────────────────────────────────────",
     "  REFL-FRAGMENT DEPENDENCY CENSUS",
     s!"    Headline names backed by manufactured rules:  " ++
@@ -4815,6 +5321,14 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       s!"{matchCompilerEquationCount}",
     s!"    Suspicious rfl-only on non-trivial names:      " ++
       s!"{rflOnNonTrivialNameCount}",
+    s!"    Universe-polymorphic kernel decls:             " ++
+      s!"{universePolymorphicCount}",
+    s!"    Quot / Quotient family deps:                   " ++
+      s!"{quotDependentCount}",
+    s!"    Acc / WellFounded family deps:                 " ++
+      s!"{accDependentCount}",
+    s!"    Lean.Elab/Meta/Parser deps in production:      " ++
+      s!"{leanMetaDependentCount}",
     bannerEdge,
     "  Notes:",
     "    * All counts read live from current environment.",
