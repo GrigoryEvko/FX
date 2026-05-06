@@ -231,6 +231,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?
 #assert_no_axioms LeanFX2.LeanKernel.Environment.findConstant?_empty
 #assert_no_axioms LeanFX2.LeanKernel.Environment.findInductive?_empty
+#assert_no_axioms LeanFX2.Cubical.homogeneousComposition
+#assert_no_axioms LeanFX2.Cubical.homogeneousComposition_toRaw
+#assert_no_axioms LeanFX2.Cubical.homogeneousComposition_parCong
+#assert_no_axioms LeanFX2.Cubical.homogeneousComposition_convCumul
+#assert_no_axioms LeanFX2.Cubical.degenerateHomogeneousComposition
+#assert_no_axioms LeanFX2.Cubical.degenerateHomogeneousComposition_toRaw
+#assert_no_axioms LeanFX2.Cubical.degenerateHomogeneousComposition_parCong
+#assert_no_axioms LeanFX2.Cubical.degenerateHomogeneousComposition_convCumul
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_toRaw
 #assert_no_axioms LeanFX2.Cubical.constantTypeTransport_typeLineRecognized

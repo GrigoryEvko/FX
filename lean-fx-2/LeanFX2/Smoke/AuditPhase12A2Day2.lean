@@ -13,6 +13,7 @@ import LeanFX2.Reduction.CumulPairedEnv
 import LeanFX2.Algo.WHNF
 import LeanFX2.Cubical.Path
 import LeanFX2.Cubical.PathLemmas
+import LeanFX2.Cubical.Composition
 import LeanFX2.Cubical.Transport
 
 /-! # AuditPhase12A2Day2 — Day 2 (Phase 12.A.2) zero-axiom audit.
@@ -133,6 +134,14 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.betaGlueElimIntroDeep
 #print axioms LeanFX2.Step.par.transp
 #print axioms LeanFX2.Step.par.hcomp
+#print axioms LeanFX2.Cubical.homogeneousComposition
+#print axioms LeanFX2.Cubical.homogeneousComposition_toRaw
+#print axioms LeanFX2.Cubical.homogeneousComposition_parCong
+#print axioms LeanFX2.Cubical.homogeneousComposition_convCumul
+#print axioms LeanFX2.Cubical.degenerateHomogeneousComposition
+#print axioms LeanFX2.Cubical.degenerateHomogeneousComposition_toRaw
+#print axioms LeanFX2.Cubical.degenerateHomogeneousComposition_parCong
+#print axioms LeanFX2.Cubical.degenerateHomogeneousComposition_convCumul
 #print axioms LeanFX2.Term.toRaw_oeqRefl
 #print axioms LeanFX2.Term.toRaw_oeqJ
 #print axioms LeanFX2.Term.toRaw_oeqFunext
