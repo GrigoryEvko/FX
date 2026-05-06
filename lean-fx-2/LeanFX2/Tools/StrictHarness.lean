@@ -30,8 +30,9 @@ or forbidden host axioms.  It is intentionally stricter than the
 project-wide gate because FX1/Core is the planned trusted root.
 
 The import-surface gates keep public production imports, host imports,
-FX1 imports, rich-production-to-FX1 imports, and the legacy Lean-kernel
-scaffold from accidentally collapsing into one dependency cone.
+FX1 imports, rich-production-to-FX1 imports, public-umbrella reachability,
+and the legacy Lean-kernel scaffold from accidentally collapsing into one
+dependency cone.
 -/
 
 namespace LeanFX2.Tools
@@ -891,6 +892,60 @@ def formatDirectImportRecords
   else
     String.intercalate "; "
       (directImportRecords.toList.map DirectImportRecord.format)
+
+/-! ## Public umbrella reachability -/
+
+/-- Whether a module is one of the public roots that should reach all
+production modules.  `LeanFX2` intentionally does not import FX1 directly,
+so the reachability root set has two entries. -/
+def isPublicProductionRootModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2 || moduleName == `LeanFX2.FX1
+
+/-- Is a project module already present in a small name set? -/
+def containsModuleName (moduleNames : Array Name) (moduleName : Name) :
+    Bool :=
+  moduleNames.contains moduleName
+
+/-- Build-failing gate that checks every loaded production module is reachable
+from the public production roots `LeanFX2` or `LeanFX2.FX1`.
+
+This is intentionally run from `Smoke.ImportEverywhere`, where Lake has loaded
+the whole library glob.  Running it only from `Smoke.ImportSurface` would see
+only the already-public cone and could not detect a production module that is
+loaded only by a smoke audit. -/
+elab "#assert_public_production_umbrella_reaches_all" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut reachableModuleNames : Array Name := #[`LeanFX2, `LeanFX2.FX1]
+  for _iteration in List.range moduleEntries.size do
+    for (effectiveImport, moduleData) in moduleEntries do
+      let sourceModuleName := effectiveImport.module
+      if containsModuleName reachableModuleNames sourceModuleName then
+        for directImport in moduleData.imports do
+          let importedModuleName := directImport.module
+          if (`LeanFX2).isPrefixOf importedModuleName &&
+              !containsModuleName reachableModuleNames importedModuleName then
+            reachableModuleNames := reachableModuleNames.push importedModuleName
+  let mut missingProductionModules : Array Name := #[]
+  let mut scannedProductionModules : Nat := 0
+  for (effectiveImport, _moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if isProductionLeanFX2ModuleName moduleName then
+      scannedProductionModules := scannedProductionModules + 1
+      if !containsModuleName reachableModuleNames moduleName then
+        missingProductionModules := missingProductionModules.push moduleName
+  if missingProductionModules.isEmpty then
+    logInfo
+      m!"public production umbrella reachability ok: {scannedProductionModules} modules"
+  else
+    let renderedModules :=
+      String.intercalate ", " (missingProductionModules.toList.map toString)
+    let header :=
+      s!"public production umbrella reachability FAILED: " ++
+      s!"{missingProductionModules.size} of {scannedProductionModules} " ++
+      "production modules are not reachable from LeanFX2 or LeanFX2.FX1"
+    throwError (header ++ "\n  " ++ renderedModules)
 
 /-- Coarse family label for import-census summaries.  The label is
 informational only; policy gates above enforce the actual boundaries. -/

@@ -10,6 +10,7 @@ import LeanFX2.Foundation.TyAct
 import LeanFX2.Foundation.TyActBridge
 import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Universe
+import LeanFX2.Foundation.Cofib
 import LeanFX2.Foundation.RenameIdentity
 
 -- Layer 1 — Term
