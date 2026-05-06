@@ -1518,6 +1518,20 @@ namespace LeanFX2.Tools
 -- acquire real `mode = ...` premises.
 #assert_mode_discipline_budget LeanFX2.Term 8
 
+-- Semantic-signature debt gates.  These do not claim the current signatures
+-- are sound; they pin the known fake-typing shapes so new ctors cannot repeat
+-- them silently and repaired ctors ratchet the budgets downward.
+#assert_dependent_eliminator_motive_budget LeanFX2.Term 9
+#assert_unit_placeholder_budget LeanFX2.Term 3
+#assert_modal_noop_budget LeanFX2.Term 3
+#assert_session_no_advance_budget LeanFX2.Term 2
+#assert_equiv_coherence_budget LeanFX2.Term 1
+
+-- Exact rich-to-FX1 bridge constructor coverage.  Fragment bridges remain
+-- useful, but only exact `FX1Bridge.encodeTermSound_<ctor>` names count as
+-- whole-constructor bridge coverage for this matrix.
+#assert_bridge_exact_coverage_budget LeanFX2.Term 71
+
 -- Naming discipline gate.  Bans non-ASCII identifiers and short
 -- identifiers (< 4 chars) outside the documented whitelist.  Catches
 -- regressions like `def f (x) := ...` or pasted Greek-letter names
