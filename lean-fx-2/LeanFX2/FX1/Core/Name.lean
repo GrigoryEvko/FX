@@ -37,6 +37,28 @@ def isAnonymous : Name -> Bool
   | Name.str _ _ => false
   | Name.num _ _ => false
 
+/-- Structural executable equality for FX1 names.
+
+This is the root checker's name comparison primitive.  It deliberately lives in
+FX1/Core instead of using host `DecidableEq Name`, so later checker code can
+depend on one audited comparison function. -/
+def beq : Name -> Name -> Bool
+  | Name.anonymous, Name.anonymous => true
+  | Name.str leftPrefix leftPart, Name.str rightPrefix rightPart =>
+      Bool.and
+        (Name.beq leftPrefix rightPrefix)
+        (BEq.beq leftPart rightPart)
+  | Name.num leftPrefix leftIndex, Name.num rightPrefix rightIndex =>
+      Bool.and
+        (Name.beq leftPrefix rightPrefix)
+        (Nat.beq leftIndex rightIndex)
+  | Name.anonymous, Name.str _ _ => false
+  | Name.anonymous, Name.num _ _ => false
+  | Name.str _ _, Name.anonymous => false
+  | Name.str _ _, Name.num _ _ => false
+  | Name.num _ _, Name.anonymous => false
+  | Name.num _ _, Name.str _ _ => false
+
 /-- Number of constructors in the name spine. -/
 def nodeCount : Name -> Nat
   | Name.anonymous => 1

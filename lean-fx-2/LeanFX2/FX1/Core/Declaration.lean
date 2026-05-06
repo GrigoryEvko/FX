@@ -54,6 +54,10 @@ def isAxiomDeclaration : Declaration -> Bool
   | Declaration.defDecl _ _ _ => false
   | Declaration.theoremDecl _ _ _ => false
 
+/-- Whether this declaration has the queried FX1 name. -/
+def hasName (queryName : Name) (declaration : Declaration) : Bool :=
+  Name.beq queryName (Declaration.name declaration)
+
 end Declaration
 
 end LeanFX2.FX1

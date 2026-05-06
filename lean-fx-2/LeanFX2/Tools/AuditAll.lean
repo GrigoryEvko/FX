@@ -704,6 +704,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Name.appendString
 #assert_no_axioms LeanFX2.FX1.Name.appendNumber
 #assert_no_axioms LeanFX2.FX1.Name.isAnonymous
+#assert_no_axioms LeanFX2.FX1.Name.beq
 #assert_no_axioms LeanFX2.FX1.Name.nodeCount
 #assert_no_axioms LeanFX2.FX1.Level
 #assert_no_axioms LeanFX2.FX1.Level.nodeCount
@@ -715,6 +716,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Declaration.valueExpr?
 #assert_no_axioms LeanFX2.FX1.Declaration.hasValue
 #assert_no_axioms LeanFX2.FX1.Declaration.isAxiomDeclaration
+#assert_no_axioms LeanFX2.FX1.Declaration.hasName
 #assert_no_axioms LeanFX2.FX1.Environment
 #assert_no_axioms LeanFX2.FX1.Environment.empty
 #assert_no_axioms LeanFX2.FX1.Environment.extend
@@ -723,6 +725,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Environment.findInDeclarations?
 #assert_no_axioms LeanFX2.FX1.Environment.findWhere?
 #assert_no_axioms LeanFX2.FX1.Environment.hasDeclarationWhere
+#assert_no_axioms LeanFX2.FX1.Environment.findByName?
+#assert_no_axioms LeanFX2.FX1.Environment.hasName
 #assert_no_axioms LeanFX2.FX1.Environment.hasAxiomDeclaration
 #assert_no_axioms LeanFX2.FX1.Context
 #assert_no_axioms LeanFX2.FX1.Context.empty

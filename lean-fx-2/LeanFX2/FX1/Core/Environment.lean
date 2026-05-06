@@ -68,6 +68,15 @@ def hasDeclarationWhere
   | some _ => true
   | none => false
 
+/-- Find the newest declaration with the queried FX1 name. -/
+def findByName? (environment : Environment) (queryName : Name) :
+    Option Declaration :=
+  Environment.findWhere? environment (Declaration.hasName queryName)
+
+/-- Whether the environment contains a declaration with the queried FX1 name. -/
+def hasName (environment : Environment) (queryName : Name) : Bool :=
+  Environment.hasDeclarationWhere environment (Declaration.hasName queryName)
+
 /-- Whether the environment currently contains an axiom placeholder. -/
 def hasAxiomDeclaration (environment : Environment) : Bool :=
   Environment.hasDeclarationWhere environment Declaration.isAxiomDeclaration
