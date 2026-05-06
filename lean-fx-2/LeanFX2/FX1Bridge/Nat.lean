@@ -4,14 +4,14 @@ import LeanFX2.FX1Bridge.Unit
 
 Root status: Bridge.
 
-Closed natural-number zero bridge fragment.  This file stages the rich Nat type
-and its zero value as object-level FX1 declarations, then proves that the empty
-rich-context `Term.natZero` encodes to a well-typed FX1 constant.
+Closed natural-number bridge fragment.  This file stages the rich Nat type,
+zero value, and successor function as object-level FX1 declarations, then
+proves that the empty rich-context `Term.natZero` and `Term.natSucc
+Term.natZero` encode to well-typed FX1 expressions.
 
 The staged declarations are `axiomDecl` placeholders, so this is Bridge
-evidence only.  Successor and eliminator fragments are intentionally left for
-later slices because they require function-shaped staged constants and
-application-level evidence.
+evidence only.  Eliminator fragments are intentionally left for later slices
+because they require motive-shaped staged constants and computation evidence.
 -/
 
 namespace LeanFX2
@@ -23,6 +23,9 @@ def natTypeAtomId : Nat := 6
 /-- Native atom id used for the staged FX1 Nat zero value name. -/
 def natZeroAtomId : Nat := 7
 
+/-- Native atom id used for the staged FX1 Nat successor function name. -/
+def natSuccAtomId : Nat := 8
+
 /-- FX1 name for the rich Nat type constant. -/
 def natTypeName : FX1.Name :=
   FX1.Name.str FX1.Name.anonymous natTypeAtomId
@@ -31,6 +34,10 @@ def natTypeName : FX1.Name :=
 def natZeroName : FX1.Name :=
   FX1.Name.str FX1.Name.anonymous natZeroAtomId
 
+/-- FX1 name for the rich Nat successor function constant. -/
+def natSuccName : FX1.Name :=
+  FX1.Name.str FX1.Name.anonymous natSuccAtomId
+
 /-- FX1 expression encoding the rich Nat type. -/
 def natTypeExpr : FX1.Expr :=
   FX1.Expr.const natTypeName
@@ -38,6 +45,14 @@ def natTypeExpr : FX1.Expr :=
 /-- FX1 expression encoding the rich Nat zero value. -/
 def natZeroExpr : FX1.Expr :=
   FX1.Expr.const natZeroName
+
+/-- FX1 expression encoding the rich Nat successor function. -/
+def natSuccExpr : FX1.Expr :=
+  FX1.Expr.const natSuccName
+
+/-- FX1 expression encoding the rich Nat successor type. -/
+def natSuccTypeExpr : FX1.Expr :=
+  FX1.Expr.pi natTypeExpr natTypeExpr
 
 /-- Staged FX1 declaration for the rich Nat type.
 
@@ -51,6 +66,12 @@ It is an object-level axiom placeholder, so it is not release-root evidence. -/
 def natZeroDeclaration : FX1.Declaration :=
   FX1.Declaration.axiomDecl natZeroName natTypeExpr
 
+/-- Staged FX1 declaration for the rich Nat successor function.
+
+It is an object-level axiom placeholder, so it is not release-root evidence. -/
+def natSuccDeclaration : FX1.Declaration :=
+  FX1.Declaration.axiomDecl natSuccName natSuccTypeExpr
+
 /-- Environment after declaring the rich Nat type constant. -/
 def natTypeEnvironment : FX1.Environment :=
   FX1.Environment.extend FX1.Environment.empty natTypeDeclaration
@@ -59,6 +80,10 @@ def natTypeEnvironment : FX1.Environment :=
 def natEnvironment : FX1.Environment :=
   FX1.Environment.extend natTypeEnvironment natZeroDeclaration
 
+/-- Staged bridge environment for the Nat successor fragment. -/
+def natSuccEnvironment : FX1.Environment :=
+  FX1.Environment.extend natEnvironment natSuccDeclaration
+
 /-- Nat-only type encoder for this bridge fragment. -/
 def encodeTy_nat : FX1.Expr :=
   natTypeExpr
@@ -66,6 +91,14 @@ def encodeTy_nat : FX1.Expr :=
 /-- Nat-zero raw-term encoder for this bridge fragment. -/
 def encodeRawTerm_natZero : FX1.Expr :=
   natZeroExpr
+
+/-- Nat-successor raw-term encoder for this bridge fragment. -/
+def encodeRawTerm_natSucc : FX1.Expr :=
+  natSuccExpr
+
+/-- Encoder for the exact rich raw term `succ zero`. -/
+def encodeRawTerm_natSuccZero : FX1.Expr :=
+  FX1.Expr.app encodeRawTerm_natSucc encodeRawTerm_natZero
 
 /-- Nat type encoding computes to the staged FX1 Nat type constant. -/
 theorem encodeTy_nat_eq_natTypeExpr :
@@ -76,6 +109,19 @@ theorem encodeTy_nat_eq_natTypeExpr :
 theorem encodeRawTerm_natZero_eq_natZeroExpr :
     Eq encodeRawTerm_natZero natZeroExpr :=
   Eq.refl natZeroExpr
+
+/-- Nat-successor raw-term encoding computes to the staged FX1 successor
+constant. -/
+theorem encodeRawTerm_natSucc_eq_natSuccExpr :
+    Eq encodeRawTerm_natSucc natSuccExpr :=
+  Eq.refl natSuccExpr
+
+/-- Exact `succ zero` raw-term encoding computes to successor applied to zero. -/
+theorem encodeRawTerm_natSuccZero_eq_app :
+    Eq
+      encodeRawTerm_natSuccZero
+      (FX1.Expr.app natSuccExpr natZeroExpr) :=
+  Eq.refl (FX1.Expr.app natSuccExpr natZeroExpr)
 
 /-- The staged Nat type declaration is well typed in the empty FX1
 environment. -/
@@ -98,6 +144,47 @@ theorem natZeroDeclaration_wellTyped :
         FX1.Environment.empty
         natTypeDeclaration))
 
+/-- The staged Nat type constant has sort zero under one Nat binder in the
+staged Nat-zero environment. -/
+theorem natTypeExpr_has_sort_in_natEnvironment_with_binder :
+    FX1.HasType
+      natEnvironment
+      (FX1.Context.extend FX1.Context.empty natTypeExpr)
+      encodeTy_nat
+      (FX1.Expr.sort FX1.Level.zero) :=
+  FX1.HasType.const
+    (FX1.Environment.HasDeclaration.older
+      natZeroDeclaration
+      (FX1.Environment.HasDeclaration.newest
+        FX1.Environment.empty
+        natTypeDeclaration))
+
+/-- The staged Nat successor type is well formed in the staged Nat-zero
+environment. -/
+theorem natSuccTypeExpr_has_sort_in_natEnvironment :
+    FX1.HasType
+      natEnvironment
+      FX1.Context.empty
+      natSuccTypeExpr
+      (FX1.Expr.sort (FX1.Level.max FX1.Level.zero FX1.Level.zero)) :=
+  FX1.HasType.pi
+    (FX1.HasType.const
+      (FX1.Environment.HasDeclaration.older
+        natZeroDeclaration
+        (FX1.Environment.HasDeclaration.newest
+          FX1.Environment.empty
+          natTypeDeclaration)))
+    natTypeExpr_has_sort_in_natEnvironment_with_binder
+
+/-- The staged Nat successor declaration is well typed after Nat and zero are
+available. -/
+theorem natSuccDeclaration_wellTyped :
+    FX1.Declaration.WellTyped
+      natEnvironment
+      natSuccDeclaration :=
+  FX1.Declaration.WellTyped.axiomDecl
+    natSuccTypeExpr_has_sort_in_natEnvironment
+
 /-- The staged Nat type environment is well formed. -/
 theorem natTypeEnvironment_wellFormed :
     FX1.Environment.WellFormed natTypeEnvironment :=
@@ -113,6 +200,20 @@ theorem natZeroName_ne_natTypeName :
     let boolEquality := congrArg (FX1.Name.beq natZeroName) namesEqual
     nomatch boolEquality
 
+/-- The staged successor name is distinct from the staged Nat type name. -/
+theorem natSuccName_ne_natTypeName :
+    Not (Eq natSuccName natTypeName) :=
+  fun namesEqual =>
+    let boolEquality := congrArg (FX1.Name.beq natSuccName) namesEqual
+    nomatch boolEquality
+
+/-- The staged successor name is distinct from the staged zero name. -/
+theorem natSuccName_ne_natZeroName :
+    Not (Eq natSuccName natZeroName) :=
+  fun namesEqual =>
+    let boolEquality := congrArg (FX1.Name.beq natSuccName) namesEqual
+    nomatch boolEquality
+
 /-- The staged zero value name is fresh after the Nat type declaration. -/
 theorem natZeroName_fresh :
     FX1.Environment.NameFresh natTypeEnvironment natZeroName :=
@@ -121,6 +222,18 @@ theorem natZeroName_fresh :
     (FX1.Environment.NameFresh.empty natZeroName)
     natZeroName_ne_natTypeName
 
+/-- The staged successor function name is fresh after the Nat type and zero
+declarations. -/
+theorem natSuccName_fresh :
+    FX1.Environment.NameFresh natEnvironment natSuccName :=
+  FX1.Environment.NameFresh.older
+    natZeroDeclaration
+    (FX1.Environment.NameFresh.older
+      natTypeDeclaration
+      (FX1.Environment.NameFresh.empty natSuccName)
+      natSuccName_ne_natTypeName)
+    natSuccName_ne_natZeroName
+
 /-- The staged Nat bridge environment is well formed. -/
 theorem natEnvironment_wellFormed :
     FX1.Environment.WellFormed natEnvironment :=
@@ -128,6 +241,14 @@ theorem natEnvironment_wellFormed :
     natTypeEnvironment_wellFormed
     natZeroName_fresh
     natZeroDeclaration_wellTyped
+
+/-- The staged Nat-successor bridge environment is well formed. -/
+theorem natSuccEnvironment_wellFormed :
+    FX1.Environment.WellFormed natSuccEnvironment :=
+  FX1.Environment.WellFormed.extend
+    natEnvironment_wellFormed
+    natSuccName_fresh
+    natSuccDeclaration_wellTyped
 
 /-- The staged Nat type constant has sort zero in the staged Nat environment. -/
 theorem natTypeExpr_has_sort_in_natEnvironment :
@@ -156,6 +277,66 @@ theorem encodedNatZero_has_type :
       natTypeEnvironment
       natZeroDeclaration)
 
+/-- The staged Nat type constant has sort zero in the staged Nat-successor
+environment. -/
+theorem natTypeExpr_has_sort_in_natSuccEnvironment :
+    FX1.HasType
+      natSuccEnvironment
+      FX1.Context.empty
+      encodeTy_nat
+      (FX1.Expr.sort FX1.Level.zero) :=
+  FX1.HasType.weaken_environment
+    natSuccDeclaration
+    natTypeExpr_has_sort_in_natEnvironment
+
+/-- The encoded rich zero value remains well typed in the staged
+Nat-successor environment. -/
+theorem encodedNatZero_has_type_in_natSuccEnvironment :
+    FX1.HasType
+      natSuccEnvironment
+      FX1.Context.empty
+      natZeroExpr
+      natTypeExpr :=
+  FX1.HasType.weaken_environment
+    natSuccDeclaration
+    encodedNatZero_has_type
+
+/-- The encoded rich successor function is well typed in the staged FX1 Nat
+successor environment. -/
+theorem encodedNatSucc_has_type :
+    FX1.HasType
+      natSuccEnvironment
+      FX1.Context.empty
+      natSuccExpr
+      natSuccTypeExpr :=
+  FX1.HasType.const
+    (FX1.Environment.HasDeclaration.newest
+      natEnvironment
+      natSuccDeclaration)
+
+/-- Rich raw term for applying successor to zero. -/
+def natSuccZeroRaw : RawTerm 0 :=
+  RawTerm.natSucc RawTerm.natZero
+
+/-- Canonical rich term for `succ zero`. -/
+def natSuccZeroTerm {mode : Mode} {level : Nat} :
+    Term
+      (Ctx.empty mode level)
+      (Ty.nat : Ty level 0)
+      natSuccZeroRaw :=
+  Term.natSucc Term.natZero
+
+/-- FX1 typing derivation for the encoded `succ zero` application. -/
+theorem encodedNatSuccZero_has_type :
+    FX1.HasType
+      natSuccEnvironment
+      FX1.Context.empty
+      encodeRawTerm_natSuccZero
+      encodeTy_nat :=
+  FX1.HasType.app
+    encodedNatSucc_has_type
+    encodedNatZero_has_type_in_natSuccEnvironment
+
 /-- Soundness of the empty-context Nat-zero bridge fragment. -/
 theorem encodeTermSound_natZero
     {mode : Mode}
@@ -167,6 +348,22 @@ theorem encodeTermSound_natZero
       encodeRawTerm_natZero
       encodeTy_nat :=
   encodedNatZero_has_type
+
+/-- Soundness of the empty-context `succ zero` bridge fragment. -/
+theorem encodeTermSound_natSuccZero
+    {mode : Mode}
+    {level : Nat}
+    (_succZeroTerm :
+      Term
+        (Ctx.empty mode level)
+        (Ty.nat : Ty level 0)
+        natSuccZeroRaw) :
+    FX1.HasType
+      natSuccEnvironment
+      FX1.Context.empty
+      encodeRawTerm_natSuccZero
+      encodeTy_nat :=
+  encodedNatSuccZero_has_type
 
 end FX1Bridge
 end LeanFX2
