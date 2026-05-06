@@ -398,4 +398,124 @@ def Lex.run (chars : List Char) :
   else
     .error errors
 
+/-! ## Audit L03 — `Lex.run`'s success branch is EOF-terminated
+
+The lemmas below establish that whenever `Lex.run` returns
+`Except.ok tokens`, the underlying token list ends with a
+`Token.eof` sentinel.  This is the load-bearing contract between
+the lexer and downstream parser: the parser may rely on the
+`eof` sentinel as an unconditional end-of-input marker.
+
+Stated via `tokens.toList.getLast?` rather than `Array.back?` to
+avoid Lean 4 v4.29.1's `Array.back?_push` / `Array.size_push`
+simp lemmas, both of which transitively depend on `propext` and
+would force the production `Surface.Lex` module out of zero-
+axiom territory.  `Array.toList` is a structure projection
+(`a.toList = a.toList`, `rfl`) and `List.getLast?` is built from
+plain pattern matching, so the routes through them are clean.
+
+All zero-axiom under `#print axioms`. -/
+
+/-- Appending an element to a list via `List.concat` makes that
+element the `getLast?` of the result.  Proved by structural
+recursion; no `simp` lemmas (which leak `propext` via Lean's
+match compiler when applied to `List.concat`'s `brecOn` body). -/
+theorem List.concat_getLast?_eq {alpha : Type} :
+    ∀ (initialList : List alpha) (lastElem : alpha),
+      (initialList.concat lastElem).getLast? = some lastElem
+  | [], _ => rfl
+  | head :: rest, lastElem => by
+    show (head :: rest.concat lastElem).getLast? = some lastElem
+    match concatEq : rest.concat lastElem with
+    | [] =>
+        -- `rest.concat lastElem` is non-empty by case analysis on `rest`.
+        have concatNonEmpty : rest.concat lastElem ≠ [] := by
+          cases rest with
+          | nil => intro hContra; cases hContra
+          | cons _ _ => intro hContra; cases hContra
+        exact absurd concatEq concatNonEmpty
+    | nextHead :: nextTail =>
+        show (head :: nextHead :: nextTail).getLast? = some lastElem
+        have ihRecursive : (rest.concat lastElem).getLast? = some lastElem :=
+          List.concat_getLast?_eq rest lastElem
+        rw [concatEq] at ihRecursive
+        exact ihRecursive
+
+/-- Pushing an element onto an `Array` makes that element the
+last entry of `toList`.  Direct corollary of
+`List.concat_getLast?_eq` plus the definitional equation
+`(arr.push x).toList = arr.toList.concat x` (which holds by
+`rfl` since `Array.push` is defined as `⟨a.toList.concat v⟩`). -/
+theorem Array.push_toList_getLast?_eq {alpha : Type}
+    (arrInput : Array alpha) (lastElem : alpha) :
+    (arrInput.push lastElem).toList.getLast? = some lastElem := by
+  show (arrInput.toList.concat lastElem).getLast? = some lastElem
+  exact List.concat_getLast?_eq arrInput.toList lastElem
+
+/-- **Audit L03**: every successful `Lex.run` output ends with a
+`Token.eof` sentinel.  Whenever `Lex.run chars` returns
+`Except.ok tokens`, the last positioned token in `tokens.toList`
+exists and carries `Token.eof` as its token field.
+
+Proof outline:
+
+1. Unfold `Lex.run` to expose its body — a `let-match-if` over
+   `lexLoop`'s pair return.
+2. Destructure the `lexLoop` pair into `(lexTokens, lexErrors)`
+   via `match`; this reduces the wrapping `match` arm.
+3. Rewrap the post-match expression at its actual type via a
+   `have ... := runOk2` cast — this shrinks the goal to a plain
+   `if-then-else`.
+4. Branch on `lexErrors.isEmpty`:
+   * `true`: `runOk` says `lexTokens.push eofPos = tokens`; supply
+     the pushed `eofPos` as the existential witness, discharge
+     the `getLast?` claim via `Array.push_toList_getLast?_eq`.
+   * `false`: `runOk` becomes `Except.error _ = Except.ok _`;
+     `cases` discharges the contradiction.
+
+Zero-axiom under `#print axioms`. -/
+theorem Lex.run_eof_terminated
+    (chars : List Char) (tokens : Array PositionedToken)
+    (runOk : Lex.run chars = Except.ok tokens) :
+    ∃ eofPos : PositionedToken,
+      tokens.toList.getLast? = some eofPos ∧ eofPos.token = Token.eof := by
+  -- Step 1: unfold via an explicit `rfl` witness to keep the `match`
+  -- visible after rewrite (plain `unfold` produces a `have`-binding
+  -- form that blocks subsequent destructuring).
+  have eqRun : Lex.run chars =
+    (match lexLoop (chars.length + 1) 0 chars #[] #[] with
+    | (lexTokens, lexErrors) =>
+      if lexErrors.isEmpty = true then
+        Except.ok (lexTokens.push
+          ({ token := Token.eof,
+             startPos := { offset := charsByteLength chars } } :
+             PositionedToken))
+      else Except.error lexErrors) := rfl
+  rw [eqRun] at runOk
+  -- Step 2: destructure the pair returned by lexLoop.
+  match lexLoopEq : lexLoop (chars.length + 1) 0 chars #[] #[], runOk with
+  | (lexTokens, lexErrors), runOkPair =>
+    -- Step 3: reduce the wrapping `match (lexTokens, lexErrors) with ...`
+    -- by ascription — both sides are definitionally equal.
+    have runOkIf :
+        (if lexErrors.isEmpty = true then
+            Except.ok (lexTokens.push
+              ({ token := Token.eof,
+                 startPos := { offset := charsByteLength chars } } :
+                 PositionedToken))
+          else Except.error lexErrors)
+        = Except.ok tokens := runOkPair
+    -- Step 4: branch on the `if`.
+    by_cases hErrorsEmpty : lexErrors.isEmpty = true
+    · rw [if_pos hErrorsEmpty] at runOkIf
+      let eofPos : PositionedToken :=
+        { token := Token.eof, startPos := { offset := charsByteLength chars } }
+      have tokensEq : lexTokens.push eofPos = tokens := by
+        injection runOkIf
+      refine ⟨eofPos, ?_, rfl⟩
+      rw [← tokensEq]
+      exact Array.push_toList_getLast?_eq _ eofPos
+    · rw [if_neg hErrorsEmpty] at runOkIf
+      cases runOkIf
+
 end LeanFX2.Surface

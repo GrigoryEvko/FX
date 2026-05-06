@@ -279,5 +279,28 @@ block at the top of `TokenSchema.lean`, `TokenInvariants.lean`,
 #print axioms BracketKind.closer_asBracketCloser
 #print axioms classifyIdent
 #print axioms Lex.run
+#print axioms List.concat_getLast?_eq
+#print axioms Array.push_toList_getLast?_eq
+#print axioms Lex.run_eof_terminated
+
+/-! ## Section 11 — L03 Lex.run EOF-termination smoke
+
+A concrete instance: lexing the empty input list (zero tokens
+produced by the lexer) yields a single-element output containing
+just the `eof` sentinel; `getLast?` recovers it. -/
+
+example :
+    let chars : List Char := []
+    Lex.run chars = .ok #[{ token := Token.eof, startPos := { offset := 0 } }] := by
+  rfl
+
+/-- Direct application of `Lex.run_eof_terminated` to a concrete
+empty input — verifies the witness extraction works end-to-end. -/
+example :
+    ∃ eofPos : PositionedToken,
+      (#[{ token := Token.eof, startPos := { offset := 0 } } ] :
+        Array PositionedToken).toList.getLast? = some eofPos ∧
+      eofPos.token = Token.eof :=
+  Lex.run_eof_terminated [] _ rfl
 
 end LeanFX2.Smoke
