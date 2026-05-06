@@ -1506,6 +1506,12 @@ namespace LeanFX2.Tools
 -- mode where a raw cubical β rule lands without its typed mirror.
 #assert_raw_typed_parity
 
+-- Schematic-payload budget gates.  These do not claim the current payload
+-- surface is ideal; they pin today's explicit `RawTerm` / `Nat` constructor
+-- payload debt so future rich-kernel edits cannot grow it silently.
+#assert_schematic_payload_budget LeanFX2.Ty 12 1
+#assert_schematic_payload_budget LeanFX2.Term 39 0
+
 -- Naming discipline gate.  Bans non-ASCII identifiers and short
 -- identifiers (< 4 chars) outside the documented whitelist.  Catches
 -- regressions like `def f (x) := ...` or pasted Greek-letter names
