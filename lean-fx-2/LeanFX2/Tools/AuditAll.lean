@@ -1542,6 +1542,38 @@ namespace LeanFX2.Tools
 -- whole-constructor bridge coverage for this matrix.
 #assert_bridge_exact_coverage_budget LeanFX2.Term 71
 
+-- Step.par cong-rule coverage matrix.  Every Term constructor with at
+-- least one sub-Term position should have a same-suffix
+-- `Step.par.<name>Cong` rule so parallel reduction can enter the
+-- ctor.  Value ctors (no sub-Term positions) naturally lack a cong
+-- rule; the budget accommodates that as architectural fact.  Tight
+-- ratchet: any future Term ctor without a cong rule fails the build.
+#assert_step_par_cong_coverage_budget LeanFX2.Term 49
+
+-- Conv cong-rule coverage matrix.  For every Term ctor, either
+-- `LeanFX2.Conv.<name>Cong` or `LeanFX2.Conv.<name>_cong` should exist
+-- so definitional conversion lifts through the ctor.  Either naming
+-- convention accepted; budget pins current debt and rejects growth.
+-- Today only one Term ctor has a Conv cong mirror — most Conv lifting
+-- happens via `Conv.fromStep` chains rather than per-ctor cong rules.
+-- This high debt count is a coverage observation, not a regression.
+#assert_conv_cong_coverage_budget LeanFX2.Term 74
+
+-- Broad manufactured-Step dependent census.  Wider than the headline
+-- refl-fragment gate above: counts ANY decl whose closure mentions a
+-- manufactured Univalence/funext rule, except for an allowlist of
+-- decls expected to thread those rules structurally (Confluence /
+-- RawCd / RawPar / Cd / CdLemma / Diamond / ChurchRosser scaffolding,
+-- the headline-named claims already counted, and HoTT/Cubical
+-- headline-adjacent files).  Pins current count to catch wrappers
+-- that rename-and-restate refl-fragment claims.  Today's 121 count
+-- includes Step.par cong rules that name the manufactured rule in
+-- their cd-lemma chain; reducing it requires either tightening the
+-- allowlist further or replacing manufactured-witness shipping with
+-- a general-rule shipping (the latter is the real fix, see
+-- WEAK-FX2-03 in the audit).
+#assert_broad_manufactured_step_dependent_budget LeanFX2 121
+
 -- Naming discipline gate.  Bans non-ASCII identifiers and short
 -- identifiers (< 4 chars) outside the documented whitelist.  Catches
 -- regressions like `def f (x) := ...` or pasted Greek-letter names

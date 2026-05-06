@@ -2896,6 +2896,184 @@ elab "#assert_hcomp_kan_budget " inductiveSyntax:ident
       s!"{records.size} hcomp Kan debts exceed budget {hcompKanBudget}"
     throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
 
+/-! ## Step.par cong-rule coverage gate
+
+Every `Term` constructor with at least one explicit sub-Term position
+should be reachable by parallel reduction.  The reaching mechanism is a
+`Step.par.<ctorname>Cong` rule that lifts a parallel step in any
+sub-term to a parallel step on the wrapping ctor.  Without that rule,
+parallel reduction cannot enter the constructor and Church-Rosser is
+incomplete on terms that mention it.
+
+This gate counts Term constructors that DO NOT have a same-suffix
+`Step.par.<ctorname>Cong` rule.  Value constructors (no sub-Term
+parameters) naturally lack a cong rule and contribute to the count;
+the budget accommodates that as architectural fact.  Future Term
+ctors with sub-terms but no cong rule make the count grow and fail.
+
+Exact name expected: `LeanFX2.Step.par.<ctorname>Cong`.  Ctors are
+named via `Term.lastSegmentString`; the gate does a contains-check
+against the loaded environment.  No structural analysis of the ctor
+shape is performed; that would prematurely allow exemptions for
+"this ctor's subterms are all raw".  The budget is the shape
+discipline. -/
+
+/-- Exact `Step.par.<ctorname>Cong` name expected for a Term ctor. -/
+def expectedStepParCongName (constructorName : Name) : Name :=
+  Name.str
+    `LeanFX2.Step.par
+    (Name.lastSegmentString constructorName ++ "Cong")
+
+/-- One Term constructor whose Step.par cong mirror is not in the
+loaded environment. -/
+structure StepParCongCoverageDebtRecord where
+  /-- Constructor whose mirror is missing. -/
+  constructorName : Name
+  /-- Exact mirror name expected by the coverage matrix. -/
+  expectedCongName : Name
+  deriving Inhabited, Repr
+
+/-- Report Step.par cong coverage debt for one Term constructor. -/
+def stepParCongCoverageDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option StepParCongCoverageDebtRecord :=
+  let expectedCongName := expectedStepParCongName constructorName
+  if environment.contains expectedCongName then
+    none
+  else
+    some {
+      constructorName := constructorName
+      expectedCongName := expectedCongName
+    }
+
+/-- Collect Step.par cong coverage debt records for every constructor
+of the given Term inductive. -/
+def stepParCongCoverageDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array StepParCongCoverageDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array StepParCongCoverageDebtRecord))
+    (fun records constructorName =>
+      match stepParCongCoverageDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for Term constructors whose
+`Step.par.<name>Cong` mirror is missing.  Existing debt may be pinned
+by the budget; future ctors without cong rules push the count above
+the ceiling and fail the build. -/
+elab "#assert_step_par_cong_coverage_budget " inductiveSyntax:ident
+    coverageDebtBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let coverageDebtBudget := coverageDebtBudgetSyntax.getNat
+  let records :=
+    stepParCongCoverageDebtRecordsForInductive environment inductiveName
+  let constructorCount :=
+    (getInductiveConstructorNames environment inductiveName).size
+  let coveredCount :=
+    if constructorCount >= records.size then
+      constructorCount - records.size
+    else 0
+  if records.size <= coverageDebtBudget then
+    logInfo
+      (s!"step-par cong coverage budget ok: {inductiveName} " ++
+      s!"({coveredCount}/{constructorCount} ctors have Step.par.*Cong " ++
+      s!"mirror; debt {records.size}/{coverageDebtBudget})")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: expected {record.expectedCongName}"
+    let header :=
+      s!"step-par cong coverage budget FAILED for {inductiveName}: " ++
+      s!"{records.size} ctors lack Step.par.*Cong mirror, exceeds budget " ++
+      s!"{coverageDebtBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-! ## Conv cong-rule coverage gate
+
+Symmetric to `#assert_step_par_cong_coverage_budget` but for the
+definitional-conversion layer.  A `Term` constructor whose
+sub-positions can step under `Step.par` should also have a cong rule
+on `Conv` (so `Conv` lifts through the constructor).  The expected
+name is `LeanFX2.Conv.<ctorname>Cong` or `LeanFX2.Conv.<ctorname>_cong`.
+Either form is accepted because both naming conventions appear in the
+codebase.
+
+Exact-name coverage; no structural analysis of subterms.  Value ctors
+naturally lack a Conv cong rule and the budget accommodates that.
+-/
+
+/-- Both expected Conv cong names for a Term ctor.  Accepts the two
+naming conventions present in the codebase. -/
+def expectedConvCongNames (constructorName : Name) : Name × Name :=
+  let suffix := Name.lastSegmentString constructorName
+  ( Name.str `LeanFX2.Conv (suffix ++ "Cong"),
+    Name.str `LeanFX2.Conv (suffix ++ "_cong") )
+
+/-- Whether either Conv cong-name shape exists in the environment for
+this Term ctor. -/
+def hasAnyConvCongMirror
+    (environment : Environment) (constructorName : Name) : Bool :=
+  let (camelName, snakeName) := expectedConvCongNames constructorName
+  environment.contains camelName || environment.contains snakeName
+
+/-- Report Conv cong coverage debt for one Term ctor. -/
+def convCongCoverageDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if hasAnyConvCongMirror environment constructorName then
+    none
+  else
+    let (camelName, snakeName) := expectedConvCongNames constructorName
+    some {
+      constructorName := constructorName
+      detail :=
+        s!"missing both {camelName} and {snakeName}"
+    }
+
+/-- Collect Conv cong coverage debt across the Term inductive. -/
+def convCongCoverageDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match convCongCoverageDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for Term ctors whose Conv cong mirror is
+absent.  Pins current count; future ctors without Conv lifting push
+the count above the ceiling and fail. -/
+elab "#assert_conv_cong_coverage_budget " inductiveSyntax:ident
+    coverageDebtBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let coverageDebtBudget := coverageDebtBudgetSyntax.getNat
+  let records :=
+    convCongCoverageDebtRecordsForInductive environment inductiveName
+  let constructorCount :=
+    (getInductiveConstructorNames environment inductiveName).size
+  let coveredCount :=
+    if constructorCount >= records.size then
+      constructorCount - records.size
+    else 0
+  if records.size <= coverageDebtBudget then
+    logInfo
+      (s!"conv cong coverage budget ok: {inductiveName} " ++
+      s!"({coveredCount}/{constructorCount} ctors have Conv cong mirror; " ++
+      s!"debt {records.size}/{coverageDebtBudget})")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"conv cong coverage budget FAILED for {inductiveName}: " ++
+      s!"{records.size} ctors lack Conv cong mirror, exceeds budget " ++
+      s!"{coverageDebtBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
 /-! ## End-of-build summary reporter -/
 
 /-- Aggregate audit summary across one namespace.  Logs total / clean /
@@ -3266,6 +3444,102 @@ elab "#assert_headline_refl_fragment_budget " namespaceSyntax:ident
       s!"{violations.size} claims exceed budget {claimBudget}"
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
 
+/-! ## Broad manufactured-Step dependent count
+
+The existing `#assert_headline_refl_fragment_budget` filters by name —
+it only counts decls whose final name segment is `Univalence`,
+`UnivalenceHet`, `funext`, or `FunextHet`.  A wrapper named
+`MyTheorem := Univalence` slips through that gate cleanly because its
+name segment is `MyTheorem`, not `Univalence`.
+
+This gate widens the lens to ALL decls in the namespace.  It counts
+every declaration whose transitive dependency closure mentions a
+manufactured Step rule, except for an allowlist of decls that are
+expected to thread those rules structurally:
+
+* The manufactured Step rules themselves (`Step.eqType`, etc.).
+* Their `Step.par.*` mirrors.
+* The headline-named claims already counted by the headline gate.
+* Confluence / Cd / CdLemma / Diamond / ChurchRosser internal
+  scaffolding (each has one match arm per Step rule).
+* Bridge raw-projection scaffolding under `Reduction.RawPar*` /
+  `RawCd*`.
+
+Anything else that mentions a manufactured rule transitively is a
+wrapper — a renamed restatement of a refl-fragment claim.  Pinning
+the count makes wrapper accumulation visible.
+-/
+
+/-- Whether a declaration is in the documented allowlist of decls
+expected to thread manufactured Step rules structurally.  Membership
+prefixes are by full prefix-of name. -/
+def isManufacturedStepStructuralDependent (declName : Name) : Bool :=
+  -- The manufactured rules themselves and their parallel mirrors.
+  declName == `LeanFX2.Step.eqType ||
+    declName == `LeanFX2.Step.eqArrow ||
+    declName == `LeanFX2.Step.eqTypeHet ||
+    declName == `LeanFX2.Step.eqArrowHet ||
+    declName == `LeanFX2.Step.par.eqType ||
+    declName == `LeanFX2.Step.par.eqArrow ||
+    declName == `LeanFX2.Step.par.eqTypeHet ||
+    declName == `LeanFX2.Step.par.eqArrowHet ||
+    -- Headline claims already counted by the headline gate (do not
+    -- double-count them in this broader census).
+    isHeadlinePrincipleClaimName declName ||
+    -- Confluence / reduction scaffolding that pattern-matches one
+    -- arm per Step rule.
+    (`LeanFX2.Confluence).isPrefixOf declName ||
+    (`LeanFX2.Reduction.Cd).isPrefixOf declName ||
+    (`LeanFX2.Reduction.CdLemma).isPrefixOf declName ||
+    (`LeanFX2.Reduction.Diamond).isPrefixOf declName ||
+    (`LeanFX2.Reduction.ChurchRosser).isPrefixOf declName ||
+    -- Raw-bridge scaffolding mirroring typed Step.par into RawStep.par.
+    (`LeanFX2.Reduction.RawPar).isPrefixOf declName ||
+    (`LeanFX2.Reduction.RawCd).isPrefixOf declName ||
+    (`LeanFX2.Reduction.Compat).isPrefixOf declName ||
+    (`LeanFX2.Reduction.ParStar).isPrefixOf declName ||
+    -- HoTT and Cubical headline-adjacent files where the manufactured
+    -- rules are the explicit subject (Conv.fromStep applications).
+    (`LeanFX2.HoTT.Univalence).isPrefixOf declName ||
+    (`LeanFX2.HoTT.UnivalenceHet).isPrefixOf declName ||
+    (`LeanFX2.Cubical.PathLemmas).isPrefixOf declName ||
+    (`LeanFX2.Cubical.FunextHet).isPrefixOf declName
+
+/-- Build-failing budget gate for the broad manufactured-Step dependent
+count.  Pins current count; future wrapper decls that depend on a
+manufactured rule outside the allowlist push the count above the
+ceiling and fail the build. -/
+elab "#assert_broad_manufactured_step_dependent_budget "
+    namespaceSyntax:ident dependentBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let dependentBudget := dependentBudgetSyntax.getNat
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut violations : Array (Name × Array Name) := #[]
+  for targetName in targetNames do
+    if isManufacturedStepStructuralDependent targetName then
+      continue
+    else
+      let manufacturedDependencies :=
+        collectManufacturedWitnessStepDependencies environment targetName
+      if !manufacturedDependencies.isEmpty then
+        violations := violations.push (targetName, manufacturedDependencies)
+  if violations.size <= dependentBudget then
+    logInfo
+      (s!"broad manufactured-Step dependent budget ok: {namespaceName} " ++
+      s!"({violations.size}/{dependentBudget} non-allowlisted decls " ++
+      "depend on manufactured Step rules)")
+  else
+    let perDeclLines := violations.toList.map fun (declName, dependencies) =>
+      let renderedDependencies :=
+        String.intercalate ", " (dependencies.toList.map toString)
+      s!"  - {declName}: manufactured Step deps [{renderedDependencies}]"
+    let header :=
+      s!"broad manufactured-Step dependent budget FAILED for " ++
+      s!"{namespaceName}: {violations.size} non-allowlisted dependents " ++
+      s!"exceed budget {dependentBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
 /-! ## Staged FX1 axiom leak detector
 
 FX1Bridge modules may use object-level `Declaration.axiomDecl` entries while a
@@ -3499,8 +3773,25 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     if totalCtorCount >= bridgeUncoveredCount then
       totalCtorCount - bridgeUncoveredCount
     else 0
+  -- Step.par cong-rule coverage matrix.
+  let stepParCongUncoveredCount :=
+    (stepParCongCoverageDebtRecordsForInductive
+      environment termInductiveName).size
+  let stepParCongCoveredCount :=
+    if totalCtorCount >= stepParCongUncoveredCount then
+      totalCtorCount - stepParCongUncoveredCount
+    else 0
+  -- Conv cong-rule coverage matrix.
+  let convCongUncoveredCount :=
+    (convCongCoverageDebtRecordsForInductive
+      environment termInductiveName).size
+  let convCongCoveredCount :=
+    if totalCtorCount >= convCongUncoveredCount then
+      totalCtorCount - convCongUncoveredCount
+    else 0
   -- Headline refl-fragment claims.
   let mut headlineReflFragmentCount : Nat := 0
+  let mut broadManufacturedDependentCount : Nat := 0
   let targetNames := namespaceAuditTargets environment namespaceName
   for targetName in targetNames do
     if isHeadlinePrincipleClaimName targetName then
@@ -3508,6 +3799,11 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
         collectManufacturedWitnessStepDependencies environment targetName
       if !manufacturedDependencies.isEmpty then
         headlineReflFragmentCount := headlineReflFragmentCount + 1
+    else if !isManufacturedStepStructuralDependent targetName then
+      let manufacturedDependencies :=
+        collectManufacturedWitnessStepDependencies environment targetName
+      if !manufacturedDependencies.isEmpty then
+        broadManufacturedDependentCount := broadManufacturedDependentCount + 1
   -- Strict-audit totals across the namespace.
   let mut auditTotalCount : Nat := 0
   let mut auditCleanCount : Nat := 0
@@ -3597,13 +3893,22 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       "Hcomp Kan (hcomp w/o boundary cofibration)"
       hcompKanDebtCount,
     "  ──────────────────────────────────────────────────────────",
-    "  BRIDGE COVERAGE  (rich Term ctor → FX1 encoding)",
-    s!"    Encoded:    {bridgeCoveredCount}/{totalCtorCount} " ++
+    "  COVERAGE MATRICES  (rich Term ctor → mirror declarations)",
+    s!"    Bridge encoding (FX1.encodeTermSound_*):     " ++
+      s!"{bridgeCoveredCount}/{totalCtorCount} " ++
       s!"({totalCtorCount - bridgeCoveredCount} unbridged)",
+    s!"    Step.par cong (Step.par.*Cong):              " ++
+      s!"{stepParCongCoveredCount}/{totalCtorCount} " ++
+      s!"({totalCtorCount - stepParCongCoveredCount} uncovered)",
+    s!"    Conv cong (Conv.*Cong / Conv.*_cong):        " ++
+      s!"{convCongCoveredCount}/{totalCtorCount} " ++
+      s!"({totalCtorCount - convCongCoveredCount} uncovered)",
     "  ──────────────────────────────────────────────────────────",
-    "  HEADLINE REFL-FRAGMENT CLAIMS",
-    s!"    Univalence/funext family backed by manufactured Step " ++
-      s!"rules: {headlineReflFragmentCount}",
+    "  REFL-FRAGMENT DEPENDENCY CENSUS",
+    s!"    Headline names backed by manufactured rules:  " ++
+      s!"{headlineReflFragmentCount}",
+    s!"    Broad non-allowlisted dependents (wrappers):  " ++
+      s!"{broadManufacturedDependentCount}",
     bannerEdge,
     "  Notes:",
     "    * All counts read live from current environment.",
