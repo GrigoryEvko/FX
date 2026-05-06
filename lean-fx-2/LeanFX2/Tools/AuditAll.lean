@@ -1183,6 +1183,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitVarContext_wellFormed
 #assert_no_axioms LeanFX2.FX1Bridge.encodedNewestUnitVar_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_newestUnitVar
+#assert_no_axioms LeanFX2.FX1Bridge.unitIdentityRaw
+#assert_no_axioms LeanFX2.FX1Bridge.unitIdentityType
+#assert_no_axioms LeanFX2.FX1Bridge.unitIdentityTerm
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unitIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.unitTypeExpr_has_sort_in_encodedUnitVarContext
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentityType_has_sort
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentity_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdentity
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to
