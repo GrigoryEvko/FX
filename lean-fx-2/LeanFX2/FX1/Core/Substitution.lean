@@ -1,5 +1,4 @@
 prelude
-import Init.Prelude
 import LeanFX2.FX1.Core.Expr
 
 /-! # FX1/Core/Substitution

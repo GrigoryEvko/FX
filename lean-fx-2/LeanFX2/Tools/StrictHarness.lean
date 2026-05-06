@@ -427,22 +427,30 @@ elab "#assert_rich_production_fx1_import_surface_clean" : command => do
       s!"{violations.size} of {scannedRichProductionModules} modules import FX1 directly"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
-/-- The only host module FX1 source files may import directly. -/
-def isAllowedFX1PreludeImport (moduleName : Name) : Bool :=
-  moduleName == `Init.Prelude
+/-- The single FX1/Core source file allowed to import `Init.Prelude` directly. -/
+def mayDirectlyImportFX1Prelude (sourceModuleName : Name) : Bool :=
+  sourceModuleName == `LeanFX2.FX1.Core.Name
+
+/-- The only host module one FX1 source file may import directly. -/
+def isAllowedFX1PreludeImport
+    (sourceModuleName importedModuleName : Name) :
+    Bool :=
+  mayDirectlyImportFX1Prelude sourceModuleName &&
+    importedModuleName == `Init.Prelude
 
 /-- Direct imports allowed from an FX1 module.
 
 FX1/Core may only import FX1/Core.  FX1/LeanKernel may import FX1/Core and
 FX1/LeanKernel.  Any future FX1 module outside those two namespaces must stay
-inside `LeanFX2.FX1`.  The only allowed non-FX1 import is `Init.Prelude`,
-matching the FX1/Core policy in `kernel-sprint.md` §1.0.1.  Host-heavy imports
-such as `Lean` or `Std` therefore fail at the source-import boundary before
-dependency-closure audit even runs. -/
+inside `LeanFX2.FX1`.  The only allowed non-FX1 direct import is
+`LeanFX2.FX1.Core.Name -> Init.Prelude`, matching the FX1/Core policy in
+`kernel-sprint.md` §1.0.1 while keeping the host-prelude edge singular.
+Host-heavy imports such as `Lean` or `Std` therefore fail at the source-import
+boundary before dependency-closure audit even runs. -/
 def isAllowedFX1DirectImport
     (sourceModuleName : Name) (importedModuleName : Name) :
     Bool :=
-  if isAllowedFX1PreludeImport importedModuleName then
+  if isAllowedFX1PreludeImport sourceModuleName importedModuleName then
     true
   else if isFX1CoreModuleName sourceModuleName then
     isFX1CoreModuleName importedModuleName
@@ -785,6 +793,7 @@ elab "#audit_import_surface_summary" : command => do
   let mut richProductionFX1Imports : Array DirectImportRecord := #[]
   let mut richProductionHostImports : Array DirectImportRecord := #[]
   let mut fx1ForbiddenImports : Array DirectImportRecord := #[]
+  let mut fx1PreludeImports : Array DirectImportRecord := #[]
   for (effectiveImport, moduleData) in moduleEntries do
     let sourceModuleName := effectiveImport.module
     if (`LeanFX2).isPrefixOf sourceModuleName then
@@ -821,6 +830,10 @@ elab "#audit_import_surface_summary" : command => do
             !isAllowedFX1DirectImport sourceModuleName importedModuleName then
           fx1ForbiddenImports :=
             fx1ForbiddenImports.push directImportRecord
+        if isFX1ModuleName sourceModuleName &&
+            importedModuleName == `Init.Prelude then
+          fx1PreludeImports :=
+            fx1PreludeImports.push directImportRecord
   logInfo
     (String.intercalate "\n" [
       "──────────── IMPORT SURFACE SUMMARY ────────────",
@@ -839,6 +852,8 @@ elab "#audit_import_surface_summary" : command => do
       s!"    {formatDirectImportRecords richProductionHostImports}",
       s!"  FX1 forbidden direct imports:     {fx1ForbiddenImports.size}",
       s!"    {formatDirectImportRecords fx1ForbiddenImports}",
+      s!"  FX1 direct Init.Prelude imports:  {fx1PreludeImports.size}",
+      s!"    {formatDirectImportRecords fx1PreludeImports}",
       "────────────────────────────────────────────────"
     ])
 

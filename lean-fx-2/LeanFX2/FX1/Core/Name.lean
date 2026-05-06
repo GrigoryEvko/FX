@@ -6,9 +6,11 @@ import Init.Prelude
 Root status: Root-FX1 syntax scaffold.
 
 This file starts the minimal FX1 root calculus with a Lean-like hierarchical
-name datatype.  It intentionally imports no host modules; the build harness
-checks that declarations in `LeanFX2.FX1` do not depend on `Lean`, `Std`,
-`Classical`, host `Quot`, or Lean core axioms.
+name datatype.  It is the only FX1/Core file that directly imports
+`Init.Prelude`; all other FX1/Core files get host primitives transitively through
+the root syntax spine.  The build harness checks that declarations in
+`LeanFX2.FX1` do not depend on `Lean`, `Std`, `Classical`, host `Quot`, or Lean
+core axioms.
 -/
 
 namespace LeanFX2.FX1
