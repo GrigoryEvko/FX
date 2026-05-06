@@ -1,4 +1,6 @@
 import LeanFX2.Effects.Foundation
+import LeanFX2.Effects.Step
+import LeanFX2.Effects.Handlers
 
 #print axioms LeanFX2.Effects.EffectLabel
 #print axioms LeanFX2.Effects.EffectRow.Member
@@ -19,3 +21,18 @@ import LeanFX2.Effects.Foundation
 #print axioms LeanFX2.Effects.EffectRow.join_commutes_subset
 #print axioms LeanFX2.Effects.EffectRow.join_associates_subset
 #print axioms LeanFX2.Effects.read_subset_writeRead
+#print axioms LeanFX2.Effects.OperationSignature
+#print axioms LeanFX2.Effects.CanPerform
+#print axioms LeanFX2.Effects.CanPerform.mono
+#print axioms LeanFX2.Effects.CanPerform.join_left
+#print axioms LeanFX2.Effects.CanPerform.join_right
+#print axioms LeanFX2.Effects.Action
+#print axioms LeanFX2.Effects.Step
+#print axioms LeanFX2.Effects.Step.mono
+#print axioms LeanFX2.Effects.Step.join_left
+#print axioms LeanFX2.Effects.Step.join_right
+#print axioms LeanFX2.Effects.Step.result_deterministic
+#print axioms LeanFX2.Effects.HandlerCase
+#print axioms LeanFX2.Effects.Handles
+#print axioms LeanFX2.Effects.Handles.to_step
+#print axioms LeanFX2.Effects.Handles.result_deterministic

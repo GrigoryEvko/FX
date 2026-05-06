@@ -21,12 +21,14 @@ an incomparable lattice element.
   bottom, join is the least upper bound, idempotency,
   commutativity, associativity (all up to mutual subset)
 * `read_subset_writeRead` — the only built-in subeffect chain
+* Row-level operation and handler semantics live in
+  `Effects.Step` / `Effects.Handlers`.
 
 ## What defers (later phases)
 
-* `Op` (operation signatures) and `effectPerform` /
-  `effectHandle` — depend on Term-level integration (Layer
-  K, kernel side); deferred to Phase 13+
+* Term-level `effectPerform` row enforcement and `effectHandle`
+  beta rules — depend on exposing effect rows and operation
+  signatures in typed-term indices.
 * User-defined effects (`effect ... end effect`) — surface
   syntax + elaboration in Phase 14+
 * Effect handlers with one-shot vs multi-shot continuations
