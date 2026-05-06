@@ -1,4 +1,5 @@
 import LeanFX2.Surface.Lex
+import LeanFX2.Surface.HostLex
 import LeanFX2.Surface.TokenSchema
 import LeanFX2.Surface.TokenInvariants
 import LeanFX2.Surface.GrammarToken
@@ -191,13 +192,14 @@ example :
 /-! ## Section 8 — Lex.run end-to-end
 
 Lex a small piece of FX surface syntax with the new schema in
-place.  We use `runFromString` (which leaks 3 axioms via
-`String.toList` — confined boundary) to check the integration. -/
+place.  We use the explicit host-boundary shim (which leaks 3 axioms via
+`String.toList`) to check integration without putting that function in
+the production `Surface.Lex` module. -/
 
-#eval Lex.runFromString "fn foo() : nat = 42;"
-#eval Lex.runFromString "let x = if true; 1 else 0 end if;"
-#eval Lex.runFromString "type quotient_thing = int;"
-#eval Lex.runFromString "with secret tainted ref mut"
+#eval HostLex.runFromString "fn foo() : nat = 42;"
+#eval HostLex.runFromString "let x = if true; 1 else 0 end if;"
+#eval HostLex.runFromString "type quotient_thing = int;"
+#eval HostLex.runFromString "with secret tainted ref mut"
 
 /-! ## Section 9 — Cross-schema consistency
 

@@ -3,12 +3,12 @@ import LeanFX2.Surface.KernelBridgeReduction
 
 /-! # Surface/KernelEnvCorrespondence — env-aware ⊇ env-free (Literal only)
 
-The env-aware bridge `RawExpr.toRawTermWithEnv?` with `Env.empty`
+The env-aware bridge `RawExpr.toRawTermWithEnv?` with `KernelEnv.empty`
 is NOT strictly equal to the env-free bridge `RawExpr.toRawTerm?`
 — they diverge on `rawBinop pipe`:
 
-* Env-free returns `none` for ALL binops.
-* Env-aware handles `pipe` STRUCTURALLY (`x |> f` becomes `f x`).
+* The env-free bridge returns `none` for ALL binops.
+* The env-aware bridge handles `pipe` STRUCTURALLY (`x |> f` becomes `f x`).
 
 The right correspondence statement is INCLUSION (subsumption):
 whenever the env-free bridge succeeds, the env-aware bridge with
@@ -50,13 +50,13 @@ admits the theorem under a propext-clean encoding.
 
 namespace LeanFX2.Surface
 
-/-- Helper: `Env.empty.lookup` is constantly `none`. -/
-@[simp] theorem Env.empty_lookup_eq (qname : QualifiedName) :
-    Env.empty.lookup qname = none := rfl
+/-- Helper: `KernelEnv.empty.lookup` is constantly `none`. -/
+@[simp] theorem KernelEnv.empty_lookup_eq (qname : QualifiedName) :
+    KernelEnv.empty.lookup qname = none := rfl
 
 /-! ## Literal correspondence (kernel-clean, zero-axiom)
 
-`Literal.toRawTerm?` and `Literal.toRawTermWithEnv? Env.empty`
+`Literal.toRawTerm?` and `Literal.toRawTermWithEnv? KernelEnv.empty`
 agree on every input that env-free maps to `some _`.  This is
 NON-MUTUAL (Literal has no recursive structure crossing into
 the rest of the bridge family), so the propext leak does not
@@ -67,7 +67,7 @@ theorem Literal.bridge_inclusion
     {scope : Nat}
     (lit : Literal) (raw : RawTerm scope)
     (envFreeEq : Literal.toRawTerm? lit = some raw) :
-    Literal.toRawTermWithEnv? (scope := scope) Env.empty lit = some raw := by
+    Literal.toRawTermWithEnv? (scope := scope) KernelEnv.empty lit = some raw := by
   cases lit with
   | unitLit =>
     rw [Literal.toRawTerm?_unitLit] at envFreeEq
@@ -90,7 +90,7 @@ theorem Literal.bridge_inclusion
     show (if 0 ≤ n then some (RawTerm.natOfNat n.toNat)
           else
             let posRaw : RawTerm scope := RawTerm.natOfNat n.natAbs
-            match Env.empty.lookup UnaryOp.negate.toQualifiedName with
+            match KernelEnv.empty.lookup UnaryOp.negate.toQualifiedName with
             | none => none
             | some negDef =>
               match negDef.liftToScope (scope := scope) with

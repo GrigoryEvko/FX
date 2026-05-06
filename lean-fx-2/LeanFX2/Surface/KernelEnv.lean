@@ -11,14 +11,14 @@ Per `Surface/KernelBridge.lean`'s docstring, the env-free bridge
 * Gap #3: dot projections (need record schema)
 * Gap #4: non-zero literals (need succ-chain)
 
-This module addresses gaps #1 and #2 with an `Env` (qualified-
+This module addresses gaps #1 and #2 with a `KernelEnv` (qualified-
 name → RawTerm symbol table) and `RawExpr.toRawTermWithEnv?`.
 
 ```lean
 structure ResolvedDef where rawTerm : RawTerm 0
-structure Env where lookup : QualifiedName → Option ResolvedDef
+structure KernelEnv where lookup : QualifiedName → Option ResolvedDef
 
-def RawExpr.toRawTermWithEnv? (env : Env) :
+def RawExpr.toRawTermWithEnv? (env : KernelEnv) :
     RawExpr scope → Option (RawTerm scope)
 ```
 
@@ -51,7 +51,7 @@ env-free bridge but threading `env` through every recursive
 call.  Termination by Lean's auto-derived `sizeOf`.
 
 The env-free bridge (in `KernelBridge.lean`) is a SPECIAL CASE
-of the env-aware bridge with `Env.empty` — provable as a
+of the env-aware bridge with `KernelEnv.empty` — provable as a
 theorem `RawExpr.toRawTermWithEnv?_empty` (deferred).
 
 Zero-axiom verified.
@@ -69,11 +69,11 @@ structure ResolvedDef where
 /-- The global environment.  Maps qualified names to their
 kernel-form definitions.  Total function (returns `none` for
 unknown names). -/
-structure Env where
+structure KernelEnv where
   lookup : QualifiedName → Option ResolvedDef
 
 /-- The empty environment — every lookup returns `none`. -/
-def Env.empty : Env := { lookup := fun _ => none }
+def KernelEnv.empty : KernelEnv := { lookup := fun _ => none }
 
 /-- Iterated weakening: `RawTerm sourceScope` lifted to
 `RawTerm (sourceScope + n)` by applying `RawTerm.weaken` n
@@ -89,10 +89,10 @@ def ResolvedDef.liftToScope {scope : Nat} (rd : ResolvedDef) :
     Option (RawTerm scope) :=
   some (Nat.zero_add scope ▸ RawTerm.weakenIter rd.rawTerm scope)
 
-/-- Env-aware literal desugaring.  Extends `Literal.toRawTerm?`
+/-- KernelEnv-aware literal desugaring.  Extends `Literal.toRawTerm?`
 to handle negative integer literals via `Std.Int.neg` lookup
 in the env. -/
-def Literal.toRawTermWithEnv? {scope : Nat} (env : Env) :
+def Literal.toRawTermWithEnv? {scope : Nat} (env : KernelEnv) :
     Literal → Option (RawTerm scope)
   | .unitLit => some RawTerm.unit
   | .boolLit true => some RawTerm.boolTrue
@@ -118,12 +118,12 @@ def Literal.toRawTermWithEnv? {scope : Nat} (env : Env) :
 
 mutual
 
-/-- Env-aware bridge: desugars `RawExpr scope` to kernel
+/-- KernelEnv-aware bridge: desugars `RawExpr scope` to kernel
 `RawTerm scope`, resolving free names and operators via `env`.
 
 Mirrors `RawExpr.toRawTerm?` from `KernelBridge.lean` but
 threads `env` through every recursive call. -/
-def RawExpr.toRawTermWithEnv? {scope : Nat} (env : Env) :
+def RawExpr.toRawTermWithEnv? {scope : Nat} (env : KernelEnv) :
     RawExpr scope → Option (RawTerm scope)
   | .rawBound idx => some (RawTerm.var idx)
   | .rawFree qname =>
@@ -216,8 +216,8 @@ def RawExpr.toRawTermWithEnv? {scope : Nat} (env : Env) :
           | some elseRaw =>
               some (RawTerm.boolElim condRaw thenRaw elseRaw)
 
-/-- Env-aware fold of an arg list into nested `RawTerm.app`. -/
-def RawArgList.foldAppsEnv? {scope : Nat} (env : Env) (acc : RawTerm scope) :
+/-- KernelEnv-aware fold of an arg list into nested `RawTerm.app`. -/
+def RawArgList.foldAppsEnv? {scope : Nat} (env : KernelEnv) (acc : RawTerm scope) :
     RawArgList scope → Option (RawTerm scope)
   | .rawNilArg => some acc
   | .rawConsArg arg rest =>
@@ -225,21 +225,21 @@ def RawArgList.foldAppsEnv? {scope : Nat} (env : Env) (acc : RawTerm scope) :
       | none => none
       | some argRaw => RawArgList.foldAppsEnv? env (RawTerm.app acc argRaw) rest
 
-/-- Env-aware desugar of a single call-arg. -/
-def RawCallArg.toRawTermWithEnv? {scope : Nat} (env : Env) :
+/-- KernelEnv-aware desugar of a single call-arg. -/
+def RawCallArg.toRawTermWithEnv? {scope : Nat} (env : KernelEnv) :
     RawCallArg scope → Option (RawTerm scope)
   | .rawPositional v => RawExpr.toRawTermWithEnv? env v
   | .rawNamed _ v => RawExpr.toRawTermWithEnv? env v
   | .rawImplicit v => RawExpr.toRawTermWithEnv? env v
 
-/-- Env-aware OptRawExpr → RawTerm (with unit fallback). -/
-def OptRawExpr.toRawTermOrUnitEnv? {scope : Nat} (env : Env) :
+/-- KernelEnv-aware OptRawExpr → RawTerm (with unit fallback). -/
+def OptRawExpr.toRawTermOrUnitEnv? {scope : Nat} (env : KernelEnv) :
     OptRawExpr scope → Option (RawTerm scope)
   | .rawNone => some RawTerm.unit
   | .rawSome r => RawExpr.toRawTermWithEnv? env r
 
-/-- Env-aware fold of a StmtList into the let-as-application chain. -/
-def RawStmtList.foldBlockEnv? {scope outScope : Nat} (env : Env) :
+/-- KernelEnv-aware fold of a StmtList into the let-as-application chain. -/
+def RawStmtList.foldBlockEnv? {scope outScope : Nat} (env : KernelEnv) :
     RawStmtList scope outScope → RawTerm outScope →
     Option (RawTerm scope)
   | .rawNilStmt, finalRaw => some finalRaw
@@ -263,7 +263,7 @@ end -- mutual
 
 /-- Wrapper: env-aware desugar from decorated `Expr`. -/
 @[reducible] def Expr.toRawTermWithEnv? {scope : Nat} {raw : RawExpr scope}
-    (env : Env) (_e : Expr raw) : Option (RawTerm scope) :=
+    (env : KernelEnv) (_e : Expr raw) : Option (RawTerm scope) :=
   RawExpr.toRawTermWithEnv? env raw
 
 end LeanFX2.Surface

@@ -249,6 +249,18 @@ audited, but it is not the planned trusted Lean-in-FX path. -/
 def isLegacyLeanKernelScaffoldModuleName (moduleName : Name) : Bool :=
   (`LeanFX2.Lean.Kernel).isPrefixOf moduleName
 
+/-- Deliberate host-boundary modules.  These are buildable and visible to
+the broad import census, but they are outside the zero-axiom production
+umbrella because their job is to cross host APIs explicitly. -/
+def isHostBoundaryModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2.Surface.HostLex
+
+/-- Modules allowed to import explicit host-boundary shims directly. -/
+def mayImportHostBoundaryModule (sourceModuleName : Name) : Bool :=
+  isHostBoundaryModuleName sourceModuleName ||
+    (`LeanFX2.Tools).isPrefixOf sourceModuleName ||
+    (`LeanFX2.Smoke).isPrefixOf sourceModuleName
+
 /-- Modules that are public production-bearing LeanFX2 modules rather than
 tests, tooling, sketches, or the old Lean-kernel scaffold.  This includes the
 root `LeanFX2` umbrella so `import LeanFX2` itself stays clean. -/
@@ -257,6 +269,7 @@ def isProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
     !(`LeanFX2.Smoke).isPrefixOf moduleName &&
     !(`LeanFX2.Tools).isPrefixOf moduleName &&
     !(`LeanFX2.Sketch).isPrefixOf moduleName &&
+    !isHostBoundaryModuleName moduleName &&
     !isLegacyLeanKernelScaffoldModuleName moduleName
 
 /-- Imports that production modules must not take directly.
@@ -376,6 +389,54 @@ elab "#assert_rich_production_host_import_surface_clean" : command => do
     let header :=
       s!"rich production host-import surface FAILED: " ++
       s!"{violations.size} of {scannedRichProductionModules} modules import host modules directly"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
+/-! ## Explicit host-boundary isolation -/
+
+/-- Host-boundary direct imports that cross out of the allowed
+smoke/tool/boundary cone. -/
+def forbiddenHostBoundaryImportsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun forbiddenImports directImport =>
+      if isHostBoundaryModuleName directImport.module &&
+          !mayImportHostBoundaryModule sourceModuleName then
+        forbiddenImports.push directImport.module
+      else
+        forbiddenImports)
+
+/-- Build-failing isolation gate for explicit host-boundary modules.
+
+Host-boundary modules remain buildable and visible in the import census, but
+regular production modules and the public `LeanFX2` umbrella must not import
+them directly.  Smoke and tooling may import them to test and audit the
+boundary. -/
+elab "#assert_host_boundary_isolated" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if (`LeanFX2).isPrefixOf moduleName then
+      scannedModules := scannedModules + 1
+      let forbiddenImports :=
+        forbiddenHostBoundaryImportsForModule moduleName moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (moduleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"host-boundary isolation ok: {scannedModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: forbidden host-boundary imports [{renderedImports}]"
+    let header :=
+      s!"host-boundary isolation FAILED: " ++
+      s!"{violations.size} of {scannedModules} modules import host-boundary shims"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
 /-! ## FX1 direct-import discipline -/
@@ -956,6 +1017,8 @@ def importFamilyLabel (moduleName : Name) : String :=
     "LeanFX2.FX1"
   else if isLegacyLeanKernelScaffoldModuleName moduleName then
     "LeanFX2.LegacyLeanKernel"
+  else if isHostBoundaryModuleName moduleName then
+    "LeanFX2.HostBoundary"
   else if (`LeanFX2.Tools).isPrefixOf moduleName then
     "LeanFX2.Tools"
   else if (`LeanFX2.Smoke).isPrefixOf moduleName then
@@ -1121,6 +1184,7 @@ elab "#audit_import_surface_summary" : command => do
   let mut richProductionHostImports : Array DirectImportRecord := #[]
   let mut legacyLeanKernelImports : Array DirectImportRecord := #[]
   let mut legacyLeanKernelOutwardImports : Array DirectImportRecord := #[]
+  let mut hostBoundaryImports : Array DirectImportRecord := #[]
   let mut fx1ForbiddenImports : Array DirectImportRecord := #[]
   let mut fx1PreludeImports : Array DirectImportRecord := #[]
   for (effectiveImport, moduleData) in moduleEntries do
@@ -1169,6 +1233,9 @@ elab "#audit_import_surface_summary" : command => do
             !isLegacyLeanKernelScaffoldModuleName importedModuleName then
           legacyLeanKernelOutwardImports :=
             legacyLeanKernelOutwardImports.push directImportRecord
+        if isHostBoundaryModuleName importedModuleName then
+          hostBoundaryImports :=
+            hostBoundaryImports.push directImportRecord
         if isFX1ModuleName sourceModuleName &&
             !isAllowedFX1DirectImport sourceModuleName importedModuleName then
           fx1ForbiddenImports :=
@@ -1200,6 +1267,8 @@ elab "#audit_import_surface_summary" : command => do
       s!"    {formatDirectImportRecords legacyLeanKernelImports}",
       s!"  Legacy LeanKernel outward imports: {legacyLeanKernelOutwardImports.size}",
       s!"    {formatDirectImportRecords legacyLeanKernelOutwardImports}",
+      s!"  Host-boundary direct imports:   {hostBoundaryImports.size}",
+      s!"    {formatDirectImportRecords hostBoundaryImports}",
       s!"  FX1 forbidden direct imports:     {fx1ForbiddenImports.size}",
       s!"    {formatDirectImportRecords fx1ForbiddenImports}",
       s!"  FX1 direct Init.Prelude imports:  {fx1PreludeImports.size}",
@@ -1400,6 +1469,22 @@ def isWhitelistedShortIdentifier (someSegment : String) : Bool :=
   someSegment == "map" ||
   someSegment == "ite" ||
   someSegment == "abs" ||
+  -- Parser and surface-standard-library vocabulary.  These are
+  -- canonical spellings of FX tokens or target names, not throwaway
+  -- abbreviations.
+  someSegment == "sub" ||
+  someSegment == "neg" ||
+  someSegment == "lt" ||
+  someSegment == "gt" ||
+  someSegment == "ge" ||
+  someSegment == "ne" ||
+  someSegment == "shl" ||
+  someSegment == "shr" ||
+  someSegment == "eof" ||
+  someSegment == "all" ||
+  someSegment == "std" ||
+  -- Observational equality is project-wide HoTT terminology.
+  someSegment == "OEq" ||
   someSegment == "opp" ||  -- Interval opposite (cubical convention)
   someSegment == "par" ||  -- parallel reduction (project-wide)
   someSegment == "one" ||  -- semiring multiplicative identity

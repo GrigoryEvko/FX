@@ -19,6 +19,7 @@ namespace LeanFX2.Smoke.ImportSurface
 
 #assert_production_import_surface_clean
 #assert_rich_production_host_import_surface_clean
+#assert_host_boundary_isolated
 #assert_fx1_import_surface_clean
 #assert_fx1_core_exact_import_shape
 #assert_rich_production_fx1_import_surface_clean

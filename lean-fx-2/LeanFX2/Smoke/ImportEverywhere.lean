@@ -6,6 +6,7 @@ import LeanFX2.Tools.StrictHarness
 import LeanFX2.Tools.Tactics.Cast
 import LeanFX2.Tools.Tactics.HEq
 import LeanFX2.Tools.Tactics.SimpStrip
+import LeanFX2.Surface.HostLex
 import LeanFX2.Lean.Kernel.Audit
 import LeanFX2.Lean.Kernel.Check
 import LeanFX2.Lean.Kernel.HasType
@@ -27,6 +28,7 @@ visible during `lake build LeanFX2`.
 namespace LeanFX2.Smoke.ImportEverywhere
 
 #assert_host_heavy_import_surface_allowlisted
+#assert_host_boundary_isolated
 #assert_legacy_lean_kernel_import_surface_clean
 #assert_public_production_umbrella_reaches_all
 #audit_import_family_summary

@@ -158,27 +158,20 @@ theorem KeywordKind.toLexemeChars_isLowerIdent_deferred :
 
 /-! ## Token-level well-formedness predicate -/
 
-/-- Decidable predicate: is `Token`'s payload (if any) a
-well-formed lexeme per the lexer's contract?
+/- Token-level contract: is `Token`'s payload (if any) a
+well-formed lexeme per the lexer?
 
-* `ident s` requires `IsLowerIdentChars s.toList = true` — but
-  `String.toList` leaks axioms, so we phrase the predicate as
-  "there EXISTS a List Char `cs` with `IsLowerIdentChars cs =
-  true` and `String.ofList cs = s`".  In practice the lexer
-  produces `ident` via `String.ofList` of an explicit chars
-  argument, so the existential is witnessed by construction.
+* `ident s` requires an explicit `List Char` witness `cs` with
+  `IsLowerIdentChars cs = true` and `String.ofList cs = s`.
+  This avoids `String.toList`, which leaks host axioms in Lean 4
+  v4.29.1.
 * `uident s` analogously.
 * All other tokens are well-formed unconditionally.
 
-We provide a Bool-valued approximation `Token.identPayloadOk`
-that uses `String.length == 0` as a stand-in (since the precise
-predicate requires going through `toList`).  The full
-existential predicate is the load-bearing form; the Bool
-approximation is the runtime check. -/
-def Token.identPayloadNonEmpty : Token → Bool
-  | .ident s  => 0 < s.length
-  | .uident s => 0 < s.length
-  | _         => true
+The full existential predicate is the load-bearing form.  There is no
+Bool-valued `String` inspection here: `String.length`, `String.toList`,
+and friends all cross the host boundary and therefore do not belong in
+the zero-axiom production surface. -/
 
 /-- Existential well-formedness: identifier payloads come from
 `String.ofList` of a properly-shaped char list.  Used as the
@@ -281,7 +274,7 @@ structure WellFormedToken where
   wfTok.underlying
 
 /-- Inject a token whose well-formedness is known. -/
-@[reducible] def WellFormedToken.mk' (tok : Token)
+@[reducible] def WellFormedToken.ofToken (tok : Token)
     (proof : Token.IsWellFormed tok) : WellFormedToken :=
   ⟨tok, proof⟩
 

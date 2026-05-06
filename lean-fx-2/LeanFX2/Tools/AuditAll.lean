@@ -1,32 +1,7 @@
 import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
-import LeanFX2.Term
-import LeanFX2.Foundation.RawPartialRename
-import LeanFX2.Term.Rename
-import LeanFX2.Term.Subst
-import LeanFX2.Term.Bridge
-import LeanFX2.Reduction.RawPar
-import LeanFX2.Reduction.RawParInversion
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.ConvBridge
-import LeanFX2.Confluence.RawCdLemma
-import LeanFX2.Confluence.RawDiamond
-import LeanFX2.Confluence.ConvBridge
-import LeanFX2.Confluence.ChurchRosser
-import LeanFX2.Bridge.PathToId
-import LeanFX2.Bridge.IdToPath
-import LeanFX2.Bridge.PathIdInverse
-import LeanFX2.Bridge.PathIdMeta
-import LeanFX2.Bridge.IdEqType
-import LeanFX2.Bridge.PathEqType
-import LeanFX2.Translation.CubicalToObservational
-import LeanFX2.Translation.ObservationalToCubical
-import LeanFX2.Translation.Inverse
-import LeanFX2.InternalLanguage.Coherence
-import LeanFX2.Conservativity.HOTTOverMLTT
-import LeanFX2.Conservativity.CubicalOverHOTT
-import LeanFX2.Conservativity.ModalOverObservational
+import LeanFX2
 import LeanFX2.Lean.Kernel.Name
 import LeanFX2.Lean.Kernel.Level
 import LeanFX2.Lean.Kernel.Expr
@@ -37,32 +12,6 @@ import LeanFX2.Lean.Kernel.HasType
 import LeanFX2.Lean.Kernel.Check
 import LeanFX2.Lean.Kernel.Soundness
 import LeanFX2.Lean.Kernel.Audit
-import LeanFX2.Reduction.Conv
-import LeanFX2.Reduction.CumulAllais
-import LeanFX2.Algo.WHNF
-import LeanFX2.Cubical.Path
-import LeanFX2.Cubical.PathLemmas
-import LeanFX2.Cubical.Transport
-import LeanFX2.HoTT.Equivalence
-import LeanFX2.HoTT.Funext
-import LeanFX2.HoTT.FunextFull
-import LeanFX2.HoTT.Path.Groupoid
-import LeanFX2.HoTT.Univalence
-import LeanFX2.HoTT.UnivalenceFull
-import LeanFX2.HoTT.UnivalenceTransport
-import LeanFX2.HoTT.HIT.Eliminator
-import LeanFX2.HoTT.HIT.PropTrunc
-import LeanFX2.HoTT.HIT.SetTrunc
-import LeanFX2.HoTT.HIT.Quot
-import LeanFX2.HoTT.HIT.S1
-import LeanFX2.HoTT.HIT.Suspension
-import LeanFX2.HoTT.HIT.Pushout
-import LeanFX2.HoTT.HIT.Coequalizer
-import LeanFX2.HoTT.HIT.Examples
-import LeanFX2.Graded.Rules
-import LeanFX2.Graded.Term
-import LeanFX2.Graded.AtkeyAttack
-import LeanFX2.Graded.Dimensions21
 import LeanFX2.FX1
 
 /-! # Tools/AuditAll — build-failing zero-axiom gate
@@ -895,6 +844,11 @@ namespace LeanFX2.Tools
 -- production modules and the public umbrella must not depend on them while
 -- Day 8 is retargeted to `LeanFX2.FX1.LeanKernel`.
 #assert_legacy_lean_kernel_scaffold_isolated
+
+-- Explicit host-boundary isolation.  Host shims such as `Surface.HostLex`
+-- may be imported by smoke/tool modules, but never by the public umbrella or
+-- regular production modules.
+#assert_host_boundary_isolated
 
 -- Global host-heavy import allowlist.  The only allowed direct host-heavy
 -- edge is the audit implementation importing Lean elaborator APIs.

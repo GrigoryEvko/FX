@@ -52,7 +52,7 @@ def isGeneratedOrToolingNameIncludingSmoke (candidateName : Name) : Bool :=
 namespace sweeps.  Each entry needs an in-file explanation naming the
 stdlib axioms it inherits and why the leak is confined. -/
 def isDocumentedAxiomBoundaryName (candidateName : Name) : Bool :=
-  candidateName == `LeanFX2.Surface.Lex.runFromString
+  candidateName == `LeanFX2.Surface.HostLex.runFromString
 
 /-- Only declarations with user-facing dependency bodies are audited by
 namespace sweeps.  Constructors and recursors are reached through their

@@ -74,16 +74,16 @@ example (t : RawTerm 0) : RawTerm.weakenIter t 0 = t := rfl
 example (t : RawTerm 0) :
     RawTerm.weakenIter t 2 = (RawTerm.weakenIter t 1).weaken := rfl
 
-/-! ## Section 4 — Env empty / defined -/
+/-! ## Section 4 — KernelEnv empty / defined -/
 
 /-- Empty env returns `none` for every lookup. -/
-example (qname : QualifiedName) : Env.empty.lookup qname = none := rfl
+example (qname : QualifiedName) : KernelEnv.empty.lookup qname = none := rfl
 
 /-- A trivial env that maps every name to a fixed `unit` def. -/
-def Env.allUnit : Env :=
+def KernelEnv.allUnit : KernelEnv :=
   { lookup := fun _ => some { rawTerm := RawTerm.unit } }
 
-example : Env.allUnit.lookup (QualifiedName.stdPath
+example : KernelEnv.allUnit.lookup (QualifiedName.stdPath
     UpperIdent.intMod LowerIdent.add) =
     some { rawTerm := RawTerm.unit } := rfl
 
@@ -110,7 +110,7 @@ def exprParen42 : Σ (raw : RawExpr 0), Expr raw :=
 
 The env-aware bridge desugars binops by looking up the
 operator's qualified name (`BinaryOp.toQualifiedName`) in the
-env and folding into nested applications.  With `Env.allUnit`
+env and folding into nested applications.  With `KernelEnv.allUnit`
 (where every name resolves to `RawTerm.unit`), a binop
 desugars to `app (app unit lhs) rhs` — verifying the FLOW
 even though the result isn't semantically meaningful.
@@ -127,6 +127,6 @@ def exprZeroPlusZero : Σ (raw : RawExpr 0), Expr raw :=
    Expr.binopExpr BinaryOp.plus zeroExpr zeroExpr (fun _ => ⟨rfl, rfl⟩) ⟨0⟩⟩
 
 #print axioms exprZeroPlusZero
-#print axioms Env.allUnit
+#print axioms KernelEnv.allUnit
 
 end LeanFX2.SmokePhase10BBridge

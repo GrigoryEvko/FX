@@ -5,7 +5,6 @@ import LeanFX2.Surface.TokenSchema
 
 ```lean
 def Lex.run (chars : List Char) : Except (Array LexError) (Array PositionedToken)
-def Lex.runFromString (source : String) : Except (Array LexError) (Array PositionedToken)
 ```
 
 Per `fx_lexer.md` §4-§5: UTF-8 source, ASCII identifiers, position
@@ -16,12 +15,12 @@ tracking, error recovery.
 The lexer now operates on `List Char` exclusively.  All internal
 helpers, `Lex.run`, and the audited public surface are zero-axiom.
 
-The single `String → List Char` conversion required to consume an
-in-memory `String` lives in `Lex.runFromString` and inherits the
-three Lean 4 v4.29.1 stdlib axioms (`propext`, `Classical.choice`,
-`Quot.sound`) from `String.toList`.  Per AXIOMS.md, that boundary
-shim is the only acceptable site — Pipeline composes from there
-and the leak does not propagate into Algo/* or Foundation/*.
+The `String → List Char` conversion required to consume an in-memory
+host `String` is intentionally not defined in this module.  It lives in
+`Surface/HostLex.lean`, outside the production umbrella, because Lean 4
+v4.29.1's `String.toList` inherits `propext`, `Classical.choice`, and
+`Quot.sound`.  Keeping that boundary out of `Surface/Lex.lean` lets the
+production `LeanFX2` import surface stay zero-axiom.
 
 ## What this implementation covers (Phase 10.A.1+)
 
@@ -62,8 +61,8 @@ plain structure constructor and is zero-axiom.
 ## Audit gates
 
 `#print axioms Lex.run` reports "does not depend on any axioms".
-`#print axioms Lex.runFromString` reports the three documented
-leaks — confined to that one boundary function.
+`#print axioms LeanFX2.Surface.HostLex.runFromString` reports the three
+documented leaks — confined to that host-boundary module.
 -/
 
 namespace LeanFX2.Surface
@@ -386,7 +385,8 @@ def charsByteLength : List Char → Nat
 
 /-- Lex an FX source.  Input is `List Char` (zero-axiom).  Returns
 `Except errors tokens` with a final `eof` sentinel token appended
-on success.  Use `Lex.runFromString` if you have a `String`. -/
+on success.  Use `HostLex.runFromString` if you deliberately cross the
+host `String` boundary. -/
 def Lex.run (chars : List Char) :
     Except (Array LexError) (Array PositionedToken) :=
   let fuel := chars.length + 1  -- +1 to handle empty input cleanly
@@ -398,15 +398,5 @@ def Lex.run (chars : List Char) :
     .ok withEof
   else
     .error errors
-
-/-- Boundary entry: consume an in-memory `String`.  This is the
-ONLY function in `Surface/Lex.lean` that depends on stdlib axioms
-(`propext`, `Classical.choice`, `Quot.sound` — all from
-`String.toList` which deserialises the underlying UTF-8
-byte array).  All callers should funnel through this single shim
-to keep the leak isolated. -/
-def Lex.runFromString (source : String) :
-    Except (Array LexError) (Array PositionedToken) :=
-  Lex.run source.toList
 
 end LeanFX2.Surface
