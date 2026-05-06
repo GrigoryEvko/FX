@@ -18,6 +18,8 @@ defined value because Lean enforces totality of the underlying
 * Equivalence-relation laws: refl, symm, trans
 * Computation laws: `head_unfold`, `tail_unfold` (latter as Bisim)
 * Productivity meta-theorem (every observation is a value)
+* Stream observation steps and the explicit productivity predicate live
+  in `Codata.Step` / `Codata.Productivity`.
 
 ## What defers (later phases)
 

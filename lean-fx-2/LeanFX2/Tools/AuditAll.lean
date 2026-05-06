@@ -675,6 +675,39 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.Examples.coequalizerUnit
 #assert_no_axioms LeanFX2.HoTT.HIT.Examples.coequalizerPointUnit
 
+-- Codata stream structural layer
+#assert_no_axioms LeanFX2.Codata.Stream
+#assert_no_axioms LeanFX2.Codata.Stream.head
+#assert_no_axioms LeanFX2.Codata.Stream.tail
+#assert_no_axioms LeanFX2.Codata.Stream.iterateState
+#assert_no_axioms LeanFX2.Codata.Stream.unfold
+#assert_no_axioms LeanFX2.Codata.Stream.Bisim
+#assert_no_axioms LeanFX2.Codata.Stream.bisim_refl
+#assert_no_axioms LeanFX2.Codata.Stream.bisim_symm
+#assert_no_axioms LeanFX2.Codata.Stream.bisim_trans
+#assert_no_axioms LeanFX2.Codata.Stream.head_unfold
+#assert_no_axioms LeanFX2.Codata.Stream.tail_unfold
+#assert_no_axioms LeanFX2.Codata.Stream.bisim_head
+#assert_no_axioms LeanFX2.Codata.Stream.bisim_tail
+#assert_no_axioms LeanFX2.Codata.Stream.productive
+#assert_no_axioms LeanFX2.Codata.constantZero
+#assert_no_axioms LeanFX2.Codata.naturals
+#assert_no_axioms LeanFX2.Codata.Stream.Destructor
+#assert_no_axioms LeanFX2.Codata.Stream.Destructor.Result
+#assert_no_axioms LeanFX2.Codata.Stream.Step
+#assert_no_axioms LeanFX2.Codata.Stream.Step.head_deterministic
+#assert_no_axioms LeanFX2.Codata.Stream.Step.tail_deterministic
+#assert_no_axioms LeanFX2.Codata.Stream.Step.head_respects_bisim
+#assert_no_axioms LeanFX2.Codata.Stream.Step.tail_respects_bisim
+#assert_no_axioms LeanFX2.Codata.Stream.Step.head_unfold
+#assert_no_axioms LeanFX2.Codata.Stream.Step.tail_unfold_bisim
+#assert_no_axioms LeanFX2.Codata.Stream.Productive
+#assert_no_axioms LeanFX2.Codata.Stream.productive_of_stream
+#assert_no_axioms LeanFX2.Codata.Stream.productive_head
+#assert_no_axioms LeanFX2.Codata.Stream.productive_tail
+#assert_no_axioms LeanFX2.Codata.Stream.productive_unfold
+#assert_no_axioms LeanFX2.Codata.Stream.productive_of_bisim
+
 -- Effect row structural layer
 #assert_no_axioms LeanFX2.Effects.EffectLabel
 #assert_no_axioms LeanFX2.Effects.EffectRow.Member
