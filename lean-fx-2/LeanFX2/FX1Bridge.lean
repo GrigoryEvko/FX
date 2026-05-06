@@ -4,6 +4,7 @@ import LeanFX2.FX1Bridge.Lambda
 import LeanFX2.FX1Bridge.Application
 import LeanFX2.FX1Bridge.Pi
 import LeanFX2.FX1Bridge.Bool
+import LeanFX2.FX1Bridge.Nat
 
 /-! # FX1Bridge
 

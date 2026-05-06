@@ -1249,6 +1249,29 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedBoolFalse_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolTrue
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolFalse
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroName
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroExpr
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.natEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_nat
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_natZero
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_nat_eq_natTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_natZero_eq_natZeroExpr
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroName_ne_natTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.natZeroName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.natEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.natTypeExpr_has_sort_in_natEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodedNatZero_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natZero
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to
