@@ -743,11 +743,11 @@ structure HeadStepResult
   targetExpr : Expr
   reductionStep : EnvStep environment sourceExpr targetExpr
 
-/-- Executable head-step search with proof payload.
+/-- Executable weak-head step search with proof payload.
 
-This is deliberately tiny: beta at the head of an application and delta for a
-transparent constant.  Congruence/recursive closure belongs to WHNF and
-conversion, which can be layered on this proof-carrying primitive. -/
+This reduces transparent constants, beta-redexes, and the function position of
+applications.  It deliberately does not reduce lambda bodies, Pi bodies, or
+application arguments; those belong to stronger conversion routines. -/
 def headStepResult? (environment : Environment) :
     (sourceExpr : Expr) -> Option (HeadStepResult environment sourceExpr)
   | Expr.const constName =>
@@ -764,15 +764,18 @@ def headStepResult? (environment : Environment) :
         targetExpr := Expr.subst0 argumentExpr bodyExpr
         reductionStep := EnvStep.beta domainExpr bodyExpr argumentExpr
       }
+  | Expr.app sourceFunction argumentExpr =>
+      match Expr.headStepResult? environment sourceFunction with
+      | some functionStep =>
+          some {
+            targetExpr := Expr.app functionStep.targetExpr argumentExpr
+            reductionStep := EnvStep.appFunction functionStep.reductionStep
+          }
+      | none => none
   | Expr.bvar _ => none
   | Expr.sort _ => none
   | Expr.pi _ _ => none
   | Expr.lam _ _ => none
-  | Expr.app (Expr.bvar _) _ => none
-  | Expr.app (Expr.sort _) _ => none
-  | Expr.app (Expr.const _) _ => none
-  | Expr.app (Expr.pi _ _) _ => none
-  | Expr.app (Expr.app _ _) _ => none
 
 /-- Project a proof-carrying head-step result to the executable target. -/
 def headStepFromResult?
@@ -821,6 +824,98 @@ def headStep?_sound
               h))
           headStepSucceeded
       nomatch noneEqualsSome
+
+/-- A fuel-bounded WHNF result paired with the reduction sequence from the
+source expression to that result. -/
+structure WhnfResult
+    (environment : Environment) (sourceExpr : Expr) : Type where
+  targetExpr : Expr
+  reductions : EnvStepStar environment sourceExpr targetExpr
+
+/-- Fuel-bounded weak-head normalization with its proof payload.
+
+Fuel exhaustion is conservative: it returns the current expression with a
+reflexive proof.  Callers that need more unfolding can provide more fuel; the
+soundness theorem below holds for every budget. -/
+def whnfResultWithFuel (environment : Environment) :
+    Nat -> (sourceExpr : Expr) -> WhnfResult environment sourceExpr
+  | Nat.zero, sourceExpr => {
+      targetExpr := sourceExpr
+      reductions := EnvStepStar.refl sourceExpr
+    }
+  | Nat.succ remainingFuel, sourceExpr =>
+      match Expr.headStepResult? environment sourceExpr with
+      | some headStepResult =>
+          let tailResult :=
+            Expr.whnfResultWithFuel
+              environment
+              remainingFuel
+              headStepResult.targetExpr
+          {
+            targetExpr := tailResult.targetExpr
+            reductions :=
+              EnvStepStar.step
+                headStepResult.reductionStep
+                tailResult.reductions
+          }
+      | none => {
+          targetExpr := sourceExpr
+          reductions := EnvStepStar.refl sourceExpr
+        }
+
+/-- Project a proof-carrying WHNF result to the executable expression. -/
+def whnfFromResult
+    {environment : Environment} {sourceExpr : Expr} :
+    WhnfResult environment sourceExpr -> Expr
+  | whnfResult => whnfResult.targetExpr
+
+/-- Runtime-facing fuel-bounded weak-head normalizer. -/
+def whnfWithFuel
+    (environment : Environment) (fuel : Nat) (sourceExpr : Expr) : Expr :=
+  Expr.whnfFromResult
+    (Expr.whnfResultWithFuel environment fuel sourceExpr)
+
+/-- FX1-local default fuel for weak-head normalization.
+
+The counter follows only the application spine because WHNF only reduces the
+head.  It avoids `Nat.add`, keeping the default executable path free of host
+extern arithmetic. -/
+def weakHeadFuel : Expr -> Nat
+  | Expr.app functionExpr _ => Nat.succ (Expr.weakHeadFuel functionExpr)
+  | Expr.bvar _ => Nat.succ Nat.zero
+  | Expr.sort _ => Nat.succ Nat.zero
+  | Expr.const _ => Nat.succ Nat.zero
+  | Expr.pi _ _ => Nat.succ Nat.zero
+  | Expr.lam _ _ => Nat.succ Nat.zero
+
+/-- Default weak-head normalizer budgeted by the source application spine.
+
+This is intentionally bounded and extern-clean.  `whnfWithFuel` remains the
+explicit API when callers need a larger unfolding budget, for example across a
+long transparent-definition chain. -/
+def whnf (environment : Environment) (sourceExpr : Expr) : Expr :=
+  Expr.whnfWithFuel environment (Expr.weakHeadFuel sourceExpr) sourceExpr
+
+/-- Soundness of fuel-bounded weak-head normalization. -/
+theorem whnfWithFuel_sound
+    (environment : Environment) (fuel : Nat) (sourceExpr : Expr) :
+    EnvStepStar
+      environment
+      sourceExpr
+      (Expr.whnfWithFuel environment fuel sourceExpr) :=
+  (Expr.whnfResultWithFuel environment fuel sourceExpr).reductions
+
+/-- Soundness of the default weak-head normalizer. -/
+theorem whnf_sound
+    (environment : Environment) (sourceExpr : Expr) :
+    EnvStepStar
+      environment
+      sourceExpr
+      (Expr.whnf environment sourceExpr) :=
+  Expr.whnfWithFuel_sound
+    environment
+    (Expr.weakHeadFuel sourceExpr)
+    sourceExpr
 
 /-- A successful checker inference paired with the relational typing
 derivation it justifies. -/

@@ -1072,6 +1072,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.headStepFromResult?
 #assert_no_axioms LeanFX2.FX1.Expr.headStep?
 #assert_no_axioms LeanFX2.FX1.Expr.headStep?_sound
+#assert_no_axioms LeanFX2.FX1.Expr.WhnfResult
+#assert_no_axioms LeanFX2.FX1.Expr.WhnfResult.targetExpr
+#assert_no_axioms LeanFX2.FX1.Expr.WhnfResult.reductions
+#assert_no_axioms LeanFX2.FX1.Expr.whnfResultWithFuel
+#assert_no_axioms LeanFX2.FX1.Expr.whnfFromResult
+#assert_no_axioms LeanFX2.FX1.Expr.whnfWithFuel
+#assert_no_axioms LeanFX2.FX1.Expr.weakHeadFuel
+#assert_no_axioms LeanFX2.FX1.Expr.whnf
+#assert_no_axioms LeanFX2.FX1.Expr.whnfWithFuel_sound
+#assert_no_axioms LeanFX2.FX1.Expr.whnf_sound
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeExpr
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeDerivation
@@ -1122,6 +1132,10 @@ namespace LeanFX2.Tools
 #assert_no_extern_dependencies LeanFX2.FX1.Context.lookupTypeInEntries?
 #assert_no_extern_dependencies LeanFX2.FX1.Context.lookupType?
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.headStep?
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.whnfResultWithFuel
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.whnfWithFuel
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.weakHeadFuel
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.whnf
 #assert_no_extern_dependencies LeanFX2.FX1.Level.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkBoolFromResult?
