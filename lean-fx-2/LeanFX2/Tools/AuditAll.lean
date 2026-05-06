@@ -1296,6 +1296,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedNatSuccZero_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natZero
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natSuccZero
+#assert_no_axioms LeanFX2.FX1Bridge.encodeUniverseLevel
+#assert_no_axioms LeanFX2.FX1Bridge.universeCodeSameLevelRaw
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_universeCodeSameLevel
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_universeSameLevel
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_universeCodeSameLevel_eq_sort
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_universeSameLevel_eq_successor_sort
+#assert_no_axioms LeanFX2.FX1Bridge.universeCodeSameLevelTerm
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUniverseCodeSameLevel_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_universeCodeSameLevel
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to
