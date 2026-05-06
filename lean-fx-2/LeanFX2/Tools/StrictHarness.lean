@@ -845,11 +845,11 @@ def isAllowedFX1LeanKernelExactDirectImport
   else if sourceModuleName == `LeanFX2.FX1.LeanKernel.HasType then
     importedModuleName == `LeanFX2.FX1.LeanKernel.Inductive
   else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Check then
-    false
+    importedModuleName == `LeanFX2.FX1.LeanKernel.HasType
   else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Soundness then
-    false
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Check
   else if sourceModuleName == `LeanFX2.FX1.LeanKernel.Audit then
-    false
+    importedModuleName == `LeanFX2.FX1.LeanKernel.Soundness
   else
     false
 

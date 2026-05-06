@@ -1,7 +1,4 @@
 prelude
-import LeanFX2.FX1.LeanKernel.HasType
-import LeanFX2.FX1.LeanKernel.Check
-import LeanFX2.FX1.LeanKernel.Soundness
 import LeanFX2.FX1.LeanKernel.Audit
 
 /-! # FX1/LeanKernel
