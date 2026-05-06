@@ -47,9 +47,8 @@ on its data.  All theorems propext-free.
 * `SessionProtocol payloadType` inductive (5 ctors)
 * `SessionProtocol.depth` — structural recursion measuring
   protocol nesting depth
-* `SessionProtocol.isFinite` — Decidable predicate (every finite
-  protocol is finite — trivially `True`; included for
-  completeness with v1.1's recursive protocols)
+* `SessionProtocol.isFinite` — Decidable structural predicate
+  certifying that every continuation branch is finite
 * Smoke samples: a request-response protocol, a branching
   protocol
 
@@ -109,16 +108,58 @@ def depth : SessionProtocol PayloadType → Nat
   | .selectProtocol leftOption rightOption =>
       1 + Nat.max leftOption.depth rightOption.depth
 
-/-- Whether the protocol terminates — for v1.0's finite
-protocol tree, always `True`.  Included as a placeholder for
-v1.1's recursive protocols where termination becomes
-non-trivial (productivity check). -/
-def isFinite (_someProtocol : SessionProtocol PayloadType) : Prop := True
+/-- Whether every protocol continuation is finite.  For v1.0's finite
+protocol tree this is always provable, but the definition follows the
+tree instead of collapsing to `True`; this keeps the interface ready for
+recursive protocol nodes without teaching downstream code a vacuous
+predicate. -/
+def isFinite : SessionProtocol PayloadType → Prop
+  | .endProtocol => True
+  | .sendStep _ continuation => continuation.isFinite
+  | .receiveStep _ continuation => continuation.isFinite
+  | .branchProtocol leftOption rightOption =>
+      leftOption.isFinite ∧ rightOption.isFinite
+  | .selectProtocol leftOption rightOption =>
+      leftOption.isFinite ∧ rightOption.isFinite
 
-/-- Decidable instance for finiteness — trivially `isTrue`. -/
+/-- Every v1.0 session protocol is finite by structural induction. -/
+theorem isFinite_of_tree (someProtocol : SessionProtocol PayloadType) :
+    someProtocol.isFinite := by
+  induction someProtocol with
+  | endProtocol => exact trivial
+  | sendStep _ _ continuationIH => exact continuationIH
+  | receiveStep _ _ continuationIH => exact continuationIH
+  | branchProtocol _ _ leftIH rightIH => exact ⟨leftIH, rightIH⟩
+  | selectProtocol _ _ leftIH rightIH => exact ⟨leftIH, rightIH⟩
+
+/-- Structural decidability for protocol finiteness. -/
+def isFiniteDecidable (someProtocol : SessionProtocol PayloadType) :
+    Decidable (someProtocol.isFinite) :=
+  match someProtocol with
+  | .endProtocol => .isTrue trivial
+  | .sendStep _ continuation => isFiniteDecidable continuation
+  | .receiveStep _ continuation => isFiniteDecidable continuation
+  | .branchProtocol leftOption rightOption =>
+      match isFiniteDecidable leftOption, isFiniteDecidable rightOption with
+      | .isTrue leftProof, .isTrue rightProof =>
+          .isTrue ⟨leftProof, rightProof⟩
+      | .isFalse leftRefutation, _ =>
+          .isFalse (fun bothFinite => leftRefutation bothFinite.left)
+      | _, .isFalse rightRefutation =>
+          .isFalse (fun bothFinite => rightRefutation bothFinite.right)
+  | .selectProtocol leftOption rightOption =>
+      match isFiniteDecidable leftOption, isFiniteDecidable rightOption with
+      | .isTrue leftProof, .isTrue rightProof =>
+          .isTrue ⟨leftProof, rightProof⟩
+      | .isFalse leftRefutation, _ =>
+          .isFalse (fun bothFinite => leftRefutation bothFinite.left)
+      | _, .isFalse rightRefutation =>
+          .isFalse (fun bothFinite => rightRefutation bothFinite.right)
+
+/-- Decidable instance for structural finiteness. -/
 instance isFinite.decidable (someProtocol : SessionProtocol PayloadType) :
     Decidable (someProtocol.isFinite) :=
-  .isTrue trivial
+  isFiniteDecidable someProtocol
 
 /-! ## Smoke samples — concrete protocols -/
 
