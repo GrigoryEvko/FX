@@ -55,6 +55,7 @@ import LeanFX2.Effects.Step
 import LeanFX2.Sessions.Foundation
 import LeanFX2.Sessions.Duality
 import LeanFX2.Sessions.Step
+import LeanFX2.Sessions.Global
 import LeanFX2.Codata.Foundation
 import LeanFX2.Codata.Productivity
 import LeanFX2.Codata.Step

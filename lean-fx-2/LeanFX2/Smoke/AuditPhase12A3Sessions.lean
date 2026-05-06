@@ -1,6 +1,7 @@
 import LeanFX2.Sessions.Foundation
 import LeanFX2.Sessions.Duality
 import LeanFX2.Sessions.Step
+import LeanFX2.Sessions.Global
 
 #print axioms LeanFX2.SessionProtocol
 #print axioms LeanFX2.SessionProtocol.depth
@@ -22,3 +23,9 @@ import LeanFX2.Sessions.Step
 #print axioms LeanFX2.SessionProtocol.Step.target_deterministic
 #print axioms LeanFX2.SessionProtocol.Step.of_dual
 #print axioms LeanFX2.SessionProtocol.Step.dual_iff
+#print axioms LeanFX2.SessionGlobal
+#print axioms LeanFX2.SessionGlobal.isWellFormed
+#print axioms LeanFX2.SessionGlobal.transmit_self_not_isWellFormed
+#print axioms LeanFX2.SessionGlobal.choice_self_not_isWellFormed
+#print axioms LeanFX2.SessionGlobal.Projects
+#print axioms LeanFX2.SessionGlobal.Projects.local_isFinite

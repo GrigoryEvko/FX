@@ -765,6 +765,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.SessionProtocol.Step.target_deterministic
 #assert_no_axioms LeanFX2.SessionProtocol.Step.of_dual
 #assert_no_axioms LeanFX2.SessionProtocol.Step.dual_iff
+#assert_no_axioms LeanFX2.SessionGlobal
+#assert_no_axioms LeanFX2.SessionGlobal.isWellFormed
+#assert_no_axioms LeanFX2.SessionGlobal.transmit_self_not_isWellFormed
+#assert_no_axioms LeanFX2.SessionGlobal.choice_self_not_isWellFormed
+#assert_no_axioms LeanFX2.SessionGlobal.Projects
+#assert_no_axioms LeanFX2.SessionGlobal.Projects.local_isFinite
 
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono
