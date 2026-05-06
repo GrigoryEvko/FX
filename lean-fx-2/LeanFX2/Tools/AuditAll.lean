@@ -263,6 +263,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.empty
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.extend
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Context.weakenEntries
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Context.weaken
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Context.extendForBinder
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.HasTypeAt
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.HasTypeAt.newest
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.HasTypeAt.older
@@ -271,6 +274,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.sort
 #assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.bvar
 #assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.const
+#assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.forallE
+#assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.lam
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.ConstantLookupResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.findConstantResultInList?
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Environment.findConstantResult?

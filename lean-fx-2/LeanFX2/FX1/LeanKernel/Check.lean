@@ -7,9 +7,9 @@ First executable Lean-kernel checker fragment.
 ## Deliverable
 
 This module implements the proof-carrying checker slice for sorts, bound
-variables, and constants.  Constructors for functions, lets, projections,
-metadata-erasure, inductives, and quotient primitives remain later
-LeanKernel-FX1 work.
+variables, constants, forall formation, and lambda introduction.  Application,
+lets, projections, metadata-erasure, inductives, and quotient primitives remain
+later LeanKernel-FX1 work.
 -/
 
 namespace LeanFX2
@@ -162,8 +162,153 @@ def inferResult? {level scope : Nat}
                 lookupResult.constantMember
           }
   | Expr.app _functionExpr _argumentExpr => Option.none
-  | Expr.lam _binderName _domainExpr _bodyExpr _binderInfo => Option.none
-  | Expr.forallE _binderName _domainExpr _bodyExpr _binderInfo => Option.none
+  | Expr.lam binderName domainExpr bodyExpr binderInfo =>
+      match inferResult? environment context domainExpr with
+      | Option.none => Option.none
+      | Option.some {
+          typeExpr := Expr.sort _domainLevel
+          typeDerivation := domainTypeDerivation
+        } =>
+          match inferResult?
+              environment
+              (Context.extendForBinder context domainExpr)
+              bodyExpr with
+          | Option.none => Option.none
+          | Option.some bodyResult =>
+              Option.some {
+                typeExpr :=
+                  Expr.forallE
+                    binderName
+                    domainExpr
+                    bodyResult.typeExpr
+                    binderInfo
+                typeDerivation :=
+                  HasType.lam
+                    domainTypeDerivation
+                    bodyResult.typeDerivation
+              }
+      | Option.some { typeExpr := Expr.bvar _position, .. } => Option.none
+      | Option.some { typeExpr := Expr.fvar _fvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.mvar _mvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.const _constName _levels, .. } =>
+          Option.none
+      | Option.some { typeExpr := Expr.app _functionExpr _argumentExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.lam _binderName _domainExpr _bodyExpr _binderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr :=
+            Expr.forallE _binderName _domainExpr _bodyExpr _binderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.letE _declName _typeExpr _valueExpr _bodyExpr _nondep
+          ..
+        } =>
+          Option.none
+      | Option.some { typeExpr := Expr.lit _literal, .. } => Option.none
+      | Option.some { typeExpr := Expr.mdata _metadata _bodyExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.proj _structName _fieldIndex _targetExpr
+          ..
+        } =>
+          Option.none
+  | Expr.forallE _binderName domainExpr bodyExpr _binderInfo =>
+      match inferResult? environment context domainExpr with
+      | Option.none => Option.none
+      | Option.some {
+          typeExpr := Expr.sort domainLevel
+          typeDerivation := domainTypeDerivation
+        } =>
+          match inferResult?
+              environment
+              (Context.extendForBinder context domainExpr)
+              bodyExpr with
+          | Option.none => Option.none
+          | Option.some {
+              typeExpr := Expr.sort bodyLevel
+              typeDerivation := bodyTypeDerivation
+            } =>
+              Option.some {
+                typeExpr :=
+                  Expr.sort (Level.imax domainLevel bodyLevel)
+                typeDerivation :=
+                  HasType.forallE
+                    domainTypeDerivation
+                    bodyTypeDerivation
+              }
+          | Option.some { typeExpr := Expr.bvar _position, .. } => Option.none
+          | Option.some { typeExpr := Expr.fvar _fvarId, .. } => Option.none
+          | Option.some { typeExpr := Expr.mvar _mvarId, .. } => Option.none
+          | Option.some { typeExpr := Expr.const _constName _levels, .. } =>
+              Option.none
+          | Option.some {
+              typeExpr := Expr.app _functionExpr _argumentExpr
+              ..
+            } =>
+              Option.none
+          | Option.some {
+              typeExpr :=
+                Expr.lam _binderName _domainExpr _bodyExpr _binderInfo
+              ..
+            } =>
+              Option.none
+          | Option.some {
+              typeExpr :=
+                Expr.forallE _binderName _domainExpr _bodyExpr _binderInfo
+              ..
+            } =>
+              Option.none
+          | Option.some {
+              typeExpr :=
+                Expr.letE _declName _typeExpr _valueExpr _bodyExpr _nondep
+              ..
+            } =>
+              Option.none
+          | Option.some { typeExpr := Expr.lit _literal, .. } => Option.none
+          | Option.some { typeExpr := Expr.mdata _metadata _bodyExpr, .. } =>
+              Option.none
+          | Option.some {
+              typeExpr := Expr.proj _structName _fieldIndex _targetExpr
+              ..
+            } =>
+              Option.none
+      | Option.some { typeExpr := Expr.bvar _position, .. } => Option.none
+      | Option.some { typeExpr := Expr.fvar _fvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.mvar _mvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.const _constName _levels, .. } =>
+          Option.none
+      | Option.some { typeExpr := Expr.app _functionExpr _argumentExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.lam _binderName _domainExpr _bodyExpr _binderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr :=
+            Expr.forallE _binderName _domainExpr _bodyExpr _binderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.letE _declName _typeExpr _valueExpr _bodyExpr _nondep
+          ..
+        } =>
+          Option.none
+      | Option.some { typeExpr := Expr.lit _literal, .. } => Option.none
+      | Option.some { typeExpr := Expr.mdata _metadata _bodyExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.proj _structName _fieldIndex _targetExpr
+          ..
+        } =>
+          Option.none
   | Expr.letE _declName _typeExpr _valueExpr _bodyExpr _nondep => Option.none
   | Expr.lit _literal => Option.none
   | Expr.mdata _metadata _bodyExpr => Option.none

@@ -7,10 +7,11 @@ Day 0 scaffold for the Lean kernel typing relation.
 
 ## Deliverable
 
-This module defines the first encoded `HasType` judgment for Lean expressions:
-sorts, bound variables, and constants.  It is deliberately a fragment.  Lean
-lambda, forall, let, inductive, projection, literal, metavariable, and
-free-variable typing belong to later LeanKernel-FX1 slices.
+This module defines the encoded `HasType` judgment for the current LeanKernel
+checker fragment.  It covers sorts, bound variables, constants, forall
+formation, and lambda introduction.  Lean application, let, inductive,
+projection, literal, metavariable, and free-variable typing belong to later
+LeanKernel-FX1 slices.
 -/
 
 namespace LeanFX2
@@ -88,6 +89,28 @@ def extend {level scope : Nat}
     (typeExpr : Expr level scope) : Context level scope where
   entries := List.cons typeExpr context.entries
 
+/-- Weaken a list of context entries under one fresh newest binder. -/
+def weakenEntries {level scope : Nat} :
+    List (Expr level scope) -> List (Expr level (Nat.succ scope))
+  | List.nil => List.nil
+  | List.cons typeExpr remainingEntries =>
+      List.cons (Expr.weaken typeExpr) (weakenEntries remainingEntries)
+
+/-- Weaken every type in a local context under one fresh newest binder. -/
+def weaken {level scope : Nat}
+    (context : Context level scope) : Context level (Nat.succ scope) where
+  entries := weakenEntries context.entries
+
+/-- Extend a context for checking the body under a new Lean binder.
+
+The new binder's type and all older entries are weakened into the body scope,
+then the new binder is placed at de Bruijn index zero.
+-/
+def extendForBinder {level scope : Nat}
+    (context : Context level scope)
+    (typeExpr : Expr level scope) : Context level (Nat.succ scope) :=
+  extend (weaken context) (Expr.weaken typeExpr)
+
 /-- Relational lookup for bound-variable types. -/
 inductive HasTypeAt {level scope : Nat} :
     Context level scope -> Nat -> Expr level scope -> Prop
@@ -128,13 +151,21 @@ end HasTypeAt
 end Context
 
 /-- Encoded Lean-kernel typing judgment for the current closed/checkable
-fragment. -/
-inductive HasType {level scope : Nat}
-    (environment : Environment level)
-    (context : Context level scope) :
+fragment.
+
+The local scope is an index, not a fixed parameter, so binder rules can recurse
+under the one-binder body scope without leaving the intrinsic judgment.
+-/
+inductive HasType {level : Nat} :
+    {scope : Nat} ->
+    (environment : Environment level) ->
+    (context : Context level scope) ->
     Expr level scope -> Expr level scope -> Prop
   /-- Lean kernel sorts are typed by their successor sort. -/
   | sort
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
       (sortLevel : Level) :
       HasType
         environment
@@ -143,6 +174,9 @@ inductive HasType {level scope : Nat}
         (Expr.sort (Level.succ sortLevel))
   /-- Bound variables are typed by local-context lookup. -/
   | bvar
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
       {position : Nat}
       {typeExpr : Expr level scope}
       (typeAtPosition : Context.HasTypeAt context position typeExpr) :
@@ -154,6 +188,9 @@ inductive HasType {level scope : Nat}
   scope; a later environment well-formedness pass must prove those payloads are
   actually closed and well typed. -/
   | const
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
       {constName : Name}
       {levels : List Level}
       {constantSpec : ConstantSpec level}
@@ -164,6 +201,52 @@ inductive HasType {level scope : Nat}
         context
         (Expr.const constName levels)
         (Expr.recontextualize constantSpec.typeExpr)
+  /-- Lean `forallE` formation. -/
+  | forallE
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      {binderName : Name}
+      {domainExpr : Expr level scope}
+      {bodyExpr : Expr level (Nat.succ scope)}
+      {binderInfo : BinderInfo}
+      {domainLevel bodyLevel : Level}
+      (domainHasSort :
+        HasType environment context domainExpr (Expr.sort domainLevel))
+      (bodyHasSort :
+        HasType
+          environment
+          (Context.extendForBinder context domainExpr)
+          bodyExpr
+          (Expr.sort bodyLevel)) :
+      HasType
+        environment
+        context
+        (Expr.forallE binderName domainExpr bodyExpr binderInfo)
+        (Expr.sort (Level.imax domainLevel bodyLevel))
+  /-- Lean lambda introduction against the inferred `forallE` type. -/
+  | lam
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      {binderName : Name}
+      {domainExpr : Expr level scope}
+      {bodyExpr bodyTypeExpr : Expr level (Nat.succ scope)}
+      {binderInfo : BinderInfo}
+      {domainLevel : Level}
+      (domainHasSort :
+        HasType environment context domainExpr (Expr.sort domainLevel))
+      (bodyHasType :
+        HasType
+          environment
+          (Context.extendForBinder context domainExpr)
+          bodyExpr
+          bodyTypeExpr) :
+      HasType
+        environment
+        context
+        (Expr.lam binderName domainExpr bodyExpr binderInfo)
+        (Expr.forallE binderName domainExpr bodyTypeExpr binderInfo)
 
 end FX1.LeanKernel
 end LeanFX2
