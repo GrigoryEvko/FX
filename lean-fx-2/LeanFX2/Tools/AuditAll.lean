@@ -808,13 +808,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Context.WellFormed
 #assert_no_axioms LeanFX2.FX1.Context.WellFormed.empty
 #assert_no_axioms LeanFX2.FX1.Context.WellFormed.extend
+#assert_no_axioms LeanFX2.FX1.Context.WellFormed.weaken_environment
 #assert_no_axioms LeanFX2.FX1.Environment.NameFresh
 #assert_no_axioms LeanFX2.FX1.Environment.NameFresh.empty
 #assert_no_axioms LeanFX2.FX1.Environment.NameFresh.older
+#assert_no_axioms LeanFX2.FX1.Environment.NameFresh.weaken
 #assert_no_axioms LeanFX2.FX1.Declaration.WellTyped
 #assert_no_axioms LeanFX2.FX1.Declaration.WellTyped.axiomDecl
 #assert_no_axioms LeanFX2.FX1.Declaration.WellTyped.defDecl
 #assert_no_axioms LeanFX2.FX1.Declaration.WellTyped.theoremDecl
+#assert_no_axioms LeanFX2.FX1.Declaration.WellTyped.weaken_environment
 #assert_no_axioms LeanFX2.FX1.Declaration.IsReleaseDeclaration
 #assert_no_axioms LeanFX2.FX1.Declaration.IsReleaseDeclaration.defDecl
 #assert_no_axioms LeanFX2.FX1.Declaration.IsReleaseDeclaration.theoremDecl

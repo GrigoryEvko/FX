@@ -35,6 +35,25 @@ inductive WellFormed (environment : Environment) : Context -> Prop
         HasType environment context typeExpr (Expr.sort sortLevel)) :
       WellFormed environment (Context.extend context typeExpr)
 
+namespace WellFormed
+
+/-- Context well-formedness is stable when the environment is extended by one
+newer declaration. -/
+theorem weaken_environment
+    {environment : Environment}
+    {context : Context}
+    (newDeclaration : Declaration)
+    (contextWellFormed : WellFormed environment context) :
+    WellFormed (Environment.extend environment newDeclaration) context :=
+  match contextWellFormed with
+  | WellFormed.empty => WellFormed.empty
+  | WellFormed.extend precedingContextWellFormed typeHasSort =>
+      WellFormed.extend
+        (weaken_environment newDeclaration precedingContextWellFormed)
+        (HasType.weaken_environment newDeclaration typeHasSort)
+
+end WellFormed
+
 end Context
 
 namespace Environment
@@ -57,6 +76,24 @@ inductive NameFresh : Environment -> Name -> Prop
       NameFresh
         (Environment.extend environment newDeclaration)
         queryName
+
+namespace NameFresh
+
+/-- Name freshness is stable under extension by a declaration with a distinct
+name. -/
+theorem weaken
+    {environment : Environment}
+    {queryName : Name}
+    (newDeclaration : Declaration)
+    (olderFresh : NameFresh environment queryName)
+    (namesDistinct :
+      Not (Eq queryName (Declaration.name newDeclaration))) :
+    NameFresh
+      (Environment.extend environment newDeclaration)
+      queryName :=
+  NameFresh.older newDeclaration olderFresh namesDistinct
+
+end NameFresh
 
 end Environment
 
@@ -96,6 +133,33 @@ inductive WellTyped (environment : Environment) : Declaration -> Prop
         HasType environment Context.empty proofExpr typeExpr) :
       WellTyped environment
         (Declaration.theoremDecl declName typeExpr proofExpr)
+
+namespace WellTyped
+
+/-- Declaration well-typedness is stable when the preceding environment is
+extended by one newer declaration. -/
+theorem weaken_environment
+    {environment : Environment}
+    {declaration : Declaration}
+    (newDeclaration : Declaration)
+    (declarationWellTyped : WellTyped environment declaration) :
+    WellTyped
+      (Environment.extend environment newDeclaration)
+      declaration :=
+  match declarationWellTyped with
+  | WellTyped.axiomDecl typeHasSort =>
+      WellTyped.axiomDecl
+        (HasType.weaken_environment newDeclaration typeHasSort)
+  | WellTyped.defDecl typeHasSort valueHasType =>
+      WellTyped.defDecl
+        (HasType.weaken_environment newDeclaration typeHasSort)
+        (HasType.weaken_environment newDeclaration valueHasType)
+  | WellTyped.theoremDecl typeHasSort proofHasType =>
+      WellTyped.theoremDecl
+        (HasType.weaken_environment newDeclaration typeHasSort)
+        (HasType.weaken_environment newDeclaration proofHasType)
+
+end WellTyped
 
 /-- Declarations admitted by a release-root environment.  Axiom placeholders are
 intentionally absent. -/
