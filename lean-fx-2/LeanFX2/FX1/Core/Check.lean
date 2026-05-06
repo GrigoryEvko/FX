@@ -416,6 +416,14 @@ def checkBoolFromResult?
       Expr.checkerBeq inferenceResult.typeExpr expectedTypeExpr
   | none => false
 
+/-- Project a runtime-facing optional inferred type to the executable check
+result against an expected type. -/
+def checkBoolFromCoreType? (expectedTypeExpr : Expr) :
+    Option Expr -> Bool
+  | some inferredTypeExpr =>
+      Expr.checkerBeq inferredTypeExpr expectedTypeExpr
+  | none => false
+
 /-- Executable inference without proof payloads.
 
 This is the runtime-facing checker path: it is intentionally separate from
@@ -482,13 +490,135 @@ def inferCore? (environment : Environment) (context : Context) :
       | some (Expr.app _ _) => none
       | none => none
 
+/-- Direct soundness for runtime-facing variable inference. -/
+theorem inferCore_bvar_sound
+    {environment : Environment}
+    {context : Context}
+    {index : Nat}
+    {inferredTypeExpr : Expr}
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore? environment context (Expr.bvar index))
+        (some inferredTypeExpr)) :
+    HasType environment context (Expr.bvar index) inferredTypeExpr :=
+  HasType.var
+    (Context.lookupType_sound inferenceSucceeded)
+
+/-- Direct soundness for runtime-facing sort inference. -/
+theorem inferCore_sort_sound
+    {environment : Environment}
+    {context : Context}
+    {sortLevel : Level}
+    {inferredTypeExpr : Expr}
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore? environment context (Expr.sort sortLevel))
+        (some inferredTypeExpr)) :
+    HasType environment context (Expr.sort sortLevel) inferredTypeExpr :=
+  let typeEquality :=
+    CheckOption.some_injective inferenceSucceeded
+  match typeEquality with
+  | Eq.refl _ => HasType.sort context sortLevel
+
 /-- Executable checking against an expected type without proof payloads. -/
 def checkCore? (environment : Environment) (context : Context)
     (expression expectedTypeExpr : Expr) : Bool :=
-  match Expr.inferCore? environment context expression with
-  | some inferredTypeExpr =>
-      Expr.checkerBeq inferredTypeExpr expectedTypeExpr
-  | none => false
+  Expr.checkBoolFromCoreType?
+    expectedTypeExpr
+    (Expr.inferCore? environment context expression)
+
+/-- Runtime-facing checking is sound whenever the accepted runtime-facing
+inference result is already known sound. -/
+theorem checkCore_of_inferCore_sound
+    {environment : Environment}
+    {context : Context}
+    {expression inferredTypeExpr expectedTypeExpr : Expr}
+    (inferenceSucceeded :
+      Eq
+        (Expr.inferCore? environment context expression)
+        (some inferredTypeExpr))
+    (inferredTypeDerivation :
+      HasType environment context expression inferredTypeExpr)
+    (checkingSucceeded :
+      Eq
+        (Expr.checkCore?
+          environment
+          context
+          expression
+          expectedTypeExpr)
+        true) :
+    HasType environment context expression expectedTypeExpr :=
+  let projectedEquality :
+      Eq (Expr.checkerBeq inferredTypeExpr expectedTypeExpr) true :=
+    Eq.trans
+      (Eq.symm
+        (congrArg
+          (Expr.checkBoolFromCoreType? expectedTypeExpr)
+          inferenceSucceeded))
+      checkingSucceeded
+  let inferredTypeEquality :=
+    Expr.checkerBeq_sound
+      inferredTypeExpr
+      expectedTypeExpr
+      projectedEquality
+  match inferredTypeEquality with
+  | Eq.refl _ => inferredTypeDerivation
+
+/-- Direct soundness for runtime-facing variable checking. -/
+theorem checkCore_bvar_sound
+    {environment : Environment}
+    {context : Context}
+    {index : Nat}
+    {expectedTypeExpr : Expr}
+    (checkingSucceeded :
+      Eq
+        (Expr.checkCore?
+          environment
+          context
+          (Expr.bvar index)
+          expectedTypeExpr)
+        true) :
+    HasType environment context (Expr.bvar index) expectedTypeExpr :=
+  match lookupSucceeded : Context.lookupType? context index with
+  | some _ =>
+      Expr.checkCore_of_inferCore_sound
+        lookupSucceeded
+        (Expr.inferCore_bvar_sound lookupSucceeded)
+        checkingSucceeded
+  | none =>
+      let falseEqualsTrue : Eq false true :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Expr.checkBoolFromCoreType? expectedTypeExpr)
+              lookupSucceeded))
+          checkingSucceeded
+      nomatch falseEqualsTrue
+
+/-- Direct soundness for runtime-facing sort checking. -/
+theorem checkCore_sort_sound
+    {environment : Environment}
+    {context : Context}
+    {sortLevel : Level}
+    {expectedTypeExpr : Expr}
+    (checkingSucceeded :
+      Eq
+        (Expr.checkCore?
+          environment
+          context
+          (Expr.sort sortLevel)
+          expectedTypeExpr)
+        true) :
+    HasType environment context (Expr.sort sortLevel) expectedTypeExpr :=
+  let inferenceSucceeded :
+      Eq
+        (Expr.inferCore? environment context (Expr.sort sortLevel))
+        (some (Expr.sort (Level.succ sortLevel))) :=
+    Eq.refl (some (Expr.sort (Level.succ sortLevel)))
+  Expr.checkCore_of_inferCore_sound
+    inferenceSucceeded
+    (Expr.inferCore_sort_sound inferenceSucceeded)
+    checkingSucceeded
 
 /-- Proof-carrying inference for the initial no-constant checker fragment. -/
 def inferResult?

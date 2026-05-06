@@ -825,8 +825,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeDerivation
 #assert_no_axioms LeanFX2.FX1.Expr.inferTypeFromResult?
 #assert_no_axioms LeanFX2.FX1.Expr.checkBoolFromResult?
+#assert_no_axioms LeanFX2.FX1.Expr.checkBoolFromCoreType?
 #assert_no_axioms LeanFX2.FX1.Expr.inferCore?
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_bvar_sound
+#assert_no_axioms LeanFX2.FX1.Expr.inferCore_sort_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkCore?
+#assert_no_axioms LeanFX2.FX1.Expr.checkCore_of_inferCore_sound
+#assert_no_axioms LeanFX2.FX1.Expr.checkCore_bvar_sound
+#assert_no_axioms LeanFX2.FX1.Expr.checkCore_sort_sound
 #assert_no_axioms LeanFX2.FX1.Expr.inferResult?
 #assert_no_axioms LeanFX2.FX1.Expr.infer?
 #assert_no_axioms LeanFX2.FX1.Expr.infer?_sound
@@ -849,6 +855,7 @@ namespace LeanFX2.Tools
 #assert_no_extern_dependencies LeanFX2.FX1.Level.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkBoolFromResult?
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.checkBoolFromCoreType?
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.inferCore?
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkCore?
 
