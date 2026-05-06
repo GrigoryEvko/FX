@@ -363,6 +363,7 @@ elab "#assert_headline_refl_fragment_budget " namespaceSyntax:ident
         collectManufacturedWitnessStepDependencies environment targetName
       if !manufacturedDependencies.isEmpty then
         violations := violations.push (targetName, manufacturedDependencies)
+  recordAuditCount `headline_refl_fragment violations.size
   if violations.size <= claimBudget then
     let successMessage :=
       s!"headline refl-fragment budget ok: {namespaceName} " ++
@@ -459,6 +460,7 @@ elab "#assert_broad_manufactured_step_dependent_budget "
         collectManufacturedWitnessStepDependencies environment targetName
       if !manufacturedDependencies.isEmpty then
         violations := violations.push (targetName, manufacturedDependencies)
+  recordAuditCount `broad_manufactured_step_dependent violations.size
   if violations.size <= dependentBudget then
     logInfo
       (s!"broad manufactured-Step dependent budget ok: {namespaceName} " ++

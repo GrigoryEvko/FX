@@ -141,41 +141,21 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     if totalCtorCount >= convCongUncoveredCount then
       totalCtorCount - convCongUncoveredCount
     else 0
-  -- Headline refl-fragment claims.
-  let mut headlineReflFragmentCount : Nat := 0
-  let mut broadManufacturedDependentCount : Nat := 0
-  let mut castOperatorDependentCount : Nat := 0
-  let mut forbiddenShapeCount : Nat := 0
-  let mut singleStepConvClaimCount : Nat := 0
+  -- First-loop counts: read from the audit-count env extension cache,
+  -- which the corresponding budget gates populate during their elab.
+  -- Skipping the recomputation here avoids ~30s of redundant
+  -- transitive-dependency walks on a multi-thousand-decl namespace.
   let targetNames := namespaceAuditTargets environment namespaceName
-  for targetName in targetNames do
-    if isHeadlinePrincipleClaimName targetName then
-      let manufacturedDependencies :=
-        collectManufacturedWitnessStepDependencies environment targetName
-      if !manufacturedDependencies.isEmpty then
-        headlineReflFragmentCount := headlineReflFragmentCount + 1
-    else if !isManufacturedStepStructuralDependent targetName then
-      let manufacturedDependencies :=
-        collectManufacturedWitnessStepDependencies environment targetName
-      if !manufacturedDependencies.isEmpty then
-        broadManufacturedDependentCount := broadManufacturedDependentCount + 1
-    if isKernelTierProductionDecl targetName then
-      let castDependencies :=
-        collectCastOperatorDependencies environment targetName
-      if !castDependencies.isEmpty then
-        castOperatorDependentCount := castOperatorDependentCount + 1
-      match forbiddenDeclShape? environment targetName with
-      | some _ => forbiddenShapeCount := forbiddenShapeCount + 1
-      | none => pure ()
-    match environment.find? targetName with
-    | some constantInfo =>
-        if claimsConvType constantInfo then
-          match constantInfo.value? with
-          | some bodyExpr =>
-              if isSingleStepConvBody bodyExpr then
-                singleStepConvClaimCount := singleStepConvClaimCount + 1
-          | none => pure ()
-    | none => pure ()
+  let headlineReflFragmentCount :=
+    lookupAuditCountOrZero environment `headline_refl_fragment
+  let broadManufacturedDependentCount :=
+    lookupAuditCountOrZero environment `broad_manufactured_step_dependent
+  let castOperatorDependentCount :=
+    lookupAuditCountOrZero environment `cast_operator_dependent
+  let forbiddenShapeCount :=
+    lookupAuditCountOrZero environment `forbidden_decl_shape
+  let singleStepConvClaimCount :=
+    lookupAuditCountOrZero environment `single_step_conv_claim
   -- All-raw-payload Term ctor count.
   let allRawPayloadCount :=
     (allRawPayloadDebtRecordsForInductive
@@ -207,87 +187,59 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
     (getInductiveConstructorNames environment `LeanFX2.Step.par).size
   let rawTermCtorCount :=
     (getInductiveConstructorNames environment `LeanFX2.RawTerm).size
-  -- Axiom-adjacent dependency censuses.
-  let mut inhabitedDependentCount : Nat := 0
-  let mut heqResultTypeCount : Nat := 0
-  let mut decideDependentCount : Nat := 0
-  let mut subsingletonDependentCount : Nat := 0
-  let mut matchCompilerEquationCount : Nat := 0
-  let mut rflOnNonTrivialNameCount : Nat := 0
-  let mut universePolymorphicCount : Nat := 0
-  let mut quotDependentCount : Nat := 0
-  let mut accDependentCount : Nat := 0
-  let mut leanMetaDependentCount : Nat := 0
+  -- Axiom-adjacent dependency censuses: read directly from the
+  -- audit-count cache populated by each `#assert_*_dependent_budget`
+  -- gate's elab.  The previous version walked the LeanFX2 namespace
+  -- and ran ~22 `collect*Dependencies` calls per decl, which dominated
+  -- the dashboard's wall-clock cost (~90s on 7000+ decls).  Each
+  -- `lookupAuditCountOrZero` is O(entries) where `entries` is the
+  -- number of recorded gate counts (~27), making the dashboard's
+  -- second loop effectively constant-time.
+  let inhabitedDependentCount :=
+    lookupAuditCountOrZero environment `inhabited_dependent
+  let heqResultTypeCount :=
+    lookupAuditCountOrZero environment `heq_result_type
+  let decideDependentCount :=
+    lookupAuditCountOrZero environment `decide_dependent
+  let subsingletonDependentCount :=
+    lookupAuditCountOrZero environment `subsingleton_dependent
+  let matchCompilerEquationCount :=
+    lookupAuditCountOrZero environment `match_compiler_equation
+  let rflOnNonTrivialNameCount :=
+    lookupAuditCountOrZero environment `rfl_on_nontrivial_name
+  let universePolymorphicCount :=
+    lookupAuditCountOrZero environment `universe_polymorphism
+  let quotDependentCount :=
+    lookupAuditCountOrZero environment `quot_dependent
+  let accDependentCount :=
+    lookupAuditCountOrZero environment `acc_dependent
+  let leanMetaDependentCount :=
+    lookupAuditCountOrZero environment `lean_meta_dependent
   -- Lean-trust-escape and shape detectors (this batch).
-  let mut coeDependentCount : Nat := 0
-  let mut ofNatDependentCount : Nat := 0
-  let mut subtypeDependentCount : Nat := 0
-  let mut functionPropertyDependentCount : Nat := 0
-  let mut eqRewritingDependentCount : Nat := 0
-  let mut reducibleDeclCount : Nat := 0
-  let mut falseResultTypeCount : Nat := 0
-  let mut dependentPairDependentCount : Nat := 0
-  let mut classicalReasoningDependentCount : Nat := 0
-  let mut apiTypeclassDependentCount : Nat := 0
-  let mut ioEffectDependentCount : Nat := 0
-  let mut anonymousProjectionDependentCount : Nat := 0
-  for targetName in targetNames do
-    if !isKernelTierProductionDecl targetName then
-      continue
-    if !(collectInhabitedDependencies environment targetName).isEmpty then
-      inhabitedDependentCount := inhabitedDependentCount + 1
-    match environment.find? targetName with
-    | some constantInfo =>
-        if claimsHEqInResultType constantInfo then
-          heqResultTypeCount := heqResultTypeCount + 1
-        if hasNonTrivialNameSuffix targetName then
-          match constantInfo.value? with
-          | some bodyExpr =>
-              if isRflOnlyBody bodyExpr then
-                rflOnNonTrivialNameCount := rflOnNonTrivialNameCount + 1
-          | none => pure ()
-    | none => pure ()
-    if !(collectDecideDependencies environment targetName).isEmpty then
-      decideDependentCount := decideDependentCount + 1
-    if !(collectSubsingletonDependencies environment targetName).isEmpty then
-      subsingletonDependentCount := subsingletonDependentCount + 1
-    if isMatchCompilerEquationName targetName then
-      matchCompilerEquationCount := matchCompilerEquationCount + 1
-    if !(collectQuotDependencies environment targetName).isEmpty then
-      quotDependentCount := quotDependentCount + 1
-    if !(collectAccDependencies environment targetName).isEmpty then
-      accDependentCount := accDependentCount + 1
-    if !(collectLeanMetaDependencies environment targetName).isEmpty then
-      leanMetaDependentCount := leanMetaDependentCount + 1
-    if !(collectCoeDependencies environment targetName).isEmpty then
-      coeDependentCount := coeDependentCount + 1
-    if !(collectOfNatDependencies environment targetName).isEmpty then
-      ofNatDependentCount := ofNatDependentCount + 1
-    if !(collectSubtypeDependencies environment targetName).isEmpty then
-      subtypeDependentCount := subtypeDependentCount + 1
-    if !(collectFunctionPropertyDependencies environment targetName).isEmpty then
-      functionPropertyDependentCount := functionPropertyDependentCount + 1
-    if !(collectEqRewritingDependencies environment targetName).isEmpty then
-      eqRewritingDependentCount := eqRewritingDependentCount + 1
-    if hasAbbrevReducibilityHint environment targetName then
-      reducibleDeclCount := reducibleDeclCount + 1
-    if !(collectDependentPairDependencies environment targetName).isEmpty then
-      dependentPairDependentCount := dependentPairDependentCount + 1
-    if !(collectClassicalReasoningDependencies environment targetName).isEmpty then
-      classicalReasoningDependentCount := classicalReasoningDependentCount + 1
-    if !(collectApiTypeclassDependencies environment targetName).isEmpty then
-      apiTypeclassDependentCount := apiTypeclassDependentCount + 1
-    if !(collectIOEffectDependencies environment targetName).isEmpty then
-      ioEffectDependentCount := ioEffectDependentCount + 1
-    if !(collectAnonymousProjectionDependencies environment targetName).isEmpty then
-      anonymousProjectionDependentCount := anonymousProjectionDependentCount + 1
-    match environment.find? targetName with
-    | some constantInfo =>
-        if hasUniversePolymorphicSort constantInfo.type then
-          universePolymorphicCount := universePolymorphicCount + 1
-        if claimsFalseResultType constantInfo then
-          falseResultTypeCount := falseResultTypeCount + 1
-    | none => pure ()
+  let coeDependentCount :=
+    lookupAuditCountOrZero environment `coe_dependent
+  let ofNatDependentCount :=
+    lookupAuditCountOrZero environment `ofnat_dependent
+  let subtypeDependentCount :=
+    lookupAuditCountOrZero environment `subtype_dependent
+  let functionPropertyDependentCount :=
+    lookupAuditCountOrZero environment `function_property_dependent
+  let eqRewritingDependentCount :=
+    lookupAuditCountOrZero environment `eq_rewriting_dependent
+  let reducibleDeclCount :=
+    lookupAuditCountOrZero environment `reducible_decl
+  let falseResultTypeCount :=
+    lookupAuditCountOrZero environment `false_in_result_type
+  let dependentPairDependentCount :=
+    lookupAuditCountOrZero environment `dependent_pair_dependent
+  let classicalReasoningDependentCount :=
+    lookupAuditCountOrZero environment `classical_reasoning_dependent
+  let apiTypeclassDependentCount :=
+    lookupAuditCountOrZero environment `api_typeclass_dependent
+  let ioEffectDependentCount :=
+    lookupAuditCountOrZero environment `io_effect_dependent
+  let anonymousProjectionDependentCount :=
+    lookupAuditCountOrZero environment `anonymous_projection_dependent
   -- Strict-audit totals across the namespace.
   let mut auditTotalCount : Nat := 0
   let mut auditCleanCount : Nat := 0

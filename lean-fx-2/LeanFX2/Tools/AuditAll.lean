@@ -69,7 +69,8 @@ import LeanFX2.Tools.AuditAll.GatesGenerous
 import LeanFX2.Tools.AuditAll.GatesHostBoundary
 import LeanFX2.Tools.AuditAll.GatesImportCensus
 import LeanFX2.Tools.AuditAll.GatesIndCount
-import LeanFX2.Tools.AuditAll.GatesNamespaceSweep
+import LeanFX2.Tools.AuditAll.GatesNsSweepAxiom
+import LeanFX2.Tools.AuditAll.GatesNsSweepStrict
 import LeanFX2.Tools.AuditAll.GatesNaming
 import LeanFX2.Tools.AuditAll.GatesNumOps
 import LeanFX2.Tools.AuditAll.GatesParity

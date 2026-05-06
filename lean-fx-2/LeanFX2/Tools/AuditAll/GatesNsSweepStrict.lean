@@ -17,19 +17,15 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## GatesNamespaceSweep — broad axiom + strict-discipline namespace sweeps. -/
-
--- Loaded production namespace sweep.  `#audit_namespace` excludes
--- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
--- gate for every production declaration imported above, not a
--- replacement for targeted smoke examples.
-#audit_namespace LeanFX2
+/-! ## GatesNsSweepStrict — aggregate strict-discipline namespace sweep. -/
 
 -- Aggregate strict gate.  Walks the same loaded production decls and
 -- flags every discipline violation in one error, including
 -- `noncomputable`, `@[extern]`, `@[implemented_by]`, and direct
 -- `Classical.*` references.  Subsumes `#audit_namespace` (which only
--- looks at axioms) but kept side-by-side as defense in depth.
+-- looks at axioms) but kept side-by-side as defense in depth.  Runs
+-- as its own sibling file so Lake parallelizes it with the axiom
+-- sweep above.
 #audit_namespace_strict LeanFX2
 
 end LeanFX2.Tools

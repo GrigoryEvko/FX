@@ -255,6 +255,7 @@ elab "#assert_cast_operator_dependent_budget " namespaceSyntax:ident
       collectCastOperatorDependencies environment targetName
     if !castDependencies.isEmpty then
       violations := violations.push (targetName, castDependencies)
+  recordAuditCount `cast_operator_dependent violations.size
   if violations.size <= castDebtBudget then
     logInfo
       (s!"cast-operator dependent budget ok: {namespaceName} " ++
@@ -344,6 +345,7 @@ elab "#assert_forbidden_decl_shape_budget " namespaceSyntax:ident
     match forbiddenDeclShape? environment targetName with
     | some shape => violations := violations.push (targetName, shape)
     | none => pure ()
+  recordAuditCount `forbidden_decl_shape violations.size
   if violations.size <= shapeDebtBudget then
     logInfo
       (s!"forbidden decl shape budget ok: {namespaceName} " ++
@@ -514,6 +516,7 @@ elab "#assert_single_step_conv_claim_budget " namespaceSyntax:ident
                 violations := violations.push targetName
           | none => pure ()
     | none => pure ()
+  recordAuditCount `single_step_conv_claim violations.size
   if violations.size <= convClaimBudget then
     logInfo
       (s!"single-step Conv claim budget ok: {namespaceName} " ++

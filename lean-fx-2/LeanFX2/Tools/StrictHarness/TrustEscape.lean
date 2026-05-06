@@ -95,6 +95,7 @@ elab "#assert_coe_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectCoeDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `coe_dependent violations.size
   if violations.size <= coeBudget then
     logInfo
       (s!"Coe dependent budget ok: {namespaceName} " ++
@@ -148,6 +149,7 @@ elab "#assert_ofnat_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectOfNatDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `ofnat_dependent violations.size
   if violations.size <= ofNatBudget then
     logInfo
       (s!"OfNat dependent budget ok: {namespaceName} " ++
@@ -200,6 +202,7 @@ elab "#assert_subtype_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectSubtypeDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `subtype_dependent violations.size
   if violations.size <= subtypeBudget then
     logInfo
       (s!"Subtype dependent budget ok: {namespaceName} " ++
@@ -256,6 +259,7 @@ elab "#assert_function_property_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectFunctionPropertyDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `function_property_dependent violations.size
   if violations.size <= functionBudget then
     logInfo
       (s!"Function-property dependent budget ok: {namespaceName} " ++
@@ -303,6 +307,7 @@ elab "#assert_reducible_decl_budget " namespaceSyntax:ident
     if hasAbbrevReducibilityHint environment targetName then
       reducibleCount := reducibleCount + 1
       violations := violations.push targetName
+  recordAuditCount `reducible_decl reducibleCount
   if reducibleCount <= reducibleBudget then
     logInfo
       (s!"reducible decl budget ok: {namespaceName} " ++
@@ -437,6 +442,7 @@ elab "#assert_eq_rewriting_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectEqRewritingDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `eq_rewriting_dependent violations.size
   if violations.size <= eqBudget then
     logInfo
       (s!"Eq-rewriting dependent budget ok: {namespaceName} " ++
@@ -482,6 +488,7 @@ elab "#assert_false_in_result_type_budget " namespaceSyntax:ident
         if claimsFalseResultType constantInfo then
           violations := violations.push targetName
     | none => pure ()
+  recordAuditCount `false_in_result_type violations.size
   if violations.size <= falseBudget then
     logInfo
       (s!"False-in-result-type budget ok: {namespaceName} " ++
@@ -588,6 +595,7 @@ elab "#assert_dependent_pair_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectDependentPairDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `dependent_pair_dependent violations.size
   if violations.size <= pairBudget then
     logInfo
       (s!"dependent-pair dependent budget ok: {namespaceName} " ++
@@ -648,6 +656,7 @@ elab "#assert_classical_reasoning_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectClassicalReasoningDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `classical_reasoning_dependent violations.size
   if violations.size <= classicalBudget then
     logInfo
       (s!"Classical-reasoning dependent budget ok: {namespaceName} " ++
@@ -708,6 +717,7 @@ elab "#assert_api_typeclass_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectApiTypeclassDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `api_typeclass_dependent violations.size
   if violations.size <= apiBudget then
     logInfo
       (s!"API typeclass dependent budget ok: {namespaceName} " ++
@@ -762,6 +772,7 @@ elab "#assert_io_effect_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectIOEffectDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `io_effect_dependent violations.size
   if violations.size <= ioBudget then
     logInfo
       (s!"IO effect dependent budget ok: {namespaceName} " ++
@@ -825,6 +836,7 @@ elab "#assert_anonymous_projection_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectAnonymousProjectionDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `anonymous_projection_dependent violations.size
   if violations.size <= projBudget then
     logInfo
       (s!"Anonymous-projection dependent budget ok: {namespaceName} " ++

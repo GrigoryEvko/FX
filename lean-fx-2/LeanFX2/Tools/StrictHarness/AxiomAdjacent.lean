@@ -68,6 +68,7 @@ elab "#assert_inhabited_dependent_budget " namespaceSyntax:ident
       collectInhabitedDependencies environment targetName
     if !inhabitedDependencies.isEmpty then
       violations := violations.push targetName
+  recordAuditCount `inhabited_dependent violations.size
   if violations.size <= inhabitedBudget then
     logInfo
       (s!"inhabited dependent budget ok: {namespaceName} " ++
@@ -121,6 +122,7 @@ elab "#assert_heq_result_type_budget " namespaceSyntax:ident
         if claimsHEqInResultType constantInfo then
           violations := violations.push targetName
     | none => pure ()
+  recordAuditCount `heq_result_type violations.size
   if violations.size <= heqBudget then
     logInfo
       (s!"HEq result-type budget ok: {namespaceName} " ++
@@ -180,6 +182,7 @@ elab "#assert_decide_dependent_budget " namespaceSyntax:ident
       collectDecideDependencies environment targetName
     if !decideDependencies.isEmpty then
       violations := violations.push targetName
+  recordAuditCount `decide_dependent violations.size
   if violations.size <= decideBudget then
     logInfo
       (s!"decide-dependent budget ok: {namespaceName} " ++
@@ -238,6 +241,7 @@ elab "#assert_subsingleton_dependent_budget " namespaceSyntax:ident
       collectSubsingletonDependencies environment targetName
     if !subsingletonDependencies.isEmpty then
       violations := violations.push targetName
+  recordAuditCount `subsingleton_dependent violations.size
   if violations.size <= subsingletonBudget then
     logInfo
       (s!"subsingleton-dependent budget ok: {namespaceName} " ++
@@ -288,6 +292,7 @@ elab "#assert_match_compiler_equation_budget " namespaceSyntax:ident
       continue
     if isMatchCompilerEquationName declName then
       equationCount := equationCount + 1
+  recordAuditCount `match_compiler_equation equationCount
   if equationCount <= equationBudget then
     logInfo
       (s!"match-compiler equation budget ok: {namespaceName} " ++
@@ -366,6 +371,7 @@ elab "#assert_rfl_on_nontrivial_name_budget " namespaceSyntax:ident
               violations := violations.push targetName
         | none => pure ()
     | none => pure ()
+  recordAuditCount `rfl_on_nontrivial_name violations.size
   if violations.size <= rflBudget then
     logInfo
       (s!"rfl-on-nontrivial-name budget ok: {namespaceName} " ++
@@ -446,6 +452,7 @@ elab "#assert_universe_polymorphism_budget " namespaceSyntax:ident
         if hasUniversePolymorphicSort constantInfo.type then
           violations := violations.push targetName
     | none => pure ()
+  recordAuditCount `universe_polymorphism violations.size
   if violations.size <= universeBudget then
     logInfo
       (s!"universe polymorphism budget ok: {namespaceName} " ++
@@ -546,6 +553,7 @@ elab "#assert_quot_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectQuotDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `quot_dependent violations.size
   if violations.size <= quotBudget then
     logInfo
       (s!"Quot dependent budget ok: {namespaceName} " ++
@@ -571,6 +579,7 @@ elab "#assert_acc_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectAccDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `acc_dependent violations.size
   if violations.size <= accBudget then
     logInfo
       (s!"Acc dependent budget ok: {namespaceName} " ++
@@ -632,6 +641,7 @@ elab "#assert_lean_meta_dependent_budget " namespaceSyntax:ident
       continue
     if !(collectLeanMetaDependencies environment targetName).isEmpty then
       violations := violations.push targetName
+  recordAuditCount `lean_meta_dependent violations.size
   if violations.size <= leanBudget then
     logInfo
       (s!"Lean meta dependent budget ok: {namespaceName} " ++
