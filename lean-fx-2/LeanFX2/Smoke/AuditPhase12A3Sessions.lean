@@ -14,6 +14,11 @@ import LeanFX2.Sessions.Step
 #print axioms LeanFX2.SessionProtocol.Action
 #print axioms LeanFX2.SessionProtocol.Action.dual
 #print axioms LeanFX2.SessionProtocol.Action.dual_involutive
+#print axioms LeanFX2.SessionProtocol.Action.dual_injective
 #print axioms LeanFX2.SessionProtocol.Step
 #print axioms LeanFX2.SessionProtocol.Step.preserves_isFinite
 #print axioms LeanFX2.SessionProtocol.Step.dual
+#print axioms LeanFX2.SessionProtocol.Step.not_from_end
+#print axioms LeanFX2.SessionProtocol.Step.target_deterministic
+#print axioms LeanFX2.SessionProtocol.Step.of_dual
+#print axioms LeanFX2.SessionProtocol.Step.dual_iff

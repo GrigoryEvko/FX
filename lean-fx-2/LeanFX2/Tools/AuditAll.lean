@@ -688,9 +688,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.SessionProtocol.Action
 #assert_no_axioms LeanFX2.SessionProtocol.Action.dual
 #assert_no_axioms LeanFX2.SessionProtocol.Action.dual_involutive
+#assert_no_axioms LeanFX2.SessionProtocol.Action.dual_injective
 #assert_no_axioms LeanFX2.SessionProtocol.Step
 #assert_no_axioms LeanFX2.SessionProtocol.Step.preserves_isFinite
 #assert_no_axioms LeanFX2.SessionProtocol.Step.dual
+#assert_no_axioms LeanFX2.SessionProtocol.Step.not_from_end
+#assert_no_axioms LeanFX2.SessionProtocol.Step.target_deterministic
+#assert_no_axioms LeanFX2.SessionProtocol.Step.of_dual
+#assert_no_axioms LeanFX2.SessionProtocol.Step.dual_iff
 
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono

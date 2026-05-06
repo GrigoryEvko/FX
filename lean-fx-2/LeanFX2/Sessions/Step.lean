@@ -65,6 +65,14 @@ theorem dual_involutive (someAction : Action PayloadType) :
     someAction.dual.dual = someAction := by
   cases someAction <;> rfl
 
+/-- Endpoint-action duality reflects equality. -/
+theorem dual_injective
+    {firstAction secondAction : Action PayloadType}
+    (dualActionsEqual : firstAction.dual = secondAction.dual) :
+    firstAction = secondAction := by
+  rw [← dual_involutive firstAction, dualActionsEqual,
+    dual_involutive secondAction]
+
 end Action
 
 /-- One protocol transition at the head of a binary session tree.
@@ -146,6 +154,43 @@ theorem dual
       exact Step.selectLeft _ _
   | offerRight =>
       exact Step.selectRight _ _
+
+/-- The terminal protocol has no outgoing protocol step. -/
+theorem not_from_end
+    {observedAction : Action PayloadType}
+    {target : SessionProtocol PayloadType} :
+    ¬ Step (.endProtocol : SessionProtocol PayloadType) observedAction target := by
+  intro stepTransition
+  cases stepTransition
+
+/-- At a fixed source and action, a protocol step has a unique target. -/
+theorem target_deterministic
+    {source firstTarget secondTarget : SessionProtocol PayloadType}
+    {observedAction : Action PayloadType}
+    (firstTransition : Step source observedAction firstTarget)
+    (secondTransition : Step source observedAction secondTarget) :
+    firstTarget = secondTarget := by
+  cases firstTransition <;> cases secondTransition <;> rfl
+
+/-- A dualized protocol step reflects back to the original endpoint. -/
+theorem of_dual
+    {source target : SessionProtocol PayloadType}
+    {observedAction : Action PayloadType}
+    (dualTransition : Step source.dual observedAction.dual target.dual) :
+    Step source observedAction target := by
+  have reflectedTransition := Step.dual dualTransition
+  rw [SessionProtocol.dual_involutive source,
+    Action.dual_involutive observedAction,
+    SessionProtocol.dual_involutive target] at reflectedTransition
+  exact reflectedTransition
+
+/-- Duality gives an iff between local and peer-side protocol steps. -/
+theorem dual_iff
+    {source target : SessionProtocol PayloadType}
+    {observedAction : Action PayloadType} :
+    Step source.dual observedAction.dual target.dual ↔
+      Step source observedAction target :=
+  ⟨Step.of_dual, Step.dual⟩
 
 end Step
 
