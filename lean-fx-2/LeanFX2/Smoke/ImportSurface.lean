@@ -23,5 +23,6 @@ namespace LeanFX2.Smoke.ImportSurface
 #assert_rich_production_fx1_import_surface_clean
 #assert_legacy_lean_kernel_scaffold_isolated
 #assert_production_layer_imports_clean
+#audit_import_surface_summary
 
 end LeanFX2.Smoke.ImportSurface

@@ -678,6 +678,125 @@ elab "#assert_production_layer_imports_clean" : command => do
       s!"{violations.size} of {scannedLayeredModules} modules import later layers"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
+/-! ## Import-surface summary
+
+The fail-fast gates above catch invalid dependency edges.  This
+summary is intentionally informational: it keeps the current import
+cone visible in every import-surface smoke run, including the few
+allowed host/tooling edges that should remain explicit rather than
+hidden in prose.
+-/
+
+/-- One direct source-module import edge. -/
+structure DirectImportRecord where
+  /-- Module that contains the import declaration. -/
+  sourceModuleName : Name
+  /-- Module named by the import declaration. -/
+  importedModuleName : Name
+  deriving Inhabited, Repr
+
+/-- Render one direct import edge for compact build-log summaries. -/
+def DirectImportRecord.format (directImportRecord : DirectImportRecord) :
+    String :=
+  s!"{directImportRecord.sourceModuleName} -> " ++
+    s!"{directImportRecord.importedModuleName}"
+
+/-- Does this direct import point from a project module to a host-heavy
+module that should stay rare and visible? -/
+def isHostHeavyDirectImportModuleName (moduleName : Name) : Bool :=
+  (`Lean).isPrefixOf moduleName ||
+    (`Lake).isPrefixOf moduleName ||
+    (`Std).isPrefixOf moduleName ||
+    (`Mathlib).isPrefixOf moduleName ||
+    (`Classical).isPrefixOf moduleName ||
+    (`Quot).isPrefixOf moduleName
+
+/-- Keep summary lines bounded while still naming the exact dependency
+edges when the count is small. -/
+def formatDirectImportRecords
+    (directImportRecords : Array DirectImportRecord) :
+    String :=
+  if directImportRecords.isEmpty then
+    "none"
+  else
+    String.intercalate "; "
+      (directImportRecords.toList.map DirectImportRecord.format)
+
+/-- Informational import summary over the currently loaded `LeanFX2.*`
+modules.  This is not a policy gate; the policy gates above remain the
+build-failing checks. -/
+elab "#audit_import_surface_summary" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut leanFX2ModuleCount : Nat := 0
+  let mut productionModuleCount : Nat := 0
+  let mut richProductionModuleCount : Nat := 0
+  let mut fx1ModuleCount : Nat := 0
+  let mut toolsModuleCount : Nat := 0
+  let mut smokeModuleCount : Nat := 0
+  let mut directImportCount : Nat := 0
+  let mut hostHeavyDirectImports : Array DirectImportRecord := #[]
+  let mut richProductionFX1Imports : Array DirectImportRecord := #[]
+  let mut richProductionHostImports : Array DirectImportRecord := #[]
+  let mut fx1ForbiddenImports : Array DirectImportRecord := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let sourceModuleName := effectiveImport.module
+    if (`LeanFX2).isPrefixOf sourceModuleName then
+      leanFX2ModuleCount := leanFX2ModuleCount + 1
+      if isProductionLeanFX2ModuleName sourceModuleName then
+        productionModuleCount := productionModuleCount + 1
+      if isRichProductionLeanFX2ModuleName sourceModuleName then
+        richProductionModuleCount := richProductionModuleCount + 1
+      if isFX1ModuleName sourceModuleName then
+        fx1ModuleCount := fx1ModuleCount + 1
+      if (`LeanFX2.Tools).isPrefixOf sourceModuleName then
+        toolsModuleCount := toolsModuleCount + 1
+      if (`LeanFX2.Smoke).isPrefixOf sourceModuleName then
+        smokeModuleCount := smokeModuleCount + 1
+      for directImport in moduleData.imports do
+        let importedModuleName := directImport.module
+        directImportCount := directImportCount + 1
+        let directImportRecord : DirectImportRecord := {
+          sourceModuleName := sourceModuleName
+          importedModuleName := importedModuleName
+        }
+        if isHostHeavyDirectImportModuleName importedModuleName then
+          hostHeavyDirectImports :=
+            hostHeavyDirectImports.push directImportRecord
+        if isRichProductionLeanFX2ModuleName sourceModuleName &&
+            isFX1ModuleName importedModuleName then
+          richProductionFX1Imports :=
+            richProductionFX1Imports.push directImportRecord
+        if isRichProductionLeanFX2ModuleName sourceModuleName &&
+            isHostHeavyDirectImportModuleName importedModuleName then
+          richProductionHostImports :=
+            richProductionHostImports.push directImportRecord
+        if isFX1ModuleName sourceModuleName &&
+            !isAllowedFX1DirectImport sourceModuleName importedModuleName then
+          fx1ForbiddenImports :=
+            fx1ForbiddenImports.push directImportRecord
+  logInfo
+    (String.intercalate "\n" [
+      "──────────── IMPORT SURFACE SUMMARY ────────────",
+      s!"  LeanFX2 modules visible:          {leanFX2ModuleCount}",
+      s!"  Production modules:               {productionModuleCount}",
+      s!"  Rich production modules:          {richProductionModuleCount}",
+      s!"  FX1 modules:                      {fx1ModuleCount}",
+      s!"  Tool modules:                     {toolsModuleCount}",
+      s!"  Smoke modules:                    {smokeModuleCount}",
+      s!"  Direct import edges scanned:      {directImportCount}",
+      s!"  Host-heavy direct imports:        {hostHeavyDirectImports.size}",
+      s!"    {formatDirectImportRecords hostHeavyDirectImports}",
+      s!"  Rich-production -> FX1 imports:   {richProductionFX1Imports.size}",
+      s!"    {formatDirectImportRecords richProductionFX1Imports}",
+      s!"  Rich-production host imports:     {richProductionHostImports.size}",
+      s!"    {formatDirectImportRecords richProductionHostImports}",
+      s!"  FX1 forbidden direct imports:     {fx1ForbiddenImports.size}",
+      s!"    {formatDirectImportRecords fx1ForbiddenImports}",
+      "────────────────────────────────────────────────"
+    ])
+
 /-! ## Raw/typed parity check -/
 
 /-- Get the constructor names of an inductive type. -/
