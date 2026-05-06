@@ -346,6 +346,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.betaPathApp
 #assert_no_axioms LeanFX2.Step.par.betaPathAppDeep
 #assert_no_axioms LeanFX2.Step.par.toRawBridge
+#assert_no_axioms LeanFX2.Step.par.rename_toRawBridge
+#assert_no_axioms LeanFX2.Step.par.subst_toRawBridge
 #assert_no_axioms LeanFX2.RawStep.par.rename_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible
 #assert_no_axioms LeanFX2.RawStep.par.subst_compatible_same

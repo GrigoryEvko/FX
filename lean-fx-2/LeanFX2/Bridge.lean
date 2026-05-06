@@ -1,4 +1,6 @@
+import LeanFX2.Reduction.Compat
 import LeanFX2.Reduction.ParRed
+import LeanFX2.Term.Bridge
 
 /-! # Bridge — typed↔raw correspondence (Phase 5).
 
@@ -331,5 +333,54 @@ theorem Step.par.toRawBridge
   -- typed-level type change with raw preserved.  Same architectural
   -- payoff as `cumulUpInnerCong` / `eqType` / `eqArrow` / `eqTypeHet`.
   | eqArrowHet _ _ _ _ => exact RawStep.par.refl _
+
+/-- Raw-image compatibility for typed parallel reduction after a typed
+renaming.
+
+This is deliberately weaker than a full typed
+`Step.par (Term.rename ...) (Term.rename ...)` theorem: it only states the
+projected raw terms are parallel-related.  That is the bridge-layer endpoint
+needed by raw confluence while the dependent typed compatibility proof remains
+in `Reduction/Compat.lean`'s phase plan. -/
+theorem Step.par.rename_toRawBridge
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rawRenaming)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    RawStep.par (Term.toRaw (Term.rename termRenaming sourceTerm))
+                (Term.toRaw (Term.rename termRenaming targetTerm)) := by
+  rw [Term.toRaw_rename termRenaming sourceTerm,
+      Term.toRaw_rename termRenaming targetTerm]
+  exact RawStep.par.rename_compatible rawRenaming
+    (Step.par.toRawBridge parallelStep)
+
+/-- Raw-image compatibility for typed parallel reduction after a typed
+substitution.
+
+Like `Step.par.rename_toRawBridge`, this is a raw projection theorem, not the
+still-pending full typed substitution compatibility theorem for `Step.par`. -/
+theorem Step.par.subst_toRawBridge
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {targetTerm : Term sourceCtx targetType targetRaw}
+    (parallelStep : Step.par sourceTerm targetTerm) :
+    RawStep.par (Term.toRaw (Term.subst termSubst sourceTerm))
+                (Term.toRaw (Term.subst termSubst targetTerm)) := by
+  rw [Term.toRaw_subst termSubst sourceTerm,
+      Term.toRaw_subst termSubst targetTerm]
+  exact RawStep.par.subst_compatible_same sigma.forRaw
+    (Step.par.toRawBridge parallelStep)
 
 end LeanFX2

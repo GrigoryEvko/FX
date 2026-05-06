@@ -129,6 +129,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp
 #print axioms LeanFX2.Step.par.betaPathAppDeep
+#print axioms LeanFX2.Step.par.rename_toRawBridge
+#print axioms LeanFX2.Step.par.subst_toRawBridge
 #print axioms LeanFX2.RawStep.par.rename_compatible
 #print axioms LeanFX2.RawStep.par.subst_compatible
 #print axioms LeanFX2.RawStep.par.subst_compatible_same
@@ -250,6 +252,8 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.ConvCumul.subst_compatible_sessionRecv_allais
 #print axioms LeanFX2.ConvCumul.subst_compatible_effectPerform_allais
 #print axioms LeanFX2.Step.par.toRawBridge
+#print axioms LeanFX2.Step.par.rename_toRawBridge
+#print axioms LeanFX2.Step.par.subst_toRawBridge
 #print axioms LeanFX2.ConvCumul.pathLamCong
 #print axioms LeanFX2.ConvCumul.pathAppCong
 #print axioms LeanFX2.ConvCumul.intervalOppCong
