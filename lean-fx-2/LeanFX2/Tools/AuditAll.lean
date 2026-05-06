@@ -1344,6 +1344,37 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnit_has_type_in_unitIdEnvironment
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdJ_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdJ
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflAtomId
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflDeclaration
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivType
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflRaw
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflTerm
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unitEquiv
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitEquivRefl
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTy_unitEquiv_eq_unitEquivTypeExpr
+#assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitEquivRefl_eq_unitEquivReflExpr
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflDeclaration_wellTyped
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName_ne_unitTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName_ne_unitValueName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_ne_unitTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_ne_unitValueName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_ne_unitEquivTypeName
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivReflName_fresh
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivEnvironment_wellFormed
+#assert_no_axioms LeanFX2.FX1Bridge.unitEquivTypeExpr_has_sort_in_unitEquivEnvironment
+#assert_no_axioms LeanFX2.FX1Bridge.encodedUnitEquivRefl_has_type
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitEquivRefl
 
 -- FX1 executable extern-dependency gates.  These are narrower than the axiom
 -- gates: they fail if a checker-critical executable primitive delegates to

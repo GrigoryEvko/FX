@@ -8,6 +8,7 @@ import LeanFX2.FX1Bridge.Nat
 import LeanFX2.FX1Bridge.Universe
 import LeanFX2.FX1Bridge.Id
 import LeanFX2.FX1Bridge.IdJ
+import LeanFX2.FX1Bridge.Equiv
 
 /-! # FX1Bridge
 
