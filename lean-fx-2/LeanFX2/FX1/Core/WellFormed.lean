@@ -210,6 +210,60 @@ inductive WellFormed : Environment -> Prop
         Declaration.WellTyped environment declaration) :
       WellFormed (Environment.extend environment declaration)
 
+namespace TransparentDefinition
+
+/-- A checked newest transparent definition has its value typed at the declared
+type after the environment extension that exposes the constant.
+
+This is the local delta-preservation payload for `TransparentDefinition.newestDef`.
+Older transparent payloads are transported by `HasType.weaken_environment`. -/
+theorem newestDef_value_has_type
+    {environment : Environment}
+    {declName : Name}
+    {typeExpr valueExpr : Expr}
+    (definitionWellTyped :
+      Declaration.WellTyped
+        environment
+        (Declaration.defDecl declName typeExpr valueExpr)) :
+    HasType
+      (Environment.extend environment
+        (Declaration.defDecl declName typeExpr valueExpr))
+      Context.empty
+      valueExpr
+      typeExpr :=
+  match definitionWellTyped with
+  | Declaration.WellTyped.defDecl _ valueHasType =>
+      HasType.weaken_environment
+        (Declaration.defDecl declName typeExpr valueExpr)
+        valueHasType
+
+/-- A checked newest transparent theorem has its proof typed at the declared
+type after the environment extension that exposes the theorem constant.
+
+This is the local delta-preservation payload for
+`TransparentDefinition.newestTheorem`. -/
+theorem newestTheorem_proof_has_type
+    {environment : Environment}
+    {declName : Name}
+    {typeExpr proofExpr : Expr}
+    (theoremWellTyped :
+      Declaration.WellTyped
+        environment
+        (Declaration.theoremDecl declName typeExpr proofExpr)) :
+    HasType
+      (Environment.extend environment
+        (Declaration.theoremDecl declName typeExpr proofExpr))
+      Context.empty
+      proofExpr
+      typeExpr :=
+  match theoremWellTyped with
+  | Declaration.WellTyped.theoremDecl _ proofHasType =>
+      HasType.weaken_environment
+        (Declaration.theoremDecl declName typeExpr proofExpr)
+        proofHasType
+
+end TransparentDefinition
+
 /-- Extending an environment with a transparent definition does not add an
 executable axiom placeholder. -/
 theorem hasAxiomDeclaration_extend_defDecl
