@@ -2032,6 +2032,78 @@ elab "#assert_no_postulate_hypothesis " namespaceSyntax:ident : command => do
       s!"{violations.size} of {targetNames.size} decls violate discipline"
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
 
+/-! ## Staged FX1 axiom leak detector
+
+FX1Bridge modules may use object-level `Declaration.axiomDecl` entries while a
+rich feature is still only staged as a Bridge fragment.  Regular rich/root
+production declarations must not depend on those staged placeholders: doing so
+would silently promote Bridge-only evidence into rich production.
+-/
+
+/-- Whether a dependency is one of the FX1 declaration constructors that admits
+object-level staged axioms. -/
+def isStagedFX1AxiomDeclarationDependency (dependencyName : Name) : Bool :=
+  dependencyName == `LeanFX2.FX1.Declaration.axiomDecl ||
+    dependencyName == `LeanFX2.FX1.Declaration.WellTyped.axiomDecl
+
+/-- Declarations allowed to mention staged FX1 axiom placeholders directly.
+
+FX1 itself defines the declaration language and release well-formedness rules.
+FX1Bridge is the explicit staging boundary.  Everything else must stay clear of
+these constructors until it has a real root certificate. -/
+def mayUseStagedFX1AxiomDeclarations (declarationName : Name) : Bool :=
+  (`LeanFX2.FX1).isPrefixOf declarationName ||
+    (`LeanFX2.FX1Bridge).isPrefixOf declarationName
+
+/-- Collect staged FX1 axiom dependencies from one declaration's transitive
+dependency closure. -/
+def collectStagedFX1AxiomDependencies
+    (environment : Environment) (targetName : Name) :
+    Array Name :=
+  let dependencyNames := collectDependencies environment targetName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun stagedDependencies dependencyName =>
+      if isStagedFX1AxiomDeclarationDependency dependencyName then
+        stagedDependencies.push dependencyName
+      else
+        stagedDependencies)
+
+/-- Build-failing gate: staged FX1 object-level axioms may not leak out of
+FX1/FX1Bridge into rich or root production declarations. -/
+elab "#assert_no_root_staged_axiom_leak " namespaceSyntax:ident : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let mut scannedDeclarationCount : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for targetName in targetNames do
+    if mayUseStagedFX1AxiomDeclarations targetName then
+      continue
+    else
+      scannedDeclarationCount := scannedDeclarationCount + 1
+      let stagedDependencies :=
+        collectStagedFX1AxiomDependencies environment targetName
+      if !stagedDependencies.isEmpty then
+        violations := violations.push (targetName, stagedDependencies)
+  if violations.isEmpty then
+    let skippedDeclarationCount := targetNames.size - scannedDeclarationCount
+    let successMessage :=
+      s!"root staged-axiom leak audit ok: {namespaceName} " ++
+      s!"({scannedDeclarationCount} declarations scanned, " ++
+      s!"{skippedDeclarationCount} FX1/bridge declarations skipped)"
+    logInfo successMessage
+  else
+    let perDeclLines := violations.toList.map fun (declName, dependencies) =>
+      let renderedDependencies :=
+        String.intercalate ", " (dependencies.toList.map toString)
+      s!"  - {declName}: staged FX1 axiom dependencies [{renderedDependencies}]"
+    let header :=
+      s!"root staged-axiom leak audit FAILED for {namespaceName}: " ++
+      s!"{violations.size} of {scannedDeclarationCount} scanned decls " ++
+      "depend on Bridge-only FX1 axiom staging"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
+
 /-! ## Per-namespace decl-count snapshot
 
 Track decl count by sub-namespace.  Useful for catching coverage

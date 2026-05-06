@@ -1519,6 +1519,11 @@ namespace LeanFX2.Tools
 -- semantically identical to adding an axiom).
 #assert_no_postulate_hypothesis LeanFX2
 
+-- Staged FX1 axiom leak detector.  Object-level `axiomDecl` placeholders are
+-- allowed inside FX1 itself and the explicit FX1Bridge staging boundary only;
+-- regular rich/root production declarations must not depend on them.
+#assert_no_root_staged_axiom_leak LeanFX2
+
 -- Per-namespace decl-count snapshot.  Strictly informational; surfaces
 -- the count distribution across `LeanFX2.*` sub-namespaces so a
 -- coverage regression (whole sub-namespace shrinking unexpectedly)
