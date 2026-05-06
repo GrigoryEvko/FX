@@ -808,7 +808,11 @@ metatheory (`Term.SubjectReduction*`) or cross-theory bridge content.
 checked by a different gate (`FX1`, tooling, smoke, sketches, or legacy
 LeanKernel). -/
 def productionImportLayer? (moduleName : Name) : Option Nat :=
-  if isSubjectReductionMetatheoryModuleName moduleName then
+  if moduleName == `LeanFX2.Kernel then
+    some 4
+  else if moduleName == `LeanFX2.Rich then
+    some 13
+  else if isSubjectReductionMetatheoryModuleName moduleName then
     some 3
   else if isReductionMetatheoryModuleName moduleName then
     some 3
@@ -1016,6 +1020,10 @@ informational only; policy gates above enforce the actual boundaries. -/
 def importFamilyLabel (moduleName : Name) : String :=
   if moduleName == `LeanFX2 then
     "LeanFX2.Root"
+  else if moduleName == `LeanFX2.Kernel then
+    "LeanFX2.Kernel"
+  else if moduleName == `LeanFX2.Rich then
+    "LeanFX2.Rich"
   else if (`LeanFX2.FX1).isPrefixOf moduleName then
     "LeanFX2.FX1"
   else if isLegacyLeanKernelScaffoldModuleName moduleName then
