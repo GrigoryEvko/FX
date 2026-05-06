@@ -6,6 +6,7 @@ import LeanFX2.FX1Bridge.Pi
 import LeanFX2.FX1Bridge.Bool
 import LeanFX2.FX1Bridge.Nat
 import LeanFX2.FX1Bridge.Universe
+import LeanFX2.FX1Bridge.Id
 
 /-! # FX1Bridge
 
