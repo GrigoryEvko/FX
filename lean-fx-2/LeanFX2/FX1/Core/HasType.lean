@@ -211,6 +211,41 @@ inductive HasType (environment : Environment) : Context -> Expr -> Expr -> Prop
 
 namespace HasType
 
+/-- Typing is stable when the environment is extended by one newer
+declaration. -/
+theorem weaken_environment
+    {environment : Environment}
+    {context : Context}
+    {expression typeExpr : Expr}
+    (newDeclaration : Declaration)
+    (typingDerivation :
+      HasType environment context expression typeExpr) :
+    HasType
+      (Environment.extend environment newDeclaration)
+      context
+      expression
+      typeExpr :=
+  match typingDerivation with
+  | HasType.sort context sortLevel =>
+      HasType.sort context sortLevel
+  | HasType.var variableType =>
+      HasType.var variableType
+  | HasType.const declarationMember =>
+      HasType.const
+        (Environment.HasDeclaration.weaken newDeclaration declarationMember)
+  | HasType.pi domainHasSort bodyHasSort =>
+      HasType.pi
+        (weaken_environment newDeclaration domainHasSort)
+        (weaken_environment newDeclaration bodyHasSort)
+  | HasType.lam domainHasSort bodyHasType =>
+      HasType.lam
+        (weaken_environment newDeclaration domainHasSort)
+        (weaken_environment newDeclaration bodyHasType)
+  | HasType.app functionHasPi argumentHasDomain =>
+      HasType.app
+        (weaken_environment newDeclaration functionHasPi)
+        (weaken_environment newDeclaration argumentHasDomain)
+
 /-- The empty-context identity over `Sort 0` has the expected Pi type. -/
 theorem sortZeroIdentity
     (environment : Environment) :

@@ -800,6 +800,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.HasType.pi
 #assert_no_axioms LeanFX2.FX1.HasType.lam
 #assert_no_axioms LeanFX2.FX1.HasType.app
+#assert_no_axioms LeanFX2.FX1.HasType.weaken_environment
 #assert_no_axioms LeanFX2.FX1.HasType.sortZeroIdentity
 #assert_no_axioms LeanFX2.FX1.HasType.identityAppNewestVar_sourceHasType
 #assert_no_axioms LeanFX2.FX1.HasType.identityAppNewestVar_targetHasType
