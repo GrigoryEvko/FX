@@ -1,4 +1,3 @@
-import LeanFX2.Cubical.Bridge
 import LeanFX2.Foundation.Ty
 
 /-! # Translation/ObservationalToCubical
