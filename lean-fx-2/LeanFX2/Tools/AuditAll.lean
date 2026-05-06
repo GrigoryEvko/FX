@@ -815,9 +815,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeExpr
 #assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeAtIndex
 #assert_no_axioms LeanFX2.FX1.Context.lookupTypeResultInEntries?
+#assert_no_axioms LeanFX2.FX1.Context.lookupTypeFromResult?
 #assert_no_axioms LeanFX2.FX1.Context.lookupTypeInEntries?
 #assert_no_axioms LeanFX2.FX1.Context.lookupType?
 #assert_no_axioms LeanFX2.FX1.Context.lookupTypeResult?
+#assert_no_axioms LeanFX2.FX1.Context.lookupType_sound
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeExpr
 #assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeDerivation
@@ -841,6 +843,9 @@ namespace LeanFX2.Tools
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.beq
 #assert_no_extern_dependencies LeanFX2.FX1.Declaration.hasName
 #assert_no_extern_dependencies LeanFX2.FX1.Environment.findByName?
+#assert_no_extern_dependencies LeanFX2.FX1.Context.lookupTypeFromResult?
+#assert_no_extern_dependencies LeanFX2.FX1.Context.lookupTypeInEntries?
+#assert_no_extern_dependencies LeanFX2.FX1.Context.lookupType?
 #assert_no_extern_dependencies LeanFX2.FX1.Level.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkerBeq
 #assert_no_extern_dependencies LeanFX2.FX1.Expr.checkBoolFromResult?

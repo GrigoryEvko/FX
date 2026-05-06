@@ -325,13 +325,20 @@ def lookupTypeResultInEntries? :
           }
       | none => none
 
+/-- Project a proof-carrying context lookup result to the executable type
+payload. -/
+def lookupTypeFromResult?
+    {entries : List Expr} {index : Nat} :
+    Option (LookupTypeResult entries index) -> Option Expr
+  | some lookupResult => some lookupResult.typeExpr
+  | none => none
+
 /-- Lookup a de Bruijn index and return the binder type shifted into the
 current context, matching `Context.HasTypeAt`. -/
 def lookupTypeInEntries? : List Expr -> Nat -> Option Expr
   | entries, index =>
-      match lookupTypeResultInEntries? entries index with
-      | some lookupResult => some lookupResult.typeExpr
-      | none => none
+      Context.lookupTypeFromResult?
+        (Context.lookupTypeResultInEntries? entries index)
 
 /-- Context-level wrapper for `lookupTypeInEntries?`. -/
 def lookupType? (context : Context) (index : Nat) : Option Expr :=
@@ -341,6 +348,43 @@ def lookupType? (context : Context) (index : Nat) : Option Expr :=
 def lookupTypeResult? (context : Context) (index : Nat) :
     Option (LookupTypeResult context.entries index) :=
   Context.lookupTypeResultInEntries? context.entries index
+
+/-- Soundness of executable shifted de Bruijn lookup. -/
+theorem lookupType_sound
+    {context : Context}
+    {index : Nat}
+    {typeExpr : Expr}
+    (lookupSucceeded :
+      Eq (Context.lookupType? context index) (some typeExpr)) :
+    Context.HasTypeAt context index typeExpr :=
+  match h : Context.lookupTypeResult? context index with
+  | some lookupResult =>
+      let projectedEquality :
+          Eq (some lookupResult.typeExpr) (some typeExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Context.lookupTypeFromResult?
+                (entries := context.entries)
+                (index := index))
+              h))
+          lookupSucceeded
+      let typeEquality :=
+        CheckOption.some_injective projectedEquality
+      match typeEquality with
+      | Eq.refl _ => lookupResult.typeAtIndex
+  | none =>
+      let noneEqualsSome :
+          Eq (none : Option Expr) (some typeExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Context.lookupTypeFromResult?
+                (entries := context.entries)
+                (index := index))
+              h))
+          lookupSucceeded
+      nomatch noneEqualsSome
 
 end Context
 
