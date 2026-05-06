@@ -675,6 +675,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.HoTT.HIT.Examples.coequalizerUnit
 #assert_no_axioms LeanFX2.HoTT.HIT.Examples.coequalizerPointUnit
 
+-- Session protocol structural layer
+#assert_no_axioms LeanFX2.SessionProtocol
+#assert_no_axioms LeanFX2.SessionProtocol.depth
+#assert_no_axioms LeanFX2.SessionProtocol.isFinite
+#assert_no_axioms LeanFX2.SessionProtocol.isFinite_of_tree
+#assert_no_axioms LeanFX2.SessionProtocol.isFiniteDecidable
+#assert_no_axioms LeanFX2.SessionProtocol.isFinite.decidable
+#assert_no_axioms LeanFX2.SessionProtocol.dual
+#assert_no_axioms LeanFX2.SessionProtocol.dual_end
+#assert_no_axioms LeanFX2.SessionProtocol.dual_involutive
+#assert_no_axioms LeanFX2.SessionProtocol.Action
+#assert_no_axioms LeanFX2.SessionProtocol.Action.dual
+#assert_no_axioms LeanFX2.SessionProtocol.Action.dual_involutive
+#assert_no_axioms LeanFX2.SessionProtocol.Step
+#assert_no_axioms LeanFX2.SessionProtocol.Step.preserves_isFinite
+#assert_no_axioms LeanFX2.SessionProtocol.Step.dual
+
 -- Graded core
 #assert_no_axioms LeanFX2.Graded.GradeVector.add_mono
 #assert_no_axioms LeanFX2.Graded.GradeVector.mul_mono
