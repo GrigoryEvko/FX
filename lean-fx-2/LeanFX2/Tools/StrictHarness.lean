@@ -2456,6 +2456,446 @@ elab "#assert_bridge_exact_coverage_budget " inductiveSyntax:ident
       s!"{records.size} unbridged ctors exceed budget {bridgeDebtBudget}"
     throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
 
+/-! ## Rich schema and linkage debt gates -/
+
+/-- Whether a binder name contains a specific substring. -/
+partial def hasBinderContainingSegment
+    (wantedSegment : String) (constructorType : Expr) :
+    Bool :=
+  match constructorType with
+  | .forallE binderName _ bodyType _ =>
+      (Name.lastSegmentString binderName).contains wantedSegment ||
+        hasBinderContainingSegment wantedSegment bodyType
+  | _ => false
+
+/-- `Ty` ctors whose identity/path endpoints are still raw terms instead of
+typed endpoint evidence. -/
+def isTyRawEndpointConstructorName (constructorName : Name) : Bool :=
+  let suffix := Name.lastSegmentString constructorName
+  suffix == "id" ||
+    suffix == "path" ||
+    suffix == "oeq" ||
+    suffix == "idStrict"
+
+/-- Whether the constructor already appears to carry typed endpoint evidence. -/
+def hasTypedEndpointEvidence (constructorType : Expr) : Bool :=
+  hasBinderContainingSegment "EndpointTerm" constructorType ||
+    hasBinderContainingSegment "endpointTerm" constructorType ||
+    hasBinderContainingSegment "EndpointWitness" constructorType ||
+    hasBinderContainingSegment "endpointWitness" constructorType
+
+/-- Report raw endpoint debt for one `Ty` constructor. -/
+def tyRawEndpointDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isTyRawEndpointConstructorName constructorName then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        let hasRawEndpoints :=
+          hasBinderWithLastSegment "leftEndpoint" constructorInfo.type &&
+            hasBinderWithLastSegment "rightEndpoint" constructorInfo.type &&
+            doesExprMentionConst `LeanFX2.RawTerm constructorInfo.type
+        if hasRawEndpoints && !hasTypedEndpointEvidence constructorInfo.type then
+          some {
+            constructorName := constructorName
+            detail := "type constructor has raw endpoints without typed endpoint evidence"
+          }
+        else
+          none
+    | _ => none
+
+/-- Collect raw endpoint debt records for a type inductive. -/
+def tyRawEndpointDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match tyRawEndpointDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for raw endpoint type constructors. -/
+elab "#assert_ty_raw_endpoint_budget " inductiveSyntax:ident
+    rawEndpointBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let rawEndpointBudget := rawEndpointBudgetSyntax.getNat
+  let records := tyRawEndpointDebtRecordsForInductive environment inductiveName
+  if records.size <= rawEndpointBudget then
+    logInfo
+      (s!"Ty raw endpoint budget ok: {inductiveName} " ++
+      s!"({records.size}/{rawEndpointBudget} raw endpoint ctors)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"Ty raw endpoint budget FAILED for {inductiveName}: " ++
+      s!"{records.size} raw endpoint ctors exceed budget {rawEndpointBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Whether a Ty constructor has the richer schema object expected by its
+surface meaning. -/
+def hasExpectedTySchemaPayload
+    (constructorName : Name) (constructorType : Expr) :
+    Bool :=
+  let suffix := Name.lastSegmentString constructorName
+  if suffix == "modal" then
+    doesExprMentionConst `LeanFX2.Modality constructorType
+  else if suffix == "glue" then
+    doesExprMentionConst `LeanFX2.BoundaryCofib constructorType &&
+      doesExprMentionConst `LeanFX2.Ty.equiv constructorType
+  else if suffix == "refine" then
+    hasBinderContainingSegment "predicateTerm" constructorType ||
+      hasBinderContainingSegment "predicateWitness" constructorType
+  else if suffix == "session" then
+    doesExprMentionConst `LeanFX2.SessionProtocol constructorType
+  else if suffix == "effect" then
+    doesExprMentionConst `LeanFX2.Effects.EffectRow constructorType
+  else
+    true
+
+/-- Ty constructors whose semantics currently travel through raw/Nat tags. -/
+def isTyUnstructuredSchemaConstructorName (constructorName : Name) : Bool :=
+  let suffix := Name.lastSegmentString constructorName
+  suffix == "modal" ||
+    suffix == "glue" ||
+    suffix == "refine" ||
+    suffix == "session" ||
+    suffix == "effect"
+
+/-- Report unstructured schema payload debt for one `Ty` constructor. -/
+def tyUnstructuredSchemaDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isTyUnstructuredSchemaConstructorName constructorName then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        if hasExpectedTySchemaPayload constructorName constructorInfo.type then
+          none
+        else
+          some {
+            constructorName := constructorName
+            detail := "type constructor uses raw/Nat schema payload instead of rich schema object"
+          }
+    | _ => none
+
+/-- Collect unstructured schema payload debt records for a type inductive. -/
+def tyUnstructuredSchemaDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match tyUnstructuredSchemaDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for unstructured Ty schema payloads. -/
+elab "#assert_ty_unstructured_schema_budget " inductiveSyntax:ident
+    schemaBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let schemaBudget := schemaBudgetSyntax.getNat
+  let records := tyUnstructuredSchemaDebtRecordsForInductive environment inductiveName
+  if records.size <= schemaBudget then
+    logInfo
+      (s!"Ty unstructured schema budget ok: {inductiveName} " ++
+      s!"({records.size}/{schemaBudget} raw/Nat schema ctors)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"Ty unstructured schema budget FAILED for {inductiveName}: " ++
+      s!"{records.size} schema debts exceed budget {schemaBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Report cubical transport endpoint-linkage debt for `Term.transp`. -/
+def transportLinkageDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if Name.lastSegmentString constructorName != "transp" then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        let hasSeparateRawCodes :=
+          hasBinderWithLastSegment "sourceTypeRaw" constructorInfo.type &&
+            hasBinderWithLastSegment "targetTypeRaw" constructorInfo.type
+        let hasLinkageEvidence :=
+          hasBinderContainingSegment "sourceTypeLink" constructorInfo.type ||
+            hasBinderContainingSegment "targetTypeLink" constructorInfo.type ||
+            hasBinderContainingSegment "decodedSource" constructorInfo.type ||
+            hasBinderContainingSegment "decodedTarget" constructorInfo.type
+        if hasSeparateRawCodes && !hasLinkageEvidence then
+          some {
+            constructorName := constructorName
+            detail := "transport has raw universe endpoints without source/target linkage evidence"
+          }
+        else
+          none
+    | _ => none
+
+/-- Collect transport endpoint-linkage debt records for an inductive. -/
+def transportLinkageDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match transportLinkageDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for cubical transport endpoint linkage debt. -/
+elab "#assert_transport_linkage_budget " inductiveSyntax:ident
+    transportLinkageBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let transportLinkageBudget := transportLinkageBudgetSyntax.getNat
+  let records := transportLinkageDebtRecordsForInductive environment inductiveName
+  if records.size <= transportLinkageBudget then
+    logInfo
+      (s!"transport linkage budget ok: {inductiveName} " ++
+      s!"({records.size}/{transportLinkageBudget} unlinked transport ctors)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"transport linkage budget FAILED for {inductiveName}: " ++
+      s!"{records.size} transport linkage debts exceed budget " ++
+      s!"{transportLinkageBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Glue-related Term constructors that should mention boundary cofibrations and
+equivalence data when they stop being schematic. -/
+def isGlueSchemaConstructorName (constructorName : Name) : Bool :=
+  let suffix := Name.lastSegmentString constructorName
+  suffix == "glueIntro" || suffix == "glueElim"
+
+/-- Report Glue boundary/equivalence schema debt for one Term constructor. -/
+def glueSchemaDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isGlueSchemaConstructorName constructorName then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        let hasBoundarySchema :=
+          doesExprMentionConst `LeanFX2.BoundaryCofib constructorInfo.type
+        let hasEquivSchema :=
+          doesExprMentionConst `LeanFX2.Ty.equiv constructorInfo.type ||
+            doesExprMentionConst `LeanFX2.IsEquiv constructorInfo.type
+        if hasBoundarySchema && hasEquivSchema then
+          none
+        else
+          some {
+            constructorName := constructorName
+            detail := "Glue constructor lacks BoundaryCofib/equivalence schema evidence"
+          }
+    | _ => none
+
+/-- Collect Glue boundary/equivalence schema debt records for an inductive. -/
+def glueSchemaDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match glueSchemaDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for schematic Glue constructors. -/
+elab "#assert_glue_schema_budget " inductiveSyntax:ident
+    glueSchemaBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let glueSchemaBudget := glueSchemaBudgetSyntax.getNat
+  let records := glueSchemaDebtRecordsForInductive environment inductiveName
+  if records.size <= glueSchemaBudget then
+    logInfo
+      (s!"Glue schema budget ok: {inductiveName} " ++
+      s!"({records.size}/{glueSchemaBudget} schematic Glue ctors)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"Glue schema budget FAILED for {inductiveName}: " ++
+      s!"{records.size} Glue schema debts exceed budget {glueSchemaBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Term constructors that should mention `EffectRow` instead of raw/unit tags. -/
+def isEffectSchemaConstructorName (constructorName : Name) : Bool :=
+  Name.lastSegmentString constructorName == "effectPerform"
+
+/-- Report effect-row schema debt for one Term constructor. -/
+def effectSchemaDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isEffectSchemaConstructorName constructorName then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        if doesExprMentionConst `LeanFX2.Effects.EffectRow constructorInfo.type then
+          none
+        else
+          some {
+            constructorName := constructorName
+            detail := "effect constructor lacks EffectRow membership evidence"
+          }
+    | _ => none
+
+/-- Collect effect-row schema debt records for an inductive. -/
+def effectSchemaDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match effectSchemaDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for effect-row schema debt. -/
+elab "#assert_effect_schema_budget " inductiveSyntax:ident
+    effectSchemaBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let effectSchemaBudget := effectSchemaBudgetSyntax.getNat
+  let records := effectSchemaDebtRecordsForInductive environment inductiveName
+  if records.size <= effectSchemaBudget then
+    logInfo
+      (s!"effect schema budget ok: {inductiveName} " ++
+      s!"({records.size}/{effectSchemaBudget} effect ctors lack row evidence)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"effect schema budget FAILED for {inductiveName}: " ++
+      s!"{records.size} effect schema debts exceed budget {effectSchemaBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Term constructors that should mention `SessionProtocol` at the core
+signature once sessions stop being raw protocol tags. -/
+def isSessionSchemaConstructorName (constructorName : Name) : Bool :=
+  let suffix := Name.lastSegmentString constructorName
+  suffix == "sessionSend" || suffix == "sessionRecv"
+
+/-- Report session schema debt for one Term constructor. -/
+def sessionSchemaDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isSessionSchemaConstructorName constructorName then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        if doesExprMentionConst `LeanFX2.SessionProtocol constructorInfo.type then
+          none
+        else
+          some {
+            constructorName := constructorName
+            detail := "session constructor lacks SessionProtocol schema evidence"
+          }
+    | _ => none
+
+/-- Collect session schema debt records for an inductive. -/
+def sessionSchemaDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match sessionSchemaDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for session protocol schema debt. -/
+elab "#assert_session_schema_budget " inductiveSyntax:ident
+    sessionSchemaBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let sessionSchemaBudget := sessionSchemaBudgetSyntax.getNat
+  let records := sessionSchemaDebtRecordsForInductive environment inductiveName
+  if records.size <= sessionSchemaBudget then
+    logInfo
+      (s!"session schema budget ok: {inductiveName} " ++
+      s!"({records.size}/{sessionSchemaBudget} session ctors lack protocol schema)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"session schema budget FAILED for {inductiveName}: " ++
+      s!"{records.size} session schema debts exceed budget {sessionSchemaBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Report homogeneous-composition Kan-boundary debt for `Term.hcomp`. -/
+def hcompKanDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if Name.lastSegmentString constructorName != "hcomp" then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        let hasKanBoundaryEvidence :=
+          doesExprMentionConst `LeanFX2.BoundaryCofib constructorInfo.type ||
+            hasBinderContainingSegment "boundary" constructorInfo.type ||
+            hasBinderContainingSegment "kan" constructorInfo.type ||
+            hasBinderContainingSegment "Kan" constructorInfo.type
+        if hasKanBoundaryEvidence then
+          none
+        else
+          some {
+            constructorName := constructorName
+            detail := "hcomp lacks Kan boundary/filler evidence"
+          }
+    | _ => none
+
+/-- Collect hcomp Kan-boundary debt records for an inductive. -/
+def hcompKanDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match hcompKanDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Build-failing budget gate for `hcomp` without Kan boundary evidence. -/
+elab "#assert_hcomp_kan_budget " inductiveSyntax:ident
+    hcompKanBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let hcompKanBudget := hcompKanBudgetSyntax.getNat
+  let records := hcompKanDebtRecordsForInductive environment inductiveName
+  if records.size <= hcompKanBudget then
+    logInfo
+      (s!"hcomp Kan budget ok: {inductiveName} " ++
+      s!"({records.size}/{hcompKanBudget} hcomp ctors lack Kan evidence)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"hcomp Kan budget FAILED for {inductiveName}: " ++
+      s!"{records.size} hcomp Kan debts exceed budget {hcompKanBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
 /-! ## End-of-build summary reporter -/
 
 /-- Aggregate audit summary across one namespace.  Logs total / clean /
@@ -2943,5 +3383,236 @@ elab "#audit_subnamespace_counts" : command => do
   logInfo
     (String.intercalate "\n"
       ([header, totalLine, "  Per-namespace:"] ++ perLine ++ [footer]))
+
+/-! ## Aggregate semantic-debt dashboard
+
+End-of-build banner aggregating EVERY signature-debt budget into one
+prominent multi-line report.  Strictly informational; the actual
+build-failing happens via the per-budget `#assert_*_budget` gates above.
+This is the visibility layer that surfaces today's debt counts amid
+build noise so a reader skimming the build log can see at a glance:
+
+* total declarations audited / clean / failed
+* schematic payload census across `Ty` and `Term`
+* every semantic-signature debt class with current count
+* bridge coverage ratio (rich Term ctor → FX1 encoding)
+* headline refl-fragment claims still depending on manufactured Step rules
+
+Wiring: invoked as the final command in `Tools/AuditAll.lean` so the
+dashboard renders LAST in the build log, after every gate has already
+fired.  When a budget rises beyond its ceiling, the corresponding gate
+errors out before the dashboard is rendered, so a passing build that
+shows the dashboard is one in which all ratchets held.
+-/
+
+/-- Format one debt row with right-justified count.  Keeps the dashboard
+columns aligned without a manual spacing table. -/
+def formatDebtRow (label : String) (count : Nat) : String :=
+  let countText := toString count
+  let labelWidth : Nat := 50
+  let labelPaddingNeeded :=
+    if label.length < labelWidth then labelWidth - label.length else 1
+  let labelPadding := String.ofList (List.replicate labelPaddingNeeded ' ')
+  s!"    {label}{labelPadding}{countText}"
+
+/-- Aggregate semantic-debt dashboard over a Term inductive, a Ty
+inductive, and a top-level namespace.  All counts are read live from the
+environment via the existing per-gate record collectors; no separate
+state is maintained.  The dashboard does not throw — it logs at info
+level so the build keeps going regardless of debt levels.
+
+Layout: one prominent banner with five sections.
+
+* Audited declarations: total / clean / failed across the namespace.
+* Schematic payload census: explicit `RawTerm` and `Nat` payloads in
+  Ty and Term constructors.
+* Semantic signature debt: thirteen rows, one per known fake-typing
+  class (mode discipline, dependent eliminator motive, unit-typed
+  proof placeholder, modal no-op, session no-advance, equiv coherence,
+  Ty raw endpoint, Ty unstructured schema, transport linkage, glue
+  schema, effect schema, session schema, hcomp Kan).
+* Bridge coverage: encoded ctor count over total ctor count, plus
+  unbridged ctor count.
+* Headline refl-fragment claims: count of declarations in the
+  namespace whose transitive closure depends on a manufactured
+  Univalence / funext Step rule.
+
+When all numbers are at their current pinned budgets the dashboard
+shows the project's debt floor in one place; when work reduces a
+budget, the corresponding row drops without manual edits. -/
+elab "#audit_debt_dashboard " termInductiveSyntax:ident
+    tyInductiveSyntax:ident namespaceSyntax:ident : command => do
+  let environment ← getEnv
+  let termInductiveName := termInductiveSyntax.getId
+  let tyInductiveName := tyInductiveSyntax.getId
+  let namespaceName := namespaceSyntax.getId
+  -- Schematic payload census across Ty and Term constructors.
+  let tyPayloadRecords :=
+    schematicPayloadRecordsForInductive environment tyInductiveName
+  let tyPayloadTotals := totalSchematicPayloadCounts tyPayloadRecords
+  let termPayloadRecords :=
+    schematicPayloadRecordsForInductive environment termInductiveName
+  let termPayloadTotals := totalSchematicPayloadCounts termPayloadRecords
+  -- Per-debt-class counts.
+  let modeDebtCount :=
+    (modeDisciplineDebtRecordsForInductive environment termInductiveName).size
+  let motiveDebtCount :=
+    (dependentEliminatorDebtRecordsForInductive
+      environment termInductiveName).size
+  let unitPlaceholderDebtCount :=
+    (unitPlaceholderDebtRecordsForInductive
+      environment termInductiveName).size
+  let modalNoopDebtCount :=
+    (modalNoopDebtRecordsForInductive environment termInductiveName).size
+  let sessionNoAdvanceDebtCount :=
+    (sessionNoAdvanceDebtRecordsForInductive
+      environment termInductiveName).size
+  let equivCoherenceDebtCount :=
+    (equivCoherenceDebtRecordsForInductive
+      environment termInductiveName).size
+  let tyRawEndpointDebtCount :=
+    (tyRawEndpointDebtRecordsForInductive
+      environment tyInductiveName).size
+  let tyUnstructuredSchemaDebtCount :=
+    (tyUnstructuredSchemaDebtRecordsForInductive
+      environment tyInductiveName).size
+  let transportLinkageDebtCount :=
+    (transportLinkageDebtRecordsForInductive
+      environment termInductiveName).size
+  let glueSchemaDebtCount :=
+    (glueSchemaDebtRecordsForInductive environment termInductiveName).size
+  let effectSchemaDebtCount :=
+    (effectSchemaDebtRecordsForInductive
+      environment termInductiveName).size
+  let sessionSchemaDebtCount :=
+    (sessionSchemaDebtRecordsForInductive
+      environment termInductiveName).size
+  let hcompKanDebtCount :=
+    (hcompKanDebtRecordsForInductive environment termInductiveName).size
+  -- Bridge coverage.
+  let totalCtorCount :=
+    (getInductiveConstructorNames environment termInductiveName).size
+  let bridgeUncoveredCount :=
+    (bridgeCoverageDebtRecordsForInductive
+      environment termInductiveName).size
+  let bridgeCoveredCount :=
+    if totalCtorCount >= bridgeUncoveredCount then
+      totalCtorCount - bridgeUncoveredCount
+    else 0
+  -- Headline refl-fragment claims.
+  let mut headlineReflFragmentCount : Nat := 0
+  let targetNames := namespaceAuditTargets environment namespaceName
+  for targetName in targetNames do
+    if isHeadlinePrincipleClaimName targetName then
+      let manufacturedDependencies :=
+        collectManufacturedWitnessStepDependencies environment targetName
+      if !manufacturedDependencies.isEmpty then
+        headlineReflFragmentCount := headlineReflFragmentCount + 1
+  -- Strict-audit totals across the namespace.
+  let mut auditTotalCount : Nat := 0
+  let mut auditCleanCount : Nat := 0
+  for targetName in targetNames do
+    auditTotalCount := auditTotalCount + 1
+    match environment.find? targetName with
+    | none => continue
+    | some constantInfo =>
+        let violations :=
+          classifyStrictViolations environment targetName constantInfo
+        if violations.isEmpty then
+          auditCleanCount := auditCleanCount + 1
+  let auditFailedCount :=
+    if auditTotalCount >= auditCleanCount then
+      auditTotalCount - auditCleanCount
+    else 0
+  -- Total semantic-signature debt across all classes.
+  let totalSignatureDebt :=
+    modeDebtCount + motiveDebtCount + unitPlaceholderDebtCount +
+      modalNoopDebtCount + sessionNoAdvanceDebtCount +
+      equivCoherenceDebtCount + tyRawEndpointDebtCount +
+      tyUnstructuredSchemaDebtCount + transportLinkageDebtCount +
+      glueSchemaDebtCount + effectSchemaDebtCount +
+      sessionSchemaDebtCount + hcompKanDebtCount
+  -- Compose banner lines.
+  let bannerEdge :=
+    "════════════════════════════════════════════════════════════"
+  let dashHeader :=
+    "             lean-fx-2 SEMANTIC DEBT DASHBOARD              "
+  let dashLines : List String := [
+    bannerEdge,
+    dashHeader,
+    bannerEdge,
+    "  AUDITED DECLARATIONS",
+    s!"    Namespace:  {namespaceName}",
+    s!"    Total:      {auditTotalCount}",
+    s!"    Clean:      {auditCleanCount}",
+    s!"    Failed:     {auditFailedCount}",
+    "  ──────────────────────────────────────────────────────────",
+    "  SCHEMATIC PAYLOAD CENSUS  (raw data laundered into typed)",
+    s!"    Ty   ctors: RawTerm={tyPayloadTotals.rawTermPayloadCount}  " ++
+      s!"Nat={tyPayloadTotals.natPayloadCount}  " ++
+      s!"(payload-bearing ctors: {tyPayloadRecords.size})",
+    s!"    Term ctors: RawTerm={termPayloadTotals.rawTermPayloadCount}  " ++
+      s!"Nat={termPayloadTotals.natPayloadCount}  " ++
+      s!"(payload-bearing ctors: {termPayloadRecords.size})",
+    "  ──────────────────────────────────────────────────────────",
+    s!"  SEMANTIC SIGNATURE DEBT  (typing-but-not-really-typing): " ++
+      s!"{totalSignatureDebt}",
+    formatDebtRow
+      "Mode discipline (cubical/strict w/o mode premise)"
+      modeDebtCount,
+    formatDebtRow
+      "Dependent eliminator motive (fixed-motive recursors)"
+      motiveDebtCount,
+    formatDebtRow
+      "Unit-typed proof placeholders (Ty.unit obligations)"
+      unitPlaceholderDebtCount,
+    formatDebtRow
+      "Modal no-op (modIntro/Elim/subsume w/o Ty.modal)"
+      modalNoopDebtCount,
+    formatDebtRow
+      "Session no-advance (no protocol continuation)"
+      sessionNoAdvanceDebtCount,
+    formatDebtRow
+      "Equiv coherence (equivIntroHet w/o leftInv/rightInv)"
+      equivCoherenceDebtCount,
+    formatDebtRow
+      "Ty raw endpoint (Ty.id/path/oeq w/o typed endpoints)"
+      tyRawEndpointDebtCount,
+    formatDebtRow
+      "Ty unstructured schema (modal/session/effect raw tag)"
+      tyUnstructuredSchemaDebtCount,
+    formatDebtRow
+      "Transport linkage (transp w/o typed endpoint linkage)"
+      transportLinkageDebtCount,
+    formatDebtRow
+      "Glue schema (glueIntro w/o boundary cofibration)"
+      glueSchemaDebtCount,
+    formatDebtRow
+      "Effect schema (effectPerform w/o effect row)"
+      effectSchemaDebtCount,
+    formatDebtRow
+      "Session schema (session w/o SessionProtocol)"
+      sessionSchemaDebtCount,
+    formatDebtRow
+      "Hcomp Kan (hcomp w/o boundary cofibration)"
+      hcompKanDebtCount,
+    "  ──────────────────────────────────────────────────────────",
+    "  BRIDGE COVERAGE  (rich Term ctor → FX1 encoding)",
+    s!"    Encoded:    {bridgeCoveredCount}/{totalCtorCount} " ++
+      s!"({totalCtorCount - bridgeCoveredCount} unbridged)",
+    "  ──────────────────────────────────────────────────────────",
+    "  HEADLINE REFL-FRAGMENT CLAIMS",
+    s!"    Univalence/funext family backed by manufactured Step " ++
+      s!"rules: {headlineReflFragmentCount}",
+    bannerEdge,
+    "  Notes:",
+    "    * All counts read live from current environment.",
+    "    * Build-failing budgets fire EARLIER if any number rose; " ++
+      "a rendered",
+    "      dashboard means every ratchet held this build.",
+    "    * Lower is better.  Each shipped fix should reduce one row.",
+    bannerEdge
+  ]
+  logInfo (String.intercalate "\n" dashLines)
 
 end LeanFX2.Tools

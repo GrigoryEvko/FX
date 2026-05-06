@@ -1527,6 +1527,16 @@ namespace LeanFX2.Tools
 #assert_session_no_advance_budget LeanFX2.Term 2
 #assert_equiv_coherence_budget LeanFX2.Term 1
 
+-- Rich schema/linkage debt gates.  These pin raw endpoint/tag laundering and
+-- missing cubical/session/effect schema evidence at both Ty and Term layers.
+#assert_ty_raw_endpoint_budget LeanFX2.Ty 4
+#assert_ty_unstructured_schema_budget LeanFX2.Ty 5
+#assert_transport_linkage_budget LeanFX2.Term 1
+#assert_glue_schema_budget LeanFX2.Term 2
+#assert_effect_schema_budget LeanFX2.Term 1
+#assert_session_schema_budget LeanFX2.Term 2
+#assert_hcomp_kan_budget LeanFX2.Term 1
+
 -- Exact rich-to-FX1 bridge constructor coverage.  Fragment bridges remain
 -- useful, but only exact `FX1Bridge.encodeTermSound_<ctor>` names count as
 -- whole-constructor bridge coverage for this matrix.
@@ -1566,5 +1576,16 @@ namespace LeanFX2.Tools
 -- blocking happens via `#audit_namespace_strict` above.  Surfaces
 -- audit health amid hundreds of OK info lines.
 #audit_summary LeanFX2
+
+-- AGGREGATE SEMANTIC-DEBT DASHBOARD.  Renders the project's full debt
+-- floor in one prominent multi-line banner at end of build.  Reads live
+-- from the environment via every per-debt-class record collector.
+-- Strictly informational; the per-budget gates above already failed
+-- the build if any ratchet rose, so a rendered dashboard means every
+-- budget held this build.  Visibility layer: makes today's debt counts
+-- and bridge-coverage status surface clearly amid build noise so a
+-- reader skimming the build log sees at a glance which classes still
+-- have debt and how the ratchets stand.
+#audit_debt_dashboard LeanFX2.Term LeanFX2.Ty LeanFX2
 
 end LeanFX2.Tools
