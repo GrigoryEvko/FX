@@ -1,4 +1,5 @@
 prelude
+import LeanFX2.FX1.Core.Primitive
 import LeanFX2.FX1.Core.Name
 import LeanFX2.FX1.Core.Level
 import LeanFX2.FX1.Core.Expr

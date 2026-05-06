@@ -649,12 +649,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Graded.FXGradeVector21.compose_mono
 
 -- FX1/Core minimal syntax and M1 environment scaffold
+#assert_no_axioms LeanFX2.FX1.Boolean.and_true_left
+#assert_no_axioms LeanFX2.FX1.Boolean.and_true_right
+#assert_no_axioms LeanFX2.FX1.NaturalNumber.beq
+#assert_no_axioms LeanFX2.FX1.NaturalNumber.beq_sound
 #assert_no_axioms LeanFX2.FX1.Name
-#assert_no_axioms LeanFX2.FX1.Name.appendString
+#assert_no_axioms LeanFX2.FX1.Name.appendAtom
 #assert_no_axioms LeanFX2.FX1.Name.appendNumber
 #assert_no_axioms LeanFX2.FX1.Name.isAnonymous
 #assert_no_axioms LeanFX2.FX1.Name.beq
 #assert_no_axioms LeanFX2.FX1.Name.nodeCount
+#assert_no_axioms LeanFX2.FX1.Name.beq_sound
 #assert_no_axioms LeanFX2.FX1.Level
 #assert_no_axioms LeanFX2.FX1.Level.beq
 #assert_no_axioms LeanFX2.FX1.Level.nodeCount
@@ -801,12 +806,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.extend
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.toWellFormed
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.hasAxiomDeclaration_false
-#assert_no_axioms LeanFX2.FX1.CheckBool.and_true_left
-#assert_no_axioms LeanFX2.FX1.CheckBool.and_true_right
 #assert_no_axioms LeanFX2.FX1.CheckOption.some_injective
 #assert_no_axioms LeanFX2.FX1.Level.checkerBeq
 #assert_no_axioms LeanFX2.FX1.Level.checkerBeq_sound
-#assert_no_axioms LeanFX2.FX1.Expr.natBeq_sound
 #assert_no_axioms LeanFX2.FX1.Expr.checkerBeq
 #assert_no_axioms LeanFX2.FX1.Expr.checkerBeq_sound
 #assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult
@@ -826,6 +828,19 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Expr.infer?_sound
 #assert_no_axioms LeanFX2.FX1.Expr.check?
 #assert_no_axioms LeanFX2.FX1.Expr.check?_sound
+
+-- FX1 executable extern-dependency gates.  These are narrower than the axiom
+-- gates: they fail if a checker-critical executable primitive delegates to
+-- Lean host runtime code such as `String.decEq` or host `Nat.beq`.
+#assert_no_extern_dependencies LeanFX2.FX1.NaturalNumber.beq
+#assert_no_extern_dependencies LeanFX2.FX1.Name.beq
+#assert_no_extern_dependencies LeanFX2.FX1.Level.beq
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.beq
+#assert_no_extern_dependencies LeanFX2.FX1.Declaration.hasName
+#assert_no_extern_dependencies LeanFX2.FX1.Environment.findByName?
+#assert_no_extern_dependencies LeanFX2.FX1.Level.checkerBeq
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.checkerBeq
+#assert_no_extern_dependencies LeanFX2.FX1.Expr.checkBoolFromResult?
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast

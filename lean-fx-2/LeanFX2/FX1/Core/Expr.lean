@@ -34,7 +34,7 @@ conversion is introduced.  The constructor-pair table is fully enumerated to
 avoid wildcard-generated proof artifacts. -/
 def beq : Expr -> Expr -> Bool
   | Expr.bvar leftIndex, Expr.bvar rightIndex =>
-      Nat.beq leftIndex rightIndex
+      NaturalNumber.beq leftIndex rightIndex
   | Expr.bvar _, Expr.sort _ => false
   | Expr.bvar _, Expr.const _ => false
   | Expr.bvar _, Expr.pi _ _ => false

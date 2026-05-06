@@ -9,36 +9,17 @@ This module adds the first executable checker slice for the minimal FX1
 lambda-Pi core.  It is intentionally incomplete:
 
 * variables, sorts, Pi types, lambdas, and applications are checked;
-* constants return `none` until executable name equality has a proved
-  zero-axiom soundness theorem;
-* equality used by application checking rejects constants and level parameters.
+* constants return `none` until executable environment lookup has a proved
+  zero-axiom membership theorem;
+* equality used by application checking is structural and FX1-native.
 
 The incompleteness is deliberate.  The executable checker is sound for the
-fragment it accepts, and rejects constants until name equality has a proved
-zero-axiom soundness theorem.  Accepting fewer programs is the conservative
-direction; accepting constants before name equality is proved would widen the
-TCB.
+fragment it accepts.  Accepting fewer programs is the conservative direction;
+accepting constants before executable environment lookup is proved would widen
+the TCB.
 -/
 
 namespace LeanFX2.FX1
-
-namespace CheckBool
-
-/-- If a Boolean conjunction is true, its left side is true. -/
-theorem and_true_left {leftBool rightBool : Bool}
-    (andIsTrue : Eq (Bool.and leftBool rightBool) true) :
-    Eq leftBool true :=
-  match leftBool, rightBool with
-  | true, true => Eq.refl true
-
-/-- If a Boolean conjunction is true, its right side is true. -/
-theorem and_true_right {leftBool rightBool : Bool}
-    (andIsTrue : Eq (Bool.and leftBool rightBool) true) :
-    Eq rightBool true :=
-  match leftBool, rightBool with
-  | true, true => Eq.refl true
-
-end CheckBool
 
 namespace CheckOption
 
@@ -57,8 +38,8 @@ namespace Level
 
 /-- Checker equality for the FX1 root universe fragment.
 
-`param` is rejected for now: comparing parameter names would require a proved
-sound executable name equality, and `Name.str` contains host `String`. -/
+Universe parameters are compared with FX1-native name equality, not host
+`String` equality. -/
 def checkerBeq : Level -> Level -> Bool
   | Level.zero, Level.zero => true
   | Level.zero, Level.succ _ => false
@@ -93,7 +74,8 @@ def checkerBeq : Level -> Level -> Bool
   | Level.param _, Level.succ _ => false
   | Level.param _, Level.max _ _ => false
   | Level.param _, Level.imax _ _ => false
-  | Level.param _, Level.param _ => false
+  | Level.param leftName, Level.param rightName =>
+      Name.beq leftName rightName
 
 /-- Soundness of FX1 checker-level universe comparison. -/
 theorem checkerBeq_sound
@@ -121,12 +103,12 @@ theorem checkerBeq_sound
         checkerBeq_sound
           leftLeftLevel
           rightLeftLevel
-          (CheckBool.and_true_left equalityIsTrue)
+          (Boolean.and_true_left equalityIsTrue)
       let rightEquality :=
         checkerBeq_sound
           leftRightLevel
           rightRightLevel
-          (CheckBool.and_true_right equalityIsTrue)
+          (Boolean.and_true_right equalityIsTrue)
       Eq.trans
         (congrArg
           (fun rewrittenLeftLevel =>
@@ -148,12 +130,12 @@ theorem checkerBeq_sound
         checkerBeq_sound
           leftLeftLevel
           rightLeftLevel
-          (CheckBool.and_true_left equalityIsTrue)
+          (Boolean.and_true_left equalityIsTrue)
       let rightEquality :=
         checkerBeq_sound
           leftRightLevel
           rightRightLevel
-          (CheckBool.and_true_right equalityIsTrue)
+          (Boolean.and_true_right equalityIsTrue)
       Eq.trans
         (congrArg
           (fun rewrittenLeftLevel =>
@@ -168,33 +150,18 @@ theorem checkerBeq_sound
   | Level.param _, Level.succ _, equalityIsTrue => nomatch equalityIsTrue
   | Level.param _, Level.max _ _, equalityIsTrue => nomatch equalityIsTrue
   | Level.param _, Level.imax _ _, equalityIsTrue => nomatch equalityIsTrue
-  | Level.param _, Level.param _, equalityIsTrue => nomatch equalityIsTrue
+  | Level.param leftName, Level.param rightName, equalityIsTrue =>
+      congrArg Level.param
+        (Name.beq_sound leftName rightName equalityIsTrue)
 
 end Level
 
 namespace Expr
 
-/-- Soundness of `Nat.beq`, kept local to the FX1 checker so no host
-decidable equality theorem becomes part of the root story. -/
-theorem natBeq_sound
-    : forall leftIndex rightIndex : Nat,
-      Eq (Nat.beq leftIndex rightIndex) true ->
-      Eq leftIndex rightIndex
-  | Nat.zero, Nat.zero, _ => Eq.refl Nat.zero
-  | Nat.zero, Nat.succ _, equalityIsTrue => nomatch equalityIsTrue
-  | Nat.succ _, Nat.zero, equalityIsTrue => nomatch equalityIsTrue
-  | Nat.succ leftSmallerIndex, Nat.succ rightSmallerIndex, equalityIsTrue =>
-      congrArg Nat.succ
-        (natBeq_sound leftSmallerIndex rightSmallerIndex equalityIsTrue)
-
-/-- Checker equality for the initial FX1 expression fragment.
-
-Constants are rejected for now, because `Name.str` uses host `String` and the
-checker does not yet have a zero-axiom proof that executable name equality
-implies propositional equality. -/
+/-- Checker equality for the initial FX1 expression fragment. -/
 def checkerBeq : Expr -> Expr -> Bool
   | Expr.bvar leftIndex, Expr.bvar rightIndex =>
-      Nat.beq leftIndex rightIndex
+      NaturalNumber.beq leftIndex rightIndex
   | Expr.bvar _, Expr.sort _ => false
   | Expr.bvar _, Expr.const _ => false
   | Expr.bvar _, Expr.pi _ _ => false
@@ -209,7 +176,8 @@ def checkerBeq : Expr -> Expr -> Bool
   | Expr.sort _, Expr.app _ _ => false
   | Expr.const _, Expr.bvar _ => false
   | Expr.const _, Expr.sort _ => false
-  | Expr.const _, Expr.const _ => false
+  | Expr.const leftName, Expr.const rightName =>
+      Name.beq leftName rightName
   | Expr.const _, Expr.pi _ _ => false
   | Expr.const _, Expr.lam _ _ => false
   | Expr.const _, Expr.app _ _ => false
@@ -249,7 +217,7 @@ theorem checkerBeq_sound
       Eq leftExpr rightExpr
   | Expr.bvar leftIndex, Expr.bvar rightIndex, equalityIsTrue =>
       congrArg Expr.bvar
-        (natBeq_sound leftIndex rightIndex equalityIsTrue)
+        (NaturalNumber.beq_sound leftIndex rightIndex equalityIsTrue)
   | Expr.bvar _, Expr.sort _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.bvar _, Expr.const _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.bvar _, Expr.pi _ _, equalityIsTrue => nomatch equalityIsTrue
@@ -265,7 +233,9 @@ theorem checkerBeq_sound
   | Expr.sort _, Expr.app _ _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.const _, Expr.bvar _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.const _, Expr.sort _, equalityIsTrue => nomatch equalityIsTrue
-  | Expr.const _, Expr.const _, equalityIsTrue => nomatch equalityIsTrue
+  | Expr.const leftName, Expr.const rightName, equalityIsTrue =>
+      congrArg Expr.const
+        (Name.beq_sound leftName rightName equalityIsTrue)
   | Expr.const _, Expr.pi _ _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.const _, Expr.lam _ _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.const _, Expr.app _ _, equalityIsTrue => nomatch equalityIsTrue
@@ -278,11 +248,11 @@ theorem checkerBeq_sound
         (checkerBeq_sound
           leftDomain
           rightDomain
-          (CheckBool.and_true_left equalityIsTrue))
+          (Boolean.and_true_left equalityIsTrue))
         (checkerBeq_sound
           leftBody
           rightBody
-          (CheckBool.and_true_right equalityIsTrue))
+          (Boolean.and_true_right equalityIsTrue))
   | Expr.pi _ _, Expr.lam _ _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.pi _ _, Expr.app _ _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.lam _ _, Expr.bvar _, equalityIsTrue => nomatch equalityIsTrue
@@ -295,11 +265,11 @@ theorem checkerBeq_sound
         (checkerBeq_sound
           leftDomain
           rightDomain
-          (CheckBool.and_true_left equalityIsTrue))
+          (Boolean.and_true_left equalityIsTrue))
         (checkerBeq_sound
           leftBody
           rightBody
-          (CheckBool.and_true_right equalityIsTrue))
+          (Boolean.and_true_right equalityIsTrue))
   | Expr.lam _ _, Expr.app _ _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.app _ _, Expr.bvar _, equalityIsTrue => nomatch equalityIsTrue
   | Expr.app _ _, Expr.sort _, equalityIsTrue => nomatch equalityIsTrue
@@ -313,11 +283,11 @@ theorem checkerBeq_sound
         (checkerBeq_sound
           leftFunction
           rightFunction
-          (CheckBool.and_true_left equalityIsTrue))
+          (Boolean.and_true_left equalityIsTrue))
         (checkerBeq_sound
           leftArgument
           rightArgument
-          (CheckBool.and_true_right equalityIsTrue))
+          (Boolean.and_true_right equalityIsTrue))
 
 end Expr
 

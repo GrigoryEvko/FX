@@ -88,6 +88,41 @@ def collectClassicalReferences
       else
         classicalSoFar)
 
+/-- Collect transitive dependencies carrying Lean's `@[extern]` attribute. -/
+def collectExternDependencies
+    (environment : Environment) (someName : Name) :
+    Array Name :=
+  let dependencyNames := collectDependencies environment someName (includeStdlib := true)
+  dependencyNames.toList.foldl
+    (init := (#[] : Array Name))
+    (fun externSoFar dependencyName =>
+      if (Lean.externAttr.getParam? environment dependencyName).isSome then
+        externSoFar.push dependencyName
+      else
+        externSoFar)
+
+/-- Build-failing transitive extern-dependency gate for one declaration.
+
+This is stricter than the namespace-level strict audit, which flags extern
+attributes on project declarations themselves.  Use this for executable
+trusted-root primitives where depending on host runtime code would widen the
+TCB even when the declaration remains axiom-clean. -/
+elab "#assert_no_extern_dependencies " targetSyntax:ident : command => do
+  let environment ← getEnv
+  let targetName := targetSyntax.getId
+  match environment.find? targetName with
+  | none =>
+      throwError "unknown declaration for extern audit: {targetName}"
+  | some _ =>
+      let externDependencies := collectExternDependencies environment targetName
+      if externDependencies.isEmpty then
+        logInfo m!"{targetName} : no extern dependencies"
+      else
+        let renderedDependencies :=
+          String.intercalate ", " (externDependencies.toList.map toString)
+        throwError
+          s!"{targetName} depends on extern declarations: [{renderedDependencies}]"
+
 /-- Compute every strict-discipline violation for one declaration.
 Built up by appending each violation category in turn so we avoid a
 do-block / `let mut` shape (which the parser rejects in this `def`
@@ -497,7 +532,7 @@ elab "#assert_rich_production_fx1_import_surface_clean" : command => do
 
 /-- The single FX1/Core source file allowed to import `Init.Prelude` directly. -/
 def mayDirectlyImportFX1Prelude (sourceModuleName : Name) : Bool :=
-  sourceModuleName == `LeanFX2.FX1.Core.Name
+  sourceModuleName == `LeanFX2.FX1.Core.Primitive
 
 /-- The only host module one FX1 source file may import directly. -/
 def isAllowedFX1PreludeImport
@@ -511,7 +546,7 @@ def isAllowedFX1PreludeImport
 FX1/Core may only import FX1/Core.  FX1/LeanKernel may import FX1/Core and
 FX1/LeanKernel.  Any future FX1 module outside those two namespaces must stay
 inside `LeanFX2.FX1`.  The only allowed non-FX1 direct import is
-`LeanFX2.FX1.Core.Name -> Init.Prelude`, matching the FX1/Core policy in
+`LeanFX2.FX1.Core.Primitive -> Init.Prelude`, matching the FX1/Core policy in
 `kernel-sprint.md` §1.0.1 while keeping the host-prelude edge singular.
 Host-heavy imports such as `Lean` or `Std` therefore fail at the source-import
 boundary before dependency-closure audit even runs. -/
@@ -584,7 +619,8 @@ def isAllowedFX1CoreExactDirectImport
   if sourceModuleName == `LeanFX2.FX1 then
     importedModuleName == `LeanFX2.FX1.Core
   else if sourceModuleName == `LeanFX2.FX1.Core then
-    importedModuleName == `LeanFX2.FX1.Core.Name ||
+    importedModuleName == `LeanFX2.FX1.Core.Primitive ||
+      importedModuleName == `LeanFX2.FX1.Core.Name ||
       importedModuleName == `LeanFX2.FX1.Core.Level ||
       importedModuleName == `LeanFX2.FX1.Core.Expr ||
       importedModuleName == `LeanFX2.FX1.Core.Declaration ||
@@ -595,8 +631,10 @@ def isAllowedFX1CoreExactDirectImport
       importedModuleName == `LeanFX2.FX1.Core.HasType ||
       importedModuleName == `LeanFX2.FX1.Core.WellFormed ||
       importedModuleName == `LeanFX2.FX1.Core.Check
-  else if sourceModuleName == `LeanFX2.FX1.Core.Name then
+  else if sourceModuleName == `LeanFX2.FX1.Core.Primitive then
     importedModuleName == `Init.Prelude
+  else if sourceModuleName == `LeanFX2.FX1.Core.Name then
+    importedModuleName == `LeanFX2.FX1.Core.Primitive
   else if sourceModuleName == `LeanFX2.FX1.Core.Level then
     importedModuleName == `LeanFX2.FX1.Core.Name
   else if sourceModuleName == `LeanFX2.FX1.Core.Expr then
