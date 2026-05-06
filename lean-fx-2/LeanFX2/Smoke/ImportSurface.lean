@@ -13,6 +13,8 @@ audits.  The same broad environment also checks FX1 source imports, prevents
 the legacy `LeanFX2.Lean.Kernel` scaffold from leaking into rich production
 modules, prevents rich production modules from depending on FX1, and verifies
 that production modules do not import later semantic layers.
+It also fails on redundant direct project imports, except for the small
+documented set of semantic core edges.
 -/
 
 namespace LeanFX2.Smoke.ImportSurface
@@ -26,6 +28,7 @@ namespace LeanFX2.Smoke.ImportSurface
 #assert_rich_production_fx1_import_surface_clean
 #assert_legacy_lean_kernel_scaffold_isolated
 #assert_production_layer_imports_clean
+#assert_no_redundant_production_project_imports
 #assert_host_heavy_import_surface_allowlisted
 #audit_import_family_summary
 #audit_import_surface_summary

@@ -30,9 +30,9 @@ or forbidden host axioms.  It is intentionally stricter than the
 project-wide gate because FX1/Core is the planned trusted root.
 
 The import-surface gates keep public production imports, host imports,
-FX1 imports, rich-production-to-FX1 imports, public-umbrella reachability,
-and the legacy Lean-kernel scaffold from accidentally collapsing into one
-dependency cone.
+FX1 imports, rich-production-to-FX1 imports, redundant direct project imports,
+public-umbrella reachability, and the legacy Lean-kernel scaffold from
+accidentally collapsing into one dependency cone.
 -/
 
 namespace LeanFX2.Tools
@@ -1049,6 +1049,155 @@ elab "#assert_production_layer_imports_clean" : command => do
       s!"production layer imports FAILED: " ++
       s!"{violations.size} of {scannedLayeredModules} modules import later layers"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
+/-! ## Redundant direct project-import discipline -/
+
+/-- Convert the loaded module header into the compact lookup shape used by
+import-reachability checks. -/
+def loadedModuleImportEntries (environment : Environment) :
+    Array (Name × ModuleData) :=
+  (Array.zip environment.header.modules environment.header.moduleData).map
+    (fun (effectiveImport, moduleData) => (effectiveImport.module, moduleData))
+
+/-- Direct imports recorded for one source module in the currently loaded
+module graph. -/
+def directImportNamesForModuleName
+    (moduleEntries : Array (Name × ModuleData))
+    (sourceModuleName : Name) :
+    List Name :=
+  match moduleEntries.find? (fun (entryName, _) => entryName == sourceModuleName) with
+  | some (_, moduleData) =>
+      moduleData.imports.toList.map (fun directImport => directImport.module)
+  | none => []
+
+/-- Fuel-bounded reachability over direct module imports.
+
+The fuel is normally the number of loaded modules plus one.  A visited list
+prevents cycles from expanding forever; the fuel keeps the definition plainly
+structural and acceptable to the kernel. -/
+def isModuleReachableFromFrontierWithFuel
+    (moduleEntries : Array (Name × ModuleData))
+    (targetModuleName : Name)
+    (fuel : Nat)
+    (visitedModuleNames : List Name)
+    (frontierModuleNames : List Name) :
+    Bool :=
+  match fuel with
+  | 0 => false
+  | Nat.succ remainingFuel =>
+      match frontierModuleNames with
+      | [] => false
+      | candidateModuleName :: remainingFrontier =>
+          if candidateModuleName == targetModuleName then
+            true
+          else if visitedModuleNames.contains candidateModuleName then
+            isModuleReachableFromFrontierWithFuel
+              moduleEntries targetModuleName remainingFuel visitedModuleNames
+              remainingFrontier
+          else
+            let candidateImports :=
+              directImportNamesForModuleName moduleEntries candidateModuleName
+            isModuleReachableFromFrontierWithFuel
+              moduleEntries targetModuleName remainingFuel
+              (candidateModuleName :: visitedModuleNames)
+              (candidateImports ++ remainingFrontier)
+
+/-- Project-local direct imports from one module.  Host imports are handled by
+the host-heavy gates and by FX1's stricter prelude rule. -/
+def directProjectImportNamesForModuleData
+    (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun projectImports directImport =>
+      if (`LeanFX2).isPrefixOf directImport.module then
+        projectImports.push directImport.module
+      else
+        projectImports)
+
+/-- Public entrypoints are intentionally broad and are checked by umbrella
+isolation/reachability gates rather than by redundant-edge minimization. -/
+def shouldScanRedundantProjectImportsForModule
+    (sourceModuleName : Name) :
+    Bool :=
+  isProductionLeanFX2ModuleName sourceModuleName &&
+    !isPublicUmbrellaImportModuleName sourceModuleName
+
+/-- Documented direct imports that are intentionally kept even though the
+target is reachable through another loaded project import.
+
+These four edges name semantic dependencies that are core to the source
+module's interface, not incidental transitive conveniences.  Keeping the
+allowlist small makes future redundancy drift fail fast. -/
+def isDocumentedRedundantProjectImport
+    (sourceModuleName importedModuleName : Name) :
+    Bool :=
+  (sourceModuleName == `LeanFX2.Term &&
+      importedModuleName == `LeanFX2.Foundation.RawTerm) ||
+    (sourceModuleName == `LeanFX2.Term &&
+      importedModuleName == `LeanFX2.Foundation.Ty) ||
+    (sourceModuleName == `LeanFX2.Graded.Rules &&
+      importedModuleName == `LeanFX2.Graded.GradeVector) ||
+    (sourceModuleName == `LeanFX2.Graded.Dimensions21 &&
+      importedModuleName == `LeanFX2.Graded.Instances.Complexity)
+
+/-- Redundant direct imports for one production module.  A direct import is
+redundant when the same project module is reachable through the source's other
+direct imports. -/
+def redundantProjectImportsForModule
+    (moduleEntries : Array (Name × ModuleData))
+    (sourceModuleName : Name)
+    (moduleData : ModuleData) :
+    Array DirectImportRecord :=
+  let directProjectImports := directProjectImportNamesForModuleData moduleData
+  directProjectImports.foldl
+    (init := (#[] : Array DirectImportRecord))
+    (fun redundantImports importedModuleName =>
+      if isDocumentedRedundantProjectImport sourceModuleName importedModuleName then
+        redundantImports
+      else
+        let otherDirectImports :=
+          directProjectImports.toList.filter
+            (fun candidateModuleName => candidateModuleName != importedModuleName)
+        let isReachableWithoutDirectEdge :=
+          isModuleReachableFromFrontierWithFuel moduleEntries importedModuleName
+            (moduleEntries.size + 1) [] otherDirectImports
+        if isReachableWithoutDirectEdge then
+          redundantImports.push {
+            sourceModuleName := sourceModuleName
+            importedModuleName := importedModuleName
+          }
+        else
+          redundantImports)
+
+/-- Build-failing gate for redundant direct project imports in production
+modules.
+
+This turns the repository import-pruning script into a durable invariant:
+regular production modules should import the narrow modules they actually use,
+but not keep extra direct project edges that are already supplied by another
+direct import. -/
+elab "#assert_no_redundant_production_project_imports" : command => do
+  let environment ← getEnv
+  let moduleEntries := loadedModuleImportEntries environment
+  let mut scannedProductionModules : Nat := 0
+  let mut violations : Array DirectImportRecord := #[]
+  for (sourceModuleName, moduleData) in moduleEntries do
+    if shouldScanRedundantProjectImportsForModule sourceModuleName then
+      scannedProductionModules := scannedProductionModules + 1
+      violations :=
+        violations ++
+          redundantProjectImportsForModule
+            moduleEntries sourceModuleName moduleData
+  if violations.isEmpty then
+    logInfo
+      m!"redundant production project imports ok: {scannedProductionModules} modules"
+  else
+    let renderedImports := formatDirectImportRecords violations
+    let header :=
+      s!"redundant production project imports FAILED: " ++
+      s!"{violations.size} redundant direct project imports"
+    throwError (header ++ "\n  " ++ renderedImports)
 
 /-! ## Import-surface summary
 

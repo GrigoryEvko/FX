@@ -943,6 +943,11 @@ namespace LeanFX2.Tools
 -- downward through a convenience import.
 #assert_production_layer_imports_clean
 
+-- Redundant direct project-import gate.  Production modules may not keep
+-- extra direct `LeanFX2.*` imports that are already reachable through another
+-- direct import, except for the four documented semantic core edges.
+#assert_no_redundant_production_project_imports
+
 -- FX1/Core host-minimal gate.  This is intentionally scoped to the
 -- future minimal-root namespace, not the rich kernel: FX1 declarations
 -- must not depend on host-heavy `Lean`, `Std`, `Classical`, host `Quot`,
