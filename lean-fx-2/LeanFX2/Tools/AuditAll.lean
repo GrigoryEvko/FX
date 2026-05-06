@@ -874,6 +874,11 @@ namespace LeanFX2.Tools
 -- as soon as the namespace is loaded.
 #assert_fx1_import_surface_clean
 
+-- Exact FX1/Core root-DAG gate.  This is stricter than "FX1 imports only
+-- FX1": it prevents a minimal-root leaf from importing the Core umbrella or a
+-- later metatheory module without an explicit policy update.
+#assert_fx1_core_exact_import_shape
+
 -- Rich production / FX1 separation.  FX1 is the future minimal TCB root;
 -- rich production modules may not import it directly until a deliberate
 -- bridge/certificate boundary exists.

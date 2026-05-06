@@ -506,6 +506,103 @@ elab "#assert_fx1_import_surface_clean" : command => do
       s!"{violations.size} of {scannedFX1Modules} FX1 modules violate import policy"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
+/-! ## FX1 exact root-DAG import discipline -/
+
+/-- Exact direct imports allowed for the current FX1/Core root DAG.
+
+The broader `#assert_fx1_import_surface_clean` gate proves FX1 stays inside
+the FX1 cone, apart from the single host-prelude edge.  This gate is stricter:
+it pins the current minimal lambda-Pi root to the intended dependency DAG so a
+leaf module cannot silently import the `Core` umbrella or a later metatheory
+module.  When `Check` and `Soundness` land, this table must grow in the same
+commit that adds those files. -/
+def isAllowedFX1CoreExactDirectImport
+    (sourceModuleName importedModuleName : Name) :
+    Bool :=
+  if sourceModuleName == `LeanFX2.FX1 then
+    importedModuleName == `LeanFX2.FX1.Core
+  else if sourceModuleName == `LeanFX2.FX1.Core then
+    importedModuleName == `LeanFX2.FX1.Core.Name ||
+      importedModuleName == `LeanFX2.FX1.Core.Level ||
+      importedModuleName == `LeanFX2.FX1.Core.Expr ||
+      importedModuleName == `LeanFX2.FX1.Core.Declaration ||
+      importedModuleName == `LeanFX2.FX1.Core.Environment ||
+      importedModuleName == `LeanFX2.FX1.Core.Context ||
+      importedModuleName == `LeanFX2.FX1.Core.Substitution ||
+      importedModuleName == `LeanFX2.FX1.Core.Reduction ||
+      importedModuleName == `LeanFX2.FX1.Core.HasType ||
+      importedModuleName == `LeanFX2.FX1.Core.WellFormed
+  else if sourceModuleName == `LeanFX2.FX1.Core.Name then
+    importedModuleName == `Init.Prelude
+  else if sourceModuleName == `LeanFX2.FX1.Core.Level then
+    importedModuleName == `LeanFX2.FX1.Core.Name
+  else if sourceModuleName == `LeanFX2.FX1.Core.Expr then
+    importedModuleName == `LeanFX2.FX1.Core.Level
+  else if sourceModuleName == `LeanFX2.FX1.Core.Declaration then
+    importedModuleName == `LeanFX2.FX1.Core.Expr
+  else if sourceModuleName == `LeanFX2.FX1.Core.Environment then
+    importedModuleName == `LeanFX2.FX1.Core.Declaration
+  else if sourceModuleName == `LeanFX2.FX1.Core.Context then
+    importedModuleName == `LeanFX2.FX1.Core.Expr
+  else if sourceModuleName == `LeanFX2.FX1.Core.Substitution then
+    importedModuleName == `LeanFX2.FX1.Core.Expr
+  else if sourceModuleName == `LeanFX2.FX1.Core.Reduction then
+    importedModuleName == `LeanFX2.FX1.Core.Substitution
+  else if sourceModuleName == `LeanFX2.FX1.Core.HasType then
+    importedModuleName == `LeanFX2.FX1.Core.Environment ||
+      importedModuleName == `LeanFX2.FX1.Core.Context ||
+      importedModuleName == `LeanFX2.FX1.Core.Reduction
+  else if sourceModuleName == `LeanFX2.FX1.Core.WellFormed then
+    importedModuleName == `LeanFX2.FX1.Core.HasType
+  else
+    false
+
+/-- Direct imports that violate the exact FX1/Core root DAG. -/
+def fx1CoreExactImportViolationsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  moduleData.imports.foldl
+    (init := (#[] : Array Name))
+    (fun violations directImport =>
+      if isAllowedFX1CoreExactDirectImport sourceModuleName directImport.module then
+        violations
+      else
+        violations.push directImport.module)
+
+/-- Build-failing gate for the exact FX1/Core root import DAG.
+
+This checks only the current minimal root umbrella and `FX1/Core` modules.  It
+does not police future `FX1/LeanKernel` files; those have a separate policy in
+`isAllowedFX1DirectImport` and should receive their own exact-DAG gate when
+the Lean-in-FX implementation starts. -/
+elab "#assert_fx1_core_exact_import_shape" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedRootModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let sourceModuleName := effectiveImport.module
+    if sourceModuleName == `LeanFX2.FX1 ||
+        sourceModuleName == `LeanFX2.FX1.Core ||
+        isFX1CoreModuleName sourceModuleName then
+      scannedRootModules := scannedRootModules + 1
+      let forbiddenImports :=
+        fx1CoreExactImportViolationsForModule sourceModuleName moduleData
+      if !forbiddenImports.isEmpty then
+        violations := violations.push (sourceModuleName, forbiddenImports)
+  if violations.isEmpty then
+    logInfo m!"FX1/Core exact import shape ok: {scannedRootModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, forbiddenImports) =>
+      let renderedImports :=
+        String.intercalate ", " (forbiddenImports.toList.map toString)
+      s!"  - {moduleName}: unexpected direct imports [{renderedImports}]"
+    let header :=
+      s!"FX1/Core exact import shape FAILED: " ++
+      s!"{violations.size} of {scannedRootModules} root modules violate the DAG"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
 /-! ## Legacy Lean-kernel scaffold isolation -/
 
 /-- Modules allowed to import the legacy Lean-kernel scaffold directly. -/
@@ -795,6 +892,95 @@ def formatDirectImportRecords
     String.intercalate "; "
       (directImportRecords.toList.map DirectImportRecord.format)
 
+/-- Coarse family label for import-census summaries.  The label is
+informational only; policy gates above enforce the actual boundaries. -/
+def importFamilyLabel (moduleName : Name) : String :=
+  if moduleName == `LeanFX2 then
+    "LeanFX2.Root"
+  else if (`LeanFX2.FX1).isPrefixOf moduleName then
+    "LeanFX2.FX1"
+  else if isLegacyLeanKernelScaffoldModuleName moduleName then
+    "LeanFX2.LegacyLeanKernel"
+  else if (`LeanFX2.Tools).isPrefixOf moduleName then
+    "LeanFX2.Tools"
+  else if (`LeanFX2.Smoke).isPrefixOf moduleName then
+    "LeanFX2.Smoke"
+  else if (`LeanFX2.Sketch).isPrefixOf moduleName then
+    "LeanFX2.Sketch"
+  else if (`LeanFX2.Foundation).isPrefixOf moduleName then
+    "LeanFX2.Foundation"
+  else if moduleName == `LeanFX2.Term ||
+      (`LeanFX2.Term).isPrefixOf moduleName then
+    "LeanFX2.Term"
+  else if (`LeanFX2.Reduction).isPrefixOf moduleName then
+    "LeanFX2.Reduction"
+  else if moduleName == `LeanFX2.Bridge ||
+      (`LeanFX2.Bridge).isPrefixOf moduleName then
+    "LeanFX2.Bridge"
+  else if (`LeanFX2.Confluence).isPrefixOf moduleName then
+    "LeanFX2.Confluence"
+  else if (`LeanFX2.HoTT).isPrefixOf moduleName then
+    "LeanFX2.HoTT"
+  else if (`LeanFX2.Cubical).isPrefixOf moduleName then
+    "LeanFX2.Cubical"
+  else if (`LeanFX2.Modal).isPrefixOf moduleName then
+    "LeanFX2.Modal"
+  else if (`LeanFX2.Effects).isPrefixOf moduleName then
+    "LeanFX2.Effects"
+  else if (`LeanFX2.Sessions).isPrefixOf moduleName then
+    "LeanFX2.Sessions"
+  else if (`LeanFX2.Codata).isPrefixOf moduleName then
+    "LeanFX2.Codata"
+  else if (`LeanFX2.Graded).isPrefixOf moduleName then
+    "LeanFX2.Graded"
+  else if (`LeanFX2.Refine).isPrefixOf moduleName then
+    "LeanFX2.Refine"
+  else if (`LeanFX2.Algo).isPrefixOf moduleName then
+    "LeanFX2.Algo"
+  else if (`LeanFX2.Surface).isPrefixOf moduleName then
+    "LeanFX2.Surface"
+  else if moduleName == `LeanFX2.Pipeline then
+    "LeanFX2.Pipeline"
+  else if (`LeanFX2.Conservativity).isPrefixOf moduleName then
+    "LeanFX2.Conservativity"
+  else if (`LeanFX2.Translation).isPrefixOf moduleName then
+    "LeanFX2.Translation"
+  else if (`LeanFX2.InternalLanguage).isPrefixOf moduleName then
+    "LeanFX2.InternalLanguage"
+  else if (`Lean).isPrefixOf moduleName then
+    "Host.Lean"
+  else if (`Lake).isPrefixOf moduleName then
+    "Host.Lake"
+  else if (`Std).isPrefixOf moduleName then
+    "Host.Std"
+  else if (`Init).isPrefixOf moduleName then
+    "Host.Init"
+  else if (`Classical).isPrefixOf moduleName then
+    "Host.Classical"
+  else if (`Quot).isPrefixOf moduleName then
+    "Host.Quot"
+  else
+    "Other"
+
+/-- Increment an import-family count in a small association list. -/
+def incrementImportFamilyCount
+    (counts : Array (String × Nat)) (familyLabel : String) :
+    Array (String × Nat) :=
+  match counts.findIdx? (fun (storedLabel, _) => storedLabel == familyLabel) with
+  | some familyIndex =>
+      counts.modify familyIndex
+        (fun (storedLabel, count) => (storedLabel, count + 1))
+  | none => counts.push (familyLabel, 1)
+
+/-- Render import-family counts in stable first-seen order. -/
+def formatImportFamilyCounts (counts : Array (String × Nat)) : String :=
+  if counts.isEmpty then
+    "none"
+  else
+    String.intercalate "; "
+      (counts.toList.map fun (familyLabel, count) =>
+        s!"{familyLabel}={count}")
+
 /-- Build-failing global host-heavy import gate.
 
 This scans every loaded `LeanFX2.*` module, including tools and smoke tests.
@@ -827,6 +1013,36 @@ elab "#assert_host_heavy_import_surface_allowlisted" : command => do
       s!"host-heavy import allowlist FAILED: " ++
       s!"{violations.size} forbidden direct host-heavy imports"
     throwError (header ++ "\n  " ++ renderedImports)
+
+/-- Informational import-family census over the currently loaded
+`LeanFX2.*` modules.  This exposes import mass by source family and target
+family without creating a committed report file. -/
+elab "#audit_import_family_summary" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut sourceFamilyCounts : Array (String × Nat) := #[]
+  let mut targetFamilyCounts : Array (String × Nat) := #[]
+  let mut directImportCount : Nat := 0
+  for (effectiveImport, moduleData) in moduleEntries do
+    let sourceModuleName := effectiveImport.module
+    if (`LeanFX2).isPrefixOf sourceModuleName then
+      sourceFamilyCounts :=
+        incrementImportFamilyCount sourceFamilyCounts
+          (importFamilyLabel sourceModuleName)
+      for directImport in moduleData.imports do
+        directImportCount := directImportCount + 1
+        targetFamilyCounts :=
+          incrementImportFamilyCount targetFamilyCounts
+            (importFamilyLabel directImport.module)
+  logInfo
+    (String.intercalate "\n" [
+      "──────────── IMPORT FAMILY SUMMARY ────────────",
+      s!"  Direct import edges scanned: {directImportCount}",
+      s!"  Source families: {formatImportFamilyCounts sourceFamilyCounts}",
+      s!"  Target families: {formatImportFamilyCounts targetFamilyCounts}",
+      "───────────────────────────────────────────────"
+    ])
 
 /-- Informational import summary over the currently loaded `LeanFX2.*`
 modules.  This is not a policy gate; the policy gates above remain the
