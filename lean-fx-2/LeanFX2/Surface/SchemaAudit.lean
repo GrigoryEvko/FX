@@ -9,9 +9,12 @@ operator/bracket/category enums.
 ## Coverage
 
 * C04: `Token.category` partition — every Token's category is
-  determined exactly once.  Implicitly true by totality + lack
-  of overlapping arms; this file adds a smoke audit asserting
-  category-class membership for representative tokens.
+  determined exactly once.  Totality is structural (`Token.category`
+  is a `def` with no overlapping arms in `GrammarToken.lean:70`); the
+  load-bearing partition direction is surjectivity, shipped here as
+  `TokenCategory.surjective` (every category has a token witness).
+  The nine spot-witness lemmas (`*_witness`) feed the headline
+  theorem and remain available as named individual gates.
 * C05: Operator precedence ladder — verified via
   `OperatorKind.precedenceLevel` returning a `Nat` in [1, 17]
   with every OperatorKind ctor mapping to exactly one level.
@@ -205,5 +208,31 @@ theorem TokenCategory.special_witness :
     ∃ tok : Token, tok.category = .special := by
   refine ⟨Token.eof, ?_⟩
   rfl
+
+/-! ## C04 universal partition: surjectivity of `Token.category`
+
+Headline theorem rolling the nine spot-witness lemmas above into a
+single universal statement: every `TokenCategory` is inhabited by at
+least one `Token`.  Combined with `Token.category`'s totality (it's
+a `def` returning `TokenCategory`, no overlapping arms in
+`GrammarToken.lean:70`), this is the load-bearing partition claim.
+
+Every branch picks the simplest witness — `Token.ident "x"` for the
+two identifier categories, `kwLet` for keyword, `plus` for operator,
+`comma` for punctuation, `eof` for special, `lparen`/`rparen` for
+delimiters, `intLit 0 none` for literal — matching the spot-witness
+lemmas above. -/
+theorem TokenCategory.surjective (category : TokenCategory) :
+    ∃ tok : Token, tok.category = category := by
+  cases category with
+  | identLower => exact ⟨Token.ident "x", rfl⟩
+  | identUpper => exact ⟨Token.uident "Foo", rfl⟩
+  | literal => exact ⟨Token.intLit 0 none, rfl⟩
+  | keyword => exact ⟨Token.kwLet, rfl⟩
+  | operator => exact ⟨Token.plus, rfl⟩
+  | delimiterOpen => exact ⟨Token.lparen, rfl⟩
+  | delimiterClose => exact ⟨Token.rparen, rfl⟩
+  | punctuation => exact ⟨Token.comma, rfl⟩
+  | special => exact ⟨Token.eof, rfl⟩
 
 end LeanFX2.Surface

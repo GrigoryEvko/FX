@@ -23,3 +23,4 @@ import LeanFX2.Surface.SchemaAudit
 #print axioms LeanFX2.Surface.TokenCategory.delimiterClose_witness
 #print axioms LeanFX2.Surface.TokenCategory.punctuation_witness
 #print axioms LeanFX2.Surface.TokenCategory.special_witness
+#print axioms LeanFX2.Surface.TokenCategory.surjective
