@@ -1,5 +1,3 @@
-import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.Compat
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Bridge
 

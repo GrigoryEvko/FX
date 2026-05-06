@@ -1,6 +1,5 @@
 import LeanFX2.Term.Rename
 import LeanFX2.Term.Subst
-import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Pointwise
 
 /-! # Term/ProofIrrel — TermRenaming / TermSubst proof irrelevance

@@ -1,8 +1,4 @@
-import LeanFX2.Algo.WHNF
 import LeanFX2.Algo.RawWHNFCorrect
-import LeanFX2.Reduction.Conv
-import LeanFX2.Confluence.CanonicalForm
-import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.ConvBridge
 
 /-! # Algo/DecConv — fuel-bounded definitional conversion

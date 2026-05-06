@@ -1,4 +1,3 @@
-import LeanFX2.Confluence.Diamond
 import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.ConvBridge
 import LeanFX2.Reduction.StepStarToPar
@@ -72,7 +71,6 @@ suffices for the elaborator's needs.
 
 ## Dependencies
 
-* `Confluence/Diamond.lean` — typed diamondRaw
 * `Confluence/ParStarBridge.lean` — `Step.parStar.toRawConfluence`
 * `Confluence/ConvBridge.lean` — `Conv.toRawJoin`
 * `Reduction/StepStarToPar.lean` — `StepStar.toParStar`

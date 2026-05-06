@@ -1,7 +1,4 @@
 import LeanFX2.Reduction.ParRed
-import LeanFX2.Reduction.RawPar
-import LeanFX2.Term.Bridge
-import LeanFX2.Term.ToRaw
 
 /-! # Bridge — typed↔raw correspondence (Phase 5).
 
