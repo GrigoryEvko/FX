@@ -28,6 +28,7 @@ visible during `lake build LeanFX2`.
 namespace LeanFX2.Smoke.ImportEverywhere
 
 #assert_host_heavy_import_surface_allowlisted
+#assert_public_umbrella_imports_isolated
 #assert_host_boundary_isolated
 #assert_legacy_lean_kernel_import_surface_clean
 #assert_public_production_umbrella_reaches_all

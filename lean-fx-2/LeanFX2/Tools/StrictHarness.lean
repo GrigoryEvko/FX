@@ -488,6 +488,110 @@ def isFX1LeanKernelModuleName (moduleName : Name) : Bool :=
 def isFX1ModuleName (moduleName : Name) : Bool :=
   (`LeanFX2.FX1).isPrefixOf moduleName
 
+/-! ## Direct import records -/
+
+/-- One direct source-module import edge. -/
+structure DirectImportRecord where
+  /-- Module that contains the import declaration. -/
+  sourceModuleName : Name
+  /-- Module named by the import declaration. -/
+  importedModuleName : Name
+  deriving Inhabited, Repr
+
+/-- Render one direct import edge for compact build-log summaries. -/
+def DirectImportRecord.format (directImportRecord : DirectImportRecord) :
+    String :=
+  s!"{directImportRecord.sourceModuleName} -> " ++
+    s!"{directImportRecord.importedModuleName}"
+
+/-- Keep summary lines bounded while still naming the exact dependency
+edges when the count is small. -/
+def formatDirectImportRecords
+    (directImportRecords : Array DirectImportRecord) :
+    String :=
+  if directImportRecords.isEmpty then
+    "none"
+  else
+    String.intercalate "; "
+      (directImportRecords.toList.map DirectImportRecord.format)
+
+/-! ## Public umbrella isolation -/
+
+/-- Public umbrella modules that should remain entrypoints, not convenient
+internal dependencies.
+
+Layer roots such as `LeanFX2.Term` are real implementation modules in this
+repository.  This list is intentionally narrower: it contains only the broad
+entrypoint surfaces whose accidental use inside production code would collapse
+the dependency graph. -/
+def isPublicUmbrellaImportModuleName (moduleName : Name) : Bool :=
+  moduleName == `LeanFX2 ||
+    moduleName == `LeanFX2.Kernel ||
+    moduleName == `LeanFX2.Rich ||
+    moduleName == `LeanFX2.FX1 ||
+    moduleName == `LeanFX2.FX1.Core
+
+/-- Direct public-umbrella imports that are part of the intended entrypoint
+chain rather than internal dependency shortcuts. -/
+def isAllowedPublicUmbrellaImport
+    (directImportRecord : DirectImportRecord) :
+    Bool :=
+  (directImportRecord.sourceModuleName == `LeanFX2 &&
+      directImportRecord.importedModuleName == `LeanFX2.Rich) ||
+    (directImportRecord.sourceModuleName == `LeanFX2.Rich &&
+      directImportRecord.importedModuleName == `LeanFX2.Kernel) ||
+    (directImportRecord.sourceModuleName == `LeanFX2.FX1 &&
+      directImportRecord.importedModuleName == `LeanFX2.FX1.Core) ||
+    (`LeanFX2.Tools).isPrefixOf directImportRecord.sourceModuleName ||
+    (`LeanFX2.Smoke).isPrefixOf directImportRecord.sourceModuleName
+
+/-- Public-umbrella imports that violate the entrypoint discipline for one
+module. -/
+def publicUmbrellaImportViolationsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array DirectImportRecord :=
+  moduleData.imports.foldl
+    (init := (#[] : Array DirectImportRecord))
+    (fun violations directImport =>
+      let directImportRecord : DirectImportRecord := {
+        sourceModuleName := sourceModuleName
+        importedModuleName := directImport.module
+      }
+      if isPublicUmbrellaImportModuleName directImport.module &&
+          !isAllowedPublicUmbrellaImport directImportRecord then
+        violations.push directImportRecord
+      else
+        violations)
+
+/-- Build-failing gate that keeps broad public umbrellas out of internal
+dependencies.
+
+The allowed edges are the public entrypoint chain itself
+(`LeanFX2 -> Rich`, `Rich -> Kernel`, `FX1 -> FX1.Core`) plus smoke/tooling
+audits.  Production implementation modules must import the narrow module they
+actually need. -/
+elab "#assert_public_umbrella_imports_isolated" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedLeanFX2Modules : Nat := 0
+  let mut violations : Array DirectImportRecord := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let sourceModuleName := effectiveImport.module
+    if (`LeanFX2).isPrefixOf sourceModuleName then
+      scannedLeanFX2Modules := scannedLeanFX2Modules + 1
+      violations :=
+        violations ++
+          publicUmbrellaImportViolationsForModule sourceModuleName moduleData
+  if violations.isEmpty then
+    logInfo m!"public umbrella import isolation ok: {scannedLeanFX2Modules} modules"
+  else
+    let renderedImports := formatDirectImportRecords violations
+    let header :=
+      s!"public umbrella import isolation FAILED: " ++
+      s!"{violations.size} forbidden broad imports"
+    throwError (header ++ "\n  " ++ renderedImports)
+
 /-! ## Rich production / FX1 separation -/
 
 /-- Direct FX1 imports from one rich production module. -/
@@ -952,20 +1056,6 @@ allowed host/tooling edges that should remain explicit rather than
 hidden in prose.
 -/
 
-/-- One direct source-module import edge. -/
-structure DirectImportRecord where
-  /-- Module that contains the import declaration. -/
-  sourceModuleName : Name
-  /-- Module named by the import declaration. -/
-  importedModuleName : Name
-  deriving Inhabited, Repr
-
-/-- Render one direct import edge for compact build-log summaries. -/
-def DirectImportRecord.format (directImportRecord : DirectImportRecord) :
-    String :=
-  s!"{directImportRecord.sourceModuleName} -> " ++
-    s!"{directImportRecord.importedModuleName}"
-
 /-- Does this direct import point from a project module to a host-heavy
 module that should stay rare and visible? -/
 def isHostHeavyDirectImportModuleName (moduleName : Name) : Bool :=
@@ -987,17 +1077,6 @@ def isAllowedHostHeavyDirectImport
     Bool :=
   directImportRecord.sourceModuleName == `LeanFX2.Tools.DependencyAudit &&
     directImportRecord.importedModuleName == `Lean
-
-/-- Keep summary lines bounded while still naming the exact dependency
-edges when the count is small. -/
-def formatDirectImportRecords
-    (directImportRecords : Array DirectImportRecord) :
-    String :=
-  if directImportRecords.isEmpty then
-    "none"
-  else
-    String.intercalate "; "
-      (directImportRecords.toList.map DirectImportRecord.format)
 
 /-! ## Public umbrella reachability -/
 

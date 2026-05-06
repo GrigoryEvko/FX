@@ -18,6 +18,7 @@ that production modules do not import later semantic layers.
 namespace LeanFX2.Smoke.ImportSurface
 
 #assert_production_import_surface_clean
+#assert_public_umbrella_imports_isolated
 #assert_rich_production_host_import_surface_clean
 #assert_host_boundary_isolated
 #assert_fx1_import_surface_clean

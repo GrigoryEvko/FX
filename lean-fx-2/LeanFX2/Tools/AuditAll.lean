@@ -864,6 +864,11 @@ namespace LeanFX2.Tools
 -- `LeanFX2` root as an internal dependency.
 #assert_production_import_surface_clean
 
+-- Public umbrella isolation.  Broad entrypoints (`LeanFX2`, `LeanFX2.Kernel`,
+-- `LeanFX2.Rich`, `LeanFX2.FX1`, `LeanFX2.FX1.Core`) may appear only in the
+-- deliberate public-entrypoint chain or in smoke/tooling audits.
+#assert_public_umbrella_imports_isolated
+
 -- Rich production host-import gate.  Regular production modules must not
 -- import host-heavy modules such as `Lean`, `Std`, `Lake`, `Mathlib`,
 -- `Classical`, or host `Quot` directly.  FX1 and tooling are checked by
