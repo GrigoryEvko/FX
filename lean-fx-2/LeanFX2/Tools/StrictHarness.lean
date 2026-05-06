@@ -243,14 +243,20 @@ elab "#assert_fx1_core_host_minimal " namespaceSyntax:ident : command => do
 
 /-! ## Import-surface gates -/
 
+/-- The pre-FX1 Lean-kernel scaffold namespace.  It remains buildable and
+audited, but it is not the planned trusted Lean-in-FX path. -/
+def isLegacyLeanKernelScaffoldModuleName (moduleName : Name) : Bool :=
+  (`LeanFX2.Lean.Kernel).isPrefixOf moduleName
+
 /-- Modules that are public production-bearing LeanFX2 modules rather than
-tests, tooling, or sketches.  This includes the root `LeanFX2` umbrella so
-`import LeanFX2` itself stays clean. -/
+tests, tooling, sketches, or the old Lean-kernel scaffold.  This includes the
+root `LeanFX2` umbrella so `import LeanFX2` itself stays clean. -/
 def isProductionLeanFX2ModuleName (moduleName : Name) : Bool :=
   (`LeanFX2).isPrefixOf moduleName &&
     !(`LeanFX2.Smoke).isPrefixOf moduleName &&
     !(`LeanFX2.Tools).isPrefixOf moduleName &&
-    !(`LeanFX2.Sketch).isPrefixOf moduleName
+    !(`LeanFX2.Sketch).isPrefixOf moduleName &&
+    !isLegacyLeanKernelScaffoldModuleName moduleName
 
 /-- Imports that production modules must not take directly.
 
@@ -502,11 +508,6 @@ elab "#assert_fx1_import_surface_clean" : command => do
 
 /-! ## Legacy Lean-kernel scaffold isolation -/
 
-/-- The pre-FX1 Lean-kernel scaffold namespace.  It remains buildable and
-audited, but it is not the planned trusted Lean-in-FX path. -/
-def isLegacyLeanKernelScaffoldModuleName (moduleName : Name) : Bool :=
-  (`LeanFX2.Lean.Kernel).isPrefixOf moduleName
-
 /-- Modules allowed to import the legacy Lean-kernel scaffold directly. -/
 def mayImportLegacyLeanKernelScaffold (sourceModuleName : Name) : Bool :=
   isLegacyLeanKernelScaffoldModuleName sourceModuleName ||
@@ -556,6 +557,58 @@ elab "#assert_legacy_lean_kernel_scaffold_isolated" : command => do
     let header :=
       s!"legacy LeanKernel scaffold isolation FAILED: " ++
       s!"{violations.size} of {scannedModules} modules import the old scaffold"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
+
+/-- Direct project imports from one legacy Lean-kernel scaffold module that
+escape the legacy scaffold namespace.  Non-project imports are ignored here
+because Lean records the ambient `Init` prelude in module data; the global
+host-heavy gate already catches broad host imports such as `Lean` or `Std`. -/
+def legacyLeanKernelOutwardImportsForModule
+    (sourceModuleName : Name) (moduleData : ModuleData) :
+    Array Name :=
+  if isLegacyLeanKernelScaffoldModuleName sourceModuleName then
+    moduleData.imports.foldl
+      (init := (#[] : Array Name))
+      (fun outwardImports directImport =>
+        if (`LeanFX2).isPrefixOf directImport.module &&
+            !isLegacyLeanKernelScaffoldModuleName directImport.module then
+          outwardImports.push directImport.module
+        else
+          outwardImports)
+  else
+    #[]
+
+/-- Build-failing isolation gate for outbound dependencies of the old
+`LeanFX2.Lean.Kernel.*` scaffold.
+
+The legacy scaffold may depend on itself while it remains audited, but it must
+not grow imports into the production kernel, FX1, tools, smoke tests, or the
+public umbrella.  This keeps it quarantined while Day 8 moves toward
+`LeanFX2.FX1.LeanKernel`. -/
+elab "#assert_legacy_lean_kernel_import_surface_clean" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedLegacyModules : Nat := 0
+  let mut violations : Array (Name × Array Name) := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let moduleName := effectiveImport.module
+    if isLegacyLeanKernelScaffoldModuleName moduleName then
+      scannedLegacyModules := scannedLegacyModules + 1
+      let outwardImports :=
+        legacyLeanKernelOutwardImportsForModule moduleName moduleData
+      if !outwardImports.isEmpty then
+        violations := violations.push (moduleName, outwardImports)
+  if violations.isEmpty then
+    logInfo m!"legacy LeanKernel import surface ok: {scannedLegacyModules} modules"
+  else
+    let perModuleLines := violations.toList.map fun (moduleName, outwardImports) =>
+      let renderedImports :=
+        String.intercalate ", " (outwardImports.toList.map toString)
+      s!"  - {moduleName}: outward imports [{renderedImports}]"
+    let header :=
+      s!"legacy LeanKernel import surface FAILED: " ++
+      s!"{violations.size} of {scannedLegacyModules} legacy modules import outside the scaffold"
     throwError (header ++ "\n" ++ String.intercalate "\n" perModuleLines)
 
 /-! ## Production layer-import discipline -/
@@ -796,6 +849,7 @@ elab "#audit_import_surface_summary" : command => do
   let mut richProductionFX1Imports : Array DirectImportRecord := #[]
   let mut richProductionHostImports : Array DirectImportRecord := #[]
   let mut legacyLeanKernelImports : Array DirectImportRecord := #[]
+  let mut legacyLeanKernelOutwardImports : Array DirectImportRecord := #[]
   let mut fx1ForbiddenImports : Array DirectImportRecord := #[]
   let mut fx1PreludeImports : Array DirectImportRecord := #[]
   for (effectiveImport, moduleData) in moduleEntries do
@@ -839,6 +893,11 @@ elab "#audit_import_surface_summary" : command => do
         if isLegacyLeanKernelScaffoldModuleName importedModuleName then
           legacyLeanKernelImports :=
             legacyLeanKernelImports.push directImportRecord
+        if isLegacyLeanKernelScaffoldModuleName sourceModuleName &&
+            (`LeanFX2).isPrefixOf importedModuleName &&
+            !isLegacyLeanKernelScaffoldModuleName importedModuleName then
+          legacyLeanKernelOutwardImports :=
+            legacyLeanKernelOutwardImports.push directImportRecord
         if isFX1ModuleName sourceModuleName &&
             !isAllowedFX1DirectImport sourceModuleName importedModuleName then
           fx1ForbiddenImports :=
@@ -868,6 +927,8 @@ elab "#audit_import_surface_summary" : command => do
       s!"    {formatDirectImportRecords richProductionHostImports}",
       s!"  Legacy LeanKernel direct imports: {legacyLeanKernelImports.size}",
       s!"    {formatDirectImportRecords legacyLeanKernelImports}",
+      s!"  Legacy LeanKernel outward imports: {legacyLeanKernelOutwardImports.size}",
+      s!"    {formatDirectImportRecords legacyLeanKernelOutwardImports}",
       s!"  FX1 forbidden direct imports:     {fx1ForbiddenImports.size}",
       s!"    {formatDirectImportRecords fx1ForbiddenImports}",
       s!"  FX1 direct Init.Prelude imports:  {fx1PreludeImports.size}",

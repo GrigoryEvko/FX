@@ -1,4 +1,3 @@
-import LeanFX2.Foundation.Universe
 import LeanFX2.Lean.Kernel.Name
 
 /-! # Lean/Kernel/Level
