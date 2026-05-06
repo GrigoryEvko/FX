@@ -13,10 +13,11 @@ lambda-Pi core.  It is intentionally incomplete:
   zero-axiom soundness theorem;
 * equality used by application checking rejects constants and level parameters.
 
-The incompleteness is deliberate.  The executable checker is not part of the
-trusted FX1 root until `infer?_sound` / `check_sound` land.  Accepting fewer
-programs is the conservative direction; accepting constants before name
-equality is proved would widen the TCB.
+The incompleteness is deliberate.  The executable checker is sound for the
+fragment it accepts, and rejects constants until name equality has a proved
+zero-axiom soundness theorem.  Accepting fewer programs is the conservative
+direction; accepting constants before name equality is proved would widen the
+TCB.
 -/
 
 namespace LeanFX2.FX1
@@ -38,6 +39,19 @@ theorem and_true_right {leftBool rightBool : Bool}
   | true, true => Eq.refl true
 
 end CheckBool
+
+namespace CheckOption
+
+/-- Constructor injectivity for `Option.some`, kept local to avoid depending
+on a host library theorem in the FX1 checker story. -/
+theorem some_injective {elementType : Type}
+    {leftValue rightValue : elementType}
+    (someValuesEqual : Eq (some leftValue) (some rightValue)) :
+    Eq leftValue rightValue :=
+  match someValuesEqual with
+  | Eq.refl _ => Eq.refl leftValue
+
+end CheckOption
 
 namespace Level
 
@@ -353,75 +367,256 @@ def lookupTypeInEntries? : List Expr -> Nat -> Option Expr
 def lookupType? (context : Context) (index : Nat) : Option Expr :=
   Context.lookupTypeInEntries? context.entries index
 
+/-- Context-level wrapper for witness-producing lookup. -/
+def lookupTypeResult? (context : Context) (index : Nat) :
+    Option (LookupTypeResult context.entries index) :=
+  Context.lookupTypeResultInEntries? context.entries index
+
 end Context
 
 namespace Expr
 
-/-- Infer the type of an FX1 expression in the initial no-constant checker
-fragment. -/
-def infer? (environment : Environment) (context : Context) : Expr -> Option Expr
-  | Expr.bvar index => Context.lookupType? context index
-  | Expr.sort sortLevel => some (Expr.sort (Level.succ sortLevel))
+/-- A successful checker inference paired with the relational typing
+derivation it justifies. -/
+structure InferResult
+    (environment : Environment) (context : Context) (expression : Expr) :
+    Type where
+  typeExpr : Expr
+  typeDerivation : HasType environment context expression typeExpr
+
+/-- Project a proof-carrying inference result to the executable inferred
+type. -/
+def inferTypeFromResult?
+    {environment : Environment} {context : Context} {expression : Expr} :
+    Option (InferResult environment context expression) -> Option Expr
+  | some inferenceResult => some inferenceResult.typeExpr
+  | none => none
+
+/-- Project a proof-carrying inference result to the executable check result
+against an expected type. -/
+def checkBoolFromResult?
+    {environment : Environment} {context : Context} {expression : Expr}
+    (expectedTypeExpr : Expr) :
+    Option (InferResult environment context expression) -> Bool
+  | some inferenceResult =>
+      Expr.checkerBeq inferenceResult.typeExpr expectedTypeExpr
+  | none => false
+
+/-- Proof-carrying inference for the initial no-constant checker fragment. -/
+def inferResult?
+    (environment : Environment) (context : Context) :
+    (expression : Expr) -> Option (InferResult environment context expression)
+  | Expr.bvar index =>
+      match Context.lookupTypeResult? context index with
+      | some lookupResult =>
+          some {
+            typeExpr := lookupResult.typeExpr
+            typeDerivation := HasType.var lookupResult.typeAtIndex
+          }
+      | none => none
+  | Expr.sort sortLevel =>
+      some {
+        typeExpr := Expr.sort (Level.succ sortLevel)
+        typeDerivation := HasType.sort context sortLevel
+      }
   | Expr.const _ => none
   | Expr.pi domainExpr bodyExpr =>
-      match Expr.infer? environment context domainExpr with
-      | some (Expr.sort domainLevel) =>
-          match Expr.infer?
-              environment
-              (Context.extend context domainExpr)
-              bodyExpr with
-          | some (Expr.sort bodyLevel) =>
-              some (Expr.sort (Level.max domainLevel bodyLevel))
-          | some (Expr.bvar _) => none
-          | some (Expr.const _) => none
-          | some (Expr.pi _ _) => none
-          | some (Expr.lam _ _) => none
-          | some (Expr.app _ _) => none
-          | none => none
-      | some (Expr.bvar _) => none
-      | some (Expr.const _) => none
-      | some (Expr.pi _ _) => none
-      | some (Expr.lam _ _) => none
-      | some (Expr.app _ _) => none
+      match Expr.inferResult? environment context domainExpr with
+      | some {
+          typeExpr := domainTypeExpr
+          typeDerivation := domainTypeDerivation
+        } =>
+          match domainTypeExpr with
+          | Expr.sort domainLevel =>
+              match Expr.inferResult?
+                  environment
+                  (Context.extend context domainExpr)
+                  bodyExpr with
+              | some {
+                  typeExpr := bodyTypeExpr
+                  typeDerivation := bodyTypeDerivation
+                } =>
+                  match bodyTypeExpr with
+                  | Expr.sort bodyLevel =>
+                      some {
+                        typeExpr := Expr.sort
+                          (Level.max domainLevel bodyLevel)
+                        typeDerivation :=
+                          HasType.pi
+                            domainTypeDerivation
+                            bodyTypeDerivation
+                      }
+                  | Expr.bvar _ => none
+                  | Expr.const _ => none
+                  | Expr.pi _ _ => none
+                  | Expr.lam _ _ => none
+                  | Expr.app _ _ => none
+              | none => none
+          | Expr.bvar _ => none
+          | Expr.const _ => none
+          | Expr.pi _ _ => none
+          | Expr.lam _ _ => none
+          | Expr.app _ _ => none
       | none => none
   | Expr.lam domainExpr bodyExpr =>
-      match Expr.infer? environment context domainExpr with
-      | some (Expr.sort _) =>
-          match Expr.infer?
-              environment
-              (Context.extend context domainExpr)
-              bodyExpr with
-          | some bodyTypeExpr => some (Expr.pi domainExpr bodyTypeExpr)
-          | none => none
-      | some (Expr.bvar _) => none
-      | some (Expr.const _) => none
-      | some (Expr.pi _ _) => none
-      | some (Expr.lam _ _) => none
-      | some (Expr.app _ _) => none
+      match Expr.inferResult? environment context domainExpr with
+      | some {
+          typeExpr := domainTypeExpr
+          typeDerivation := domainTypeDerivation
+        } =>
+          match domainTypeExpr with
+          | Expr.sort _ =>
+              match Expr.inferResult?
+                  environment
+                  (Context.extend context domainExpr)
+                  bodyExpr with
+              | some bodyResult =>
+                  some {
+                    typeExpr := Expr.pi domainExpr bodyResult.typeExpr
+                    typeDerivation :=
+                      HasType.lam
+                        domainTypeDerivation
+                        bodyResult.typeDerivation
+                  }
+              | none => none
+          | Expr.bvar _ => none
+          | Expr.const _ => none
+          | Expr.pi _ _ => none
+          | Expr.lam _ _ => none
+          | Expr.app _ _ => none
       | none => none
   | Expr.app functionExpr argumentExpr =>
-      match Expr.infer? environment context functionExpr with
-      | some (Expr.pi domainExpr bodyTypeExpr) =>
-          match Expr.infer? environment context argumentExpr with
-          | some argumentTypeExpr =>
-              match Expr.checkerBeq argumentTypeExpr domainExpr with
-              | true => some (Expr.subst0 argumentExpr bodyTypeExpr)
-              | false => none
-          | none => none
-      | some (Expr.bvar _) => none
-      | some (Expr.sort _) => none
-      | some (Expr.const _) => none
-      | some (Expr.lam _ _) => none
-      | some (Expr.app _ _) => none
+      match Expr.inferResult? environment context functionExpr with
+      | some {
+          typeExpr := functionTypeExpr
+          typeDerivation := functionTypeDerivation
+        } =>
+          match functionTypeExpr with
+          | Expr.pi domainExpr bodyTypeExpr =>
+              match Expr.inferResult? environment context argumentExpr with
+              | some argumentResult =>
+                  match h :
+                      Expr.checkerBeq argumentResult.typeExpr domainExpr with
+                  | true =>
+                      let argumentTypeEquality :=
+                        Expr.checkerBeq_sound
+                          argumentResult.typeExpr
+                          domainExpr
+                          h
+                      let argumentHasDomain :
+                          HasType
+                            environment
+                            context
+                            argumentExpr
+                            domainExpr :=
+                        match argumentTypeEquality with
+                        | Eq.refl _ => argumentResult.typeDerivation
+                      some {
+                        typeExpr :=
+                          Expr.subst0 argumentExpr bodyTypeExpr
+                        typeDerivation :=
+                          HasType.app
+                            functionTypeDerivation
+                            argumentHasDomain
+                      }
+                  | false => none
+              | none => none
+          | Expr.bvar _ => none
+          | Expr.sort _ => none
+          | Expr.const _ => none
+          | Expr.lam _ _ => none
+          | Expr.app _ _ => none
       | none => none
+
+/-- Infer the type of an FX1 expression in the initial no-constant checker
+fragment. -/
+def infer? (environment : Environment) (context : Context)
+    (expression : Expr) : Option Expr :=
+  Expr.inferTypeFromResult?
+    (Expr.inferResult? environment context expression)
+
+/-- Soundness of executable inference. -/
+theorem infer?_sound
+    {environment : Environment}
+    {context : Context}
+    {expression inferredTypeExpr : Expr}
+    (inferenceSucceeded :
+      Eq
+        (Expr.infer? environment context expression)
+        (some inferredTypeExpr)) :
+    HasType environment context expression inferredTypeExpr :=
+  match h :
+      Expr.inferResult? environment context expression with
+  | some inferenceResult =>
+      let projectedEquality :
+          Eq (some inferenceResult.typeExpr) (some inferredTypeExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              Expr.inferTypeFromResult?
+              h))
+          inferenceSucceeded
+      let typeEquality :=
+        CheckOption.some_injective projectedEquality
+      match typeEquality with
+      | Eq.refl _ => inferenceResult.typeDerivation
+  | none =>
+      let noneEqualsSome :
+          Eq (none : Option Expr) (some inferredTypeExpr) :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              Expr.inferTypeFromResult?
+              h))
+          inferenceSucceeded
+      nomatch noneEqualsSome
 
 /-- Check an expression against an expected type using checker equality. -/
 def check? (environment : Environment) (context : Context)
     (expression expectedTypeExpr : Expr) : Bool :=
-  match Expr.infer? environment context expression with
-  | some inferredTypeExpr =>
-      Expr.checkerBeq inferredTypeExpr expectedTypeExpr
-  | none => false
+  Expr.checkBoolFromResult?
+    expectedTypeExpr
+    (Expr.inferResult? environment context expression)
+
+/-- Soundness of executable checking. -/
+theorem check?_sound
+    {environment : Environment}
+    {context : Context}
+    {expression expectedTypeExpr : Expr}
+    (checkingSucceeded :
+      Eq
+        (Expr.check? environment context expression expectedTypeExpr)
+        true) :
+    HasType environment context expression expectedTypeExpr :=
+  match h :
+      Expr.inferResult? environment context expression with
+  | some inferenceResult =>
+      let projectedEquality :
+          Eq
+            (Expr.checkerBeq inferenceResult.typeExpr expectedTypeExpr)
+            true :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Expr.checkBoolFromResult? expectedTypeExpr)
+              h))
+          checkingSucceeded
+      let inferredTypeEquality :=
+        Expr.checkerBeq_sound
+          inferenceResult.typeExpr
+          expectedTypeExpr
+          projectedEquality
+      match inferredTypeEquality with
+      | Eq.refl _ => inferenceResult.typeDerivation
+  | none =>
+      let falseEqualsTrue : Eq false true :=
+        Eq.trans
+          (Eq.symm
+            (congrArg
+              (Expr.checkBoolFromResult? expectedTypeExpr)
+              h))
+          checkingSucceeded
+      nomatch falseEqualsTrue
 
 end Expr
 

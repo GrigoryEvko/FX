@@ -801,6 +801,31 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.extend
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.toWellFormed
 #assert_no_axioms LeanFX2.FX1.Environment.ReleaseWellFormed.hasAxiomDeclaration_false
+#assert_no_axioms LeanFX2.FX1.CheckBool.and_true_left
+#assert_no_axioms LeanFX2.FX1.CheckBool.and_true_right
+#assert_no_axioms LeanFX2.FX1.CheckOption.some_injective
+#assert_no_axioms LeanFX2.FX1.Level.checkerBeq
+#assert_no_axioms LeanFX2.FX1.Level.checkerBeq_sound
+#assert_no_axioms LeanFX2.FX1.Expr.natBeq_sound
+#assert_no_axioms LeanFX2.FX1.Expr.checkerBeq
+#assert_no_axioms LeanFX2.FX1.Expr.checkerBeq_sound
+#assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult
+#assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeExpr
+#assert_no_axioms LeanFX2.FX1.Context.LookupTypeResult.typeAtIndex
+#assert_no_axioms LeanFX2.FX1.Context.lookupTypeResultInEntries?
+#assert_no_axioms LeanFX2.FX1.Context.lookupTypeInEntries?
+#assert_no_axioms LeanFX2.FX1.Context.lookupType?
+#assert_no_axioms LeanFX2.FX1.Context.lookupTypeResult?
+#assert_no_axioms LeanFX2.FX1.Expr.InferResult
+#assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeExpr
+#assert_no_axioms LeanFX2.FX1.Expr.InferResult.typeDerivation
+#assert_no_axioms LeanFX2.FX1.Expr.inferTypeFromResult?
+#assert_no_axioms LeanFX2.FX1.Expr.checkBoolFromResult?
+#assert_no_axioms LeanFX2.FX1.Expr.inferResult?
+#assert_no_axioms LeanFX2.FX1.Expr.infer?
+#assert_no_axioms LeanFX2.FX1.Expr.infer?_sound
+#assert_no_axioms LeanFX2.FX1.Expr.check?
+#assert_no_axioms LeanFX2.FX1.Expr.check?_sound
 
 -- Loaded production namespace sweep.  `#audit_namespace` excludes
 -- `LeanFX2.Tools` and `LeanFX2.Smoke`, so this is the broad fail-fast
