@@ -40,9 +40,11 @@ return type `Step _ result.snd` involves a Sigma projection that
 Lean's elaborator doesn't pattern-match against `thenBranch` from
 the goal alone — it has to be told. -/
 theorem boolElimTrue_step_sound
-    {motiveType : Ty level scope}
-    (thenBranch : Term context motiveType RawTerm.unit)
-    (elseBranch : Term context motiveType RawTerm.unit) :
+    {motiveType : Ty level (scope + 1)}
+    (thenBranch : Term context
+      (motiveType.subst0 Ty.bool RawTerm.boolTrue) RawTerm.unit)
+    (elseBranch : Term context
+      (motiveType.subst0 Ty.bool RawTerm.boolFalse) RawTerm.unit) :
     Step (Term.boolElim (motiveType := motiveType)
             Term.boolTrue thenBranch elseBranch) thenBranch :=
   Term.headStep?_sound (result := ⟨_, thenBranch⟩) _ rfl
@@ -50,9 +52,11 @@ theorem boolElimTrue_step_sound
 /-- Concrete: `eval_sound` on a boolElim-true reduction with
 fuel = 1.  The closure produces a `StepStar` chain of length 1. -/
 theorem boolElimTrue_eval_sound
-    {motiveType : Ty level scope}
-    (thenBranch : Term context motiveType RawTerm.unit)
-    (elseBranch : Term context motiveType RawTerm.unit) :
+    {motiveType : Ty level (scope + 1)}
+    (thenBranch : Term context
+      (motiveType.subst0 Ty.bool RawTerm.boolTrue) RawTerm.unit)
+    (elseBranch : Term context
+      (motiveType.subst0 Ty.bool RawTerm.boolFalse) RawTerm.unit) :
     StepStar (Term.boolElim (motiveType := motiveType)
                 Term.boolTrue thenBranch elseBranch)
              (Term.eval 1 (Term.boolElim (motiveType := motiveType)

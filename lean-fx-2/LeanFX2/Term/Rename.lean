@@ -91,6 +91,90 @@ theorem TermRenaming.weakenStep {mode : Mode} {level scope : Nat}
     TermRenaming context (context.cons newType) RawRenaming.weaken :=
   fun _ => rfl
 
+theorem equivIntroHetLeftInverseCodomain_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (carrierA : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) :
+    (equivIntroHetLeftInverseCodomain carrierA forwardRaw backwardRaw).rename rho.lift =
+      equivIntroHetLeftInverseCodomain (carrierA.rename rho)
+        (forwardRaw.rename rho) (backwardRaw.rename rho) := by
+  unfold equivIntroHetLeftInverseCodomain
+  simp only [Ty.rename, RawTerm.rename]
+  rw [Ty.weaken_rename_commute rho carrierA,
+      RawTerm.weaken_rename_commute rho backwardRaw,
+      RawTerm.weaken_rename_commute rho forwardRaw]
+
+theorem equivIntroHetLeftInverseType_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (carrierA : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) :
+    (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw).rename rho =
+      equivIntroHetLeftInverseType (carrierA.rename rho)
+        (forwardRaw.rename rho) (backwardRaw.rename rho) := by
+  unfold equivIntroHetLeftInverseType
+  simp only [Ty.rename]
+  congr 1
+  exact equivIntroHetLeftInverseCodomain_rename rho carrierA forwardRaw backwardRaw
+
+theorem equivIntroHetRightInverseCodomain_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (carrierB : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) :
+    (equivIntroHetRightInverseCodomain carrierB forwardRaw backwardRaw).rename rho.lift =
+      equivIntroHetRightInverseCodomain (carrierB.rename rho)
+        (forwardRaw.rename rho) (backwardRaw.rename rho) := by
+  unfold equivIntroHetRightInverseCodomain
+  simp only [Ty.rename, RawTerm.rename]
+  rw [Ty.weaken_rename_commute rho carrierB,
+      RawTerm.weaken_rename_commute rho forwardRaw,
+      RawTerm.weaken_rename_commute rho backwardRaw]
+
+theorem equivIntroHetRightInverseType_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (carrierB : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) :
+    (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw).rename rho =
+      equivIntroHetRightInverseType (carrierB.rename rho)
+        (forwardRaw.rename rho) (backwardRaw.rename rho) := by
+  unfold equivIntroHetRightInverseType
+  simp only [Ty.rename]
+  congr 1
+  exact equivIntroHetRightInverseCodomain_rename rho carrierB forwardRaw backwardRaw
+
+theorem oeqFunextPointwiseCodomain_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope) :
+    (oeqFunextPointwiseCodomain codomainType
+      leftFunctionRaw rightFunctionRaw).rename rho.lift =
+      oeqFunextPointwiseCodomain (codomainType.rename rho)
+        (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho) := by
+  unfold oeqFunextPointwiseCodomain
+  simp only [Ty.rename, RawTerm.rename]
+  rw [Ty.weaken_rename_commute rho codomainType,
+      RawTerm.weaken_rename_commute rho leftFunctionRaw,
+      RawTerm.weaken_rename_commute rho rightFunctionRaw]
+
+theorem oeqFunextPointwiseType_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope) :
+    (oeqFunextPointwiseType domainType codomainType
+      leftFunctionRaw rightFunctionRaw).rename rho =
+      oeqFunextPointwiseType (domainType.rename rho) (codomainType.rename rho)
+        (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho) := by
+  unfold oeqFunextPointwiseType
+  simp only [Ty.rename]
+  congr 1
+  exact oeqFunextPointwiseCodomain_rename rho codomainType
+    leftFunctionRaw rightFunctionRaw
+
 /-! ## Term.rename -/
 
 /-- Apply a typed termRenaming to a typed term.  The output's raw index is
@@ -147,13 +231,19 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       (Ty.subst0_rename_commute secondType firstType
         (RawTerm.fst pairRaw) rho).symm ▸
         Term.snd (Term.rename termRenaming pairTerm)
-  -- Booleans: trivial.
+  -- Booleans.
   | _, _, .boolTrue => Term.boolTrue
   | _, _, .boolFalse => Term.boolFalse
-  | _, _, .boolElim scrutinee thenBranch elseBranch =>
-      Term.boolElim (Term.rename termRenaming scrutinee)
-                    (Term.rename termRenaming thenBranch)
-                    (Term.rename termRenaming elseBranch)
+  | _, _, .boolElim (motiveType := motiveType) (scrutineeRaw := scrutineeRaw)
+                    scrutinee thenBranch elseBranch =>
+      (Ty.subst0_rename_commute motiveType Ty.bool scrutineeRaw rho).symm ▸
+        Term.boolElim
+          (motiveType := motiveType.rename rho.lift)
+          (Term.rename termRenaming scrutinee)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolTrue rho ▸
+            Term.rename termRenaming thenBranch)
+          (Ty.subst0_rename_commute motiveType Ty.bool RawTerm.boolFalse rho ▸
+            Term.rename termRenaming elseBranch)
   -- Naturals: trivial constants + structural cong.
   | _, _, .natZero => Term.natZero
   | _, _, .natSucc predecessor =>
@@ -207,11 +297,13 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
       leftFunctionRaw rightFunctionRaw pointwiseProof =>
       Term.oeqFunext (domainType.rename rho) (codomainType.rename rho)
         (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho)
-        (Term.rename termRenaming pointwiseProof)
-  | _, _, .idStrictRefl carrier rawWitness =>
-      Term.idStrictRefl (carrier.rename rho) (rawWitness.rename rho)
-  | _, _, .idStrictRec baseCase witness =>
-      Term.idStrictRec (Term.rename termRenaming baseCase)
+        (oeqFunextPointwiseType_rename rho domainType codomainType
+          leftFunctionRaw rightFunctionRaw ▸
+          Term.rename termRenaming pointwiseProof)
+  | _, _, .idStrictRefl modeIsStrict carrier rawWitness =>
+      Term.idStrictRefl modeIsStrict (carrier.rename rho) (rawWitness.rename rho)
+  | _, _, .idStrictRec modeIsStrict baseCase witness =>
+      Term.idStrictRec modeIsStrict (Term.rename termRenaming baseCase)
                        (Term.rename termRenaming witness)
   -- Modal: Layer 1 scaffolding preserves innerType.
   | _, _, .modIntro innerTerm =>
@@ -231,33 +323,33 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .intervalJoin leftValue rightValue =>
       Term.intervalJoin (Term.rename termRenaming leftValue)
                         (Term.rename termRenaming rightValue)
-  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
-      Term.pathLam (carrierType.rename rho)
+  | _, _, .pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body =>
+      Term.pathLam modeIsUnivalent (carrierType.rename rho)
         (leftEndpoint.rename rho)
         (rightEndpoint.rename rho)
         (Ty.weaken_rename_commute rho carrierType ▸
           Term.rename (termRenaming.lift Ty.interval) body)
-  | _, _, .pathApp pathTerm intervalTerm =>
-      Term.pathApp (Term.rename termRenaming pathTerm)
+  | _, _, .pathApp modeIsUnivalent pathTerm intervalTerm =>
+      Term.pathApp modeIsUnivalent (Term.rename termRenaming pathTerm)
                    (Term.rename termRenaming intervalTerm)
-  | _, _, .glueIntro baseType boundaryWitness baseValue partialValue =>
-      Term.glueIntro (baseType.rename rho)
+  | _, _, .glueIntro modeIsUnivalent baseType boundaryWitness baseValue partialValue =>
+      Term.glueIntro modeIsUnivalent (baseType.rename rho)
         (boundaryWitness.rename rho)
         (Term.rename termRenaming baseValue)
         (Term.rename termRenaming partialValue)
-  | _, _, .glueElim gluedValue =>
-      Term.glueElim (Term.rename termRenaming gluedValue)
-  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+  | _, _, .glueElim modeIsUnivalent gluedValue =>
+      Term.glueElim modeIsUnivalent (Term.rename termRenaming gluedValue)
+  | _, _, .transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw typePath sourceValue =>
-      Term.transp universeLevel universeLevelLt
+      Term.transp modeIsUnivalent universeLevel universeLevelLt
         (sourceType.rename rho)
         (targetType.rename rho)
         (sourceTypeRaw.rename rho)
         (targetTypeRaw.rename rho)
         (Term.rename termRenaming typePath)
         (Term.rename termRenaming sourceValue)
-  | _, _, .hcomp sidesValue capValue =>
-      Term.hcomp (Term.rename termRenaming sidesValue)
+  | _, _, .hcomp modeIsUnivalent sidesValue capValue =>
+      Term.hcomp modeIsUnivalent (Term.rename termRenaming sidesValue)
                  (Term.rename termRenaming capValue)
   | _, _, .recordIntro firstField =>
       Term.recordIntro (Term.rename termRenaming firstField)
@@ -280,8 +372,14 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         (Term.rename termRenaming payload)
   | _, _, .sessionRecv channel =>
       Term.sessionRecv (Term.rename termRenaming channel)
-  | _, _, .effectPerform effectTag operationTag arguments =>
+  | _, _, .effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments =>
       Term.effectPerform (effectTag.rename rho)
+        effectRow
+        (operationSignature.map (fun carrierType => carrierType.rename rho))
+        (Effects.CanPerform.map
+          (fun carrierType => carrierType.rename rho)
+          canPerformOperation)
         (Term.rename termRenaming operationTag)
         (Term.rename termRenaming arguments)
   -- Universe-code: scope-polymorphic.  Both `Ty.universe outerLevel
@@ -319,9 +417,15 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   -- rho)` which aligns with the ctor's expected raw form.  No type-
   -- equality cast needed because `Ty.equiv` and `Ty.arrow` rename
   -- structurally (no binder shift, no weaken interaction).
-  | _, _, .equivIntroHet forward backward =>
+  | _, _, .equivIntroHet (carrierA := carrierA) (carrierB := carrierB)
+        (forwardRaw := forwardRaw) (backwardRaw := backwardRaw)
+        forward backward leftInv rightInv =>
       Term.equivIntroHet (Term.rename termRenaming forward)
                          (Term.rename termRenaming backward)
+        (equivIntroHetLeftInverseType_rename rho carrierA forwardRaw backwardRaw ▸
+          Term.rename termRenaming leftInv)
+        (equivIntroHetRightInverseType_rename rho carrierB forwardRaw backwardRaw ▸
+          Term.rename termRenaming rightInv)
   | _, _, .equivApp equivTerm argumentTerm =>
       Term.equivApp (Term.rename termRenaming equivTerm)
                     (Term.rename termRenaming argumentTerm)

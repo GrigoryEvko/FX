@@ -27,6 +27,7 @@ implemented constant-path fragment.  The `carrier` argument names the typed
 carrier whose identity equivalence is produced. -/
 def constantTypePathToEquivRefl {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (_modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -46,6 +47,7 @@ equivalence raw form. -/
 theorem constantTypePathToEquivRefl_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -56,7 +58,7 @@ theorem constantTypePathToEquivRefl_toRaw
       Term context
         (Ty.path (Ty.universe innerLevel innerLevelLt) typeRaw typeRaw)
         (RawTerm.pathLam typeRaw.weaken)) :
-    (constantTypePathToEquivRefl innerLevel innerLevelLt
+    (constantTypePathToEquivRefl modeIsUnivalent innerLevel innerLevelLt
       carrier typeCode typePath).toRaw =
       (Term.equivReflId (context := context) carrier).toRaw := rfl
 
@@ -64,14 +66,15 @@ theorem constantTypePathToEquivRefl_toRaw
 theorem constantTypePathToEquivRefl_onCanonical
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe innerLevel innerLevelLt) typeRaw) :
-    constantTypePathToEquivRefl innerLevel innerLevelLt carrier typeCode
-      (Cubical.constantTypePath innerLevel innerLevelLt typeCode) =
+    constantTypePathToEquivRefl modeIsUnivalent innerLevel innerLevelLt carrier typeCode
+      (Cubical.constantTypePath modeIsUnivalent innerLevel innerLevelLt typeCode) =
       Term.equivReflId carrier := rfl
 
 end Bridge

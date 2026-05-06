@@ -259,15 +259,37 @@ def Term.check : ∀ {scope : Nat}
           else
             none
       | none => none
-  -- Boolean eliminator: motive is the expected type (no separate
-  -- elementType to infer).  Check scrutinee at Ty.bool, both branches
-  -- at expectedType.
+  -- Boolean eliminator: use a constant dependent motive obtained by
+  -- weakening the expected type under the scrutinee binder.
   | .boolElim scrutineeRaw thenRaw elseRaw =>
       match Term.check context Ty.bool scrutineeRaw,
             Term.check context expectedType thenRaw,
             Term.check context expectedType elseRaw with
       | some scrutineeTerm, some thenTerm, some elseTerm =>
-          some (Term.boolElim scrutineeTerm thenTerm elseTerm)
+          let thenTypeEq :
+              expectedType.weaken.subst0 Ty.bool RawTerm.boolTrue = expectedType :=
+            Ty.weaken_subst_singleton expectedType Ty.bool RawTerm.boolTrue
+          let elseTypeEq :
+              expectedType.weaken.subst0 Ty.bool RawTerm.boolFalse = expectedType :=
+            Ty.weaken_subst_singleton expectedType Ty.bool RawTerm.boolFalse
+          let resultTypeEq :
+              expectedType.weaken.subst0 Ty.bool scrutineeRaw = expectedType :=
+            Ty.weaken_subst_singleton expectedType Ty.bool scrutineeRaw
+          let castedThen :
+              Term context (expectedType.weaken.subst0 Ty.bool RawTerm.boolTrue) thenRaw :=
+            thenTypeEq.symm ▸ thenTerm
+          let castedElse :
+              Term context (expectedType.weaken.subst0 Ty.bool RawTerm.boolFalse) elseRaw :=
+            elseTypeEq.symm ▸ elseTerm
+          let checkedBoolElim :
+              Term context (expectedType.weaken.subst0 Ty.bool scrutineeRaw)
+                (RawTerm.boolElim scrutineeRaw thenRaw elseRaw) :=
+            Term.boolElim
+              (motiveType := expectedType.weaken)
+              scrutineeTerm
+              castedThen
+              castedElse
+          some (resultTypeEq ▸ checkedBoolElim)
       | none, _, _ => none
       | _, none, _ => none
       | _, _, none => none

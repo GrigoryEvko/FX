@@ -14,7 +14,7 @@ import LeanFX2.FX1.LeanKernel.Soundness
 import LeanFX2.FX1.LeanKernel.Audit
 import LeanFX2.FX1
 import LeanFX2.FX1Bridge
--- Per-decl axiom audits — 40 sibling files, semantically grouped by namespace.
+-- Per-decl axiom audits — 41 sibling files, semantically grouped by namespace.
 -- Each file imports the same prelude and is independent of the others, so
 -- Lake compiles them in parallel.
 import LeanFX2.Tools.AuditAll.AuditBridge
@@ -25,7 +25,10 @@ import LeanFX2.Tools.AuditAll.AuditCubical
 import LeanFX2.Tools.AuditAll.AuditEffects
 import LeanFX2.Tools.AuditAll.AuditFX1Bridge_Bool
 import LeanFX2.Tools.AuditAll.AuditFX1Bridge_Encode
+import LeanFX2.Tools.AuditAll.AuditFX1Bridge_Interval
 import LeanFX2.Tools.AuditAll.AuditFX1Bridge_Nat
+import LeanFX2.Tools.AuditAll.AuditFX1Bridge_Path
+import LeanFX2.Tools.AuditAll.AuditFX1Bridge_Record
 import LeanFX2.Tools.AuditAll.AuditFX1Bridge_UnitEncode
 import LeanFX2.Tools.AuditAll.AuditFX1Bridge_UnitEnv
 import LeanFX2.Tools.AuditAll.AuditFX1Bridge_UnitEquiv
@@ -87,9 +90,9 @@ import LeanFX2.Tools.AuditAll.SummaryDebtDashboard
 
 /-! # Tools/AuditAll — pure-import umbrella, all work in sibling submodules.
 
-`LeanFX2/Tools/AuditAll/` contains 60 sibling files:
+`LeanFX2/Tools/AuditAll/` contains 63 sibling files:
 
-* 40 `Audit*.lean` — `#assert_no_axioms` per-decl checks, semantically
+* 43 `Audit*.lean` — `#assert_no_axioms` per-decl checks, semantically
   grouped by namespace (Foundation, Term, Reduction, Confluence,
   HoTT.HIT subdivisions, FX1.* subdivisions, FX1Bridge.* subdivisions).
 * 17 `Gates*.lean` — heavy budget gates split by topic (extern, imports,
@@ -98,6 +101,6 @@ import LeanFX2.Tools.AuditAll.SummaryDebtDashboard
 * 3 `Summary*.lean` — end-of-build summary commands (subnamespace counts,
   audit report, debt dashboard).
 
-This umbrella is pure imports.  Lake compiles all 60 siblings in
+This umbrella is pure imports.  Lake compiles all 63 siblings in
 parallel up to the worker count.  No file in this directory contains
 inter-sibling dependencies. -/

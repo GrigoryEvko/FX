@@ -153,12 +153,14 @@ visible at the call site. -/
 
 /-- Boolean elim synthesis. -/
 @[reducible] def Term.synthBoolElim
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {scrutineeRaw thenRaw elseRaw : RawTerm scope}
     (scrutinee : Term context Ty.bool scrutineeRaw)
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
-    Term context motiveType
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
+    Term context (motiveType.subst0 Ty.bool scrutineeRaw)
       (RawTerm.boolElim scrutineeRaw thenRaw elseRaw) :=
   Term.boolElim scrutinee thenBranch elseBranch
 

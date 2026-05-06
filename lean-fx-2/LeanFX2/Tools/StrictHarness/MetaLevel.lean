@@ -204,22 +204,28 @@ of any decl in the Smoke namespace whose body mentions the Term ctor's
 constant by name.
 -/
 
+/-- Whether a declaration belongs to the smoke/audit cone.  Some older smoke
+files use namespaces such as `LeanFX2.SmokePhase9DCheck` instead of living
+under `LeanFX2.Smoke.*`, so this deliberately accepts any `LeanFX2.Smoke...`
+prefix. -/
+def isSmokeAuditDeclName (declName : Name) : Bool :=
+  (toString declName).startsWith "LeanFX2.Smoke"
+
 /-- Whether any decl in the LeanFX2.Smoke.* namespace mentions the
-given Term constructor.  Heuristic: walk every Smoke decl's value
-Expr looking for a const reference. -/
+given Term constructor.  Heuristic: walk every smoke decl's type and
+value Expr looking for a const reference.  Checking types matters for
+smoke declarations whose body is just `rfl` but whose theorem statement
+mentions the constructor being audited. -/
 def hasAnySmokeReference
     (environment : Environment) (constructorName : Name) : Bool :=
   let smokeMatches :=
     environment.constants.toList.filter fun (declName, _) =>
-      Name.isWithinNamespace `LeanFX2.Smoke declName
-  let smokeDeclNames := smokeMatches.map (·.1)
-  smokeDeclNames.any fun smokeDeclName =>
-    match environment.find? smokeDeclName with
-    | some constantInfo =>
-        match constantInfo.value? with
-        | some bodyExpr => doesExprMentionConst constructorName bodyExpr
-        | none => false
-    | none => false
+      isSmokeAuditDeclName declName
+  smokeMatches.any fun (_, constantInfo) =>
+    doesExprMentionConst constructorName constantInfo.type ||
+      match constantInfo.value? with
+      | some bodyExpr => doesExprMentionConst constructorName bodyExpr
+      | none => false
 
 /-- Term ctors lacking any reference from the Smoke namespace. -/
 def smokeReferenceDebtRecordsForInductive

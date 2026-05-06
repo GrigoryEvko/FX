@@ -2,6 +2,7 @@ import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.Context
+import LeanFX2.Foundation.Effect
 
 /-! # Term — Layer 1 raw-aware typed term inductive.
 
@@ -80,6 +81,68 @@ inductive zero-axiom is the critical milestone.
 
 namespace LeanFX2
 
+/-- Codomain of the left-inverse law for `equivIntroHet`.
+
+Under one fresh `carrierA` binder, this is the identity type
+`backward (forward x) = x`.  The endpoints are raw because `Ty.id`
+currently stores raw endpoints; the proof term required by
+`Term.equivIntroHet` is still a real `Term` inhabiting this codomain. -/
+@[reducible] def equivIntroHetLeftInverseCodomain {level scope : Nat}
+    (carrierA : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) : Ty level (scope + 1) :=
+  Ty.id carrierA.weaken
+    (RawTerm.app backwardRaw.weaken
+      (RawTerm.app forwardRaw.weaken
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)))
+    (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)
+
+/-- Proof-function type for the left-inverse law of `equivIntroHet`. -/
+@[reducible] def equivIntroHetLeftInverseType {level scope : Nat}
+    (carrierA : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) : Ty level scope :=
+  Ty.piTy carrierA
+    (equivIntroHetLeftInverseCodomain carrierA forwardRaw backwardRaw)
+
+/-- Codomain of the right-inverse law for `equivIntroHet`.
+
+Under one fresh `carrierB` binder, this is the identity type
+`forward (backward y) = y`. -/
+@[reducible] def equivIntroHetRightInverseCodomain {level scope : Nat}
+    (carrierB : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) : Ty level (scope + 1) :=
+  Ty.id carrierB.weaken
+    (RawTerm.app forwardRaw.weaken
+      (RawTerm.app backwardRaw.weaken
+        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)))
+    (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)
+
+/-- Proof-function type for the right-inverse law of `equivIntroHet`. -/
+@[reducible] def equivIntroHetRightInverseType {level scope : Nat}
+    (carrierB : Ty level scope)
+    (forwardRaw backwardRaw : RawTerm scope) : Ty level scope :=
+  Ty.piTy carrierB
+    (equivIntroHetRightInverseCodomain carrierB forwardRaw backwardRaw)
+
+/-- Codomain of the pointwise equality law for `oeqFunext`.
+
+Under one fresh `domainType` binder, this is the observational equality
+`left x = right x` at the weakened codomain. -/
+@[reducible] def oeqFunextPointwiseCodomain {level scope : Nat}
+    (codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope) : Ty level (scope + 1) :=
+  Ty.oeq codomainType.weaken
+    (RawTerm.app leftFunctionRaw.weaken
+      (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+    (RawTerm.app rightFunctionRaw.weaken
+      (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+
+/-- Proof-function type for `oeqFunext`: pointwise equality over the domain. -/
+@[reducible] def oeqFunextPointwiseType {level scope : Nat}
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope) : Ty level scope :=
+  Ty.piTy domainType
+    (oeqFunextPointwiseCodomain codomainType leftFunctionRaw rightFunctionRaw)
+
 /-- Raw-aware typed term.  Each ctor's signature pins the raw form
 structurally; `Term.toRaw t = raw` is `rfl`. -/
 inductive Term : ∀ {mode : Mode} {level scope : Nat},
@@ -141,12 +204,15 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
   | boolFalse {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
       Term context Ty.bool RawTerm.boolFalse
   | boolElim {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {scrutineeRaw thenRaw elseRaw : RawTerm scope}
       (scrutinee : Term context Ty.bool scrutineeRaw)
-      (thenBranch : Term context motiveType thenRaw)
-      (elseBranch : Term context motiveType elseRaw) :
-      Term context motiveType (RawTerm.boolElim scrutineeRaw thenRaw elseRaw)
+      (thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+      (elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
+      Term context (motiveType.subst0 Ty.bool scrutineeRaw)
+        (RawTerm.boolElim scrutineeRaw thenRaw elseRaw)
   -- Naturals
   | natZero {mode : Mode} {level scope : Nat} {context : Ctx mode level scope} :
       Term context Ty.nat RawTerm.natZero
@@ -252,7 +318,11 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (domainType codomainType : Ty level scope)
       (leftFunctionRaw rightFunctionRaw : RawTerm scope)
       {pointwiseRaw : RawTerm scope}
-      (pointwiseProof : Term context Ty.unit pointwiseRaw) :
+      (pointwiseProof :
+        Term context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRaw) :
       Term context
         (Ty.oeq (Ty.arrow domainType codomainType)
           leftFunctionRaw rightFunctionRaw)
@@ -261,12 +331,14 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
   -- `Ty.idStrict`, keeping definitional identity separate from HoTT `Ty.id`.
   | idStrictRefl {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       (carrier : Ty level scope) (rawWitness : RawTerm scope) :
       Term context
         (Ty.idStrict carrier rawWitness rawWitness)
         (RawTerm.idStrictRefl rawWitness)
   | idStrictRec {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
       {motiveType : Ty level scope}
       {baseRaw witnessRaw : RawTerm scope}
@@ -318,6 +390,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       Term context Ty.interval (RawTerm.intervalJoin leftRaw rightRaw)
   | pathLam {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (carrierType : Ty level scope)
       (leftEndpoint rightEndpoint : RawTerm scope)
       {bodyRaw : RawTerm (scope + 1)}
@@ -326,6 +399,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
         (RawTerm.pathLam bodyRaw)
   | pathApp {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {pathRaw intervalRaw : RawTerm scope}
@@ -336,6 +410,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
   -- Cubical Glue fragment — typed mirror of the raw D2.5 Glue β rule.
   | glueIntro {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (baseType : Ty level scope)
       (boundaryWitness : RawTerm scope)
       {baseRaw partialRaw : RawTerm scope}
@@ -345,6 +420,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
         (RawTerm.glueIntro baseRaw partialRaw)
   | glueElim {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness gluedRaw : RawTerm scope}
       (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
@@ -360,6 +436,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       existing heterogeneous-univalence constructors. -/
   | transp {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (universeLevel : UniverseLevel)
       (universeLevelLt : universeLevel.toNat + 1 ≤ level)
       (sourceType targetType : Ty level scope)
@@ -379,6 +456,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       computational hcomp boundary rules remain future work. -/
   | hcomp {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {sidesRaw capRaw : RawTerm scope}
       (sidesValue : Term context carrierType sidesRaw)
@@ -460,17 +538,29 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {channelRaw : RawTerm scope}
       (channel : Term context (Ty.session protocolStep) channelRaw) :
       Term context (Ty.session protocolStep) (RawTerm.sessionRecv channelRaw)
-  /-- Effect perform mirror.  The operation tag is proof-erased at this
-      layer as a unit-typed tag term; richer effect-row semantics live in
-      `Effects`. -/
+  /-- Effect perform mirror with row-permission evidence.
+
+      The operation term is no longer a unit-typed placeholder: it carries
+      the same effect tag as the result, its argument/result carriers come
+      from an `Effects.OperationSignature`, and construction requires
+      `Effects.CanPerform` evidence for the ambient row.  The raw
+      `effectTag` remains the Foundation-level schema carrier until `Ty.effect`
+      stores structured rows directly. -/
   | effectPerform {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       (effectTag : RawTerm scope)
-      {carrierType : Ty level scope}
+      (effectRow : Effects.EffectRow)
+      (operationSignature : Effects.OperationSignature (Ty level scope))
+      (canPerformOperation :
+        Effects.CanPerform effectRow operationSignature)
       {operationRaw argumentsRaw : RawTerm scope}
-      (operationTag : Term context Ty.unit operationRaw)
-      (arguments : Term context carrierType argumentsRaw) :
-      Term context (Ty.effect carrierType effectTag)
+      (operationTag :
+        Term context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationRaw)
+      (arguments :
+        Term context operationSignature.argumentCarrier argumentsRaw) :
+      Term context (Ty.effect operationSignature.resultCarrier effectTag)
         (RawTerm.effectPerform operationRaw argumentsRaw)
   /-- Universe-code at inner level `innerLevel`, typed at outer level
       `≥ outerLevel.toNat + 1` (sitting inside `Ty.universe outerLevel`).
@@ -634,9 +724,10 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
   /-- **Heterogeneous-carrier equivalence introduction.**
       Inhabitant of `Ty.equiv carrierA carrierB` for arbitrary
       carriers A, B at the same universe level.  Packages a forward
-      function `carrierA → carrierB` and a backward function
-      `carrierB → carrierA`; the raw form is `RawTerm.equivIntro
-      forwardRaw backwardRaw`.
+      function `carrierA → carrierB`, a backward function
+      `carrierB → carrierA`, and proof functions for the two inverse
+      laws; the raw form remains `RawTerm.equivIntro forwardRaw
+      backwardRaw`.
 
       ## Why this generalizes `Term.equivReflId`
 
@@ -644,26 +735,37 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       equivalence at `Ty.equiv carrier carrier` — the rfl-fragment
       of Univalence.  Heterogeneous Univalence (`(A B : Type) →
       (A = B) ≃ (A ≃ B)` for ARBITRARY A ≠ B) needs a Term ctor that
-      carries arbitrary forward + backward witnesses; this ctor
-      provides exactly that.
+      carries arbitrary forward + backward witnesses plus coherence;
+      this ctor provides exactly that.
 
       ## Cascade contract
 
-      The two subterms (`forward`, `backward`) propagate through
+      The computational subterms (`forward`, `backward`) propagate through
       `Term.rename`, `Term.subst`, `Term.substHet`, `Term.pointwise`,
       and the Allais arm of `ConvCumul.subst_compatible` via two-
       subterm cong infrastructure (mirror of `pairCong` /
-      `listConsCong`).  No new Step β/ι rule fires from this ctor
-      (it is a value); only `Step.par.equivIntroHetCong` allows
-      parallel reduction inside its subterms.
+      `listConsCong`).  The proof-function subterms (`leftInv`,
+      `rightInv`) are proof obligations: they are transformed by the
+      structural cascades but do not appear in the raw projection.  No
+      new Step β/ι rule fires from this ctor (it is a value); only
+      `Step.par.equivIntroHetCong` allows parallel reduction inside
+      its computational subterms.
 
       Phase 12.A.B8.5 (heterogeneous Univalence prerequisite). -/
   | equivIntroHet {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       {carrierA carrierB : Ty level scope}
-      {forwardRaw backwardRaw : RawTerm scope}
+      {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
       (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
-      (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw) :
+      (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+      (leftInv :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+          leftInvRaw)
+      (rightInv :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+          rightInvRaw) :
       Term context (Ty.equiv carrierA carrierB)
                    (RawTerm.equivIntro forwardRaw backwardRaw)
   /-- Apply a packaged equivalence to an argument.  This mirrors the raw
@@ -695,9 +797,9 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       as the underlying `equivWitness`.  This pre-aligns the projected
       raw form for the eventual `Step.eqTypeHet` reduction (heterogeneous
       Univalence): the source `Term.uaIntroHet ...` and the target
-      `Term.equivIntroHet forward backward` will share the same raw
-      projection, so the `Step.par.toRawBridge` arm collapses to
-      `RawStep.par.refl _` (the same architectural trick as
+      `Term.equivIntroHet forward backward leftInv rightInv` will share
+      the same raw projection, so the `Step.par.toRawBridge` arm collapses
+      to `RawStep.par.refl _` (the same architectural trick as
       `Step.eqType` / `Step.eqArrow` and `Step.cumulUpInner`).
 
       ## Carrier representation

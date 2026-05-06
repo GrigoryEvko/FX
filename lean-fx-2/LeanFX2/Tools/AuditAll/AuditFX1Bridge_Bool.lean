@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1Bridge_Bool — 37 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1Bridge_Bool — 39 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1Bridge.boolTypeAtomId
 #assert_no_axioms LeanFX2.FX1Bridge.boolTrueAtomId
@@ -55,6 +55,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedBoolTrue_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodedBoolFalse_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolTrue
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolTrue_roundTrip
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolFalse
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_boolFalse_roundTrip
 
 end LeanFX2.Tools

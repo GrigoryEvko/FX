@@ -37,6 +37,40 @@ def encodeTy_unitIdentity : FX1.Expr :=
 def encodeRawTerm_unitIdentity : FX1.Expr :=
   FX1.Expr.lam encodeTy_unit encodeRawTerm_unitVar
 
+/-- Fragment decoder for the unit identity type. -/
+def decodeTy_unitIdentity {level : Nat} : FX1.Expr ->
+    Option (Ty level 0)
+  | FX1.Expr.pi domainExpr bodyExpr =>
+      match
+        decodeTy_unit (level := level) (scope := 0) domainExpr,
+        decodeTy_unit (level := level) (scope := 0) bodyExpr with
+      | Option.some _, Option.some _ =>
+          Option.some (unitIdentityType level)
+      | Option.some _, Option.none => Option.none
+      | Option.none, Option.some _ => Option.none
+      | Option.none, Option.none => Option.none
+  | FX1.Expr.bvar _ => Option.none
+  | FX1.Expr.sort _ => Option.none
+  | FX1.Expr.const _ => Option.none
+  | FX1.Expr.lam _ _ => Option.none
+  | FX1.Expr.app _ _ => Option.none
+
+/-- Fragment decoder for the unit identity lambda. -/
+def decodeRawTerm_unitIdentity : FX1.Expr -> Option (RawTerm 0)
+  | FX1.Expr.lam domainExpr bodyExpr =>
+      match
+        decodeTy_unit (level := 0) (scope := 0) domainExpr,
+        decodeRawTerm_unitVar bodyExpr with
+      | Option.some _, Option.some _ => Option.some unitIdentityRaw
+      | Option.some _, Option.none => Option.none
+      | Option.none, Option.some _ => Option.none
+      | Option.none, Option.none => Option.none
+  | FX1.Expr.bvar _ => Option.none
+  | FX1.Expr.sort _ => Option.none
+  | FX1.Expr.const _ => Option.none
+  | FX1.Expr.pi _ _ => Option.none
+  | FX1.Expr.app _ _ => Option.none
+
 /-- The staged unit type constant has sort zero in the one-binder staged unit
 context. -/
 theorem unitTypeExpr_has_sort_in_encodedUnitVarContext :
@@ -90,6 +124,27 @@ theorem encodeTermSound_unitIdentity
       encodeRawTerm_unitIdentity
       encodeTy_unitIdentity :=
   encodedUnitIdentity_has_type
+
+/-- Exact round-trip evidence for the unit identity-lambda bridge fragment. -/
+def encodeTermSound_unitIdentity_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_identityTerm :
+      Term
+        (Ctx.empty mode level)
+        (unitIdentityType level)
+        unitIdentityRaw) :
+    BridgeRoundTrip
+      encodeTy_unitIdentity
+      (decodeTy_unitIdentity (level := level))
+      (unitIdentityType level)
+      encodeRawTerm_unitIdentity
+      decodeRawTerm_unitIdentity
+      unitIdentityRaw :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (unitIdentityType level))
+    rawRoundTrip := Eq.refl (Option.some unitIdentityRaw)
+  }
 
 end FX1Bridge
 end LeanFX2

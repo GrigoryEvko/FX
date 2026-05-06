@@ -35,16 +35,16 @@ namespace LeanFX2.Tools
 -- strict/univalent-only availability but whose signatures still quantify over
 -- arbitrary `mode`.  The budget pins current debt until the ctor signatures
 -- acquire real `mode = ...` premises.
-#assert_mode_discipline_budget LeanFX2.Term 8
+#assert_mode_discipline_budget LeanFX2.Term 0
 
 -- Semantic-signature debt gates.  These do not claim the current signatures
 -- are sound; they pin the known fake-typing shapes so new ctors cannot repeat
 -- them silently and repaired ctors ratchet the budgets downward.
 #assert_dependent_eliminator_motive_budget LeanFX2.Term 9
-#assert_unit_placeholder_budget LeanFX2.Term 3
+#assert_unit_placeholder_budget LeanFX2.Term 1
 #assert_modal_noop_budget LeanFX2.Term 3
 #assert_session_no_advance_budget LeanFX2.Term 2
-#assert_equiv_coherence_budget LeanFX2.Term 1
+#assert_equiv_coherence_budget LeanFX2.Term 0
 
 -- Rich schema/linkage debt gates.  These pin raw endpoint/tag laundering and
 -- missing cubical/session/effect schema evidence at both Ty and Term layers.
@@ -52,14 +52,19 @@ namespace LeanFX2.Tools
 #assert_ty_unstructured_schema_budget LeanFX2.Ty 5
 #assert_transport_linkage_budget LeanFX2.Term 1
 #assert_glue_schema_budget LeanFX2.Term 2
-#assert_effect_schema_budget LeanFX2.Term 1
+#assert_effect_schema_budget LeanFX2.Term 0
 #assert_session_schema_budget LeanFX2.Term 2
 #assert_hcomp_kan_budget LeanFX2.Term 1
+
+-- Exact snapshots for the small, high-risk semantic debt classes above.
+-- Count budgets catch growth; these catch one-for-one debt replacement.
+#assert_term_semantic_debt_snapshots LeanFX2.Term
+#assert_ty_schema_debt_snapshots LeanFX2.Ty
 
 -- Exact rich-to-FX1 bridge constructor coverage.  Fragment bridges remain
 -- useful, but only exact `FX1Bridge.encodeTermSound_<ctor>` names count as
 -- whole-constructor bridge coverage for this matrix.
-#assert_bridge_exact_coverage_budget LeanFX2.Term 71
+#assert_bridge_exact_coverage_budget LeanFX2.Term 62
 
 -- Step.par cong-rule coverage matrix.  Every Term constructor with at
 -- least one sub-Term position should have a same-suffix

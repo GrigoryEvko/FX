@@ -153,26 +153,32 @@ theorem Term.toRaw_oeqFunext {mode : Mode} {level scope : Nat}
     (domainType codomainType : Ty level scope)
     (leftFunctionRaw rightFunctionRaw : RawTerm scope)
     {pointwiseRaw : RawTerm scope}
-    (pointwiseProof : Term context Ty.unit pointwiseRaw) :
+    (pointwiseProof :
+      Term context
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw) :
     (Term.oeqFunext domainType codomainType
       leftFunctionRaw rightFunctionRaw pointwiseProof).toRaw =
       RawTerm.oeqFunext pointwiseProof.toRaw := rfl
 
 theorem Term.toRaw_idStrictRefl {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
     (carrier : Ty level scope) (rawWitness : RawTerm scope) :
-    (Term.idStrictRefl (context := context) carrier rawWitness).toRaw =
+    (Term.idStrictRefl (context := context) modeIsStrict carrier rawWitness).toRaw =
       RawTerm.idStrictRefl rawWitness := rfl
 
 theorem Term.toRaw_idStrictRec {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
     {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
     {motiveType : Ty level scope}
     {baseRaw witnessRaw : RawTerm scope}
     (baseCase : Term context motiveType baseRaw)
     (witness :
       Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw) :
-    (Term.idStrictRec baseCase witness).toRaw =
+    (Term.idStrictRec modeIsStrict baseCase witness).toRaw =
       RawTerm.idStrictRec baseCase.toRaw witness.toRaw := rfl
 
 theorem Term.toRaw_codataUnfold {mode : Mode} {level scope : Nat}
@@ -211,11 +217,19 @@ theorem Term.toRaw_sessionRecv {mode : Mode} {level scope : Nat}
 theorem Term.toRaw_effectPerform {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     (effectTag : RawTerm scope)
-    {carrierType : Ty level scope}
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
     {operationRaw argumentsRaw : RawTerm scope}
-    (operationTag : Term context Ty.unit operationRaw)
-    (arguments : Term context carrierType argumentsRaw) :
-    (Term.effectPerform effectTag operationTag arguments).toRaw =
+    (operationTag :
+      Term context
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term context operationSignature.argumentCarrier argumentsRaw) :
+    (Term.effectPerform effectTag effectRow operationSignature
+      canPerformOperation operationTag arguments).toRaw =
       RawTerm.effectPerform operationTag.toRaw arguments.toRaw := rfl
 
 /-! ## Booleans, Naturals, Lists, Options, Eithers, Modal -/
@@ -229,11 +243,13 @@ theorem Term.toRaw_boolFalse {mode : Mode} {level scope : Nat}
     (Term.boolFalse (context := context)).toRaw = RawTerm.boolFalse := rfl
 
 theorem Term.toRaw_boolElim {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope} {motiveType : Ty level scope}
+    {context : Ctx mode level scope} {motiveType : Ty level (scope + 1)}
     {scrutineeRaw thenRaw elseRaw : RawTerm scope}
     (scrutinee : Term context Ty.bool scrutineeRaw)
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
     (Term.boolElim scrutinee thenBranch elseBranch).toRaw =
       RawTerm.boolElim scrutinee.toRaw thenBranch.toRaw elseBranch.toRaw := rfl
 
@@ -382,43 +398,49 @@ theorem Term.toRaw_intervalJoin {mode : Mode} {level scope : Nat}
 
 theorem Term.toRaw_pathLam {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (carrierType : Ty level scope)
     (leftEndpoint rightEndpoint : RawTerm scope)
     {bodyRaw : RawTerm (scope + 1)}
     (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw) :
-    (Term.pathLam carrierType leftEndpoint rightEndpoint body).toRaw =
+    (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body).toRaw =
       RawTerm.pathLam body.toRaw := rfl
 
 theorem Term.toRaw_pathApp {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {leftEndpoint rightEndpoint : RawTerm scope}
     {pathRaw intervalRaw : RawTerm scope}
     (pathTerm : Term context
       (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
     (intervalTerm : Term context Ty.interval intervalRaw) :
-    (Term.pathApp pathTerm intervalTerm).toRaw =
+    (Term.pathApp modeIsUnivalent pathTerm intervalTerm).toRaw =
       RawTerm.pathApp pathTerm.toRaw intervalTerm.toRaw := rfl
 
 theorem Term.toRaw_glueIntro {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (baseType : Ty level scope) (boundaryWitness : RawTerm scope)
     {baseRaw partialRaw : RawTerm scope}
     (baseValue : Term context baseType baseRaw)
     (partialValue : Term context baseType partialRaw) :
-    (Term.glueIntro baseType boundaryWitness baseValue partialValue).toRaw =
+    (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+      baseValue partialValue).toRaw =
       RawTerm.glueIntro baseValue.toRaw partialValue.toRaw := rfl
 
 theorem Term.toRaw_glueElim {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {baseType : Ty level scope}
     {boundaryWitness gluedRaw : RawTerm scope}
     (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw) :
-    (Term.glueElim gluedValue).toRaw =
+    (Term.glueElim modeIsUnivalent gluedValue).toRaw =
       RawTerm.glueElim gluedValue.toRaw := rfl
 
 theorem Term.toRaw_transp {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType targetType : Ty level scope)
@@ -430,17 +452,18 @@ theorem Term.toRaw_transp {mode : Mode} {level scope : Nat}
           sourceTypeRaw targetTypeRaw)
         pathRaw)
     (sourceValue : Term context sourceType sourceRaw) :
-    (Term.transp universeLevel universeLevelLt sourceType targetType
+    (Term.transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw typePath sourceValue).toRaw =
       RawTerm.transp typePath.toRaw sourceValue.toRaw := rfl
 
 theorem Term.toRaw_hcomp {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRaw capRaw : RawTerm scope}
     (sidesValue : Term context carrierType sidesRaw)
     (capValue : Term context carrierType capRaw) :
-    (Term.hcomp sidesValue capValue).toRaw =
+    (Term.hcomp modeIsUnivalent sidesValue capValue).toRaw =
       RawTerm.hcomp sidesValue.toRaw capValue.toRaw := rfl
 
 theorem Term.toRaw_recordIntro {mode : Mode} {level scope : Nat}
@@ -547,10 +570,18 @@ theorem Term.toRaw_funextReflAtId {mode : Mode} {level scope : Nat}
 theorem Term.toRaw_equivIntroHet {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {carrierA carrierB : Ty level scope}
-    {forwardRaw backwardRaw : RawTerm scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
     (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
-    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw) :
-    (Term.equivIntroHet forward backward).toRaw =
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw) :
+    (Term.equivIntroHet forward backward leftInv rightInv).toRaw =
       RawTerm.equivIntro forward.toRaw backward.toRaw := rfl
 
 theorem Term.toRaw_uaIntroHet {mode : Mode} {level scope : Nat}

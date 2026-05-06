@@ -31,13 +31,19 @@ example :
 
 /-- `boolElim true t e ⟶ι t`. -/
 example
-    {motiveType : LeanFX2.Ty 0 0}
     (thenBranch elseBranch :
       LeanFX2.Term (LeanFX2.Ctx.empty (mode := LeanFX2.Mode.software) (level := 0))
-        motiveType LeanFX2.RawTerm.boolTrue) :
+        LeanFX2.Ty.bool LeanFX2.RawTerm.boolTrue) :
     LeanFX2.Step
-      (LeanFX2.Term.boolElim LeanFX2.Term.boolTrue thenBranch elseBranch)
-      thenBranch :=
+      (LeanFX2.Term.boolElim
+        (motiveType := LeanFX2.Ty.bool.weaken)
+        LeanFX2.Term.boolTrue
+        ((LeanFX2.Ty.weaken_subst_singleton LeanFX2.Ty.bool LeanFX2.Ty.bool
+          LeanFX2.RawTerm.boolTrue).symm ▸ thenBranch)
+        ((LeanFX2.Ty.weaken_subst_singleton LeanFX2.Ty.bool LeanFX2.Ty.bool
+          LeanFX2.RawTerm.boolFalse).symm ▸ elseBranch))
+      ((LeanFX2.Ty.weaken_subst_singleton LeanFX2.Ty.bool LeanFX2.Ty.bool
+        LeanFX2.RawTerm.boolTrue).symm ▸ thenBranch) :=
   LeanFX2.Step.iotaBoolElimTrue _ _
 
 end LeanFX2.Smoke.Phase3A

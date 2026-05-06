@@ -174,8 +174,8 @@ theorem Term.subst_pointwise
   | _, _, .oeqFunext _ _ _ _ pointwiseProof => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq pointwiseProof]
-  | _, _, .idStrictRefl _ _ => rfl
-  | _, _, .idStrictRec baseCase witness => by
+  | _, _, .idStrictRefl _ _ _ => rfl
+  | _, _, .idStrictRec _ baseCase witness => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq baseCase,
           Term.subst_pointwise pointwiseEq witness]
@@ -201,26 +201,26 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq leftValue,
           Term.subst_pointwise pointwiseEq rightValue]
-  | _, _, .pathLam _ _ _ body => by
+  | _, _, .pathLam _ _ _ _ body => by
       simp only [Term.subst]
       rw [Term.subst_pointwise
             (TermSubst.lift_pointwise pointwiseEq Ty.interval) body]
-  | _, _, .pathApp pathTerm intervalTerm => by
+  | _, _, .pathApp _ pathTerm intervalTerm => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq pathTerm,
           Term.subst_pointwise pointwiseEq intervalTerm]
-  | _, _, .glueIntro _ _ baseValue partialValue => by
+  | _, _, .glueIntro _ _ _ baseValue partialValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq baseValue,
           Term.subst_pointwise pointwiseEq partialValue]
-  | _, _, .glueElim gluedValue => by
+  | _, _, .glueElim _ gluedValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq gluedValue]
-  | _, _, .transp _ _ _ _ _ _ typePath sourceValue => by
+  | _, _, .transp _ _ _ _ _ _ _ typePath sourceValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq typePath,
           Term.subst_pointwise pointwiseEq sourceValue]
-  | _, _, .hcomp sidesValue capValue => by
+  | _, _, .hcomp _ sidesValue capValue => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq sidesValue,
           Term.subst_pointwise pointwiseEq capValue]
@@ -251,7 +251,7 @@ theorem Term.subst_pointwise
   | _, _, .sessionRecv channel => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq channel]
-  | _, _, .effectPerform _ operationTag arguments => by
+  | _, _, .effectPerform _ _ _ _ operationTag arguments => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq operationTag,
           Term.subst_pointwise pointwiseEq arguments]
@@ -273,14 +273,16 @@ theorem Term.subst_pointwise
   | _, _, .equivReflIdAtId _ _ _ _ => rfl
   | _, _, .funextReflAtId _ _ _ => rfl
   -- HoTT heterogeneous-carrier equivIntroHet (Phase 12.A.B8.5): the
-  -- subst arm in Term/Subst.lean recurses on the two subterms via
+  -- subst arm in Term/Subst.lean recurses on the four subterms via
   -- Term.subst (which respects pointwise hypothesis by structural
-  -- IH).  Pointwise equality propagates through both forward and
-  -- backward subterms, then the ctor reassembles identically.
-  | _, _, .equivIntroHet forward backward => by
+  -- IH).  Pointwise equality propagates through forward/backward plus
+  -- the proof-function obligations, then the ctor reassembles identically.
+  | _, _, .equivIntroHet forward backward leftInv rightInv => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq forward,
-          Term.subst_pointwise pointwiseEq backward]
+          Term.subst_pointwise pointwiseEq backward,
+          Term.subst_pointwise pointwiseEq leftInv,
+          Term.subst_pointwise pointwiseEq rightInv]
   | _, _, .equivApp equivTerm argumentTerm => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq equivTerm,

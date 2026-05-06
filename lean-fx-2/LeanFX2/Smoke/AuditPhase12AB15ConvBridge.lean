@@ -96,10 +96,12 @@ example
 /-- ι-redex roundtrip example. -/
 example
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {thenRaw elseRaw : RawTerm scope}
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
+    (thenBranch : Term context
+      (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch : Term context
+      (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
     ConvCumul (Term.boolElim Term.boolTrue thenBranch elseBranch) thenBranch :=
   Step.toConvCumul (Step.iotaBoolElimTrue thenBranch elseBranch)
 

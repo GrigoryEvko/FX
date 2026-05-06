@@ -25,6 +25,7 @@ This constructs the redex shape for future constant-transport β without
 granting that β rule yet. -/
 def constantTypeTransport {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType : Ty level scope)
@@ -34,9 +35,9 @@ def constantTypeTransport {mode : Mode} {level scope : Nat}
     (sourceValue : Term context sourceType sourceRaw) :
     Term context sourceType
       (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRaw) :=
-  Term.transp universeLevel universeLevelLt
+  Term.transp modeIsUnivalent universeLevel universeLevelLt
     sourceType sourceType typeRaw typeRaw
-    (constantTypePath universeLevel universeLevelLt typeCode)
+    (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode)
     sourceValue
 
 /-- `constantTypeTransport` projects to exactly the raw transport redex
@@ -44,6 +45,7 @@ future `transpRefl` work must handle. -/
 theorem constantTypeTransport_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType : Ty level scope)
@@ -51,7 +53,7 @@ theorem constantTypeTransport_toRaw
     (typeCode :
       Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
     (sourceValue : Term context sourceType sourceRaw) :
-    (constantTypeTransport universeLevel universeLevelLt
+    (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
       sourceType typeCode sourceValue).toRaw =
       RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRaw :=
   rfl
@@ -62,15 +64,16 @@ raw constant-path recognizer.  This is the exact guard future transport
 theorem constantTypeTransport_typeLineRecognized
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe universeLevel universeLevelLt) typeRaw) :
     RawTerm.constantPathBody?
-      (constantTypePath universeLevel universeLevelLt typeCode).toRaw =
+      (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode).toRaw =
       some typeRaw :=
-  constantTypePath_rawRecognized universeLevel universeLevelLt typeCode
+  constantTypePath_rawRecognized modeIsUnivalent universeLevel universeLevelLt typeCode
 
 /-- The named constant-transport redex is stable under parallel
 reduction of its source value.  This is still transport congruence, not
@@ -78,6 +81,7 @@ transport β. -/
 theorem constantTypeTransport_sourceCong
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType : Ty level scope)
@@ -88,11 +92,11 @@ theorem constantTypeTransport_sourceCong
     {sourceValueTarget : Term context sourceType sourceRawTarget}
     (sourceStep : Step.par sourceValueSource sourceValueTarget) :
     Step.par
-      (constantTypeTransport universeLevel universeLevelLt
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
         sourceType typeCode sourceValueSource)
-      (constantTypeTransport universeLevel universeLevelLt
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
         sourceType typeCode sourceValueTarget) :=
-  Step.par.transp universeLevel universeLevelLt
+  Step.par.transp modeIsUnivalent universeLevel universeLevelLt
     sourceType sourceType typeRaw typeRaw
     (Step.par.refl _) sourceStep
 
@@ -102,6 +106,7 @@ constant type line. -/
 theorem constantTypeTransport_sourceCong_toRawBridge
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType : Ty level scope)
@@ -117,7 +122,7 @@ theorem constantTypeTransport_sourceCong_toRawBridge
   simpa [constantTypeTransport_toRaw]
     using Step.par.toRawBridge
       (constantTypeTransport_sourceCong
-        universeLevel universeLevelLt sourceType typeCode sourceStep)
+        modeIsUnivalent universeLevel universeLevelLt sourceType typeCode sourceStep)
 
 /-- Conversion-level congruence for the named constant-transport redex.
 This keeps future transport work using the named redex shape through
@@ -125,6 +130,7 @@ This keeps future transport work using the named redex shape through
 theorem constantTypeTransport_sourceConvCumul
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType : Ty level scope)
@@ -135,11 +141,11 @@ theorem constantTypeTransport_sourceConvCumul
     {sourceValueTarget : Term context sourceType sourceRawTarget}
     (sourceRel : ConvCumul sourceValueSource sourceValueTarget) :
     ConvCumul
-      (constantTypeTransport universeLevel universeLevelLt
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
         sourceType typeCode sourceValueSource)
-      (constantTypeTransport universeLevel universeLevelLt
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
         sourceType typeCode sourceValueTarget) :=
-  ConvCumul.transpCong universeLevel universeLevelLt
+  ConvCumul.transpCong modeIsUnivalent universeLevel universeLevelLt
     sourceType sourceType typeRaw typeRaw
     (ConvCumul.refl _) sourceRel
 
@@ -153,6 +159,7 @@ reduction preserves weakened constant path bodies. -/
 theorem constantTypeTransport_betaConvCumul
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     (sourceType : Ty level scope)
@@ -161,12 +168,12 @@ theorem constantTypeTransport_betaConvCumul
       Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
     (sourceValue : Term context sourceType sourceRaw) :
     ConvCumul
-      (constantTypeTransport universeLevel universeLevelLt
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
         sourceType typeCode sourceValue)
       sourceValue :=
-  ConvCumul.betaTranspConstantTypeCumul
+  ConvCumul.betaTranspConstantTypeCumul modeIsUnivalent
     universeLevel universeLevelLt sourceType
-    (constantTypePath universeLevel universeLevelLt typeCode)
+    (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode)
     sourceValue
 
 end Cubical

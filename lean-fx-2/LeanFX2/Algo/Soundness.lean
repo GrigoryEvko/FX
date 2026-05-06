@@ -68,11 +68,13 @@ variable {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
 when the scrutinee's head is `boolTrue`, the result `thenBranch`
 is reachable via `Step.iotaBoolElimTrue`. -/
 theorem Term.headStep?_sound_boolElimTrue
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {scrutRaw thenRaw elseRaw : RawTerm scope}
     (scrutinee : Term context Ty.bool scrutRaw)
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
     (headEq : scrutinee.headCtor = Term.HeadCtor.boolTrue) :
     Step (Term.boolElim scrutinee thenBranch elseBranch) thenBranch := by
   have rawEq : scrutRaw = RawTerm.boolTrue :=
@@ -85,11 +87,13 @@ theorem Term.headStep?_sound_boolElimTrue
 
 /-- Soundness for the boolElim-false case of `Term.headStep?`. -/
 theorem Term.headStep?_sound_boolElimFalse
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {scrutRaw thenRaw elseRaw : RawTerm scope}
     (scrutinee : Term context Ty.bool scrutRaw)
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
     (headEq : scrutinee.headCtor = Term.HeadCtor.boolFalse) :
     Step (Term.boolElim scrutinee thenBranch elseBranch) elseBranch := by
   have rawEq : scrutRaw = RawTerm.boolFalse :=
@@ -434,14 +438,14 @@ theorem Term.headStep?_sound
   | codataDest _ => nomatch firedEq
   | sessionSend _ _ _ => nomatch firedEq
   | sessionRecv _ => nomatch firedEq
-  | effectPerform _ _ _ => nomatch firedEq
+  | effectPerform _ _ _ _ _ _ => nomatch firedEq
   | universeCode _ _ _ _ => nomatch firedEq
   | cumulUp _ _ _ _ _ _ => nomatch firedEq
   | equivReflId _ => nomatch firedEq
   | funextRefl _ _ _ => nomatch firedEq
   | equivReflIdAtId _ _ _ _ => nomatch firedEq
   | funextReflAtId _ _ _ => nomatch firedEq
-  | equivIntroHet _ _ => nomatch firedEq
+  | equivIntroHet _ _ _ _ => nomatch firedEq
   | equivApp _ _ => nomatch firedEq
   | uaIntroHet _ _ _ _ _ => nomatch firedEq
   | funextIntroHet _ _ _ _ => nomatch firedEq
@@ -525,49 +529,88 @@ theorem Term.headStep?_sound
                  | none => none
                else none) from rfl, headEq] at firedEq
       nomatch firedEq
-  | boolElim scrutinee thenBranch elseBranch =>
-    match headEq : scrutinee.headCtor with
+  | @boolElim _ _ _ scrutineeRaw _ _ scrutinee thenBranch elseBranch =>
+    match scrutineeRaw with
     | .boolTrue =>
-      rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
-            = (let scrutineeHead := scrutinee.headCtor
-               if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
-               else if scrutineeHead == .boolFalse then some ⟨_, elseBranch⟩
-               else none) from rfl, headEq] at firedEq
+      change (some ⟨_, thenBranch⟩ = some result) at firedEq
       cases firedEq
-      exact Term.headStep?_sound_boolElimTrue scrutinee thenBranch elseBranch headEq
+      have scrutEq : scrutinee = Term.boolTrue :=
+        eq_of_heq (Term.boolTrue_unique scrutinee Term.boolTrue)
+      rw [scrutEq]
+      exact Step.iotaBoolElimTrue thenBranch elseBranch
     | .boolFalse =>
-      rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
-            = (let scrutineeHead := scrutinee.headCtor
-               if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
-               else if scrutineeHead == .boolFalse then some ⟨_, elseBranch⟩
-               else none) from rfl, headEq] at firedEq
+      change (some ⟨_, elseBranch⟩ = some result) at firedEq
       cases firedEq
-      exact Term.headStep?_sound_boolElimFalse scrutinee thenBranch elseBranch headEq
-    -- Other head values: headStep? returns none, contradiction
-    | .var | .unit | .lam | .app | .lamPi | .appPi
-    | .pair | .fst | .snd
-    | .boolElim
-    | .natZero | .natSucc | .natElim | .natRec
-    | .listNil | .listCons | .listElim
-    | .optionNone | .optionSome | .optionMatch
-    | .eitherInl | .eitherInr | .eitherMatch
-    | .refl | .idJ | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec | .modIntro | .modElim | .subsume
-    | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-    | .pathLam | .pathApp
-    | .glueIntro | .glueElim | .transp | .hcomp
-    | .recordIntro | .recordProj | .refineIntro | .refineElim
-    | .codataUnfold | .codataDest
-    | .sessionSend | .sessionRecv | .effectPerform
-    | .universeCode | .cumulUp
-    | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
-    | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet
-    | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
-    | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
-      rw [show (Term.boolElim scrutinee thenBranch elseBranch).headStep?
-            = (let scrutineeHead := scrutinee.headCtor
-               if scrutineeHead == .boolTrue then some ⟨_, thenBranch⟩
-               else if scrutineeHead == .boolFalse then some ⟨_, elseBranch⟩
-               else none) from rfl, headEq] at firedEq
+      have scrutEq : scrutinee = Term.boolFalse :=
+        eq_of_heq (Term.boolFalse_unique scrutinee Term.boolFalse)
+      rw [scrutEq]
+      exact Step.iotaBoolElimFalse thenBranch elseBranch
+    | .var _
+    | .unit
+    | .lam _
+    | .app _ _
+    | .pair _ _
+    | .fst _
+    | .snd _
+    | .boolElim _ _ _
+    | .natZero
+    | .natSucc _
+    | .natElim _ _ _
+    | .natRec _ _ _
+    | .listNil
+    | .listCons _ _
+    | .listElim _ _ _
+    | .optionNone
+    | .optionSome _
+    | .optionMatch _ _ _
+    | .eitherInl _
+    | .eitherInr _
+    | .eitherMatch _ _ _
+    | .refl _
+    | .idJ _ _
+    | .oeqRefl _
+    | .oeqJ _ _
+    | .oeqFunext _
+    | .idStrictRefl _
+    | .idStrictRec _ _
+    | .modIntro _
+    | .modElim _
+    | .subsume _
+    | .interval0
+    | .interval1
+    | .intervalOpp _
+    | .intervalMeet _ _
+    | .intervalJoin _ _
+    | .pathLam _
+    | .pathApp _ _
+    | .glueIntro _ _
+    | .glueElim _
+    | .transp _ _
+    | .hcomp _ _
+    | .recordIntro _
+    | .recordProj _
+    | .refineIntro _ _
+    | .refineElim _
+    | .codataUnfold _ _
+    | .codataDest _
+    | .sessionSend _ _
+    | .sessionRecv _
+    | .effectPerform _ _
+    | .universeCode _
+    | .cumulUpMarker _
+    | .equivIntro _ _
+    | .equivApp _ _
+    | .arrowCode _ _
+    | .piTyCode _ _
+    | .sigmaTyCode _ _
+    | .productCode _ _
+    | .sumCode _ _
+    | .listCode _
+    | .optionCode _
+    | .eitherCode _ _
+    | .idCode _ _ _
+    | .equivCode _ _ =>
+      change (none = some result) at firedEq
       nomatch firedEq
   | natElim scrutinee zeroBranch succBranch =>
     match headEq : scrutinee.headCtor with

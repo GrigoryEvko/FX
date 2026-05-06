@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1Bridge_UnitId — 53 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1Bridge_UnitId — 57 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdentityRaw
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdentityType
@@ -27,12 +27,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentityType_has_sort
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentity_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdentity_roundTrip
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdentityAppRaw
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdentityAppTerm
 #assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitIdentityApp
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentityApp_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdentityApp_betaStep
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdentityApp
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdentityApp_roundTrip
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdTypeAtomId
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdReflAtomId
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdTypeName
@@ -64,6 +66,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdTypeExpr_has_sort_in_unitIdEnvironment
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdRefl_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdRefl
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdRefl_roundTrip
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdJRaw
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdJTerm
 #assert_no_axioms LeanFX2.FX1Bridge.unitIdJ_iotaStep
@@ -72,5 +75,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnit_has_type_in_unitIdEnvironment
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitIdJ_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdJ
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitIdJ_roundTrip
 
 end LeanFX2.Tools

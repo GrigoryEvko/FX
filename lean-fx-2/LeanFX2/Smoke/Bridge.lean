@@ -60,6 +60,7 @@ namespace LeanFX2.Smoke
 /-- Typed path application must project to the exact raw path-app shape. -/
 theorem pathApp_toRaw_smoke {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {leftEndpoint rightEndpoint intervalRaw : RawTerm scope}
     {bodyRaw : RawTerm (scope + 1)}
@@ -67,7 +68,9 @@ theorem pathApp_toRaw_smoke {mode : Mode} {level scope : Nat}
       Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
     (intervalTerm : Term context Ty.interval intervalRaw) :
     (Term.pathApp
-      (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+      modeIsUnivalent
+      (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+        bodyTerm)
       intervalTerm).toRaw =
       RawTerm.pathApp (RawTerm.pathLam bodyRaw) intervalRaw := rfl
 
@@ -75,6 +78,7 @@ theorem pathApp_toRaw_smoke {mode : Mode} {level scope : Nat}
 to some raw congruence fallback. -/
 theorem betaPathApp_toRawBridge_smoke {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {leftEndpoint rightEndpoint : RawTerm scope}
     {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
@@ -92,6 +96,7 @@ theorem betaPathApp_toRawBridge_smoke {mode : Mode} {level scope : Nat}
       (bodyRawTarget.subst0 intervalRawTarget) :=
   Step.par.toRawBridge
     (Step.par.betaPathApp
+      modeIsUnivalent
       (leftEndpoint := leftEndpoint)
       (rightEndpoint := rightEndpoint)
       bodyStep intervalStep)
@@ -100,6 +105,7 @@ theorem betaPathApp_toRawBridge_smoke {mode : Mode} {level scope : Nat}
 theorem betaPathAppDeep_toRawBridge_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {leftEndpoint rightEndpoint : RawTerm scope}
     {pathRawSource intervalRawSource intervalRawTarget : RawTerm scope}
@@ -113,17 +119,20 @@ theorem betaPathAppDeep_toRawBridge_smoke
     {intervalTarget : Term context Ty.interval intervalRawTarget}
     (pathStep :
       Step.par pathSource
-        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget))
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+          bodyTarget))
     (intervalStep : Step.par intervalSource intervalTarget) :
     RawStep.par
       (RawTerm.pathApp pathRawSource intervalRawSource)
       (bodyRawTarget.subst0 intervalRawTarget) :=
-  Step.par.toRawBridge (Step.par.betaPathAppDeep pathStep intervalStep)
+  Step.par.toRawBridge
+    (Step.par.betaPathAppDeep modeIsUnivalent pathStep intervalStep)
 
 /-- Typed Glue β must bridge to the raw `betaGlueElimIntro` target. -/
 theorem betaGlueElimIntro_toRawBridge_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {baseType : Ty level scope}
     {boundaryWitness : RawTerm scope}
     {baseRawSource baseRawTarget partialRawSource partialRawTarget :
@@ -140,12 +149,14 @@ theorem betaGlueElimIntro_toRawBridge_smoke
       baseRawTarget :=
   Step.par.toRawBridge
     (Step.par.betaGlueElimIntro
+      modeIsUnivalent
       (boundaryWitness := boundaryWitness) baseStep partialStep)
 
 /-- Deep typed Glue β must bridge to the raw deep Glue β rule. -/
 theorem betaGlueElimIntroDeep_toRawBridge_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {baseType : Ty level scope}
     {boundaryWitness gluedRawSource baseRawTarget partialRawTarget :
       RawTerm scope}
@@ -155,15 +166,17 @@ theorem betaGlueElimIntroDeep_toRawBridge_smoke
     {partialTarget : Term context baseType partialRawTarget}
     (gluedStep :
       Step.par gluedSource
-        (Term.glueIntro baseType boundaryWitness baseTarget partialTarget)) :
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseTarget partialTarget)) :
     RawStep.par (RawTerm.glueElim gluedRawSource) baseRawTarget :=
   Step.par.toRawBridge
-    (Step.par.betaGlueElimIntroDeep gluedStep)
+    (Step.par.betaGlueElimIntroDeep modeIsUnivalent gluedStep)
 
 /-- Typed transport congruence currently has only cong parity; this smoke
 locks that parity to the raw transport congruence rule. -/
 theorem transpCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {universeLevel : UniverseLevel}
     {universeLevelLt : universeLevel.toNat + 1 ≤ level}
     {sourceType targetType : Ty level scope}
@@ -188,7 +201,7 @@ theorem transpCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
       (RawTerm.transp pathRawSource sourceRawSource)
       (RawTerm.transp pathRawTarget sourceRawTarget) :=
   Step.par.toRawBridge
-    (Step.par.transp universeLevel universeLevelLt
+    (Step.par.transp modeIsUnivalent universeLevel universeLevelLt
       sourceType targetType sourceTypeRaw targetTypeRaw pathStep sourceStep)
 
 /-- Constant-type transport wiring smoke.
@@ -201,6 +214,7 @@ transport β rule. -/
 theorem constantTypeTransport_fullStackWiring_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {universeLevel : UniverseLevel}
     {universeLevelLt : universeLevel.toNat + 1 ≤ level}
     {sourceType : Ty level scope}
@@ -213,13 +227,16 @@ theorem constantTypeTransport_fullStackWiring_smoke
     (sourceRel : ConvCumul sourceValueSource sourceValueTarget) :
     And
       (RawTerm.constantPathBody?
-        (Cubical.constantTypePath universeLevel universeLevelLt typeCode).toRaw =
+        (Cubical.constantTypePath modeIsUnivalent
+          universeLevel universeLevelLt typeCode).toRaw =
           some typeRaw)
       (And
         (Step.par
-          (Cubical.constantTypeTransport universeLevel universeLevelLt
+          (Cubical.constantTypeTransport modeIsUnivalent
+            universeLevel universeLevelLt
             sourceType typeCode sourceValueSource)
-          (Cubical.constantTypeTransport universeLevel universeLevelLt
+          (Cubical.constantTypeTransport modeIsUnivalent
+            universeLevel universeLevelLt
             sourceType typeCode sourceValueTarget))
         (And
           (RawStep.par
@@ -227,37 +244,41 @@ theorem constantTypeTransport_fullStackWiring_smoke
             (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRawTarget))
           (And
             (ConvCumul
-              (Cubical.constantTypeTransport universeLevel universeLevelLt
+              (Cubical.constantTypeTransport modeIsUnivalent
+                universeLevel universeLevelLt
                 sourceType typeCode sourceValueSource)
-              (Cubical.constantTypeTransport universeLevel universeLevelLt
+              (Cubical.constantTypeTransport modeIsUnivalent
+                universeLevel universeLevelLt
                 sourceType typeCode sourceValueTarget))
             (ConvCumul
-              (Cubical.constantTypeTransport universeLevel universeLevelLt
+              (Cubical.constantTypeTransport modeIsUnivalent
+                universeLevel universeLevelLt
                 sourceType typeCode sourceValueSource)
               sourceValueSource)))) := by
   exact And.intro
     (Cubical.constantTypeTransport_typeLineRecognized
-      universeLevel universeLevelLt typeCode)
+      modeIsUnivalent universeLevel universeLevelLt typeCode)
     (And.intro
       (Cubical.constantTypeTransport_sourceCong
-        universeLevel universeLevelLt sourceType typeCode
+        modeIsUnivalent universeLevel universeLevelLt sourceType typeCode
         sourceStep)
       (And.intro
         (Cubical.constantTypeTransport_sourceCong_toRawBridge
-          universeLevel universeLevelLt sourceType typeCode
+          modeIsUnivalent universeLevel universeLevelLt sourceType typeCode
           sourceStep)
         (And.intro
           (Cubical.constantTypeTransport_sourceConvCumul
-            universeLevel universeLevelLt sourceType typeCode
+            modeIsUnivalent universeLevel universeLevelLt sourceType typeCode
             sourceRel)
           (Cubical.constantTypeTransport_betaConvCumul
-            universeLevel universeLevelLt sourceType typeCode
+            modeIsUnivalent universeLevel universeLevelLt sourceType typeCode
             sourceValueSource))))
 
 /-- Typed hcomp congruence currently has only cong parity; this smoke
 locks that parity to the raw hcomp congruence rule. -/
 theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRawSource sidesRawTarget capRawSource capRawTarget :
       RawTerm scope}
@@ -270,7 +291,8 @@ theorem hcompCong_toRawBridge_smoke {mode : Mode} {level scope : Nat}
     RawStep.par
       (RawTerm.hcomp sidesRawSource capRawSource)
       (RawTerm.hcomp sidesRawTarget capRawTarget) :=
-  Step.par.toRawBridge (Step.par.hcomp sidesStep capStep)
+  Step.par.toRawBridge
+    (Step.par.hcomp modeIsUnivalent sidesStep capStep)
 
 /-- Path/id bridge wiring smoke.
 
@@ -280,34 +302,36 @@ agree on the same endpoint raw index. -/
 theorem constantPathIdBridge_fullStackWiring_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
     And
-      ((Bridge.constantPathToId pointTerm
-        (Cubical.constantPath pointTerm)).toRaw =
+      ((Bridge.constantPathToId modeIsUnivalent pointTerm
+        (Cubical.constantPath modeIsUnivalent pointTerm)).toRaw =
           RawTerm.refl pointRaw)
       (And
-        ((Bridge.reflIdToConstantPath pointTerm
+        ((Bridge.reflIdToConstantPath modeIsUnivalent pointTerm
           (Term.refl carrierType pointRaw)).toRaw =
             RawTerm.pathLam pointRaw.weaken)
         (And
-          ((Bridge.reflIdToConstantPath pointTerm
-            (Bridge.constantPathToId pointTerm
-              (Cubical.constantPath pointTerm))).toRaw =
+          ((Bridge.reflIdToConstantPath modeIsUnivalent pointTerm
+            (Bridge.constantPathToId modeIsUnivalent pointTerm
+              (Cubical.constantPath modeIsUnivalent pointTerm))).toRaw =
               RawTerm.pathLam pointRaw.weaken)
-          ((Bridge.constantPathToId pointTerm
-            (Bridge.reflIdToConstantPath pointTerm
+          ((Bridge.constantPathToId modeIsUnivalent pointTerm
+            (Bridge.reflIdToConstantPath modeIsUnivalent pointTerm
               (Term.refl carrierType pointRaw))).toRaw =
               RawTerm.refl pointRaw))) := by
   exact And.intro
-    (Bridge.constantPathToId_toRaw pointTerm (Cubical.constantPath pointTerm))
+    (Bridge.constantPathToId_toRaw modeIsUnivalent pointTerm
+      (Cubical.constantPath modeIsUnivalent pointTerm))
     (And.intro
-      (Bridge.reflIdToConstantPath_toRaw pointTerm
+      (Bridge.reflIdToConstantPath_toRaw modeIsUnivalent pointTerm
         (Term.refl carrierType pointRaw))
       (And.intro
-        (Bridge.constantPath_roundTrip_toRaw pointTerm)
-        (Bridge.reflId_roundTrip_toRaw pointTerm)))
+        (Bridge.constantPath_roundTrip_toRaw modeIsUnivalent pointTerm)
+        (Bridge.reflId_roundTrip_toRaw modeIsUnivalent pointTerm)))
 
 /-- Observational type-equality bridge wiring smoke.
 
@@ -347,6 +371,7 @@ universe produces the canonical identity equivalence for an explicit carrier.
 theorem pathEqTypeBridge_fullStackWiring_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -354,19 +379,26 @@ theorem pathEqTypeBridge_fullStackWiring_smoke
     (typeCode :
       Term context (Ty.universe innerLevel innerLevelLt) typeRaw) :
     And
-      ((Bridge.constantTypePathToEquivRefl innerLevel innerLevelLt
+      ((Bridge.constantTypePathToEquivRefl modeIsUnivalent
+        innerLevel innerLevelLt
         carrier typeCode
-        (Cubical.constantTypePath innerLevel innerLevelLt typeCode)).toRaw =
+        (Cubical.constantTypePath modeIsUnivalent
+          innerLevel innerLevelLt typeCode)).toRaw =
           (Term.equivReflId (context := context) carrier).toRaw)
-      (Bridge.constantTypePathToEquivRefl innerLevel innerLevelLt
+      (Bridge.constantTypePathToEquivRefl modeIsUnivalent
+        innerLevel innerLevelLt
         carrier typeCode
-        (Cubical.constantTypePath innerLevel innerLevelLt typeCode) =
+        (Cubical.constantTypePath modeIsUnivalent
+          innerLevel innerLevelLt typeCode) =
           Term.equivReflId carrier) :=
   And.intro
-    (Bridge.constantTypePathToEquivRefl_toRaw innerLevel innerLevelLt
+    (Bridge.constantTypePathToEquivRefl_toRaw modeIsUnivalent
+      innerLevel innerLevelLt
       carrier typeCode
-      (Cubical.constantTypePath innerLevel innerLevelLt typeCode))
-    (Bridge.constantTypePathToEquivRefl_onCanonical innerLevel innerLevelLt
+      (Cubical.constantTypePath modeIsUnivalent
+        innerLevel innerLevelLt typeCode))
+    (Bridge.constantTypePathToEquivRefl_onCanonical modeIsUnivalent
+      innerLevel innerLevelLt
       carrier typeCode)
 
 /-- Cubical-facing bridge façade smoke.
@@ -377,37 +409,41 @@ surface. -/
 theorem cubicalBridgeFacade_fullStackWiring_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
     And
-      ((Cubical.constantPathToObservationalId pointTerm
-        (Cubical.constantPath pointTerm)).toRaw =
+      ((Cubical.constantPathToObservationalId modeIsUnivalent pointTerm
+        (Cubical.constantPath modeIsUnivalent pointTerm)).toRaw =
           RawTerm.refl pointRaw)
-      ((Cubical.observationalReflToConstantPath pointTerm
+      ((Cubical.observationalReflToConstantPath modeIsUnivalent pointTerm
         (Term.refl carrierType pointRaw)).toRaw =
           RawTerm.pathLam pointRaw.weaken) :=
   And.intro
-    (Cubical.constantPathToObservationalId_toRaw pointTerm
-      (Cubical.constantPath pointTerm))
-    (Cubical.observationalReflToConstantPath_toRaw pointTerm
+    (Cubical.constantPathToObservationalId_toRaw modeIsUnivalent pointTerm
+      (Cubical.constantPath modeIsUnivalent pointTerm))
+    (Cubical.observationalReflToConstantPath_toRaw modeIsUnivalent pointTerm
       (Term.refl carrierType pointRaw))
 
 /-- Cubical-facing type-path/equivalence façade smoke. -/
 theorem cubicalTypeBridgeFacade_fullStackWiring_smoke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe innerLevel innerLevelLt) typeRaw) :
-    Cubical.constantCubicalTypePathToEquiv innerLevel innerLevelLt carrier
-      typeCode (Cubical.constantTypePath innerLevel innerLevelLt typeCode) =
+    Cubical.constantCubicalTypePathToEquiv modeIsUnivalent
+      innerLevel innerLevelLt carrier typeCode
+      (Cubical.constantTypePath modeIsUnivalent
+        innerLevel innerLevelLt typeCode) =
       Term.equivReflId carrier :=
   Cubical.constantCubicalTypePathToEquiv_onCanonical
-    innerLevel innerLevelLt carrier typeCode
+    modeIsUnivalent innerLevel innerLevelLt carrier typeCode
 
 /-- Type-level cubical-to-observational translation smoke. -/
 theorem cubicalToObservationalTy_fullStackWiring_smoke

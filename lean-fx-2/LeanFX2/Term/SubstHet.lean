@@ -103,6 +103,99 @@ def TermSubstHet.lift {mode : Mode}
         Term.weaken (newSourceType.substHet sigma)
                     (termSubstHet ⟨k, Nat.lt_of_succ_lt_succ h⟩)
 
+theorem equivIntroHetLeftInverseCodomain_substHet
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (carrierA : Ty sourceLevel sourceScope)
+    (forwardRaw backwardRaw : RawTerm sourceScope) :
+    (equivIntroHetLeftInverseCodomain carrierA forwardRaw backwardRaw).substHet sigma.lift =
+      equivIntroHetLeftInverseCodomain (carrierA.substHet sigma)
+        (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
+  unfold equivIntroHetLeftInverseCodomain
+  simp only [Ty.substHet, RawTerm.subst]
+  rw [Ty.weaken_substHet_commute sigma carrierA,
+      RawTerm.weaken_subst_commute sigma.forRaw backwardRaw,
+      RawTerm.weaken_subst_commute sigma.forRaw forwardRaw]
+
+theorem equivIntroHetLeftInverseType_substHet
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (carrierA : Ty sourceLevel sourceScope)
+    (forwardRaw backwardRaw : RawTerm sourceScope) :
+    (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw).substHet sigma =
+      equivIntroHetLeftInverseType (carrierA.substHet sigma)
+        (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
+  unfold equivIntroHetLeftInverseType
+  simp only [Ty.substHet]
+  congr 1
+  exact equivIntroHetLeftInverseCodomain_substHet sigma carrierA forwardRaw backwardRaw
+
+theorem equivIntroHetRightInverseCodomain_substHet
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (carrierB : Ty sourceLevel sourceScope)
+    (forwardRaw backwardRaw : RawTerm sourceScope) :
+    (equivIntroHetRightInverseCodomain carrierB forwardRaw backwardRaw).substHet sigma.lift =
+      equivIntroHetRightInverseCodomain (carrierB.substHet sigma)
+        (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
+  unfold equivIntroHetRightInverseCodomain
+  simp only [Ty.substHet, RawTerm.subst]
+  rw [Ty.weaken_substHet_commute sigma carrierB,
+      RawTerm.weaken_subst_commute sigma.forRaw forwardRaw,
+      RawTerm.weaken_subst_commute sigma.forRaw backwardRaw]
+
+theorem equivIntroHetRightInverseType_substHet
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (carrierB : Ty sourceLevel sourceScope)
+    (forwardRaw backwardRaw : RawTerm sourceScope) :
+    (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw).substHet sigma =
+      equivIntroHetRightInverseType (carrierB.substHet sigma)
+        (forwardRaw.subst sigma.forRaw) (backwardRaw.subst sigma.forRaw) := by
+  unfold equivIntroHetRightInverseType
+  simp only [Ty.substHet]
+  congr 1
+  exact equivIntroHetRightInverseCodomain_substHet sigma carrierB forwardRaw backwardRaw
+
+theorem oeqFunextPointwiseCodomain_substHet
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (codomainType : Ty sourceLevel sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope) :
+    (oeqFunextPointwiseCodomain codomainType
+      leftFunctionRaw rightFunctionRaw).substHet sigma.lift =
+      oeqFunextPointwiseCodomain (codomainType.substHet sigma)
+        (leftFunctionRaw.subst sigma.forRaw)
+        (rightFunctionRaw.subst sigma.forRaw) := by
+  unfold oeqFunextPointwiseCodomain
+  simp only [Ty.substHet, RawTerm.subst]
+  rw [Ty.weaken_substHet_commute sigma codomainType,
+      RawTerm.weaken_subst_commute sigma.forRaw leftFunctionRaw,
+      RawTerm.weaken_subst_commute sigma.forRaw rightFunctionRaw]
+
+theorem oeqFunextPointwiseType_substHet
+    {sourceLevel targetLevel : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : SubstHet sourceLevel targetLevel sourceScope targetScope)
+    (domainType codomainType : Ty sourceLevel sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope) :
+    (oeqFunextPointwiseType domainType codomainType
+      leftFunctionRaw rightFunctionRaw).substHet sigma =
+      oeqFunextPointwiseType (domainType.substHet sigma)
+        (codomainType.substHet sigma)
+        (leftFunctionRaw.subst sigma.forRaw)
+        (rightFunctionRaw.subst sigma.forRaw) := by
+  unfold oeqFunextPointwiseType
+  simp only [Ty.substHet]
+  congr 1
+  exact oeqFunextPointwiseCodomain_substHet sigma codomainType
+    leftFunctionRaw rightFunctionRaw
+
 /-! ## Term.substHet -/
 
 /-- Apply a heterogeneous typed substitution to a typed term.  Mirrors
@@ -152,10 +245,16 @@ def Term.substHet {mode : Mode}
   -- Booleans.
   | _, _, .boolTrue => Term.boolTrue
   | _, _, .boolFalse => Term.boolFalse
-  | _, _, .boolElim scrutinee thenBranch elseBranch =>
-      Term.boolElim (Term.substHet termSubstHet scrutinee)
-                    (Term.substHet termSubstHet thenBranch)
-                    (Term.substHet termSubstHet elseBranch)
+  | _, _, .boolElim (motiveType := motiveType) (scrutineeRaw := scrutineeRaw)
+                    scrutinee thenBranch elseBranch =>
+      (Ty.subst0_substHet_commute motiveType Ty.bool scrutineeRaw sigma).symm ▸
+        Term.boolElim
+          (motiveType := motiveType.substHet sigma.lift)
+          (Term.substHet termSubstHet scrutinee)
+          (Ty.subst0_substHet_commute motiveType Ty.bool RawTerm.boolTrue sigma ▸
+            Term.substHet termSubstHet thenBranch)
+          (Ty.subst0_substHet_commute motiveType Ty.bool RawTerm.boolFalse sigma ▸
+            Term.substHet termSubstHet elseBranch)
   -- Naturals.
   | _, _, .natZero => Term.natZero
   | _, _, .natSucc predecessor =>
@@ -211,12 +310,14 @@ def Term.substHet {mode : Mode}
       Term.oeqFunext (domainType.substHet sigma) (codomainType.substHet sigma)
         (leftFunctionRaw.subst sigma.forRaw)
         (rightFunctionRaw.subst sigma.forRaw)
-        (Term.substHet termSubstHet pointwiseProof)
-  | _, _, .idStrictRefl carrier rawWitness =>
-      Term.idStrictRefl
+        (oeqFunextPointwiseType_substHet sigma domainType codomainType
+          leftFunctionRaw rightFunctionRaw ▸
+          Term.substHet termSubstHet pointwiseProof)
+  | _, _, .idStrictRefl modeIsStrict carrier rawWitness =>
+      Term.idStrictRefl modeIsStrict
         (carrier.substHet sigma) (rawWitness.subst sigma.forRaw)
-  | _, _, .idStrictRec baseCase witness =>
-      Term.idStrictRec (Term.substHet termSubstHet baseCase)
+  | _, _, .idStrictRec modeIsStrict baseCase witness =>
+      Term.idStrictRec modeIsStrict (Term.substHet termSubstHet baseCase)
                        (Term.substHet termSubstHet witness)
   -- Modal: Layer 1 scaffolding.
   | _, _, .modIntro innerTerm =>
@@ -236,25 +337,25 @@ def Term.substHet {mode : Mode}
   | _, _, .intervalJoin leftValue rightValue =>
       Term.intervalJoin (Term.substHet termSubstHet leftValue)
                         (Term.substHet termSubstHet rightValue)
-  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
-      Term.pathLam (carrierType.substHet sigma)
+  | _, _, .pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body =>
+      Term.pathLam modeIsUnivalent (carrierType.substHet sigma)
         (leftEndpoint.subst sigma.forRaw)
         (rightEndpoint.subst sigma.forRaw)
         (Ty.weaken_substHet_commute sigma carrierType ▸
           Term.substHet (termSubstHet.lift Ty.interval) body)
-  | _, _, .pathApp pathTerm intervalTerm =>
-      Term.pathApp (Term.substHet termSubstHet pathTerm)
+  | _, _, .pathApp modeIsUnivalent pathTerm intervalTerm =>
+      Term.pathApp modeIsUnivalent (Term.substHet termSubstHet pathTerm)
                    (Term.substHet termSubstHet intervalTerm)
-  | _, _, .glueIntro baseType boundaryWitness baseValue partialValue =>
-      Term.glueIntro (baseType.substHet sigma)
+  | _, _, .glueIntro modeIsUnivalent baseType boundaryWitness baseValue partialValue =>
+      Term.glueIntro modeIsUnivalent (baseType.substHet sigma)
         (boundaryWitness.subst sigma.forRaw)
         (Term.substHet termSubstHet baseValue)
         (Term.substHet termSubstHet partialValue)
-  | _, _, .glueElim gluedValue =>
-      Term.glueElim (Term.substHet termSubstHet gluedValue)
-  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+  | _, _, .glueElim modeIsUnivalent gluedValue =>
+      Term.glueElim modeIsUnivalent (Term.substHet termSubstHet gluedValue)
+  | _, _, .transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw typePath sourceValue =>
-      Term.transp universeLevel
+      Term.transp modeIsUnivalent universeLevel
         (Nat.le_trans universeLevelLt sigma.cumulOk)
         (sourceType.substHet sigma)
         (targetType.substHet sigma)
@@ -262,8 +363,8 @@ def Term.substHet {mode : Mode}
         (targetTypeRaw.subst sigma.forRaw)
         (Term.substHet termSubstHet typePath)
         (Term.substHet termSubstHet sourceValue)
-  | _, _, .hcomp sidesValue capValue =>
-      Term.hcomp (Term.substHet termSubstHet sidesValue)
+  | _, _, .hcomp modeIsUnivalent sidesValue capValue =>
+      Term.hcomp modeIsUnivalent (Term.substHet termSubstHet sidesValue)
                  (Term.substHet termSubstHet capValue)
   | _, _, .recordIntro firstField =>
       Term.recordIntro (Term.substHet termSubstHet firstField)
@@ -286,8 +387,14 @@ def Term.substHet {mode : Mode}
         (Term.substHet termSubstHet payload)
   | _, _, .sessionRecv channel =>
       Term.sessionRecv (Term.substHet termSubstHet channel)
-  | _, _, .effectPerform effectTag operationTag arguments =>
+  | _, _, .effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments =>
       Term.effectPerform (effectTag.subst sigma.forRaw)
+        effectRow
+        (operationSignature.map (fun carrierType => carrierType.substHet sigma))
+        (Effects.CanPerform.map
+          (fun carrierType => carrierType.substHet sigma)
+          canPerformOperation)
         (Term.substHet termSubstHet operationTag)
         (Term.substHet termSubstHet arguments)
   -- Universe-code: the outer level shifts via Nat.le_trans on the levelLe
@@ -322,9 +429,15 @@ def Term.substHet {mode : Mode}
   -- `sigma`; the two subterms `forward`, `backward` substitute
   -- structurally.  No `weaken`-commute cast needed because `Ty.equiv`
   -- and `Ty.arrow` are non-binder carriers (no scope shift).
-  | _, _, .equivIntroHet forward backward =>
+  | _, _, .equivIntroHet (carrierA := carrierA) (carrierB := carrierB)
+        (forwardRaw := forwardRaw) (backwardRaw := backwardRaw)
+        forward backward leftInv rightInv =>
       Term.equivIntroHet (Term.substHet termSubstHet forward)
                          (Term.substHet termSubstHet backward)
+        (equivIntroHetLeftInverseType_substHet sigma carrierA forwardRaw backwardRaw ▸
+          Term.substHet termSubstHet leftInv)
+        (equivIntroHetRightInverseType_substHet sigma carrierB forwardRaw backwardRaw ▸
+          Term.substHet termSubstHet rightInv)
   | _, _, .equivApp equivTerm argumentTerm =>
       Term.equivApp (Term.substHet termSubstHet equivTerm)
                     (Term.substHet termSubstHet argumentTerm)

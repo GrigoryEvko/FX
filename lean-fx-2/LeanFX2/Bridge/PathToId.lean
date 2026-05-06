@@ -27,6 +27,7 @@ translation out of arbitrary cubical paths, only the fragment currently
 supported by `Cubical.constantPath`. -/
 def constantPathToId {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (_modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (_pointTerm : Term context carrierType pointRaw)
@@ -40,23 +41,26 @@ def constantPathToId {mode : Mode} {level scope : Nat}
 /-- The reflexive path-to-id bridge projects to the raw `refl` witness. -/
 theorem constantPathToId_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
     (pathTerm :
       Term context (Ty.path carrierType pointRaw pointRaw)
         (RawTerm.pathLam pointRaw.weaken)) :
-    (constantPathToId pointTerm pathTerm).toRaw =
+    (constantPathToId modeIsUnivalent pointTerm pathTerm).toRaw =
       RawTerm.refl pointRaw := rfl
 
 /-- Specialization of `constantPathToId` to the canonical cubical constant
 path constructor. -/
 theorem constantPathToId_onCanonical {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    constantPathToId pointTerm (Cubical.constantPath pointTerm) =
+    constantPathToId modeIsUnivalent pointTerm
+        (Cubical.constantPath modeIsUnivalent pointTerm) =
       Term.refl carrierType pointRaw := rfl
 
 end Bridge

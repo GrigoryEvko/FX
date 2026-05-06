@@ -44,6 +44,10 @@ theorem unitIdJ_iotaStep {mode : Mode} {level : Nat} :
 def encodeRawTerm_unitIdJ : FX1.Expr :=
   encodeRawTerm_unit
 
+/-- Fragment decoder for the exact computed Unit identity eliminator. -/
+def decodeRawTerm_unitIdJ : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom unitValueAtomId unitIdJRaw
+
 /-- The computed Unit identity eliminator encoding is the staged unit value. -/
 theorem encodeRawTerm_unitIdJ_eq_unit :
     Eq encodeRawTerm_unitIdJ encodeRawTerm_unit :=
@@ -85,6 +89,27 @@ theorem encodeTermSound_unitIdJ
       encodeRawTerm_unitIdJ
       encodeTy_unit :=
   encodedUnitIdJ_has_type
+
+/-- Exact round-trip evidence for the `J unit (refl unit)` bridge fragment. -/
+def encodeTermSound_unitIdJ_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_idJTerm :
+      Term
+        (Ctx.empty mode level)
+        (Ty.unit : Ty level 0)
+        unitIdJRaw) :
+    BridgeRoundTrip
+      encodeTy_unit
+      (decodeTy_unit (level := level) (scope := 0))
+      (Ty.unit : Ty level 0)
+      encodeRawTerm_unitIdJ
+      decodeRawTerm_unitIdJ
+      unitIdJRaw :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.unit : Ty level 0))
+    rawRoundTrip := Eq.refl (Option.some unitIdJRaw)
+  }
 
 end FX1Bridge
 end LeanFX2

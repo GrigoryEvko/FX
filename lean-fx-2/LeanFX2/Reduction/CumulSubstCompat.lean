@@ -202,7 +202,10 @@ theorem ConvCumulHomo.subst_compatible_paired_allais
       exact ConvCumul.idJCong (ihBase compat) (ihWitness compat)
   | boolElimCong _ _ _ ihScrut ihThen ihElse =>
       intros _ _ _ _ _ compat
-      exact ConvCumul.boolElimCong (ihScrut compat) (ihThen compat) (ihElse compat)
+      exact ConvCumul.cast_eq_indep_benton _ _
+        (ConvCumul.boolElimCong (ihScrut compat)
+          (ConvCumul.cast_eq_both_benton _ (ihThen compat))
+          (ConvCumul.cast_eq_both_benton _ (ihElse compat)))
   | natElimCong _ _ _ ihScrut ihZero ihSucc =>
       intros _ _ _ _ _ compat
       exact ConvCumul.natElimCong (ihScrut compat) (ihZero compat) (ihSucc compat)

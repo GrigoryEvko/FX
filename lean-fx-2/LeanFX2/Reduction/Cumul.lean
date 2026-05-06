@@ -315,15 +315,19 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
   | boolElimCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {scrutFirstRaw scrutSecondRaw : RawTerm scope}
       {thenFirstRaw thenSecondRaw elseFirstRaw elseSecondRaw : RawTerm scope}
       {scrutFirst : Term context Ty.bool scrutFirstRaw}
       {scrutSecond : Term context Ty.bool scrutSecondRaw}
-      {thenFirst : Term context motiveType thenFirstRaw}
-      {thenSecond : Term context motiveType thenSecondRaw}
-      {elseFirst : Term context motiveType elseFirstRaw}
-      {elseSecond : Term context motiveType elseSecondRaw}
+      {thenFirst :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenFirstRaw}
+      {thenSecond :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenSecondRaw}
+      {elseFirst :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseFirstRaw}
+      {elseSecond :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseSecondRaw}
       (scrutRel : ConvCumul scrutFirst scrutSecond)
       (thenRel : ConvCumul thenFirst thenSecond)
       (elseRel : ConvCumul elseFirst elseSecond) :
@@ -538,8 +542,16 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (domainType codomainType : Ty level scope)
       (leftFunctionRaw rightFunctionRaw : RawTerm scope)
       {pointwiseFirstRaw pointwiseSecondRaw : RawTerm scope}
-      {pointwiseFirst : Term context Ty.unit pointwiseFirstRaw}
-      {pointwiseSecond : Term context Ty.unit pointwiseSecondRaw}
+      {pointwiseFirst :
+        Term context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseFirstRaw}
+      {pointwiseSecond :
+        Term context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseSecondRaw}
       (pointwiseRel : ConvCumul pointwiseFirst pointwiseSecond) :
       ConvCumul
         (Term.oeqFunext domainType codomainType
@@ -551,6 +563,7 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
   | idStrictRecCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       {carrier : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {motiveType : Ty level scope}
@@ -565,8 +578,8 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
           witnessSecondRaw}
       (baseRel : ConvCumul baseFirst baseSecond)
       (witnessRel : ConvCumul witnessFirst witnessSecond) :
-      ConvCumul (Term.idStrictRec baseFirst witnessFirst)
-                (Term.idStrictRec baseSecond witnessSecond)
+      ConvCumul (Term.idStrictRec modeIsStrict baseFirst witnessFirst)
+                (Term.idStrictRec modeIsStrict baseSecond witnessSecond)
   /-- Homogeneous modIntro: ConvCumul-related inner term lifts to ConvCumul-
   related modIntro. -/
   | modIntroCong
@@ -770,22 +783,37 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       {effectTag : RawTerm scope}
-      {carrierType : Ty level scope}
+      {effectRow : Effects.EffectRow}
+      {operationSignature : Effects.OperationSignature (Ty level scope)}
+      {canPerformOperation :
+        Effects.CanPerform effectRow operationSignature}
       {operationFirstRaw operationSecondRaw argumentsFirstRaw argumentsSecondRaw :
         RawTerm scope}
-      {operationFirst : Term context Ty.unit operationFirstRaw}
-      {operationSecond : Term context Ty.unit operationSecondRaw}
-      {argumentsFirst : Term context carrierType argumentsFirstRaw}
-      {argumentsSecond : Term context carrierType argumentsSecondRaw}
+      {operationFirst :
+        Term context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationFirstRaw}
+      {operationSecond :
+        Term context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationSecondRaw}
+      {argumentsFirst :
+        Term context operationSignature.argumentCarrier argumentsFirstRaw}
+      {argumentsSecond :
+        Term context operationSignature.argumentCarrier argumentsSecondRaw}
       (operationRel : ConvCumul operationFirst operationSecond)
       (argumentsRel : ConvCumul argumentsFirst argumentsSecond) :
-      ConvCumul (Term.effectPerform effectTag operationFirst argumentsFirst)
-                (Term.effectPerform effectTag operationSecond argumentsSecond)
+      ConvCumul
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationFirst argumentsFirst)
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationSecond argumentsSecond)
   /-- Homogeneous pathLam: ConvCumul-related interval-indexed bodies
   lift to ConvCumul-related path abstractions. -/
   | pathLamCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {bodyFirstRaw bodySecondRaw : RawTerm (scope + 1)}
@@ -795,13 +823,14 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
         Term (context.cons Ty.interval) carrierType.weaken bodySecondRaw}
       (bodyRel : ConvCumul bodyFirst bodySecond) :
       ConvCumul
-        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyFirst)
-        (Term.pathLam carrierType leftEndpoint rightEndpoint bodySecond)
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyFirst)
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodySecond)
   /-- Homogeneous pathApp: ConvCumul-related path and interval inputs
   lift to ConvCumul-related path applications. -/
   | pathAppCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {pathFirstRaw pathSecondRaw intervalFirstRaw intervalSecondRaw :
@@ -816,13 +845,14 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {intervalSecond : Term context Ty.interval intervalSecondRaw}
       (pathRel : ConvCumul pathFirst pathSecond)
       (intervalRel : ConvCumul intervalFirst intervalSecond) :
-      ConvCumul (Term.pathApp pathFirst intervalFirst)
-                (Term.pathApp pathSecond intervalSecond)
+      ConvCumul (Term.pathApp modeIsUnivalent pathFirst intervalFirst)
+                (Term.pathApp modeIsUnivalent pathSecond intervalSecond)
   /-- Homogeneous glueIntro: ConvCumul-related base and partial values
   lift to ConvCumul-related Glue introductions. -/
   | glueIntroCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {baseFirstRaw baseSecondRaw partialFirstRaw partialSecondRaw :
@@ -834,13 +864,16 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (baseRel : ConvCumul baseFirst baseSecond)
       (partialRel : ConvCumul partialFirst partialSecond) :
       ConvCumul
-        (Term.glueIntro baseType boundaryWitness baseFirst partialFirst)
-        (Term.glueIntro baseType boundaryWitness baseSecond partialSecond)
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseFirst partialFirst)
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseSecond partialSecond)
   /-- Homogeneous glueElim: ConvCumul-related glued values lift to
   ConvCumul-related Glue eliminations. -/
   | glueElimCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {gluedFirstRaw gluedSecondRaw : RawTerm scope}
@@ -849,13 +882,14 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {gluedSecond :
         Term context (Ty.glue baseType boundaryWitness) gluedSecondRaw}
       (gluedRel : ConvCumul gluedFirst gluedSecond) :
-      ConvCumul (Term.glueElim gluedFirst)
-                (Term.glueElim gluedSecond)
+      ConvCumul (Term.glueElim modeIsUnivalent gluedFirst)
+                (Term.glueElim modeIsUnivalent gluedSecond)
   /-- Homogeneous transport: ConvCumul-related type paths and source
   values lift to ConvCumul-related transport terms. -/
   | transpCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (universeLevel : UniverseLevel)
       (universeLevelLt : universeLevel.toNat + 1 ≤ level)
       (sourceType targetType : Ty level scope)
@@ -877,15 +911,18 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (pathRel : ConvCumul typePathFirst typePathSecond)
       (sourceRel : ConvCumul sourceFirst sourceSecond) :
       ConvCumul
-        (Term.transp universeLevel universeLevelLt sourceType targetType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
           sourceTypeRaw targetTypeRaw typePathFirst sourceFirst)
-        (Term.transp universeLevel universeLevelLt sourceType targetType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
           sourceTypeRaw targetTypeRaw typePathSecond sourceSecond)
   /-- Homogeneous hcomp: ConvCumul-related sides and cap values lift to
   ConvCumul-related homogeneous compositions. -/
   | hcompCong
       {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {sidesFirstRaw sidesSecondRaw capFirstRaw capSecondRaw :
         RawTerm scope}
@@ -895,8 +932,8 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {capSecond : Term context carrierType capSecondRaw}
       (sidesRel : ConvCumul sidesFirst sidesSecond)
       (capRel : ConvCumul capFirst capSecond) :
-      ConvCumul (Term.hcomp sidesFirst capFirst)
-                (Term.hcomp sidesSecond capSecond)
+      ConvCumul (Term.hcomp modeIsUnivalent sidesFirst capFirst)
+                (Term.hcomp modeIsUnivalent sidesSecond capSecond)
   /-- Homogeneous equivIntroHet: ConvCumul-related forward + backward
   subterms lift to ConvCumul-related equivIntroHet.  Two-subterm cong
   rule mirroring `pairCong` and `listConsCong`.  Phase 12.A.B8.5. -/
@@ -910,10 +947,28 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       {forwardSecond : Term context (Ty.arrow carrierA carrierB) forwardSecondRaw}
       {backwardFirst : Term context (Ty.arrow carrierB carrierA) backwardFirstRaw}
       {backwardSecond : Term context (Ty.arrow carrierB carrierA) backwardSecondRaw}
+      {leftInvFirstRaw rightInvFirstRaw
+       leftInvSecondRaw rightInvSecondRaw : RawTerm scope}
+      {leftInvFirst :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardFirstRaw backwardFirstRaw)
+          leftInvFirstRaw}
+      {rightInvFirst :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardFirstRaw backwardFirstRaw)
+          rightInvFirstRaw}
+      {leftInvSecond :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardSecondRaw backwardSecondRaw)
+          leftInvSecondRaw}
+      {rightInvSecond :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardSecondRaw backwardSecondRaw)
+          rightInvSecondRaw}
       (forwardRel : ConvCumul forwardFirst forwardSecond)
       (backwardRel : ConvCumul backwardFirst backwardSecond) :
-      ConvCumul (Term.equivIntroHet forwardFirst backwardFirst)
-                (Term.equivIntroHet forwardSecond backwardSecond)
+      ConvCumul (Term.equivIntroHet forwardFirst backwardFirst leftInvFirst rightInvFirst)
+                (Term.equivIntroHet forwardSecond backwardSecond leftInvSecond rightInvSecond)
   /-- Homogeneous equivalence application: ConvCumul-related equivalence
   and argument subterms lift to ConvCumul-related applications. -/
   | equivAppCong
@@ -1012,6 +1067,7 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
   Mirror of `Step.betaPathApp`. -/
   | betaPathAppCumul
       {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {bodyRaw : RawTerm (scope + 1)} {intervalRaw : RawTerm scope}
@@ -1019,28 +1075,31 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
         Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
       (intervalTerm : Term context Ty.interval intervalRaw) :
       ConvCumul
-        (Term.pathApp
-          (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTerm)
           intervalTerm)
         (Term.subst0 bodyTerm intervalTerm)
   /-- Cubical Glue β-reduction: `glueElim (glueIntro base partial) ⟶ base`.
   Mirror of `Step.betaGlueElimIntro`. -/
   | betaGlueElimIntroCumul
       {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {baseRaw partialRaw : RawTerm scope}
       (baseValue : Term context baseType baseRaw)
       (partialValue : Term context baseType partialRaw) :
       ConvCumul
-        (Term.glueElim
-          (Term.glueIntro baseType boundaryWitness baseValue partialValue))
+        (Term.glueElim modeIsUnivalent
+          (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+            baseValue partialValue))
         baseValue
   /-- Conversion-layer cubical transport β for a syntactically constant
   type path.  This intentionally lives at `ConvCumul` until raw
   confluence has the preservation lemma needed for a `Step.par` rule. -/
   | betaTranspConstantTypeCumul
       {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (universeLevel : UniverseLevel)
       (universeLevelLt : universeLevel.toNat + 1 ≤ level)
       (sourceType : Ty level scope)
@@ -1052,7 +1111,8 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
           (RawTerm.pathLam typeRaw.weaken))
       (sourceValue : Term context sourceType sourceRaw) :
       ConvCumul
-        (Term.transp universeLevel universeLevelLt sourceType sourceType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType sourceType
           typeRaw typeRaw typePath sourceValue)
         sourceValue
   /-- β-reduction for single-field record projection:
@@ -1113,19 +1173,23 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
   `Step.iotaBoolElimTrue`. -/
   | iotaBoolElimTrueCumul
       {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {thenRaw elseRaw : RawTerm scope}
-      (thenBranch : Term context motiveType thenRaw)
-      (elseBranch : Term context motiveType elseRaw) :
+      (thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+      (elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
       ConvCumul (Term.boolElim Term.boolTrue thenBranch elseBranch) thenBranch
   /-- ι-reduction `boolElim false t e ⟶ e`.  Mirror of
   `Step.iotaBoolElimFalse`. -/
   | iotaBoolElimFalseCumul
       {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {thenRaw elseRaw : RawTerm scope}
-      (thenBranch : Term context motiveType thenRaw)
-      (elseBranch : Term context motiveType elseRaw) :
+      (thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+      (elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
       ConvCumul (Term.boolElim Term.boolFalse thenBranch elseBranch) elseBranch
   /-- ι-reduction `natElim 0 z s ⟶ z`.  Mirror of
   `Step.iotaNatElimZero`. -/
@@ -1262,6 +1326,7 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
   `Step.iotaIdStrictRecRefl`. -/
   | iotaIdStrictRecReflCumul
       {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       (carrier : Ty level scope) (endpoint : RawTerm scope)
       {motiveType : Ty level scope}
       {baseRaw : RawTerm scope}
@@ -1269,8 +1334,9 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       ConvCumul (Term.idStrictRec (carrier := carrier)
                                    (leftEndpoint := endpoint)
                                    (rightEndpoint := endpoint)
+                  modeIsStrict
                   baseCase
-                  (Term.idStrictRefl carrier endpoint))
+                  (Term.idStrictRefl modeIsStrict carrier endpoint))
                 baseCase
   /-- **Univalence rfl-fragment at the ConvCumul level.**  Mirror of
   `Step.eqType`: the canonical Id-typed identity-equivalence proof

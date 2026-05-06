@@ -28,13 +28,16 @@ namespace LeanFX2.Tools
 
 -- HEq result-type theorem census.  Theorems whose claimed result type
 -- mentions `HEq` are propext-adjacent — heterogeneous equality cannot
--- generally reduce.  Tight ratchet at current count.
-#assert_heq_result_type_budget LeanFX2 91
+-- generally reduce.  92 today includes the stronger `equivIntroHet`
+-- constructor shape with inverse-law proof functions.
+#assert_heq_result_type_budget LeanFX2 92
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable
--- on Eq.  Tight ratchet at current count.
-#assert_decide_dependent_budget LeanFX2 383
+-- on Eq.  390 today includes the stronger `equivIntroHet` constructor
+-- shape with inverse-law proof functions and the pointwise proof-function
+-- premise on `Term.oeqFunext`, plus the dependent bool eliminator motive.
+#assert_decide_dependent_budget LeanFX2 390
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

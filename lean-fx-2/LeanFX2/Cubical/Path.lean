@@ -25,27 +25,30 @@ new core `Term` constructor and makes the constant-path redex shape explicit
 before any transport computation rule is introduced. -/
 def constantPath {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
     Term context (Ty.path carrierType pointRaw pointRaw)
       (RawTerm.pathLam pointRaw.weaken) :=
-  Term.pathLam carrierType pointRaw pointRaw
+  Term.pathLam modeIsUnivalent carrierType pointRaw pointRaw
     (Term.weaken Ty.interval pointTerm)
 
 /-- Projection of `constantPath` is the canonical raw constant-path shape. -/
 theorem constantPath_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    (constantPath pointTerm).toRaw =
+    (constantPath modeIsUnivalent pointTerm).toRaw =
       RawTerm.pathLam pointRaw.weaken := rfl
 
 /-- Constant path specialized to universe codes, the precise input shape
 needed for transport along a constant type line. -/
 def constantTypePath {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     {typeRaw : RawTerm scope}
@@ -54,18 +57,19 @@ def constantTypePath {mode : Mode} {level scope : Nat}
     Term context
       (Ty.path (Ty.universe universeLevel universeLevelLt) typeRaw typeRaw)
       (RawTerm.pathLam typeRaw.weaken) :=
-  constantPath typeCode
+  constantPath modeIsUnivalent typeCode
 
 /-- Projection of `constantTypePath` is the same raw constant-path shape,
 specialized to a universe-code endpoint. -/
 theorem constantTypePath_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe universeLevel universeLevelLt) typeRaw) :
-    (constantTypePath universeLevel universeLevelLt typeCode).toRaw =
+    (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode).toRaw =
       RawTerm.pathLam typeRaw.weaken := rfl
 
 end Cubical

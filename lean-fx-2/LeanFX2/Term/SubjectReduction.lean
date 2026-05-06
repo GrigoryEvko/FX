@@ -178,18 +178,34 @@ theorem StepStar.boolElimScrutinee_lift_general
     (someChain : StepStar srcTerm tgtTerm)
     (srcIsBool : srcTy = Ty.bool)
     (tgtIsBool : tgtTy = Ty.bool)
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {thenRaw elseRaw : RawTerm scope}
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
     StepStar (Term.boolElim (srcIsBool ▸ srcTerm) thenBranch elseBranch)
              (Term.boolElim (tgtIsBool ▸ tgtTerm) thenBranch elseBranch) :=
-  StepStar.lift_at_isClosedTy
-    (resultTy := motiveType) IsClosedTy.bool
-    (wrapRaw := fun raw => RawTerm.boolElim raw thenRaw elseRaw)
-    (fun term => Term.boolElim term thenBranch elseBranch)
-    (fun step => Step.boolElimScrutinee step)
-    someChain srcIsBool tgtIsBool
+  by
+    -- Mirror `StepStar.lift_at_isClosedTy`'s recipe inlined.  The new
+    -- dep `Term.boolElim` result type `motiveType.subst0 Ty.bool
+    -- scrutineeRaw` does not fit the `lift_at_isClosedTy` signature,
+    -- which requires a fixed `resultTy`.  `induction someChain` runs
+    -- BEFORE the `cases srcIsBool` so that the `StepStar` indices are
+    -- still free variables; `cases` inside each branch then
+    -- substitutes `srcTy ↦ Ty.bool`.
+    induction someChain with
+    | refl _ =>
+        cases srcIsBool
+        cases tgtIsBool
+        exact StepStar.refl _
+    | step head _ tailIH =>
+        have midIsBool : _ = Ty.bool :=
+          Step.preserves_isClosedTy IsClosedTy.bool head srcIsBool
+        cases srcIsBool
+        cases midIsBool
+        exact StepStar.step (Step.boolElimScrutinee head)
+                            (tailIH rfl tgtIsBool)
 
 /-- Lift a `StepStar` between bool-typed terms to a `StepStar`
 between `boolElim`-wrappers. -/
@@ -198,12 +214,17 @@ theorem StepStar.boolElimScrutinee_lift
     {scrutA : Term context Ty.bool scrutRawA}
     {scrutB : Term context Ty.bool scrutRawB}
     (chain : StepStar scrutA scrutB)
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {thenRaw elseRaw : RawTerm scope}
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
     StepStar (Term.boolElim scrutA thenBranch elseBranch)
              (Term.boolElim scrutB thenBranch elseBranch) :=
+  -- Delegate to `_lift_general` with `rfl` proofs so the `induction`
+  -- runs over the StepStar before `Ty.bool` is baked into the term
+  -- type (see `_lift_general` for the why).
   StepStar.boolElimScrutinee_lift_general chain rfl rfl thenBranch elseBranch
 
 /-- Generalized lift for `natElim` scrutinee cong.  1-step

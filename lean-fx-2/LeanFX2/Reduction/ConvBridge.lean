@@ -194,14 +194,14 @@ theorem Step.toConvCumul
       leftFunctionRaw rightFunctionRaw _ ih =>
       exact ConvCumul.oeqFunextCong domainType codomainType
         leftFunctionRaw rightFunctionRaw ih
-  | idStrictRecBase _ ih =>
-      exact ConvCumul.idStrictRecCong ih (ConvCumul.refl _)
-  | idStrictRecWitness baseCase _ ih =>
-      exact ConvCumul.idStrictRecCong (ConvCumul.refl baseCase) ih
+  | idStrictRecBase modeIsStrict _ ih =>
+      exact ConvCumul.idStrictRecCong modeIsStrict ih (ConvCumul.refl _)
+  | idStrictRecWitness modeIsStrict baseCase _ ih =>
+      exact ConvCumul.idStrictRecCong modeIsStrict (ConvCumul.refl baseCase) ih
   | iotaIdJRefl carrier endpoint baseCase =>
       exact ConvCumul.iotaIdJReflCumul carrier endpoint baseCase
-  | iotaIdStrictRecRefl carrier endpoint baseCase =>
-      exact ConvCumul.iotaIdStrictRecReflCumul carrier endpoint baseCase
+  | iotaIdStrictRecRefl modeIsStrict carrier endpoint baseCase =>
+      exact ConvCumul.iotaIdStrictRecReflCumul modeIsStrict carrier endpoint baseCase
   | modIntroInner _ ih =>
       exact ConvCumul.modIntroCong ih
   | modElimInner _ ih =>
@@ -210,22 +210,25 @@ theorem Step.toConvCumul
       exact ConvCumul.betaModElimIntroCumul innerTerm
   | subsumeInner _ ih =>
       exact ConvCumul.subsumeCong ih
-  | pathLamBody _ ih =>
-      exact ConvCumul.pathLamCong ih
-  | pathAppPath _ ih =>
-      exact ConvCumul.pathAppCong ih (ConvCumul.refl _)
-  | pathAppInterval _ ih =>
-      exact ConvCumul.pathAppCong (ConvCumul.refl _) ih
-  | betaPathApp bodyTerm intervalTerm =>
-      exact ConvCumul.betaPathAppCumul bodyTerm intervalTerm
-  | glueIntroBase _ ih =>
-      exact ConvCumul.glueIntroCong ih (ConvCumul.refl _)
-  | glueIntroPartial _ ih =>
-      exact ConvCumul.glueIntroCong (ConvCumul.refl _) ih
-  | glueElimValue _ ih =>
-      exact ConvCumul.glueElimCong ih
-  | betaGlueElimIntro baseValue partialValue =>
-      exact ConvCumul.betaGlueElimIntroCumul baseValue partialValue
+  | pathLamBody modeIsUnivalent _ ih =>
+      exact ConvCumul.pathLamCong modeIsUnivalent ih
+  | pathAppPath modeIsUnivalent _ ih =>
+      exact ConvCumul.pathAppCong modeIsUnivalent ih (ConvCumul.refl _)
+  | pathAppInterval modeIsUnivalent _ ih =>
+      exact ConvCumul.pathAppCong modeIsUnivalent (ConvCumul.refl _) ih
+  | betaPathApp modeIsUnivalent bodyTerm intervalTerm =>
+      exact ConvCumul.betaPathAppCumul modeIsUnivalent bodyTerm intervalTerm
+  | glueIntroBase modeIsUnivalent _ ih =>
+      exact ConvCumul.glueIntroCong modeIsUnivalent
+        ih (ConvCumul.refl _)
+  | glueIntroPartial modeIsUnivalent _ ih =>
+      exact ConvCumul.glueIntroCong modeIsUnivalent
+        (ConvCumul.refl _) ih
+  | glueElimValue modeIsUnivalent _ ih =>
+      exact ConvCumul.glueElimCong modeIsUnivalent ih
+  | betaGlueElimIntro modeIsUnivalent baseValue partialValue =>
+      exact ConvCumul.betaGlueElimIntroCumul
+        modeIsUnivalent baseValue partialValue
   | intervalOppInner _ ih =>
       exact ConvCumul.intervalOppCong ih
   | intervalMeetLeft _ ih =>
@@ -269,20 +272,20 @@ theorem Step.toConvCumul
       exact ConvCumul.effectPerformCong ih (ConvCumul.refl _)
   | effectPerformArguments _ ih =>
       exact ConvCumul.effectPerformCong (ConvCumul.refl _) ih
-  | transpPath universeLevel universeLevelLt sourceType targetType
+  | transpPath modeIsUnivalent universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
-      exact ConvCumul.transpCong universeLevel universeLevelLt
+      exact ConvCumul.transpCong modeIsUnivalent universeLevel universeLevelLt
         sourceType targetType sourceTypeRaw targetTypeRaw
         ih (ConvCumul.refl _)
-  | transpSource universeLevel universeLevelLt sourceType targetType
+  | transpSource modeIsUnivalent universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw _ ih =>
-      exact ConvCumul.transpCong universeLevel universeLevelLt
+      exact ConvCumul.transpCong modeIsUnivalent universeLevel universeLevelLt
         sourceType targetType sourceTypeRaw targetTypeRaw
         (ConvCumul.refl _) ih
-  | hcompSides _ ih =>
-      exact ConvCumul.hcompCong ih (ConvCumul.refl _)
-  | hcompCap _ ih =>
-      exact ConvCumul.hcompCong (ConvCumul.refl _) ih
+  | hcompSides modeIsUnivalent _ ih =>
+      exact ConvCumul.hcompCong modeIsUnivalent ih (ConvCumul.refl _)
+  | hcompCap modeIsUnivalent _ ih =>
+      exact ConvCumul.hcompCong modeIsUnivalent (ConvCumul.refl _) ih
   | equivIntroHetForward _ ih =>
       exact ConvCumul.equivIntroHetCong ih (ConvCumul.refl _)
   | equivIntroHetBackward _ ih =>
@@ -507,6 +510,7 @@ theorem ConvCumul.betaModElimIntroCumul_toConv
 
 theorem ConvCumul.betaPathAppCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {leftEndpoint rightEndpoint : RawTerm scope}
     {bodyRaw : RawTerm (scope + 1)} {intervalRaw : RawTerm scope}
@@ -514,24 +518,27 @@ theorem ConvCumul.betaPathAppCumul_toConv
       Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
     (intervalTerm : Term context Ty.interval intervalRaw) :
     Conv
-      (Term.pathApp
-        (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+      (Term.pathApp modeIsUnivalent
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTerm)
         intervalTerm)
       (Term.subst0 bodyTerm intervalTerm) :=
-  Conv.fromStep (Step.betaPathApp bodyTerm intervalTerm)
+  Conv.fromStep (Step.betaPathApp modeIsUnivalent bodyTerm intervalTerm)
 
 theorem ConvCumul.betaGlueElimIntroCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {baseType : Ty level scope}
     {boundaryWitness : RawTerm scope}
     {baseRaw partialRaw : RawTerm scope}
     (baseValue : Term context baseType baseRaw)
     (partialValue : Term context baseType partialRaw) :
     Conv
-      (Term.glueElim
-        (Term.glueIntro baseType boundaryWitness baseValue partialValue))
+      (Term.glueElim modeIsUnivalent
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue))
       baseValue :=
-  Conv.fromStep (Step.betaGlueElimIntro baseValue partialValue)
+  Conv.fromStep
+    (Step.betaGlueElimIntro modeIsUnivalent baseValue partialValue)
 
 theorem ConvCumul.betaRecordProjIntroCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
@@ -576,19 +583,23 @@ theorem ConvCumul.betaSndPairCumul_toConv
 
 theorem ConvCumul.iotaBoolElimTrueCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {thenRaw elseRaw : RawTerm scope}
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
     Conv (Term.boolElim Term.boolTrue thenBranch elseBranch) thenBranch :=
   Conv.fromStep (Step.iotaBoolElimTrue thenBranch elseBranch)
 
 theorem ConvCumul.iotaBoolElimFalseCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {thenRaw elseRaw : RawTerm scope}
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw) :
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
     Conv (Term.boolElim Term.boolFalse thenBranch elseBranch) elseBranch :=
   Conv.fromStep (Step.iotaBoolElimFalse thenBranch elseBranch)
 
@@ -724,6 +735,7 @@ theorem ConvCumul.iotaIdJReflCumul_toConv
 
 theorem ConvCumul.iotaIdStrictRecReflCumul_toConv
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
     (carrier : Ty level scope) (endpoint : RawTerm scope)
     {motiveType : Ty level scope}
     {baseRaw : RawTerm scope}
@@ -731,10 +743,11 @@ theorem ConvCumul.iotaIdStrictRecReflCumul_toConv
     Conv (Term.idStrictRec (carrier := carrier)
                             (leftEndpoint := endpoint)
                             (rightEndpoint := endpoint)
+            modeIsStrict
             baseCase
-            (Term.idStrictRefl carrier endpoint))
+            (Term.idStrictRefl modeIsStrict carrier endpoint))
          baseCase :=
-  Conv.fromStep (Step.iotaIdStrictRecRefl carrier endpoint baseCase)
+  Conv.fromStep (Step.iotaIdStrictRecRefl modeIsStrict carrier endpoint baseCase)
 
 /-! ## Step-witness ConvCumul → Conv
 

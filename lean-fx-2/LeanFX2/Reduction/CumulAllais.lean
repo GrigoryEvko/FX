@@ -521,17 +521,25 @@ theorem ConvCumul.subst_compatible_equivIntroHet_allais
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
     {carrierA carrierB : Ty sourceLevel sourceScope}
-    {forwardRaw backwardRaw : RawTerm sourceScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
     (forward : Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw)
     (backward : Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
     (forwardCompat :
       ConvCumul (forward.substHet termSubstA)
                 (forward.substHet termSubstB))
     (backwardCompat :
       ConvCumul (backward.substHet termSubstA)
                 (backward.substHet termSubstB)) :
-    ConvCumul ((Term.equivIntroHet forward backward).substHet termSubstA)
-              ((Term.equivIntroHet forward backward).substHet termSubstB) :=
+    ConvCumul ((Term.equivIntroHet forward backward leftInv rightInv).substHet termSubstA)
+              ((Term.equivIntroHet forward backward leftInv rightInv).substHet termSubstB) :=
   ConvCumul.equivIntroHetCong forwardCompat backwardCompat
 
 /-- Allais arm for `equivApp`: two-subterm congruence over the packaged
@@ -820,6 +828,7 @@ theorem ConvCumul.subst_compatible_pathLam_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
     (carrierType : Ty sourceLevel sourceScope)
     (leftEndpoint rightEndpoint : RawTerm sourceScope)
     {bodyRaw : RawTerm (sourceScope + 1)}
@@ -828,11 +837,11 @@ theorem ConvCumul.subst_compatible_pathLam_allais
       ConvCumul (body.substHet (termSubstA.lift Ty.interval))
                 (body.substHet (termSubstB.lift Ty.interval))) :
     ConvCumul
-      ((Term.pathLam carrierType leftEndpoint rightEndpoint body).substHet
+      ((Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body).substHet
         termSubstA)
-      ((Term.pathLam carrierType leftEndpoint rightEndpoint body).substHet
+      ((Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body).substHet
         termSubstB) :=
-  ConvCumul.pathLamCong
+  ConvCumul.pathLamCong modeIsUnivalent
     (ConvCumul.cast_eq_both_benton _ bodyCompat)
 
 /-- Allais arm for `pathApp`: two-subterm cong via `pathAppCong`. -/
@@ -843,6 +852,7 @@ theorem ConvCumul.subst_compatible_pathApp_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty sourceLevel sourceScope}
     {leftEndpoint rightEndpoint : RawTerm sourceScope}
     {pathRaw intervalRaw : RawTerm sourceScope}
@@ -856,9 +866,9 @@ theorem ConvCumul.subst_compatible_pathApp_allais
     (intervalCompat :
       ConvCumul (intervalTerm.substHet termSubstA)
                 (intervalTerm.substHet termSubstB)) :
-    ConvCumul ((Term.pathApp pathTerm intervalTerm).substHet termSubstA)
-              ((Term.pathApp pathTerm intervalTerm).substHet termSubstB) :=
-  ConvCumul.pathAppCong pathCompat intervalCompat
+    ConvCumul ((Term.pathApp modeIsUnivalent pathTerm intervalTerm).substHet termSubstA)
+              ((Term.pathApp modeIsUnivalent pathTerm intervalTerm).substHet termSubstB) :=
+  ConvCumul.pathAppCong modeIsUnivalent pathCompat intervalCompat
 
 /-- Allais arm for `glueIntro`: two-subterm cong via
 `glueIntroCong`. -/
@@ -869,6 +879,7 @@ theorem ConvCumul.subst_compatible_glueIntro_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
     (baseType : Ty sourceLevel sourceScope)
     (boundaryWitness : RawTerm sourceScope)
     {baseRaw partialRaw : RawTerm sourceScope}
@@ -881,11 +892,13 @@ theorem ConvCumul.subst_compatible_glueIntro_allais
       ConvCumul (partialValue.substHet termSubstA)
                 (partialValue.substHet termSubstB)) :
     ConvCumul
-      ((Term.glueIntro baseType boundaryWitness baseValue partialValue).substHet
+      ((Term.glueIntro modeIsUnivalent baseType boundaryWitness
+        baseValue partialValue).substHet
         termSubstA)
-      ((Term.glueIntro baseType boundaryWitness baseValue partialValue).substHet
+      ((Term.glueIntro modeIsUnivalent baseType boundaryWitness
+        baseValue partialValue).substHet
         termSubstB) :=
-  ConvCumul.glueIntroCong baseCompat partialCompat
+  ConvCumul.glueIntroCong modeIsUnivalent baseCompat partialCompat
 
 /-- Allais arm for `glueElim`: single-subterm cong via
 `glueElimCong`. -/
@@ -896,15 +909,16 @@ theorem ConvCumul.subst_compatible_glueElim_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
     {baseType : Ty sourceLevel sourceScope}
     {boundaryWitness gluedRaw : RawTerm sourceScope}
     (gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw)
     (gluedCompat :
       ConvCumul (gluedValue.substHet termSubstA)
                 (gluedValue.substHet termSubstB)) :
-    ConvCumul ((Term.glueElim gluedValue).substHet termSubstA)
-              ((Term.glueElim gluedValue).substHet termSubstB) :=
-  ConvCumul.glueElimCong gluedCompat
+    ConvCumul ((Term.glueElim modeIsUnivalent gluedValue).substHet termSubstA)
+              ((Term.glueElim modeIsUnivalent gluedValue).substHet termSubstB) :=
+  ConvCumul.glueElimCong modeIsUnivalent gluedCompat
 
 /-- Allais arm for `transp`: two-subterm cong via `transpCong`. -/
 theorem ConvCumul.subst_compatible_transp_allais
@@ -914,6 +928,7 @@ theorem ConvCumul.subst_compatible_transp_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ sourceLevel)
     (sourceType targetType : Ty sourceLevel sourceScope)
@@ -932,13 +947,15 @@ theorem ConvCumul.subst_compatible_transp_allais
       ConvCumul (sourceValue.substHet termSubstA)
                 (sourceValue.substHet termSubstB)) :
     ConvCumul
-      ((Term.transp universeLevel universeLevelLt sourceType targetType
+      ((Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType
         sourceTypeRaw targetTypeRaw typePath sourceValue).substHet
         termSubstA)
-      ((Term.transp universeLevel universeLevelLt sourceType targetType
+      ((Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType
         sourceTypeRaw targetTypeRaw typePath sourceValue).substHet
         termSubstB) :=
-  ConvCumul.transpCong universeLevel
+  ConvCumul.transpCong modeIsUnivalent universeLevel
     (Nat.le_trans universeLevelLt sigma.cumulOk)
     (sourceType.substHet sigma)
     (targetType.substHet sigma)
@@ -954,6 +971,7 @@ theorem ConvCumul.subst_compatible_hcomp_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty sourceLevel sourceScope}
     {sidesRaw capRaw : RawTerm sourceScope}
     (sidesValue : Term sourceCtx carrierType sidesRaw)
@@ -964,9 +982,11 @@ theorem ConvCumul.subst_compatible_hcomp_allais
     (capCompat :
       ConvCumul (capValue.substHet termSubstA)
                 (capValue.substHet termSubstB)) :
-    ConvCumul ((Term.hcomp sidesValue capValue).substHet termSubstA)
-              ((Term.hcomp sidesValue capValue).substHet termSubstB) :=
-  ConvCumul.hcompCong sidesCompat capCompat
+    ConvCumul ((Term.hcomp modeIsUnivalent sidesValue capValue).substHet
+                termSubstA)
+              ((Term.hcomp modeIsUnivalent sidesValue capValue).substHet
+                termSubstB) :=
+  ConvCumul.hcompCong modeIsUnivalent sidesCompat capCompat
 
 /-- Allais arm for single-field `recordIntro`: one-subterm congruence. -/
 theorem ConvCumul.subst_compatible_recordIntro_allais
@@ -1135,10 +1155,18 @@ theorem ConvCumul.subst_compatible_effectPerform_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     (effectTag : RawTerm sourceScope)
-    {carrierType : Ty sourceLevel sourceScope}
+    (effectRow : Effects.EffectRow)
+    (operationSignature :
+      Effects.OperationSignature (Ty sourceLevel sourceScope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
     {operationRaw argumentsRaw : RawTerm sourceScope}
-    (operationTag : Term sourceCtx Ty.unit operationRaw)
-    (arguments : Term sourceCtx carrierType argumentsRaw)
+    (operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw)
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
     (operationCompat :
       ConvCumul (operationTag.substHet termSubstA)
@@ -1146,8 +1174,11 @@ theorem ConvCumul.subst_compatible_effectPerform_allais
     (argumentsCompat :
       ConvCumul (arguments.substHet termSubstA)
                 (arguments.substHet termSubstB)) :
-    ConvCumul ((Term.effectPerform effectTag operationTag arguments).substHet termSubstA)
-              ((Term.effectPerform effectTag operationTag arguments).substHet termSubstB) :=
+    ConvCumul
+      ((Term.effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments).substHet termSubstA)
+      ((Term.effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments).substHet termSubstB) :=
   ConvCumul.effectPerformCong operationCompat argumentsCompat
 
 /-! ### Allais closed-payload arms (parametric data + refl)
@@ -1432,8 +1463,8 @@ theorem ConvCumul.subst_compatible_oeqJ_allais
               ((Term.oeqJ baseCase witness).substHet termSubstB) :=
   ConvCumul.oeqJCong baseCompat witnessCompat
 
-/-- Allais arm for OEq funext: one-subterm cong through the
-proof-erased pointwise certificate. -/
+/-- Allais arm for OEq funext: one-subterm cong through the pointwise
+equality proof function. -/
 theorem ConvCumul.subst_compatible_oeqFunext_allais
     {mode : Mode}
     {sourceLevel targetLevel sourceScope targetScope : Nat}
@@ -1444,7 +1475,11 @@ theorem ConvCumul.subst_compatible_oeqFunext_allais
     (domainType codomainType : Ty sourceLevel sourceScope)
     (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
     {pointwiseRaw : RawTerm sourceScope}
-    (pointwiseProof : Term sourceCtx Ty.unit pointwiseRaw)
+    (pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw)
     (pointwiseCompat :
       ConvCumul (pointwiseProof.substHet termSubstA)
                 (pointwiseProof.substHet termSubstB)) :
@@ -1457,7 +1492,7 @@ theorem ConvCumul.subst_compatible_oeqFunext_allais
     (domainType.substHet sigma) (codomainType.substHet sigma)
     (leftFunctionRaw.subst sigma.forRaw)
     (rightFunctionRaw.subst sigma.forRaw)
-    pointwiseCompat
+    (ConvCumul.cast_eq_both_benton _ pointwiseCompat)
 
 /-- Allais arm for strict identity refl.  The raw witness is substituted
 through the shared `sigma`, so both sides are definitionally equal. -/
@@ -1467,13 +1502,14 @@ theorem ConvCumul.subst_compatible_idStrictRefl_allais
     {sourceCtx : Ctx mode sourceLevel sourceScope}
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    (modeIsStrict : mode = Mode.strict)
     (termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma)
     (carrier : Ty sourceLevel sourceScope)
     (rawWitness : RawTerm sourceScope) :
     ConvCumul ((Term.idStrictRefl (context := sourceCtx)
-                  carrier rawWitness).substHet termSubstA)
+                  modeIsStrict carrier rawWitness).substHet termSubstA)
               ((Term.idStrictRefl (context := sourceCtx)
-                  carrier rawWitness).substHet termSubstB) :=
+                  modeIsStrict carrier rawWitness).substHet termSubstB) :=
   ConvCumul.refl _
 
 /-- Allais arm for strict identity recursor: two-subterm congruence. -/
@@ -1484,6 +1520,7 @@ theorem ConvCumul.subst_compatible_idStrictRec_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsStrict : mode = Mode.strict)
     {carrier : Ty sourceLevel sourceScope}
     {leftEndpoint rightEndpoint : RawTerm sourceScope}
     {motiveType : Ty sourceLevel sourceScope}
@@ -1498,9 +1535,9 @@ theorem ConvCumul.subst_compatible_idStrictRec_allais
     (witnessCompat :
       ConvCumul (witness.substHet termSubstA)
                 (witness.substHet termSubstB)) :
-    ConvCumul ((Term.idStrictRec baseCase witness).substHet termSubstA)
-              ((Term.idStrictRec baseCase witness).substHet termSubstB) :=
-  ConvCumul.idStrictRecCong baseCompat witnessCompat
+    ConvCumul ((Term.idStrictRec modeIsStrict baseCase witness).substHet termSubstA)
+              ((Term.idStrictRec modeIsStrict baseCase witness).substHet termSubstB) :=
+  ConvCumul.idStrictRecCong modeIsStrict baseCompat witnessCompat
 
 /-- Allais arm for `boolElim`: three-subterm cong via `boolElimCong`. -/
 theorem ConvCumul.subst_compatible_boolElim_allais
@@ -1510,11 +1547,13 @@ theorem ConvCumul.subst_compatible_boolElim_allais
     {targetCtx : Ctx mode targetLevel targetScope}
     {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
     {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
-    {motiveType : Ty sourceLevel sourceScope}
+    {motiveType : Ty sourceLevel (sourceScope + 1)}
     {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
     (scrutinee : Term sourceCtx Ty.bool scrutineeRaw)
-    (thenBranch : Term sourceCtx motiveType thenRaw)
-    (elseBranch : Term sourceCtx motiveType elseRaw)
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
     (scrutineeCompat :
       ConvCumul (scrutinee.substHet termSubstA)
                 (scrutinee.substHet termSubstB))
@@ -1526,7 +1565,15 @@ theorem ConvCumul.subst_compatible_boolElim_allais
                 (elseBranch.substHet termSubstB)) :
     ConvCumul ((Term.boolElim scrutinee thenBranch elseBranch).substHet termSubstA)
               ((Term.boolElim scrutinee thenBranch elseBranch).substHet termSubstB) :=
-  ConvCumul.boolElimCong scrutineeCompat thenCompat elseCompat
+  ConvCumul.cast_eq_both_benton
+    (Ty.subst0_substHet_commute motiveType Ty.bool scrutineeRaw sigma).symm
+    (ConvCumul.boolElimCong scrutineeCompat
+      (ConvCumul.cast_eq_both_benton
+        (Ty.subst0_substHet_commute motiveType Ty.bool RawTerm.boolTrue sigma)
+        thenCompat)
+      (ConvCumul.cast_eq_both_benton
+        (Ty.subst0_substHet_commute motiveType Ty.bool RawTerm.boolFalse sigma)
+        elseCompat))
 
 /-! ### Allais cumul-promotion arm
 

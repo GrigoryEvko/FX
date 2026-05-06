@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1Bridge_Nat — 47 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1Bridge_Nat — 49 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1Bridge.natTypeAtomId
 #assert_no_axioms LeanFX2.FX1Bridge.natZeroAtomId
@@ -65,6 +65,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.natSuccZeroTerm
 #assert_no_axioms LeanFX2.FX1Bridge.encodedNatSuccZero_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natZero
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natZero_roundTrip
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natSuccZero
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_natSuccZero_roundTrip
 
 end LeanFX2.Tools

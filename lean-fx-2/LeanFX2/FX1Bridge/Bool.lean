@@ -91,6 +91,18 @@ def encodeRawTerm_boolTrue : FX1.Expr :=
 def encodeRawTerm_boolFalse : FX1.Expr :=
   boolFalseExpr
 
+/-- Fragment decoder for the staged rich Bool type. -/
+def decodeTy_bool {level scope : Nat} : FX1.Expr -> Option (Ty level scope) :=
+  decodeConstByAtom boolTypeAtomId (Ty.bool : Ty level scope)
+
+/-- Fragment decoder for the staged rich Bool true value. -/
+def decodeRawTerm_boolTrue : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom boolTrueAtomId RawTerm.boolTrue
+
+/-- Fragment decoder for the staged rich Bool false value. -/
+def decodeRawTerm_boolFalse : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom boolFalseAtomId RawTerm.boolFalse
+
 /-- Bool type encoding computes to the staged FX1 Bool type constant. -/
 theorem encodeTy_bool_eq_boolTypeExpr :
     Eq encodeTy_bool boolTypeExpr :=
@@ -263,6 +275,23 @@ theorem encodeTermSound_boolTrue
       encodeTy_bool :=
   encodedBoolTrue_has_type
 
+/-- Exact round-trip evidence for the Bool true bridge fragment. -/
+def encodeTermSound_boolTrue_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_trueTerm : Term (Ctx.empty mode level) Ty.bool RawTerm.boolTrue) :
+    BridgeRoundTrip
+      encodeTy_bool
+      (decodeTy_bool (level := level) (scope := 0))
+      (Ty.bool : Ty level 0)
+      encodeRawTerm_boolTrue
+      decodeRawTerm_boolTrue
+      RawTerm.boolTrue :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.bool : Ty level 0))
+    rawRoundTrip := Eq.refl (Option.some RawTerm.boolTrue)
+  }
+
 /-- Soundness of the empty-context Bool false bridge fragment. -/
 theorem encodeTermSound_boolFalse
     {mode : Mode}
@@ -274,6 +303,23 @@ theorem encodeTermSound_boolFalse
       encodeRawTerm_boolFalse
       encodeTy_bool :=
   encodedBoolFalse_has_type
+
+/-- Exact round-trip evidence for the Bool false bridge fragment. -/
+def encodeTermSound_boolFalse_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_falseTerm : Term (Ctx.empty mode level) Ty.bool RawTerm.boolFalse) :
+    BridgeRoundTrip
+      encodeTy_bool
+      (decodeTy_bool (level := level) (scope := 0))
+      (Ty.bool : Ty level 0)
+      encodeRawTerm_boolFalse
+      decodeRawTerm_boolFalse
+      RawTerm.boolFalse :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.bool : Ty level 0))
+    rawRoundTrip := Eq.refl (Option.some RawTerm.boolFalse)
+  }
 
 end FX1Bridge
 end LeanFX2

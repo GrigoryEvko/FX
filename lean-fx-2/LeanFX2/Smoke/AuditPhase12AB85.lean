@@ -15,9 +15,10 @@ import LeanFX2.Bridge
 
 Phase 12.A.B8.5 (heterogeneous Univalence prerequisite).  Adds
 `Term.equivIntroHet` — the general heterogeneous-carrier equivalence
-introduction at type `Ty.equiv carrierA carrierB` packaging arbitrary
-forward + backward functions.  Generalizes `Term.equivReflId` (which
-only ships the rfl-fragment at homogeneous carriers).
+introduction at type `Ty.equiv carrierA carrierB` packaging forward +
+backward functions plus left/right inverse proof functions.  Generalizes
+`Term.equivReflId` (which only ships the rfl-fragment at homogeneous
+carriers).
 
 ## Cascade summary
 
@@ -63,15 +64,18 @@ axiom.  Build remains GREEN at all 299 prior jobs PLUS new jobs.
 
 ## Honest scope
 
-`Term.equivIntroHet` is the SHAPE — it carries arbitrary forward and
-backward functions but does NOT yet enforce that they form an actual
-equivalence (that's a refinement to add via `IsEquiv` or similar
-later).  The structural cascade (rename / subst / substHet / pointwise
-/ Algo / Reduction / Confluence / Cumul) is complete and zero-axiom.
+`Term.equivIntroHet` now enforces the bi-inverse shape: a forward map,
+a backward map, and proof functions for `backward (forward x) = x` and
+`forward (backward y) = y`.  This still inherits the current `Ty.id`
+raw-endpoint limitation, so the endpoint typing debt is tracked by the
+separate Ty raw-endpoint gate.  The structural cascade (rename / subst /
+substHet / pointwise / Algo / Reduction / Confluence / Cumul) is
+complete and zero-axiom.
 
 This unblocks heterogeneous Univalence: the cascade pieces needed to
 extend `Step.eqType` to A ≠ B are now in place — the remaining work
-is the Step rule + IsEquiv coherence, deferred to a future phase. -/
+is the general heterogeneous Step rule and the broader endpoint-typing
+repair, deferred to a future phase. -/
 
 namespace LeanFX2
 

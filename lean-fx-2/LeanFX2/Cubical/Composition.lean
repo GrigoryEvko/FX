@@ -30,28 +30,31 @@ Keeping the name here prevents downstream code from reaching directly for raw
 payloads when it only needs homogeneous composition over one carrier type. -/
 def homogeneousComposition {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRaw capRaw : RawTerm scope}
     (sidesValue : Term context carrierType sidesRaw)
     (capValue : Term context carrierType capRaw) :
     Term context carrierType (RawTerm.hcomp sidesRaw capRaw) :=
-  Term.hcomp sidesValue capValue
+  Term.hcomp modeIsUnivalent sidesValue capValue
 
 /-- `homogeneousComposition` projects to the corresponding raw `hcomp`
 payload. -/
 theorem homogeneousComposition_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRaw capRaw : RawTerm scope}
     (sidesValue : Term context carrierType sidesRaw)
     (capValue : Term context carrierType capRaw) :
-    (homogeneousComposition sidesValue capValue).toRaw =
+    (homogeneousComposition modeIsUnivalent sidesValue capValue).toRaw =
       RawTerm.hcomp sidesRaw capRaw :=
   rfl
 
 /-- Parallel congruence for the named homogeneous-composition redex. -/
 theorem homogeneousComposition_parCong {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRawSource sidesRawTarget capRawSource capRawTarget : RawTerm scope}
     {sidesSource : Term context carrierType sidesRawSource}
@@ -61,13 +64,14 @@ theorem homogeneousComposition_parCong {mode : Mode} {level scope : Nat}
     (sidesStep : Step.par sidesSource sidesTarget)
     (capStep : Step.par capSource capTarget) :
     Step.par
-      (homogeneousComposition sidesSource capSource)
-      (homogeneousComposition sidesTarget capTarget) :=
-  Step.par.hcompCong sidesStep capStep
+      (homogeneousComposition modeIsUnivalent sidesSource capSource)
+      (homogeneousComposition modeIsUnivalent sidesTarget capTarget) :=
+  Step.par.hcompCong modeIsUnivalent sidesStep capStep
 
 /-- Conversion congruence for the named homogeneous-composition redex. -/
 theorem homogeneousComposition_convCumul {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRawFirst sidesRawSecond capRawFirst capRawSecond : RawTerm scope}
     {sidesFirst : Term context carrierType sidesRawFirst}
@@ -77,9 +81,9 @@ theorem homogeneousComposition_convCumul {mode : Mode} {level scope : Nat}
     (sidesRel : ConvCumul sidesFirst sidesSecond)
     (capRel : ConvCumul capFirst capSecond) :
     ConvCumul
-      (homogeneousComposition sidesFirst capFirst)
-      (homogeneousComposition sidesSecond capSecond) :=
-  ConvCumul.hcompCong sidesRel capRel
+      (homogeneousComposition modeIsUnivalent sidesFirst capFirst)
+      (homogeneousComposition modeIsUnivalent sidesSecond capSecond) :=
+  ConvCumul.hcompCong modeIsUnivalent sidesRel capRel
 
 /-- Degenerate homogeneous composition where the side payload is the cap.
 
@@ -88,20 +92,22 @@ It is only the canonical named redex shape that future boundary-aware hcomp
 computation can target. -/
 def degenerateHomogeneousComposition {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {capRaw : RawTerm scope}
     (capValue : Term context carrierType capRaw) :
     Term context carrierType (RawTerm.hcomp capRaw capRaw) :=
-  homogeneousComposition capValue capValue
+  homogeneousComposition modeIsUnivalent capValue capValue
 
 /-- The degenerate hcomp redex projects to `RawTerm.hcomp cap cap`. -/
 theorem degenerateHomogeneousComposition_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {capRaw : RawTerm scope}
     (capValue : Term context carrierType capRaw) :
-    (degenerateHomogeneousComposition capValue).toRaw =
+    (degenerateHomogeneousComposition modeIsUnivalent capValue).toRaw =
       RawTerm.hcomp capRaw capRaw :=
   rfl
 
@@ -109,29 +115,31 @@ theorem degenerateHomogeneousComposition_toRaw
 theorem degenerateHomogeneousComposition_parCong
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {capRawSource capRawTarget : RawTerm scope}
     {capSource : Term context carrierType capRawSource}
     {capTarget : Term context carrierType capRawTarget}
     (capStep : Step.par capSource capTarget) :
     Step.par
-      (degenerateHomogeneousComposition capSource)
-      (degenerateHomogeneousComposition capTarget) :=
-  homogeneousComposition_parCong capStep capStep
+      (degenerateHomogeneousComposition modeIsUnivalent capSource)
+      (degenerateHomogeneousComposition modeIsUnivalent capTarget) :=
+  homogeneousComposition_parCong modeIsUnivalent capStep capStep
 
 /-- Conversion congruence for the degenerate hcomp redex. -/
 theorem degenerateHomogeneousComposition_convCumul
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {capRawFirst capRawSecond : RawTerm scope}
     {capFirst : Term context carrierType capRawFirst}
     {capSecond : Term context carrierType capRawSecond}
     (capRel : ConvCumul capFirst capSecond) :
     ConvCumul
-      (degenerateHomogeneousComposition capFirst)
-      (degenerateHomogeneousComposition capSecond) :=
-  homogeneousComposition_convCumul capRel capRel
+      (degenerateHomogeneousComposition modeIsUnivalent capFirst)
+      (degenerateHomogeneousComposition modeIsUnivalent capSecond) :=
+  homogeneousComposition_convCumul modeIsUnivalent capRel capRel
 
 end Cubical
 end LeanFX2

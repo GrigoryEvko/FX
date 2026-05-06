@@ -160,6 +160,10 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
   let allRawPayloadCount :=
     (allRawPayloadDebtRecordsForInductive
       environment termInductiveName).size
+  -- Value-shaped type-code constructors.
+  let valueTypeCodeCount :=
+    (valueTypeCodeDebtRecordsForInductive
+      environment termInductiveName).size
   -- Reduction.Compat coverage debt for Step.par cong rules.
   let reductionCompatUncoveredCount :=
     (reductionCompatCoverageDebtRecordsForInductive
@@ -320,7 +324,7 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       "Glue schema (glueIntro w/o boundary cofibration)"
       glueSchemaDebtCount,
     formatDebtRow
-      "Effect schema (effectPerform w/o effect row)"
+      "Effect schema (effectPerform row evidence missing)"
       effectSchemaDebtCount,
     formatDebtRow
       "Session schema (session w/o SessionProtocol)"
@@ -368,6 +372,8 @@ elab "#audit_debt_dashboard " termInductiveSyntax:ident
       s!"{singleStepConvClaimCount}",
     s!"    All-raw-payload Term ctors (untyped wrappers): " ++
       s!"{allRawPayloadCount}",
+    s!"    Value-shaped type-code Term ctors (*Code):     " ++
+      s!"{valueTypeCodeCount}",
     s!"    Step.par cong rules w/o full Compat coverage:  " ++
       s!"{reductionCompatUncoveredCount}",
     "  ──────────────────────────────────────────────────────────",

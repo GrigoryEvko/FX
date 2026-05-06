@@ -33,6 +33,16 @@ def encodeCtx_unitVar : FX1.Context :=
 def encodeRawTerm_unitVar : FX1.Expr :=
   FX1.Expr.bvar Nat.zero
 
+/-- Fragment decoder for the newest variable in the one-binder unit context. -/
+def decodeRawTerm_unitVar : FX1.Expr -> Option (RawTerm 1)
+  | FX1.Expr.bvar Nat.zero => Option.some unitVarRaw
+  | FX1.Expr.bvar (Nat.succ _) => Option.none
+  | FX1.Expr.sort _ => Option.none
+  | FX1.Expr.const _ => Option.none
+  | FX1.Expr.pi _ _ => Option.none
+  | FX1.Expr.lam _ _ => Option.none
+  | FX1.Expr.app _ _ => Option.none
+
 /-- The rich newest variable lookup in the unit context computes to unit. -/
 theorem unitVarType_eq_unit {mode : Mode} {level : Nat} :
     Eq
@@ -98,6 +108,27 @@ theorem encodeTermSound_newestUnitVar
       encodeRawTerm_unitVar
       encodeTy_unit :=
   encodedNewestUnitVar_has_type
+
+/-- Exact round-trip evidence for the newest-unit-variable bridge fragment. -/
+def encodeTermSound_newestUnitVar_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_variableTerm :
+      Term
+        (unitVarContext mode level)
+        (Ty.unit : Ty level 1)
+        unitVarRaw) :
+    BridgeRoundTrip
+      encodeTy_unit
+      (decodeTy_unit (level := level) (scope := 1))
+      (Ty.unit : Ty level 1)
+      encodeRawTerm_unitVar
+      decodeRawTerm_unitVar
+      unitVarRaw :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.unit : Ty level 1))
+    rawRoundTrip := Eq.refl (Option.some unitVarRaw)
+  }
 
 end FX1Bridge
 end LeanFX2

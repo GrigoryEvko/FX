@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1Bridge_UnitVar — 10 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1Bridge_UnitVar — 11 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1Bridge.unitVarPosition
 #assert_no_axioms LeanFX2.FX1Bridge.unitVarRaw
@@ -29,5 +29,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitVarContext_wellFormed
 #assert_no_axioms LeanFX2.FX1Bridge.encodedNewestUnitVar_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_newestUnitVar
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_newestUnitVar_roundTrip
 
 end LeanFX2.Tools

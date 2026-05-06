@@ -22,12 +22,13 @@ cubical helper, `Term.toRaw`, raw weakening, and `RawTerm.unweaken?`;
 it deliberately does not add a transport computation rule. -/
 theorem constantPath_rawRecognized {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    RawTerm.constantPathBody? (constantPath pointTerm).toRaw =
+    RawTerm.constantPathBody? (constantPath modeIsUnivalent pointTerm).toRaw =
       some pointRaw := by
-  rw [constantPath_toRaw]
+  rw [constantPath_toRaw modeIsUnivalent]
   exact RawTerm.constantPathBody?_pathLam_weaken pointRaw
 
 /-- Universe-code specialization of `constantPath_rawRecognized`.
@@ -35,26 +36,28 @@ Future constant-transport rules should consume this recognizer theorem
 rather than assuming every `pathLam` is a constant type line. -/
 theorem constantTypePath_rawRecognized {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe universeLevel universeLevelLt) typeRaw) :
     RawTerm.constantPathBody?
-      (constantTypePath universeLevel universeLevelLt typeCode).toRaw =
+      (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode).toRaw =
       some typeRaw := by
-  rw [constantTypePath_toRaw]
+  rw [constantTypePath_toRaw modeIsUnivalent]
   exact RawTerm.constantPathBody?_pathLam_weaken typeRaw
 
 /-- The interval identity path mentions the interval binder, so it is
 not a constant path.  This typed term is the small counterexample that
 blocks the unsound shortcut "every `pathLam` is transport-constant". -/
 def intervalBinderPath {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope} :
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent) :
     Term context (Ty.path Ty.interval RawTerm.interval0 RawTerm.interval1)
       (RawTerm.pathLam
         (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) :=
-  Term.pathLam Ty.interval RawTerm.interval0 RawTerm.interval1
+  Term.pathLam modeIsUnivalent Ty.interval RawTerm.interval0 RawTerm.interval1
     (Term.var (context := context.cons Ty.interval)
       ⟨0, Nat.zero_lt_succ scope⟩)
 
@@ -63,9 +66,10 @@ This is the typed counterpart to
 `RawTerm.constantPathBody?_pathLam_interval_var_none`. -/
 theorem intervalBinderPath_rawRejected
     {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope} :
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent) :
     RawTerm.constantPathBody?
-      (intervalBinderPath (context := context)).toRaw =
+      (intervalBinderPath (context := context) modeIsUnivalent).toRaw =
       none := by
   change RawTerm.constantPathBody?
     (RawTerm.pathLam
@@ -93,14 +97,16 @@ single-binder substitution form; `constantPath_rawBetaApp` records the
 raw endpoint simplification separately. -/
 theorem constantPath_betaPathApp {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw intervalRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
     (intervalTerm : Term context Ty.interval intervalRaw) :
     Step.par
-      (Term.pathApp (constantPath pointTerm) intervalTerm)
+      (Term.pathApp modeIsUnivalent
+        (constantPath modeIsUnivalent pointTerm) intervalTerm)
       (Term.subst0 (Term.weaken Ty.interval pointTerm) intervalTerm) :=
-  Step.par.betaPathApp (Step.par.refl _) (Step.par.refl _)
+  Step.par.betaPathApp modeIsUnivalent (Step.par.refl _) (Step.par.refl _)
 
 /-- Typed constant-path β projects through the typed-to-raw bridge to
 the endpoint-level raw β fact.  This is a load-bearing wiring smoke:
@@ -110,6 +116,7 @@ the raw weakening/substitution cancellation together. -/
 theorem constantPath_betaPathApp_toRawEndpoint
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw intervalRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
@@ -123,7 +130,7 @@ theorem constantPath_betaPathApp_toRawEndpoint
         (pointRaw.weaken.subst0 intervalRaw) := by
     simpa [constantPath_toRaw, Term.toRaw_weaken, Term.toRaw_subst0]
       using Step.par.toRawBridge
-        (constantPath_betaPathApp pointTerm intervalTerm)
+        (constantPath_betaPathApp modeIsUnivalent pointTerm intervalTerm)
   simpa [RawTerm.subst0, RawTerm.weaken_subst_singleton] using bridgeStep
 
 /-- Universe-code specialization of `constantPath_betaPathApp`.  This
@@ -131,6 +138,7 @@ is the typed redex shape future constant-transport computation will
 consume: a path application over a constant type line. -/
 theorem constantTypePath_betaPathApp {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     {typeRaw intervalRaw : RawTerm scope}
@@ -138,11 +146,11 @@ theorem constantTypePath_betaPathApp {mode : Mode} {level scope : Nat}
       Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
     (intervalTerm : Term context Ty.interval intervalRaw) :
     Step.par
-      (Term.pathApp
-        (constantTypePath universeLevel universeLevelLt typeCode)
+      (Term.pathApp modeIsUnivalent
+        (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode)
         intervalTerm)
       (Term.subst0 (Term.weaken Ty.interval typeCode) intervalTerm) :=
-  Step.par.betaPathApp (Step.par.refl _) (Step.par.refl _)
+  Step.par.betaPathApp modeIsUnivalent (Step.par.refl _) (Step.par.refl _)
 
 /-- Universe-code constant-path β projects through the typed-to-raw
 bridge to the original universe code.  This is the load-bearing
@@ -150,6 +158,7 @@ type-line guardrail for future constant-transport rules. -/
 theorem constantTypePath_betaPathApp_toRawEndpoint
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (universeLevel : UniverseLevel)
     (universeLevelLt : universeLevel.toNat + 1 ≤ level)
     {typeRaw intervalRaw : RawTerm scope}
@@ -166,7 +175,7 @@ theorem constantTypePath_betaPathApp_toRawEndpoint
     simpa [constantTypePath_toRaw, Term.toRaw_weaken, Term.toRaw_subst0]
       using Step.par.toRawBridge
         (constantTypePath_betaPathApp
-          universeLevel universeLevelLt typeCode intervalTerm)
+          modeIsUnivalent universeLevel universeLevelLt typeCode intervalTerm)
   simpa [RawTerm.subst0, RawTerm.weaken_subst_singleton] using bridgeStep
 
 end Cubical

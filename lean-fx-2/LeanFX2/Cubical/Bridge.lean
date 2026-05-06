@@ -30,6 +30,7 @@ universe pathLevel
 /-- Cubical-facing name for the canonical constant-path-to-identity bridge. -/
 def constantPathToObservationalId {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
@@ -38,36 +39,40 @@ def constantPathToObservationalId {mode : Mode} {level scope : Nat}
         (RawTerm.pathLam pointRaw.weaken)) :
     Term context (Ty.id carrierType pointRaw pointRaw)
       (RawTerm.refl pointRaw) :=
-  Bridge.constantPathToId pointTerm pathTerm
+  Bridge.constantPathToId modeIsUnivalent pointTerm pathTerm
 
 /-- The cubical-facing path-to-id fragment projects to raw reflexivity. -/
 theorem constantPathToObservationalId_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
     (pathTerm :
       Term context (Ty.path carrierType pointRaw pointRaw)
         (RawTerm.pathLam pointRaw.weaken)) :
-    (constantPathToObservationalId pointTerm pathTerm).toRaw =
+    (constantPathToObservationalId modeIsUnivalent pointTerm pathTerm).toRaw =
       RawTerm.refl pointRaw :=
-  Bridge.constantPathToId_toRaw pointTerm pathTerm
+  Bridge.constantPathToId_toRaw modeIsUnivalent pointTerm pathTerm
 
 /-- The canonical cubical constant path maps to `Term.refl`. -/
 theorem constantPathToObservationalId_onCanonical
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    constantPathToObservationalId pointTerm (constantPath pointTerm) =
+    constantPathToObservationalId modeIsUnivalent pointTerm
+        (constantPath modeIsUnivalent pointTerm) =
       Term.refl carrierType pointRaw :=
-  Bridge.constantPathToId_onCanonical pointTerm
+  Bridge.constantPathToId_onCanonical modeIsUnivalent pointTerm
 
 /-- Cubical-facing name for the reflexive identity-to-constant-path bridge. -/
 def observationalReflToConstantPath {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
@@ -76,25 +81,27 @@ def observationalReflToConstantPath {mode : Mode} {level scope : Nat}
         (RawTerm.refl pointRaw)) :
     Term context (Ty.path carrierType pointRaw pointRaw)
       (RawTerm.pathLam pointRaw.weaken) :=
-  Bridge.reflIdToConstantPath pointTerm idWitness
+  Bridge.reflIdToConstantPath modeIsUnivalent pointTerm idWitness
 
 /-- The cubical-facing id-to-path fragment projects to the raw constant path. -/
 theorem observationalReflToConstantPath_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
     (idWitness :
       Term context (Ty.id carrierType pointRaw pointRaw)
         (RawTerm.refl pointRaw)) :
-    (observationalReflToConstantPath pointTerm idWitness).toRaw =
+    (observationalReflToConstantPath modeIsUnivalent pointTerm idWitness).toRaw =
       RawTerm.pathLam pointRaw.weaken :=
-  Bridge.reflIdToConstantPath_toRaw pointTerm idWitness
+  Bridge.reflIdToConstantPath_toRaw modeIsUnivalent pointTerm idWitness
 
 /-- Canonical constant universe paths produce identity equivalences. -/
 def constantCubicalTypePathToEquiv {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -104,16 +111,17 @@ def constantCubicalTypePathToEquiv {mode : Mode} {level scope : Nat}
     (typePath :
       Term context
         (Ty.path (Ty.universe innerLevel innerLevelLt) typeRaw typeRaw)
-        (RawTerm.pathLam typeRaw.weaken)) :
+      (RawTerm.pathLam typeRaw.weaken)) :
     Term context (Ty.equiv carrier carrier)
       (Term.equivReflId (context := context) carrier).toRaw :=
-  Bridge.constantTypePathToEquivRefl innerLevel innerLevelLt
+  Bridge.constantTypePathToEquivRefl modeIsUnivalent innerLevel innerLevelLt
     carrier typeCode typePath
 
 /-- The constant type-path bridge projects to identity equivalence raw form. -/
 theorem constantCubicalTypePathToEquiv_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -124,10 +132,10 @@ theorem constantCubicalTypePathToEquiv_toRaw
       Term context
         (Ty.path (Ty.universe innerLevel innerLevelLt) typeRaw typeRaw)
         (RawTerm.pathLam typeRaw.weaken)) :
-    (constantCubicalTypePathToEquiv innerLevel innerLevelLt
+    (constantCubicalTypePathToEquiv modeIsUnivalent innerLevel innerLevelLt
       carrier typeCode typePath).toRaw =
       (Term.equivReflId (context := context) carrier).toRaw :=
-  Bridge.constantTypePathToEquivRefl_toRaw innerLevel innerLevelLt
+  Bridge.constantTypePathToEquivRefl_toRaw modeIsUnivalent innerLevel innerLevelLt
     carrier typeCode typePath
 
 /-- Specialization of `constantCubicalTypePathToEquiv` to
@@ -135,16 +143,17 @@ theorem constantCubicalTypePathToEquiv_toRaw
 theorem constantCubicalTypePathToEquiv_onCanonical
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe innerLevel innerLevelLt) typeRaw) :
-    constantCubicalTypePathToEquiv innerLevel innerLevelLt carrier typeCode
-      (constantTypePath innerLevel innerLevelLt typeCode) =
+    constantCubicalTypePathToEquiv modeIsUnivalent innerLevel innerLevelLt carrier typeCode
+      (constantTypePath modeIsUnivalent innerLevel innerLevelLt typeCode) =
       Term.equivReflId carrier :=
-  Bridge.constantTypePathToEquivRefl_onCanonical
+  Bridge.constantTypePathToEquivRefl_onCanonical modeIsUnivalent
     innerLevel innerLevelLt carrier typeCode
 
 /-- Cubical-facing set-level Path/Id equivalence.

@@ -109,7 +109,7 @@ The remaining work for full heterogeneous Univalence is the
 
 ```
 | eqTypeHet : Step (Term.uaIntroHet ... equivWitness)
-                   (Term.equivIntroHet forward backward)
+                   (Term.equivIntroHet forward backward leftInv rightInv)
 ```
 
 deferred to a future phase. -/

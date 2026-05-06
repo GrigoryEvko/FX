@@ -22,5 +22,10 @@ the authoritative declaration gates live in the imported audit modules.
 namespace LeanFX2
 namespace Smoke
 
+-- Reviewer-facing smoke coverage must run after `Smoke.AuditNamespace`
+-- imports the smoke files.  The Tools/AuditAll cone intentionally does not
+-- load smoke modules, so this gate belongs here.
+#assert_smoke_reference_coverage_budget LeanFX2.Term 47
+
 end Smoke
 end LeanFX2

@@ -19,41 +19,49 @@ namespace Bridge
 constant-path input. -/
 theorem constantPath_roundTrip_onCanonical {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    reflIdToConstantPath pointTerm
-      (constantPathToId pointTerm (Cubical.constantPath pointTerm)) =
-      Cubical.constantPath pointTerm := rfl
+    reflIdToConstantPath modeIsUnivalent pointTerm
+      (constantPathToId modeIsUnivalent pointTerm
+        (Cubical.constantPath modeIsUnivalent pointTerm)) =
+      Cubical.constantPath modeIsUnivalent pointTerm := rfl
 
 /-- `id -> path -> id` is `refl` on the canonical reflexivity input. -/
 theorem reflId_roundTrip_onRefl {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    constantPathToId pointTerm
-      (reflIdToConstantPath pointTerm (Term.refl carrierType pointRaw)) =
+    constantPathToId modeIsUnivalent pointTerm
+      (reflIdToConstantPath modeIsUnivalent pointTerm
+        (Term.refl carrierType pointRaw)) =
       Term.refl carrierType pointRaw := rfl
 
 /-- Raw-shape smoke for the canonical `path -> id -> path` round trip. -/
 theorem constantPath_roundTrip_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    (reflIdToConstantPath pointTerm
-      (constantPathToId pointTerm (Cubical.constantPath pointTerm))).toRaw =
+    (reflIdToConstantPath modeIsUnivalent pointTerm
+      (constantPathToId modeIsUnivalent pointTerm
+        (Cubical.constantPath modeIsUnivalent pointTerm))).toRaw =
       RawTerm.pathLam pointRaw.weaken := rfl
 
 /-- Raw-shape smoke for the canonical `id -> path -> id` round trip. -/
 theorem reflId_roundTrip_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    (constantPathToId pointTerm
-      (reflIdToConstantPath pointTerm (Term.refl carrierType pointRaw))).toRaw =
+    (constantPathToId modeIsUnivalent pointTerm
+      (reflIdToConstantPath modeIsUnivalent pointTerm
+        (Term.refl carrierType pointRaw))).toRaw =
       RawTerm.refl pointRaw := rfl
 
 end Bridge

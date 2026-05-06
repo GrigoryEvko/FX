@@ -665,28 +665,76 @@ def exactBridgeSoundnessNameForConstructor (constructorName : Name) : Name :=
     `LeanFX2.FX1Bridge
     ("encodeTermSound_" ++ Name.lastSegmentString constructorName)
 
-/-- One `Term` constructor without an exact `FX1Bridge.encodeTermSound_*`
-theorem.  Fragment-specific bridge lemmas are useful, but this exact-name
-matrix is the ratchet for whole-constructor bridge coverage. -/
+/-- Raw constructor names that can witness an exact bridge for a `Term`
+constructor.
+
+Most typed constructors pin the same-suffix raw constructor.  Dependent and
+non-dependent lambda/application share raw syntax, so `lamPi` and `appPi`
+intentionally map to the same raw constructors as `lam` and `app`. -/
+def expectedRawConstructorNamesForTermConstructor
+    (constructorName : Name) :
+    Array Name :=
+  let constructorSuffix := Name.lastSegmentString constructorName
+  let rawSuffix :=
+    if constructorSuffix == "lamPi" then
+      "lam"
+    else if constructorSuffix == "appPi" then
+      "app"
+    else
+      constructorSuffix
+  #[Name.str `LeanFX2.RawTerm rawSuffix]
+
+/-- One `Term` constructor without a certificate-shaped exact
+`FX1Bridge.encodeTermSound_*` theorem.  Fragment-specific bridge lemmas are
+useful, but this exact-name matrix is the ratchet for whole-constructor bridge
+coverage. -/
 structure BridgeCoverageDebtRecord where
   /-- Constructor name being reported. -/
   constructorName : Name
   /-- Exact bridge theorem name expected by the coverage matrix. -/
   expectedBridgeName : Name
+  /-- Why the exact bridge theorem did not count. -/
+  detail : String
   deriving Inhabited, Repr
+
+/-- Whether an exact bridge coverage declaration has the minimum soundness
+shape: it must consume/mention a rich `Term`, produce/mention an FX1
+`HasType` derivation, and mention the raw constructor pinned by the covered
+typed constructor.  This is still a shape check, not a proof of semantic
+faithfulness; the separate round-trip gate checks certificate companions. -/
+def isExactBridgeSoundnessShapeValid
+    (constructorName : Name) (constantInfo : ConstantInfo) :
+    Bool :=
+  let expectedRawConstructors :=
+    expectedRawConstructorNamesForTermConstructor constructorName
+  doesExprMentionConst `LeanFX2.Term constantInfo.type &&
+    doesExprMentionConst `LeanFX2.FX1.HasType constantInfo.type &&
+    expectedRawConstructors.any
+      (fun rawConstructorName =>
+        doesExprMentionConst rawConstructorName constantInfo.type)
 
 /-- Report bridge coverage debt for one constructor. -/
 def bridgeCoverageDebtRecord?
     (environment : Environment) (constructorName : Name) :
     Option BridgeCoverageDebtRecord :=
   let expectedBridgeName := exactBridgeSoundnessNameForConstructor constructorName
-  if environment.contains expectedBridgeName then
-    none
-  else
-    some {
-      constructorName := constructorName
-      expectedBridgeName := expectedBridgeName
-    }
+  match environment.find? expectedBridgeName with
+  | some constantInfo =>
+      if isExactBridgeSoundnessShapeValid constructorName constantInfo then
+        none
+      else
+        some {
+          constructorName := constructorName
+          expectedBridgeName := expectedBridgeName
+          detail :=
+            "declaration exists but is not Term/raw-ctor -> FX1.HasType shaped"
+        }
+  | none =>
+      some {
+        constructorName := constructorName
+        expectedBridgeName := expectedBridgeName
+        detail := "missing declaration"
+      }
 
 /-- Collect exact bridge coverage debt records for an inductive. -/
 def bridgeCoverageDebtRecordsForInductive
@@ -718,7 +766,8 @@ elab "#assert_bridge_exact_coverage_budget " inductiveSyntax:ident
       s!"debt {records.size}/{bridgeDebtBudget})")
   else
     let perCtorLines := records.toList.map fun record =>
-      s!"  - {record.constructorName}: expected {record.expectedBridgeName}"
+      s!"  - {record.constructorName}: expected {record.expectedBridgeName}; " ++
+      record.detail
     let header :=
       s!"bridge exact coverage budget FAILED for {inductiveName}: " ++
       s!"{records.size} unbridged ctors exceed budget {bridgeDebtBudget}"
@@ -1163,6 +1212,309 @@ elab "#assert_hcomp_kan_budget " inductiveSyntax:ident
       s!"hcomp Kan budget FAILED for {inductiveName}: " ++
       s!"{records.size} hcomp Kan debts exceed budget {hcompKanBudget}"
     throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-! ## Exact semantic-debt snapshots
+
+The budget gates above prevent debt counts from growing.  Count-only
+budgets still miss a dangerous substitution pattern: one known bad
+constructor can be repaired while a new bad constructor appears in the
+same class, keeping the total count unchanged.  These snapshot gates pin
+the exact constructor names for the small, high-risk semantic debt
+classes so any replacement debt requires an explicit harness update.
+-/
+
+/-- Extract constructor names from signature-debt records. -/
+def signatureDebtConstructorNames
+    (records : Array SignatureDebtRecord) :
+    Array Name :=
+  records.map (fun record => record.constructorName)
+
+/-- Render a constructor-name array compactly for error messages. -/
+def formatNameArray (names : Array Name) : String :=
+  "[" ++ String.intercalate ", " (names.toList.map toString) ++ "]"
+
+/-- Order-sensitive equality for constructor-name arrays.  Constructor
+collectors walk the inductive in declaration order, so an ordering change is
+also useful signal during review. -/
+def nameArraysEqual (leftNames rightNames : Array Name) : Bool :=
+  leftNames.size == rightNames.size &&
+    (leftNames.toList.zip rightNames.toList).all
+      (fun (namePair : Name × Name) => namePair.1 == namePair.2)
+
+/-- Build-failing exact snapshot for a small semantic-debt class. -/
+def assertExactDebtSnapshot
+    (snapshotName : String) (auditCountName : Name)
+    (actualNames expectedNames : Array Name) :
+    CommandElabM Unit := do
+  recordAuditCount auditCountName actualNames.size
+  if nameArraysEqual actualNames expectedNames then
+    logInfo
+      (s!"{snapshotName} exact snapshot ok " ++
+      s!"({actualNames.size} constructors)")
+  else
+    throwError
+      (s!"{snapshotName} exact snapshot FAILED\n" ++
+      s!"  actual:   {formatNameArray actualNames}\n" ++
+      s!"  expected: {formatNameArray expectedNames}")
+
+/-- Expected current Term constructors with missing mode premises. -/
+def expectedTermModeDebtNames : Array Name := #[]
+
+/-- Expected current fixed-motive eliminator constructors. -/
+def expectedTermDependentMotiveDebtNames : Array Name := #[
+  `LeanFX2.Term.boolElim,
+  `LeanFX2.Term.natElim,
+  `LeanFX2.Term.natRec,
+  `LeanFX2.Term.listElim,
+  `LeanFX2.Term.optionMatch,
+  `LeanFX2.Term.eitherMatch,
+  `LeanFX2.Term.idJ,
+  `LeanFX2.Term.oeqJ,
+  `LeanFX2.Term.idStrictRec
+]
+
+/-- Expected current constructors with unit-typed proof/tag placeholders. -/
+def expectedTermUnitPlaceholderDebtNames : Array Name := #[
+  `LeanFX2.Term.refineIntro
+]
+
+/-- Expected current modal constructors whose type signatures are no-ops. -/
+def expectedTermModalNoopDebtNames : Array Name := #[
+  `LeanFX2.Term.modIntro,
+  `LeanFX2.Term.modElim,
+  `LeanFX2.Term.subsume
+]
+
+/-- Expected current session constructors without protocol advancement. -/
+def expectedTermSessionNoAdvanceDebtNames : Array Name := #[
+  `LeanFX2.Term.sessionSend,
+  `LeanFX2.Term.sessionRecv
+]
+
+/-- Expected current equivalence constructors without coherence witnesses. -/
+def expectedTermEquivCoherenceDebtNames : Array Name := #[]
+
+/-- Expected current transport constructor with unlinked universe endpoints. -/
+def expectedTermTransportLinkageDebtNames : Array Name := #[
+  `LeanFX2.Term.transp
+]
+
+/-- Expected current Glue constructors without rich boundary/equiv schema. -/
+def expectedTermGlueSchemaDebtNames : Array Name := #[
+  `LeanFX2.Term.glueIntro,
+  `LeanFX2.Term.glueElim
+]
+
+/-- Expected current effect constructor without row-membership schema. -/
+def expectedTermEffectSchemaDebtNames : Array Name := #[
+]
+
+/-- Expected current session constructors without protocol schema. -/
+def expectedTermSessionSchemaDebtNames : Array Name := #[
+  `LeanFX2.Term.sessionSend,
+  `LeanFX2.Term.sessionRecv
+]
+
+/-- Expected current hcomp constructor without Kan-boundary evidence. -/
+def expectedTermHcompKanDebtNames : Array Name := #[
+  `LeanFX2.Term.hcomp
+]
+
+/-- Exact snapshots for the small high-risk Term semantic-debt classes. -/
+elab "#assert_term_semantic_debt_snapshots " inductiveSyntax:ident :
+    command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  assertExactDebtSnapshot "Term mode-discipline debt"
+    `term_mode_discipline_snapshot
+    (modeDisciplineDebtRecordsForInductive environment inductiveName |>.map
+      (fun record => record.constructorName))
+    expectedTermModeDebtNames
+  assertExactDebtSnapshot "Term dependent-motive debt"
+    `term_dependent_motive_snapshot
+    (dependentEliminatorDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermDependentMotiveDebtNames
+  assertExactDebtSnapshot "Term unit-placeholder debt"
+    `term_unit_placeholder_snapshot
+    (unitPlaceholderDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermUnitPlaceholderDebtNames
+  assertExactDebtSnapshot "Term modal-noop debt"
+    `term_modal_noop_snapshot
+    (modalNoopDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermModalNoopDebtNames
+  assertExactDebtSnapshot "Term session no-advance debt"
+    `term_session_no_advance_snapshot
+    (sessionNoAdvanceDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermSessionNoAdvanceDebtNames
+  assertExactDebtSnapshot "Term equiv-coherence debt"
+    `term_equiv_coherence_snapshot
+    (equivCoherenceDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermEquivCoherenceDebtNames
+  assertExactDebtSnapshot "Term transport-linkage debt"
+    `term_transport_linkage_snapshot
+    (transportLinkageDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermTransportLinkageDebtNames
+  assertExactDebtSnapshot "Term Glue-schema debt"
+    `term_glue_schema_snapshot
+    (glueSchemaDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermGlueSchemaDebtNames
+  assertExactDebtSnapshot "Term effect-schema debt"
+    `term_effect_schema_snapshot
+    (effectSchemaDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermEffectSchemaDebtNames
+  assertExactDebtSnapshot "Term session-schema debt"
+    `term_session_schema_snapshot
+    (sessionSchemaDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermSessionSchemaDebtNames
+  assertExactDebtSnapshot "Term hcomp-Kan debt"
+    `term_hcomp_kan_snapshot
+    (hcompKanDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermHcompKanDebtNames
+
+/-- Expected current Ty constructors whose endpoints remain raw. -/
+def expectedTyRawEndpointDebtNames : Array Name := #[
+  `LeanFX2.Ty.id,
+  `LeanFX2.Ty.path,
+  `LeanFX2.Ty.oeq,
+  `LeanFX2.Ty.idStrict
+]
+
+/-- Expected current Ty constructors with unstructured schema payloads. -/
+def expectedTyUnstructuredSchemaDebtNames : Array Name := #[
+  `LeanFX2.Ty.glue,
+  `LeanFX2.Ty.refine,
+  `LeanFX2.Ty.session,
+  `LeanFX2.Ty.effect,
+  `LeanFX2.Ty.modal
+]
+
+/-- Exact snapshots for the small high-risk Ty schema-debt classes. -/
+elab "#assert_ty_schema_debt_snapshots " inductiveSyntax:ident :
+    command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  assertExactDebtSnapshot "Ty raw-endpoint debt"
+    `ty_raw_endpoint_snapshot
+    (tyRawEndpointDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTyRawEndpointDebtNames
+  assertExactDebtSnapshot "Ty unstructured-schema debt"
+    `ty_unstructured_schema_snapshot
+    (tyUnstructuredSchemaDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTyUnstructuredSchemaDebtNames
+
+/-! ## Value-shaped type-code constructor gate
+
+The all-raw-payload gate deliberately ignores proof binders, which made it
+miss the `*Code` constructors: they carry proof premises such as
+`levelLe : outerLevel.toNat + 1 <= level`, but their computational payload is
+still schematic rather than recursively typed.  This gate tracks type-code
+constructors whose explicit parameters contain no recursive `Term` child.
+-/
+
+/-- Whether a constructor name is one of the `Term.*Code` type-code ctors. -/
+def isTypeCodeConstructorName (constructorName : Name) : Bool :=
+  (Name.lastSegmentString constructorName).endsWith "Code"
+
+/-- Whether a constructor signature has any explicit recursive `Term` child. -/
+partial def hasExplicitTermChildBinder (constructorType : Expr) : Bool :=
+  match constructorType with
+  | .forallE _ parameterType bodyType binderInfo =>
+      let currentBinderIsTermChild :=
+        match binderInfo with
+        | .default => doesExprMentionConst `LeanFX2.Term parameterType
+        | _ => false
+      currentBinderIsTermChild || hasExplicitTermChildBinder bodyType
+  | _ => false
+
+/-- Report a value-shaped type-code constructor if it has no recursive Term
+child tying the code payload back to typed syntax. -/
+def valueTypeCodeDebtRecord?
+    (environment : Environment) (constructorName : Name) :
+    Option SignatureDebtRecord :=
+  if !isTypeCodeConstructorName constructorName then
+    none
+  else
+    match environment.find? constructorName with
+    | some (.ctorInfo constructorInfo) =>
+        if hasExplicitTermChildBinder constructorInfo.type then
+          none
+        else
+          some {
+            constructorName := constructorName
+            detail := "type-code constructor has no recursive Term child"
+          }
+    | _ => none
+
+/-- Collect value-shaped type-code debt records across a Term inductive. -/
+def valueTypeCodeDebtRecordsForInductive
+    (environment : Environment) (inductiveName : Name) :
+    Array SignatureDebtRecord :=
+  let constructorNames := getInductiveConstructorNames environment inductiveName
+  constructorNames.foldl
+    (init := (#[] : Array SignatureDebtRecord))
+    (fun records constructorName =>
+      match valueTypeCodeDebtRecord? environment constructorName with
+      | some record => records.push record
+      | none => records)
+
+/-- Expected current value-shaped type-code constructors. -/
+def expectedTermValueTypeCodeDebtNames : Array Name := #[
+  `LeanFX2.Term.universeCode,
+  `LeanFX2.Term.arrowCode,
+  `LeanFX2.Term.piTyCode,
+  `LeanFX2.Term.sigmaTyCode,
+  `LeanFX2.Term.productCode,
+  `LeanFX2.Term.sumCode,
+  `LeanFX2.Term.listCode,
+  `LeanFX2.Term.optionCode,
+  `LeanFX2.Term.eitherCode,
+  `LeanFX2.Term.idCode,
+  `LeanFX2.Term.equivCode
+]
+
+/-- Build-failing budget gate for `Term.*Code` ctors whose code payloads are
+value-shaped instead of recursive typed subterms. -/
+elab "#assert_value_type_code_budget " inductiveSyntax:ident
+    typeCodeBudgetSyntax:num : command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  let typeCodeBudget := typeCodeBudgetSyntax.getNat
+  let records := valueTypeCodeDebtRecordsForInductive environment inductiveName
+  recordAuditCount `value_type_code_ctor records.size
+  if records.size <= typeCodeBudget then
+    logInfo
+      (s!"value-shaped type-code budget ok: {inductiveName} " ++
+      s!"({records.size}/{typeCodeBudget} *Code ctors have no Term child)")
+  else
+    let perCtorLines := records.toList.map fun record =>
+      s!"  - {record.constructorName}: {record.detail}"
+    let header :=
+      s!"value-shaped type-code budget FAILED for {inductiveName}: " ++
+      s!"{records.size} *Code ctors exceed budget {typeCodeBudget}"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
+/-- Exact snapshot for the current value-shaped type-code constructor debt. -/
+elab "#assert_value_type_code_snapshot " inductiveSyntax:ident :
+    command => do
+  let environment ← getEnv
+  let inductiveName := inductiveSyntax.getId
+  assertExactDebtSnapshot "Term value-shaped type-code debt"
+    `value_type_code_ctor_snapshot
+    (valueTypeCodeDebtRecordsForInductive environment inductiveName |>
+      signatureDebtConstructorNames)
+    expectedTermValueTypeCodeDebtNames
 
 
 end LeanFX2.Tools

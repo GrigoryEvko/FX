@@ -169,21 +169,27 @@ theorem Conv.natSucc_cong
 `Conv` on `boolElim`-wrappers (with shared motive + branches).
 1-step parameterization of `Conv.cong_at_isClosedTy`. -/
 theorem Conv.boolElimScrutinee_cong
-    {motiveType : Ty level scope}
+    {motiveType : Ty level (scope + 1)}
     {scrutRawA scrutRawB thenRaw elseRaw : RawTerm scope}
     {scrutA : Term context Ty.bool scrutRawA}
     {scrutB : Term context Ty.bool scrutRawB}
-    (thenBranch : Term context motiveType thenRaw)
-    (elseBranch : Term context motiveType elseRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
     (scrutConv : Conv scrutA scrutB) :
     Conv (Term.boolElim scrutA thenBranch elseBranch)
          (Term.boolElim scrutB thenBranch elseBranch) :=
-  Conv.cong_at_isClosedTy
-    (resultTy := motiveType) IsClosedTy.bool
-    (wrapRaw := fun raw => RawTerm.boolElim raw thenRaw elseRaw)
-    (fun term => Term.boolElim term thenBranch elseBranch)
-    (fun step => Step.boolElimScrutinee step)
-    scrutConv
+  by
+    obtain ⟨midType, midRaw, midTerm, chainA, chainB⟩ := scrutConv
+    have midIsBool : midType = Ty.bool :=
+      StepStar.preserves_isClosedTy IsClosedTy.bool chainA rfl
+    refine ⟨_, _, Term.boolElim (midIsBool ▸ midTerm) thenBranch elseBranch,
+      ?_, ?_⟩
+    · exact StepStar.boolElimScrutinee_lift_general
+        chainA rfl midIsBool thenBranch elseBranch
+    · exact StepStar.boolElimScrutinee_lift_general
+        chainB rfl midIsBool thenBranch elseBranch
 
 /-- Scrutinee cong rule: `Conv` on nat-typed scrutinees lifts to
 `Conv` on `natElim`-wrappers. -/
@@ -240,12 +246,12 @@ theorem Conv.boolElimThen_cong_unit
     {thenB : Term context Ty.unit thenRawB}
     (elseBranch : Term context Ty.unit elseRaw)
     (thenConv : Conv thenA thenB) :
-    Conv (Term.boolElim scrutinee thenA elseBranch)
-         (Term.boolElim scrutinee thenB elseBranch) :=
+    Conv (Term.boolElim (motiveType := Ty.unit.weaken) scrutinee thenA elseBranch)
+         (Term.boolElim (motiveType := Ty.unit.weaken) scrutinee thenB elseBranch) :=
   Conv.cong_at_isClosedTy
     (resultTy := Ty.unit) IsClosedTy.unit
     (wrapRaw := fun raw => RawTerm.boolElim scrutRaw raw elseRaw)
-    (fun term => Term.boolElim scrutinee term elseBranch)
+    (fun term => Term.boolElim (motiveType := Ty.unit.weaken) scrutinee term elseBranch)
     (fun step => Step.boolElimThen step) thenConv
 
 /-- `Conv` on `boolElim`'s then-branch at `Ty.bool` motive. -/
@@ -256,12 +262,12 @@ theorem Conv.boolElimThen_cong_bool
     {thenB : Term context Ty.bool thenRawB}
     (elseBranch : Term context Ty.bool elseRaw)
     (thenConv : Conv thenA thenB) :
-    Conv (Term.boolElim scrutinee thenA elseBranch)
-         (Term.boolElim scrutinee thenB elseBranch) :=
+    Conv (Term.boolElim (motiveType := Ty.bool.weaken) scrutinee thenA elseBranch)
+         (Term.boolElim (motiveType := Ty.bool.weaken) scrutinee thenB elseBranch) :=
   Conv.cong_at_isClosedTy
     (resultTy := Ty.bool) IsClosedTy.bool
     (wrapRaw := fun raw => RawTerm.boolElim scrutRaw raw elseRaw)
-    (fun term => Term.boolElim scrutinee term elseBranch)
+    (fun term => Term.boolElim (motiveType := Ty.bool.weaken) scrutinee term elseBranch)
     (fun step => Step.boolElimThen step) thenConv
 
 /-- `Conv` on `boolElim`'s then-branch at `Ty.nat` motive. -/
@@ -272,12 +278,12 @@ theorem Conv.boolElimThen_cong_nat
     {thenB : Term context Ty.nat thenRawB}
     (elseBranch : Term context Ty.nat elseRaw)
     (thenConv : Conv thenA thenB) :
-    Conv (Term.boolElim scrutinee thenA elseBranch)
-         (Term.boolElim scrutinee thenB elseBranch) :=
+    Conv (Term.boolElim (motiveType := Ty.nat.weaken) scrutinee thenA elseBranch)
+         (Term.boolElim (motiveType := Ty.nat.weaken) scrutinee thenB elseBranch) :=
   Conv.cong_at_isClosedTy
     (resultTy := Ty.nat) IsClosedTy.nat
     (wrapRaw := fun raw => RawTerm.boolElim scrutRaw raw elseRaw)
-    (fun term => Term.boolElim scrutinee term elseBranch)
+    (fun term => Term.boolElim (motiveType := Ty.nat.weaken) scrutinee term elseBranch)
     (fun step => Step.boolElimThen step) thenConv
 
 /-- `Conv` on `boolElim`'s else-branch at `Ty.unit` motive. -/
@@ -288,12 +294,12 @@ theorem Conv.boolElimElse_cong_unit
     {elseA : Term context Ty.unit elseRawA}
     {elseB : Term context Ty.unit elseRawB}
     (elseConv : Conv elseA elseB) :
-    Conv (Term.boolElim scrutinee thenBranch elseA)
-         (Term.boolElim scrutinee thenBranch elseB) :=
+    Conv (Term.boolElim (motiveType := Ty.unit.weaken) scrutinee thenBranch elseA)
+         (Term.boolElim (motiveType := Ty.unit.weaken) scrutinee thenBranch elseB) :=
   Conv.cong_at_isClosedTy
     (resultTy := Ty.unit) IsClosedTy.unit
     (wrapRaw := fun raw => RawTerm.boolElim scrutRaw thenRaw raw)
-    (fun term => Term.boolElim scrutinee thenBranch term)
+    (fun term => Term.boolElim (motiveType := Ty.unit.weaken) scrutinee thenBranch term)
     (fun step => Step.boolElimElse step) elseConv
 
 /-- `Conv` on `boolElim`'s else-branch at `Ty.bool` motive. -/
@@ -304,12 +310,12 @@ theorem Conv.boolElimElse_cong_bool
     {elseA : Term context Ty.bool elseRawA}
     {elseB : Term context Ty.bool elseRawB}
     (elseConv : Conv elseA elseB) :
-    Conv (Term.boolElim scrutinee thenBranch elseA)
-         (Term.boolElim scrutinee thenBranch elseB) :=
+    Conv (Term.boolElim (motiveType := Ty.bool.weaken) scrutinee thenBranch elseA)
+         (Term.boolElim (motiveType := Ty.bool.weaken) scrutinee thenBranch elseB) :=
   Conv.cong_at_isClosedTy
     (resultTy := Ty.bool) IsClosedTy.bool
     (wrapRaw := fun raw => RawTerm.boolElim scrutRaw thenRaw raw)
-    (fun term => Term.boolElim scrutinee thenBranch term)
+    (fun term => Term.boolElim (motiveType := Ty.bool.weaken) scrutinee thenBranch term)
     (fun step => Step.boolElimElse step) elseConv
 
 /-- `Conv` on `boolElim`'s else-branch at `Ty.nat` motive. -/
@@ -320,12 +326,12 @@ theorem Conv.boolElimElse_cong_nat
     {elseA : Term context Ty.nat elseRawA}
     {elseB : Term context Ty.nat elseRawB}
     (elseConv : Conv elseA elseB) :
-    Conv (Term.boolElim scrutinee thenBranch elseA)
-         (Term.boolElim scrutinee thenBranch elseB) :=
+    Conv (Term.boolElim (motiveType := Ty.nat.weaken) scrutinee thenBranch elseA)
+         (Term.boolElim (motiveType := Ty.nat.weaken) scrutinee thenBranch elseB) :=
   Conv.cong_at_isClosedTy
     (resultTy := Ty.nat) IsClosedTy.nat
     (wrapRaw := fun raw => RawTerm.boolElim scrutRaw thenRaw raw)
-    (fun term => Term.boolElim scrutinee thenBranch term)
+    (fun term => Term.boolElim (motiveType := Ty.nat.weaken) scrutinee thenBranch term)
     (fun step => Step.boolElimElse step) elseConv
 
 /-! ## natElim/natRec zero-branch cong rules at closed motive types -/

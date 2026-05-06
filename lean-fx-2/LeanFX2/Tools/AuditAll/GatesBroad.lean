@@ -41,8 +41,11 @@ namespace LeanFX2.Tools
 -- These are the heterogeneous-equality cast operators that often
 -- hide propext or Quot.sound; a budgeted count makes new casts
 -- visible.  Kernel tier covers Term/Foundation/Reduction/Confluence/
--- HoTT/Cubical/Modal/Graded.  Tight ratchet at current count.
-#assert_cast_operator_dependent_budget LeanFX2 849
+-- HoTT/Cubical/Modal/Graded.  860 today includes the stronger
+-- `equivIntroHet` constructor shape, pointwise proof-function premise
+-- on `Term.oeqFunext`, and row-permission evidence transport on
+-- `Term.effectPerform`, plus the dependent bool eliminator motive.
+#assert_cast_operator_dependent_budget LeanFX2 860
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel
@@ -57,6 +60,12 @@ namespace LeanFX2.Tools
 -- ratchet: any future ctor whose every explicit binder is raw will
 -- fail the build at this 0 budget.
 #assert_all_raw_payload_budget LeanFX2.Term 0
+
+-- Value-shaped type-code constructors.  The all-raw gate misses `*Code`
+-- ctors because they carry proof binders; this gate counts `Term.*Code`
+-- ctors that still lack recursive typed `Term` children.
+#assert_value_type_code_budget LeanFX2.Term 11
+#assert_value_type_code_snapshot LeanFX2.Term
 
 -- Single-step Conv claim count.  A theorem whose result type is
 -- `Conv ...` and whose body collapses to a single `Conv.fromStep` /

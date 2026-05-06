@@ -84,6 +84,14 @@ def encodeTy_unitId : FX1.Expr :=
 def encodeRawTerm_unitIdRefl : FX1.Expr :=
   unitIdReflExpr
 
+/-- Fragment decoder for the staged exact Unit identity type. -/
+def decodeTy_unitId {level : Nat} : FX1.Expr -> Option (Ty level 0) :=
+  decodeConstByAtom unitIdTypeAtomId (unitIdType level)
+
+/-- Fragment decoder for the staged exact Unit reflexivity witness. -/
+def decodeRawTerm_unitIdRefl : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom unitIdReflAtomId unitIdReflRaw
+
 /-- Unit identity type encoding computes to the staged FX1 type constant. -/
 theorem encodeTy_unitId_eq_unitIdTypeExpr :
     Eq encodeTy_unitId unitIdTypeExpr :=
@@ -241,6 +249,27 @@ theorem encodeTermSound_unitIdRefl
       encodeRawTerm_unitIdRefl
       encodeTy_unitId :=
   encodedUnitIdRefl_has_type
+
+/-- Exact round-trip evidence for the Unit-reflexivity bridge fragment. -/
+def encodeTermSound_unitIdRefl_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_reflTerm :
+      Term
+        (Ctx.empty mode level)
+        (unitIdType level)
+        unitIdReflRaw) :
+    BridgeRoundTrip
+      encodeTy_unitId
+      (decodeTy_unitId (level := level))
+      (unitIdType level)
+      encodeRawTerm_unitIdRefl
+      decodeRawTerm_unitIdRefl
+      unitIdReflRaw :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (unitIdType level))
+    rawRoundTrip := Eq.refl (Option.some unitIdReflRaw)
+  }
 
 end FX1Bridge
 end LeanFX2

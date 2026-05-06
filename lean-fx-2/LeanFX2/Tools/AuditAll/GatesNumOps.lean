@@ -22,9 +22,11 @@ namespace LeanFX2.Tools
 
 -- OfNat / OfScientific dependent census.  OfNat instances let numeric
 -- literals inject into types; custom instances on inappropriate types
--- are literal-injection vectors.  524 today reflects pervasive use of
--- Nat literals in proofs; tight ratchet at current count.
-#assert_ofnat_dependent_budget LeanFX2 524
+-- are literal-injection vectors.  530 today reflects pervasive use of
+-- Nat literals in proofs plus the stronger `equivIntroHet` constructor
+-- shape, pointwise proof-function premise on `Term.oeqFunext`, and the
+-- dependent bool eliminator motive.
+#assert_ofnat_dependent_budget LeanFX2 530
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -35,9 +37,10 @@ namespace LeanFX2.Tools
 #assert_function_property_dependent_budget LeanFX2 0
 
 -- Eq.symm / Eq.trans / Eq.mp / Eq.recOn / Eq.subst dependent census.
--- 761 today reflects pervasive equality-rewriting in proofs.  Tight
--- ratchet at current count.
-#assert_eq_rewriting_dependent_budget LeanFX2 761
+-- 766 today reflects pervasive equality-rewriting in proofs plus the
+-- stronger `equivIntroHet` constructor shape and pointwise proof-function
+-- premise on `Term.oeqFunext`, plus the dependent bool eliminator motive.
+#assert_eq_rewriting_dependent_budget LeanFX2 766
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

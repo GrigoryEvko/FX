@@ -79,6 +79,7 @@ the `ua` module.  The path argument is restricted to the constant universe path
 fragment already implemented by the bridge layer. -/
 def uaConstantTypePathToEquiv {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -92,12 +93,13 @@ def uaConstantTypePathToEquiv {mode : Mode} {level scope : Nat}
     Term context (Ty.equiv carrier carrier)
       (Term.equivReflId (context := context) carrier).toRaw :=
   constantCubicalTypePathToEquiv
-    innerLevel innerLevelLt carrier typeCode typePath
+    modeIsUnivalent innerLevel innerLevelLt carrier typeCode typePath
 
 /-- The canonical type-path `ua` fragment projects to identity equivalence. -/
 theorem uaConstantTypePathToEquiv_toRaw
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
@@ -108,27 +110,28 @@ theorem uaConstantTypePathToEquiv_toRaw
       Term context
         (Ty.path (Ty.universe innerLevel innerLevelLt) typeRaw typeRaw)
         (RawTerm.pathLam typeRaw.weaken)) :
-    (uaConstantTypePathToEquiv innerLevel innerLevelLt
+    (uaConstantTypePathToEquiv modeIsUnivalent innerLevel innerLevelLt
       carrier typeCode typePath).toRaw =
       (Term.equivReflId (context := context) carrier).toRaw :=
   constantCubicalTypePathToEquiv_toRaw
-    innerLevel innerLevelLt carrier typeCode typePath
+    modeIsUnivalent innerLevel innerLevelLt carrier typeCode typePath
 
 /-- Canonical specialization of the constant type-path `ua` fragment. -/
 theorem uaConstantTypePathToEquiv_onCanonical
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     (innerLevel : UniverseLevel)
     (innerLevelLt : innerLevel.toNat + 1 ≤ level)
     (carrier : Ty level scope)
     {typeRaw : RawTerm scope}
     (typeCode :
       Term context (Ty.universe innerLevel innerLevelLt) typeRaw) :
-    uaConstantTypePathToEquiv innerLevel innerLevelLt carrier typeCode
-      (constantTypePath innerLevel innerLevelLt typeCode) =
+    uaConstantTypePathToEquiv modeIsUnivalent innerLevel innerLevelLt carrier typeCode
+      (constantTypePath modeIsUnivalent innerLevel innerLevelLt typeCode) =
       Term.equivReflId carrier :=
   constantCubicalTypePathToEquiv_onCanonical
-    innerLevel innerLevelLt carrier typeCode
+    modeIsUnivalent innerLevel innerLevelLt carrier typeCode
 
 /-! ## Meta-level computational rules -/
 

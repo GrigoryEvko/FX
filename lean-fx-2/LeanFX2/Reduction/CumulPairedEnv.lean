@@ -305,32 +305,32 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .subsume inner =>
       ConvCumul.subst_compatible_subsume_allais inner
         (Term.subst_compatible_pointwise_allais compat inner)
-  | _, _, .pathLam carrierType leftEndpoint rightEndpoint body =>
+  | _, _, .pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body =>
       ConvCumul.subst_compatible_pathLam_allais
-        carrierType leftEndpoint rightEndpoint body
+        modeIsUnivalent carrierType leftEndpoint rightEndpoint body
         (Term.subst_compatible_pointwise_allais
           (compat.lift Ty.interval) body)
-  | _, _, .pathApp pathTerm intervalTerm =>
-      ConvCumul.subst_compatible_pathApp_allais pathTerm intervalTerm
+  | _, _, .pathApp modeIsUnivalent pathTerm intervalTerm =>
+      ConvCumul.subst_compatible_pathApp_allais modeIsUnivalent pathTerm intervalTerm
         (Term.subst_compatible_pointwise_allais compat pathTerm)
         (Term.subst_compatible_pointwise_allais compat intervalTerm)
-  | _, _, .glueIntro baseType boundaryWitness baseValue partialValue =>
+  | _, _, .glueIntro modeIsUnivalent baseType boundaryWitness baseValue partialValue =>
       ConvCumul.subst_compatible_glueIntro_allais
-        baseType boundaryWitness baseValue partialValue
+        modeIsUnivalent baseType boundaryWitness baseValue partialValue
         (Term.subst_compatible_pointwise_allais compat baseValue)
         (Term.subst_compatible_pointwise_allais compat partialValue)
-  | _, _, .glueElim gluedValue =>
-      ConvCumul.subst_compatible_glueElim_allais gluedValue
+  | _, _, .glueElim modeIsUnivalent gluedValue =>
+      ConvCumul.subst_compatible_glueElim_allais modeIsUnivalent gluedValue
         (Term.subst_compatible_pointwise_allais compat gluedValue)
-  | _, _, .transp universeLevel universeLevelLt sourceType targetType
+  | _, _, .transp modeIsUnivalent universeLevel universeLevelLt sourceType targetType
       sourceTypeRaw targetTypeRaw typePath sourceValue =>
       ConvCumul.subst_compatible_transp_allais
-        universeLevel universeLevelLt sourceType targetType
+        modeIsUnivalent universeLevel universeLevelLt sourceType targetType
         sourceTypeRaw targetTypeRaw typePath sourceValue
         (Term.subst_compatible_pointwise_allais compat typePath)
         (Term.subst_compatible_pointwise_allais compat sourceValue)
-  | _, _, .hcomp sidesValue capValue =>
-      ConvCumul.subst_compatible_hcomp_allais sidesValue capValue
+  | _, _, .hcomp modeIsUnivalent sidesValue capValue =>
+      ConvCumul.subst_compatible_hcomp_allais modeIsUnivalent sidesValue capValue
         (Term.subst_compatible_pointwise_allais compat sidesValue)
         (Term.subst_compatible_pointwise_allais compat capValue)
   | _, _, .recordIntro firstField =>
@@ -361,9 +361,11 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .sessionRecv channel =>
       ConvCumul.subst_compatible_sessionRecv_allais channel
         (Term.subst_compatible_pointwise_allais compat channel)
-  | _, _, .effectPerform effectTag operationTag arguments =>
+  | _, _, .effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments =>
       ConvCumul.subst_compatible_effectPerform_allais
-        effectTag operationTag arguments
+        effectTag effectRow operationSignature canPerformOperation
+        operationTag arguments
         (Term.subst_compatible_pointwise_allais compat operationTag)
         (Term.subst_compatible_pointwise_allais compat arguments)
   | _, _, .fst pairTerm =>
@@ -405,11 +407,11 @@ def Term.subst_compatible_pointwise_allais
         domainType codomainType leftFunctionRaw rightFunctionRaw
         pointwiseProof
         (Term.subst_compatible_pointwise_allais compat pointwiseProof)
-  | _, _, .idStrictRefl carrier rawWitness =>
-      ConvCumul.subst_compatible_idStrictRefl_allais _ _
+  | _, _, .idStrictRefl modeIsStrict carrier rawWitness =>
+      ConvCumul.subst_compatible_idStrictRefl_allais modeIsStrict _ _
         carrier rawWitness
-  | _, _, .idStrictRec baseCase witness =>
-      ConvCumul.subst_compatible_idStrictRec_allais baseCase witness
+  | _, _, .idStrictRec modeIsStrict baseCase witness =>
+      ConvCumul.subst_compatible_idStrictRec_allais modeIsStrict baseCase witness
         (Term.subst_compatible_pointwise_allais compat baseCase)
         (Term.subst_compatible_pointwise_allais compat witness)
   | _, _, .boolElim scrutinee thenBranch elseBranch =>
@@ -469,9 +471,9 @@ def Term.subst_compatible_pointwise_allais
   | _, _, .funextReflAtId domainType codomainType applyRaw =>
       ConvCumul.subst_compatible_funextReflAtId_allais _ _
         domainType codomainType applyRaw
-  | _, _, .equivIntroHet forward backward =>
+  | _, _, .equivIntroHet forward backward leftInv rightInv =>
       ConvCumul.subst_compatible_equivIntroHet_allais
-        forward backward
+        forward backward leftInv rightInv
         (Term.subst_compatible_pointwise_allais compat forward)
         (Term.subst_compatible_pointwise_allais compat backward)
   | _, _, .equivApp equivTerm argumentTerm =>

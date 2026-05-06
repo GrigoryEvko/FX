@@ -133,10 +133,33 @@ def boolElim
       (RawTerm.boolElim conditionRaw thenRaw elseRaw)
       resultAttr where
   underlying :=
-    Term.boolElim
-      conditionTerm.underlying
-      thenTerm.underlying
-      elseTerm.underlying
+    -- Codex's dependent-eliminator refactor: `Term.boolElim`'s motive
+    -- is now `Ty level (scope+1)` (proper Π-motive recursor pattern).
+    -- For the non-dependent case (motiveType : Ty level scope), pass
+    -- `motiveType.weaken : Ty level (scope+1)` and rely on
+    -- `Ty.weaken_subst_singleton` to cast each branch + result back.
+    let thenTypeEq :
+        motiveType.weaken.subst0 Ty.bool RawTerm.boolTrue = motiveType :=
+      Ty.weaken_subst_singleton motiveType Ty.bool RawTerm.boolTrue
+    let elseTypeEq :
+        motiveType.weaken.subst0 Ty.bool RawTerm.boolFalse = motiveType :=
+      Ty.weaken_subst_singleton motiveType Ty.bool RawTerm.boolFalse
+    let resultTypeEq :
+        motiveType.weaken.subst0 Ty.bool conditionRaw = motiveType :=
+      Ty.weaken_subst_singleton motiveType Ty.bool conditionRaw
+    let castedThen :
+        Term gradedCtx.toCtx
+          (motiveType.weaken.subst0 Ty.bool RawTerm.boolTrue) thenRaw :=
+      thenTypeEq.symm ▸ thenTerm.underlying
+    let castedElse :
+        Term gradedCtx.toCtx
+          (motiveType.weaken.subst0 Ty.bool RawTerm.boolFalse) elseRaw :=
+      elseTypeEq.symm ▸ elseTerm.underlying
+    let checkedBoolElim :
+        Term gradedCtx.toCtx (motiveType.weaken.subst0 Ty.bool conditionRaw)
+          (RawTerm.boolElim conditionRaw thenRaw elseRaw) :=
+      Term.boolElim conditionTerm.underlying castedThen castedElse
+    resultTypeEq ▸ checkedBoolElim
 
 /-- Grade-only subsumption: widen a term's attribution without changing
 the underlying typed term. -/

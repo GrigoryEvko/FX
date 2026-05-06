@@ -25,6 +25,7 @@ in its index.  The result is the canonical cubical constant path at that
 endpoint. -/
 def reflIdToConstantPath {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
@@ -33,29 +34,31 @@ def reflIdToConstantPath {mode : Mode} {level scope : Nat}
         (RawTerm.refl pointRaw)) :
     Term context (Ty.path carrierType pointRaw pointRaw)
       (RawTerm.pathLam pointRaw.weaken) :=
-  Cubical.constantPath pointTerm
+  Cubical.constantPath modeIsUnivalent pointTerm
 
 /-- The reflexive id-to-path bridge projects to the raw constant-path shape. -/
 theorem reflIdToConstantPath_toRaw {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw)
     (idWitness :
       Term context (Ty.id carrierType pointRaw pointRaw)
         (RawTerm.refl pointRaw)) :
-    (reflIdToConstantPath pointTerm idWitness).toRaw =
+    (reflIdToConstantPath modeIsUnivalent pointTerm idWitness).toRaw =
       RawTerm.pathLam pointRaw.weaken := rfl
 
 /-- Specialization of `reflIdToConstantPath` to the canonical identity
 reflexivity constructor. -/
 theorem reflIdToConstantPath_onRefl {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {pointRaw : RawTerm scope}
     (pointTerm : Term context carrierType pointRaw) :
-    reflIdToConstantPath pointTerm (Term.refl carrierType pointRaw) =
-      Cubical.constantPath pointTerm := rfl
+    reflIdToConstantPath modeIsUnivalent pointTerm (Term.refl carrierType pointRaw) =
+      Cubical.constantPath modeIsUnivalent pointTerm := rfl
 
 end Bridge
 end LeanFX2

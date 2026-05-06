@@ -548,36 +548,21 @@ theorem ConvCumul.rename_compatible_idJ_benton
               ((Term.idJ baseSecond witnessSecond).rename termRenaming) :=
   ConvCumul.idJCong baseRel witnessRel
 
-/-- Benton rename arm for `boolElim`: three-subterm cong via `boolElimCong`. -/
-theorem ConvCumul.rename_compatible_boolElim_benton
-    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
-    {sourceCtx : Ctx mode level sourceScope}
-    {targetCtx : Ctx mode level targetScope}
-    {rho : RawRenaming sourceScope targetScope}
-    {termRenaming : TermRenaming sourceCtx targetCtx rho}
-    {motiveType : Ty level sourceScope}
-    {scrutineeRawFirst scrutineeRawSecond
-     thenRawFirst thenRawSecond elseRawFirst elseRawSecond : RawTerm sourceScope}
-    {scrutineeFirst : Term sourceCtx Ty.bool scrutineeRawFirst}
-    {scrutineeSecond : Term sourceCtx Ty.bool scrutineeRawSecond}
-    {thenBranchFirst : Term sourceCtx motiveType thenRawFirst}
-    {thenBranchSecond : Term sourceCtx motiveType thenRawSecond}
-    {elseBranchFirst : Term sourceCtx motiveType elseRawFirst}
-    {elseBranchSecond : Term sourceCtx motiveType elseRawSecond}
-    (scrutineeRel :
-      ConvCumul (scrutineeFirst.rename termRenaming)
-                (scrutineeSecond.rename termRenaming))
-    (thenRel :
-      ConvCumul (thenBranchFirst.rename termRenaming)
-                (thenBranchSecond.rename termRenaming))
-    (elseRel :
-      ConvCumul (elseBranchFirst.rename termRenaming)
-                (elseBranchSecond.rename termRenaming)) :
-    ConvCumul (Term.rename termRenaming
-                 (Term.boolElim scrutineeFirst thenBranchFirst elseBranchFirst))
-              (Term.rename termRenaming
-                 (Term.boolElim scrutineeSecond thenBranchSecond elseBranchSecond)) :=
-  ConvCumul.boolElimCong scrutineeRel thenRel elseRel
+/- DEFERRED: `ConvCumul.rename_compatible_boolElim_benton` removed
+during codex's dependent-eliminator refactor of `Term.boolElim`.
+
+The original Benton rename arm assumed a non-dep boolElim (motive
+`: Ty level scope`, branches both at `motive`).  After the refactor
+the motive lives at `Ty level (scope+1)` with subst0-instantiated
+branch types, and `Term.rename` of `boolElim` introduces
+`Ty.subst0_rename_commute` casts on the result motive.  Re-introducing
+this lemma requires propagating those casts through `boolElimCong`,
+which needs cast-shaped helper lemmas not yet in scope.  Codex will
+re-add when finishing the dep-motive cascade.
+
+The matching `#print axioms` reference in
+`Smoke/AuditCumulSubstCompat.lean:88` should be removed alongside
+this restoration. -/
 
 /-! ## Binder cong rename arms
 

@@ -247,50 +247,62 @@ inductive Step :
            secondValue
   /-- Step inside the scrutinee of a `boolElim`. -/
   | boolElimScrutinee {mode level scope} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {scrutineeRawSource scrutineeRawTarget thenRaw elseRaw : RawTerm scope}
       {scrutineeSource : Term context Ty.bool scrutineeRawSource}
       {scrutineeTarget : Term context Ty.bool scrutineeRawTarget}
-      {thenBranch : Term context motiveType thenRaw}
-      {elseBranch : Term context motiveType elseRaw} :
+      {thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+      {elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw} :
       Step scrutineeSource scrutineeTarget →
       Step (Term.boolElim scrutineeSource thenBranch elseBranch)
            (Term.boolElim scrutineeTarget thenBranch elseBranch)
   /-- Step inside the then-branch of a `boolElim`. -/
   | boolElimThen {mode level scope} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {scrutineeRaw thenRawSource thenRawTarget elseRaw : RawTerm scope}
       {scrutinee : Term context Ty.bool scrutineeRaw}
-      {thenSource : Term context motiveType thenRawSource}
-      {thenTarget : Term context motiveType thenRawTarget}
-      {elseBranch : Term context motiveType elseRaw} :
+      {thenSource :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawSource}
+      {thenTarget :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRawTarget}
+      {elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw} :
       Step thenSource thenTarget →
       Step (Term.boolElim scrutinee thenSource elseBranch)
            (Term.boolElim scrutinee thenTarget elseBranch)
   /-- Step inside the else-branch of a `boolElim`. -/
   | boolElimElse {mode level scope} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {scrutineeRaw thenRaw elseRawSource elseRawTarget : RawTerm scope}
       {scrutinee : Term context Ty.bool scrutineeRaw}
-      {thenBranch : Term context motiveType thenRaw}
-      {elseSource : Term context motiveType elseRawSource}
-      {elseTarget : Term context motiveType elseRawTarget} :
+      {thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+      {elseSource :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawSource}
+      {elseTarget :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRawTarget} :
       Step elseSource elseTarget →
       Step (Term.boolElim scrutinee thenBranch elseSource)
            (Term.boolElim scrutinee thenBranch elseTarget)
   /-- ι-reduction `boolElim true t e ⟶ t`. -/
   | iotaBoolElimTrue {mode level scope} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {thenRaw elseRaw : RawTerm scope}
-      (thenBranch : Term context motiveType thenRaw)
-      (elseBranch : Term context motiveType elseRaw) :
+      (thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+      (elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
       Step (Term.boolElim Term.boolTrue thenBranch elseBranch) thenBranch
   /-- ι-reduction `boolElim false t e ⟶ e`. -/
   | iotaBoolElimFalse {mode level scope} {context : Ctx mode level scope}
-      {motiveType : Ty level scope}
+      {motiveType : Ty level (scope + 1)}
       {thenRaw elseRaw : RawTerm scope}
-      (thenBranch : Term context motiveType thenRaw)
-      (elseBranch : Term context motiveType elseRaw) :
+      (thenBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+      (elseBranch :
+        Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw) :
       Step (Term.boolElim Term.boolFalse thenBranch elseBranch) elseBranch
   /-- Step inside the predecessor of `Term.natSucc`. -/
   | natSuccPred {mode level scope} {context : Ctx mode level scope}
@@ -675,14 +687,22 @@ inductive Step :
       Step witnessSource witnessTarget →
       Step (Term.oeqJ baseCase witnessSource)
            (Term.oeqJ baseCase witnessTarget)
-  /-- Step inside OEq funext's proof-erased pointwise certificate. -/
+  /-- Step inside OEq funext's pointwise equality proof function. -/
   | oeqFunextPointwise {mode level scope}
       {context : Ctx mode level scope}
       (domainType codomainType : Ty level scope)
       (leftFunctionRaw rightFunctionRaw : RawTerm scope)
       {pointwiseRawSource pointwiseRawTarget : RawTerm scope}
-      {pointwiseSource : Term context Ty.unit pointwiseRawSource}
-      {pointwiseTarget : Term context Ty.unit pointwiseRawTarget} :
+      {pointwiseSource :
+        Term context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRawSource}
+      {pointwiseTarget :
+        Term context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRawTarget} :
       Step pointwiseSource pointwiseTarget →
       Step
         (Term.oeqFunext domainType codomainType
@@ -691,6 +711,7 @@ inductive Step :
           leftFunctionRaw rightFunctionRaw pointwiseTarget)
   /-- Step inside `idStrictRec`'s baseCase. -/
   | idStrictRecBase {mode level scope} {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
       {motiveType : Ty level scope}
       {baseRawSource baseRawTarget witnessRaw : RawTerm scope}
@@ -699,10 +720,11 @@ inductive Step :
       {witnessTerm :
         Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw} :
       Step baseSource baseTarget →
-      Step (Term.idStrictRec baseSource witnessTerm)
-           (Term.idStrictRec baseTarget witnessTerm)
+      Step (Term.idStrictRec modeIsStrict baseSource witnessTerm)
+           (Term.idStrictRec modeIsStrict baseTarget witnessTerm)
   /-- Step inside `idStrictRec`'s witness. -/
   | idStrictRecWitness {mode level scope} {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
       {motiveType : Ty level scope}
       {baseRaw witnessRawSource witnessRawTarget : RawTerm scope}
@@ -714,8 +736,8 @@ inductive Step :
         Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
           witnessRawTarget} :
       Step witnessSource witnessTarget →
-      Step (Term.idStrictRec baseCase witnessSource)
-           (Term.idStrictRec baseCase witnessTarget)
+      Step (Term.idStrictRec modeIsStrict baseCase witnessSource)
+           (Term.idStrictRec modeIsStrict baseCase witnessTarget)
   /-- ι-reduction `J base (refl rt) ⟶ base`. -/
   | iotaIdJRefl {mode level scope} {context : Ctx mode level scope}
       (carrier : Ty level scope) (endpoint : RawTerm scope)
@@ -731,6 +753,7 @@ inductive Step :
   /-- Strict-identity ι-reduction
       `idStrictRec base (idStrictRefl rt) ⟶ base`. -/
   | iotaIdStrictRecRefl {mode level scope} {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
       (carrier : Ty level scope) (endpoint : RawTerm scope)
       {motiveType : Ty level scope}
       {baseRaw : RawTerm scope}
@@ -738,8 +761,9 @@ inductive Step :
       Step (Term.idStrictRec (carrier := carrier)
                              (leftEndpoint := endpoint)
                              (rightEndpoint := endpoint)
+              modeIsStrict
               baseCase
-              (Term.idStrictRefl carrier endpoint))
+              (Term.idStrictRefl modeIsStrict carrier endpoint))
            baseCase
   /-- Step inside `modIntro`'s payload. -/
   | modIntroInner {mode level scope} {context : Ctx mode level scope}
@@ -776,6 +800,7 @@ inductive Step :
       Step (Term.subsume innerSource) (Term.subsume innerTarget)
   /-- Step inside a cubical path lambda body. -/
   | pathLamBody {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {bodyRawSource bodyRawTarget : RawTerm (scope + 1)}
@@ -784,10 +809,11 @@ inductive Step :
       {bodyTarget :
         Term (context.cons Ty.interval) carrierType.weaken bodyRawTarget} :
       Step bodySource bodyTarget →
-      Step (Term.pathLam carrierType leftEndpoint rightEndpoint bodySource)
-           (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTarget)
+      Step (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodySource)
+           (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTarget)
   /-- Step inside the path position of cubical path application. -/
   | pathAppPath {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {pathRawSource pathRawTarget intervalRaw : RawTerm scope}
@@ -799,10 +825,11 @@ inductive Step :
           pathRawTarget}
       {intervalTerm : Term context Ty.interval intervalRaw} :
       Step pathSource pathTarget →
-      Step (Term.pathApp pathSource intervalTerm)
-           (Term.pathApp pathTarget intervalTerm)
+      Step (Term.pathApp modeIsUnivalent pathSource intervalTerm)
+           (Term.pathApp modeIsUnivalent pathTarget intervalTerm)
   /-- Step inside the interval argument of cubical path application. -/
   | pathAppInterval {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint pathRaw : RawTerm scope}
       {intervalRawSource intervalRawTarget : RawTerm scope}
@@ -812,13 +839,14 @@ inductive Step :
       {intervalSource : Term context Ty.interval intervalRawSource}
       {intervalTarget : Term context Ty.interval intervalRawTarget} :
       Step intervalSource intervalTarget →
-      Step (Term.pathApp pathTerm intervalSource)
-           (Term.pathApp pathTerm intervalTarget)
+      Step (Term.pathApp modeIsUnivalent pathTerm intervalSource)
+           (Term.pathApp modeIsUnivalent pathTerm intervalTarget)
   /-- Cubical β-reduction: `(pathLam body) @ interval ⟶ body[interval]`.
   Source type is `carrierType`; target type is
   `carrierType.weaken.subst0 Ty.interval intervalRaw`, so this uses
   the two-Ty Step signature just like `betaApp`. -/
   | betaPathApp {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {leftEndpoint rightEndpoint : RawTerm scope}
       {bodyRaw : RawTerm (scope + 1)}
@@ -827,12 +855,13 @@ inductive Step :
         Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
       (intervalTerm : Term context Ty.interval intervalRaw) :
       Step
-        (Term.pathApp
-          (Term.pathLam carrierType leftEndpoint rightEndpoint bodyTerm)
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTerm)
           intervalTerm)
         (Term.subst0 bodyTerm intervalTerm)
   /-- Step inside `glueIntro`'s base value. -/
   | glueIntroBase {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {baseRawSource baseRawTarget partialRaw : RawTerm scope}
@@ -840,10 +869,13 @@ inductive Step :
       {baseTarget : Term context baseType baseRawTarget}
       {partialValue : Term context baseType partialRaw} :
       Step baseSource baseTarget →
-      Step (Term.glueIntro baseType boundaryWitness baseSource partialValue)
-           (Term.glueIntro baseType boundaryWitness baseTarget partialValue)
+      Step (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+              baseSource partialValue)
+           (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+              baseTarget partialValue)
   /-- Step inside `glueIntro`'s partial value. -/
   | glueIntroPartial {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {baseRaw partialRawSource partialRawTarget : RawTerm scope}
@@ -851,10 +883,13 @@ inductive Step :
       {partialSource : Term context baseType partialRawSource}
       {partialTarget : Term context baseType partialRawTarget} :
       Step partialSource partialTarget →
-      Step (Term.glueIntro baseType boundaryWitness baseValue partialSource)
-           (Term.glueIntro baseType boundaryWitness baseValue partialTarget)
+      Step (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+              baseValue partialSource)
+           (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+              baseValue partialTarget)
   /-- Step inside `glueElim`'s glued value. -/
   | glueElimValue {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {gluedRawSource gluedRawTarget : RawTerm scope}
@@ -863,17 +898,20 @@ inductive Step :
       {gluedTarget :
         Term context (Ty.glue baseType boundaryWitness) gluedRawTarget} :
       Step gluedSource gluedTarget →
-      Step (Term.glueElim gluedSource) (Term.glueElim gluedTarget)
+      Step (Term.glueElim modeIsUnivalent gluedSource)
+           (Term.glueElim modeIsUnivalent gluedTarget)
   /-- Cubical Glue β-reduction: `glueElim (glueIntro base partial) ⟶ base`. -/
   | betaGlueElimIntro {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {baseType : Ty level scope}
       {boundaryWitness : RawTerm scope}
       {baseRaw partialRaw : RawTerm scope}
       (baseValue : Term context baseType baseRaw)
       (partialValue : Term context baseType partialRaw) :
       Step
-        (Term.glueElim
-          (Term.glueIntro baseType boundaryWitness baseValue partialValue))
+        (Term.glueElim modeIsUnivalent
+          (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+            baseValue partialValue))
         baseValue
   /-- Step inside interval negation. -/
   | intervalOppInner {mode level scope} {context : Ctx mode level scope}
@@ -1063,27 +1101,50 @@ inductive Step :
   /-- Step inside an effect operation tag. -/
   | effectPerformOperation {mode level scope} {context : Ctx mode level scope}
       {effectTag : RawTerm scope}
-      {carrierType : Ty level scope}
+      {effectRow : Effects.EffectRow}
+      {operationSignature : Effects.OperationSignature (Ty level scope)}
+      {canPerformOperation :
+        Effects.CanPerform effectRow operationSignature}
       {operationRawSource operationRawTarget argumentsRaw : RawTerm scope}
-      {operationSource : Term context Ty.unit operationRawSource}
-      {operationTarget : Term context Ty.unit operationRawTarget}
-      {arguments : Term context carrierType argumentsRaw} :
+      {operationSource :
+        Term context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationRawSource}
+      {operationTarget :
+        Term context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationRawTarget}
+      {arguments :
+        Term context operationSignature.argumentCarrier argumentsRaw} :
       Step operationSource operationTarget →
-      Step (Term.effectPerform effectTag operationSource arguments)
-           (Term.effectPerform effectTag operationTarget arguments)
+      Step (Term.effectPerform effectTag effectRow operationSignature
+              canPerformOperation operationSource arguments)
+           (Term.effectPerform effectTag effectRow operationSignature
+              canPerformOperation operationTarget arguments)
   /-- Step inside effect arguments. -/
   | effectPerformArguments {mode level scope} {context : Ctx mode level scope}
       {effectTag : RawTerm scope}
-      {carrierType : Ty level scope}
+      {effectRow : Effects.EffectRow}
+      {operationSignature : Effects.OperationSignature (Ty level scope)}
+      {canPerformOperation :
+        Effects.CanPerform effectRow operationSignature}
       {operationRaw argumentsRawSource argumentsRawTarget : RawTerm scope}
-      {operationTag : Term context Ty.unit operationRaw}
-      {argumentsSource : Term context carrierType argumentsRawSource}
-      {argumentsTarget : Term context carrierType argumentsRawTarget} :
+      {operationTag :
+        Term context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationRaw}
+      {argumentsSource :
+        Term context operationSignature.argumentCarrier argumentsRawSource}
+      {argumentsTarget :
+        Term context operationSignature.argumentCarrier argumentsRawTarget} :
       Step argumentsSource argumentsTarget →
-      Step (Term.effectPerform effectTag operationTag argumentsSource)
-           (Term.effectPerform effectTag operationTag argumentsTarget)
+      Step (Term.effectPerform effectTag effectRow operationSignature
+              canPerformOperation operationTag argumentsSource)
+           (Term.effectPerform effectTag effectRow operationSignature
+              canPerformOperation operationTag argumentsTarget)
   /-- Step inside cubical transport's type path. -/
   | transpPath {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (universeLevel : UniverseLevel)
       (universeLevelLt : universeLevel.toNat + 1 ≤ level)
       (sourceType targetType : Ty level scope)
@@ -1102,12 +1163,15 @@ inductive Step :
       {sourceValue : Term context sourceType sourceRaw} :
       Step typePathSource typePathTarget →
       Step
-        (Term.transp universeLevel universeLevelLt sourceType targetType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
           sourceTypeRaw targetTypeRaw typePathSource sourceValue)
-        (Term.transp universeLevel universeLevelLt sourceType targetType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
           sourceTypeRaw targetTypeRaw typePathTarget sourceValue)
   /-- Step inside cubical transport's source value. -/
   | transpSource {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       (universeLevel : UniverseLevel)
       (universeLevelLt : universeLevel.toNat + 1 ≤ level)
       (sourceType targetType : Ty level scope)
@@ -1122,30 +1186,34 @@ inductive Step :
       {sourceValueTarget : Term context sourceType sourceRawTarget} :
       Step sourceValueSource sourceValueTarget →
       Step
-        (Term.transp universeLevel universeLevelLt sourceType targetType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
           sourceTypeRaw targetTypeRaw typePath sourceValueSource)
-        (Term.transp universeLevel universeLevelLt sourceType targetType
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
           sourceTypeRaw targetTypeRaw typePath sourceValueTarget)
   /-- Step inside homogeneous composition's side system. -/
   | hcompSides {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {sidesRawSource sidesRawTarget capRaw : RawTerm scope}
       {sidesSource : Term context carrierType sidesRawSource}
       {sidesTarget : Term context carrierType sidesRawTarget}
       {capValue : Term context carrierType capRaw} :
       Step sidesSource sidesTarget →
-      Step (Term.hcomp sidesSource capValue)
-           (Term.hcomp sidesTarget capValue)
+      Step (Term.hcomp modeIsUnivalent sidesSource capValue)
+           (Term.hcomp modeIsUnivalent sidesTarget capValue)
   /-- Step inside homogeneous composition's cap. -/
   | hcompCap {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
       {carrierType : Ty level scope}
       {sidesRaw capRawSource capRawTarget : RawTerm scope}
       {sidesValue : Term context carrierType sidesRaw}
       {capSource : Term context carrierType capRawSource}
       {capTarget : Term context carrierType capRawTarget} :
       Step capSource capTarget →
-      Step (Term.hcomp sidesValue capSource)
-           (Term.hcomp sidesValue capTarget)
+      Step (Term.hcomp modeIsUnivalent sidesValue capSource)
+           (Term.hcomp modeIsUnivalent sidesValue capTarget)
   /-- Step inside the forward map of a heterogeneous equivalence. -/
   | equivIntroHetForward {mode level scope}
       {context : Ctx mode level scope}
@@ -1155,10 +1223,28 @@ inductive Step :
         Term context (Ty.arrow carrierA carrierB) forwardRawSource}
       {forwardTarget :
         Term context (Ty.arrow carrierA carrierB) forwardRawTarget}
-      {backwardTerm : Term context (Ty.arrow carrierB carrierA) backwardRaw} :
+      {backwardTerm : Term context (Ty.arrow carrierB carrierA) backwardRaw}
+      {leftInvSourceRaw rightInvSourceRaw
+       leftInvTargetRaw rightInvTargetRaw : RawTerm scope}
+      {leftInvSource :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRaw)
+          leftInvSourceRaw}
+      {rightInvSource :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRawSource backwardRaw)
+          rightInvSourceRaw}
+      {leftInvTarget :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRaw)
+          leftInvTargetRaw}
+      {rightInvTarget :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRaw)
+          rightInvTargetRaw} :
       Step forwardSource forwardTarget →
-      Step (Term.equivIntroHet forwardSource backwardTerm)
-           (Term.equivIntroHet forwardTarget backwardTerm)
+      Step (Term.equivIntroHet forwardSource backwardTerm leftInvSource rightInvSource)
+           (Term.equivIntroHet forwardTarget backwardTerm leftInvTarget rightInvTarget)
   /-- Step inside the backward map of a heterogeneous equivalence. -/
   | equivIntroHetBackward {mode level scope}
       {context : Ctx mode level scope}
@@ -1168,10 +1254,28 @@ inductive Step :
       {backwardSource :
         Term context (Ty.arrow carrierB carrierA) backwardRawSource}
       {backwardTarget :
-        Term context (Ty.arrow carrierB carrierA) backwardRawTarget} :
+        Term context (Ty.arrow carrierB carrierA) backwardRawTarget}
+      {leftInvSourceRaw rightInvSourceRaw
+       leftInvTargetRaw rightInvTargetRaw : RawTerm scope}
+      {leftInvSource :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRaw backwardRawSource)
+          leftInvSourceRaw}
+      {rightInvSource :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRaw backwardRawSource)
+          rightInvSourceRaw}
+      {leftInvTarget :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRaw backwardRawTarget)
+          leftInvTargetRaw}
+      {rightInvTarget :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRaw backwardRawTarget)
+          rightInvTargetRaw} :
       Step backwardSource backwardTarget →
-      Step (Term.equivIntroHet forwardTerm backwardSource)
-           (Term.equivIntroHet forwardTerm backwardTarget)
+      Step (Term.equivIntroHet forwardTerm backwardSource leftInvSource rightInvSource)
+           (Term.equivIntroHet forwardTerm backwardTarget leftInvTarget rightInvTarget)
   /-- Step inside the equivalence position of an equivalence application. -/
   | equivAppEquiv {mode level scope}
       {context : Ctx mode level scope}

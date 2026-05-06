@@ -86,6 +86,14 @@ fragment. -/
 def encodeRawTerm_unitEquivRefl : FX1.Expr :=
   unitEquivReflExpr
 
+/-- Fragment decoder for the staged exact Unit equivalence type. -/
+def decodeTy_unitEquiv {level : Nat} : FX1.Expr -> Option (Ty level 0) :=
+  decodeConstByAtom unitEquivTypeAtomId (unitEquivType level)
+
+/-- Fragment decoder for the staged exact Unit identity equivalence. -/
+def decodeRawTerm_unitEquivRefl : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom unitEquivReflAtomId unitEquivReflRaw
+
 /-- Unit equivalence type encoding computes to the staged FX1 type constant. -/
 theorem encodeTy_unitEquiv_eq_unitEquivTypeExpr :
     Eq encodeTy_unitEquiv unitEquivTypeExpr :=
@@ -244,6 +252,28 @@ theorem encodeTermSound_unitEquivRefl
       encodeRawTerm_unitEquivRefl
       encodeTy_unitEquiv :=
   encodedUnitEquivRefl_has_type
+
+/-- Exact round-trip evidence for the Unit identity-equivalence bridge
+fragment. -/
+def encodeTermSound_unitEquivRefl_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_equivTerm :
+      Term
+        (Ctx.empty mode level)
+        (unitEquivType level)
+        unitEquivReflRaw) :
+    BridgeRoundTrip
+      encodeTy_unitEquiv
+      (decodeTy_unitEquiv (level := level))
+      (unitEquivType level)
+      encodeRawTerm_unitEquivRefl
+      decodeRawTerm_unitEquivRefl
+      unitEquivReflRaw :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (unitEquivType level))
+    rawRoundTrip := Eq.refl (Option.some unitEquivReflRaw)
+  }
 
 end FX1Bridge
 end LeanFX2

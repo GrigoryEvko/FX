@@ -31,9 +31,11 @@ namespace LeanFX2.Tools
 #assert_inductive_ctor_count_ratchet LeanFX2.Mode 5
 
 -- Bridge round-trip parity.  For every encodeTermSound_<X>, expect a
--- companion encodeTermSound_<X>_roundTrip proving decode∘encode = id.
--- Without round-trip, the bridge could be lossy.  Pin current debt.
-#assert_bridge_round_trip_budget LeanFX2 9999
+-- companion encodeTermSound_<X>_roundTrip proving a `BridgeRoundTrip`
+-- certificate.  Without a certificate-shaped companion, the bridge could be
+-- lossy.  Tight budget at zero: every current exact bridge fragment has a
+-- certificate-shaped round-trip companion.
+#assert_bridge_round_trip_budget LeanFX2 0
 
 -- False-in-result-type kernel decl census.  Theorems whose result type
 -- mentions False are evidence of vacuous reasoning or contradiction
@@ -48,9 +50,12 @@ namespace LeanFX2.Tools
 #assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 8
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
--- packaging types; heavy use signals existential reasoning.  936 today
--- reflects pervasive use of Sigma/PSigma in dependent-type proofs.
+-- packaging types; heavy use signals existential reasoning.  942 today
+-- reflects pervasive use of Sigma/PSigma in dependent-type proofs plus
+-- the proof-function coherence premises on `Term.equivIntroHet` and
+-- pointwise proof-function premise on `Term.oeqFunext`, plus the
+-- dependent bool eliminator motive.
 -- Tight ratchet at current count.
-#assert_dependent_pair_dependent_budget LeanFX2 936
+#assert_dependent_pair_dependent_budget LeanFX2 942
 
 end LeanFX2.Tools

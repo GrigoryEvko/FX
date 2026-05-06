@@ -103,7 +103,15 @@ branches unit. -/
 example :
     Term.check context (Ty.unit (level := level) (scope := scope))
         (RawTerm.boolElim RawTerm.boolTrue RawTerm.unit RawTerm.unit) =
-      some (Term.boolElim Term.boolTrue Term.unit Term.unit) := rfl
+      some
+        ((Ty.weaken_subst_singleton Ty.unit Ty.bool RawTerm.boolTrue) ▸
+          Term.boolElim
+            (motiveType := Ty.unit.weaken)
+            Term.boolTrue
+            ((Ty.weaken_subst_singleton Ty.unit Ty.bool RawTerm.boolTrue).symm ▸
+              Term.unit)
+            ((Ty.weaken_subst_singleton Ty.unit Ty.bool RawTerm.boolFalse).symm ▸
+              Term.unit)) := rfl
 
 /-- Nat eliminator at motive `Ty.unit`: scrutinee nat, zero branch
 unit, succ branch `λ_:nat. unit`. -/

@@ -1,4 +1,4 @@
-import LeanFX2.Term
+import LeanFX2.FX1Bridge.RoundTrip
 import LeanFX2.FX1.Core.WellFormed
 
 /-! # FX1Bridge/Unit
@@ -75,6 +75,14 @@ def encodeTy_unit : FX1.Expr :=
 /-- Unit-only raw-term encoder for this first bridge fragment. -/
 def encodeRawTerm_unit : FX1.Expr :=
   unitValueExpr
+
+/-- Fragment decoder for the staged rich unit type. -/
+def decodeTy_unit {level scope : Nat} : FX1.Expr -> Option (Ty level scope) :=
+  decodeConstByAtom unitTypeAtomId (Ty.unit : Ty level scope)
+
+/-- Fragment decoder for the staged rich unit value. -/
+def decodeRawTerm_unit : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom unitValueAtomId RawTerm.unit
 
 /-- Unit type encoding computes to the staged FX1 unit type constant. -/
 theorem encodeTy_unit_eq_unitTypeExpr :
@@ -165,6 +173,23 @@ theorem encodeTermSound_unit
       encodeRawTerm_unit
       encodeTy_unit :=
   encodedUnit_has_type
+
+/-- Exact round-trip evidence for the unit bridge fragment. -/
+def encodeTermSound_unit_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_unitTerm : Term (Ctx.empty mode level) Ty.unit RawTerm.unit) :
+    BridgeRoundTrip
+      encodeTy_unit
+      (decodeTy_unit (level := level) (scope := 0))
+      (Ty.unit : Ty level 0)
+      encodeRawTerm_unit
+      decodeRawTerm_unit
+      RawTerm.unit :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.unit : Ty level 0))
+    rawRoundTrip := Eq.refl (Option.some RawTerm.unit)
+  }
 
 end FX1Bridge
 end LeanFX2

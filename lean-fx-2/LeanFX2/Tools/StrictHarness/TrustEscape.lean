@@ -347,12 +347,13 @@ elab "#assert_inductive_ctor_count_exact " inductiveSyntax:ident
 /-! ## Bridge round-trip parity gate
 
 For every `FX1Bridge.encodeTermSound_<X>` (the bridge soundness theorem
-for ctor X), there should be a companion `FX1Bridge.encodeTermSound_<X>_roundTrip`
-proving `decode (encode t) = t`.  Without round-trip, the bridge could
-be lossy — encoding might collapse distinct typed terms.
+for ctor X), there should be a companion
+`FX1Bridge.encodeTermSound_<X>_roundTrip` whose result type is the
+`FX1Bridge.BridgeRoundTrip` certificate.  Without a typed certificate
+shape, a name-only companion could hide a lossy bridge.
 
-This gate scans the FX1Bridge namespace for `encodeTermSound_*` decls
-and checks each has a companion round-trip.  Pin current debt.
+This gate scans the FX1Bridge namespace for `encodeTermSound_*` decls and
+checks each has a certificate-shaped round-trip companion.  Pin current debt.
 -/
 
 /-- Whether a name is the soundness theorem for a Term ctor encoding. -/
@@ -368,6 +369,17 @@ def expectedRoundTripCompanionName (soundnessName : Name) : Name :=
     (`LeanFX2.FX1Bridge)
     (Name.lastSegmentString soundnessName ++ "_roundTrip")
 
+/-- Whether a round-trip companion has the required certificate-shaped result
+type. -/
+def isBridgeRoundTripCompanionValid
+    (environment : Environment) (companionName : Name) : Bool :=
+  match environment.find? companionName with
+  | some constantInfo =>
+      doesExprMentionConst
+        `LeanFX2.FX1Bridge.BridgeRoundTrip
+        constantInfo.type
+  | none => false
+
 elab "#assert_bridge_round_trip_budget " namespaceSyntax:ident
     roundTripBudgetSyntax:num : command => do
   let environment ← getEnv
@@ -375,25 +387,28 @@ elab "#assert_bridge_round_trip_budget " namespaceSyntax:ident
   let roundTripBudget := roundTripBudgetSyntax.getNat
   let targetNames := namespaceAuditTargets environment namespaceName
   let mut soundnessCount : Nat := 0
-  let mut missingRoundTrips : Array Name := #[]
+  let mut missingOrInvalidRoundTrips : Array Name := #[]
   for targetName in targetNames do
     if isEncodeTermSoundName targetName then
       soundnessCount := soundnessCount + 1
       let companionName := expectedRoundTripCompanionName targetName
-      if !environment.contains companionName then
-        missingRoundTrips := missingRoundTrips.push targetName
-  if missingRoundTrips.size <= roundTripBudget then
+      if !isBridgeRoundTripCompanionValid environment companionName then
+        missingOrInvalidRoundTrips :=
+          missingOrInvalidRoundTrips.push targetName
+  if missingOrInvalidRoundTrips.size <= roundTripBudget then
     logInfo
       (s!"bridge round-trip parity budget ok: {namespaceName} " ++
-      s!"({soundnessCount - missingRoundTrips.size}/{soundnessCount} " ++
-      s!"soundness theorems have round-trip companions; " ++
-      s!"debt {missingRoundTrips.size}/{roundTripBudget})")
+      s!"({soundnessCount - missingOrInvalidRoundTrips.size}/{soundnessCount} " ++
+      s!"soundness theorems have certificate-shaped round-trip companions; " ++
+      s!"debt {missingOrInvalidRoundTrips.size}/{roundTripBudget})")
   else
-    let perDeclLines := missingRoundTrips.toList.take 20 |>.map fun declName =>
-      s!"  - {declName}: missing _roundTrip companion"
+    let perDeclLines :=
+      missingOrInvalidRoundTrips.toList.take 20 |>.map fun declName =>
+        s!"  - {declName}: missing or invalid _roundTrip companion"
     let header :=
       s!"bridge round-trip parity budget FAILED for {namespaceName}: " ++
-      s!"{missingRoundTrips.size} soundness theorems lack round-trip, " ++
+      s!"{missingOrInvalidRoundTrips.size} soundness theorems lack " ++
+      s!"certificate-shaped round-trip, " ++
       s!"exceeds budget {roundTripBudget}"
     throwError (header ++ "\n" ++ String.intercalate "\n" perDeclLines)
 

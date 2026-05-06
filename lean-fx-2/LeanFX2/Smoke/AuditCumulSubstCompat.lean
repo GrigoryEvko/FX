@@ -85,7 +85,9 @@ import LeanFX2.Reduction.CumulSubstCompat
 #print axioms LeanFX2.ConvCumul.rename_compatible_pair_benton
 #print axioms LeanFX2.ConvCumul.rename_compatible_listCons_benton
 #print axioms LeanFX2.ConvCumul.rename_compatible_idJ_benton
-#print axioms LeanFX2.ConvCumul.rename_compatible_boolElim_benton
+-- `rename_compatible_boolElim_benton` deferred during codex's
+-- dependent-eliminator refactor of `Term.boolElim`; see
+-- `Reduction/CumulBenton.lean` for context.
 
 -- Binder cong arms (2)
 #print axioms LeanFX2.ConvCumul.rename_compatible_lam_benton

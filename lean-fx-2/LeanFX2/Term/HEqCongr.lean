@@ -199,7 +199,7 @@ theorem Term.snd_HEq_congr
 /-- HEq congruence for `Term.boolElim`. -/
 theorem Term.boolElim_HEq_congr
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
-    {motiveType1 motiveType2 : Ty level scope}
+    {motiveType1 motiveType2 : Ty level (scope + 1)}
     {scrutineeRaw1 scrutineeRaw2 thenRaw1 thenRaw2 elseRaw1 elseRaw2 : RawTerm scope}
     (motiveEq : motiveType1 = motiveType2)
     (scrutineeRawEq : scrutineeRaw1 = scrutineeRaw2)
@@ -208,11 +208,15 @@ theorem Term.boolElim_HEq_congr
     {scrutinee1 : Term context Ty.bool scrutineeRaw1}
     {scrutinee2 : Term context Ty.bool scrutineeRaw2}
     (scrutineeHEq : HEq scrutinee1 scrutinee2)
-    {thenBranch1 : Term context motiveType1 thenRaw1}
-    {thenBranch2 : Term context motiveType2 thenRaw2}
+    {thenBranch1 :
+      Term context (motiveType1.subst0 Ty.bool RawTerm.boolTrue) thenRaw1}
+    {thenBranch2 :
+      Term context (motiveType2.subst0 Ty.bool RawTerm.boolTrue) thenRaw2}
     (thenHEq : HEq thenBranch1 thenBranch2)
-    {elseBranch1 : Term context motiveType1 elseRaw1}
-    {elseBranch2 : Term context motiveType2 elseRaw2}
+    {elseBranch1 :
+      Term context (motiveType1.subst0 Ty.bool RawTerm.boolFalse) elseRaw1}
+    {elseBranch2 :
+      Term context (motiveType2.subst0 Ty.bool RawTerm.boolFalse) elseRaw2}
     (elseHEq : HEq elseBranch1 elseBranch2) :
     HEq (Term.boolElim scrutinee1 thenBranch1 elseBranch1)
         (Term.boolElim scrutinee2 thenBranch2 elseBranch2) := by

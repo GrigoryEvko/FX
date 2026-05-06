@@ -239,7 +239,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .oeqRefl _ _ => none
   | _, _, _, _, .oeqJ _ _ => none
   | _, _, _, _, .oeqFunext _ _ _ _ _ => none
-  | _, _, _, _, .idStrictRefl _ _ => none
+  | _, _, _, _, .idStrictRefl _ _ _ => none
   | _, _, _, _, .modIntro _ => none
   | _, _, _, _, .subsume _ => none
   | _, _, _, _, .universeCode _ _ _ _ => none
@@ -253,7 +253,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .funextReflAtId _ _ _ => none
   -- HoTT heterogeneous-carrier equivIntroHet is a value (canonical
   -- equivalence form, not a β/ι redex head): no head step fires.
-  | _, _, _, _, .equivIntroHet _ _ => none
+  | _, _, _, _, .equivIntroHet _ _ _ _ => none
   | _, _, _, _, .equivApp _ _ => none
   -- HoTT heterogeneous-carrier uaIntroHet (Phase 12.A.B8.5b): a value
   -- (canonical path-from-equivalence form at the universe).  The future
@@ -289,21 +289,21 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .intervalOpp _ => none
   | _, _, _, _, .intervalMeet _ _ => none
   | _, _, _, _, .intervalJoin _ _ => none
-  | _, _, _, _, .pathLam _ _ _ _ => none
-  | _, _, _, _, .glueIntro _ _ _ _ => none
-  | _, _, _, _, .transp _ _ _ _ _ _ _ _ => none
-  | _, _, _, _, .hcomp _ _ => none
+  | _, _, _, _, .pathLam _ _ _ _ _ => none
+  | _, _, _, _, .glueIntro _ _ _ _ _ => none
+  | _, _, _, _, .transp _ _ _ _ _ _ _ _ _ => none
+  | _, _, _, _, .hcomp _ _ _ => none
   | _, _, _, _, .recordIntro _ => none
   | _, _, _, _, .refineIntro _ _ _ => none
   | _, _, _, _, .codataUnfold _ _ => none
   | _, _, _, _, .sessionSend _ _ _ => none
   | _, _, _, _, .sessionRecv _ => none
-  | _, _, _, _, .effectPerform _ _ _ => none
+  | _, _, _, _, .effectPerform _ _ _ _ _ _ => none
   -- Eliminators — fire only when the canonical scrutinee has no payload.
   | _, _, _, _, .app _ _ => none           -- β-app needs body extraction
   | _, _, _, _, .appPi _ _ => none          -- β-Π needs body extraction
-  | _, _, _, _, .pathApp _ _ => none        -- path β needs body extraction
-  | _, _, _, _, .glueElim _ => none         -- Glue β needs value extraction
+  | _, _, _, _, .pathApp _ _ _ => none      -- path β needs body extraction
+  | _, _, _, _, .glueElim _ _ => none       -- Glue β needs value extraction
   | _, _, _, _, .recordProj _ => none        -- record β needs field extraction
   | _, _, _, _, .refineElim _ => none        -- refinement β needs intro extraction
   | _, _, _, _, .codataDest _ => none        -- codata has no typed β yet
@@ -316,14 +316,76 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
       else
         none
   | _, _, _, _, .snd _ => none              -- β-pair-snd needs second extraction
-  | _, _, _, _, .boolElim scrutinee thenBranch elseBranch =>
-      let scrutineeHead := scrutinee.headCtor
-      if scrutineeHead == .boolTrue then
-        some ⟨_, thenBranch⟩
-      else if scrutineeHead == .boolFalse then
-        some ⟨_, elseBranch⟩
-      else
-        none
+  | _, _, _, _, .boolElim (scrutineeRaw := scrutineeRaw)
+      _ thenBranch elseBranch =>
+      match scrutineeRaw with
+      | .boolTrue => some ⟨_, thenBranch⟩
+      | .boolFalse => some ⟨_, elseBranch⟩
+      | .var _
+      | .unit
+      | .lam _
+      | .app _ _
+      | .pair _ _
+      | .fst _
+      | .snd _
+      | .boolElim _ _ _
+      | .natZero
+      | .natSucc _
+      | .natElim _ _ _
+      | .natRec _ _ _
+      | .listNil
+      | .listCons _ _
+      | .listElim _ _ _
+      | .optionNone
+      | .optionSome _
+      | .optionMatch _ _ _
+      | .eitherInl _
+      | .eitherInr _
+      | .eitherMatch _ _ _
+      | .refl _
+      | .idJ _ _
+      | .modIntro _
+      | .modElim _
+      | .subsume _
+      | .interval0
+      | .interval1
+      | .intervalOpp _
+      | .intervalMeet _ _
+      | .intervalJoin _ _
+      | .pathLam _
+      | .pathApp _ _
+      | .glueIntro _ _
+      | .glueElim _
+      | .transp _ _
+      | .hcomp _ _
+      | .oeqRefl _
+      | .oeqJ _ _
+      | .oeqFunext _
+      | .idStrictRefl _
+      | .idStrictRec _ _
+      | .equivIntro _ _
+      | .equivApp _ _
+      | .refineIntro _ _
+      | .refineElim _
+      | .recordIntro _
+      | .recordProj _
+      | .codataUnfold _ _
+      | .codataDest _
+      | .sessionSend _ _
+      | .sessionRecv _
+      | .effectPerform _ _
+      | .universeCode _
+      | .arrowCode _ _
+      | .piTyCode _ _
+      | .sigmaTyCode _ _
+      | .productCode _ _
+      | .sumCode _ _
+      | .listCode _
+      | .optionCode _
+      | .eitherCode _ _
+      | .idCode _ _ _
+      | .equivCode _ _
+      | .cumulUpMarker _ => none
   | _, _, _, _, .natElim scrutinee zeroBranch succBranch =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then
@@ -380,7 +442,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
       else
         none
   | _, _, _, _, .idJ _ _ => none            -- J-on-refl needs witness extraction
-  | _, _, _, _, .idStrictRec _ _ => none     -- strict β not in raw layer yet
+  | _, _, _, _, .idStrictRec _ _ _ => none   -- strict β not in raw layer yet
   | _, _, _, _, .modElim _ => none          -- needs inner extraction
 
 /-- Fuel-bounded head reducer.  Repeatedly fires head ι-redexes via

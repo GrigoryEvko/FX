@@ -115,25 +115,25 @@ theorem Step.par.toRawBridge
       exact RawStep.par.oeqJCong ihBase ihWitness
   | oeqFunextCong _ _ _ _ _ ihPointwise =>
       exact RawStep.par.oeqFunextCong ihPointwise
-  | idStrictReflCong witnessStep =>
+  | idStrictReflCong _ witnessStep =>
       exact RawStep.par.idStrictReflCong witnessStep
-  | idStrictRecCong _ _ ihBase ihWitness =>
+  | idStrictRecCong _ _ _ ihBase ihWitness =>
       exact RawStep.par.idStrictRecCong ihBase ihWitness
   -- Cong: modal
   | modIntro _ ihInner => exact RawStep.par.modIntro ihInner
   | modElim _ ihInner => exact RawStep.par.modElim ihInner
   | subsume _ ihInner => exact RawStep.par.subsume ihInner
   -- Cong: cubical path fragment
-  | pathLam _ ihBody => exact RawStep.par.pathLamCong ihBody
-  | pathApp _ _ ihPath ihInterval =>
+  | pathLam _ _ ihBody => exact RawStep.par.pathLamCong ihBody
+  | pathApp _ _ _ ihPath ihInterval =>
       exact RawStep.par.pathAppCong ihPath ihInterval
-  | glueIntro _ _ ihBase ihPartial =>
+  | glueIntro _ _ _ ihBase ihPartial =>
       exact RawStep.par.glueIntroCong ihBase ihPartial
-  | glueElim _ ihGlued =>
+  | glueElim _ _ ihGlued =>
       exact RawStep.par.glueElimCong ihGlued
-  | transp _ _ _ _ _ _ _ _ ihPath ihSource =>
+  | transp _ _ _ _ _ _ _ _ _ ihPath ihSource =>
       exact RawStep.par.transpCong ihPath ihSource
-  | hcomp _ _ ihSides ihCap =>
+  | hcomp _ _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
   | recordIntroCong _ ihFirst =>
       exact RawStep.par.recordIntroCong ihFirst
@@ -149,16 +149,16 @@ theorem Step.par.toRawBridge
       exact RawStep.par.intervalMeetCong ihLeft ihRight
   | intervalJoinCong _ _ ihLeft ihRight =>
       exact RawStep.par.intervalJoinCong ihLeft ihRight
-  | pathLamCong _ ihBody => exact RawStep.par.pathLamCong ihBody
-  | pathAppCong _ _ ihPath ihInterval =>
+  | pathLamCong _ _ ihBody => exact RawStep.par.pathLamCong ihBody
+  | pathAppCong _ _ _ ihPath ihInterval =>
       exact RawStep.par.pathAppCong ihPath ihInterval
-  | glueIntroCong _ _ ihBase ihPartial =>
+  | glueIntroCong _ _ _ ihBase ihPartial =>
       exact RawStep.par.glueIntroCong ihBase ihPartial
-  | glueElimCong _ ihGlued =>
+  | glueElimCong _ _ ihGlued =>
       exact RawStep.par.glueElimCong ihGlued
-  | transpCong _ _ _ _ _ _ _ _ ihPath ihSource =>
+  | transpCong _ _ _ _ _ _ _ _ _ ihPath ihSource =>
       exact RawStep.par.transpCong ihPath ihSource
-  | hcompCong _ _ ihSides ihCap =>
+  | hcompCong _ _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
   -- β shallow (5)
   | betaApp _ _ ihBody ihArgument =>
@@ -169,9 +169,9 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaModElimIntro ihInner
   | betaModElimIntroDeep _ ihInner =>
       exact RawStep.par.betaModElimIntroDeep ihInner
-  | betaPathApp _ _ ihBody ihInterval =>
+  | betaPathApp _ _ _ ihBody ihInterval =>
       exact RawStep.par.betaPathApp ihBody ihInterval
-  | betaGlueElimIntro _ _ ihBase ihPartial =>
+  | betaGlueElimIntro _ _ _ ihBase ihPartial =>
       exact RawStep.par.betaGlueElimIntro ihBase ihPartial
   | betaRecordProjIntro _ ihFirst =>
       exact RawStep.par.betaRecordProjIntro ihFirst
@@ -222,16 +222,16 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInr _ ihValue ihRight
   | iotaIdJRefl carrier endpoint _ ihBase =>
       exact RawStep.par.iotaIdJRefl _ ihBase
-  | iotaIdStrictRecRefl carrier endpoint _ ihBase =>
+  | iotaIdStrictRecRefl _ carrier endpoint _ ihBase =>
       exact RawStep.par.iotaIdStrictRecRefl _ ihBase
   -- β deep (5)
   | betaAppDeep _ _ ihFunction ihArgument =>
       exact RawStep.par.betaAppDeep ihFunction ihArgument
   | betaAppPiDeep _ _ ihFunction ihArgument =>
       exact RawStep.par.betaAppDeep ihFunction ihArgument
-  | betaPathAppDeep _ _ ihPath ihInterval =>
+  | betaPathAppDeep _ _ _ ihPath ihInterval =>
       exact RawStep.par.betaPathAppDeep ihPath ihInterval
-  | betaGlueElimIntroDeep _ ihGlued =>
+  | betaGlueElimIntroDeep _ _ ihGlued =>
       exact RawStep.par.betaGlueElimIntroDeep ihGlued
   | betaRecordProjIntroDeep _ ihRecord =>
       exact RawStep.par.betaRecordProjIntroDeep ihRecord
@@ -268,7 +268,7 @@ theorem Step.par.toRawBridge
       exact RawStep.par.iotaEitherMatchInrDeep _ ihScrutinee ihRight
   | iotaIdJReflDeep _ _ ihWitness ihBase =>
       exact RawStep.par.iotaIdJReflDeep ihWitness ihBase
-  | iotaIdStrictRecReflDeep _ _ ihWitness ihBase =>
+  | iotaIdStrictRecReflDeep _ _ _ ihWitness ihBase =>
       exact RawStep.par.iotaIdStrictRecReflDeep ihWitness ihBase
   -- cumulUpInnerCong — Phase CUMUL-2.6 Design D: source projects to
   -- `RawTerm.cumulUpMarker codeSourceRaw`, target to

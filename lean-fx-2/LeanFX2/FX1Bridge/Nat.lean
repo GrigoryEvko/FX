@@ -96,9 +96,40 @@ def encodeRawTerm_natZero : FX1.Expr :=
 def encodeRawTerm_natSucc : FX1.Expr :=
   natSuccExpr
 
+/-- Rich raw term for applying successor to zero. -/
+def natSuccZeroRaw : RawTerm 0 :=
+  RawTerm.natSucc RawTerm.natZero
+
 /-- Encoder for the exact rich raw term `succ zero`. -/
 def encodeRawTerm_natSuccZero : FX1.Expr :=
   FX1.Expr.app encodeRawTerm_natSucc encodeRawTerm_natZero
+
+/-- Fragment decoder for the staged rich Nat type. -/
+def decodeTy_nat {level scope : Nat} : FX1.Expr -> Option (Ty level scope) :=
+  decodeConstByAtom natTypeAtomId (Ty.nat : Ty level scope)
+
+/-- Fragment decoder for the staged rich Nat zero value. -/
+def decodeRawTerm_natZero : FX1.Expr -> Option (RawTerm 0) :=
+  decodeConstByAtom natZeroAtomId RawTerm.natZero
+
+/-- Fragment recognizer for the staged rich Nat successor function symbol. -/
+def decodeRawTerm_natSuccSymbol : FX1.Expr -> Option Unit :=
+  decodeConstByAtom natSuccAtomId ()
+
+/-- Fragment decoder for the exact rich raw term `succ zero`. -/
+def decodeRawTerm_natSuccZero : FX1.Expr -> Option (RawTerm 0)
+  | FX1.Expr.app functionExpr argumentExpr =>
+      match decodeRawTerm_natSuccSymbol functionExpr with
+      | Option.some _ =>
+          match decodeRawTerm_natZero argumentExpr with
+          | Option.some _ => Option.some natSuccZeroRaw
+          | Option.none => Option.none
+      | Option.none => Option.none
+  | FX1.Expr.bvar _ => Option.none
+  | FX1.Expr.sort _ => Option.none
+  | FX1.Expr.const _ => Option.none
+  | FX1.Expr.pi _ _ => Option.none
+  | FX1.Expr.lam _ _ => Option.none
 
 /-- Nat type encoding computes to the staged FX1 Nat type constant. -/
 theorem encodeTy_nat_eq_natTypeExpr :
@@ -314,10 +345,6 @@ theorem encodedNatSucc_has_type :
       natEnvironment
       natSuccDeclaration)
 
-/-- Rich raw term for applying successor to zero. -/
-def natSuccZeroRaw : RawTerm 0 :=
-  RawTerm.natSucc RawTerm.natZero
-
 /-- Canonical rich term for `succ zero`. -/
 def natSuccZeroTerm {mode : Mode} {level : Nat} :
     Term
@@ -349,6 +376,23 @@ theorem encodeTermSound_natZero
       encodeTy_nat :=
   encodedNatZero_has_type
 
+/-- Exact round-trip evidence for the Nat-zero bridge fragment. -/
+def encodeTermSound_natZero_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_zeroTerm : Term (Ctx.empty mode level) Ty.nat RawTerm.natZero) :
+    BridgeRoundTrip
+      encodeTy_nat
+      (decodeTy_nat (level := level) (scope := 0))
+      (Ty.nat : Ty level 0)
+      encodeRawTerm_natZero
+      decodeRawTerm_natZero
+      RawTerm.natZero :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.nat : Ty level 0))
+    rawRoundTrip := Eq.refl (Option.some RawTerm.natZero)
+  }
+
 /-- Soundness of the empty-context `succ zero` bridge fragment. -/
 theorem encodeTermSound_natSuccZero
     {mode : Mode}
@@ -364,6 +408,27 @@ theorem encodeTermSound_natSuccZero
       encodeRawTerm_natSuccZero
       encodeTy_nat :=
   encodedNatSuccZero_has_type
+
+/-- Exact round-trip evidence for the `succ zero` bridge fragment. -/
+def encodeTermSound_natSuccZero_roundTrip
+    {mode : Mode}
+    {level : Nat}
+    (_succZeroTerm :
+      Term
+        (Ctx.empty mode level)
+        (Ty.nat : Ty level 0)
+        natSuccZeroRaw) :
+    BridgeRoundTrip
+      encodeTy_nat
+      (decodeTy_nat (level := level) (scope := 0))
+      (Ty.nat : Ty level 0)
+      encodeRawTerm_natSuccZero
+      decodeRawTerm_natSuccZero
+      natSuccZeroRaw :=
+  {
+    typeRoundTrip := Eq.refl (Option.some (Ty.nat : Ty level 0))
+    rawRoundTrip := Eq.refl (Option.some natSuccZeroRaw)
+  }
 
 end FX1Bridge
 end LeanFX2

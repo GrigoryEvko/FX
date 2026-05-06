@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1Bridge_UnitTypeForm — 14 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1Bridge_UnitTypeForm — 16 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityRaw
 #assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityType
@@ -27,11 +27,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentityType_has_sort
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentity_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitPiIdentity
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitPiIdentity_roundTrip
 #assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityAppRaw
 #assert_no_axioms LeanFX2.FX1Bridge.unitPiIdentityAppTerm
 #assert_no_axioms LeanFX2.FX1Bridge.encodeRawTerm_unitPiIdentityApp
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentityApp_has_type
 #assert_no_axioms LeanFX2.FX1Bridge.encodedUnitPiIdentityApp_betaStep
 #assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitPiIdentityApp
+#assert_no_axioms LeanFX2.FX1Bridge.encodeTermSound_unitPiIdentityApp_roundTrip
 
 end LeanFX2.Tools
