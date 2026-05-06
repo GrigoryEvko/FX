@@ -1512,6 +1512,12 @@ namespace LeanFX2.Tools
 #assert_schematic_payload_budget LeanFX2.Ty 12 1
 #assert_schematic_payload_budget LeanFX2.Term 39 0
 
+-- Mode-discipline debt gate.  These are known constructors whose names imply
+-- strict/univalent-only availability but whose signatures still quantify over
+-- arbitrary `mode`.  The budget pins current debt until the ctor signatures
+-- acquire real `mode = ...` premises.
+#assert_mode_discipline_budget LeanFX2.Term 8
+
 -- Naming discipline gate.  Bans non-ASCII identifiers and short
 -- identifiers (< 4 chars) outside the documented whitelist.  Catches
 -- regressions like `def f (x) := ...` or pasted Greek-letter names
