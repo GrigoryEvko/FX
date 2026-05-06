@@ -1,7 +1,5 @@
 import LeanFX2.Foundation.Interval
-import LeanFX2.Foundation.Ty
 import LeanFX2.Term.Rename
-import LeanFX2.Term.ToRaw
 
 /-! # Cubical/Path
 

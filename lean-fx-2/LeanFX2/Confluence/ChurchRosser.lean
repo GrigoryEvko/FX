@@ -1,6 +1,4 @@
-import LeanFX2.Confluence.ParStarBridge
 import LeanFX2.Confluence.ConvBridge
-import LeanFX2.Reduction.StepStarToPar
 
 /-! # Confluence/ChurchRosser — multi-step Church-Rosser corollaries
 

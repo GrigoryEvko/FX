@@ -1,6 +1,5 @@
 import LeanFX2.Algo.RawWHNF
 import LeanFX2.Confluence.RawParStarCong
-import LeanFX2.Reduction.RawParCompatible
 
 /-! # Algo/RawWHNFCorrect — RawTerm.whnf reaches a parallel reduct
 

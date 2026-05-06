@@ -1,7 +1,5 @@
 import LeanFX2.Cubical.Path
 import LeanFX2.Foundation.RawPartialRename
-import LeanFX2.Reduction.RawPar
-import LeanFX2.Reduction.ParRed
 import LeanFX2.Bridge
 import LeanFX2.Term.Bridge
 

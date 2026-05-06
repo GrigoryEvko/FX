@@ -1,5 +1,4 @@
 import LeanFX2.Confluence.Cd
-import LeanFX2.Confluence.RawCdLemma
 import LeanFX2.Confluence.RawDiamond
 
 /-! # Confluence/CdLemma — every parallel reduct lands in cd t (raw projection)

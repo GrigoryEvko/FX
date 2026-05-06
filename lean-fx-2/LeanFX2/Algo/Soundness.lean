@@ -1,7 +1,5 @@
 import LeanFX2.Algo.Check
-import LeanFX2.Algo.Infer
 import LeanFX2.Algo.Eval
-import LeanFX2.Term.Inversion
 
 /-! # Algo/Soundness — algorithmic soundness theorems
 
