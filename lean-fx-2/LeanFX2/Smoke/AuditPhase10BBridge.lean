@@ -1,4 +1,5 @@
 import LeanFX2.Surface.KernelEnv
+import LeanFX2.Surface.Semantics
 
 /-! Phase 10.B — Surface AST → kernel RawTerm bridge audit.
 
@@ -25,6 +26,20 @@ open LeanFX2 LeanFX2.Surface
 #print axioms ResolvedDef.liftToScope
 #print axioms RawTerm.natOfNat
 #print axioms RawTerm.weakenIter
+
+/-! ## Section 0 — Surface.Semantics denotational ⟦·⟧
+
+Tracker #1241 (B01).  By identifying `Expr.denote` with
+`Expr.toRawTerm?`, the eleven B-series correctness theorems
+(B02–B12) collapse to reduction-shape lemmas (R-series) plus
+totality (B12) plus env-empty equivalence (B10).  See
+`Surface/Semantics.lean` docstring for the umbrella mapping. -/
+
+#print axioms RawExpr.denote
+#print axioms Expr.denote
+#print axioms RawExpr.denote_eq_toRawTerm?
+#print axioms Expr.denote_eq_toRawTerm?
+#print axioms Expr.denote_eq_RawExpr_denote
 
 /-! ## Section 1 — Literal desugaring -/
 

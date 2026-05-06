@@ -58,6 +58,7 @@ import LeanFX2.Tools.AuditAll.AuditHIT_Trunc
 import LeanFX2.Tools.AuditAll.AuditMisc_Option
 import LeanFX2.Tools.AuditAll.AuditReduction
 import LeanFX2.Tools.AuditAll.AuditSessions
+import LeanFX2.Tools.AuditAll.AuditSurface
 import LeanFX2.Tools.AuditAll.AuditTerm
 import LeanFX2.Tools.AuditAll.AuditTranslation
 -- Heavy budget gates — 17 sibling files, each containing 1-19 commands.

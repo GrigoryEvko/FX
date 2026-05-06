@@ -115,6 +115,7 @@ import LeanFX2.Surface.SchemaAudit
 import LeanFX2.Surface.StdNames
 import LeanFX2.Surface.KernelBridge
 import LeanFX2.Surface.KernelBridgeReduction
+import LeanFX2.Surface.Semantics
 import LeanFX2.Surface.KernelEnv
 import LeanFX2.Surface.KernelEnvCorrespondence
 import LeanFX2.Surface.Parse
