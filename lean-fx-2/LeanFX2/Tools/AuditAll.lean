@@ -859,6 +859,10 @@ namespace LeanFX2.Tools
 -- Day 8 is retargeted to `LeanFX2.FX1.LeanKernel`.
 #assert_legacy_lean_kernel_scaffold_isolated
 
+-- Global host-heavy import allowlist.  The only allowed direct host-heavy
+-- edge is the audit implementation importing Lean elaborator APIs.
+#assert_host_heavy_import_surface_allowlisted
+
 -- Raw / typed parity gate.  Every constructor of `RawStep.par` must
 -- have a same-suffix constructor in `Step.par`.  Catches the failure
 -- mode where a raw cubical β rule lands without its typed mirror.

@@ -711,6 +711,18 @@ def isHostHeavyDirectImportModuleName (moduleName : Name) : Bool :=
     (`Classical).isPrefixOf moduleName ||
     (`Quot).isPrefixOf moduleName
 
+/-- Explicit allowlist for direct host-heavy imports anywhere inside
+`LeanFX2.*`.
+
+Only the audit implementation itself may import Lean elaborator APIs.  FX1's
+temporary `Init.Prelude` imports are intentionally not host-heavy here: the
+FX1-specific source and declaration gates police them separately. -/
+def isAllowedHostHeavyDirectImport
+    (directImportRecord : DirectImportRecord) :
+    Bool :=
+  directImportRecord.sourceModuleName == `LeanFX2.Tools.DependencyAudit &&
+    directImportRecord.importedModuleName == `Lean
+
 /-- Keep summary lines bounded while still naming the exact dependency
 edges when the count is small. -/
 def formatDirectImportRecords
@@ -721,6 +733,39 @@ def formatDirectImportRecords
   else
     String.intercalate "; "
       (directImportRecords.toList.map DirectImportRecord.format)
+
+/-- Build-failing global host-heavy import gate.
+
+This scans every loaded `LeanFX2.*` module, including tools and smoke tests.
+The broader production gates already forbid host-heavy imports in production
+modules; this gate also keeps tools/smoke host imports explicit and prevents a
+second accidental `import Lean` from entering unnoticed. -/
+elab "#assert_host_heavy_import_surface_allowlisted" : command => do
+  let environment ← getEnv
+  let moduleEntries :=
+    Array.zip environment.header.modules environment.header.moduleData
+  let mut scannedLeanFX2Modules : Nat := 0
+  let mut violations : Array DirectImportRecord := #[]
+  for (effectiveImport, moduleData) in moduleEntries do
+    let sourceModuleName := effectiveImport.module
+    if (`LeanFX2).isPrefixOf sourceModuleName then
+      scannedLeanFX2Modules := scannedLeanFX2Modules + 1
+      for directImport in moduleData.imports do
+        let directImportRecord : DirectImportRecord := {
+          sourceModuleName := sourceModuleName
+          importedModuleName := directImport.module
+        }
+        if isHostHeavyDirectImportModuleName directImport.module &&
+            !isAllowedHostHeavyDirectImport directImportRecord then
+          violations := violations.push directImportRecord
+  if violations.isEmpty then
+    logInfo m!"host-heavy import allowlist ok: {scannedLeanFX2Modules} modules"
+  else
+    let renderedImports := formatDirectImportRecords violations
+    let header :=
+      s!"host-heavy import allowlist FAILED: " ++
+      s!"{violations.size} forbidden direct host-heavy imports"
+    throwError (header ++ "\n  " ++ renderedImports)
 
 /-- Informational import summary over the currently loaded `LeanFX2.*`
 modules.  This is not a policy gate; the policy gates above remain the
