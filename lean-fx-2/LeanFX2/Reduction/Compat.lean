@@ -984,6 +984,54 @@ theorem subst_compatible
 
 end recordProjCong
 
+/-! ### `recordIntroCong` (unary, single-field record introduction).
+
+Structurally identical to `recordProjCong` — single inner Step.par
+premise on the field value, no mode hypothesis, no binder.  The
+record's single field has type `singleFieldType`, and the typed
+recordIntro produces a term at the matching `Ty.record`. -/
+namespace recordIntroCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {firstRawSource firstRawTarget : RawTerm sourceScope}
+    {firstSource : Term sourceCtx singleFieldType firstRawSource}
+    {firstTarget : Term sourceCtx singleFieldType firstRawTarget}
+    (renamedFirstStep :
+      Step.par (Term.rename termRenaming firstSource)
+               (Term.rename termRenaming firstTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.recordIntro firstSource))
+      (Term.rename termRenaming (Term.recordIntro firstTarget)) :=
+  Step.par.recordIntroCong renamedFirstStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {singleFieldType : Ty level sourceScope}
+    {firstRawSource firstRawTarget : RawTerm sourceScope}
+    {firstSource : Term sourceCtx singleFieldType firstRawSource}
+    {firstTarget : Term sourceCtx singleFieldType firstRawTarget}
+    (substitutedFirstStep :
+      Step.par (Term.subst termSubst firstSource)
+               (Term.subst termSubst firstTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.recordIntro firstSource))
+      (Term.subst termSubst (Term.recordIntro firstTarget)) :=
+  Step.par.recordIntroCong substitutedFirstStep
+
+end recordIntroCong
+
 end par
 
 end Step

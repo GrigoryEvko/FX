@@ -160,6 +160,9 @@ Every declaration listed must report "does not depend on any axioms".
 -- D2.10 incremental: recordProjCong (unary, single-field record projection)
 #print axioms LeanFX2.Step.par.recordProjCong.rename_compatible
 #print axioms LeanFX2.Step.par.recordProjCong.subst_compatible
+-- D2.10 incremental: recordIntroCong (unary, single-field record introduction)
+#print axioms LeanFX2.Step.par.recordIntroCong.rename_compatible
+#print axioms LeanFX2.Step.par.recordIntroCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

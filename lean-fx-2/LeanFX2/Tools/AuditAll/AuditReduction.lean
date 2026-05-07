@@ -164,4 +164,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.recordProjCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.recordProjCong.subst_compatible
 
+-- D2.10 typed compositional compat — incremental rule:
+-- `recordIntroCong` (unary, single-field record introduction).
+#assert_no_axioms LeanFX2.Step.par.recordIntroCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.recordIntroCong.subst_compatible
+
 end LeanFX2.Tools
