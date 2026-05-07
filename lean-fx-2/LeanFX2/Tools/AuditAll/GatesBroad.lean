@@ -102,6 +102,9 @@ namespace LeanFX2.Tools
 -- (binary, mode-univalent, multi-arg cubical transport), `equivIntroCong`
 -- and `equivIntroHetCong` (alias-pair producing the heterogeneous
 -- equivalence-intro term).  Ratchet 6 → 3.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 3
+-- D2.10 incremental (2026-05-07): shipped `uaIntroHetCong` (unary,
+-- structured `RawTerm.equivIntro` raw index renames/substs
+-- structurally).  Ratchet 3 → 2.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 2
 
 end LeanFX2.Tools

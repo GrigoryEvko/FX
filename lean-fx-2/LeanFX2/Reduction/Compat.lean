@@ -1768,6 +1768,94 @@ theorem subst_compatible
 
 end equivIntroHetCong
 
+/-! ### `uaIntroHetCong` (unary, heterogeneous univalence intro).
+
+Unary exemplar with one inner Step.par premise on the
+equivalence-witness term.  The witness's raw index is the
+structured form `RawTerm.equivIntro forwardRaw backwardRaw`,
+which renames/substitutes structurally via the corresponding
+RawSubst equations, so the typed-Term step composes directly
+through `Step.par.uaIntroHetCong`. -/
+namespace uaIntroHetCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {equivWitnessSource :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRawSource backwardRawSource)}
+    {equivWitnessTarget :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRawTarget backwardRawTarget)}
+    (renamedEquivWitnessStep :
+      Step.par (Term.rename termRenaming equivWitnessSource)
+               (Term.rename termRenaming equivWitnessTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.uaIntroHet (context := sourceCtx)
+                         innerLevel innerLevelLt
+                         carrierARaw carrierBRaw
+                         equivWitnessSource))
+      (Term.rename termRenaming
+        (Term.uaIntroHet (context := sourceCtx)
+                         innerLevel innerLevelLt
+                         carrierARaw carrierBRaw
+                         equivWitnessTarget)) :=
+  Step.par.uaIntroHetCong (context := targetCtx)
+    innerLevel innerLevelLt
+    (carrierARaw.rename rho) (carrierBRaw.rename rho)
+    renamedEquivWitnessStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {equivWitnessSource :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRawSource backwardRawSource)}
+    {equivWitnessTarget :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRawTarget backwardRawTarget)}
+    (substitutedEquivWitnessStep :
+      Step.par (Term.subst termSubst equivWitnessSource)
+               (Term.subst termSubst equivWitnessTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.uaIntroHet (context := sourceCtx)
+                         innerLevel innerLevelLt
+                         carrierARaw carrierBRaw
+                         equivWitnessSource))
+      (Term.subst termSubst
+        (Term.uaIntroHet (context := sourceCtx)
+                         innerLevel innerLevelLt
+                         carrierARaw carrierBRaw
+                         equivWitnessTarget)) :=
+  Step.par.uaIntroHetCong (context := targetCtx)
+    innerLevel innerLevelLt
+    (carrierARaw.subst sigma.forRaw) (carrierBRaw.subst sigma.forRaw)
+    substitutedEquivWitnessStep
+
+end uaIntroHetCong
+
 end par
 
 end Step

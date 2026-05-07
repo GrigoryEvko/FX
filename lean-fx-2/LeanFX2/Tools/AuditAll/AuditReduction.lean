@@ -196,4 +196,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.equivIntroHetCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.equivIntroHetCong.subst_compatible
 
+-- D2.10 typed compositional compat — uaIntroHetCong (unary, structured
+-- raw index `RawTerm.equivIntro forwardRaw backwardRaw` renames/substs
+-- structurally through the corresponding RawSubst equations).
+#assert_no_axioms LeanFX2.Step.par.uaIntroHetCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.uaIntroHetCong.subst_compatible
+
 end LeanFX2.Tools
