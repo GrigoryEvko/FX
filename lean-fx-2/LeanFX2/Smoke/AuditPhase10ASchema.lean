@@ -283,6 +283,14 @@ block at the top of `TokenSchema.lean`, `TokenInvariants.lean`,
 #print axioms Array.push_toList_getLast?_eq
 #print axioms Lex.run_eof_terminated
 
+/-! ## L07 — LexError.offset projection (#1205) -/
+
+#print axioms LeanFX2.Surface.LexError.offset
+#print axioms LeanFX2.Surface.LexError.offset_unexpectedChar
+#print axioms LeanFX2.Surface.LexError.offset_unterminatedString
+#print axioms LeanFX2.Surface.LexError.offset_invalidEscape
+#print axioms LeanFX2.Surface.LexError.offset_total
+
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 
 A concrete instance: lexing the empty input list (zero tokens
