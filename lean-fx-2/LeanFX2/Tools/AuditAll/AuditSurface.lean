@@ -131,4 +131,10 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Token.spellingsOfReservedNonTokens_catalogue
 #assert_no_axioms LeanFX2.Surface.Token.spellingsOfReservedNonTokens_length
 
+/-! ### Surface.KernelEnv — S01/S02/S03 binop syntactic-role smoke (#1285-#1287) -/
+
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawBinop_pipe
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawBinop_arrow
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawBinop_isCtor
+
 end LeanFX2.Tools

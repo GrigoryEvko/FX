@@ -265,4 +265,53 @@ end -- mutual
     (env : KernelEnv) (_e : Expr raw) : Option (RawTerm scope) :=
   RawExpr.toRawTermWithEnv? env raw
 
+/-! ## S01-S03 binop syntactic-role smoke theorems
+
+Three definitional `rfl` lemmas that pin the structural treatment
+of the three distinct-role binary operators in the env-aware bridge:
+
+* `pipe` (`x |> f`) desugars to structural application `f x` —
+  no env lookup needed (S01)
+* `arrow` is a type-level operator with no value-level desugaring (S02)
+* `isCtor` (`x is Foo`) is a pattern-matching operator the kernel
+  treats specially; bridge produces no `RawTerm` (S03)
+
+All three rely on `BinaryOp.{pipe,arrow,isCtor}.toQualifiedName = none`
+being definitional (verified by inspection of `Surface/StdNames.lean`
+lines 225-227).  Each smoke fires by `rfl` because the function's
+outer match on `op.toQualifiedName` reduces structurally and the inner
+match on `op` reduces structurally.
+
+These are zero-axiom by construction (`rfl` proofs cannot leak axioms). -/
+
+/-- S01: `x |> f` definitionally desugars to `f x` via the env-aware
+bridge.  No env lookup involved — `pipe` is a syntactic structural
+role distinct from the stdlib-named operators. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_pipe
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.pipe lhs rhs).toRawTermWithEnv? env =
+      match RawExpr.toRawTermWithEnv? env lhs with
+      | none => none
+      | some lhsRaw =>
+        match RawExpr.toRawTermWithEnv? env rhs with
+        | none => none
+        | some rhsRaw => some (RawTerm.app rhsRaw lhsRaw) := rfl
+
+/-- S02: `arrow` is type-level — no value-level desugaring.
+The env-aware bridge returns `none` for any `arrow`-bin-op expression
+regardless of its operands. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_arrow
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.arrow lhs rhs).toRawTermWithEnv? env =
+      none := rfl
+
+/-- S03: `x is Foo` (constructor test) is kernel-special — the
+env-aware bridge returns `none`.  Pattern-matching is not represented
+as a `RawTerm` in this kernel slice; downstream layers (Elab,
+Pipeline) handle the `is`-pattern separately. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_isCtor
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.isCtor lhs rhs).toRawTermWithEnv? env =
+      none := rfl
+
 end LeanFX2.Surface
