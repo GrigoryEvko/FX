@@ -228,6 +228,8 @@ parameter through any emitted `LexError`.  Composed via
 #assert_no_axioms LeanFX2.Surface.Lex.readIntLexeme_byteLength_invariant
 #assert_no_axioms LeanFX2.Surface.resolveEscapeChar
 #assert_no_axioms LeanFX2.Surface.Lex.readStringLexeme_byteLength_invariant
+#assert_no_axioms LeanFX2.Surface.Lex.lexOpOrPunct_byteLength_invariant
+#assert_no_axioms LeanFX2.Surface.Lex.lexOne_byteLength_invariant
 
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 

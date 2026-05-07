@@ -424,16 +424,21 @@ def lexOpOrPunct (offset : Nat) (firstChar : Char) (restChars : List Char) :
           firstChar.utf8Size restChars
 
 /-- String branch: try `readStringLexeme`; emit `unterminatedString`
-on failure.  The `offset` parameter is forwarded into the error
-case ONLY. -/
-def lexStringBranch (offset : Nat) (restChars : List Char) : LexStep :=
-  match readStringLexeme restChars [] 1 with
+on failure.  Takes `firstChar` (always `'"'` at call sites in
+`lexOne`) so byte accounting uses the abstract
+`firstChar.utf8Size`, sidestepping the propext leak that
+`eq_of_beq` would introduce when reducing `'"'.utf8Size = 1`.
+
+The `offset` parameter is forwarded into the error case ONLY. -/
+def lexStringBranch (offset : Nat) (firstChar : Char) (restChars : List Char) : LexStep :=
+  match readStringLexeme restChars [] firstChar.utf8Size with
   | some (revBody, byteLen, remaining) =>
       LexStep.token
         (Token.strLit (String.ofList revBody.reverse) StrKind.regular)
         byteLen remaining
   | none =>
-      LexStep.error (LexError.unterminatedString offset) 1 restChars
+      LexStep.error (LexError.unterminatedString offset) firstChar.utf8Size
+        restChars
 
 /-- Identifier branch: read identifier lexeme, classify into Token.
 Pure `Char → List Char → LexStep`, no offset needed (identifier
@@ -468,7 +473,7 @@ def lexOne (offset : Nat) : List Char → LexStep
     else if isDigitChar firstChar then
       lexDigitBranch firstChar restChars
     else if firstChar == '"' then
-      lexStringBranch offset restChars
+      lexStringBranch offset firstChar restChars
     else
       lexOpOrPunct offset firstChar restChars
 
@@ -757,22 +762,23 @@ preservation lemma decompose cleanly:
 All zero-axiom; verified at the end of this section under
 `#assert_no_axioms`. -/
 
-/-- **L07.1**: `lexStringBranch offset restChars = LexStep.error
-err _ _` implies `err.offset = offset`.  The string branch only
-emits `LexError.unterminatedString offset` when `readStringLexeme`
-returns `none`. -/
+/-- **L07.1**: `lexStringBranch offset firstChar restChars =
+LexStep.error err _ _` implies `err.offset = offset`.  The string
+branch only emits `LexError.unterminatedString offset` when
+`readStringLexeme` returns `none`. -/
 theorem Lex.lexStringBranch_error_offset_eq (offset : Nat)
-    (restChars : List Char)
+    (firstChar : Char) (restChars : List Char)
     {err : LexError} {bytes : Nat} {restAfter : List Char}
-    (stepEq : lexStringBranch offset restChars
+    (stepEq : lexStringBranch offset firstChar restChars
               = LexStep.error err bytes restAfter) :
     err.offset = offset := by
   unfold lexStringBranch at stepEq
-  generalize hReadStr : readStringLexeme restChars [] 1 = readResult at stepEq
+  generalize hReadStr :
+      readStringLexeme restChars [] firstChar.utf8Size = readResult at stepEq
   cases readResult with
   | none =>
-    -- stepEq : LexStep.error (LexError.unterminatedString offset) 1 restChars
-    --        = LexStep.error err bytes restAfter
+    -- stepEq : LexStep.error (LexError.unterminatedString offset)
+    --           firstChar.utf8Size restChars = LexStep.error err bytes restAfter
     injection stepEq with errEq _ _
     rw [← errEq]; rfl
   | some _ =>
@@ -881,14 +887,15 @@ theorem Lex.lexOne_error_offset_eq (offset : Nat) (chars : List Char)
         · -- String branch.
           have stepEqUnfold :
               lexOne offset (firstChar :: restChars)
-                = lexStringBranch offset restChars := by
+                = lexStringBranch offset firstChar restChars := by
             show (if isIdentStart firstChar = true then _
                   else if isDigitChar firstChar = true then _
                   else if firstChar == '"' then _
                   else lexOpOrPunct offset firstChar restChars) = _
             rw [if_neg hIdent, if_neg hDigit, if_pos hQuote]
           rw [stepEqUnfold] at stepEq
-          exact Lex.lexStringBranch_error_offset_eq offset restChars stepEq
+          exact Lex.lexStringBranch_error_offset_eq offset firstChar restChars
+            stepEq
         · -- Op/punct branch.
           have stepEqUnfold :
               lexOne offset (firstChar :: restChars)
@@ -1721,5 +1728,307 @@ theorem Lex.readStringLexeme_byteLength_invariant :
           show (n + c.utf8Size) + charsByteLength (c2 :: rest2)
             = n + (c.utf8Size + charsByteLength (c2 :: rest2))
           exact Nat.add_assoc n c.utf8Size (charsByteLength (c2 :: rest2))
+
+/-- **L07.5.4-helper**: `lexOpOrPunct` conserves bytes.
+
+`lexOpOrPunct` returns either `LexStep.token` (two-char or single-
+char success) or `LexStep.error` (no match — `unexpectedChar`).
+In every non-`eof` case, the emitted bytes plus
+`charsByteLength remaining` equals
+`charsByteLength (firstChar :: restChars)`.
+
+The `LexStep.eof` arm is vacuous — `lexOpOrPunct` never returns
+`eof`.  Including it keeps the theorem statement uniform with
+`lexOne_byteLength_invariant`.
+
+Proof: case-split on `restChars` to expose `lexTwoCharPeek`'s
+reduction (empty rest gives `none`, cons rest reduces to the
+inner `lexTwoCharOp` lookup).  Then case-split on the inner
+lookup results.  Each of the four resulting paths (two-char
+success, single-char success on empty, single-char success on
+cons, error) closes via either `rfl`
+(`firstChar.utf8Size + charsByteLength rest = charsByteLength
+(firstChar :: rest)` is definitional) or `Nat.add_assoc`
+(two-char success has shape
+`(a + b) + c = a + (b + c)`).
+
+Zero-axiom — uniform `Char.utf8Size` accounting throughout. -/
+theorem Lex.lexOpOrPunct_byteLength_invariant
+    (offset : Nat) (firstChar : Char) (restChars : List Char) :
+    match lexOpOrPunct offset firstChar restChars with
+    | LexStep.eof => True
+    | LexStep.token _ bytes remaining =>
+      bytes + charsByteLength remaining = charsByteLength (firstChar :: restChars)
+    | LexStep.error _ bytes remaining =>
+      bytes + charsByteLength remaining = charsByteLength (firstChar :: restChars) := by
+  match restChars with
+  | [] =>
+    -- `lexTwoCharPeek firstChar [] = none` → fall through to single-char dispatch.
+    cases hPunct : lexSingleCharPunct firstChar with
+    | some tok =>
+      have hReduces :
+          lexOpOrPunct offset firstChar []
+            = LexStep.token tok firstChar.utf8Size [] := by
+        unfold lexOpOrPunct lexTwoCharPeek
+        rw [hPunct]
+      rw [hReduces]
+      show firstChar.utf8Size + charsByteLength ([] : List Char)
+        = charsByteLength (firstChar :: [])
+      rfl
+    | none =>
+      have hReduces :
+          lexOpOrPunct offset firstChar []
+            = LexStep.error (LexError.unexpectedChar offset firstChar)
+                firstChar.utf8Size [] := by
+        unfold lexOpOrPunct lexTwoCharPeek
+        rw [hPunct]
+      rw [hReduces]
+      show firstChar.utf8Size + charsByteLength ([] : List Char)
+        = charsByteLength (firstChar :: [])
+      rfl
+  | secondChar :: more =>
+    -- `lexTwoCharPeek firstChar (secondChar :: more)` definitionally
+    -- reduces by the cons arm of its body — `rfl` clean.  We rewrite
+    -- with this equation INSIDE `unfold lexOpOrPunct` to expose the
+    -- inner `lexTwoCharOp firstChar secondChar` for case analysis.
+    have hPeekReduces :
+        lexTwoCharPeek firstChar (secondChar :: more)
+          = match lexTwoCharOp firstChar secondChar with
+            | some tok => some (tok, secondChar, more)
+            | none => none := rfl
+    cases hOp : lexTwoCharOp firstChar secondChar with
+    | some tok =>
+      have hReduces :
+          lexOpOrPunct offset firstChar (secondChar :: more)
+            = LexStep.token tok (firstChar.utf8Size + secondChar.utf8Size) more := by
+        unfold lexOpOrPunct
+        rw [hPeekReduces, hOp]
+      rw [hReduces]
+      show (firstChar.utf8Size + secondChar.utf8Size) + charsByteLength more
+        = charsByteLength (firstChar :: secondChar :: more)
+      show (firstChar.utf8Size + secondChar.utf8Size) + charsByteLength more
+        = firstChar.utf8Size + (secondChar.utf8Size + charsByteLength more)
+      exact Nat.add_assoc firstChar.utf8Size secondChar.utf8Size
+        (charsByteLength more)
+    | none =>
+      cases hPunct : lexSingleCharPunct firstChar with
+      | some tok =>
+        have hReduces :
+            lexOpOrPunct offset firstChar (secondChar :: more)
+              = LexStep.token tok firstChar.utf8Size (secondChar :: more) := by
+          unfold lexOpOrPunct
+          rw [hPeekReduces, hOp, hPunct]
+        rw [hReduces]
+        show firstChar.utf8Size + charsByteLength (secondChar :: more)
+          = charsByteLength (firstChar :: secondChar :: more)
+        rfl
+      | none =>
+        have hReduces :
+            lexOpOrPunct offset firstChar (secondChar :: more)
+              = LexStep.error (LexError.unexpectedChar offset firstChar)
+                  firstChar.utf8Size (secondChar :: more) := by
+          unfold lexOpOrPunct
+          rw [hPeekReduces, hOp, hPunct]
+        rw [hReduces]
+        show firstChar.utf8Size + charsByteLength (secondChar :: more)
+          = charsByteLength (firstChar :: secondChar :: more)
+        rfl
+
+/-- **L07.5.4**: `lexOne` conserves bytes.
+
+For every input `chars`, the emitted byte count plus
+`charsByteLength` of the remaining characters equals
+`charsByteLength chars`.  This is the unified per-step byte-
+conservation invariant — `lexLoop` lifts it across iterations
+to prove `Lex.run`'s end-to-end byte invariant (`L07.5`).
+
+Cases:
+* `chars = []` → `lexOne offset [] = LexStep.eof`; `eof` arm is
+  trivially `True`.
+* `chars = firstChar :: restChars` → 4-way if-cascade.  Each
+  branch delegates to a helper whose byte-conservation is
+  already proven:
+    - `isIdentStart firstChar` → `lexIdentBranch` →
+      `readIdentLexeme_byteLength_invariant`.
+    - `isDigitChar firstChar` → `lexDigitBranch` →
+      `readIntLexeme_byteLength_invariant`.
+    - `firstChar == '"'` → `lexStringBranch` →
+      `readStringLexeme_byteLength_invariant` (success) OR
+      error byte = `1 = '"'.utf8Size`.
+    - else → `lexOpOrPunct` →
+      `lexOpOrPunct_byteLength_invariant`.
+
+Zero-axiom — every branch closes either via `rfl` (when the
+helper output is structurally a `LexStep.token` whose byte count
+is already in canonical form) or via `Nat.add_assoc` /
+`Nat.add_comm` arithmetic.
+
+The string-error branch's `1` reduces to `'"'.utf8Size = 1` via
+`rfl` (ASCII char ≤ 0x7F gives a single UTF-8 byte). -/
+theorem Lex.lexOne_byteLength_invariant
+    (offset : Nat) (chars : List Char) :
+    match lexOne offset chars with
+    | LexStep.eof => True
+    | LexStep.token _ bytes remaining =>
+      bytes + charsByteLength remaining = charsByteLength chars
+    | LexStep.error _ bytes remaining =>
+      bytes + charsByteLength remaining = charsByteLength chars := by
+  match chars with
+  | [] => trivial
+  | firstChar :: restChars =>
+    show match lexOne offset (firstChar :: restChars) with
+         | LexStep.eof => True
+         | LexStep.token _ bytes remaining =>
+           bytes + charsByteLength remaining
+             = charsByteLength (firstChar :: restChars)
+         | LexStep.error _ bytes remaining =>
+           bytes + charsByteLength remaining
+             = charsByteLength (firstChar :: restChars)
+    by_cases hIdent : isIdentStart firstChar = true
+    · -- Identifier branch.
+      have hReduces :
+          lexOne offset (firstChar :: restChars)
+            = lexIdentBranch firstChar restChars := by
+        show (if isIdentStart firstChar = true then
+                lexIdentBranch firstChar restChars
+              else if isDigitChar firstChar = true then
+                lexDigitBranch firstChar restChars
+              else if firstChar == '"' then
+                lexStringBranch offset firstChar restChars
+              else
+                lexOpOrPunct offset firstChar restChars)
+            = lexIdentBranch firstChar restChars
+        rw [if_pos hIdent]
+      rw [hReduces]
+      -- `lexIdentBranch` always returns `LexStep.token`.
+      show match lexIdentBranch firstChar restChars with
+           | LexStep.eof => True
+           | LexStep.token _ bytes remaining =>
+             bytes + charsByteLength remaining
+               = charsByteLength (firstChar :: restChars)
+           | LexStep.error _ bytes remaining =>
+             bytes + charsByteLength remaining
+               = charsByteLength (firstChar :: restChars)
+      have hIdentResult :
+          (readIdentLexeme (firstChar :: restChars) [] 0).snd.fst
+            + charsByteLength (readIdentLexeme (firstChar :: restChars) [] 0).snd.snd
+              = 0 + charsByteLength (firstChar :: restChars) :=
+        Lex.readIdentLexeme_byteLength_invariant (firstChar :: restChars) [] 0
+      show match (let identResult := readIdentLexeme (firstChar :: restChars) [] 0
+                  LexStep.token (classifyIdent identResult.fst)
+                    identResult.snd.fst identResult.snd.snd) with
+           | LexStep.eof => True
+           | LexStep.token _ bytes remaining =>
+             bytes + charsByteLength remaining
+               = charsByteLength (firstChar :: restChars)
+           | LexStep.error _ bytes remaining =>
+             bytes + charsByteLength remaining
+               = charsByteLength (firstChar :: restChars)
+      show (readIdentLexeme (firstChar :: restChars) [] 0).snd.fst
+            + charsByteLength (readIdentLexeme (firstChar :: restChars) [] 0).snd.snd
+          = charsByteLength (firstChar :: restChars)
+      rw [hIdentResult]
+      exact Nat.zero_add (charsByteLength (firstChar :: restChars))
+    · by_cases hDigit : isDigitChar firstChar = true
+      · -- Digit branch.
+        have hReduces :
+            lexOne offset (firstChar :: restChars)
+              = lexDigitBranch firstChar restChars := by
+          show (if isIdentStart firstChar = true then
+                  lexIdentBranch firstChar restChars
+                else if isDigitChar firstChar = true then
+                  lexDigitBranch firstChar restChars
+                else if firstChar == '"' then
+                  lexStringBranch offset firstChar restChars
+                else
+                  lexOpOrPunct offset firstChar restChars)
+              = lexDigitBranch firstChar restChars
+          rw [if_neg hIdent, if_pos hDigit]
+        rw [hReduces]
+        show match lexDigitBranch firstChar restChars with
+             | LexStep.eof => True
+             | LexStep.token _ bytes remaining =>
+               bytes + charsByteLength remaining
+                 = charsByteLength (firstChar :: restChars)
+             | LexStep.error _ bytes remaining =>
+               bytes + charsByteLength remaining
+                 = charsByteLength (firstChar :: restChars)
+        have hDigitResult :
+            (readIntLexeme (firstChar :: restChars) [] 0).snd.fst
+              + charsByteLength (readIntLexeme (firstChar :: restChars) [] 0).snd.snd
+                = 0 + charsByteLength (firstChar :: restChars) :=
+          Lex.readIntLexeme_byteLength_invariant (firstChar :: restChars) [] 0
+        show (readIntLexeme (firstChar :: restChars) [] 0).snd.fst
+              + charsByteLength (readIntLexeme (firstChar :: restChars) [] 0).snd.snd
+            = charsByteLength (firstChar :: restChars)
+        rw [hDigitResult]
+        exact Nat.zero_add (charsByteLength (firstChar :: restChars))
+      · by_cases hQuote : firstChar == '"'
+        · -- String branch.  The refactored `lexStringBranch firstChar`
+          -- uses `firstChar.utf8Size` for byte counts, so we don't need
+          -- to derive `firstChar = '"'` (which would require
+          -- `eq_of_beq`'s propext-leaking `of_decide_eq_true` for Char).
+          have hReduces :
+              lexOne offset (firstChar :: restChars)
+                = lexStringBranch offset firstChar restChars := by
+            show (if isIdentStart firstChar = true then
+                    lexIdentBranch firstChar restChars
+                  else if isDigitChar firstChar = true then
+                    lexDigitBranch firstChar restChars
+                  else if firstChar == '"' then
+                    lexStringBranch offset firstChar restChars
+                  else
+                    lexOpOrPunct offset firstChar restChars)
+                = lexStringBranch offset firstChar restChars
+            rw [if_neg hIdent, if_neg hDigit, if_pos hQuote]
+          rw [hReduces]
+          show match lexStringBranch offset firstChar restChars with
+               | LexStep.eof => True
+               | LexStep.token _ bytes remaining =>
+                 bytes + charsByteLength remaining
+                   = charsByteLength (firstChar :: restChars)
+               | LexStep.error _ bytes remaining =>
+                 bytes + charsByteLength remaining
+                   = charsByteLength (firstChar :: restChars)
+          unfold lexStringBranch
+          have hStringResult :
+              match readStringLexeme restChars [] firstChar.utf8Size with
+              | some (_, bytes, remaining) =>
+                bytes + charsByteLength remaining
+                  = firstChar.utf8Size + charsByteLength restChars
+              | none => True :=
+            Lex.readStringLexeme_byteLength_invariant restChars []
+              firstChar.utf8Size
+          cases hRead : readStringLexeme restChars [] firstChar.utf8Size with
+          | none =>
+            -- Error branch: bytes = firstChar.utf8Size, remaining = restChars.
+            show firstChar.utf8Size + charsByteLength restChars
+              = charsByteLength (firstChar :: restChars)
+            rfl
+          | some triple =>
+            obtain ⟨_, bytes, remaining⟩ := triple
+            rw [hRead] at hStringResult
+            show bytes + charsByteLength remaining
+              = charsByteLength (firstChar :: restChars)
+            rw [hStringResult]
+            show firstChar.utf8Size + charsByteLength restChars
+              = charsByteLength (firstChar :: restChars)
+            rfl
+        · -- Op/punct branch.
+          have hReduces :
+              lexOne offset (firstChar :: restChars)
+                = lexOpOrPunct offset firstChar restChars := by
+            show (if isIdentStart firstChar = true then
+                    lexIdentBranch firstChar restChars
+                  else if isDigitChar firstChar = true then
+                    lexDigitBranch firstChar restChars
+                  else if firstChar == '"' then
+                    lexStringBranch offset firstChar restChars
+                  else
+                    lexOpOrPunct offset firstChar restChars)
+                = lexOpOrPunct offset firstChar restChars
+            rw [if_neg hIdent, if_neg hDigit, if_neg hQuote]
+          rw [hReduces]
+          exact Lex.lexOpOrPunct_byteLength_invariant offset firstChar restChars
 
 end LeanFX2.Surface
