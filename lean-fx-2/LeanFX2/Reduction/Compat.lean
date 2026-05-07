@@ -1032,6 +1032,422 @@ theorem subst_compatible
 
 end recordIntroCong
 
+/-! ### `refineIntroCong` (binary, value at base + proof at unit).
+
+Structurally a binary exemplar: two inner Step.par premises (one
+on the value at `baseType`, one on the proof witness at
+`Ty.unit`).  No mode hypothesis.  The shared `predicate` term
+on `RawTerm (scope + 1)` is index data, not a step subject. -/
+namespace refineIntroCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRawSource valueRawTarget proofRawSource proofRawTarget :
+      RawTerm sourceScope}
+    {valueSource : Term sourceCtx baseType valueRawSource}
+    {valueTarget : Term sourceCtx baseType valueRawTarget}
+    {proofSource : Term sourceCtx Ty.unit proofRawSource}
+    {proofTarget : Term sourceCtx Ty.unit proofRawTarget}
+    (renamedValueStep :
+      Step.par (Term.rename termRenaming valueSource)
+               (Term.rename termRenaming valueTarget))
+    (renamedProofStep :
+      Step.par (Term.rename termRenaming proofSource)
+               (Term.rename termRenaming proofTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.refineIntro predicate valueSource proofSource))
+      (Term.rename termRenaming
+        (Term.refineIntro predicate valueTarget proofTarget)) :=
+  Step.par.refineIntroCong renamedValueStep renamedProofStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {valueRawSource valueRawTarget proofRawSource proofRawTarget :
+      RawTerm sourceScope}
+    {valueSource : Term sourceCtx baseType valueRawSource}
+    {valueTarget : Term sourceCtx baseType valueRawTarget}
+    {proofSource : Term sourceCtx Ty.unit proofRawSource}
+    {proofTarget : Term sourceCtx Ty.unit proofRawTarget}
+    (substitutedValueStep :
+      Step.par (Term.subst termSubst valueSource)
+               (Term.subst termSubst valueTarget))
+    (substitutedProofStep :
+      Step.par (Term.subst termSubst proofSource)
+               (Term.subst termSubst proofTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.refineIntro predicate valueSource proofSource))
+      (Term.subst termSubst
+        (Term.refineIntro predicate valueTarget proofTarget)) :=
+  Step.par.refineIntroCong substitutedValueStep substitutedProofStep
+
+end refineIntroCong
+
+/-! ### `codataUnfoldCong` (binary, state + transition function).
+
+Binary exemplar with two inner Step.par premises: one on the
+state at `stateType`, one on the transition function at
+`Ty.arrow stateType outputType`.  No mode hypothesis. -/
+namespace codataUnfoldCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {stateRawSource stateRawTarget transitionRawSource transitionRawTarget :
+      RawTerm sourceScope}
+    {stateSource : Term sourceCtx stateType stateRawSource}
+    {stateTarget : Term sourceCtx stateType stateRawTarget}
+    {transitionSource :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawSource}
+    {transitionTarget :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawTarget}
+    (renamedStateStep :
+      Step.par (Term.rename termRenaming stateSource)
+               (Term.rename termRenaming stateTarget))
+    (renamedTransitionStep :
+      Step.par (Term.rename termRenaming transitionSource)
+               (Term.rename termRenaming transitionTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.codataUnfold stateSource transitionSource))
+      (Term.rename termRenaming
+        (Term.codataUnfold stateTarget transitionTarget)) :=
+  Step.par.codataUnfoldCong renamedStateStep renamedTransitionStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {stateType outputType : Ty level sourceScope}
+    {stateRawSource stateRawTarget transitionRawSource transitionRawTarget :
+      RawTerm sourceScope}
+    {stateSource : Term sourceCtx stateType stateRawSource}
+    {stateTarget : Term sourceCtx stateType stateRawTarget}
+    {transitionSource :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawSource}
+    {transitionTarget :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRawTarget}
+    (substitutedStateStep :
+      Step.par (Term.subst termSubst stateSource)
+               (Term.subst termSubst stateTarget))
+    (substitutedTransitionStep :
+      Step.par (Term.subst termSubst transitionSource)
+               (Term.subst termSubst transitionTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.codataUnfold stateSource transitionSource))
+      (Term.subst termSubst
+        (Term.codataUnfold stateTarget transitionTarget)) :=
+  Step.par.codataUnfoldCong substitutedStateStep substitutedTransitionStep
+
+end codataUnfoldCong
+
+/-! ### `hcompCong` (binary, mode-univalent gated, both at carrier).
+
+Binary exemplar: two inner Step.par premises (sides + cap), both
+at the shared `carrierType`.  Mode hypothesis `mode = .univalent`
+threaded through. -/
+namespace hcompCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRawSource sidesRawTarget capRawSource capRawTarget :
+      RawTerm sourceScope}
+    {sidesSource : Term sourceCtx carrierType sidesRawSource}
+    {sidesTarget : Term sourceCtx carrierType sidesRawTarget}
+    {capSource : Term sourceCtx carrierType capRawSource}
+    {capTarget : Term sourceCtx carrierType capRawTarget}
+    (renamedSidesStep :
+      Step.par (Term.rename termRenaming sidesSource)
+               (Term.rename termRenaming sidesTarget))
+    (renamedCapStep :
+      Step.par (Term.rename termRenaming capSource)
+               (Term.rename termRenaming capTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.hcomp modeIsUnivalent sidesSource capSource))
+      (Term.rename termRenaming
+        (Term.hcomp modeIsUnivalent sidesTarget capTarget)) :=
+  Step.par.hcompCong modeIsUnivalent renamedSidesStep renamedCapStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRawSource sidesRawTarget capRawSource capRawTarget :
+      RawTerm sourceScope}
+    {sidesSource : Term sourceCtx carrierType sidesRawSource}
+    {sidesTarget : Term sourceCtx carrierType sidesRawTarget}
+    {capSource : Term sourceCtx carrierType capRawSource}
+    {capTarget : Term sourceCtx carrierType capRawTarget}
+    (substitutedSidesStep :
+      Step.par (Term.subst termSubst sidesSource)
+               (Term.subst termSubst sidesTarget))
+    (substitutedCapStep :
+      Step.par (Term.subst termSubst capSource)
+               (Term.subst termSubst capTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.hcomp modeIsUnivalent sidesSource capSource))
+      (Term.subst termSubst
+        (Term.hcomp modeIsUnivalent sidesTarget capTarget)) :=
+  Step.par.hcompCong modeIsUnivalent substitutedSidesStep substitutedCapStep
+
+end hcompCong
+
+/-! ### `glueIntroCong` (binary, mode-univalent gated, both at base).
+
+Binary exemplar: two inner Step.par premises (base + partial),
+both at the shared `baseType`.  `boundaryWitness : RawTerm scope`
+is index data.  Mode hypothesis `mode = .univalent`. -/
+namespace glueIntroCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (boundaryWitness : RawTerm sourceScope)
+    {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+      RawTerm sourceScope}
+    {baseSource : Term sourceCtx baseType baseRawSource}
+    {baseTarget : Term sourceCtx baseType baseRawTarget}
+    {partialSource : Term sourceCtx baseType partialRawSource}
+    {partialTarget : Term sourceCtx baseType partialRawTarget}
+    (renamedBaseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (renamedPartialStep :
+      Step.par (Term.rename termRenaming partialSource)
+               (Term.rename termRenaming partialTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseSource partialSource))
+      (Term.rename termRenaming
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseTarget partialTarget)) :=
+  Step.par.glueIntroCong modeIsUnivalent renamedBaseStep renamedPartialStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (boundaryWitness : RawTerm sourceScope)
+    {baseRawSource baseRawTarget partialRawSource partialRawTarget :
+      RawTerm sourceScope}
+    {baseSource : Term sourceCtx baseType baseRawSource}
+    {baseTarget : Term sourceCtx baseType baseRawTarget}
+    {partialSource : Term sourceCtx baseType partialRawSource}
+    {partialTarget : Term sourceCtx baseType partialRawTarget}
+    (substitutedBaseStep :
+      Step.par (Term.subst termSubst baseSource)
+               (Term.subst termSubst baseTarget))
+    (substitutedPartialStep :
+      Step.par (Term.subst termSubst partialSource)
+               (Term.subst termSubst partialTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseSource partialSource))
+      (Term.subst termSubst
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseTarget partialTarget)) :=
+  Step.par.glueIntroCong modeIsUnivalent substitutedBaseStep substitutedPartialStep
+
+end glueIntroCong
+
+/-! ### `oeqJCong` (binary, base at motive + witness at oeq).
+
+Binary exemplar with two inner Step.par premises: base at the
+motive type, witness at the OEq type.  No mode hypothesis. -/
+namespace oeqJCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget
+     witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+        witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+        witnessRawTarget}
+    (renamedBaseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (renamedWitnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming witnessTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.oeqJ baseSource witnessSource))
+      (Term.rename termRenaming (Term.oeqJ baseTarget witnessTarget)) :=
+  Step.par.oeqJCong renamedBaseStep renamedWitnessStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget
+     witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+        witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+        witnessRawTarget}
+    (substitutedBaseStep :
+      Step.par (Term.subst termSubst baseSource)
+               (Term.subst termSubst baseTarget))
+    (substitutedWitnessStep :
+      Step.par (Term.subst termSubst witnessSource)
+               (Term.subst termSubst witnessTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.oeqJ baseSource witnessSource))
+      (Term.subst termSubst (Term.oeqJ baseTarget witnessTarget)) :=
+  Step.par.oeqJCong substitutedBaseStep substitutedWitnessStep
+
+end oeqJCong
+
+/-! ### `idStrictRecCong` (binary, mode-strict gated).
+
+Binary exemplar with two inner Step.par premises: base at the
+motive type, witness at the strict-id type.  Mode hypothesis
+`mode = .strict`. -/
+namespace idStrictRecCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget
+     witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRawTarget}
+    (renamedBaseStep :
+      Step.par (Term.rename termRenaming baseSource)
+               (Term.rename termRenaming baseTarget))
+    (renamedWitnessStep :
+      Step.par (Term.rename termRenaming witnessSource)
+               (Term.rename termRenaming witnessTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idStrictRec modeIsStrict baseSource witnessSource))
+      (Term.rename termRenaming
+        (Term.idStrictRec modeIsStrict baseTarget witnessTarget)) :=
+  Step.par.idStrictRecCong modeIsStrict renamedBaseStep renamedWitnessStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRawSource baseRawTarget
+     witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    {baseSource : Term sourceCtx motiveType baseRawSource}
+    {baseTarget : Term sourceCtx motiveType baseRawTarget}
+    {witnessSource :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRawSource}
+    {witnessTarget :
+      Term sourceCtx (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRawTarget}
+    (substitutedBaseStep :
+      Step.par (Term.subst termSubst baseSource)
+               (Term.subst termSubst baseTarget))
+    (substitutedWitnessStep :
+      Step.par (Term.subst termSubst witnessSource)
+               (Term.subst termSubst witnessTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.idStrictRec modeIsStrict baseSource witnessSource))
+      (Term.subst termSubst
+        (Term.idStrictRec modeIsStrict baseTarget witnessTarget)) :=
+  Step.par.idStrictRecCong modeIsStrict substitutedBaseStep substitutedWitnessStep
+
+end idStrictRecCong
+
 end par
 
 end Step

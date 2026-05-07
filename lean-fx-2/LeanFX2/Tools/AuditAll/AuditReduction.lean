@@ -169,4 +169,21 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.recordIntroCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.recordIntroCong.subst_compatible
 
+-- D2.10 typed compositional compat — BATCH 7: 7 more cong rules
+-- following the compositional exemplar.  All zero-axiom direct
+-- applications of the corresponding `Step.par.*Cong` constructor
+-- to renamed/substituted inner steps.
+#assert_no_axioms LeanFX2.Step.par.refineIntroCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.refineIntroCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.codataUnfoldCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.codataUnfoldCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.hcompCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.hcompCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.glueIntroCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.glueIntroCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.oeqJCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.oeqJCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.idStrictRecCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.idStrictRecCong.subst_compatible
+
 end LeanFX2.Tools

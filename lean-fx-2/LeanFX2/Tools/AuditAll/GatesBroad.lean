@@ -92,6 +92,12 @@ namespace LeanFX2.Tools
 -- `intervalOppCong` (unary, structural); ratchet 14 → 13.
 -- D2.10 incremental (2026-05-07): shipped `recordIntroCong` mirroring
 -- `recordProjCong` (unary, structural); ratchet 13 → 12.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 12
+-- D2.10 BATCH 6 (2026-05-07): shipped 6 more cong rules following the
+-- compositional exemplar — `refineIntroCong`, `codataUnfoldCong`,
+-- `hcompCong`, `glueIntroCong`, `oeqJCong`, `idStrictRecCong`.
+-- Ratchet 12 → 6.  oeqFunextCong deferred — its `oeqFunextPointwiseType`
+-- introduces a non-syntactic ▸ cast on rename/subst that needs explicit
+-- type-coercion handling beyond the simple compositional pattern.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 6
 
 end LeanFX2.Tools

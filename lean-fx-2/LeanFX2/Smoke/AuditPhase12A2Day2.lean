@@ -163,6 +163,19 @@ Every declaration listed must report "does not depend on any axioms".
 -- D2.10 incremental: recordIntroCong (unary, single-field record introduction)
 #print axioms LeanFX2.Step.par.recordIntroCong.rename_compatible
 #print axioms LeanFX2.Step.par.recordIntroCong.subst_compatible
+-- D2.10 BATCH 7: 7 more cong rules following the compositional exemplar
+#print axioms LeanFX2.Step.par.refineIntroCong.rename_compatible
+#print axioms LeanFX2.Step.par.refineIntroCong.subst_compatible
+#print axioms LeanFX2.Step.par.codataUnfoldCong.rename_compatible
+#print axioms LeanFX2.Step.par.codataUnfoldCong.subst_compatible
+#print axioms LeanFX2.Step.par.hcompCong.rename_compatible
+#print axioms LeanFX2.Step.par.hcompCong.subst_compatible
+#print axioms LeanFX2.Step.par.glueIntroCong.rename_compatible
+#print axioms LeanFX2.Step.par.glueIntroCong.subst_compatible
+#print axioms LeanFX2.Step.par.oeqJCong.rename_compatible
+#print axioms LeanFX2.Step.par.oeqJCong.subst_compatible
+#print axioms LeanFX2.Step.par.idStrictRecCong.rename_compatible
+#print axioms LeanFX2.Step.par.idStrictRecCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp
