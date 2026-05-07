@@ -98,6 +98,10 @@ namespace LeanFX2.Tools
 -- Ratchet 12 → 6.  oeqFunextCong deferred — its `oeqFunextPointwiseType`
 -- introduces a non-syntactic ▸ cast on rename/subst that needs explicit
 -- type-coercion handling beyond the simple compositional pattern.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 6
+-- D2.10 BATCH 3 (2026-05-07): shipped 3 more cong rules — `transpCong`
+-- (binary, mode-univalent, multi-arg cubical transport), `equivIntroCong`
+-- and `equivIntroHetCong` (alias-pair producing the heterogeneous
+-- equivalence-intro term).  Ratchet 6 → 3.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 3
 
 end LeanFX2.Tools

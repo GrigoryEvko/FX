@@ -1448,6 +1448,326 @@ theorem subst_compatible
 
 end idStrictRecCong
 
+/-! ### `transpCong` (binary, mode-univalent, multi-arg cubical transport).
+
+Binary exemplar with two inner Step.par premises: typePath at the
+universe-typed Path, sourceValue at sourceType.  Mode hypothesis
+`mode = .univalent`.  All other args (universeLevel, levelLt,
+source/target types, source/target type raws) are explicit data,
+not step subjects. -/
+namespace transpCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRawSource pathRawTarget sourceRawSource sourceRawTarget :
+      RawTerm sourceScope}
+    {typePathSource :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRawSource}
+    {typePathTarget :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRawTarget}
+    {sourceValueSource : Term sourceCtx sourceType sourceRawSource}
+    {sourceValueTarget : Term sourceCtx sourceType sourceRawTarget}
+    (renamedTypePathStep :
+      Step.par (Term.rename termRenaming typePathSource)
+               (Term.rename termRenaming typePathTarget))
+    (renamedSourceValueStep :
+      Step.par (Term.rename termRenaming sourceValueSource)
+               (Term.rename termRenaming sourceValueTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSource sourceValueSource))
+      (Term.rename termRenaming
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget)) :=
+  Step.par.transpCong modeIsUnivalent
+    universeLevel universeLevelLt
+    (sourceType.rename rho) (targetType.rename rho)
+    (sourceTypeRaw.rename rho) (targetTypeRaw.rename rho)
+    renamedTypePathStep renamedSourceValueStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    {pathRawSource pathRawTarget sourceRawSource sourceRawTarget :
+      RawTerm sourceScope}
+    {typePathSource :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRawSource}
+    {typePathTarget :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRawTarget}
+    {sourceValueSource : Term sourceCtx sourceType sourceRawSource}
+    {sourceValueTarget : Term sourceCtx sourceType sourceRawTarget}
+    (substitutedTypePathStep :
+      Step.par (Term.subst termSubst typePathSource)
+               (Term.subst termSubst typePathTarget))
+    (substitutedSourceValueStep :
+      Step.par (Term.subst termSubst sourceValueSource)
+               (Term.subst termSubst sourceValueTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathSource sourceValueSource))
+      (Term.subst termSubst
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType
+          sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget)) :=
+  Step.par.transpCong modeIsUnivalent
+    universeLevel universeLevelLt
+    (sourceType.subst sigma) (targetType.subst sigma)
+    (sourceTypeRaw.subst sigma.forRaw) (targetTypeRaw.subst sigma.forRaw)
+    substitutedTypePathStep substitutedSourceValueStep
+
+end transpCong
+
+/-! ### `equivIntroCong` (binary, equivalence-intro with leftInv/rightInv data).
+
+Binary exemplar: two inner Step.par premises (forward + backward),
+plus heterogeneous leftInv/rightInv typed data carrying the source
+and target inverse-witness raw forms.  No mode hypothesis. -/
+namespace equivIntroCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {forwardSource :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawSource}
+    {forwardTarget :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawTarget}
+    {backwardSource :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawSource}
+    {backwardTarget :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawTarget}
+    {leftInvSourceRaw rightInvSourceRaw
+     leftInvTargetRaw rightInvTargetRaw : RawTerm sourceScope}
+    {leftInvSource :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRawSource)
+        leftInvSourceRaw}
+    {rightInvSource :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawSource backwardRawSource)
+        rightInvSourceRaw}
+    {leftInvTarget :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRawTarget)
+        leftInvTargetRaw}
+    {rightInvTarget :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRawTarget)
+        rightInvTargetRaw}
+    (renamedForwardStep :
+      Step.par (Term.rename termRenaming forwardSource)
+               (Term.rename termRenaming forwardTarget))
+    (renamedBackwardStep :
+      Step.par (Term.rename termRenaming backwardSource)
+               (Term.rename termRenaming backwardTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardSource backwardSource leftInvSource rightInvSource))
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardTarget backwardTarget leftInvTarget rightInvTarget)) :=
+  Step.par.equivIntroCong renamedForwardStep renamedBackwardStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {forwardSource :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawSource}
+    {forwardTarget :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawTarget}
+    {backwardSource :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawSource}
+    {backwardTarget :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawTarget}
+    {leftInvSourceRaw rightInvSourceRaw
+     leftInvTargetRaw rightInvTargetRaw : RawTerm sourceScope}
+    {leftInvSource :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRawSource)
+        leftInvSourceRaw}
+    {rightInvSource :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawSource backwardRawSource)
+        rightInvSourceRaw}
+    {leftInvTarget :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRawTarget)
+        leftInvTargetRaw}
+    {rightInvTarget :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRawTarget)
+        rightInvTargetRaw}
+    (substitutedForwardStep :
+      Step.par (Term.subst termSubst forwardSource)
+               (Term.subst termSubst forwardTarget))
+    (substitutedBackwardStep :
+      Step.par (Term.subst termSubst backwardSource)
+               (Term.subst termSubst backwardTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.equivIntroHet forwardSource backwardSource leftInvSource rightInvSource))
+      (Term.subst termSubst
+        (Term.equivIntroHet forwardTarget backwardTarget leftInvTarget rightInvTarget)) :=
+  Step.par.equivIntroCong substitutedForwardStep substitutedBackwardStep
+
+end equivIntroCong
+
+/-! ### `equivIntroHetCong` (alias of `equivIntroCong`, same shape).
+
+Identical signature to `equivIntroCong` — both produce
+`Term.equivIntroHet` from forward + backward typed steps.  Kept
+as a separate namespace for headline parity with the constructor
+catalog. -/
+namespace equivIntroHetCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {forwardSource :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawSource}
+    {forwardTarget :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawTarget}
+    {backwardSource :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawSource}
+    {backwardTarget :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawTarget}
+    {leftInvSourceRaw rightInvSourceRaw
+     leftInvTargetRaw rightInvTargetRaw : RawTerm sourceScope}
+    {leftInvSource :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRawSource)
+        leftInvSourceRaw}
+    {rightInvSource :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawSource backwardRawSource)
+        rightInvSourceRaw}
+    {leftInvTarget :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRawTarget)
+        leftInvTargetRaw}
+    {rightInvTarget :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRawTarget)
+        rightInvTargetRaw}
+    (renamedForwardStep :
+      Step.par (Term.rename termRenaming forwardSource)
+               (Term.rename termRenaming forwardTarget))
+    (renamedBackwardStep :
+      Step.par (Term.rename termRenaming backwardSource)
+               (Term.rename termRenaming backwardTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardSource backwardSource leftInvSource rightInvSource))
+      (Term.rename termRenaming
+        (Term.equivIntroHet forwardTarget backwardTarget leftInvTarget rightInvTarget)) :=
+  Step.par.equivIntroHetCong renamedForwardStep renamedBackwardStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {carrierA carrierB : Ty level sourceScope}
+    {forwardRawSource forwardRawTarget
+     backwardRawSource backwardRawTarget : RawTerm sourceScope}
+    {forwardSource :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawSource}
+    {forwardTarget :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRawTarget}
+    {backwardSource :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawSource}
+    {backwardTarget :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRawTarget}
+    {leftInvSourceRaw rightInvSourceRaw
+     leftInvTargetRaw rightInvTargetRaw : RawTerm sourceScope}
+    {leftInvSource :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawSource backwardRawSource)
+        leftInvSourceRaw}
+    {rightInvSource :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawSource backwardRawSource)
+        rightInvSourceRaw}
+    {leftInvTarget :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRawTarget backwardRawTarget)
+        leftInvTargetRaw}
+    {rightInvTarget :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRawTarget backwardRawTarget)
+        rightInvTargetRaw}
+    (substitutedForwardStep :
+      Step.par (Term.subst termSubst forwardSource)
+               (Term.subst termSubst forwardTarget))
+    (substitutedBackwardStep :
+      Step.par (Term.subst termSubst backwardSource)
+               (Term.subst termSubst backwardTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.equivIntroHet forwardSource backwardSource leftInvSource rightInvSource))
+      (Term.subst termSubst
+        (Term.equivIntroHet forwardTarget backwardTarget leftInvTarget rightInvTarget)) :=
+  Step.par.equivIntroHetCong substitutedForwardStep substitutedBackwardStep
+
+end equivIntroHetCong
+
 end par
 
 end Step

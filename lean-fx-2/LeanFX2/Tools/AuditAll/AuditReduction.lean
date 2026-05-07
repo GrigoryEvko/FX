@@ -186,4 +186,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.idStrictRecCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.idStrictRecCong.subst_compatible
 
+-- D2.10 typed compositional compat — BATCH 3: transpCong (binary,
+-- mode-univalent, multi-arg cubical transport), equivIntroCong, and
+-- equivIntroHetCong (alias-pair producing Term.equivIntroHet).
+#assert_no_axioms LeanFX2.Step.par.transpCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.transpCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.equivIntroCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.equivIntroCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.equivIntroHetCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.equivIntroHetCong.subst_compatible
+
 end LeanFX2.Tools

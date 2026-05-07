@@ -176,6 +176,13 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.oeqJCong.subst_compatible
 #print axioms LeanFX2.Step.par.idStrictRecCong.rename_compatible
 #print axioms LeanFX2.Step.par.idStrictRecCong.subst_compatible
+-- D2.10 BATCH 3: transpCong + equivIntroCong + equivIntroHetCong
+#print axioms LeanFX2.Step.par.transpCong.rename_compatible
+#print axioms LeanFX2.Step.par.transpCong.subst_compatible
+#print axioms LeanFX2.Step.par.equivIntroCong.rename_compatible
+#print axioms LeanFX2.Step.par.equivIntroCong.subst_compatible
+#print axioms LeanFX2.Step.par.equivIntroHetCong.rename_compatible
+#print axioms LeanFX2.Step.par.equivIntroHetCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp
