@@ -199,6 +199,26 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.LexError.offset_invalidEscape
 #assert_no_axioms LeanFX2.Surface.LexError.offset_total
 
+/-! ### Surface.Lex — L07 per-step preservation theorems (#1205)
+
+Branch-helper preservation: `lexStringBranch`, `lexOpOrPunct`,
+`lexIdentBranch`, `lexDigitBranch` all preserve the `offset`
+parameter through any emitted `LexError`.  Composed via
+`lexOne_error_offset_eq`. -/
+
+#assert_no_axioms LeanFX2.Surface.lexTwoCharOp
+#assert_no_axioms LeanFX2.Surface.lexTwoCharPeek
+#assert_no_axioms LeanFX2.Surface.lexSingleCharPunct
+#assert_no_axioms LeanFX2.Surface.lexOpOrPunct
+#assert_no_axioms LeanFX2.Surface.lexStringBranch
+#assert_no_axioms LeanFX2.Surface.lexIdentBranch
+#assert_no_axioms LeanFX2.Surface.lexDigitBranch
+#assert_no_axioms LeanFX2.Surface.Lex.lexStringBranch_error_offset_eq
+#assert_no_axioms LeanFX2.Surface.Lex.lexOpOrPunct_error_offset_eq
+#assert_no_axioms LeanFX2.Surface.Lex.lexIdentBranch_no_error
+#assert_no_axioms LeanFX2.Surface.Lex.lexDigitBranch_no_error
+#assert_no_axioms LeanFX2.Surface.Lex.lexOne_error_offset_eq
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff

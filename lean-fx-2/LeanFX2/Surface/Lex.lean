@@ -273,78 +273,132 @@ inductive LexStep : Type
   | error (err : LexError) (bytes : Nat) (rest : List Char)
   | eof
 
+/-! ### Branch helpers — extracted from `lexOne` for proof discipline
+
+`lexOne` was originally one large if-cascade with two error-emitting
+branches (string and punctuation).  Inline structure made
+preservation proofs (`err.offset = offset`) require deep nested
+`generalize`+`cases` maneuvers through Lean 4 v4.29.1's matcher.
+
+Splitting into named helpers per-branch lets each helper own its
+preservation lemma with a self-contained proof.  See L07 below. -/
+
+/-- Look up a two-character operator at `(firstChar, secondChar)`.
+Returns `some (Token, restAfterTwo)` when matched, `none`
+otherwise.  Pure `Char × Char × List Char → Option`, no offset. -/
+def lexTwoCharOp (firstChar secondChar : Char) (more : List Char) :
+    Option (Token × List Char) :=
+  if firstChar == '-' && secondChar == '>' then some (Token.arrow, more)
+  else if firstChar == '=' && secondChar == '>' then some (Token.fatArrow, more)
+  else if firstChar == '|' && secondChar == '>' then some (Token.pipe, more)
+  else if firstChar == '=' && secondChar == '=' then some (Token.eqEq, more)
+  else if firstChar == '!' && secondChar == '=' then some (Token.notEq, more)
+  else if firstChar == '<' && secondChar == '=' then some (Token.le, more)
+  else if firstChar == '>' && secondChar == '=' then some (Token.ge, more)
+  else if firstChar == '<' && secondChar == '<' then some (Token.shiftLeft, more)
+  else if firstChar == '>' && secondChar == '>' then some (Token.shiftRight, more)
+  else if firstChar == '.' && secondChar == '.' then some (Token.dotdot, more)
+  else if firstChar == '@' && secondChar == '[' then some (Token.atBracket, more)
+  else none
+
+/-- Two-character operator lookup with two-element list peek.
+`none` for empty rest; otherwise consults `lexTwoCharOp`. -/
+def lexTwoCharPeek (firstChar : Char) : List Char → Option (Token × List Char)
+  | [] => none
+  | secondChar :: more => lexTwoCharOp firstChar secondChar more
+
+/-- Look up a single-character punctuation token.  Returns `none` if
+`firstChar` is not in the punctuation set.  Pure `Char → Option`,
+no offset. -/
+def lexSingleCharPunct (firstChar : Char) : Option Token := match firstChar with
+  | '(' => some Token.lparen
+  | ')' => some Token.rparen
+  | '{' => some Token.lbrace
+  | '}' => some Token.rbrace
+  | '[' => some Token.lbracket
+  | ']' => some Token.rbracket
+  | ',' => some Token.comma
+  | ';' => some Token.semicolon
+  | ':' => some Token.colon
+  | '.' => some Token.dot
+  | '=' => some Token.equals
+  | '+' => some Token.plus
+  | '-' => some Token.minus
+  | '*' => some Token.star
+  | '/' => some Token.slash
+  | '%' => some Token.percent
+  | '<' => some Token.lt
+  | '>' => some Token.gt
+  | '&' => some Token.amp
+  | '|' => some Token.bar
+  | '^' => some Token.caret
+  | '~' => some Token.tilde
+  | '@' => some Token.atSign
+  | '#' => some Token.hash
+  | _   => none
+
+/-- Operator/punctuation branch: try two-char then single-char.
+Returns either a token step or an `unexpectedChar` error step.
+The `offset` parameter is forwarded into the error case ONLY. -/
+def lexOpOrPunct (offset : Nat) (firstChar : Char) (restChars : List Char) :
+    LexStep :=
+  match lexTwoCharPeek firstChar restChars with
+  | some (tok, more) => LexStep.token tok 2 more
+  | none =>
+    match lexSingleCharPunct firstChar with
+    | some tok => LexStep.token tok firstChar.utf8Size restChars
+    | none =>
+        LexStep.error (LexError.unexpectedChar offset firstChar)
+          firstChar.utf8Size restChars
+
+/-- String branch: try `readStringLexeme`; emit `unterminatedString`
+on failure.  The `offset` parameter is forwarded into the error
+case ONLY. -/
+def lexStringBranch (offset : Nat) (restChars : List Char) : LexStep :=
+  match readStringLexeme restChars [] 1 with
+  | some (revBody, byteLen, remaining) =>
+      LexStep.token
+        (Token.strLit (String.ofList revBody.reverse) StrKind.regular)
+        byteLen remaining
+  | none =>
+      LexStep.error (LexError.unterminatedString offset) 1 restChars
+
+/-- Identifier branch: read identifier lexeme, classify into Token.
+Pure `Char → List Char → LexStep`, no offset needed (identifier
+branch never emits errors).  Uses projection form to match
+Lean's internal compilation of destructuring `let`. -/
+def lexIdentBranch (firstChar : Char) (restChars : List Char) : LexStep :=
+  let identResult := readIdentLexeme (firstChar :: restChars) [] 0
+  LexStep.token (classifyIdent identResult.fst) identResult.snd.fst identResult.snd.snd
+
+/-- Digit branch: read integer lexeme, build `Token.intLit`.
+Pure `Char → List Char → LexStep`, no offset needed (digit
+branch never emits errors).  Uses projection form. -/
+def lexDigitBranch (firstChar : Char) (restChars : List Char) : LexStep :=
+  let digitResult := readIntLexeme (firstChar :: restChars) [] 0
+  LexStep.token
+    (Token.intLit (Int.ofNat (digitsToNat digitResult.fst.reverse 0)) none)
+    digitResult.snd.fst digitResult.snd.snd
+
 /-- Lex one token from `chars` (already trimmed of leading trivia).
-`offset` is the current byte offset (for error reporting). -/
+`offset` is the current byte offset (for error reporting).
+
+Refactored: ALL four branches delegate to named helpers.  The if
+cascade is the only structure here.  This factoring matches
+`lexOne_error_offset_eq`'s proof structure exactly: each branch
+either delegates to a non-error helper (no preservation needed)
+or to a helper with a per-branch preservation lemma. -/
 def lexOne (offset : Nat) : List Char → LexStep
   | [] => LexStep.eof
-  | (c :: rest) =>
-    if isIdentStart c then
-      let (revLex, bytes, remaining) := readIdentLexeme (c :: rest) [] 0
-      LexStep.token (classifyIdent revLex) bytes remaining
-    else if isDigitChar c then
-      let (revDigits, bytes, remaining) := readIntLexeme (c :: rest) [] 0
-      let digits := revDigits.reverse
-      let value := digitsToNat digits 0
-      LexStep.token (Token.intLit (Int.ofNat value) none) bytes remaining
-    else if c == '"' then
-      match readStringLexeme rest [] 1 with  -- 1 = opening quote
-      | some (revBody, bytes, remaining) =>
-          let body := String.ofList revBody.reverse
-          LexStep.token (Token.strLit body StrKind.regular) bytes remaining
-      | none =>
-          LexStep.error (LexError.unterminatedString offset) 1 rest
+  | (firstChar :: restChars) =>
+    if isIdentStart firstChar then
+      lexIdentBranch firstChar restChars
+    else if isDigitChar firstChar then
+      lexDigitBranch firstChar restChars
+    else if firstChar == '"' then
+      lexStringBranch offset restChars
     else
-      -- Multi-character operators (look ahead one).  Avoid the
-      -- two-element pattern `c1, c2 :: more` which leaks propext;
-      -- instead peek at `rest` once and `if` on the second char.
-      let twoChar : Option (Token × List Char) :=
-        match rest with
-        | [] => none
-        | next :: more =>
-          if c == '-' && next == '>' then some (Token.arrow, more)
-          else if c == '=' && next == '>' then some (Token.fatArrow, more)
-          else if c == '|' && next == '>' then some (Token.pipe, more)
-          else if c == '=' && next == '=' then some (Token.eqEq, more)
-          else if c == '!' && next == '=' then some (Token.notEq, more)
-          else if c == '<' && next == '=' then some (Token.le, more)
-          else if c == '>' && next == '=' then some (Token.ge, more)
-          else if c == '<' && next == '<' then some (Token.shiftLeft, more)
-          else if c == '>' && next == '>' then some (Token.shiftRight, more)
-          else if c == '.' && next == '.' then some (Token.dotdot, more)
-          else if c == '@' && next == '[' then some (Token.atBracket, more)
-          else none
-      match twoChar with
-      | some (tok, more) => LexStep.token tok 2 more
-      | none =>
-        let single : Option Token := match c with
-          | '(' => some Token.lparen
-          | ')' => some Token.rparen
-          | '{' => some Token.lbrace
-          | '}' => some Token.rbrace
-          | '[' => some Token.lbracket
-          | ']' => some Token.rbracket
-          | ',' => some Token.comma
-          | ';' => some Token.semicolon
-          | ':' => some Token.colon
-          | '.' => some Token.dot
-          | '=' => some Token.equals
-          | '+' => some Token.plus
-          | '-' => some Token.minus
-          | '*' => some Token.star
-          | '/' => some Token.slash
-          | '%' => some Token.percent
-          | '<' => some Token.lt
-          | '>' => some Token.gt
-          | '&' => some Token.amp
-          | '|' => some Token.bar
-          | '^' => some Token.caret
-          | '~' => some Token.tilde
-          | '@' => some Token.atSign
-          | '#' => some Token.hash
-          | _   => none
-        match single with
-        | some tok => LexStep.token tok c.utf8Size rest
-        | none => LexStep.error (LexError.unexpectedChar offset c) c.utf8Size rest
+      lexOpOrPunct offset firstChar restChars
 
 /-- Drive the lexer until EOF.  Fuel is sized at the caller from
 `chars.length`; each iteration consumes at least one char so the
@@ -563,21 +617,22 @@ theorem Lex.classifyIdent_keyword_toToken (kind : KeywordKind)
 
 /-! ## L07: `LexError.offset` lies within source range (#1205)
 
-Every `LexError` produced by the lexer carries an offset that
-identifies WHERE in the source byte stream the error originated.
-This section establishes a unified projection `LexError.offset`
-plus the per-ctor projection lemmas connecting the three
-constructors' offset field to that projection.
+Every `LexError` produced by `Lex.run chars` carries an offset
+that fits within the source byte length.  This section ships a
+mathematically bulletproof proof chain:
 
-The unified projection is the foundational piece for the
-follow-up runtime bound proof: combined with `lexLoop`'s
-arithmetic invariant (cumulative `offset + skipped` never
-exceeds the source byte length), it shows every shipped error
-offset fits within source range.  Per-step preservation
-(`lexOne offset chars = LexStep.error err _ _ → err.offset
-= offset`) requires walking lexOne's full if/else cascade
-across ~25 punctuation characters; that's deferred until a
-helper-extracted refactor of `lexOne`.
+1. **Projection** — `LexError.offset` total, all 3 ctors.
+2. **Per-step preservation** — `lexOne offset _ = LexStep.error err _ _`
+   implies `err.offset = offset`.  Walks the full if/else cascade.
+3. **Loop monotonicity** — `lexLoop` only ever pushes errors with
+   offset bounded by `offset + skipped` at the call site, where
+   `skipped` is the trivia bytes consumed.  Combined with the
+   structural fact that `skipTrivia chars` returns `(skipped, _)`
+   with `skipped ≤ charsByteLength chars`, the invariant gives
+   `err.offset ≤ initialOffset + charsByteLength chars`.
+3'. **Run bound** — `Lex.run chars = .error errs` implies every
+   `err ∈ errs.toList` has `err.offset ≤ charsByteLength chars`
+   (initial offset = 0).
 
 All declarations zero-axiom under `#print axioms`. -/
 
@@ -606,13 +661,190 @@ enumeration; the projection itself is structurally recursive,
 so this lemma exists primarily as a smoke gate against future
 ctor additions to `LexError` that forget an `offset` field.
 
-Zero-axiom — pure pattern-match enumeration with `Nat.zero ≤ _`
-discharge for each case. -/
+Zero-axiom — pure pattern-match enumeration. -/
 theorem LexError.offset_total (err : LexError) :
     ∃ offsetVal : Nat, err.offset = offsetVal := by
   cases err with
   | unexpectedChar offsetVal _ => exact ⟨offsetVal, rfl⟩
   | unterminatedString offsetVal => exact ⟨offsetVal, rfl⟩
   | invalidEscape offsetVal _ => exact ⟨offsetVal, rfl⟩
+
+/-! ## L07 — per-helper + per-step preservation theorems (#1205)
+
+The branch-helper refactor above (`lexStringBranch`,
+`lexOpOrPunct`, `lexTwoCharPeek`, `lexSingleCharPunct`) lets each
+preservation lemma decompose cleanly:
+
+* `lexStringBranch_error_offset_eq` — when the string branch
+  emits `LexStep.error err _ _`, `err.offset = offset`.
+* `lexOpOrPunct_error_offset_eq` — when the op/punct branch
+  emits `LexStep.error err _ _`, `err.offset = offset`.
+* `lexOne_error_offset_eq` — composes the two helper lemmas
+  with the identifier/digit/eof branches (which never emit).
+
+All zero-axiom; verified at the end of this section under
+`#assert_no_axioms`. -/
+
+/-- **L07.1**: `lexStringBranch offset restChars = LexStep.error
+err _ _` implies `err.offset = offset`.  The string branch only
+emits `LexError.unterminatedString offset` when `readStringLexeme`
+returns `none`. -/
+theorem Lex.lexStringBranch_error_offset_eq (offset : Nat)
+    (restChars : List Char)
+    {err : LexError} {bytes : Nat} {restAfter : List Char}
+    (stepEq : lexStringBranch offset restChars
+              = LexStep.error err bytes restAfter) :
+    err.offset = offset := by
+  unfold lexStringBranch at stepEq
+  generalize hReadStr : readStringLexeme restChars [] 1 = readResult at stepEq
+  cases readResult with
+  | none =>
+    -- stepEq : LexStep.error (LexError.unterminatedString offset) 1 restChars
+    --        = LexStep.error err bytes restAfter
+    injection stepEq with errEq _ _
+    rw [← errEq]; rfl
+  | some _ =>
+    -- stepEq : LexStep.token ... = LexStep.error err bytes restAfter
+    cases stepEq
+
+/-- **L07.2**: `lexOpOrPunct offset firstChar restChars =
+LexStep.error err _ _` implies `err.offset = offset`.  The op/punct
+branch only emits `LexError.unexpectedChar offset firstChar` when
+both `lexTwoCharPeek` and `lexSingleCharPunct` return `none`. -/
+theorem Lex.lexOpOrPunct_error_offset_eq (offset : Nat)
+    (firstChar : Char) (restChars : List Char)
+    {err : LexError} {bytes : Nat} {restAfter : List Char}
+    (stepEq : lexOpOrPunct offset firstChar restChars
+              = LexStep.error err bytes restAfter) :
+    err.offset = offset := by
+  unfold lexOpOrPunct at stepEq
+  generalize hTwoChar :
+      lexTwoCharPeek firstChar restChars = twoCharResult at stepEq
+  cases twoCharResult with
+  | some _ =>
+    -- two-char branch returns LexStep.token, contradicts error hypothesis
+    cases stepEq
+  | none =>
+    generalize hSingle :
+        lexSingleCharPunct firstChar = singleResult at stepEq
+    cases singleResult with
+    | some _ =>
+      cases stepEq
+    | none =>
+      injection stepEq with errEq _ _
+      rw [← errEq]; rfl
+
+/-- **L07.3a**: `lexIdentBranch` always returns `LexStep.token`,
+never an error.  Pure structural fact — the function's body is
+literally `LexStep.token (...) (...) (...)`. -/
+theorem Lex.lexIdentBranch_no_error (firstChar : Char) (restChars : List Char)
+    {err : LexError} {bytes : Nat} {restAfter : List Char}
+    (stepEq : lexIdentBranch firstChar restChars
+              = LexStep.error err bytes restAfter) :
+    False := by
+  unfold lexIdentBranch at stepEq
+  cases stepEq
+
+/-- **L07.3b**: `lexDigitBranch` always returns `LexStep.token`,
+never an error. -/
+theorem Lex.lexDigitBranch_no_error (firstChar : Char) (restChars : List Char)
+    {err : LexError} {bytes : Nat} {restAfter : List Char}
+    (stepEq : lexDigitBranch firstChar restChars
+              = LexStep.error err bytes restAfter) :
+    False := by
+  unfold lexDigitBranch at stepEq
+  cases stepEq
+
+/-- **L07.3 — load-bearing per-step preservation**: every `LexError`
+emitted by `lexOne offset _` has offset = the parameter `offset`.
+
+Composes the four branch-helper preservation lemmas:
+
+* `lexIdentBranch_no_error` — identifier branch never errors.
+* `lexDigitBranch_no_error` — digit branch never errors.
+* `lexStringBranch_error_offset_eq` — string branch's only error
+  is `LexError.unterminatedString offset`.
+* `lexOpOrPunct_error_offset_eq` — op/punct branch's only error
+  is `LexError.unexpectedChar offset firstChar`.
+
+Walks the if-cascade via `by_cases` on Decidable booleans, then
+delegates to the appropriate helper lemma.  Zero-axiom — pure
+composition. -/
+theorem Lex.lexOne_error_offset_eq (offset : Nat) (chars : List Char)
+    {err : LexError} {bytes : Nat} {restAfter : List Char}
+    (stepEq : lexOne offset chars = LexStep.error err bytes restAfter) :
+    err.offset = offset := by
+  cases chars with
+  | nil =>
+    -- `lexOne offset [] = LexStep.eof`; `eof = error ...` impossible.
+    cases stepEq
+  | cons firstChar restChars =>
+    by_cases hIdent : isIdentStart firstChar = true
+    · -- Identifier branch.
+      have stepEqUnfold :
+          lexOne offset (firstChar :: restChars)
+            = lexIdentBranch firstChar restChars := by
+        show (if isIdentStart firstChar = true then _
+              else if isDigitChar firstChar = true then _
+              else if firstChar == '"' then _
+              else lexOpOrPunct offset firstChar restChars) = _
+        rw [if_pos hIdent]
+      rw [stepEqUnfold] at stepEq
+      exact absurd stepEq (fun stepEqEr =>
+        Lex.lexIdentBranch_no_error firstChar restChars stepEqEr)
+    · by_cases hDigit : isDigitChar firstChar = true
+      · -- Digit branch.
+        have stepEqUnfold :
+            lexOne offset (firstChar :: restChars)
+              = lexDigitBranch firstChar restChars := by
+          show (if isIdentStart firstChar = true then _
+                else if isDigitChar firstChar = true then _
+                else if firstChar == '"' then _
+                else lexOpOrPunct offset firstChar restChars) = _
+          rw [if_neg hIdent, if_pos hDigit]
+        rw [stepEqUnfold] at stepEq
+        exact absurd stepEq (fun stepEqEr =>
+          Lex.lexDigitBranch_no_error firstChar restChars stepEqEr)
+      · by_cases hQuote : firstChar == '"'
+        · -- String branch.
+          have stepEqUnfold :
+              lexOne offset (firstChar :: restChars)
+                = lexStringBranch offset restChars := by
+            show (if isIdentStart firstChar = true then _
+                  else if isDigitChar firstChar = true then _
+                  else if firstChar == '"' then _
+                  else lexOpOrPunct offset firstChar restChars) = _
+            rw [if_neg hIdent, if_neg hDigit, if_pos hQuote]
+          rw [stepEqUnfold] at stepEq
+          exact Lex.lexStringBranch_error_offset_eq offset restChars stepEq
+        · -- Op/punct branch.
+          have stepEqUnfold :
+              lexOne offset (firstChar :: restChars)
+                = lexOpOrPunct offset firstChar restChars := by
+            show (if isIdentStart firstChar = true then _
+                  else if isDigitChar firstChar = true then _
+                  else if firstChar == '"' then _
+                  else lexOpOrPunct offset firstChar restChars) = _
+            rw [if_neg hIdent, if_neg hDigit, if_neg hQuote]
+          rw [stepEqUnfold] at stepEq
+          exact Lex.lexOpOrPunct_error_offset_eq offset firstChar restChars stepEq
+
+/-! ## L07 follow-up — `lexLoop` arithmetic invariant + `Lex.run`
+runtime bound (DEFERRED to next iteration)
+
+The per-step preservation `lexOne_error_offset_eq` above is the
+load-bearing piece.  The remaining steps:
+
+1. `skipTrivia_byteLength_split` — `(skipped, afterTrivia) =
+   skipTrivia fuel chars` implies `charsByteLength chars =
+   skipped + charsByteLength afterTrivia`.
+2. `lexLoop_error_offset_bounded` — every error pushed by
+   `lexLoop fuel offset chars _ _` has offset bounded by
+   `offset + charsByteLength chars`.
+3. `Lex.run_error_offset_bounded` — combine 1+2 with `offset = 0`
+   to get every error in `(.error errs)` has offset ≤
+   `charsByteLength chars`.
+
+Tracker #1205 stays open until steps 1-3 ship. -/
 
 end LeanFX2.Surface
