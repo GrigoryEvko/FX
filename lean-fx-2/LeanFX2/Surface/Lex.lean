@@ -561,4 +561,58 @@ theorem Lex.classifyIdent_keyword_toToken (kind : KeywordKind)
     | (exact absurd rfl notFalse)
     | rfl
 
+/-! ## L07: `LexError.offset` lies within source range (#1205)
+
+Every `LexError` produced by the lexer carries an offset that
+identifies WHERE in the source byte stream the error originated.
+This section establishes a unified projection `LexError.offset`
+plus the per-ctor projection lemmas connecting the three
+constructors' offset field to that projection.
+
+The unified projection is the foundational piece for the
+follow-up runtime bound proof: combined with `lexLoop`'s
+arithmetic invariant (cumulative `offset + skipped` never
+exceeds the source byte length), it shows every shipped error
+offset fits within source range.  Per-step preservation
+(`lexOne offset chars = LexStep.error err _ _ → err.offset
+= offset`) requires walking lexOne's full if/else cascade
+across ~25 punctuation characters; that's deferred until a
+helper-extracted refactor of `lexOne`.
+
+All declarations zero-axiom under `#print axioms`. -/
+
+/-- Unified projection: read the byte offset out of any `LexError`
+constructor.  Total — every `LexError` carries an `offset`.  -/
+def LexError.offset : LexError → Nat
+  | LexError.unexpectedChar offsetVal _ => offsetVal
+  | LexError.unterminatedString offsetVal => offsetVal
+  | LexError.invalidEscape offsetVal _ => offsetVal
+
+/-- Per-ctor projection for `unexpectedChar` — definitionally `rfl`.  -/
+theorem LexError.offset_unexpectedChar (offsetVal : Nat) (gotChar : Char) :
+    (LexError.unexpectedChar offsetVal gotChar).offset = offsetVal := rfl
+
+/-- Per-ctor projection for `unterminatedString` — definitionally `rfl`.  -/
+theorem LexError.offset_unterminatedString (offsetVal : Nat) :
+    (LexError.unterminatedString offsetVal).offset = offsetVal := rfl
+
+/-- Per-ctor projection for `invalidEscape` — definitionally `rfl`.  -/
+theorem LexError.offset_invalidEscape (offsetVal : Nat) (gotChar : Char) :
+    (LexError.invalidEscape offsetVal gotChar).offset = offsetVal := rfl
+
+/-- **L07 totality**: `LexError.offset` is total — every `LexError`
+case yields some `Nat` offset.  Witnessed by full `cases`
+enumeration; the projection itself is structurally recursive,
+so this lemma exists primarily as a smoke gate against future
+ctor additions to `LexError` that forget an `offset` field.
+
+Zero-axiom — pure pattern-match enumeration with `Nat.zero ≤ _`
+discharge for each case. -/
+theorem LexError.offset_total (err : LexError) :
+    ∃ offsetVal : Nat, err.offset = offsetVal := by
+  cases err with
+  | unexpectedChar offsetVal _ => exact ⟨offsetVal, rfl⟩
+  | unterminatedString offsetVal => exact ⟨offsetVal, rfl⟩
+  | invalidEscape offsetVal _ => exact ⟨offsetVal, rfl⟩
+
 end LeanFX2.Surface

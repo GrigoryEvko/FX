@@ -191,6 +191,14 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_kwFalse
 #assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_keyword_toToken
 
+/-! ### Surface.Lex — L07 LexError offset projection (#1205) -/
+
+#assert_no_axioms LeanFX2.Surface.LexError.offset
+#assert_no_axioms LeanFX2.Surface.LexError.offset_unexpectedChar
+#assert_no_axioms LeanFX2.Surface.LexError.offset_unterminatedString
+#assert_no_axioms LeanFX2.Surface.LexError.offset_invalidEscape
+#assert_no_axioms LeanFX2.Surface.LexError.offset_total
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff
