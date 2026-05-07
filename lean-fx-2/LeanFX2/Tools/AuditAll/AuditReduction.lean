@@ -119,4 +119,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.sessionRecvCong
 #assert_no_axioms LeanFX2.Step.par.effectPerformCong
 
+-- D2.10 typed compositional compat — exemplar `intervalOppCong`.
+#assert_no_axioms LeanFX2.Step.par.intervalOppCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.intervalOppCong.subst_compatible
+
 end LeanFX2.Tools

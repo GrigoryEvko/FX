@@ -125,6 +125,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.intervalOppCong
 #print axioms LeanFX2.Step.par.intervalMeetCong
 #print axioms LeanFX2.Step.par.intervalJoinCong
+-- D2.10 typed compositional compat — exemplar `intervalOppCong`.
+#print axioms LeanFX2.Step.par.intervalOppCong.rename_compatible
+#print axioms LeanFX2.Step.par.intervalOppCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

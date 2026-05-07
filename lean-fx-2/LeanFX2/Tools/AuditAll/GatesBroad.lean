@@ -79,6 +79,8 @@ namespace LeanFX2.Tools
 -- expect <X>Cong.rename_compatible and <X>Cong.subst_compatible.
 -- Without these, parallel-reduction substitution stability fails and
 -- the diamond cascade breaks.  Tight ratchet at current count.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 28
+-- D2.10 (2026-05-07): shipped typed compositional compat for
+-- `intervalOppCong` (the exemplar pattern), ratcheting 28 → 27.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 27
 
 end LeanFX2.Tools
