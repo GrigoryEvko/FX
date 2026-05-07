@@ -63,4 +63,66 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnUnitExpr
 #assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnLitExpr
 
+/-! ### Surface.KernelBridge — env-free bridge core (#1531) -/
+
+#assert_no_axioms LeanFX2.Surface.RawTerm.natOfNat
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?
+#assert_no_axioms LeanFX2.Surface.RawArgList.foldApps?
+#assert_no_axioms LeanFX2.Surface.RawCallArg.toRawTerm?
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.toRawTermOrUnit?
+#assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlock?
+#assert_no_axioms LeanFX2.Surface.Expr.toRawTerm?
+
+/-! ### Surface.KernelEnv — env-aware bridge core (#1531) -/
+
+#assert_no_axioms LeanFX2.Surface.KernelEnv.empty
+#assert_no_axioms LeanFX2.Surface.RawTerm.weakenIter
+#assert_no_axioms LeanFX2.Surface.ResolvedDef.liftToScope
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTermWithEnv?
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?
+#assert_no_axioms LeanFX2.Surface.RawArgList.foldAppsEnv?
+#assert_no_axioms LeanFX2.Surface.RawCallArg.toRawTermWithEnv?
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.toRawTermOrUnitEnv?
+#assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlockEnv?
+#assert_no_axioms LeanFX2.Surface.Expr.toRawTermWithEnv?
+
+/-! ### Surface.KernelEnvCorrespondence — env-empty equivalence (#1531) -/
+
+#assert_no_axioms LeanFX2.Surface.KernelEnv.empty_lookup_eq
+#assert_no_axioms LeanFX2.Surface.Literal.bridge_inclusion
+
+/-! ### Surface.KernelBridgeReduction — R-series per-ctor reduction lemmas (#1531) -/
+
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_unitLit
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_boolLit_true
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_boolLit_false
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_intLit_zero
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_decLit
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_floatLit
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_strLit
+#assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_intLit_neg
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawBound
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawFree
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawLit
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawUnit
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawParen
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawDot
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawApp
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawBinop
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawUnop
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawLam
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawBlock
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTerm?_rawIf
+#assert_no_axioms LeanFX2.Surface.RawArgList.foldApps?_rawNilArg
+#assert_no_axioms LeanFX2.Surface.RawArgList.foldApps?_rawConsArg
+#assert_no_axioms LeanFX2.Surface.RawCallArg.toRawTerm?_rawPositional
+#assert_no_axioms LeanFX2.Surface.RawCallArg.toRawTerm?_rawNamed
+#assert_no_axioms LeanFX2.Surface.RawCallArg.toRawTerm?_rawImplicit
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.toRawTermOrUnit?_rawNone
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.toRawTermOrUnit?_rawSome
+#assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawNilStmt
+#assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawLetCons
+#assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawExprCons
+
 end LeanFX2.Tools
