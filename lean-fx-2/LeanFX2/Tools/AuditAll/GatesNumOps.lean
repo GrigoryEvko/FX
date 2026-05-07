@@ -22,13 +22,13 @@ namespace LeanFX2.Tools
 
 -- OfNat / OfScientific dependent census.  OfNat instances let numeric
 -- literals inject into types; custom instances on inappropriate types
--- are literal-injection vectors.  540 today reflects pervasive use of
+-- are literal-injection vectors.  545 today reflects pervasive use of
 -- Nat literals in proofs plus the stronger `equivIntroHet` constructor
 -- shape, pointwise proof-function premise on `Term.oeqFunext`, the
--- dependent bool eliminator motive, and the ten Algo/Completeness M10
--- theorems (atomic + single-recurse) whose closure transitively pulls
--- in `Term.infer`.
-#assert_ofnat_dependent_budget LeanFX2 540
+-- dependent bool eliminator motive, and the FIFTEEN Algo/Completeness
+-- M10 theorems closing the full inferable subset (atomic + single-recurse
+-- + multi-recurse) whose closure transitively pulls in `Term.infer`.
+#assert_ofnat_dependent_budget LeanFX2 545
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -39,12 +39,14 @@ namespace LeanFX2.Tools
 #assert_function_property_dependent_budget LeanFX2 0
 
 -- Eq.symm / Eq.trans / Eq.mp / Eq.recOn / Eq.subst dependent census.
--- 776 today reflects pervasive equality-rewriting in proofs plus the
+-- 781 today reflects pervasive equality-rewriting in proofs plus the
 -- stronger `equivIntroHet` constructor shape and pointwise proof-function
 -- premise on `Term.oeqFunext`, plus the dependent bool eliminator motive,
--- plus the ten Algo/Completeness M10 theorems (atomic + single-recurse)
--- pulling in `Term.infer`.
-#assert_eq_rewriting_dependent_budget LeanFX2 776
+-- plus the FIFTEEN Algo/Completeness M10 theorems closing the full
+-- inferable subset (atomic + single-recurse + multi-recurse including
+-- the dsimp-only/dif_pos-rfl recipe for app/listCons) pulling in
+-- `Term.infer`.
+#assert_eq_rewriting_dependent_budget LeanFX2 781
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

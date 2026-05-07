@@ -43,13 +43,14 @@ namespace LeanFX2.Tools
 
 -- absurd / False.elim / False.rec dependent census.  These discharge
 -- contradictions; heavy use signals proofs threading through
--- contradictory hypotheses, sometimes vacuously.  539 today includes
+-- contradictory hypotheses, sometimes vacuously.  544 today includes
 -- the stronger `equivIntroHet` constructor shape and pointwise
 -- proof-function premise on `Term.oeqFunext`, plus the dependent bool
--- eliminator motive, plus the ten Algo/Completeness M10 theorems
--- (atomic + single-recurse) whose closure transitively pulls in
--- `Term.infer`'s match-arm impossible-case absurd discharges.
-#assert_absurd_false_dependent_budget LeanFX2 539
+-- eliminator motive, plus the FIFTEEN Algo/Completeness M10 theorems
+-- closing the full inferable subset (atomic + single-recurse +
+-- multi-recurse) whose closure transitively pulls in `Term.infer`'s
+-- match-arm impossible-case absurd discharges.
+#assert_absurd_false_dependent_budget LeanFX2 544
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the

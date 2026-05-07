@@ -34,14 +34,15 @@ namespace LeanFX2.Tools
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable
--- on Eq.  400 today includes the stronger `equivIntroHet` constructor
+-- on Eq.  405 today includes the stronger `equivIntroHet` constructor
 -- shape with inverse-law proof functions and the pointwise proof-function
 -- premise on `Term.oeqFunext`, plus the dependent bool eliminator motive,
--- plus the ten Algo/Completeness M10 theorems whose closure transitively
--- includes `Term.infer` (which uses `decide` on `Ty` equality at recursive
--- arms): five atomic-case + five single-recurse (natSucc / optionSome /
--- modIntro / modElim / subsume).
-#assert_decide_dependent_budget LeanFX2 400
+-- plus the FIFTEEN Algo/Completeness M10 theorems closing the full
+-- inferable subset (atomic + single-recurse + multi-recurse) whose
+-- closure transitively includes `Term.infer` (which uses `decide` on
+-- `Ty` equality at recursive arms — `app`'s domainEq, `listCons`'s
+-- elementEq, etc.).
+#assert_decide_dependent_budget LeanFX2 405
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions
