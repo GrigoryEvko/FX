@@ -878,6 +878,62 @@ theorem subst_compatible
 
 end sessionSendCong
 
+/-! ### `idStrictReflCong` (raw-witness inner premise, mode-strict gated).
+
+Mirrors `oeqReflCong` exactly, but with the `modeIsStrict` mode-
+discipline hypothesis threaded through (the `Term.idStrictRefl`
+constructor requires `mode = Mode.strict`, unlike `Term.oeqRefl`
+which is mode-polymorphic). -/
+namespace idStrictReflCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (renamedRawStep :
+      RawStep.par (witnessRawSource.rename rho)
+                  (witnessRawTarget.rename rho)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.idStrictRefl (context := sourceCtx) modeIsStrict
+          carrier witnessRawSource))
+      (Term.rename termRenaming
+        (Term.idStrictRefl (context := sourceCtx) modeIsStrict
+          carrier witnessRawTarget)) :=
+  Step.par.idStrictReflCong (carrier := carrier.rename rho)
+    modeIsStrict renamedRawStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (substitutedRawStep :
+      RawStep.par (witnessRawSource.subst sigma.forRaw)
+                  (witnessRawTarget.subst sigma.forRaw)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.idStrictRefl (context := sourceCtx) modeIsStrict
+          carrier witnessRawSource))
+      (Term.subst termSubst
+        (Term.idStrictRefl (context := sourceCtx) modeIsStrict
+          carrier witnessRawTarget)) :=
+  Step.par.idStrictReflCong (carrier := carrier.subst sigma)
+    modeIsStrict substitutedRawStep
+
+end idStrictReflCong
+
 end par
 
 end Step

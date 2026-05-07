@@ -154,6 +154,9 @@ Every declaration listed must report "does not depend on any axioms".
 #print axioms LeanFX2.Step.par.equivAppCong.subst_compatible
 #print axioms LeanFX2.Step.par.sessionSendCong.rename_compatible
 #print axioms LeanFX2.Step.par.sessionSendCong.subst_compatible
+-- D2.10 incremental: idStrictReflCong (mode-strict gated)
+#print axioms LeanFX2.Step.par.idStrictReflCong.rename_compatible
+#print axioms LeanFX2.Step.par.idStrictReflCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

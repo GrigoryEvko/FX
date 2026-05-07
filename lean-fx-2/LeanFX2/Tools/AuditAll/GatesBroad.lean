@@ -86,6 +86,8 @@ namespace LeanFX2.Tools
 -- codataDestCong, sessionRecvCong, cumulUpInnerCong, effectPerformCong,
 -- intervalMeetCong, intervalJoinCong, pathAppCong, equivAppCong,
 -- sessionSendCong), ratcheting 27 → 15.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 15
+-- D2.10 incremental (2026-05-07): shipped `idStrictReflCong` mirroring
+-- `oeqReflCong` with `modeIsStrict` threaded; ratchet 15 → 14.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 14
 
 end LeanFX2.Tools

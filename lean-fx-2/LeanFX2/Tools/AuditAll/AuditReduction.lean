@@ -153,4 +153,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.sessionSendCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.sessionSendCong.subst_compatible
 
+-- D2.10 typed compositional compat — incremental rule:
+-- `idStrictReflCong` (raw-witness inner premise, mode-strict gated).
+-- Mirrors `oeqReflCong` with `modeIsStrict` threaded through.
+#assert_no_axioms LeanFX2.Step.par.idStrictReflCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.idStrictReflCong.subst_compatible
+
 end LeanFX2.Tools
