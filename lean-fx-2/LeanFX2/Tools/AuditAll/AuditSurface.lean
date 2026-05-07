@@ -219,6 +219,10 @@ parameter through any emitted `LexError`.  Composed via
 #assert_no_axioms LeanFX2.Surface.Lex.lexDigitBranch_no_error
 #assert_no_axioms LeanFX2.Surface.Lex.lexOne_error_offset_eq
 
+/-! ### Surface.Lex — L07.4 byte-conservation invariants (#1205) -/
+
+#assert_no_axioms LeanFX2.Surface.Lex.skipUntilNewline_byteLength_invariant
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff

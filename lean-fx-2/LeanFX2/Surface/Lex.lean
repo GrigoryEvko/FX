@@ -114,11 +114,17 @@ def isWhitespaceChar (c : Char) : Bool :=
   c == ' ' || c == '\t' || c == '\n' || c == '\r'
 
 /-- Skip a line comment body up to the first newline (inclusive).
-Per fx_lexer.md §2.2.  Single-cons pattern keeps this propext-free. -/
+Per fx_lexer.md §2.2.  Single-cons pattern keeps this propext-free.
+
+Uses uniform `c.utf8Size` accounting in BOTH branches (newline
+itself is ASCII so `'\n'.utf8Size = 1`).  This uniform accounting
+makes the byte-conservation proof
+`Lex.skipUntilNewline_byteLength_invariant` propext-clean — the
+proof needs only `Nat.add_assoc`, no Char-eq case analysis. -/
 def skipUntilNewline : List Char → Nat → Nat × List Char
   | [], n => (n, [])
   | c :: rest, n =>
-    if c == '\n' then (n + 1, rest)
+    if c == '\n' then (n + c.utf8Size, rest)
     else skipUntilNewline rest (n + c.utf8Size)
 
 /-- Skip a block comment body up to the closing `*/` (inclusive).
@@ -829,22 +835,80 @@ theorem Lex.lexOne_error_offset_eq (offset : Nat) (chars : List Char)
           rw [stepEqUnfold] at stepEq
           exact Lex.lexOpOrPunct_error_offset_eq offset firstChar restChars stepEq
 
-/-! ## L07 follow-up — `lexLoop` arithmetic invariant + `Lex.run`
-runtime bound (DEFERRED to next iteration)
+/-! ## L07.4 — Byte-conservation invariants for trivia skippers
 
-The per-step preservation `lexOne_error_offset_eq` above is the
-load-bearing piece.  The remaining steps:
+The `lexLoop` arithmetic invariant requires that `skipTrivia`
+(and its helpers `skipUntilNewline` / `skipBlockComment`) conserve
+bytes: the bytes counted as "skipped" plus the bytes remaining in
+the output equal the bytes that came in (plus initial accumulator).
 
-1. `skipTrivia_byteLength_split` — `(skipped, afterTrivia) =
-   skipTrivia fuel chars` implies `charsByteLength chars =
-   skipped + charsByteLength afterTrivia`.
-2. `lexLoop_error_offset_bounded` — every error pushed by
-   `lexLoop fuel offset chars _ _` has offset bounded by
-   `offset + charsByteLength chars`.
-3. `Lex.run_error_offset_bounded` — combine 1+2 with `offset = 0`
-   to get every error in `(.error errs)` has offset ≤
-   `charsByteLength chars`.
+These are the foundation lemmas for the `Lex.run_error_offset_bounded`
+runtime theorem. -/
 
-Tracker #1205 stays open until steps 1-3 ship. -/
+/-- **L07.4a**: `skipUntilNewline` conserves bytes.
+
+For `(skipBytes, restAfter) = skipUntilNewline chars n`, we have
+`skipBytes + charsByteLength restAfter = n + charsByteLength chars`.
+
+Proof: induction on `chars`.  Both branches of `if c == '\n'` use
+`c.utf8Size` for byte accounting (uniform), so the proof needs
+only structural recursion + `Nat.add_assoc`.  No `omega`, no
+`decide`, no `of_decide_eq_true` — all propext-clean.
+
+Zero-axiom under `#assert_no_axioms`. -/
+theorem Lex.skipUntilNewline_byteLength_invariant :
+    ∀ (chars : List Char) (n : Nat),
+      let result := skipUntilNewline chars n
+      result.fst + charsByteLength result.snd = n + charsByteLength chars
+  | [], n => by
+    show n + charsByteLength [] = n + charsByteLength []
+    rfl
+  | firstChar :: restChars, n => by
+    show (skipUntilNewline (firstChar :: restChars) n).fst
+        + charsByteLength (skipUntilNewline (firstChar :: restChars) n).snd
+      = n + charsByteLength (firstChar :: restChars)
+    by_cases hNewline : firstChar == '\n'
+    · -- Newline branch: function returns (n + firstChar.utf8Size, restChars).
+      have stepReduces :
+          skipUntilNewline (firstChar :: restChars) n
+            = (n + firstChar.utf8Size, restChars) := by
+        show (if firstChar == '\n' then (n + firstChar.utf8Size, restChars)
+              else skipUntilNewline restChars (n + firstChar.utf8Size))
+            = (n + firstChar.utf8Size, restChars)
+        rw [if_pos hNewline]
+      rw [stepReduces]
+      show (n + firstChar.utf8Size) + charsByteLength restChars
+        = n + (firstChar.utf8Size + charsByteLength restChars)
+      exact Nat.add_assoc n firstChar.utf8Size (charsByteLength restChars)
+    · -- Non-newline branch: tail-recurses with n + firstChar.utf8Size.
+      have stepReduces :
+          skipUntilNewline (firstChar :: restChars) n
+            = skipUntilNewline restChars (n + firstChar.utf8Size) := by
+        show (if firstChar == '\n' then (n + firstChar.utf8Size, restChars)
+              else skipUntilNewline restChars (n + firstChar.utf8Size))
+            = skipUntilNewline restChars (n + firstChar.utf8Size)
+        rw [if_neg hNewline]
+      rw [stepReduces]
+      have ihRecursive :
+          (skipUntilNewline restChars (n + firstChar.utf8Size)).fst
+          + charsByteLength (skipUntilNewline restChars
+              (n + firstChar.utf8Size)).snd
+            = (n + firstChar.utf8Size) + charsByteLength restChars :=
+        Lex.skipUntilNewline_byteLength_invariant
+          restChars (n + firstChar.utf8Size)
+      rw [ihRecursive]
+      show n + firstChar.utf8Size + charsByteLength restChars
+        = n + (firstChar.utf8Size + charsByteLength restChars)
+      exact Nat.add_assoc n firstChar.utf8Size (charsByteLength restChars)
+
+/-! ## L07 follow-up — `skipBlockComment` + `skipTrivia` byte
+conservation + `lexLoop_error_offset_bounded` + `Lex.run_error_offset_bounded`
+(DEFERRED to next iteration)
+
+`skipUntilNewline_byteLength_invariant` above is the simplest of the
+three trivia byte-conservation lemmas.  `skipBlockComment` and
+`skipTrivia` follow the same pattern but require deeper case
+analysis.  Combined, they give the `lexLoop` arithmetic invariant
+that closes L07's runtime bound. -/
 
 end LeanFX2.Surface
