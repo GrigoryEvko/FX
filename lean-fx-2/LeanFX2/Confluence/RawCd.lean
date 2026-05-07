@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawPartialRename
 
 /-! # Confluence/RawCd — raw-side complete development
 
@@ -1707,6 +1708,92 @@ def RawTerm.cdIdStrictRecCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.cumulUpMarker _ => RawTerm.idStrictRec developedBase developedWitness
 
+/-- Cubical transport at a syntactically constant type path:
+`transp (pathLam typeRaw.weaken) source ⟶ source` (the cubical
+analog of `transp refl x ⟶ x`).  When the developed path is
+`pathLam pathBody` and `RawTerm.unweaken? pathBody` succeeds (i.e.
+`pathBody` is a weakened type code with no interval-binder
+dependence), fire the β reduction.  Otherwise rebuild as a
+`transp` cong.
+
+The 67-arm outer match keeps the match compiler propext-clean per
+`feedback_lean_zero_axiom_match.md`; the inner `Option (RawTerm
+scope)` match enumerates `some _` / `none` explicitly. -/
+def RawTerm.cdTranspCase {scope : Nat}
+    (developedPath developedSource : RawTerm scope) : RawTerm scope :=
+  match developedPath with
+  | RawTerm.pathLam pathBody =>
+    match RawTerm.unweaken? pathBody with
+    | some _ => developedSource
+    | none =>
+        RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.var _ => RawTerm.transp developedPath developedSource
+  | RawTerm.unit => RawTerm.transp developedPath developedSource
+  | RawTerm.lam _ => RawTerm.transp developedPath developedSource
+  | RawTerm.app _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.pair _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.fst _ => RawTerm.transp developedPath developedSource
+  | RawTerm.snd _ => RawTerm.transp developedPath developedSource
+  | RawTerm.boolTrue => RawTerm.transp developedPath developedSource
+  | RawTerm.boolFalse => RawTerm.transp developedPath developedSource
+  | RawTerm.boolElim _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.natZero => RawTerm.transp developedPath developedSource
+  | RawTerm.natSucc _ => RawTerm.transp developedPath developedSource
+  | RawTerm.natElim _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.natRec _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.listNil => RawTerm.transp developedPath developedSource
+  | RawTerm.listCons _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.listElim _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.optionNone => RawTerm.transp developedPath developedSource
+  | RawTerm.optionSome _ => RawTerm.transp developedPath developedSource
+  | RawTerm.optionMatch _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.eitherInl _ => RawTerm.transp developedPath developedSource
+  | RawTerm.eitherInr _ => RawTerm.transp developedPath developedSource
+  | RawTerm.eitherMatch _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.refl _ => RawTerm.transp developedPath developedSource
+  | RawTerm.idJ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.modIntro _ => RawTerm.transp developedPath developedSource
+  | RawTerm.modElim _ => RawTerm.transp developedPath developedSource
+  | RawTerm.subsume _ => RawTerm.transp developedPath developedSource
+  | RawTerm.interval0 => RawTerm.transp developedPath developedSource
+  | RawTerm.interval1 => RawTerm.transp developedPath developedSource
+  | RawTerm.intervalOpp _ => RawTerm.transp developedPath developedSource
+  | RawTerm.intervalMeet _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.intervalJoin _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.pathApp _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.glueIntro _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.glueElim _ => RawTerm.transp developedPath developedSource
+  | RawTerm.transp _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.hcomp _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.oeqRefl _ => RawTerm.transp developedPath developedSource
+  | RawTerm.oeqJ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.oeqFunext _ => RawTerm.transp developedPath developedSource
+  | RawTerm.idStrictRefl _ => RawTerm.transp developedPath developedSource
+  | RawTerm.idStrictRec _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.equivIntro _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.equivApp _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.refineIntro _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.refineElim _ => RawTerm.transp developedPath developedSource
+  | RawTerm.recordIntro _ => RawTerm.transp developedPath developedSource
+  | RawTerm.recordProj _ => RawTerm.transp developedPath developedSource
+  | RawTerm.codataUnfold _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.codataDest _ => RawTerm.transp developedPath developedSource
+  | RawTerm.sessionSend _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.sessionRecv _ => RawTerm.transp developedPath developedSource
+  | RawTerm.effectPerform _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.universeCode _ => RawTerm.transp developedPath developedSource
+  | RawTerm.arrowCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.piTyCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.sigmaTyCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.productCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.sumCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.listCode _ => RawTerm.transp developedPath developedSource
+  | RawTerm.optionCode _ => RawTerm.transp developedPath developedSource
+  | RawTerm.eitherCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.idCode _ _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.equivCode _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.cumulUpMarker _ => RawTerm.transp developedPath developedSource
+
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
 developed.  Zero axioms: full enumeration in every inner match
@@ -1779,6 +1866,13 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.glueIntro (RawTerm.cd baseValue) (RawTerm.cd partialValue)
   | _, .glueElim gluedValue => RawTerm.cdGlueElimCase (RawTerm.cd gluedValue)
   | _, .transp pathTerm sourceTerm =>
+      -- D2.5.4-F: `RawTerm.cdTranspCase` is staged as a helper but not yet
+      -- wired in.  Wiring requires `RawTerm.unweaken?_rename_lift_commute`
+      -- (~250-line structural induction) to discharge `RawCdRename.cd_rename`
+      -- and `RawCdDominates` transp arms.  The commute lemma plus the cd-arm
+      -- update lands in a follow-up commit (D2.5.4-F continuation) tracked
+      -- in #1583.  For now keep cd's transp arm as plain cong so the build
+      -- remains green and the cdTranspCase helper is auditable in isolation.
       RawTerm.transp (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
   | _, .hcomp sidesTerm capTerm =>
       RawTerm.hcomp (RawTerm.cd sidesTerm) (RawTerm.cd capTerm)
