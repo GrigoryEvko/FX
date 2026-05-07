@@ -93,6 +93,101 @@ inductive Expr : Nat -> Nat -> Type
       (fieldIndex : Nat)
       (targetExpr : Expr level scope) : Expr level scope
 
+namespace FVarId
+
+/-- Proof-carrying structural comparison for free-variable identifiers.
+
+`FVarId` is a single-ctor wrapper around `Name`; the comparison reduces
+to `Name.eqResult` on the underlying name, then promotes the witness
+through `congrArg FVarId.mk`. -/
+def eqResult : (leftFvarId rightFvarId : FVarId) ->
+    EqualityResult leftFvarId rightFvarId
+  | FVarId.mk leftName, FVarId.mk rightName =>
+      match Name.eqResult leftName rightName with
+      | EqualityResult.equal nameEquality =>
+          EqualityResult.equal (congrArg FVarId.mk nameEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
+end FVarId
+
+namespace MVarId
+
+/-- Proof-carrying structural comparison for metavariable identifiers.
+
+`MVarId` is a single-ctor wrapper around `Name`; the comparison reduces
+to `Name.eqResult` on the underlying name, then promotes the witness
+through `congrArg MVarId.mk`. -/
+def eqResult : (leftMvarId rightMvarId : MVarId) ->
+    EqualityResult leftMvarId rightMvarId
+  | MVarId.mk leftName, MVarId.mk rightName =>
+      match Name.eqResult leftName rightName with
+      | EqualityResult.equal nameEquality =>
+          EqualityResult.equal (congrArg MVarId.mk nameEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
+end MVarId
+
+namespace BinderInfo
+
+/-- Proof-carrying structural comparison for Lean binder information.
+
+Four-element enum: `default`, `implicit`, `strictImplicit`, `instImplicit`.
+Sixteen enumerated arms keep the equation compiler from collapsing
+shape-mismatch cases through wildcards (which would leak `propext`). -/
+def eqResult : (leftBinder rightBinder : BinderInfo) ->
+    EqualityResult leftBinder rightBinder
+  | BinderInfo.default, BinderInfo.default =>
+      EqualityResult.equal (Eq.refl BinderInfo.default)
+  | BinderInfo.default, BinderInfo.implicit => EqualityResult.notEqual
+  | BinderInfo.default, BinderInfo.strictImplicit => EqualityResult.notEqual
+  | BinderInfo.default, BinderInfo.instImplicit => EqualityResult.notEqual
+  | BinderInfo.implicit, BinderInfo.default => EqualityResult.notEqual
+  | BinderInfo.implicit, BinderInfo.implicit =>
+      EqualityResult.equal (Eq.refl BinderInfo.implicit)
+  | BinderInfo.implicit, BinderInfo.strictImplicit => EqualityResult.notEqual
+  | BinderInfo.implicit, BinderInfo.instImplicit => EqualityResult.notEqual
+  | BinderInfo.strictImplicit, BinderInfo.default => EqualityResult.notEqual
+  | BinderInfo.strictImplicit, BinderInfo.implicit => EqualityResult.notEqual
+  | BinderInfo.strictImplicit, BinderInfo.strictImplicit =>
+      EqualityResult.equal (Eq.refl BinderInfo.strictImplicit)
+  | BinderInfo.strictImplicit, BinderInfo.instImplicit =>
+      EqualityResult.notEqual
+  | BinderInfo.instImplicit, BinderInfo.default => EqualityResult.notEqual
+  | BinderInfo.instImplicit, BinderInfo.implicit => EqualityResult.notEqual
+  | BinderInfo.instImplicit, BinderInfo.strictImplicit =>
+      EqualityResult.notEqual
+  | BinderInfo.instImplicit, BinderInfo.instImplicit =>
+      EqualityResult.equal (Eq.refl BinderInfo.instImplicit)
+
+end BinderInfo
+
+namespace Literal
+
+/-- Proof-carrying structural comparison for Lean literal payloads.
+
+Two-element variant: `natVal` (Nat) and `strAtomVal` (Nat-encoded
+string atom).  Four enumerated arms; payloads compared via
+`NaturalNumber.eqResult` and lifted through `congrArg`. -/
+def eqResult : (leftLiteral rightLiteral : Literal) ->
+    EqualityResult leftLiteral rightLiteral
+  | Literal.natVal leftValue, Literal.natVal rightValue =>
+      match NaturalNumber.eqResult leftValue rightValue with
+      | EqualityResult.equal valueEquality =>
+          EqualityResult.equal (congrArg Literal.natVal valueEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Literal.natVal _leftValue, Literal.strAtomVal _rightAtomId =>
+      EqualityResult.notEqual
+  | Literal.strAtomVal _leftAtomId, Literal.natVal _rightValue =>
+      EqualityResult.notEqual
+  | Literal.strAtomVal leftAtomId, Literal.strAtomVal rightAtomId =>
+      match NaturalNumber.eqResult leftAtomId rightAtomId with
+      | EqualityResult.equal atomEquality =>
+          EqualityResult.equal
+            (congrArg Literal.strAtomVal atomEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
+end Literal
+
 namespace Expr
 
 /-- Copy an expression into another local-scope index.

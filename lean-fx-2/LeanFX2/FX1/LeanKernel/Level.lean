@@ -221,6 +221,119 @@ def le (leftLevel rightLevel : Level) : Prop :=
 theorem normalize_zero :
     Eq (normalize Level.zero) Level.zero := Eq.refl Level.zero
 
+/-- Proof-carrying structural comparison for Lean-kernel universe levels.
+
+The result either delivers an `Eq` witness on the equal case or signals
+structural mismatch.  This subsumes `Level.beq` for callers that need an
+equality witness without passing through Boolean contradiction lemmas.
+
+Mirrors the `Name.eqResult` shape and is a leaf prerequisite for the
+forthcoming `Expr.eqResult`, which the executable Lean-kernel checker will
+use when matching an inferred argument type against a Pi domain in the
+`Expr.app` typing rule (D8.7-EXTEND).
+
+Six structural cases × six structural cases = 36 enumerated arms; the
+match enumerates every constructor pair to keep the equation compiler from
+emitting `propext` via wildcard collapse (per the project's match-compiler
+propext recipes). -/
+def eqResult : (leftLevel rightLevel : Level) ->
+    EqualityResult leftLevel rightLevel
+  | Level.zero, Level.zero =>
+      EqualityResult.equal (Eq.refl Level.zero)
+  | Level.zero, Level.succ _rightBase => EqualityResult.notEqual
+  | Level.zero, Level.max _rightLeft _rightRight => EqualityResult.notEqual
+  | Level.zero, Level.imax _rightLeft _rightRight => EqualityResult.notEqual
+  | Level.zero, Level.param _rightName => EqualityResult.notEqual
+  | Level.zero, Level.mvar _rightName => EqualityResult.notEqual
+  | Level.succ _leftBase, Level.zero => EqualityResult.notEqual
+  | Level.succ leftBase, Level.succ rightBase =>
+      match eqResult leftBase rightBase with
+      | EqualityResult.equal baseEquality =>
+          EqualityResult.equal (congrArg Level.succ baseEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Level.succ _leftBase, Level.max _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.succ _leftBase, Level.imax _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.succ _leftBase, Level.param _rightName => EqualityResult.notEqual
+  | Level.succ _leftBase, Level.mvar _rightName => EqualityResult.notEqual
+  | Level.max _leftLeft _leftRight, Level.zero => EqualityResult.notEqual
+  | Level.max _leftLeft _leftRight, Level.succ _rightBase =>
+      EqualityResult.notEqual
+  | Level.max leftLeft leftRight, Level.max rightLeft rightRight =>
+      match eqResult leftLeft rightLeft with
+      | EqualityResult.equal leftEquality =>
+          match eqResult leftRight rightRight with
+          | EqualityResult.equal rightEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenLeft =>
+                      Level.max rewrittenLeft leftRight)
+                    leftEquality)
+                  (congrArg
+                    (fun rewrittenRight =>
+                      Level.max rightLeft rewrittenRight)
+                    rightEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Level.max _leftLeft _leftRight, Level.imax _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.max _leftLeft _leftRight, Level.param _rightName =>
+      EqualityResult.notEqual
+  | Level.max _leftLeft _leftRight, Level.mvar _rightName =>
+      EqualityResult.notEqual
+  | Level.imax _leftLeft _leftRight, Level.zero => EqualityResult.notEqual
+  | Level.imax _leftLeft _leftRight, Level.succ _rightBase =>
+      EqualityResult.notEqual
+  | Level.imax _leftLeft _leftRight, Level.max _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.imax leftLeft leftRight, Level.imax rightLeft rightRight =>
+      match eqResult leftLeft rightLeft with
+      | EqualityResult.equal leftEquality =>
+          match eqResult leftRight rightRight with
+          | EqualityResult.equal rightEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenLeft =>
+                      Level.imax rewrittenLeft leftRight)
+                    leftEquality)
+                  (congrArg
+                    (fun rewrittenRight =>
+                      Level.imax rightLeft rewrittenRight)
+                    rightEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Level.imax _leftLeft _leftRight, Level.param _rightName =>
+      EqualityResult.notEqual
+  | Level.imax _leftLeft _leftRight, Level.mvar _rightName =>
+      EqualityResult.notEqual
+  | Level.param _leftName, Level.zero => EqualityResult.notEqual
+  | Level.param _leftName, Level.succ _rightBase => EqualityResult.notEqual
+  | Level.param _leftName, Level.max _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.param _leftName, Level.imax _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.param leftName, Level.param rightName =>
+      match Name.eqResult leftName rightName with
+      | EqualityResult.equal nameEquality =>
+          EqualityResult.equal (congrArg Level.param nameEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | Level.param _leftName, Level.mvar _rightName => EqualityResult.notEqual
+  | Level.mvar _leftName, Level.zero => EqualityResult.notEqual
+  | Level.mvar _leftName, Level.succ _rightBase => EqualityResult.notEqual
+  | Level.mvar _leftName, Level.max _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.mvar _leftName, Level.imax _rightLeft _rightRight =>
+      EqualityResult.notEqual
+  | Level.mvar _leftName, Level.param _rightName => EqualityResult.notEqual
+  | Level.mvar leftName, Level.mvar rightName =>
+      match Name.eqResult leftName rightName with
+      | EqualityResult.equal nameEquality =>
+          EqualityResult.equal (congrArg Level.mvar nameEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
 end Level
 
 end FX1.LeanKernel
