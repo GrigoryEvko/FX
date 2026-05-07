@@ -461,4 +461,39 @@ theorem Expr.denoteIsTotalOnLitExpr {scope : Nat} (lit : Literal)
                 = some rawTerm :=
   Literal.bridgeIsTotalOnGapFree (scope := scope) lit gapFree
 
+/-! ## S04 bridge invariant theorem (#1288)
+
+The semantic equivalence `e ≅ r` between a decorated `Expr raw`
+and a kernel `RawTerm scope` is, by the design choice declared at
+the top of this file, the equation `Expr.denote e = some r`.
+
+Since `Expr.denote := Expr.toRawTerm?` is `@[reducible]`, the
+"bridge invariant" (bridge-success implies semantic equivalence
+between source `Expr` and target `RawTerm`) is the iff between
+the two `Option`-equality forms — `rfl` after unfolding `denote`.
+
+This theorem is intentionally trivial: the value lies in NAMING
+the invariant for downstream consumers, not in proof content.
+Future S-series entries for the env-aware bridge thread the same
+invariant via `Expr.toRawTermWithEnv?`. -/
+
+/-- S04 (tracker #1288): the bridge result IS the semantic
+equivalence witness.  Whenever `Expr.toRawTerm? expr = some
+target`, the decorated `Expr` denotes to `target`, and vice
+versa.  The equivalence relation `≅` between source surface
+and target kernel is exactly this denotational equality. -/
+theorem Expr.bridge_invariant {scope : Nat} {raw : RawExpr scope}
+    (expr : Expr raw) (target : RawTerm scope) :
+    Expr.toRawTerm? expr = some target ↔ Expr.denote expr = some target :=
+  Iff.rfl
+
+/-- S04 raw counterpart: the same invariant at the
+underlying-`RawExpr` layer.  Bridges the two-tier Surface AST
+to the kernel by witnessing semantic equivalence
+`raw ≅ target` as `RawExpr.denote raw = some target`. -/
+theorem RawExpr.bridge_invariant {scope : Nat}
+    (raw : RawExpr scope) (target : RawTerm scope) :
+    RawExpr.toRawTerm? raw = some target ↔ RawExpr.denote raw = some target :=
+  Iff.rfl
+
 end LeanFX2.Surface
