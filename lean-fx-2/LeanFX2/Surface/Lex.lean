@@ -518,4 +518,47 @@ theorem Lex.run_eof_terminated
     · rw [if_neg hErrorsEmpty] at runOkIf
       cases runOkIf
 
+/-! ## L02: classifyIdent reverses correctly (#1200)
+
+`classifyIdent` consumes the lexeme in REVERSED order (last
+char read = head of list) and reverses internally.  Composed
+with `KeywordKind.toLexemeChars` (which yields the FORWARD
+spelling), feeding `kind.toLexemeChars.reverse` into
+`classifyIdent` recovers the keyword token.
+
+Three cases: `trueK` and `falseK` decode to `Token.boolLit`
+(per `classifyIdent`'s special-case for boolean literals);
+every other keyword decodes to `kind.toToken`. -/
+
+/-- L02 case A: `trueK`'s lexeme `['t','r','u','e']` reversed
+through `classifyIdent` recovers the `boolLit true` token
+(NOT `Token.kwTrue`, because `classifyIdent` prefers the
+literal form for downstream parser convenience). -/
+theorem Lex.classifyIdent_kwTrue :
+    classifyIdent KeywordKind.trueK.toLexemeChars.reverse
+      = Token.boolLit true := by
+  decide
+
+/-- L02 case B: `falseK`'s lexeme `['f','a','l','s','e']` reversed
+through `classifyIdent` recovers the `boolLit false` token. -/
+theorem Lex.classifyIdent_kwFalse :
+    classifyIdent KeywordKind.falseK.toLexemeChars.reverse
+      = Token.boolLit false := by
+  decide
+
+/-- L02 case C: every keyword OTHER than `trueK`/`falseK`
+decodes through `classifyIdent` back to its canonical
+`Token.toToken` form.  The reversal cancels and the
+`fromCharsExact_toLexemeChars` round-trip recovers the
+original `KeywordKind`; the two `decide` guards both
+evaluate to `false` per the hypotheses. -/
+theorem Lex.classifyIdent_keyword_toToken (kind : KeywordKind)
+    (notTrue : kind ≠ KeywordKind.trueK)
+    (notFalse : kind ≠ KeywordKind.falseK) :
+    classifyIdent kind.toLexemeChars.reverse = kind.toToken := by
+  cases kind <;> first
+    | (exact absurd rfl notTrue)
+    | (exact absurd rfl notFalse)
+    | rfl
+
 end LeanFX2.Surface

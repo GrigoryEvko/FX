@@ -158,4 +158,10 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Expr.bridge_invariant
 #assert_no_axioms LeanFX2.Surface.RawExpr.bridge_invariant
 
+/-! ### Surface.Lex — L02 classifyIdent reversal correctness (#1200) -/
+
+#assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_kwTrue
+#assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_kwFalse
+#assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_keyword_toToken
+
 end LeanFX2.Tools
