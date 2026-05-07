@@ -112,6 +112,16 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.KernelEnv.empty_lookup_eq
 #assert_no_axioms LeanFX2.Surface.Literal.bridge_inclusion
 
+/-! ### Surface.KernelEnvCorrespondence — B10 atomic + vacuous inclusion (#1250) -/
+
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawBound
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawUnit
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawLit
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawFree
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawDot
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawBinop
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridge_inclusion_rawUnop
+
 /-! ### Surface.KernelBridgeReduction — R-series per-ctor reduction lemmas (#1531) -/
 
 #assert_no_axioms LeanFX2.Surface.Literal.toRawTerm?_unitLit

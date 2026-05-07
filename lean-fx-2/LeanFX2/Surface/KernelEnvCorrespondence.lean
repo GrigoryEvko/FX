@@ -116,4 +116,91 @@ theorem Literal.bridge_inclusion
   | tritLit _ _ _ =>
     nomatch envFreeEq
 
+/-! ## B10 partial: atomic + vacuous RawExpr inclusion (#1250)
+
+The full mutual-block correspondence (RawExpr × OptRawExpr ×
+RawArgList × RawCallArg × RawStmtList) is propext-blocked per
+the docstring above.  However, the **atomic** and **vacuous**
+RawExpr cases are non-recursive and ship cleanly:
+
+* atomic non-recursive ctors (`rawBound`, `rawUnit`) — both
+  bridges produce the same `some _` directly;
+* atomic recursive-leaf (`rawLit`) — delegates to `Literal.
+  bridge_inclusion`;
+* vacuous ctors (`rawFree`, `rawDot`, `rawBinop`, `rawUnop`) —
+  the env-free bridge always returns `none`, so the hypothesis
+  `toRawTerm? = some raw` is structurally impossible and the
+  conclusion follows by `nomatch`.
+
+These six theorems cover 6 of the 12 RawExpr ctors at the
+inclusion level, with the remaining six (`rawParen`, `rawApp`,
+`rawLam`, `rawBlock`, `rawIf` plus the OptRawExpr/list
+recursive cases) deferred per the docstring. -/
+
+/-- B10 atomic: bound variable inclusion. -/
+theorem RawExpr.bridge_inclusion_rawBound {scope : Nat}
+    (idx : Fin scope) (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm? (RawExpr.rawBound idx) = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawBound idx) = some raw := by
+  show some (RawTerm.var idx) = some raw
+  exact envFreeEq
+
+/-- B10 atomic: unit inclusion. -/
+theorem RawExpr.bridge_inclusion_rawUnit {scope : Nat}
+    (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm?
+                  (RawExpr.rawUnit (scope := scope)) = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawUnit (scope := scope)) = some raw := by
+  show some RawTerm.unit = some raw
+  exact envFreeEq
+
+/-- B10 leaf: literal inclusion delegates to `Literal.bridge_inclusion`. -/
+theorem RawExpr.bridge_inclusion_rawLit {scope : Nat}
+    (lit : Literal) (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm? (RawExpr.rawLit (scope := scope) lit)
+                  = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawLit lit) = some raw := by
+  show Literal.toRawTermWithEnv? KernelEnv.empty lit = some raw
+  exact Literal.bridge_inclusion (scope := scope) lit raw envFreeEq
+
+/-- B10 vacuous: free names always fail the env-free bridge,
+so the inclusion is discharged by `nomatch`. -/
+theorem RawExpr.bridge_inclusion_rawFree {scope : Nat}
+    (qname : QualifiedName) (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm?
+                  (RawExpr.rawFree (scope := scope) qname) = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawFree qname) = some raw := by
+  nomatch envFreeEq
+
+/-- B10 vacuous: dot projection always fails the env-free bridge. -/
+theorem RawExpr.bridge_inclusion_rawDot {scope : Nat}
+    {objRaw : RawExpr scope} (field : LowerIdent) (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm? (RawExpr.rawDot objRaw field)
+                  = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawDot objRaw field) = some raw := by
+  nomatch envFreeEq
+
+/-- B10 vacuous: binary ops always fail the env-free bridge. -/
+theorem RawExpr.bridge_inclusion_rawBinop {scope : Nat}
+    (op : BinaryOp) (lhs rhs : RawExpr scope) (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm? (RawExpr.rawBinop op lhs rhs)
+                  = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawBinop op lhs rhs) = some raw := by
+  nomatch envFreeEq
+
+/-- B10 vacuous: unary ops always fail the env-free bridge. -/
+theorem RawExpr.bridge_inclusion_rawUnop {scope : Nat}
+    (op : UnaryOp) (operand : RawExpr scope) (raw : RawTerm scope)
+    (envFreeEq : RawExpr.toRawTerm? (RawExpr.rawUnop op operand)
+                  = some raw) :
+    RawExpr.toRawTermWithEnv? (scope := scope)
+      KernelEnv.empty (RawExpr.rawUnop op operand) = some raw := by
+  nomatch envFreeEq
+
 end LeanFX2.Surface
