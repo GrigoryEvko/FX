@@ -314,6 +314,50 @@ theorem RawExpr.toRawTermWithEnv?_rawBinop_isCtor
     (RawExpr.rawBinop BinaryOp.isCtor lhs rhs).toRawTermWithEnv? env =
       none := rfl
 
+/-! ## B09 — env-aware freeNameExpr structural correctness (#1249)
+
+Free names (`rawFree qname`) are the surface representation of
+unbound qualified identifiers like `Std.Int.add` before
+elaboration.  The env-aware bridge looks up the qualified name
+in the kernel env and lifts the resolved definition's RawTerm to
+the local scope.
+
+The single smoke below pins the structural correspondence —
+both the failure path (`env.lookup qname = none → bridge none`)
+and the success path (`some resolved → resolved.liftToScope`)
+fall out of the canonical match form. -/
+
+/-- B09: free-name desugaring is exactly env-lookup composed
+with `ResolvedDef.liftToScope`.  `rfl` after definitional
+unfolding. -/
+theorem RawExpr.toRawTermWithEnv?_rawFree
+    {scope : Nat} (env : KernelEnv) (qname : QualifiedName) :
+    (RawExpr.rawFree (scope := scope) qname).toRawTermWithEnv? env =
+      (match env.lookup qname with
+       | none => none
+       | some resolved => resolved.liftToScope (scope := scope)) := rfl
+
+/-- B09: explicit failure-path corollary — when the env has no
+entry for `qname`, the bridge returns `none`.  Useful for
+downstream theorems that want to discharge the failure case
+without case-splitting on the inner match. -/
+theorem RawExpr.toRawTermWithEnv?_rawFree_lookupNone
+    {scope : Nat} (env : KernelEnv) (qname : QualifiedName)
+    (lookupFailed : env.lookup qname = none) :
+    (RawExpr.rawFree (scope := scope) qname).toRawTermWithEnv? env = none := by
+  rw [RawExpr.toRawTermWithEnv?_rawFree, lookupFailed]
+
+/-- B09: explicit success-path corollary — when the env resolves
+`qname` to `resolved`, the bridge returns
+`resolved.liftToScope`. -/
+theorem RawExpr.toRawTermWithEnv?_rawFree_lookupSome
+    {scope : Nat} (env : KernelEnv) (qname : QualifiedName)
+    (resolved : ResolvedDef)
+    (lookupOk : env.lookup qname = some resolved) :
+    (RawExpr.rawFree (scope := scope) qname).toRawTermWithEnv? env =
+      resolved.liftToScope (scope := scope) := by
+  rw [RawExpr.toRawTermWithEnv?_rawFree, lookupOk]
+
 /-! ## B08 — env-aware binopExpr structural correctness (#1248)
 
 For every "regular" binary operator (those with a stdlib qualified

@@ -164,6 +164,12 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawBinop_logicalAnd
 #assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawBinop_bitAnd
 
+/-! ### Surface.KernelEnv — B09 env-aware freeNameExpr correctness (#1249) -/
+
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawFree
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawFree_lookupNone
+#assert_no_axioms LeanFX2.Surface.RawExpr.toRawTermWithEnv?_rawFree_lookupSome
+
 /-! ### Surface.Semantics — S04 bridge invariant theorems (#1288) -/
 
 #assert_no_axioms LeanFX2.Surface.Expr.bridge_invariant
