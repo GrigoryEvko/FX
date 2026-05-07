@@ -42,6 +42,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.MVarId.eqResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.BinderInfo.eqResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Literal.eqResult
+#assert_no_axioms LeanFX2.FX1.LeanKernel.MDataEntry.eqResult
+#assert_no_axioms LeanFX2.FX1.LeanKernel.MData.eqResult
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.eqResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.FVarId
 #assert_no_axioms LeanFX2.FX1.LeanKernel.MVarId
 #assert_no_axioms LeanFX2.FX1.LeanKernel.BinderInfo

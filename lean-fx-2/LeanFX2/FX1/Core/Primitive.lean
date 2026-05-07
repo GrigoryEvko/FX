@@ -90,4 +90,64 @@ def eqResult : (leftIndex rightIndex : Nat) ->
 
 end NaturalNumber
 
+namespace Boolean
+
+/-- Proof-carrying structural comparison for booleans.
+
+Avoids host `Bool.beq` and Lean's auto-derived `DecidableEq Bool` (the
+auto-derivation pulls in `propext` through the equation compiler when
+the result type is later eliminated dependently).  Four enumerated
+arms; equal cases return `Eq.refl`. -/
+def eqResult : (leftBool rightBool : Bool) ->
+    EqualityResult leftBool rightBool
+  | true, true => EqualityResult.equal (Eq.refl true)
+  | true, false => EqualityResult.notEqual
+  | false, true => EqualityResult.notEqual
+  | false, false => EqualityResult.equal (Eq.refl false)
+
+end Boolean
+
+namespace ListPayload
+
+/-- Proof-carrying structural comparison for lists, parametrised by a
+per-element comparator.
+
+The element comparator must produce an `EqualityResult` carrying an
+`Eq` witness on the equal case; the four list arms (nil/nil,
+nil/cons, cons/nil, cons/cons) lift those witnesses through
+`congrArg` + `Eq.trans` over the cons constructor.
+
+Used by `MData.eqResult` (List of MDataEntry) and by `Expr.eqResult`
+in the `Expr.const _ levels` arm (List of Level).  Keeping the
+recursion on `leftList` makes structural-recursion termination
+obvious. -/
+def eqResult {alpha : Type}
+    (elementEq :
+      (leftElement rightElement : alpha) ->
+        EqualityResult leftElement rightElement) :
+    (leftList rightList : List alpha) -> EqualityResult leftList rightList
+  | List.nil, List.nil =>
+      EqualityResult.equal (Eq.refl (List.nil : List alpha))
+  | List.nil, List.cons _rightHead _rightTail => EqualityResult.notEqual
+  | List.cons _leftHead _leftTail, List.nil => EqualityResult.notEqual
+  | List.cons leftHead leftTail, List.cons rightHead rightTail =>
+      match elementEq leftHead rightHead with
+      | EqualityResult.equal headEquality =>
+          match eqResult elementEq leftTail rightTail with
+          | EqualityResult.equal tailEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenHead =>
+                      List.cons rewrittenHead leftTail)
+                    headEquality)
+                  (congrArg
+                    (fun rewrittenTail =>
+                      List.cons rightHead rewrittenTail)
+                    tailEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
+end ListPayload
+
 end LeanFX2.FX1

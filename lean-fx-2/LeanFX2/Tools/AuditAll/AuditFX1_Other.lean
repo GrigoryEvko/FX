@@ -21,6 +21,8 @@ namespace LeanFX2.Tools
 
 #assert_no_axioms LeanFX2.FX1.Boolean.and_true_left
 #assert_no_axioms LeanFX2.FX1.Boolean.and_true_right
+#assert_no_axioms LeanFX2.FX1.Boolean.eqResult
+#assert_no_axioms LeanFX2.FX1.ListPayload.eqResult
 #assert_no_axioms LeanFX2.FX1.EqualityResult
 #assert_no_axioms LeanFX2.FX1.EqualityResult.equal
 #assert_no_axioms LeanFX2.FX1.EqualityResult.notEqual

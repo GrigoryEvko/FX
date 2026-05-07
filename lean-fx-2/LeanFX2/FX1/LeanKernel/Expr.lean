@@ -188,6 +188,55 @@ def eqResult : (leftLiteral rightLiteral : Literal) ->
 
 end Literal
 
+namespace MDataEntry
+
+/-- Proof-carrying structural comparison for `MDataEntry` records.
+
+`MDataEntry` is a two-field record with `keyName : Name` and
+`valueAtomId : Nat`.  Comparison reduces to `Name.eqResult` on the key
+and `NaturalNumber.eqResult` on the atom id, then lifts both witnesses
+through `congrArg` over the record constructor `MDataEntry.mk`. -/
+def eqResult : (leftEntry rightEntry : MDataEntry) ->
+    EqualityResult leftEntry rightEntry
+  | { keyName := leftKey, valueAtomId := leftAtomId },
+    { keyName := rightKey, valueAtomId := rightAtomId } =>
+      match Name.eqResult leftKey rightKey with
+      | EqualityResult.equal keyEquality =>
+          match NaturalNumber.eqResult leftAtomId rightAtomId with
+          | EqualityResult.equal atomEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenKey =>
+                      MDataEntry.mk rewrittenKey leftAtomId)
+                    keyEquality)
+                  (congrArg
+                    (fun rewrittenAtom =>
+                      MDataEntry.mk rightKey rewrittenAtom)
+                    atomEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
+end MDataEntry
+
+namespace MData
+
+/-- Proof-carrying structural comparison for `MData` records.
+
+`MData` is a single-field record over `List MDataEntry`; comparison
+delegates to `ListPayload.eqResult MDataEntry.eqResult` on the entries
+list, then lifts via `congrArg MData.mk`. -/
+def eqResult : (leftMetadata rightMetadata : MData) ->
+    EqualityResult leftMetadata rightMetadata
+  | { entries := leftEntries }, { entries := rightEntries } =>
+      match
+        ListPayload.eqResult MDataEntry.eqResult leftEntries rightEntries with
+      | EqualityResult.equal entriesEquality =>
+          EqualityResult.equal (congrArg MData.mk entriesEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+
+end MData
+
 namespace Expr
 
 /-- Copy an expression into another local-scope index.
@@ -280,6 +329,418 @@ theorem nodeCount_mdata {level scope : Nat}
       (nodeCount (Expr.mdata metadata bodyExpr))
       (Nat.succ (nodeCount bodyExpr)) :=
   Eq.refl (Nat.succ (nodeCount bodyExpr))
+
+/-- Proof-carrying structural comparison for the 12-ctor encoded Lean
+expression syntax.
+
+Returns `EqualityResult.equal` carrying an `Eq leftExpr rightExpr`
+witness when the two expressions are structurally identical, otherwise
+`EqualityResult.notEqual`.  Recursion is structural on the first
+argument; for binders (`lam` / `forallE` / `letE`) the body lives at
+`Expr level (Nat.succ scope)` and the recursive call uses
+`eqResult`'s scope polymorphism to descend uniformly.
+
+All 144 constructor pairs (12 × 12) are enumerated explicitly to keep
+Lean's match compiler from emitting `propext`-dependent equation
+lemmas on the indexed `Expr level scope` inductive — wildcards or
+partial patterns over indexed inductives leak `propext` through
+auto-generated equation rewriters in Lean 4 v4.29.1 (per the
+project's match-compiler propext recipes).
+
+This is the load-bearing prerequisite for D8.7-EXTEND HasType.app:
+the executable Lean-kernel checker needs to verify an inferred
+argument type matches a Pi domain via decidable structural equality. -/
+def eqResult {level : Nat} : {scope : Nat} ->
+    (leftExpr rightExpr : Expr level scope) ->
+      EqualityResult leftExpr rightExpr
+  -- bvar (1)
+  | _scope, Expr.bvar leftPosition, Expr.bvar rightPosition =>
+      match NaturalNumber.eqResult leftPosition rightPosition with
+      | EqualityResult.equal positionEquality =>
+          EqualityResult.equal (congrArg Expr.bvar positionEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.bvar _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- fvar (2)
+  | _scope, Expr.fvar _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.fvar leftFvarId, Expr.fvar rightFvarId =>
+      match FVarId.eqResult leftFvarId rightFvarId with
+      | EqualityResult.equal fvarEquality =>
+          EqualityResult.equal (congrArg Expr.fvar fvarEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.fvar _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- mvar (3)
+  | _scope, Expr.mvar _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.mvar leftMvarId, Expr.mvar rightMvarId =>
+      match MVarId.eqResult leftMvarId rightMvarId with
+      | EqualityResult.equal mvarEquality =>
+          EqualityResult.equal (congrArg Expr.mvar mvarEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.mvar _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- sort (4)
+  | _scope, Expr.sort _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.sort leftSortLevel, Expr.sort rightSortLevel =>
+      match Level.eqResult leftSortLevel rightSortLevel with
+      | EqualityResult.equal sortLevelEquality =>
+          EqualityResult.equal (congrArg Expr.sort sortLevelEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.sort _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- const (5)
+  | _scope, Expr.const _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope,
+    Expr.const leftConstName leftLevels,
+    Expr.const rightConstName rightLevels =>
+      match Name.eqResult leftConstName rightConstName with
+      | EqualityResult.equal constNameEquality =>
+          match
+            ListPayload.eqResult Level.eqResult leftLevels rightLevels with
+          | EqualityResult.equal levelsEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenName =>
+                      Expr.const rewrittenName leftLevels)
+                    constNameEquality)
+                  (congrArg
+                    (fun rewrittenLevels =>
+                      Expr.const rightConstName rewrittenLevels)
+                    levelsEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.const _ _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- app (6)
+  | _scope, Expr.app _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope,
+    Expr.app leftFunction leftArgument,
+    Expr.app rightFunction rightArgument =>
+      match eqResult leftFunction rightFunction with
+      | EqualityResult.equal functionEquality =>
+          match eqResult leftArgument rightArgument with
+          | EqualityResult.equal argumentEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenFn => Expr.app rewrittenFn leftArgument)
+                    functionEquality)
+                  (congrArg
+                    (fun rewrittenArg =>
+                      Expr.app rightFunction rewrittenArg)
+                    argumentEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.app _ _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- lam (7)
+  | _scope, Expr.lam _ _ _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope,
+    Expr.lam leftBinderName leftDomain leftBody leftBinderInfo,
+    Expr.lam rightBinderName rightDomain rightBody rightBinderInfo =>
+      match Name.eqResult leftBinderName rightBinderName with
+      | EqualityResult.equal binderNameEquality =>
+          match eqResult leftDomain rightDomain with
+          | EqualityResult.equal domainEquality =>
+              match eqResult leftBody rightBody with
+              | EqualityResult.equal bodyEquality =>
+                  match
+                    BinderInfo.eqResult leftBinderInfo rightBinderInfo with
+                  | EqualityResult.equal binderInfoEquality =>
+                      EqualityResult.equal
+                        (Eq.trans
+                          (Eq.trans
+                            (Eq.trans
+                              (congrArg
+                                (fun rewrittenName =>
+                                  Expr.lam rewrittenName
+                                    leftDomain leftBody leftBinderInfo)
+                                binderNameEquality)
+                              (congrArg
+                                (fun rewrittenDomain =>
+                                  Expr.lam rightBinderName
+                                    rewrittenDomain leftBody leftBinderInfo)
+                                domainEquality))
+                            (congrArg
+                              (fun rewrittenBody =>
+                                Expr.lam rightBinderName rightDomain
+                                  rewrittenBody leftBinderInfo)
+                              bodyEquality))
+                          (congrArg
+                            (fun rewrittenBinderInfo =>
+                              Expr.lam rightBinderName rightDomain
+                                rightBody rewrittenBinderInfo)
+                            binderInfoEquality))
+                  | EqualityResult.notEqual => EqualityResult.notEqual
+              | EqualityResult.notEqual => EqualityResult.notEqual
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.lam _ _ _ _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- forallE (8)
+  | _scope, Expr.forallE _ _ _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope,
+    Expr.forallE leftBinderName leftDomain leftBody leftBinderInfo,
+    Expr.forallE rightBinderName rightDomain rightBody rightBinderInfo =>
+      match Name.eqResult leftBinderName rightBinderName with
+      | EqualityResult.equal binderNameEquality =>
+          match eqResult leftDomain rightDomain with
+          | EqualityResult.equal domainEquality =>
+              match eqResult leftBody rightBody with
+              | EqualityResult.equal bodyEquality =>
+                  match
+                    BinderInfo.eqResult leftBinderInfo rightBinderInfo with
+                  | EqualityResult.equal binderInfoEquality =>
+                      EqualityResult.equal
+                        (Eq.trans
+                          (Eq.trans
+                            (Eq.trans
+                              (congrArg
+                                (fun rewrittenName =>
+                                  Expr.forallE rewrittenName
+                                    leftDomain leftBody leftBinderInfo)
+                                binderNameEquality)
+                              (congrArg
+                                (fun rewrittenDomain =>
+                                  Expr.forallE rightBinderName
+                                    rewrittenDomain leftBody leftBinderInfo)
+                                domainEquality))
+                            (congrArg
+                              (fun rewrittenBody =>
+                                Expr.forallE rightBinderName rightDomain
+                                  rewrittenBody leftBinderInfo)
+                              bodyEquality))
+                          (congrArg
+                            (fun rewrittenBinderInfo =>
+                              Expr.forallE rightBinderName rightDomain
+                                rightBody rewrittenBinderInfo)
+                            binderInfoEquality))
+                  | EqualityResult.notEqual => EqualityResult.notEqual
+              | EqualityResult.notEqual => EqualityResult.notEqual
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.letE _ _ _ _ _ =>
+      EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.forallE _ _ _ _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- letE (9)
+  | _scope, Expr.letE _ _ _ _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.forallE _ _ _ _ =>
+      EqualityResult.notEqual
+  | _scope,
+    Expr.letE leftDeclName leftType leftValue leftBody leftNonDep,
+    Expr.letE rightDeclName rightType rightValue rightBody rightNonDep =>
+      match Name.eqResult leftDeclName rightDeclName with
+      | EqualityResult.equal declNameEquality =>
+          match eqResult leftType rightType with
+          | EqualityResult.equal typeEquality =>
+              match eqResult leftValue rightValue with
+              | EqualityResult.equal valueEquality =>
+                  match eqResult leftBody rightBody with
+                  | EqualityResult.equal bodyEquality =>
+                      match
+                        Boolean.eqResult leftNonDep rightNonDep with
+                      | EqualityResult.equal nonDepEquality =>
+                          EqualityResult.equal
+                            (Eq.trans
+                              (Eq.trans
+                                (Eq.trans
+                                  (Eq.trans
+                                    (congrArg
+                                      (fun rewrittenName =>
+                                        Expr.letE rewrittenName leftType
+                                          leftValue leftBody leftNonDep)
+                                      declNameEquality)
+                                    (congrArg
+                                      (fun rewrittenType =>
+                                        Expr.letE rightDeclName rewrittenType
+                                          leftValue leftBody leftNonDep)
+                                      typeEquality))
+                                  (congrArg
+                                    (fun rewrittenValue =>
+                                      Expr.letE rightDeclName rightType
+                                        rewrittenValue leftBody leftNonDep)
+                                    valueEquality))
+                                (congrArg
+                                  (fun rewrittenBody =>
+                                    Expr.letE rightDeclName rightType
+                                      rightValue rewrittenBody leftNonDep)
+                                  bodyEquality))
+                              (congrArg
+                                (fun rewrittenNonDep =>
+                                  Expr.letE rightDeclName rightType
+                                    rightValue rightBody rewrittenNonDep)
+                                nonDepEquality))
+                      | EqualityResult.notEqual => EqualityResult.notEqual
+                  | EqualityResult.notEqual => EqualityResult.notEqual
+              | EqualityResult.notEqual => EqualityResult.notEqual
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.letE _ _ _ _ _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- lit (10)
+  | _scope, Expr.lit _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.lit leftLiteral, Expr.lit rightLiteral =>
+      match Literal.eqResult leftLiteral rightLiteral with
+      | EqualityResult.equal literalEquality =>
+          EqualityResult.equal (congrArg Expr.lit literalEquality)
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope, Expr.lit _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- mdata (11)
+  | _scope, Expr.mdata _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope,
+    Expr.mdata leftMetadata leftBody,
+    Expr.mdata rightMetadata rightBody =>
+      match MData.eqResult leftMetadata rightMetadata with
+      | EqualityResult.equal metadataEquality =>
+          match eqResult leftBody rightBody with
+          | EqualityResult.equal bodyEquality =>
+              EqualityResult.equal
+                (Eq.trans
+                  (congrArg
+                    (fun rewrittenMetadata =>
+                      Expr.mdata rewrittenMetadata leftBody)
+                    metadataEquality)
+                  (congrArg
+                    (fun rewrittenBody =>
+                      Expr.mdata rightMetadata rewrittenBody)
+                    bodyEquality))
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
+  | _scope, Expr.mdata _ _, Expr.proj _ _ _ => EqualityResult.notEqual
+  -- proj (12)
+  | _scope, Expr.proj _ _ _, Expr.bvar _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.fvar _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.mvar _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.sort _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.const _ _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.app _ _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.lam _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.forallE _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.letE _ _ _ _ _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.lit _ => EqualityResult.notEqual
+  | _scope, Expr.proj _ _ _, Expr.mdata _ _ => EqualityResult.notEqual
+  | _scope,
+    Expr.proj leftStructName leftFieldIndex leftTarget,
+    Expr.proj rightStructName rightFieldIndex rightTarget =>
+      match Name.eqResult leftStructName rightStructName with
+      | EqualityResult.equal structNameEquality =>
+          match
+            NaturalNumber.eqResult leftFieldIndex rightFieldIndex with
+          | EqualityResult.equal fieldIndexEquality =>
+              match eqResult leftTarget rightTarget with
+              | EqualityResult.equal targetEquality =>
+                  EqualityResult.equal
+                    (Eq.trans
+                      (Eq.trans
+                        (congrArg
+                          (fun rewrittenName =>
+                            Expr.proj rewrittenName
+                              leftFieldIndex leftTarget)
+                          structNameEquality)
+                        (congrArg
+                          (fun rewrittenIndex =>
+                            Expr.proj rightStructName
+                              rewrittenIndex leftTarget)
+                          fieldIndexEquality))
+                      (congrArg
+                        (fun rewrittenTarget =>
+                          Expr.proj rightStructName
+                            rightFieldIndex rewrittenTarget)
+                        targetEquality))
+              | EqualityResult.notEqual => EqualityResult.notEqual
+          | EqualityResult.notEqual => EqualityResult.notEqual
+      | EqualityResult.notEqual => EqualityResult.notEqual
 
 end Expr
 
