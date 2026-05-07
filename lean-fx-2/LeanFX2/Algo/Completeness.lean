@@ -1,13 +1,12 @@
 import LeanFX2.Algo.Infer
 
-/-! # Algo/Completeness — algorithmic completeness (atomic fragment)
+/-! # Algo/Completeness — algorithmic completeness (atomic + single-recurse)
 
 Every well-typed Term is recovered by `Term.infer` on its raw
-projection.  This file ships the atomic cases — each is `rfl`
-because `Term.infer` is structurally aligned with `Term`'s
-constructors at the inferable subset.
+projection.  This file ships the atomic cases (each `rfl`) and the
+single-recurse cases (`unfold`/`rw [innerIH]` after structural IH).
 
-## Atomic fragment shipped here
+## Atomic fragment
 
 * `infer_complete_var` — `Term.var position` round-trips through
   `Term.infer context (RawTerm.var position)`.
@@ -15,15 +14,25 @@ constructors at the inferable subset.
   `infer_complete_boolFalse`, `infer_complete_natZero` — the four
   nullary canonical-head cases.
 
-## What is NOT shipped here yet
+## Single-recurse fragment (Phase 4 partial)
 
-The recursive cases (`natSucc`, `app`, `fst`, `snd`, `listCons`,
-`optionSome`, `idJ`, `modIntro`, `modElim`, `subsume`) require
-inductive completeness over the inferred sub-term — they live in a
-follow-on file once the recursive pattern is established.  The
-non-inferable (check-mode-only) cases — `lam`, `pair`, `refl`,
-eliminators — require `Term.check` completeness, deferred to the
-broader M10 milestone (#1279).
+Each of these takes the inner term's completeness as a hypothesis
+(structural IH) and pushes through one match-arm of `Term.infer`:
+
+* `infer_complete_natSucc` — DecidableEq dispatch on `Ty.nat`.
+* `infer_complete_optionSome` — pure pass-through (no DecEq).
+* `infer_complete_modIntro` / `_modElim` / `_subsume` — modal-marker
+  pass-through (type unchanged).
+
+## What is NOT shipped yet
+
+Multi-recurse cases (`app`, `fst`, `snd`, `listCons`, `idJ`)
+require destructuring on inferred sub-term Ty shape and cross-
+arm coordination (e.g. `app` synth's fn at `.arrow domainType
+codomainType` then synth's arg at `domainType`).  Pending Phase 4
+remaining items.  The non-inferable (check-mode-only) cases
+— `lam`, `pair`, `refl`, eliminators — require `Term.check`
+completeness, deferred to the broader M10 milestone (#1279).
 
 ## Why atomic-only first
 
@@ -80,5 +89,76 @@ theorem Term.infer_complete_natZero
     (context : Ctx mode level scope) :
     Term.infer context RawTerm.natZero
       = some ⟨Ty.nat, Term.natZero⟩ := rfl
+
+/-- Completeness of `Term.infer` at `natSucc`.  Given that the
+inner term `innerTerm : Term context Ty.nat innerRaw` is recovered
+by `Term.infer context innerRaw`, the wrapping `Term.natSucc
+innerTerm` is recovered by `Term.infer context (RawTerm.natSucc
+innerRaw)`.  The DecidableEq dispatch on `Ty.nat = Ty.nat` reduces
+on `rfl`. -/
+theorem Term.infer_complete_natSucc
+    (context : Ctx mode level scope)
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context Ty.nat innerRaw)
+    (innerIH : Term.infer context innerRaw = some ⟨Ty.nat, innerTerm⟩) :
+    Term.infer context (RawTerm.natSucc innerRaw)
+      = some ⟨Ty.nat, Term.natSucc innerTerm⟩ := by
+  unfold Term.infer
+  rw [innerIH]
+  rfl
+
+/-- Completeness of `Term.infer` at `optionSome`.  Given that the
+inner term is recovered, the wrapping `Term.optionSome` is
+recovered.  Pure pass-through arm — no DecEq dispatch needed. -/
+theorem Term.infer_complete_optionSome
+    (context : Ctx mode level scope)
+    {elementType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context elementType innerRaw)
+    (innerIH : Term.infer context innerRaw = some ⟨elementType, innerTerm⟩) :
+    Term.infer context (RawTerm.optionSome innerRaw)
+      = some ⟨Ty.optionType elementType, Term.optionSome innerTerm⟩ := by
+  unfold Term.infer
+  rw [innerIH]
+
+/-- Completeness of `Term.infer` at `modIntro`.  Modal markers
+preserve inner type — the inferrer threads the inner result through
+unchanged. -/
+theorem Term.infer_complete_modIntro
+    (context : Ctx mode level scope)
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerIH : Term.infer context innerRaw = some ⟨innerType, innerTerm⟩) :
+    Term.infer context (RawTerm.modIntro innerRaw)
+      = some ⟨innerType, Term.modIntro innerTerm⟩ := by
+  unfold Term.infer
+  rw [innerIH]
+
+/-- Completeness of `Term.infer` at `modElim`.  Mirror of
+`infer_complete_modIntro`. -/
+theorem Term.infer_complete_modElim
+    (context : Ctx mode level scope)
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerIH : Term.infer context innerRaw = some ⟨innerType, innerTerm⟩) :
+    Term.infer context (RawTerm.modElim innerRaw)
+      = some ⟨innerType, Term.modElim innerTerm⟩ := by
+  unfold Term.infer
+  rw [innerIH]
+
+/-- Completeness of `Term.infer` at `subsume`.  Cumulativity-marker
+pass-through; same shape as the modal markers. -/
+theorem Term.infer_complete_subsume
+    (context : Ctx mode level scope)
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerIH : Term.infer context innerRaw = some ⟨innerType, innerTerm⟩) :
+    Term.infer context (RawTerm.subsume innerRaw)
+      = some ⟨innerType, Term.subsume innerTerm⟩ := by
+  unfold Term.infer
+  rw [innerIH]
 
 end LeanFX2
