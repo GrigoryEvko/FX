@@ -51,10 +51,10 @@ Acceptance: ✅ Term.toRaw_X = rfl for all 75 ctors; specialized SR for parametr
 * [x] `Reduction/Conv.lean` — Conv as ∃-StepStar (W10 design baked in)
 * [x] `Reduction/ParRed.lean` — 109 ctors (#1312 D2.8)
 * [x] `Reduction/RawPar.lean` (#1313 D2.9)
-* [~] `Reduction/Compat.lean` — D2.10 (#1314): exemplar `intervalOppCong` + 12 batch shipped (commit 7ecca67); **15 cong rules still need rename+subst compat**
-* [ ] D2.5 cubical β rules (#1309): typed β for transp/hcomp/glue (#1527-1529)
+* [x] `Reduction/Compat.lean` — D2.10 (#1314) ✅ COMPLETE (commit 4d15f98, 2026-05-07): all 14 typed cong-rule rename+subst compat lemmas shipped at zero axioms; budget ratcheted 14 → 0.  Compositional pattern (10 rules) + cast-surfacing pattern (oeqFunextCong via `oeqFunextPointwiseType_rename`/`_subst`; pathLamCong via `Ty.weaken_rename_commute`/`_subst`).
+* [~] D2.5 cubical β rules (#1309): typed β for transp/hcomp (#1527-1528) **PENDING — design work** (β-rule shape requires constant-path/empty-sides framework); D2.5.3 (#1529) ✅ verified — `Step.betaGlueElimIntro` IS the typed glueBeta (existing docstring "Cubical Glue β-reduction").
 
-Acceptance: rename/subst preserves Step ✅ (raw level); typed `Step.par.<X>Cong.{rename,subst}_compatible` 13 of 28 done (46%).
+Acceptance: rename/subst preserves Step ✅ (raw and typed levels); typed `Step.par.<X>Cong.{rename,subst}_compatible` 14 of 14 done (100%).  Outstanding: D2.5.1/D2.5.2 typed transp/hcomp β-rules (deferred, blocked on kernel design choices for constant-path/empty-sides predicates — not blocking M06 SR or PHASE7-CONV-TRANS since those are cong-rule consumers, not β-rule consumers).
 
 ## Phase 4 — Confluence (Layer 3) ✅ DONE (raw-level)
 
@@ -64,7 +64,7 @@ Acceptance: rename/subst preserves Step ✅ (raw level); typed `Step.par.<X>Cong
 * [x] `Confluence/ChurchRosser.lean` — `RawStep.parStar.confluence` shipped
 * [x] `Confluence/CanonicalForm.lean` — `Conv.canonicalRaw` shipped (#1319 D3.4)
 
-Acceptance: ✅ raw-level Tait-Martin-Löf chain ships zero-axiom.  **Open**: typed `Conv.trans` (#1504 PHASE7-CONV-TRANS) blocked by full D2.10 + M06 SR (#1275); typed Cong (#1502 WEAK-FX2-03) requires Phase 7 SR.
+Acceptance: ✅ raw-level Tait-Martin-Löf chain ships zero-axiom.  **Open**: typed `Conv.trans` (#1504 PHASE7-CONV-TRANS) blocked on M06 SR (#1275) — D2.10 ✅ closed 2026-05-07; typed Cong (#1502 WEAK-FX2-03) requires Phase 7 SR.
 
 ## Phase 5 — Bridge (Layer 4) ✅ DONE
 
@@ -171,20 +171,21 @@ Acceptance: ✅ 7780 audited decls clean inline; AuditAll auto-extends via names
 * [ ] D7.11 v1.0 git tag (#1374)
 
 **Cutover gating**: Phase 15 NOT to fire until Phases 7 (modal),
-remaining Phase 3 (D2.10 Compat 15-rule completion), Phase 9-12
-debt is closed AND M06 SR / typed Conv.trans / Phase 7 SR work
-is shipped.  Premature cutover would orphan the lean-fx codebase
-before lean-fx-2 reaches feature parity.
+Phase 9-12 debt is closed AND M06 SR / typed Conv.trans / Phase 7
+SR work is shipped.  D2.10 Compat (14 typed cong rename+subst
+lemmas) ✅ closed 2026-05-07 — no longer a cutover blocker.
+Premature cutover would orphan the lean-fx codebase before
+lean-fx-2 reaches feature parity.
 
 ## Critical-path summary (v1.0 requirements)
 
 The v1.0 milestone ("100% proven kernel") gates on:
 
-1. **D2.10 #1314** — typed Step.par cong rename+subst compat (15 of 28 still missing)
-2. **M06 #1275** — Phase 7 subject reduction at arrow types (depends on D2.10)
+1. **D2.10 #1314** ✅ DONE 2026-05-07 — typed Step.par cong rename+subst compat (14 of 14 shipped, budget ratcheted to 0)
+2. **M06 #1275** — Phase 7 subject reduction at arrow types (D2.10 unblocked, ready)
 3. **PHASE7-CONV-TRANS #1504** — typed `Conv.trans` (depends on M06)
 4. **K07.1-8 #1516-1523** — dep-motive eliminator refactors (8 ctors)
-5. **D2.5.1-3 #1527-1529** — typed cubical β rules (transp/hcomp/glue)
+5. **D2.5.1-2 #1527-1528** — typed cubical β rules (transp/hcomp); D2.5.3 #1529 ✅ verified (`Step.betaGlueElimIntro` IS the typed glueBeta)
 6. **WEAK-FX2-03 #1502** — retire 121 manufactured-witness wrappers
 7. **D4 modal layer** — full ♭⊣◇⊣□⊣♯ adjoint chain
 
@@ -197,7 +198,7 @@ Each item has its own task in the tracker; the dashboard
 * Phase 4-6 + 8 (Confluence, Bridge, HoTT, Graded): ✅ done
 * Phase 9-13 (partial): ~3-4 agent runs to close
 * Phase 7 modal: ~2-3 agent runs
-* D2.10 completion: ~3-4 batch agent runs (already 13/28; expect similar batches)
+* D2.10 completion: ✅ done 2026-05-07 (14/14 cong-rules shipped at zero axioms in 7 batched commits ending at 4d15f98)
 * Phase 11/12 surface + pipeline: ~5-7 agent runs
 * Cutover: ~1-2 agent runs
 
