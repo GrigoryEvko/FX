@@ -44,4 +44,23 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Expr.denote_binopExpr
 #assert_no_axioms LeanFX2.Surface.Expr.denote_unopExpr
 
+/-! ### B12 partial: gap-free fragment totality (atomic + compositional) -/
+
+#assert_no_axioms LeanFX2.Surface.Literal.isGapFree
+#assert_no_axioms LeanFX2.Surface.RawExpr.isGapFree
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.isGapFree
+#assert_no_axioms LeanFX2.Surface.RawArgList.isGapFree
+#assert_no_axioms LeanFX2.Surface.RawCallArg.isGapFree
+#assert_no_axioms LeanFX2.Surface.RawStmtList.isGapFree
+#assert_no_axioms LeanFX2.Surface.Literal.bridgeIsTotalOnGapFree
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawBound
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawUnit
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawLit
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawParen
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawLam
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawApp
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnBoundExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnUnitExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnLitExpr
+
 end LeanFX2.Tools
