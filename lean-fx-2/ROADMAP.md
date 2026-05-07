@@ -121,7 +121,7 @@ Acceptance: ✅ Atkey-2018 witness rejected by corrected Lam rule.
 * [ ] M03 `Term.eval` reaches WHNF (#1272), M04 strong normalization (#1273), M05 progress (#1274)
 * [x] M06 SR at arrow types (#1275) — `Step.preserves_ty_arrow` ships at `Term/SubjectReductionGeneral.lean:754` via the closed-isClosedTy preservation chain (#1276 M07 also done at lines 787, 818); unblocks #1504 PHASE7-CONV-TRANS
 * [~] M08 `Term.headStep?` ι coverage (#1277) — 5 atomic ι-rules shipped at `Algo/Soundness.lean:70-209` (boolElim×2, natElimZero, natRecZero, listElimNil, optionMatchNone); successor + payload firings remain
-* [~] M10 `Algo/Completeness.lean` infer/check completeness (#1279) — 5 atomic-case theorems shipped at `Algo/Completeness.lean:54-82` (var, unit, boolTrue, boolFalse, natZero, all `rfl` zero-axiom, commit 053dc0e); 10 recursive cases (natSucc/app/fst/snd/listCons/optionSome/idJ/modIntro/modElim/subsume) plus check-mode counterpart pending Phase 4 of close-out plan
+* [x] M10 `Algo/Completeness.lean` infer/check completeness (#1279) — full bidirectional surface shipped 2026-05-07: 15 zero-axiom inferable theorems (5 atomic + 5 single-recurse + 5 multi-recurse via `dsimp only + dif_pos rfl` recipe, commits 053dc0e + 6afd940 + 35b7840) plus 15 zero-axiom check-mode counterparts (5 atomic + 2 parametric leaves + 4 single-recurse + 1 multi-recurse + 3 binder via term-mode `dif_pos rfl` and `simp only [Term.check]` recipes, commit a140694); 30 theorems total close the canonical RawTerm fragment that `Algo/Infer` + `Algo/Check` handle deterministically.  Eliminator and HoTT/cubical/modal-primitive check arms remain deferred.
 
 ## Phase 11 — Surface (Layer 10) — PARTIAL [~]
 
