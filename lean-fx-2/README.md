@@ -88,8 +88,12 @@ builds the architecture-of-record from day 1:
 * **8 STRICT-N harness gates** (`STRICT-1` through `STRICT-8`)
   enforce: axioms-zero, raw/typed parity, naming discipline,
   hypothesis-as-postulate detection, sub-namespace coverage
-* **30 cong rules** in `Step.par` with rename+subst compat: 13 of 28
-  shipped (intervalOppCong + 12 batch); 15 still on the v1.0 path
+* **28 cong rules** in `Step.par` with rename+subst compat: ✅ 28
+  of 28 shipped at zero axioms (D2.10 closed 2026-05-07: exemplar
+  `intervalOppCong` + 12-rule BATCH 12 in commit 7ecca67, then 14
+  rules across 7 batched commits ending at 4d15f98); budget
+  `#assert_reduction_compat_coverage_budget LeanFX2.Step.par`
+  ratcheted 14 → 0
 * **Univalence + funext** as zero-axiom theorems via `Step.eqType` /
   `Step.eqArrow` reductions (NOT axioms)
 * **5 docs**: AXIOMS.md, WORKING_RULES.md, README.md, ARCHITECTURE.md,

@@ -57,7 +57,8 @@ Items already shipped (verifiable via `lake build LeanFX2`):
 * ✅ Phase 0 (skeleton), 1 (Foundation), 2 (Term), 4 (Confluence raw),
   5 (Bridge), 6 (HoTT incl. real-theorem Univalence + funext), 8
   (Graded), 13 (Tools)
-* 🚧 Phase 3 partial (D2.10 Compat 13 of 28 cong rules done)
+* ✅ Phase 3 D2.10 Compat — 28 of 28 typed cong rename+subst compat
+  rules done at zero axioms (2026-05-07; budget ratcheted to 0)
 * 🚧 Phase 9, 10, 11 partial
 * ❌ Phase 7 (Modal D4.x) NOT STARTED
 * ❌ Phase 12 (Pipeline) TODO
@@ -71,13 +72,15 @@ remaining tasks.
 **Cutover MUST NOT fire** until ALL these v1.0 critical-path items
 close (per ROADMAP.md):
 
-* [ ] D2.10 typed Step.par cong rename+subst compat (15 of 28 still
-      missing as of 2026-05-07; tracker #1314)
-* [ ] M06 Phase 7 subject reduction at arrow types (#1275, blocked
-      by D2.10)
+* [x] D2.10 typed Step.par cong rename+subst compat — ✅ DONE
+      2026-05-07 (28 of 28 shipped at zero axioms; tracker #1314)
+* [ ] M06 Phase 7 subject reduction at arrow types (#1275; D2.10
+      blocker cleared, ready to start)
 * [ ] PHASE7-CONV-TRANS typed Conv.trans (#1504, blocked by M06)
 * [ ] K07.1-8 dep-motive eliminator refactors (#1516-1523, 8 ctors)
-* [ ] D2.5.1-3 typed cubical β rules transp/hcomp/glue (#1527-1529)
+* [ ] D2.5.1-2 typed cubical β rules transp/hcomp (#1527-1528;
+      D2.5.3 #1529 ✅ verified — `Step.betaGlueElimIntro` IS the
+      typed glueBeta)
 * [ ] WEAK-FX2-03 retire 121 manufactured-witness wrappers (#1502)
 * [ ] D4 modal layer (#1328-1336)
 * [ ] D6.4-6.6 Surface Parse/Print/Roundtrip (#1354-1356)
