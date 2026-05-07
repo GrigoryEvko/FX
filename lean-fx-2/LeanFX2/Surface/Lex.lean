@@ -346,29 +346,37 @@ preservation proofs (`err.offset = offset`) require deep nested
 Splitting into named helpers per-branch lets each helper own its
 preservation lemma with a self-contained proof.  See L07 below. -/
 
-/-- Look up a two-character operator at `(firstChar, secondChar)`.
-Returns `some (Token, restAfterTwo)` when matched, `none`
-otherwise.  Pure `Char × Char × List Char → Option`, no offset. -/
-def lexTwoCharOp (firstChar secondChar : Char) (more : List Char) :
-    Option (Token × List Char) :=
-  if firstChar == '-' && secondChar == '>' then some (Token.arrow, more)
-  else if firstChar == '=' && secondChar == '>' then some (Token.fatArrow, more)
-  else if firstChar == '|' && secondChar == '>' then some (Token.pipe, more)
-  else if firstChar == '=' && secondChar == '=' then some (Token.eqEq, more)
-  else if firstChar == '!' && secondChar == '=' then some (Token.notEq, more)
-  else if firstChar == '<' && secondChar == '=' then some (Token.le, more)
-  else if firstChar == '>' && secondChar == '=' then some (Token.ge, more)
-  else if firstChar == '<' && secondChar == '<' then some (Token.shiftLeft, more)
-  else if firstChar == '>' && secondChar == '>' then some (Token.shiftRight, more)
-  else if firstChar == '.' && secondChar == '.' then some (Token.dotdot, more)
-  else if firstChar == '@' && secondChar == '[' then some (Token.atBracket, more)
+/-- Two-character operator lookup.  Pure `Char × Char → Option Token`
+— no list manipulation (refactored from earlier shape that threaded
+`more` through unchanged, which forced `lexOpOrPunct` to use a
+hardcoded `2` byte count instead of the abstract
+`firstChar.utf8Size + secondChar.utf8Size` that composes with
+`charsByteLength` for the byte-conservation proof). -/
+def lexTwoCharOp (firstChar secondChar : Char) : Option Token :=
+  if firstChar == '-' && secondChar == '>' then some Token.arrow
+  else if firstChar == '=' && secondChar == '>' then some Token.fatArrow
+  else if firstChar == '|' && secondChar == '>' then some Token.pipe
+  else if firstChar == '=' && secondChar == '=' then some Token.eqEq
+  else if firstChar == '!' && secondChar == '=' then some Token.notEq
+  else if firstChar == '<' && secondChar == '=' then some Token.le
+  else if firstChar == '>' && secondChar == '=' then some Token.ge
+  else if firstChar == '<' && secondChar == '<' then some Token.shiftLeft
+  else if firstChar == '>' && secondChar == '>' then some Token.shiftRight
+  else if firstChar == '.' && secondChar == '.' then some Token.dotdot
+  else if firstChar == '@' && secondChar == '[' then some Token.atBracket
   else none
 
 /-- Two-character operator lookup with two-element list peek.
-`none` for empty rest; otherwise consults `lexTwoCharOp`. -/
-def lexTwoCharPeek (firstChar : Char) : List Char → Option (Token × List Char)
+`none` for empty rest; otherwise consults `lexTwoCharOp`.  Carries
+the `secondChar` through so byte accounting in `lexOpOrPunct` can
+use `firstChar.utf8Size + secondChar.utf8Size` directly. -/
+def lexTwoCharPeek (firstChar : Char) :
+    List Char → Option (Token × Char × List Char)
   | [] => none
-  | secondChar :: more => lexTwoCharOp firstChar secondChar more
+  | secondChar :: more =>
+    match lexTwoCharOp firstChar secondChar with
+    | some tok => some (tok, secondChar, more)
+    | none => none
 
 /-- Look up a single-character punctuation token.  Returns `none` if
 `firstChar` is not in the punctuation set.  Pure `Char → Option`,
@@ -406,7 +414,8 @@ The `offset` parameter is forwarded into the error case ONLY. -/
 def lexOpOrPunct (offset : Nat) (firstChar : Char) (restChars : List Char) :
     LexStep :=
   match lexTwoCharPeek firstChar restChars with
-  | some (tok, more) => LexStep.token tok 2 more
+  | some (tok, secondChar, more) =>
+    LexStep.token tok (firstChar.utf8Size + secondChar.utf8Size) more
   | none =>
     match lexSingleCharPunct firstChar with
     | some tok => LexStep.token tok firstChar.utf8Size restChars
