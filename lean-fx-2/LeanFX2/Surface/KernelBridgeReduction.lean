@@ -16,13 +16,16 @@ function) but `rfl` works for ctor-head LHSes.
 
 ## Why this matters
 
-Bridge correctness (`B01–B12`), bridge invariants
-(`S01–S04`), and the env-aware/env-free equivalence (`B10`) all
-reason about `RawExpr.toRawTerm?` on specific constructors.
+Bridge correctness (tracker B01–B12, tasks #1241–#1252), bridge
+invariants `BR01–BR04` (file-local labels — see Label legend
+below), and the env-aware/env-free equivalence (tracker B10,
+task #1250) all reason about `RawExpr.toRawTerm?` on specific
+constructors.
 
 ## Coverage (30 lemmas)
 
-* `RawExpr.toRawTerm?` — 12 ctor lemmas (R01–R12)
+* `RawExpr.toRawTerm?` — 12 ctor lemmas mapped to tracker
+  R01–R12 (#1280)
 * `RawArgList.foldApps?` — 2 ctor lemmas
 * `RawCallArg.toRawTerm?` — 3 ctor lemmas
 * `OptRawExpr.toRawTermOrUnit?` — 2 ctor lemmas
@@ -30,6 +33,18 @@ reason about `RawExpr.toRawTerm?` on specific constructors.
 * `Literal.toRawTerm?` — 8 ctor lemmas (non-mutual)
 
 Zero-axiom verified per declaration via AuditAll.
+
+## Label legend (per tracker #1533)
+
+The `S01–S04` previously mentioned in this docstring referred to
+**file-local bridge-invariant labels**, NOT to the tracker
+**S-series** at tasks #1285–#1288 (which cover pipe-desugar
+semantic claims, arrow-not-value-level, isCtor-not-app-desugar,
+and the bridge-invariant `e.toRawTerm? = some r → e ≅ r`).
+Renamed to `BR01–BR04` (Bridge Reduction local labels) here to
+avoid the conflation.  Concretely: when this file or its sibling
+audit gates mention `BR01`, that means a bridge-reduction lemma
+on `RawExpr.toRawTerm?`, not a tracker S-series claim.
 -/
 
 namespace LeanFX2.Surface
