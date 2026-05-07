@@ -28,17 +28,32 @@ Day 2 of the cubical+2LTT+HOTT sprint shipped:
   increments and the typed beta mirrors.
   Remaining raw β/ι rules for new ctors are still paired with their
   cd-extension in Confluence/RawCd.lean before being claimed.
-* D2.9 — RawStep.par 27 new cong rules (DONE in 2afe3493)
-* D2.10 — Compat extension for 27 new cong rules in
-  RawParRename.lean and RawParCompatible.lean (DONE in 2afe3493)
-* D2.11 — THIS audit, plus 27 new inversion lemmas added in this commit.
+* D2.9 — RawStep.par 27 new cong rules (DONE in 2afe3493).
+* D2.10 — typed `Step.par.<X>Cong.{rename,subst}_compatible` ✅ COMPLETE
+  2026-05-07: all 28 cong-rule rename+subst compat lemmas shipped at
+  zero axioms across two phases — exemplar `intervalOppCong` + 12-rule
+  BATCH 12 (commit 7ecca67) followed by 14 rules across 7 batched
+  commits ending at 4d15f98 (idStrictRefl, recordProj, recordIntro,
+  refineIntro, codataUnfold, hcomp, glueIntro, oeqJ, idStrictRec,
+  transp, equivIntro, equivIntroHet, uaIntroHet, oeqFunext, pathLam).
+  Compositional pattern (10 rules) + cast-surfacing pattern
+  (oeqFunextCong via `oeqFunextPointwiseType_rename`/`_subst`;
+  pathLamCong via `Ty.weaken_rename_commute`/`_subst`).  Budget
+  `#assert_reduction_compat_coverage_budget LeanFX2.Step.par`
+  ratcheted 14 → 0.  Raw mirror in RawParRename.lean and
+  RawParCompatible.lean was DONE earlier in 2afe3493.
+* D2.11 — THIS audit + Phase 12.A.2 closure, plus 27 new inversion
+  lemmas added in commit 2afe3493.
 
-Strategic deferral:
-* D2.5 transport / hcomp computational rules still wait for their full
-  typed semantics.  The current typed `transp` and `hcomp` slice is
-  congruence parity only.
-* D2.6–D2.7 additional typed rules wait for typed Term ctors to land per-need
-  (matches D1.9 deferral).
+Strategic deferral (NOT blocking M06 SR or PHASE7-CONV-TRANS, since
+those are cong-rule consumers, not β-rule consumers):
+* D2.5.1/D2.5.2 — typed `Step.transpBeta` / `Step.hcompBeta` β rules
+  pending design work for constant-path / empty-sides framework.  The
+  current typed `transp` and `hcomp` slice is congruence parity only.
+* D2.5.3 — verified 2026-05-07: `Step.betaGlueElimIntro` IS the typed
+  glueBeta (existing docstring "Cubical Glue β-reduction").
+* D2.6–D2.7 additional typed rules wait for typed Term ctors to land
+  per-need (matches D1.9 deferral).
 
 The project build implicitly verifies zero-axiom; this file
 explicitly enumerates the Day-2 deliverables.
