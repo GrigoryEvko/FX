@@ -128,21 +128,29 @@ def skipUntilNewline : List Char → Nat → Nat × List Char
     else skipUntilNewline rest (n + c.utf8Size)
 
 /-- Skip a block comment body up to the closing `*/` (inclusive).
-Per fx_lexer.md §2.3 — block comments do NOT nest.  Avoids the
-double-cons pattern `'*' :: '/' :: rest` (which leaks propext via
-Lean's match compiler) by matching cons once and using `==` on
-the next char. -/
+Per fx_lexer.md §2.3 — block comments do NOT nest.
+
+Uses 3-pattern flat enumeration (`[]`, `[c]`, `c :: next :: rest2`)
+rather than nested `match rest with` — Lean 4 v4.29.1's match compiler
+auto-reduces flat patterns at `show` sites without `simp` help, which
+makes the byte-conservation proof propext-clean.
+
+The single-element case collapses both star-and-non-star branches to
+`(n + c.utf8Size, [])` (in both cases the original code returns the
+same value: star branch hits inner `[]`, non-star tail-recurses on
+`[]` which returns `(n + c.utf8Size, [])`).
+
+Uses uniform `c.utf8Size + next.utf8Size` accounting at the closing
+`*/` (both ASCII so `*.utf8Size = /.utf8Size = 1`, total 2). -/
 def skipBlockComment : List Char → Nat → Nat × List Char
   | [], n => (n, [])
-  | c :: rest, n =>
+  | c :: [], n => (n + c.utf8Size, [])
+  | c :: next :: rest2, n =>
     if c == '*' then
-      match rest with
-      | [] => (n + c.utf8Size, [])
-      | next :: rest2 =>
-        if next == '/' then (n + 2, rest2)
-        else skipBlockComment rest (n + c.utf8Size)
+      if next == '/' then (n + c.utf8Size + next.utf8Size, rest2)
+      else skipBlockComment (next :: rest2) (n + c.utf8Size)
     else
-      skipBlockComment rest (n + c.utf8Size)
+      skipBlockComment (next :: rest2) (n + c.utf8Size)
 
 /-- Skip ASCII whitespace + line/block comments at the head of
 `chars`.  Returns (bytes skipped, remaining chars).  Fuel-bounded
@@ -901,14 +909,147 @@ theorem Lex.skipUntilNewline_byteLength_invariant :
         = n + (firstChar.utf8Size + charsByteLength restChars)
       exact Nat.add_assoc n firstChar.utf8Size (charsByteLength restChars)
 
-/-! ## L07 follow-up — `skipBlockComment` + `skipTrivia` byte
-conservation + `lexLoop_error_offset_bounded` + `Lex.run_error_offset_bounded`
+/-- **L07.4b**: `skipBlockComment` conserves bytes.
+
+For `(skipBytes, restAfter) = skipBlockComment chars n`, we have
+`skipBytes + charsByteLength restAfter = n + charsByteLength chars`.
+
+Proof: induction on the 3-pattern flat enumeration of `chars`:
+* `[]`: returns `(n, [])` — `rfl`.
+* `[c]`: returns `(n + c.utf8Size, [])` — arithmetic via `Nat.add_zero`
+  + `Nat.add_assoc`.
+* `c :: next :: rest2`: split on `c == '*'` and `next == '/'`:
+  - star + slash: closing reached, uniform accounting closes via
+    `Nat.add_assoc`.
+  - star + non-slash: tail-recurse with `next :: rest2` and
+    `n + c.utf8Size`; IH + `Nat.add_assoc` closes.
+  - non-star: tail-recurse with `next :: rest2`; IH + `Nat.add_assoc`
+    closes.
+
+Zero-axiom — uniform accounting + structural recursion + `Nat.add_assoc`. -/
+theorem Lex.skipBlockComment_byteLength_invariant :
+    ∀ (chars : List Char) (n : Nat),
+      let result := skipBlockComment chars n
+      result.fst + charsByteLength result.snd = n + charsByteLength chars
+  | [], n => by
+    show n + charsByteLength [] = n + charsByteLength []
+    rfl
+  | firstChar :: [], n => by
+    show (n + firstChar.utf8Size) + charsByteLength ([] : List Char)
+      = n + charsByteLength (firstChar :: [])
+    show (n + firstChar.utf8Size) + 0
+      = n + (firstChar.utf8Size + 0)
+    rw [Nat.add_zero, Nat.add_zero]
+  | firstChar :: nextChar :: rest2, n => by
+    by_cases hStar : firstChar == '*'
+    · -- firstChar == '*'.  Split on nextChar == '/'.
+      by_cases hSlash : nextChar == '/'
+      · -- closing */ found.  Returns
+        -- (n + firstChar.utf8Size + nextChar.utf8Size, rest2).
+        have stepReduces :
+            skipBlockComment (firstChar :: nextChar :: rest2) n
+              = (n + firstChar.utf8Size + nextChar.utf8Size, rest2) := by
+          show (if firstChar == '*' then
+                  if nextChar == '/'
+                  then (n + firstChar.utf8Size + nextChar.utf8Size, rest2)
+                  else skipBlockComment (nextChar :: rest2)
+                    (n + firstChar.utf8Size)
+                else skipBlockComment (nextChar :: rest2)
+                  (n + firstChar.utf8Size))
+              = (n + firstChar.utf8Size + nextChar.utf8Size, rest2)
+          rw [if_pos hStar, if_pos hSlash]
+        rw [stepReduces]
+        show n + firstChar.utf8Size + nextChar.utf8Size
+            + charsByteLength rest2
+          = n + (firstChar.utf8Size
+              + (nextChar.utf8Size + charsByteLength rest2))
+        rw [Nat.add_assoc (n + firstChar.utf8Size) nextChar.utf8Size
+              (charsByteLength rest2),
+          Nat.add_assoc n firstChar.utf8Size
+            (nextChar.utf8Size + charsByteLength rest2)]
+      · -- not closing.  tail-recurse with (n + firstChar.utf8Size).
+        have stepReduces :
+            skipBlockComment (firstChar :: nextChar :: rest2) n
+              = skipBlockComment (nextChar :: rest2)
+                  (n + firstChar.utf8Size) := by
+          show (if firstChar == '*' then
+                  if nextChar == '/'
+                  then (n + firstChar.utf8Size + nextChar.utf8Size, rest2)
+                  else skipBlockComment (nextChar :: rest2)
+                    (n + firstChar.utf8Size)
+                else skipBlockComment (nextChar :: rest2)
+                  (n + firstChar.utf8Size))
+              = skipBlockComment (nextChar :: rest2)
+                  (n + firstChar.utf8Size)
+          rw [if_pos hStar, if_neg hSlash]
+        rw [stepReduces]
+        show (skipBlockComment (nextChar :: rest2)
+              (n + firstChar.utf8Size)).fst
+            + charsByteLength (skipBlockComment (nextChar :: rest2)
+                (n + firstChar.utf8Size)).snd
+          = n + charsByteLength (firstChar :: nextChar :: rest2)
+        have ihRecursive :
+            (skipBlockComment (nextChar :: rest2)
+                (n + firstChar.utf8Size)).fst
+            + charsByteLength (skipBlockComment (nextChar :: rest2)
+                (n + firstChar.utf8Size)).snd
+              = (n + firstChar.utf8Size)
+                + charsByteLength (nextChar :: rest2) :=
+          Lex.skipBlockComment_byteLength_invariant
+            (nextChar :: rest2) (n + firstChar.utf8Size)
+        rw [ihRecursive]
+        show (n + firstChar.utf8Size)
+            + (nextChar.utf8Size + charsByteLength rest2)
+          = n + (firstChar.utf8Size
+              + (nextChar.utf8Size + charsByteLength rest2))
+        exact Nat.add_assoc n firstChar.utf8Size
+          (nextChar.utf8Size + charsByteLength rest2)
+    · -- firstChar != '*'.  Tail-recurse with (n + firstChar.utf8Size).
+      have stepReduces :
+          skipBlockComment (firstChar :: nextChar :: rest2) n
+            = skipBlockComment (nextChar :: rest2)
+                (n + firstChar.utf8Size) := by
+        show (if firstChar == '*' then
+                if nextChar == '/'
+                then (n + firstChar.utf8Size + nextChar.utf8Size, rest2)
+                else skipBlockComment (nextChar :: rest2)
+                  (n + firstChar.utf8Size)
+              else skipBlockComment (nextChar :: rest2)
+                (n + firstChar.utf8Size))
+            = skipBlockComment (nextChar :: rest2)
+                (n + firstChar.utf8Size)
+        rw [if_neg hStar]
+      rw [stepReduces]
+      show (skipBlockComment (nextChar :: rest2)
+            (n + firstChar.utf8Size)).fst
+          + charsByteLength (skipBlockComment (nextChar :: rest2)
+              (n + firstChar.utf8Size)).snd
+        = n + charsByteLength (firstChar :: nextChar :: rest2)
+      have ihRecursive :
+          (skipBlockComment (nextChar :: rest2)
+              (n + firstChar.utf8Size)).fst
+          + charsByteLength (skipBlockComment (nextChar :: rest2)
+              (n + firstChar.utf8Size)).snd
+            = (n + firstChar.utf8Size)
+              + charsByteLength (nextChar :: rest2) :=
+        Lex.skipBlockComment_byteLength_invariant
+          (nextChar :: rest2) (n + firstChar.utf8Size)
+      rw [ihRecursive]
+      show (n + firstChar.utf8Size)
+          + (nextChar.utf8Size + charsByteLength rest2)
+        = n + (firstChar.utf8Size
+            + (nextChar.utf8Size + charsByteLength rest2))
+      exact Nat.add_assoc n firstChar.utf8Size
+        (nextChar.utf8Size + charsByteLength rest2)
+
+/-! ## L07 follow-up — `skipTrivia` byte conservation +
+`lexLoop_error_offset_bounded` + `Lex.run_error_offset_bounded`
 (DEFERRED to next iteration)
 
-`skipUntilNewline_byteLength_invariant` above is the simplest of the
-three trivia byte-conservation lemmas.  `skipBlockComment` and
-`skipTrivia` follow the same pattern but require deeper case
-analysis.  Combined, they give the `lexLoop` arithmetic invariant
-that closes L07's runtime bound. -/
+`skipUntilNewline_byteLength_invariant` and
+`skipBlockComment_byteLength_invariant` above are the two helper
+byte-conservation lemmas.  Next: combine into
+`skipTrivia_byteLength_invariant`, then `lexLoop_error_offset_bounded`,
+then `Lex.run_error_offset_bounded`. -/
 
 end LeanFX2.Surface

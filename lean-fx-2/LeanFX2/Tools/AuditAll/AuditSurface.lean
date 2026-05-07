@@ -222,6 +222,7 @@ parameter through any emitted `LexError`.  Composed via
 /-! ### Surface.Lex — L07.4 byte-conservation invariants (#1205) -/
 
 #assert_no_axioms LeanFX2.Surface.Lex.skipUntilNewline_byteLength_invariant
+#assert_no_axioms LeanFX2.Surface.Lex.skipBlockComment_byteLength_invariant
 
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 

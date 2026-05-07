@@ -291,6 +291,21 @@ block at the top of `TokenSchema.lean`, `TokenInvariants.lean`,
 #print axioms LeanFX2.Surface.LexError.offset_invalidEscape
 #print axioms LeanFX2.Surface.LexError.offset_total
 
+/-! ## L07.4 — trivia byte-conservation invariants (#1205)
+
+Two helper lemmas underpinning the runtime arithmetic bound for
+`Lex.run`.  Each guarantees that the bytes consumed plus the bytes
+remaining equal the original byte budget — a structural invariant
+that turns into a finite arithmetic fact on the call graph and lets
+the offset bound chain through `lexLoop`.  `skipBlockComment` ships
+with a uniform-`utf8Size` accounting refactor (closing `*/` charges
+`'*'.utf8Size + '/'.utf8Size`, semantically identical to the legacy
+`+ 2` since both ASCII chars cost 1 byte) which sidesteps the
+propext leak from `of_decide_eq_true` chars-equality. -/
+
+#print axioms LeanFX2.Surface.Lex.skipUntilNewline_byteLength_invariant
+#print axioms LeanFX2.Surface.Lex.skipBlockComment_byteLength_invariant
+
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 
 A concrete instance: lexing the empty input list (zero tokens
