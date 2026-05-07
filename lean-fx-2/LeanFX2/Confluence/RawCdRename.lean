@@ -1,6 +1,7 @@
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Foundation.RawPartialRenameCommute
 
 /-! # Confluence/RawCdRename — `cd` commutes with `rename`.
 
@@ -260,6 +261,38 @@ theorem RawTerm.cdIdStrictRecCase_rename {sourceScope targetScope : Nat}
     (RawTerm.cdIdStrictRecCase developedBase developedWitness).rename rho =
     RawTerm.cdIdStrictRecCase (developedBase.rename rho) (developedWitness.rename rho) := by
   cases developedWitness <;> rfl
+
+/-! ## Helper-rename lemma 18 of 18: cdTranspCase.
+
+The `pathLam` arm dispatches on `unweaken? pathBody`; both branches
+are aligned via `RawTerm.unweaken?_rename_lift_commute` plus a case
+split on `unweaken? pathBody`.  The 66 non-pathLam ctors all rebuild
+as plain `transp` cong and close by `rfl`. -/
+
+/-- `cdTranspCase` commutes with `rename`.  The pathLam case splits
+on `unweaken? pathBody`: when `some inner`, both sides reduce to
+`developedSource.rename rho` (using `weaken_rename_commute` and
+`unweaken?_weaken`); when `none`, both sides reduce to
+`transp (pathLam (pathBody.rename rho.lift)) (developedSource.rename rho)`
+(using the commute lemma to align the dispatch). -/
+theorem RawTerm.cdTranspCase_rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (developedPath developedSource : RawTerm sourceScope) :
+    (RawTerm.cdTranspCase developedPath developedSource).rename rho =
+    RawTerm.cdTranspCase (developedPath.rename rho)
+      (developedSource.rename rho) := by
+  cases developedPath
+  case pathLam pathBody =>
+      show ((match RawTerm.unweaken? pathBody with
+              | some _ => developedSource
+              | none => RawTerm.transp (RawTerm.pathLam pathBody) developedSource).rename rho) =
+           (match RawTerm.unweaken? (pathBody.rename rho.lift) with
+              | some _ => developedSource.rename rho
+              | none => RawTerm.transp (RawTerm.pathLam (pathBody.rename rho.lift))
+                          (developedSource.rename rho))
+      rw [RawTerm.unweaken?_rename_lift_commute pathBody rho]
+      cases RawTerm.unweaken? pathBody <;> rfl
+  all_goals rfl
 
 /-! ## Main theorem: `cd` commutes with `rename`.
 

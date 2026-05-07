@@ -1866,13 +1866,12 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.glueIntro (RawTerm.cd baseValue) (RawTerm.cd partialValue)
   | _, .glueElim gluedValue => RawTerm.cdGlueElimCase (RawTerm.cd gluedValue)
   | _, .transp pathTerm sourceTerm =>
-      -- D2.5.4-F: `RawTerm.cdTranspCase` is staged as a helper but not yet
-      -- wired in.  Wiring requires `RawTerm.unweaken?_rename_lift_commute`
-      -- (~250-line structural induction) to discharge `RawCdRename.cd_rename`
-      -- and `RawCdDominates` transp arms.  The commute lemma plus the cd-arm
-      -- update lands in a follow-up commit (D2.5.4-F continuation) tracked
-      -- in #1583.  For now keep cd's transp arm as plain cong so the build
-      -- remains green and the cdTranspCase helper is auditable in isolation.
+      -- D2.5.4-F: `RawTerm.cdTranspCase` is staged + verified
+      -- (`cdTranspCase_rename` zero-axiom in `Confluence/RawCdRename.lean`),
+      -- but wiring it into `cd` requires `RawStep.par.transpReflBetaDeep`
+      -- (D2.5.4-G) for `cd_dominates` to discharge the new β-firing case.
+      -- Cd-arm activation lands together with that ctor in a single
+      -- atomic commit (#1584) so confluence stays sound throughout.
       RawTerm.transp (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
   | _, .hcomp sidesTerm capTerm =>
       RawTerm.hcomp (RawTerm.cd sidesTerm) (RawTerm.cd capTerm)
