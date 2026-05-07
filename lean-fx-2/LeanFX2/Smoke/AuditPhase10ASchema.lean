@@ -3,6 +3,7 @@ import LeanFX2.Surface.Lex.EofTermination
 import LeanFX2.Surface.Lex.ErrorOffset
 import LeanFX2.Surface.Lex.ByteConservation
 import LeanFX2.Surface.Lex.LoopBound
+import LeanFX2.Surface.Lex.MonotonicOffset
 import LeanFX2.Surface.HostLex
 import LeanFX2.Surface.TokenSchema
 import LeanFX2.Surface.TokenInvariants
@@ -349,6 +350,20 @@ internal `lexLoop` call for `generalize`. -/
 
 #print axioms LeanFX2.Surface.Lex.run_eq_loop_branch
 #print axioms LeanFX2.Surface.Lex.run_error_offset_bounded
+
+/-! ## Section 10d — L04.1 + L04.2 monotonic-offset predicate (#1538, #1539)
+
+The L04 chain uses a `List`-based `IsMonotonicByOffset`
+inductive `Prop` plus its push-preservation lemma.  Both
+zero-axiom: rolling our own structural-recursion predicate
+sidesteps stdlib `Array.size_push` (which leaks `propext` via
+`List.length_concat`). -/
+
+#print axioms LeanFX2.Surface.Lex.List.IsMonotonicByOffset
+#print axioms LeanFX2.Surface.Lex.List.mem_cons_decompose
+#print axioms LeanFX2.Surface.Lex.List.IsMonotonicByOffset.concat
+#print axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset
+#print axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset_push
 
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 

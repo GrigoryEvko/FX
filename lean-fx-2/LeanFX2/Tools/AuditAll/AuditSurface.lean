@@ -252,6 +252,20 @@ empty initial errors at offset 0 used by `Lex.run`. -/
 #assert_no_axioms LeanFX2.Surface.Lex.run_eq_loop_branch
 #assert_no_axioms LeanFX2.Surface.Lex.run_error_offset_bounded
 
+/-! ### Surface.Lex — L04.1 + L04.2 monotonic-offset chain (#1538, #1539)
+
+Predicate `Array.isMonotonicByOffset` (delegates to inductive
+`List.IsMonotonicByOffset`) plus its push-preservation lemma.
+Both at zero-axiom by `Array.toList = arr.toList.concat` rfl
+bridge — bypasses stdlib `Array.size_push` (which depends on
+`List.length_concat → propext`). -/
+
+#assert_no_axioms LeanFX2.Surface.Lex.List.IsMonotonicByOffset
+#assert_no_axioms LeanFX2.Surface.Lex.List.mem_cons_decompose
+#assert_no_axioms LeanFX2.Surface.Lex.List.IsMonotonicByOffset.concat
+#assert_no_axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset
+#assert_no_axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset_push
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff
