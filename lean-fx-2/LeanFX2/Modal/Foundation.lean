@@ -59,6 +59,20 @@ inductive Modality : Mode → Mode → Type
   /-- Diamond modality `◇ m`: possibility at mode `m`.
   Eventually-available; idempotent on `m`. -/
   | diamondK (someMode : Mode) : Modality someMode someMode
+  /-- Flat (`♭`) modality: the discrete reflection.  Cross-mode
+  arrow `software ⤳ ghost` — forgets continuous structure and lands
+  in the static / pointwise mode.  Per fx_design.md §6.3 cohesive
+  modalities; canonical reference is Shulman's Real Cohesion (2018,
+  arXiv:1509.07584) and Sikkel POPL'25 (BiSikkel, presheaf
+  cohesion).  Pairs with `sharp` via the cohesive adjoint chain
+  `♭ ⊣ ◇ ⊣ □ ⊣ ♯` (full chain ships when TwoCell infrastructure
+  lands). -/
+  | flat : Modality Mode.software Mode.ghost
+  /-- Sharp (`♯`) modality: the codiscrete coreflection.  Cross-mode
+  arrow `ghost ⤳ software` — lifts discrete content into the
+  continuous mode trivially.  Right adjoint to `flat` in the
+  cohesive setting.  Same provenance as `flat`. -/
+  | sharp : Modality Mode.ghost Mode.software
   deriving Repr
 
 namespace Modality
