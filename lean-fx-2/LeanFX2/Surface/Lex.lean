@@ -226,26 +226,59 @@ def readIntLexeme :
     else
       (acc, n, c :: rest)
 
+/-- Resolve an escape character following a `\\` in a string literal.
+Maps `n`/`t`/`r`/`"`/`\\` to their unescaped form; everything else
+returns `none` (signalling an invalid escape sequence). -/
+def resolveEscapeChar : Char → Option Char
+  | 'n'  => some '\n'
+  | 't'  => some '\t'
+  | 'r'  => some '\r'
+  | '"'  => some '"'
+  | '\\' => some '\\'
+  | _    => none
+
 /-- Read a string literal body up to closing `"`.  Returns
 (reversed body chars, byte size including delimiters,
-remaining chars), or `none` if unterminated / invalid escape. -/
+remaining chars), or `none` if unterminated / invalid escape.
+
+Uses the same 3-pattern flat structure that skipBlockComment uses
+(`[]`, `[c]`, `c :: c2 :: rest2`) to avoid the nested
+`match rest with | [] => ... | c2 :: rest2 => ...` shape — Lean
+4 v4.29.1's match compiler refuses to auto-reduce that nested
+form for abstract scrutinees, blocking propext-clean rewriting
+in the byte-conservation proof.
+
+Single-char `[c]` case collapses both outcomes:
+* `c == '"'`: closing quote, returns `some (acc, n + c.utf8Size, [])`.
+* otherwise (incl. `c == '\\'` with no second char to escape, or
+  any char without a closing quote in sight): returns `none`.
+
+Two-or-more `c :: c2 :: rest2` case dispatches via three-way `if`:
+* `c == '"'`: closing quote.
+* `c == '\\'`: try `resolveEscapeChar c2`; valid escape recurses
+  on `rest2` with byte count `n + c.utf8Size + c2.utf8Size`,
+  invalid returns `none`.
+* otherwise: normal char, tail-recurse on `c2 :: rest2` with
+  `n + c.utf8Size`.
+
+All forms use uniform abstract `Char.utf8Size` so the proof reduces
+by `Nat.add_assoc` without literal-char unfolding. -/
 def readStringLexeme :
     List Char → List Char → Nat → Option (List Char × Nat × List Char)
   | [], _, _ => none  -- unterminated
-  | '"' :: rest, acc, n => some (acc, n + 1, rest)  -- closing "
-  | '\\' :: c :: rest, acc, n =>
-    let escaped : Option Char := match c with
-      | 'n'  => some '\n'
-      | 't'  => some '\t'
-      | 'r'  => some '\r'
-      | '"'  => some '"'
-      | '\\' => some '\\'
-      | _    => none
-    match escaped with
-    | some ch => readStringLexeme rest (ch :: acc) (n + 2)
-    | none    => none
-  | '\\' :: [], _, _ => none
-  | c :: rest, acc, n => readStringLexeme rest (c :: acc) (n + c.utf8Size)
+  | c :: [], acc, n =>
+    if c == '"' then some (acc, n + c.utf8Size, [])
+    else none
+  | c :: c2 :: rest2, acc, n =>
+    if c == '"' then
+      some (acc, n + c.utf8Size, c2 :: rest2)
+    else if c == '\\' then
+      match resolveEscapeChar c2 with
+      | some ch =>
+        readStringLexeme rest2 (ch :: acc) (n + c.utf8Size + c2.utf8Size)
+      | none => none
+    else
+      readStringLexeme (c2 :: rest2) (c :: acc) (n + c.utf8Size)
 
 /-- Fold a list of decimal-digit chars (in left-to-right order)
 into a single `Nat`.  Non-digit chars are treated as 0 — caller
@@ -1501,5 +1534,183 @@ theorem Lex.readIntLexeme_byteLength_invariant :
             = (acc, n, firstChar :: restChars)
         rw [if_neg hDigit]
       rw [stepReduces]
+
+/-- **L07.5.3**: `readStringLexeme` conserves bytes, conditional on
+the `some` result.
+
+For any `readStringLexeme chars acc n = some (revBody, bytes, remaining)`,
+we have `bytes + charsByteLength remaining = n + charsByteLength chars`.
+
+Proof structure (mirrors the 3-pattern flat def):
+* `[]`: returns `none`, vacuous.
+* `[c]`: split on `c == '"'`.  Closing-quote arm gives
+  `(n + c.utf8Size) + 0 = n + (c.utf8Size + 0)` via `Nat.add_assoc`.
+  Else returns `none`.
+* `c :: c2 :: rest2`: split three-way:
+  - `c == '"'`: closing quote, single `Nat.add_assoc`.
+  - `c == '\\'`: split on `resolveEscapeChar c2` — `none` vacuous,
+    `some` recurses with byte count `n + c.utf8Size + c2.utf8Size`
+    and closes via IH + two `Nat.add_assoc` applications.
+  - else: tail-recurse on `c2 :: rest2` with `n + c.utf8Size`, IH +
+    `Nat.add_assoc`.
+
+Zero-axiom. -/
+theorem Lex.readStringLexeme_byteLength_invariant :
+    ∀ (chars : List Char) (acc : List Char) (n : Nat),
+      match readStringLexeme chars acc n with
+      | some (_, bytes, remaining) =>
+        bytes + charsByteLength remaining = n + charsByteLength chars
+      | none => True
+  | [], _, _ => by trivial
+  | c :: [], acc, n => by
+    by_cases hQuote : c == '"'
+    · -- Closing quote.  Returns some (acc, n + c.utf8Size, []).
+      have stepReduces :
+          readStringLexeme (c :: []) acc n
+            = some (acc, n + c.utf8Size, ([] : List Char)) := by
+        show (if c == '"' then some (acc, n + c.utf8Size, ([] : List Char))
+              else (none : Option _))
+            = some (acc, n + c.utf8Size, ([] : List Char))
+        rw [if_pos hQuote]
+      rw [stepReduces]
+      show (n + c.utf8Size) + charsByteLength ([] : List Char)
+        = n + charsByteLength (c :: [])
+      show (n + c.utf8Size) + 0 = n + (c.utf8Size + 0)
+      exact Nat.add_assoc n c.utf8Size 0
+    · -- Not closing quote.  Returns none.
+      have stepReduces :
+          readStringLexeme (c :: []) acc n = (none : Option _) := by
+        show (if c == '"' then some (acc, n + c.utf8Size, ([] : List Char))
+              else (none : Option _))
+            = none
+        rw [if_neg hQuote]
+      rw [stepReduces]
+      trivial
+  | c :: c2 :: rest2, acc, n => by
+    by_cases hQuote : c == '"'
+    · -- Closing quote.
+      have stepReduces :
+          readStringLexeme (c :: c2 :: rest2) acc n
+            = some (acc, n + c.utf8Size, c2 :: rest2) := by
+        show (if c == '"' then some (acc, n + c.utf8Size, c2 :: rest2)
+              else if c == '\\' then
+                match resolveEscapeChar c2 with
+                | some ch =>
+                  readStringLexeme rest2 (ch :: acc)
+                    (n + c.utf8Size + c2.utf8Size)
+                | none => none
+              else
+                readStringLexeme (c2 :: rest2) (c :: acc) (n + c.utf8Size))
+            = some (acc, n + c.utf8Size, c2 :: rest2)
+        rw [if_pos hQuote]
+      rw [stepReduces]
+      show (n + c.utf8Size) + charsByteLength (c2 :: rest2)
+        = n + charsByteLength (c :: c2 :: rest2)
+      show (n + c.utf8Size) + (c2.utf8Size + charsByteLength rest2)
+        = n + (c.utf8Size + (c2.utf8Size + charsByteLength rest2))
+      exact Nat.add_assoc n c.utf8Size (c2.utf8Size + charsByteLength rest2)
+    · -- Not closing quote.  Split on c == '\\'.
+      by_cases hBack : c == '\\'
+      · -- Backslash escape.  Case on resolveEscapeChar c2.
+        cases hEsc : resolveEscapeChar c2 with
+        | none =>
+          have stepReduces :
+              readStringLexeme (c :: c2 :: rest2) acc n
+                = (none : Option _) := by
+            show (if c == '"' then some (acc, n + c.utf8Size, c2 :: rest2)
+                  else if c == '\\' then
+                    match resolveEscapeChar c2 with
+                    | some ch =>
+                      readStringLexeme rest2 (ch :: acc)
+                        (n + c.utf8Size + c2.utf8Size)
+                    | none => none
+                  else
+                    readStringLexeme (c2 :: rest2) (c :: acc) (n + c.utf8Size))
+                = none
+            rw [if_neg hQuote, if_pos hBack, hEsc]
+          rw [stepReduces]
+          trivial
+        | some ch =>
+          have stepReduces :
+              readStringLexeme (c :: c2 :: rest2) acc n
+                = readStringLexeme rest2 (ch :: acc)
+                    (n + c.utf8Size + c2.utf8Size) := by
+            show (if c == '"' then some (acc, n + c.utf8Size, c2 :: rest2)
+                  else if c == '\\' then
+                    match resolveEscapeChar c2 with
+                    | some ch' =>
+                      readStringLexeme rest2 (ch' :: acc)
+                        (n + c.utf8Size + c2.utf8Size)
+                    | none => none
+                  else
+                    readStringLexeme (c2 :: rest2) (c :: acc) (n + c.utf8Size))
+                = readStringLexeme rest2 (ch :: acc)
+                    (n + c.utf8Size + c2.utf8Size)
+            rw [if_neg hQuote, if_pos hBack, hEsc]
+          rw [stepReduces]
+          have ihRecursive :
+              match readStringLexeme rest2 (ch :: acc)
+                      (n + c.utf8Size + c2.utf8Size) with
+              | some (_, bytes, remaining) =>
+                bytes + charsByteLength remaining
+                  = (n + c.utf8Size + c2.utf8Size) + charsByteLength rest2
+              | none => True :=
+            Lex.readStringLexeme_byteLength_invariant rest2 (ch :: acc)
+              (n + c.utf8Size + c2.utf8Size)
+          cases hRec : readStringLexeme rest2 (ch :: acc)
+                        (n + c.utf8Size + c2.utf8Size) with
+          | none => trivial
+          | some triple =>
+            rw [hRec] at ihRecursive
+            obtain ⟨_, bytes, remaining⟩ := triple
+            show bytes + charsByteLength remaining
+              = n + charsByteLength (c :: c2 :: rest2)
+            rw [ihRecursive]
+            show (n + c.utf8Size + c2.utf8Size) + charsByteLength rest2
+              = n + (c.utf8Size + (c2.utf8Size + charsByteLength rest2))
+            rw [Nat.add_assoc (n + c.utf8Size) c2.utf8Size
+                  (charsByteLength rest2),
+              Nat.add_assoc n c.utf8Size
+                (c2.utf8Size + charsByteLength rest2)]
+      · -- Normal char (neither '"' nor '\\').  tail-recurse on c2 :: rest2.
+        have stepReduces :
+            readStringLexeme (c :: c2 :: rest2) acc n
+              = readStringLexeme (c2 :: rest2) (c :: acc)
+                  (n + c.utf8Size) := by
+          show (if c == '"' then some (acc, n + c.utf8Size, c2 :: rest2)
+                else if c == '\\' then
+                  match resolveEscapeChar c2 with
+                  | some ch =>
+                    readStringLexeme rest2 (ch :: acc)
+                      (n + c.utf8Size + c2.utf8Size)
+                  | none => none
+                else
+                  readStringLexeme (c2 :: rest2) (c :: acc)
+                    (n + c.utf8Size))
+              = readStringLexeme (c2 :: rest2) (c :: acc)
+                  (n + c.utf8Size)
+          rw [if_neg hQuote, if_neg hBack]
+        rw [stepReduces]
+        have ihRecursive :
+            match readStringLexeme (c2 :: rest2) (c :: acc)
+                    (n + c.utf8Size) with
+            | some (_, bytes, remaining) =>
+              bytes + charsByteLength remaining
+                = (n + c.utf8Size) + charsByteLength (c2 :: rest2)
+            | none => True :=
+          Lex.readStringLexeme_byteLength_invariant (c2 :: rest2) (c :: acc)
+            (n + c.utf8Size)
+        cases hRec : readStringLexeme (c2 :: rest2) (c :: acc)
+                      (n + c.utf8Size) with
+        | none => trivial
+        | some triple =>
+          rw [hRec] at ihRecursive
+          obtain ⟨_, bytes, remaining⟩ := triple
+          show bytes + charsByteLength remaining
+            = n + charsByteLength (c :: c2 :: rest2)
+          rw [ihRecursive]
+          show (n + c.utf8Size) + charsByteLength (c2 :: rest2)
+            = n + (c.utf8Size + charsByteLength (c2 :: rest2))
+          exact Nat.add_assoc n c.utf8Size (charsByteLength (c2 :: rest2))
 
 end LeanFX2.Surface
