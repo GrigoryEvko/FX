@@ -20,6 +20,7 @@ import LeanFX2.FX1Bridge
 import LeanFX2.Tools.AuditAll.AuditBridge
 import LeanFX2.Tools.AuditAll.AuditCodata
 import LeanFX2.Tools.AuditAll.AuditConfluence
+import LeanFX2.Tools.AuditAll.AuditConservativity
 import LeanFX2.Tools.AuditAll.AuditConvCumul
 import LeanFX2.Tools.AuditAll.AuditCubical
 import LeanFX2.Tools.AuditAll.AuditEffects
