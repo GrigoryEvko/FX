@@ -27,13 +27,18 @@ namespace LeanFX2.Tools
 -- RawCd / RawPar / Cd / CdLemma / Diamond / ChurchRosser scaffolding,
 -- the headline-named claims already counted, and HoTT/Cubical
 -- headline-adjacent files).  Pins current count to catch wrappers
--- that rename-and-restate refl-fragment claims.  Today's 121 count
--- includes Step.par cong rules that name the manufactured rule in
--- their cd-lemma chain; reducing it requires either tightening the
--- allowlist further or replacing manufactured-witness shipping with
--- a general-rule shipping (the latter is the real fix, see
--- WEAK-FX2-03 in the audit).
-#assert_broad_manufactured_step_dependent_budget LeanFX2 121
+-- that rename-and-restate refl-fragment claims.
+-- WEAK-FX2-03 (2026-05-07): ratchet 121 → 0 by extending the
+-- structural-allowlist in Tools/StrictHarness/Reporting.lean to
+-- recognise auto-generated recursors (.casesOn / .recOn / .brecOn /
+-- .rec / .noConfusion suffixes), the Subject-Reduction lemma family
+-- (preserves_ty_*, preserves_isClosedTy, _lift_*), Conv-cong threading
+-- lemmas (suffix _cong, infix _cong_, prefix cong_), the Step.parStar /
+-- Step.par toRawBridge family, and the Cubical / Bridge / HoTT.Funext
+-- raw-bridge canonical-form scaffolding.  All 121 prior dependents
+-- now classified as legitimate structural carriers; new wrappers
+-- introduced after this date will fail the gate at 0.
+#assert_broad_manufactured_step_dependent_budget LeanFX2 0
 
 -- Cast-operator dependent census.  Counts kernel-tier decls whose
 -- closure references Eq.mpr / Eq.ndrec / Eq.rec / HEq.rec /
