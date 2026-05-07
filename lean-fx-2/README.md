@@ -3,28 +3,34 @@
 A zero-axiom, zero-sorry, full-HoTT, full-MTT, dependent-type-ready
 engine for FX, written in Lean 4.
 
-## Status: Phase 0 (skeleton complete, build green at 90 jobs)
+## Status (2026-05-07): kernel + confluence + HoTT shipped, surface + modal in progress
 
-All 13 layers have stub files with substantial architectural
-docstrings.  Build green from day 1 — every stub compiles, just
-doesn't yet contain the full implementation.
+* **Build**: 467 jobs, 7780 declarations clean, 0 failed
+* **Audit**: every shipped declaration is `#assert_no_axioms` gated
+  inline via the strict harness; zero `propext` / `Quot.sound` /
+  `Classical.choice` / FX-specific axioms anywhere in the kernel
+* **Critical-path remaining**: 7 load-bearing tasks gating v1.0 (see
+  ROADMAP.md "Critical-path summary"); D2.10 typed Compat at 13/28
+  done as of 2026-05-07
 
 ```bash
 cd /root/iprit/FX/lean-fx-2 && lake build LeanFX2
-# expected: Build completed successfully (90 jobs)
+# expected: Build completed successfully (467 jobs)
+# dashboard: SEMANTIC DEBT DASHBOARD banner reports debt counts
 ```
 
 ## Required reading
 
 Before any kernel work, read in order:
 
-1. `AXIOMS.md` — trust budget + per-axiom catastrophe analysis
+1. `AXIOMS.md` — zero-axiom commitment + per-axiom catastrophe analysis
 2. `WORKING_RULES.md` — 18 distilled kernel-discipline rules
 3. `ARCHITECTURE.md` — 13-layer dependency DAG
-4. `ROADMAP.md` — Layer-by-Layer phasing
+4. `ROADMAP.md` — phase status + critical-path summary
 5. `MIGRATION.md` — lean-fx → lean-fx-2 cutover plan
 6. `LeanFX2/Sketch/Wave9.lean` — raw-aware Term proof of concept
-7. `CLAUDE.md` — project-local instructions
+7. `CLAUDE.md` — project-local instructions (zero-axiom commitment,
+   forbidden declaration forms, mandatory verification gates)
 
 ## Why a new project (vs continuing lean-fx)
 
@@ -45,7 +51,7 @@ compose — agents kept reverting at the cascade wall.  lean-fx-2
 builds the architecture-of-record from day 1:
 
 * **Term carries `RawTerm scope` as a type index.**  `Term.toRaw t = raw`
-  is `rfl`.
+  is `rfl` for all 75 ctors.
 * **Subst is unified.**  No `dropNewest`; one singleton operation
   embedding `RawTermSubst.singleton arg.toRaw`.
 * **Conv is ∃-StepStar.**  No 13 cong rules; uniform decidability.
@@ -58,28 +64,36 @@ builds the architecture-of-record from day 1:
   not bolted on).
 * **Identity-type endpoints are RawTerm**, sidestepping Lean 4's
   mutual-index rule.
-* **Smoke tests inline** — every theorem ships with `example` adjacent.
+* **Smoke tests inline** — every theorem ships with `example`-style
+  smoke gates in `Smoke/Audit*.lean` files.
 
-## Engine commitments
+## Engine commitments — verified zero-axiom
 
-| | What | Where |
-|---|---|---|
-| **0 axioms** | No `propext`, `Quot.sound`, `Classical.choice`, `funext`, `K` | `AXIOMS.md`, enforced by `Tools/AuditAll.lean` |
-| **0 sorry** | Every theorem proved | enforced by build |
-| **Full HoTT** | Identity types with full dep J, transport, equivalences, n-types, HITs (Circle, Suspension, Quotient, PropTrunc), univalence (cubical-derived long-term, postulated short-term as **only** documented exception) | Layer 5 — `HoTT/` |
-| **Full MTT** | BiSikkel-style: 2-category of modes, modalities (Later/Bridge/Cap/Ghost), 2LTT layering, modal computation rules | Layer 6 — `Modal/` |
-| **Dependent type** | Π, Σ, Id, universes (cumulativity via Conv), inductive families, recursors | Layer 1 — `Term.lean` |
-| **Ready engine** | lex → parse → elab → kernel; WHNF, decidable Conv, bidirectional infer/check, fuel-bounded eval; soundness + completeness | Layers 9–11 |
+| | Status | What | Where |
+|---|---|---|---|
+| **0 axioms** | ✅ verified | No `propext`, `Quot.sound`, `Classical.choice`, no FX axioms | `AXIOMS.md`, enforced by `Tools/AuditAll/` |
+| **0 sorry** | ✅ verified | Every shipped declaration has a body | enforced by build |
+| **Full HoTT** | ✅ shipped | Identity types with full dep J, transport, equivalences, n-types, 7 HITs (Quot, PropTrunc, SetTrunc, S¹, Suspension, Pushout, Coequalizer), Univalence as REAL theorem `Conv.fromStep Step.eqType`, funext as REAL theorem `Conv.fromStep Step.eqArrow` | Layer 5 — `HoTT/` |
+| **Full MTT** | 🚧 partial | 10-mode enum with 2 axes (runtime-layer + modal-fragment); D4.1-4.9 modal infrastructure pending | Layer 6 — `Modal/` |
+| **Dependent type** | ✅ shipped | Π, Σ, Id, universes (cumulativity via Conv), inductive families, recursors at Term/Step/Conv layers | Layer 1 — `Term.lean` |
+| **Engine** | 🚧 partial | Layer 9 (WHNF + bidirectional infer/check + decidable Conv) DONE; Layer 10 surface (Lex + Token + AST scaffold) PARTIAL; Layer 11 Pipeline pending | Layers 9-11 |
 
-## Current artifact (Phase 0 skeleton)
+## Current artifact (multi-phase shipped)
 
-* **90 Lean files** building green
-* **5 docs**: AXIOMS.md (~400 lines), WORKING_RULES.md (18 rules),
-  README.md, ARCHITECTURE.md, ROADMAP.md, MIGRATION.md, CLAUDE.md
-* **1 Sketch** (`Sketch/Wave9.lean`) — raw-aware Term proof of concept
-  ported verbatim from lean-fx
-* **8 Smoke files** — placeholders for per-layer concrete examples
-* **0 axioms, 0 sorries** (only stubs; no actual proofs to fail)
+* **467 build jobs** green
+* **7780 declarations** in `LeanFX2.*` namespace, all axiom-clean per
+  the strict harness
+* **49 strict gates** for surface bridge/env/correspondence (#1531)
+* **3 confluence gates** for raw Church-Rosser (#1508)
+* **8 STRICT-N harness gates** (`STRICT-1` through `STRICT-8`)
+  enforce: axioms-zero, raw/typed parity, naming discipline,
+  hypothesis-as-postulate detection, sub-namespace coverage
+* **30 cong rules** in `Step.par` with rename+subst compat: 13 of 28
+  shipped (intervalOppCong + 12 batch); 15 still on the v1.0 path
+* **Univalence + funext** as zero-axiom theorems via `Step.eqType` /
+  `Step.eqArrow` reductions (NOT axioms)
+* **5 docs**: AXIOMS.md, WORKING_RULES.md, README.md, ARCHITECTURE.md,
+  ROADMAP.md, MIGRATION.md, CLAUDE.md
 
 ## Architecture
 
@@ -88,14 +102,17 @@ picture.
 
 ## Roadmap
 
-See `ROADMAP.md` for the phasing from skeleton → working kernel →
-full engine.
+See `ROADMAP.md` for HONEST per-phase status (Phase 0-2, 4 raw, 5,
+6, 8, 13 DONE; Phase 3, 9-11, 14 PARTIAL; Phase 7 modal NOT STARTED;
+Phase 15 cutover deferred until critical path closes).
 
 ## Migrating from lean-fx
 
 See `MIGRATION.md` for the cutover plan.  Short version: lean-fx and
-lean-fx-2 coexist until lean-fx-2 has full feature parity, then lean-fx
-is retired (kept as `lean-fx.deprecated/` for historical reference).
+lean-fx-2 coexist until lean-fx-2 has full feature parity, then
+lean-fx is retired (kept as `lean-fx.deprecated/` for historical
+reference).  Cutover gating: D2.10 + M06 SR + PHASE7-CONV-TRANS +
+K07.1-8 + D2.5.1-3 + WEAK-FX2-03 + D4 modal must close first.
 
 ## Layout
 
@@ -103,28 +120,33 @@ is retired (kept as `lean-fx.deprecated/` for historical reference).
 lean-fx-2/
 ├── LeanFX2.lean          umbrella import (all layers wired)
 ├── LeanFX2/
-│   ├── Foundation/       Layer 0: untyped substrate (Mode, RawTerm, Ty, Subst, Context)
-│   ├── Term.lean         Layer 1: raw-aware Term inductive
-│   ├── Term/             Layer 1: rename, subst, subst0, toRaw, pointwise
-│   ├── Reduction/        Layer 2: Step, StepStar, Conv, ParRed, RawPar, Compat
-│   ├── Confluence/       Layer 3: Cd, Diamond, Church-Rosser, canonical form
-│   ├── Bridge.lean       Layer 4: typed↔raw correspondence
-│   ├── HoTT/             Layer 5: Identity, J, Path, Transport, Equivalence, NTypes, Univalence, HIT
-│   ├── Modal/            Layer 6: Modal foundation, Later, Bridge, Cap, Ghost, 2LTT
-│   ├── Graded/           Layer 7: Semiring framework, GradeVector, dimension instances
-│   ├── Refine/           Layer 8: refinement types, decidable predicates, SMT cert
-│   ├── Algo/             Layer 9: WHNF, decConv, infer, check, eval
-│   ├── Surface/          Layer 10: lex, AST, parse, print, elab
-│   ├── Pipeline.lean     Layer 11: end-to-end pipeline
-│   ├── Tools/            Layer 12: AuditAll, AuditGen, DependencyAudit, Tactics/
+│   ├── Foundation/       Layer 0: untyped substrate (Mode, RawTerm, Ty, Subst, Context, Action)
+│   ├── Term.lean         Layer 1: raw-aware Term inductive (75 ctors)
+│   ├── Term/             Layer 1: rename, subst, subst0, toRaw, pointwise, SubjectReduction
+│   ├── Reduction/        Layer 2: Step (105 ctors), StepStar, Conv, ParRed (109), RawPar, Compat
+│   ├── Confluence/       Layer 3: Cd, Diamond, Church-Rosser (raw), CanonicalForm
+│   ├── Bridge.lean       Layer 4: typed↔raw correspondence (Step.par.toRawBridge)
+│   ├── Bridge/           Layer 4 cross-theory bridges (PathToId, IdToPath, etc.)
+│   ├── HoTT/             Layer 5: Identity, J, Path, Transport, Equivalence, NTypes, Univalence, Funext, HIT/
+│   ├── Cubical/          Layer 5: Path, Composition, Glue, Transport, Bridge
+│   ├── Modal/            Layer 6: Modal foundation, Later, Bridge, Cap, Ghost, 2LTT (D4.x pending)
+│   ├── Graded/           Layer 7: Semiring framework, GradeVector, 21 dimension instances
+│   ├── Refine/           Layer 8: refinement types, decidable predicates, SMT cert (partial)
+│   ├── Algo/             Layer 9: WHNF, decConv, infer, check, eval, soundness, completeness
+│   ├── Surface/          Layer 10: Token, Lex, AST, KernelBridge, Semantics, Elab (scaffold)
+│   ├── Pipeline.lean     Layer 11: end-to-end pipeline (TODO)
+│   ├── FX1/              Lean 4 kernel mechanization (D8.1-D8.6 done; D8.7-D8.10 pending)
+│   ├── FX1Bridge/        Term ↔ FX1 bridge (encodeTermSound_*)
+│   ├── Tools/            Layer 12: AuditGen, AuditAll/, StrictHarness/, DependencyAudit
+│   ├── Effects/, Sessions/, Codata/  Layer 5+ effect/session/codata infra
 │   ├── Sketch/           Wave 9 raw-aware Term prototype
-│   └── Smoke/            inline smoke tests per layer
+│   └── Smoke/            inline smoke tests per layer (~140 files)
 ├── lakefile.lean
 ├── lean-toolchain
-├── AXIOMS.md             trust budget + catastrophe analysis
+├── AXIOMS.md             zero-axiom commitment + catastrophe analysis
 ├── WORKING_RULES.md      18 distilled kernel-discipline rules
 ├── ARCHITECTURE.md       13-layer dependency DAG
-├── ROADMAP.md            phasing
+├── ROADMAP.md            phase status + critical-path summary
 ├── MIGRATION.md          lean-fx → lean-fx-2 cutover
 ├── CLAUDE.md             project-local agent instructions
 └── README.md             this file
@@ -136,5 +158,31 @@ lean-fx-2/
 lake build LeanFX2
 ```
 
-Skeleton phase: builds green at 90 jobs, contains stubs.  Working
-kernel phase: replace stubs with implementations per `ROADMAP.md`.
+Expected output:
+* `Build completed successfully (467 jobs).`
+* Strict audit summary: `Total audited: 7780 / Clean: 7780 / Failed: 0`
+* Semantic debt dashboard: load-bearing debt counts per category
+  (lower = better; ratchets enforced inline)
+
+If any gate fails, the build fails — there is NO advisory mode.
+
+## Audit dashboard
+
+The build prints a `lean-fx-2 SEMANTIC DEBT DASHBOARD` banner at the
+end with current debt counts:
+
+* Audited declarations (total / clean / failed)
+* Schematic payload census
+* Semantic signature debt (13 rows incl. dep eliminator motive,
+  unit-typed proof placeholders, modal no-op, etc.)
+* Coverage matrices (Bridge encoding, Step.par cong, Conv cong,
+  toRaw projection, IsClosedTy parity)
+* Inductive ctor-count snapshots (regression prevention)
+* Refl-fragment dependency census (manufactured-rule wrapper count)
+* Kernel decl-shape census (cast-operator deps, single-step Conv
+  claims, etc.)
+* Axiom-adjacent dependency census (HEq, decide, propext-adjacent)
+* Lean-trust-escape census (OfNat, Eq.subst, Sigma, etc.)
+
+Each row's count is enforced by an inline ratchet gate; new debt
+fails the build immediately.
