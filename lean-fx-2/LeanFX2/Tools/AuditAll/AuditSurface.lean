@@ -125,4 +125,10 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawLetCons
 #assert_no_axioms LeanFX2.Surface.RawStmtList.foldBlock?_rawExprCons
 
+/-! ### Surface.GrammarToken — C09 reserved-non-token catalogue (#1225) -/
+
+#assert_no_axioms LeanFX2.Surface.Token.spellingsOfReservedNonTokens
+#assert_no_axioms LeanFX2.Surface.Token.spellingsOfReservedNonTokens_catalogue
+#assert_no_axioms LeanFX2.Surface.Token.spellingsOfReservedNonTokens_length
+
 end LeanFX2.Tools

@@ -495,11 +495,30 @@ annotation).  Record updates and format overrides use spread
 composition uses `handle`.  All these are distinct tokens. -/
 
 /-- Documentary: list of token-spellings explicitly EXCLUDED
-from the FX alphabet per fx_grammar.md §2.4.  Returning a list
-of strings rather than a per-ctor function keeps the audit
-zero-axiom and avoids enumerating the full Token ctor set. -/
+from the FX alphabet per fx_grammar.md §2.4 + fx_design.md §2.6.
+Returning a list of strings rather than a per-ctor function keeps
+the audit zero-axiom and avoids enumerating the full Token ctor set.
+
+Source enumeration (fx_design.md §2.6):
+  "No `:=`, `::`, `!`, `?`, `?.`, `&&`, `||`, `<|`, `'` (per
+   fx_grammar.md §2.4)."
+
+That spec lists exactly nine non-tokens; this list mirrors them. -/
 def Token.spellingsOfReservedNonTokens : List String :=
   [":=", "::", "!", "?", "?.", "&&", "||", "<|", "'"]
+
+/-- C09 completeness audit: the catalogue of reserved non-tokens
+contains exactly the nine spellings enumerated in fx_grammar.md
+§2.4 / fx_design.md §2.6, in source order.  Pinning the equality
+catches any accidental addition / removal / reordering. -/
+theorem Token.spellingsOfReservedNonTokens_catalogue :
+    Token.spellingsOfReservedNonTokens =
+      [":=", "::", "!", "?", "?.", "&&", "||", "<|", "'"] := rfl
+
+/-- The catalogue length is exactly 9 — the count stated in
+fx_grammar.md §2.4. -/
+theorem Token.spellingsOfReservedNonTokens_length :
+    Token.spellingsOfReservedNonTokens.length = 9 := rfl
 
 /-! ## Cross-schema consistency
 
