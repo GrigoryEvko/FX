@@ -1952,6 +1952,81 @@ theorem subst_compatible
 
 end oeqFunextCong
 
+/-! ### `pathLamCong` (unary, binder, mode-univalent gated).
+
+Binder rule: the body lives at `(scope + 1)` under
+`(context.cons Ty.interval) ⊢ carrierType.weaken : ...`.  After
+rename/subst, the body must traverse `TermRenaming.lift` (resp.
+`TermSubst.lift`) and bridge `carrierType.weaken` →
+`(carrierType.rename rho).weaken` (resp. `.subst sigma`) via
+`Ty.weaken_rename_commute` / `Ty.weaken_subst_commute`.  Same
+cast-surfacing approach as `oeqFunextCong` — the caller supplies
+the inner Step.par premise at the cast type expected by
+`Step.par.pathLamCong`. -/
+namespace pathLamCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {bodySource :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    (renamedBodyStep :
+      Step.par
+        (Ty.weaken_rename_commute rho carrierType ▸
+          Term.rename (termRenaming.lift Ty.interval) bodySource)
+        (Ty.weaken_rename_commute rho carrierType ▸
+          Term.rename (termRenaming.lift Ty.interval) bodyTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodySource))
+      (Term.rename termRenaming
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodyTarget)) :=
+  Step.par.pathLamCong modeIsUnivalent renamedBodyStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {bodyRawSource bodyRawTarget : RawTerm (sourceScope + 1)}
+    {bodySource :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawSource}
+    {bodyTarget :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRawTarget}
+    (substitutedBodyStep :
+      Step.par
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) bodySource)
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) bodyTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodySource))
+      (Term.subst termSubst
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodyTarget)) :=
+  Step.par.pathLamCong modeIsUnivalent substitutedBodyStep
+
+end pathLamCong
+
 end par
 
 end Step

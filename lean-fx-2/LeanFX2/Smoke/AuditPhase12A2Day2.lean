@@ -190,6 +190,10 @@ Every declaration listed must report "does not depend on any axioms".
 -- oeqFunextPointwiseType_rename / _subst commute lemmas)
 #print axioms LeanFX2.Step.par.oeqFunextCong.rename_compatible
 #print axioms LeanFX2.Step.par.oeqFunextCong.subst_compatible
+-- D2.10 incremental: pathLamCong (unary, binder rule, ▸-cast bridge via
+-- Ty.weaken_rename_commute / Ty.weaken_subst_commute)
+#print axioms LeanFX2.Step.par.pathLamCong.rename_compatible
+#print axioms LeanFX2.Step.par.pathLamCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

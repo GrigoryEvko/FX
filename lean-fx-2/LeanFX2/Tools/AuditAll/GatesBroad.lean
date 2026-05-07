@@ -111,6 +111,11 @@ namespace LeanFX2.Tools
 -- caller now supplies the inner Step.par premise at the CAST type
 -- — matching exactly what `Step.par.oeqFunextCong` constructor wants).
 -- Ratchet 2 → 1.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 1
+-- D2.10 FINAL (2026-05-07): shipped `pathLamCong` (unary, binder
+-- rule; body lives under `(context.cons Ty.interval)` at
+-- `carrierType.weaken`; uses same ▸-cast bridge approach as
+-- `oeqFunextCong` via `Ty.weaken_rename_commute` /
+-- `Ty.weaken_subst_commute`).  D2.10 COMPLETE — ratchet 1 → 0.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 0
 
 end LeanFX2.Tools

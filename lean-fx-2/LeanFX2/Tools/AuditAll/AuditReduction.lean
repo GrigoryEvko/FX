@@ -209,4 +209,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.oeqFunextCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.oeqFunextCong.subst_compatible
 
+-- D2.10 typed compositional compat — pathLamCong (unary, binder rule;
+-- body lives under `(context.cons Ty.interval)` at `carrierType.weaken`,
+-- requires `Ty.weaken_rename_commute` / `Ty.weaken_subst_commute` ▸
+-- cast surfaced in the inner Step.par premise).
+#assert_no_axioms LeanFX2.Step.par.pathLamCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.pathLamCong.subst_compatible
+
 end LeanFX2.Tools
