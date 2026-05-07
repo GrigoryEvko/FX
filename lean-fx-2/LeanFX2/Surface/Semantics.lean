@@ -461,6 +461,219 @@ theorem Expr.denoteIsTotalOnLitExpr {scope : Nat} (lit : Literal)
                 = some rawTerm :=
   Literal.bridgeIsTotalOnGapFree (scope := scope) lit gapFree
 
+/-! ### B12 compositional totality — helper families
+
+The `OptRawExpr`, `RawArgList`, `RawCallArg`, and `RawStmtList`
+families each carry their own gap-free predicate and per-ctor
+totality lemma.  Together with the `RawExpr` ctors above they
+form the full compositional toolkit on which any specific
+gap-free surface program can be proved total by structural
+recursion at the call site. -/
+
+/-- B12 atomic: `rawNone` always denotes (to `RawTerm.unit`). -/
+theorem OptRawExpr.bridgeIsTotalOnRawNone {scope : Nat} :
+    ∃ rawTerm,
+        OptRawExpr.toRawTermOrUnit?
+          (OptRawExpr.rawNone (scope := scope)) = some rawTerm :=
+  ⟨RawTerm.unit, rfl⟩
+
+/-- B12 compositional: `rawSome value` denotes whenever its
+inner expression does. -/
+theorem OptRawExpr.bridgeIsTotalOnRawSome {scope : Nat}
+    (value : RawExpr scope)
+    (valueTotal : ∃ valueTerm, RawExpr.toRawTerm? value = some valueTerm) :
+    ∃ rawTerm,
+        OptRawExpr.toRawTermOrUnit? (OptRawExpr.rawSome value)
+          = some rawTerm := by
+  obtain ⟨valueTerm, valueEq⟩ := valueTotal
+  exact ⟨valueTerm, valueEq⟩
+
+/-- B12 atomic: `rawNilArg` always succeeds for any starting
+accumulator (the fold returns the accumulator unchanged). -/
+theorem RawArgList.bridgeIsTotalOnRawNilArg {scope : Nat}
+    (acc : RawTerm scope) :
+    ∃ result,
+        RawArgList.foldApps? acc
+          (RawArgList.rawNilArg (scope := scope)) = some result :=
+  ⟨acc, rfl⟩
+
+/-- B12 compositional: `rawConsArg arg rest` succeeds whenever
+`arg` is total and the recursive fold over `rest` succeeds for
+every starting accumulator. -/
+theorem RawArgList.bridgeIsTotalOnRawConsArg {scope : Nat}
+    (arg : RawCallArg scope) (rest : RawArgList scope)
+    (acc : RawTerm scope)
+    (argTotal : ∃ argTerm, RawCallArg.toRawTerm? arg = some argTerm)
+    (restTotal : ∀ acc' : RawTerm scope,
+        ∃ result, RawArgList.foldApps? acc' rest = some result) :
+    ∃ result,
+        RawArgList.foldApps? acc (RawArgList.rawConsArg arg rest)
+          = some result := by
+  obtain ⟨argTerm, argEq⟩ := argTotal
+  obtain ⟨result, restEq⟩ := restTotal (RawTerm.app acc argTerm)
+  refine ⟨result, ?_⟩
+  show (match RawCallArg.toRawTerm? arg with
+        | none => none
+        | some argRaw => RawArgList.foldApps? (RawTerm.app acc argRaw) rest)
+        = some result
+  rw [argEq]; exact restEq
+
+/-- B12 compositional: `rawPositional` reduces to inner totality. -/
+theorem RawCallArg.bridgeIsTotalOnRawPositional {scope : Nat}
+    (value : RawExpr scope)
+    (valueTotal : ∃ valueTerm, RawExpr.toRawTerm? value = some valueTerm) :
+    ∃ argTerm,
+        RawCallArg.toRawTerm? (RawCallArg.rawPositional value)
+          = some argTerm :=
+  valueTotal
+
+/-- B12 compositional: `rawNamed` reduces to inner totality
+(the `name` field is discarded by the env-free bridge). -/
+theorem RawCallArg.bridgeIsTotalOnRawNamed {scope : Nat}
+    (name : LowerIdent) (value : RawExpr scope)
+    (valueTotal : ∃ valueTerm, RawExpr.toRawTerm? value = some valueTerm) :
+    ∃ argTerm,
+        RawCallArg.toRawTerm? (RawCallArg.rawNamed name value)
+          = some argTerm :=
+  valueTotal
+
+/-- B12 compositional: `rawImplicit` reduces to inner totality
+(implicit args collapse to the same kernel value as positional). -/
+theorem RawCallArg.bridgeIsTotalOnRawImplicit {scope : Nat}
+    (value : RawExpr scope)
+    (valueTotal : ∃ valueTerm, RawExpr.toRawTerm? value = some valueTerm) :
+    ∃ argTerm,
+        RawCallArg.toRawTerm? (RawCallArg.rawImplicit value)
+          = some argTerm :=
+  valueTotal
+
+/-- B12 atomic: `rawNilStmt` always succeeds (the fold returns
+the supplied final term unchanged). -/
+theorem RawStmtList.bridgeIsTotalOnRawNilStmt {scope : Nat}
+    (finalRaw : RawTerm scope) :
+    ∃ result,
+        RawStmtList.foldBlock?
+          (RawStmtList.rawNilStmt (scope := scope)) finalRaw = some result :=
+  ⟨finalRaw, rfl⟩
+
+/-- B12 compositional: `rawLetCons` succeeds when the let-value
+denotes and the recursive fold over the rest succeeds. -/
+theorem RawStmtList.bridgeIsTotalOnRawLetCons {scope outScope : Nat}
+    (name : LowerIdent) (typeAnnot : OptRawExpr scope)
+    (value : RawExpr scope) (rest : RawStmtList (scope + 1) outScope)
+    (finalRaw : RawTerm outScope)
+    (valueTotal : ∃ valueTerm, RawExpr.toRawTerm? value = some valueTerm)
+    (restTotal : ∃ restRaw,
+        RawStmtList.foldBlock? rest finalRaw = some restRaw) :
+    ∃ result,
+        RawStmtList.foldBlock?
+          (RawStmtList.rawLetCons name typeAnnot value rest) finalRaw
+          = some result := by
+  obtain ⟨valueTerm, valueEq⟩ := valueTotal
+  obtain ⟨restRaw, restEq⟩ := restTotal
+  refine ⟨RawTerm.app (RawTerm.lam restRaw) valueTerm, ?_⟩
+  show (match RawExpr.toRawTerm? value with
+        | none => none
+        | some valueRaw =>
+          match RawStmtList.foldBlock? rest finalRaw with
+          | none => none
+          | some restRawInner =>
+              some (RawTerm.app (RawTerm.lam restRawInner) valueRaw))
+        = some (RawTerm.app (RawTerm.lam restRaw) valueTerm)
+  rw [valueEq, restEq]
+
+/-- B12 compositional: `rawExprCons` succeeds when the discarded
+expression denotes and the recursive fold over the rest succeeds.
+The kernel-level encoding wraps the rest in a vacuous `lam`
+applied to the discarded value (using `RawTerm.weaken` to lift
+the rest to the wider scope). -/
+theorem RawStmtList.bridgeIsTotalOnRawExprCons {scope outScope : Nat}
+    (value : RawExpr scope) (rest : RawStmtList scope outScope)
+    (finalRaw : RawTerm outScope)
+    (valueTotal : ∃ valueTerm, RawExpr.toRawTerm? value = some valueTerm)
+    (restTotal : ∃ restRaw,
+        RawStmtList.foldBlock? rest finalRaw = some restRaw) :
+    ∃ result,
+        RawStmtList.foldBlock?
+          (RawStmtList.rawExprCons value rest) finalRaw = some result := by
+  obtain ⟨valueTerm, valueEq⟩ := valueTotal
+  obtain ⟨restRaw, restEq⟩ := restTotal
+  refine ⟨RawTerm.app (RawTerm.lam restRaw.weaken) valueTerm, ?_⟩
+  show (match RawExpr.toRawTerm? value with
+        | none => none
+        | some valueRaw =>
+          match RawStmtList.foldBlock? rest finalRaw with
+          | none => none
+          | some restRawInner =>
+              some (RawTerm.app (RawTerm.lam restRawInner.weaken) valueRaw))
+        = some (RawTerm.app (RawTerm.lam restRaw.weaken) valueTerm)
+  rw [valueEq, restEq]
+
+/-! ### B12 compositional totality — remaining `RawExpr` ctors -/
+
+/-- B12 compositional: `rawIf cond thenBr elseBr` denotes whenever
+all three branches denote (using `OptRawExpr.toRawTermOrUnit?` for
+the `else` branch — `rawNone` already denotes to `RawTerm.unit`). -/
+theorem RawExpr.bridgeIsTotalOnRawIf {scope : Nat}
+    (cond thenBr : RawExpr scope) (elseBr : OptRawExpr scope)
+    (condTotal : ∃ condRaw, RawExpr.toRawTerm? cond = some condRaw)
+    (thenTotal : ∃ thenRaw, RawExpr.toRawTerm? thenBr = some thenRaw)
+    (elseTotal : ∃ elseRaw,
+        OptRawExpr.toRawTermOrUnit? elseBr = some elseRaw) :
+    ∃ rawTerm,
+        RawExpr.toRawTerm? (RawExpr.rawIf cond thenBr elseBr)
+          = some rawTerm := by
+  obtain ⟨condRaw, condEq⟩ := condTotal
+  obtain ⟨thenRaw, thenEq⟩ := thenTotal
+  obtain ⟨elseRaw, elseEq⟩ := elseTotal
+  refine ⟨RawTerm.boolElim condRaw thenRaw elseRaw, ?_⟩
+  show (match RawExpr.toRawTerm? cond with
+        | none => none
+        | some condRaw' =>
+          match RawExpr.toRawTerm? thenBr with
+          | none => none
+          | some thenRaw' =>
+            match OptRawExpr.toRawTermOrUnit? elseBr with
+            | none => none
+            | some elseRaw' =>
+                some (RawTerm.boolElim condRaw' thenRaw' elseRaw'))
+        = some (RawTerm.boolElim condRaw thenRaw elseRaw)
+  rw [condEq, thenEq, elseEq]
+
+/-- B12 compositional: `rawBlock stmts final` denotes whenever
+the final expression denotes and the statement-list fold
+succeeds against that final term. -/
+theorem RawExpr.bridgeIsTotalOnRawBlock {scope outScope : Nat}
+    (stmts : RawStmtList scope outScope) (final : RawExpr outScope)
+    (finalTotal : ∃ finalRaw, RawExpr.toRawTerm? final = some finalRaw)
+    (stmtsTotal : ∀ finalRaw' : RawTerm outScope,
+        ∃ result, RawStmtList.foldBlock? stmts finalRaw' = some result) :
+    ∃ rawTerm,
+        RawExpr.toRawTerm? (RawExpr.rawBlock stmts final) = some rawTerm := by
+  obtain ⟨finalRaw, finalEq⟩ := finalTotal
+  obtain ⟨result, stmtsEq⟩ := stmtsTotal finalRaw
+  refine ⟨result, ?_⟩
+  show (match RawExpr.toRawTerm? final with
+        | none => none
+        | some finalRawInner => RawStmtList.foldBlock? stmts finalRawInner)
+        = some result
+  rw [finalEq]; exact stmtsEq
+
+/-! ### B12 lifted — remaining `Expr` ctors
+
+Each `Expr.denoteIsTotalOn*` theorem lifts the corresponding
+`RawExpr` totality to the decorated family by definitional
+unfolding of `Expr.denote = Expr.toRawTerm? = RawExpr.toRawTerm?
+∘ Expr.toRaw`. -/
+
+/-- B12 lifted: `parenExpr` denotes whenever its inner does. -/
+theorem Expr.denoteIsTotalOnParenExpr {scope : Nat} {innerRaw : RawExpr scope}
+    (inner : Expr innerRaw) (pos : SrcPos)
+    (innerTotal : ∃ innerTerm, RawExpr.toRawTerm? innerRaw = some innerTerm) :
+    ∃ rawTerm,
+        Expr.denote (Expr.parenExpr inner pos) = some rawTerm :=
+  RawExpr.bridgeIsTotalOnRawParen (scope := scope) innerRaw innerTotal
+
 /-! ## S04 bridge invariant theorem (#1288)
 
 The semantic equivalence `e ≅ r` between a decorated `Expr raw`

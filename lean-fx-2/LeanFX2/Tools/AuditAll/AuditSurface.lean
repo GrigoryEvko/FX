@@ -63,6 +63,22 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnUnitExpr
 #assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnLitExpr
 
+/-! ### B12 compositional: helper-family + remaining ctors (#1252) -/
+
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.bridgeIsTotalOnRawNone
+#assert_no_axioms LeanFX2.Surface.OptRawExpr.bridgeIsTotalOnRawSome
+#assert_no_axioms LeanFX2.Surface.RawArgList.bridgeIsTotalOnRawNilArg
+#assert_no_axioms LeanFX2.Surface.RawArgList.bridgeIsTotalOnRawConsArg
+#assert_no_axioms LeanFX2.Surface.RawCallArg.bridgeIsTotalOnRawPositional
+#assert_no_axioms LeanFX2.Surface.RawCallArg.bridgeIsTotalOnRawNamed
+#assert_no_axioms LeanFX2.Surface.RawCallArg.bridgeIsTotalOnRawImplicit
+#assert_no_axioms LeanFX2.Surface.RawStmtList.bridgeIsTotalOnRawNilStmt
+#assert_no_axioms LeanFX2.Surface.RawStmtList.bridgeIsTotalOnRawLetCons
+#assert_no_axioms LeanFX2.Surface.RawStmtList.bridgeIsTotalOnRawExprCons
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawIf
+#assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawBlock
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnParenExpr
+
 /-! ### Surface.KernelBridge — env-free bridge core (#1531) -/
 
 #assert_no_axioms LeanFX2.Surface.RawTerm.natOfNat
