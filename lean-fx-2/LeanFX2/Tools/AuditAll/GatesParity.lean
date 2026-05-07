@@ -25,6 +25,13 @@ namespace LeanFX2.Tools
 -- mode where a raw cubical β rule lands without its typed mirror.
 #assert_raw_typed_parity
 
+-- Typed / raw reverse parity gate (STRICT-9).  Every constructor of
+-- `Step.par` must either have a same-suffix constructor in
+-- `RawStep.par` OR be on the documented typed-only exception list.
+-- Catches the complementary failure mode where a typed β/cong ctor
+-- lands without raw projection or justification.
+#assert_typed_raw_parity
+
 -- Schematic-payload budget gates.  These do not claim the current payload
 -- surface is ideal; they pin today's explicit `RawTerm` / `Nat` constructor
 -- payload debt so future rich-kernel edits cannot grow it silently.

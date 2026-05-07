@@ -1776,5 +1776,128 @@ elab "#assert_raw_typed_parity" : command => do
       s!"raw/typed parity FAILED: {missing.size} raw ctors lack typed counterpart"
     throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
 
+/-- Documented typed-only constructors that intentionally have no
+raw counterpart in the current snapshot.  STRICT-9 reverse parity:
+this is the dual of `isDocumentedRawOnlyParity`.  The typed layer
+runs at finer granularity than raw — the same operation is split
+across multiple typed cong/sub-step rules whose RawStep.par
+counterpart is one umbrella cong rule.  Plus a smaller set of
+typed-only β/eq rules that exist only at the typed level by design.
+
+Discipline for moving an entry OUT of this list: add the matching
+`RawStep.par.X` constructor in `Reduction/RawPar.lean`, mirror the
+`Confluence/Cd.lean` and `Confluence/CdLemma.lean` typed entries to
+`Confluence/RawCd.lean` and `Confluence/RawCdLemma.lean`, then delete
+the entry below.
+
+Discipline for ADDING entries: every new typed-only Step.par ctor
+must come with a docstring justifying why it has no raw mirror
+(typically: typed-level type information that doesn't survive raw
+projection).  Without justification, the ctor should land with a
+RawStep.par mirror first. -/
+def isDocumentedTypedOnlyParity (typedCtorName : Name) : Bool :=
+  let suffix := Name.lastSegmentString typedCtorName
+  -- Section A: fine-grained per-position cong rules (typed has separate
+  -- ctors for each subterm; raw uses one umbrella cong per RawTerm
+  -- ctor).  Maps to the same operation at raw level.
+  suffix == "appLeft" || suffix == "appRight" ||
+  suffix == "boolElimScrutinee" || suffix == "boolElimThen" ||
+  suffix == "boolElimElse" ||
+  suffix == "natElimScrutinee" || suffix == "natElimZero" ||
+  suffix == "natElimSucc" ||
+  suffix == "natRecScrutinee" || suffix == "natRecZero" ||
+  suffix == "natRecSucc" ||
+  suffix == "natSuccPred" ||
+  suffix == "listConsHead" || suffix == "listConsTail" ||
+  suffix == "listElimScrutinee" || suffix == "listElimNil" ||
+  suffix == "listElimCons" ||
+  suffix == "optionMatchScrutinee" || suffix == "optionMatchNone" ||
+  suffix == "optionMatchSome" ||
+  suffix == "optionSomeValue" ||
+  suffix == "eitherInlValue" || suffix == "eitherInrValue" ||
+  suffix == "eitherMatchScrutinee" || suffix == "eitherMatchLeft" ||
+  suffix == "eitherMatchRight" ||
+  suffix == "fstCong" || suffix == "sndCong" ||
+  suffix == "pairRight" ||
+  suffix == "lamBody" ||
+  suffix == "modIntroInner" || suffix == "modElimInner" ||
+  suffix == "subsumeInner" ||
+  suffix == "intervalOppInner" ||
+  suffix == "intervalMeetLeft" || suffix == "intervalMeetRight" ||
+  suffix == "intervalJoinLeft" || suffix == "intervalJoinRight" ||
+  suffix == "pathLamBody" ||
+  suffix == "pathAppPath" || suffix == "pathAppInterval" ||
+  suffix == "transpPath" || suffix == "transpSource" ||
+  suffix == "hcompSides" || suffix == "hcompCap" ||
+  suffix == "glueIntroBase" || suffix == "glueIntroPartial" ||
+  suffix == "glueElimValue" ||
+  suffix == "oeqJBase" || suffix == "oeqJWitness" ||
+  suffix == "oeqFunextPointwise" ||
+  suffix == "idStrictRecBase" || suffix == "idStrictRecWitness" ||
+  suffix == "idJBase" || suffix == "idJWitness" ||
+  suffix == "equivAppEquiv" || suffix == "equivAppArgument" ||
+  suffix == "refineIntroValue" || suffix == "refineIntroProof" ||
+  suffix == "refineElimValue" ||
+  suffix == "recordIntroField" || suffix == "recordProjRecord" ||
+  suffix == "codataUnfoldState" || suffix == "codataUnfoldTransition" ||
+  suffix == "codataDestValue" ||
+  suffix == "sessionSendChannel" || suffix == "sessionSendPayload" ||
+  suffix == "sessionRecvChannel" ||
+  suffix == "effectPerformOperation" || suffix == "effectPerformArguments" ||
+  -- Section B: typed-Pi-flavored cong rules (raw treats arrow and
+  -- Pi uniformly via `app`; typed splits Pi-flavored arms separately
+  -- because typed Pi carries a binder type and shifts subst indices).
+  suffix == "appPi" || suffix == "appPiLeft" || suffix == "appPiRight" ||
+  suffix == "lamPi" || suffix == "lamPiBody" ||
+  suffix == "betaAppPi" || suffix == "betaAppPiDeep" ||
+  -- Section C: typed-only β/cong for HOTT eq* rules and cumulativity
+  -- (D2.6 / CUMUL series — these encode typed-level definitional
+  -- equalities that the raw projection collapses).
+  suffix == "eqType" || suffix == "eqArrow" ||
+  suffix == "eqTypeHet" || suffix == "eqArrowHet" ||
+  suffix == "cumulUpInner" || suffix == "cumulUpInnerCong" ||
+  -- Section D: heterogeneous equiv/UA intro (MEGA-Z8 — typed-level
+  -- heterogeneous variants needed for cross-type observational
+  -- reasoning; raw doesn't track types).
+  suffix == "equivIntroHetForward" || suffix == "equivIntroHetBackward" ||
+  suffix == "equivIntroHetCong" ||
+  suffix == "uaIntroHetWitness" || suffix == "uaIntroHetCong" ||
+  -- Section E: glue/hcomp/transp/pathApp/pathLam/glueIntro/glueElim/
+  -- transp short-form aliases (the raw layer uses a single suffix for
+  -- the umbrella; typed splits the same op across multiple ctors).
+  suffix == "glueIntro" || suffix == "glueElim" ||
+  suffix == "hcomp" || suffix == "transp" ||
+  suffix == "pathApp" || suffix == "pathLam"
+
+/-- Build-failing reverse parity gate (STRICT-9).  For every
+constructor of `LeanFX2.Step.par` whose suffix is not in the
+documented typed-only list, the constructor with the same suffix
+must exist in `LeanFX2.RawStep.par`.
+
+Catches the failure mode complementary to STRICT-3: a typed β rule
+(or fine-grained cong rule) that lands without a documented
+justification or a raw mirror, breaking the discipline that every
+typed reduction projects to a raw reduction. -/
+elab "#assert_typed_raw_parity" : command => do
+  let environment ← getEnv
+  let rawCtors := getInductiveConstructorNames environment `LeanFX2.RawStep.par
+  let typedCtors := getInductiveConstructorNames environment `LeanFX2.Step.par
+  let rawSuffixes : Std.HashSet String :=
+    rawCtors.foldl (init := {}) fun acc ctorName =>
+      acc.insert (Name.lastSegmentString ctorName)
+  let mut missing : Array Name := #[]
+  for typedCtorName in typedCtors do
+    let suffix := Name.lastSegmentString typedCtorName
+    if !rawSuffixes.contains suffix && !isDocumentedTypedOnlyParity typedCtorName then
+      missing := missing.push typedCtorName
+  if missing.isEmpty then
+    logInfo s!"typed/raw parity ok: {typedCtors.size} typed ctors have raw mirror or documented typed-only ({rawCtors.size} raw ctors)"
+  else
+    let perCtorLines := missing.toList.map fun typedCtorName =>
+      s!"  - {typedCtorName} -> expected LeanFX2.RawStep.par.{Name.lastSegmentString typedCtorName} (missing) or add to isDocumentedTypedOnlyParity"
+    let header :=
+      s!"typed/raw parity FAILED: {missing.size} typed ctors lack raw counterpart and are not documented typed-only"
+    throwError (header ++ "\n" ++ String.intercalate "\n" perCtorLines)
+
 
 end LeanFX2.Tools
