@@ -110,6 +110,9 @@ import LeanFX2.Algo.Completeness
 -- Layer 11 - Surface
 import LeanFX2.Surface.Token
 import LeanFX2.Surface.Lex
+import LeanFX2.Surface.Lex.EofTermination
+import LeanFX2.Surface.Lex.ErrorOffset
+import LeanFX2.Surface.Lex.ByteConservation
 import LeanFX2.Surface.AST
 import LeanFX2.Surface.SchemaAudit
 import LeanFX2.Surface.StdNames

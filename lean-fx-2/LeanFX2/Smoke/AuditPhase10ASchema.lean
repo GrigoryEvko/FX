@@ -1,4 +1,7 @@
 import LeanFX2.Surface.Lex
+import LeanFX2.Surface.Lex.EofTermination
+import LeanFX2.Surface.Lex.ErrorOffset
+import LeanFX2.Surface.Lex.ByteConservation
 import LeanFX2.Surface.HostLex
 import LeanFX2.Surface.TokenSchema
 import LeanFX2.Surface.TokenInvariants
