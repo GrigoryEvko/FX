@@ -674,6 +674,57 @@ theorem Expr.denoteIsTotalOnParenExpr {scope : Nat} {innerRaw : RawExpr scope}
         Expr.denote (Expr.parenExpr inner pos) = some rawTerm :=
   RawExpr.bridgeIsTotalOnRawParen (scope := scope) innerRaw innerTotal
 
+/-- B12 lifted: `lamExpr` denotes whenever its body does. -/
+theorem Expr.denoteIsTotalOnLamExpr {scope : Nat}
+    {paramTypeRaw : OptRawExpr scope} {bodyRaw : RawExpr (scope + 1)}
+    (paramName : LowerIdent) (paramType : OptExpr paramTypeRaw)
+    (body : Expr bodyRaw) (pos : SrcPos)
+    (bodyTotal : ∃ bodyTerm, RawExpr.toRawTerm? bodyRaw = some bodyTerm) :
+    ∃ rawTerm,
+        Expr.denote (Expr.lamExpr paramName paramType body pos) = some rawTerm :=
+  RawExpr.bridgeIsTotalOnRawLam paramName paramTypeRaw bodyRaw bodyTotal
+
+/-- B12 lifted: `appExpr` denotes whenever the function and the
+fold over its arguments succeed. -/
+theorem Expr.denoteIsTotalOnAppExpr {scope : Nat}
+    {fnRaw : RawExpr scope} {argsRaw : RawArgList scope}
+    (fn : Expr fnRaw) (args : ArgList argsRaw) (pos : SrcPos)
+    (fnTotal : ∃ fnTerm, RawExpr.toRawTerm? fnRaw = some fnTerm)
+    (foldTotal : ∀ acc : RawTerm scope,
+        ∃ result, RawArgList.foldApps? acc argsRaw = some result) :
+    ∃ rawTerm,
+        Expr.denote (Expr.appExpr fn args pos) = some rawTerm :=
+  RawExpr.bridgeIsTotalOnRawApp fnRaw argsRaw fnTotal foldTotal
+
+/-- B12 lifted: `ifExpr` denotes whenever cond, then-branch, and
+the optional else-branch all denote.  The else-branch uses
+`OptRawExpr.toRawTermOrUnit?` (rawNone defaults to unit). -/
+theorem Expr.denoteIsTotalOnIfExpr {scope : Nat}
+    {condRaw thenRaw : RawExpr scope} {elseRaw : OptRawExpr scope}
+    (cond : Expr condRaw) (thenBr : Expr thenRaw) (elseBr : OptExpr elseRaw)
+    (pos : SrcPos)
+    (condTotal : ∃ condTerm, RawExpr.toRawTerm? condRaw = some condTerm)
+    (thenTotal : ∃ thenTerm, RawExpr.toRawTerm? thenRaw = some thenTerm)
+    (elseTotal : ∃ elseTerm,
+        OptRawExpr.toRawTermOrUnit? elseRaw = some elseTerm) :
+    ∃ rawTerm,
+        Expr.denote (Expr.ifExpr cond thenBr elseBr pos) = some rawTerm :=
+  RawExpr.bridgeIsTotalOnRawIf condRaw thenRaw elseRaw
+    condTotal thenTotal elseTotal
+
+/-- B12 lifted: `blockExpr` denotes whenever the final expression
+denotes and the statement-list fold succeeds against the final
+term.  -/
+theorem Expr.denoteIsTotalOnBlockExpr {scope outScope : Nat}
+    {stmtsRaw : RawStmtList scope outScope} {finalRaw : RawExpr outScope}
+    (stmts : StmtList stmtsRaw) (final : Expr finalRaw) (pos : SrcPos)
+    (finalTotal : ∃ finalTerm, RawExpr.toRawTerm? finalRaw = some finalTerm)
+    (stmtsTotal : ∀ finalTerm' : RawTerm outScope,
+        ∃ result, RawStmtList.foldBlock? stmtsRaw finalTerm' = some result) :
+    ∃ rawTerm,
+        Expr.denote (Expr.blockExpr stmts final pos) = some rawTerm :=
+  RawExpr.bridgeIsTotalOnRawBlock stmtsRaw finalRaw finalTotal stmtsTotal
+
 /-! ## S04 bridge invariant theorem (#1288)
 
 The semantic equivalence `e ≅ r` between a decorated `Expr raw`

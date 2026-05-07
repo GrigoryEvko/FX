@@ -78,6 +78,10 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawIf
 #assert_no_axioms LeanFX2.Surface.RawExpr.bridgeIsTotalOnRawBlock
 #assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnParenExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnLamExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnAppExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnIfExpr
+#assert_no_axioms LeanFX2.Surface.Expr.denoteIsTotalOnBlockExpr
 
 /-! ### Surface.KernelBridge — env-free bridge core (#1531) -/
 
