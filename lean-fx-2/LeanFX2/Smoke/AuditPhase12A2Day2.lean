@@ -186,6 +186,10 @@ Every declaration listed must report "does not depend on any axioms".
 -- D2.10 incremental: uaIntroHetCong (unary, structured raw index)
 #print axioms LeanFX2.Step.par.uaIntroHetCong.rename_compatible
 #print axioms LeanFX2.Step.par.uaIntroHetCong.subst_compatible
+-- D2.10 incremental: oeqFunextCong (unary, ▸-cast bridge via
+-- oeqFunextPointwiseType_rename / _subst commute lemmas)
+#print axioms LeanFX2.Step.par.oeqFunextCong.rename_compatible
+#print axioms LeanFX2.Step.par.oeqFunextCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

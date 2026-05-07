@@ -202,4 +202,11 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.uaIntroHetCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.uaIntroHetCong.subst_compatible
 
+-- D2.10 typed compositional compat — oeqFunextCong (unary, computed
+-- pointwise type `oeqFunextPointwiseType` requires explicit ▸ cast on
+-- the inner Step.par premise via `oeqFunextPointwiseType_rename` /
+-- `_subst` commute lemmas).
+#assert_no_axioms LeanFX2.Step.par.oeqFunextCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.oeqFunextCong.subst_compatible
+
 end LeanFX2.Tools

@@ -105,6 +105,12 @@ namespace LeanFX2.Tools
 -- D2.10 incremental (2026-05-07): shipped `uaIntroHetCong` (unary,
 -- structured `RawTerm.equivIntro` raw index renames/substs
 -- structurally).  Ratchet 3 → 2.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 2
+-- D2.10 incremental (2026-05-07): shipped `oeqFunextCong` (unary,
+-- bridges the computed `oeqFunextPointwiseType` ▸ cast through the
+-- existing `oeqFunextPointwiseType_rename` / `_subst` commute lemmas;
+-- caller now supplies the inner Step.par premise at the CAST type
+-- — matching exactly what `Step.par.oeqFunextCong` constructor wants).
+-- Ratchet 2 → 1.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 1
 
 end LeanFX2.Tools

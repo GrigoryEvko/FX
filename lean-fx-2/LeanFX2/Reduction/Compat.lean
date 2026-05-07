@@ -1856,6 +1856,102 @@ theorem subst_compatible
 
 end uaIntroHetCong
 
+/-! ### `oeqFunextCong` (unary, pointwise-equality inner premise).
+
+Unary cong rule with one inner Step.par premise on the
+pointwise-equality function.  The pointwise type
+`oeqFunextPointwiseType` is a computed Pi-type that does NOT
+syntactically commute with `rename` / `subst` — Lean reports
+a `▸` cast on the inner Term arguments.  We bridge by stating
+the caller's premise at the renamed pointwise type using the
+existing `oeqFunextPointwiseType_rename` / `_subst` commute
+lemmas to align the type, then apply the cong constructor. -/
+namespace oeqFunextCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRawSource pointwiseRawTarget : RawTerm sourceScope}
+    {pointwiseSource :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRawSource}
+    {pointwiseTarget :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRawTarget}
+    (renamedPointwiseStep :
+      Step.par
+        (oeqFunextPointwiseType_rename rho
+          domainType codomainType
+          leftFunctionRaw rightFunctionRaw ▸
+            Term.rename termRenaming pointwiseSource)
+        (oeqFunextPointwiseType_rename rho
+          domainType codomainType
+          leftFunctionRaw rightFunctionRaw ▸
+            Term.rename termRenaming pointwiseTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseSource))
+      (Term.rename termRenaming
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseTarget)) :=
+  Step.par.oeqFunextCong (domainType.rename rho) (codomainType.rename rho)
+    (leftFunctionRaw.rename rho) (rightFunctionRaw.rename rho)
+    renamedPointwiseStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (domainType codomainType : Ty level sourceScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    {pointwiseRawSource pointwiseRawTarget : RawTerm sourceScope}
+    {pointwiseSource :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRawSource}
+    {pointwiseTarget :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRawTarget}
+    (substitutedPointwiseStep :
+      Step.par
+        (oeqFunextPointwiseType_subst sigma
+          domainType codomainType
+          leftFunctionRaw rightFunctionRaw ▸
+            Term.subst termSubst pointwiseSource)
+        (oeqFunextPointwiseType_subst sigma
+          domainType codomainType
+          leftFunctionRaw rightFunctionRaw ▸
+            Term.subst termSubst pointwiseTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseSource))
+      (Term.subst termSubst
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseTarget)) :=
+  Step.par.oeqFunextCong (domainType.subst sigma) (codomainType.subst sigma)
+    (leftFunctionRaw.subst sigma.forRaw) (rightFunctionRaw.subst sigma.forRaw)
+    substitutedPointwiseStep
+
+end oeqFunextCong
+
 end par
 
 end Step
