@@ -158,33 +158,45 @@ structural recursion: each recursive call consumes at least one
 char from the head, so `chars.length` is a sound upper bound on
 total iterations.
 
-Pattern style: outer match peels one cons at a time, then nested
-`if`/`match` on the head/next char.  Multi-character literal
-patterns like `'/' :: '/' :: rest` are AVOIDED — Lean 4 v4.29.1's
-match compiler emits propext-using auxiliaries for those. -/
+Pattern style: 4-pattern flat enumeration over (fuel, chars):
+  `(0, _)`, `(_+1, [])`, `(_+1, [c])`, `(_+1, c :: next :: rest2)`.
+The `[c]` (single-char) case collapses to terminal results since
+neither `//` nor `/*` can match a single char.  The two-or-more
+case dispatches via nested `if`/`if`/`if` rather than nested
+`match` — Lean 4 v4.29.1's match compiler auto-reduces flat
+patterns under `show` blocks but leaves nested-match-on-projection
+scrutinees un-reduced, blocking propext-clean rewriting.
+
+Uniform `c.utf8Size` accounting: whitespace branch charges
+`c.utf8Size` instead of `1` (semantically identical for ASCII
+whitespace, but eliminates `of_decide_eq_true` propext leak in
+the byte-conservation proof).  Comment-prefix charges
+`c.utf8Size + next.utf8Size` instead of `2`. -/
 def skipTrivia : Nat → List Char → Nat × List Char
   | 0,        chars => (0, chars)
   | _ + 1,    [] => (0, [])
-  | fuel + 1, c :: rest =>
+  | _ + 1, c :: [] =>
+    if isWhitespaceChar c then (c.utf8Size, [])
+    else (0, [c])
+  | fuel + 1, c :: next :: rest2 =>
     if isWhitespaceChar c then
-      let (n, r) := skipTrivia fuel rest
-      (1 + n, r)
+      let (n, r) := skipTrivia fuel (next :: rest2)
+      (c.utf8Size + n, r)
     else if c == '/' then
-      match rest with
-      | [] => (0, c :: rest)
-      | next :: rest2 =>
-        if next == '/' then
-          let (lineSkipped, afterLine) := skipUntilNewline rest2 2
-          let (n, r) := skipTrivia fuel afterLine
-          (lineSkipped + n, r)
-        else if next == '*' then
-          let (blockSkipped, afterBlock) := skipBlockComment rest2 2
-          let (n, r) := skipTrivia fuel afterBlock
-          (blockSkipped + n, r)
-        else
-          (0, c :: rest)
+      if next == '/' then
+        let (lineSkipped, afterLine) :=
+          skipUntilNewline rest2 (c.utf8Size + next.utf8Size)
+        let (n, r) := skipTrivia fuel afterLine
+        (lineSkipped + n, r)
+      else if next == '*' then
+        let (blockSkipped, afterBlock) :=
+          skipBlockComment rest2 (c.utf8Size + next.utf8Size)
+        let (n, r) := skipTrivia fuel afterBlock
+        (blockSkipped + n, r)
+      else
+        (0, c :: next :: rest2)
     else
-      (0, c :: rest)
+      (0, c :: next :: rest2)
 
 /-- Read a contiguous identifier-or-keyword.  Returns
 (reversed lexeme chars, byte size, remaining chars).  We
@@ -1042,14 +1054,319 @@ theorem Lex.skipBlockComment_byteLength_invariant :
       exact Nat.add_assoc n firstChar.utf8Size
         (nextChar.utf8Size + charsByteLength rest2)
 
-/-! ## L07 follow-up — `skipTrivia` byte conservation +
-`lexLoop_error_offset_bounded` + `Lex.run_error_offset_bounded`
-(DEFERRED to next iteration)
+/-- **L07.4c**: `skipTrivia` conserves bytes.
 
-`skipUntilNewline_byteLength_invariant` and
-`skipBlockComment_byteLength_invariant` above are the two helper
-byte-conservation lemmas.  Next: combine into
-`skipTrivia_byteLength_invariant`, then `lexLoop_error_offset_bounded`,
-then `Lex.run_error_offset_bounded`. -/
+For `(skipBytes, restAfter) = skipTrivia fuel chars`, we have
+`skipBytes + charsByteLength restAfter = charsByteLength chars`.
+
+Note: `skipTrivia` does not take an accumulator — the byte counter
+starts at 0 (skipBytes is the total bytes skipped from this call's
+start).  This differs from `skipUntilNewline` / `skipBlockComment`
+which carry an `n` accumulator.
+
+Proof: induction on the 4-pattern flat enumeration:
+* `(0, chars)`: returns `(0, chars)` — `Nat.zero_add`.
+* `(_+1, [])`: returns `(0, [])` — `rfl` after both arithmetic.
+* `(_+1, [c])`: split on `isWhitespaceChar c`:
+  - true: returns `(c.utf8Size, [])` — arithmetic.
+  - false: returns `(0, [c])` — `Nat.zero_add`.
+* `(_+1, c :: next :: rest2)`: split on:
+  - `isWhitespaceChar c`: tail-recurse on `(next :: rest2)`, IH +
+    `Nat.add_assoc` closes.
+  - `c == '/'` and `next == '/'`: line comment — combine
+    `skipUntilNewline_byteLength_invariant` + IH + arithmetic.
+  - `c == '/'` and `next == '*'`: block comment — combine
+    `skipBlockComment_byteLength_invariant` + IH + arithmetic.
+  - else: returns `(0, c :: next :: rest2)` — `Nat.zero_add`.
+
+Zero-axiom — relies only on the two helper invariants and
+`Nat.add_assoc` / `Nat.zero_add`. -/
+theorem Lex.skipTrivia_byteLength_invariant :
+    ∀ (fuel : Nat) (chars : List Char),
+      let result := skipTrivia fuel chars
+      result.fst + charsByteLength result.snd = charsByteLength chars
+  | 0,        chars => by
+    show 0 + charsByteLength chars = charsByteLength chars
+    exact Nat.zero_add _
+  | _ + 1,    [] => by
+    show 0 + charsByteLength ([] : List Char) = charsByteLength ([] : List Char)
+    exact Nat.zero_add _
+  | fuel + 1, c :: [] => by
+    by_cases hWhite : isWhitespaceChar c
+    · -- whitespace single char.  Returns (c.utf8Size, []).
+      have stepReduces :
+          skipTrivia (fuel + 1) (c :: [])
+            = (c.utf8Size, ([] : List Char)) := by
+        show (if isWhitespaceChar c then (c.utf8Size, ([] : List Char))
+              else (0, [c]))
+            = (c.utf8Size, ([] : List Char))
+        rw [if_pos hWhite]
+      rw [stepReduces]
+      show c.utf8Size + charsByteLength ([] : List Char)
+        = charsByteLength (c :: [])
+      show c.utf8Size + 0 = c.utf8Size + 0
+      rfl
+    · -- non-whitespace single char.  Returns (0, [c]).
+      have stepReduces :
+          skipTrivia (fuel + 1) (c :: [])
+            = ((0 : Nat), [c]) := by
+        show (if isWhitespaceChar c then (c.utf8Size, ([] : List Char))
+              else (0, [c]))
+            = (0, [c])
+        rw [if_neg hWhite]
+      rw [stepReduces]
+      show 0 + charsByteLength [c] = charsByteLength (c :: [])
+      exact Nat.zero_add _
+  | fuel + 1, c :: next :: rest2 => by
+    by_cases hWhite : isWhitespaceChar c
+    · -- whitespace two-or-more.  tail-recurse on (next :: rest2).
+      have stepReduces :
+          skipTrivia (fuel + 1) (c :: next :: rest2)
+            = (c.utf8Size + (skipTrivia fuel (next :: rest2)).fst,
+               (skipTrivia fuel (next :: rest2)).snd) := by
+        show (if isWhitespaceChar c then
+                let (n, r) := skipTrivia fuel (next :: rest2)
+                (c.utf8Size + n, r)
+              else if c == '/' then
+                if next == '/' then
+                  let (lineSkipped, afterLine) :=
+                    skipUntilNewline rest2 (c.utf8Size + next.utf8Size)
+                  let (n, r) := skipTrivia fuel afterLine
+                  (lineSkipped + n, r)
+                else if next == '*' then
+                  let (blockSkipped, afterBlock) :=
+                    skipBlockComment rest2 (c.utf8Size + next.utf8Size)
+                  let (n, r) := skipTrivia fuel afterBlock
+                  (blockSkipped + n, r)
+                else
+                  (0, c :: next :: rest2)
+              else
+                (0, c :: next :: rest2))
+            = (c.utf8Size + (skipTrivia fuel (next :: rest2)).fst,
+               (skipTrivia fuel (next :: rest2)).snd)
+        rw [if_pos hWhite]
+      rw [stepReduces]
+      show c.utf8Size + (skipTrivia fuel (next :: rest2)).fst
+          + charsByteLength (skipTrivia fuel (next :: rest2)).snd
+        = charsByteLength (c :: next :: rest2)
+      have ihRecursive :
+          (skipTrivia fuel (next :: rest2)).fst
+          + charsByteLength (skipTrivia fuel (next :: rest2)).snd
+            = charsByteLength (next :: rest2) :=
+        Lex.skipTrivia_byteLength_invariant fuel (next :: rest2)
+      show c.utf8Size + (skipTrivia fuel (next :: rest2)).fst
+          + charsByteLength (skipTrivia fuel (next :: rest2)).snd
+        = c.utf8Size + charsByteLength (next :: rest2)
+      rw [Nat.add_assoc c.utf8Size (skipTrivia fuel (next :: rest2)).fst
+            (charsByteLength (skipTrivia fuel (next :: rest2)).snd),
+        ihRecursive]
+    · -- not whitespace.  Split on c == '/'.
+      by_cases hSlash : c == '/'
+      · -- c == '/'.  Split on next.
+        by_cases hNextSlash : next == '/'
+        · -- // line comment.
+          have stepReduces :
+              skipTrivia (fuel + 1) (c :: next :: rest2)
+                = ((skipUntilNewline rest2
+                      (c.utf8Size + next.utf8Size)).fst
+                    + (skipTrivia fuel (skipUntilNewline rest2
+                          (c.utf8Size + next.utf8Size)).snd).fst,
+                   (skipTrivia fuel (skipUntilNewline rest2
+                      (c.utf8Size + next.utf8Size)).snd).snd) := by
+            show (if isWhitespaceChar c then
+                    let (n, r) := skipTrivia fuel (next :: rest2)
+                    (c.utf8Size + n, r)
+                  else if c == '/' then
+                    if next == '/' then
+                      let (lineSkipped, afterLine) :=
+                        skipUntilNewline rest2 (c.utf8Size + next.utf8Size)
+                      let (n, r) := skipTrivia fuel afterLine
+                      (lineSkipped + n, r)
+                    else if next == '*' then
+                      let (blockSkipped, afterBlock) :=
+                        skipBlockComment rest2 (c.utf8Size + next.utf8Size)
+                      let (n, r) := skipTrivia fuel afterBlock
+                      (blockSkipped + n, r)
+                    else
+                      (0, c :: next :: rest2)
+                  else
+                    (0, c :: next :: rest2))
+                = ((skipUntilNewline rest2
+                      (c.utf8Size + next.utf8Size)).fst
+                    + (skipTrivia fuel (skipUntilNewline rest2
+                          (c.utf8Size + next.utf8Size)).snd).fst,
+                   (skipTrivia fuel (skipUntilNewline rest2
+                      (c.utf8Size + next.utf8Size)).snd).snd)
+            rw [if_neg hWhite, if_pos hSlash, if_pos hNextSlash]
+          rw [stepReduces]
+          -- Use skipUntilNewline invariant + IH + arithmetic.
+          have invSkip :
+              (skipUntilNewline rest2 (c.utf8Size + next.utf8Size)).fst
+              + charsByteLength (skipUntilNewline rest2
+                  (c.utf8Size + next.utf8Size)).snd
+                = (c.utf8Size + next.utf8Size) + charsByteLength rest2 :=
+            Lex.skipUntilNewline_byteLength_invariant rest2
+              (c.utf8Size + next.utf8Size)
+          have ihRecursive :
+              (skipTrivia fuel (skipUntilNewline rest2
+                  (c.utf8Size + next.utf8Size)).snd).fst
+              + charsByteLength (skipTrivia fuel (skipUntilNewline rest2
+                  (c.utf8Size + next.utf8Size)).snd).snd
+                = charsByteLength (skipUntilNewline rest2
+                    (c.utf8Size + next.utf8Size)).snd :=
+            Lex.skipTrivia_byteLength_invariant fuel
+              (skipUntilNewline rest2 (c.utf8Size + next.utf8Size)).snd
+          show (skipUntilNewline rest2 (c.utf8Size + next.utf8Size)).fst
+              + (skipTrivia fuel (skipUntilNewline rest2
+                  (c.utf8Size + next.utf8Size)).snd).fst
+              + charsByteLength (skipTrivia fuel (skipUntilNewline rest2
+                  (c.utf8Size + next.utf8Size)).snd).snd
+            = charsByteLength (c :: next :: rest2)
+          rw [Nat.add_assoc
+                (skipUntilNewline rest2 (c.utf8Size + next.utf8Size)).fst
+                (skipTrivia fuel (skipUntilNewline rest2
+                    (c.utf8Size + next.utf8Size)).snd).fst
+                (charsByteLength (skipTrivia fuel (skipUntilNewline rest2
+                    (c.utf8Size + next.utf8Size)).snd).snd),
+            ihRecursive, invSkip]
+          show (c.utf8Size + next.utf8Size) + charsByteLength rest2
+            = c.utf8Size + (next.utf8Size + charsByteLength rest2)
+          exact Nat.add_assoc c.utf8Size next.utf8Size
+            (charsByteLength rest2)
+        · -- c == '/' but next != '/'.  Split on next == '*'.
+          by_cases hNextStar : next == '*'
+          · -- /* block comment.
+            have stepReduces :
+                skipTrivia (fuel + 1) (c :: next :: rest2)
+                  = ((skipBlockComment rest2
+                        (c.utf8Size + next.utf8Size)).fst
+                      + (skipTrivia fuel (skipBlockComment rest2
+                            (c.utf8Size + next.utf8Size)).snd).fst,
+                     (skipTrivia fuel (skipBlockComment rest2
+                        (c.utf8Size + next.utf8Size)).snd).snd) := by
+              show (if isWhitespaceChar c then
+                      let (n, r) := skipTrivia fuel (next :: rest2)
+                      (c.utf8Size + n, r)
+                    else if c == '/' then
+                      if next == '/' then
+                        let (lineSkipped, afterLine) :=
+                          skipUntilNewline rest2
+                            (c.utf8Size + next.utf8Size)
+                        let (n, r) := skipTrivia fuel afterLine
+                        (lineSkipped + n, r)
+                      else if next == '*' then
+                        let (blockSkipped, afterBlock) :=
+                          skipBlockComment rest2
+                            (c.utf8Size + next.utf8Size)
+                        let (n, r) := skipTrivia fuel afterBlock
+                        (blockSkipped + n, r)
+                      else
+                        (0, c :: next :: rest2)
+                    else
+                      (0, c :: next :: rest2))
+                  = ((skipBlockComment rest2
+                        (c.utf8Size + next.utf8Size)).fst
+                      + (skipTrivia fuel (skipBlockComment rest2
+                            (c.utf8Size + next.utf8Size)).snd).fst,
+                     (skipTrivia fuel (skipBlockComment rest2
+                        (c.utf8Size + next.utf8Size)).snd).snd)
+              rw [if_neg hWhite, if_pos hSlash, if_neg hNextSlash,
+                if_pos hNextStar]
+            rw [stepReduces]
+            have invSkip :
+                (skipBlockComment rest2
+                    (c.utf8Size + next.utf8Size)).fst
+                + charsByteLength (skipBlockComment rest2
+                    (c.utf8Size + next.utf8Size)).snd
+                  = (c.utf8Size + next.utf8Size) + charsByteLength rest2 :=
+              Lex.skipBlockComment_byteLength_invariant rest2
+                (c.utf8Size + next.utf8Size)
+            have ihRecursive :
+                (skipTrivia fuel (skipBlockComment rest2
+                    (c.utf8Size + next.utf8Size)).snd).fst
+                + charsByteLength (skipTrivia fuel (skipBlockComment rest2
+                    (c.utf8Size + next.utf8Size)).snd).snd
+                  = charsByteLength (skipBlockComment rest2
+                      (c.utf8Size + next.utf8Size)).snd :=
+              Lex.skipTrivia_byteLength_invariant fuel
+                (skipBlockComment rest2
+                  (c.utf8Size + next.utf8Size)).snd
+            show (skipBlockComment rest2
+                  (c.utf8Size + next.utf8Size)).fst
+                + (skipTrivia fuel (skipBlockComment rest2
+                    (c.utf8Size + next.utf8Size)).snd).fst
+                + charsByteLength (skipTrivia fuel (skipBlockComment rest2
+                    (c.utf8Size + next.utf8Size)).snd).snd
+              = charsByteLength (c :: next :: rest2)
+            rw [Nat.add_assoc
+                  (skipBlockComment rest2 (c.utf8Size + next.utf8Size)).fst
+                  (skipTrivia fuel (skipBlockComment rest2
+                      (c.utf8Size + next.utf8Size)).snd).fst
+                  (charsByteLength (skipTrivia fuel (skipBlockComment rest2
+                      (c.utf8Size + next.utf8Size)).snd).snd),
+              ihRecursive, invSkip]
+            show (c.utf8Size + next.utf8Size) + charsByteLength rest2
+              = c.utf8Size + (next.utf8Size + charsByteLength rest2)
+            exact Nat.add_assoc c.utf8Size next.utf8Size
+              (charsByteLength rest2)
+          · -- c == '/' but next is neither / nor *.  Returns (0, c :: next :: rest2).
+            have stepReduces :
+                skipTrivia (fuel + 1) (c :: next :: rest2)
+                  = (0, c :: next :: rest2) := by
+              show (if isWhitespaceChar c then
+                      let (n, r) := skipTrivia fuel (next :: rest2)
+                      (c.utf8Size + n, r)
+                    else if c == '/' then
+                      if next == '/' then
+                        let (lineSkipped, afterLine) :=
+                          skipUntilNewline rest2
+                            (c.utf8Size + next.utf8Size)
+                        let (n, r) := skipTrivia fuel afterLine
+                        (lineSkipped + n, r)
+                      else if next == '*' then
+                        let (blockSkipped, afterBlock) :=
+                          skipBlockComment rest2
+                            (c.utf8Size + next.utf8Size)
+                        let (n, r) := skipTrivia fuel afterBlock
+                        (blockSkipped + n, r)
+                      else
+                        (0, c :: next :: rest2)
+                    else
+                      (0, c :: next :: rest2))
+                  = (0, c :: next :: rest2)
+              rw [if_neg hWhite, if_pos hSlash, if_neg hNextSlash,
+                if_neg hNextStar]
+            rw [stepReduces]
+            show 0 + charsByteLength (c :: next :: rest2)
+              = charsByteLength (c :: next :: rest2)
+            exact Nat.zero_add _
+      · -- c != '/' and not whitespace.  Returns (0, c :: next :: rest2).
+        have stepReduces :
+            skipTrivia (fuel + 1) (c :: next :: rest2)
+              = (0, c :: next :: rest2) := by
+          show (if isWhitespaceChar c then
+                  let (n, r) := skipTrivia fuel (next :: rest2)
+                  (c.utf8Size + n, r)
+                else if c == '/' then
+                  if next == '/' then
+                    let (lineSkipped, afterLine) :=
+                      skipUntilNewline rest2 (c.utf8Size + next.utf8Size)
+                    let (n, r) := skipTrivia fuel afterLine
+                    (lineSkipped + n, r)
+                  else if next == '*' then
+                    let (blockSkipped, afterBlock) :=
+                      skipBlockComment rest2 (c.utf8Size + next.utf8Size)
+                    let (n, r) := skipTrivia fuel afterBlock
+                    (blockSkipped + n, r)
+                  else
+                    (0, c :: next :: rest2)
+                else
+                  (0, c :: next :: rest2))
+              = (0, c :: next :: rest2)
+          rw [if_neg hWhite, if_neg hSlash]
+        rw [stepReduces]
+        show 0 + charsByteLength (c :: next :: rest2)
+          = charsByteLength (c :: next :: rest2)
+        exact Nat.zero_add _
 
 end LeanFX2.Surface

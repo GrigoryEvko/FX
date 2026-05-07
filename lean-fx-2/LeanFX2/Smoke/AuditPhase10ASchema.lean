@@ -305,6 +305,7 @@ propext leak from `of_decide_eq_true` chars-equality. -/
 
 #print axioms LeanFX2.Surface.Lex.skipUntilNewline_byteLength_invariant
 #print axioms LeanFX2.Surface.Lex.skipBlockComment_byteLength_invariant
+#print axioms LeanFX2.Surface.Lex.skipTrivia_byteLength_invariant
 
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 
