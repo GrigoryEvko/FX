@@ -337,6 +337,19 @@ exposes the cons-arm body for `generalize` / `cases`. -/
 #print axioms LeanFX2.Surface.Lex.lexLoop_cons_unfold
 #print axioms LeanFX2.Surface.Lex.lexLoop_error_offset_bounded
 
+/-! ## Section 10c — L07.6 closes L07 (#1537 / #1205)
+
+The headline error-offset-bound theorem: `Lex.run chars =
+.error errors → ∀ e ∈ errors, e.offset ≤ charsByteLength chars`.
+
+Specializes the L07.5 invariant to the empty initial errors at
+offset 0 used by `Lex.run`.  `Lex.run_eq_loop_branch` is the
+zeta-reduced unfold equation (`rfl`-provable) that exposes the
+internal `lexLoop` call for `generalize`. -/
+
+#print axioms LeanFX2.Surface.Lex.run_eq_loop_branch
+#print axioms LeanFX2.Surface.Lex.run_error_offset_bounded
+
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 
 A concrete instance: lexing the empty input list (zero tokens

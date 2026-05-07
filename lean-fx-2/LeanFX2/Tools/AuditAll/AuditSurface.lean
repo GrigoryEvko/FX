@@ -242,6 +242,16 @@ either was already in `errors` or has offset within source range. -/
 #assert_no_axioms LeanFX2.Surface.Lex.lexLoop_cons_unfold
 #assert_no_axioms LeanFX2.Surface.Lex.lexLoop_error_offset_bounded
 
+/-! ### Surface.Lex — L07.6 closes L07 (#1537 / #1205)
+
+Headline `Lex.run_error_offset_bounded`: every `LexError`
+returned by `Lex.run chars` has an offset within the source byte
+range.  Specializes L07.5 (`lexLoop_error_offset_bounded`) to the
+empty initial errors at offset 0 used by `Lex.run`. -/
+
+#assert_no_axioms LeanFX2.Surface.Lex.run_eq_loop_branch
+#assert_no_axioms LeanFX2.Surface.Lex.run_error_offset_bounded
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff

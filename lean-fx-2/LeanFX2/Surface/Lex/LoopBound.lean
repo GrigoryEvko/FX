@@ -226,4 +226,78 @@ theorem Lex.lexLoop_error_offset_bounded :
         rw [hSumEq] at ihResult
         exact ihResult
 
+/-! ## L07.6: Lex.run error-offset bound (#1537)
+
+The headline L07 theorem.  Specializes `lexLoop_error_offset_bounded`
+to the empty initial errors at offset 0 used by `Lex.run`. -/
+
+/-- **Auxiliary**: explicit zeta-reduced unfold equation for
+`Lex.run`.  The body's internal `let lexResult := lexLoop ...`
+binding is substituted out so that subsequent `lexLoop` references
+appear directly, enabling `generalize` and `cases` on the loop's
+result.  Provable by `rfl` because `let` zeta reduction is
+definitional. -/
+theorem Lex.run_eq_loop_branch (chars : List Char) :
+    Lex.run chars =
+      (if (lexLoop (chars.length + 1) 0 chars #[] #[]).snd.isEmpty then
+         .ok ((lexLoop (chars.length + 1) 0 chars #[] #[]).fst.push
+                { token := Token.eof,
+                  startPos := { offset := charsByteLength chars } })
+       else
+         .error (lexLoop (chars.length + 1) 0 chars #[] #[]).snd) := rfl
+
+/-- **L07.6 (#1537) — closes L07 (#1205)**: every `LexError`
+returned by `Lex.run chars` has an offset that lies within the
+source byte range.  Proven by specializing the L07.5 invariant to
+empty initial errors at offset 0.
+
+`Lex.run` returns `.error errors` only when the loop produced a
+non-empty error array, in which case the bound is precisely the
+total source byte length. -/
+theorem Lex.run_error_offset_bounded
+    (chars : List Char) (errors : Array LexError)
+    (hRunErr : Lex.run chars = .error errors) :
+    ∀ resultErr ∈ errors.toList,
+      resultErr.offset ≤ charsByteLength chars := by
+  intro resultErr resultMember
+  -- Step 1: rewrite Lex.run using the zeta-reduced unfold.
+  rw [Lex.run_eq_loop_branch] at hRunErr
+  -- Step 2: generalize the lexLoop result so the if-then-else
+  -- can be split.
+  generalize hLexEq :
+      lexLoop (chars.length + 1) 0 chars #[] #[] = lexResult
+    at hRunErr
+  -- Step 3: case-split on whether the loop produced any errors.
+  by_cases hEmpty : lexResult.snd.isEmpty
+  · -- Empty: Lex.run returned `.ok ...`, contradicting `.error errors`.
+    rw [if_pos hEmpty] at hRunErr
+    cases hRunErr
+  · -- Non-empty: hRunErr : .error lexResult.snd = .error errors.
+    rw [if_neg hEmpty] at hRunErr
+    -- Inject the equality.
+    have hErrorsEq : lexResult.snd = errors := by
+      cases hRunErr
+      rfl
+    -- Step 4: apply L07.5 with offset = 0, initial errors = #[].
+    have hInitBounded :
+        ∀ pastErr ∈ (#[] : Array LexError).toList,
+          pastErr.offset ≤ 0 + charsByteLength chars := by
+      intro pastErr pastMember
+      -- #[].toList = [], so membership is impossible.
+      cases pastMember
+    have hLoopBound :=
+      Lex.lexLoop_error_offset_bounded
+        (chars.length + 1) 0 chars #[] #[]
+        hInitBounded resultErr
+    -- Bridge the membership: resultErr ∈ errors.toList becomes
+    -- resultErr ∈ lexResult.snd.toList becomes
+    -- resultErr ∈ (lexLoop ... ).snd.toList.
+    rw [← hErrorsEq] at resultMember
+    rw [← hLexEq] at resultMember
+    have hBound := hLoopBound resultMember
+    -- hBound : resultErr.offset ≤ 0 + charsByteLength chars
+    -- Goal:    resultErr.offset ≤ charsByteLength chars
+    rw [Nat.zero_add] at hBound
+    exact hBound
+
 end LeanFX2.Surface

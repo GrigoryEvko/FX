@@ -521,12 +521,12 @@ def Lex.run (chars : List Char) :
     Except (Array LexError) (Array PositionedToken) :=
   let fuel := chars.length + 1  -- +1 to handle empty input cleanly
   let totalBytes := charsByteLength chars
-  let (tokens, errors) := lexLoop fuel 0 chars #[] #[]
-  if errors.isEmpty then
-    let withEof := tokens.push
+  let lexResult := lexLoop fuel 0 chars #[] #[]
+  if lexResult.snd.isEmpty then
+    let withEof := lexResult.fst.push
       { token := Token.eof, startPos := { offset := totalBytes } }
     .ok withEof
   else
-    .error errors
+    .error lexResult.snd
 
 end LeanFX2.Surface
