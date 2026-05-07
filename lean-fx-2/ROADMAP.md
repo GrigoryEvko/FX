@@ -64,7 +64,7 @@ Acceptance: rename/subst preserves Step ✅ (raw and typed levels); typed `Step.
 * [x] `Confluence/ChurchRosser.lean` — `RawStep.parStar.confluence` shipped
 * [x] `Confluence/CanonicalForm.lean` — `Conv.canonicalRaw` shipped (#1319 D3.4)
 
-Acceptance: ✅ raw-level Tait-Martin-Löf chain ships zero-axiom.  **Open**: typed `Conv.trans` (#1504 PHASE7-CONV-TRANS) blocked on M06 SR (#1275) — D2.10 ✅ closed 2026-05-07; typed Cong (#1502 WEAK-FX2-03) requires Phase 7 SR.
+Acceptance: ✅ raw-level Tait-Martin-Löf chain ships zero-axiom.  **Open**: typed `Conv.trans` (#1504 PHASE7-CONV-TRANS) — M06 SR ✅ shipped (`Step.preserves_ty_arrow` at `Term/SubjectReductionGeneral.lean:754` via closed-isClosedTy chain); D2.10 ✅ closed 2026-05-07; #1504 now UNBLOCKED, ready for Phase 1; typed Cong (#1502 WEAK-FX2-03) requires Phase 7 SR.
 
 ## Phase 5 — Bridge (Layer 4) ✅ DONE
 
@@ -119,9 +119,9 @@ Acceptance: ✅ Atkey-2018 witness rejected by corrected Lam rule.
 * [x] `Algo/RawWHNF.lean`, `Algo/RawWHNFCorrect.lean`, `Algo/WHNF.lean`, `Algo/DecConv.lean`
 * [x] `Algo/Infer.lean`, `Algo/Check.lean`, `Algo/Synth.lean`, `Algo/Eval.lean`, `Algo/Soundness.lean`, `Algo/Completeness.lean`
 * [ ] M03 `Term.eval` reaches WHNF (#1272), M04 strong normalization (#1273), M05 progress (#1274)
-* [ ] M06 SR at arrow types (#1275, blocks Conv.trans)
-* [ ] M08 `Term.headStep?` ι coverage (#1277)
-* [ ] M10 `Algo/Completeness.lean` infer/check completeness (#1279)
+* [x] M06 SR at arrow types (#1275) — `Step.preserves_ty_arrow` ships at `Term/SubjectReductionGeneral.lean:754` via the closed-isClosedTy preservation chain (#1276 M07 also done at lines 787, 818); unblocks #1504 PHASE7-CONV-TRANS
+* [~] M08 `Term.headStep?` ι coverage (#1277) — 5 atomic ι-rules shipped at `Algo/Soundness.lean:70-209` (boolElim×2, natElimZero, natRecZero, listElimNil, optionMatchNone); successor + payload firings remain
+* [~] M10 `Algo/Completeness.lean` infer/check completeness (#1279) — 5 atomic-case theorems shipped at `Algo/Completeness.lean:54-82` (var, unit, boolTrue, boolFalse, natZero, all `rfl` zero-axiom, commit 053dc0e); 10 recursive cases (natSucc/app/fst/snd/listCons/optionSome/idJ/modIntro/modElim/subsume) plus check-mode counterpart pending Phase 4 of close-out plan
 
 ## Phase 11 — Surface (Layer 10) — PARTIAL [~]
 
@@ -182,8 +182,8 @@ lean-fx-2 reaches feature parity.
 The v1.0 milestone ("100% proven kernel") gates on:
 
 1. **D2.10 #1314** ✅ DONE 2026-05-07 — typed Step.par cong rename+subst compat (14 of 14 shipped, budget ratcheted to 0)
-2. **M06 #1275** — Phase 7 subject reduction at arrow types (D2.10 unblocked, ready)
-3. **PHASE7-CONV-TRANS #1504** — typed `Conv.trans` (depends on M06)
+2. **M06 #1275** ✅ DONE — Phase 7 subject reduction at arrow types (`Step.preserves_ty_arrow` at `Term/SubjectReductionGeneral.lean:754`)
+3. **PHASE7-CONV-TRANS #1504** — typed `Conv.trans` (M06 done, READY for Phase 1 of close-out plan)
 4. **K07.1-8 #1516-1523** — dep-motive eliminator refactors (8 ctors)
 5. **D2.5.1-2 #1527-1528** — typed cubical β rules (transp/hcomp); D2.5.3 #1529 ✅ verified (`Step.betaGlueElimIntro` IS the typed glueBeta)
 6. **WEAK-FX2-03 #1502** — retire 121 manufactured-witness wrappers
