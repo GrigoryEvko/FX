@@ -1,53 +1,84 @@
-/-! # Algo/Completeness — algorithmic completeness
+import LeanFX2.Algo.Infer
 
-Every well-typed Term has an inferable / checkable type:
+/-! # Algo/Completeness — algorithmic completeness (atomic fragment)
 
-```lean
-theorem Term.infer_complete :
-    -- For every typed Term t : Term ctx ty raw,
-    -- the inference algorithm finds it (or a Conv-equivalent type)
-    Term.infer ctx raw = some ⟨ty', t'⟩ ∧ Conv ty ty' ∧ HEq t t'
-```
+Every well-typed Term is recovered by `Term.infer` on its raw
+projection.  This file ships the atomic cases — each is `rfl`
+because `Term.infer` is structurally aligned with `Term`'s
+constructors at the inferable subset.
 
-Completeness is the harder half — soundness is automatic from typing,
-but completeness requires proving the algorithm doesn't *miss* valid
-typings.
+## Atomic fragment shipped here
 
-## Proof structure
+* `infer_complete_var` — `Term.var position` round-trips through
+  `Term.infer context (RawTerm.var position)`.
+* `infer_complete_unit`, `infer_complete_boolTrue`,
+  `infer_complete_boolFalse`, `infer_complete_natZero` — the four
+  nullary canonical-head cases.
 
-By structural induction on the typed Term:
-* `var i`: infer returns the var via varType
-* `app fn arg`: infer fn → arrow type, check arg → matches, return
-* `lam body`: needs check mode (synth doesn't infer abstractions
-  without type ann)
-* etc.
+## What is NOT shipped here yet
 
-## Modulo Conv
+The recursive cases (`natSucc`, `app`, `fst`, `snd`, `listCons`,
+`optionSome`, `idJ`, `modIntro`, `modElim`, `subsume`) require
+inductive completeness over the inferred sub-term — they live in a
+follow-on file once the recursive pattern is established.  The
+non-inferable (check-mode-only) cases — `lam`, `pair`, `refl`,
+eliminators — require `Term.check` completeness, deferred to the
+broader M10 milestone (#1279).
 
-Completeness is "up to Conv" because two Terms of Conv-equal types
-are interchangeable.  The algorithm picks a canonical type from the
-synth-then-Conv discipline; the user's expected type may differ
-modulo Conv.
+## Why atomic-only first
+
+Each atomic theorem is `rfl` against `Term.infer`'s pattern-match
+arm — so they compile in a single line, ship zero-axiom on first
+attempt, and serve as the foundation for the recursive cases'
+induction-base.  Together they convert the previous stub into a
+file with five real declarations, removing the deception slot per
+project zero-axiom commitment (CLAUDE.md).
 
 ## Dependencies
 
-* `Algo/Soundness.lean`
+* `Algo/Infer.lean`
 
 ## Downstream
 
 * `Pipeline.lean` — pipeline composes infer + check + Conv
-* `Surface/Elab.lean` — completeness underwrites elaboration's
-  guarantee that valid surface terms produce typed kernel Terms
-
-## Implementation plan (Layer 9)
-
-1. State completeness theorem
-2. Structural induction on Term
-3. Each case: invoke synth/check, verify result agrees up to Conv
+* `Surface/Elab.lean` — elaboration leans on infer completeness
 -/
 
-namespace LeanFX2.Algo
+namespace LeanFX2
 
--- TODO Layer 9: infer_complete + check_complete theorems
+variable {mode : Mode} {level scope : Nat}
 
-end LeanFX2.Algo
+/-- Completeness of `Term.infer` at the variable case.  For every
+position `i`, the inferrer returns the canonical typed witness
+`Term.var i` together with its declared type `varType context i`. -/
+theorem Term.infer_complete_var
+    (context : Ctx mode level scope) (position : Fin scope) :
+    Term.infer context (RawTerm.var position)
+      = some ⟨varType context position, Term.var position⟩ := rfl
+
+/-- Completeness of `Term.infer` at the `unit` canonical head.
+Returns the canonical `Term.unit` typed at `Ty.unit`. -/
+theorem Term.infer_complete_unit
+    (context : Ctx mode level scope) :
+    Term.infer context RawTerm.unit
+      = some ⟨Ty.unit, Term.unit⟩ := rfl
+
+/-- Completeness of `Term.infer` at the `boolTrue` canonical head. -/
+theorem Term.infer_complete_boolTrue
+    (context : Ctx mode level scope) :
+    Term.infer context RawTerm.boolTrue
+      = some ⟨Ty.bool, Term.boolTrue⟩ := rfl
+
+/-- Completeness of `Term.infer` at the `boolFalse` canonical head. -/
+theorem Term.infer_complete_boolFalse
+    (context : Ctx mode level scope) :
+    Term.infer context RawTerm.boolFalse
+      = some ⟨Ty.bool, Term.boolFalse⟩ := rfl
+
+/-- Completeness of `Term.infer` at the `natZero` canonical head. -/
+theorem Term.infer_complete_natZero
+    (context : Ctx mode level scope) :
+    Term.infer context RawTerm.natZero
+      = some ⟨Ty.nat, Term.natZero⟩ := rfl
+
+end LeanFX2

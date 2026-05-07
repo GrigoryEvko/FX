@@ -50,12 +50,13 @@ namespace LeanFX2.Tools
 #assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 8
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
--- packaging types; heavy use signals existential reasoning.  942 today
+-- packaging types; heavy use signals existential reasoning.  947 today
 -- reflects pervasive use of Sigma/PSigma in dependent-type proofs plus
 -- the proof-function coherence premises on `Term.equivIntroHet` and
 -- pointwise proof-function premise on `Term.oeqFunext`, plus the
--- dependent bool eliminator motive.
+-- dependent bool eliminator motive, plus the five Algo/Completeness
+-- atomic theorems (#1569 sub-step) returning `Σ ty, Term ctx ty raw`.
 -- Tight ratchet at current count.
-#assert_dependent_pair_dependent_budget LeanFX2 942
+#assert_dependent_pair_dependent_budget LeanFX2 947
 
 end LeanFX2.Tools
