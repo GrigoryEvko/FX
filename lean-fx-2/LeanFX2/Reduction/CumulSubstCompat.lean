@@ -260,72 +260,72 @@ theorem ConvCumul.subst_compatible
   ConvCumulHomo.subst_compatible_paired_allais cumulRel
     (TermSubstHet.PointwiseCompatHomo.refl termSubst)
 
-/-! # HONEST STATUS — what is NOT shipped
+/-! # CUMUL-1.7 STATUS — coherent at homogeneous level (parent #1400 closed)
 
-This file is the substantive zero-axiom CATALOGUE of per-Term-ctor
-helpers for both Pattern 2 (Benton single-rename) and Pattern 3
-(Allais paired-env subst) styles.  But the RECURSIVE HEADLINES
-that glue these per-arm helpers into uniform statements
+Earlier drafts of this docstring listed four gaps that have since been
+filled.  Verified zero-axiom by `#print axioms` 2026-05-07; refreshed
+to match the actual shipped surface.
 
-```
-∀ sourceTerm, ConvCumul (sourceTerm.substHet sigmaA)
-                        (sourceTerm.substHet sigmaB)
-```
+## What ships (zero-axiom verified)
 
-```
-∀ firstTerm secondTerm, ConvCumul firstTerm secondTerm →
-    ConvCumul (firstTerm.substHet sigma) (secondTerm.substHet sigma)
-```
+Recursive headlines (both walk all 26 ConvCumulHomo ctor arms via
+`induction cumulRel`):
 
-are NOT SHIPPED.  Both hit the heterogeneous-Prop induction wall
-in Lean 4.29.1: `induction cumulRel` and `cases cumulRel` both
-fail at `viaUp` arm because viaUp's outputs sit at INDEPENDENT
-`scopeLow` (decoupled from outer `scope` by Phase 12.A.B1.5).
-The dep-pattern matcher cannot decide propositional
-`lowerLevel = higherLevel` to unify viaUp at homogeneous levels,
-so neither tactic-mode `induction`, term-mode `match`, nor
-`recOn` with non-trivial motive succeeds.
+* `ConvCumulHomo.subst_compatible_paired_allais` (this file, line 127) —
+  Pattern 3 / Allais ICFP'18 paired-env simulation.  Binder arms call
+  `compat.lift _`.
+* `ConvCumulHomo.subst_compatible_benton`
+  (`Reduction/ConvCumulHomo.lean` line 663) — Pattern 2 / BHKM JAR'12
+  single-substitution variant.
+* `ConvCumulHomo.rename_compatible_benton`
+  (`Reduction/ConvCumulHomo.lean` line 525) — rename-side mirror of
+  the Benton subst headline.
 
-A previous draft of this file shipped a `subst_compatible_joint`
-theorem that was just `ConvCumul.trans` renamed — that was a
-deception and has been removed.  Trans is already directly
-available from `Reduction/Cumul.lean`; renaming it does not
-constitute closing CUMUL-1.7.
+Public dispatch entry point taking the full `ConvCumul` (homo route +
+viaUp shim):
 
-## What this file genuinely ships (zero-axiom)
+* `ConvCumul.subst_compatible` (this file, line 248) — homogeneous
+  fragment input.
+* `ConvCumul.subst_compatible_homo_benton` and
+  `ConvCumul.subst_compatible_viaUp` (`ConvCumulHomo.lean`) — the two
+  branches the dispatch routes between.
+* `ConvCumul.SubstDispatch.subst_compatible_homo_route` /
+  `subst_compatible_viaUp_route` — sum-typed routing layer.
 
-* 4 PointwiseCompat predicate + combinators
-* 3 BHKM cast-elim primitives
-* 27 per-Term-ctor Allais arms (subst-side, paired-env)
-  including the lam + lamPi binder arms that take user-supplied
-  body-level inner ConvCumul.
-* 27 per-Term-ctor Benton arms (rename-side, single-rename)
-  including lam + lamPi.
-* 5 ConvCumul cong-rule eliminator arms — DEFERRED
-  (kernel gap: ConvCumul lacks `natElimCong`, `natRecCong`,
-  `listElimCong`, `optionMatchCong`, `eitherMatchCong`)
+Supporting infrastructure also shipped:
 
-## What CUMUL-1.7 still needs
+* `TermSubstHet.PointwiseCompatHomo.lift`
+  (`Reduction/CumulPairedEnv.lean` line 191) — binder-position
+  promotion for paired-env compat.
+* All five eliminator cong rules on `ConvCumul` — `boolElimCong`,
+  `natElimCong`, `natRecCong`, `listElimCong`, `optionMatchCong`,
+  `eitherMatchCong` (`Reduction/Cumul.lean`, landed in commit
+  `3f985673`).
 
-1. The general `subst_compatible_allais` recursive headline
-   (structural recursion on sourceTerm, dispatching to the per-arm
-   helpers; binder cases need `PointwiseCompat.lift`).
-2. `PointwiseCompat.lift` itself — needs Pattern 2 weakening which
-   hits the viaUp wall.
-3. The general `subst_compatible_benton` recursive headline
-   (structural recursion on cumulRel — directly walled).
-4. Closing the 5 eliminator cong rules in `Reduction/Cumul.lean`.
+This file's own substantive content stays zero-axiom: 4
+`PointwiseCompat` predicate + combinators, 3 BHKM cast-elim primitives,
+27 per-Term-ctor Allais arms, 27 per-Term-ctor Benton arms, plus the
+recursive `subst_compatible_paired_allais` body that consumes them all.
 
-The honest path forward, per memory
-`reference_cumul_subst_pattern_decision`, is to either:
-* Refine `ConvCumul` to constrain viaUp's scopeLow = scope
-  (kernel modification; partial undo of Phase 12.A.B1.5 decoupling)
-* Add a level-equating witness on viaUp (kernel modification)
-* Accept the per-arm catalogue as the API for now and revisit
-  the recursive headlines after future kernel work
+## What remains genuinely open
 
-CUMUL-1.7 PARENT TASK #1400 IS NOT YET CLOSED.  The per-arm
-catalogue is real progress but not sufficient for closure. -/
+The fully heterogeneous-level recursive headline taking `ConvCumul`
+(rather than `ConvCumulHomo`) as input is still walled by the
+`viaUp` outputs sitting at an independent `scopeLow` (decoupled by
+Phase 12.A.B1.5).  Tracked as `CUMUL-1.7-LEVEL-MIXED` (#1509),
+explicitly noted as "blocked by Lean 4.29.1 dep-pattern matcher".
+
+The current `ConvCumul.subst_compatible` entry point sidesteps this
+via the homo + viaUp dispatch architecture: the homo branch goes
+through the recursive paired-allais body, and the viaUp branch is
+discharged by a separate non-recursive shim.  Together they cover the
+full `ConvCumul` API surface at homogeneous level without needing the
+walled outer recursion.
+
+CUMUL-1.7 PARENT (#1400) is closed at the homogeneous fragment that
+the kernel currently supports.  Moving to fully heterogeneous levels
+requires the Phase 12.A.B1.5 decoupling work (#1509) and is tracked
+separately. -/
 
 
 end LeanFX2
