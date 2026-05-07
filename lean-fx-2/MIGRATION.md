@@ -50,20 +50,72 @@ These lean-fx artifacts contain correct math but need re-architecting:
 * Hardware/synthesis layer (fx_design.md §18) — separate project
 * Distribution / package manager (fx_design.md §25) — far future
 
-## Cutover checklist
+## Status check (2026-05-07)
 
-When lean-fx-2 reaches Phase 11 (Surface complete):
+Items already shipped (verifiable via `lake build LeanFX2`):
 
-1. [ ] Verify `lake build LeanFX2` is green with all phases 0–11
-2. [ ] Verify zero axioms across kernel via AuditAll
-3. [ ] Verify zero sorries: `rg --type lean -n '\bsorry\b' LeanFX2/` returns NO matches in declaration bodies (docstring/keyword mentions are OK).  Univalence is NOT exempt — it is a real theorem with body `Conv.fromStep Step.eqType` per `HoTT/Univalence.lean`
-4. [ ] Smoke test parity: every smoke test in `lean-fx/LeanFX/Syntax/Smoke.lean` has an analog in `lean-fx-2/LeanFX2/Smoke/`
-5. [ ] W8 confluence chain delivers same theorems as `lean-fx/LeanFX/Syntax/Reduction/Confluence.lean`
-6. [ ] Bridge sorries closed (`grep -c sorry lean-fx-2/LeanFX2/Bridge.lean` returns 0)
-7. [ ] `git mv lean-fx lean-fx.deprecated && git mv lean-fx-2 lean-fx`
-8. [ ] Update `/root/iprit/FX/CLAUDE.md`'s lean-fx references
-9. [ ] Update memory entries: `project_lean_fx_state.md` notes the cutover; `project_lean_fx_v2_refactor.md` archived
-10. [ ] Tag the parent FX repo at the cutover commit
+* ✅ Phase 0 (skeleton), 1 (Foundation), 2 (Term), 4 (Confluence raw),
+  5 (Bridge), 6 (HoTT incl. real-theorem Univalence + funext), 8
+  (Graded), 13 (Tools)
+* 🚧 Phase 3 partial (D2.10 Compat 13 of 28 cong rules done)
+* 🚧 Phase 9, 10, 11 partial
+* ❌ Phase 7 (Modal D4.x) NOT STARTED
+* ❌ Phase 12 (Pipeline) TODO
+* ❌ Phase 15 cutover deferred
+
+See ROADMAP.md "Critical-path summary" for the 7 load-bearing
+remaining tasks.
+
+## Cutover checklist (gated on critical path)
+
+**Cutover MUST NOT fire** until ALL these v1.0 critical-path items
+close (per ROADMAP.md):
+
+* [ ] D2.10 typed Step.par cong rename+subst compat (15 of 28 still
+      missing as of 2026-05-07; tracker #1314)
+* [ ] M06 Phase 7 subject reduction at arrow types (#1275, blocked
+      by D2.10)
+* [ ] PHASE7-CONV-TRANS typed Conv.trans (#1504, blocked by M06)
+* [ ] K07.1-8 dep-motive eliminator refactors (#1516-1523, 8 ctors)
+* [ ] D2.5.1-3 typed cubical β rules transp/hcomp/glue (#1527-1529)
+* [ ] WEAK-FX2-03 retire 121 manufactured-witness wrappers (#1502)
+* [ ] D4 modal layer (#1328-1336)
+* [ ] D6.4-6.6 Surface Parse/Print/Roundtrip (#1354-1356)
+* [ ] D6.7-6.9 Elab/ElabSoundness/ElabCompleteness (#1357-1359)
+* [ ] D6.12 Pipeline.lean end-to-end (#1362)
+
+When ALL of the above are closed, run the cutover sequence:
+
+1. [ ] Verify `lake build LeanFX2` is green AND every phase shows
+       ✅ in ROADMAP.md
+2. [ ] Verify zero axioms via the strict harness:
+       `lake build LeanFX2 2>&1 | grep -E "axiom audit (failed|FAILED)"`
+       returns nothing
+3. [ ] Verify zero sorries: `rg --type lean -n '\bsorry\b' LeanFX2/`
+       returns NO matches in declaration bodies (docstring/keyword
+       mentions are OK).  Univalence is NOT exempt — it is a real
+       theorem with body `Conv.fromStep Step.eqType` per
+       `HoTT/Univalence.lean`
+4. [ ] Verify dashboard debt counts at zero or expected ratchet
+       targets:
+       - Compat coverage: 0/28 (all cong rules covered)
+       - Conv cong: 75/75 covered
+       - Bridge encoding: load-bearing ratio at expected level
+       - Manufactured-witness wrappers: 0
+5. [ ] Smoke test parity: every smoke test in
+       `lean-fx/LeanFX/Syntax/Smoke.lean` has an analog in
+       `lean-fx-2/LeanFX2/Smoke/`
+6. [ ] W8 confluence chain delivers same theorems as
+       `lean-fx/LeanFX/Syntax/Reduction/Confluence.lean`
+7. [ ] Bridge sorries closed:
+       `grep -c sorry lean-fx-2/LeanFX2/Bridge.lean` returns 0
+8. [ ] `git mv lean-fx lean-fx.deprecated && git mv lean-fx-2 lean-fx`
+9. [ ] Update `/root/iprit/FX/CLAUDE.md`'s lean-fx references
+10. [ ] Update memory entries:
+        `project_lean_fx_state.md` notes the cutover;
+        `project_lean_fx_v2_refactor.md` archived
+11. [ ] Tag the parent FX repo at the cutover commit
+12. [ ] D7.11 v1.0 git tag + release manifest (#1374)
 
 ## What to keep from lean-fx forever
 
