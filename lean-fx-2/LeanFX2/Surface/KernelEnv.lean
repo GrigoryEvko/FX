@@ -314,4 +314,100 @@ theorem RawExpr.toRawTermWithEnv?_rawBinop_isCtor
     (RawExpr.rawBinop BinaryOp.isCtor lhs rhs).toRawTermWithEnv? env =
       none := rfl
 
+/-! ## B08 — env-aware binopExpr structural correctness (#1248)
+
+For every "regular" binary operator (those with a stdlib qualified
+name — `op.toQualifiedName = some qname`), the env-aware bridge
+desugars `lhs op rhs` to the canonical applied-stdlib-op form:
+
+  `app (app opRaw lhsRaw) rhsRaw`
+
+where `opRaw` comes from looking up `qname` in the kernel env and
+lifting its definition to the local scope.  Each rfl-smoke pins
+this shape for one representative ctor per operator class —
+arithmetic (`plus`), comparison (`eqEq`), logical (`logicalAnd`),
+bitwise (`bitAnd`).  A typo in `toQualifiedName` for any of these
+breaks the rfl at build time. -/
+
+/-- B08 arithmetic representative: `lhs + rhs` desugars through
+`Std.Int.add` lookup + double-app, given a successful env lookup
++ scope lift. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_plus
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.plus lhs rhs).toRawTermWithEnv? env =
+      (match env.lookup
+                (QualifiedName.stdPath UpperIdent.intMod LowerIdent.add) with
+       | none => none
+       | some opDef =>
+         match opDef.liftToScope (scope := scope) with
+         | none => none
+         | some opRaw =>
+           match RawExpr.toRawTermWithEnv? env lhs with
+           | none => none
+           | some lhsRaw =>
+             match RawExpr.toRawTermWithEnv? env rhs with
+             | none => none
+             | some rhsRaw =>
+               some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)) := rfl
+
+/-- B08 comparison representative: `lhs == rhs` desugars through
+`Std.Ord.eq` lookup + double-app. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_eqEq
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.eqEq lhs rhs).toRawTermWithEnv? env =
+      (match env.lookup
+                (QualifiedName.stdPath UpperIdent.ordMod LowerIdent.eq) with
+       | none => none
+       | some opDef =>
+         match opDef.liftToScope (scope := scope) with
+         | none => none
+         | some opRaw =>
+           match RawExpr.toRawTermWithEnv? env lhs with
+           | none => none
+           | some lhsRaw =>
+             match RawExpr.toRawTermWithEnv? env rhs with
+             | none => none
+             | some rhsRaw =>
+               some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)) := rfl
+
+/-- B08 logical representative: `lhs and rhs` desugars through
+`Std.Bool.andOp` lookup + double-app. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_logicalAnd
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.logicalAnd lhs rhs).toRawTermWithEnv? env =
+      (match env.lookup
+                (QualifiedName.stdPath UpperIdent.boolMod LowerIdent.andOp) with
+       | none => none
+       | some opDef =>
+         match opDef.liftToScope (scope := scope) with
+         | none => none
+         | some opRaw =>
+           match RawExpr.toRawTermWithEnv? env lhs with
+           | none => none
+           | some lhsRaw =>
+             match RawExpr.toRawTermWithEnv? env rhs with
+             | none => none
+             | some rhsRaw =>
+               some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)) := rfl
+
+/-- B08 bitwise representative: `lhs & rhs` desugars through
+`Std.Bits.bitAndOp` lookup + double-app. -/
+theorem RawExpr.toRawTermWithEnv?_rawBinop_bitAnd
+    {scope : Nat} (env : KernelEnv) (lhs rhs : RawExpr scope) :
+    (RawExpr.rawBinop BinaryOp.bitAnd lhs rhs).toRawTermWithEnv? env =
+      (match env.lookup
+                (QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitAndOp) with
+       | none => none
+       | some opDef =>
+         match opDef.liftToScope (scope := scope) with
+         | none => none
+         | some opRaw =>
+           match RawExpr.toRawTermWithEnv? env lhs with
+           | none => none
+           | some lhsRaw =>
+             match RawExpr.toRawTermWithEnv? env rhs with
+             | none => none
+             | some rhsRaw =>
+               some (RawTerm.app (RawTerm.app opRaw lhsRaw) rhsRaw)) := rfl
+
 end LeanFX2.Surface
