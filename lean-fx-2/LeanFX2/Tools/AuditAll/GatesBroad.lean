@@ -81,6 +81,11 @@ namespace LeanFX2.Tools
 -- the diamond cascade breaks.  Tight ratchet at current count.
 -- D2.10 (2026-05-07): shipped typed compositional compat for
 -- `intervalOppCong` (the exemplar pattern), ratcheting 28 → 27.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 27
+-- D2.10 BATCH 12 (2026-05-07): shipped 12 more cong rules following
+-- the exemplar pattern (oeqReflCong, glueElimCong, refineElimCong,
+-- codataDestCong, sessionRecvCong, cumulUpInnerCong, effectPerformCong,
+-- intervalMeetCong, intervalJoinCong, pathAppCong, equivAppCong,
+-- sessionSendCong), ratcheting 27 → 15.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 15
 
 end LeanFX2.Tools

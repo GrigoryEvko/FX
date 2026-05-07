@@ -128,6 +128,32 @@ Every declaration listed must report "does not depend on any axioms".
 -- D2.10 typed compositional compat — exemplar `intervalOppCong`.
 #print axioms LeanFX2.Step.par.intervalOppCong.rename_compatible
 #print axioms LeanFX2.Step.par.intervalOppCong.subst_compatible
+-- D2.10 typed compositional compat — BATCH 12 (12 cong rules,
+-- 24 theorems = 12 rename + 12 subst).
+#print axioms LeanFX2.Step.par.oeqReflCong.rename_compatible
+#print axioms LeanFX2.Step.par.oeqReflCong.subst_compatible
+#print axioms LeanFX2.Step.par.glueElimCong.rename_compatible
+#print axioms LeanFX2.Step.par.glueElimCong.subst_compatible
+#print axioms LeanFX2.Step.par.refineElimCong.rename_compatible
+#print axioms LeanFX2.Step.par.refineElimCong.subst_compatible
+#print axioms LeanFX2.Step.par.codataDestCong.rename_compatible
+#print axioms LeanFX2.Step.par.codataDestCong.subst_compatible
+#print axioms LeanFX2.Step.par.sessionRecvCong.rename_compatible
+#print axioms LeanFX2.Step.par.sessionRecvCong.subst_compatible
+#print axioms LeanFX2.Step.par.cumulUpInnerCong.rename_compatible
+#print axioms LeanFX2.Step.par.cumulUpInnerCong.subst_compatible
+#print axioms LeanFX2.Step.par.effectPerformCong.rename_compatible
+#print axioms LeanFX2.Step.par.effectPerformCong.subst_compatible
+#print axioms LeanFX2.Step.par.intervalMeetCong.rename_compatible
+#print axioms LeanFX2.Step.par.intervalMeetCong.subst_compatible
+#print axioms LeanFX2.Step.par.intervalJoinCong.rename_compatible
+#print axioms LeanFX2.Step.par.intervalJoinCong.subst_compatible
+#print axioms LeanFX2.Step.par.pathAppCong.rename_compatible
+#print axioms LeanFX2.Step.par.pathAppCong.subst_compatible
+#print axioms LeanFX2.Step.par.equivAppCong.rename_compatible
+#print axioms LeanFX2.Step.par.equivAppCong.subst_compatible
+#print axioms LeanFX2.Step.par.sessionSendCong.rename_compatible
+#print axioms LeanFX2.Step.par.sessionSendCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

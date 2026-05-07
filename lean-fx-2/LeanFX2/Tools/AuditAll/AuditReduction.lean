@@ -123,4 +123,34 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.intervalOppCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.intervalOppCong.subst_compatible
 
+-- D2.10 typed compositional compat — BATCH 12: 12 cong rules
+-- following the `intervalOppCong` exemplar.  Seven unary cong rules
+-- (one inner Step.par premise; `oeqReflCong` takes a RawStep.par
+-- since its constructor's inner is a raw witness, not a typed term)
+-- plus five binary cong rules (two inner Step.par premises).
+#assert_no_axioms LeanFX2.Step.par.oeqReflCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.oeqReflCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.glueElimCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.glueElimCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.refineElimCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.refineElimCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.codataDestCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.codataDestCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.sessionRecvCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.sessionRecvCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.cumulUpInnerCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.cumulUpInnerCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.effectPerformCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.effectPerformCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.intervalMeetCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.intervalMeetCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.intervalJoinCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.intervalJoinCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.pathAppCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.pathAppCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.equivAppCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.equivAppCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.sessionSendCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.sessionSendCong.subst_compatible
+
 end LeanFX2.Tools

@@ -184,6 +184,700 @@ theorem subst_compatible
 
 end intervalOppCong
 
+/-! ### `oeqReflCong` (raw-witness inner premise).
+
+Unlike `intervalOppCong`, the `oeqReflCong` constructor takes a
+`RawStep.par` on the inner raw witness (not a typed `Step.par`),
+because `Term.oeqRefl` carries an explicit `RawTerm` payload rather
+than a typed sub-term.  The compositional shape is parallel: caller
+supplies the renamed/substituted RAW step, this lemma packages it. -/
+namespace oeqReflCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (renamedRawStep :
+      RawStep.par (witnessRawSource.rename rho)
+                  (witnessRawTarget.rename rho)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.oeqRefl (context := sourceCtx) carrier witnessRawSource))
+      (Term.rename termRenaming
+        (Term.oeqRefl (context := sourceCtx) carrier witnessRawTarget)) :=
+  Step.par.oeqReflCong (carrier := carrier.rename rho) renamedRawStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (carrier : Ty level sourceScope)
+    {witnessRawSource witnessRawTarget : RawTerm sourceScope}
+    (substitutedRawStep :
+      RawStep.par (witnessRawSource.subst sigma.forRaw)
+                  (witnessRawTarget.subst sigma.forRaw)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.oeqRefl (context := sourceCtx) carrier witnessRawSource))
+      (Term.subst termSubst
+        (Term.oeqRefl (context := sourceCtx) carrier witnessRawTarget)) :=
+  Step.par.oeqReflCong (carrier := carrier.subst sigma) substitutedRawStep
+
+end oeqReflCong
+
+/-! ### `glueElimCong` (unary, mode-univalent gated). -/
+namespace glueElimCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {gluedRawSource gluedRawTarget : RawTerm sourceScope}
+    {gluedSource :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawSource}
+    {gluedTarget :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawTarget}
+    (renamedInnerStep :
+      Step.par (Term.rename termRenaming gluedSource)
+               (Term.rename termRenaming gluedTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.glueElim modeIsUnivalent gluedSource))
+      (Term.rename termRenaming
+        (Term.glueElim modeIsUnivalent gluedTarget)) :=
+  Step.par.glueElimCong modeIsUnivalent renamedInnerStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness : RawTerm sourceScope}
+    {gluedRawSource gluedRawTarget : RawTerm sourceScope}
+    {gluedSource :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawSource}
+    {gluedTarget :
+      Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRawTarget}
+    (substitutedInnerStep :
+      Step.par (Term.subst termSubst gluedSource)
+               (Term.subst termSubst gluedTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.glueElim modeIsUnivalent gluedSource))
+      (Term.subst termSubst
+        (Term.glueElim modeIsUnivalent gluedTarget)) :=
+  Step.par.glueElimCong modeIsUnivalent substitutedInnerStep
+
+end glueElimCong
+
+/-! ### `refineElimCong` (unary). -/
+namespace refineElimCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRawSource refinedRawTarget : RawTerm sourceScope}
+    {refinedSource :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRawSource}
+    {refinedTarget :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRawTarget}
+    (renamedInnerStep :
+      Step.par (Term.rename termRenaming refinedSource)
+               (Term.rename termRenaming refinedTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.refineElim refinedSource))
+      (Term.rename termRenaming (Term.refineElim refinedTarget)) :=
+  Step.par.refineElimCong renamedInnerStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRawSource refinedRawTarget : RawTerm sourceScope}
+    {refinedSource :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRawSource}
+    {refinedTarget :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRawTarget}
+    (substitutedInnerStep :
+      Step.par (Term.subst termSubst refinedSource)
+               (Term.subst termSubst refinedTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.refineElim refinedSource))
+      (Term.subst termSubst (Term.refineElim refinedTarget)) :=
+  Step.par.refineElimCong substitutedInnerStep
+
+end refineElimCong
+
+/-! ### `codataDestCong` (unary). -/
+namespace codataDestCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {stateType outputType : Ty level sourceScope}
+    {codataRawSource codataRawTarget : RawTerm sourceScope}
+    {codataSource :
+      Term sourceCtx (Ty.codata stateType outputType) codataRawSource}
+    {codataTarget :
+      Term sourceCtx (Ty.codata stateType outputType) codataRawTarget}
+    (renamedInnerStep :
+      Step.par (Term.rename termRenaming codataSource)
+               (Term.rename termRenaming codataTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.codataDest codataSource))
+      (Term.rename termRenaming (Term.codataDest codataTarget)) :=
+  Step.par.codataDestCong renamedInnerStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {stateType outputType : Ty level sourceScope}
+    {codataRawSource codataRawTarget : RawTerm sourceScope}
+    {codataSource :
+      Term sourceCtx (Ty.codata stateType outputType) codataRawSource}
+    {codataTarget :
+      Term sourceCtx (Ty.codata stateType outputType) codataRawTarget}
+    (substitutedInnerStep :
+      Step.par (Term.subst termSubst codataSource)
+               (Term.subst termSubst codataTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.codataDest codataSource))
+      (Term.subst termSubst (Term.codataDest codataTarget)) :=
+  Step.par.codataDestCong substitutedInnerStep
+
+end codataDestCong
+
+/-! ### `sessionRecvCong` (unary). -/
+namespace sessionRecvCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {protocolStep : RawTerm sourceScope}
+    {channelRawSource channelRawTarget : RawTerm sourceScope}
+    {channelSource :
+      Term sourceCtx (Ty.session protocolStep) channelRawSource}
+    {channelTarget :
+      Term sourceCtx (Ty.session protocolStep) channelRawTarget}
+    (renamedInnerStep :
+      Step.par (Term.rename termRenaming channelSource)
+               (Term.rename termRenaming channelTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.sessionRecv channelSource))
+      (Term.rename termRenaming (Term.sessionRecv channelTarget)) :=
+  Step.par.sessionRecvCong renamedInnerStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {protocolStep : RawTerm sourceScope}
+    {channelRawSource channelRawTarget : RawTerm sourceScope}
+    {channelSource :
+      Term sourceCtx (Ty.session protocolStep) channelRawSource}
+    {channelTarget :
+      Term sourceCtx (Ty.session protocolStep) channelRawTarget}
+    (substitutedInnerStep :
+      Step.par (Term.subst termSubst channelSource)
+               (Term.subst termSubst channelTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.sessionRecv channelSource))
+      (Term.subst termSubst (Term.sessionRecv channelTarget)) :=
+  Step.par.sessionRecvCong substitutedInnerStep
+
+end sessionRecvCong
+
+/-! ### `cumulUpInnerCong` (unary, threads explicit cumul args). -/
+namespace cumulUpInnerCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeSourceRaw codeTargetRaw : RawTerm sourceScope}
+    {typeCodeSource :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeSourceRaw}
+    {typeCodeTarget :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeTargetRaw}
+    (renamedInnerStep :
+      Step.par (Term.rename termRenaming typeCodeSource)
+               (Term.rename termRenaming typeCodeTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.cumulUp (context := sourceCtx)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCodeSource))
+      (Term.rename termRenaming
+        (Term.cumulUp (context := sourceCtx)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCodeTarget)) :=
+  Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone
+    levelLeLow levelLeHigh renamedInnerStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeSourceRaw codeTargetRaw : RawTerm sourceScope}
+    {typeCodeSource :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeSourceRaw}
+    {typeCodeTarget :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeTargetRaw}
+    (substitutedInnerStep :
+      Step.par (Term.subst termSubst typeCodeSource)
+               (Term.subst termSubst typeCodeTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.cumulUp (context := sourceCtx)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCodeSource))
+      (Term.subst termSubst
+        (Term.cumulUp (context := sourceCtx)
+                      lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCodeTarget)) :=
+  Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone
+    levelLeLow levelLeHigh substitutedInnerStep
+
+end cumulUpInnerCong
+
+/-! ### `effectPerformCong` (binary). -/
+namespace effectPerformCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {effectTag : RawTerm sourceScope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature : Effects.OperationSignature (Ty level sourceScope)}
+    {canPerformOperation :
+      Effects.CanPerform effectRow operationSignature}
+    {operationRawSource operationRawTarget
+     argumentsRawSource argumentsRawTarget : RawTerm sourceScope}
+    {operationSource :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRawSource}
+    {operationTarget :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRawTarget}
+    {argumentsSource :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRawSource}
+    {argumentsTarget :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRawTarget}
+    (renamedOperationStep :
+      Step.par (Term.rename termRenaming operationSource)
+               (Term.rename termRenaming operationTarget))
+    (renamedArgumentsStep :
+      Step.par (Term.rename termRenaming argumentsSource)
+               (Term.rename termRenaming argumentsTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationSource argumentsSource))
+      (Term.rename termRenaming
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTarget argumentsTarget)) :=
+  Step.par.effectPerformCong renamedOperationStep renamedArgumentsStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {effectTag : RawTerm sourceScope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature : Effects.OperationSignature (Ty level sourceScope)}
+    {canPerformOperation :
+      Effects.CanPerform effectRow operationSignature}
+    {operationRawSource operationRawTarget
+     argumentsRawSource argumentsRawTarget : RawTerm sourceScope}
+    {operationSource :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRawSource}
+    {operationTarget :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRawTarget}
+    {argumentsSource :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRawSource}
+    {argumentsTarget :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRawTarget}
+    (substitutedOperationStep :
+      Step.par (Term.subst termSubst operationSource)
+               (Term.subst termSubst operationTarget))
+    (substitutedArgumentsStep :
+      Step.par (Term.subst termSubst argumentsSource)
+               (Term.subst termSubst argumentsTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationSource argumentsSource))
+      (Term.subst termSubst
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTarget argumentsTarget)) :=
+  Step.par.effectPerformCong substitutedOperationStep substitutedArgumentsStep
+
+end effectPerformCong
+
+/-! ### `intervalMeetCong` (binary, both inners at `Ty.interval`). -/
+namespace intervalMeetCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftRawSource leftRawTarget rightRawSource rightRawTarget :
+      RawTerm sourceScope}
+    {leftSource : Term sourceCtx Ty.interval leftRawSource}
+    {leftTarget : Term sourceCtx Ty.interval leftRawTarget}
+    {rightSource : Term sourceCtx Ty.interval rightRawSource}
+    {rightTarget : Term sourceCtx Ty.interval rightRawTarget}
+    (renamedLeftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget))
+    (renamedRightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.intervalMeet leftSource rightSource))
+      (Term.rename termRenaming (Term.intervalMeet leftTarget rightTarget)) :=
+  Step.par.intervalMeetCong renamedLeftStep renamedRightStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {leftRawSource leftRawTarget rightRawSource rightRawTarget :
+      RawTerm sourceScope}
+    {leftSource : Term sourceCtx Ty.interval leftRawSource}
+    {leftTarget : Term sourceCtx Ty.interval leftRawTarget}
+    {rightSource : Term sourceCtx Ty.interval rightRawSource}
+    {rightTarget : Term sourceCtx Ty.interval rightRawTarget}
+    (substitutedLeftStep :
+      Step.par (Term.subst termSubst leftSource)
+               (Term.subst termSubst leftTarget))
+    (substitutedRightStep :
+      Step.par (Term.subst termSubst rightSource)
+               (Term.subst termSubst rightTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.intervalMeet leftSource rightSource))
+      (Term.subst termSubst (Term.intervalMeet leftTarget rightTarget)) :=
+  Step.par.intervalMeetCong substitutedLeftStep substitutedRightStep
+
+end intervalMeetCong
+
+/-! ### `intervalJoinCong` (binary, both inners at `Ty.interval`). -/
+namespace intervalJoinCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {leftRawSource leftRawTarget rightRawSource rightRawTarget :
+      RawTerm sourceScope}
+    {leftSource : Term sourceCtx Ty.interval leftRawSource}
+    {leftTarget : Term sourceCtx Ty.interval leftRawTarget}
+    {rightSource : Term sourceCtx Ty.interval rightRawSource}
+    {rightTarget : Term sourceCtx Ty.interval rightRawTarget}
+    (renamedLeftStep :
+      Step.par (Term.rename termRenaming leftSource)
+               (Term.rename termRenaming leftTarget))
+    (renamedRightStep :
+      Step.par (Term.rename termRenaming rightSource)
+               (Term.rename termRenaming rightTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.intervalJoin leftSource rightSource))
+      (Term.rename termRenaming (Term.intervalJoin leftTarget rightTarget)) :=
+  Step.par.intervalJoinCong renamedLeftStep renamedRightStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {leftRawSource leftRawTarget rightRawSource rightRawTarget :
+      RawTerm sourceScope}
+    {leftSource : Term sourceCtx Ty.interval leftRawSource}
+    {leftTarget : Term sourceCtx Ty.interval leftRawTarget}
+    {rightSource : Term sourceCtx Ty.interval rightRawSource}
+    {rightTarget : Term sourceCtx Ty.interval rightRawTarget}
+    (substitutedLeftStep :
+      Step.par (Term.subst termSubst leftSource)
+               (Term.subst termSubst leftTarget))
+    (substitutedRightStep :
+      Step.par (Term.subst termSubst rightSource)
+               (Term.subst termSubst rightTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.intervalJoin leftSource rightSource))
+      (Term.subst termSubst (Term.intervalJoin leftTarget rightTarget)) :=
+  Step.par.intervalJoinCong substitutedLeftStep substitutedRightStep
+
+end intervalJoinCong
+
+/-! ### `pathAppCong` (binary, mode-univalent gated). -/
+namespace pathAppCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRawSource pathRawTarget intervalRawSource intervalRawTarget :
+      RawTerm sourceScope}
+    {pathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRawSource}
+    {pathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (renamedPathStep :
+      Step.par (Term.rename termRenaming pathSource)
+               (Term.rename termRenaming pathTarget))
+    (renamedIntervalStep :
+      Step.par (Term.rename termRenaming intervalSource)
+               (Term.rename termRenaming intervalTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.pathApp modeIsUnivalent pathSource intervalSource))
+      (Term.rename termRenaming
+        (Term.pathApp modeIsUnivalent pathTarget intervalTarget)) :=
+  Step.par.pathAppCong modeIsUnivalent renamedPathStep renamedIntervalStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {pathRawSource pathRawTarget intervalRawSource intervalRawTarget :
+      RawTerm sourceScope}
+    {pathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRawSource}
+    {pathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        pathRawTarget}
+    {intervalSource : Term sourceCtx Ty.interval intervalRawSource}
+    {intervalTarget : Term sourceCtx Ty.interval intervalRawTarget}
+    (substitutedPathStep :
+      Step.par (Term.subst termSubst pathSource)
+               (Term.subst termSubst pathTarget))
+    (substitutedIntervalStep :
+      Step.par (Term.subst termSubst intervalSource)
+               (Term.subst termSubst intervalTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.pathApp modeIsUnivalent pathSource intervalSource))
+      (Term.subst termSubst
+        (Term.pathApp modeIsUnivalent pathTarget intervalTarget)) :=
+  Step.par.pathAppCong modeIsUnivalent substitutedPathStep substitutedIntervalStep
+
+end pathAppCong
+
+/-! ### `equivAppCong` (binary). -/
+namespace equivAppCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRawSource equivRawTarget argumentRawSource argumentRawTarget :
+      RawTerm sourceScope}
+    {equivSource : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawSource}
+    {equivTarget : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawTarget}
+    {argumentSource : Term sourceCtx carrierA argumentRawSource}
+    {argumentTarget : Term sourceCtx carrierA argumentRawTarget}
+    (renamedEquivStep :
+      Step.par (Term.rename termRenaming equivSource)
+               (Term.rename termRenaming equivTarget))
+    (renamedArgumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.equivApp equivSource argumentSource))
+      (Term.rename termRenaming (Term.equivApp equivTarget argumentTarget)) :=
+  Step.par.equivAppCong renamedEquivStep renamedArgumentStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRawSource equivRawTarget argumentRawSource argumentRawTarget :
+      RawTerm sourceScope}
+    {equivSource : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawSource}
+    {equivTarget : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawTarget}
+    {argumentSource : Term sourceCtx carrierA argumentRawSource}
+    {argumentTarget : Term sourceCtx carrierA argumentRawTarget}
+    (substitutedEquivStep :
+      Step.par (Term.subst termSubst equivSource)
+               (Term.subst termSubst equivTarget))
+    (substitutedArgumentStep :
+      Step.par (Term.subst termSubst argumentSource)
+               (Term.subst termSubst argumentTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.equivApp equivSource argumentSource))
+      (Term.subst termSubst (Term.equivApp equivTarget argumentTarget)) :=
+  Step.par.equivAppCong substitutedEquivStep substitutedArgumentStep
+
+end equivAppCong
+
+/-! ### `sessionSendCong` (binary). -/
+namespace sessionSendCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {protocolStep : RawTerm sourceScope}
+    {payloadType : Ty level sourceScope}
+    {channelRawSource channelRawTarget payloadRawSource payloadRawTarget :
+      RawTerm sourceScope}
+    {channelSource : Term sourceCtx (Ty.session protocolStep) channelRawSource}
+    {channelTarget : Term sourceCtx (Ty.session protocolStep) channelRawTarget}
+    {payloadSource : Term sourceCtx payloadType payloadRawSource}
+    {payloadTarget : Term sourceCtx payloadType payloadRawTarget}
+    (renamedChannelStep :
+      Step.par (Term.rename termRenaming channelSource)
+               (Term.rename termRenaming channelTarget))
+    (renamedPayloadStep :
+      Step.par (Term.rename termRenaming payloadSource)
+               (Term.rename termRenaming payloadTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.sessionSend protocolStep channelSource payloadSource))
+      (Term.rename termRenaming
+        (Term.sessionSend protocolStep channelTarget payloadTarget)) :=
+  Step.par.sessionSendCong renamedChannelStep renamedPayloadStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {protocolStep : RawTerm sourceScope}
+    {payloadType : Ty level sourceScope}
+    {channelRawSource channelRawTarget payloadRawSource payloadRawTarget :
+      RawTerm sourceScope}
+    {channelSource : Term sourceCtx (Ty.session protocolStep) channelRawSource}
+    {channelTarget : Term sourceCtx (Ty.session protocolStep) channelRawTarget}
+    {payloadSource : Term sourceCtx payloadType payloadRawSource}
+    {payloadTarget : Term sourceCtx payloadType payloadRawTarget}
+    (substitutedChannelStep :
+      Step.par (Term.subst termSubst channelSource)
+               (Term.subst termSubst channelTarget))
+    (substitutedPayloadStep :
+      Step.par (Term.subst termSubst payloadSource)
+               (Term.subst termSubst payloadTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.sessionSend protocolStep channelSource payloadSource))
+      (Term.subst termSubst
+        (Term.sessionSend protocolStep channelTarget payloadTarget)) :=
+  Step.par.sessionSendCong substitutedChannelStep substitutedPayloadStep
+
+end sessionSendCong
+
 end par
 
 end Step
