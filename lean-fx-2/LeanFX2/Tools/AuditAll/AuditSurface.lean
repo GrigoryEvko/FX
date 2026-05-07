@@ -231,6 +231,17 @@ parameter through any emitted `LexError`.  Composed via
 #assert_no_axioms LeanFX2.Surface.Lex.lexOpOrPunct_byteLength_invariant
 #assert_no_axioms LeanFX2.Surface.Lex.lexOne_byteLength_invariant
 
+/-! ### Surface.Lex — L07.5 lexLoop error-offset bound (#1536)
+
+Closes the inductive step of the L07 (#1205) preservation chain.
+Every `LexError` produced by `lexLoop fuel offset chars tokens errors`
+either was already in `errors` or has offset within source range. -/
+
+#assert_no_axioms LeanFX2.Surface.Lex.List.mem_concat_decompose
+#assert_no_axioms LeanFX2.Surface.Lex.Array.push_toList_mem_decompose
+#assert_no_axioms LeanFX2.Surface.Lex.lexLoop_cons_unfold
+#assert_no_axioms LeanFX2.Surface.Lex.lexLoop_error_offset_bounded
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff

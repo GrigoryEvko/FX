@@ -2,6 +2,7 @@ import LeanFX2.Surface.Lex
 import LeanFX2.Surface.Lex.EofTermination
 import LeanFX2.Surface.Lex.ErrorOffset
 import LeanFX2.Surface.Lex.ByteConservation
+import LeanFX2.Surface.Lex.LoopBound
 import LeanFX2.Surface.HostLex
 import LeanFX2.Surface.TokenSchema
 import LeanFX2.Surface.TokenInvariants
@@ -315,6 +316,26 @@ propext leak from `of_decide_eq_true` chars-equality. -/
 #print axioms LeanFX2.Surface.Lex.readStringLexeme_byteLength_invariant
 #print axioms LeanFX2.Surface.Lex.lexOpOrPunct_byteLength_invariant
 #print axioms LeanFX2.Surface.Lex.lexOne_byteLength_invariant
+
+/-! ## Section 10b — L07.5 lexLoop error-offset bound (#1536)
+
+Composes the per-step `lexOne_error_offset_eq` (#1532) and the
+byte-conservation chain into a fuel-recursion invariant.  Proves
+that every `LexError` produced by `lexLoop fuel offset chars
+tokens errors` either was already in the input `errors` array
+or has offset bounded by `offset + charsByteLength chars`.
+
+Auxiliary: structural-recursion membership decomposition for
+`List.concat` and `Array.push` (avoids `List.mem_concat`-style
+stdlib lemmas that leak `propext`).  Explicit unfold equation
+`lexLoop_cons_unfold` (`rfl`-provable after the `let trivia
+:= skipTrivia ...; trivia.fst` projection refactor of `lexLoop`)
+exposes the cons-arm body for `generalize` / `cases`. -/
+
+#print axioms LeanFX2.Surface.Lex.List.mem_concat_decompose
+#print axioms LeanFX2.Surface.Lex.Array.push_toList_mem_decompose
+#print axioms LeanFX2.Surface.Lex.lexLoop_cons_unfold
+#print axioms LeanFX2.Surface.Lex.lexLoop_error_offset_bounded
 
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 

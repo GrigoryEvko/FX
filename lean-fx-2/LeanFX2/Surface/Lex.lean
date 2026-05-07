@@ -495,16 +495,16 @@ def lexLoop (fuel : Nat) (offset : Nat) (chars : List Char)
     | [] => (tokens, errors)
     | _ :: _ =>
       let triviaFuel := chars.length
-      let (skipped, afterTrivia) := skipTrivia triviaFuel chars
-      match lexOne (offset + skipped) afterTrivia with
+      let trivia := skipTrivia triviaFuel chars
+      match lexOne (offset + trivia.fst) trivia.snd with
       | LexStep.eof => (tokens, errors)
       | LexStep.token tok bytes remaining =>
           let positioned : PositionedToken :=
-            { token := tok, startPos := { offset := offset + skipped } }
-          lexLoop fuelMinusOne (offset + skipped + bytes) remaining
+            { token := tok, startPos := { offset := offset + trivia.fst } }
+          lexLoop fuelMinusOne (offset + trivia.fst + bytes) remaining
             (tokens.push positioned) errors
       | LexStep.error err bytes remaining =>
-          lexLoop fuelMinusOne (offset + skipped + bytes) remaining
+          lexLoop fuelMinusOne (offset + trivia.fst + bytes) remaining
             tokens (errors.push err)
 
 /-- Compute the total UTF-8 byte length of a `List Char`.
