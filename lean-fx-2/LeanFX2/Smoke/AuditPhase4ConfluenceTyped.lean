@@ -23,7 +23,7 @@ conversion) and elaborator coherence proofs.
 -/
 
 #print axioms LeanFX2.Term.cdRaw
-#print axioms LeanFX2.Term.cdRaw_eq
+#print axioms LeanFX2.Term.cdRaw_unfolds
 #print axioms LeanFX2.Term.cdRaw_unit
 #print axioms LeanFX2.Term.cdRaw_boolTrue
 #print axioms LeanFX2.Term.cdRaw_boolFalse

@@ -52,8 +52,13 @@ namespace LeanFX2.Tools
 -- rfl-only on non-trivial-name theorem census.  Theorems whose name
 -- ends in `_inj` / `_unique` / `_iff` / `_def` / `_eq` / `_uniqueProof`
 -- with `Eq.refl _` body are heuristic flags for definitionally-trivial
--- restatements masquerading as substantive claims.  Tight ratchet at
--- current count of 1.
-#assert_rfl_on_nontrivial_name_budget LeanFX2 1
+-- restatements masquerading as substantive claims.
+-- Tightened 2026-05-07: ratchet 1 → 0 by renaming `Term.cdRaw_eq`
+-- (a legitimate projection-commutativity rfl-lemma associated with a
+-- `@[reducible]` def) to `Term.cdRaw_unfolds`, which truthfully
+-- advertises the rfl unfold.  Future genuinely substantial `_eq` /
+-- `_inj` / `_unique` theorems with rfl-only bodies are caught here
+-- and must either acquire a real proof body or rename to escape.
+#assert_rfl_on_nontrivial_name_budget LeanFX2 0
 
 end LeanFX2.Tools

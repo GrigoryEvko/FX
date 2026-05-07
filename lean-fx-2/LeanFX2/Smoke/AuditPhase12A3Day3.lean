@@ -62,7 +62,7 @@ decidable-conversion and canonical-form layers consume.
 
 -- D3 typed-input/raw-output confluence bridge
 #print axioms LeanFX2.Term.cdRaw
-#print axioms LeanFX2.Term.cdRaw_eq
+#print axioms LeanFX2.Term.cdRaw_unfolds
 #print axioms LeanFX2.Step.par.cdLemmaRaw
 #print axioms LeanFX2.Step.par.cdDominatesRaw
 #print axioms LeanFX2.Step.par.cdLemmaRaw_refl

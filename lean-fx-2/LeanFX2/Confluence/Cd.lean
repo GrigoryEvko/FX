@@ -51,7 +51,7 @@ under which the projection-into-cd is exposed.
 ## What this file ships (zero axioms)
 
 * `Term.cdRaw` — typed-input, raw-output cd projection
-* `Term.cdRaw_eq` — projection commutes with `RawTerm.cd`
+* `Term.cdRaw_unfolds` — projection commutes with `RawTerm.cd`
 * `Term.cdRaw_var` / `_unit` / `_lam` / etc. — per-ctor unfolding
   smoke tests (proven by rfl) that confirm the projection-into-cd
   is structural
@@ -79,8 +79,13 @@ raw projection.  Definitionally `RawTerm.cd rawForm` since
     (_typedTerm : Term context tipe rawForm) : RawTerm scope :=
   RawTerm.cd rawForm
 
-/-- `Term.cdRaw` agrees with `RawTerm.cd` of the raw projection. -/
-theorem Term.cdRaw_eq
+/-- `Term.cdRaw` unfolds to `RawTerm.cd` of the raw projection.
+This is `rfl` because `cdRaw` is `@[reducible]`; the lemma is kept
+as a discoverable rewrite for downstream consumers that want the
+unfolding step explicit.  Naming avoids the `_eq` heuristic suffix
+flagged by `#assert_rfl_on_nontrivial_name_budget`; the body really
+is `rfl` and the suffix `_unfolds` advertises that. -/
+theorem Term.cdRaw_unfolds
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
     {tipe : Ty level scope} {rawForm : RawTerm scope}
     (typedTerm : Term context tipe rawForm) :
