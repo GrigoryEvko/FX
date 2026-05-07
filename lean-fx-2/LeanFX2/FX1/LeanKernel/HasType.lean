@@ -247,6 +247,36 @@ inductive HasType {level : Nat} :
         context
         (Expr.lam binderName domainExpr bodyExpr binderInfo)
         (Expr.forallE binderName domainExpr bodyTypeExpr binderInfo)
+  /-- Lean function application instantiates the codomain with the argument.
+
+  The function position has Pi type `forallE binderName domainExpr bodyTypeExpr
+  binderInfo`; the argument is checked against `domainExpr`; the application's
+  type is the body with the newest bound variable instantiated by the argument.
+  This is the standard Lean-kernel application rule, mechanised intrinsically:
+  the codomain instantiation uses `Expr.instantiate` rather than a side
+  condition on the substitution metafunction. -/
+  | app
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      {functionExpr argumentExpr : Expr level scope}
+      {binderName : Name}
+      {domainExpr : Expr level scope}
+      {bodyTypeExpr : Expr level (Nat.succ scope)}
+      {binderInfo : BinderInfo}
+      (functionHasPi :
+        HasType
+          environment
+          context
+          functionExpr
+          (Expr.forallE binderName domainExpr bodyTypeExpr binderInfo))
+      (argumentHasDomain :
+        HasType environment context argumentExpr domainExpr) :
+      HasType
+        environment
+        context
+        (Expr.app functionExpr argumentExpr)
+        (Expr.instantiate bodyTypeExpr argumentExpr)
 
 end FX1.LeanKernel
 end LeanFX2

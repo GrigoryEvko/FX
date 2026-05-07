@@ -161,7 +161,60 @@ def inferResult? {level scope : Nat}
                 (levels := levels)
                 lookupResult.constantMember
           }
-  | Expr.app _functionExpr _argumentExpr => Option.none
+  | Expr.app functionExpr argumentExpr =>
+      match inferResult? environment context functionExpr with
+      | Option.none => Option.none
+      | Option.some {
+          typeExpr :=
+            Expr.forallE _binderName domainExpr bodyTypeExpr _binderInfo
+          typeDerivation := functionTypeDerivation
+        } =>
+          match inferResult? environment context argumentExpr with
+          | Option.none => Option.none
+          | Option.some argumentResult =>
+              match Expr.eqResult argumentResult.typeExpr domainExpr with
+              | EqualityResult.equal domainEquality =>
+                  Option.some {
+                    typeExpr :=
+                      Expr.instantiate bodyTypeExpr argumentExpr
+                    typeDerivation :=
+                      HasType.app
+                        functionTypeDerivation
+                        (domainEquality ▸ argumentResult.typeDerivation)
+                  }
+              | EqualityResult.notEqual => Option.none
+      | Option.some { typeExpr := Expr.bvar _position, .. } => Option.none
+      | Option.some { typeExpr := Expr.fvar _fvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.mvar _mvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.sort _sortLevel, .. } => Option.none
+      | Option.some { typeExpr := Expr.const _constName _levels, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.app _innerFunctionExpr _innerArgumentExpr
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr :=
+            Expr.lam _innerBinderName _innerDomainExpr _innerBodyExpr
+              _innerBinderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr :=
+            Expr.letE _declName _typeExpr _valueExpr _bodyExpr _nondep
+          ..
+        } =>
+          Option.none
+      | Option.some { typeExpr := Expr.lit _literal, .. } => Option.none
+      | Option.some { typeExpr := Expr.mdata _metadata _bodyExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.proj _structName _fieldIndex _targetExpr
+          ..
+        } =>
+          Option.none
   | Expr.lam binderName domainExpr bodyExpr binderInfo =>
       match inferResult? environment context domainExpr with
       | Option.none => Option.none

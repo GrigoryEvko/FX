@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1LeanKernel_Other — 65 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1LeanKernel_Other — 66 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Name
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Name.appendStr
@@ -87,6 +87,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.const
 #assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.forallE
 #assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.lam
+#assert_no_axioms LeanFX2.FX1.LeanKernel.HasType.app
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.LookupTypeResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.lookupTypeResultInEntries?
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Context.lookupTypeResult?
