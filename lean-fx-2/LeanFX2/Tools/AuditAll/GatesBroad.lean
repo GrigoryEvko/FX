@@ -46,15 +46,18 @@ namespace LeanFX2.Tools
 -- These are the heterogeneous-equality cast operators that often
 -- hide propext or Quot.sound; a budgeted count makes new casts
 -- visible.  Kernel tier covers Term/Foundation/Reduction/Confluence/
--- HoTT/Cubical/Modal/Graded.  875 today includes the stronger
+-- HoTT/Cubical/Modal/Graded.  1173 today includes the stronger
 -- `equivIntroHet` constructor shape, pointwise proof-function premise
 -- on `Term.oeqFunext`, and row-permission evidence transport on
 -- `Term.effectPerform`, plus the dependent bool eliminator motive, plus
--- the FIFTEEN Algo/Completeness M10 theorems closing the full inferable
--- subset (atomic + single-recurse + multi-recurse, the latter using
--- the dsimp-only-reduces-match recipe whose ▸-casts thread through
--- `Term.infer`'s recursive arms).
-#assert_cast_operator_dependent_budget LeanFX2 875
+-- the FIFTEEN Algo/Completeness M10 inferable theorems (atomic +
+-- single-recurse + multi-recurse, the latter using the dsimp-only-
+-- reduces-match recipe whose ▸-casts thread through `Term.infer`'s
+-- recursive arms), plus the FIFTEEN check-mode counterpart theorems
+-- whose closure threads through `Term.check`'s `h ▸ t` casts on every
+-- expected-type-equality dispatch arm (var/unit/boolTrue/boolFalse/
+-- natZero/natSucc/lam/lamPi/pair/listCons/...).
+#assert_cast_operator_dependent_budget LeanFX2 1173
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

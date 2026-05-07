@@ -1,4 +1,4 @@
-import LeanFX2.Algo.Infer
+import LeanFX2.Algo.Check
 
 /-! # Algo/Completeness — algorithmic completeness (full inferable subset)
 
@@ -29,9 +29,11 @@ expected type is covered.  Closure of the inferable subset.
 The non-inferable (check-mode-only) cases — `lam`, `pair`, `refl`,
 all eliminators, all modal/cubical/HOTT primitives — require the
 expected-type check side of bidirectional checking.  Their
-counterpart `Term.check_complete_X` family belongs to the
-check-mode portion of M10 (#1279), shipping when `Algo/Check.lean`
-gets the matching completeness treatment.
+counterpart `Term.check_complete_X` family lives in the second
+half of this file, leveraging `Term.check` (which dispatches on
+expectedType for ambiguous ctors).  The atomic-leaf check arms
+ship below alongside the inferable ones to give the full bidi
+recovery surface.
 
 ## Why atomic-only first
 
@@ -257,5 +259,221 @@ theorem Term.infer_complete_idJ
       = some ⟨motiveType, Term.idJ baseTerm witnessTerm⟩ := by
   unfold Term.infer
   rw [witnessIH, baseIH]
+
+/-! ## Check-mode counterparts (atomic leaves)
+
+The check-mode side of M10 `Term.check_complete_X` family.  Where
+`Term.infer` synthesizes type from term, `Term.check` confirms a
+term inhabits a *given* expected type.  Atomic leaves dispatch on
+the expected type via DecidableEq; the positive branch fires on
+`rfl`.
+
+### Why DecEq dispatch is propext-clean
+
+`Term.check` uses `if h : expectedType = X then some (h ▸ ...)
+else none` for atomic leaves.  When `expectedType = X`
+syntactically, the dite takes its positive branch with `h := rfl`,
+and `rfl ▸ x` reduces definitionally to `x`.  Recipe:
+`unfold Term.check; exact dif_pos rfl`.
+
+The `dsimp only` step from the multi-recurse infer recipe is not
+needed here because the `match raw with | .X => ...` outer dispatch
+selects exactly one arm based on the canonical raw form, and that
+arm is already in dite-normal form. -/
+
+/-- Completeness of `Term.check` at the variable case.  When the
+expected type matches `varType context position`, the checker
+returns the canonical `Term.var` witness.  Recipe: definitional
+unfold of the dite via `dif_pos rfl` against the explicit
+expected-type-equals-self equality. -/
+theorem Term.check_complete_var
+    (context : Ctx mode level scope) (position : Fin scope) :
+    Term.check context (varType context position) (RawTerm.var position)
+      = some (Term.var position) :=
+  dif_pos rfl
+
+/-- Completeness of `Term.check` at the `unit` literal.  The
+expected type must be `Ty.unit`. -/
+theorem Term.check_complete_unit
+    (context : Ctx mode level scope) :
+    Term.check context Ty.unit RawTerm.unit = some Term.unit :=
+  dif_pos rfl
+
+/-- Completeness of `Term.check` at `boolTrue`.  Expected type
+must be `Ty.bool`. -/
+theorem Term.check_complete_boolTrue
+    (context : Ctx mode level scope) :
+    Term.check context Ty.bool RawTerm.boolTrue = some Term.boolTrue :=
+  dif_pos rfl
+
+/-- Completeness of `Term.check` at `boolFalse`. -/
+theorem Term.check_complete_boolFalse
+    (context : Ctx mode level scope) :
+    Term.check context Ty.bool RawTerm.boolFalse = some Term.boolFalse :=
+  dif_pos rfl
+
+/-- Completeness of `Term.check` at `natZero`.  Expected type
+must be `Ty.nat`. -/
+theorem Term.check_complete_natZero
+    (context : Ctx mode level scope) :
+    Term.check context Ty.nat RawTerm.natZero = some Term.natZero :=
+  dif_pos rfl
+
+/-- Completeness of `Term.check` at `listNil`.  When the expected
+type is `Ty.listType elementType`, the checker returns the
+canonical `Term.listNil` witness without recursion.  No DecEq
+dispatch — dispatch is via the `match expectedType with` outer
+selector, which definitionally selects the `.listType` arm. -/
+theorem Term.check_complete_listNil
+    (context : Ctx mode level scope) (elementType : Ty level scope) :
+    Term.check context (Ty.listType elementType) RawTerm.listNil
+      = some Term.listNil := rfl
+
+/-- Completeness of `Term.check` at `optionNone`.  Expected type
+must be `Ty.optionType elementType`. -/
+theorem Term.check_complete_optionNone
+    (context : Ctx mode level scope) (elementType : Ty level scope) :
+    Term.check context (Ty.optionType elementType) RawTerm.optionNone
+      = some Term.optionNone := rfl
+
+/-- Completeness of `Term.check` at `natSucc`.  The expected type
+must be `Ty.nat`; the inner predecessor recurses via the IH. -/
+theorem Term.check_complete_natSucc
+    (context : Ctx mode level scope)
+    {predRaw : RawTerm scope}
+    (predTerm : Term context Ty.nat predRaw)
+    (predIH : Term.check context Ty.nat predRaw = some predTerm) :
+    Term.check context Ty.nat (RawTerm.natSucc predRaw)
+      = some (Term.natSucc predTerm) := by
+  show (if h : (Ty.nat : Ty level scope) = Ty.nat then
+          match Term.check context Ty.nat predRaw with
+          | some predTerm' => some (h ▸ Term.natSucc predTerm')
+          | none => none
+        else none) = some (Term.natSucc predTerm)
+  rw [dif_pos rfl, predIH]
+
+/-- Completeness of `Term.check` at `optionSome`.  Expected type
+`Ty.optionType elementType`; inner value recurses at
+`elementType`. -/
+theorem Term.check_complete_optionSome
+    (context : Ctx mode level scope)
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context elementType valueRaw)
+    (valueIH :
+      Term.check context elementType valueRaw = some valueTerm) :
+    Term.check context (Ty.optionType elementType)
+        (RawTerm.optionSome valueRaw)
+      = some (Term.optionSome valueTerm) := by
+  simp only [Term.check]
+  rw [valueIH]
+
+/-- Completeness of `Term.check` at `eitherInl`.  Expected type
+`Ty.eitherType leftType rightType`; inner value recurses at
+`leftType`. -/
+theorem Term.check_complete_eitherInl
+    (context : Ctx mode level scope)
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context leftType valueRaw)
+    (valueIH :
+      Term.check context leftType valueRaw = some valueTerm) :
+    Term.check context (Ty.eitherType leftType rightType)
+        (RawTerm.eitherInl valueRaw)
+      = some (Term.eitherInl valueTerm) := by
+  simp only [Term.check]
+  rw [valueIH]
+
+/-- Completeness of `Term.check` at `eitherInr`.  Mirror of
+`eitherInl`; inner value recurses at `rightType`. -/
+theorem Term.check_complete_eitherInr
+    (context : Ctx mode level scope)
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context rightType valueRaw)
+    (valueIH :
+      Term.check context rightType valueRaw = some valueTerm) :
+    Term.check context (Ty.eitherType leftType rightType)
+        (RawTerm.eitherInr valueRaw)
+      = some (Term.eitherInr valueTerm) := by
+  simp only [Term.check]
+  rw [valueIH]
+
+/-- Completeness of `Term.check` at `listCons`.  Multi-recurse with
+expected-type match: head recurses at `elementType`, tail at the
+list type itself.  No DecEq dispatch — both recursions feed
+expected types directly. -/
+theorem Term.check_complete_listCons
+    (context : Ctx mode level scope)
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (headTerm : Term context elementType headRaw)
+    (tailTerm : Term context (Ty.listType elementType) tailRaw)
+    (headIH : Term.check context elementType headRaw = some headTerm)
+    (tailIH :
+      Term.check context (Ty.listType elementType) tailRaw = some tailTerm) :
+    Term.check context (Ty.listType elementType)
+        (RawTerm.listCons headRaw tailRaw)
+      = some (Term.listCons headTerm tailTerm) := by
+  simp only [Term.check]
+  rw [headIH, tailIH]
+
+/-- Completeness of `Term.check` at `lam` (non-dependent arrow).
+Expected type `Ty.arrow domainType codomainType`; body recurses
+at `codomainType.weaken` under `context.cons domainType`. -/
+theorem Term.check_complete_lam
+    (context : Ctx mode level scope)
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (bodyIH :
+      Term.check (context.cons domainType) codomainType.weaken bodyRaw
+        = some bodyTerm) :
+    Term.check context (Ty.arrow domainType codomainType)
+        (RawTerm.lam bodyRaw)
+      = some (Term.lam bodyTerm) := by
+  simp only [Term.check]
+  rw [bodyIH]
+
+/-- Completeness of `Term.check` at `lam` (dependent Π).  Expected
+type `Ty.piTy domainType codomainType`; body recurses at
+`codomainType` under `context.cons domainType`. -/
+theorem Term.check_complete_lamPi
+    (context : Ctx mode level scope)
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (bodyTerm :
+      Term (context.cons domainType) codomainType bodyRaw)
+    (bodyIH :
+      Term.check (context.cons domainType) codomainType bodyRaw
+        = some bodyTerm) :
+    Term.check context (Ty.piTy domainType codomainType)
+        (RawTerm.lam bodyRaw)
+      = some (Term.lamPi bodyTerm) := by
+  simp only [Term.check]
+  rw [bodyIH]
+
+/-- Completeness of `Term.check` at `pair`.  Expected type
+`Ty.sigmaTy firstType secondType`; first recurses at `firstType`,
+second at the substituted second type. -/
+theorem Term.check_complete_pair
+    (context : Ctx mode level scope)
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (firstTerm : Term context firstType firstRaw)
+    (secondTerm :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstIH : Term.check context firstType firstRaw = some firstTerm)
+    (secondIH :
+      Term.check context (secondType.subst0 firstType firstRaw) secondRaw
+        = some secondTerm) :
+    Term.check context (Ty.sigmaTy firstType secondType)
+        (RawTerm.pair firstRaw secondRaw)
+      = some (Term.pair firstTerm secondTerm) := by
+  simp only [Term.check]
+  rw [firstIH, secondIH]
 
 end LeanFX2

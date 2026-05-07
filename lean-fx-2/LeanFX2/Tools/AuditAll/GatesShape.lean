@@ -50,15 +50,20 @@ namespace LeanFX2.Tools
 #assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 8
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
--- packaging types; heavy use signals existential reasoning.  957 today
+-- packaging types; heavy use signals existential reasoning.  1255 today
 -- reflects pervasive use of Sigma/PSigma in dependent-type proofs plus
 -- the proof-function coherence premises on `Term.equivIntroHet` and
 -- pointwise proof-function premise on `Term.oeqFunext`, plus the
 -- dependent bool eliminator motive, plus the FIFTEEN Algo/Completeness
--- M10 theorems closing the full inferable subset (#1569): five
--- atomic-case + five single-recurse + five multi-recurse (app/fst/
--- snd/listCons/idJ via the `dsimp only + dif_pos rfl` recipe) all
--- returning `Σ ty, Term ctx ty raw`.  Tight ratchet at current count.
-#assert_dependent_pair_dependent_budget LeanFX2 957
+-- M10 inferable theorems (#1569) closing the full inferable subset:
+-- five atomic-case + five single-recurse + five multi-recurse
+-- (app/fst/snd/listCons/idJ via the `dsimp only + dif_pos rfl`
+-- recipe) all returning `Σ ty, Term ctx ty raw`, plus the FIFTEEN
+-- check-mode counterpart theorems closing the bidirectional side
+-- of M10 (atomic + parametric leaf + single-recurse + multi-recurse
+-- + binder + Σ-pair) which transitively pull in the 529-line
+-- `Term.check` function whose closure references DecEq-Ty and
+-- expected-type pattern dispatch.  Tight ratchet at current count.
+#assert_dependent_pair_dependent_budget LeanFX2 1255
 
 end LeanFX2.Tools
