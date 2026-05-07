@@ -1,5 +1,6 @@
 import LeanFX2.Surface.Lex
 import LeanFX2.Surface.Lex.ByteConservation
+import LeanFX2.Surface.Lex.LoopBound
 
 /-! # Surface/Lex/MonotonicOffset — L04 monotonic offset chain
 
@@ -168,5 +169,334 @@ theorem Array.isMonotonicByOffset_push
     hMonotonic hAllBelow
 
 end Lex
+
+/-! ## L04.3 (#1540) — lexLoop preservation chain
+
+Two strengthened invariants that together close the L04 spec:
+
+* `Lex.lexLoop_token_offsets_bounded` — every loop-emitted token's
+  offset stays within `offset + charsByteLength chars`.  Mirror of
+  `Lex.lexLoop_error_offset_bounded` (L07.5) for tokens.
+
+* `Lex.lexLoop_preserves_monotonic_offsets` — given monotonic
+  input tokens whose offsets are bounded by the current `offset`,
+  the loop's output tokens remain monotonic.
+
+The two are stated as independent invariants because the
+push-preservation step needs both: monotonic-up-to-now plus
+bounded-by-newToken-offset (witnessed by the first invariant). -/
+
+/-- **L04.3 (#1540) — token offset bound**: every token in
+`(lexLoop fuel offset chars tokens errors).fst` has
+`startPos.offset ≤ offset + charsByteLength chars`.
+
+Mirror of `Lex.lexLoop_error_offset_bounded` for tokens.  Each
+`LexStep.token` push lands at offset `offset + skipped`, which
+is `≤ offset + charsByteLength chars` by
+`skipTrivia_byteLength_invariant`. -/
+theorem Lex.lexLoop_token_offsets_bounded :
+    ∀ (fuel : Nat) (offset : Nat) (chars : List Char)
+      (tokens : Array PositionedToken) (errors : Array LexError),
+      (∀ pastTok ∈ tokens.toList,
+          pastTok.startPos.offset ≤ offset + charsByteLength chars) →
+      ∀ resultTok ∈ (lexLoop fuel offset chars tokens errors).fst.toList,
+        resultTok.startPos.offset ≤ offset + charsByteLength chars := by
+  intro fuel
+  induction fuel with
+  | zero =>
+    intro offset chars tokens errors tokensBounded resultTok resultMember
+    exact tokensBounded resultTok resultMember
+  | succ fuelMinusOne ihFuel =>
+    intro offset chars tokens errors tokensBounded resultTok resultMember
+    cases chars with
+    | nil =>
+      exact tokensBounded resultTok resultMember
+    | cons firstChar restChars =>
+      rw [Lex.lexLoop_cons_unfold] at resultMember
+      have hSkipBytesUngen :=
+        Lex.skipTrivia_byteLength_invariant
+          (firstChar :: restChars).length (firstChar :: restChars)
+      generalize hSkipEq :
+        skipTrivia (firstChar :: restChars).length (firstChar :: restChars)
+          = trivia
+        at resultMember hSkipBytesUngen
+      obtain ⟨skipped, afterTrivia⟩ := trivia
+      dsimp only at resultMember hSkipBytesUngen
+      have hSkipBytes :
+          skipped + charsByteLength afterTrivia
+            = charsByteLength (firstChar :: restChars) :=
+        hSkipBytesUngen
+      have hLexOneBytesUngen :=
+        Lex.lexOne_byteLength_invariant (offset + skipped) afterTrivia
+      generalize hLexOneEq :
+        lexOne (offset + skipped) afterTrivia = lexOneResult
+        at resultMember hLexOneBytesUngen
+      cases lexOneResult with
+      | eof =>
+        exact tokensBounded resultTok resultMember
+      | token tokenSeen tokenBytes remainingChars =>
+        have hLexOneBytes :
+            tokenBytes + charsByteLength remainingChars
+              = charsByteLength afterTrivia := hLexOneBytesUngen
+        have hSumEq :
+            offset + skipped + tokenBytes + charsByteLength remainingChars
+              = offset + charsByteLength (firstChar :: restChars) := by
+          rw [Nat.add_assoc offset skipped tokenBytes,
+              Nat.add_assoc offset (skipped + tokenBytes)
+                            (charsByteLength remainingChars),
+              Nat.add_assoc skipped tokenBytes
+                            (charsByteLength remainingChars),
+              hLexOneBytes,
+              hSkipBytes]
+        have hSkipLe :
+            skipped ≤ charsByteLength (firstChar :: restChars) := by
+          rw [← hSkipBytes]
+          exact Nat.le_add_right _ _
+        have ihBoundedHyp :
+            ∀ pastTok ∈ (tokens.push
+                { token := tokenSeen,
+                  startPos := { offset := offset + skipped } }).toList,
+              pastTok.startPos.offset
+                ≤ (offset + skipped + tokenBytes)
+                    + charsByteLength remainingChars := by
+          intro pastTok pastMember
+          rw [hSumEq]
+          cases Lex.Array.push_toList_mem_decompose tokens
+                  { token := tokenSeen,
+                    startPos := { offset := offset + skipped } }
+                  pastMember with
+          | inl hOldMember => exact tokensBounded pastTok hOldMember
+          | inr hPastEqEmitted =>
+            rw [hPastEqEmitted]
+            exact Nat.add_le_add_left hSkipLe offset
+        have ihResult := ihFuel
+          (offset + skipped + tokenBytes)
+          remainingChars
+          (tokens.push
+            { token := tokenSeen,
+              startPos := { offset := offset + skipped } })
+          errors
+          ihBoundedHyp
+          resultTok
+          resultMember
+        rw [hSumEq] at ihResult
+        exact ihResult
+      | error errEmitted errorBytes remainingChars =>
+        have hLexOneBytes :
+            errorBytes + charsByteLength remainingChars
+              = charsByteLength afterTrivia := hLexOneBytesUngen
+        have hSumEq :
+            offset + skipped + errorBytes + charsByteLength remainingChars
+              = offset + charsByteLength (firstChar :: restChars) := by
+          rw [Nat.add_assoc offset skipped errorBytes,
+              Nat.add_assoc offset (skipped + errorBytes)
+                            (charsByteLength remainingChars),
+              Nat.add_assoc skipped errorBytes
+                            (charsByteLength remainingChars),
+              hLexOneBytes,
+              hSkipBytes]
+        have ihBoundedHyp :
+            ∀ pastTok ∈ tokens.toList,
+              pastTok.startPos.offset
+                ≤ (offset + skipped + errorBytes)
+                    + charsByteLength remainingChars := by
+          intro pastTok pastMember
+          rw [hSumEq]
+          exact tokensBounded pastTok pastMember
+        have ihResult := ihFuel
+          (offset + skipped + errorBytes)
+          remainingChars
+          tokens
+          (errors.push errEmitted)
+          ihBoundedHyp
+          resultTok
+          resultMember
+        rw [hSumEq] at ihResult
+        exact ihResult
+
+/-- **L04.3 (#1540) — monotonicity preservation**: if the input
+`tokens` array is monotonic by offset and every input token's
+offset is `≤ offset`, then the loop's output token array remains
+monotonic.
+
+Structure mirrors `lexLoop_token_offsets_bounded`: induction on
+fuel, case-split on `lexOne`.  At the `LexStep.token` push site,
+`Lex.Array.isMonotonicByOffset_push` (L04.2) extends monotonicity
+because every existing token's offset `≤ offset ≤ offset + skipped`
+(the new token's offset). -/
+theorem Lex.lexLoop_preserves_monotonic_offsets :
+    ∀ (fuel : Nat) (offset : Nat) (chars : List Char)
+      (tokens : Array PositionedToken) (errors : Array LexError),
+      Lex.Array.isMonotonicByOffset tokens →
+      (∀ pastTok ∈ tokens.toList, pastTok.startPos.offset ≤ offset) →
+      Lex.Array.isMonotonicByOffset
+        (lexLoop fuel offset chars tokens errors).fst := by
+  intro fuel
+  induction fuel with
+  | zero =>
+    intro offset chars tokens errors hMonotonic _hBounded
+    exact hMonotonic
+  | succ fuelMinusOne ihFuel =>
+    intro offset chars tokens errors hMonotonic hBounded
+    cases chars with
+    | nil =>
+      exact hMonotonic
+    | cons firstChar restChars =>
+      rw [Lex.lexLoop_cons_unfold]
+      have hSkipBytesUngen :=
+        Lex.skipTrivia_byteLength_invariant
+          (firstChar :: restChars).length (firstChar :: restChars)
+      generalize hSkipEq :
+        skipTrivia (firstChar :: restChars).length (firstChar :: restChars)
+          = trivia
+        at hSkipBytesUngen ⊢
+      obtain ⟨skipped, afterTrivia⟩ := trivia
+      dsimp only at hSkipBytesUngen ⊢
+      have hLexOneBytesUngen :=
+        Lex.lexOne_byteLength_invariant (offset + skipped) afterTrivia
+      generalize hLexOneEq :
+        lexOne (offset + skipped) afterTrivia = lexOneResult
+        at hLexOneBytesUngen ⊢
+      cases lexOneResult with
+      | eof =>
+        exact hMonotonic
+      | token tokenSeen tokenBytes remainingChars =>
+        -- Push site: extend monotonicity to tokens.push newToken.
+        have hPushMonotonic :
+            Lex.Array.isMonotonicByOffset
+              (tokens.push
+                { token := tokenSeen,
+                  startPos := { offset := offset + skipped } }) := by
+          apply Lex.Array.isMonotonicByOffset_push tokens
+            { token := tokenSeen,
+              startPos := { offset := offset + skipped } }
+            hMonotonic
+          intro pastTok pastMember
+          have hPastBound := hBounded pastTok pastMember
+          exact Nat.le_trans hPastBound (Nat.le_add_right offset skipped)
+        -- New bound for IH: every (tokens.push newToken) token's
+        -- offset ≤ offset + skipped + tokenBytes (next loop offset).
+        have hPushBounded :
+            ∀ pastTok ∈ (tokens.push
+                { token := tokenSeen,
+                  startPos := { offset := offset + skipped } }).toList,
+              pastTok.startPos.offset ≤ offset + skipped + tokenBytes := by
+          intro pastTok pastMember
+          cases Lex.Array.push_toList_mem_decompose tokens
+                  { token := tokenSeen,
+                    startPos := { offset := offset + skipped } }
+                  pastMember with
+          | inl hOldMember =>
+            have hPastBound := hBounded pastTok hOldMember
+            exact Nat.le_trans hPastBound
+              (Nat.le_trans
+                (Nat.le_add_right offset skipped)
+                (Nat.le_add_right (offset + skipped) tokenBytes))
+          | inr hEqNew =>
+            rw [hEqNew]
+            exact Nat.le_add_right (offset + skipped) tokenBytes
+        exact ihFuel (offset + skipped + tokenBytes) remainingChars
+          (tokens.push
+            { token := tokenSeen,
+              startPos := { offset := offset + skipped } })
+          errors hPushMonotonic hPushBounded
+      | error errEmitted errorBytes remainingChars =>
+        -- Tokens unchanged; the bound widens because the next
+        -- loop offset `offset + skipped + errorBytes ≥ offset`.
+        have hWidenBounded :
+            ∀ pastTok ∈ tokens.toList,
+              pastTok.startPos.offset ≤ offset + skipped + errorBytes := by
+          intro pastTok pastMember
+          have hPastBound := hBounded pastTok pastMember
+          exact Nat.le_trans hPastBound
+            (Nat.le_trans
+              (Nat.le_add_right offset skipped)
+              (Nat.le_add_right (offset + skipped) errorBytes))
+        exact ihFuel (offset + skipped + errorBytes) remainingChars
+          tokens (errors.push errEmitted) hMonotonic hWidenBounded
+
+/-! ## L04.4 (#1541) — Lex.run output monotonic, closes L04 (#1202) -/
+
+/-- **L04.4 (#1541) — closes L04 (#1202)**: every successful
+`Lex.run chars` produces an `Array PositionedToken` whose
+`startPos.offset` values are weakly monotonically non-decreasing
+across the array.
+
+The proof:
+1. Apply `Lex.lexLoop_preserves_monotonic_offsets` at the empty
+   initial token array (trivially monotonic + bounded by 0).
+2. Apply `Lex.lexLoop_token_offsets_bounded` to show every
+   loop-produced token's offset `≤ charsByteLength chars`
+   (the eof sentinel's offset).
+3. Use `Lex.Array.isMonotonicByOffset_push` (L04.2) to extend
+   monotonicity through the appended `Token.eof` sentinel. -/
+theorem Lex.run_offsets_monotonic
+    (chars : List Char) (tokens : Array PositionedToken)
+    (hRun : Lex.run chars = .ok tokens) :
+    Lex.Array.isMonotonicByOffset tokens := by
+  rw [Lex.run_eq_loop_branch] at hRun
+  generalize hLexEq :
+      lexLoop (chars.length + 1) 0 chars #[] #[] = lexResult
+    at hRun
+  by_cases hEmpty : lexResult.snd.isEmpty
+  · rw [if_pos hEmpty] at hRun
+    have hTokensEq :
+        lexResult.fst.push
+            { token := Token.eof,
+              startPos := { offset := charsByteLength chars } }
+          = tokens := by
+      cases hRun
+      rfl
+    -- Step 1: loop output is monotonic (L04.3 at empty initial).
+    have hLoopMonotonic :
+        Lex.Array.isMonotonicByOffset lexResult.fst := by
+      have hInitMonotonic :
+          Lex.Array.isMonotonicByOffset (#[] : Array PositionedToken) :=
+        Lex.List.IsMonotonicByOffset.empty
+      have hInitBounded :
+          ∀ pastTok ∈ (#[] : Array PositionedToken).toList,
+            pastTok.startPos.offset ≤ 0 := by
+        intro _pastTok pastMember
+        cases pastMember
+      have hPreserved :=
+        Lex.lexLoop_preserves_monotonic_offsets
+          (chars.length + 1) 0 chars #[] #[]
+          hInitMonotonic hInitBounded
+      rw [hLexEq] at hPreserved
+      exact hPreserved
+    -- Step 2: every loop token's offset ≤ charsByteLength chars
+    -- (L04.3 token bound at empty initial).
+    have hLoopBounded :
+        ∀ pastTok ∈ lexResult.fst.toList,
+          pastTok.startPos.offset ≤ charsByteLength chars := by
+      intro pastTok pastMember
+      have hInitBounded :
+          ∀ pastT ∈ (#[] : Array PositionedToken).toList,
+            pastT.startPos.offset ≤ 0 + charsByteLength chars := by
+        intro _pastT pastM
+        cases pastM
+      have hBoundedRes :=
+        Lex.lexLoop_token_offsets_bounded
+          (chars.length + 1) 0 chars #[] #[] hInitBounded
+      rw [hLexEq] at hBoundedRes
+      have hRes := hBoundedRes pastTok pastMember
+      rw [Nat.zero_add] at hRes
+      exact hRes
+    -- Step 3: push eof preserves monotonicity (L04.2).
+    have hPushMonotonic :
+        Lex.Array.isMonotonicByOffset
+          (lexResult.fst.push
+            { token := Token.eof,
+              startPos := { offset := charsByteLength chars } }) := by
+      apply Lex.Array.isMonotonicByOffset_push lexResult.fst
+        { token := Token.eof,
+          startPos := { offset := charsByteLength chars } }
+        hLoopMonotonic
+      intro pastTok pastMember
+      exact hLoopBounded pastTok pastMember
+    rw [← hTokensEq]
+    exact hPushMonotonic
+  · rw [if_neg hEmpty] at hRun
+    cases hRun
 
 end LeanFX2.Surface

@@ -127,8 +127,9 @@ Acceptance: ✅ Atkey-2018 witness rejected by corrected Lam rule.
 
 * [x] `Surface/{Token,GrammarToken,TokenSchema,TokenInvariants,Lex,SchemaAudit,StdNames,KernelBridge,KernelBridgeReduction,KernelEnv,KernelEnvCorrespondence,Semantics,HostLex}.lean` — token/lex/AST/bridge skeleton
 * [x] B01-B07, B11 + B12 partial (#1241-#1247, #1251, #1252 partial)
-* [x] L08, L03, C02-C08 (Surface audits) #1206, #1201, #1218-#1224
-* [ ] L01/L02/L04-L07 (#1199, #1200, #1202-#1205)
+* [x] L08, L03, L07, L04, C02-C08 (Surface audits) #1206, #1201, #1205, #1202, #1218-#1224
+* [x] L04 (#1202) — `Lex.run_offsets_monotonic` ships zero-axiom 2026-05-07 via `lexLoop_token_offsets_bounded` + `lexLoop_preserves_monotonic_offsets` (mirror of L07.5/L07.6 chain) extending through the appended `Token.eof` sentinel via `Array.isMonotonicByOffset_push` (L04.2)
+* [ ] L01, L05, L06 (#1199, #1203, #1204)
 * [ ] T01-T10 (#1207-#1216)
 * [ ] A01-A15 (#1226-#1240) — AST extensions for §3-§18 fx_design coverage
 * [ ] H01-H05 (#1289-#1293) — higher-rank

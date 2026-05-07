@@ -364,6 +364,9 @@ sidesteps stdlib `Array.size_push` (which leaks `propext` via
 #print axioms LeanFX2.Surface.Lex.List.IsMonotonicByOffset.concat
 #print axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset
 #print axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset_push
+#print axioms LeanFX2.Surface.Lex.lexLoop_token_offsets_bounded
+#print axioms LeanFX2.Surface.Lex.lexLoop_preserves_monotonic_offsets
+#print axioms LeanFX2.Surface.Lex.run_offsets_monotonic
 
 /-! ## Section 11 — L03 Lex.run EOF-termination smoke
 

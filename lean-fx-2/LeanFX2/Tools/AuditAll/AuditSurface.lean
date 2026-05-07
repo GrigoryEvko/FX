@@ -266,6 +266,20 @@ bridge — bypasses stdlib `Array.size_push` (which depends on
 #assert_no_axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset
 #assert_no_axioms LeanFX2.Surface.Lex.Array.isMonotonicByOffset_push
 
+/-! ### Surface.Lex — L04.3 + L04.4 lexLoop monotonic preservation chain
+(#1540, #1541; closes L04 / #1202)
+
+`lexLoop_token_offsets_bounded` mirrors L07.5's error-offset bound
+for tokens, and `lexLoop_preserves_monotonic_offsets` extends
+monotonicity through every push.  `Lex.run_offsets_monotonic`
+specializes both to the empty initial state at offset 0 and
+extends through the appended `Token.eof` sentinel via the
+push-preservation auxiliary L04.2. -/
+
+#assert_no_axioms LeanFX2.Surface.Lex.lexLoop_token_offsets_bounded
+#assert_no_axioms LeanFX2.Surface.Lex.lexLoop_preserves_monotonic_offsets
+#assert_no_axioms LeanFX2.Surface.Lex.run_offsets_monotonic
+
 /-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
 
 #assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff
