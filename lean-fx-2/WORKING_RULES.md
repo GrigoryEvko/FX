@@ -232,6 +232,96 @@ clearly paired follow-up commit:
 
 Do not call a D2/D3 redex task closed from raw evidence alone.
 
+## Discipline #24: Mutual termination on indexed inductives with Eq premises (B12 partial discovery)
+
+Lean 4 v4.29.1's structural-recursion analyzer **cannot infer
+termination** for a mutual block of theorems where:
+
+1. Each theorem takes a parameter of indexed inductive type
+   (`RawExpr scope`, `RawStmtList scope outScope`, etc.).
+2. AND each theorem also takes an `Eq`-typed premise whose indices
+   are not variables (e.g. `gapFree : isGapFree raw = true`).
+
+The checker skips the `Eq` parameter (its indices aren't variables)
+and then fails to find a decreasing measure on the structural
+inputs because cross-call mutual relations through the `Eq`
+premise aren't tracked.
+
+**Symptom** (from B12 totality attempt):
+
+```
+fail to show termination for
+  RawExpr.bridgeIsTotalOnGapFree
+  ...
+Not considering parameter gapFree of ...:
+  its type Eq is an inductive family and indices are not variables
+    raw.isGapFree = true
+Cannot use parameters raw of RawExpr.bridgeIsTotalOnGapFree, ...:
+  failed to eliminate recursive application
+```
+
+**Workarounds** (in order of preference):
+
+1. **Compositional toolkit pattern**: prove ATOMIC theorems for
+   leaf cases + COMPOSITIONAL theorems that take inner-step
+   results as explicit hypotheses.  No mutual recursion in the
+   proof.  Verified zero-axiom in `Surface/Semantics.lean`
+   (B12 partial, commit ed6aec2).
+2. **Define a `bridgeOrFail : (raw) (gf : isGapFree raw = true) → RawTerm`
+   as a mutual `def`** (Lean's def-termination handles mutual
+   structural recursion better than theorem-termination), then
+   derive the existence theorem as a `rfl`-corollary.
+3. **Explicit `WellFoundedRecursion`** with `termination_by sizeOf raw`
+   + `decreasing_by exact ...` for each cross-call.
+
+For D2.10 cong-rule compat: the COMPOSITIONAL pattern was used
+(commit 72b2fa3 + 7ecca67) — each `<Cong>.rename_compatible` takes
+the renamed inner Step.par as an explicit hypothesis, then
+applies the constructor.  No mutual recursion required.
+
+**Rule**: when a mutual theorem block fails termination with
+"its type Eq is an inductive family and indices are not variables",
+DO NOT chase exotic `decreasing_by` clauses.  Switch to the
+compositional toolkit pattern.
+
+## Discipline #25: `match X with` (single-arg) vs `match X, Y with` for indexed inductives
+
+When pattern-matching on an indexed inductive (e.g.
+`RawStmtList scope outScope` where the two indices aren't free),
+the multi-scrutinee `match X, Y with` form fails to refine the
+indices automatically:
+
+**WRONG** (fails with "Case tag rhs not found"):
+
+```lean
+match stmts, gapFree with
+| .rawNilStmt, _ => ...   -- Lean cannot unify outScope = scope
+```
+
+**RIGHT**:
+
+```lean
+cases stmts with
+| rawNilStmt => ...        -- index unification automatic
+| rawLetCons name typeAnnot value rest => ...
+```
+
+OR
+
+```lean
+match stmts with
+| .rawNilStmt => ...       -- single-arg match also handles
+```
+
+Then `simp [<inductive>.isGapFree, Bool.and_eq_true] at gapFree`
+to decompose any Bool conjunctions per case.
+
+**Rule**: for indexed inductives where pattern uses index-fixing
+constructors (e.g. `rawNilStmt` requires `outScope = scope`), use
+`cases X with` or `match X with` (single-arg).  Multi-arg
+`match X, Y with` is NOT a substitute — Lean's matcher does NOT
+refine the index family in the multi-arg form.
+
 ## Audit incantation
 
 After any new function or theorem, run:
