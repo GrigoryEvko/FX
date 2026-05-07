@@ -232,4 +232,42 @@ def UnaryOp.toQualifiedName : UnaryOp → QualifiedName
   | .bitNot => QualifiedName.stdPath UpperIdent.bitsMod LowerIdent.bitNotOp
   | .logicalNot => QualifiedName.stdPath UpperIdent.boolMod LowerIdent.notOp
 
+/-! ## G05/G06 — propositional + range desugaring smoke (#1257, #1258)
+
+The `toQualifiedName` mapping is the single source of truth for
+how surface-level `BinaryOp` ctors desugar through the env-aware
+bridge.  Rfl smoke theorems pin the four entries that fx_grammar.md
+calls out as semantically load-bearing:
+
+* `iff` / `implies` (G05) — these are propositional connectives,
+  NOT plain function calls; they desugar to `Std.Prop.iffName` /
+  `Std.Prop.impliesName` so the elaborator can apply specialized
+  type rules (`Prop ↔ Prop`, `Prop → Prop`).
+* `rangeExcl` / `rangeIncl` (G06) — `0..10` and `0..=10` desugar
+  to `Std.Range.exclusive` / `Std.Range.inclusive`, distinct
+  semantic roles (half-open vs closed).
+
+A typo in either function would break this theorem — the rfl
+proof IS the regression check. -/
+
+/-- G05: `iff` desugars to `Std.Prop.iffName`. -/
+theorem BinaryOp.toQualifiedName_iff :
+    BinaryOp.iff.toQualifiedName =
+      some (QualifiedName.stdPath UpperIdent.propMod LowerIdent.iffName) := rfl
+
+/-- G05: `implies` desugars to `Std.Prop.impliesName`. -/
+theorem BinaryOp.toQualifiedName_implies :
+    BinaryOp.implies.toQualifiedName =
+      some (QualifiedName.stdPath UpperIdent.propMod LowerIdent.impliesName) := rfl
+
+/-- G06: `rangeExcl` (`..`) desugars to `Std.Range.exclusive`. -/
+theorem BinaryOp.toQualifiedName_rangeExcl :
+    BinaryOp.rangeExcl.toQualifiedName =
+      some (QualifiedName.stdPath UpperIdent.rangeMod LowerIdent.exclusive) := rfl
+
+/-- G06: `rangeIncl` (`..=`) desugars to `Std.Range.inclusive`. -/
+theorem BinaryOp.toQualifiedName_rangeIncl :
+    BinaryOp.rangeIncl.toQualifiedName =
+      some (QualifiedName.stdPath UpperIdent.rangeMod LowerIdent.inclusive) := rfl
+
 end LeanFX2.Surface

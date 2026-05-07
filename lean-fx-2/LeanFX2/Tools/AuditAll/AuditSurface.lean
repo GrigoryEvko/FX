@@ -164,4 +164,11 @@ ledger so a regression cannot slip through silently.
 #assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_kwFalse
 #assert_no_axioms LeanFX2.Surface.Lex.classifyIdent_keyword_toToken
 
+/-! ### Surface.StdNames — G05/G06 propositional + range desugaring (#1257, #1258) -/
+
+#assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_iff
+#assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_implies
+#assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_rangeExcl
+#assert_no_axioms LeanFX2.Surface.BinaryOp.toQualifiedName_rangeIncl
+
 end LeanFX2.Tools
