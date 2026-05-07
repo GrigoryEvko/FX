@@ -3,6 +3,7 @@ import LeanFX2.Foundation.Mode
 import LeanFX2.Foundation.RawTerm
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.SubstActsOnTy
