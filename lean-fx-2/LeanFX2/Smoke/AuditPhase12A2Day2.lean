@@ -157,6 +157,9 @@ Every declaration listed must report "does not depend on any axioms".
 -- D2.10 incremental: idStrictReflCong (mode-strict gated)
 #print axioms LeanFX2.Step.par.idStrictReflCong.rename_compatible
 #print axioms LeanFX2.Step.par.idStrictReflCong.subst_compatible
+-- D2.10 incremental: recordProjCong (unary, single-field record projection)
+#print axioms LeanFX2.Step.par.recordProjCong.rename_compatible
+#print axioms LeanFX2.Step.par.recordProjCong.subst_compatible
 #print axioms LeanFX2.Step.betaPathApp
 #print axioms LeanFX2.Step.betaModElimIntro
 #print axioms LeanFX2.Step.par.betaPathApp

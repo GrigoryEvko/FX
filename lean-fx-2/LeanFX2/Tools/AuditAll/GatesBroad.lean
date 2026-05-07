@@ -88,6 +88,8 @@ namespace LeanFX2.Tools
 -- sessionSendCong), ratcheting 27 → 15.
 -- D2.10 incremental (2026-05-07): shipped `idStrictReflCong` mirroring
 -- `oeqReflCong` with `modeIsStrict` threaded; ratchet 15 → 14.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 14
+-- D2.10 incremental (2026-05-07): shipped `recordProjCong` mirroring
+-- `intervalOppCong` (unary, structural); ratchet 14 → 13.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 13
 
 end LeanFX2.Tools

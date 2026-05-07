@@ -934,6 +934,56 @@ theorem subst_compatible
 
 end idStrictReflCong
 
+/-! ### `recordProjCong` (unary, single-field record projection).
+
+Structurally identical to `intervalOppCong` — single inner Step.par
+premise on a record-typed term, no mode hypothesis, no binder. -/
+namespace recordProjCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {singleFieldType : Ty level sourceScope}
+    {recordRawSource recordRawTarget : RawTerm sourceScope}
+    {recordSource :
+      Term sourceCtx (Ty.record singleFieldType) recordRawSource}
+    {recordTarget :
+      Term sourceCtx (Ty.record singleFieldType) recordRawTarget}
+    (renamedRecordStep :
+      Step.par (Term.rename termRenaming recordSource)
+               (Term.rename termRenaming recordTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.recordProj recordSource))
+      (Term.rename termRenaming (Term.recordProj recordTarget)) :=
+  Step.par.recordProjCong renamedRecordStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {singleFieldType : Ty level sourceScope}
+    {recordRawSource recordRawTarget : RawTerm sourceScope}
+    {recordSource :
+      Term sourceCtx (Ty.record singleFieldType) recordRawSource}
+    {recordTarget :
+      Term sourceCtx (Ty.record singleFieldType) recordRawTarget}
+    (substitutedRecordStep :
+      Step.par (Term.subst termSubst recordSource)
+               (Term.subst termSubst recordTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.recordProj recordSource))
+      (Term.subst termSubst (Term.recordProj recordTarget)) :=
+  Step.par.recordProjCong substitutedRecordStep
+
+end recordProjCong
+
 end par
 
 end Step
