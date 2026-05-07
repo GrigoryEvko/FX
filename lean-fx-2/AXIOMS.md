@@ -1,9 +1,24 @@
-# AXIOMS.md — trust budget for lean-fx-2
+# AXIOMS.md — zero-axiom commitment for lean-fx-2
 
-This document is the canonical reasoning about what lean-fx-2 trusts,
-what catastrophes are possible, and how the project disciplines itself
-against them.  Adapted from `lean-fx/AXIOMS.md` with lean-fx-2-specific
-commitments.
+**TL;DR**: lean-fx-2 commits to **ZERO AXIOMS** across every shipped
+declaration.  No `propext`.  No `Quot.sound`.  No `Classical.choice`.
+No FX-specific axiom.  No `funext`-as-axiom.  No `Univalence`-as-axiom.
+The ceiling is permanently zero, enforced inline via the strict
+harness (`Tools/AuditAll/`).
+
+This document explains:
+1. The commitment itself (this section + "Zero-axiom ceiling — ABSOLUTE").
+2. Why each Lean core axiom (propext / Quot.sound / Classical.choice)
+   is dangerous if used (per-axiom catastrophe analysis below).
+3. Why FX-specific axioms (Univalence, funext, ua_wire, ua_ghost,
+   fix_productivity, hit_path_intro) are doubly dangerous and how
+   the load-bearing principles enter the kernel WITHOUT them
+   (`Step` reductions; "Genuinely-unprovable principles" section).
+4. Common axiom-injection patterns to avoid (Layer K critical).
+
+Adapted from `lean-fx/AXIOMS.md` with lean-fx-2-specific commitments.
+The **older "8-axiom ceiling" is REVOKED**; see Zero-axiom ceiling
+section.
 
 ## The four layers of trust
 
@@ -233,8 +248,16 @@ Mitigation: start with named, specific HITs, not general schema.
 ### Combined future-axiom catastrophe
 
 The dangerous case is the chain `ua_wire + ua_ghost + fix_productivity
-+ hit_path_intro` combined with the three Lean core axioms.  Each
-must have a separate RFC; ceiling is 5 FX-specific axioms ever.
++ hit_path_intro` combined with the three Lean core axioms.  In the
+revoked older policy, each future-axiom slot would have required a
+separate RFC; ceiling was 5 FX-specific axioms.  **That ceiling is
+now REVOKED — the actual ceiling is ZERO** (see "Zero-axiom ceiling
+— ABSOLUTE" below).  The "Reserved future-axiom slots" section
+above is preserved as DESIGN RATIONALE for why each principle is
+hazardous, NOT as a slot anyone may fill.  Univalence + funext +
+HIT eliminators enter the kernel via `Step` reductions (theorems
+with bodies), not via axioms.  Modal univalence at Wire/Ghost modes
+must follow the same Step-reduction discipline if it ever lands.
 
 ## Common axiom-injection sources to avoid (Layer K critical)
 
