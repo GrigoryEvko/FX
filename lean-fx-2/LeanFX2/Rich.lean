@@ -115,6 +115,7 @@ import LeanFX2.Surface.Lex.ErrorOffset
 import LeanFX2.Surface.Lex.ByteConservation
 import LeanFX2.Surface.Lex.LoopBound
 import LeanFX2.Surface.Lex.MonotonicOffset
+import LeanFX2.Surface.Lex.InvalidErrors
 import LeanFX2.Surface.AST
 import LeanFX2.Surface.SchemaAudit
 import LeanFX2.Surface.StdNames
