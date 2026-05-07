@@ -13,12 +13,19 @@ raw-aware.  Every Term ctor's signature pins the corresponding
 RawTerm structure, so `Term.toRaw t = raw` is `rfl` (the projection
 IS the type index).
 
-## Constructors (28 total)
+## Constructors (67 total)
 
 Mirrors lean-fx-2's typed Term constructor list (sans type
 annotations).  Modal ctors (`modIntro`, `modElim`, `subsume`)
 included from day 1 even though Layer 6 isn't implemented yet —
 this avoids backward-incompatible additions later.
+
+The 67 figure is checked by the inductive ctor-count ratchet
+`#assert_inductive_ctor_count_pinned LeanFX2.RawTerm 67` in
+`Tools/AuditAll/GatesIndCount.lean`; the original "28 total"
+docstring was stale per audit ac74bd7e (D1.6 cubical/HOTT/refine/
+record/codata/session/effect cascade landed 39 additional
+ctors).
 
 ## Decidable equality
 

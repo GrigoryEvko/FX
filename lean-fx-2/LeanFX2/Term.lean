@@ -38,7 +38,14 @@ These intentionally use `Ty.subst0`'s unified flavor (which embeds
 makes the typed↔raw bridge `rfl`-driven for refl-bearing β-redexes
 later in Layer 4.
 
-## Constructor list (29 total)
+## Constructor list (75 total)
+
+The 75 figure is checked by the inductive ctor-count ratchet
+`#assert_inductive_ctor_count_pinned LeanFX2.Term 75` in
+`Tools/AuditAll/GatesIndCount.lean`; the original "29 total"
+docstring was stale per audit ac74bd7e (D1.9 cubical/HOTT/refine/
+record/codata/session/effect/modal cascade added 46 additional
+typed ctors).
 
 Foundational + dependent + Identity + Modal:
 * `var, unit` — base
