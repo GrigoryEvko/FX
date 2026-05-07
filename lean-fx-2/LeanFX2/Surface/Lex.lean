@@ -212,13 +212,17 @@ def readIdentLexeme :
       (acc, n, c :: rest)
 
 /-- Read a contiguous decimal integer literal.  Returns
-(reversed digit chars, byte size, remaining chars). -/
+(reversed digit chars, byte size, remaining chars).
+
+Uses uniform `c.utf8Size` accounting (semantically identical to
+`+ 1` since digits are ASCII, but eliminates the propext leak in
+the byte-conservation proof). -/
 def readIntLexeme :
     List Char → List Char → Nat → List Char × Nat × List Char
   | [], acc, n => (acc, n, [])
   | c :: rest, acc, n =>
     if isDigitChar c then
-      readIntLexeme rest (c :: acc) (n + 1)  -- digits are 1 byte
+      readIntLexeme rest (c :: acc) (n + c.utf8Size)
     else
       (acc, n, c :: rest)
 
@@ -1368,5 +1372,134 @@ theorem Lex.skipTrivia_byteLength_invariant :
         show 0 + charsByteLength (c :: next :: rest2)
           = charsByteLength (c :: next :: rest2)
         exact Nat.zero_add _
+
+/-- **L07.5.1**: `readIdentLexeme` conserves bytes.
+
+For `(_, bytes, remaining) = readIdentLexeme chars acc n`, we have
+`bytes + charsByteLength remaining = n + charsByteLength chars`.
+
+Proof: structural induction on `chars`.  Two cases:
+* `[]`: returns `(acc, n, [])` — `n + 0 = n + 0` after definitional
+  reduction of `charsByteLength`.
+* `c :: rest`: split on `isIdentCont c`.  Continue branch tail-
+  recurses with `(rest, c :: acc, n + c.utf8Size)`; the IH plus
+  `Nat.add_assoc` closes.  Stop branch returns `(acc, n, c :: rest)`
+  — `n + charsByteLength (c :: rest)` matches directly.
+
+Zero-axiom — uniform `c.utf8Size` accounting (no `1 = c.utf8Size`
+arithmetic). -/
+theorem Lex.readIdentLexeme_byteLength_invariant :
+    ∀ (chars : List Char) (acc : List Char) (n : Nat),
+      let result := readIdentLexeme chars acc n
+      result.snd.fst + charsByteLength result.snd.snd
+        = n + charsByteLength chars
+  | [], acc, n => by
+    show n + charsByteLength ([] : List Char)
+      = n + charsByteLength ([] : List Char)
+    rfl
+  | firstChar :: restChars, acc, n => by
+    by_cases hCont : isIdentCont firstChar
+    · -- continue branch.  tail-recurse.
+      have stepReduces :
+          readIdentLexeme (firstChar :: restChars) acc n
+            = readIdentLexeme restChars (firstChar :: acc)
+                (n + firstChar.utf8Size) := by
+        show (if isIdentCont firstChar then
+                readIdentLexeme restChars (firstChar :: acc)
+                  (n + firstChar.utf8Size)
+              else (acc, n, firstChar :: restChars))
+            = readIdentLexeme restChars (firstChar :: acc)
+                (n + firstChar.utf8Size)
+        rw [if_pos hCont]
+      rw [stepReduces]
+      show (readIdentLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.fst
+          + charsByteLength (readIdentLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.snd
+        = n + charsByteLength (firstChar :: restChars)
+      have ihRecursive :
+          (readIdentLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.fst
+          + charsByteLength (readIdentLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.snd
+            = (n + firstChar.utf8Size) + charsByteLength restChars :=
+        Lex.readIdentLexeme_byteLength_invariant restChars
+          (firstChar :: acc) (n + firstChar.utf8Size)
+      rw [ihRecursive]
+      show (n + firstChar.utf8Size) + charsByteLength restChars
+        = n + (firstChar.utf8Size + charsByteLength restChars)
+      exact Nat.add_assoc n firstChar.utf8Size (charsByteLength restChars)
+    · -- stop branch.  Returns (acc, n, firstChar :: restChars).
+      have stepReduces :
+          readIdentLexeme (firstChar :: restChars) acc n
+            = (acc, n, firstChar :: restChars) := by
+        show (if isIdentCont firstChar then
+                readIdentLexeme restChars (firstChar :: acc)
+                  (n + firstChar.utf8Size)
+              else (acc, n, firstChar :: restChars))
+            = (acc, n, firstChar :: restChars)
+        rw [if_neg hCont]
+      rw [stepReduces]
+
+/-- **L07.5.2**: `readIntLexeme` conserves bytes.
+
+For `(_, bytes, remaining) = readIntLexeme chars acc n`, we have
+`bytes + charsByteLength remaining = n + charsByteLength chars`.
+
+Proof: identical pattern to `readIdentLexeme_byteLength_invariant`
+— structural induction with `isDigitChar c` split, IH +
+`Nat.add_assoc`. -/
+theorem Lex.readIntLexeme_byteLength_invariant :
+    ∀ (chars : List Char) (acc : List Char) (n : Nat),
+      let result := readIntLexeme chars acc n
+      result.snd.fst + charsByteLength result.snd.snd
+        = n + charsByteLength chars
+  | [], acc, n => by
+    show n + charsByteLength ([] : List Char)
+      = n + charsByteLength ([] : List Char)
+    rfl
+  | firstChar :: restChars, acc, n => by
+    by_cases hDigit : isDigitChar firstChar
+    · -- continue branch.  tail-recurse.
+      have stepReduces :
+          readIntLexeme (firstChar :: restChars) acc n
+            = readIntLexeme restChars (firstChar :: acc)
+                (n + firstChar.utf8Size) := by
+        show (if isDigitChar firstChar then
+                readIntLexeme restChars (firstChar :: acc)
+                  (n + firstChar.utf8Size)
+              else (acc, n, firstChar :: restChars))
+            = readIntLexeme restChars (firstChar :: acc)
+                (n + firstChar.utf8Size)
+        rw [if_pos hDigit]
+      rw [stepReduces]
+      show (readIntLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.fst
+          + charsByteLength (readIntLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.snd
+        = n + charsByteLength (firstChar :: restChars)
+      have ihRecursive :
+          (readIntLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.fst
+          + charsByteLength (readIntLexeme restChars (firstChar :: acc)
+              (n + firstChar.utf8Size)).snd.snd
+            = (n + firstChar.utf8Size) + charsByteLength restChars :=
+        Lex.readIntLexeme_byteLength_invariant restChars
+          (firstChar :: acc) (n + firstChar.utf8Size)
+      rw [ihRecursive]
+      show (n + firstChar.utf8Size) + charsByteLength restChars
+        = n + (firstChar.utf8Size + charsByteLength restChars)
+      exact Nat.add_assoc n firstChar.utf8Size (charsByteLength restChars)
+    · -- stop branch.  Returns (acc, n, firstChar :: restChars).
+      have stepReduces :
+          readIntLexeme (firstChar :: restChars) acc n
+            = (acc, n, firstChar :: restChars) := by
+        show (if isDigitChar firstChar then
+                readIntLexeme restChars (firstChar :: acc)
+                  (n + firstChar.utf8Size)
+              else (acc, n, firstChar :: restChars))
+            = (acc, n, firstChar :: restChars)
+        rw [if_neg hDigit]
+      rw [stepReduces]
 
 end LeanFX2.Surface
