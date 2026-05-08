@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditReduction — 99 `#assert_no_axioms` checks. -/
+/-! ## AuditReduction — 170 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Step.castSourceRaw
 #assert_no_axioms LeanFX2.Step.castTargetRaw
@@ -35,6 +35,30 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.betaModElimIntroDeep
 #assert_no_axioms LeanFX2.RawStep.par.betaCodataDestUnfold
 #assert_no_axioms LeanFX2.RawStep.par.betaCodataDestUnfoldDeep
+-- D2.5.4 transpReflBeta cascade (closes #1555).  Cubical-β rule
+-- "transp at constant path = identity" — the kernel-internal analog
+-- of `transp refl A x ⟶ x` from observational type theory.  Phase G
+-- activated this rule across raw + typed + cd cascade in commit
+-- cd77f91; the headline rule and its cascade have lived under the
+-- reviewer-facing log `Smoke/AuditPhase12A2D254.lean` only — this
+-- block (D3.6-S2 verification, #1683) brings the cascade up to the
+-- canonical strict-harness audit-gate standard alongside D3.6-S1
+-- `uaBeta` above.  The deep raw-only ctor `transpReflBetaDeep` is
+-- documented raw-only via `isDocumentedRawOnlyParity` (no typed
+-- mirror — see Section C of `Tools/StrictHarness/Common.lean`).
+#assert_no_axioms LeanFX2.RawStep.par.transpReflBeta
+#assert_no_axioms LeanFX2.RawStep.par.transpReflBetaDeep
+#assert_no_axioms LeanFX2.Step.transpReflBeta
+#assert_no_axioms LeanFX2.Step.par.transpReflBeta
+-- D2.5.8 betaPathReflApp cascade (companion to D2.5.4, same shape).
+-- "(λ i ⇒ value) @ i ⟶ value" for value independent of i — the
+-- cubical path analog of `transpReflBeta`.  Shipped in commit b453df6
+-- as `Step.betaPathReflApp` + raw mirror.  No deep variant required
+-- because `betaPathApp` / `betaPathAppDeep` + cd's collapsing through
+-- `RawTerm.weaken_subst_singleton` already covers cd-developed cases.
+#assert_no_axioms LeanFX2.RawStep.par.betaPathReflApp
+#assert_no_axioms LeanFX2.Step.betaPathReflApp
+#assert_no_axioms LeanFX2.Step.par.betaPathReflApp
 -- D3.6-S1 univalence-β raw rules (kernel-internal univalence-β —
 -- raw-only confluence-closure mechanism, listed in
 -- `isDocumentedRawOnlyParity` since `Term.uaToEquiv` produces
