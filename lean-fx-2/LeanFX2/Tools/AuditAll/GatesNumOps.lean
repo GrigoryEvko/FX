@@ -31,7 +31,7 @@ namespace LeanFX2.Tools
 -- `Term.infer`, plus the FIFTEEN M10 check-mode theorems whose closure
 -- transitively pulls in `Term.check` (which itself references OfNat
 -- via the Nat-indexed Fin scope position dispatch).
-#assert_ofnat_dependent_budget LeanFX2 863
+#assert_ofnat_dependent_budget LeanFX2 864
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -51,7 +51,7 @@ namespace LeanFX2.Tools
 -- pulling in `Term.infer`, plus the FIFTEEN M10 check-mode counterpart
 -- theorems whose closure threads `h ▸ t` (which expands through
 -- Eq.rec) on every expected-type-equality arm of `Term.check`.
-#assert_eq_rewriting_dependent_budget LeanFX2 1099
+#assert_eq_rewriting_dependent_budget LeanFX2 1100
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

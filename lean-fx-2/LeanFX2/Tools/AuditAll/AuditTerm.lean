@@ -90,5 +90,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.headCtor_productCode_raw
 #assert_no_axioms LeanFX2.Term.headCtor_sumCode_raw
 #assert_no_axioms LeanFX2.Term.headCtor_listCode_raw
+#assert_no_axioms LeanFX2.Term.headCtor_optionCode_raw
 
 end LeanFX2.Tools
