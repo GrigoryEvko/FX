@@ -2117,4 +2117,116 @@ theorem RawStep.par.lift_full_idJ
     rw [witnessEq] at witnessStepTyped
     exact Step.par.iotaIdJReflDeep witnessStepTyped baseStepTyped
 
+/-- **β cast wall demolition — Term.oeqJ full lift.**  Only one
+inversion arm (cong); no iota at the raw level for oeqJ. -/
+theorem RawStep.par.lift_full_oeqJ
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par baseRaw targetRawIH →
+      ∃ baseTarget : Term context motiveType targetRawIH,
+        Step.par baseCase baseTarget)
+    (witnessLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par witnessRaw targetRawIH →
+      ∃ witnessTarget :
+          Term context (Ty.oeq carrier leftEndpoint rightEndpoint) targetRawIH,
+        Step.par witness witnessTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.oeqJ baseRaw witnessRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.oeqJ baseCase witness) targetTerm := by
+  obtain ⟨baseTargetRaw, witnessTargetRaw, eq, baseStep, witnessStep⟩ :=
+    RawStep.par.oeqJ_inv rawStep
+  obtain ⟨baseTarget, baseStepTyped⟩ := baseLift baseStep
+  obtain ⟨witnessTarget, witnessStepTyped⟩ := witnessLift witnessStep
+  cases eq
+  refine ⟨motiveType, Term.oeqJ baseTarget witnessTarget, ?_⟩
+  exact Step.par.oeqJCong baseStepTyped witnessStepTyped
+
+/-- Destructor for `Term.idStrictRefl` at type `Ty.idStrict carrier
+leftEndpoint rightEndpoint` with raw `RawTerm.idStrictRefl witnessRaw`. -/
+def Term.idStrictReflDestruct
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {witnessRaw : RawTerm scope}
+    (someTerm :
+      Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+                   (RawTerm.idStrictRefl witnessRaw)) :
+    Σ' (witnessEqLeft : witnessRaw = leftEndpoint)
+       (witnessEqRight : witnessRaw = rightEndpoint),
+       HEq someTerm
+            (Term.idStrictRefl (context := context) modeIsStrict carrier
+                               witnessRaw) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.idStrictRefl witnessRaw)),
+        someType = Ty.idStrict carrier leftEndpoint rightEndpoint →
+        Σ' (witnessEqLeft : witnessRaw = leftEndpoint)
+           (witnessEqRight : witnessRaw = rightEndpoint),
+           HEq genericTerm
+                (Term.idStrictRefl (context := context) modeIsStrict carrier
+                                   witnessRaw) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsIdStrict
+  cases genericTerm
+  rename_i innerMode innerCarrier
+  have idStrictEq := Ty.idStrict.inj someTypeIsIdStrict
+  cases idStrictEq.1
+  exact ⟨idStrictEq.2.1, idStrictEq.2.2, HEq.rfl⟩
+
+/-- **β cast wall demolition — Term.idStrictRec full lift.**  Two-arm
+raw inversion: cong + iotaIdStrictRecRefl.  In iota arm, the witness IH
+gives a Term at Ty.idStrict carrier left right with idStrictRefl-raw,
+which by typing forces left = right = witnessRaw'. -/
+theorem RawStep.par.lift_full_idStrictRec
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par baseRaw targetRawIH →
+      ∃ baseTarget : Term context motiveType targetRawIH,
+        Step.par baseCase baseTarget)
+    (witnessLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par witnessRaw targetRawIH →
+      ∃ witnessTarget :
+          Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) targetRawIH,
+        Step.par witness witnessTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.idStrictRec baseRaw witnessRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.idStrictRec modeIsStrict baseCase witness) targetTerm := by
+  rcases RawStep.par.idStrictRec_inv rawStep with
+    ⟨baseTargetRaw, witnessTargetRaw, eq, baseStep, witnessStep⟩
+    | ⟨witnessRaw', baseTargetRaw, eq, witnessToRefl, baseStep⟩
+  · -- cong arm
+    obtain ⟨baseTarget, baseStepTyped⟩ := baseLift baseStep
+    obtain ⟨witnessTarget, witnessStepTyped⟩ := witnessLift witnessStep
+    cases eq
+    refine ⟨motiveType, Term.idStrictRec modeIsStrict baseTarget witnessTarget, ?_⟩
+    exact Step.par.idStrictRecCong modeIsStrict baseStepTyped witnessStepTyped
+  · -- iota arm: witness raw-reduces to RawTerm.idStrictRefl witnessRaw'
+    obtain ⟨witnessCanonical, witnessStepTyped⟩ := witnessLift witnessToRefl
+    obtain ⟨baseTarget, baseStepTyped⟩ := baseLift baseStep
+    cases eq
+    obtain ⟨witnessRawEqLeft, witnessRawEqRight, witnessHeq⟩ :=
+      Term.idStrictReflDestruct modeIsStrict witnessCanonical
+    cases witnessRawEqLeft
+    cases witnessRawEqRight
+    have witnessEq : witnessCanonical =
+        Term.idStrictRefl modeIsStrict carrier leftEndpoint :=
+      eq_of_heq witnessHeq
+    rw [witnessEq] at witnessStepTyped
+    refine ⟨motiveType, baseTarget, ?_⟩
+    exact Step.par.iotaIdStrictRecReflDeep modeIsStrict
+            witnessStepTyped baseStepTyped
+
 end LeanFX2
