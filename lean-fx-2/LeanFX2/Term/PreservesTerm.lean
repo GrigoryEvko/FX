@@ -2426,6 +2426,77 @@ theorem RawStep.par.lift_full_refl
   cases idEq.1
   exact Step.par.reflCong carrier witnessStep
 
+/-! ## Atom-shaped value ctors (equivReflId, equivReflIdAtId)
+
+`Term.equivReflId carrier` and `Term.equivReflIdAtId innerLevel innerLevelLt
+carrier carrierRaw` are atom-shaped values with raw form
+`RawTerm.equivIntro (lam (var 0)) (lam (var 0))`.  The id-lam bodies are
+fixed `RawTerm.var 0`, which only refl-step.  Therefore the only raw
+step from this composed shape is `refl`, and the typed lift returns the
+source term itself with `Step.par.refl`. -/
+
+/-- **Term.equivReflId full lift.**  Atom-shaped — only refl applies. -/
+theorem RawStep.par.lift_full_equivReflId
+    (carrier : Ty level scope)
+    (sourceTerm :
+      Term context (Ty.equiv carrier carrier)
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))))
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  -- The id-lam body is var 0; var only refl-steps; lam_inv yields target = lam (var 0).
+  obtain ⟨forwardTarget, backwardTarget, eqOuter, forwardStep, backwardStep⟩ :=
+    RawStep.par.equivIntro_inv rawStep
+  obtain ⟨forwardBody, fEqLam, fBodyStep⟩ := RawStep.par.lam_inv forwardStep
+  have fBodyVar := RawStep.par.var_inv fBodyStep
+  cases fBodyVar
+  cases fEqLam
+  obtain ⟨backwardBody, bEqLam, bBodyStep⟩ := RawStep.par.lam_inv backwardStep
+  have bBodyVar := RawStep.par.var_inv bBodyStep
+  cases bBodyVar
+  cases bEqLam
+  cases eqOuter
+  exact ⟨Ty.equiv carrier carrier, sourceTerm, Step.par.refl sourceTerm⟩
+
+/-- **Term.equivReflIdAtId full lift.**  Atom-shaped — only refl applies. -/
+theorem RawStep.par.lift_full_equivReflIdAtId
+    (innerLevel : UniverseLevel) (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope) (carrierRaw : RawTerm scope)
+    (sourceTerm :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw)
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))))
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
+          (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨forwardTarget, backwardTarget, eqOuter, forwardStep, backwardStep⟩ :=
+    RawStep.par.equivIntro_inv rawStep
+  obtain ⟨forwardBody, fEqLam, fBodyStep⟩ := RawStep.par.lam_inv forwardStep
+  have fBodyVar := RawStep.par.var_inv fBodyStep
+  cases fBodyVar
+  cases fEqLam
+  obtain ⟨backwardBody, bEqLam, bBodyStep⟩ := RawStep.par.lam_inv backwardStep
+  have bBodyVar := RawStep.par.var_inv bBodyStep
+  cases bBodyVar
+  cases bEqLam
+  cases eqOuter
+  exact ⟨Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw,
+         sourceTerm, Step.par.refl sourceTerm⟩
+
 theorem RawStep.par.lift_full_oeqFunext
     (domainType codomainType : Ty level scope)
     (leftFunctionRaw rightFunctionRaw : RawTerm scope)
