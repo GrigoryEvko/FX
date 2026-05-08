@@ -25,6 +25,12 @@ What it deliberately does not claim:
 * no arbitrary `Equiv A B -> Path Type A B` at the cubical Term layer;
 * no Glue-derived computation rule for arbitrary equivalences;
 * no synthesis of equivalence witnesses from arbitrary cubical paths.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Smoke/Bridge
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

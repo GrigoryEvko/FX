@@ -15,6 +15,12 @@ parallel-step layer (`Step.par`).  The raw preservation lemma
 unblocks the par lift; the matching typed ctor
 `Step.par.transpReflBeta` (`Reduction/ParRed.lean`) closes the
 shallow shape.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: Smoke/Bridge, Smoke/AuditPhase12A2Day2, Smoke/AuditPhase12A2D254
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

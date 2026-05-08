@@ -20,6 +20,12 @@ the cubical namespace:
 The arbitrary path-to-id bridge still waits for a dependent identity eliminator
 connected to cubical paths.  This file keeps the current scope explicit so
 `Cubical.Bridge` is no longer a documentation-only module.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Cubical/Ua, Smoke/Bridge
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

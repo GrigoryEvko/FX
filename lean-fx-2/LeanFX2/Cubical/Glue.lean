@@ -18,6 +18,12 @@ This module exposes exactly the Glue structure already present in the typed
 kernel: introduction, elimination, congruence, and the safe eliminator-after-
 introduction β rule.  It does not add face-specific Glue computation rules;
 those require a richer boundary/cofibration payload.
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: Smoke/AuditPhase12A2Day2
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

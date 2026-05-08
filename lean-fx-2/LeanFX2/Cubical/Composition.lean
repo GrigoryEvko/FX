@@ -18,6 +18,12 @@ the boundary cofibration data needed for Kan computation rules, so this module
 exports construction, projection, parallel congruence, and conversion
 congruence only.  Any future β rule belongs here only after the raw payload is
 strong enough to state the boundary condition being reduced.
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: Smoke/AuditPhase12A2Day2
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

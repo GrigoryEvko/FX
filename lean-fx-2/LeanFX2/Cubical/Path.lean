@@ -11,6 +11,12 @@ This module will collect path constructors and derived path combinators over
 the Day 1 interval primitive.  The implementation belongs to the cubical layer;
 Day 0 only guarantees the module path exists and typechecks without introducing
 dependencies or axioms.
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: Cubical/PathLemmas, Bridge/PathToId, Bridge/PathEqType, Bridge/IdToPath, Smoke/AuditPhase12A2Day2
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

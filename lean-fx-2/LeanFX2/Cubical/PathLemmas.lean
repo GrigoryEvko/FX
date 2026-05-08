@@ -18,6 +18,12 @@ single-step (`Step.par.betaPathApp`).
   three-layer β principle (`_betaParStep`, `_betaParStar`,
   `_betaConvCumul`) shipped via Phase G (`Step.par.transpReflBeta`).
 * Glue introduction / elimination β: `Cubical/Glue.lean`.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: Cubical/Transport, Smoke/AuditPhase12A2Day2
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2
