@@ -2435,6 +2435,28 @@ take a raw step on applyRaw and produce a typed Step.par on the
 wrapper.  Each lift uses lam_inv + refl_inv to extract the inner
 applyRaw step from the raw target. -/
 
+/-! ### Term.funextRefl full lift — DEFERRED
+
+Term.funextRefl's raw form `RawTerm.lam (RawTerm.refl applyRaw)` is
+SHARED with Term.lamPi (Term.refl ...) at the same Ty.piTy domainType
+(Ty.id codomainType.weaken applyRaw applyRaw) type.  Both ctors
+inhabit identical (typed × raw) signatures.  Generic lift dispatch
+via `cases genericTerm` produces both arms; the lamPi case requires
+constructing Step.par from Term.lamPi to Term.funextRefl, which is
+NOT a Step.par cong rule (would require a "Term.lamPi-to-funextRefl"
+ctor that ETA-equates the two structurally-distinct ctors).
+
+A clean lift requires either:
+1. A new Step.par ctor witnessing the two ctors are convertible (an
+   eta-style rule for funextRefl).
+2. A Term.unique lemma saying lamPi (refl ...) and funextRefl
+   constructed at the same (Ty, raw) signature are HEq.
+3. Restricting the headline existential to allow Term.lamPi witnesses
+   (since they have identical raw shape, the down-stream confluence
+   chain cares about raw, not syntactic Term).
+
+Deferred to a separate commit alongside the headline assembly. -/
+
 /-- **Term.funextReflAtId full lift.** Type
 `Ty.id (Ty.arrow domainType codomainType) (lam (refl applyRaw)) (lam (refl applyRaw))`. -/
 theorem RawStep.par.lift_full_funextReflAtId
@@ -2484,6 +2506,20 @@ theorem RawStep.par.lift_full_funextReflAtId
     | (rename_i innerDomain innerCodomain
        have idEq := Ty.id.inj someTypeIsId
        nomatch idEq.1)
+
+/-! ### Term.funextIntroHet full lift — DEFERRED
+
+Term.funextIntroHet's raw form `RawTerm.lam (RawTerm.refl applyARaw)`
+is shape-collision with Term.funextReflAtId at Ty.id types — when the
+applyARaw happens to be `RawTerm.refl applyRaw'`, both ctors have
+identical (Ty, raw) signatures.  Generic dispatch surfaces both arms;
+constructing a Step.par from Term.funextReflAtId to Term.funextIntroHet
+is not a single Step.par ctor — it would require composing through
+the eqArrow / eqArrowHet rules, which target funextRefl / funextRefl
+respectively, not funextIntroHet directly.
+
+Deferred to the headline assembly phase, where the dispatch can branch
+on the actual source ctor and use ctor-specific Step.par rules. -/
 
 /-! ## Atom-shaped value ctors (equivReflId, equivReflIdAtId)
 
@@ -2555,6 +2591,116 @@ theorem RawStep.par.lift_full_equivReflIdAtId
   cases eqOuter
   exact ⟨Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw carrierRaw,
          sourceTerm, Step.par.refl sourceTerm⟩
+
+/-! ## Heterogeneous-carrier ctors with single typed equivWitness child
+
+`Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw equivWitness`
+has a single typed `equivWitness : Term context (Ty.equiv carrierA carrierB)
+(RawTerm.equivIntro forwardRaw backwardRaw)` child.  The raw form is the
+SAME `RawTerm.equivIntro forwardRaw backwardRaw` as the equivWitness.
+
+The lift takes an equivWitness lift IH; from `RawStep.par.equivIntro_inv`
+we get a target raw that matches RawTerm.equivIntro forward' backward'.
+Apply Step.par.uaIntroHetCong with the typed step. -/
+
+/-- **Term.uaIntroHet full lift.** Single typed child (equivWitness) at
+`Ty.equiv carrierA carrierB`. -/
+theorem RawStep.par.lift_full_uaIntroHet
+    (innerLevel : UniverseLevel) (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                 (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivWitnessLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par (RawTerm.equivIntro forwardRaw backwardRaw) targetRawIH →
+      ∃ equivWitnessTarget :
+          Term context (Ty.equiv carrierA carrierB) targetRawIH,
+        Step.par equivWitness equivWitnessTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.equivIntro forwardRaw backwardRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.uaIntroHet (context := context) innerLevel innerLevelLt
+                         carrierARaw carrierBRaw equivWitness)
+        targetTerm := by
+  -- Use equivIntro_inv to extract target shape
+  obtain ⟨forwardTarget, backwardTarget, eqOuter, _, _⟩ :=
+    RawStep.par.equivIntro_inv rawStep
+  -- Apply equivWitness lift IH (passing the full rawStep) to get typed target
+  obtain ⟨equivWitnessTarget, equivWitnessStepTyped⟩ := equivWitnessLift rawStep
+  cases eqOuter
+  refine ⟨Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw carrierBRaw, ?_, ?_⟩
+  · -- equivWitnessTarget at Ty.equiv carrierA carrierB with raw equivIntro forwardTarget backwardTarget;
+    -- we want a typed Term at Ty.id (Ty.universe ...) carrierARaw carrierBRaw with the same raw.
+    -- Use Term.uaIntroHet to wrap.
+    exact Term.uaIntroHet (context := context) innerLevel innerLevelLt
+                          carrierARaw carrierBRaw equivWitnessTarget
+  · exact Step.par.uaIntroHetCong innerLevel innerLevelLt
+                                  carrierARaw carrierBRaw equivWitnessStepTyped
+
+/-! ## Heterogeneous-carrier equivalence intro lift
+
+`Term.equivIntroHet forward backward leftInv rightInv` has four typed
+children but only `forward` + `backward` appear in the raw projection
+`RawTerm.equivIntro forwardRaw backwardRaw`.  The cong rule
+`Step.par.equivIntroHetCong` takes Step.par on forward + backward and
+auto-constructs the leftInv/rightInv with new types.
+
+The lift takes IHs on forward and backward only.  The leftInv/rightInv
+inputs are passed through as schematic implicits to the cong rule. -/
+
+/-- **Term.equivIntroHet full lift.** -/
+theorem RawStep.par.lift_full_equivIntroHet
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (forwardLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par forwardRaw targetRawIH →
+      ∃ forwardTarget : Term context (Ty.arrow carrierA carrierB) targetRawIH,
+        Step.par forward forwardTarget)
+    (backwardLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par backwardRaw targetRawIH →
+      ∃ backwardTarget : Term context (Ty.arrow carrierB carrierA) targetRawIH,
+        Step.par backward backwardTarget)
+    (leftInvNewSource :
+      ∀ (forwardTarget backwardTarget : RawTerm scope),
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardTarget backwardTarget)
+        leftInvRaw)
+    (rightInvNewSource :
+      ∀ (forwardTarget backwardTarget : RawTerm scope),
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardTarget backwardTarget)
+        rightInvRaw)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.equivIntro forwardRaw backwardRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.equivIntroHet (context := context) forward backward leftInv rightInv)
+        targetTerm := by
+  obtain ⟨forwardTarget, backwardTarget, eqOuter, forwardStep, backwardStep⟩ :=
+    RawStep.par.equivIntro_inv rawStep
+  obtain ⟨forwardTyped, forwardStepTyped⟩ := forwardLift forwardStep
+  obtain ⟨backwardTyped, backwardStepTyped⟩ := backwardLift backwardStep
+  cases eqOuter
+  refine ⟨Ty.equiv carrierA carrierB,
+          Term.equivIntroHet (context := context) forwardTyped backwardTyped
+                             (leftInvNewSource forwardTarget backwardTarget)
+                             (rightInvNewSource forwardTarget backwardTarget),
+          ?_⟩
+  exact Step.par.equivIntroHetCong forwardStepTyped backwardStepTyped
 
 theorem RawStep.par.lift_full_oeqFunext
     (domainType codomainType : Ty level scope)
