@@ -239,6 +239,29 @@ end MData
 
 namespace Expr
 
+/-- Canonical kernel name for the primitive natural-number type.
+
+This is the name that the Lean-kernel typing rule for `Literal.natVal`
+literals pins as the literal's type.  An environment well-formedness pass
+must enforce that `natTypeName` resolves to a primitive `Nat` declaration
+with the expected shape; this slice only commits to the name. -/
+def natTypeName : Name := Name.str Name.anonymous Nat.zero
+
+/-- Canonical kernel name for the primitive string type.
+
+This is the name that the Lean-kernel typing rule for `Literal.strAtomVal`
+literals pins as the literal's type.  Environment well-formedness for this
+name is enforced by a later slice. -/
+def stringTypeName : Name := Name.str Name.anonymous (Nat.succ Nat.zero)
+
+/-- The canonical primitive natural-number type expression. -/
+def natType {level scope : Nat} : Expr level scope :=
+  Expr.const natTypeName List.nil
+
+/-- The canonical primitive string type expression. -/
+def stringType {level scope : Nat} : Expr level scope :=
+  Expr.const stringTypeName List.nil
+
 /-- Copy an expression into another local-scope index.
 
 This operation preserves the raw de Bruijn positions.  It is used only for

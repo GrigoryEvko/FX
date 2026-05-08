@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditFX1LeanKernel_Other — 66 `#assert_no_axioms` checks. -/
+/-! ## AuditFX1LeanKernel_Other — 70 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Name
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Name.appendStr
@@ -44,6 +44,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Literal.eqResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.MDataEntry.eqResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.MData.eqResult
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.natTypeName
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.stringTypeName
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.natType
+#assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.stringType
 #assert_no_axioms LeanFX2.FX1.LeanKernel.Expr.eqResult
 #assert_no_axioms LeanFX2.FX1.LeanKernel.FVarId
 #assert_no_axioms LeanFX2.FX1.LeanKernel.MVarId
