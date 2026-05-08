@@ -58,14 +58,27 @@ raw level, their typed terms are convertible by construction.
   join (alias of `Conv.toRawJoin` from `ConvBridge.lean`)
 * `Conv.transRaw` — typed Conv composition expressed at raw level
 
-## Conv.trans — typed version requires SR
+## Conv.trans — partial ship; full version blocks on strong SR
 
 The classical `Conv.trans` requires a typed common reduct from
 two typed convergence triangles: given `Conv s t` and `Conv t u`,
 need a typed midpoint reachable from both `s` and `u`.  This
 needs subject reduction to lift the raw confluence join back to
-a typed Term.  Until SR ships, the raw analog `Conv.transRaw`
-suffices for the elaborator's needs.
+a typed Term.
+
+* **Chain-composition fragment** (`Conv.transChains` /
+  `Conv.trans_via_chains`, see `Confluence/ConvTrans.lean`) is
+  shipped at zero axioms — covers the case where both Conv
+  witnesses arrive as explicit `StepStar` chains.
+* **Full unrestricted version** (where each Conv brings its own
+  midpoint) remains blocked on strong subject reduction (term
+  construction via raw-step inversion at typed sources).  M06/M07
+  ship the type-EQUALITY part of SR but not term construction.
+
+For the elaborator's decidable conversion needs, the raw analog
+`Conv.transRaw` (in this file) is sufficient: typed convertibility
+is preserved by typing (elaboration-time invariant), so once two
+reducts agree at the raw level their typed terms are convertible.
 
 ## Dependencies
 

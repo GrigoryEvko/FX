@@ -388,9 +388,16 @@ matching.  Trans is the one genuine blocker.
 ## Refl-only safe ship
 
 The full ConvCumulHomo.toConv requires `Conv.trans` for the trans
-ctor case.  Conv.trans depends on Church-Rosser (Layer 3,
-deferred).  We ship the refl-only project-back at zero axioms
-and document the trans gap.
+ctor case.  Conv.trans's chain-composition flavor (`Conv.transChains`,
+shipped 2026-05-08 in `Reduction/Conv.lean`) handles the case where
+both Conv witnesses arrive as explicit `StepStar` chains; the full
+unrestricted version (where each Conv brings its own midpoint)
+remains blocked on strong subject reduction (Phase 7 close-out —
+see `Confluence/ConvTrans.lean`).  ConvCumulHomo.toConv's trans-arm
+in particular needs the unrestricted version because the trans
+constructor's IHs do not in general flatten to explicit chains.
+We ship the refl-only project-back at zero axioms and document the
+trans gap.
 
 ## Refl-restricted bridge
 

@@ -21,10 +21,17 @@ common reduct's `(tyMid, rawMid)` is also free.
 * `Conv.refl`, `Conv.sym`
 * `Conv.fromStepStar` (single chain ⇒ Conv via target-as-reduct)
 * `Conv.fromStep` (single step ⇒ Conv)
+* `Conv.transChains` — chain-composition flavor of trans (no
+  confluence needed): given explicit `StepStar` chains
+  `s →* t` and `t →* u`, ship `Conv s u` directly via
+  `StepStar.append` + `Conv.fromStepStar`.
 
 ## Deferred to Layer 3 (Confluence)
 
-* `Conv.trans` — needs Church-Rosser to merge two triangles into one
+* Full unrestricted `Conv.trans` — needs Church-Rosser to merge two
+  triangles into one.  See `Confluence/ChurchRosser.lean`'s
+  `Conv.transRaw` (raw output) and `Confluence/ConvTrans.lean` for
+  shipping plan.
 * `Conv.canonical_form` — both endpoints reach a shared canonical
   representative (this IS the Church-Rosser corollary applied)
 
@@ -105,6 +112,31 @@ theorem Conv.fromStep
     (singleStep : Step sourceTerm targetTerm) :
     Conv sourceTerm targetTerm :=
   Conv.fromStepStar (StepStar.fromStep singleStep)
+
+/-- Chain-composition transitivity: when both convertibility witnesses
+arrive as explicit `StepStar` chains (i.e., were built via
+`Conv.fromStepStar`), we can compose them via `StepStar.append` and
+package as a fresh `Conv` whose midpoint is the second chain's
+target.
+
+This is the **easy** fragment of `Conv.trans`: it covers the case
+where the convertibility direction is monotonic — every reduction
+goes from source towards target — without crossing back through a
+common reduct.  The full `Conv.trans` (where each Conv brings its
+own midpoint) requires Church-Rosser to merge the two convergence
+triangles; see `Confluence/ConvTrans.lean` for the shipping plan
+on that. -/
+theorem Conv.transChains
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {sourceType middleType targetType : Ty level scope}
+    {sourceRaw middleRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {middleTerm : Term context middleType middleRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (firstChain : StepStar sourceTerm middleTerm)
+    (secondChain : StepStar middleTerm targetTerm) :
+    Conv sourceTerm targetTerm :=
+  Conv.fromStepStar (StepStar.append firstChain secondChain)
 
 /-! ## Cast helpers — propositional transport for indices. -/
 

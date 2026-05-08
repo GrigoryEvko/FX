@@ -49,8 +49,17 @@ reusing the same chain.
 ## Conv.trans
 
 Classical `Conv.trans` (typed midpoint) requires SR to lift the
-raw confluence join to a typed Term.  The raw analog is shipped
-in `ChurchRosser.lean` as `Conv.transRaw`.
+raw confluence join to a typed Term.  Two flavors exist:
+
+* `Conv.transChains` / `Conv.trans_via_chains` — chain-composition
+  flavor, zero-axiom (lives in `Reduction/Conv.lean` /
+  `Confluence/ConvTrans.lean`).  Covers the case where both Conv
+  witnesses arrive as explicit `StepStar` chains.
+* Full unrestricted `Conv.trans` — still blocked on strong subject
+  reduction (term construction, not just type equality).  See
+  `Confluence/ConvTrans.lean` docstring.
+
+The raw analog `Conv.transRaw` is shipped in `ChurchRosser.lean`.
 
 ## What this file ships (zero axioms)
 

@@ -85,7 +85,14 @@ namespace LeanFX2.Tools
 -- convertibility but only via one reduction.  Pinning catches
 -- "Theorem X = Conv.fromStep RuleY" claims that pretend more than
 -- they prove.  Tight ratchet at current count.
-#assert_single_step_conv_claim_budget LeanFX2 32
+-- PHASE7-CONV-TRANS (#1504, 2026-05-08): bumped 32 → 33 to accommodate
+-- `Conv.transChains` — chain-composition trans flavor whose body is
+-- `Conv.fromStepStar (StepStar.append _ _)`.  This is genuine
+-- chain composition packaged via `fromStepStar`; the gate misclassifies
+-- it as a "single-step Conv claim" because the head expr is
+-- `Conv.fromStepStar`.  Real chain content lives in the
+-- `StepStar.append` argument.
+#assert_single_step_conv_claim_budget LeanFX2 33
 
 -- Reduction.Compat per-cong coverage.  For every Step.par.<X>Cong,
 -- expect <X>Cong.rename_compatible and <X>Cong.subst_compatible.

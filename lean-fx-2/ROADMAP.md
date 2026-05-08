@@ -64,7 +64,7 @@ Acceptance: rename/subst preserves Step ✅ (raw and typed levels); typed `Step.
 * [x] `Confluence/ChurchRosser.lean` — `RawStep.parStar.confluence` shipped
 * [x] `Confluence/CanonicalForm.lean` — `Conv.canonicalRaw` shipped (#1319 D3.4)
 
-Acceptance: ✅ raw-level Tait-Martin-Löf chain ships zero-axiom.  **Open**: typed `Conv.trans` (#1504 PHASE7-CONV-TRANS) — M06 SR ✅ shipped (`Step.preserves_ty_arrow` at `Term/SubjectReductionGeneral.lean:754` via closed-isClosedTy chain); D2.10 ✅ closed 2026-05-07; #1504 now UNBLOCKED, ready for Phase 1; typed Cong (#1502 WEAK-FX2-03) requires Phase 7 SR.
+Acceptance: ✅ raw-level Tait-Martin-Löf chain ships zero-axiom.  **Partial**: typed `Conv.trans` (#1504 PHASE7-CONV-TRANS) — Phase 1 (chain composition) ✅ shipped 2026-05-08 as `Conv.transChains` / `Conv.trans_via_chains` (`Reduction/Conv.lean` + `Confluence/ConvTrans.lean`).  Full `Conv.trans` (where each Conv brings its own midpoint) still blocked on **strong subject reduction** (term construction via raw-step inversion at typed sources) — M06/M07 ship the type-EQUALITY part of SR but not term construction (~100+ inversion cases).  See `Confluence/ConvTrans.lean`'s docstring for the detailed shipping plan. M06 SR ✅ shipped (`Step.preserves_ty_arrow` at `Term/SubjectReductionGeneral.lean:754` via closed-isClosedTy chain); D2.10 ✅ closed 2026-05-07; typed Cong (#1502 WEAK-FX2-03) requires the same Phase 7 strong SR.
 
 ## Phase 5 — Bridge (Layer 4) ✅ DONE
 
@@ -184,7 +184,7 @@ The v1.0 milestone ("100% proven kernel") gates on:
 
 1. **D2.10 #1314** ✅ DONE 2026-05-07 — typed Step.par cong rename+subst compat (14 of 14 shipped, budget ratcheted to 0)
 2. **M06 #1275** ✅ DONE — Phase 7 subject reduction at arrow types (`Step.preserves_ty_arrow` at `Term/SubjectReductionGeneral.lean:754`)
-3. **PHASE7-CONV-TRANS #1504** — typed `Conv.trans` (M06 done, READY for Phase 1 of close-out plan)
+3. **PHASE7-CONV-TRANS #1504** — typed `Conv.trans`: Phase 1 ✅ shipped 2026-05-08 (`Conv.transChains` / `Conv.trans_via_chains` zero-axiom, chain-composition flavor); full unrestricted `Conv.trans` still requires Phase 7 strong subject reduction (term construction via raw-step inversion at typed sources, ~100+ ctor-by-ctor cases — see `Confluence/ConvTrans.lean`)
 4. **K07.1-8 #1516-1523** — dep-motive eliminator refactors (8 ctors)
 5. **D2.5.1-2 #1527-1528** — typed cubical β rules (transp/hcomp); D2.5.3 #1529 ✅ verified (`Step.betaGlueElimIntro` IS the typed glueBeta)
 6. **WEAK-FX2-03 #1502** — retire 121 manufactured-witness wrappers

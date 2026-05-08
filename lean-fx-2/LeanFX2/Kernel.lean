@@ -61,6 +61,7 @@ import LeanFX2.Confluence.CdLemma
 import LeanFX2.Confluence.Diamond
 import LeanFX2.Confluence.ChurchRosser
 import LeanFX2.Confluence.CanonicalForm
+import LeanFX2.Confluence.ConvTrans
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdDominates
 import LeanFX2.Confluence.RawCdLemma
