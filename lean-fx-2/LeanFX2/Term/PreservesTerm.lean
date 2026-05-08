@@ -172,4 +172,167 @@ theorem RawStep.par.lift_var
   cases RawStep.par.var_inv rawStep
   exact ⟨sourceTerm, Step.par.refl sourceTerm⟩
 
+/-! ## Tier 1 — unary cong (no β/ι firing)
+
+Ctors with a single Term child at the same scope.  No β/ι rule fires
+from these heads; the raw inversion gives a single child reduction.
+The lemma takes the child's lift as an explicit IH parameter — when
+the headline `Term.preserves` is assembled, the IH is supplied by the
+outer Term induction.  Until then, each Tier 1 lemma stands as a
+*compositional* statement: "given the child's lift, the wrapper's lift
+follows".
+
+Recipe per ctor:
+1. Run the raw inversion to extract child raw step.
+2. Apply child IH to get a typed child target + child Step.par.
+3. Wrap with the corresponding `Step.par.<ctor>` cong rule.
+
+Each Tier 1 lemma is ~6 LoC.  Cluster: natSucc, optionSome, eitherInl,
+eitherInr, recordIntro, intervalOpp, modIntro, subsume. -/
+
+/-- **Tier 1 — Term.natSucc lift.**  IH-parameterized: given the
+predecessor's lift, the natSucc lift follows. -/
+theorem RawStep.par.lift_natSucc
+    {predRaw : RawTerm scope}
+    (predecessor : Term context Ty.nat predRaw)
+    (predLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par predRaw targetRawIH →
+      ∃ predTarget : Term context Ty.nat targetRawIH,
+        Step.par predecessor predTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.natSucc predRaw) targetRaw) :
+    ∃ targetTerm : Term context Ty.nat targetRaw,
+      Step.par (Term.natSucc predecessor) targetTerm := by
+  obtain ⟨predTargetRaw, targetEq, predStep⟩ := RawStep.par.natSucc_inv rawStep
+  obtain ⟨predTarget, predStepTyped⟩ := predLift predStep
+  cases targetEq
+  exact ⟨Term.natSucc predTarget, Step.par.natSucc predStepTyped⟩
+
+/-- **Tier 1 — Term.optionSome lift.** -/
+theorem RawStep.par.lift_optionSome
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context elementType valueRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context elementType targetRawIH,
+        Step.par valueTerm valueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.optionSome valueRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.optionType elementType) targetRaw,
+      Step.par (Term.optionSome valueTerm) targetTerm := by
+  obtain ⟨valueTargetRaw, targetEq, valueStep⟩ := RawStep.par.optionSome_inv rawStep
+  obtain ⟨valueTarget, valueStepTyped⟩ := valueLift valueStep
+  cases targetEq
+  exact ⟨Term.optionSome valueTarget, Step.par.optionSome valueStepTyped⟩
+
+/-- **Tier 1 — Term.eitherInl lift.** -/
+theorem RawStep.par.lift_eitherInl
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context leftType valueRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context leftType targetRawIH,
+        Step.par valueTerm valueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.eitherInl valueRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.eitherType leftType rightType) targetRaw,
+      Step.par (Term.eitherInl (rightType := rightType) valueTerm) targetTerm := by
+  obtain ⟨valueTargetRaw, targetEq, valueStep⟩ := RawStep.par.eitherInl_inv rawStep
+  obtain ⟨valueTarget, valueStepTyped⟩ := valueLift valueStep
+  cases targetEq
+  exact ⟨Term.eitherInl (rightType := rightType) valueTarget,
+         Step.par.eitherInl valueStepTyped⟩
+
+/-- **Tier 1 — Term.eitherInr lift.** -/
+theorem RawStep.par.lift_eitherInr
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context rightType valueRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context rightType targetRawIH,
+        Step.par valueTerm valueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.eitherInr valueRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.eitherType leftType rightType) targetRaw,
+      Step.par (Term.eitherInr (leftType := leftType) valueTerm) targetTerm := by
+  obtain ⟨valueTargetRaw, targetEq, valueStep⟩ := RawStep.par.eitherInr_inv rawStep
+  obtain ⟨valueTarget, valueStepTyped⟩ := valueLift valueStep
+  cases targetEq
+  exact ⟨Term.eitherInr (leftType := leftType) valueTarget,
+         Step.par.eitherInr valueStepTyped⟩
+
+/-- **Tier 1 — Term.intervalOpp lift.** -/
+theorem RawStep.par.lift_intervalOpp
+    {innerRaw : RawTerm scope}
+    (innerValue : Term context Ty.interval innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context Ty.interval targetRawIH,
+        Step.par innerValue innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.intervalOpp innerRaw) targetRaw) :
+    ∃ targetTerm : Term context Ty.interval targetRaw,
+      Step.par (Term.intervalOpp innerValue) targetTerm := by
+  obtain ⟨innerTargetRaw, targetEq, innerStep⟩ := RawStep.par.intervalOpp_inv rawStep
+  obtain ⟨innerTarget, innerStepTyped⟩ := innerLift innerStep
+  cases targetEq
+  exact ⟨Term.intervalOpp innerTarget, Step.par.intervalOppCong innerStepTyped⟩
+
+/-- **Tier 1 — Term.modIntro lift.** -/
+theorem RawStep.par.lift_modIntro
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context innerType targetRawIH,
+        Step.par innerTerm innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.modIntro innerRaw) targetRaw) :
+    ∃ targetTerm : Term context innerType targetRaw,
+      Step.par (Term.modIntro innerTerm) targetTerm := by
+  obtain ⟨innerTargetRaw, targetEq, innerStep⟩ := RawStep.par.modIntro_inv rawStep
+  obtain ⟨innerTarget, innerStepTyped⟩ := innerLift innerStep
+  cases targetEq
+  exact ⟨Term.modIntro innerTarget, Step.par.modIntro innerStepTyped⟩
+
+/-- **Tier 1 — Term.subsume lift.** -/
+theorem RawStep.par.lift_subsume
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context innerType targetRawIH,
+        Step.par innerTerm innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.subsume innerRaw) targetRaw) :
+    ∃ targetTerm : Term context innerType targetRaw,
+      Step.par (Term.subsume innerTerm) targetTerm := by
+  obtain ⟨innerTargetRaw, targetEq, innerStep⟩ := RawStep.par.subsume_inv rawStep
+  obtain ⟨innerTarget, innerStepTyped⟩ := innerLift innerStep
+  cases targetEq
+  exact ⟨Term.subsume innerTarget, Step.par.subsume innerStepTyped⟩
+
+/-- **Tier 1 — Term.recordIntro lift.** -/
+theorem RawStep.par.lift_recordIntro
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (firstField : Term context singleFieldType firstRaw)
+    (firstLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par firstRaw targetRawIH →
+      ∃ firstTarget : Term context singleFieldType targetRawIH,
+        Step.par firstField firstTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.recordIntro firstRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.record singleFieldType) targetRaw,
+      Step.par (Term.recordIntro firstField) targetTerm := by
+  obtain ⟨firstTargetRaw, targetEq, firstStep⟩ := RawStep.par.recordIntro_inv rawStep
+  obtain ⟨firstTarget, firstStepTyped⟩ := firstLift firstStep
+  cases targetEq
+  exact ⟨Term.recordIntro firstTarget, Step.par.recordIntroCong firstStepTyped⟩
+
 end LeanFX2
