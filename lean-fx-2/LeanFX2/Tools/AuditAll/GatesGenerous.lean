@@ -53,7 +53,7 @@ namespace LeanFX2.Tools
 -- theorems whose closure invokes `Term.check`'s expected-type
 -- exhaustive enumeration where every non-matching arm produces
 -- `none` via match-equation propext-clean dispatch.
-#assert_absurd_false_dependent_budget LeanFX2 855
+#assert_absurd_false_dependent_budget LeanFX2 856
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the
