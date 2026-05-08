@@ -123,5 +123,35 @@ theorem check_sound_mdata {level scope : Nat}
     HasType environment context (Expr.mdata metadata bodyExpr) typeExpr :=
   check_sound checkingSucceeded
 
+/-- Per-arm soundness for Lean structure projection.
+
+The current LeanKernel-FX1 slice rejects `Expr.proj` in the executable
+checker (returns `Option.none`).  Sound typing rules for projection
+require inductive-spec lookup, parameter substitution, and
+field-index-driven constructor type instantiation — infrastructure
+that belongs to the Inductive slice, not this LeanKernel-FX1 typing
+slice.  Until that lands, the relational `HasType` has no `proj`
+arm; absence of an arm is sound (it monotonically restricts the
+trusted claim).
+
+The lemma is therefore vacuously true: from the impossible hypothesis
+`Eq Option.none (Option.some typeExpr)` we discharge via `nomatch`.
+Once the projection slice ships, this lemma's body is replaced by a
+real `HasType.proj` witness extraction; signature stays the same. -/
+theorem check_sound_proj {level scope : Nat}
+    {environment : Environment level}
+    {context : Context level scope}
+    {structName : Name}
+    {fieldIndex : Nat}
+    {targetExpr typeExpr : Expr level scope}
+    (checkingSucceeded :
+      Eq
+        (check environment context
+          (Expr.proj structName fieldIndex targetExpr))
+        (Option.some typeExpr)) :
+    HasType environment context
+      (Expr.proj structName fieldIndex targetExpr) typeExpr :=
+  nomatch checkingSucceeded
+
 end FX1.LeanKernel
 end LeanFX2
