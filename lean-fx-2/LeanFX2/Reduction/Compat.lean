@@ -5,6 +5,7 @@ import LeanFX2.Reduction.Compat.Cubical
 import LeanFX2.Reduction.Compat.HoTT
 import LeanFX2.Reduction.Compat.Effects
 import LeanFX2.Reduction.Compat.Misc
+import LeanFX2.Reduction.Compat.TypeCodes
 
 /-! # Reduction/Compat — rename + subst compatibility (umbrella)
 
@@ -23,9 +24,12 @@ raw-layer compatibility API (lines below).  Downstream files
 that `import LeanFX2.Reduction.Compat` keep working unchanged.
 
 * `Compat/Cubical.lean` — 9 ctors (interval/glue/path/hcomp/transp/pathLam)
-* `Compat/HoTT.lean` — 7 ctors (oeqRefl/J/Funext/equivApp/Intro/IntroHet/uaIntroHet)
+* `Compat/HoTT.lean` — 11 ctors (oeqRefl/J/Funext/equivApp/Intro/IntroHet/
+  uaIntroHet/refl/funextRefl/funextReflAtId/funextIntroHet)
 * `Compat/Effects.lean` — 7 ctors (refine/codata/session/effect)
 * `Compat/Misc.lean` — 5 ctors (cumulUpInner/recordProj/Intro/idStrict{Refl,Rec})
+* `Compat/TypeCodes.lean` — 10 ctors (CUMUL-2.4 typed type-code constructors:
+  arrow/piTy/sigmaTy/product/sum/list/option/either/id/equivCode)
 
 ## The big simplification (from lean-fx)
 
