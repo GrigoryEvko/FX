@@ -106,3 +106,33 @@ Every declaration below must report "does not depend on any axioms".
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaParStep_toRawBridge
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaParStar
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaConvCumul
+
+/-! ## D2.5.8 betaPathReflApp cascade — companion roadmap entry.
+
+`pathApp (pathLam value.weaken) interval ⟶ value` — the cubical path
+analog of D2.5.4 transpReflBeta.  When the pathLam's body is literally
+`value.weaken` (no interval binder), pathApp returns the original value
+irrespective of the interval — "(λ i ⇒ value) @ i ⟶ value" for value
+independent of i.
+
+Cascade shipped (full raw + typed + bridge):
+  * Raw ctor `RawStep.par.betaPathReflApp` (no Deep variant required —
+    existing `betaPathApp` / `betaPathAppDeep` + cd's collapsing through
+    `RawTerm.weaken_subst_singleton` already covers cd-developed cases).
+  * Typed ctors `Step.betaPathReflApp` (single-step) and
+    `Step.par.betaPathReflApp` (parallel mirror).
+  * `ConvCumul.betaPathReflAppCumul` — Conv-layer mirror used by
+    `Step.toConvCumul` and `Conv.fromStep` consumers.
+  * Cascade arms: `pathApp_inv`, `RawStep.par.rename`,
+    `RawStep.par.subst_compatible`, `cd_lemma`,
+    `Step.par.toRawBridge`, `Step.toPar`, `Step.toConvCumul`.
+
+The four cascade theorems remain zero-axiom after this rule's
+landing — the new ctor + cascade arms add no axiom dependency.
+-/
+
+-- D2.5.8 new ctors
+#print axioms LeanFX2.RawStep.par.betaPathReflApp
+#print axioms LeanFX2.Step.betaPathReflApp
+#print axioms LeanFX2.Step.par.betaPathReflApp
+#print axioms LeanFX2.ConvCumul.betaPathReflAppCumul
