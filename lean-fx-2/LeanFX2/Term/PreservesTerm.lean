@@ -2426,6 +2426,65 @@ theorem RawStep.par.lift_full_refl
   cases idEq.1
   exact Step.par.reflCong carrier witnessStep
 
+/-! ## Funext-family schematic-payload lifts
+
+`Term.funextRefl`, `Term.funextReflAtId`, `Term.funextIntroHet` all
+have raw form `RawTerm.lam (RawTerm.refl applyRaw)` (with applyRaw at
+scope+1).  Their typed cong rules (added in the prior juggernaut)
+take a raw step on applyRaw and produce a typed Step.par on the
+wrapper.  Each lift uses lam_inv + refl_inv to extract the inner
+applyRaw step from the raw target. -/
+
+/-- **Term.funextReflAtId full lift.** Type
+`Ty.id (Ty.arrow domainType codomainType) (lam (refl applyRaw)) (lam (refl applyRaw))`. -/
+theorem RawStep.par.lift_full_funextReflAtId
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1))
+    (sourceTerm :
+      Term context
+        (Ty.id (Ty.arrow domainType codomainType)
+               (RawTerm.lam (RawTerm.refl applyRaw))
+               (RawTerm.lam (RawTerm.refl applyRaw)))
+        (RawTerm.lam (RawTerm.refl applyRaw)))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.lam (RawTerm.refl applyRaw)) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨bodyTarget, eqOuter, bodyStep⟩ := RawStep.par.lam_inv rawStep
+  obtain ⟨applyTarget, eqInner, applyStep⟩ := RawStep.par.refl_inv bodyStep
+  cases eqInner
+  cases eqOuter
+  refine ⟨Ty.id (Ty.arrow domainType codomainType)
+            (RawTerm.lam (RawTerm.refl applyTarget))
+            (RawTerm.lam (RawTerm.refl applyTarget)),
+          Term.funextReflAtId (context := context) domainType codomainType applyTarget,
+          ?_⟩
+  -- Force sourceTerm to be Term.funextReflAtId via free-the-type:
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType
+          (RawTerm.lam (RawTerm.refl applyRaw))),
+        someType = Ty.id (Ty.arrow domainType codomainType)
+                         (RawTerm.lam (RawTerm.refl applyRaw))
+                         (RawTerm.lam (RawTerm.refl applyRaw)) →
+        Step.par genericTerm
+                 (Term.funextReflAtId (context := context) domainType codomainType
+                                      applyTarget) by
+    exact key sourceTerm rfl
+  intro someType genericTerm someTypeIsId
+  cases genericTerm
+  case funextReflAtId innerDomain innerCodomain =>
+    have idEq := Ty.id.inj someTypeIsId
+    have arrowEq := Ty.arrow.inj idEq.1
+    cases arrowEq.1
+    cases arrowEq.2
+    exact Step.par.funextReflAtIdCong domainType codomainType applyStep
+  all_goals first
+    | nomatch someTypeIsId
+    | (rename_i innerDomain innerCodomain
+       have idEq := Ty.id.inj someTypeIsId
+       nomatch idEq.1)
+
 /-! ## Atom-shaped value ctors (equivReflId, equivReflIdAtId)
 
 `Term.equivReflId carrier` and `Term.equivReflIdAtId innerLevel innerLevelLt
