@@ -1,5 +1,7 @@
 import LeanFX2.Algo.DecConv
 import LeanFX2.Algo.Synth
+import LeanFX2.Confluence.ChurchRosser
+import LeanFX2.Confluence.RawParStarCong
 import LeanFX2.Reduction.ConvCanonical
 import LeanFX2.Term.Inversion
 
@@ -85,6 +87,50 @@ example {ty1 ty2 : Ty level scope}
     Conv term1 term2 :=
   Conv.canonical_boolTrue term1 term2
 
+/-! ## Step 6 — Phase 3 inversions in action
+
+`RawStep.parStar.<head>_inv` lemmas extracted from
+`Confluence/RawParStarCong.lean` constrain the common raw reduct
+when one side has a canonical-head raw form.  Demonstrates the
+machinery — even though it doesn't fully lift to typed
+`Conv.canonicalForm_<head>`, it's directly useful for decidable
+conversion. -/
+
+/-- Given a parStar chain from `unit`, the only reachable target
+is `unit` itself.  Direct application of `parStar.unit_inv`. -/
+example {someTarget : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.unit : RawTerm scope) someTarget) :
+    someTarget = RawTerm.unit :=
+  RawStep.parStar.unit_inv chain
+
+/-- The raw join of a unit-source Conv must be unit.  Composing
+`Conv.canonicalRaw` (which gives the raw join) with
+`parStar.unit_inv` produces this constraint. -/
+example {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.unit (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.unit (scope := scope)))
+    (someConv : Conv term1 term2) :
+    ∃ commonRaw,
+      commonRaw = (RawTerm.unit (scope := scope)) ∧
+      RawStep.parStar (RawTerm.unit (scope := scope)) commonRaw ∧
+      RawStep.parStar (RawTerm.unit (scope := scope)) commonRaw := by
+  obtain ⟨commonRaw, sourceJoin, targetJoin⟩ := Conv.canonicalRaw someConv
+  exact ⟨commonRaw, RawStep.parStar.unit_inv sourceJoin,
+         sourceJoin, targetJoin⟩
+
+/-- Same pattern at `boolTrue`. -/
+example {ty1 ty2 : Ty level scope}
+    (term1 : Term context ty1 (RawTerm.boolTrue (scope := scope)))
+    (term2 : Term context ty2 (RawTerm.boolTrue (scope := scope)))
+    (someConv : Conv term1 term2) :
+    ∃ commonRaw,
+      commonRaw = (RawTerm.boolTrue (scope := scope)) ∧
+      RawStep.parStar (RawTerm.boolTrue (scope := scope)) commonRaw ∧
+      RawStep.parStar (RawTerm.boolTrue (scope := scope)) commonRaw := by
+  obtain ⟨commonRaw, sourceJoin, targetJoin⟩ := Conv.canonicalRaw someConv
+  exact ⟨commonRaw, RawStep.parStar.boolTrue_inv sourceJoin,
+         sourceJoin, targetJoin⟩
+
 /-! ## Audit
 
 All theorems in this file should be zero-axiom — they delegate
@@ -95,5 +141,7 @@ to existing zero-axiom primitives shipped this iteration. -/
 #print axioms LeanFX2.Term.checkConv_sound
 #print axioms LeanFX2.Conv.canonical_unit
 #print axioms LeanFX2.Conv.canonical_boolTrue
+#print axioms LeanFX2.RawStep.parStar.unit_inv
+#print axioms LeanFX2.RawStep.parStar.boolTrue_inv
 
 end LeanFX2.SmokePhase79EndToEnd
