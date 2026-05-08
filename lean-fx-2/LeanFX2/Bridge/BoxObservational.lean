@@ -31,6 +31,12 @@ coherence statement that requires:
 Documented placeholder.  See `Modal/Adjunction.lean` for the full
 Phase 12.A.6+ prerequisite catalogue; this file is one of the
 downstream consumers.
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (Day 0 scaffold; namespace only)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

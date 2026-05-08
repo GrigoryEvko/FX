@@ -51,6 +51,12 @@ contractually clear via the suffixes and this advisory.
 * #1515 PATHIDINVERSE-SCOPE: this scope advisory.
 * #1510 PATH-CUBICAL-REAL: prerequisite for arbitrary-input
   inverse extension.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Cubical/Bridge, Smoke/Bridge
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

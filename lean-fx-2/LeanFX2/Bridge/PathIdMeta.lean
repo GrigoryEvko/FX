@@ -10,6 +10,12 @@ is intentionally limited to the reflexive typed-Term fragment.  At the
 set-level HoTT layer, however, `Path left right` is definitionally Lean
 `Eq left right`, so the Path/Id bridge is an actual equivalence with
 definitional round trips.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Cubical/Bridge, Smoke/Bridge
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

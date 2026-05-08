@@ -15,6 +15,12 @@ raw type code and the `Ty` carrier are schematic data, following the existing
 `Term.equivReflIdAtId` convention.  Full heterogeneous path-to-equivalence
 needs a cubical universe path eliminator that is not present in this kernel
 slice.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Cubical/Bridge, Smoke/Bridge
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

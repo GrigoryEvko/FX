@@ -17,6 +17,12 @@ Both are conversion theorems between typed terms, not raw type-family
 equalities.  The full pseudo-signature from the sprint plan,
 `Conv (Ty.id Type A B) (Ty.equiv A B)`, is represented in this kernel by
 the corresponding `Term` witnesses because `Conv` relates terms.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Cubical/Ua, Smoke/Bridge
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

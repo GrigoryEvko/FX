@@ -13,6 +13,12 @@ The full bridge from arbitrary `Ty.id` witnesses to cubical paths needs the
 identity eliminator connected to the cubical path layer.  This module only
 exports the current kernel-supported fragment: `refl` maps to the canonical
 constant cubical path generated from the endpoint term.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Bridge/PathIdInverse
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

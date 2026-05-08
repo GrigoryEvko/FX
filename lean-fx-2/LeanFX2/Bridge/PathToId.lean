@@ -14,6 +14,12 @@ principle for arbitrary paths.  The current kernel has only the typed
 constant-path constructor, so this module exposes exactly that load-bearing
 fragment: a canonical constant cubical path at `pointRaw` maps to
 `Term.refl carrierType pointRaw`.
+
+## Root status
+
+* Layer: bridge
+* Load-bearing for: Bridge/PathIdInverse
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2
