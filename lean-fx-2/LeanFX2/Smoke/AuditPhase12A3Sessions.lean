@@ -11,6 +11,10 @@ import LeanFX2.Sessions.Global
 #print axioms LeanFX2.SessionProtocol.isFinite.decidable
 #print axioms LeanFX2.SessionProtocol.dual
 #print axioms LeanFX2.SessionProtocol.dual_end
+#print axioms LeanFX2.SessionProtocol.dual_cancels_send_recv
+#print axioms LeanFX2.SessionProtocol.dual_cancels_recv_send
+#print axioms LeanFX2.SessionProtocol.dual_cancels_branch_select
+#print axioms LeanFX2.SessionProtocol.dual_cancels_select_branch
 #print axioms LeanFX2.SessionProtocol.dual_involutive
 #print axioms LeanFX2.SessionProtocol.Action
 #print axioms LeanFX2.SessionProtocol.Action.dual

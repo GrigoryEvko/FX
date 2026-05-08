@@ -75,6 +75,41 @@ theorem dual_end :
     dual (endProtocol : SessionProtocol PayloadType) = endProtocol :=
   rfl
 
+/-- Send-step duality cancels into a receive-step continuation.  Definitional
+expansion of `dual` on the send arm; named explicitly so downstream session
+code can `rw [dual_cancels_send_recv]` instead of unfolding `dual`. -/
+theorem dual_cancels_send_recv
+    (payloadCarrier : PayloadType)
+    (continuation : SessionProtocol PayloadType) :
+    dual (sendStep payloadCarrier continuation)
+      = receiveStep payloadCarrier continuation.dual :=
+  rfl
+
+/-- Receive-step duality cancels into a send-step continuation.  Symmetric
+companion to `dual_cancels_send_recv`. -/
+theorem dual_cancels_recv_send
+    (payloadCarrier : PayloadType)
+    (continuation : SessionProtocol PayloadType) :
+    dual (receiveStep payloadCarrier continuation)
+      = sendStep payloadCarrier continuation.dual :=
+  rfl
+
+/-- Branch (passive) duality cancels into select (active) on dual'd inner
+protocols.  Definitional. -/
+theorem dual_cancels_branch_select
+    (leftOption rightOption : SessionProtocol PayloadType) :
+    dual (branchProtocol leftOption rightOption)
+      = selectProtocol leftOption.dual rightOption.dual :=
+  rfl
+
+/-- Select (active) duality cancels into branch (passive) on dual'd inner
+protocols.  Definitional. -/
+theorem dual_cancels_select_branch
+    (leftOption rightOption : SessionProtocol PayloadType) :
+    dual (selectProtocol leftOption rightOption)
+      = branchProtocol leftOption.dual rightOption.dual :=
+  rfl
+
 /-- The headline: `dual` is involutive — applying it twice
 returns the original protocol.  Discharged by structural
 induction on the (non-nested) binary protocol via Lean's
