@@ -1097,4 +1097,181 @@ theorem RawStep.par.lift_effectPerform
                             canPerformOperation operationTarget argumentsTarget,
          Step.par.effectPerformCong operationStepTyped argumentsStepTyped⟩
 
+/-! ## Inline destructors for canonical-head Term values
+
+These destructors mirror the ones in `Term/Inversion.lean`
+(natSuccDestruct, listConsDestruct, optionSomeDestruct,
+eitherInlDestruct, eitherInrDestruct, pairDestruct) for ctors not
+yet covered upstream — each follows the suffices/free-the-index
+pattern documented in `feedback_lean_free_type_via_suffices.md` to
+sidestep the `Ty.X = varType ctx pos` dep-elim wall.
+
+Inline in this file because they're consumed only by the lift
+theorems below; promoting to Inversion.lean is a future cleanup. -/
+
+/-- Destructor for `Term.modIntro`: from a typed Term whose raw form
+is `RawTerm.modIntro innerRaw`, extract the typed inner. -/
+def Term.modIntroDestruct
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (someTerm : Term context innerType (RawTerm.modIntro innerRaw)) :
+    Σ' (innerTerm : Term context innerType innerRaw),
+       HEq someTerm (Term.modIntro innerTerm) := by
+  cases someTerm
+  rename_i innerTerm
+  exact ⟨innerTerm, HEq.rfl⟩
+
+/-- Destructor for `Term.recordIntro`. -/
+def Term.recordIntroDestruct
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (someTerm :
+      Term context (Ty.record singleFieldType) (RawTerm.recordIntro firstRaw)) :
+    Σ' (firstField : Term context singleFieldType firstRaw),
+       HEq someTerm (Term.recordIntro firstField) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.recordIntro firstRaw)),
+        someType = Ty.record singleFieldType →
+        Σ' (firstField : Term context singleFieldType firstRaw),
+           HEq genericTerm (Term.recordIntro firstField) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsRecord
+  cases genericTerm
+  rename_i innerSingleField firstField
+  have singleFieldEq : innerSingleField = singleFieldType :=
+    Ty.record.inj someTypeIsRecord
+  cases singleFieldEq
+  exact ⟨firstField, HEq.rfl⟩
+
+/-- Destructor for `Term.refineIntro`. -/
+def Term.refineIntroDestruct
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (someTerm :
+      Term context (Ty.refine baseType predicate)
+        (RawTerm.refineIntro valueRaw proofRaw)) :
+    Σ' (baseValue : Term context baseType valueRaw)
+       (predicateProof : Term context Ty.unit proofRaw),
+       HEq someTerm (Term.refineIntro predicate baseValue predicateProof) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm :
+          Term context someType (RawTerm.refineIntro valueRaw proofRaw)),
+        someType = Ty.refine baseType predicate →
+        Σ' (baseValue : Term context baseType valueRaw)
+           (predicateProof : Term context Ty.unit proofRaw),
+           HEq genericTerm (Term.refineIntro predicate baseValue predicateProof) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsRefine
+  cases genericTerm
+  rename_i innerBase innerPredicate baseValue predicateProof
+  have refineEq := Ty.refine.inj someTypeIsRefine
+  cases refineEq.1
+  cases refineEq.2
+  exact ⟨baseValue, predicateProof, HEq.rfl⟩
+
+/-! ## Tier 3 — eliminator lifts with shallow β (single-child)
+
+Single-Term-child eliminators where β fires when the child is the
+matching canonical introducer.  Two-arm raw inversion: cong + β-deep.
+
+Recipe per β-firing eliminator:
+  rcases <head>_inv rawStep with
+    ⟨..., eq, congStep⟩
+    | ⟨..., eq, βStep⟩
+  case 1 (cong arm): apply childLift to congStep, wrap with Step.par.<elim>Cong
+  case 2 (β arm): apply childLift to βStep (which yields a Term at
+    canonical type), use the corresponding destructor to extract
+    the canonical payload, then apply Step.par.beta<elim><Intro>Deep -/
+
+/-- **Tier 3 — Term.modElim lift.**  Two-arm: cong + betaModElimIntro.
+The β-arm uses Term.modIntroDestruct to extract the typed payload
+when the inner reaches a Term.modIntro. -/
+theorem RawStep.par.lift_modElim
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context innerType targetRawIH,
+        Step.par innerTerm innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.modElim innerRaw) targetRaw) :
+    ∃ targetTerm : Term context innerType targetRaw,
+      Step.par (Term.modElim innerTerm) targetTerm := by
+  rcases RawStep.par.modElim_inv rawStep with
+    ⟨innerTargetRaw, eq, innerStep⟩
+    | ⟨payloadTarget, eq, innerToModIntro⟩
+  · obtain ⟨innerTarget, innerStepTyped⟩ := innerLift innerStep
+    cases eq
+    exact ⟨Term.modElim innerTarget, Step.par.modElim innerStepTyped⟩
+  · obtain ⟨innerCanonical, innerStepTyped⟩ := innerLift innerToModIntro
+    obtain ⟨payload, payloadHeq⟩ := Term.modIntroDestruct innerCanonical
+    have payloadEq : innerCanonical = Term.modIntro payload := eq_of_heq payloadHeq
+    rw [payloadEq] at innerStepTyped
+    cases eq
+    exact ⟨payload, Step.par.betaModElimIntroDeep innerStepTyped⟩
+
+/-- **Tier 3 — Term.recordProj lift.**  Two-arm: cong + betaRecordProjIntro. -/
+theorem RawStep.par.lift_recordProj
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    (recordValue : Term context (Ty.record singleFieldType) recordRaw)
+    (recordLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par recordRaw targetRawIH →
+      ∃ recordTarget :
+          Term context (Ty.record singleFieldType) targetRawIH,
+        Step.par recordValue recordTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.recordProj recordRaw) targetRaw) :
+    ∃ targetTerm : Term context singleFieldType targetRaw,
+      Step.par (Term.recordProj recordValue) targetTerm := by
+  rcases RawStep.par.recordProj_inv rawStep with
+    ⟨recordTargetRaw, eq, recordStep⟩
+    | ⟨firstTarget, eq, recordToIntro⟩
+  · obtain ⟨recordTarget, recordStepTyped⟩ := recordLift recordStep
+    cases eq
+    exact ⟨Term.recordProj recordTarget, Step.par.recordProjCong recordStepTyped⟩
+  · obtain ⟨recordCanonical, recordStepTyped⟩ := recordLift recordToIntro
+    obtain ⟨firstField, firstHeq⟩ := Term.recordIntroDestruct recordCanonical
+    have firstEq : recordCanonical = Term.recordIntro firstField := eq_of_heq firstHeq
+    rw [firstEq] at recordStepTyped
+    cases eq
+    exact ⟨firstField, Step.par.betaRecordProjIntroDeep recordStepTyped⟩
+
+/-- **Tier 3 — Term.refineElim lift.**  Two-arm: cong + betaRefineElimIntro.
+The β arm extracts the typed value from a Term.refineIntro. -/
+theorem RawStep.par.lift_refineElim
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw)
+    (refinedLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par refinedRaw targetRawIH →
+      ∃ refinedTarget :
+          Term context (Ty.refine baseType predicate) targetRawIH,
+        Step.par refinedValue refinedTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.refineElim refinedRaw) targetRaw) :
+    ∃ targetTerm : Term context baseType targetRaw,
+      Step.par (Term.refineElim refinedValue) targetTerm := by
+  rcases RawStep.par.refineElim_inv rawStep with
+    ⟨refinedTargetRaw, eq, refinedStep⟩
+    | ⟨valueTarget, proofTarget, eq, refinedToIntro⟩
+  · obtain ⟨refinedTarget, refinedStepTyped⟩ := refinedLift refinedStep
+    cases eq
+    exact ⟨Term.refineElim refinedTarget,
+           Step.par.refineElimCong refinedStepTyped⟩
+  · obtain ⟨refinedCanonical, refinedStepTyped⟩ := refinedLift refinedToIntro
+    obtain ⟨baseValue, predicateProof, valueHeq⟩ :=
+      Term.refineIntroDestruct predicate refinedCanonical
+    have valueEq :
+        refinedCanonical = Term.refineIntro predicate baseValue predicateProof :=
+      eq_of_heq valueHeq
+    rw [valueEq] at refinedStepTyped
+    cases eq
+    exact ⟨baseValue, Step.par.betaRefineElimIntroDeep refinedStepTyped⟩
+
 end LeanFX2
