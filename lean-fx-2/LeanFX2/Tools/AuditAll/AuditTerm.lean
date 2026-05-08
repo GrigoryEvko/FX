@@ -79,5 +79,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.headCtor_lamPi_raw
 #assert_no_axioms LeanFX2.Term.headCtor_modIntro_raw
 #assert_no_axioms LeanFX2.Term.headCtor_recordIntro_raw
+#assert_no_axioms LeanFX2.Term.headCtor_pathLam_raw
 
 end LeanFX2.Tools
