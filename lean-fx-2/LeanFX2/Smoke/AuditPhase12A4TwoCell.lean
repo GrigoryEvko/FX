@@ -68,4 +68,73 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.TwoCell.vert
 #print axioms LeanFX2.TwoCell.horiz
 
+/-! ## Type-level smoke samples — TwoCell.refl at each Modality ctor
+
+Confirms that the identity 2-cell `TwoCell.refl` typechecks at
+each of the five `Modality` constructors (identity, boxK,
+diamondK, flat, sharp) without any inference hint, exercising
+the implicit `{sourceMode targetMode : Mode}` arguments. -/
+
+example : TwoCell (Modality.identity Mode.software)
+                  (Modality.identity Mode.software) :=
+  TwoCell.refl (Modality.identity Mode.software)
+
+example : TwoCell (Modality.boxK Mode.software)
+                  (Modality.boxK Mode.software) :=
+  TwoCell.refl (Modality.boxK Mode.software)
+
+example : TwoCell (Modality.diamondK Mode.software)
+                  (Modality.diamondK Mode.software) :=
+  TwoCell.refl (Modality.diamondK Mode.software)
+
+example : TwoCell Modality.flat Modality.flat :=
+  TwoCell.refl Modality.flat
+
+example : TwoCell Modality.sharp Modality.sharp :=
+  TwoCell.refl Modality.sharp
+
+/-! ## Type-level smoke samples — TwoCell.vert composition
+
+Confirms that vertical composition typechecks when the middle
+1-cell is shared.  Uses `refl` 2-cells as components — the
+result is again an identity 2-cell (left/right identity laws
+for `vert` are deferred to D4.0b #1700). -/
+
+example
+    (firstCell : TwoCell (Modality.boxK Mode.software)
+                         (Modality.boxK Mode.software))
+    (secondCell : TwoCell (Modality.boxK Mode.software)
+                          (Modality.boxK Mode.software)) :
+    TwoCell (Modality.boxK Mode.software)
+            (Modality.boxK Mode.software) :=
+  TwoCell.vert firstCell secondCell
+
+example : TwoCell (Modality.boxK Mode.software)
+                  (Modality.boxK Mode.software) :=
+  TwoCell.vert (TwoCell.refl _) (TwoCell.refl _)
+
+/-! ## Type-level smoke samples — TwoCell.horiz composition
+
+Confirms that horizontal composition typechecks.  At
+`Mode.software`, composing two `boxK` modalities horizontally
+gives a 2-cell whose source and target are
+`Modality.compose (boxK ...) (boxK ...) = boxK ...` (by
+`compose_boxK_idempotent`).  Lean elaborates the indices via
+`Modality.compose`'s reducibility (Discipline #4 marker
+applied in `Modal/Foundation.lean`). -/
+
+example : TwoCell (Modality.compose (Modality.boxK Mode.software)
+                                    (Modality.boxK Mode.software))
+                  (Modality.compose (Modality.boxK Mode.software)
+                                    (Modality.boxK Mode.software)) :=
+  TwoCell.horiz (TwoCell.refl (Modality.boxK Mode.software))
+                (TwoCell.refl (Modality.boxK Mode.software))
+
+example : TwoCell (Modality.compose (Modality.identity Mode.ghost)
+                                    (Modality.diamondK Mode.ghost))
+                  (Modality.compose (Modality.identity Mode.ghost)
+                                    (Modality.diamondK Mode.ghost)) :=
+  TwoCell.horiz (TwoCell.refl (Modality.identity Mode.ghost))
+                (TwoCell.refl (Modality.diamondK Mode.ghost))
+
 end LeanFX2.Smoke
