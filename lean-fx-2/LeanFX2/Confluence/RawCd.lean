@@ -1839,7 +1839,11 @@ def RawTerm.cdTranspCase {scope : Nat}
   | RawTerm.idCode _ _ _ => RawTerm.transp developedPath developedSource
   | RawTerm.equivCode _ _ => RawTerm.transp developedPath developedSource
   | RawTerm.cumulUpMarker _ => RawTerm.transp developedPath developedSource
-  | RawTerm.uaToEquiv _ => RawTerm.transp developedPath developedSource
+  -- D3.6-S1: univalence-β fires when developed path is `uaToEquiv proof`.
+  -- Reduce to `equivApply (uaToEquiv proof) developedSource` (the ua β
+  -- contractum).
+  | RawTerm.uaToEquiv proof =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedSource
   | RawTerm.equivApply _ _ => RawTerm.transp developedPath developedSource
 
 /-- Complete development on raw terms.  Maximal parallel reduct:

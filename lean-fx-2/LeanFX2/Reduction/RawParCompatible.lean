@@ -679,6 +679,23 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
   | equivApplyCong _ _ equivIH argIH =>
       exact RawStep.par.equivApplyCong
         (equivIH substsRelated) (argIH substsRelated)
+  | uaBeta _ _ proofIH sourceIH =>
+      -- D3.6-S1: parallel substitution preserves the univalence-β
+      -- contractum.  LHS subst pushes through transp/uaToEquiv heads;
+      -- RHS subst pushes through equivApply/uaToEquiv heads.  Both
+      -- sides are mechanical via the definition of `RawTerm.subst`
+      -- on the involved ctors (no binder shift since none of the
+      -- involved ctors carry binders at this level).
+      simp only [RawTerm.subst]
+      exact RawStep.par.uaBeta (proofIH substsRelated) (sourceIH substsRelated)
+  | uaBetaDeep _ _ pathIH sourceIH =>
+      -- D3.6-S1 deep variant: parallel substitution pushes through
+      -- transp/equivApply/uaToEquiv heads.  Lift pathIH via subst on
+      -- its uaToEquiv-headed target, then assemble.
+      simp only [RawTerm.subst]
+      have pathSubstStep := pathIH substsRelated
+      simp only [RawTerm.subst] at pathSubstStep
+      exact RawStep.par.uaBetaDeep pathSubstStep (sourceIH substsRelated)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

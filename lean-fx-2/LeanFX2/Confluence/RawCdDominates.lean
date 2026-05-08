@@ -272,7 +272,21 @@ theorem RawStep.par.cd_dominates :
               exact RawStep.par.transpReflBetaDeep pathParStep sourceParStep
           case _ _unwknEqn =>
               exact RawStep.par.transpCong pathParStep sourceParStep
-      all_goals exact RawStep.par.transpCong pathParStep sourceParStep
+      -- D3.6-S1 cd activation: when cd pathTerm = uaToEquiv proofRaw,
+      -- fire the deep univalence-β rule.  The deep variant takes the
+      -- pathParStep premise directly without needing path-shape
+      -- inversion (mirrors `transpReflBetaDeep` for the constant-path
+      -- case at lines 264-273 above).  Each remaining `split` arm
+      -- defaults to `transpCong`; the uaToEquiv arm overrides with
+      -- `uaBetaDeep`.  Use `first` over each leftover goal: try the
+      -- uaToEquiv-specific tactic (which depends on `cdPathEqn` of
+      -- the right shape and a single proofRaw binder), otherwise
+      -- close via transpCong.
+      all_goals first
+        | (rename_i proofRaw cdPathEqn
+           rw [cdPathEqn] at pathParStep
+           exact RawStep.par.uaBetaDeep pathParStep sourceParStep)
+        | exact RawStep.par.transpCong pathParStep sourceParStep
   | _, .hcomp sidesTerm capTerm =>
       RawStep.par.hcompCong
         (RawStep.par.cd_dominates sidesTerm)

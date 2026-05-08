@@ -1766,7 +1766,19 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- confluence-only mechanism when combined with cd's `cdTranspCase`
   -- β-firing.  The deep par ctor exists purely to close the cd cascade
   -- via `RawStep.par.weaken_inv` (Phase G.0).
-  suffix == "transpReflBetaDeep"
+  suffix == "transpReflBetaDeep" ||
+  -- Section D: D3.6-S1 univalence-β raw rules.  Typed `Term.transp` requires
+  -- its path argument at type `Ty.path ...`, but typed `Term.uaToEquiv`
+  -- produces type `Ty.equiv ...` (NOT `Ty.path`).  Therefore no typed
+  -- `Term.transp` can have a path-raw of `RawTerm.uaToEquiv proofRaw`,
+  -- making both `uaBeta` (shallow, `transp (uaToEquiv proof) source ⟶
+  -- equivApply (uaToEquiv proof) source`) and `uaBetaDeep` (path develops
+  -- to uaToEquiv via parallel reduction) structurally raw-only
+  -- confluence-closure mechanisms — kernel-internal univalence-β at the
+  -- raw level.  Activated through `cdTranspCase`'s `uaToEquiv` arm in
+  -- `Confluence/RawCd.lean`.
+  suffix == "uaBeta" ||
+  suffix == "uaBetaDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

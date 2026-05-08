@@ -35,6 +35,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.betaModElimIntroDeep
 #assert_no_axioms LeanFX2.RawStep.par.betaCodataDestUnfold
 #assert_no_axioms LeanFX2.RawStep.par.betaCodataDestUnfoldDeep
+-- D3.6-S1 univalence-β raw rules (kernel-internal univalence-β —
+-- raw-only confluence-closure mechanism, listed in
+-- `isDocumentedRawOnlyParity` since `Term.uaToEquiv` produces
+-- `Ty.equiv` not `Ty.path`, blocking a typed `Term.transp` mirror).
+#assert_no_axioms LeanFX2.RawStep.par.uaBeta
+#assert_no_axioms LeanFX2.RawStep.par.uaBetaDeep
+#assert_no_axioms LeanFX2.RawStep.par.uaToEquiv_inv
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp

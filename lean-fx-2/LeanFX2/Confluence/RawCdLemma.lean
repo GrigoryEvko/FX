@@ -452,7 +452,51 @@ theorem RawStep.par.cd_lemma {scope : Nat}
               exact RawStep.par.transpReflBetaDeep pathIH sourceIH
           case _ _unwknEqn =>
               exact RawStep.par.transpCong pathIH sourceIH
-      all_goals exact RawStep.par.transpCong pathIH sourceIH
+      -- D3.6-S1: when `cd pathRawSource = uaToEquiv proofRawTarget`,
+      -- cdTranspCase fires the equivApply contractum.  Use uaBetaDeep
+      -- with pathIH directly (par pathRawTarget (uaToEquiv ...)).
+      -- The `first` block tries the uaToEquiv-specific tactic per
+      -- remaining arm; only the uaToEquiv arm has `pathIH : par _
+      -- (uaToEquiv _)` after the rewrite, so all others fall through
+      -- to the transpCong default.
+      all_goals first
+        | (rename_i proofRaw cdPathEqn
+           rw [cdPathEqn] at pathIH
+           exact RawStep.par.uaBetaDeep pathIH sourceIH)
+        | exact RawStep.par.transpCong pathIH sourceIH
+  | @uaBeta _ proofRawSource _ _ _ _ sourceStep proofIH sourceIH =>
+      -- D3.6-S1 shallow: source = transp (uaToEquiv proofRawSource)
+      --                            sourceRawSource.
+      -- Target = equivApply (uaToEquiv proofRawTarget) sourceRawTarget.
+      -- proofIH : par proofRawTarget (cd proofRawSource)
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource)
+      -- Goal: par (equivApply (uaToEquiv proofRawTarget) sourceRawTarget)
+      --           (cd (transp (uaToEquiv proofRawSource) sourceRawSource))
+      -- = par (equivApply (uaToEquiv proofRawTarget) sourceRawTarget)
+      --       (cdTranspCase (uaToEquiv (cd proofRawSource)) (cd sourceRawSource))
+      -- = par (equivApply (uaToEquiv proofRawTarget) sourceRawTarget)
+      --       (equivApply (uaToEquiv (cd proofRawSource)) (cd sourceRawSource))
+      -- Conclude via equivApplyCong + uaToEquivCong proofIH and sourceIH.
+      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      exact RawStep.par.equivApplyCong
+        (RawStep.par.uaToEquivCong proofIH) sourceIH
+  | @uaBetaDeep _ pathRawSource _ _ _ pathStep sourceStep pathIH sourceIH =>
+      -- D3.6-S1 deep: source = transp pathRawSource sourceRawSource.
+      -- Target = equivApply (uaToEquiv proofRawTarget) sourceRawTarget.
+      -- pathStep : par pathRawSource (uaToEquiv proofRawTarget)
+      -- pathIH : par (uaToEquiv proofRawTarget) (cd pathRawSource)
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource)
+      -- Goal: par (equivApply (uaToEquiv proofRawTarget) sourceRawTarget)
+      --           (cdTranspCase (cd pathRawSource) (cd sourceRawSource))
+      -- By uaToEquiv_inv on pathIH: cd pathRawSource = uaToEquiv X
+      -- with par proofRawTarget X.  cdTranspCase fires the uaToEquiv arm
+      -- yielding equivApply (uaToEquiv X) (cd sourceRawSource).
+      obtain ⟨proofInner, cdPathEq, proofParStep⟩ :=
+        RawStep.par.uaToEquiv_inv pathIH
+      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      rw [cdPathEq]
+      exact RawStep.par.equivApplyCong
+        (RawStep.par.uaToEquivCong proofParStep) sourceIH
   | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
       -- Source = transp (pathLam typeRawSource.weaken) sourceRawSource.
       -- Target = sourceRawTarget.

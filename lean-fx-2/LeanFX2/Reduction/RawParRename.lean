@@ -351,6 +351,23 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.uaToEquivCong (innerIH _)
   | equivApplyCong _ _ equivIH argIH =>
       exact RawStep.par.equivApplyCong (equivIH _) (argIH _)
+  | uaBeta _ _ proofIH sourceIH =>
+      -- D3.6-S1: rename commutes with the univalence-β contractum.
+      -- LHS rename: transp (uaToEquiv (proof.rename rho)) (source.rename rho)
+      -- RHS rename: equivApply (uaToEquiv (proof.rename rho)) (source.rename rho)
+      -- Both sides are mechanical via the definition of `RawTerm.rename`
+      -- on `transp`/`uaToEquiv`/`equivApply`.
+      simp only [RawTerm.rename]
+      exact RawStep.par.uaBeta (proofIH _) (sourceIH _)
+  | uaBetaDeep _ _ pathIH sourceIH =>
+      -- D3.6-S1 deep variant: rename commutes via `RawTerm.rename` on
+      -- `transp`/`equivApply`/`uaToEquiv`.  pathIH renamed gives a par
+      -- step on the renamed path landing at uaToEquiv of the renamed
+      -- proofTarget; the simp + RawTerm.rename pushes through.
+      simp only [RawTerm.rename]
+      have pathRenameStep := pathIH rawRenaming
+      simp only [RawTerm.rename] at pathRenameStep
+      exact RawStep.par.uaBetaDeep pathRenameStep (sourceIH _)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)
   | funextReflAtIdCong _ applyIH =>

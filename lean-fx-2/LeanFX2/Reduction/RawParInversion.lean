@@ -338,6 +338,20 @@ theorem RawStep.par.pathLam_inv {scope : Nat}
   | refl _ => exact ⟨body, rfl, RawStep.par.refl _⟩
   | pathLamCong bodyStep => exact ⟨_, rfl, bodyStep⟩
 
+/-- D3.6-S1 `RawStep.par (uaToEquiv proof) target → target =
+uaToEquiv proof' ∧ par proof proof'`.  Required by `RawCdLemma`'s
+`uaBetaDeep` arm and `cdTranspCase` activation: a parallel step
+landing at `uaToEquiv X` admits only the `uaToEquivCong` rule (or
+`refl`), so the target is `uaToEquiv` of an inner par-target. -/
+theorem RawStep.par.uaToEquiv_inv {scope : Nat}
+    {proof : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.uaToEquiv proof) target) :
+    ∃ proofTarget, target = RawTerm.uaToEquiv proofTarget ∧
+      RawStep.par proof proofTarget := by
+  cases parallelStep with
+  | refl _ => exact ⟨proof, rfl, RawStep.par.refl _⟩
+  | uaToEquivCong proofStep => exact ⟨_, rfl, proofStep⟩
+
 /-- `RawStep.par (pathApp p i) target` either stays a congruent
 `pathApp`, or fires cubical path β after the path develops to a
 `pathLam`. -/
@@ -415,8 +429,11 @@ theorem RawStep.par.glueElim_inv {scope : Nat}
 /-- Inversion of `RawStep.par` on a `transp` head: either the target
 is again a `transp` (refl / transpCong cases), the LHS path was a
 constant `pathLam typeRaw.weaken` and the rule fired through
-`transpReflBeta`, or the path develops to a constant pathLam-weaken
-via parallel step (deep-β `transpReflBetaDeep`). -/
+`transpReflBeta`, the path develops to a constant pathLam-weaken via
+parallel step (deep-β `transpReflBetaDeep`), the LHS path was a
+`uaToEquiv proofRaw` head and the rule fired through `uaBeta`
+(D3.6-S1), or the path develops to `uaToEquiv proofRawTarget` via
+parallel step (deep ua-β `uaBetaDeep`). -/
 theorem RawStep.par.transp_inv {scope : Nat}
     {pathTerm sourceTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.transp pathTerm sourceTerm) target) :
@@ -431,6 +448,17 @@ theorem RawStep.par.transp_inv {scope : Nat}
     (∃ (typeRawTarget : RawTerm scope) (sourceTarget : RawTerm scope),
         target = sourceTarget ∧
         RawStep.par pathTerm (RawTerm.pathLam typeRawTarget.weaken) ∧
+        RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (proofRawSource proofRawTarget sourceTarget : RawTerm scope),
+        pathTerm = RawTerm.uaToEquiv proofRawSource ∧
+        target = RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget)
+                                     sourceTarget ∧
+        RawStep.par proofRawSource proofRawTarget ∧
+        RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (proofRawTarget sourceTarget : RawTerm scope),
+        target = RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget)
+                                     sourceTarget ∧
+        RawStep.par pathTerm (RawTerm.uaToEquiv proofRawTarget) ∧
         RawStep.par sourceTerm sourceTarget) := by
   cases parallelStep with
   | refl _ =>
@@ -441,7 +469,14 @@ theorem RawStep.par.transp_inv {scope : Nat}
   | @transpReflBeta _ typeRawSource _ _ _ _ sourceStep =>
       exact Or.inr (Or.inl ⟨typeRawSource, _, rfl, rfl, sourceStep⟩)
   | @transpReflBetaDeep _ _ typeRawTarget _ _ pathStep sourceStep =>
-      exact Or.inr (Or.inr ⟨typeRawTarget, _, rfl, pathStep, sourceStep⟩)
+      exact Or.inr (Or.inr (Or.inl
+        ⟨typeRawTarget, _, rfl, pathStep, sourceStep⟩))
+  | @uaBeta _ proofRawSource proofRawTarget _ _ proofStep sourceStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨proofRawSource, proofRawTarget, _, rfl, rfl, proofStep, sourceStep⟩)))
+  | @uaBetaDeep _ _ proofRawTarget _ _ pathStep sourceStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inr
+        ⟨proofRawTarget, _, rfl, pathStep, sourceStep⟩)))
 
 /-- `RawStep.par (hcomp s c) target → target = hcomp s' c' ∧ pars`. -/
 theorem RawStep.par.hcomp_inv {scope : Nat}

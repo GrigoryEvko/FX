@@ -945,6 +945,63 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par argSource argTarget →
       RawStep.par (RawTerm.equivApply equivSource argSource)
                   (RawTerm.equivApply equivTarget argTarget)
+  /-- D3.6-S1 univalence-β raw rule:
+  `transp (uaToEquiv proof) source ⟶ equivApply (uaToEquiv proof) source`.
+
+  The headline kernel-internal univalence-β reduction.  When the path
+  argument of `transp` is a `uaToEquiv proofRaw` head (the term-level
+  marker of "interpret this `Id (Universe lvl) leftTy rightTy` proof
+  as the corresponding type equivalence"), the entire `transp`
+  expression reduces to applying the packaged equivalence directly to
+  the source value via `equivApply (uaToEquiv proof) source`.
+
+  ## Why no typed mirror
+
+  At the typed level, `Term.transp` requires its path argument to be a
+  `Term context (Ty.path ...) pathRaw`, but `Term.uaToEquiv` produces
+  type `Ty.equiv leftTy rightTy` (NOT `Ty.path`).  Therefore no typed
+  `Term.transp` can have a path-raw of `RawTerm.uaToEquiv proofRaw`,
+  making this β rule structurally a raw-only confluence-closure
+  mechanism — listed in `isDocumentedRawOnlyParity` alongside the
+  raw-only `transpReflBetaDeep`.
+
+  ## Why both proof and source step
+
+  Inner reductions on `proofRaw` and `sourceRaw` proceed via the two
+  `RawStep.par` premises.  The β fires on the outer `transp` head
+  with the path's `uaToEquiv` ctor matching syntactically.  This is
+  the shallow form; a deep variant (path develops to `uaToEquiv` via
+  parallel reduction) is `uaBetaDeep` below. -/
+  | uaBeta {scope : Nat}
+      {proofRawSource proofRawTarget sourceRawSource sourceRawTarget :
+        RawTerm scope} :
+      RawStep.par proofRawSource proofRawTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.transp (RawTerm.uaToEquiv proofRawSource) sourceRawSource)
+        (RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget) sourceRawTarget)
+  /-- D3.6-S1 deep univalence-β raw rule: when the path develops via
+  parallel reduction to a `uaToEquiv proofRawTarget` and the source
+  steps to a target value, the entire `transp` reduces to the
+  univalence-β contractum.  Required for `cd_dominates` to discharge
+  `cdTranspCase`'s `uaToEquiv`-firing branch when the path was NOT
+  literally `uaToEquiv X` on the LHS but reaches that shape under cd
+  development.
+
+  Discharge in `cd_lemma` requires the typical path-shape inversion
+  on `pathStep` (pathLam_inv / uaToEquiv_inv via the `transp_inv`
+  cascade) — analogous to `transpReflBetaDeep` for the constant-path
+  case.  Like `transpReflBetaDeep`, this is documented `raw-only`
+  (`isDocumentedRawOnlyParity`) — a confluence-only mechanism with no
+  typed mirror because `uaBeta` itself has no typed mirror. -/
+  | uaBetaDeep {scope : Nat}
+      {pathRawSource proofRawTarget sourceRawSource sourceRawTarget :
+        RawTerm scope} :
+      RawStep.par pathRawSource (RawTerm.uaToEquiv proofRawTarget) →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.transp pathRawSource sourceRawSource)
+        (RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget) sourceRawTarget)
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/
