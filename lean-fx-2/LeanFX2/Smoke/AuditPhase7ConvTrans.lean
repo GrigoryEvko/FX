@@ -32,3 +32,19 @@ shipping plan and the dependency chain.
 
 #print axioms LeanFX2.Conv.transChains
 #print axioms LeanFX2.Conv.trans_via_chains
+
+/-! ## Phase 2 (#1590 TYPED-SR-TERM-CONSTRUCTION) — asymmetric trans variants
+
+When one Conv input arrives as an explicit `StepStar` chain and the
+other as a full `Conv` (existential midpoint), trans composes via
+`StepStar.append` without invoking confluence.  Six new theorems land
+zero-axiom in this phase. -/
+
+#print axioms LeanFX2.Conv.trans_chainLeft
+#print axioms LeanFX2.Conv.trans_chainRight
+#print axioms LeanFX2.Conv.trans_step_left
+#print axioms LeanFX2.Conv.trans_step_right
+#print axioms LeanFX2.Conv.trans_fromStepLeft
+#print axioms LeanFX2.Conv.trans_fromStepRight
+#print axioms LeanFX2.Conv.trans_refl_left
+#print axioms LeanFX2.Conv.trans_refl_right

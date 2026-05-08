@@ -29,6 +29,23 @@ work. -/
 #assert_no_axioms LeanFX2.Conv.canonicalRaw
 #assert_no_axioms LeanFX2.Conv.transRaw
 
+/-! ### Asymmetric typed Conv.trans variants (#1590 PHASE7-CONV-TRANS Phase 2)
+
+Asymmetric flavors where one side is a `StepStar` chain and the
+other is a `Conv` ship at zero axioms because the typed midpoint is
+inherited from the input `Conv`'s existential — no confluence call
+required.  Strong subject-reduction with term construction is NOT
+needed for these subsets. -/
+
+#assert_no_axioms LeanFX2.Conv.trans_chainLeft
+#assert_no_axioms LeanFX2.Conv.trans_chainRight
+#assert_no_axioms LeanFX2.Conv.trans_step_left
+#assert_no_axioms LeanFX2.Conv.trans_step_right
+#assert_no_axioms LeanFX2.Conv.trans_fromStepLeft
+#assert_no_axioms LeanFX2.Conv.trans_fromStepRight
+#assert_no_axioms LeanFX2.Conv.trans_refl_left
+#assert_no_axioms LeanFX2.Conv.trans_refl_right
+
 /-! ### Raw-level confluence machinery (#1508)
 
 The typed Conv corollaries above lift their proofs through these

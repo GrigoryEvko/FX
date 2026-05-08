@@ -14,4 +14,12 @@ import LeanFX2.Reduction.ConvCumulHomo
 #print axioms LeanFX2.Conv.transRaw
 #print axioms LeanFX2.Conv.transChains
 #print axioms LeanFX2.Conv.trans_via_chains
+#print axioms LeanFX2.Conv.trans_chainLeft
+#print axioms LeanFX2.Conv.trans_chainRight
+#print axioms LeanFX2.Conv.trans_step_left
+#print axioms LeanFX2.Conv.trans_step_right
+#print axioms LeanFX2.Conv.trans_fromStepLeft
+#print axioms LeanFX2.Conv.trans_fromStepRight
+#print axioms LeanFX2.Conv.trans_refl_left
+#print axioms LeanFX2.Conv.trans_refl_right
 #print axioms LeanFX2.ConvCumulHomo.subst_compatible_paired_allais
