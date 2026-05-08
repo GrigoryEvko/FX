@@ -601,4 +601,150 @@ theorem RawStep.par.lift_sessionSend
   exact ⟨Term.sessionSend protocolStep channelTarget payloadTarget,
          Step.par.sessionSendCong channelStepTyped payloadStepTyped⟩
 
+/-- **Tier 2 — Term.listCons lift.**  Two children: head (elementType)
+and tail (listType elementType). -/
+theorem RawStep.par.lift_listCons
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (headTerm : Term context elementType headRaw)
+    (tailTerm : Term context (Ty.listType elementType) tailRaw)
+    (headLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par headRaw targetRawIH →
+      ∃ headTarget : Term context elementType targetRawIH,
+        Step.par headTerm headTarget)
+    (tailLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par tailRaw targetRawIH →
+      ∃ tailTarget : Term context (Ty.listType elementType) targetRawIH,
+        Step.par tailTerm tailTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.listCons headRaw tailRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.listType elementType) targetRaw,
+      Step.par (Term.listCons headTerm tailTerm) targetTerm := by
+  obtain ⟨headTargetRaw, tailTargetRaw, eq, headStep, tailStep⟩ :=
+    RawStep.par.listCons_inv rawStep
+  obtain ⟨headTarget, headStepTyped⟩ := headLift headStep
+  obtain ⟨tailTarget, tailStepTyped⟩ := tailLift tailStep
+  cases eq
+  exact ⟨Term.listCons headTarget tailTarget,
+         Step.par.listCons headStepTyped tailStepTyped⟩
+
+/-- **Tier 2 — Term.equivApp lift.**  Two children: equiv (Ty.equiv A B)
+and argument (A); result type B. -/
+theorem RawStep.par.lift_equivApp
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw)
+    (equivLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par equivRaw targetRawIH →
+      ∃ equivTarget : Term context (Ty.equiv carrierA carrierB) targetRawIH,
+        Step.par equivTerm equivTarget)
+    (argumentLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentRaw targetRawIH →
+      ∃ argumentTarget : Term context carrierA targetRawIH,
+        Step.par argumentTerm argumentTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.equivApp equivRaw argumentRaw) targetRaw) :
+    ∃ targetTerm : Term context carrierB targetRaw,
+      Step.par (Term.equivApp equivTerm argumentTerm) targetTerm := by
+  obtain ⟨equivTargetRaw, argumentTargetRaw, eq, equivStep, argumentStep⟩ :=
+    RawStep.par.equivApp_inv rawStep
+  obtain ⟨equivTarget, equivStepTyped⟩ := equivLift equivStep
+  obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+  cases eq
+  exact ⟨Term.equivApp equivTarget argumentTarget,
+         Step.par.equivAppCong equivStepTyped argumentStepTyped⟩
+
+/-- **Tier 1 — Term.sessionRecv lift.**  Single Term child (channel),
+no β fires. -/
+theorem RawStep.par.lift_sessionRecv
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (channelLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par channelRaw targetRawIH →
+      ∃ channelTarget : Term context (Ty.session protocolStep) targetRawIH,
+        Step.par channel channelTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.sessionRecv channelRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.session protocolStep) targetRaw,
+      Step.par (Term.sessionRecv channel) targetTerm := by
+  obtain ⟨channelTargetRaw, eq, channelStep⟩ := RawStep.par.sessionRecv_inv rawStep
+  obtain ⟨channelTarget, channelStepTyped⟩ := channelLift channelStep
+  cases eq
+  exact ⟨Term.sessionRecv channelTarget,
+         Step.par.sessionRecvCong channelStepTyped⟩
+
+/-- **Tier 2 — Term.refineIntro lift.**  Two children: value (baseType)
+and predicateProof (Ty.unit). -/
+theorem RawStep.par.lift_refineIntro
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (baseValue : Term context baseType valueRaw)
+    (predicateProof : Term context Ty.unit proofRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context baseType targetRawIH,
+        Step.par baseValue valueTarget)
+    (proofLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par proofRaw targetRawIH →
+      ∃ proofTarget : Term context Ty.unit targetRawIH,
+        Step.par predicateProof proofTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.refineIntro valueRaw proofRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.refine baseType predicate) targetRaw,
+      Step.par (Term.refineIntro predicate baseValue predicateProof) targetTerm := by
+  obtain ⟨valueTargetRaw, proofTargetRaw, eq, valueStep, proofStep⟩ :=
+    RawStep.par.refineIntro_inv rawStep
+  obtain ⟨valueTarget, valueStepTyped⟩ := valueLift valueStep
+  obtain ⟨proofTarget, proofStepTyped⟩ := proofLift proofStep
+  cases eq
+  exact ⟨Term.refineIntro predicate valueTarget proofTarget,
+         Step.par.refineIntroCong valueStepTyped proofStepTyped⟩
+
+/-- **Tier 2 — Term.effectPerform lift.**  Two children: operationTag
+(Ty.effect argumentCarrier effectTag) and arguments (argumentCarrier).  -/
+theorem RawStep.par.lift_effectPerform
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    (operationTag :
+      Term context (Ty.effect operationSignature.argumentCarrier effectTag)
+                   operationRaw)
+    (arguments :
+      Term context operationSignature.argumentCarrier argumentsRaw)
+    (operationLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par operationRaw targetRawIH →
+      ∃ operationTarget :
+          Term context (Ty.effect operationSignature.argumentCarrier effectTag)
+                       targetRawIH,
+        Step.par operationTag operationTarget)
+    (argumentsLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentsRaw targetRawIH →
+      ∃ argumentsTarget :
+          Term context operationSignature.argumentCarrier targetRawIH,
+        Step.par arguments argumentsTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.effectPerform operationRaw argumentsRaw) targetRaw) :
+    ∃ targetTerm :
+        Term context (Ty.effect operationSignature.resultCarrier effectTag)
+                     targetRaw,
+      Step.par
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments)
+        targetTerm := by
+  obtain ⟨operationTargetRaw, argumentsTargetRaw, eq, operationStep, argumentsStep⟩ :=
+    RawStep.par.effectPerform_inv rawStep
+  obtain ⟨operationTarget, operationStepTyped⟩ := operationLift operationStep
+  obtain ⟨argumentsTarget, argumentsStepTyped⟩ := argumentsLift argumentsStep
+  cases eq
+  exact ⟨Term.effectPerform effectTag effectRow operationSignature
+                            canPerformOperation operationTarget argumentsTarget,
+         Step.par.effectPerformCong operationStepTyped argumentsStepTyped⟩
+
 end LeanFX2
