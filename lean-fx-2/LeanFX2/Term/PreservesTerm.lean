@@ -2229,4 +2229,81 @@ theorem RawStep.par.lift_full_idStrictRec
     exact Step.par.iotaIdStrictRecReflDeep modeIsStrict
             witnessStepTyped baseStepTyped
 
+/-! ## Type-changing motive — boolElim via two-Ty existential
+
+`Term.boolElim`'s motive lives at scope+1 (`motiveType : Ty level (scope
++ 1)`) and the boolElim's result type is `motiveType.subst0 Ty.bool
+scrutineeRaw`.  After scrutinee steps to scrutineeTargetRaw, the result
+type changes to `motiveType.subst0 Ty.bool scrutineeTargetRaw`.  The
+two-Ty existential absorbs this gap. -/
+
+/-- **Type-changing motive wall demolition — Term.boolElim full lift.**
+Three-arm raw inversion: cong + iotaBoolElimTrueDeep + iotaBoolElimFalseDeep. -/
+theorem RawStep.par.lift_full_boolElim
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context Ty.bool targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (thenLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par thenRaw targetRawIH →
+      ∃ thenTarget :
+          Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) targetRawIH,
+        Step.par thenBranch thenTarget)
+    (elseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par elseRaw targetRawIH →
+      ∃ elseTarget :
+          Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) targetRawIH,
+        Step.par elseBranch elseTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.boolElim scrutineeRaw thenRaw elseRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.boolElim (motiveType := motiveType) scrutinee thenBranch elseBranch)
+        targetTerm := by
+  rcases RawStep.par.boolElim_inv rawStep with
+    ⟨scrutTargetRaw, thenTargetRaw, elseTargetRaw, eq, scrutStep, thenStep, elseStep⟩
+    | ⟨thenTargetRaw, eq, scrutToTrue, thenStep⟩
+    | ⟨elseTargetRaw, eq, scrutToFalse, elseStep⟩
+  · -- cong arm
+    obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+    obtain ⟨thenTarget, thenStepTyped⟩ := thenLift thenStep
+    obtain ⟨elseTarget, elseStepTyped⟩ := elseLift elseStep
+    cases eq
+    refine ⟨motiveType.subst0 Ty.bool scrutTargetRaw,
+            Term.boolElim scrutTarget thenTarget elseTarget, ?_⟩
+    exact Step.par.boolElim scrutStepTyped thenStepTyped elseStepTyped
+  · -- iotaBoolElimTrueDeep arm: scrutinee →* boolTrue
+    obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutToTrue
+    obtain ⟨thenTarget, thenStepTyped⟩ := thenLift thenStep
+    -- scrutTarget : Term ctx Ty.bool RawTerm.boolTrue → must be Term.boolTrue
+    have heq :
+        HEq scrutTarget (Term.boolTrue (context := context)) :=
+      Term.boolTrue_unique scrutTarget Term.boolTrue
+    have scrutEq : scrutTarget = (Term.boolTrue (context := context)) :=
+      eq_of_heq heq
+    rw [scrutEq] at scrutStepTyped
+    cases eq
+    refine ⟨motiveType.subst0 Ty.bool RawTerm.boolTrue, thenTarget, ?_⟩
+    exact Step.par.iotaBoolElimTrueDeep elseBranch scrutStepTyped thenStepTyped
+  · -- iotaBoolElimFalseDeep arm: scrutinee →* boolFalse
+    obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutToFalse
+    obtain ⟨elseTarget, elseStepTyped⟩ := elseLift elseStep
+    have heq :
+        HEq scrutTarget (Term.boolFalse (context := context)) :=
+      Term.boolFalse_unique scrutTarget Term.boolFalse
+    have scrutEq : scrutTarget = (Term.boolFalse (context := context)) :=
+      eq_of_heq heq
+    rw [scrutEq] at scrutStepTyped
+    cases eq
+    refine ⟨motiveType.subst0 Ty.bool RawTerm.boolFalse, elseTarget, ?_⟩
+    exact Step.par.iotaBoolElimFalseDeep thenBranch scrutStepTyped elseStepTyped
+
 end LeanFX2
