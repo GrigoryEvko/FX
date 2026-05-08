@@ -173,6 +173,13 @@ theorem Step.par.toRawBridge
       exact RawStep.par.betaModElimIntroDeep ihInner
   | betaPathApp _ _ _ ihBody ihInterval =>
       exact RawStep.par.betaPathApp ihBody ihInterval
+  | betaPathReflApp _ _ _ _ _ _ ihValue ihInterval =>
+      -- Source raw: pathApp (pathLam valueRawSource.weaken) intervalRawSource.
+      -- Target raw: valueRawTarget.
+      -- ihValue : RawStep.par valueRawSource valueRawTarget.
+      -- ihInterval : RawStep.par intervalRawSource intervalRawTarget.
+      -- Direct lift to the new raw ctor.
+      exact RawStep.par.betaPathReflApp ihValue ihInterval
   | betaGlueElimIntro _ _ _ ihBase ihPartial =>
       exact RawStep.par.betaGlueElimIntro ihBase ihPartial
   | betaRecordProjIntro _ ihFirst =>

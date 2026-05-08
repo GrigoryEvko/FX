@@ -1079,6 +1079,26 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
           (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTerm)
           intervalTerm)
         (Term.subst0 bodyTerm intervalTerm)
+  /-- Cubical β-reduction at a syntactically constant path body:
+  `pathApp (pathLam value.weaken) interval ⟶ value`.
+  Mirror of `Step.betaPathReflApp`.  When the path body is literally
+  `value.weaken`, applying the path returns the original value
+  irrespective of the interval — the cubical analog of
+  "(λ i ⇒ value) @ i ⟶ value" for value independent of i. -/
+  | betaPathReflAppCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (carrierType : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {valueRaw intervalRaw : RawTerm scope}
+      (valueTerm : Term context carrierType valueRaw)
+      (intervalTerm : Term context Ty.interval intervalRaw) :
+      ConvCumul
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+            (Term.weaken Ty.interval valueTerm))
+          intervalTerm)
+        valueTerm
   /-- Cubical Glue β-reduction: `glueElim (glueIntro base partial) ⟶ base`.
   Mirror of `Step.betaGlueElimIntro`. -/
   | betaGlueElimIntroCumul

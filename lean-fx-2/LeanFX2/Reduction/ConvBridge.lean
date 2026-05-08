@@ -218,6 +218,10 @@ theorem Step.toConvCumul
       exact ConvCumul.pathAppCong modeIsUnivalent (ConvCumul.refl _) ih
   | betaPathApp modeIsUnivalent bodyTerm intervalTerm =>
       exact ConvCumul.betaPathAppCumul modeIsUnivalent bodyTerm intervalTerm
+  | betaPathReflApp modeIsUnivalent carrierType leftEndpoint rightEndpoint
+      valueTerm intervalTerm =>
+      exact ConvCumul.betaPathReflAppCumul modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint valueTerm intervalTerm
   | glueIntroBase modeIsUnivalent _ ih =>
       exact ConvCumul.glueIntroCong modeIsUnivalent
         ih (ConvCumul.refl _)

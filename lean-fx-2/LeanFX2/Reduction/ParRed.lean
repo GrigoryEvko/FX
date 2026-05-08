@@ -824,6 +824,51 @@ inductive Step.par :
           (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodySource)
           intervalSource)
         (Term.subst0 bodyTarget intervalTarget)
+  /-- Cubical path β at a syntactically constant path body:
+  `pathApp (pathLam value.weaken) interval ⟶ value`.
+
+  This is the typed mirror of `RawStep.par.betaPathReflApp`
+  (`Reduction/RawPar.lean`) and the parallel-step lift of
+  `Step.betaPathReflApp` (`Reduction/Step.lean`).  When the pathLam's
+  body is literally `value.weaken` (i.e. mentions no interval binder),
+  applying the path reduces to the original value irrespective of the
+  interval point — the cubical analog of "(λ i ⇒ value) @ i ⟶ value"
+  when value is independent of i.
+
+  ## Why source and target carriers coincide
+
+  The Step.par's source has Ty `carrierType` (the path's type-code),
+  and the target has Ty `carrierType` (since pathApp produces a value
+  of carrier type, and our value lives at carrierType already).  Both
+  share the same Ty index — no two-Ty signature needed for this rule.
+  This is symmetric to `transpReflBeta` (where source and target both
+  share `sourceType`).
+
+  ## Step.par mirror discharges the cd cascade collision
+
+  In the cd-lemma cascade, two parties may converge on this rule from
+  either the `betaPathApp` side (target = body[i/0]) or the
+  `betaPathReflApp` side (target = value).  When body = value.weaken,
+  the existing `RawTerm.weaken_subst_singleton` propositional equality
+  collapses both into the same target. -/
+  | betaPathReflApp {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (carrierType : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {valueRawSource valueRawTarget intervalRawSource intervalRawTarget :
+        RawTerm scope}
+      {valueSource : Term context carrierType valueRawSource}
+      {valueTarget : Term context carrierType valueRawTarget}
+      {intervalSource : Term context Ty.interval intervalRawSource}
+      {intervalTarget : Term context Ty.interval intervalRawTarget} :
+      Step.par valueSource valueTarget →
+      Step.par intervalSource intervalTarget →
+      Step.par
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+            (Term.weaken Ty.interval valueSource))
+          intervalSource)
+        valueTarget
   /-- Shallow cubical Glue β: `unglue (glue base partial) ⟶ base`. -/
   | betaGlueElimIntro {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)
@@ -1908,6 +1953,11 @@ theorem Step.toPar
   | betaPathApp modeIsUnivalent bodyTerm intervalTerm =>
       exact Step.par.betaPathApp modeIsUnivalent
         (Step.par.refl bodyTerm) (Step.par.refl intervalTerm)
+  | betaPathReflApp modeIsUnivalent carrierType leftEndpoint rightEndpoint
+      valueTerm intervalTerm =>
+      exact Step.par.betaPathReflApp modeIsUnivalent carrierType
+        leftEndpoint rightEndpoint
+        (Step.par.refl valueTerm) (Step.par.refl intervalTerm)
   | glueIntroBase modeIsUnivalent singleStep singleStepIH =>
       exact Step.par.glueIntroCong modeIsUnivalent
         singleStepIH (Step.par.refl _)

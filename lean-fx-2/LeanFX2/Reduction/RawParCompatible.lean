@@ -542,6 +542,17 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.betaPathAppDeep
         (pathIH substsRelated)
         (intervalIH substsRelated)
+  | @betaPathReflApp _ valueRawSource _ _ _ _ _ valueIH intervalIH =>
+      -- Source: pathApp (pathLam valueRawSource.weaken) intervalRawSource.
+      -- After subst rho: pathApp (pathLam (valueRawSource.weaken.subst rho.lift))
+      --                          (intervalRawSource.subst rho)
+      -- We need: valueRawSource.weaken.subst rho.lift =
+      --            (valueRawSource.subst rho).weaken.
+      -- That is `weaken_subst_commute`, mirroring the transpReflBeta arm.
+      simp only [RawTerm.subst]
+      rw [RawTerm.weaken_subst_commute firstSubst valueRawSource]
+      exact RawStep.par.betaPathReflApp
+        (valueIH substsRelated) (intervalIH substsRelated)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH substsRelated) (partialIH substsRelated)
   | betaGlueElimIntro _ _ baseIH partialIH =>

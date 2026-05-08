@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawParRename
 
 /-! # Reduction/RawParInversion — inversion lemmas for RawStep.par
 
@@ -315,6 +316,19 @@ theorem RawStep.par.pathApp_inv {scope : Nat}
       exact Or.inr ⟨_, _, rfl, RawStep.par.pathLamCong bodyStep, intervalStep⟩
   | betaPathAppDeep pathStep intervalStep =>
       exact Or.inr ⟨_, _, rfl, pathStep, intervalStep⟩
+  | betaPathReflApp valueStep intervalStep =>
+      -- Source: pathApp (pathLam valueSource.weaken) intervalArg.
+      -- valueStep : par <valueSource> target (where target is the header's
+      -- target, and the constructor's valueRawTarget unifies with it).
+      -- intervalStep : par intervalArg <intervalRawTarget>.
+      -- Reuse branch 2 (β-fired) with bodyTarget = target.weaken,
+      -- intervalTarget := the constructor's intervalRawTarget.
+      -- The equation `target = target.weaken.subst0 intervalRawTarget`
+      -- holds via `RawTerm.weaken_subst_singleton`.
+      refine Or.inr ⟨target.weaken, _, ?_, ?_, intervalStep⟩
+      · exact (RawTerm.weaken_subst_singleton target _).symm
+      · exact RawStep.par.pathLamCong
+          (RawStep.par.rename (RawRenaming.weaken (scope := _)) valueStep)
 
 /-- `RawStep.par (glueIntro b p) target → target = glueIntro b' p' ∧ pars`. -/
 theorem RawStep.par.glueIntro_inv {scope : Nat}

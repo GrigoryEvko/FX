@@ -859,6 +859,38 @@ inductive Step :
           (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint bodyTerm)
           intervalTerm)
         (Term.subst0 bodyTerm intervalTerm)
+  /-- Cubical path β at a syntactically constant path body:
+  `pathApp (pathLam value.weaken) interval ⟶ value`.
+
+  This is the Step-layer mirror of `RawStep.par.betaPathReflApp` and
+  `Step.par.betaPathReflApp`.  When the pathLam's body is literally
+  `value.weaken` (mentions no interval binder), pathApp gives back
+  the original value irrespective of the interval — the cubical
+  analog of "(λ i ⇒ value) @ i ⟶ value" for value independent of i.
+
+  ## Why this is a primitive Step ctor (matches transpReflBeta)
+
+  At the typed Step layer, `Term.subst0 (Term.weaken value) interval`
+  is propositionally — but not definitionally — equal to `value`
+  (cancellation via `Ty.weaken_subst_singleton` and
+  `RawTerm.weaken_subst_singleton`).  Defining `betaPathReflApp` as a
+  primitive Step ctor with the cancelled-form target lets `Conv.fromStep`
+  consumers and the downstream cd cascade reach `value` directly
+  without threading a propositional Eq cast through every site.  This
+  matches the existing `transpReflBeta` discipline. -/
+  | betaPathReflApp {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (carrierType : Ty level scope)
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {valueRaw intervalRaw : RawTerm scope}
+      (valueTerm : Term context carrierType valueRaw)
+      (intervalTerm : Term context Ty.interval intervalRaw) :
+      Step
+        (Term.pathApp modeIsUnivalent
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+            (Term.weaken Ty.interval valueTerm))
+          intervalTerm)
+        valueTerm
   /-- Step inside `glueIntro`'s base value. -/
   | glueIntroBase {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

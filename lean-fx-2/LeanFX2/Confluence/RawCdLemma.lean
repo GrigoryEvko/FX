@@ -258,6 +258,26 @@ theorem RawStep.par.cd_lemma {scope : Nat}
         RawStep.par.pathLam_inv pathIH
       rw [cdPathEq]
       exact RawStep.par.subst0_par bodyParStep intervalIH
+  | betaPathReflApp valueStep intervalStep valueIH intervalIH =>
+      -- Source: pathApp (pathLam valueRawSource.weaken) intervalRawSource.
+      -- Target: valueRawTarget.
+      -- valueIH : par valueRawTarget (cd valueRawSource)
+      -- intervalIH : par intervalRawTarget (cd intervalRawSource)
+      -- Goal: par valueRawTarget
+      --   (cd (pathApp (pathLam valueRawSource.weaken) intervalRawSource))
+      --   = par valueRawTarget
+      --     (cdPathAppCase (cd (pathLam valueRawSource.weaken)) (cd intervalRawSource))
+      --   = par valueRawTarget
+      --     (cdPathAppCase (pathLam (cd valueRawSource.weaken)) (cd intervalRawSource))
+      --   = par valueRawTarget
+      --     ((cd valueRawSource.weaken).subst0 (cd intervalRawSource))
+      -- By RawTerm.cd_weaken: cd valueRawSource.weaken = (cd valueRawSource).weaken.
+      -- Then (cd valueRawSource).weaken.subst0 (cd intervalRawSource) =
+      --   cd valueRawSource (by RawTerm.weaken_subst_singleton).
+      -- Goal collapses to par valueRawTarget (cd valueRawSource) = valueIH.
+      simp only [RawTerm.cd, RawTerm.cdPathAppCase, RawTerm.cd_weaken,
+                 RawTerm.weaken_subst_singleton]
+      exact valueIH
   | betaFstPairDeep pairStep pairIH =>
       simp only [RawTerm.cd]
       obtain ⟨firstAfter, secondAfter, cdPairEq, firstParStep, _⟩ :=

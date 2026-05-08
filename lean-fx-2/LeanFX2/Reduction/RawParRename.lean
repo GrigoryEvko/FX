@@ -235,6 +235,16 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       simp only [RawTerm.rename]
       rw [RawTerm.subst0_rename_commute _ _ rawRenaming]
       exact RawStep.par.betaPathAppDeep (pathIH _) (intervalIH _)
+  | @betaPathReflApp _ valueRawSource _ _ _ _ _ valueIH intervalIH =>
+      -- LHS: pathApp (pathLam valueRawSource.weaken) intervalRawSource.
+      -- After rename rho: pathApp (pathLam (valueRawSource.weaken.rename rho.lift))
+      --                          (intervalRawSource.rename rho)
+      -- We need: valueRawSource.weaken.rename rho.lift =
+      --            (valueRawSource.rename rho).weaken.
+      -- That is `weaken_rename_commute`, mirroring the transpReflBeta arm.
+      simp only [RawTerm.rename]
+      rw [RawTerm.weaken_rename_commute rawRenaming valueRawSource]
+      exact RawStep.par.betaPathReflApp (valueIH _) (intervalIH _)
   | glueIntroCong _ _ baseIH partialIH =>
       exact RawStep.par.glueIntroCong (baseIH _) (partialIH _)
   | betaGlueElimIntro _ _ baseIH partialIH =>

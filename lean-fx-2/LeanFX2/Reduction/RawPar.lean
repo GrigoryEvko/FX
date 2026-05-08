@@ -579,6 +579,35 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par intervalRawSource intervalRawTarget →
       RawStep.par (RawTerm.pathApp pathRawSource intervalRawSource)
                   (bodyRawTarget.subst0 intervalRawTarget)
+  /-- Cubical path β at a syntactically constant path body:
+  `pathApp (pathLam value.weaken) interval ⟶ value`.
+
+  This is the raw analog of `Step.betaPathReflApp` and the parallel-step
+  ctor `Step.par.betaPathReflApp`.  When the pathLam body is
+  `value.weaken` (i.e. mentions no interval binder), application across
+  the path gives back the original value irrespective of the interval
+  argument — the cubical analog of "(λ i ⇒ value) @ i ⟶ value" when
+  `value` is independent of `i`.
+
+  ## Shallow shape (single-redex β)
+
+  This is the shallow variant: the `pathApp` head plus the constant
+  `pathLam` body must be exactly that pair on the LHS.  Inner
+  reductions on `valueRawSource` and `intervalRawSource` proceed via
+  the two `RawStep.par` premises.  The deep variant is intentionally
+  deferred — the existing `betaPathApp` / `betaPathAppDeep` pair
+  already handles the case where the path develops to `pathLam body`
+  for arbitrary body, including `body = value.weaken`; the cd cascade
+  arm for `betaPathReflApp` collapses against the existing path-app
+  cascade through `RawTerm.weaken_subst_singleton`. -/
+  | betaPathReflApp {scope : Nat}
+      {valueRawSource valueRawTarget intervalRawSource intervalRawTarget :
+        RawTerm scope} :
+      RawStep.par valueRawSource valueRawTarget →
+      RawStep.par intervalRawSource intervalRawTarget →
+      RawStep.par
+        (RawTerm.pathApp (RawTerm.pathLam valueRawSource.weaken) intervalRawSource)
+        valueRawTarget
   /-- Cong: glueIntro reduces in base and partial values. -/
   | glueIntroCong {scope : Nat}
       {baseRawSource baseRawTarget partialRawSource partialRawTarget : RawTerm scope} :
