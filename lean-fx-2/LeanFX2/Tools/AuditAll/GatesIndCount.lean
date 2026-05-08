@@ -27,7 +27,8 @@ namespace LeanFX2.Tools
 #assert_inductive_ctor_count_ratchet LeanFX2.Ty 25
 #assert_inductive_ctor_count_ratchet LeanFX2.Step 105
 #assert_inductive_ctor_count_ratchet LeanFX2.Step.par 109
-#assert_inductive_ctor_count_ratchet LeanFX2.RawTerm 67
+-- D3.6-P1 bumped RawTerm 67 → 68 by adding `RawTerm.uaToEquiv`.
+#assert_inductive_ctor_count_ratchet LeanFX2.RawTerm 68
 
 -- Coe / CoeSort / CoeFun typeclass dependent census.  These silently
 -- inject elements between types; a bad Coe makes the type system

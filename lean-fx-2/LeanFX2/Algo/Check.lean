@@ -518,6 +518,7 @@ def Term.check : ∀ {scope : Nat}
   | .idCode _ _ _       => none
   | .equivCode _ _      => none
   | .cumulUpMarker _    => none
+  | .uaToEquiv _        => none
 
 end LeanFX2
 

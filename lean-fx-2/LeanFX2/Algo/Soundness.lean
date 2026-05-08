@@ -598,6 +598,7 @@ theorem Term.headStep?_sound
     | .effectPerform _ _
     | .universeCode _
     | .cumulUpMarker _
+    | .uaToEquiv _
     | .equivIntro _ _
     | .equivApp _ _
     | .arrowCode _ _

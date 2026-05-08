@@ -56,8 +56,10 @@ namespace LeanFX2.Tools
 -- recursive arms), plus the FIFTEEN check-mode counterpart theorems
 -- whose closure threads through `Term.check`'s `h ▸ t` casts on every
 -- expected-type-equality dispatch arm (var/unit/boolTrue/boolFalse/
--- natZero/natSucc/lam/lamPi/pair/listCons/...).
-#assert_cast_operator_dependent_budget LeanFX2 1301
+-- natZero/natSucc/lam/lamPi/pair/listCons/...).  D3.6-P1's cascade
+-- arms (cd / WHNF / partialRename / etc.) thread one new cast path
+-- through the new ctor.
+#assert_cast_operator_dependent_budget LeanFX2 1302
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

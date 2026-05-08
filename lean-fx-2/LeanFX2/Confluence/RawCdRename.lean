@@ -672,6 +672,12 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
            RawTerm.cd (RawTerm.cumulUpMarker (innerCodeRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
       rw [innerIH rho]
+  | uaToEquiv proofRaw proofIH =>
+      intro _ rho
+      show (RawTerm.uaToEquiv (RawTerm.cd proofRaw)).rename rho =
+           RawTerm.cd (RawTerm.uaToEquiv (proofRaw.rename rho))
+      simp only [RawTerm.rename, RawTerm.cd]
+      rw [proofIH rho]
 
 /-! ## Specialization: `cd_weaken`. -/
 

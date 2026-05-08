@@ -183,6 +183,7 @@ private theorem RawTerm.rename_eq_boolTrue_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `boolFalse`. -/
 private theorem RawTerm.rename_eq_boolFalse_imp {sourceScope targetScope : Nat}
@@ -259,6 +260,7 @@ private theorem RawTerm.rename_eq_boolFalse_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `natZero`. -/
 private theorem RawTerm.rename_eq_natZero_imp {sourceScope targetScope : Nat}
@@ -335,6 +337,7 @@ private theorem RawTerm.rename_eq_natZero_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `listNil`. -/
 private theorem RawTerm.rename_eq_listNil_imp {sourceScope targetScope : Nat}
@@ -411,6 +414,7 @@ private theorem RawTerm.rename_eq_listNil_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `optionNone`. -/
 private theorem RawTerm.rename_eq_optionNone_imp {sourceScope targetScope : Nat}
@@ -487,6 +491,7 @@ private theorem RawTerm.rename_eq_optionNone_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `interval0`. -/
 private theorem RawTerm.rename_eq_interval0_imp {sourceScope targetScope : Nat}
@@ -563,6 +568,7 @@ private theorem RawTerm.rename_eq_interval0_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `interval1`. -/
 private theorem RawTerm.rename_eq_interval1_imp {sourceScope targetScope : Nat}
@@ -639,6 +645,7 @@ private theorem RawTerm.rename_eq_interval1_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `natSucc`. -/
 private theorem RawTerm.rename_eq_natSucc_imp {sourceScope targetScope : Nat}
@@ -719,6 +726,7 @@ private theorem RawTerm.rename_eq_natSucc_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `optionSome`. -/
 private theorem RawTerm.rename_eq_optionSome_imp {sourceScope targetScope : Nat}
@@ -799,6 +807,7 @@ private theorem RawTerm.rename_eq_optionSome_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `eitherInl`. -/
 private theorem RawTerm.rename_eq_eitherInl_imp {sourceScope targetScope : Nat}
@@ -879,6 +888,7 @@ private theorem RawTerm.rename_eq_eitherInl_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `eitherInr`. -/
 private theorem RawTerm.rename_eq_eitherInr_imp {sourceScope targetScope : Nat}
@@ -959,6 +969,7 @@ private theorem RawTerm.rename_eq_eitherInr_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `refl`. -/
 private theorem RawTerm.rename_eq_refl_imp {sourceScope targetScope : Nat}
@@ -1039,6 +1050,7 @@ private theorem RawTerm.rename_eq_refl_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `modIntro`. -/
 private theorem RawTerm.rename_eq_modIntro_imp {sourceScope targetScope : Nat}
@@ -1119,6 +1131,7 @@ private theorem RawTerm.rename_eq_modIntro_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `idStrictRefl`. -/
 private theorem RawTerm.rename_eq_idStrictRefl_imp {sourceScope targetScope : Nat}
@@ -1199,6 +1212,7 @@ private theorem RawTerm.rename_eq_idStrictRefl_imp {sourceScope targetScope : Na
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `recordIntro`. -/
 private theorem RawTerm.rename_eq_recordIntro_imp {sourceScope targetScope : Nat}
@@ -1279,6 +1293,7 @@ private theorem RawTerm.rename_eq_recordIntro_imp {sourceScope targetScope : Nat
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `pathLam` (binder). -/
 private theorem RawTerm.rename_eq_pathLam_imp {sourceScope targetScope : Nat}
@@ -1359,6 +1374,7 @@ private theorem RawTerm.rename_eq_pathLam_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `pair`. -/
 private theorem RawTerm.rename_eq_pair_imp {sourceScope targetScope : Nat}
@@ -1442,6 +1458,7 @@ private theorem RawTerm.rename_eq_pair_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `listCons`. -/
 private theorem RawTerm.rename_eq_listCons_imp {sourceScope targetScope : Nat}
@@ -1525,6 +1542,7 @@ private theorem RawTerm.rename_eq_listCons_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `glueIntro`. -/
 private theorem RawTerm.rename_eq_glueIntro_imp {sourceScope targetScope : Nat}
@@ -1608,6 +1626,7 @@ private theorem RawTerm.rename_eq_glueIntro_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `refineIntro`. -/
 private theorem RawTerm.rename_eq_refineIntro_imp {sourceScope targetScope : Nat}
@@ -1691,6 +1710,7 @@ private theorem RawTerm.rename_eq_refineIntro_imp {sourceScope targetScope : Nat
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `codataUnfold`. -/
 private theorem RawTerm.rename_eq_codataUnfold_imp {sourceScope targetScope : Nat}
@@ -1774,6 +1794,7 @@ private theorem RawTerm.rename_eq_codataUnfold_imp {sourceScope targetScope : Na
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-- Shape inversion for `lam` (binder). -/
 private theorem RawTerm.rename_eq_lam_imp {sourceScope targetScope : Nat}
@@ -1854,6 +1875,7 @@ private theorem RawTerm.rename_eq_lam_imp {sourceScope targetScope : Nat}
   | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
   | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
 
 /-! ## Headline: par-step preserves the image of an injective renaming.
 
@@ -2049,6 +2071,16 @@ theorem RawStep.par.rename_inj_inv :
     | cumulUpMarkerCong innerStep =>
       obtain ⟨innerInner, hInnerInner⟩ := innerIH rho rhoInj innerStep
       refine ⟨RawTerm.cumulUpMarker innerInner, ?_⟩
+      rw [hInnerInner]; rfl
+  | uaToEquiv proofRaw proofIH =>
+    intro _ rho rhoInj _ parStep
+    change RawStep.par
+      (RawTerm.uaToEquiv (proofRaw.rename rho)) _ at parStep
+    cases parStep with
+    | refl _ => exact ⟨RawTerm.uaToEquiv proofRaw, rfl⟩
+    | uaToEquivCong innerStep =>
+      obtain ⟨innerInner, hInnerInner⟩ := proofIH rho rhoInj innerStep
+      refine ⟨RawTerm.uaToEquiv innerInner, ?_⟩
       rw [hInnerInner]; rfl
   -- ============== Two-subterm cong (no redex parent) ==============
   | pair firstValue secondValue firstIH secondIH =>

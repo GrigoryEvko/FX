@@ -52,8 +52,14 @@ namespace LeanFX2.Tools
 -- absurd discharges, plus the FIFTEEN M10 check-mode counterpart
 -- theorems whose closure invokes `Term.check`'s expected-type
 -- exhaustive enumeration where every non-matching arm produces
--- `none` via match-equation propext-clean dispatch.
-#assert_absurd_false_dependent_budget LeanFX2 970
+-- `none` via match-equation propext-clean dispatch.  D3.6-P1 added
+-- one cong rule (`RawStep.par.uaToEquivCong`) and one ctor
+-- (`RawTerm.uaToEquiv`) to the kernel; the cong rule transitively
+-- pulls in absurd/False.elim through the inversion lemmas of `cd`'s
+-- cascade arms (every redex helper now has a matching uaToEquiv arm
+-- that rebuilds the original term, contributing one absurd-using
+-- branch in the rebuild's elimination obligations).
+#assert_absurd_false_dependent_budget LeanFX2 971
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the

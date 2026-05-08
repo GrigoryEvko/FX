@@ -307,6 +307,10 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
   | .cumulUpMarker innerCodeRaw, _, _, substsRelated =>
       RawStep.par.cumulUpMarkerCong
         (RawTerm.subst_par_pointwise innerCodeRaw substsRelated)
+  -- D3.6-P1: uaToEquiv recurses on inner proof raw.
+  | .uaToEquiv proofRaw, _, _, substsRelated =>
+      RawStep.par.uaToEquivCong
+        (RawTerm.subst_par_pointwise proofRaw substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -665,6 +669,8 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.equivCodeCong (leftIH substsRelated) (rightIH substsRelated)
   | cumulUpMarkerCong _ innerIH =>
       exact RawStep.par.cumulUpMarkerCong (innerIH substsRelated)
+  | uaToEquivCong _ innerIH =>
+      exact RawStep.par.uaToEquivCong (innerIH substsRelated)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

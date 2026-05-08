@@ -206,6 +206,9 @@ def RawTerm.rename : ∀ {source target : Nat},
   -- CUMUL-2.6 cumulUpMarker arm.
   | _, _, .cumulUpMarker innerCodeRaw, rawRenaming =>
       .cumulUpMarker (innerCodeRaw.rename rawRenaming)
+  -- D3.6-P1 uaToEquiv arm.
+  | _, _, .uaToEquiv proofRaw, rawRenaming =>
+      .uaToEquiv (proofRaw.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -370,6 +373,8 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.rename]; rw [innerIH renamingEq]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename]; rw [proofIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -530,6 +535,8 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.rename]; rw [innerIH rho1 rho2]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename]; rw [proofIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -709,6 +716,9 @@ def RawTerm.subst : ∀ {source target : Nat},
   -- CUMUL-2.6 cumulUpMarker arm.
   | _, _, .cumulUpMarker innerCodeRaw, sigma =>
       .cumulUpMarker (innerCodeRaw.subst sigma)
+  -- D3.6-P1 uaToEquiv arm.
+  | _, _, .uaToEquiv proofRaw, sigma =>
+      .uaToEquiv (proofRaw.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -880,6 +890,8 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.subst]; rw [innerIH substEq]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst]; rw [proofIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -1077,6 +1089,8 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
       rw [leftIH rho sigma, rightIH rho sigma]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.rename, RawTerm.subst]; rw [innerIH rho sigma]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [proofIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -1280,6 +1294,8 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
       rw [leftIH sigma rho, rightIH sigma rho]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.subst, RawTerm.rename]; rw [innerIH sigma rho]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [proofIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -1479,6 +1495,8 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.subst]; rw [innerIH sigma1 sigma2]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -1662,6 +1680,8 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [leftIH, rightIH]
   | cumulUpMarker innerCodeRaw innerIH =>
       simp only [RawTerm.subst]; rw [innerIH]
+  | uaToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst]; rw [proofIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

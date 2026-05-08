@@ -466,6 +466,11 @@ theorem RawTerm.partialRename?_rename_compat :
       simp only [RawTerm.rename, RawTerm.partialRename?]
       rw [innerIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? innerCode partialA <;> rfl
+  | uaToEquiv proofRaw proofIH =>
+      intro rhoVar rhoTerm partialA partialB compat
+      simp only [RawTerm.rename, RawTerm.partialRename?]
+      rw [proofIH rhoVar rhoTerm partialA partialB compat]
+      cases RawTerm.partialRename? proofRaw partialA <;> rfl
 
 /-! ## Specialisation: `unweaken?` commutes with `rename` after `lift`. -/
 

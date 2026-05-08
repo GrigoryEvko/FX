@@ -284,6 +284,10 @@ theorem RawTerm.rename_identity {scope : Nat} :
   | .cumulUpMarker innerCodeRaw => by
       show (innerCodeRaw.rename _).cumulUpMarker = innerCodeRaw.cumulUpMarker
       rw [RawTerm.rename_identity innerCodeRaw]
+  -- D3.6-P1: uaToEquiv — recurse on inner proof raw.
+  | .uaToEquiv proofRaw => by
+      show (proofRaw.rename _).uaToEquiv = proofRaw.uaToEquiv
+      rw [RawTerm.rename_identity proofRaw]
 
 /-! ## Ty.rename_identity
 

@@ -398,5 +398,9 @@ theorem RawStep.par.cd_dominates :
   | _, .cumulUpMarker innerCodeRaw =>
       RawStep.par.cumulUpMarkerCong
         (RawStep.par.cd_dominates innerCodeRaw)
+  -- D3.6-P1: uaToEquiv — pure cong, recurse on inner proof raw.
+  | _, .uaToEquiv proofRaw =>
+      RawStep.par.uaToEquivCong
+        (RawStep.par.cd_dominates proofRaw)
 
 end LeanFX2

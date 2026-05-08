@@ -1748,6 +1748,11 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "idCodeCong" ||
   suffix == "equivCodeCong" ||
   suffix == "cumulUpMarkerCong" ||
+  -- D3.6-P1: uaToEquiv cong rule.  The raw cong rule is the vocabulary-
+  -- level baseline; the typed mirror lands when `Term.uaToEquiv` ctor
+  -- ships in P3.  Until then, `RawStep.par.uaToEquivCong` is documented
+  -- as a raw-only entry to keep the parity gate green.
+  suffix == "uaToEquivCong" ||
   -- Section B: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong" ||

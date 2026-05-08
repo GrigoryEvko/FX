@@ -221,6 +221,17 @@ inductive RawTerm : Nat → Type
   family with propositional index equations.  See the architectural
   note in `LeanFX2/Term.lean` for the details. -/
   | cumulUpMarker {scope : Nat} (innerCodeRaw : RawTerm scope) : RawTerm scope
+  /-- Phase D3.6-P1: univalence-β raw vocabulary.  `uaToEquiv proof`
+  represents the term-level operation that turns a univalence proof
+  (`proof : Id (Universe lvl) leftTy rightTy` at the typing layer)
+  into the corresponding type equivalence.  At raw level the ctor is
+  unary, carrying the underlying proof term raw.  The actual β-rule
+  `transp at (uaToEquiv e)` reducing to `equivApply e` lands in a
+  later phase (S1+); P1 ships the vocabulary so downstream functions
+  can pattern-match on it.  Structurally distinct from every other
+  `RawTerm` ctor by raw-ctor mismatch, so existing typed inversions
+  remain unaffected. -/
+  | uaToEquiv {scope : Nat} (proofRaw : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -501,5 +512,9 @@ equalities. -/
   -- re-tags an existing type code as "promoted to a higher level").
   | _, _, .cumulUpMarker innerCodeRaw, someAction =>
       .cumulUpMarker (innerCodeRaw.act someAction)
+  -- D3.6-P1: univalence-to-equiv vocabulary.  Atom-shape arm —
+  -- recurse on the single proof raw payload (no binder).
+  | _, _, .uaToEquiv proofRaw, someAction =>
+      .uaToEquiv (proofRaw.act someAction)
 
 end LeanFX2

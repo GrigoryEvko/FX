@@ -30,8 +30,9 @@ namespace LeanFX2.Tools
 -- single-recurse + multi-recurse) whose closure transitively pulls in
 -- `Term.infer`, plus the FIFTEEN M10 check-mode theorems whose closure
 -- transitively pulls in `Term.check` (which itself references OfNat
--- via the Nat-indexed Fin scope position dispatch).
-#assert_ofnat_dependent_budget LeanFX2 974
+-- via the Nat-indexed Fin scope position dispatch).  D3.6-P1 added
+-- one cong rule + ctor whose cascade arms thread one new OfNat path.
+#assert_ofnat_dependent_budget LeanFX2 975
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -51,7 +52,9 @@ namespace LeanFX2.Tools
 -- pulling in `Term.infer`, plus the FIFTEEN M10 check-mode counterpart
 -- theorems whose closure threads `h ▸ t` (which expands through
 -- Eq.rec) on every expected-type-equality arm of `Term.check`.
-#assert_eq_rewriting_dependent_budget LeanFX2 1207
+-- D3.6-P1's cascade arms (28-ctor matches in subst/rename/cd) add
+-- one new Eq-rewriting path through the new ctor.
+#assert_eq_rewriting_dependent_budget LeanFX2 1208
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

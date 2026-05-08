@@ -928,6 +928,15 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRaw targetRaw →
       RawStep.par (RawTerm.cumulUpMarker sourceRaw)
                   (RawTerm.cumulUpMarker targetRaw)
+  /-- D3.6-P1 Cong: uaToEquiv reduces in its inner proof raw.  The
+  actual univalence-β rule (`uaToEquiv` applied at `transp` reducing
+  to `equivApply`) ships in a later phase; the cong rule is the
+  vocabulary-level reduction baseline. -/
+  | uaToEquivCong {scope : Nat}
+      {sourceRaw targetRaw : RawTerm scope} :
+      RawStep.par sourceRaw targetRaw →
+      RawStep.par (RawTerm.uaToEquiv sourceRaw)
+                  (RawTerm.uaToEquiv targetRaw)
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/
