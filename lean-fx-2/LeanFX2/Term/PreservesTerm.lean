@@ -416,4 +416,189 @@ theorem RawStep.par.lift_pathLam
                       bodyTarget,
          Step.par.pathLam modeIsUnivalent bodyStepTyped⟩
 
+/-! ## Tier 2 — binary cong rules (no β/ι firing from the head)
+
+Two Term children at the same scope, both contributing independent
+parallel reductions.  Same recipe as Tier 1 unary, but with two IHs.
+
+Recipe per binary ctor:
+  obtain ⟨_, _, eq, leftStep, rightStep⟩ := <ctor>_inv rawStep
+  obtain ⟨leftT,  leftSt⟩  := leftLift  leftStep
+  obtain ⟨rightT, rightSt⟩ := rightLift rightStep
+  cases eq
+  exact ⟨Term.<ctor> ... leftT rightT,
+         Step.par.<ctor>Cong leftSt rightSt⟩
+
+Shipped this batch:
+  * intervalMeet — both at Ty.interval
+  * intervalJoin — both at Ty.interval
+  * glueIntro    — both at baseType
+  * hcomp        — both at carrierType
+  * codataUnfold — different types (state, transition)
+  * sessionSend  — different types (channel = session, payload)
+  * effectPerform — different types (operation, arguments) -/
+
+/-- **Tier 2 — Term.intervalMeet lift.** -/
+theorem RawStep.par.lift_intervalMeet
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw)
+    (leftLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par leftRaw targetRawIH →
+      ∃ leftTarget : Term context Ty.interval targetRawIH,
+        Step.par leftValue leftTarget)
+    (rightLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par rightRaw targetRawIH →
+      ∃ rightTarget : Term context Ty.interval targetRawIH,
+        Step.par rightValue rightTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.intervalMeet leftRaw rightRaw) targetRaw) :
+    ∃ targetTerm : Term context Ty.interval targetRaw,
+      Step.par (Term.intervalMeet leftValue rightValue) targetTerm := by
+  obtain ⟨leftTargetRaw, rightTargetRaw, eq, leftStep, rightStep⟩ :=
+    RawStep.par.intervalMeet_inv rawStep
+  obtain ⟨leftTarget, leftStepTyped⟩ := leftLift leftStep
+  obtain ⟨rightTarget, rightStepTyped⟩ := rightLift rightStep
+  cases eq
+  exact ⟨Term.intervalMeet leftTarget rightTarget,
+         Step.par.intervalMeetCong leftStepTyped rightStepTyped⟩
+
+/-- **Tier 2 — Term.intervalJoin lift.** -/
+theorem RawStep.par.lift_intervalJoin
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term context Ty.interval leftRaw)
+    (rightValue : Term context Ty.interval rightRaw)
+    (leftLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par leftRaw targetRawIH →
+      ∃ leftTarget : Term context Ty.interval targetRawIH,
+        Step.par leftValue leftTarget)
+    (rightLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par rightRaw targetRawIH →
+      ∃ rightTarget : Term context Ty.interval targetRawIH,
+        Step.par rightValue rightTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.intervalJoin leftRaw rightRaw) targetRaw) :
+    ∃ targetTerm : Term context Ty.interval targetRaw,
+      Step.par (Term.intervalJoin leftValue rightValue) targetTerm := by
+  obtain ⟨leftTargetRaw, rightTargetRaw, eq, leftStep, rightStep⟩ :=
+    RawStep.par.intervalJoin_inv rawStep
+  obtain ⟨leftTarget, leftStepTyped⟩ := leftLift leftStep
+  obtain ⟨rightTarget, rightStepTyped⟩ := rightLift rightStep
+  cases eq
+  exact ⟨Term.intervalJoin leftTarget rightTarget,
+         Step.par.intervalJoinCong leftStepTyped rightStepTyped⟩
+
+/-- **Tier 2 — Term.glueIntro lift.** -/
+theorem RawStep.par.lift_glueIntro
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    (baseValue : Term context baseType baseRaw)
+    (partialValue : Term context baseType partialRaw)
+    (baseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par baseRaw targetRawIH →
+      ∃ baseTarget : Term context baseType targetRawIH,
+        Step.par baseValue baseTarget)
+    (partialLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par partialRaw targetRawIH →
+      ∃ partialTarget : Term context baseType targetRawIH,
+        Step.par partialValue partialTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.glueIntro baseRaw partialRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.glue baseType boundaryWitness) targetRaw,
+      Step.par
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseValue
+                        partialValue)
+        targetTerm := by
+  obtain ⟨baseTargetRaw, partialTargetRaw, eq, baseStep, partialStep⟩ :=
+    RawStep.par.glueIntro_inv rawStep
+  obtain ⟨baseTarget, baseStepTyped⟩ := baseLift baseStep
+  obtain ⟨partialTarget, partialStepTyped⟩ := partialLift partialStep
+  cases eq
+  exact ⟨Term.glueIntro modeIsUnivalent baseType boundaryWitness baseTarget
+                        partialTarget,
+         Step.par.glueIntroCong modeIsUnivalent baseStepTyped partialStepTyped⟩
+
+/-- **Tier 2 — Term.hcomp lift.** -/
+theorem RawStep.par.lift_hcomp
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    (sidesValue : Term context carrierType sidesRaw)
+    (capValue : Term context carrierType capRaw)
+    (sidesLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par sidesRaw targetRawIH →
+      ∃ sidesTarget : Term context carrierType targetRawIH,
+        Step.par sidesValue sidesTarget)
+    (capLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par capRaw targetRawIH →
+      ∃ capTarget : Term context carrierType targetRawIH,
+        Step.par capValue capTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.hcomp sidesRaw capRaw) targetRaw) :
+    ∃ targetTerm : Term context carrierType targetRaw,
+      Step.par (Term.hcomp modeIsUnivalent sidesValue capValue) targetTerm := by
+  obtain ⟨sidesTargetRaw, capTargetRaw, eq, sidesStep, capStep⟩ :=
+    RawStep.par.hcomp_inv rawStep
+  obtain ⟨sidesTarget, sidesStepTyped⟩ := sidesLift sidesStep
+  obtain ⟨capTarget, capStepTyped⟩ := capLift capStep
+  cases eq
+  exact ⟨Term.hcomp modeIsUnivalent sidesTarget capTarget,
+         Step.par.hcompCong modeIsUnivalent sidesStepTyped capStepTyped⟩
+
+/-- **Tier 2 — Term.codataUnfold lift.** -/
+theorem RawStep.par.lift_codataUnfold
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw)
+    (stateLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par stateRaw targetRawIH →
+      ∃ stateTarget : Term context stateType targetRawIH,
+        Step.par initialState stateTarget)
+    (transitionLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par transitionRaw targetRawIH →
+      ∃ transitionTarget :
+          Term context (Ty.arrow stateType outputType) targetRawIH,
+        Step.par transition transitionTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.codataUnfold stateRaw transitionRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.codata stateType outputType) targetRaw,
+      Step.par (Term.codataUnfold initialState transition) targetTerm := by
+  obtain ⟨stateTargetRaw, transitionTargetRaw, eq, stateStep, transitionStep⟩ :=
+    RawStep.par.codataUnfold_inv rawStep
+  obtain ⟨stateTarget, stateStepTyped⟩ := stateLift stateStep
+  obtain ⟨transitionTarget, transitionStepTyped⟩ := transitionLift transitionStep
+  cases eq
+  exact ⟨Term.codataUnfold stateTarget transitionTarget,
+         Step.par.codataUnfoldCong stateStepTyped transitionStepTyped⟩
+
+/-- **Tier 2 — Term.sessionSend lift.** -/
+theorem RawStep.par.lift_sessionSend
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (payload : Term context payloadType payloadRaw)
+    (channelLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par channelRaw targetRawIH →
+      ∃ channelTarget : Term context (Ty.session protocolStep) targetRawIH,
+        Step.par channel channelTarget)
+    (payloadLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par payloadRaw targetRawIH →
+      ∃ payloadTarget : Term context payloadType targetRawIH,
+        Step.par payload payloadTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.sessionSend channelRaw payloadRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.session protocolStep) targetRaw,
+      Step.par (Term.sessionSend protocolStep channel payload) targetTerm := by
+  obtain ⟨channelTargetRaw, payloadTargetRaw, eq, channelStep, payloadStep⟩ :=
+    RawStep.par.sessionSend_inv rawStep
+  obtain ⟨channelTarget, channelStepTyped⟩ := channelLift channelStep
+  obtain ⟨payloadTarget, payloadStepTyped⟩ := payloadLift payloadStep
+  cases eq
+  exact ⟨Term.sessionSend protocolStep channelTarget payloadTarget,
+         Step.par.sessionSendCong channelStepTyped payloadStepTyped⟩
+
 end LeanFX2
