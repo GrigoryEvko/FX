@@ -75,6 +75,12 @@ presentations are importable together and gives small representative
 values over `Unit`.  The mathematical content lives in the per-HIT
 modules; this module is the load-bearing examples surface named by the
 sprint plan.
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (concrete examples surface)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

@@ -40,6 +40,12 @@ and computation rules without importing Lean's quotient axioms.
 * `HoTT/HIT/Setoid.lean` — encoding
 * `HoTT/HIT/Eliminator.lean` — HIT induction
 * `HoTT/HIT/Examples.lean` — concrete HITs
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: HoTT/HIT/Setoid
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

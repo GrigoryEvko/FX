@@ -13,6 +13,12 @@ This module does not synthesize the equivalence closure of those seam
 paths.  Instead, callers provide the relation and equivalence proofs,
 plus the seam relation witnesses.  This keeps the kernel zero-axiom and
 prevents hidden quotient machinery.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Examples, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

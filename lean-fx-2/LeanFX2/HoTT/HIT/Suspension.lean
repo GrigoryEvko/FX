@@ -10,6 +10,12 @@ value.
 
 This is the 0-truncated presentation.  It does not attempt to encode
 higher coherence data for iterated spheres.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Examples, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

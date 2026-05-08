@@ -14,6 +14,12 @@ by the named `SetTruncRel.reflPath` constructor.
 This is not a full higher inductive 0-truncation with a generated
 `isSet` constructor for arbitrary source types.  That needs a richer
 higher-path presentation than the current setoid layer.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: Smoke/HoTT, HoTT/HIT/Examples
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

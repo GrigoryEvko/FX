@@ -11,6 +11,12 @@ must carry relation-preservation proofs, so the kernel never relies on
 
 This is intentionally weaker than native quotient syntax: values remain
 representatives, and the quotient relation is tracked explicitly.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Examples, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

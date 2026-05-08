@@ -12,6 +12,12 @@ This module does not synthesize the equivalence closure of those path
 constructors.  Callers provide the relation, the equivalence proofs, and
 the map-equality witnesses directly.  This keeps the presentation
 zero-axiom and avoids Lean's quotient primitives.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Examples, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

@@ -30,6 +30,12 @@ For S¹:
 ## Downstream consumers
 
 * `HoTT/HIT/Examples.lean` — concrete HIT eliminators
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: HoTT/HIT/SetTrunc, HoTT/HIT/Coequalizer, HoTT/HIT/Pushout, HoTT/HIT/Suspension, HoTT/HIT/S1, HoTT/HIT/PropTrunc, HoTT/HIT/Quot, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

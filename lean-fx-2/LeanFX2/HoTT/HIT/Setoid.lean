@@ -46,6 +46,12 @@ propext.
 lean-fx had this on the roadmap (#950).  lean-fx-2 now ships the
 first load-bearing setoid foundation; concrete HIT modules still need
 their own relations, recursors, and computation smokes.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Eliminator
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

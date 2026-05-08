@@ -13,6 +13,12 @@ it respects the squash relation.
 This is the first concrete HIT specialization over the generic
 `HITSetoid` / `HITRecursor` foundation.  It deliberately avoids
 Lean's quotient machinery and therefore avoids `Quot.sound`.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Examples, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

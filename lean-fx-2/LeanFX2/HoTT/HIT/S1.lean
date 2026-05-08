@@ -15,6 +15,12 @@ fundamental group or higher loop composition.  Those require a richer
 path algebra than the current `HITSetoid` foundation.  The purpose here
 is to make the base/loop/coherence wiring non-vacuous without importing
 axioms.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/HIT/Examples, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2
