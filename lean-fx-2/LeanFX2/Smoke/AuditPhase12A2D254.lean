@@ -15,6 +15,7 @@ import LeanFX2.Confluence.CanonicalForm
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Bridge
+import LeanFX2.Cubical.Transport
 
 /-! # AuditPhase12A2D254 — D2.5.4 transp-refl-β cascade zero-axiom audit.
 
@@ -99,3 +100,7 @@ Every declaration below must report "does not depend on any axioms".
 #print axioms LeanFX2.RawStep.parStar.confluence
 #print axioms LeanFX2.Conv.canonicalRaw
 #print axioms LeanFX2.Conv.transRaw
+
+-- Phase G consumer: named-redex β at Step.par level (Cubical/Transport)
+#print axioms LeanFX2.Cubical.constantTypeTransport_betaParStep
+#print axioms LeanFX2.Cubical.constantTypeTransport_betaConvCumul

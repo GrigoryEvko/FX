@@ -8,10 +8,12 @@ Transport helpers for cubical paths.
 ## Deliverable
 
 This module names the safe constant-type transport redex shape and
-provides its conversion-layer β rule.  The raw and typed parallel
-reductions still have transport congruence only; lifting this β rule to
-`Step.par` needs a raw preservation lemma for weakened constant path
-bodies.
+provides its β rule at the conversion layer (`ConvCumul`) AND at the
+parallel-step layer (`Step.par`).  The raw preservation lemma
+`RawStep.par.weaken_inv` (Phase G.0, `Reduction/RawParWeakenInv.lean`)
+unblocks the par lift; the matching typed ctor
+`Step.par.transpReflBeta` (`Reduction/ParRed.lean`) closes the
+shallow shape.
 -/
 
 namespace LeanFX2
@@ -149,13 +151,42 @@ theorem constantTypeTransport_sourceConvCumul
     sourceType sourceType typeRaw typeRaw
     (ConvCumul.refl _) sourceRel
 
+/-- Parallel-step β for transport along the named constant type line.
+
+The named-redex `constantTypeTransport ... typeCode sourceValue`
+parallel-reduces to `sourceValue` in one step.  This is the
+`Step.par`-level analog of `constantTypeTransport_betaConvCumul`,
+unblocked by `RawStep.par.weaken_inv` (Phase G.0) and the matching
+typed ctor `Step.par.transpReflBeta` (Phase G).  Earlier versions
+of this module had to defer this lift; the deferral is now
+discharged. -/
+theorem constantTypeTransport_betaParStep
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    Step.par
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
+        sourceType typeCode sourceValue)
+      sourceValue :=
+  Step.par.transpReflBeta modeIsUnivalent universeLevel universeLevelLt
+    sourceType
+    (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode)
+    (Step.par.refl sourceValue)
+
 /-- Conversion-layer β for transport along the named constant type line.
 
-This is the currently safe computation principle for `transp`: it is
-restricted to `constantTypeTransport`, so it cannot collapse arbitrary
-path lambdas whose bodies mention the interval binder.  A future
-`Step.par` β rule needs an additional raw lemma showing that parallel
-reduction preserves weakened constant path bodies. -/
+This is the safe computation principle for `transp` at conversion
+level: it is restricted to `constantTypeTransport`, so it cannot
+collapse arbitrary path lambdas whose bodies mention the interval
+binder.  Companion `constantTypeTransport_betaParStep` lifts the
+same principle to `Step.par` directly. -/
 theorem constantTypeTransport_betaConvCumul
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
