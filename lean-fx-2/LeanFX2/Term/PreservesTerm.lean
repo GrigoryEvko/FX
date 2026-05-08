@@ -2423,4 +2423,39 @@ theorem RawStep.par.lift_full_oeqFunext
                                leftFunctionRaw rightFunctionRaw
                                pointwiseStepTyped
 
+/-! ## Coverage status (post-juggernaut Phase 4)
+
+**Full lifts shipped (two-Ty existential)**: 6 ctors:
+- app (β cast wall demolished)
+- pathApp (β cast wall demolished)
+- fst, snd (Σ-elim)
+- idJ, idStrictRec (type-changing iota for HoTT/strict identity)
+- boolElim (type-changing motive)
+- oeqJ (cong-only — no iota at raw level)
+- oeqRefl, idStrictRefl (schematic-payload value with typed cong)
+- oeqFunext (single typed child)
+
+**Cong-only lifts shipped (existing)**: lift_app_cong,
+lift_appPi_cong, lift_pathApp_cong, lift_transp_cong.
+
+**Tier 0/1/2/3 lifts shipped (existing)**: 47 ctors as
+documented in the file's docstring.
+
+**Pending walls** (per file docstring):
+- Schematic-payload value ctors WITHOUT typed cong rules: refl,
+  equivReflId, funextRefl, equivReflIdAtId, funextReflAtId,
+  funextIntroHet, equivIntroHet, uaIntroHet, arrowCode, piTyCode,
+  sigmaTyCode, productCode, sumCode, listCode, optionCode,
+  eitherCode, idCode, equivCode (18 ctors).  These need new
+  Step.par cong rules.
+- pair (heterogeneous Step.par via subst-typed second; needs
+  IH-shape extension).
+- appPi (lamPi vs funextRefl shape ambiguity at Ty.piTy).
+- transp full (transpReflBetaDeep typed Step.par doesn't exist).
+
+The headline `Term.preserves` over the FULL Term inductive is
+deferred pending these walls.  Each lift above is a compositional
+brick — when assembled via Term induction, the IH for child Terms
+is supplied by the inductive case. -/
+
 end LeanFX2
