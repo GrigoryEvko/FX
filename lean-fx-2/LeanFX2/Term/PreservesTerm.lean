@@ -1279,6 +1279,55 @@ Recipe per β-firing eliminator:
     canonical type), use the corresponding destructor to extract
     the canonical payload, then apply Step.par.beta<elim><Intro>Deep -/
 
+/-- **Tier 3 — Term.transp lift, cong arm only.**  The transp_inv has
+3 disjuncts: cong + transpReflBeta (constant-pathLam fires) +
+transpReflBetaDeep.  The β arms require the path argument to develop
+to a `RawTerm.pathLam typeRaw.weaken` form — checking this at the
+typed level requires alignment between the pathLam's body-raw and the
+schematic typeRaw payload, deferred. -/
+theorem RawStep.par.lift_transp_cong
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term context sourceType sourceRaw)
+    (typePathLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pathRaw targetRawIH →
+      ∃ typePathTarget :
+          Term context
+            (Ty.path (Ty.universe universeLevel universeLevelLt)
+              sourceTypeRaw targetTypeRaw)
+            targetRawIH,
+        Step.par typePath typePathTarget)
+    (sourceValueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par sourceRaw targetRawIH →
+      ∃ sourceValueTarget : Term context sourceType targetRawIH,
+        Step.par sourceValue sourceValueTarget)
+    {pathTargetRaw sourceTargetRaw : RawTerm scope}
+    (pathStep : RawStep.par pathRaw pathTargetRaw)
+    (sourceStep : RawStep.par sourceRaw sourceTargetRaw) :
+    ∃ targetTerm :
+        Term context targetType (RawTerm.transp pathTargetRaw sourceTargetRaw),
+      Step.par
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType sourceTypeRaw targetTypeRaw typePath sourceValue)
+        targetTerm := by
+  obtain ⟨typePathTarget, typePathStepTyped⟩ := typePathLift pathStep
+  obtain ⟨sourceValueTarget, sourceValueStepTyped⟩ := sourceValueLift sourceStep
+  exact ⟨Term.transp modeIsUnivalent universeLevel universeLevelLt
+                     sourceType targetType
+                     sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget,
+         Step.par.transpCong modeIsUnivalent universeLevel universeLevelLt
+                             sourceType targetType sourceTypeRaw targetTypeRaw
+                             typePathStepTyped sourceValueStepTyped⟩
+
 /-- **Tier 3 — Term.pathApp lift, cong arm only.**  The β-arms
 (betaPathApp / betaPathReflApp) require body-substitution casts —
 deferred per the lift_app comment. -/
