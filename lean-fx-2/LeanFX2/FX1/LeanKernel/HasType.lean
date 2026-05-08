@@ -313,6 +313,23 @@ inductive HasType {level : Nat} :
         context
         (Expr.letE declName ascribedTypeExpr valueExpr bodyExpr nondep)
         (Expr.instantiate bodyTypeExpr valueExpr)
+  /-- Metadata-wrapped expressions are typed by their inner body.
+
+  Lean's `mdata` is a transparent annotation node that carries reviewer hints
+  but contributes no operational meaning.  This rule mirrors Lean's kernel by
+  forwarding the inner derivation unchanged. -/
+  | mdata
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      {metadata : MData}
+      {bodyExpr typeExpr : Expr level scope}
+      (bodyHasType : HasType environment context bodyExpr typeExpr) :
+      HasType
+        environment
+        context
+        (Expr.mdata metadata bodyExpr)
+        typeExpr
 
 end FX1.LeanKernel
 end LeanFX2

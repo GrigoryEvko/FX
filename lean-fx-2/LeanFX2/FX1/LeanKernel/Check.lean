@@ -427,7 +427,17 @@ def inferResult? {level scope : Nat}
         } =>
           Option.none
   | Expr.lit _literal => Option.none
-  | Expr.mdata _metadata _bodyExpr => Option.none
+  | Expr.mdata metadata bodyExpr =>
+      match inferResult? environment context bodyExpr with
+      | Option.none => Option.none
+      | Option.some bodyResult =>
+          Option.some {
+            typeExpr := bodyResult.typeExpr
+            typeDerivation :=
+              HasType.mdata
+                (metadata := metadata)
+                bodyResult.typeDerivation
+          }
   | Expr.proj _structName _fieldIndex _targetExpr => Option.none
 
 /-- Infer a type, erasing the proof-carrying payload. -/
