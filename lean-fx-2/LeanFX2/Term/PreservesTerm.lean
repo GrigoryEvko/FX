@@ -25,33 +25,142 @@ We progress per Term ctor in tiers:
 * **Tier 0** — atoms (raw form has no children).  `RawStep.par`
   inversion forces `targetRaw = sourceRaw`, so the target Term IS the
   source Term and the typed Step.par witness is `Step.par.refl
-  sourceTerm`.  Atoms shipped here:
-  `unit`, `boolTrue`, `boolFalse`, `natZero`, `listNil`, `optionNone`,
-  `interval0`, `interval1`, `var`.
+  sourceTerm`.  Shipped (9): `unit`, `boolTrue`, `boolFalse`,
+  `natZero`, `listNil`, `optionNone`, `interval0`, `interval1`, `var`.
 
-* **Tier 1** — unary cong.  Single child; the raw inversion gives a
-  child raw step.  We recurse via the IH on the child.  *Pending*.
+* **Tier 1 unary** — single Term child at the same scope (no β/ι).
+  Shipped (8): `natSucc`, `optionSome`, `eitherInl`, `eitherInr`,
+  `intervalOpp`, `modIntro`, `subsume`, `recordIntro`.
 
-* **Tier 2+** — binary cong / β/ι rules.  *Pending*.
+* **Tier 1 binders** — single Term child at scope+1 under a binder.
+  Shipped (3): `lam`, `lamPi`, `pathLam`.
 
-The headline statement `Term.preserves` aggregates all per-ctor
-lemmas via induction on Term ctor.
+* **Tier 1 single-child no-β** — Shipped (1): `sessionRecv`.
 
-## Headline shape
+* **Tier 2 binary cong** — two Term children, both reducing in
+  parallel.  Shipped (10): `intervalMeet`, `intervalJoin`,
+  `glueIntro`, `hcomp`, `codataUnfold`, `sessionSend`, `listCons`,
+  `equivApp`, `refineIntro`, `effectPerform`.
+
+* **Tier 3 eliminators (constant motive)** — eliminator ctors where
+  `motiveType : Ty level scope` (NOT scope+1), giving a fixed result
+  type.  3-arm raw inversion: cong + iotaCanonical1 + iotaCanonical2;
+  each iota arm uses a destructor (or inline suffices/free-index) to
+  align the typed scrutinee with its canonical form, then dispatches
+  to the matching deep ι rule.  Shipped (5): `natElim`, `natRec`,
+  `listElim`, `optionMatch`, `eitherMatch`.
+
+* **Tier 3 single-child β-firing eliminators** — eliminators where
+  the introducer's payload is a single Term child.  2-arm raw
+  inversion: cong + β-deep; β arm uses an inline destructor for the
+  introducer.  Shipped (5): `modElim`, `recordProj`, `refineElim`,
+  `glueElim`, `codataDest`.
+
+* **Tier 3 cong-arm-only β-blocked ctors** — ctors whose β-firing
+  raw arms hit a `Ty.weaken_subst_singleton` cast wall (the βApp/
+  βAppPi/βPathApp target Term has type `codomain.weaken.subst0 ...`
+  while the existential expects `codomain`; the `▸`-rewrite
+  propagates through the existential's other type indices).  Shipped
+  cong-only variants (4): `lift_app_cong`, `lift_appPi_cong`,
+  `lift_pathApp_cong`, `lift_transp_cong`.
+
+The headline statement `Term.preserves` aggregating all per-ctor
+lemmas via induction on Term ctor is the natural close-out — but
+requires resolving the schematic-payload value-ctor wall and the
+β cast wall.  See "Pending ctors and their walls" below.
+
+## Headline shape (per ctor)
 
 ```
 theorem RawStep.par.lift_<ctor>
     (sourceTerm : Term context sourceTy <ctorRaw>)
+    (childLifts : ...)         -- IH for each Term child
     {targetRaw : RawTerm scope}
     (rawStep : RawStep.par <ctorRaw> targetRaw) :
     ∃ targetTerm : Term context sourceTy targetRaw,
       Step.par sourceTerm targetTerm
 ```
 
-The `sourceTy` is left general so the lemma applies whenever a typed
-Term inhabits the matching raw shape.  For atoms, the `Term` ctor pins
-the type uniquely (`Term.unit` only inhabits `Ty.unit`), so the
-recipient threads the equation forward.
+The `childLifts` are explicit IH parameters — when assembled into the
+headline `Term.preserves` via Term induction, the IH is supplied by
+the inductive case.
+
+## Pending ctors and their walls
+
+These ctors don't ship per-ctor lifts at the headline shape; each
+needs additional infrastructure or a different headline shape.
+
+### Schematic-payload value ctors
+
+`Term.refl carrier rawWitness` is a value Term whose only computational
+content is the schematic raw payload `rawWitness`.  RawStep.par has a
+cong rule `reflCong rwStep : par (refl rw) (refl wt)` that allows the
+witness raw to step.  But the typed Step.par has NO cong rule for
+`Term.refl` (since the witness isn't a typed Term, just a raw).  Thus
+the only typed step from `Term.refl c rw` is `Step.par.refl _`,
+forcing target = source.  But the raw step can yield a non-trivial
+target.
+
+This means `lift_refl` at fixed type is structurally false: when
+`par rw wt` is non-refl, no typed Step.par witness exists.
+
+Same wall for: `oeqRefl`, `idStrictRefl`, `equivReflId`, `funextRefl`,
+`equivReflIdAtId`, `funextReflAtId`, `funextIntroHet`, `equivIntroHet`,
+`uaIntroHet`, `arrowCode`, `piTyCode`, `sigmaTyCode`, `productCode`,
+`sumCode`, `listCode`, `optionCode`, `eitherCode`, `idCode`,
+`equivCode`, `universeCode`, `cumulUp`.
+
+Resolution options:
+  1. Add typed cong rules `Step.par.<ctor>Cong : RawStep.par on raw
+     payload → Step.par at heterogeneous types`.  Invasive (changes
+     Step.par's ctor count gates) but mathematically correct.
+  2. Restrict the headline to "raw-stable" Term ctors only (skip
+     these in induction).
+  3. Use a HEq-shaped existential where the target Ty can differ
+     from the source's.
+
+### β cast wall (ctors with subst0-on-codomain cong rules)
+
+`lift_app`, `lift_appPi`, `lift_pathApp`'s β arms produce target
+Terms at substituted types (`codomainType.weaken.subst0 ...` =
+`codomainType` propositionally via `Ty.weaken_subst_singleton`).
+The `▸` cast propagates through Lean's goal in undesired directions.
+
+Resolution options:
+  1. Use HEq-shaped existential.
+  2. Provide a `Term.cast` helper that surgically rewrites the Ty
+     index without touching surrounding goal expressions.
+  3. Use Step.par's two-Ty signature directly in the headline.
+  4. Generalize the existential over Ty: `∃ tgtTy, Eq proof, ∃
+     tgtTerm : Term ctx tgtTy targetRaw, Step.par ...`.
+
+### Type-changing iota (idJ / oeqJ / idStrictRec)
+
+Iota β fires when the witness raw-reduces to refl/oeqRefl/idStrictRefl.
+The typed witness type (`Ty.id carrier left right` for distinct
+endpoints) differs from the typed target (`Ty.id carrier wr wr` after
+refl-firing).  Step.par's two-Ty signature handles this, but our
+fixed-type existential doesn't.  Same resolution options as the β
+cast wall.
+
+### Type-changing motive (boolElim)
+
+`Term.boolElim`'s motive `Ty.bool → Ty` lives at scope+1.  After
+scrutinee step, the result type changes (`motive.subst0 Ty.bool
+oldRaw` → `motive.subst0 Ty.bool newRaw`).  Same wall.
+
+### pair / fst / snd (heterogeneous Step.par via subst-typed second)
+
+`Term.pair fv sv`'s second has type `secondType.subst0 firstType
+firstRaw`.  After firstRaw steps, the second's required type changes.
+Step.par's two-Ty signature handles this; our fixed-type lift doesn't.
+
+### universe / cumul ctors
+
+`universeCode` is essentially Tier 0 (only refl applies — RawStep.par
+has no `universeCode` ctor).  Could ship trivially.  `cumulUp` has a
+`cumulUpInnerCong` but the inner code's type is at the lower
+universe — same shape as binders/cong, would ship.
 
 ## Why a separate file
 
@@ -172,6 +281,65 @@ theorem RawStep.par.lift_var
       Step.par sourceTerm targetTerm := by
   cases RawStep.par.var_inv rawStep
   exact ⟨sourceTerm, Step.par.refl sourceTerm⟩
+
+/-- **Tier 0 — Term.universeCode lift.**  `RawTerm.universeCode k` is
+a nullary canonical with NO `RawStep.par` cong rule (only refl
+applies).  Hence target raw = source raw. -/
+theorem RawStep.par.lift_universeCode
+    {sourceType : Ty level scope} {innerLevelNat : Nat}
+    (sourceTerm :
+      Term context sourceType (RawTerm.universeCode innerLevelNat))
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.universeCode innerLevelNat : RawTerm scope) targetRaw) :
+    ∃ targetTerm : Term context sourceType targetRaw,
+      Step.par sourceTerm targetTerm := by
+  cases rawStep
+  case refl => exact ⟨sourceTerm, Step.par.refl sourceTerm⟩
+
+/-- Inline inversion: `RawStep.par (cumulUpMarker rw) target → ∃ wt,
+target = cumulUpMarker wt ∧ par rw wt`.  No β fires from
+cumulUpMarker — only refl + cong arms. -/
+theorem RawStep.par.cumulUpMarker_inv {scope : Nat}
+    {sourceRaw : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.cumulUpMarker sourceRaw) target) :
+    ∃ targetInner, target = RawTerm.cumulUpMarker targetInner ∧
+      RawStep.par sourceRaw targetInner := by
+  cases parallelStep with
+  | refl _ => exact ⟨sourceRaw, rfl, RawStep.par.refl _⟩
+  | cumulUpMarkerCong innerStep => exact ⟨_, rfl, innerStep⟩
+
+/-- **Tier 1 — Term.cumulUp lift.**  Single inner Term child
+(`typeCode` at `Ty.universe lowerLevel levelLeLow`).  No β fires from
+cumulUp; only `Step.par.cumulUpInnerCong` applies. -/
+theorem RawStep.par.lift_cumulUp
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    (typeCode : Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (typeCodeLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par codeRaw targetRawIH →
+      ∃ typeCodeTarget :
+          Term context (Ty.universe lowerLevel levelLeLow) targetRawIH,
+        Step.par typeCode typeCodeTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.cumulUpMarker codeRaw : RawTerm scope) targetRaw) :
+    ∃ targetTerm :
+        Term context (Ty.universe higherLevel levelLeHigh) targetRaw,
+      Step.par
+        (Term.cumulUp lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCode)
+        targetTerm := by
+  obtain ⟨codeTargetRaw, eq, codeStep⟩ := RawStep.par.cumulUpMarker_inv rawStep
+  obtain ⟨codeTarget, codeStepTyped⟩ := typeCodeLift codeStep
+  cases eq
+  exact ⟨Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow levelLeHigh
+                      codeTarget,
+         Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone
+                                   levelLeLow levelLeHigh codeStepTyped⟩
 
 /-! ## Tier 1 — unary cong (no β/ι firing)
 
