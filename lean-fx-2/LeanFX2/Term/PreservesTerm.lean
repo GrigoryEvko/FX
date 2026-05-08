@@ -1,5 +1,6 @@
 import LeanFX2.Reduction.ParRed
 import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Term.Inversion
 
 /-! # Term/PreservesTerm — Strong subject reduction with term construction
 
@@ -702,6 +703,89 @@ theorem RawStep.par.lift_refineIntro
   cases eq
   exact ⟨Term.refineIntro predicate valueTarget proofTarget,
          Step.par.refineIntroCong valueStepTyped proofStepTyped⟩
+
+/-! ## Tier 3 — eliminators with constant motive
+
+Eliminators where `motiveType : Ty level scope` (NOT scope+1) — the
+result type is `motiveType` regardless of the scrutinee's raw form.
+Hence the lift can stay at fixed type even when the scrutinee
+parallel-reduces.
+
+The raw inversion has THREE arms: cong + iota-canonical (one per
+canonical scrutinee form).  We dispatch each arm to the matching typed
+Step.par cong / iota rule.  The iota arms use the deep variants
+(iota*Deep) which take a `Step.par scrutinee canonicalTerm` premise —
+this is exactly what the scrutinee IH produces (after the
+`Term.<canonical>_unique` HEq → eq conversion).
+
+For natElim's iotaSucc arm, the raw scrutinee parallel-reduces to
+`RawTerm.natSucc predRaw`.  The typed scrutinee IH applied to this
+step yields a typed term at `Term ctx Ty.nat (natSucc predRaw)`.
+Pattern-matching on this typed term forces it to be of the form
+`Term.natSucc predTarget` for some typed predTarget. -/
+
+/-- **Tier 3 — Term.natElim lift.**  Three-arm raw inversion handles
+cong + iotaZero + iotaSucc.  motiveType at scope (constant), so
+target type is fixed at `motiveType`. -/
+theorem RawStep.par.lift_natElim
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context Ty.nat targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (zeroLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par zeroRaw targetRawIH →
+      ∃ zeroTarget : Term context motiveType targetRawIH,
+        Step.par zeroBranch zeroTarget)
+    (succLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par succRaw targetRawIH →
+      ∃ succTarget : Term context (Ty.arrow Ty.nat motiveType) targetRawIH,
+        Step.par succBranch succTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.natElim scrutineeRaw zeroRaw succRaw) targetRaw) :
+    ∃ targetTerm : Term context motiveType targetRaw,
+      Step.par (Term.natElim scrutinee zeroBranch succBranch) targetTerm := by
+  rcases RawStep.par.natElim_inv rawStep with
+    ⟨scrutTargetRaw, zeroTargetRaw, succTargetRaw, eq, scrutStep, zeroStep, succStep⟩
+    | ⟨zeroTargetRaw, eq, scrutToZero, zeroStep⟩
+    | ⟨predTargetRaw, succTargetRaw, eq, scrutToSucc, succStep⟩
+  · -- cong arm
+    obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+    obtain ⟨zeroTarget, zeroStepTyped⟩ := zeroLift zeroStep
+    obtain ⟨succTarget, succStepTyped⟩ := succLift succStep
+    cases eq
+    exact ⟨Term.natElim scrutTarget zeroTarget succTarget,
+           Step.par.natElim scrutStepTyped zeroStepTyped succStepTyped⟩
+  · -- iotaZero arm: scrutinee →* natZero, target = zero result
+    obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutToZero
+    obtain ⟨zeroTarget, zeroStepTyped⟩ := zeroLift zeroStep
+    -- Use uniqueness to force scrutTarget = Term.natZero (HEq → eq at fixed type)
+    have heq :
+        HEq scrutTarget (Term.natZero (context := context)) :=
+      Term.natZero_unique scrutTarget Term.natZero
+    have scrutEq : scrutTarget = (Term.natZero (context := context)) := eq_of_heq heq
+    rw [scrutEq] at scrutStepTyped
+    cases eq
+    exact ⟨zeroTarget,
+           Step.par.iotaNatElimZeroDeep succBranch scrutStepTyped zeroStepTyped⟩
+  · -- iotaSucc arm: scrutinee →* natSucc predRaw, target = app succ predRaw
+    obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutToSucc
+    obtain ⟨succTarget, succStepTyped⟩ := succLift succStep
+    -- scrutTarget : Term ctx Ty.nat (natSucc predTargetRaw) — must be Term.natSucc _
+    -- Use the destructor (suffices/free-index pattern) to extract the
+    -- predecessor at fixed Ty.nat type.
+    obtain ⟨predecessor, predecessorHeq⟩ := Term.natSuccDestruct scrutTarget
+    have predecessorEq : scrutTarget = Term.natSucc predecessor :=
+      eq_of_heq predecessorHeq
+    rw [predecessorEq] at scrutStepTyped
+    cases eq
+    exact ⟨Term.app succTarget predecessor,
+           Step.par.iotaNatElimSuccDeep zeroBranch scrutStepTyped succStepTyped⟩
 
 /-- **Tier 2 — Term.effectPerform lift.**  Two children: operationTag
 (Ty.effect argumentCarrier effectTag) and arguments (argumentCarrier).  -/
