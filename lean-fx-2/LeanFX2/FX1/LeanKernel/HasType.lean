@@ -362,5 +362,32 @@ inductive HasType {level : Nat} :
         (Expr.lit (Literal.strAtomVal literalAtomId))
         (Expr.const Expr.stringTypeName List.nil)
 
+/-! ## Deferred kernel constructors
+
+The remaining three Lean-kernel expression constructors carry typing rules
+whose modelling depends on infrastructure not yet shipped in this slice:
+
+* `Expr.proj` — projection out of a structure.  A sound typing rule requires
+  inductive-spec lookup (parameter substitution, field-index lookup,
+  parameter instantiation through the constructor type).  Modelling those
+  reductions belongs to the Inductive slice, not the LeanKernel-FX1 typing
+  slice.  Until that lands, the executable checker rejects `proj` (returns
+  `Option.none`); the relational `HasType` consequently has no `proj`
+  arm, which is sound: an empty rule set rejects all such expressions.
+* `Expr.fvar` — free variables.  The current `Context` only stores
+  bound-variable types; fvar typing requires a separate fvar-context and
+  free-variable reindexing.  That extension is a later slice.  The
+  executable checker rejects fvars at the current slice; absence of a
+  HasType arm preserves soundness.
+* `Expr.mvar` — metavariables.  Lean's kernel rejects mvars in
+  fully-elaborated terms.  Mirroring that policy, the executable checker
+  rejects mvars and the relational `HasType` has no mvar arm.
+
+Restricting the relational typing to "no rule" for these three constructors
+is conservative: every successful checker call is still witnessed by an
+inhabitant of `HasType`, and no unsoundness can leak through a missing
+arm.  Adding rules later is monotone — only a future enlargement of the
+trusted claim, never a retraction. -/
+
 end FX1.LeanKernel
 end LeanFX2
