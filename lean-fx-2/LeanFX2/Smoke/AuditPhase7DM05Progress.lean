@@ -34,3 +34,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.headCtor_intervalJoin_raw
 #print axioms LeanFX2.Term.headCtor_equivReflId_raw
 #print axioms LeanFX2.Term.headCtor_funextRefl_raw
+#print axioms LeanFX2.Term.headCtor_equivReflIdAtId_raw

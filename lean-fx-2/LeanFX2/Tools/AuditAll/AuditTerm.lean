@@ -101,5 +101,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.headCtor_intervalJoin_raw
 #assert_no_axioms LeanFX2.Term.headCtor_equivReflId_raw
 #assert_no_axioms LeanFX2.Term.headCtor_funextRefl_raw
+#assert_no_axioms LeanFX2.Term.headCtor_equivReflIdAtId_raw
 
 end LeanFX2.Tools
