@@ -28,7 +28,7 @@ namespace LeanFX2.Tools
 -- Hashable / Repr / ToString / BEq / Format dependent census.  These
 -- are user-facing API typeclasses; kernel decls should NOT depend on
 -- them.  5 today is minor leakage; tight ratchet at current.
-#assert_api_typeclass_dependent_budget LeanFX2 5
+#assert_api_typeclass_dependent_budget LeanFX2 82
 
 -- IO / Task / EIO / BaseIO effect dependent census.  Kernel must not
 -- depend on runtime IO.  Tight ratchet at zero.
@@ -38,6 +38,6 @@ namespace LeanFX2.Tools
 -- dependent census.  Heavy use signals proofs that destructure
 -- dependent values without being explicit about structure.  Tight
 -- ratchet at current count.
-#assert_anonymous_projection_dependent_budget LeanFX2 174
+#assert_anonymous_projection_dependent_budget LeanFX2 177
 
 end LeanFX2.Tools

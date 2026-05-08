@@ -134,5 +134,26 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.refineElim_refineIntro_steps
 #assert_no_axioms LeanFX2.Term.codataDest_codataUnfold_steps
 #assert_no_axioms LeanFX2.Term.cumulUp_inner_steps
+-- M05.C cong-rule lifters (Phase 7.D, #1644).
+#assert_no_axioms LeanFX2.Term.app_function_steps_lift
+#assert_no_axioms LeanFX2.Term.appPi_function_steps_lift
+#assert_no_axioms LeanFX2.Term.fst_pair_steps_lift
+#assert_no_axioms LeanFX2.Term.snd_pair_steps_lift
+#assert_no_axioms LeanFX2.Term.boolElim_scrutinee_steps_lift
+#assert_no_axioms LeanFX2.Term.natElim_scrutinee_steps_lift
+#assert_no_axioms LeanFX2.Term.natRec_scrutinee_steps_lift
+#assert_no_axioms LeanFX2.Term.listElim_scrutinee_steps_lift
+#assert_no_axioms LeanFX2.Term.optionMatch_scrutinee_steps_lift
+#assert_no_axioms LeanFX2.Term.eitherMatch_scrutinee_steps_lift
+#assert_no_axioms LeanFX2.Term.idJ_witness_steps_lift
+#assert_no_axioms LeanFX2.Term.modElim_inner_steps_lift
+#assert_no_axioms LeanFX2.Term.pathApp_path_steps_lift
+#assert_no_axioms LeanFX2.Term.glueElim_value_steps_lift
+#assert_no_axioms LeanFX2.Term.recordProj_record_steps_lift
+#assert_no_axioms LeanFX2.Term.refineElim_value_steps_lift
+#assert_no_axioms LeanFX2.Term.codataDest_value_steps_lift
+-- M05.D partial headline progress (Phase 7.D, #1645).
+#assert_no_axioms LeanFX2.Term.value_or_cong_only_progress
+#assert_no_axioms LeanFX2.Term.app_progress_or_step
 
 end LeanFX2.Tools

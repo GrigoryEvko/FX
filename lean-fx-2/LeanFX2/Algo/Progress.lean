@@ -1,6 +1,5 @@
 import LeanFX2.Algo.WHNF
 import LeanFX2.Term.Inversion
-import LeanFX2.Term.PreservesTerm
 import LeanFX2.Reduction.Step
 
 /-! # Algo/Progress — Wright-Felleisen Progress lemma (M05).
@@ -4300,6 +4299,56 @@ theorem Term.value_or_cong_only_progress
   | recordProj _ => exact absurd rfl notConditionalElim.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
   | refineElim _ => exact absurd rfl notConditionalElim.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2
 
+/-! ## Local destructor for non-dep λ
+
+`Term.lamDestructAlgo` is the Algo-layer copy of
+`Term.lamDestruct` (which lives in `Term/PreservesTerm.lean`).
+Inlined here to avoid importing PreservesTerm — that module
+imports `Reduction.ParRed` (a later layer), so pulling it into
+Algo would violate the production import-surface gate.
+
+The two definitions are byte-equivalent except for the name.
+Both are zero-axiom under strict policy via the suffices/free-
+index pattern from `feedback_lean_free_type_via_suffices.md`. -/
+
+/-- Algo-layer destructor for `Term.lam` (non-dep arrow).
+Disambiguated from `Term.lamPi`, `Term.funextRefl`,
+`Term.funextReflAtId`, and `Term.funextIntroHet` (all with raw
+`RawTerm.lam ...`) by the fixed `Ty.arrow` source-type index —
+the latter four have `Ty.id` or `Ty.piTy` shaped types.
+
+Used by `Term.app_progress_or_step` to extract the typed body
+of the `Term.lam` form when the function position of an `app`
+node is itself a lambda.  Zero-axiom via the suffices/free-
+index pattern (mirrors `Term.lamDestruct` in
+`Term/PreservesTerm.lean`). -/
+def Term.lamDestructAlgo {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (someTerm :
+      Term context (Ty.arrow domainType codomainType) (RawTerm.lam bodyRaw)) :
+    Σ' (body : Term (context.cons domainType) codomainType.weaken bodyRaw),
+       HEq someTerm (Term.lam (codomainType := codomainType) body) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.lam bodyRaw)),
+        someType = Ty.arrow domainType codomainType →
+        Σ' (body : Term (context.cons domainType) codomainType.weaken bodyRaw),
+           HEq genericTerm (Term.lam (codomainType := codomainType) body) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsArrow
+  cases genericTerm
+  case lam innerDomain innerCodomain body =>
+    have arrowEq := Ty.arrow.inj someTypeIsArrow
+    cases arrowEq.1
+    cases arrowEq.2
+    exact ⟨body, HEq.rfl⟩
+  case lamPi innerDomain innerCodomain body =>
+    nomatch someTypeIsArrow
+  case funextRefl _ _ _ => nomatch someTypeIsArrow
+  case funextReflAtId _ _ _ => nomatch someTypeIsArrow
+  case funextIntroHet _ _ _ _ => nomatch someTypeIsArrow
+
 /-- Focused progress theorem for the `Term.app` head.  Every
 non-dep `app`-headed term is either in WHNF (when the function
 position is not a `lam`) or takes a β-step (when the function
@@ -4331,7 +4380,7 @@ theorem Term.app_progress_or_step
   | lam =>
       obtain ⟨bodyRaw, rawEq⟩ := Term.headCtor_lam_raw functionTerm h
       cases rawEq
-      obtain ⟨body, bodyHeq⟩ := Term.lamDestruct functionTerm
+      obtain ⟨body, bodyHeq⟩ := Term.lamDestructAlgo functionTerm
       have bodyEq := eq_of_heq bodyHeq
       rw [bodyEq]
       exact Or.inr ⟨_, _, _, Step.betaApp body argumentTerm⟩

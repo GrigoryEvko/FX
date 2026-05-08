@@ -67,3 +67,24 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.refineElim_refineIntro_steps
 #print axioms LeanFX2.Term.codataDest_codataUnfold_steps
 #print axioms LeanFX2.Term.cumulUp_inner_steps
+-- M05.C cong-rule lifters (#1644).
+#print axioms LeanFX2.Term.app_function_steps_lift
+#print axioms LeanFX2.Term.appPi_function_steps_lift
+#print axioms LeanFX2.Term.fst_pair_steps_lift
+#print axioms LeanFX2.Term.snd_pair_steps_lift
+#print axioms LeanFX2.Term.boolElim_scrutinee_steps_lift
+#print axioms LeanFX2.Term.natElim_scrutinee_steps_lift
+#print axioms LeanFX2.Term.natRec_scrutinee_steps_lift
+#print axioms LeanFX2.Term.listElim_scrutinee_steps_lift
+#print axioms LeanFX2.Term.optionMatch_scrutinee_steps_lift
+#print axioms LeanFX2.Term.eitherMatch_scrutinee_steps_lift
+#print axioms LeanFX2.Term.idJ_witness_steps_lift
+#print axioms LeanFX2.Term.modElim_inner_steps_lift
+#print axioms LeanFX2.Term.pathApp_path_steps_lift
+#print axioms LeanFX2.Term.glueElim_value_steps_lift
+#print axioms LeanFX2.Term.recordProj_record_steps_lift
+#print axioms LeanFX2.Term.refineElim_value_steps_lift
+#print axioms LeanFX2.Term.codataDest_value_steps_lift
+-- M05.D partial headline progress (#1645).
+#print axioms LeanFX2.Term.value_or_cong_only_progress
+#print axioms LeanFX2.Term.app_progress_or_step

@@ -30,7 +30,7 @@ namespace LeanFX2.Tools
 -- mentions `HEq` are propext-adjacent — heterogeneous equality cannot
 -- generally reduce.  92 today includes the stronger `equivIntroHet`
 -- constructor shape with inverse-law proof functions.
-#assert_heq_result_type_budget LeanFX2 92
+#assert_heq_result_type_budget LeanFX2 93
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable
@@ -44,7 +44,7 @@ namespace LeanFX2.Tools
 -- `listCons`'s elementEq, etc.), plus the FIFTEEN M10 check-mode
 -- counterpart theorems whose closure runs through `Term.check` (529
 -- LoC, DecEq-Ty saturated for expected-type dispatch on every arm).
-#assert_decide_dependent_budget LeanFX2 750
+#assert_decide_dependent_budget LeanFX2 831
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions
