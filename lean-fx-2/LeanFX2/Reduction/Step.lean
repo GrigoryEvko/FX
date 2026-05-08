@@ -1200,6 +1200,50 @@ inductive Step :
   constant path (i.e. its body is a weakened type code, mentioning
   no interval binder), transport across it must be the identity.
 
+  ## D2.5.x roadmap status (Phase G complete; v1.1 deferred items below)
+
+  D2.5.1 (transpBeta — generic transp β at non-constant path):
+    SUPERSEDED by D2.5.4.  The original D2.5.1 description ("transp β
+    currently only in Step.par") referred to a `Step.par.transpBeta`
+    that does not exist in this kernel — `transp` reduction at a
+    constant path lands here as `transpReflBeta` (D2.5.4) and at a
+    non-constant path requires the binder-aware `transpPi` /
+    `transpSigma` cascade (D2.5.5–D2.5.7) which are v1.1 deferred.
+    No action required.
+
+  D2.5.2 (hcompBeta — homogeneous composition β):
+    BLOCKED ON RAW PAYLOAD EXTENSION.  `hcomp` does not currently
+    carry a face/cofibration system in the raw kernel; a β rule
+    cannot be stated until that payload lands.  Deferred to v1.1
+    cubical-cofib extension; not in this kernel's surface.
+
+  D2.5.3 (pathBeta — `(pathLam body) @ i ⟶ body[i/0]`):
+    SHIPPED as `Step.betaPathApp` and `RawStep.par.betaPathApp` /
+    `RawStep.par.betaPathAppDeep`.
+
+  D2.5.4 (transpReflBeta — this rule):
+    SHIPPED.  See documentation below.
+
+  D2.5.5 (transpPi — binder-aware transp Π β rule):
+    V1.1 DEFERRED.  Needs the multi-day cascade (par ctor + raw +
+    six compat arms + cd cascade + typed mirror + bridge + smoke).
+    Not shippable as an atomic patch.
+
+  D2.5.6 (transpSigma — same shape as transpPi):
+    V1.1 DEFERRED.  Same scope as D2.5.5.
+
+  D2.5.7 (closed-type transps — list/option/either/record):
+    V1.1 DEFERRED.  Per-ctor recursion structure across closed
+    introducers; multi-day.
+
+  D2.5.8 (betaPathReflApp — `pathApp (pathLam value.weaken) i ⟶ value`):
+    LANDED in this batch (Step ctor + raw mirror + cd cascade).
+    See `Step.betaPathReflApp` below.
+
+  D2.5.9 (glueAtFace — Glue β at face cofibration):
+    BLOCKED ON PREREQUISITE.  Needs a face-system predicate that is
+    not in the raw kernel.  Deferred to v1.1 cubical-cofib extension.
+
   ## Why this is the cubical analog of "transp refl = id"
 
   In cubical type theory, the constant path `λ i ⇒ A` (built here as
@@ -1217,15 +1261,12 @@ inductive Step :
   is the strictest form of "transp at constant path is identity"
   that survives intrinsic typing.
 
-  ## Step.par mirror is intentionally deferred (atomic Step lift)
+  ## Step.par mirror lives in `Reduction/ParRed.lean`
 
-  The matching `Step.par.transpReflBeta` mirror requires a raw-level
-  preservation lemma showing that parallel reduction maps weakened
-  constant path bodies to weakened constant path bodies (so the cd
-  cascade can converge two transp reductions).  That lemma lives in
-  the D2.5-CASCADE follow-up (#1561); shipping the Step ctor first
-  unblocks `Conv.fromStep` consumers without coupling to the raw
-  preservation work. -/
+  The matching `Step.par.transpReflBeta` mirror is shipped alongside
+  this Step ctor in `Reduction/ParRed.lean`; the cd cascade for it
+  is in `Confluence/RawCdLemma.lean`.  Phase G activation completed
+  the cascade including the deep variant `transpReflBetaDeep`. -/
   | transpReflBeta {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)
       (universeLevel : UniverseLevel)
