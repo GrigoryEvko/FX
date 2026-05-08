@@ -1,4 +1,5 @@
 import LeanFX2.Confluence.RawDiamond
+import LeanFX2.Reduction.RawParInversion
 
 /-! # Confluence/RawParStarCong — parStar congruence rules
 
@@ -318,5 +319,103 @@ theorem RawStep.parStar.subsume
   | refl _ => exact .refl _
   | trans firstStep _ restIH =>
       exact .trans (RawStep.par.subsume firstStep) restIH
+
+/-! ## Canonical-head parStar inversions
+
+Multi-step versions of the single-step `RawStep.par.<ctor>_inv`
+inversions for nullary canonical heads (`unit`, `boolTrue`,
+`boolFalse`, `natZero`, `listNil`, `optionNone`).  Each says: a
+parStar chain whose source is a canonical head reaches only that
+canonical head.
+
+These inversions enable Conv-level canonical-form theorems: when
+one side of a `Conv` has raw form equal to a canonical head, the
+other side's raw form must too. -/
+
+/-! ### Suffices/free-the-index pattern
+
+The pattern below frees the source index via `suffices` so the
+inductive recursion sees a generic `source = canonical` hypothesis
+and can run `induction` cleanly.  Direct `induction chain` fails
+because parStar's source index is concrete (e.g. `RawTerm.unit`),
+not a variable, so the dep-elim machinery cannot specialize it.
+After `suffices`, the source becomes a generic variable matching
+the IH's pattern; the canonical-equality hypothesis carries through
+and is used at each `trans` step to constrain the intermediate. -/
+
+/-! ### Generic helper for canonical-head parStar inversions
+
+Given:
+* a proof `parStep_inv` that any `RawStep.par canonicalHead target`
+  forces `target = canonicalHead`
+* a `parStar` chain whose source is `canonicalHead`
+
+we show the chain's target is also `canonicalHead`.
+
+Strategy: induction on the chain's length via `RawStep.parStar`'s
+recursive `trans` constructor.  We introduce a fresh `someChain`
+hypothesis with the source generalized so the dep-elim machinery
+can specialize it cleanly. -/
+
+private theorem RawStep.parStar.canonical_inv_helper
+    {scope : Nat} {canonicalHead : RawTerm scope}
+    (parStepInv : ∀ {target : RawTerm scope},
+        RawStep.par canonicalHead target → target = canonicalHead)
+    {target : RawTerm scope}
+    (chain : RawStep.parStar canonicalHead target) :
+    target = canonicalHead := by
+  -- We induct on chain's length.  Each `trans` step reduces a
+  -- `parStar canonicalHead target` to `parStar middle target` with
+  -- middle determined by the single par step from canonicalHead.
+  -- `parStepInv` constrains middle to canonicalHead, so the IH
+  -- applies recursively at the same canonicalHead source.
+  induction chain with
+  | refl _ => rfl
+  | trans firstStep _ restIH =>
+      have midEq := parStepInv firstStep
+      cases midEq
+      exact restIH parStepInv
+
+/-- `RawStep.parStar unit target → target = unit`. -/
+theorem RawStep.parStar.unit_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.unit : RawTerm scope) target) :
+    target = RawTerm.unit :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.unit_inv chain
+
+/-- `RawStep.parStar boolTrue target → target = boolTrue`. -/
+theorem RawStep.parStar.boolTrue_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.boolTrue : RawTerm scope) target) :
+    target = RawTerm.boolTrue :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.boolTrue_inv chain
+
+/-- `RawStep.parStar boolFalse target → target = boolFalse`. -/
+theorem RawStep.parStar.boolFalse_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.boolFalse : RawTerm scope) target) :
+    target = RawTerm.boolFalse :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.boolFalse_inv chain
+
+/-- `RawStep.parStar natZero target → target = natZero`. -/
+theorem RawStep.parStar.natZero_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.natZero : RawTerm scope) target) :
+    target = RawTerm.natZero :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.natZero_inv chain
+
+/-- `RawStep.parStar listNil target → target = listNil`. -/
+theorem RawStep.parStar.listNil_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.listNil : RawTerm scope) target) :
+    target = RawTerm.listNil :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.listNil_inv chain
+
+/-- `RawStep.parStar optionNone target → target = optionNone`. -/
+theorem RawStep.parStar.optionNone_inv
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.optionNone : RawTerm scope) target) :
+    target = RawTerm.optionNone :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.optionNone_inv chain
 
 end LeanFX2

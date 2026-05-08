@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Confluence.RawParStarCong
 
 /-! Phase 6.B inversion-lemma zero-axiom audit.
 
@@ -10,6 +11,7 @@ single-Nat-indexed inductives don't trigger propext+Quot.sound on
 #print axioms LeanFX2.RawStep.par.lam_inv
 #print axioms LeanFX2.RawStep.par.pair_inv
 #print axioms LeanFX2.RawStep.par.refl_inv
+#print axioms LeanFX2.RawStep.par.unit_inv
 #print axioms LeanFX2.RawStep.par.boolTrue_inv
 #print axioms LeanFX2.RawStep.par.boolFalse_inv
 #print axioms LeanFX2.RawStep.par.natZero_inv
@@ -23,3 +25,18 @@ single-Nat-indexed inductives don't trigger propext+Quot.sound on
 #print axioms LeanFX2.RawStep.par.modIntro_inv
 #print axioms LeanFX2.RawStep.par.modElim_inv
 #print axioms LeanFX2.RawStep.par.subsume_inv
+
+/-! ## Phase 3 (#1590 TYPED-SR-TERM-CONSTRUCTION) — multi-step canonical inversions
+
+`RawStep.parStar.<head>_inv` lifts the single-step inversions
+through chain induction.  Each is a one-line specialization of the
+generic `canonical_inv_helper` private lemma.  Used by
+`Conv.canonicalForm_<head>` corollaries to constrain target raw form
+when source has a canonical-head raw projection. -/
+
+#print axioms LeanFX2.RawStep.parStar.unit_inv
+#print axioms LeanFX2.RawStep.parStar.boolTrue_inv
+#print axioms LeanFX2.RawStep.parStar.boolFalse_inv
+#print axioms LeanFX2.RawStep.parStar.natZero_inv
+#print axioms LeanFX2.RawStep.parStar.listNil_inv
+#print axioms LeanFX2.RawStep.parStar.optionNone_inv

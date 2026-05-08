@@ -375,4 +375,46 @@ theorem Conv.trans_fromStepRight
     Conv sourceTerm targetTerm :=
   Conv.trans_step_right firstConv reverseStep
 
+/-! ## Cong-rule via Conv chain in closed-type fragment
+
+For `IsClosedTy`-typed terms, every `Step` (and `StepStar`) preserves
+the type by `Step.preserves_isClosedTy`.  This means that when we
+have a typed Conv between two closed-typed terms, we can ASSUME
+that any midpoint of the existential must also have the same closed
+type.  This is a property the trans variants exploit.
+
+## Phase 3 building blocks: canonical-head parStar inversions
+
+`RawStep.parStar.unit_inv` (and its boolTrue/boolFalse/natZero/
+listNil/optionNone siblings, lifted from `RawStep.par.<head>_inv`
+via `canonical_inv_helper` in `Confluence/RawParStarCong.lean`) say:
+a parStar chain whose source is a canonical-head raw term reaches
+only that same canonical-head raw term.
+
+These are MACHINERY for the eventual `Conv.canonicalForm_<head>`
+corollaries — but those corollaries don't ship yet because the
+**reverse** direction is FALSE in general.  Concretely:
+`RawStep.par source unit → source = unit` is **NOT** a theorem.
+Counterexample: `(λx. unit) argument →β unit` — source is the
+β-redex, not `unit`.
+
+What this means for typed Conv: given `Conv source target` where
+source.toRaw = `RawTerm.unit`, we get `RawStep.parStar source.toRaw
+commonRaw` which by `unit_inv` forces commonRaw = `RawTerm.unit`,
+so `RawStep.parStar target.toRaw unit`.  This does NOT force
+target.toRaw = unit (the β counterexample above is exactly such
+a target).  Hence target may be a more complex Term still
+convertible to `Term.unit` — which is the `Conv` content already.
+
+So the canonical-head inversions are necessary but not sufficient
+for the typed Conv canonical-form theorem.  The missing piece is
+the typed lift: from `RawStep.parStar t.toRaw unit` to a typed
+`StepStar t (Term.unit ...)`.  That's the SR-with-term-construction
+wall.
+
+The inversions still ship as standalone lemmas because they're
+useful in other contexts (e.g., decidable conversion via
+`Algo/RawWHNF.lean`'s normalizer, where checking that a head
+matches a canonical raw form is a primary operation). -/
+
 end LeanFX2

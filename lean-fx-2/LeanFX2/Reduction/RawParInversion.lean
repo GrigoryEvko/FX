@@ -66,6 +66,34 @@ theorem RawStep.par.refl_inv {scope : Nat}
   | refl _ => exact ⟨rawWitness, rfl, RawStep.par.refl _⟩
   | reflCong witnessStep => exact ⟨_, rfl, witnessStep⟩
 
+/-- `RawStep.par unit target → target = unit` (canonical).
+
+`RawTerm.unit` has no β/ι rules (it's a closed canonical head with
+no eliminator chain firing).  Hence the only `RawStep.par` from
+`unit` is `refl`. -/
+theorem RawStep.par.unit_inv {scope : Nat}
+    {target : RawTerm scope}
+    (parallelStep :
+      RawStep.par (RawTerm.unit : RawTerm scope) target) :
+    target = RawTerm.unit := by
+  cases parallelStep
+  case refl _ => rfl
+
+/-! ### Why no reverse direction `RawStep.par source unit → source = unit`?
+
+The reverse direction is FALSE in general.  Counterexample: take
+`body = RawTerm.unit : RawTerm (scope + 1)` (a constant body that
+ignores its bound variable) and any `argument : RawTerm scope`.
+Then `body.subst (singleton argument) = RawTerm.unit` reduces
+`RawTerm.app (RawTerm.lam body) argument` to `RawTerm.unit` via
+`RawStep.par.betaApp`.  So `RawStep.par sourceA unit` with sourceA =
+`(λ. unit) argument` (NOT `unit`).
+
+Hence `RawStep.par.unit_target_inv` does NOT exist as a theorem.
+The forward direction `unit_inv` (from `unit` source to `unit`
+target) holds because no β/ι rule has `unit` as a SOURCE — `unit`
+has no eliminator that chains through it. -/
+
 /-- `RawStep.par boolTrue target → target = boolTrue` (canonical). -/
 theorem RawStep.par.boolTrue_inv {scope : Nat}
     {target : RawTerm scope}
