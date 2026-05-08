@@ -2662,6 +2662,77 @@ theorem RawStep.par.lift_full_recordIntro
   obtain ⟨target, step⟩ := RawStep.par.lift_recordIntro firstField firstLift rawStep
   exact ⟨Ty.record singleFieldType, target, step⟩
 
+/-- **Tier 1 — Term.lam at two-Ty.** -/
+theorem RawStep.par.lift_full_lam
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (bodyLift : ∀ {targetRawIH : RawTerm (scope + 1)},
+      RawStep.par bodyRaw targetRawIH →
+      ∃ bodyTarget : Term (context.cons domainType) codomainType.weaken targetRawIH,
+        Step.par body bodyTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.lam bodyRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.lam (codomainType := codomainType) body) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_lam body bodyLift rawStep
+  exact ⟨Ty.arrow domainType codomainType, target, step⟩
+
+/-- **Tier 1 — Term.lamPi at two-Ty.** -/
+theorem RawStep.par.lift_full_lamPi
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons domainType) codomainType bodyRaw)
+    (bodyLift : ∀ {targetRawIH : RawTerm (scope + 1)},
+      RawStep.par bodyRaw targetRawIH →
+      ∃ bodyTarget : Term (context.cons domainType) codomainType targetRawIH,
+        Step.par body bodyTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.lam bodyRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.lamPi (domainType := domainType) body) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_lamPi body bodyLift rawStep
+  exact ⟨Ty.piTy domainType codomainType, target, step⟩
+
+/-- **Tier 1 — Term.pathLam at two-Ty.** -/
+theorem RawStep.par.lift_full_pathLam
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+    (bodyLift : ∀ {targetRawIH : RawTerm (scope + 1)},
+      RawStep.par bodyRaw targetRawIH →
+      ∃ bodyTarget :
+          Term (context.cons Ty.interval) carrierType.weaken targetRawIH,
+        Step.par body bodyTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.pathLam bodyRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body)
+        targetTerm := by
+  obtain ⟨target, step⟩ :=
+    RawStep.par.lift_pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                             body bodyLift rawStep
+  exact ⟨Ty.path carrierType leftEndpoint rightEndpoint, target, step⟩
+
+/-- **Tier 1 — Term.sessionRecv at two-Ty.** -/
+theorem RawStep.par.lift_full_sessionRecv
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (channelLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par channelRaw targetRawIH →
+      ∃ channelTarget : Term context (Ty.session protocolStep) targetRawIH,
+        Step.par channel channelTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.sessionRecv channelRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.sessionRecv channel) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_sessionRecv channel channelLift rawStep
+  exact ⟨Ty.session protocolStep, target, step⟩
+
 /-! ## Coverage status (post-juggernaut Phase 4)
 
 **Full lifts shipped (two-Ty existential)**: 6 ctors:
