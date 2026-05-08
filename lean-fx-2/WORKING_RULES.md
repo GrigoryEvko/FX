@@ -330,11 +330,19 @@ After any new function or theorem, run:
 ```
 Expected: "does not depend on any axioms".  Anything else → debug per the rules above.
 
-For project-wide check:
+For project-wide check (full audit sweep — gate files live in
+`LeanFX2.Tools` / `LeanFX2.Smoke` which are NOT in the default
+`LeanFX2` target; see `lakefile.lean`):
 ```
-lake build LeanFX2 2>&1 | grep "axiom audit failed"
+lake build LeanFX2 LeanFX2Audit 2>&1 | grep "axiom audit failed"
 ```
 Expected: empty.
+
+Inner-loop iteration (faster, kernel only — does NOT verify axiom
+discipline; use the dual-target form before committing):
+```
+lake build LeanFX2
+```
 
 ## When in doubt
 

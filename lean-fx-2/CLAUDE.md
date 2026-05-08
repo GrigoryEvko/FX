@@ -95,8 +95,20 @@ extra parameters.  ALL of these are banned:
 ### Mandatory verification gate
 
 Every committed theorem/lemma/def is enforced by the strict harness
-in `LeanFX2/Tools/`.  `lake build LeanFX2` runs the gates inline; a
-failed gate fails the build, not just emits a warning.  Four layers:
+in `LeanFX2/Tools/`.  Two build targets:
+
+* `lake build LeanFX2` — fast inner-loop kernel build (~265 jobs).
+  Does NOT include `LeanFX2.Tools` / `LeanFX2.Smoke` / `LeanFX2.Sketch`
+  modules, so the per-decl audit gate does not pay its elaboration tax
+  on every iteration.  Use this for compile-and-iterate work.
+
+* `lake build LeanFX2Audit` (or, equivalently,
+  `lake build LeanFX2 LeanFX2Audit`) — full strict-zero-axiom sweep.
+  Elaborates every gate file under `LeanFX2.Tools.*`, every smoke log
+  under `LeanFX2.Smoke.*`, and every experimental sketch under
+  `LeanFX2.Sketch.*`.  Pre-merge gating, CI, and "is this theorem
+  shipped?" checks all run THIS target.  A failed gate fails the build,
+  not just emits a warning.  Four layers:
 
 1. **`#assert_no_axioms YourTheorem`** (`Tools/DependencyAudit.lean`)
    per-decl axiom gate.  Fails elaboration if the transitive closure
@@ -197,14 +209,17 @@ filling in for the missing theorem is NOT.
 When you ship a new theorem:
 
 1. Write the proof.
-2. Run `lake build LeanFX2`.  Build green.
+2. Run `lake build LeanFX2`.  Kernel build green (fast, no audit tax).
 3. Add `#assert_no_axioms YourTheorem` to
    `LeanFX2/Tools/AuditAll.lean` when the declaration is load-bearing
    or otherwise part of the curated kernel gate.
 4. Add `#print axioms YourTheorem` to the matching
    `Smoke/AuditPhase*.lean` file.  Verify "does not depend on any
    axioms".
-5. Commit only after both gates pass.
+5. Run `lake build LeanFX2 LeanFX2Audit`.  Audit target green —
+   `#assert_no_axioms`, `#audit_namespace`, `#audit_namespace_strict`,
+   `#assert_raw_typed_parity`, and `#audit_summary` ALL clean.
+6. Commit only after both targets are green.
 
 If the audit prints any axiom — including `propext`, `Quot.sound`,
 `Classical.choice`, `funext`, `Univalence`, or any user axiom — the
@@ -218,11 +233,21 @@ After every new theorem, verify:
 
 ## Build verification
 
+Inner-loop iteration (kernel only, no audit tax):
+
 ```bash
 cd /root/iprit/FX/lean-fx-2 && lake build LeanFX2
 ```
 
-Expected: green build.  AuditAll gates auto-fire during build.
+Pre-commit / pre-merge full audit sweep:
+
+```bash
+cd /root/iprit/FX/lean-fx-2 && lake build LeanFX2 LeanFX2Audit
+```
+
+Expected: both targets green.  AuditAll / Smoke / Sketch gates fire
+under the `LeanFX2Audit` target only — running `lake build LeanFX2`
+alone does NOT verify zero-axiom discipline.
 
 ## Naming + style discipline
 
@@ -263,6 +288,10 @@ Per `WORKING_RULES.md`:
 * Don't skip reading specs / memories on fresh context — those are the recovery mechanism
 * Don't claim a task is "completed" because a file exists.  A task is
   completed iff (1) every shipped declaration is a theorem/lemma/def
-  with a body, (2) `lake build LeanFX2` is green, AND (3) every shipped
-  declaration is gated by `#print axioms` reporting clean.  Anything
-  else is a deception, even if a `Smoke/AuditPhase*.lean` file exists.
+  with a body, (2) `lake build LeanFX2 LeanFX2Audit` is green (BOTH
+  targets, not just the kernel), AND (3) every shipped declaration is
+  gated by `#print axioms` reporting clean.  Anything else is a
+  deception, even if a `Smoke/AuditPhase*.lean` file exists.  Building
+  `LeanFX2` alone is fine for inner-loop iteration but is NOT
+  sufficient for a "task complete" claim — the audit target is what
+  enforces zero-axiom discipline.

@@ -312,8 +312,12 @@ rg -n 'propext|Quot\.sound|Classical\.choice|funext|sorry|admit|^axiom|^postulat
   --type lean
 # Filter out docstring hits manually.  Code-body hits MUST be zero.
 
-# Per-decl axiom check (run by AuditAll.lean during build):
-lake build LeanFX2 2>&1 | grep "axiom audit failed"
+# Per-decl axiom check (run by AuditAll.lean / Smoke logs during build).
+# AuditAll lives in LeanFX2.Tools.* and Smoke logs in LeanFX2.Smoke.*,
+# both of which are in the LeanFX2Audit target — NOT the default
+# LeanFX2 target (split via lakefile.lean to keep inner-loop builds
+# off the audit-elaboration tax).  For full verification:
+lake build LeanFX2 LeanFX2Audit 2>&1 | grep "axiom audit failed"
 # Should return nothing.
 ```
 
