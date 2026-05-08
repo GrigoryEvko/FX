@@ -82,6 +82,7 @@ Acceptance: ✅ `Step.par.toRawBridge` total; cross-theory bridges ship rfl-frag
 * [x] `HoTT/Univalence.lean` — Univalence via `Conv.fromStep Step.eqType` (#1321 D3.6, #1437 CUMUL-8.6)
 * [x] `HoTT/Funext.lean` — funext via `Conv.fromStep Step.eqArrow` (#1322 D3.7, #1438 CUMUL-8.7)
 * [x] `HoTT/HIT/{Spec,Setoid,Eliminator,Examples}.lean` — 7 concrete HITs (#1323, #1324)
+* [x] D3.12-ROOT-LABELS (#1576) — every HoTT/HIT/Cubical/Modal/Bridge module now exposes a `## Root status` docstring subsection (Layer / Load-bearing for / Axiom budget); 47 modules labelled across 6 commits 2026-05-08
 
 Acceptance: ✅ Univalence + funext are real theorems (zero-axiom verified per #1439 CUMUL-8.8); HIT eliminators land via parallel `Step` reductions.
 
