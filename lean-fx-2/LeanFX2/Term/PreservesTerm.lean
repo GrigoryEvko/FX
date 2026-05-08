@@ -1279,6 +1279,67 @@ Recipe per β-firing eliminator:
     canonical type), use the corresponding destructor to extract
     the canonical payload, then apply Step.par.beta<elim><Intro>Deep -/
 
+/-- **Tier 3 — Term.pathApp lift, cong arm only.**  The β-arms
+(betaPathApp / betaPathReflApp) require body-substitution casts —
+deferred per the lift_app comment. -/
+theorem RawStep.par.lift_pathApp_cong
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    (pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw)
+    (pathLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pathRaw targetRawIH →
+      ∃ pathTarget :
+          Term context (Ty.path carrierType leftEndpoint rightEndpoint) targetRawIH,
+        Step.par pathTerm pathTarget)
+    (intervalLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par intervalRaw targetRawIH →
+      ∃ intervalTarget : Term context Ty.interval targetRawIH,
+        Step.par intervalTerm intervalTarget)
+    {pathTargetRaw intervalTargetRaw : RawTerm scope}
+    (pathStep : RawStep.par pathRaw pathTargetRaw)
+    (intervalStep : RawStep.par intervalRaw intervalTargetRaw) :
+    ∃ targetTerm :
+        Term context carrierType (RawTerm.pathApp pathTargetRaw intervalTargetRaw),
+      Step.par (Term.pathApp modeIsUnivalent pathTerm intervalTerm) targetTerm := by
+  obtain ⟨pathTarget, pathStepTyped⟩ := pathLift pathStep
+  obtain ⟨intervalTarget, intervalStepTyped⟩ := intervalLift intervalStep
+  exact ⟨Term.pathApp modeIsUnivalent pathTarget intervalTarget,
+         Step.par.pathApp modeIsUnivalent pathStepTyped intervalStepTyped⟩
+
+/-- **Tier 3 — Term.appPi lift, cong arm only.**  Source/target Ty
+shapes are identical (both `codomainType.subst0 domainType <argRaw>`)
+when the function step is non-β; the β arm has the same cast wall as
+`lift_app` (deferred). -/
+theorem RawStep.par.lift_appPi_cong
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm : Term context (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par functionRaw targetRawIH →
+      ∃ functionTarget :
+          Term context (Ty.piTy domainType codomainType) targetRawIH,
+        Step.par functionTerm functionTarget)
+    (argumentLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentRaw targetRawIH →
+      ∃ argumentTarget : Term context domainType targetRawIH,
+        Step.par argumentTerm argumentTarget)
+    {functionTargetRaw argumentTargetRaw : RawTerm scope}
+    (functionStep : RawStep.par functionRaw functionTargetRaw)
+    (argumentStep : RawStep.par argumentRaw argumentTargetRaw) :
+    ∃ targetTerm :
+        Term context (codomainType.subst0 domainType argumentTargetRaw)
+                     (RawTerm.app functionTargetRaw argumentTargetRaw),
+      Step.par (Term.appPi functionTerm argumentTerm) targetTerm := by
+  obtain ⟨functionTarget, functionStepTyped⟩ := functionLift functionStep
+  obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+  exact ⟨Term.appPi functionTarget argumentTarget,
+         Step.par.appPi functionStepTyped argumentStepTyped⟩
+
 /-- **Tier 3 — Term.app lift, cong arm only.**  The β arm of
 `RawStep.par.app_inv` requires casting between `codomainType.weaken.
 subst0 ...` and `codomainType` (related by
