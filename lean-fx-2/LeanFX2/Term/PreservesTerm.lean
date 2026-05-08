@@ -2733,6 +2733,45 @@ theorem RawStep.par.lift_full_sessionRecv
   obtain ⟨target, step⟩ := RawStep.par.lift_sessionRecv channel channelLift rawStep
   exact ⟨Ty.session protocolStep, target, step⟩
 
+/-- **Tier 1 — Term.universeCode at two-Ty.** -/
+theorem RawStep.par.lift_full_universeCode
+    {sourceType : Ty level scope} {innerLevelNat : Nat}
+    (sourceTerm :
+      Term context sourceType (RawTerm.universeCode innerLevelNat))
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.universeCode innerLevelNat : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_universeCode sourceTerm rawStep
+  exact ⟨sourceType, target, step⟩
+
+/-- **Tier 1 — Term.cumulUp at two-Ty.** -/
+theorem RawStep.par.lift_full_cumulUp
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    (typeCode : Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
+    (typeCodeLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par codeRaw targetRawIH →
+      ∃ typeCodeTarget :
+          Term context (Ty.universe lowerLevel levelLeLow) targetRawIH,
+        Step.par typeCode typeCodeTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep :
+      RawStep.par (RawTerm.cumulUpMarker codeRaw : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.cumulUp lowerLevel higherLevel cumulMonotone
+                      levelLeLow levelLeHigh typeCode)
+        targetTerm := by
+  obtain ⟨target, step⟩ :=
+    RawStep.par.lift_cumulUp lowerLevel higherLevel cumulMonotone
+                             levelLeLow levelLeHigh typeCode typeCodeLift rawStep
+  exact ⟨Ty.universe higherLevel levelLeHigh, target, step⟩
+
 /-! ## Coverage status (post-juggernaut Phase 4)
 
 **Full lifts shipped (two-Ty existential)**: 6 ctors:
