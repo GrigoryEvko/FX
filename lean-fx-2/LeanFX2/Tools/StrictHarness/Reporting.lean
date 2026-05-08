@@ -496,6 +496,7 @@ def isManufacturedStepStructuralDependent (declName : Name) : Bool :=
     declName == `LeanFX2.Cubical.constantPath_betaPathApp_toRawEndpoint ||
     declName == `LeanFX2.Cubical.constantTypePath_betaPathApp_toRawEndpoint ||
     declName == `LeanFX2.Cubical.constantTypeTransport_sourceCong_toRawBridge ||
+    declName == `LeanFX2.Cubical.constantTypeTransport_betaParStep_toRawBridge ||
     declName == `LeanFX2.Bridge.idEqTypeRefl ||
     declName == `LeanFX2.Bridge.idEqTypeHet ||
     -- Confluence / reduction scaffolding that pattern-matches one

@@ -181,6 +181,30 @@ theorem constantTypeTransport_betaParStep
     (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode)
     (Step.par.refl sourceValue)
 
+/-- The β step at `Step.par` projects through the typed-to-raw bridge
+to the raw β fact: `RawTerm.transp (pathLam typeRaw.weaken) sourceRaw`
+parallel-reduces to `sourceRaw`.  Mirrors `_sourceCong_toRawBridge`'s
+shape — the bridge gives a raw witness consumers needing only raw
+parallel reduction can call directly. -/
+theorem constantTypeTransport_betaParStep_toRawBridge
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    RawStep.par
+      (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRaw)
+      sourceRaw := by
+  simpa [constantTypeTransport_toRaw]
+    using Step.par.toRawBridge
+      (constantTypeTransport_betaParStep modeIsUnivalent universeLevel
+        universeLevelLt sourceType typeCode sourceValue)
+
 /-- Multistep parallel β for transport along the named constant type
 line.  Lifts `constantTypeTransport_betaParStep` to the reflexive-
 transitive closure used by `Conv`.  This is the form callers reach

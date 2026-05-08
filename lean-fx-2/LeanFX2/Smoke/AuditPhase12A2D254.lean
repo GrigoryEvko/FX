@@ -103,5 +103,6 @@ Every declaration below must report "does not depend on any axioms".
 
 -- Phase G consumer: named-redex β across reduction layers (Cubical/Transport)
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaParStep
+#print axioms LeanFX2.Cubical.constantTypeTransport_betaParStep_toRawBridge
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaParStar
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaConvCumul
