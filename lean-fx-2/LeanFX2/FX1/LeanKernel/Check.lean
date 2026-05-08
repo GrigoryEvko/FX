@@ -426,7 +426,16 @@ def inferResult? {level scope : Nat}
           ..
         } =>
           Option.none
-  | Expr.lit _literal => Option.none
+  | Expr.lit (Literal.natVal literalValue) =>
+      Option.some {
+        typeExpr := Expr.natType
+        typeDerivation := HasType.litNat literalValue
+      }
+  | Expr.lit (Literal.strAtomVal literalAtomId) =>
+      Option.some {
+        typeExpr := Expr.stringType
+        typeDerivation := HasType.litStrAtom literalAtomId
+      }
   | Expr.mdata metadata bodyExpr =>
       match inferResult? environment context bodyExpr with
       | Option.none => Option.none

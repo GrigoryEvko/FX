@@ -330,6 +330,37 @@ inductive HasType {level : Nat} :
         context
         (Expr.mdata metadata bodyExpr)
         typeExpr
+  /-- Natural-number literals are typed by the canonical `Nat` constant.
+
+  This rule pins the canonical primitive name rather than performing an
+  environment lookup so the soundness theorem stays definitionally pinned.
+  A later environment well-formedness pass must require `Expr.natTypeName` to
+  resolve to a primitive `Nat` declaration with the expected shape. -/
+  | litNat
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      (literalValue : Nat) :
+      HasType
+        environment
+        context
+        (Expr.lit (Literal.natVal literalValue))
+        (Expr.const Expr.natTypeName List.nil)
+  /-- String-atom literals are typed by the canonical `String` constant.
+
+  Like `litNat`, this rule pins a canonical primitive name (`Expr.stringTypeName`)
+  rather than performing an environment lookup; environment well-formedness
+  enforcement is deferred. -/
+  | litStrAtom
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      (literalAtomId : Nat) :
+      HasType
+        environment
+        context
+        (Expr.lit (Literal.strAtomVal literalAtomId))
+        (Expr.const Expr.stringTypeName List.nil)
 
 end FX1.LeanKernel
 end LeanFX2
