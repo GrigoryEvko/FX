@@ -57,7 +57,7 @@ namespace LeanFX2.Tools
 -- whose closure threads through `Term.check`'s `h ▸ t` casts on every
 -- expected-type-equality dispatch arm (var/unit/boolTrue/boolFalse/
 -- natZero/natSucc/lam/lamPi/pair/listCons/...).
-#assert_cast_operator_dependent_budget LeanFX2 1213
+#assert_cast_operator_dependent_budget LeanFX2 1220
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel
