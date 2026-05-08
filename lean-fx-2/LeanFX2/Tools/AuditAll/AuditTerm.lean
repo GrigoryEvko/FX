@@ -94,5 +94,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.headCtor_eitherCode_raw
 #assert_no_axioms LeanFX2.Term.headCtor_idCode_raw
 #assert_no_axioms LeanFX2.Term.headCtor_equivCode_raw
+#assert_no_axioms LeanFX2.Term.headCtor_interval0_raw
 
 end LeanFX2.Tools
