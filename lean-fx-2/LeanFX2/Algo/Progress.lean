@@ -3299,4 +3299,29 @@ theorem Term.headCtor_idStrictRefl_raw {context : Ctx mode level scope}
   | idCode _ _ _ _ _ => nomatch headEq
   | equivCode _ _ _ _ => nomatch headEq
 
+/-! ## Step-provability for non-canonical β/ι forms (M05.B)
+
+These atoms package the existing Step β/ι constructors as
+existential-result theorems: "if a typed term has the shape
+of a non-canonical β-redex, then it can take a Step."  Each
+atom is mechanical Step-witness packaging — the load-bearing
+work lives in `Reduction/Step.lean` (the β/ι ctor).  These
+existentials feed the headline Progress theorem's β/ι cases.
+-/
+
+/-- β-app step provability: a non-dep β-redex `(λ. body) arg`
+can take a Step.  Packages `Step.betaApp` as an existential.
+First atom of the M05.B.1 Π/Σ β cohort. -/
+theorem Term.app_lam_steps {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+    (bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (argumentTerm : Term context domainType argumentRaw) :
+    ∃ (targetType : Ty level scope) (targetRaw : RawTerm scope)
+      (target : Term context targetType targetRaw),
+      Step (Term.app (Term.lam (codomainType := codomainType) bodyTerm)
+                     argumentTerm) target :=
+  ⟨_, _, _, Step.betaApp bodyTerm argumentTerm⟩
+
 end LeanFX2
