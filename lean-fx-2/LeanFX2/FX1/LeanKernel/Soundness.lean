@@ -82,5 +82,26 @@ theorem check_sound_letE {level scope : Nat}
       typeExpr :=
   check_sound checkingSucceeded
 
+/-- Per-arm soundness for Lean literals.
+
+When the executable checker accepts an `Expr.lit literal`, the inferred
+type witness depends on the literal variant: `Literal.natVal` produces
+`HasType.litNat` typed by the canonical `Nat` constant expression, and
+`Literal.strAtomVal` produces `HasType.litStrAtom` typed by the canonical
+`String` constant expression.  The body delegates to the generic
+`check_sound` because `inferResult?` already case-splits on both literal
+variants and constructs the matching `HasType` arm. -/
+theorem check_sound_lit {level scope : Nat}
+    {environment : Environment level}
+    {context : Context level scope}
+    {literal : Literal}
+    {typeExpr : Expr level scope}
+    (checkingSucceeded :
+      Eq
+        (check environment context (Expr.lit literal))
+        (Option.some typeExpr)) :
+    HasType environment context (Expr.lit literal) typeExpr :=
+  check_sound checkingSucceeded
+
 end FX1.LeanKernel
 end LeanFX2

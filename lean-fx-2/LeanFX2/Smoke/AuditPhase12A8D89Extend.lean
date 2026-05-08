@@ -20,3 +20,4 @@ fails the build if any does. -/
 
 #print axioms LeanFX2.FX1.LeanKernel.check_sound_app
 #print axioms LeanFX2.FX1.LeanKernel.check_sound_letE
+#print axioms LeanFX2.FX1.LeanKernel.check_sound_lit

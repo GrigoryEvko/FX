@@ -103,5 +103,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound
 #assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_app
 #assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_letE
+#assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_lit
 
 end LeanFX2.Tools
