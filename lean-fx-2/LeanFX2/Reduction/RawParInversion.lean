@@ -39,6 +39,18 @@ theorem RawStep.par.lam_inv {scope : Nat} {body : RawTerm (scope + 1)}
   | refl _ => exact ⟨body, rfl, RawStep.par.refl _⟩
   | lam bodyStep => exact ⟨_, rfl, bodyStep⟩
 
+/-- `RawStep.par (RawTerm.var position) target → target = RawTerm.var position`.
+
+`RawStep.par` has no constructor that takes a variable as input — the
+only step from a variable is `refl`.  Hence the inversion forces the
+target to be the same variable. -/
+theorem RawStep.par.var_inv {scope : Nat} {position : Fin scope}
+    {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.var position) target) :
+    target = RawTerm.var position := by
+  cases parallelStep
+  case refl _ => rfl
+
 /-- `RawStep.par (pair fv sv) target → target = pair fv' sv' ∧ pars`. -/
 theorem RawStep.par.pair_inv {scope : Nat}
     {firstValue secondValue : RawTerm scope} {target : RawTerm scope}
