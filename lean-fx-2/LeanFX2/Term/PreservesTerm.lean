@@ -2306,4 +2306,83 @@ theorem RawStep.par.lift_full_boolElim
     refine ⟨motiveType.subst0 Ty.bool RawTerm.boolFalse, elseTarget, ?_⟩
     exact Step.par.iotaBoolElimFalseDeep thenBranch scrutStepTyped elseStepTyped
 
+/-! ## Schematic-payload value ctors with typed cong rules
+
+`Term.oeqRefl` and `Term.idStrictRefl` are schematic-payload value
+ctors — their only Term-level computational content is a raw witness.
+Both have typed Step.par cong rules (`oeqReflCong`, `idStrictReflCong`)
+that take a `RawStep.par` on the witness raw and produce a typed
+Step.par at heterogeneous source/target types (the carrier's left and
+right endpoints both reduce in lockstep with the witness).
+
+These lifts don't take a typed-IH parameter — the cong rule consumes
+the raw step directly.  This makes them genuinely Tier 0.5 (atom-like
+but with raw cong). -/
+
+/-- **Term.oeqRefl full lift.**  No typed IH needed — `oeqReflCong`
+takes the raw step directly. -/
+theorem RawStep.par.lift_full_oeqRefl
+    (carrier : Ty level scope) (rawWitness : RawTerm scope)
+    (sourceTerm :
+      Term context (Ty.oeq carrier rawWitness rawWitness)
+                   (RawTerm.oeqRefl rawWitness))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.oeqRefl rawWitness) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨witnessTarget, eq, witnessStep⟩ := RawStep.par.oeqRefl_inv rawStep
+  cases eq
+  -- Use Term.oeqRefl_unique to align sourceTerm with the canonical Term.oeqRefl:
+  -- Actually sourceTerm has type Ty.oeq carrier rawWitness rawWitness with raw
+  -- RawTerm.oeqRefl rawWitness, which forces it to be Term.oeqRefl carrier rawWitness.
+  -- But cases on sourceTerm would hit dep-elim wall; use a destructor.
+  refine ⟨Ty.oeq carrier witnessTarget witnessTarget,
+          Term.oeqRefl (context := context) carrier witnessTarget, ?_⟩
+  -- Need: Step.par sourceTerm (Term.oeqRefl carrier witnessTarget)
+  -- Use suffices to force sourceTerm to be Term.oeqRefl _ rawWitness:
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.oeqRefl rawWitness)),
+        someType = Ty.oeq carrier rawWitness rawWitness →
+        Step.par genericTerm
+                 (Term.oeqRefl (context := context) carrier witnessTarget) by
+    exact key sourceTerm rfl
+  intro someType genericTerm someTypeIsOeq
+  cases genericTerm
+  rename_i innerCarrier
+  have oeqEq := Ty.oeq.inj someTypeIsOeq
+  cases oeqEq.1
+  exact Step.par.oeqReflCong witnessStep
+
+/-- **Term.idStrictRefl full lift.** -/
+theorem RawStep.par.lift_full_idStrictRefl
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope)
+    (sourceTerm :
+      Term context (Ty.idStrict carrier rawWitness rawWitness)
+                   (RawTerm.idStrictRefl rawWitness))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.idStrictRefl rawWitness) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨witnessTarget, eq, witnessStep⟩ := RawStep.par.idStrictRefl_inv rawStep
+  cases eq
+  refine ⟨Ty.idStrict carrier witnessTarget witnessTarget,
+          Term.idStrictRefl (context := context) modeIsStrict carrier
+                            witnessTarget, ?_⟩
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.idStrictRefl rawWitness)),
+        someType = Ty.idStrict carrier rawWitness rawWitness →
+        Step.par genericTerm
+                 (Term.idStrictRefl (context := context) modeIsStrict carrier
+                                    witnessTarget) by
+    exact key sourceTerm rfl
+  intro someType genericTerm someTypeIsIdStrict
+  cases genericTerm
+  rename_i innerMode innerCarrier
+  have idStrictEq := Ty.idStrict.inj someTypeIsIdStrict
+  cases idStrictEq.1
+  exact Step.par.idStrictReflCong modeIsStrict witnessStep
+
 end LeanFX2
