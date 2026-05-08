@@ -3000,4 +3000,105 @@ theorem Term.headCtor_uaIntroHet_raw {context : Ctx mode level scope}
   | idCode _ _ _ _ _ => nomatch headEq
   | equivCode _ _ _ _ => nomatch headEq
 
+/-- If a term's `headCtor` is `funextIntroHet`, its raw is the
+heterogeneous-carrier funext-introduction lambda raw form
+`RawTerm.lam (RawTerm.refl applyARaw)` for some
+`applyARaw : RawTerm (scope + 1)`.  This ctor inhabits
+`Ty.id (Ty.arrow domainType codomainType) (RawTerm.lam applyARaw)
+(RawTerm.lam applyBRaw)` — a path between two DISTINCT lambda-shaped
+raw functions at the arrow type — but its raw payload is the
+`applyARaw`-only side of the path (pre-aligned with `funextRefl` /
+`funextReflAtId`'s raw shape, with `applyBRaw` living only in the
+type signature).  This sets up `Step.eqArrowHet` to fire as a
+type-only reduction at the raw level, collapsing the
+`Step.par.toRawBridge` arm to `RawStep.par.refl _`.
+Heterogeneous-funext path-introduction canonical form needed by
+Progress for full HoTT path-via-pointwise; future scrutinee
+inversion when the head is `funextIntroHet`.  Existential-payload
+pattern (one binder, the `applyARaw : RawTerm (scope + 1)`);
+mirror of `funextReflAtId` generalized.  Seventh of the M05.A
+Univalence-rfl-fragment cohort. -/
+theorem Term.headCtor_funextIntroHet_raw {context : Ctx mode level scope}
+    {ty : Ty level scope} {raw : RawTerm scope}
+    (someTerm : Term context ty raw)
+    (headEq : someTerm.headCtor = Term.HeadCtor.funextIntroHet) :
+    ∃ applyARaw : RawTerm (scope + 1),
+      raw = RawTerm.lam (RawTerm.refl applyARaw) := by
+  cases someTerm with
+  | var _ => nomatch headEq
+  | unit => nomatch headEq
+  | lam _ => nomatch headEq
+  | app _ _ => nomatch headEq
+  | lamPi _ => nomatch headEq
+  | appPi _ _ => nomatch headEq
+  | pair _ _ => nomatch headEq
+  | fst _ => nomatch headEq
+  | snd _ => nomatch headEq
+  | boolTrue => nomatch headEq
+  | boolFalse => nomatch headEq
+  | boolElim _ _ _ => nomatch headEq
+  | natZero => nomatch headEq
+  | natSucc _ => nomatch headEq
+  | natElim _ _ _ => nomatch headEq
+  | natRec _ _ _ => nomatch headEq
+  | listNil => nomatch headEq
+  | listCons _ _ => nomatch headEq
+  | listElim _ _ _ => nomatch headEq
+  | optionNone => nomatch headEq
+  | optionSome _ => nomatch headEq
+  | optionMatch _ _ _ => nomatch headEq
+  | eitherInl _ => nomatch headEq
+  | eitherInr _ => nomatch headEq
+  | eitherMatch _ _ _ => nomatch headEq
+  | refl _ _ => nomatch headEq
+  | idJ _ _ => nomatch headEq
+  | oeqRefl _ _ => nomatch headEq
+  | oeqJ _ _ => nomatch headEq
+  | oeqFunext _ _ _ _ _ => nomatch headEq
+  | idStrictRefl _ _ _ => nomatch headEq
+  | idStrictRec _ _ _ => nomatch headEq
+  | modIntro _ => nomatch headEq
+  | modElim _ => nomatch headEq
+  | subsume _ => nomatch headEq
+  | interval0 => nomatch headEq
+  | interval1 => nomatch headEq
+  | intervalOpp _ => nomatch headEq
+  | intervalMeet _ _ => nomatch headEq
+  | intervalJoin _ _ => nomatch headEq
+  | pathLam _ _ _ _ _ => nomatch headEq
+  | pathApp _ _ _ => nomatch headEq
+  | glueIntro _ _ _ _ _ => nomatch headEq
+  | glueElim _ _ => nomatch headEq
+  | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
+  | hcomp _ _ _ => nomatch headEq
+  | recordIntro _ => nomatch headEq
+  | recordProj _ => nomatch headEq
+  | refineIntro _ _ _ => nomatch headEq
+  | refineElim _ => nomatch headEq
+  | codataUnfold _ _ => nomatch headEq
+  | codataDest _ => nomatch headEq
+  | sessionSend _ _ _ => nomatch headEq
+  | sessionRecv _ => nomatch headEq
+  | effectPerform _ _ _ _ _ _ => nomatch headEq
+  | universeCode _ _ _ _ => nomatch headEq
+  | cumulUp _ _ _ _ _ _ => nomatch headEq
+  | equivReflId _ => nomatch headEq
+  | funextRefl _ _ _ => nomatch headEq
+  | equivReflIdAtId _ _ _ _ => nomatch headEq
+  | funextReflAtId _ _ _ => nomatch headEq
+  | equivIntroHet _ _ _ _ => nomatch headEq
+  | equivApp _ _ => nomatch headEq
+  | uaIntroHet _ _ _ _ _ => nomatch headEq
+  | funextIntroHet _ _ _ _ => exact ⟨_, rfl⟩
+  | arrowCode _ _ _ _ => nomatch headEq
+  | piTyCode _ _ _ _ => nomatch headEq
+  | sigmaTyCode _ _ _ _ => nomatch headEq
+  | productCode _ _ _ _ => nomatch headEq
+  | sumCode _ _ _ _ => nomatch headEq
+  | listCode _ _ _ => nomatch headEq
+  | optionCode _ _ _ => nomatch headEq
+  | eitherCode _ _ _ _ => nomatch headEq
+  | idCode _ _ _ _ _ => nomatch headEq
+  | equivCode _ _ _ _ => nomatch headEq
+
 end LeanFX2
