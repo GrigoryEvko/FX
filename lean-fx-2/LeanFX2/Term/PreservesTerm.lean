@@ -1913,4 +1913,76 @@ theorem RawStep.par.lift_full_pathApp
             (pathSource := pathTerm) (bodyTarget := bodyTerm)
             pathStepTyped intervalStepTyped
 
+/-! ## Σ-type ctors — fst, snd, pair (heterogeneous via two-Ty existential) -/
+
+/-- **β cast wall demolition — Term.fst full lift.**  The fst target
+type is `firstType` (constant); two-Ty form chosen for headline
+parity.  Two-arm raw inversion: cong + β-deep (pair). -/
+theorem RawStep.par.lift_full_fst
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pairRaw targetRawIH →
+      ∃ pairTarget : Term context (Ty.sigmaTy firstType secondType) targetRawIH,
+        Step.par pairTerm pairTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.fst pairRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.fst (secondType := secondType) pairTerm) targetTerm := by
+  rcases RawStep.par.fst_inv rawStep with
+    ⟨pairTargetRaw, eq, pairStep⟩
+    | ⟨firstTargetRaw, secondTargetRaw, eq, pairToPair⟩
+  · -- cong arm
+    obtain ⟨pairTarget, pairStepTyped⟩ := pairLift pairStep
+    cases eq
+    refine ⟨firstType, Term.fst (secondType := secondType) pairTarget, ?_⟩
+    exact Step.par.fst pairStepTyped
+  · -- β-deep arm: pair raw-reduces to RawTerm.pair firstTargetRaw secondTargetRaw
+    obtain ⟨pairCanonical, pairStepTyped⟩ := pairLift pairToPair
+    obtain ⟨firstValue, secondValue, pairHeq⟩ := Term.pairDestruct pairCanonical
+    have pairEq : pairCanonical = Term.pair firstValue secondValue := eq_of_heq pairHeq
+    rw [pairEq] at pairStepTyped
+    cases eq
+    refine ⟨firstType, firstValue, ?_⟩
+    exact Step.par.betaFstPairDeep pairStepTyped
+
+/-- **β cast wall demolition — Term.snd full lift.**  The snd target
+type is `secondType.subst0 firstType (RawTerm.fst pairRaw)`, then
+after the cong arm, becomes `secondType.subst0 firstType (RawTerm.fst
+pairTargetRaw)`; the two-Ty existential absorbs this gap.  In the β
+arm, the snd target is the second component of the pair, at type
+`secondType.subst0 firstType firstRawTarget` — different from
+`secondType.subst0 firstType (RawTerm.fst pairRaw)` propositionally
+but the existential lets us state the lift uniformly. -/
+theorem RawStep.par.lift_full_snd
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pairRaw targetRawIH →
+      ∃ pairTarget : Term context (Ty.sigmaTy firstType secondType) targetRawIH,
+        Step.par pairTerm pairTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.snd pairRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.snd (secondType := secondType) pairTerm) targetTerm := by
+  rcases RawStep.par.snd_inv rawStep with
+    ⟨pairTargetRaw, eq, pairStep⟩
+    | ⟨firstTargetRaw, secondTargetRaw, eq, pairToPair⟩
+  · -- cong arm
+    obtain ⟨pairTarget, pairStepTyped⟩ := pairLift pairStep
+    cases eq
+    refine ⟨secondType.subst0 firstType (RawTerm.fst pairTargetRaw),
+            Term.snd (secondType := secondType) pairTarget, ?_⟩
+    exact Step.par.snd pairStepTyped
+  · -- β-deep arm: pair raw-reduces to RawTerm.pair firstTargetRaw secondTargetRaw
+    obtain ⟨pairCanonical, pairStepTyped⟩ := pairLift pairToPair
+    obtain ⟨firstValue, secondValue, pairHeq⟩ := Term.pairDestruct pairCanonical
+    have pairEq : pairCanonical = Term.pair firstValue secondValue := eq_of_heq pairHeq
+    rw [pairEq] at pairStepTyped
+    cases eq
+    refine ⟨secondType.subst0 firstType firstTargetRaw, secondValue, ?_⟩
+    exact Step.par.betaSndPairDeep pairStepTyped
+
 end LeanFX2
