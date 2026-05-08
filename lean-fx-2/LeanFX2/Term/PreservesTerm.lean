@@ -2385,8 +2385,47 @@ theorem RawStep.par.lift_full_idStrictRefl
   cases idStrictEq.1
   exact Step.par.idStrictReflCong modeIsStrict witnessStep
 
-/-- **Term.oeqFunext full lift.**  Single typed Term child
-(pointwiseProof) at `oeqFunextPointwiseType`. -/
+/-! ## Schematic-payload value ctors with new typed cong rules
+
+`Term.refl carrier rawWitness`'s only computational content is the
+schematic raw `rawWitness`.  `Step.par.reflCong` was added in the prior
+juggernaut to lift `RawStep.par.reflCong` to the typed level: a raw step
+on the witness produces a typed step on the wrapper.
+
+`Term.funextRefl`, `Term.funextReflAtId`, `Term.funextIntroHet` follow
+the same pattern with their respective new cong rules. -/
+
+/-- **Term.refl full lift.**  No typed IH needed — `reflCong` consumes the
+raw step directly.  Source type `Ty.id carrier rawWitness rawWitness`;
+target type after step is `Ty.id carrier witnessTarget witnessTarget`. -/
+theorem RawStep.par.lift_full_refl
+    (carrier : Ty level scope) (rawWitness : RawTerm scope)
+    (sourceTerm :
+      Term context (Ty.id carrier rawWitness rawWitness)
+                   (RawTerm.refl rawWitness))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.refl rawWitness) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨witnessTarget, eq, witnessStep⟩ := RawStep.par.refl_inv rawStep
+  cases eq
+  refine ⟨Ty.id carrier witnessTarget witnessTarget,
+          Term.refl (context := context) carrier witnessTarget, ?_⟩
+  -- Force sourceTerm to be Term.refl _ rawWitness via free-the-type:
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.refl rawWitness)),
+        someType = Ty.id carrier rawWitness rawWitness →
+        Step.par genericTerm
+                 (Term.refl (context := context) carrier witnessTarget) by
+    exact key sourceTerm rfl
+  intro someType genericTerm someTypeIsId
+  cases genericTerm
+  rename_i innerCarrier
+  have idEq := Ty.id.inj someTypeIsId
+  cases idEq.1
+  exact Step.par.reflCong carrier witnessStep
+
 theorem RawStep.par.lift_full_oeqFunext
     (domainType codomainType : Ty level scope)
     (leftFunctionRaw rightFunctionRaw : RawTerm scope)
