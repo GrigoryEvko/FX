@@ -55,5 +55,32 @@ theorem check_sound_app {level scope : Nat}
       (Expr.app functionExpr argumentExpr) typeExpr :=
   check_sound checkingSucceeded
 
+/-- Per-arm soundness for Lean let-binding.
+
+When the executable checker accepts an `Expr.letE declName ascribedTypeExpr
+valueExpr bodyExpr nondep`, the inferred type witness is the `HasType.letE`
+derivation built from three sub-derivations: the ascribed-type-has-sort
+sub-derivation, the value-matches-ascribed-type sub-derivation, and the
+body-has-type sub-derivation under the extended context.  Body delegates
+to the generic `check_sound` because `inferResult?` already constructs
+the `HasType.letE` arm. -/
+theorem check_sound_letE {level scope : Nat}
+    {environment : Environment level}
+    {context : Context level scope}
+    {declName : Name}
+    {ascribedTypeExpr valueExpr : Expr level scope}
+    {bodyExpr : Expr level (Nat.succ scope)}
+    {nondep : Bool}
+    {typeExpr : Expr level scope}
+    (checkingSucceeded :
+      Eq
+        (check environment context
+          (Expr.letE declName ascribedTypeExpr valueExpr bodyExpr nondep))
+        (Option.some typeExpr)) :
+    HasType environment context
+      (Expr.letE declName ascribedTypeExpr valueExpr bodyExpr nondep)
+      typeExpr :=
+  check_sound checkingSucceeded
+
 end FX1.LeanKernel
 end LeanFX2
