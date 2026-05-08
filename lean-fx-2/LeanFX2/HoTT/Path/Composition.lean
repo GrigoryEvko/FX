@@ -36,6 +36,12 @@ Lean's `Eq.refl / Eq.trans` and pattern-matching via `subst`
 on a path are propext-free.  The structural lemmas below are
 all `rfl`-discharged once Lean's definitional equality unfolds
 the underlying Eq operations.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Path/Inverse, Smoke/AuditPhase12A3HoTTPath
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

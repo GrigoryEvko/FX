@@ -84,6 +84,12 @@ HoTT applications: `refl_A` becomes `id A : Equiv A A`) ships here.
   `noncomputable`, `Inhabited` of unconstructible types (banned).
 
 This file ships ONE theorem with a REAL BODY.  No exceptions.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Funext, Bridge/IdEqType, Smoke/AuditPhase12AB89, Smoke/AuditMegaZ2A1, Smoke/AuditPhase12AB88, Smoke/AuditPhase12AB8, Smoke/AuditMegaZ5A1, Smoke/AuditMegaZ3, Smoke/AuditCumulMeta
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

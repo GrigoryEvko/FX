@@ -95,6 +95,12 @@ as future work (see `kernel-sprint.md` D3.6 future phases).
 * `HoTT/Univalence.lean` — kernel rfl-fragment + meta-level forward map
 * `HoTT/Funext.lean` — kernel rfl-fragment for funext
 * `HoTT/Equivalence.lean` — `Equiv`, `IsEquiv`, `IsContr`, `Fiber`
+
+## Root status
+
+* Layer: metatheory
+* Load-bearing for: HoTT/FunextFull, HoTT/UnivalenceTransport, Smoke/AuditPhase12AB8, Smoke/AuditUnivalenceFull
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

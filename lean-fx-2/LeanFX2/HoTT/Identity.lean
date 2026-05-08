@@ -37,6 +37,12 @@ computation laws (Path.compose refl p = p, etc.).
   HoTT/Univalence).
 
 Zero-axiom verified per declaration via AuditAll.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Transport, HoTT/Path/Composition (via consumers), Smoke/HoTT, Smoke/AuditPhase12A2HoTTIdentityCong
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

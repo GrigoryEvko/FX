@@ -76,7 +76,14 @@ witness.
 * `HoTT/Univalence.lean` (D3.6) — ua as zero-axiom theorem
   via OEq decomposition
 
-Zero-axiom verified per declaration via AuditAll. -/
+Zero-axiom verified per declaration via AuditAll.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: none — pure-derivation file (currently only re-exposed via Rich.lean aggregation)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

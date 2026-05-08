@@ -20,6 +20,12 @@ The inverse laws + composition laws together give path the
 set-level these laws are definitional (after `cases somePath`),
 so no SN/confluence machinery is needed — Lean's pattern matcher
 discharges everything.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Transport, HoTT/Path/Groupoid, Smoke/AuditPhase12A3HoTTPath
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

@@ -34,7 +34,14 @@ universe codes (Phase 6+), deferred to v1.1.
   composition (provable by path induction)
 * `transport (λ _. P) p x = x`  — constant motive (identity)
 
-Zero-axiom verified per declaration. -/
+Zero-axiom verified per declaration.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Equivalence, Smoke/HoTT, Smoke/AuditPhase12A5HoTTTransport
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

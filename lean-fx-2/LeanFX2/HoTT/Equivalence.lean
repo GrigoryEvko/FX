@@ -44,6 +44,12 @@ Lean's `Eq.refl / Eq.symm / Eq.trans / Eq.mpr` are propext-free
 * `HoTT/Univalence.lean` — relates `=` on types to `Equiv`
 * `HoTT/HIT/Eliminator.lean` — HIT eliminators preserve equivalence
 * `HoTT/Path/*` — path operations at the meta-level
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Observational, HoTT/NTypes, Bridge/PathIdMeta, Smoke/AuditPhase12A3HoTTEquivalence
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

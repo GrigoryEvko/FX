@@ -61,6 +61,12 @@ function `Term → Term ctx Ty.universe u`.
 4. Smoke: compute `J` on refl, verify path-induction examples
 
 Target: ~200-400 lines depending on universe encoding choice.
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: HoTT/Path/Composition, Smoke/HoTT
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

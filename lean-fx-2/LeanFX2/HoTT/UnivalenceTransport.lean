@@ -50,7 +50,14 @@ paths but ships as `idToEquivMeta` rather than `ua` per se), plus
 the rfl-fragment variant.
 
 This file is FULLY constructive at zero axioms; every theorem ships
-with a real body and audits clean. -/
+with a real body and audits clean.
+
+## Root status
+
+* Layer: metatheory
+* Load-bearing for: Cubical/Ua, Smoke/AuditPhase12AB8, Smoke/AuditUnivalenceTransport
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

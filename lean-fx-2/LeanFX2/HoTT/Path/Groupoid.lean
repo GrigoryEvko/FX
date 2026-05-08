@@ -34,6 +34,12 @@ are deferred to v1.1+ along with higher-truncation structure.
 * `HoTT/HIT/*` — HITs use the groupoid structure for path ctors
 * `HoTT/Equivalence.lean` — equivalences are coherent groupoid
   morphisms
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/NTypes, HoTT/HIT/Spec, Bridge/PathIdMeta, Smoke/AuditPhase12A3HoTTPath
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

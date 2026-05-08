@@ -51,6 +51,12 @@ stdlib operation when the type is proven Subsingleton).
 
 * `HoTT/Univalence.lean` — univalence classified by n-types
 * `HoTT/HIT/*` — HITs have specific n-type characters
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/Univalence, Smoke/AuditPhase12A3HoTTNTypes
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

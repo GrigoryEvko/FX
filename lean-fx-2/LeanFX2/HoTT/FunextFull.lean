@@ -52,7 +52,14 @@ heterogeneous-function `Step` ctors (Phase E future work).
   Equiv — would require the unprovable backward direction.
 
 This file is the maximum honest delivery on top of the existing
-kernel's funext content. -/
+kernel's funext content.
+
+## Root status
+
+* Layer: metatheory
+* Load-bearing for: Smoke/AuditFunextFull, Smoke/AuditPhase12AB8
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

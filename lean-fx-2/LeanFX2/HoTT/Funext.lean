@@ -87,6 +87,12 @@ fragment (which is the load-bearing case for HoTT applications:
   `noncomputable`, `Inhabited` of unconstructible types (banned).
 
 This file ships ONE theorem with a REAL BODY.  No exceptions.
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: HoTT/UnivalenceFull, Smoke/AuditPhase12AB8, Smoke/AuditCumulMeta, Smoke/AuditMegaZ5A1, Smoke/AuditPhase12AB88, Smoke/StrictComposition, Smoke/AuditPhase12AB8Cascade, Smoke/AuditMegaZ3, Smoke/AuditMegaZ2A1
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2
