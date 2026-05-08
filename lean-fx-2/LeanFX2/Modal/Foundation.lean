@@ -107,7 +107,13 @@ Same-mode-only encoding makes this total via full 9-case enumeration
 one matching arm).
 
 Full enumeration avoids Lean 4 v4.29.1's match-compiler propext leak
-that fires when partial cases on indexed inductives overlap. -/
+that fires when partial cases on indexed inductives overlap.
+
+Marked `@[reducible]` per `WORKING_RULES.md` Discipline #4 so
+downstream inductive constructor signatures whose indices contain
+`compose` (notably `Modal/TwoCell.lean`'s horizontal-composition
+ctor `TwoCell.horiz`) elaborate without unifier failures. -/
+@[reducible]
 def compose : ∀ {someMode : Mode},
     Modality someMode someMode → Modality someMode someMode →
     Modality someMode someMode

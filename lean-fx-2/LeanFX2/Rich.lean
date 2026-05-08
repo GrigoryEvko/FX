@@ -46,6 +46,7 @@ import LeanFX2.Modal.«2LTT»
 import LeanFX2.Modal.TwoLevel
 import LeanFX2.Modal.BoxPath
 import LeanFX2.Modal.Cohesive
+import LeanFX2.Modal.TwoCell
 import LeanFX2.Modal.Adjunction
 
 -- Layer 7 - Effects, sessions, codata

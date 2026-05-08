@@ -18,3 +18,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.headCtor_codataUnfold_raw
 #print axioms LeanFX2.Term.headCtor_universeCode_raw
 #print axioms LeanFX2.Term.headCtor_arrowCode_raw
+#print axioms LeanFX2.Term.headCtor_piTyCode_raw
