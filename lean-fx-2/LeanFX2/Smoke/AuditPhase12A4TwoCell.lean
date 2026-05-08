@@ -1,4 +1,5 @@
 import LeanFX2.Modal.TwoCell
+import LeanFX2.Modal.TwoCellLaws
 import LeanFX2.Tools.DependencyAudit
 
 /-! # AuditPhase12A4TwoCell — TwoCell zero-axiom audit (#1699 D4.0a).
@@ -35,13 +36,19 @@ future regression on the 2-cell inductive surfaces in this
 file's compile-time output rather than being buried in the
 namespace-wide sweep banner.
 
-## Coherence laws (deferred)
+## Coherence laws (D4.0b #1700, landed)
 
-Coherence laws (associativity of `vert`, left/right identity
-for `vert`, middle-four exchange between `vert` and `horiz`,
-unit-vs-vertical coherence) ship in `Modal/TwoCellLaws.lean`
-under tracker #1700 (D4.0b).  This audit grows when those
-theorems land.
+Coherence laws ship in `Modal/TwoCellLaws.lean` under tracker
+#1700 (D4.0b) up to an explicit equivalence relation
+`TwoCellEq`.  Per the `Modal/TwoCellLaws.lean` top docstring,
+the free `TwoCell` inductive does NOT admit these four
+equations as Lean `=` — `TwoCellEq` is the smallest congruence
+on `TwoCell` containing the strict-2-category coherence laws,
+and the laws are constructors of that inductive (so they are
+zero-axiom data, not postulates).
+
+The four shipped laws are: `TwoCell.vertAssoc`,
+`TwoCell.vertLeftId`, `TwoCell.vertRightId`, `TwoCell.exchange`.
 
 ## Cross-mode horizontal composition (deferred)
 
@@ -61,12 +68,48 @@ namespace LeanFX2.Smoke
 #assert_no_axioms LeanFX2.TwoCell.vert
 #assert_no_axioms LeanFX2.TwoCell.horiz
 
+/-! ## D4.0b — TwoCellEq inductive + 9 ctors -/
+
+#assert_no_axioms LeanFX2.TwoCellEq
+#assert_no_axioms LeanFX2.TwoCellEq.reflEq
+#assert_no_axioms LeanFX2.TwoCellEq.symmEq
+#assert_no_axioms LeanFX2.TwoCellEq.transEq
+#assert_no_axioms LeanFX2.TwoCellEq.vertCongEq
+#assert_no_axioms LeanFX2.TwoCellEq.horizCongEq
+#assert_no_axioms LeanFX2.TwoCellEq.vertAssocEq
+#assert_no_axioms LeanFX2.TwoCellEq.vertLeftIdEq
+#assert_no_axioms LeanFX2.TwoCellEq.vertRightIdEq
+#assert_no_axioms LeanFX2.TwoCellEq.exchangeEq
+
+/-! ## D4.0b — Four coherence-law theorems (up to TwoCellEq) -/
+
+#assert_no_axioms LeanFX2.TwoCell.vertAssoc
+#assert_no_axioms LeanFX2.TwoCell.vertLeftId
+#assert_no_axioms LeanFX2.TwoCell.vertRightId
+#assert_no_axioms LeanFX2.TwoCell.exchange
+
 /-! ## Reviewer-facing log -/
 
 #print axioms LeanFX2.TwoCell
 #print axioms LeanFX2.TwoCell.refl
 #print axioms LeanFX2.TwoCell.vert
 #print axioms LeanFX2.TwoCell.horiz
+
+#print axioms LeanFX2.TwoCellEq
+#print axioms LeanFX2.TwoCellEq.reflEq
+#print axioms LeanFX2.TwoCellEq.symmEq
+#print axioms LeanFX2.TwoCellEq.transEq
+#print axioms LeanFX2.TwoCellEq.vertCongEq
+#print axioms LeanFX2.TwoCellEq.horizCongEq
+#print axioms LeanFX2.TwoCellEq.vertAssocEq
+#print axioms LeanFX2.TwoCellEq.vertLeftIdEq
+#print axioms LeanFX2.TwoCellEq.vertRightIdEq
+#print axioms LeanFX2.TwoCellEq.exchangeEq
+
+#print axioms LeanFX2.TwoCell.vertAssoc
+#print axioms LeanFX2.TwoCell.vertLeftId
+#print axioms LeanFX2.TwoCell.vertRightId
+#print axioms LeanFX2.TwoCell.exchange
 
 /-! ## Type-level smoke samples — TwoCell.refl at each Modality ctor
 
