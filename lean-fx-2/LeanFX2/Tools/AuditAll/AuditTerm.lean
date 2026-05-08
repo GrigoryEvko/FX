@@ -34,6 +34,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.toRaw_equivIntroHet
 #assert_no_axioms LeanFX2.Term.toRaw_uaIntroHet
 #assert_no_axioms LeanFX2.Term.toRaw_funextIntroHet
+-- D3.6-P3: typed univalence-β extractor (Term.uaToEquiv).
+#assert_no_axioms LeanFX2.Term.toRaw_uaToEquiv
 #assert_no_axioms LeanFX2.Term.toRaw_arrowCode
 #assert_no_axioms LeanFX2.Term.toRaw_piTyCode
 #assert_no_axioms LeanFX2.Term.toRaw_sigmaTyCode

@@ -36,7 +36,13 @@ namespace LeanFX2.Tools
 -- surface is ideal; they pin today's explicit `RawTerm` / `Nat` constructor
 -- payload debt so future rich-kernel edits cannot grow it silently.
 #assert_schematic_payload_budget LeanFX2.Ty 12 1
-#assert_schematic_payload_budget LeanFX2.Term 39 0
+-- D3.6-P3: `Term.uaToEquiv` carries 4 schematic RawTerm payloads
+-- (leftTyRaw, rightTyRaw, plus the implicit proofRaw which the census
+-- counts via the typed proof subterm's index), bumping the Term
+-- schematic payload budget from 39 to 41 (leftTyRaw + rightTyRaw, the
+-- two new raw-typed schematic args appearing in the explicit
+-- argument cohort).
+#assert_schematic_payload_budget LeanFX2.Term 41 0
 
 -- Mode-discipline debt gate.  These are known constructors whose names imply
 -- strict/univalent-only availability but whose signatures still quantify over
@@ -75,7 +81,10 @@ namespace LeanFX2.Tools
 -- Exact rich-to-FX1 bridge constructor coverage.  Fragment bridges remain
 -- useful, but only exact `FX1Bridge.encodeTermSound_<ctor>` names count as
 -- whole-constructor bridge coverage for this matrix.
-#assert_bridge_exact_coverage_budget LeanFX2.Term 62
+-- D3.6-P3: `Term.uaToEquiv` ships without an `FX1Bridge.encodeTermSound_uaToEquiv`
+-- bridge yet (FX1 bridge layer is independent of Day 3 typed cascade);
+-- bumps unbridged-ctor budget from 62 to 63.
+#assert_bridge_exact_coverage_budget LeanFX2.Term 63
 
 -- Step.par cong-rule coverage matrix.  Every Term constructor with at
 -- least one sub-Term position should have a same-suffix
@@ -92,6 +101,9 @@ namespace LeanFX2.Tools
 -- Today only one Term ctor has a Conv cong mirror — most Conv lifting
 -- happens via `Conv.fromStep` chains rather than per-ctor cong rules.
 -- This high debt count is a coverage observation, not a regression.
-#assert_conv_cong_coverage_budget LeanFX2.Term 74
+-- D3.6-P3: `Term.uaToEquiv` lacks a `Conv.uaToEquivCong` direct mirror
+-- (Conv lifting is via `Conv.fromStep` chains; budget accommodates
+-- the new ctor at the per-ctor census).
+#assert_conv_cong_coverage_budget LeanFX2.Term 75
 
 end LeanFX2.Tools

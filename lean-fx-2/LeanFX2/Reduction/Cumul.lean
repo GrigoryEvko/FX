@@ -1015,6 +1015,40 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                                  innerLevel innerLevelLt
                                  carrierARaw carrierBRaw
                                  equivWitnessSecond)
+  /-- Homogeneous uaToEquiv: ConvCumul-related proof subterms lift to
+  ConvCumul-related uaToEquiv.  Single-subterm cong rule mirroring
+  `uaIntroHetCong` — the universe level + cumul witness + leftTy /
+  rightTy + raw type-codes are fixed; only the path-at-the-universe
+  proof ConvCumul-relates the two sides; the ctor reassembles with
+  the matching raw indices.  Phase D3.6-P3 (typed mirror of
+  `RawStep.par.uaToEquivCong`). -/
+  | uaToEquivCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (leftTy rightTy : Ty level scope)
+      (leftTyRaw rightTyRaw : RawTerm scope)
+      {proofFirstRaw proofSecondRaw : RawTerm scope}
+      {proofFirst :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofFirstRaw}
+      {proofSecond :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofSecondRaw}
+      (proofRel : ConvCumul proofFirst proofSecond) :
+      ConvCumul (Term.uaToEquiv (context := context)
+                                innerLevel innerLevelLt
+                                leftTy rightTy
+                                leftTyRaw rightTyRaw
+                                proofFirst)
+                (Term.uaToEquiv (context := context)
+                                innerLevel innerLevelLt
+                                leftTy rightTy
+                                leftTyRaw rightTyRaw
+                                proofSecond)
   /-- Homogeneous cumulUp: ConvCumul-related lower terms lift to ConvCumul-
   related cumulUp.  This is the recursive cumul-up case: when
   lower-side terms are themselves cumul-related, their cumulUp wrappings

@@ -320,6 +320,12 @@ theorem Step.par.toRawBridge
   -- exists (or is needed) — we reuse the equivWitness's raw-side step
   -- directly, mirroring the `eqType` / `cumulUpInnerCong` collapse.
   | uaIntroHetCong _ _ _ _ _ ihEquivWitness => exact ihEquivWitness
+  -- Phase D3.6-P3: univalence-β extractor cong.  Source `Term.uaToEquiv
+  -- ... proofSource` and target `Term.uaToEquiv ... proofTarget` BOTH
+  -- project to `RawTerm.uaToEquiv proofRaw...`.  The IH gives a raw
+  -- parallel step on the proof raws; wrap in `RawStep.par.uaToEquivCong`.
+  | uaToEquivCong _ _ _ _ _ _ _ ihProof =>
+      exact RawStep.par.uaToEquivCong ihProof
   -- Heterogeneous Univalence reduction (Phase 12.A.B8.6): both source
   -- `Term.uaIntroHet ... equivWitness` and target `equivWitness`
   -- project to the SAME raw form `RawTerm.equivIntro forwardRaw

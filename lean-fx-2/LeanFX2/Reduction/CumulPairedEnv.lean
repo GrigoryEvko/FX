@@ -487,6 +487,14 @@ def Term.subst_compatible_pointwise_allais
         innerLevel innerLevelLt carrierARaw carrierBRaw
         equivWitness
         (Term.subst_compatible_pointwise_allais compat equivWitness)
+  -- Phase D3.6-P3: univalence-β extractor.  Single-subterm cong via
+  -- `subst_compatible_uaToEquiv_allais`; recurse on the proof subterm.
+  | _, _, .uaToEquiv innerLevel innerLevelLt leftTy rightTy
+                     leftTyRaw rightTyRaw proof =>
+      ConvCumul.subst_compatible_uaToEquiv_allais
+        innerLevel innerLevelLt leftTy rightTy leftTyRaw rightTyRaw
+        proof
+        (Term.subst_compatible_pointwise_allais compat proof)
   -- Phase 12.A.B8.8 (heterogeneous funext-intro at Id-of-arrow):
   -- VALUE ctor, NO typed subterms — same precedent as funextReflAtId.
   -- Both substHet sides depend only on `sigma`, ConvCumul.refl

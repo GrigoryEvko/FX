@@ -501,6 +501,21 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                           (codomainType.rename rho)
                           (applyARaw.rename rho.lift)
                           (applyBRaw.rename rho.lift)
+  -- Phase D3.6-P3: univalence-β extractor.  Single typed subterm
+  -- `proof` recurses via `Term.rename`; the schematic raw payloads
+  -- `leftTyRaw, rightTyRaw` rename via `rho` at the outer scope.
+  -- The result type `Ty.equiv leftTy rightTy` renames carrierA and
+  -- carrierB structurally; the `Ty.id (Ty.universe ...) leftTyRaw
+  -- rightTyRaw` proof type renames carrier (universe is constant)
+  -- and endpoints via `rho` — same shape as the ctor expects after
+  -- the recursive call.  No type-equality cast needed since
+  -- `Ty.equiv`, `Ty.universe`, and `Ty.id` are non-binder carriers.
+  | _, _, .uaToEquiv innerLevel innerLevelLt leftTy rightTy
+                     leftTyRaw rightTyRaw proof =>
+      Term.uaToEquiv innerLevel innerLevelLt
+                     (leftTy.rename rho) (rightTy.rename rho)
+                     (leftTyRaw.rename rho) (rightTyRaw.rename rho)
+                     (Term.rename termRenaming proof)
   -- CUMUL-2.4 typed type-code constructors.  All ten ctors are
   -- VALUE-shaped (schematic raw payloads, no recursive Term
   -- children).  Atom-shape codes rename their raw payloads via

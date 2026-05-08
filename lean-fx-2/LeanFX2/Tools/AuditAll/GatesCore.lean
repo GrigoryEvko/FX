@@ -27,7 +27,10 @@ namespace LeanFX2.Tools
 -- the Action / ActsOnRawTerm / ActsOnTyVar typeclass framework being
 -- universe-polymorphic by design — not a regression, an architectural
 -- choice.  Tight ratchet at current count.
-#assert_universe_polymorphism_budget LeanFX2 527
+-- D3.6-P3: typed `Term.uaToEquiv` ctor + Step.par.uaToEquivCong +
+-- Step.uaToEquivProof + ConvCumul.uaToEquivCong + Allais helper +
+-- toRaw_uaToEquiv contribute two more universe-poly kernel decls.
+#assert_universe_polymorphism_budget LeanFX2 529
 
 -- Quot / Quotient family dependents.  Quot is propositional truncation;
 -- Quot.lift / Quot.ind / Quot.rec are Classical-adjacent (Quot.sound IS

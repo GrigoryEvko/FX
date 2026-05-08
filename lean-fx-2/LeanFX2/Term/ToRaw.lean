@@ -605,6 +605,25 @@ theorem Term.toRaw_funextIntroHet {mode : Mode} {level scope : Nat}
       domainType codomainType applyARaw applyBRaw).toRaw =
       RawTerm.lam (RawTerm.refl applyARaw) := rfl
 
+/-- Phase D3.6-P3: raw projection of `Term.uaToEquiv` is
+`RawTerm.uaToEquiv proof.toRaw`.  Holds by construction since
+`Term.toRaw t = raw` is `rfl` in lean-fx-2 (Term carries RawTerm
+as a type-level index). -/
+theorem Term.toRaw_uaToEquiv {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level scope)
+    (leftTyRaw rightTyRaw : RawTerm scope)
+    {proofRaw : RawTerm scope}
+    (proof : Term context
+               (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+               proofRaw) :
+    (Term.uaToEquiv (context := context)
+      innerLevel innerLevelLt leftTy rightTy
+      leftTyRaw rightTyRaw proof).toRaw =
+      RawTerm.uaToEquiv proof.toRaw := rfl
+
 theorem Term.toRaw_arrowCode {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     (outerLevel : UniverseLevel)

@@ -482,6 +482,18 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                           (codomainType.subst sigma)
                           (applyARaw.subst sigma.forRaw.lift)
                           (applyBRaw.subst sigma.forRaw.lift)
+  -- Phase D3.6-P3: univalence-β extractor.  Single typed subterm
+  -- `proof` recurses via `Term.subst`; schematic `leftTyRaw, rightTyRaw`
+  -- substitute via `sigma.forRaw` at the outer scope (no binder shift,
+  -- since `Ty.equiv`, `Ty.universe`, and `Ty.id` are non-binder
+  -- carriers).
+  | _, _, .uaToEquiv innerLevel innerLevelLt leftTy rightTy
+                     leftTyRaw rightTyRaw proof =>
+      Term.uaToEquiv innerLevel innerLevelLt
+                     (leftTy.subst sigma) (rightTy.subst sigma)
+                     (leftTyRaw.subst sigma.forRaw)
+                     (rightTyRaw.subst sigma.forRaw)
+                     (Term.subst termSubst proof)
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  All ten
   -- ctors substitute their schematic raw payloads via `sigma.forRaw`
   -- at the outer scope; binder-shape codes (piTyCode, sigmaTyCode)

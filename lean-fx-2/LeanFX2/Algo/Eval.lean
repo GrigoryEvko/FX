@@ -266,6 +266,11 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- `Step.eqArrowHet` rule will fire from this ctor, but at the headStep?
   -- level we treat it as a non-redex head (mirror of funextReflAtId).
   | _, _, _, _, .funextIntroHet _ _ _ _ => none
+  -- Phase D3.6-P3: univalence-β extractor.  Cong parity only at the
+  -- current Day 3 layer; no β-rule fires from `RawTerm.uaToEquiv`
+  -- yet (the eventual univalence-β rule lands once the typed
+  -- `Term.equivApply` ctor ships in P4).
+  | _, _, _, _, .uaToEquiv _ _ _ _ _ _ _ => none
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  No β/ι
   -- redex head fires from these ctors — they are canonical type
   -- codes inhabiting `Ty.universe outerLevel`.

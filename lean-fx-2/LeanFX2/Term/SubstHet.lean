@@ -503,6 +503,21 @@ def Term.substHet {mode : Mode}
                           (codomainType.substHet sigma)
                           (applyARaw.subst sigma.forRaw.lift)
                           (applyBRaw.subst sigma.forRaw.lift)
+  -- Phase D3.6-P3: univalence-β extractor — heterogeneous-Subst variant.
+  -- Single typed subterm `proof` recurses via `Term.substHet`;
+  -- schematic `leftTyRaw, rightTyRaw` substitute via `sigma.forRaw` at
+  -- the outer scope; level cumulativity threads through `Nat.le_trans
+  -- innerLevelLt sigma.cumulOk` (mirrors the `uaIntroHet` arm above).
+  -- No `weaken`-commute cast needed since `Ty.equiv`, `Ty.universe`,
+  -- and `Ty.id` are non-binder carriers (no scope shift).
+  | _, _, .uaToEquiv innerLevel innerLevelLt leftTy rightTy
+                     leftTyRaw rightTyRaw proof =>
+      Term.uaToEquiv innerLevel
+                     (Nat.le_trans innerLevelLt sigma.cumulOk)
+                     (leftTy.substHet sigma) (rightTy.substHet sigma)
+                     (leftTyRaw.subst sigma.forRaw)
+                     (rightTyRaw.subst sigma.forRaw)
+                     (Term.substHet termSubstHet proof)
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped) —
   -- heterogeneous-Subst variant.  Each ctor's schematic raw payloads
   -- substitute via `sigma.forRaw` at the outer scope; binder-shape

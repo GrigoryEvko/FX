@@ -30,7 +30,11 @@ namespace LeanFX2.Tools
 -- mentions `HEq` are propext-adjacent — heterogeneous equality cannot
 -- generally reduce.  92 today includes the stronger `equivIntroHet`
 -- constructor shape with inverse-law proof functions.
-#assert_heq_result_type_budget LeanFX2 93
+-- D3.6-P3 added the typed `Term.uaToEquiv` ctor + Step.par.uaToEquivCong
+-- + Step.uaToEquivProof + ConvCumul.uaToEquivCong + Allais helper,
+-- contributing one more HEq-result-typed dependent (the Allais helper
+-- bridge through `Ty.id` carrier).
+#assert_heq_result_type_budget LeanFX2 94
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable
@@ -48,7 +52,10 @@ namespace LeanFX2.Tools
 -- decide-dependent path through the `cd` cascade arms.
 -- D3.6-P2 ships `RawTerm.equivApply` (binary) + `equivApplyCong`,
 -- adding one more decide-dependent path through the same cascade.
-#assert_decide_dependent_budget LeanFX2 833
+-- D3.6-P3 ships the typed `Term.uaToEquiv` ctor + cascade, adding five
+-- more decide-dependent paths (cong rules, Allais helper, typed Step
+-- and Step.par mirrors).
+#assert_decide_dependent_budget LeanFX2 838
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

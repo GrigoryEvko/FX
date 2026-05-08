@@ -1752,6 +1752,42 @@ inductive Step.par :
                                 innerLevel innerLevelLt
                                 carrierARaw carrierBRaw
                                 equivWitnessTarget)
+  /-- Parallel-cong: univalence-β extractor reduces in its single
+  proof subterm.  Phase D3.6-P3 (typed mirror of
+  `RawStep.par.uaToEquivCong`): single-subterm cong rule — the path-
+  at-the-universe proof parallel-reduces, the universe level + cumul
+  witness + leftTy/rightTy + raw type-codes are fixed, the ctor
+  reassembles with the new raw indices.  Both source and target
+  proof are at the SAME `Ty.id (Ty.universe ...) leftTyRaw rightTyRaw`
+  type but with different `proofRaw` raws — exactly as
+  `equivIntroHetCong` / `uaIntroHetCong` ship single-subterm
+  parallel-reduction. -/
+  | uaToEquivCong {mode level scope}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (leftTy rightTy : Ty level scope)
+      (leftTyRaw rightTyRaw : RawTerm scope)
+      {proofRawSource proofRawTarget : RawTerm scope}
+      {proofSource :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofRawSource}
+      {proofTarget :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofRawTarget} :
+      Step.par proofSource proofTarget →
+      Step.par (Term.uaToEquiv (context := context)
+                               innerLevel innerLevelLt
+                               leftTy rightTy
+                               leftTyRaw rightTyRaw
+                               proofSource)
+               (Term.uaToEquiv (context := context)
+                               innerLevel innerLevelLt
+                               leftTy rightTy
+                               leftTyRaw rightTyRaw
+                               proofTarget)
   /-- **Heterogeneous Univalence at the parallel level.**  Mirrors
   `Step.eqTypeHet`: the heterogeneous-carrier path-from-equivalence
   proof at the universe parallel-reduces in one step to the underlying
@@ -2234,6 +2270,10 @@ theorem Step.toPar
       singleStep singleStepIH =>
       exact Step.par.uaIntroHetCong innerLevel innerLevelLt
         carrierARaw carrierBRaw singleStepIH
+  | uaToEquivProof innerLevel innerLevelLt leftTy rightTy
+      leftTyRaw rightTyRaw singleStep singleStepIH =>
+      exact Step.par.uaToEquivCong innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw singleStepIH
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ singleStepIH =>
       exact Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone

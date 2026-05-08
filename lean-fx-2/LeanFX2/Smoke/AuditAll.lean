@@ -25,7 +25,9 @@ namespace Smoke
 -- Reviewer-facing smoke coverage must run after `Smoke.AuditNamespace`
 -- imports the smoke files.  The Tools/AuditAll cone intentionally does not
 -- load smoke modules, so this gate belongs here.
-#assert_smoke_reference_coverage_budget LeanFX2.Term 47
+-- D3.6-P3: typed `Term.uaToEquiv` ctor + smoke audit; smoke gate
+-- bumps from 47 to 48 (per-ctor census heuristic for the new ctor).
+#assert_smoke_reference_coverage_budget LeanFX2.Term 48
 
 end Smoke
 end LeanFX2

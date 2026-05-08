@@ -603,6 +603,47 @@ theorem ConvCumul.subst_compatible_uaIntroHet_allais
     (carrierARaw.subst sigma.forRaw) (carrierBRaw.subst sigma.forRaw)
     equivWitnessCompat
 
+/-- Allais arm for `uaToEquiv` (Phase D3.6-P3): single-subterm cong via
+`uaToEquivCong`.  Mirrors the structure of
+`subst_compatible_uaIntroHet_allais` — the proof subterm recurses via
+the `compat` IH, and the ctor-level cong rule reassembles.  The
+leftTyRaw/rightTyRaw substitute structurally via `sigma.forRaw`
+(identical on both A and B sides since both share `sigma`); only the
+proof differs. -/
+theorem ConvCumul.subst_compatible_uaToEquiv_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ sourceLevel)
+    (leftTy rightTy : Ty sourceLevel sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRaw : RawTerm sourceScope}
+    (proof : Term sourceCtx
+               (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+               proofRaw)
+    (proofCompat :
+      ConvCumul (proof.substHet termSubstA)
+                (proof.substHet termSubstB)) :
+    ConvCumul ((Term.uaToEquiv (context := sourceCtx)
+                               innerLevel innerLevelLt
+                               leftTy rightTy
+                               leftTyRaw rightTyRaw
+                               proof).substHet termSubstA)
+              ((Term.uaToEquiv (context := sourceCtx)
+                               innerLevel innerLevelLt
+                               leftTy rightTy
+                               leftTyRaw rightTyRaw
+                               proof).substHet termSubstB) :=
+  ConvCumul.uaToEquivCong (context := targetCtx) innerLevel
+    (Nat.le_trans innerLevelLt sigma.cumulOk)
+    (leftTy.substHet sigma) (rightTy.substHet sigma)
+    (leftTyRaw.subst sigma.forRaw) (rightTyRaw.subst sigma.forRaw)
+    proofCompat
+
 /-- Allais arm for `natSucc`: single-subterm cong via `natSuccCong`. -/
 theorem ConvCumul.subst_compatible_natSucc_allais
     {mode : Mode}

@@ -1017,5 +1017,63 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope) :
       Term context (Ty.universe outerLevel levelLe)
                    (RawTerm.equivCode leftTypeCodeRaw rightTypeCodeRaw)
+  /-- **Univalence-β extractor: proof of `Id (Universe lvl) A B` to
+      `Equiv A B`.**  Phase D3.6-P3 (typed mirror of `RawTerm.uaToEquiv`
+      from D3.6-P1).
+
+      Inhabitant of `Ty.equiv leftTy rightTy` projecting to
+      `RawTerm.uaToEquiv proofRaw`.  The single typed subterm `proof :
+      Term context (Ty.id (Ty.universe innerLevel innerLevelLt)
+      leftTyRaw rightTyRaw) proofRaw` is the path-at-the-universe
+      whose equivalence content `uaToEquiv` extracts.
+
+      ## Why two raw payloads `leftTyRaw, rightTyRaw`
+
+      `Ty.id` endpoints are RawTerm by the architectural commitment
+      (CLAUDE.md), so the universe-level identity carries
+      `leftTyRaw rightTyRaw : RawTerm scope` as raw type-codes.  The
+      result type `Ty.equiv leftTy rightTy` references the
+      corresponding Ty values, kept as separate schematic implicits
+      — same precedent as `Term.uaIntroHet`'s `carrierARaw/carrierBRaw`
+      vs `carrierA/carrierB` split.
+
+      ## Cascade contract
+
+      The single typed subterm propagates through `Term.rename`,
+      `Term.subst`, `Term.substHet`, `Term.pointwise`, and the Allais
+      arm of `ConvCumul.subst_compatible` — same single-subterm cong
+      shape as `Term.uaIntroHet` (mirror of `optionSomeCong` /
+      `natSuccCong`).  The Step.par cong rule
+      `Step.par.uaToEquivCong` lifts a typed parallel step on `proof`
+      to a typed parallel step on `Term.uaToEquiv proof`.  No β/ι
+      rule fires from this ctor as a redex source yet (the eventual
+      univalence-β rule `transp at (uaToEquiv e)` reducing to
+      `equivApply e` lands in S1+ once the matching `Term.equivApply`
+      ctor ships in P4).
+
+      ## Why no type-equality cast in the result type
+
+      The result type `Ty.equiv leftTy rightTy` is a non-binder Ty
+      (no scope shift), so rename/subst/substHet arms recurse
+      structurally without invoking `Ty.weaken_*_commute` casts —
+      same precedent as `Term.equivApp` (binary, non-binder result).
+      The `proof` subterm carries a Ty.id witness whose carrier is
+      `Ty.universe innerLevel innerLevelLt`, also non-binder.
+
+      Phase D3.6-P3 (typed mirror; pairs with D3.6-P1's raw
+      `RawTerm.uaToEquiv` and `RawStep.par.uaToEquivCong`). -/
+  | uaToEquiv {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (leftTy rightTy : Ty level scope)
+      (leftTyRaw rightTyRaw : RawTerm scope)
+      {proofRaw : RawTerm scope}
+      (proof : Term context
+                 (Ty.id (Ty.universe innerLevel innerLevelLt)
+                        leftTyRaw rightTyRaw)
+                 proofRaw) :
+      Term context (Ty.equiv leftTy rightTy)
+                   (RawTerm.uaToEquiv proofRaw)
 
 end LeanFX2

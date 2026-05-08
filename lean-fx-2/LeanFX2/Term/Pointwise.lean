@@ -298,6 +298,17 @@ theorem Term.subst_pointwise
   | _, _, .uaIntroHet _ _ _ _ equivWitness => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq equivWitness]
+  -- Phase D3.6-P3: univalence-β extractor.  Same single-subterm
+  -- pattern as `uaIntroHet`: the subst arm in Term/Subst.lean
+  -- recurses on the single typed subterm `proof` via Term.subst.
+  -- Both TermSubsts share the SAME underlying `sigma`, so
+  -- `leftTyRaw.subst sigma.forRaw` and `rightTyRaw.subst sigma.forRaw`
+  -- are identical on both sides.  Pointwise equality propagates
+  -- through the `proof` subterm via the structural IH and the ctor
+  -- reassembles identically.
+  | _, _, .uaToEquiv _ _ _ _ _ _ proof => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq proof]
   -- HoTT heterogeneous-carrier funext-introduction at Id-of-arrow
   -- (Phase 12.A.B8.8): the subst arm in Term/Subst.lean has NO
   -- subterm to recurse on (funextIntroHet is a VALUE, like

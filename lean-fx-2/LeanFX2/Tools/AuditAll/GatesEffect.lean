@@ -28,7 +28,10 @@ namespace LeanFX2.Tools
 -- Hashable / Repr / ToString / BEq / Format dependent census.  These
 -- are user-facing API typeclasses; kernel decls should NOT depend on
 -- them.  5 today is minor leakage; tight ratchet at current.
-#assert_api_typeclass_dependent_budget LeanFX2 82
+-- D3.6-P3: typed `Term.uaToEquiv` cascade contributes one more
+-- API-typeclass dependent (DecidableEq HeadCtor extension for the
+-- new enum entry).
+#assert_api_typeclass_dependent_budget LeanFX2 83
 
 -- IO / Task / EIO / BaseIO effect dependent census.  Kernel must not
 -- depend on runtime IO.  Tight ratchet at zero.
@@ -38,6 +41,9 @@ namespace LeanFX2.Tools
 -- dependent census.  Heavy use signals proofs that destructure
 -- dependent values without being explicit about structure.  Tight
 -- ratchet at current count.
-#assert_anonymous_projection_dependent_budget LeanFX2 177
+-- D3.6-P3: typed `Term.uaToEquiv` cascade Allais helper +
+-- substHet/rename/subst arms thread one more anonymous-projection
+-- dependent.
+#assert_anonymous_projection_dependent_budget LeanFX2 178
 
 end LeanFX2.Tools

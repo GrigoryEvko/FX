@@ -1443,6 +1443,30 @@ inductive Step :
           carrierARaw carrierBRaw equivSource)
         (Term.uaIntroHet innerLevel innerLevelLt
           carrierARaw carrierBRaw equivTarget)
+  /-- Step inside the path-at-the-universe proof carried by univalence-β
+  extractor (`Term.uaToEquiv`).  Phase D3.6-P3 — single-subterm
+  cong rule mirroring `uaIntroHetWitness`. -/
+  | uaToEquivProof {mode level scope}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (leftTy rightTy : Ty level scope)
+      (leftTyRaw rightTyRaw : RawTerm scope)
+      {proofRawSource proofRawTarget : RawTerm scope}
+      {proofSource :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofRawSource}
+      {proofTarget :
+        Term context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+          proofRawTarget} :
+      Step proofSource proofTarget →
+      Step
+        (Term.uaToEquiv innerLevel innerLevelLt
+          leftTy rightTy leftTyRaw rightTyRaw proofSource)
+        (Term.uaToEquiv innerLevel innerLevelLt
+          leftTy rightTy leftTyRaw rightTyRaw proofTarget)
   /-- Cong rule for `Term.cumulUp`: a Step inside the lower payload
   lifts to a Step on the wrapping `cumulUp`.  The lower payload sits
   at its own context `ctxLow` and scope `scopeLow` (decoupled per

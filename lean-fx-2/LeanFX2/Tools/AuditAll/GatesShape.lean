@@ -50,7 +50,9 @@ namespace LeanFX2.Tools
 -- `RawTerm.uaToEquiv` (a raw-only ctor; typed mirror lands in P3),
 -- shrinking the delta from 8 to 7.  D3.6-P2 adds `RawTerm.equivApply`
 -- (also raw-only; typed mirror lands in P4), shrinking it to 6.
-#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 6
+-- D3.6-P3 ships the typed mirror `Term.uaToEquiv` (Term grows by 1
+-- to 76; RawTerm unchanged at 69), so the delta grows back to 7.
+#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 7
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
 -- packaging types; heavy use signals existential reasoning.  1255 today
@@ -76,6 +78,11 @@ namespace LeanFX2.Tools
 -- `equivApplyCong`, contributing one more dependent through the
 -- mirror cascade arms (each redex helper now has a parallel
 -- `RawTerm.equivApply _ _ => rebuild` branch).
-#assert_dependent_pair_dependent_budget LeanFX2 1388
+-- D3.6-P3 ships the typed `Term.uaToEquiv` cascade — the new typed
+-- ctor + Step.par.uaToEquivCong + Step.uaToEquivProof +
+-- ConvCumul.uaToEquivCong + Allais helper transitively contribute
+-- six more dependent-pair existential dependents through their
+-- inversion / induction / dispatch arms.
+#assert_dependent_pair_dependent_budget LeanFX2 1394
 
 end LeanFX2.Tools

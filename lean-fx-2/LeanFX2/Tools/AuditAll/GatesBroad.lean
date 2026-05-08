@@ -60,7 +60,9 @@ namespace LeanFX2.Tools
 -- arms (cd / WHNF / partialRename / etc.) thread one new cast path
 -- through the new ctor.  D3.6-P2 adds another cast path through the
 -- binary `equivApply` ctor's cascade arms.
-#assert_cast_operator_dependent_budget LeanFX2 1303
+-- D3.6-P3: typed Term.uaToEquiv cascade (rename / subst / substHet /
+-- pointwise + cong rules + Allais helper) threads six more cast paths.
+#assert_cast_operator_dependent_budget LeanFX2 1309
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel
@@ -138,6 +140,12 @@ namespace LeanFX2.Tools
 -- `carrierType.weaken`; uses same ▸-cast bridge approach as
 -- `oeqFunextCong` via `Ty.weaken_rename_commute` /
 -- `Ty.weaken_subst_commute`).  D2.10 COMPLETE — ratchet 1 → 0.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 0
+-- D3.6-P3 (2026-05-09): ships `Step.par.uaToEquivCong` (typed mirror
+-- of `RawStep.par.uaToEquivCong`); the matching
+-- `uaToEquivCong.rename_compatible` / `_subst_compatible` lemmas
+-- ship in a follow-up phase (D3.6-P5+ — non-binder cong rule, same
+-- shape as `uaIntroHetCong` so the existing exemplar applies).
+-- Bumps budget 0 → 1 temporarily.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 1
 
 end LeanFX2.Tools

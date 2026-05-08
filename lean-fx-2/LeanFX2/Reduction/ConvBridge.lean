@@ -305,6 +305,10 @@ theorem Step.toConvCumul
   | uaIntroHetWitness innerLevel innerLevelLt carrierARaw carrierBRaw _ ih =>
       exact ConvCumul.uaIntroHetCong innerLevel innerLevelLt
         carrierARaw carrierBRaw ih
+  | uaToEquivProof innerLevel innerLevelLt leftTy rightTy
+      leftTyRaw rightTyRaw _ ih =>
+      exact ConvCumul.uaToEquivCong innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw ih
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ ih =>
       exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone

@@ -61,7 +61,13 @@ namespace LeanFX2.Tools
 -- branch in the rebuild's elimination obligations).  D3.6-P2 adds the
 -- binary `equivApply` ctor + `equivApplyCong`, contributing one more
 -- absurd-using branch through the parallel cascade arms.
-#assert_absurd_false_dependent_budget LeanFX2 972
+-- D3.6-P3 adds the typed `Term.uaToEquiv` ctor +
+-- `Step.par.uaToEquivCong` + `Step.uaToEquivProof` +
+-- `ConvCumul.uaToEquivCong` + the Allais helper, contributing five
+-- more absurd-using branches across the typed-layer enumeration arms
+-- (~33 nomatch sites in the Algo inversion cohort plus the typed
+-- cascade and Cumul cong fan-out).
+#assert_absurd_false_dependent_budget LeanFX2 977
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the
