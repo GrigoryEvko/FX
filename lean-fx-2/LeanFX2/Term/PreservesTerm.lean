@@ -1913,6 +1913,65 @@ theorem RawStep.par.lift_full_pathApp
             (pathSource := pathTerm) (bodyTarget := bodyTerm)
             pathStepTyped intervalStepTyped
 
+/-- Destructor for `Term.refl` at fixed `Ty.id carrier endpoint endpoint`.
+Extracts an `Eq` between the witness raw and the endpoint, since
+`Term.refl c w : Ty.id c w w` forces both endpoints = w. -/
+def Term.reflDestruct
+    {carrier : Ty level scope}
+    {endpoint : RawTerm scope}
+    {rawWitness : RawTerm scope}
+    (someTerm :
+      Term context (Ty.id carrier endpoint endpoint) (RawTerm.refl rawWitness)) :
+    PLift (rawWitness = endpoint) := by
+  -- Term.refl forces both endpoints equal to its rawWitness arg, so
+  -- having the type say endpoint endpoint and the raw say rawWitness,
+  -- we get rawWitness = endpoint by ctor inversion.
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.refl rawWitness)),
+        someType = Ty.id carrier endpoint endpoint →
+        PLift (rawWitness = endpoint) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsIdRefl
+  cases genericTerm
+  rename_i innerCarrier
+  -- innerCarrier : Ty level scope; the ctor's type is
+  --   Ty.id innerCarrier rawWitness rawWitness
+  -- which equals (per someTypeIsIdRefl) Ty.id carrier endpoint endpoint.
+  have idEq := Ty.id.inj someTypeIsIdRefl
+  -- idEq.2.1 : rawWitness = endpoint (left endpoint match)
+  exact ⟨idEq.2.1⟩
+
+/-- Destructor for `Term.refl` at type `Ty.id carrier leftEndpoint
+rightEndpoint` with raw `RawTerm.refl witnessRaw`.  Forces leftEndpoint
+= rightEndpoint = witnessRaw and yields HEq alignment. -/
+def Term.idReflDestruct
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {witnessRaw : RawTerm scope}
+    (someTerm :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint)
+                   (RawTerm.refl witnessRaw)) :
+    Σ' (witnessEqLeft : witnessRaw = leftEndpoint)
+       (witnessEqRight : witnessRaw = rightEndpoint),
+       HEq someTerm
+            (Term.refl (context := context) carrier witnessRaw) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.refl witnessRaw)),
+        someType = Ty.id carrier leftEndpoint rightEndpoint →
+        Σ' (witnessEqLeft : witnessRaw = leftEndpoint)
+           (witnessEqRight : witnessRaw = rightEndpoint),
+           HEq genericTerm
+                (Term.refl (context := context) carrier witnessRaw) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsId
+  cases genericTerm
+  rename_i innerCarrier
+  have idEq := Ty.id.inj someTypeIsId
+  cases idEq.1
+  exact ⟨idEq.2.1, idEq.2.2, HEq.rfl⟩
+
 /-! ## Σ-type ctors — fst, snd, pair (heterogeneous via two-Ty existential) -/
 
 /-- **β cast wall demolition — Term.fst full lift.**  The fst target
@@ -1984,5 +2043,78 @@ theorem RawStep.par.lift_full_snd
     cases eq
     refine ⟨secondType.subst0 firstType firstTargetRaw, secondValue, ?_⟩
     exact Step.par.betaSndPairDeep pairStepTyped
+
+/-! ## Identity-type elimination — idJ, oeqJ, idStrictRec via two-Ty existential
+
+These eliminators have a constant `motiveType` (at scope, NOT scope+1),
+so the cong arm produces a target at `motiveType` directly.  The
+iota-refl arm requires the witness to typed-reduce to a `Term.refl
+carrier endpoint`, which forces `leftEndpoint = rightEndpoint`
+(`Term.refl c w : Ty.id c w w`).  We extract this equality via the
+witness IH + reflDestruct, then dispatch through the deep iota rule. -/
+
+/-- **β cast wall demolition — Term.idJ full lift.**  Two-arm raw
+inversion: cong + iotaIdJReflDeep.  In the iota arm, the witness IH
+produces a Term at `Ty.id carrier leftEndpoint rightEndpoint` with raw
+`RawTerm.refl witnessRaw'`.  By Term.refl's typing, this forces
+`leftEndpoint = rightEndpoint = witnessRaw'`.  We then apply
+`Step.par.iotaIdJReflDeep`. -/
+theorem RawStep.par.lift_full_idJ
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par baseRaw targetRawIH →
+      ∃ baseTarget : Term context motiveType targetRawIH,
+        Step.par baseCase baseTarget)
+    (witnessLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par witnessRaw targetRawIH →
+      ∃ witnessTarget :
+          Term context (Ty.id carrier leftEndpoint rightEndpoint) targetRawIH,
+        Step.par witness witnessTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.idJ baseRaw witnessRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.idJ baseCase witness) targetTerm := by
+  rcases RawStep.par.idJ_inv rawStep with
+    ⟨baseTargetRaw, witnessTargetRaw, eq, baseStep, witnessStep⟩
+    | ⟨witnessRaw', baseTargetRaw, eq, witnessToRefl, baseStep⟩
+  · -- cong arm
+    obtain ⟨baseTarget, baseStepTyped⟩ := baseLift baseStep
+    obtain ⟨witnessTarget, witnessStepTyped⟩ := witnessLift witnessStep
+    cases eq
+    refine ⟨motiveType, Term.idJ baseTarget witnessTarget, ?_⟩
+    exact Step.par.idJ baseStepTyped witnessStepTyped
+  · -- iota arm: witness raw-reduces to RawTerm.refl witnessRaw'
+    obtain ⟨witnessCanonical, witnessStepTyped⟩ := witnessLift witnessToRefl
+    obtain ⟨baseTarget, baseStepTyped⟩ := baseLift baseStep
+    cases eq
+    refine ⟨motiveType, baseTarget, ?_⟩
+    -- The typed IH gives witnessCanonical : Term ctx (Ty.id carrier left right)
+    --                                              (RawTerm.refl witnessRaw').
+    -- Term.refl_ty_inv says the type-shape forces witnessRaw' = left = right.
+    -- We extract this via a destructor that returns a fresh Term.refl-shape
+    -- target along with HEq alignment.
+    --
+    -- The cleanest approach: use a destructor that yields directly a
+    -- Step.par witness (Term.refl carrier endpoint) for some endpoint
+    -- = leftEndpoint = rightEndpoint.
+    --
+    -- We use a pre-extraction lemma `Term.idReflDestruct` that takes
+    -- a Term at Ty.id with refl-raw and returns a triple (leftEqWitness,
+    -- rightEqWitness, witnessAsTermRefl_via_HEq).
+    obtain ⟨witnessRawEqLeft, witnessRawEqRight, witnessHeq⟩ :=
+      Term.idReflDestruct witnessCanonical
+    cases witnessRawEqLeft
+    cases witnessRawEqRight
+    -- Now witnessRaw' = leftEndpoint = rightEndpoint, and witnessHeq is
+    -- HEq witnessCanonical (Term.refl carrier leftEndpoint).
+    have witnessEq : witnessCanonical = Term.refl carrier leftEndpoint :=
+      eq_of_heq witnessHeq
+    rw [witnessEq] at witnessStepTyped
+    exact Step.par.iotaIdJReflDeep witnessStepTyped baseStepTyped
 
 end LeanFX2
