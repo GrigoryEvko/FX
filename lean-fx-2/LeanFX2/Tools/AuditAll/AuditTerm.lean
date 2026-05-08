@@ -86,5 +86,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.headCtor_universeCode_raw
 #assert_no_axioms LeanFX2.Term.headCtor_arrowCode_raw
 #assert_no_axioms LeanFX2.Term.headCtor_piTyCode_raw
+#assert_no_axioms LeanFX2.Term.headCtor_sigmaTyCode_raw
 
 end LeanFX2.Tools
