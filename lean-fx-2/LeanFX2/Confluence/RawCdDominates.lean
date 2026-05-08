@@ -254,10 +254,25 @@ theorem RawStep.par.cd_dominates :
           exact RawStep.par.betaGlueElimIntroDeep
             (gluedEqn ▸ gluedParStep)
       all_goals exact RawStep.par.glueElimCong gluedParStep
-  | _, .transp pathTerm sourceTerm =>
-      RawStep.par.transpCong
-        (RawStep.par.cd_dominates pathTerm)
-        (RawStep.par.cd_dominates sourceTerm)
+  | _, .transp pathTerm sourceTerm => by
+      let pathParStep := RawStep.par.cd_dominates pathTerm
+      let sourceParStep := RawStep.par.cd_dominates sourceTerm
+      unfold RawTerm.cd
+      unfold RawTerm.cdTranspCase
+      split
+      case _ pathBody pathBodyEqn =>
+          -- cd pathTerm = pathLam pathBody.  Rewrite pathParStep via cd-eqn.
+          rw [pathBodyEqn] at pathParStep
+          split
+          case _ innerType unwknEqn =>
+              -- unweaken? pathBody = some innerType, so pathBody = innerType.weaken.
+              have hPath : pathBody = innerType.weaken :=
+                RawTerm.unweaken?_imp_weaken pathBody innerType unwknEqn
+              rw [hPath] at pathParStep
+              exact RawStep.par.transpReflBetaDeep pathParStep sourceParStep
+          case _ _unwknEqn =>
+              exact RawStep.par.transpCong pathParStep sourceParStep
+      all_goals exact RawStep.par.transpCong pathParStep sourceParStep
   | _, .hcomp sidesTerm capTerm =>
       RawStep.par.hcompCong
         (RawStep.par.cd_dominates sidesTerm)

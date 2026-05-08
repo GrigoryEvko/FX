@@ -1749,7 +1749,17 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "cumulUpMarkerCong" ||
   -- Section B: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
-  suffix == "reflCong"
+  suffix == "reflCong" ||
+  -- Section C: deep cubical β rule for transp-at-constant-path.  The typed
+  -- mirror would require Step.par.transpReflBetaDeep with a path-reduction
+  -- premise across heterogeneous `pathRawSource` raw shape; this is a
+  -- raw-only confluence-closure mechanism (D2.5.4-G).  Typed transp β is
+  -- already covered through `Step.par.transpReflBeta` (shallow form,
+  -- shipped) for the typed bridge target #1555 — which is itself a
+  -- confluence-only mechanism when combined with cd's `cdTranspCase`
+  -- β-firing.  The deep par ctor exists purely to close the cd cascade
+  -- via `RawStep.par.weaken_inv` (Phase G.0).
+  suffix == "transpReflBetaDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

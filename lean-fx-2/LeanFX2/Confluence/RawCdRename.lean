@@ -497,10 +497,11 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
       rw [RawTerm.cdGlueElimCase_rename rho (RawTerm.cd gluedValue), gluedIH rho]
   | transp pathTerm sourceTerm pathIH sourceIH =>
       intro _ rho
-      show (RawTerm.transp (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)).rename rho =
+      show (RawTerm.cdTranspCase (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)).rename rho =
            RawTerm.cd (RawTerm.transp (pathTerm.rename rho) (sourceTerm.rename rho))
-      simp only [RawTerm.rename, RawTerm.cd]
-      rw [pathIH rho, sourceIH rho]
+      simp only [RawTerm.cd]
+      rw [RawTerm.cdTranspCase_rename rho (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm),
+          pathIH rho, sourceIH rho]
   | hcomp sides cap sidesIH capIH =>
       intro _ rho
       show (RawTerm.hcomp (RawTerm.cd sides) (RawTerm.cd cap)).rename rho =

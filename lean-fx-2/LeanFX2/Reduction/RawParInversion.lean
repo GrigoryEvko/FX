@@ -352,20 +352,36 @@ theorem RawStep.par.glueElim_inv {scope : Nat}
       exact Or.inr ⟨_, _, rfl, gluedStep⟩
   | glueElimCong gluedStep => exact Or.inl ⟨_, rfl, gluedStep⟩
 
-/-- `RawStep.par (transp p s) target → target = transp p' s' ∧ pars`. -/
+/-- Inversion of `RawStep.par` on a `transp` head: either the target
+is again a `transp` (refl / transpCong cases), the LHS path was a
+constant `pathLam typeRaw.weaken` and the rule fired through
+`transpReflBeta`, or the path develops to a constant pathLam-weaken
+via parallel step (deep-β `transpReflBetaDeep`). -/
 theorem RawStep.par.transp_inv {scope : Nat}
     {pathTerm sourceTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.transp pathTerm sourceTerm) target) :
-    ∃ pathTarget sourceTarget,
-      target = RawTerm.transp pathTarget sourceTarget ∧
-        RawStep.par pathTerm pathTarget ∧
-        RawStep.par sourceTerm sourceTarget := by
+    (∃ pathTarget sourceTarget,
+        target = RawTerm.transp pathTarget sourceTarget ∧
+          RawStep.par pathTerm pathTarget ∧
+          RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (typeRawSource : RawTerm scope) (sourceTarget : RawTerm scope),
+        pathTerm = RawTerm.pathLam typeRawSource.weaken ∧
+        target = sourceTarget ∧
+        RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (typeRawTarget : RawTerm scope) (sourceTarget : RawTerm scope),
+        target = sourceTarget ∧
+        RawStep.par pathTerm (RawTerm.pathLam typeRawTarget.weaken) ∧
+        RawStep.par sourceTerm sourceTarget) := by
   cases parallelStep with
   | refl _ =>
-      exact ⟨pathTerm, sourceTerm, rfl,
+      exact Or.inl ⟨pathTerm, sourceTerm, rfl,
         RawStep.par.refl _, RawStep.par.refl _⟩
   | transpCong pathStep sourceStep =>
-      exact ⟨_, _, rfl, pathStep, sourceStep⟩
+      exact Or.inl ⟨_, _, rfl, pathStep, sourceStep⟩
+  | @transpReflBeta _ typeRawSource _ _ _ _ sourceStep =>
+      exact Or.inr (Or.inl ⟨typeRawSource, _, rfl, rfl, sourceStep⟩)
+  | @transpReflBetaDeep _ _ typeRawTarget _ _ pathStep sourceStep =>
+      exact Or.inr (Or.inr ⟨typeRawTarget, _, rfl, pathStep, sourceStep⟩)
 
 /-- `RawStep.par (hcomp s c) target → target = hcomp s' c' ∧ pars`. -/
 theorem RawStep.par.hcomp_inv {scope : Nat}

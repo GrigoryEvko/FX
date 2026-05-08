@@ -133,6 +133,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.glueElimCong ihGlued
   | transp _ _ _ _ _ _ _ _ _ ihPath ihSource =>
       exact RawStep.par.transpCong ihPath ihSource
+  | transpReflBeta _ _ _ _ _ _ ihSource =>
+      exact RawStep.par.transpReflBeta (RawStep.par.refl _) ihSource
   | hcomp _ _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
   | recordIntroCong _ ihFirst =>

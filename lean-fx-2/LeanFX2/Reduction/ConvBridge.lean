@@ -282,6 +282,10 @@ theorem Step.toConvCumul
       exact ConvCumul.transpCong modeIsUnivalent universeLevel universeLevelLt
         sourceType targetType sourceTypeRaw targetTypeRaw
         (ConvCumul.refl _) ih
+  | transpReflBeta modeIsUnivalent universeLevel universeLevelLt
+      sourceType typePath sourceValue =>
+      exact ConvCumul.betaTranspConstantTypeCumul modeIsUnivalent
+        universeLevel universeLevelLt sourceType typePath sourceValue
   | hcompSides modeIsUnivalent _ ih =>
       exact ConvCumul.hcompCong modeIsUnivalent ih (ConvCumul.refl _)
   | hcompCap modeIsUnivalent _ ih =>

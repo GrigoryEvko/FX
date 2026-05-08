@@ -614,6 +614,51 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRawSource sourceRawTarget →
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
                   (RawTerm.transp pathRawTarget sourceRawTarget)
+  /-- Cubical transport β at a syntactically constant type path:
+  `transp (pathLam typeRaw.weaken) value ⟶ value`.
+
+  This is the raw analog of `Step.transpReflBeta` and the Step.par
+  ctor `Step.par.transpReflBeta` (`Reduction/ParRed.lean`).  When
+  the type path body is `typeRaw.weaken` (i.e. mentions no interval
+  binder), transport across it is the identity.  This is the
+  cubical analog of "transp refl A x ⟶ x" — `pathLam typeRaw.weaken`
+  is the constant path `λ i ⇒ typeRaw`, which plays the role of
+  `refl typeRaw` in the cubical fragment.
+
+  ## Shallow shape (single-redex β)
+
+  This is the shallow variant: the `transp` head plus the constant
+  `pathLam` body must be exactly that pair on the LHS.  Inner
+  reductions on `typeRaw` and `sourceRaw` proceed via the two
+  `RawStep.par` premises.  The deep variant (when the path is not
+  literally `pathLam typeRaw.weaken` on the LHS but reduces to it)
+  is intentionally deferred to D2.5-CASCADE; the diamond cd lemma
+  for this rule will need it once typed confluence cascades fire. -/
+  | transpReflBeta {scope : Nat}
+      {typeRawSource typeRawTarget sourceRawSource sourceRawTarget :
+        RawTerm scope} :
+      RawStep.par typeRawSource typeRawTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.transp (RawTerm.pathLam typeRawSource.weaken) sourceRawSource)
+        sourceRawTarget
+  /-- Deep cubical transport β: when the path develops via parallel
+  reduction to a constant `pathLam typeRawTarget.weaken` and the
+  source steps to a target value, the whole transp reduces to that
+  target.  Required for `cd_dominates` to discharge `cdTranspCase`'s
+  β-firing branch when the path was NOT literally `pathLam X.weaken`
+  on the LHS but reaches that shape under cd development.
+
+  Discharge requires `RawStep.par.weaken_inv` (Phase G.0, shipped via
+  `RawParWeakenInv.lean`) to invert the path reduction in cd_lemma's
+  arm. -/
+  | transpReflBetaDeep {scope : Nat}
+      {pathRawSource typeRawTarget sourceRawSource sourceRawTarget :
+        RawTerm scope} :
+      RawStep.par pathRawSource (RawTerm.pathLam typeRawTarget.weaken) →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
+                  sourceRawTarget
   /-- Cong: hcomp reduces in sides and cap. -/
   | hcompCong {scope : Nat}
       {sidesRawSource sidesRawTarget capRawSource capRawTarget : RawTerm scope} :

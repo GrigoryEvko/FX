@@ -2085,12 +2085,23 @@ theorem RawStep.par.rename_inj_inv :
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.transp (path.rename rho)
       (source.rename rho)) _ at parStep
-    obtain ⟨pathTarget, sourceTarget, hTarget, pathStep, sourceStep⟩ :=
-      RawStep.par.transp_inv parStep
-    obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj pathStep
-    obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
-    refine ⟨RawTerm.transp pathInner sourceInner, ?_⟩
-    rw [hTarget, hPathInner, hSourceInner]; rfl
+    rcases RawStep.par.transp_inv parStep with
+      ⟨pathTarget, sourceTarget, hTarget, pathStep, sourceStep⟩ |
+      ⟨_typeRawSource, sourceTarget, _, hTarget, sourceStep⟩ |
+      ⟨_typeRawTarget, sourceTarget, hTarget, _pathStep, sourceStep⟩
+    · -- cong arm
+      obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj pathStep
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨RawTerm.transp pathInner sourceInner, ?_⟩
+      rw [hTarget, hPathInner, hSourceInner]; rfl
+    · -- transpReflBeta arm: target = sourceTarget = sourceInner.rename rho
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨sourceInner, ?_⟩
+      rw [hTarget, hSourceInner]
+    · -- transpReflBetaDeep arm: same conclusion as shallow
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨sourceInner, ?_⟩
+      rw [hTarget, hSourceInner]
   | hcomp sides cap sidesIH capIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.hcomp (sides.rename rho)

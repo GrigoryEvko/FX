@@ -556,6 +556,17 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.glueElimCong (gluedIH substsRelated)
   | transpCong _ _ pathIH sourceIH =>
       exact RawStep.par.transpCong (pathIH substsRelated) (sourceIH substsRelated)
+  | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
+      simp only [RawTerm.subst]
+      rw [RawTerm.weaken_subst_commute firstSubst typeRawSource]
+      exact RawStep.par.transpReflBeta
+        (typeIH substsRelated) (sourceIH substsRelated)
+  | @transpReflBetaDeep _ _ typeRawTarget _ _ _ _ pathIH sourceIH =>
+      simp only [RawTerm.subst]
+      have pathSubstStep := pathIH substsRelated
+      simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
+      exact RawStep.par.transpReflBetaDeep pathSubstStep
+        (sourceIH substsRelated)
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.hcompCong (sidesIH substsRelated) (capIH substsRelated)
   | oeqReflCong _ witnessIH =>

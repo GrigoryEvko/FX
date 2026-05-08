@@ -543,6 +543,36 @@ inductive Step.par :
         (Term.transp modeIsUnivalent universeLevel universeLevelLt
           sourceType targetType
           sourceTypeRaw targetTypeRaw typePathTarget sourceValueTarget)
+  /-- Cubical transport β at a syntactically constant type path:
+  `transp (pathLam typeRaw.weaken) sourceValue ⟶ sourceValueTarget`,
+  with the inner source reduction `Step.par sourceValueSource
+  sourceValueTarget` lifted to the par-level shallow shape.
+
+  This is the typed mirror of `RawStep.par.transpReflBeta`
+  (`Reduction/RawPar.lean`) and the parallel-step lift of
+  `Step.transpReflBeta` (`Reduction/Step.lean`).  The path is held
+  fixed at the constant `pathLam typeRaw.weaken`; deep variants
+  (path reducing to a constant path from a non-constant LHS) live
+  in D2.5-CASCADE follow-up. -/
+  | transpReflBeta {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType : Ty level scope)
+      {typeRaw sourceRawSource sourceRawTarget : RawTerm scope}
+      (typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            typeRaw typeRaw)
+          (RawTerm.pathLam typeRaw.weaken))
+      {sourceValueSource : Term context sourceType sourceRawSource}
+      {sourceValueTarget : Term context sourceType sourceRawTarget} :
+      Step.par sourceValueSource sourceValueTarget →
+      Step.par
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType sourceType
+          typeRaw typeRaw typePath sourceValueSource)
+        sourceValueTarget
   /-- Parallel-cong: homogeneous composition reduces in sides and cap. -/
   | hcomp {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)
@@ -1943,6 +1973,10 @@ theorem Step.toPar
       exact Step.par.transpCong modeIsUnivalent universeLevel universeLevelLt
         sourceType targetType sourceTypeRaw targetTypeRaw
         (Step.par.refl _) singleStepIH
+  | transpReflBeta modeIsUnivalent universeLevel universeLevelLt sourceType
+      typePath sourceValue =>
+      exact Step.par.transpReflBeta modeIsUnivalent universeLevel
+        universeLevelLt sourceType typePath (Step.par.refl sourceValue)
   | hcompSides modeIsUnivalent singleStep singleStepIH =>
       exact Step.par.hcompCong modeIsUnivalent
         singleStepIH (Step.par.refl _)

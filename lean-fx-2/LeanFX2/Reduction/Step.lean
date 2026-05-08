@@ -1192,6 +1192,57 @@ inductive Step :
         (Term.transp modeIsUnivalent universeLevel universeLevelLt
           sourceType targetType
           sourceTypeRaw targetTypeRaw typePath sourceValueTarget)
+  /-- β-reduction for cubical transport along a syntactically constant
+  type path: `transp (pathLam typeRaw.weaken) value ⟶ value`.
+
+  This is the Step-layer lift of `ConvCumul.betaTranspConstantTypeCumul`
+  (`Reduction/Cumul.lean`).  When the type path is the canonical
+  constant path (i.e. its body is a weakened type code, mentioning
+  no interval binder), transport across it must be the identity.
+
+  ## Why this is the cubical analog of "transp refl = id"
+
+  In cubical type theory, the constant path `λ i ⇒ A` (built here as
+  `Term.pathLam ... typeRaw.weaken` and helper-named
+  `constantTypePath`) plays the role of `refl A`.  Transporting along
+  this path leaves the value unchanged.  This rule makes that fact
+  definitional at the Step layer.
+
+  ## Why both source and target carriers are pinned to `sourceType`
+
+  The Step's source position is a `Term context targetType raw`; for
+  the rule to type-check both sides at the same `Ty`, the typed
+  source and target carriers must coincide (`sourceType` for both).
+  This matches the existing `betaTranspConstantTypeCumul` shape and
+  is the strictest form of "transp at constant path is identity"
+  that survives intrinsic typing.
+
+  ## Step.par mirror is intentionally deferred (atomic Step lift)
+
+  The matching `Step.par.transpReflBeta` mirror requires a raw-level
+  preservation lemma showing that parallel reduction maps weakened
+  constant path bodies to weakened constant path bodies (so the cd
+  cascade can converge two transp reductions).  That lemma lives in
+  the D2.5-CASCADE follow-up (#1561); shipping the Step ctor first
+  unblocks `Conv.fromStep` consumers without coupling to the raw
+  preservation work. -/
+  | transpReflBeta {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType : Ty level scope)
+      {typeRaw sourceRaw : RawTerm scope}
+      (typePath :
+        Term context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            typeRaw typeRaw)
+          (RawTerm.pathLam typeRaw.weaken))
+      (sourceValue : Term context sourceType sourceRaw) :
+      Step
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType sourceType
+          typeRaw typeRaw typePath sourceValue)
+        sourceValue
   /-- Step inside homogeneous composition's side system. -/
   | hcompSides {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

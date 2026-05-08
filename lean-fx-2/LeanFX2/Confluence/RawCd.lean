@@ -1866,13 +1866,13 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.glueIntro (RawTerm.cd baseValue) (RawTerm.cd partialValue)
   | _, .glueElim gluedValue => RawTerm.cdGlueElimCase (RawTerm.cd gluedValue)
   | _, .transp pathTerm sourceTerm =>
-      -- D2.5.4-F: `RawTerm.cdTranspCase` is staged + verified
-      -- (`cdTranspCase_rename` zero-axiom in `Confluence/RawCdRename.lean`),
-      -- but wiring it into `cd` requires `RawStep.par.transpReflBetaDeep`
-      -- (D2.5.4-G) for `cd_dominates` to discharge the new β-firing case.
-      -- Cd-arm activation lands together with that ctor in a single
-      -- atomic commit (#1584) so confluence stays sound throughout.
-      RawTerm.transp (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
+      -- D2.5.4-G: cdTranspCase fires β when developed path is
+      -- `pathLam X.weaken` (constant path, body in image of weaken),
+      -- otherwise plain transp cong.  The β-firing branch needs
+      -- `RawStep.par.weaken_inv` (Phase G.0, shipped) to discharge
+      -- cd_lemma's transpReflBeta arm via the developed path's body
+      -- being preserved as a weakened term under par.
+      RawTerm.cdTranspCase (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
   | _, .hcomp sidesTerm capTerm =>
       RawTerm.hcomp (RawTerm.cd sidesTerm) (RawTerm.cd capTerm)
   -- D1.6: observational + strict equality (pure cong)

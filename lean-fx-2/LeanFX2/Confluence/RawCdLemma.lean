@@ -1,6 +1,8 @@
 import LeanFX2.Confluence.RawCdDominates
+import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParWeakenInv
 
 /-! # Confluence/RawCdLemma — every parallel reduct lands in `RawTerm.cd`
 
@@ -403,9 +405,64 @@ theorem RawStep.par.cd_lemma {scope : Nat}
           exact RawStep.par.betaGlueElimIntroDeep
             (gluedEqn ▸ gluedIH)
       all_goals exact RawStep.par.glueElimCong gluedIH
-  | transpCong _ _ pathIH sourceIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.transpCong pathIH sourceIH
+  | @transpCong _ pathRawSource pathRawTarget _ _ pathStep sourceStep pathIH sourceIH =>
+      -- pathIH : par pathRawTarget (cd pathRawSource).
+      -- Goal: par (transp pathRawTarget sourceRawTarget)
+      --           (cdTranspCase (cd pathRawSource) (cd sourceRawSource)).
+      -- Split on cdTranspCase result via cd pathRawSource's shape.
+      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      split
+      case _ pathBody pathBodyEqn =>
+          rw [pathBodyEqn] at pathIH
+          split
+          case _ innerType unwknEqn =>
+              -- pathBody = innerType.weaken; β fires.
+              have hPath : pathBody = innerType.weaken :=
+                RawTerm.unweaken?_imp_weaken pathBody innerType unwknEqn
+              rw [hPath] at pathIH
+              exact RawStep.par.transpReflBetaDeep pathIH sourceIH
+          case _ _unwknEqn =>
+              exact RawStep.par.transpCong pathIH sourceIH
+      all_goals exact RawStep.par.transpCong pathIH sourceIH
+  | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
+      -- Source = transp (pathLam typeRawSource.weaken) sourceRawSource.
+      -- Target = sourceRawTarget.
+      -- typeIH : par typeRawTarget (cd typeRawSource)
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource)
+      -- Goal: par sourceRawTarget (cd (transp (pathLam typeRawSource.weaken)
+      --                                        sourceRawSource))
+      -- = par sourceRawTarget (cdTranspCase (pathLam (cd typeRawSource).weaken)
+      --                                       (cd sourceRawSource))
+      -- = par sourceRawTarget (cd sourceRawSource) [β fires; via cd-rename
+      --   commute, cd typeRawSource.weaken = (cd typeRawSource).weaken;
+      --   unweaken? = some]
+      -- = sourceIH ✓
+      simp only [RawTerm.cd, RawTerm.cdTranspCase, RawTerm.cd_weaken,
+                 RawTerm.unweaken?_weaken]
+      exact sourceIH
+  | @transpReflBetaDeep _ pathRawSource _ _ _ pathStep sourceStep pathIH sourceIH =>
+      -- Source = transp pathRawSource sourceRawSource.
+      -- Target = sourceRawTarget.
+      -- pathStep : par pathRawSource (pathLam typeRawTarget.weaken)
+      -- pathIH : par (pathLam typeRawTarget.weaken) (cd pathRawSource)
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource)
+      -- Goal: par sourceRawTarget (cd (transp pathRawSource sourceRawSource))
+      -- = par sourceRawTarget (cdTranspCase (cd pathRawSource) (cd sourceRawSource))
+      -- By pathLam_inv on pathIH: cd pathRawSource = pathLam someBody, par
+      -- (typeRawTarget.weaken) someBody.  By weaken_inv: someBody = X.weaken;
+      -- so unweaken? someBody = some X, β fires, target = cd sourceRawSource = sourceIH.
+      obtain ⟨someBody, cdPathEq, bodyParStep⟩ := RawStep.par.pathLam_inv pathIH
+      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      rw [cdPathEq]
+      -- Goal: par sourceRawTarget
+      --   (match unweaken? someBody with
+      --    | some _ => cd sourceRawSource
+      --    | none => transp (pathLam someBody) (cd sourceRawSource))
+      -- Use weaken_inv to derive someBody = ?.weaken, so unweaken? someBody ≠ none.
+      obtain ⟨innerType, hWeak⟩ := RawStep.par.weaken_inv bodyParStep
+      rw [hWeak]
+      simp only [RawTerm.unweaken?_weaken]
+      exact sourceIH
   | hcompCong _ _ sidesIH capIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.hcompCong sidesIH capIH

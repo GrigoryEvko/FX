@@ -247,6 +247,15 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.glueElimCong (gluedIH _)
   | transpCong _ _ pathIH sourceIH =>
       exact RawStep.par.transpCong (pathIH _) (sourceIH _)
+  | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
+      simp only [RawTerm.rename]
+      rw [RawTerm.weaken_rename_commute rawRenaming typeRawSource]
+      exact RawStep.par.transpReflBeta (typeIH _) (sourceIH _)
+  | @transpReflBetaDeep _ _ typeRawTarget _ _ _ _ pathIH sourceIH =>
+      simp only [RawTerm.rename]
+      have pathRenameStep := pathIH rawRenaming
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at pathRenameStep
+      exact RawStep.par.transpReflBetaDeep pathRenameStep (sourceIH _)
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.hcompCong (sidesIH _) (capIH _)
   | oeqReflCong _ witnessIH =>
