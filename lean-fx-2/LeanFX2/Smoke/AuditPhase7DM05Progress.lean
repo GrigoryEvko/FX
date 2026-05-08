@@ -1,0 +1,9 @@
+import LeanFX2.Algo.Progress
+
+/-! Phase 7.D — M05 Progress lemma zero-axiom audit.
+
+Each `#print axioms` below MUST report
+"does not depend on any axioms" for the build to count as Progress
+shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
+
+#print axioms LeanFX2.Term.headCtor_lam_raw

@@ -72,5 +72,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Term.toRaw_sessionSend
 #assert_no_axioms LeanFX2.Term.toRaw_sessionRecv
 #assert_no_axioms LeanFX2.Term.toRaw_effectPerform
+-- M05 Progress canonical-form raw inversions (Phase 7.D).
+#assert_no_axioms LeanFX2.Term.headCtor_lam_raw
 
 end LeanFX2.Tools

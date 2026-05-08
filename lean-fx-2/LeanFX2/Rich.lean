@@ -106,6 +106,7 @@ import LeanFX2.Algo.Synth
 import LeanFX2.Algo.Eval
 import LeanFX2.Algo.Soundness
 import LeanFX2.Algo.Completeness
+import LeanFX2.Algo.Progress
 
 -- Layer 11 - Surface
 import LeanFX2.Surface.Token
