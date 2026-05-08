@@ -216,4 +216,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.pathLamCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.pathLamCong.subst_compatible
 
+-- D3.6-P5 typed compositional compat — uaToEquivCong (unary, single
+-- typed subterm `proof` at `Ty.id (Ty.universe ...) leftTyRaw rightTyRaw`)
+-- and equivApplyCong (binary, `equivTerm + argumentTerm` at non-binder
+-- `Ty.equiv carrierA carrierB` / `carrierA`).  Closes the deferral
+-- from D3.6-P3+P4 (`step.par compat coverage` budget 2 → 0); both
+-- cong rules are non-binder so no `Ty.weaken_*_commute` cast needed.
+#assert_no_axioms LeanFX2.Step.par.uaToEquivCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.uaToEquivCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.equivApplyCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.equivApplyCong.subst_compatible
+
 end LeanFX2.Tools

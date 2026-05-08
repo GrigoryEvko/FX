@@ -921,6 +921,181 @@ theorem subst_compatible
 
 end funextIntroHetCong
 
+/-! ### `uaToEquivCong` (D3.6-P5, unary, single typed subterm).
+
+Phase D3.6-P5 ships the typed-compat mirror of D3.6-P3's
+`Step.par.uaToEquivCong` (single-subterm cong rule for the typed
+univalence-β extractor `Term.uaToEquiv`).  The cong rule's premise
+is one inner `Step.par` on the typed `proof : Term context (Ty.id
+(Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+proofRaw` subterm; the universe level + cumul witness, the leftTy/
+rightTy carriers, and the schematic `leftTyRaw/rightTyRaw` payloads
+are fixed.
+
+`Term.uaToEquiv` lives at result type `Ty.equiv leftTy rightTy`,
+which is non-binder.  No `Ty.weaken_*_commute` cast is needed —
+same precedent as `equivIntroHetCong` / `uaIntroHetCong`'s
+non-binder cascade arms.  The proof is a one-line application of
+the constructor with the renamed/substituted carriers + raw
+payloads + the witnessed inner step. -/
+namespace uaToEquivCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRawSource proofRawTarget : RawTerm sourceScope}
+    {proofSource :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRawSource}
+    {proofTarget :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRawTarget}
+    (renamedProofStep :
+      Step.par (Term.rename termRenaming proofSource)
+               (Term.rename termRenaming proofTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.uaToEquiv (context := sourceCtx)
+                        innerLevel innerLevelLt
+                        leftTy rightTy
+                        leftTyRaw rightTyRaw
+                        proofSource))
+      (Term.rename termRenaming
+        (Term.uaToEquiv (context := sourceCtx)
+                        innerLevel innerLevelLt
+                        leftTy rightTy
+                        leftTyRaw rightTyRaw
+                        proofTarget)) :=
+  Step.par.uaToEquivCong (context := targetCtx)
+    innerLevel innerLevelLt
+    (leftTy.rename rho) (rightTy.rename rho)
+    (leftTyRaw.rename rho) (rightTyRaw.rename rho)
+    renamedProofStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    {proofRawSource proofRawTarget : RawTerm sourceScope}
+    {proofSource :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRawSource}
+    {proofTarget :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRawTarget}
+    (substitutedProofStep :
+      Step.par (Term.subst termSubst proofSource)
+               (Term.subst termSubst proofTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.uaToEquiv (context := sourceCtx)
+                        innerLevel innerLevelLt
+                        leftTy rightTy
+                        leftTyRaw rightTyRaw
+                        proofSource))
+      (Term.subst termSubst
+        (Term.uaToEquiv (context := sourceCtx)
+                        innerLevel innerLevelLt
+                        leftTy rightTy
+                        leftTyRaw rightTyRaw
+                        proofTarget)) :=
+  Step.par.uaToEquivCong (context := targetCtx)
+    innerLevel innerLevelLt
+    (leftTy.subst sigma) (rightTy.subst sigma)
+    (leftTyRaw.subst sigma.forRaw) (rightTyRaw.subst sigma.forRaw)
+    substitutedProofStep
+
+end uaToEquivCong
+
+/-! ### `equivApplyCong` (D3.6-P5, binary, two typed subterms).
+
+Phase D3.6-P5 ships the typed-compat mirror of D3.6-P4's
+`Step.par.equivApplyCong` (binary-subterm cong rule for the typed
+univalence-β application `Term.equivApply`).  The cong rule's
+premises are two inner `Step.par`s: one on the packaged equivalence
+`equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw`,
+one on the source-side argument `argumentTerm : Term context
+carrierA argumentRaw`.
+
+Architectural twin of `equivAppCong.{rename,subst}_compatible`:
+both `Term.equivApp` and `Term.equivApply` are binary cong rules
+at non-binder result types (`carrierB` for both), so the rename/
+subst arms recurse structurally without `Ty.weaken_*_commute`
+casts.  The proof is a one-line application of the constructor
+with the renamed/substituted inner steps. -/
+namespace equivApplyCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRawSource equivRawTarget argumentRawSource argumentRawTarget :
+      RawTerm sourceScope}
+    {equivSource : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawSource}
+    {equivTarget : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawTarget}
+    {argumentSource : Term sourceCtx carrierA argumentRawSource}
+    {argumentTarget : Term sourceCtx carrierA argumentRawTarget}
+    (renamedEquivStep :
+      Step.par (Term.rename termRenaming equivSource)
+               (Term.rename termRenaming equivTarget))
+    (renamedArgumentStep :
+      Step.par (Term.rename termRenaming argumentSource)
+               (Term.rename termRenaming argumentTarget)) :
+    Step.par
+      (Term.rename termRenaming (Term.equivApply equivSource argumentSource))
+      (Term.rename termRenaming (Term.equivApply equivTarget argumentTarget)) :=
+  Step.par.equivApplyCong renamedEquivStep renamedArgumentStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {carrierA carrierB : Ty level sourceScope}
+    {equivRawSource equivRawTarget argumentRawSource argumentRawTarget :
+      RawTerm sourceScope}
+    {equivSource : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawSource}
+    {equivTarget : Term sourceCtx (Ty.equiv carrierA carrierB) equivRawTarget}
+    {argumentSource : Term sourceCtx carrierA argumentRawSource}
+    {argumentTarget : Term sourceCtx carrierA argumentRawTarget}
+    (substitutedEquivStep :
+      Step.par (Term.subst termSubst equivSource)
+               (Term.subst termSubst equivTarget))
+    (substitutedArgumentStep :
+      Step.par (Term.subst termSubst argumentSource)
+               (Term.subst termSubst argumentTarget)) :
+    Step.par
+      (Term.subst termSubst (Term.equivApply equivSource argumentSource))
+      (Term.subst termSubst (Term.equivApply equivTarget argumentTarget)) :=
+  Step.par.equivApplyCong substitutedEquivStep substitutedArgumentStep
+
+end equivApplyCong
+
 end par
 
 end Step

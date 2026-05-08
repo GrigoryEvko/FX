@@ -148,13 +148,17 @@ namespace LeanFX2.Tools
 -- `uaToEquivCong.rename_compatible` / `_subst_compatible` lemmas
 -- ship in a follow-up phase (D3.6-P5+ — non-binder cong rule, same
 -- shape as `uaIntroHetCong` so the existing exemplar applies).
--- Bumps budget 0 → 1 temporarily.
+-- Bumped budget 0 → 1 temporarily.
 -- D3.6-P4 (2026-05-09): ships `Step.par.equivApplyCong` (typed mirror
 -- of `RawStep.par.equivApplyCong`); the matching binary
 -- `equivApplyCong.rename_compatible` / `_subst_compatible` lemmas
 -- ship in a follow-up phase (D3.6-P5+ — binary non-binder cong rule,
 -- same shape as `equivAppCong` so the existing exemplar applies).
--- Bumps budget 1 → 2 temporarily.
-#assert_reduction_compat_coverage_budget LeanFX2.Step.par 2
+-- Bumped budget 1 → 2 temporarily.
+-- D3.6-P5 (2026-05-09): ships `uaToEquivCong.{rename,subst}_compatible`
+-- and `equivApplyCong.{rename,subst}_compatible` in
+-- `LeanFX2/Reduction/Compat/HoTT.lean`, closing the deferral from
+-- D3.6-P3+P4.  Coverage drops back to 0; ratchet budget 2 → 0.
+#assert_reduction_compat_coverage_budget LeanFX2.Step.par 0
 
 end LeanFX2.Tools
