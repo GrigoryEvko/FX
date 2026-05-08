@@ -107,5 +107,6 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_mdata
 #assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_proj
 #assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_fvar
+#assert_no_axioms LeanFX2.FX1.LeanKernel.check_sound_mvar
 
 end LeanFX2.Tools

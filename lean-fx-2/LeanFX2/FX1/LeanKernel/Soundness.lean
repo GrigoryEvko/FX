@@ -178,5 +178,32 @@ theorem check_sound_fvar {level scope : Nat}
     HasType environment context (Expr.fvar fvarId) typeExpr :=
   nomatch checkingSucceeded
 
+/-- Per-arm soundness for Lean metavariables.
+
+Lean's kernel rejects `Expr.mvar` in fully-elaborated terms; the
+LeanKernel-FX1 executable checker mirrors that policy by returning
+`Option.none` for every metavariable.  The relational `HasType`
+consequently has no `mvar` arm.  Unlike `proj` and `fvar`, this is
+not a deferred-feature gap: Lean's kernel never types metavariables,
+so the absent `HasType.mvar` arm is a permanent design decision rather
+than scaffolding awaiting infrastructure.
+
+The lemma is vacuously true: from the impossible hypothesis
+`Eq Option.none (Option.some typeExpr)` we discharge via `nomatch`.
+A future revision could replace this body with a real witness only
+if the LeanKernel-FX1 typing rule for metavariables changes (which
+it should not, per the kernel's mvar-rejection policy). -/
+theorem check_sound_mvar {level scope : Nat}
+    {environment : Environment level}
+    {context : Context level scope}
+    {mvarId : MVarId}
+    {typeExpr : Expr level scope}
+    (checkingSucceeded :
+      Eq
+        (check environment context (Expr.mvar mvarId))
+        (Option.some typeExpr)) :
+    HasType environment context (Expr.mvar mvarId) typeExpr :=
+  nomatch checkingSucceeded
+
 end FX1.LeanKernel
 end LeanFX2
