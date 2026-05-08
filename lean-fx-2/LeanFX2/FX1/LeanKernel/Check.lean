@@ -362,7 +362,70 @@ def inferResult? {level scope : Nat}
           ..
         } =>
           Option.none
-  | Expr.letE _declName _typeExpr _valueExpr _bodyExpr _nondep => Option.none
+  | Expr.letE declName ascribedTypeExpr valueExpr bodyExpr nondep =>
+      match inferResult? environment context ascribedTypeExpr with
+      | Option.none => Option.none
+      | Option.some {
+          typeExpr := Expr.sort _ascribedTypeLevel
+          typeDerivation := ascribedTypeDerivation
+        } =>
+          match inferResult? environment context valueExpr with
+          | Option.none => Option.none
+          | Option.some valueResult =>
+              match
+                Expr.eqResult valueResult.typeExpr ascribedTypeExpr with
+              | EqualityResult.equal valueAscribedEquality =>
+                  match inferResult?
+                      environment
+                      (Context.extendForBinder context ascribedTypeExpr)
+                      bodyExpr with
+                  | Option.none => Option.none
+                  | Option.some bodyResult =>
+                      Option.some {
+                        typeExpr :=
+                          Expr.instantiate bodyResult.typeExpr valueExpr
+                        typeDerivation :=
+                          HasType.letE
+                            (declName := declName)
+                            (nondep := nondep)
+                            ascribedTypeDerivation
+                            (valueAscribedEquality ▸
+                              valueResult.typeDerivation)
+                            bodyResult.typeDerivation
+                      }
+              | EqualityResult.notEqual => Option.none
+      | Option.some { typeExpr := Expr.bvar _position, .. } => Option.none
+      | Option.some { typeExpr := Expr.fvar _fvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.mvar _mvarId, .. } => Option.none
+      | Option.some { typeExpr := Expr.const _constName _levels, .. } =>
+          Option.none
+      | Option.some { typeExpr := Expr.app _functionExpr _argumentExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.lam _binderName _domainExpr _bodyExpr _binderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr :=
+            Expr.forallE _binderName _domainExpr _bodyExpr _binderInfo
+          ..
+        } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.letE _innerDeclName _innerType _innerValue
+            _innerBody _innerNonDep
+          ..
+        } =>
+          Option.none
+      | Option.some { typeExpr := Expr.lit _literal, .. } => Option.none
+      | Option.some { typeExpr := Expr.mdata _metadata _bodyExpr, .. } =>
+          Option.none
+      | Option.some {
+          typeExpr := Expr.proj _structName _fieldIndex _targetExpr
+          ..
+        } =>
+          Option.none
   | Expr.lit _literal => Option.none
   | Expr.mdata _metadata _bodyExpr => Option.none
   | Expr.proj _structName _fieldIndex _targetExpr => Option.none

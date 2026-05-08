@@ -277,6 +277,42 @@ inductive HasType {level : Nat} :
         context
         (Expr.app functionExpr argumentExpr)
         (Expr.instantiate bodyTypeExpr argumentExpr)
+  /-- Lean `letE` introduction.
+
+  The ascribed type must inhabit a sort, the bound value must match it, and the
+  body is checked under one fresh binder typed by the ascribed type.  The
+  resulting type is the body type with the newest bound variable instantiated
+  by the bound value, mirroring application's codomain reduction.  This keeps
+  `letE` a sound surface form for definitional unfolding without introducing a
+  separate definitional reduction rule at this slice. -/
+  | letE
+      {scope : Nat}
+      {environment : Environment level}
+      {context : Context level scope}
+      {declName : Name}
+      {ascribedTypeExpr valueExpr : Expr level scope}
+      {bodyExpr bodyTypeExpr : Expr level (Nat.succ scope)}
+      {ascribedTypeLevel : Level}
+      {nondep : Bool}
+      (ascribedTypeHasSort :
+        HasType
+          environment
+          context
+          ascribedTypeExpr
+          (Expr.sort ascribedTypeLevel))
+      (valueHasAscribedType :
+        HasType environment context valueExpr ascribedTypeExpr)
+      (bodyHasType :
+        HasType
+          environment
+          (Context.extendForBinder context ascribedTypeExpr)
+          bodyExpr
+          bodyTypeExpr) :
+      HasType
+        environment
+        context
+        (Expr.letE declName ascribedTypeExpr valueExpr bodyExpr nondep)
+        (Expr.instantiate bodyTypeExpr valueExpr)
 
 end FX1.LeanKernel
 end LeanFX2
