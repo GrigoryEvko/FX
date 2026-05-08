@@ -937,6 +937,14 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRaw targetRaw →
       RawStep.par (RawTerm.uaToEquiv sourceRaw)
                   (RawTerm.uaToEquiv targetRaw)
+  /-- D3.6-P2 Cong: equivApply reduces pointwise in its equiv and
+  arg raw payloads.  Binary mirror of `uaToEquivCong`. -/
+  | equivApplyCong {scope : Nat}
+      {equivSource equivTarget argSource argTarget : RawTerm scope} :
+      RawStep.par equivSource equivTarget →
+      RawStep.par argSource argTarget →
+      RawStep.par (RawTerm.equivApply equivSource argSource)
+                  (RawTerm.equivApply equivTarget argTarget)
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/

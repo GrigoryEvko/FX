@@ -625,5 +625,8 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | uaToEquivCong _ innerIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.uaToEquivCong innerIH
+  | equivApplyCong _ _ equivIH argIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.equivApplyCong equivIH argIH
 
 end LeanFX2

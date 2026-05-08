@@ -140,6 +140,7 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.cumulUpMarker _ => RawTerm.app developedFunction developedArgument
   | RawTerm.uaToEquiv _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.equivApply _ _ => RawTerm.app developedFunction developedArgument
 
 /-- Path application redex: `(pathLam body) @ point → body[point/i]`;
 otherwise rebuild `pathApp dp di`. -/
@@ -214,6 +215,7 @@ def RawTerm.cdPathAppCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.cumulUpMarker _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.uaToEquiv _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.equivApply _ _ => RawTerm.pathApp developedPath developedInterval
 
 /-- Glue elimination redex: `unglue (glue base partial) → base`;
 otherwise rebuild `glueElim dg`. -/
@@ -288,6 +290,7 @@ def RawTerm.cdGlueElimCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.glueElim developedGlued
   | RawTerm.cumulUpMarker _ => RawTerm.glueElim developedGlued
   | RawTerm.uaToEquiv _ => RawTerm.glueElim developedGlued
+  | RawTerm.equivApply _ _ => RawTerm.glueElim developedGlued
 
 /-- Modal elimination redex: `modElim (modIntro payload) → payload`;
 otherwise rebuild `modElim developedInner`. -/
@@ -362,6 +365,7 @@ def RawTerm.cdModElimCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.modElim developedInner
   | RawTerm.cumulUpMarker _ => RawTerm.modElim developedInner
   | RawTerm.uaToEquiv _ => RawTerm.modElim developedInner
+  | RawTerm.equivApply _ _ => RawTerm.modElim developedInner
 
 /-- Refinement elimination redex: `refineElim (refineIntro value proof)
 → value`; otherwise rebuild `refineElim dr`. -/
@@ -436,6 +440,7 @@ def RawTerm.cdRefineElimCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.refineElim developedRefined
   | RawTerm.cumulUpMarker _ => RawTerm.refineElim developedRefined
   | RawTerm.uaToEquiv _ => RawTerm.refineElim developedRefined
+  | RawTerm.equivApply _ _ => RawTerm.refineElim developedRefined
 
 /-- Record projection redex: `recordProj (recordIntro field) → field`;
 otherwise rebuild `recordProj dr`. -/
@@ -510,6 +515,7 @@ def RawTerm.cdRecordProjCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.recordProj developedRecord
   | RawTerm.cumulUpMarker _ => RawTerm.recordProj developedRecord
   | RawTerm.uaToEquiv _ => RawTerm.recordProj developedRecord
+  | RawTerm.equivApply _ _ => RawTerm.recordProj developedRecord
 
 /-- Codata observation redex:
 `codataDest (codataUnfold state transition) → transition state`;
@@ -586,6 +592,7 @@ def RawTerm.cdCodataDestCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.codataDest developedCodata
   | RawTerm.cumulUpMarker _ => RawTerm.codataDest developedCodata
   | RawTerm.uaToEquiv _ => RawTerm.codataDest developedCodata
+  | RawTerm.equivApply _ _ => RawTerm.codataDest developedCodata
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -659,6 +666,7 @@ def RawTerm.cdFstCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.fst developedPair
   | RawTerm.cumulUpMarker _ => RawTerm.fst developedPair
   | RawTerm.uaToEquiv _ => RawTerm.fst developedPair
+  | RawTerm.equivApply _ _ => RawTerm.fst developedPair
 
 /-- Snd redex: `snd (a, b) → b`; otherwise rebuild `snd dp`. -/
 def RawTerm.cdSndCase {scope : Nat}
@@ -732,6 +740,7 @@ def RawTerm.cdSndCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.snd developedPair
   | RawTerm.cumulUpMarker _ => RawTerm.snd developedPair
   | RawTerm.uaToEquiv _ => RawTerm.snd developedPair
+  | RawTerm.equivApply _ _ => RawTerm.snd developedPair
 
 /-- BoolElim redex: `boolElim true t e → t`, `boolElim false t e → e`;
 otherwise rebuild. -/
@@ -872,6 +881,8 @@ def RawTerm.cdBoolElimCase {scope : Nat}
   | RawTerm.cumulUpMarker _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.uaToEquiv _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.equivApply _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
 
 /-- NatElim redex: `natElim 0 z s → z`, `natElim (succ p) z s → s p`;
@@ -1014,6 +1025,8 @@ def RawTerm.cdNatElimCase {scope : Nat}
   | RawTerm.cumulUpMarker _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.uaToEquiv _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.equivApply _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
 
 /-- NatRec redex: `natRec 0 z s → z`,
@@ -1158,6 +1171,8 @@ def RawTerm.cdNatRecCase {scope : Nat}
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.uaToEquiv _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.equivApply _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
 
 /-- ListElim redex: `listElim nil n c → n`,
 `listElim (cons h t) n c → c h t`; otherwise rebuild. -/
@@ -1299,6 +1314,8 @@ def RawTerm.cdListElimCase {scope : Nat}
   | RawTerm.cumulUpMarker _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.uaToEquiv _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.equivApply _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
 
 /-- OptionMatch redex: `optionMatch none n s → n`,
@@ -1442,6 +1459,8 @@ def RawTerm.cdOptionMatchCase {scope : Nat}
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.uaToEquiv _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.equivApply _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
 
 /-- EitherMatch redex: `eitherMatch (inl v) l r → l v`,
 `eitherMatch (inr v) l r → r v`; otherwise rebuild. -/
@@ -1583,6 +1602,8 @@ def RawTerm.cdEitherMatchCase {scope : Nat}
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.uaToEquiv _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.equivApply _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
 
 /-- IdJ redex: `idJ b (refl _) → b`; otherwise rebuild. -/
 def RawTerm.cdIdJCase {scope : Nat}
@@ -1656,6 +1677,7 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.cumulUpMarker _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.uaToEquiv _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.equivApply _ _ => RawTerm.idJ developedBase developedWitness
 
 /-- Strict identity recursor redex: `idStrictRec b (idStrictRefl _) → b`;
 otherwise rebuild. -/
@@ -1730,6 +1752,7 @@ def RawTerm.cdIdStrictRecCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.cumulUpMarker _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.uaToEquiv _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.equivApply _ _ => RawTerm.idStrictRec developedBase developedWitness
 
 /-- Cubical transport at a syntactically constant type path:
 `transp (pathLam typeRaw.weaken) source ⟶ source` (the cubical
@@ -1817,6 +1840,7 @@ def RawTerm.cdTranspCase {scope : Nat}
   | RawTerm.equivCode _ _ => RawTerm.transp developedPath developedSource
   | RawTerm.cumulUpMarker _ => RawTerm.transp developedPath developedSource
   | RawTerm.uaToEquiv _ => RawTerm.transp developedPath developedSource
+  | RawTerm.equivApply _ _ => RawTerm.transp developedPath developedSource
 
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
@@ -1962,5 +1986,8 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   -- D3.6-P1: uaToEquiv recurses on inner proof raw.
   | _, .uaToEquiv proofRaw =>
       RawTerm.uaToEquiv (RawTerm.cd proofRaw)
+  -- D3.6-P2: equivApply recurses on equiv and arg raws.
+  | _, .equivApply equivRaw argRaw =>
+      RawTerm.equivApply (RawTerm.cd equivRaw) (RawTerm.cd argRaw)
 
 end LeanFX2

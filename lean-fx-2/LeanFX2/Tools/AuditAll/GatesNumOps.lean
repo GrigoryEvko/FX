@@ -32,7 +32,8 @@ namespace LeanFX2.Tools
 -- transitively pulls in `Term.check` (which itself references OfNat
 -- via the Nat-indexed Fin scope position dispatch).  D3.6-P1 added
 -- one cong rule + ctor whose cascade arms thread one new OfNat path.
-#assert_ofnat_dependent_budget LeanFX2 975
+-- D3.6-P2 adds one more OfNat path via `equivApply` cascade arms.
+#assert_ofnat_dependent_budget LeanFX2 976
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -53,8 +54,9 @@ namespace LeanFX2.Tools
 -- theorems whose closure threads `h ▸ t` (which expands through
 -- Eq.rec) on every expected-type-equality arm of `Term.check`.
 -- D3.6-P1's cascade arms (28-ctor matches in subst/rename/cd) add
--- one new Eq-rewriting path through the new ctor.
-#assert_eq_rewriting_dependent_budget LeanFX2 1208
+-- one new Eq-rewriting path through the new ctor.  D3.6-P2 adds one
+-- more Eq-rewriting path via the binary `equivApply` ctor cascade.
+#assert_eq_rewriting_dependent_budget LeanFX2 1209
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

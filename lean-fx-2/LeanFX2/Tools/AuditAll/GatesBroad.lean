@@ -58,8 +58,9 @@ namespace LeanFX2.Tools
 -- expected-type-equality dispatch arm (var/unit/boolTrue/boolFalse/
 -- natZero/natSucc/lam/lamPi/pair/listCons/...).  D3.6-P1's cascade
 -- arms (cd / WHNF / partialRename / etc.) thread one new cast path
--- through the new ctor.
-#assert_cast_operator_dependent_budget LeanFX2 1302
+-- through the new ctor.  D3.6-P2 adds another cast path through the
+-- binary `equivApply` ctor's cascade arms.
+#assert_cast_operator_dependent_budget LeanFX2 1303
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

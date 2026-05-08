@@ -678,6 +678,12 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
            RawTerm.cd (RawTerm.uaToEquiv (proofRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
       rw [proofIH rho]
+  | equivApply equivRaw argRaw equivIH argIH =>
+      intro _ rho
+      show (RawTerm.equivApply (RawTerm.cd equivRaw) (RawTerm.cd argRaw)).rename rho =
+           RawTerm.cd (RawTerm.equivApply (equivRaw.rename rho) (argRaw.rename rho))
+      simp only [RawTerm.rename, RawTerm.cd]
+      rw [equivIH rho, argIH rho]
 
 /-! ## Specialization: `cd_weaken`. -/
 

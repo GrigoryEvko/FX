@@ -311,6 +311,11 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
   | .uaToEquiv proofRaw, _, _, substsRelated =>
       RawStep.par.uaToEquivCong
         (RawTerm.subst_par_pointwise proofRaw substsRelated)
+  -- D3.6-P2: equivApply recurses on equiv and arg raws.
+  | .equivApply equivRaw argRaw, _, _, substsRelated =>
+      RawStep.par.equivApplyCong
+        (RawTerm.subst_par_pointwise equivRaw substsRelated)
+        (RawTerm.subst_par_pointwise argRaw substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -671,6 +676,9 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.cumulUpMarkerCong (innerIH substsRelated)
   | uaToEquivCong _ innerIH =>
       exact RawStep.par.uaToEquivCong (innerIH substsRelated)
+  | equivApplyCong _ _ equivIH argIH =>
+      exact RawStep.par.equivApplyCong
+        (equivIH substsRelated) (argIH substsRelated)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

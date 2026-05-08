@@ -82,6 +82,8 @@ inductive RawTerm.HeadCtor : Type
   | cumulUpMarker
   -- D3.6-P1: univalence-to-equiv vocabulary
   | uaToEquiv
+  -- D3.6-P2: equivApply vocabulary
+  | equivApply
 
 /-- Project a raw term to its head-ctor tag.  Full enumeration of
 all 28 RawTerm ctors keeps this propext-free. -/
@@ -134,6 +136,7 @@ def RawTerm.headCtor {scope : Nat} (term : RawTerm scope) : RawTerm.HeadCtor :=
   | .equivCode _ _ => .equivCode
   | .cumulUpMarker _ => .cumulUpMarker
   | .uaToEquiv _ => .uaToEquiv
+  | .equivApply _ _ => .equivApply
 
 /-! ## ?-projection helpers — full 28-arm enumeration
 
@@ -181,7 +184,7 @@ def RawTerm.lamBody? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Project the components of a `pair` term. -/
 def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
@@ -216,7 +219,7 @@ def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Project the predecessor from a `natSucc` term. -/
 def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
@@ -251,7 +254,7 @@ def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Project head/tail from a `listCons`. -/
 def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
@@ -286,7 +289,7 @@ def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Project the value from `optionSome`. -/
 def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
@@ -321,7 +324,7 @@ def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Project the value from `eitherInl`. -/
 def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
@@ -356,7 +359,7 @@ def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Project the value from `eitherInr`. -/
 def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
@@ -391,7 +394,7 @@ def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
   | .productCode _ _ => none | .sumCode _ _ => none
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
-  | .cumulUpMarker _ => none | .uaToEquiv _ => none
+  | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
 
 /-- Test whether a term is a `refl` (independent of the witness). -/
 def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
@@ -425,7 +428,7 @@ def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
   | .productCode _ _ => false | .sumCode _ _ => false
   | .listCode _ => false | .optionCode _ => false | .eitherCode _ _ => false
   | .idCode _ _ _ => false | .equivCode _ _ => false
-  | .cumulUpMarker _ => false | .uaToEquiv _ => false
+  | .cumulUpMarker _ => false | .uaToEquiv _ => false | .equivApply _ _ => false
 
 /-! ## Eq-witness recovery for the projection helpers
 
@@ -605,7 +608,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .boolElim scrutineeWhnf thenBranch elseBranch
     | .natZero => .natZero
     | .natSucc predecessor => .natSucc predecessor
@@ -636,7 +639,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .natElim scrutineeWhnf zeroBranch succBranch
     | .natRec scrutinee zeroBranch succBranch =>
         let scrutineeWhnf := RawTerm.whnf fuel scrutinee
@@ -667,7 +670,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .natRec scrutineeWhnf zeroBranch succBranch
     | .listNil => .listNil
     | .listCons headTerm tailTerm => .listCons headTerm tailTerm
@@ -698,7 +701,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .listElim scrutineeWhnf nilBranch consBranch
     | .optionNone => .optionNone
     | .optionSome valueTerm => .optionSome valueTerm
@@ -729,7 +732,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .optionMatch scrutineeWhnf noneBranch someBranch
     | .eitherInl valueTerm => .eitherInl valueTerm
     | .eitherInr valueTerm => .eitherInr valueTerm
@@ -764,7 +767,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .eitherMatch scrutineeWhnf leftBranch rightBranch
     | .refl rawWitness => .refl rawWitness
     | .idJ baseCase witness =>
@@ -788,7 +791,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply =>
             .idJ baseCase witnessWhnf
     -- Modal: no reduction rules yet (Layer 6 will add iotaModal).
     | .modIntro innerTerm => .modIntro innerTerm
@@ -840,5 +843,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
     | .cumulUpMarker innerCodeRaw => .cumulUpMarker innerCodeRaw
     -- D3.6-P1: uaToEquiv — value form, no β/ι (S1+ adds the actual rule).
     | .uaToEquiv proofRaw => .uaToEquiv proofRaw
+    -- D3.6-P2: equivApply — value form, no β/ι (S1+ adds the actual rule).
+    | .equivApply equivRaw argRaw => .equivApply equivRaw argRaw
 
 end LeanFX2

@@ -288,6 +288,11 @@ theorem RawTerm.rename_identity {scope : Nat} :
   | .uaToEquiv proofRaw => by
       show (proofRaw.rename _).uaToEquiv = proofRaw.uaToEquiv
       rw [RawTerm.rename_identity proofRaw]
+  -- D3.6-P2: equivApply — recurse on equiv and arg raws.
+  | .equivApply equivRaw argRaw => by
+      show (equivRaw.rename _).equivApply (argRaw.rename _) =
+           equivRaw.equivApply argRaw
+      rw [RawTerm.rename_identity equivRaw, RawTerm.rename_identity argRaw]
 
 /-! ## Ty.rename_identity
 

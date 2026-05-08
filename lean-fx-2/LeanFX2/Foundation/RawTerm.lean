@@ -232,6 +232,18 @@ inductive RawTerm : Nat → Type
   `RawTerm` ctor by raw-ctor mismatch, so existing typed inversions
   remain unaffected. -/
   | uaToEquiv {scope : Nat} (proofRaw : RawTerm scope) : RawTerm scope
+  /-- Phase D3.6-P2: univalence-β raw vocabulary.  `equivApply equiv arg`
+  represents the term-level operation that applies a type equivalence
+  (`equiv : Equiv leftTy rightTy` at the typing layer) to an argument
+  of the source type, producing an inhabitant of the target type.  At
+  raw level the ctor is binary, carrying the underlying equivalence
+  and argument term raws (no binder).  The actual β-rule
+  `transp at (uaToEquiv e)` reducing to `equivApply e` lands in a
+  later phase (S1+); P2 ships the vocabulary so downstream functions
+  can pattern-match on it.  Structurally distinct from every other
+  `RawTerm` ctor by raw-ctor mismatch, so existing typed inversions
+  remain unaffected. -/
+  | equivApply {scope : Nat} (equivRaw argRaw : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -516,5 +528,9 @@ equalities. -/
   -- recurse on the single proof raw payload (no binder).
   | _, _, .uaToEquiv proofRaw, someAction =>
       .uaToEquiv (proofRaw.act someAction)
+  -- D3.6-P2: equivApply vocabulary.  Atom-shape arm — recurse on
+  -- both the equivalence raw and the argument raw (no binder).
+  | _, _, .equivApply equivRaw argRaw, someAction =>
+      .equivApply (equivRaw.act someAction) (argRaw.act someAction)
 
 end LeanFX2

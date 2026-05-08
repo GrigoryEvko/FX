@@ -349,6 +349,8 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.cumulUpMarkerCong (innerIH _)
   | uaToEquivCong _ innerIH =>
       exact RawStep.par.uaToEquivCong (innerIH _)
+  | equivApplyCong _ _ equivIH argIH =>
+      exact RawStep.par.equivApplyCong (equivIH _) (argIH _)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)
   | funextReflAtIdCong _ applyIH =>

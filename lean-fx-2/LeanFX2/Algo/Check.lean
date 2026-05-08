@@ -519,6 +519,7 @@ def Term.check : ∀ {scope : Nat}
   | .equivCode _ _      => none
   | .cumulUpMarker _    => none
   | .uaToEquiv _        => none
+  | .equivApply _ _     => none
 
 end LeanFX2
 

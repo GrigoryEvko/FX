@@ -402,5 +402,10 @@ theorem RawStep.par.cd_dominates :
   | _, .uaToEquiv proofRaw =>
       RawStep.par.uaToEquivCong
         (RawStep.par.cd_dominates proofRaw)
+  -- D3.6-P2: equivApply — pure cong, recurse on equiv and arg raws.
+  | _, .equivApply equivRaw argRaw =>
+      RawStep.par.equivApplyCong
+        (RawStep.par.cd_dominates equivRaw)
+        (RawStep.par.cd_dominates argRaw)
 
 end LeanFX2

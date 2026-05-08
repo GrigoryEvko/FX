@@ -503,6 +503,11 @@ theorem RawTerm.act_eq_rename :
       show RawTerm.uaToEquiv (proofRaw.act someRenaming) =
            RawTerm.uaToEquiv (proofRaw.rename someRenaming)
       rw [proofIH someRenaming]
+  | equivApply equivRaw argRaw equivIH argIH =>
+      intro someRenaming
+      show RawTerm.equivApply (equivRaw.act someRenaming) (argRaw.act someRenaming) =
+           RawTerm.equivApply (equivRaw.rename someRenaming) (argRaw.rename someRenaming)
+      rw [equivIH someRenaming, argIH someRenaming]
 
 /-- Bridge theorem: applying `RawTerm.act` over a `Subst level`
 Container produces the same result as applying `RawTerm.subst
@@ -875,6 +880,12 @@ theorem RawTerm.act_eq_subst_forRaw {level : Nat} :
       show RawTerm.uaToEquiv (proofRaw.act someSubst) =
            RawTerm.uaToEquiv (proofRaw.subst someSubst.forRaw)
       rw [proofIH someSubst]
+  | equivApply equivRaw argRaw equivIH argIH =>
+      intro someSubst
+      show RawTerm.equivApply (equivRaw.act someSubst) (argRaw.act someSubst) =
+           RawTerm.equivApply (equivRaw.subst someSubst.forRaw)
+                              (argRaw.subst someSubst.forRaw)
+      rw [equivIH someSubst, argIH someSubst]
 
 /-! ## Smoke equivalences with existing `Ty.subst`.
 

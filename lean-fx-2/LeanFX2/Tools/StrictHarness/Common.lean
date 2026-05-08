@@ -1753,6 +1753,12 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- ships in P3.  Until then, `RawStep.par.uaToEquivCong` is documented
   -- as a raw-only entry to keep the parity gate green.
   suffix == "uaToEquivCong" ||
+  -- D3.6-P2: equivApply cong rule.  The raw cong rule is the
+  -- vocabulary-level baseline; the typed mirror lands when
+  -- `Term.equivApply` ctor ships in P4.  Until then,
+  -- `RawStep.par.equivApplyCong` is documented as a raw-only entry to
+  -- keep the parity gate green.
+  suffix == "equivApplyCong" ||
   -- Section B: refl cong rule (typed Term.refl uses different reduction
   -- shape; raw reflCong is structural-only).
   suffix == "reflCong" ||

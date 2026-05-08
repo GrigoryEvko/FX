@@ -379,6 +379,11 @@ def RawTerm.partialRename? : ∀ {sourceScope targetScope : Nat},
       match RawTerm.partialRename? proofRaw partialRenaming with
       | some renamedProof => some (RawTerm.uaToEquiv renamedProof)
       | none => none
+  | _, _, .equivApply equivRaw argRaw, partialRenaming =>
+      Option.mapTwo
+        (RawTerm.partialRename? equivRaw partialRenaming)
+        (RawTerm.partialRename? argRaw partialRenaming)
+        RawTerm.equivApply
 
 /-- Try to lower a raw term across one outer weakening.  This is the
 recognizer needed before any safe constant-transport computation rule:
@@ -463,6 +468,7 @@ def RawTerm.constantPathBody? {scope : Nat}
   | RawTerm.equivCode _ _ => none
   | RawTerm.cumulUpMarker _ => none
   | RawTerm.uaToEquiv _ => none
+  | RawTerm.equivApply _ _ => none
 
 /-- The newest variable cannot be lowered across the dropped binder. -/
 theorem RawTerm.unweaken?_newest_var_none {scope : Nat} :
@@ -751,6 +757,10 @@ theorem RawTerm.partialRename?_rename_some
   | uaToEquiv proofRaw proofIH =>
       simp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
+  | equivApply equivRaw argRaw equivIH argIH =>
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      rw [equivIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
+        argIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
 
 /-- Weakening followed by `unweaken?` recovers any raw term.  This is the
 generic form of the constant-path recognizer's positive case and is the
@@ -2159,6 +2169,21 @@ theorem RawTerm.partialRename?_imp_rename :
             RawTerm.uaToEquiv (renamedProof.rename forwardRenaming)
           rw [proofIH forwardRenaming partialRenaming renamingInjectsBack
                 renamedProof hChild]
+  | equivApply equivRaw argRaw equivIH argIH =>
+      intro forwardRenaming partialRenaming renamingInjectsBack extracted success
+      obtain ⟨renamedEquiv, renamedArg, hEquiv, hArg, eqResult⟩ :=
+        Option.mapTwo_eq_some success
+      have eqEquiv :=
+        equivIH forwardRenaming partialRenaming renamingInjectsBack
+          renamedEquiv hEquiv
+      have eqArg :=
+        argIH forwardRenaming partialRenaming renamingInjectsBack
+          renamedArg hArg
+      rw [eqResult]
+      show RawTerm.equivApply equivRaw argRaw =
+        RawTerm.equivApply (renamedEquiv.rename forwardRenaming)
+                           (renamedArg.rename forwardRenaming)
+      rw [eqEquiv, eqArg]
 
 /-! ### Specialization: `dropNewest` injects back into the image of
 `RawRenaming.weaken`.

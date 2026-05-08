@@ -42,14 +42,15 @@ namespace LeanFX2.Tools
 -- discharge.  Tight ratchet at zero — currently clean.
 #assert_false_in_result_type_budget LeanFX2 0
 
--- Term/RawTerm ctor delta.  Term has 75 ctors, RawTerm has 68 — the 7
+-- Term/RawTerm ctor delta.  Term has 75 ctors, RawTerm has 69 — the 6
 -- delta means manufactured-witness Term ctors share raw projections
 -- with each other.  Architectural choice for refl-fragment Univalence/
 -- funext support.  Pinning the delta catches new manufactured-witness
 -- ctors arriving without RawTerm parity.  D3.6-P1 added
 -- `RawTerm.uaToEquiv` (a raw-only ctor; typed mirror lands in P3),
--- shrinking the delta from 8 to 7.
-#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 7
+-- shrinking the delta from 8 to 7.  D3.6-P2 adds `RawTerm.equivApply`
+-- (also raw-only; typed mirror lands in P4), shrinking it to 6.
+#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 6
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
 -- packaging types; heavy use signals existential reasoning.  1255 today
@@ -71,7 +72,10 @@ namespace LeanFX2.Tools
 -- `cd`'s redex helpers (each new `RawTerm.uaToEquiv _ => rebuild`
 -- branch) plus the `subst_par_pointwise` arm transitively pull in
 -- the dependent-pair existentials of inversion lemmas, contributing
--- one new dependent.
-#assert_dependent_pair_dependent_budget LeanFX2 1387
+-- one new dependent.  D3.6-P2 ships the binary `equivApply` ctor +
+-- `equivApplyCong`, contributing one more dependent through the
+-- mirror cascade arms (each redex helper now has a parallel
+-- `RawTerm.equivApply _ _ => rebuild` branch).
+#assert_dependent_pair_dependent_budget LeanFX2 1388
 
 end LeanFX2.Tools

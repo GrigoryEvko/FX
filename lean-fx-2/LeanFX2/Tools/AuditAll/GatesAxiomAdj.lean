@@ -46,7 +46,9 @@ namespace LeanFX2.Tools
 -- LoC, DecEq-Ty saturated for expected-type dispatch on every arm).
 -- D3.6-P1 added one cong rule + ctor that contribute one new
 -- decide-dependent path through the `cd` cascade arms.
-#assert_decide_dependent_budget LeanFX2 832
+-- D3.6-P2 ships `RawTerm.equivApply` (binary) + `equivApplyCong`,
+-- adding one more decide-dependent path through the same cascade.
+#assert_decide_dependent_budget LeanFX2 833
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

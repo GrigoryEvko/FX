@@ -58,8 +58,10 @@ namespace LeanFX2.Tools
 -- pulls in absurd/False.elim through the inversion lemmas of `cd`'s
 -- cascade arms (every redex helper now has a matching uaToEquiv arm
 -- that rebuilds the original term, contributing one absurd-using
--- branch in the rebuild's elimination obligations).
-#assert_absurd_false_dependent_budget LeanFX2 971
+-- branch in the rebuild's elimination obligations).  D3.6-P2 adds the
+-- binary `equivApply` ctor + `equivApplyCong`, contributing one more
+-- absurd-using branch through the parallel cascade arms.
+#assert_absurd_false_dependent_budget LeanFX2 972
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the
