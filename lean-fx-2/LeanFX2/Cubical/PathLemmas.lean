@@ -5,12 +5,19 @@ import LeanFX2.Term.Bridge
 
 /-! # Cubical/PathLemmas
 
-Day 0 scaffold for path algebra lemmas.
+Path algebra lemmas — guardrails between the typed `constantPath` /
+`constantTypePath` helpers and the raw constant-path recognizer
+`RawTerm.constantPathBody?`, plus typed/raw β fact pairs at
+single-step (`Step.par.betaPathApp`).
 
-## Deliverable
+## Companion modules
 
-Future work will collect path refl, inverse, composition, application, and
-transport lemmas here when those definitions move into the cubical layer.
+* Path refl / inverse / composition: `HoTT/Path/{Composition,Inverse,
+  Groupoid}.lean`.
+* Transport (constant type line β): `Cubical/Transport.lean` — full
+  three-layer β principle (`_betaParStep`, `_betaParStar`,
+  `_betaConvCumul`) shipped via Phase G (`Step.par.transpReflBeta`).
+* Glue introduction / elimination β: `Cubical/Glue.lean`.
 -/
 
 namespace LeanFX2

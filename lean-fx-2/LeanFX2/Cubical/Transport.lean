@@ -62,8 +62,10 @@ theorem constantTypeTransport_toRaw
   rfl
 
 /-- The type line used by `constantTypeTransport` is accepted by the
-raw constant-path recognizer.  This is the exact guard future transport
-β should check before reducing. -/
+raw constant-path recognizer.  This is the guard the cd-cascade
+`cdTranspCase` consults before firing β; the recognizer answer drives
+`unweaken?` which selects between `transpReflBetaDeep` and `transpCong`
+in `RawCdDominates`. -/
 theorem constantTypeTransport_typeLineRecognized
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -128,8 +130,9 @@ theorem constantTypeTransport_sourceCong_toRawBridge
         modeIsUnivalent universeLevel universeLevelLt sourceType typeCode sourceStep)
 
 /-- Conversion-level congruence for the named constant-transport redex.
-This keeps future transport work using the named redex shape through
-`ConvCumul`, not just through `Step.par`. -/
+Mirrors `_sourceCong` at the `ConvCumul` layer.  Companion β rules
+(`_betaConvCumul`, `_betaParStep`, `_betaParStar`) close the named-redex
+β principle across all three reduction layers. -/
 theorem constantTypeTransport_sourceConvCumul
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
