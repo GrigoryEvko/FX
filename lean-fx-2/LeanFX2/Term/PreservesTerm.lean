@@ -2385,4 +2385,42 @@ theorem RawStep.par.lift_full_idStrictRefl
   cases idStrictEq.1
   exact Step.par.idStrictReflCong modeIsStrict witnessStep
 
+/-- **Term.oeqFunext full lift.**  Single typed Term child
+(pointwiseProof) at `oeqFunextPointwiseType`. -/
+theorem RawStep.par.lift_full_oeqFunext
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+    {pointwiseRaw : RawTerm scope}
+    (pointwiseProof :
+      Term context
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw)
+    (pointwiseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pointwiseRaw targetRawIH →
+      ∃ pointwiseTarget :
+          Term context
+            (oeqFunextPointwiseType domainType codomainType
+              leftFunctionRaw rightFunctionRaw)
+            targetRawIH,
+        Step.par pointwiseProof pointwiseTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.oeqFunext pointwiseRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseProof)
+        targetTerm := by
+  obtain ⟨pointwiseTargetRaw, eq, pointwiseStep⟩ :=
+    RawStep.par.oeqFunext_inv rawStep
+  obtain ⟨pointwiseTarget, pointwiseStepTyped⟩ := pointwiseLift pointwiseStep
+  cases eq
+  refine
+    ⟨Ty.oeq (Ty.arrow domainType codomainType) leftFunctionRaw rightFunctionRaw,
+     Term.oeqFunext domainType codomainType leftFunctionRaw rightFunctionRaw
+                    pointwiseTarget, ?_⟩
+  exact Step.par.oeqFunextCong domainType codomainType
+                               leftFunctionRaw rightFunctionRaw
+                               pointwiseStepTyped
+
 end LeanFX2
