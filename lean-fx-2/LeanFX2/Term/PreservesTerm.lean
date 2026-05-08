@@ -1751,4 +1751,78 @@ theorem RawStep.par.lift_codataDest
     exact ⟨Term.app transition initialState,
            Step.par.betaCodataDestUnfoldDeep codataStepTyped⟩
 
+/-! ## β cast wall demolition — full lifts via two-Ty existential
+
+The fixed-target-Ty existential used by `lift_app_cong`,
+`lift_appPi_cong`, `lift_pathApp_cong`, `lift_transp_cong` cannot
+absorb the β arms of `app`, `appPi`, `pathApp`, `transp` because the
+target Term's Ty index is `codomainType.weaken.subst0 substituent
+argRaw` — propositionally equal to `codomainType` via
+`Ty.weaken_subst_singleton`, but the `▸` cast propagates through the
+existential's other Ty indices.
+
+The fix: generalize the headline existential over the target Ty.
+`Step.par`'s native two-Ty signature `{sourceType targetType : Ty
+level scope}` accommodates this directly.
+
+```
+∃ (targetTy : Ty level scope) (targetTerm : Term context targetTy targetRaw),
+  Step.par sourceTerm targetTerm
+```
+
+Each `lift_full_<ctor>` lemma uses this two-Ty existential and
+absorbs both the cong arm and any β/ι arms uniformly.  When
+assembled into the headline `Term.preserves`, the IH has the same
+two-Ty shape, and child lifts are typed at the two-Ty existential
+form. -/
+
+/-- **β cast wall demolition — Term.app full lift.**  Two-Ty
+existential absorbs both the cong arm (target at `codomainType`) and
+the β-deep arm (target at `codomainType.weaken.subst0 ...` via
+`Term.subst0`).  The function IH stays at fixed `Ty.arrow domainType
+codomainType` — the function's type is invariant under reduction at
+arrow type.  The argument IH stays at fixed `domainType`. -/
+theorem RawStep.par.lift_full_app
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm : Term context (Ty.arrow domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par functionRaw targetRawIH →
+      ∃ functionTarget :
+          Term context (Ty.arrow domainType codomainType) targetRawIH,
+        Step.par functionTerm functionTarget)
+    (argumentLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentRaw targetRawIH →
+      ∃ argumentTarget : Term context domainType targetRawIH,
+        Step.par argumentTerm argumentTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.app functionRaw argumentRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.app functionTerm argumentTerm) targetTerm := by
+  rcases RawStep.par.app_inv rawStep with
+    ⟨functionTargetRaw, argumentTargetRaw, eq, functionStep, argumentStep⟩
+    | ⟨bodyTargetRaw, argumentTargetRaw, eq, functionToLam, argumentStep⟩
+  · -- cong arm
+    obtain ⟨functionTarget, functionStepTyped⟩ := functionLift functionStep
+    obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+    cases eq
+    exact ⟨codomainType, Term.app functionTarget argumentTarget,
+           Step.par.app functionStepTyped argumentStepTyped⟩
+  · -- β-deep arm: function raw-reduces to lam bodyTargetRaw
+    obtain ⟨functionCanonical, functionStepTyped⟩ := functionLift functionToLam
+    obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+    -- functionCanonical : Term ctx (Ty.arrow domainType codomainType) (RawTerm.lam bodyTargetRaw)
+    -- Use lamDestruct to extract the body
+    obtain ⟨bodyTerm, bodyHeq⟩ := Term.lamDestruct functionCanonical
+    have bodyEq : functionCanonical = Term.lam (codomainType := codomainType) bodyTerm :=
+      eq_of_heq bodyHeq
+    rw [bodyEq] at functionStepTyped
+    cases eq
+    refine ⟨codomainType.weaken.subst0 domainType argumentTargetRaw,
+            Term.subst0 bodyTerm argumentTarget, ?_⟩
+    exact Step.par.betaAppDeep
+            (functionRawSource := bodyTargetRaw)
+            functionStepTyped argumentStepTyped
+
 end LeanFX2
