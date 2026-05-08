@@ -1825,4 +1825,92 @@ theorem RawStep.par.lift_full_app
             (functionRawSource := bodyTargetRaw)
             functionStepTyped argumentStepTyped
 
+/-- Destructor for `Term.pathLam`.  `RawTerm.pathLam bodyRaw` is
+produced uniquely by `Term.pathLam`. -/
+def Term.pathLamDestruct
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (someTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+                   (RawTerm.pathLam bodyRaw)) :
+    Σ' (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw),
+       HEq someTerm
+            (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                          body) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.pathLam bodyRaw)),
+        someType = Ty.path carrierType leftEndpoint rightEndpoint →
+        Σ' (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw),
+           HEq genericTerm
+                (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                              body) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsPath
+  cases genericTerm
+  rename_i innerMode innerCarrier innerLeft innerRight body
+  have pathEq := Ty.path.inj someTypeIsPath
+  cases pathEq.1
+  cases pathEq.2.1
+  cases pathEq.2.2
+  exact ⟨body, HEq.rfl⟩
+
+/-- **β cast wall demolition — Term.pathApp full lift.**  Two-Ty
+existential absorbs both the cong arm (target at `carrierType`) and
+the β-deep arm (target via `Term.subst0` at `carrierType.weaken.subst0
+Ty.interval intervalTargetRaw`).  Per pathApp_inv, both betaPathApp
+and betaPathReflApp arms route through the "path develops to pathLam"
+disjunct, so we need only handle cong + pathLam-shape β. -/
+theorem RawStep.par.lift_full_pathApp
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    (pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
+    (intervalTerm : Term context Ty.interval intervalRaw)
+    (pathLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pathRaw targetRawIH →
+      ∃ pathTarget :
+          Term context (Ty.path carrierType leftEndpoint rightEndpoint) targetRawIH,
+        Step.par pathTerm pathTarget)
+    (intervalLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par intervalRaw targetRawIH →
+      ∃ intervalTarget : Term context Ty.interval targetRawIH,
+        Step.par intervalTerm intervalTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.pathApp pathRaw intervalRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.pathApp modeIsUnivalent pathTerm intervalTerm) targetTerm := by
+  rcases RawStep.par.pathApp_inv rawStep with
+    ⟨pathTargetRaw, intervalTargetRaw, eq, pathStep, intervalStep⟩
+    | ⟨bodyTargetRaw, intervalTargetRaw, eq, pathToLam, intervalStep⟩
+  · -- cong arm
+    obtain ⟨pathTarget, pathStepTyped⟩ := pathLift pathStep
+    obtain ⟨intervalTarget, intervalStepTyped⟩ := intervalLift intervalStep
+    cases eq
+    refine ⟨carrierType, Term.pathApp modeIsUnivalent pathTarget intervalTarget, ?_⟩
+    exact Step.par.pathApp modeIsUnivalent pathStepTyped intervalStepTyped
+  · -- β-deep arm: path raw-reduces to pathLam bodyTargetRaw
+    obtain ⟨pathCanonical, pathStepTyped⟩ := pathLift pathToLam
+    obtain ⟨intervalTarget, intervalStepTyped⟩ := intervalLift intervalStep
+    -- pathCanonical : Term ctx (Ty.path ...) (RawTerm.pathLam bodyTargetRaw)
+    obtain ⟨bodyTerm, bodyHeq⟩ :=
+      Term.pathLamDestruct modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                           pathCanonical
+    have bodyEq :
+        pathCanonical =
+          Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                       bodyTerm :=
+      eq_of_heq bodyHeq
+    rw [bodyEq] at pathStepTyped
+    cases eq
+    refine ⟨carrierType.weaken.subst0 Ty.interval intervalTargetRaw,
+            Term.subst0 bodyTerm intervalTarget, ?_⟩
+    exact Step.par.betaPathAppDeep modeIsUnivalent
+            (pathSource := pathTerm) (bodyTarget := bodyTerm)
+            pathStepTyped intervalStepTyped
+
 end LeanFX2
