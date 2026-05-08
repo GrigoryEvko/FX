@@ -7,3 +7,4 @@ Each `#print axioms` below MUST report
 shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 
 #print axioms LeanFX2.Term.headCtor_lam_raw
+#print axioms LeanFX2.Term.headCtor_pair_raw
