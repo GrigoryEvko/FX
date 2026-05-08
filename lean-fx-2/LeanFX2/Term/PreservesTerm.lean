@@ -2423,6 +2423,117 @@ theorem RawStep.par.lift_full_oeqFunext
                                leftFunctionRaw rightFunctionRaw
                                pointwiseStepTyped
 
+/-! ## Tier 0/1/2/3 lifts re-expressed at two-Ty existential
+
+The existing fixed-Ty lifts (lift_unit, lift_lam, ..., lift_codataDest)
+all produce targets at a SPECIFIC type.  When assembled into the
+headline `Term.preserves` via Term induction, we want a uniform IH
+shape: `∃ targetTy targetTerm, Step.par sourceTerm targetTerm`.
+
+These wrapper theorems thread the existing fixed-Ty lift's result
+through the two-Ty existential.  Each wrapper is a 1-line
+`⟨_, target, step⟩` rebracketing.
+
+When all 75 ctors have either a `_full` or `_uniform` lift, the
+headline can dispatch via Term induction.  The ctors blocked by the
+walls (refl/funextRefl/etc; pair; appPi; transp full) cannot be
+rebracketed since their underlying lifts don't exist. -/
+
+/-- **Tier 0 — Term.unit at two-Ty.** -/
+theorem RawStep.par.lift_full_unit
+    (sourceTerm : Term context Ty.unit (RawTerm.unit : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.unit : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_unit sourceTerm rawStep
+  exact ⟨Ty.unit, target, step⟩
+
+/-- **Tier 0 — Term.boolTrue at two-Ty.** -/
+theorem RawStep.par.lift_full_boolTrue
+    (sourceTerm : Term context Ty.bool (RawTerm.boolTrue : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.boolTrue : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_boolTrue sourceTerm rawStep
+  exact ⟨Ty.bool, target, step⟩
+
+/-- **Tier 0 — Term.boolFalse at two-Ty.** -/
+theorem RawStep.par.lift_full_boolFalse
+    (sourceTerm : Term context Ty.bool (RawTerm.boolFalse : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.boolFalse : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_boolFalse sourceTerm rawStep
+  exact ⟨Ty.bool, target, step⟩
+
+/-- **Tier 0 — Term.natZero at two-Ty.** -/
+theorem RawStep.par.lift_full_natZero
+    (sourceTerm : Term context Ty.nat (RawTerm.natZero : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.natZero : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_natZero sourceTerm rawStep
+  exact ⟨Ty.nat, target, step⟩
+
+/-- **Tier 0 — Term.var at two-Ty.** -/
+theorem RawStep.par.lift_full_var
+    {sourceType : Ty level scope} {position : Fin scope}
+    (sourceTerm : Term context sourceType (RawTerm.var position))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.var position) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_var sourceTerm rawStep
+  exact ⟨sourceType, target, step⟩
+
+/-- **Tier 0 — Term.listNil at two-Ty.** -/
+theorem RawStep.par.lift_full_listNil
+    {elementType : Ty level scope}
+    (sourceTerm :
+      Term context (Ty.listType elementType) (RawTerm.listNil : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.listNil : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_listNil sourceTerm rawStep
+  exact ⟨Ty.listType elementType, target, step⟩
+
+/-- **Tier 0 — Term.optionNone at two-Ty.** -/
+theorem RawStep.par.lift_full_optionNone
+    {elementType : Ty level scope}
+    (sourceTerm :
+      Term context (Ty.optionType elementType) (RawTerm.optionNone : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.optionNone : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_optionNone sourceTerm rawStep
+  exact ⟨Ty.optionType elementType, target, step⟩
+
+/-- **Tier 0 — Term.interval0 at two-Ty.** -/
+theorem RawStep.par.lift_full_interval0
+    (sourceTerm : Term context Ty.interval (RawTerm.interval0 : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.interval0 : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_interval0 sourceTerm rawStep
+  exact ⟨Ty.interval, target, step⟩
+
+/-- **Tier 0 — Term.interval1 at two-Ty.** -/
+theorem RawStep.par.lift_full_interval1
+    (sourceTerm : Term context Ty.interval (RawTerm.interval1 : RawTerm scope))
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.interval1 : RawTerm scope) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par sourceTerm targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_interval1 sourceTerm rawStep
+  exact ⟨Ty.interval, target, step⟩
+
 /-! ## Coverage status (post-juggernaut Phase 4)
 
 **Full lifts shipped (two-Ty existential)**: 6 ctors:
