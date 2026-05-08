@@ -153,5 +153,30 @@ theorem check_sound_proj {level scope : Nat}
       (Expr.proj structName fieldIndex targetExpr) typeExpr :=
   nomatch checkingSucceeded
 
+/-- Per-arm soundness for Lean free variables.
+
+The current LeanKernel-FX1 slice rejects `Expr.fvar` in the executable
+checker (returns `Option.none`).  The current `Context` only stores
+bound-variable types; fvar typing requires a separate fvar-context
+plus free-variable reindexing — infrastructure deferred to a later
+slice.  Until that lands, the relational `HasType` has no `fvar`
+arm; absence of an arm is sound.
+
+The lemma is therefore vacuously true: from the impossible hypothesis
+`Eq Option.none (Option.some typeExpr)` we discharge via `nomatch`.
+Once the fvar-context slice ships, this lemma's body is replaced by a
+real `HasType.fvar` witness extraction; signature stays the same. -/
+theorem check_sound_fvar {level scope : Nat}
+    {environment : Environment level}
+    {context : Context level scope}
+    {fvarId : FVarId}
+    {typeExpr : Expr level scope}
+    (checkingSucceeded :
+      Eq
+        (check environment context (Expr.fvar fvarId))
+        (Option.some typeExpr)) :
+    HasType environment context (Expr.fvar fvarId) typeExpr :=
+  nomatch checkingSucceeded
+
 end FX1.LeanKernel
 end LeanFX2
