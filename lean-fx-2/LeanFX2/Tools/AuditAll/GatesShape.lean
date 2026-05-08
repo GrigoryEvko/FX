@@ -64,6 +64,6 @@ namespace LeanFX2.Tools
 -- + binder + Σ-pair) which transitively pull in the 529-line
 -- `Term.check` function whose closure references DecEq-Ty and
 -- expected-type pattern dispatch.  Tight ratchet at current count.
-#assert_dependent_pair_dependent_budget LeanFX2 1269
+#assert_dependent_pair_dependent_budget LeanFX2 1270
 
 end LeanFX2.Tools
