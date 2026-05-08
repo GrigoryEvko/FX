@@ -44,7 +44,7 @@ namespace LeanFX2.Tools
 -- `listCons`'s elementEq, etc.), plus the FIFTEEN M10 check-mode
 -- counterpart theorems whose closure runs through `Term.check` (529
 -- LoC, DecEq-Ty saturated for expected-type dispatch on every arm).
-#assert_decide_dependent_budget LeanFX2 721
+#assert_decide_dependent_budget LeanFX2 722
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions
