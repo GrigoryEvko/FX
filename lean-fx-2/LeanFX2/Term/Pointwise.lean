@@ -309,6 +309,14 @@ theorem Term.subst_pointwise
   | _, _, .uaToEquiv _ _ _ _ _ _ proof => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq proof]
+  -- Phase D3.6-P4: univalence-β application.  Binary-subterm pattern
+  -- mirroring `equivApp`: the subst arm in Term/Subst.lean recurses
+  -- on both `equivTerm` and `argumentTerm` via Term.subst; pointwise
+  -- equality propagates through both subterms via the structural IH.
+  | _, _, .equivApply equivTerm argumentTerm => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq equivTerm,
+          Term.subst_pointwise pointwiseEq argumentTerm]
   -- HoTT heterogeneous-carrier funext-introduction at Id-of-arrow
   -- (Phase 12.A.B8.8): the subst arm in Term/Subst.lean has NO
   -- subterm to recurse on (funextIntroHet is a VALUE, like

@@ -494,6 +494,13 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                      (leftTyRaw.subst sigma.forRaw)
                      (rightTyRaw.subst sigma.forRaw)
                      (Term.subst termSubst proof)
+  -- Phase D3.6-P4: univalence-β application.  Two typed subterms
+  -- `equivTerm, argumentTerm` recurse via `Term.subst`.  No type-
+  -- equality cast needed since `Ty.equiv` and `carrierB` are non-
+  -- binder carriers (same precedent as `equivApp`).
+  | _, _, .equivApply equivTerm argumentTerm =>
+      Term.equivApply (Term.subst termSubst equivTerm)
+                      (Term.subst termSubst argumentTerm)
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  All ten
   -- ctors substitute their schematic raw payloads via `sigma.forRaw`
   -- at the outer scope; binder-shape codes (piTyCode, sigmaTyCode)

@@ -516,6 +516,14 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
                      (leftTy.rename rho) (rightTy.rename rho)
                      (leftTyRaw.rename rho) (rightTyRaw.rename rho)
                      (Term.rename termRenaming proof)
+  -- Phase D3.6-P4: univalence-β application.  Two typed subterms
+  -- `equivTerm, argumentTerm` recurse via `Term.rename`.  The result
+  -- type `carrierB` renames structurally without cast since it is a
+  -- non-binder Ty (same precedent as `equivApp`).  No raw schematic
+  -- payloads — both raws come from the recursive subterm indices.
+  | _, _, .equivApply equivTerm argumentTerm =>
+      Term.equivApply (Term.rename termRenaming equivTerm)
+                      (Term.rename termRenaming argumentTerm)
   -- CUMUL-2.4 typed type-code constructors.  All ten ctors are
   -- VALUE-shaped (schematic raw payloads, no recursive Term
   -- children).  Atom-shape codes rename their raw payloads via

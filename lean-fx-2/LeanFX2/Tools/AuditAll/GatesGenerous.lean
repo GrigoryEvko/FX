@@ -66,8 +66,12 @@ namespace LeanFX2.Tools
 -- `ConvCumul.uaToEquivCong` + the Allais helper, contributing five
 -- more absurd-using branches across the typed-layer enumeration arms
 -- (~33 nomatch sites in the Algo inversion cohort plus the typed
--- cascade and Cumul cong fan-out).
-#assert_absurd_false_dependent_budget LeanFX2 977
+-- cascade and Cumul cong fan-out).  D3.6-P4 adds the typed
+-- `Term.equivApply` cascade — typed binary ctor +
+-- `Step.par.equivApplyCong` + `Step.equivApplyEquiv` +
+-- `Step.equivApplyArgument` + `ConvCumul.equivApplyCong` + Allais
+-- helper, contributing four more absurd-using branches.
+#assert_absurd_false_dependent_budget LeanFX2 981
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the

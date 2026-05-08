@@ -1049,6 +1049,24 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
                                 leftTy rightTy
                                 leftTyRaw rightTyRaw
                                 proofSecond)
+  /-- Homogeneous univalence-β application: ConvCumul-related equivalence
+  and argument subterms lift to ConvCumul-related applications.
+  Binary-subterm cong rule mirroring `equivAppCong`.  Phase D3.6-P4
+  (typed mirror of `RawStep.par.equivApplyCong`). -/
+  | equivApplyCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivFirstRaw equivSecondRaw argumentFirstRaw argumentSecondRaw :
+        RawTerm scope}
+      {equivFirst : Term context (Ty.equiv carrierA carrierB) equivFirstRaw}
+      {equivSecond : Term context (Ty.equiv carrierA carrierB) equivSecondRaw}
+      {argumentFirst : Term context carrierA argumentFirstRaw}
+      {argumentSecond : Term context carrierA argumentSecondRaw}
+      (equivRel : ConvCumul equivFirst equivSecond)
+      (argumentRel : ConvCumul argumentFirst argumentSecond) :
+      ConvCumul (Term.equivApply equivFirst argumentFirst)
+                (Term.equivApply equivSecond argumentSecond)
   /-- Homogeneous cumulUp: ConvCumul-related lower terms lift to ConvCumul-
   related cumulUp.  This is the recursive cumul-up case: when
   lower-side terms are themselves cumul-related, their cumulUp wrappings

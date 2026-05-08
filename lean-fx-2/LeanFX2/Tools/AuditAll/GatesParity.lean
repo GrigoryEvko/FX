@@ -84,7 +84,9 @@ namespace LeanFX2.Tools
 -- D3.6-P3: `Term.uaToEquiv` ships without an `FX1Bridge.encodeTermSound_uaToEquiv`
 -- bridge yet (FX1 bridge layer is independent of Day 3 typed cascade);
 -- bumps unbridged-ctor budget from 62 to 63.
-#assert_bridge_exact_coverage_budget LeanFX2.Term 63
+-- D3.6-P4: `Term.equivApply` ships without an
+-- `FX1Bridge.encodeTermSound_equivApply` bridge yet; bumps from 63 to 64.
+#assert_bridge_exact_coverage_budget LeanFX2.Term 64
 
 -- Step.par cong-rule coverage matrix.  Every Term constructor with at
 -- least one sub-Term position should have a same-suffix
@@ -104,6 +106,8 @@ namespace LeanFX2.Tools
 -- D3.6-P3: `Term.uaToEquiv` lacks a `Conv.uaToEquivCong` direct mirror
 -- (Conv lifting is via `Conv.fromStep` chains; budget accommodates
 -- the new ctor at the per-ctor census).
-#assert_conv_cong_coverage_budget LeanFX2.Term 75
+-- D3.6-P4: `Term.equivApply` lacks a `Conv.equivApplyCong` direct
+-- mirror (Conv lifting via `Conv.fromStep`); bumps to 76.
+#assert_conv_cong_coverage_budget LeanFX2.Term 76
 
 end LeanFX2.Tools

@@ -644,6 +644,32 @@ theorem ConvCumul.subst_compatible_uaToEquiv_allais
     (leftTyRaw.subst sigma.forRaw) (rightTyRaw.subst sigma.forRaw)
     proofCompat
 
+/-- Allais arm for `equivApply` (Phase D3.6-P4): binary-subterm cong
+via `equivApplyCong`.  Mirrors the structure of
+`subst_compatible_equivApp_allais` — both equivTerm and argumentTerm
+recurse via the structural `compat` IHs, and the ctor-level cong
+rule reassembles. -/
+theorem ConvCumul.subst_compatible_equivApply_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty sourceLevel sourceScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    (equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term sourceCtx carrierA argumentRaw)
+    (equivCompat :
+      ConvCumul (equivTerm.substHet termSubstA)
+                (equivTerm.substHet termSubstB))
+    (argumentCompat :
+      ConvCumul (argumentTerm.substHet termSubstA)
+                (argumentTerm.substHet termSubstB)) :
+    ConvCumul ((Term.equivApply equivTerm argumentTerm).substHet termSubstA)
+              ((Term.equivApply equivTerm argumentTerm).substHet termSubstB) :=
+  ConvCumul.equivApplyCong equivCompat argumentCompat
+
 /-- Allais arm for `natSucc`: single-subterm cong via `natSuccCong`. -/
 theorem ConvCumul.subst_compatible_natSucc_allais
     {mode : Mode}

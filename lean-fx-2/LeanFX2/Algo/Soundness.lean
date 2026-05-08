@@ -452,6 +452,9 @@ theorem Term.headStep?_sound
   -- Phase D3.6-P3: univalence-β extractor.  Returns `none` from
   -- headStep?, so `firedEq : none = some _` is contradictory.
   | uaToEquiv _ _ _ _ _ _ _ => nomatch firedEq
+  -- Phase D3.6-P4: univalence-β application.  Returns `none` from
+  -- headStep?, so `firedEq : none = some _` is contradictory.
+  | equivApply _ _ => nomatch firedEq
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped, all return
   -- `none` from headStep?, so `firedEq : none = some _` is contradictory).
   | arrowCode _ _ _ _ => nomatch firedEq
@@ -522,6 +525,7 @@ theorem Term.headStep?_sound
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet | .uaToEquiv
+    | .equivApply
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
     | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
       rw [show (Term.fst pairTerm).headStep?
@@ -667,6 +671,7 @@ theorem Term.headStep?_sound
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet | .uaToEquiv
+    | .equivApply
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
     | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
       rw [show (Term.natElim scrutinee zeroBranch succBranch).headStep?
@@ -732,6 +737,7 @@ theorem Term.headStep?_sound
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet | .uaToEquiv
+    | .equivApply
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
     | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
       rw [show (Term.natRec scrutinee zeroBranch succBranch).headStep?
@@ -798,6 +804,7 @@ theorem Term.headStep?_sound
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet | .uaToEquiv
+    | .equivApply
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
     | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
       rw [show (Term.listElim scrutinee nilBranch consBranch).headStep?
@@ -861,6 +868,7 @@ theorem Term.headStep?_sound
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet | .uaToEquiv
+    | .equivApply
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
     | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
       rw [show (Term.optionMatch scrutinee noneBranch someBranch).headStep?
@@ -941,6 +949,7 @@ theorem Term.headStep?_sound
     | .universeCode | .cumulUp
     | .equivReflId | .funextRefl | .equivReflIdAtId | .funextReflAtId
     | .equivIntroHet | .equivApp | .uaIntroHet | .funextIntroHet | .uaToEquiv
+    | .equivApply
     | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
     | .listCode | .optionCode | .eitherCode | .idCode | .equivCode =>
       rw [show (Term.eitherMatch scrutinee leftBranch rightBranch).headStep?

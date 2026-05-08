@@ -160,6 +160,7 @@ theorem Term.headCtor_lam_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -250,6 +251,7 @@ theorem Term.headCtor_pair_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -337,6 +339,7 @@ theorem Term.headCtor_refl_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -426,6 +429,7 @@ theorem Term.headCtor_lamPi_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -515,6 +519,7 @@ theorem Term.headCtor_recordIntro_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -601,6 +606,7 @@ theorem Term.headCtor_modIntro_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -689,6 +695,7 @@ theorem Term.headCtor_pathLam_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -777,6 +784,7 @@ theorem Term.headCtor_glueIntro_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -865,6 +873,7 @@ theorem Term.headCtor_refineIntro_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -957,6 +966,7 @@ theorem Term.headCtor_codataUnfold_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1049,6 +1059,7 @@ theorem Term.headCtor_universeCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1141,6 +1152,7 @@ theorem Term.headCtor_arrowCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => exact ⟨_, _, rfl⟩
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1231,6 +1243,7 @@ theorem Term.headCtor_piTyCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => exact ⟨_, _, rfl⟩
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1322,6 +1335,7 @@ theorem Term.headCtor_sigmaTyCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => exact ⟨_, _, rfl⟩
@@ -1414,6 +1428,7 @@ theorem Term.headCtor_productCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1505,6 +1520,7 @@ theorem Term.headCtor_sumCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1597,6 +1613,7 @@ theorem Term.headCtor_listCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1687,6 +1704,7 @@ theorem Term.headCtor_optionCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1779,6 +1797,7 @@ theorem Term.headCtor_eitherCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1871,6 +1890,7 @@ theorem Term.headCtor_idCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1964,6 +1984,7 @@ theorem Term.headCtor_equivCode_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2054,6 +2075,7 @@ theorem Term.headCtor_interval0_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2144,6 +2166,7 @@ theorem Term.headCtor_interval1_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2236,6 +2259,7 @@ theorem Term.headCtor_intervalOpp_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2329,6 +2353,7 @@ theorem Term.headCtor_intervalMeet_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2423,6 +2448,7 @@ theorem Term.headCtor_intervalJoin_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2519,6 +2545,7 @@ theorem Term.headCtor_equivReflId_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2614,6 +2641,7 @@ theorem Term.headCtor_funextRefl_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2714,6 +2742,7 @@ theorem Term.headCtor_equivReflIdAtId_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2814,6 +2843,7 @@ theorem Term.headCtor_funextReflAtId_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -2916,6 +2946,7 @@ theorem Term.headCtor_equivIntroHet_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -3021,6 +3052,7 @@ theorem Term.headCtor_uaIntroHet_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => exact ⟨_, _, rfl⟩
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -3123,6 +3155,7 @@ theorem Term.headCtor_funextIntroHet_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => exact ⟨_, rfl⟩
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -3221,6 +3254,7 @@ theorem Term.headCtor_oeqRefl_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -3323,6 +3357,7 @@ theorem Term.headCtor_idStrictRefl_raw {context : Ctx mode level scope}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -4304,6 +4339,7 @@ theorem Term.value_or_cong_only_progress
   | funextIntroHet _ _ _ _ => exact Or.inl rfl
   | uaToEquiv _ _ _ _ _ _ _ => exact Or.inl rfl
   | equivApp _ _ => exact Or.inl rfl
+  | equivApply _ _ => exact Or.inl rfl
   | arrowCode _ _ _ _ => exact Or.inl rfl
   | piTyCode _ _ _ _ => exact Or.inl rfl
   | sigmaTyCode _ _ _ _ => exact Or.inl rfl
@@ -4549,6 +4585,8 @@ theorem Term.app_progress_or_step
   | funextIntroHet =>
       apply Or.inl; simp only [Term.isWHNF, h]; rfl
   | uaToEquiv =>
+      apply Or.inl; simp only [Term.isWHNF, h]; rfl
+  | equivApply =>
       apply Or.inl; simp only [Term.isWHNF, h]; rfl
   | arrowCode =>
       apply Or.inl; simp only [Term.isWHNF, h]; rfl

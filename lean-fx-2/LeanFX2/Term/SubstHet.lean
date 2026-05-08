@@ -518,6 +518,14 @@ def Term.substHet {mode : Mode}
                      (leftTyRaw.subst sigma.forRaw)
                      (rightTyRaw.subst sigma.forRaw)
                      (Term.substHet termSubstHet proof)
+  -- Phase D3.6-P4: univalence-β application — heterogeneous-Subst
+  -- variant.  Two typed subterms `equivTerm, argumentTerm` recurse
+  -- via `Term.substHet`.  No `weaken`-commute cast needed since
+  -- `Ty.equiv` and `carrierB` are non-binder carriers (same
+  -- precedent as `equivApp`).
+  | _, _, .equivApply equivTerm argumentTerm =>
+      Term.equivApply (Term.substHet termSubstHet equivTerm)
+                      (Term.substHet termSubstHet argumentTerm)
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped) —
   -- heterogeneous-Subst variant.  Each ctor's schematic raw payloads
   -- substitute via `sigma.forRaw` at the outer scope; binder-shape

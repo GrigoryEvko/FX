@@ -119,6 +119,8 @@ inductive Term.HeadCtor : Type
   | funextIntroHet
   -- Phase D3.6-P3: univalence-β extractor head.
   | uaToEquiv
+  -- Phase D3.6-P4: univalence-β application head.
+  | equivApply
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).
   | arrowCode
   | piTyCode
@@ -205,6 +207,8 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .funextIntroHet _ _ _ _ => .funextIntroHet
   -- Phase D3.6-P3: univalence-β extractor.
   | .uaToEquiv _ _ _ _ _ _ _ => .uaToEquiv
+  -- Phase D3.6-P4: univalence-β application.
+  | .equivApply _ _ => .equivApply
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).
   | .arrowCode _ _ _ _ => .arrowCode
   | .piTyCode _ _ _ _ => .piTyCode
@@ -295,6 +299,12 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   -- yet (the actual univalence-β `transp at (uaToEquiv e) ⟶
   -- equivApply e` lands in S1+ once `Term.equivApply` ships in P4).
   | .uaToEquiv _ _ _ _ _ _ _ => true
+  -- Phase D3.6-P4: univalence-β application.  Cong parity only at
+  -- the current Day 3 layer; no β-rule fires from
+  -- `RawTerm.equivApply` yet (the actual univalence-β β-rule lands
+  -- in S1+ once the underlying β-rule typing infrastructure is in
+  -- place).
+  | .equivApply _ _ => true
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped, all WHNF —
   -- not β/ι redex heads).  No new Step rules fire from these ctors.
   | .arrowCode _ _ _ _ => true
@@ -451,6 +461,7 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -535,6 +546,7 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -619,6 +631,7 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -703,6 +716,7 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -787,6 +801,7 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -882,6 +897,7 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -966,6 +982,7 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1050,6 +1067,7 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1134,6 +1152,7 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1218,6 +1237,7 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq
@@ -1302,6 +1322,7 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | uaIntroHet _ _ _ _ _ => nomatch headEq
   | funextIntroHet _ _ _ _ => nomatch headEq
   | uaToEquiv _ _ _ _ _ _ _ => nomatch headEq
+  | equivApply _ _ => nomatch headEq
   | arrowCode _ _ _ _ => nomatch headEq
   | piTyCode _ _ _ _ => nomatch headEq
   | sigmaTyCode _ _ _ _ => nomatch headEq

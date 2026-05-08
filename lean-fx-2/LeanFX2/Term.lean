@@ -1075,5 +1075,57 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
                  proofRaw) :
       Term context (Ty.equiv leftTy rightTy)
                    (RawTerm.uaToEquiv proofRaw)
+  /-- **Univalence-β application: apply a packaged equivalence to an
+      argument, producing the target carrier inhabitant.**  Phase
+      D3.6-P4 (typed mirror of `RawTerm.equivApply` from D3.6-P2).
+
+      Inhabitant of `carrierB` projecting to `RawTerm.equivApply
+      equivRaw argumentRaw`.  The two typed subterms are the packaged
+      equivalence `equivTerm : Term context (Ty.equiv carrierA
+      carrierB) equivRaw` and the source-side argument `argumentTerm
+      : Term context carrierA argumentRaw`.
+
+      ## Why a separate ctor from `Term.equivApp`
+
+      `Term.equivApp` and `Term.equivApply` differ at the raw level:
+      `Term.equivApp` projects to `RawTerm.equivApp equivRaw
+      argumentRaw` while `Term.equivApply` projects to
+      `RawTerm.equivApply equivRaw argumentRaw`.  The two raw ctors
+      mark different reduction targets — `RawTerm.equivApply` is the
+      univalence-β reduct of `transp at (uaToEquiv e) arg`, distinct
+      from the kernel-internal application form `RawTerm.equivApp`.
+      Both ship as binary cong-only at Day 3 (no β/ι rule from this
+      ctor as a redex source until S1+).
+
+      ## Cascade contract
+
+      The two typed subterms propagate through `Term.rename`,
+      `Term.subst`, `Term.substHet`, `Term.pointwise`, and the Allais
+      arm of `ConvCumul.subst_compatible` — same binary-subterm cong
+      shape as `Term.equivApp` (mirror of `Term.app`'s function +
+      argument cascade).  The Step.par cong rule
+      `Step.par.equivApplyCong` lifts a typed parallel step on each
+      subterm to a typed parallel step on `Term.equivApply equiv arg`.
+      The eventual univalence-β rule `transp at (uaToEquiv e) arg
+      ⟶ equivApply e arg` lands in S1+ once the underlying β-rule
+      typing infrastructure is in place.
+
+      ## Why no type-equality cast in the result type
+
+      The result type `carrierB` is a non-binder Ty (no scope shift),
+      so rename/subst/substHet arms recurse structurally without
+      invoking `Ty.weaken_*_commute` casts — same precedent as
+      `Term.equivApp` (binary, non-binder result).
+
+      Phase D3.6-P4 (typed mirror; pairs with D3.6-P2's raw
+      `RawTerm.equivApply` and `RawStep.par.equivApplyCong`). -/
+  | equivApply {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRaw argumentRaw : RawTerm scope}
+      (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+      (argumentTerm : Term context carrierA argumentRaw) :
+      Term context carrierB
+                   (RawTerm.equivApply equivRaw argumentRaw)
 
 end LeanFX2

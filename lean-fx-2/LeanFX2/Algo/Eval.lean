@@ -271,6 +271,11 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   -- yet (the eventual univalence-β rule lands once the typed
   -- `Term.equivApply` ctor ships in P4).
   | _, _, _, _, .uaToEquiv _ _ _ _ _ _ _ => none
+  -- Phase D3.6-P4: univalence-β application.  Cong parity only at
+  -- the current Day 3 layer; the actual β-rule
+  -- `transp at (uaToEquiv e) arg ⟶ equivApply e arg` lands in S1+
+  -- once the underlying β-rule typing infrastructure is in place.
+  | _, _, _, _, .equivApply _ _ => none
   -- CUMUL-2.4 typed type-code constructors (VALUE-shaped).  No β/ι
   -- redex head fires from these ctors — they are canonical type
   -- codes inhabiting `Ty.universe outerLevel`.

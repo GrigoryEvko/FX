@@ -27,7 +27,9 @@ namespace Smoke
 -- load smoke modules, so this gate belongs here.
 -- D3.6-P3: typed `Term.uaToEquiv` ctor + smoke audit; smoke gate
 -- bumps from 47 to 48 (per-ctor census heuristic for the new ctor).
-#assert_smoke_reference_coverage_budget LeanFX2.Term 48
+-- D3.6-P4: typed `Term.equivApply` ctor + smoke audit; smoke gate
+-- bumps from 48 to 49 (per-ctor census heuristic for the new ctor).
+#assert_smoke_reference_coverage_budget LeanFX2.Term 49
 
 end Smoke
 end LeanFX2

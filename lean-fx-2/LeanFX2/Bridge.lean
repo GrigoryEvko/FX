@@ -326,6 +326,14 @@ theorem Step.par.toRawBridge
   -- parallel step on the proof raws; wrap in `RawStep.par.uaToEquivCong`.
   | uaToEquivCong _ _ _ _ _ _ _ ihProof =>
       exact RawStep.par.uaToEquivCong ihProof
+  -- Phase D3.6-P4: univalence-β application cong.  Source
+  -- `Term.equivApply equivSource argumentSource` and target
+  -- `Term.equivApply equivTarget argumentTarget` project to
+  -- `RawTerm.equivApply equivRaw... argumentRaw...`.  The IHs give
+  -- raw parallel steps on the equiv and arg raws; wrap in
+  -- `RawStep.par.equivApplyCong`.
+  | equivApplyCong _ _ ihEquiv ihArgument =>
+      exact RawStep.par.equivApplyCong ihEquiv ihArgument
   -- Heterogeneous Univalence reduction (Phase 12.A.B8.6): both source
   -- `Term.uaIntroHet ... equivWitness` and target `equivWitness`
   -- project to the SAME raw form `RawTerm.equivIntro forwardRaw

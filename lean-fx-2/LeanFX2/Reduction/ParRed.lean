@@ -1788,6 +1788,28 @@ inductive Step.par :
                                leftTy rightTy
                                leftTyRaw rightTyRaw
                                proofTarget)
+  /-- Parallel-cong: univalence-β application reduces in both its
+  equivalence and argument subterms.  Phase D3.6-P4 (typed mirror of
+  `RawStep.par.equivApplyCong`): binary-subterm cong rule — both
+  source and target equivTerm/argumentTerm parallel-reduce, the
+  carriers are fixed, the ctor reassembles with the new raw indices.
+  Both source and target equivs are at the SAME `Ty.equiv carrierA
+  carrierB` type and both arguments at `carrierA` but with different
+  raws — exactly as `equivAppCong` ships binary-subterm parallel-
+  reduction. -/
+  | equivApplyCong {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRawSource equivRawTarget argumentRawSource argumentRawTarget :
+        RawTerm scope}
+      {equivSource : Term context (Ty.equiv carrierA carrierB) equivRawSource}
+      {equivTarget : Term context (Ty.equiv carrierA carrierB) equivRawTarget}
+      {argumentSource : Term context carrierA argumentRawSource}
+      {argumentTarget : Term context carrierA argumentRawTarget} :
+      Step.par equivSource equivTarget →
+      Step.par argumentSource argumentTarget →
+      Step.par (Term.equivApply equivSource argumentSource)
+               (Term.equivApply equivTarget argumentTarget)
   /-- **Heterogeneous Univalence at the parallel level.**  Mirrors
   `Step.eqTypeHet`: the heterogeneous-carrier path-from-equivalence
   proof at the universe parallel-reduces in one step to the underlying
@@ -2274,6 +2296,13 @@ theorem Step.toPar
       leftTyRaw rightTyRaw singleStep singleStepIH =>
       exact Step.par.uaToEquivCong innerLevel innerLevelLt
         leftTy rightTy leftTyRaw rightTyRaw singleStepIH
+  -- Phase D3.6-P4: equivApply equiv-side cong → equivApplyCong with
+  -- argument refl; equivApply argument-side cong → equivApplyCong
+  -- with equiv refl.  Same pattern as equivAppEquiv / equivAppArgument.
+  | equivApplyEquiv singleStep singleStepIH =>
+      exact Step.par.equivApplyCong singleStepIH (Step.par.refl _)
+  | equivApplyArgument equivTerm singleStep singleStepIH =>
+      exact Step.par.equivApplyCong (Step.par.refl equivTerm) singleStepIH
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ singleStepIH =>
       exact Step.par.cumulUpInnerCong lowerLevel higherLevel cumulMonotone

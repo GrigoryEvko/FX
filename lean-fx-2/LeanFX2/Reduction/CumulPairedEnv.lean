@@ -495,6 +495,13 @@ def Term.subst_compatible_pointwise_allais
         innerLevel innerLevelLt leftTy rightTy leftTyRaw rightTyRaw
         proof
         (Term.subst_compatible_pointwise_allais compat proof)
+  -- Phase D3.6-P4: univalence-β application.  Binary-subterm cong via
+  -- `subst_compatible_equivApply_allais`; recurse on both subterms.
+  | _, _, .equivApply equivTerm argumentTerm =>
+      ConvCumul.subst_compatible_equivApply_allais
+        equivTerm argumentTerm
+        (Term.subst_compatible_pointwise_allais compat equivTerm)
+        (Term.subst_compatible_pointwise_allais compat argumentTerm)
   -- Phase 12.A.B8.8 (heterogeneous funext-intro at Id-of-arrow):
   -- VALUE ctor, NO typed subterms — same precedent as funextReflAtId.
   -- Both substHet sides depend only on `sigma`, ConvCumul.refl

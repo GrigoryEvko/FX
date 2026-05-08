@@ -36,7 +36,10 @@ namespace LeanFX2.Tools
 -- D3.6-P3: typed `Term.uaToEquiv` cascade adds five more OfNat paths
 -- (rename/subst/substHet/Allais helper/Step.par cong arms — each
 -- threads UniverseLevel/innerLevel through Nat).
-#assert_ofnat_dependent_budget LeanFX2 981
+-- D3.6-P4: typed `Term.equivApply` binary cascade adds four more OfNat
+-- paths (binary cong rules — equivApplyEquiv + equivApplyArgument +
+-- Step.par cong + ConvCumul cong + Allais helper + dispatch arm).
+#assert_ofnat_dependent_budget LeanFX2 985
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -60,7 +63,9 @@ namespace LeanFX2.Tools
 -- one new Eq-rewriting path through the new ctor.  D3.6-P2 adds one
 -- more Eq-rewriting path via the binary `equivApply` ctor cascade.
 -- D3.6-P3: typed cascade adds six more Eq-rewriting paths.
-#assert_eq_rewriting_dependent_budget LeanFX2 1215
+-- D3.6-P4: typed `Term.equivApply` binary cascade adds five more
+-- Eq-rewriting paths.
+#assert_eq_rewriting_dependent_budget LeanFX2 1220
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for
@@ -69,6 +74,9 @@ namespace LeanFX2.Tools
 -- D3.6-P3: typed `Term.uaToEquiv` cascade adds two more reducible
 -- decls (the typed ctor + raw-projection theorem are reducible by
 -- Lean's auto-derivation).
-#assert_reducible_decl_budget LeanFX2 478
+-- D3.6-P4: typed `Term.equivApply` cascade adds two more reducible
+-- decls (the binary typed ctor + raw-projection theorem) reflected
+-- in the live count.
+#assert_reducible_decl_budget LeanFX2 480
 
 end LeanFX2.Tools

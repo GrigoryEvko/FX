@@ -624,6 +624,20 @@ theorem Term.toRaw_uaToEquiv {mode : Mode} {level scope : Nat}
       leftTyRaw rightTyRaw proof).toRaw =
       RawTerm.uaToEquiv proof.toRaw := rfl
 
+/-- Phase D3.6-P4: raw projection of `Term.equivApply` is
+`RawTerm.equivApply equivTerm.toRaw argumentTerm.toRaw`.  Holds by
+construction since `Term.toRaw t = raw` is `rfl` in lean-fx-2 (Term
+carries RawTerm as a type-level index). -/
+theorem Term.toRaw_equivApply {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+    (argumentTerm : Term context carrierA argumentRaw) :
+    (Term.equivApply (context := context)
+      equivTerm argumentTerm).toRaw =
+      RawTerm.equivApply equivTerm.toRaw argumentTerm.toRaw := rfl
+
 theorem Term.toRaw_arrowCode {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     (outerLevel : UniverseLevel)

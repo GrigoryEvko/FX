@@ -34,7 +34,10 @@ namespace LeanFX2.Tools
 -- + Step.uaToEquivProof + ConvCumul.uaToEquivCong + Allais helper,
 -- contributing one more HEq-result-typed dependent (the Allais helper
 -- bridge through `Ty.id` carrier).
-#assert_heq_result_type_budget LeanFX2 94
+-- D3.6-P4 adds the typed `Term.equivApply` binary cascade
+-- contributing one more HEq-result-typed dependent through the
+-- binary Allais helper.
+#assert_heq_result_type_budget LeanFX2 95
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable
@@ -55,7 +58,11 @@ namespace LeanFX2.Tools
 -- D3.6-P3 ships the typed `Term.uaToEquiv` ctor + cascade, adding five
 -- more decide-dependent paths (cong rules, Allais helper, typed Step
 -- and Step.par mirrors).
-#assert_decide_dependent_budget LeanFX2 838
+-- D3.6-P4 ships the typed `Term.equivApply` binary cascade adding
+-- four more decide-dependent paths (binary cong rules — equivApplyEquiv
+-- + equivApplyArgument + Step.par cong + ConvCumul cong + Allais
+-- helper + dispatch arm).
+#assert_decide_dependent_budget LeanFX2 842
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

@@ -309,6 +309,12 @@ theorem Step.toConvCumul
       leftTyRaw rightTyRaw _ ih =>
       exact ConvCumul.uaToEquivCong innerLevel innerLevelLt
         leftTy rightTy leftTyRaw rightTyRaw ih
+  -- Phase D3.6-P4: equivApply equiv-side / argument-side cong →
+  -- ConvCumul.equivApplyCong with the static refl side.
+  | equivApplyEquiv _ ih =>
+      exact ConvCumul.equivApplyCong ih (ConvCumul.refl _)
+  | equivApplyArgument equivTerm _ ih =>
+      exact ConvCumul.equivApplyCong (ConvCumul.refl equivTerm) ih
   | cumulUpInner lowerLevel higherLevel cumulMonotone
                   levelLeLow levelLeHigh _ ih =>
       exact ConvCumul.cumulUpCong lowerLevel higherLevel cumulMonotone

@@ -1467,6 +1467,32 @@ inductive Step :
           leftTy rightTy leftTyRaw rightTyRaw proofSource)
         (Term.uaToEquiv innerLevel innerLevelLt
           leftTy rightTy leftTyRaw rightTyRaw proofTarget)
+  /-- Step inside the equivalence position of a univalence-β
+  application (`Term.equivApply`).  Phase D3.6-P4 — binary cong rule
+  mirroring `Step.equivAppEquiv` for the new `equivApply` ctor. -/
+  | equivApplyEquiv {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRawSource equivRawTarget argumentRaw : RawTerm scope}
+      {equivSource : Term context (Ty.equiv carrierA carrierB) equivRawSource}
+      {equivTarget : Term context (Ty.equiv carrierA carrierB) equivRawTarget}
+      {argumentTerm : Term context carrierA argumentRaw} :
+      Step equivSource equivTarget →
+      Step (Term.equivApply equivSource argumentTerm)
+           (Term.equivApply equivTarget argumentTerm)
+  /-- Step inside the argument position of a univalence-β application
+  (`Term.equivApply`).  Phase D3.6-P4 — binary cong rule mirroring
+  `Step.equivAppArgument` for the new `equivApply` ctor. -/
+  | equivApplyArgument {mode level scope}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivRaw argumentRawSource argumentRawTarget : RawTerm scope}
+      (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+      {argumentSource : Term context carrierA argumentRawSource}
+      {argumentTarget : Term context carrierA argumentRawTarget} :
+      Step argumentSource argumentTarget →
+      Step (Term.equivApply equivTerm argumentSource)
+           (Term.equivApply equivTerm argumentTarget)
   /-- Cong rule for `Term.cumulUp`: a Step inside the lower payload
   lifts to a Step on the wrapping `cumulUp`.  The lower payload sits
   at its own context `ctxLow` and scope `scopeLow` (decoupled per

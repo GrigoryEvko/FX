@@ -30,7 +30,11 @@ namespace LeanFX2.Tools
 -- D3.6-P3: typed `Term.uaToEquiv` ctor + Step.par.uaToEquivCong +
 -- Step.uaToEquivProof + ConvCumul.uaToEquivCong + Allais helper +
 -- toRaw_uaToEquiv contribute two more universe-poly kernel decls.
-#assert_universe_polymorphism_budget LeanFX2 529
+-- D3.6-P4: typed `Term.equivApply` binary cascade — Step.par.equivApplyCong
+-- + Step.equivApplyEquiv + Step.equivApplyArgument +
+-- ConvCumul.equivApplyCong + Allais helper + toRaw_equivApply
+-- contribute two more universe-poly kernel decls.
+#assert_universe_polymorphism_budget LeanFX2 531
 
 -- Quot / Quotient family dependents.  Quot is propositional truncation;
 -- Quot.lift / Quot.ind / Quot.rec are Classical-adjacent (Quot.sound IS
