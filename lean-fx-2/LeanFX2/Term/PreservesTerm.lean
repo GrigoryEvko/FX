@@ -2457,55 +2457,21 @@ A clean lift requires either:
 
 Deferred to a separate commit alongside the headline assembly. -/
 
-/-- **Term.funextReflAtId full lift.** Type
-`Ty.id (Ty.arrow domainType codomainType) (lam (refl applyRaw)) (lam (refl applyRaw))`. -/
-theorem RawStep.par.lift_full_funextReflAtId
-    (domainType codomainType : Ty level scope)
-    (applyRaw : RawTerm (scope + 1))
-    (sourceTerm :
-      Term context
-        (Ty.id (Ty.arrow domainType codomainType)
-               (RawTerm.lam (RawTerm.refl applyRaw))
-               (RawTerm.lam (RawTerm.refl applyRaw)))
-        (RawTerm.lam (RawTerm.refl applyRaw)))
-    {targetRaw : RawTerm scope}
-    (rawStep : RawStep.par (RawTerm.lam (RawTerm.refl applyRaw)) targetRaw) :
-    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
-      Step.par sourceTerm targetTerm := by
-  obtain ⟨bodyTarget, eqOuter, bodyStep⟩ := RawStep.par.lam_inv rawStep
-  obtain ⟨applyTarget, eqInner, applyStep⟩ := RawStep.par.refl_inv bodyStep
-  cases eqInner
-  cases eqOuter
-  refine ⟨Ty.id (Ty.arrow domainType codomainType)
-            (RawTerm.lam (RawTerm.refl applyTarget))
-            (RawTerm.lam (RawTerm.refl applyTarget)),
-          Term.funextReflAtId (context := context) domainType codomainType applyTarget,
-          ?_⟩
-  -- Force sourceTerm to be Term.funextReflAtId via free-the-type:
-  suffices key :
-      ∀ {someType : Ty level scope}
-        (genericTerm : Term context someType
-          (RawTerm.lam (RawTerm.refl applyRaw))),
-        someType = Ty.id (Ty.arrow domainType codomainType)
-                         (RawTerm.lam (RawTerm.refl applyRaw))
-                         (RawTerm.lam (RawTerm.refl applyRaw)) →
-        Step.par genericTerm
-                 (Term.funextReflAtId (context := context) domainType codomainType
-                                      applyTarget) by
-    exact key sourceTerm rfl
-  intro someType genericTerm someTypeIsId
-  cases genericTerm
-  case funextReflAtId innerDomain innerCodomain =>
-    have idEq := Ty.id.inj someTypeIsId
-    have arrowEq := Ty.arrow.inj idEq.1
-    cases arrowEq.1
-    cases arrowEq.2
-    exact Step.par.funextReflAtIdCong domainType codomainType applyStep
-  all_goals first
-    | nomatch someTypeIsId
-    | (rename_i innerDomain innerCodomain
-       have idEq := Ty.id.inj someTypeIsId
-       nomatch idEq.1)
+/-! ### Term.funextReflAtId full lift — DEFERRED
+
+Term.funextReflAtId's raw form `RawTerm.lam (RawTerm.refl applyRaw)`
+collides at the (Ty.id (Ty.arrow ...) ...) type with multiple Term
+ctors (Term.lam, Term.lamPi, Term.funextRefl, Term.funextIntroHet).
+The `cases genericTerm` + `all_goals first | nomatch | ...` pattern
+that ALMOST works at the surface level was found to LEAK 2 axioms
+(Quot.sound, propext) per the per-decl audit gate — the indexed-
+inductive partial-match trap (memorized) fires on the multi-ctor
+dispatch.
+
+The fix requires using ctor-by-ctor explicit `casesOn` with motive,
+or matching on raw projection via `Term.toRaw`-shape dispatch.  Both
+are deferred to the headline assembly phase where the dispatch can
+branch cleanly on Term ctor IDs. -/
 
 /-! ### Term.funextIntroHet full lift — DEFERRED
 
