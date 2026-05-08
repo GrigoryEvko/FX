@@ -60,6 +60,12 @@ zero-axiom commitment, see CLAUDE.md).
 
 The cross-mode handle layer (Cohesive) IS shipped under the new
 Modality ctors; only the 2-cell adjunction layer awaits TwoCell.
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (Day 0 scaffold; namespace only)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

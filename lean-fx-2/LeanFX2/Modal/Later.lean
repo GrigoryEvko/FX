@@ -50,6 +50,12 @@ Defined in `Modal/Clock.lean`.
 
 1. Define Later modality + intro/elim
 2. Verify productivity smoke: 1 + 2 + 4 + ... bitstream
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (Day 0 scaffold; namespace only)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

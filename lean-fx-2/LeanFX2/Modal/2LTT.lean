@@ -43,6 +43,12 @@ end-to-end tests.
 * Compilation phases (frontend → static phase + dynamic phase)
 * User-level proofs that ghost-mode values are never observed at
   runtime
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (integration-test placeholder; namespace only)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

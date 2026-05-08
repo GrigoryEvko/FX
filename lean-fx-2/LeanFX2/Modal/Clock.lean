@@ -22,6 +22,12 @@ Verify productive corecursion (lean-fx task v3.28).
 ## Downstream consumers
 
 * User-level coinductive definitions (streams, infinite trees)
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (Day 0 scaffold; namespace only)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

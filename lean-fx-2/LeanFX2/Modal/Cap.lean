@@ -39,6 +39,12 @@ cannot perform `Cap(filesystem.write)` operations.
 ## Downstream consumers
 
 * User-level capability-aware code
+
+## Root status
+
+* Layer: audit-only
+* Load-bearing for: none — pure-derivation file (Day 0 scaffold; namespace only)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
 -/
 
 namespace LeanFX2

@@ -77,7 +77,14 @@ These ship in subsequent Phase 12.A.6 increments (D4.2, D4.5).
 * `Modal/Adjunction.lean` — `flat ⊣ sharp` adjunction (pending
   TwoCell).
 * `Modal/Bridge.lean` — strict / observational / univalent
-  transfer (pending mode-bridge equivalences). -/
+  transfer (pending mode-bridge equivalences).
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: Smoke/AuditPhase12A6CohesiveCtors
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

@@ -56,7 +56,14 @@ to consumers.
   `Term.modal` ships.
 
 Zero-axiom verified per declaration (`#assert_no_axioms` via the
-namespace sweep `#audit_namespace LeanFX2`). -/
+namespace sweep `#audit_namespace LeanFX2`).
+
+## Root status
+
+* Layer: typed-derived
+* Load-bearing for: none — pure-derivation file (currently only re-exposed via Rich.lean aggregation)
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

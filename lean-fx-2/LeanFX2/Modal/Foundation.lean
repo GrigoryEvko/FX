@@ -40,7 +40,14 @@ mode pairs and lift to a richer 2-categorical structure.  Adding
 them incrementally avoids combinatorial blow-up in the `compose`
 definition (which would otherwise have ~64 cases).
 
-Zero-axiom verified per declaration. -/
+Zero-axiom verified per declaration.
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: Conservativity/ModalOverObservational, Modal/Cohesive, Modal/Ghost, Modal/TwoLevel, Smoke/Modal, Smoke/AuditPhase12A5ModalFoundation, Smoke/AuditPhase12A4Day4
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 

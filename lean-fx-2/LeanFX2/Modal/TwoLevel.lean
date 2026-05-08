@@ -74,7 +74,14 @@ this within each Layer.
 * `Modal/Bridge.lean` (D4.6) — Layer transfer between modes
 * `Modal/Ghost.lean` — ghost ⊣ erase (the canonical 2LTT pair)
 
-Zero-axiom verified per declaration via AuditAll. -/
+Zero-axiom verified per declaration via AuditAll.
+
+## Root status
+
+* Layer: kernel
+* Load-bearing for: Smoke/AuditPhase12A4Day4
+* Axiom budget: zero (verified via `#assert_no_axioms` in Tools/AuditAll/)
+-/
 
 namespace LeanFX2
 
