@@ -142,6 +142,58 @@ Acceptance: ✅ Atkey-2018 witness rejected by corrected Lam rule.
 
 * [ ] `Pipeline.lean` — D6.12 (#1362) end-to-end String → Tokens → AST → Term → Reduced value
 
+## Day 5 — Sessions / Codata layer ✅ PARTIAL
+
+* [x] D5.11 `Sessions/Foundation.lean` — `SessionProtocol` 5-ctor inductive
+  factored out (#1347)
+* [x] D5.12 `Sessions/Duality.lean` — dual involution + four named
+  dual_cancels_* lemmas (commit 7f6ebca, 2026-05-08)
+* [x] `Sessions/Step.lean` — binary protocol-step relation with 6 ctors,
+  preserves_isFinite, dual, target_deterministic, of_dual, dual_iff
+* [x] `Sessions/Global.lean` — top-down global protocol + projection
+  relation
+* [ ] D5.x v1.1 — typed-session-step rule lifting protocol advance to the
+  Term level (requires graded-mode Ctx tracking + typed Term.sessionSend
+  protocol-position update); deferred
+* [ ] D5.x v1.1 — bridge `SessionProtocol PayloadType` ↔ `Ty.session
+  protocolStep : RawTerm scope` requires fixing PayloadType := RawTerm
+  scope or shipping a custom encoding; deferred
+
+Acceptance: ✅ binary session protocol grammar + duality + protocol-step
+relation + global projection all ship at zero axioms; AuditSessions.lean
+ratchet 30 #assert_no_axioms gates.  Linear-typing claim deferred.
+
+## Day 8 — Lean kernel modeling (FX1.LeanKernel) ✅ Outcome B (partial scope, zero axioms)
+
+* [x] D8.1 base HasType arms — sort, bvar, const, forallE, lam (#1318
+  initial slice)
+* [x] D8.6 HasType.app + Expr.instantiate codomain reduction (#1521)
+* [x] D8.7-EXTEND HasType.{letE, mdata, litNat, litStrAtom} +
+  Expr.{natTypeName, stringTypeName, natType, stringType} primitive name
+  helpers (#1524, commits ee3cac8 → 1f4f11b)
+* [x] D8.8-EXTEND `Term.check` arms covering all ten HasType arms (#1524)
+* [x] D8.9 `check_sound` composition: every check-accepted expression is
+  witnessed by HasType (proof composes per-arm soundness)
+* [x] D8.10 `FX1/LeanKernel/Audit.lean` reviewer-facing comprehensive
+  axiom cone over the 25 load-bearing decls (HasType + 10 arms, Context +
+  6 helpers, Environment HasConstant{InList,}, 4 primitive-name helpers,
+  check + check_sound) — strict harness gates already cover via
+  `AuditFX1LeanKernel_Other.lean` (74 #assert_no_axioms checks)
+* [ ] proj — needs Inductive-spec lookup + parameter-substituted field
+  type computation; deferred (Outcome B forward path)
+* [ ] fvar — needs separate fvar-context + free-variable reindexing;
+  deferred (Outcome B forward path)
+* [ ] mvar — Lean kernel rejects mvars in fully-elaborated terms; mirror
+  policy is "executable checker returns Option.none, no HasType arm";
+  deferred unless mvar typing semantics change
+
+Acceptance: ✅ Outcome B — 10 of 13 Expr constructors have HasType arms;
+all ship zero-axiom; relational typing remains conservative (missing arms
+are monotone, can only enlarge trusted set).  `check_sound` connects
+executable Option-valued bidirectional checker to relational HasType for
+every accepted shape.  Strict harness gates fail-fast inline on any
+axiom regression.
+
 ## Phase 13 — Tools (Layer 12) ✅ DONE
 
 * [x] `Tools/AuditGen.lean` — auto-generation tactic (#1365 D7.2)
