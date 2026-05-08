@@ -1205,6 +1205,39 @@ def Term.glueIntroDestruct
   cases glueEq.2
   exact ⟨baseValue, partialValue, HEq.rfl⟩
 
+/-- Destructor for `Term.lam` (non-dep arrow).  Disambiguated from
+`Term.lamPi`, `Term.funextRefl`, `Term.funextReflAtId`, and
+`Term.funextIntroHet` (all with raw `RawTerm.lam ...`) by the fixed
+`Ty.arrow` source-type index — the latter three have `Ty.id` or
+`Ty.piTy` shaped types. -/
+def Term.lamDestruct
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (someTerm :
+      Term context (Ty.arrow domainType codomainType) (RawTerm.lam bodyRaw)) :
+    Σ' (body : Term (context.cons domainType) codomainType.weaken bodyRaw),
+       HEq someTerm (Term.lam (codomainType := codomainType) body) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm : Term context someType (RawTerm.lam bodyRaw)),
+        someType = Ty.arrow domainType codomainType →
+        Σ' (body : Term (context.cons domainType) codomainType.weaken bodyRaw),
+           HEq genericTerm (Term.lam (codomainType := codomainType) body) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsArrow
+  cases genericTerm
+  case lam innerDomain innerCodomain body =>
+    have arrowEq := Ty.arrow.inj someTypeIsArrow
+    cases arrowEq.1
+    cases arrowEq.2
+    exact ⟨body, HEq.rfl⟩
+  case lamPi innerDomain innerCodomain body =>
+    -- Ty.piTy ≠ Ty.arrow shape mismatch
+    nomatch someTypeIsArrow
+  case funextRefl _ _ _ => nomatch someTypeIsArrow
+  case funextReflAtId _ _ _ => nomatch someTypeIsArrow
+  case funextIntroHet _ _ _ _ => nomatch someTypeIsArrow
+
 /-- Destructor for `Term.codataUnfold`. -/
 def Term.codataUnfoldDestruct
     {stateType outputType : Ty level scope}
@@ -1246,9 +1279,46 @@ Recipe per β-firing eliminator:
     canonical type), use the corresponding destructor to extract
     the canonical payload, then apply Step.par.beta<elim><Intro>Deep -/
 
-/-- **Tier 3 — Term.modElim lift.**  Two-arm: cong + betaModElimIntro.
-The β-arm uses Term.modIntroDestruct to extract the typed payload
-when the inner reaches a Term.modIntro. -/
+/-- **Tier 3 — Term.app lift, cong arm only.**  The β arm of
+`RawStep.par.app_inv` requires casting between `codomainType.weaken.
+subst0 ...` and `codomainType` (related by
+`Ty.weaken_subst_singleton`); the `▸`-rewrite propagates through the
+existential's type binder.  A clean solution requires a HEq-shaped
+existential or a more flexible cast helper — deferred to a future
+phase.
+
+This cong-only variant covers the case where `RawStep.par fnRaw
+fnTargetRaw` does NOT reach a `RawTerm.lam` form — which is the
+shape of every non-β raw step from `RawTerm.app`.  Specifically, when
+the function's raw step is `refl` or any `app`-cong, the βApp arm of
+the inversion does not fire; only the cong arm fires.
+
+For the general case (including β-firing), use a richer headline that
+allows the target Ty to differ via HEq — pending. -/
+theorem RawStep.par.lift_app_cong
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm : Term context (Ty.arrow domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par functionRaw targetRawIH →
+      ∃ functionTarget :
+          Term context (Ty.arrow domainType codomainType) targetRawIH,
+        Step.par functionTerm functionTarget)
+    (argumentLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par argumentRaw targetRawIH →
+      ∃ argumentTarget : Term context domainType targetRawIH,
+        Step.par argumentTerm argumentTarget)
+    {functionTargetRaw argumentTargetRaw : RawTerm scope}
+    (functionStep : RawStep.par functionRaw functionTargetRaw)
+    (argumentStep : RawStep.par argumentRaw argumentTargetRaw) :
+    ∃ targetTerm :
+        Term context codomainType (RawTerm.app functionTargetRaw argumentTargetRaw),
+      Step.par (Term.app functionTerm argumentTerm) targetTerm := by
+  obtain ⟨functionTarget, functionStepTyped⟩ := functionLift functionStep
+  obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
+  exact ⟨Term.app functionTarget argumentTarget,
+         Step.par.app functionStepTyped argumentStepTyped⟩
 theorem RawStep.par.lift_modElim
     {innerType : Ty level scope}
     {innerRaw : RawTerm scope}
