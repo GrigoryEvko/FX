@@ -1172,6 +1172,66 @@ def Term.refineIntroDestruct
   cases refineEq.2
   exact ⟨baseValue, predicateProof, HEq.rfl⟩
 
+/-- Destructor for `Term.glueIntro`. -/
+def Term.glueIntroDestruct
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    (someTerm :
+      Term context (Ty.glue baseType boundaryWitness)
+        (RawTerm.glueIntro baseRaw partialRaw)) :
+    Σ' (baseValue : Term context baseType baseRaw)
+       (partialValue : Term context baseType partialRaw),
+       HEq someTerm
+            (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseValue
+                            partialValue) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm :
+          Term context someType (RawTerm.glueIntro baseRaw partialRaw)),
+        someType = Ty.glue baseType boundaryWitness →
+        Σ' (baseValue : Term context baseType baseRaw)
+           (partialValue : Term context baseType partialRaw),
+           HEq genericTerm
+                (Term.glueIntro modeIsUnivalent baseType boundaryWitness baseValue
+                                partialValue) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsGlue
+  cases genericTerm
+  rename_i innerMode innerBase innerBoundary baseValue partialValue
+  have glueEq := Ty.glue.inj someTypeIsGlue
+  cases glueEq.1
+  cases glueEq.2
+  exact ⟨baseValue, partialValue, HEq.rfl⟩
+
+/-- Destructor for `Term.codataUnfold`. -/
+def Term.codataUnfoldDestruct
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (someTerm :
+      Term context (Ty.codata stateType outputType)
+        (RawTerm.codataUnfold stateRaw transitionRaw)) :
+    Σ' (initialState : Term context stateType stateRaw)
+       (transition : Term context (Ty.arrow stateType outputType) transitionRaw),
+       HEq someTerm (Term.codataUnfold initialState transition) := by
+  suffices key :
+      ∀ {someType : Ty level scope}
+        (genericTerm :
+          Term context someType (RawTerm.codataUnfold stateRaw transitionRaw)),
+        someType = Ty.codata stateType outputType →
+        Σ' (initialState : Term context stateType stateRaw)
+           (transition : Term context (Ty.arrow stateType outputType) transitionRaw),
+           HEq genericTerm (Term.codataUnfold initialState transition) by
+    exact key someTerm rfl
+  intro someType genericTerm someTypeIsCodata
+  cases genericTerm
+  rename_i innerState innerOutput initialState transition
+  have codataEq := Ty.codata.inj someTypeIsCodata
+  cases codataEq.1
+  cases codataEq.2
+  exact ⟨initialState, transition, HEq.rfl⟩
+
 /-! ## Tier 3 — eliminator lifts with shallow β (single-child)
 
 Single-Term-child eliminators where β fires when the child is the
@@ -1273,5 +1333,74 @@ theorem RawStep.par.lift_refineElim
     rw [valueEq] at refinedStepTyped
     cases eq
     exact ⟨baseValue, Step.par.betaRefineElimIntroDeep refinedStepTyped⟩
+
+/-- **Tier 3 — Term.glueElim lift.**  Two-arm: cong + betaGlueElimIntro.
+The β arm extracts the typed base from a Term.glueIntro. -/
+theorem RawStep.par.lift_glueElim
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {gluedRaw : RawTerm scope}
+    (gluedValue : Term context (Ty.glue baseType boundaryWitness) gluedRaw)
+    (gluedLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par gluedRaw targetRawIH →
+      ∃ gluedTarget :
+          Term context (Ty.glue baseType boundaryWitness) targetRawIH,
+        Step.par gluedValue gluedTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.glueElim gluedRaw) targetRaw) :
+    ∃ targetTerm : Term context baseType targetRaw,
+      Step.par (Term.glueElim modeIsUnivalent gluedValue) targetTerm := by
+  rcases RawStep.par.glueElim_inv rawStep with
+    ⟨gluedTargetRaw, eq, gluedStep⟩
+    | ⟨baseTarget, partialTarget, eq, gluedToIntro⟩
+  · obtain ⟨gluedTarget, gluedStepTyped⟩ := gluedLift gluedStep
+    cases eq
+    exact ⟨Term.glueElim modeIsUnivalent gluedTarget,
+           Step.par.glueElimCong modeIsUnivalent gluedStepTyped⟩
+  · obtain ⟨gluedCanonical, gluedStepTyped⟩ := gluedLift gluedToIntro
+    obtain ⟨baseValue, partialValue, glueHeq⟩ :=
+      Term.glueIntroDestruct modeIsUnivalent baseType boundaryWitness gluedCanonical
+    have glueEq :
+        gluedCanonical = Term.glueIntro modeIsUnivalent baseType boundaryWitness
+                                        baseValue partialValue :=
+      eq_of_heq glueHeq
+    rw [glueEq] at gluedStepTyped
+    cases eq
+    exact ⟨baseValue, Step.par.betaGlueElimIntroDeep modeIsUnivalent gluedStepTyped⟩
+
+/-- **Tier 3 — Term.codataDest lift.**  Two-arm: cong + betaCodataDestUnfold.
+The β arm extracts the typed initial state and transition from a
+Term.codataUnfold; the iota target is `app transition initialState`. -/
+theorem RawStep.par.lift_codataDest
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    (codataValue : Term context (Ty.codata stateType outputType) codataRaw)
+    (codataLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par codataRaw targetRawIH →
+      ∃ codataTarget :
+          Term context (Ty.codata stateType outputType) targetRawIH,
+        Step.par codataValue codataTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.codataDest codataRaw) targetRaw) :
+    ∃ targetTerm : Term context outputType targetRaw,
+      Step.par (Term.codataDest codataValue) targetTerm := by
+  rcases RawStep.par.codataDest_inv rawStep with
+    ⟨codataTargetRaw, eq, codataStep⟩
+    | ⟨stateTarget, transitionTarget, eq, codataToUnfold⟩
+  · obtain ⟨codataTarget, codataStepTyped⟩ := codataLift codataStep
+    cases eq
+    exact ⟨Term.codataDest codataTarget,
+           Step.par.codataDestCong codataStepTyped⟩
+  · obtain ⟨codataCanonical, codataStepTyped⟩ := codataLift codataToUnfold
+    obtain ⟨initialState, transition, codataHeq⟩ :=
+      Term.codataUnfoldDestruct codataCanonical
+    have codataEq :
+        codataCanonical = Term.codataUnfold initialState transition :=
+      eq_of_heq codataHeq
+    rw [codataEq] at codataStepTyped
+    cases eq
+    exact ⟨Term.app transition initialState,
+           Step.par.betaCodataDestUnfoldDeep codataStepTyped⟩
 
 end LeanFX2
