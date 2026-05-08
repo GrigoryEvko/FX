@@ -1,5 +1,6 @@
 import LeanFX2.Cubical.PathLemmas
 import LeanFX2.Reduction.Cumul
+import LeanFX2.Reduction.ParStar
 
 /-! # Cubical/Transport
 
@@ -180,13 +181,40 @@ theorem constantTypeTransport_betaParStep
     (constantTypePath modeIsUnivalent universeLevel universeLevelLt typeCode)
     (Step.par.refl sourceValue)
 
+/-- Multistep parallel β for transport along the named constant type
+line.  Lifts `constantTypeTransport_betaParStep` to the reflexive-
+transitive closure used by `Conv`.  This is the form callers reach
+for when they need a `Step.parStar` witness (the underlying relation
+of `Conv` after Phase 6 confluence).
+
+One-line corollary: `Step.par.toStar` lifts the single par-step. -/
+theorem constantTypeTransport_betaParStar
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType : Ty level scope)
+    {typeRaw sourceRaw : RawTerm scope}
+    (typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw)
+    (sourceValue : Term context sourceType sourceRaw) :
+    Step.parStar
+      (constantTypeTransport modeIsUnivalent universeLevel universeLevelLt
+        sourceType typeCode sourceValue)
+      sourceValue :=
+  Step.par.toStar
+    (constantTypeTransport_betaParStep modeIsUnivalent universeLevel
+      universeLevelLt sourceType typeCode sourceValue)
+
 /-- Conversion-layer β for transport along the named constant type line.
 
 This is the safe computation principle for `transp` at conversion
 level: it is restricted to `constantTypeTransport`, so it cannot
 collapse arbitrary path lambdas whose bodies mention the interval
 binder.  Companion `constantTypeTransport_betaParStep` lifts the
-same principle to `Step.par` directly. -/
+same principle to `Step.par` directly; `_betaParStar` lifts further
+to the reflexive-transitive closure. -/
 theorem constantTypeTransport_betaConvCumul
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}

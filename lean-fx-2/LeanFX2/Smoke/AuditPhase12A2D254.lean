@@ -101,6 +101,7 @@ Every declaration below must report "does not depend on any axioms".
 #print axioms LeanFX2.Conv.canonicalRaw
 #print axioms LeanFX2.Conv.transRaw
 
--- Phase G consumer: named-redex β at Step.par level (Cubical/Transport)
+-- Phase G consumer: named-redex β across reduction layers (Cubical/Transport)
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaParStep
+#print axioms LeanFX2.Cubical.constantTypeTransport_betaParStar
 #print axioms LeanFX2.Cubical.constantTypeTransport_betaConvCumul
