@@ -665,6 +665,12 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.equivCodeCong (leftIH substsRelated) (rightIH substsRelated)
   | cumulUpMarkerCong _ innerIH =>
       exact RawStep.par.cumulUpMarkerCong (innerIH substsRelated)
+  | funextReflCong _ applyIH =>
+      exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
+  | funextReflAtIdCong _ applyIH =>
+      exact RawStep.par.funextReflAtIdCong (applyIH (RawTermSubst.par_lift substsRelated))
+  | funextIntroHetCong _ applyAIH =>
+      exact RawStep.par.funextIntroHetCong (applyAIH (RawTermSubst.par_lift substsRelated))
 
 /-! ## β-corollary: parallel substitution at position 0. -/
 

@@ -38,6 +38,12 @@ theorem RawStep.par.lam_inv {scope : Nat} {body : RawTerm (scope + 1)}
   cases parallelStep with
   | refl _ => exact ⟨body, rfl, RawStep.par.refl _⟩
   | lam bodyStep => exact ⟨_, rfl, bodyStep⟩
+  | funextReflCong applyStep =>
+      exact ⟨_, rfl, RawStep.par.reflCong applyStep⟩
+  | funextReflAtIdCong applyStep =>
+      exact ⟨_, rfl, RawStep.par.reflCong applyStep⟩
+  | funextIntroHetCong applyAStep =>
+      exact ⟨_, rfl, RawStep.par.reflCong applyAStep⟩
 
 /-- `RawStep.par (RawTerm.var position) target → target = RawTerm.var position`.
 

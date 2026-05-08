@@ -342,6 +342,37 @@ theorem Step.par.toRawBridge
   -- typed-level type change with raw preserved.  Same architectural
   -- payoff as `cumulUpInnerCong` / `eqType` / `eqArrow` / `eqTypeHet`.
   | eqArrowHet _ _ _ _ => exact RawStep.par.refl _
+  -- New schematic-payload value cong rules + type-code cong rules
+  -- (Phase juggernaut Day 2 close-out).  Each maps to its raw mirror
+  -- via the matching RawStep.par.*Cong rule.
+  | reflCong _ witnessStep =>
+      exact RawStep.par.reflCong witnessStep
+  | funextReflCong _ _ applyStep =>
+      exact RawStep.par.funextReflCong applyStep
+  | funextReflAtIdCong _ _ applyStep =>
+      exact RawStep.par.funextReflAtIdCong applyStep
+  | funextIntroHetCong _ _ applyAStep _ =>
+      exact RawStep.par.funextIntroHetCong applyAStep
+  | arrowCodeCong _ _ ihDomain ihCodomain =>
+      exact RawStep.par.arrowCodeCong ihDomain ihCodomain
+  | piTyCodeCong _ _ ihDomain ihCodomain =>
+      exact RawStep.par.piTyCodeCong ihDomain ihCodomain
+  | sigmaTyCodeCong _ _ ihFirst ihSecond =>
+      exact RawStep.par.sigmaTyCodeCong ihFirst ihSecond
+  | productCodeCong _ _ ihFirst ihSecond =>
+      exact RawStep.par.productCodeCong ihFirst ihSecond
+  | sumCodeCong _ _ ihLeft ihRight =>
+      exact RawStep.par.sumCodeCong ihLeft ihRight
+  | listCodeCong _ _ ihElement =>
+      exact RawStep.par.listCodeCong ihElement
+  | optionCodeCong _ _ ihElement =>
+      exact RawStep.par.optionCodeCong ihElement
+  | eitherCodeCong _ _ ihLeft ihRight =>
+      exact RawStep.par.eitherCodeCong ihLeft ihRight
+  | idCodeCong _ _ ihCarrier ihLeft ihRight =>
+      exact RawStep.par.idCodeCong ihCarrier ihLeft ihRight
+  | equivCodeCong _ _ ihCarrierA ihCarrierB =>
+      exact RawStep.par.equivCodeCong ihCarrierA ihCarrierB
 
 /-- Raw-image compatibility for typed parallel reduction after a typed
 renaming.

@@ -1791,6 +1791,195 @@ inductive Step.par :
                              domainType codomainType applyARaw applyBRaw)
         (Term.funextRefl (context := context)
                          domainType codomainType applyARaw)
+  /-- **Schematic-payload value cong: Term.refl reduces in its raw witness.**
+      Adds typed parity for `RawStep.par.reflCong`, lifting raw witness
+      reduction to a heterogeneous-typed Step.par on `Term.refl`. -/
+  | reflCong {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (carrier : Ty level scope)
+      {witnessRawSource witnessRawTarget : RawTerm scope} :
+      RawStep.par witnessRawSource witnessRawTarget →
+      Step.par (Term.refl (context := context) carrier witnessRawSource)
+               (Term.refl (context := context) carrier witnessRawTarget)
+  /-- Schematic-payload cong: Term.funextRefl reduces in its applyRaw payload.
+      Raw form is `RawTerm.lam (RawTerm.refl applyRaw)`; raw cascade fires
+      lam(reflCong applyStep). -/
+  | funextReflCong {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      {applyRawSource applyRawTarget : RawTerm (scope + 1)} :
+      RawStep.par applyRawSource applyRawTarget →
+      Step.par
+        (Term.funextRefl (context := context)
+                         domainType codomainType applyRawSource)
+        (Term.funextRefl (context := context)
+                         domainType codomainType applyRawTarget)
+  /-- Schematic-payload cong: Term.funextReflAtId reduces in its applyRaw
+      payload.  Mirror of funextReflCong at the universe-level identity. -/
+  | funextReflAtIdCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      {applyRawSource applyRawTarget : RawTerm (scope + 1)} :
+      RawStep.par applyRawSource applyRawTarget →
+      Step.par
+        (Term.funextReflAtId (context := context)
+                             domainType codomainType applyRawSource)
+        (Term.funextReflAtId (context := context)
+                             domainType codomainType applyRawTarget)
+  /-- Schematic-payload cong: Term.funextIntroHet reduces in applyARaw + applyBRaw
+      (the two raw payloads).  Raw form is `RawTerm.lam (RawTerm.refl applyARaw)`,
+      and raw cascade fires only on applyARaw via lam(reflCong applyAStep) — but
+      the typed ctor stores BOTH applyARaw + applyBRaw, and we model the source/
+      target Ty changing via applyBRaw too. -/
+  | funextIntroHetCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      {applyARawSource applyARawTarget applyBRawSource applyBRawTarget :
+        RawTerm (scope + 1)} :
+      RawStep.par applyARawSource applyARawTarget →
+      RawStep.par applyBRawSource applyBRawTarget →
+      Step.par
+        (Term.funextIntroHet (context := context)
+                             domainType codomainType applyARawSource applyBRawSource)
+        (Term.funextIntroHet (context := context)
+                             domainType codomainType applyARawTarget applyBRawTarget)
+  /-- Type-code cong: arrowCode reduces in its two raw payloads. -/
+  | arrowCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {domainCodeRawSource domainCodeRawTarget
+       codomainCodeRawSource codomainCodeRawTarget : RawTerm scope} :
+      RawStep.par domainCodeRawSource domainCodeRawTarget →
+      RawStep.par codomainCodeRawSource codomainCodeRawTarget →
+      Step.par
+        (Term.arrowCode (context := context) outerLevel levelLe
+          domainCodeRawSource codomainCodeRawSource)
+        (Term.arrowCode (context := context) outerLevel levelLe
+          domainCodeRawTarget codomainCodeRawTarget)
+  /-- Type-code cong: piTyCode reduces in its three raw payloads (codomainCode
+      lives at scope+1). -/
+  | piTyCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {domainCodeRawSource domainCodeRawTarget : RawTerm scope}
+      {codomainCodeRawSource codomainCodeRawTarget : RawTerm (scope + 1)} :
+      RawStep.par domainCodeRawSource domainCodeRawTarget →
+      RawStep.par codomainCodeRawSource codomainCodeRawTarget →
+      Step.par
+        (Term.piTyCode (context := context) outerLevel levelLe
+          domainCodeRawSource codomainCodeRawSource)
+        (Term.piTyCode (context := context) outerLevel levelLe
+          domainCodeRawTarget codomainCodeRawTarget)
+  /-- Type-code cong: sigmaTyCode reduces in its three raw payloads. -/
+  | sigmaTyCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {firstCodeRawSource firstCodeRawTarget : RawTerm scope}
+      {secondCodeRawSource secondCodeRawTarget : RawTerm (scope + 1)} :
+      RawStep.par firstCodeRawSource firstCodeRawTarget →
+      RawStep.par secondCodeRawSource secondCodeRawTarget →
+      Step.par
+        (Term.sigmaTyCode (context := context) outerLevel levelLe
+          firstCodeRawSource secondCodeRawSource)
+        (Term.sigmaTyCode (context := context) outerLevel levelLe
+          firstCodeRawTarget secondCodeRawTarget)
+  /-- Type-code cong: productCode reduces in its two raw payloads. -/
+  | productCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {firstCodeRawSource firstCodeRawTarget
+       secondCodeRawSource secondCodeRawTarget : RawTerm scope} :
+      RawStep.par firstCodeRawSource firstCodeRawTarget →
+      RawStep.par secondCodeRawSource secondCodeRawTarget →
+      Step.par
+        (Term.productCode (context := context) outerLevel levelLe
+          firstCodeRawSource secondCodeRawSource)
+        (Term.productCode (context := context) outerLevel levelLe
+          firstCodeRawTarget secondCodeRawTarget)
+  /-- Type-code cong: sumCode reduces in its two raw payloads. -/
+  | sumCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {leftCodeRawSource leftCodeRawTarget
+       rightCodeRawSource rightCodeRawTarget : RawTerm scope} :
+      RawStep.par leftCodeRawSource leftCodeRawTarget →
+      RawStep.par rightCodeRawSource rightCodeRawTarget →
+      Step.par
+        (Term.sumCode (context := context) outerLevel levelLe
+          leftCodeRawSource rightCodeRawSource)
+        (Term.sumCode (context := context) outerLevel levelLe
+          leftCodeRawTarget rightCodeRawTarget)
+  /-- Type-code cong: listCode reduces in its element code raw. -/
+  | listCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {elementCodeRawSource elementCodeRawTarget : RawTerm scope} :
+      RawStep.par elementCodeRawSource elementCodeRawTarget →
+      Step.par
+        (Term.listCode (context := context) outerLevel levelLe
+          elementCodeRawSource)
+        (Term.listCode (context := context) outerLevel levelLe
+          elementCodeRawTarget)
+  /-- Type-code cong: optionCode reduces in its element code raw. -/
+  | optionCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {elementCodeRawSource elementCodeRawTarget : RawTerm scope} :
+      RawStep.par elementCodeRawSource elementCodeRawTarget →
+      Step.par
+        (Term.optionCode (context := context) outerLevel levelLe
+          elementCodeRawSource)
+        (Term.optionCode (context := context) outerLevel levelLe
+          elementCodeRawTarget)
+  /-- Type-code cong: eitherCode reduces in its two raw payloads. -/
+  | eitherCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {leftCodeRawSource leftCodeRawTarget
+       rightCodeRawSource rightCodeRawTarget : RawTerm scope} :
+      RawStep.par leftCodeRawSource leftCodeRawTarget →
+      RawStep.par rightCodeRawSource rightCodeRawTarget →
+      Step.par
+        (Term.eitherCode (context := context) outerLevel levelLe
+          leftCodeRawSource rightCodeRawSource)
+        (Term.eitherCode (context := context) outerLevel levelLe
+          leftCodeRawTarget rightCodeRawTarget)
+  /-- Type-code cong: idCode reduces in its three raw payloads. -/
+  | idCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {carrierCodeRawSource carrierCodeRawTarget
+       leftRawSource leftRawTarget rightRawSource rightRawTarget :
+        RawTerm scope} :
+      RawStep.par carrierCodeRawSource carrierCodeRawTarget →
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par rightRawSource rightRawTarget →
+      Step.par
+        (Term.idCode (context := context) outerLevel levelLe
+          carrierCodeRawSource leftRawSource rightRawSource)
+        (Term.idCode (context := context) outerLevel levelLe
+          carrierCodeRawTarget leftRawTarget rightRawTarget)
+  /-- Type-code cong: equivCode reduces in its two carrier raw payloads. -/
+  | equivCodeCong {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      {carrierARawSource carrierARawTarget
+       carrierBRawSource carrierBRawTarget : RawTerm scope} :
+      RawStep.par carrierARawSource carrierARawTarget →
+      RawStep.par carrierBRawSource carrierBRawTarget →
+      Step.par
+        (Term.equivCode (context := context) outerLevel levelLe
+          carrierARawSource carrierBRawSource)
+        (Term.equivCode (context := context) outerLevel levelLe
+          carrierARawTarget carrierBRawTarget)
 
 /-! ## Step.toPar — single-step ⇒ parallel.
 

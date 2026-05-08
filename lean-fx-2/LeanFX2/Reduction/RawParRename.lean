@@ -347,5 +347,11 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.equivCodeCong (leftIH _) (rightIH _)
   | cumulUpMarkerCong _ innerIH =>
       exact RawStep.par.cumulUpMarkerCong (innerIH _)
+  | funextReflCong _ applyIH =>
+      exact RawStep.par.funextReflCong (applyIH _)
+  | funextReflAtIdCong _ applyIH =>
+      exact RawStep.par.funextReflAtIdCong (applyIH _)
+  | funextIntroHetCong _ applyAIH =>
+      exact RawStep.par.funextIntroHetCong (applyAIH _)
 
 end LeanFX2

@@ -154,6 +154,15 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | reflCong rawTermStep rawTermIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.reflCong rawTermIH
+  | funextReflCong applyStep applyIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.funextReflCong applyIH
+  | funextReflAtIdCong applyStep applyIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.funextReflAtIdCong applyIH
+  | funextIntroHetCong applyAStep applyAIH =>
+      simp only [RawTerm.cd]
+      exact RawStep.par.funextIntroHetCong applyAIH
   | idJ baseStep witnessStep baseIH witnessIH =>
       simp only [RawTerm.cd, RawTerm.cdIdJCase]
       split

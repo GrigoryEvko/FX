@@ -928,5 +928,27 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRaw targetRaw →
       RawStep.par (RawTerm.cumulUpMarker sourceRaw)
                   (RawTerm.cumulUpMarker targetRaw)
+  /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
+      `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
+      via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/
+  | funextReflCong {scope : Nat}
+      {applyRawSource applyRawTarget : RawTerm (scope + 1)} :
+      RawStep.par applyRawSource applyRawTarget →
+      RawStep.par (RawTerm.lam (RawTerm.refl applyRawSource))
+                  (RawTerm.lam (RawTerm.refl applyRawTarget))
+  /-- Schematic-payload value cong (typed `Term.funextReflAtId`'s mirror at raw). -/
+  | funextReflAtIdCong {scope : Nat}
+      {applyRawSource applyRawTarget : RawTerm (scope + 1)} :
+      RawStep.par applyRawSource applyRawTarget →
+      RawStep.par (RawTerm.lam (RawTerm.refl applyRawSource))
+                  (RawTerm.lam (RawTerm.refl applyRawTarget))
+  /-- Schematic-payload value cong (typed `Term.funextIntroHet`'s mirror at raw).
+      The applyB raw isn't carried in the projected raw form; only applyA's
+      reduction shows up at the raw level via `lam(reflCong)`. -/
+  | funextIntroHetCong {scope : Nat}
+      {applyARawSource applyARawTarget : RawTerm (scope + 1)} :
+      RawStep.par applyARawSource applyARawTarget →
+      RawStep.par (RawTerm.lam (RawTerm.refl applyARawSource))
+                  (RawTerm.lam (RawTerm.refl applyARawTarget))
 
 end LeanFX2
