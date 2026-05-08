@@ -26,3 +26,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.headCtor_optionCode_raw
 #print axioms LeanFX2.Term.headCtor_eitherCode_raw
 #print axioms LeanFX2.Term.headCtor_idCode_raw
+#print axioms LeanFX2.Term.headCtor_equivCode_raw
