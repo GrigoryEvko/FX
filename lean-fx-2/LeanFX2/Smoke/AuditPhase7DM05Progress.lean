@@ -24,3 +24,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.headCtor_sumCode_raw
 #print axioms LeanFX2.Term.headCtor_listCode_raw
 #print axioms LeanFX2.Term.headCtor_optionCode_raw
+#print axioms LeanFX2.Term.headCtor_eitherCode_raw
