@@ -103,5 +103,25 @@ theorem check_sound_lit {level scope : Nat}
     HasType environment context (Expr.lit literal) typeExpr :=
   check_sound checkingSucceeded
 
+/-- Per-arm soundness for Lean metadata-erasure expressions.
+
+When the executable checker accepts an `Expr.mdata metadata bodyExpr`,
+the inferred type witness is the `HasType.mdata` derivation forwarding
+the inner body's derivation unchanged.  Lean's `mdata` is a transparent
+annotation node carrying reviewer hints with no operational meaning, so
+the checker recurses on the inner body and the resulting type is the
+inner body's type.  Body delegates to the generic `check_sound`. -/
+theorem check_sound_mdata {level scope : Nat}
+    {environment : Environment level}
+    {context : Context level scope}
+    {metadata : MData}
+    {bodyExpr typeExpr : Expr level scope}
+    (checkingSucceeded :
+      Eq
+        (check environment context (Expr.mdata metadata bodyExpr))
+        (Option.some typeExpr)) :
+    HasType environment context (Expr.mdata metadata bodyExpr) typeExpr :=
+  check_sound checkingSucceeded
+
 end FX1.LeanKernel
 end LeanFX2
