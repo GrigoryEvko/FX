@@ -143,6 +143,7 @@ import LeanFX2.Bridge.IdEqType
 import LeanFX2.Bridge.PathEqType
 import LeanFX2.Bridge.BoxObservational
 import LeanFX2.Bridge.BoxCubical
+import LeanFX2.Bridge.BoxObservationalInverse
 import LeanFX2.Conservativity.HOTTOverMLTT
 import LeanFX2.Conservativity.CubicalOverHOTT
 import LeanFX2.Conservativity.ModalOverObservational

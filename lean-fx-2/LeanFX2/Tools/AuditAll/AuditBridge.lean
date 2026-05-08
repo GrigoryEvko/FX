@@ -17,7 +17,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditBridge — 42 `#assert_no_axioms` checks. -/
+/-! ## AuditBridge — 46 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Bridge.constantPathToId
 #assert_no_axioms LeanFX2.Bridge.constantPathToId_toRaw
@@ -61,5 +61,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Bridge.cubicalBoxRefl_roundTrip_onConstantPath
 #assert_no_axioms LeanFX2.Bridge.boxCubicalRefl_roundTrip_toRaw
 #assert_no_axioms LeanFX2.Bridge.cubicalBoxRefl_roundTrip_toRaw
+#assert_no_axioms LeanFX2.Bridge.boxObservational_roundTrip_onCanonical
+#assert_no_axioms LeanFX2.Bridge.observationalBox_roundTrip_onCanonical
+#assert_no_axioms LeanFX2.Bridge.boxObservational_roundTrip_toRaw
+#assert_no_axioms LeanFX2.Bridge.observationalBox_roundTrip_toRaw
 
 end LeanFX2.Tools

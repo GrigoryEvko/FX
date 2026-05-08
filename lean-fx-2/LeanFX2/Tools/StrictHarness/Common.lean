@@ -1077,7 +1077,8 @@ def isCrossTheoryBridgeModuleName (moduleName : Name) : Bool :=
     moduleName == `LeanFX2.Bridge.IdEqType ||
     moduleName == `LeanFX2.Bridge.PathEqType ||
     moduleName == `LeanFX2.Bridge.BoxObservational ||
-    moduleName == `LeanFX2.Bridge.BoxCubical
+    moduleName == `LeanFX2.Bridge.BoxCubical ||
+    moduleName == `LeanFX2.Bridge.BoxObservationalInverse
 
 /-- Semantic import layer for production modules.  The numbering matches the
 public `LeanFX2.lean` umbrella comments after refining path names that carry
