@@ -2534,6 +2534,134 @@ theorem RawStep.par.lift_full_interval1
   obtain ⟨target, step⟩ := RawStep.par.lift_interval1 sourceTerm rawStep
   exact ⟨Ty.interval, target, step⟩
 
+/-- **Tier 1 — Term.natSucc at two-Ty.** -/
+theorem RawStep.par.lift_full_natSucc
+    {predRaw : RawTerm scope}
+    (predecessor : Term context Ty.nat predRaw)
+    (predLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par predRaw targetRawIH →
+      ∃ predTarget : Term context Ty.nat targetRawIH,
+        Step.par predecessor predTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.natSucc predRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.natSucc predecessor) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_natSucc predecessor predLift rawStep
+  exact ⟨Ty.nat, target, step⟩
+
+/-- **Tier 1 — Term.optionSome at two-Ty.** -/
+theorem RawStep.par.lift_full_optionSome
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context elementType valueRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context elementType targetRawIH,
+        Step.par valueTerm valueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.optionSome valueRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.optionSome valueTerm) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_optionSome valueTerm valueLift rawStep
+  exact ⟨Ty.optionType elementType, target, step⟩
+
+/-- **Tier 1 — Term.eitherInl at two-Ty.** -/
+theorem RawStep.par.lift_full_eitherInl
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context leftType valueRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context leftType targetRawIH,
+        Step.par valueTerm valueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.eitherInl valueRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.eitherInl (rightType := rightType) valueTerm) targetTerm := by
+  obtain ⟨target, step⟩ :=
+    RawStep.par.lift_eitherInl (rightType := rightType) valueTerm valueLift rawStep
+  exact ⟨Ty.eitherType leftType rightType, target, step⟩
+
+/-- **Tier 1 — Term.eitherInr at two-Ty.** -/
+theorem RawStep.par.lift_full_eitherInr
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term context rightType valueRaw)
+    (valueLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par valueRaw targetRawIH →
+      ∃ valueTarget : Term context rightType targetRawIH,
+        Step.par valueTerm valueTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.eitherInr valueRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.eitherInr (leftType := leftType) valueTerm) targetTerm := by
+  obtain ⟨target, step⟩ :=
+    RawStep.par.lift_eitherInr (leftType := leftType) valueTerm valueLift rawStep
+  exact ⟨Ty.eitherType leftType rightType, target, step⟩
+
+/-- **Tier 1 — Term.intervalOpp at two-Ty.** -/
+theorem RawStep.par.lift_full_intervalOpp
+    {innerRaw : RawTerm scope}
+    (innerValue : Term context Ty.interval innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context Ty.interval targetRawIH,
+        Step.par innerValue innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.intervalOpp innerRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.intervalOpp innerValue) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_intervalOpp innerValue innerLift rawStep
+  exact ⟨Ty.interval, target, step⟩
+
+/-- **Tier 1 — Term.modIntro at two-Ty.** -/
+theorem RawStep.par.lift_full_modIntro
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context innerType targetRawIH,
+        Step.par innerTerm innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.modIntro innerRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.modIntro innerTerm) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_modIntro innerTerm innerLift rawStep
+  exact ⟨innerType, target, step⟩
+
+/-- **Tier 1 — Term.subsume at two-Ty.** -/
+theorem RawStep.par.lift_full_subsume
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw)
+    (innerLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par innerRaw targetRawIH →
+      ∃ innerTarget : Term context innerType targetRawIH,
+        Step.par innerTerm innerTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.subsume innerRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.subsume innerTerm) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_subsume innerTerm innerLift rawStep
+  exact ⟨innerType, target, step⟩
+
+/-- **Tier 1 — Term.recordIntro at two-Ty.** -/
+theorem RawStep.par.lift_full_recordIntro
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (firstField : Term context singleFieldType firstRaw)
+    (firstLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par firstRaw targetRawIH →
+      ∃ firstTarget : Term context singleFieldType targetRawIH,
+        Step.par firstField firstTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.recordIntro firstRaw) targetRaw) :
+    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+      Step.par (Term.recordIntro firstField) targetTerm := by
+  obtain ⟨target, step⟩ := RawStep.par.lift_recordIntro firstField firstLift rawStep
+  exact ⟨Ty.record singleFieldType, target, step⟩
+
 /-! ## Coverage status (post-juggernaut Phase 4)
 
 **Full lifts shipped (two-Ty existential)**: 6 ctors:
