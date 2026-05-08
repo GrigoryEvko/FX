@@ -335,4 +335,85 @@ theorem RawStep.par.lift_recordIntro
   cases targetEq
   exact ⟨Term.recordIntro firstTarget, Step.par.recordIntroCong firstStepTyped⟩
 
+/-! ## Tier 1 — binder cong rules
+
+Lambda-shaped ctors carry a body at scope+1 under the ctor's
+introduced binder.  The IH lives at scope+1 with the extended
+context.  No β fires from a bare lam/lamPi/pathLam — only when
+applied (Tier 3 territory).
+
+These ctors construct typed function values; the type is preserved
+through the cong rule because the body at scope+1 keeps the same
+codomain shape.
+
+* `lam` / `lamPi` produce `Ty.arrow` / `Ty.piTy` shaped values.
+* `pathLam` produces `Ty.path carrierType leftEndpoint rightEndpoint`
+  with the body at `Ty.interval`-extended context. -/
+
+/-- **Tier 1 — Term.lam lift.**  Body lives at the extended context
+`context.cons domainType` and at `codomainType.weaken`. -/
+theorem RawStep.par.lift_lam
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (bodyLift : ∀ {targetRawIH : RawTerm (scope + 1)},
+      RawStep.par bodyRaw targetRawIH →
+      ∃ bodyTarget : Term (context.cons domainType) codomainType.weaken targetRawIH,
+        Step.par body bodyTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.lam bodyRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.arrow domainType codomainType) targetRaw,
+      Step.par (Term.lam (codomainType := codomainType) body) targetTerm := by
+  obtain ⟨bodyTargetRaw, targetEq, bodyStep⟩ := RawStep.par.lam_inv rawStep
+  obtain ⟨bodyTarget, bodyStepTyped⟩ := bodyLift bodyStep
+  cases targetEq
+  exact ⟨Term.lam (codomainType := codomainType) bodyTarget,
+         Step.par.lam bodyStepTyped⟩
+
+/-- **Tier 1 — Term.lamPi lift.**  Body lives at the extended context
+and the dependent codomain type lives at scope+1. -/
+theorem RawStep.par.lift_lamPi
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons domainType) codomainType bodyRaw)
+    (bodyLift : ∀ {targetRawIH : RawTerm (scope + 1)},
+      RawStep.par bodyRaw targetRawIH →
+      ∃ bodyTarget : Term (context.cons domainType) codomainType targetRawIH,
+        Step.par body bodyTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.lam bodyRaw) targetRaw) :
+    ∃ targetTerm : Term context (Ty.piTy domainType codomainType) targetRaw,
+      Step.par (Term.lamPi (domainType := domainType) body) targetTerm := by
+  obtain ⟨bodyTargetRaw, targetEq, bodyStep⟩ := RawStep.par.lam_inv rawStep
+  obtain ⟨bodyTarget, bodyStepTyped⟩ := bodyLift bodyStep
+  cases targetEq
+  exact ⟨Term.lamPi (domainType := domainType) bodyTarget,
+         Step.par.lamPi bodyStepTyped⟩
+
+/-- **Tier 1 — Term.pathLam lift.** -/
+theorem RawStep.par.lift_pathLam
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+    (bodyLift : ∀ {targetRawIH : RawTerm (scope + 1)},
+      RawStep.par bodyRaw targetRawIH →
+      ∃ bodyTarget :
+          Term (context.cons Ty.interval) carrierType.weaken targetRawIH,
+        Step.par body bodyTarget)
+    {targetRaw : RawTerm scope}
+    (rawStep : RawStep.par (RawTerm.pathLam bodyRaw) targetRaw) :
+    ∃ targetTerm :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint) targetRaw,
+      Step.par
+        (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint body)
+        targetTerm := by
+  obtain ⟨bodyTargetRaw, targetEq, bodyStep⟩ := RawStep.par.pathLam_inv rawStep
+  obtain ⟨bodyTarget, bodyStepTyped⟩ := bodyLift bodyStep
+  cases targetEq
+  exact ⟨Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+                      bodyTarget,
+         Step.par.pathLam modeIsUnivalent bodyStepTyped⟩
+
 end LeanFX2
