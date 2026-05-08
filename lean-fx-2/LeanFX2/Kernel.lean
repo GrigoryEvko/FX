@@ -37,6 +37,7 @@ import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Reduction.ParStar
 import LeanFX2.Reduction.StepStarToPar
 import LeanFX2.Reduction.Compat
