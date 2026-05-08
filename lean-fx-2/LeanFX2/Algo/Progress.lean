@@ -3324,4 +3324,21 @@ theorem Term.app_lam_steps {context : Ctx mode level scope}
                      argumentTerm) target :=
   ⟨_, _, _, Step.betaApp bodyTerm argumentTerm⟩
 
+/-- β-appPi step provability: a dependent Π β-redex
+`(λ. body) arg` at the dependent Π type can take a Step.
+Packages `Step.betaAppPi` as an existential.  The dependent
+codomain `codomainType : Ty level (scope + 1)` distinguishes
+this from the non-dep `app_lam_steps`; same witness shape via
+`Step.betaAppPi`.  Second atom of the M05.B.1 Π/Σ β cohort. -/
+theorem Term.appPi_lamPi_steps {context : Ctx mode level scope}
+    {domainType : Ty level scope} {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)} {argumentRaw : RawTerm scope}
+    (bodyTerm : Term (context.cons domainType) codomainType bodyRaw)
+    (argumentTerm : Term context domainType argumentRaw) :
+    ∃ (targetType : Ty level scope) (targetRaw : RawTerm scope)
+      (target : Term context targetType targetRaw),
+      Step (Term.appPi (Term.lamPi (domainType := domainType) bodyTerm)
+                       argumentTerm) target :=
+  ⟨_, _, _, Step.betaAppPi bodyTerm argumentTerm⟩
+
 end LeanFX2

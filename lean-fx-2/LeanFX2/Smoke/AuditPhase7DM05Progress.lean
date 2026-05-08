@@ -42,3 +42,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.headCtor_oeqRefl_raw
 #print axioms LeanFX2.Term.headCtor_idStrictRefl_raw
 #print axioms LeanFX2.Term.app_lam_steps
+#print axioms LeanFX2.Term.appPi_lamPi_steps
