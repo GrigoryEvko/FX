@@ -62,7 +62,11 @@ namespace LeanFX2.Tools
 -- four more decide-dependent paths (binary cong rules — equivApplyEquiv
 -- + equivApplyArgument + Step.par cong + ConvCumul cong + Allais
 -- helper + dispatch arm).
-#assert_decide_dependent_budget LeanFX2 842
+-- D3.6-S3 ships the raw `RawTerm.pathCompose` ctor + cong (pathComposeCong)
+-- + shallow β (transpCompose) + deep β (transpComposeDeep) + inversion
+-- (pathCompose_inv) cascade, transitively contributing one more
+-- decide-dependent path through the new cd-cascade arm in cdTranspCase.
+#assert_decide_dependent_budget LeanFX2 843
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

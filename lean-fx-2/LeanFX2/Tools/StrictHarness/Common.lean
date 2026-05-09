@@ -1778,7 +1778,18 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- raw level.  Activated through `cdTranspCase`'s `uaToEquiv` arm in
   -- `Confluence/RawCd.lean`.
   suffix == "uaBeta" ||
-  suffix == "uaBetaDeep"
+  suffix == "uaBetaDeep" ||
+  -- Section E: D3.6-S3 compose-β raw rules.  `RawTerm.pathCompose` ships at
+  -- the raw layer (binary ctor, `pathCompose left right`), enabling the
+  -- headline rule `transp (pathCompose left right) source ⟶ transp right
+  -- (transp left source)` to fire syntactically through the cd cascade.
+  -- Typed `Term.pathCompose` is the v1.1 D3.10 follow-up; until then,
+  -- `pathComposeCong` (cong), `transpCompose` (shallow β), and
+  -- `transpComposeDeep` (path-developed β) all ship raw-only.  Activated
+  -- through `cdTranspCase`'s `pathCompose` arm in `Confluence/RawCd.lean`.
+  suffix == "pathComposeCong" ||
+  suffix == "transpCompose" ||
+  suffix == "transpComposeDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

@@ -368,6 +368,26 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       have pathRenameStep := pathIH rawRenaming
       simp only [RawTerm.rename] at pathRenameStep
       exact RawStep.par.uaBetaDeep pathRenameStep (sourceIH _)
+  | pathComposeCong _ _ leftIH rightIH =>
+      -- D3.6-S3: rename distributes over the binary pathCompose ctor.
+      exact RawStep.par.pathComposeCong (leftIH _) (rightIH _)
+  | transpCompose _ _ _ leftIH rightIH sourceIH =>
+      -- D3.6-S3: rename commutes with the compose-β contractum.
+      -- LHS rename: transp (pathCompose (left.rename rho) (right.rename rho))
+      --                    (source.rename rho)
+      -- RHS rename: transp (right.rename rho)
+      --                    (transp (left.rename rho) (source.rename rho))
+      -- Both sides mechanical via `RawTerm.rename` on `transp`/`pathCompose`.
+      simp only [RawTerm.rename]
+      exact RawStep.par.transpCompose (leftIH _) (rightIH _) (sourceIH _)
+  | transpComposeDeep _ _ pathIH sourceIH =>
+      -- D3.6-S3 deep variant: rename commutes via `RawTerm.rename` on
+      -- `transp`/`pathCompose`.  pathIH renamed gives a par step on the
+      -- renamed path landing at pathCompose of the renamed targets.
+      simp only [RawTerm.rename]
+      have pathRenameStep := pathIH rawRenaming
+      simp only [RawTerm.rename] at pathRenameStep
+      exact RawStep.par.transpComposeDeep pathRenameStep (sourceIH _)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)
   | funextReflAtIdCong _ applyIH =>

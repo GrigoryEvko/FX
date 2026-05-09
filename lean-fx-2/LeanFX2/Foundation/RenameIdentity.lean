@@ -293,6 +293,11 @@ theorem RawTerm.rename_identity {scope : Nat} :
       show (equivRaw.rename _).equivApply (argRaw.rename _) =
            equivRaw.equivApply argRaw
       rw [RawTerm.rename_identity equivRaw, RawTerm.rename_identity argRaw]
+  -- D3.6-S3: pathCompose — recurse on left and right path raws.
+  | .pathCompose leftPathRaw rightPathRaw => by
+      show (leftPathRaw.rename _).pathCompose (rightPathRaw.rename _) =
+           leftPathRaw.pathCompose rightPathRaw
+      rw [RawTerm.rename_identity leftPathRaw, RawTerm.rename_identity rightPathRaw]
 
 /-! ## Ty.rename_identity
 

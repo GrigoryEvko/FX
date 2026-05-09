@@ -273,19 +273,21 @@ theorem RawStep.par.cd_dominates :
           case _ _unwknEqn =>
               exact RawStep.par.transpCong pathParStep sourceParStep
       -- D3.6-S1 cd activation: when cd pathTerm = uaToEquiv proofRaw,
-      -- fire the deep univalence-β rule.  The deep variant takes the
-      -- pathParStep premise directly without needing path-shape
-      -- inversion (mirrors `transpReflBetaDeep` for the constant-path
-      -- case at lines 264-273 above).  Each remaining `split` arm
-      -- defaults to `transpCong`; the uaToEquiv arm overrides with
-      -- `uaBetaDeep`.  Use `first` over each leftover goal: try the
-      -- uaToEquiv-specific tactic (which depends on `cdPathEqn` of
-      -- the right shape and a single proofRaw binder), otherwise
+      -- fire the deep univalence-β rule.  D3.6-S3 cd activation: when
+      -- cd pathTerm = pathCompose left right, fire the deep
+      -- compose-β rule.  Each leftover `split` arm defaults to
+      -- `transpCong`; the uaToEquiv arm overrides with `uaBetaDeep`,
+      -- and the pathCompose arm overrides with `transpComposeDeep`.
+      -- Use `first` over each leftover goal: try the uaToEquiv-specific
+      -- tactic, otherwise the pathCompose-specific tactic, otherwise
       -- close via transpCong.
       all_goals first
         | (rename_i proofRaw cdPathEqn
            rw [cdPathEqn] at pathParStep
            exact RawStep.par.uaBetaDeep pathParStep sourceParStep)
+        | (rename_i leftPathRaw rightPathRaw cdPathEqn
+           rw [cdPathEqn] at pathParStep
+           exact RawStep.par.transpComposeDeep pathParStep sourceParStep)
         | exact RawStep.par.transpCong pathParStep sourceParStep
   | _, .hcomp sidesTerm capTerm =>
       RawStep.par.hcompCong
@@ -421,5 +423,12 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.equivApplyCong
         (RawStep.par.cd_dominates equivRaw)
         (RawStep.par.cd_dominates argRaw)
+  -- D3.6-S3: pathCompose — pure cong, recurse on left and right path raws.
+  -- The actual β rule fires through `cdTranspCase` when pathCompose is
+  -- the developed path of a transp.
+  | _, .pathCompose leftPathRaw rightPathRaw =>
+      RawStep.par.pathComposeCong
+        (RawStep.par.cd_dominates leftPathRaw)
+        (RawStep.par.cd_dominates rightPathRaw)
 
 end LeanFX2

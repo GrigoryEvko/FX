@@ -508,6 +508,11 @@ theorem RawTerm.act_eq_rename :
       show RawTerm.equivApply (equivRaw.act someRenaming) (argRaw.act someRenaming) =
            RawTerm.equivApply (equivRaw.rename someRenaming) (argRaw.rename someRenaming)
       rw [equivIH someRenaming, argIH someRenaming]
+  | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
+      intro someRenaming
+      show RawTerm.pathCompose (leftPathRaw.act someRenaming) (rightPathRaw.act someRenaming) =
+           RawTerm.pathCompose (leftPathRaw.rename someRenaming) (rightPathRaw.rename someRenaming)
+      rw [leftIH someRenaming, rightIH someRenaming]
 
 /-- Bridge theorem: applying `RawTerm.act` over a `Subst level`
 Container produces the same result as applying `RawTerm.subst
@@ -886,6 +891,12 @@ theorem RawTerm.act_eq_subst_forRaw {level : Nat} :
            RawTerm.equivApply (equivRaw.subst someSubst.forRaw)
                               (argRaw.subst someSubst.forRaw)
       rw [equivIH someSubst, argIH someSubst]
+  | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
+      intro someSubst
+      show RawTerm.pathCompose (leftPathRaw.act someSubst) (rightPathRaw.act someSubst) =
+           RawTerm.pathCompose (leftPathRaw.subst someSubst.forRaw)
+                               (rightPathRaw.subst someSubst.forRaw)
+      rw [leftIH someSubst, rightIH someSubst]
 
 /-! ## Smoke equivalences with existing `Ty.subst`.
 

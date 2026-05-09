@@ -323,6 +323,7 @@ def Term.infer (context : Ctx mode level scope) :
   | .cumulUpMarker _    => none
   | .uaToEquiv _        => none
   | .equivApply _ _     => none
+  | .pathCompose _ _    => none
 
 end LeanFX2
 

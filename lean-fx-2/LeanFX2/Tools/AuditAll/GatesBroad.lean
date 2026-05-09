@@ -65,7 +65,9 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed Term.equivApply cascade (binary rename/subst/substHet/
 -- pointwise + binary Step cong rules + Step.par cong + ConvCumul cong
 -- + Allais helper) threads five more cast paths.
-#assert_cast_operator_dependent_budget LeanFX2 1314
+-- D3.6-S3 ships the raw `RawTerm.pathCompose` cascade (cong / shallow β /
+-- deep β / inversion + cd cascade extension), threading one more cast path.
+#assert_cast_operator_dependent_budget LeanFX2 1315
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

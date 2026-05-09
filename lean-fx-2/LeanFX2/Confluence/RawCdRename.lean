@@ -684,6 +684,13 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
            RawTerm.cd (RawTerm.equivApply (equivRaw.rename rho) (argRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
       rw [equivIH rho, argIH rho]
+  | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
+      intro _ rho
+      show (RawTerm.pathCompose (RawTerm.cd leftPathRaw) (RawTerm.cd rightPathRaw)).rename rho =
+           RawTerm.cd (RawTerm.pathCompose (leftPathRaw.rename rho)
+                                            (rightPathRaw.rename rho))
+      simp only [RawTerm.rename, RawTerm.cd]
+      rw [leftIH rho, rightIH rho]
 
 /-! ## Specialization: `cd_weaken`. -/
 

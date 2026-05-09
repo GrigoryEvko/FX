@@ -134,6 +134,7 @@ theorem RawTerm.eq_lam_of_lamBody?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
 
 /-- Inversion for `pairComponents?`. -/
 theorem RawTerm.eq_pair_of_pairComponents?_eq_some
@@ -216,6 +217,7 @@ theorem RawTerm.eq_pair_of_pairComponents?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
 
 /-- Inversion for `natSuccPred?`. -/
 theorem RawTerm.eq_natSucc_of_natSuccPred?_eq_some
@@ -295,6 +297,7 @@ theorem RawTerm.eq_natSucc_of_natSuccPred?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
 
 /-- Inversion for `listConsParts?`. -/
 theorem RawTerm.eq_listCons_of_listConsParts?_eq_some
@@ -377,6 +380,7 @@ theorem RawTerm.eq_listCons_of_listConsParts?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
 
 /-- Inversion for `optionSomeValue?`. -/
 theorem RawTerm.eq_optionSome_of_optionSomeValue?_eq_some
@@ -456,6 +460,7 @@ theorem RawTerm.eq_optionSome_of_optionSomeValue?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
 
 /-- Inversion for `eitherInlValue?`. -/
 theorem RawTerm.eq_eitherInl_of_eitherInlValue?_eq_some
@@ -535,6 +540,7 @@ theorem RawTerm.eq_eitherInl_of_eitherInlValue?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
 
 /-- Inversion for `eitherInrValue?`. -/
 theorem RawTerm.eq_eitherInr_of_eitherInrValue?_eq_some
@@ -614,6 +620,7 @@ theorem RawTerm.eq_eitherInr_of_eitherInrValue?_eq_some
   | cumulUpMarker _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | uaToEquiv _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | equivApply _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | pathCompose _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
 
 /-! ## Headline theorem: `RawTerm.whnf` reaches a parallel reduct
 
@@ -824,7 +831,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.boolElimScrutinee thenBranch elseBranch
@@ -897,7 +904,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.natElimScrutinee zeroBranch succBranch
@@ -973,7 +980,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.natRecScrutinee zeroBranch succBranch
@@ -1047,7 +1054,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.listElimScrutinee nilBranch consBranch
@@ -1122,7 +1129,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.optionMatchScrutinee noneBranch someBranch
@@ -1200,7 +1207,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hScrutineeWhnf] at scrutineeChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.eitherMatchScrutinee leftBranch rightBranch
@@ -1253,7 +1260,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | productCode _ _ | sumCode _ _
         | listCode _ | optionCode _ | eitherCode _ _
         | idCode _ _ _ | equivCode _ _ | cumulUpMarker _
-        | uaToEquiv _ | equivApply _ _ =>
+        | uaToEquiv _ | equivApply _ _ | pathCompose _ _ =>
             rw [hWitnessWhnf] at witnessChain
             simp only [RawTerm.headCtor]
             exact RawStep.parStar.idJWitness baseCase witnessChain
@@ -1307,6 +1314,9 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
     | uaToEquiv _ => exact RawStep.parStar.refl _
     -- D3.6-P2: equivApply — vocabulary-only, no β/ι, refl.
     | equivApply _ _ => exact RawStep.parStar.refl _
+    -- D3.6-S3: pathCompose — vocabulary-only, no β/ι, refl.
+    -- The β rule fires under transp, not inside pathCompose itself.
+    | pathCompose _ _ => exact RawStep.parStar.refl _
 
 /-! ## Corollary: WHNF agreement ⇒ common reduct
 

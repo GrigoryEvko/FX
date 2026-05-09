@@ -39,7 +39,9 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` binary cascade adds four more OfNat
 -- paths (binary cong rules — equivApplyEquiv + equivApplyArgument +
 -- Step.par cong + ConvCumul cong + Allais helper + dispatch arm).
-#assert_ofnat_dependent_budget LeanFX2 985
+-- D3.6-S3: raw `RawTerm.pathCompose` cascade adds one more OfNat path
+-- through new shape-inversion helper rename_eq_pathCompose_imp.
+#assert_ofnat_dependent_budget LeanFX2 986
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -65,7 +67,9 @@ namespace LeanFX2.Tools
 -- D3.6-P3: typed cascade adds six more Eq-rewriting paths.
 -- D3.6-P4: typed `Term.equivApply` binary cascade adds five more
 -- Eq-rewriting paths.
-#assert_eq_rewriting_dependent_budget LeanFX2 1220
+-- D3.6-S3: raw `RawTerm.pathCompose` cascade adds one more Eq-rewriting
+-- path through the new cd cascade arm + inversion helper.
+#assert_eq_rewriting_dependent_budget LeanFX2 1221
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

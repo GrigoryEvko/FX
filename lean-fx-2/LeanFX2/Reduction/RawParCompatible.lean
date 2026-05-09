@@ -316,6 +316,11 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
       RawStep.par.equivApplyCong
         (RawTerm.subst_par_pointwise equivRaw substsRelated)
         (RawTerm.subst_par_pointwise argRaw substsRelated)
+  -- D3.6-S3: pathCompose recurses on left and right path raws.
+  | .pathCompose leftPathRaw rightPathRaw, _, _, substsRelated =>
+      RawStep.par.pathComposeCong
+        (RawTerm.subst_par_pointwise leftPathRaw substsRelated)
+        (RawTerm.subst_par_pointwise rightPathRaw substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -696,6 +701,29 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       have pathSubstStep := pathIH substsRelated
       simp only [RawTerm.subst] at pathSubstStep
       exact RawStep.par.uaBetaDeep pathSubstStep (sourceIH substsRelated)
+  | pathComposeCong _ _ leftIH rightIH =>
+      -- D3.6-S3: parallel substitution distributes over the binary
+      -- pathCompose ctor; each path raw gets the same substitution.
+      exact RawStep.par.pathComposeCong
+        (leftIH substsRelated) (rightIH substsRelated)
+  | transpCompose _ _ _ leftIH rightIH sourceIH =>
+      -- D3.6-S3: parallel substitution preserves the compose-β
+      -- contractum.  LHS subst pushes through transp/pathCompose heads;
+      -- RHS subst pushes through nested transp.  Mechanical via the
+      -- definition of `RawTerm.subst` on the involved ctors (no binder
+      -- shift since none of the involved ctors carry binders at this
+      -- level).
+      simp only [RawTerm.subst]
+      exact RawStep.par.transpCompose
+        (leftIH substsRelated) (rightIH substsRelated) (sourceIH substsRelated)
+  | transpComposeDeep _ _ pathIH sourceIH =>
+      -- D3.6-S3 deep variant: parallel substitution pushes through
+      -- transp/pathCompose heads.  Lift pathIH via subst on its
+      -- pathCompose-headed target, then assemble the nested-transp RHS.
+      simp only [RawTerm.subst]
+      have pathSubstStep := pathIH substsRelated
+      simp only [RawTerm.subst] at pathSubstStep
+      exact RawStep.par.transpComposeDeep pathSubstStep (sourceIH substsRelated)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

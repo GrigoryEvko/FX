@@ -244,6 +244,39 @@ inductive RawTerm : Nat → Type
   `RawTerm` ctor by raw-ctor mismatch, so existing typed inversions
   remain unaffected. -/
   | equivApply {scope : Nat} (equivRaw argRaw : RawTerm scope) : RawTerm scope
+  /-- Phase D3.6-S3: cubical path composition.  `pathCompose leftPath
+  rightPath` represents the cubical operation of concatenating two
+  paths into a single path.  At the typing layer (v1.1 D3.10
+  follow-up), `Term.pathCompose` will require both paths to be
+  `Ty.path carrier x y` and `Ty.path carrier y z` and yield
+  `Ty.path carrier x z`.  At raw level the ctor is binary, carrying
+  the two underlying path term raws (no binder).
+
+  ## Why a kernel-syntactic ctor
+
+  Path composition cannot be derived from existing kernel constructors
+  without `hcomp` β rules (deferred — see `Reduction/Step.lean` line
+  1247 BLOCKED).  The set-level alias `Path.trans` in
+  `HoTT/Path/Composition.lean` (= `Eq.trans`) is meta-level only.
+  Adding `pathCompose` as a kernel ctor enables the headline D3.6-S3
+  rule
+
+  ```
+  transp (pathCompose leftPath rightPath) source
+    ⟶ transp rightPath (transp leftPath source)
+  ```
+
+  to be expressed at the kernel level and fire through the cd cascade.
+
+  ## Structural distinctness
+
+  This ctor is structurally distinct from every other `RawTerm` ctor
+  by raw-ctor mismatch — including `RawTerm.idJ` (which has the same
+  binary shape but different field semantics).  Existing typed
+  inversions remain unaffected because the new ctor doesn't appear in
+  any existing inversion lemma's case enumeration. -/
+  | pathCompose {scope : Nat}
+      (leftPathRaw rightPathRaw : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -532,5 +565,11 @@ equalities. -/
   -- both the equivalence raw and the argument raw (no binder).
   | _, _, .equivApply equivRaw argRaw, someAction =>
       .equivApply (equivRaw.act someAction) (argRaw.act someAction)
+  -- D3.6-S3: pathCompose vocabulary.  Atom-shape arm — recurse on
+  -- both path raws (no binder; the cubical `compose path1 path2` does
+  -- not introduce a fresh interval variable at the syntactic layer —
+  -- the binder, if any, lives inside each path's `pathLam` body).
+  | _, _, .pathCompose leftPathRaw rightPathRaw, someAction =>
+      .pathCompose (leftPathRaw.act someAction) (rightPathRaw.act someAction)
 
 end LeanFX2

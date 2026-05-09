@@ -1002,6 +1002,90 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par
         (RawTerm.transp pathRawSource sourceRawSource)
         (RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget) sourceRawTarget)
+  /-- D3.6-S3 Cong: pathCompose reduces pointwise in its left and right
+  path raw payloads.  Binary mirror of `uaToEquivCong`. -/
+  | pathComposeCong {scope : Nat}
+      {leftSource leftTarget rightSource rightTarget : RawTerm scope} :
+      RawStep.par leftSource leftTarget →
+      RawStep.par rightSource rightTarget →
+      RawStep.par (RawTerm.pathCompose leftSource rightSource)
+                  (RawTerm.pathCompose leftTarget rightTarget)
+  /-- D3.6-S3 raw cubical-β rule: transport distributes over path composition.
+
+  ```
+  transp (pathCompose leftPath rightPath) source
+    ⟶ transp rightPath (transp leftPath source)
+  ```
+
+  This is the kernel-internal cubical-β rule encoding the spec's
+  rule "transp (compose path1 path2) source ⟶ transp path2 (transp
+  path1 source)" (per `fx_design.md` §27 / Appendix H).  The headline
+  rule fires when `transp`'s path argument is syntactically a
+  `pathCompose leftRaw rightRaw` head — both paths develop in parallel
+  to their target shapes, the source value develops to its target,
+  and the resulting expression nests two `transp` applications,
+  applying `leftPath`'s transport first (innermost) and `rightPath`'s
+  outermost.
+
+  ## Why both paths and source step
+
+  Inner reductions on each path raw and the source proceed via three
+  `RawStep.par` premises.  The β fires on the outer `transp` head
+  with the path's `pathCompose` ctor matching syntactically.  This is
+  the shallow form; the deep variant (path develops to `pathCompose`
+  via parallel reduction) is `transpComposeDeep` below.
+
+  ## Raw-only cascade (matches uaBeta architecture)
+
+  At the typed level, `Term.pathCompose` requires both paths to be
+  `Term context (Ty.path ...) ...` and produces a fresh path of the
+  composed endpoints — but the kernel's typed `Term` inductive does
+  NOT yet have a `pathCompose` ctor (D3.10 follow-up, deferred to
+  v1.1).  Therefore no typed `Term.transp` can have a path-raw of
+  `RawTerm.pathCompose ...`, making this β rule structurally a raw-
+  only confluence-closure mechanism — listed in
+  `isDocumentedRawOnlyParity` alongside `uaBeta`/`uaBetaDeep` and
+  `transpReflBetaDeep`.
+
+  ## Connection to meta-level rule
+
+  At the meta-level, `Path.transport_compose` in
+  `HoTT/TranspCompose.lean` proves the SAME rule for set-level paths
+  (Lean Eq).  The kernel-syntactic raw rule shipped here is the
+  cubical analog that fires through the cd cascade. -/
+  | transpCompose {scope : Nat}
+      {leftRawSource leftRawTarget rightRawSource rightRawTarget
+       sourceRawSource sourceRawTarget : RawTerm scope} :
+      RawStep.par leftRawSource leftRawTarget →
+      RawStep.par rightRawSource rightRawTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.transp (RawTerm.pathCompose leftRawSource rightRawSource)
+          sourceRawSource)
+        (RawTerm.transp rightRawTarget
+          (RawTerm.transp leftRawTarget sourceRawTarget))
+  /-- D3.6-S3 deep raw cubical-β rule: when the path develops via
+  parallel reduction to a `pathCompose leftRawTarget rightRawTarget`
+  and the source steps to a target value, the entire `transp` reduces
+  to the compose-β contractum.  Required for `cd_dominates` to
+  discharge `cdTranspCase`'s `pathCompose`-firing branch when the
+  path was NOT literally `pathCompose left right` on the LHS but
+  reaches that shape under cd development.
+
+  Discharge in `cd_lemma` requires the typical path-shape inversion
+  on `pathStep` — analogous to `uaBetaDeep` for the univalence-β case.
+  Documented `raw-only` (`isDocumentedRawOnlyParity`) — a
+  confluence-only mechanism with no typed mirror because
+  `transpCompose` itself has no typed mirror until D3.10 v1.1. -/
+  | transpComposeDeep {scope : Nat}
+      {pathRawSource leftRawTarget rightRawTarget
+       sourceRawSource sourceRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource
+        (RawTerm.pathCompose leftRawTarget rightRawTarget) →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
+                  (RawTerm.transp rightRawTarget
+                    (RawTerm.transp leftRawTarget sourceRawTarget))
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/

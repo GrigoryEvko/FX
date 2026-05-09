@@ -520,6 +520,7 @@ def Term.check : ∀ {scope : Nat}
   | .cumulUpMarker _    => none
   | .uaToEquiv _        => none
   | .equivApply _ _     => none
+  | .pathCompose _ _    => none
 
 end LeanFX2
 

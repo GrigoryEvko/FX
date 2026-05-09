@@ -352,6 +352,23 @@ theorem RawStep.par.uaToEquiv_inv {scope : Nat}
   | refl _ => exact ⟨proof, rfl, RawStep.par.refl _⟩
   | uaToEquivCong proofStep => exact ⟨_, rfl, proofStep⟩
 
+/-- D3.6-S3 `RawStep.par (pathCompose left right) target → target =
+pathCompose left' right' ∧ par left left' ∧ par right right'`.  Required
+by `RawCdLemma`'s `transpComposeDeep` arm and `cdTranspCase`
+activation: a parallel step landing at `pathCompose X Y` admits only
+the `pathComposeCong` rule (or `refl`), so the target is `pathCompose`
+of inner par-targets. -/
+theorem RawStep.par.pathCompose_inv {scope : Nat}
+    {leftPath rightPath : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.pathCompose leftPath rightPath) target) :
+    ∃ leftTarget rightTarget,
+      target = RawTerm.pathCompose leftTarget rightTarget ∧
+      RawStep.par leftPath leftTarget ∧
+      RawStep.par rightPath rightTarget := by
+  cases parallelStep with
+  | refl _ => exact ⟨leftPath, rightPath, rfl, RawStep.par.refl _, RawStep.par.refl _⟩
+  | pathComposeCong leftStep rightStep => exact ⟨_, _, rfl, leftStep, rightStep⟩
+
 /-- `RawStep.par (pathApp p i) target` either stays a congruent
 `pathApp`, or fires cubical path β after the path develops to a
 `pathLam`. -/
@@ -432,8 +449,11 @@ constant `pathLam typeRaw.weaken` and the rule fired through
 `transpReflBeta`, the path develops to a constant pathLam-weaken via
 parallel step (deep-β `transpReflBetaDeep`), the LHS path was a
 `uaToEquiv proofRaw` head and the rule fired through `uaBeta`
-(D3.6-S1), or the path develops to `uaToEquiv proofRawTarget` via
-parallel step (deep ua-β `uaBetaDeep`). -/
+(D3.6-S1), the path develops to `uaToEquiv proofRawTarget` via
+parallel step (deep ua-β `uaBetaDeep`), the LHS path was a
+`pathCompose left right` head and the rule fired through
+`transpCompose` (D3.6-S3), or the path develops to a `pathCompose`
+shape via parallel step (deep compose-β `transpComposeDeep`). -/
 theorem RawStep.par.transp_inv {scope : Nat}
     {pathTerm sourceTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.transp pathTerm sourceTerm) target) :
@@ -459,6 +479,19 @@ theorem RawStep.par.transp_inv {scope : Nat}
         target = RawTerm.equivApply (RawTerm.uaToEquiv proofRawTarget)
                                      sourceTarget ∧
         RawStep.par pathTerm (RawTerm.uaToEquiv proofRawTarget) ∧
+        RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (leftRawSource leftRawTarget rightRawSource rightRawTarget
+        sourceTarget : RawTerm scope),
+        pathTerm = RawTerm.pathCompose leftRawSource rightRawSource ∧
+        target = RawTerm.transp rightRawTarget
+                                (RawTerm.transp leftRawTarget sourceTarget) ∧
+        RawStep.par leftRawSource leftRawTarget ∧
+        RawStep.par rightRawSource rightRawTarget ∧
+        RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (leftRawTarget rightRawTarget sourceTarget : RawTerm scope),
+        target = RawTerm.transp rightRawTarget
+                                (RawTerm.transp leftRawTarget sourceTarget) ∧
+        RawStep.par pathTerm (RawTerm.pathCompose leftRawTarget rightRawTarget) ∧
         RawStep.par sourceTerm sourceTarget) := by
   cases parallelStep with
   | refl _ =>
@@ -475,8 +508,16 @@ theorem RawStep.par.transp_inv {scope : Nat}
       exact Or.inr (Or.inr (Or.inr (Or.inl
         ⟨proofRawSource, proofRawTarget, _, rfl, rfl, proofStep, sourceStep⟩)))
   | @uaBetaDeep _ _ proofRawTarget _ _ pathStep sourceStep =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr
-        ⟨proofRawTarget, _, rfl, pathStep, sourceStep⟩)))
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨proofRawTarget, _, rfl, pathStep, sourceStep⟩))))
+  | @transpCompose _ leftRawSource leftRawTarget rightRawSource rightRawTarget
+                   _ _ leftStep rightStep sourceStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨leftRawSource, leftRawTarget, rightRawSource, rightRawTarget, _,
+         rfl, rfl, leftStep, rightStep, sourceStep⟩)))))
+  | @transpComposeDeep _ _ leftRawTarget rightRawTarget _ _ pathStep sourceStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+        ⟨leftRawTarget, rightRawTarget, _, rfl, pathStep, sourceStep⟩)))))
 
 /-- `RawStep.par (hcomp s c) target → target = hcomp s' c' ∧ pars`. -/
 theorem RawStep.par.hcomp_inv {scope : Nat}

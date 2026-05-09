@@ -66,6 +66,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.uaBeta
 #assert_no_axioms LeanFX2.RawStep.par.uaBetaDeep
 #assert_no_axioms LeanFX2.RawStep.par.uaToEquiv_inv
+-- D3.6-S3 compose-β raw rules (kernel-internal cubical compose-β —
+-- raw-only confluence-closure mechanism mounted on the new
+-- `RawTerm.pathCompose` ctor, listed in `isDocumentedRawOnlyParity`
+-- since typed `Term.pathCompose` is the v1.1 D3.10 follow-up — once
+-- it lands, the typed mirrors `Step.pathComposeCong` /
+-- `Step.transpCompose` / `Step.par.transpCompose` will ship and these
+-- arms will move out of the raw-only whitelist).  Activated through
+-- `cdTranspCase`'s `pathCompose` arm in `Confluence/RawCd.lean`.
+#assert_no_axioms LeanFX2.RawStep.par.pathComposeCong
+#assert_no_axioms LeanFX2.RawStep.par.transpCompose
+#assert_no_axioms LeanFX2.RawStep.par.transpComposeDeep
+#assert_no_axioms LeanFX2.RawStep.par.pathCompose_inv
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp

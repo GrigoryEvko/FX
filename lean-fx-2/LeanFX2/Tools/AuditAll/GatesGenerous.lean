@@ -71,7 +71,10 @@ namespace LeanFX2.Tools
 -- `Step.par.equivApplyCong` + `Step.equivApplyEquiv` +
 -- `Step.equivApplyArgument` + `ConvCumul.equivApplyCong` + Allais
 -- helper, contributing four more absurd-using branches.
-#assert_absurd_false_dependent_budget LeanFX2 981
+-- D3.6-S3 ships the raw `RawTerm.pathCompose` ctor + cascade adding
+-- one more absurd-using branch through the new shape-inversion helper
+-- (66 nomatch arms contribute through cascade dependents).
+#assert_absurd_false_dependent_budget LeanFX2 982
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the

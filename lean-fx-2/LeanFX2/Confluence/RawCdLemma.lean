@@ -455,14 +455,21 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       -- D3.6-S1: when `cd pathRawSource = uaToEquiv proofRawTarget`,
       -- cdTranspCase fires the equivApply contractum.  Use uaBetaDeep
       -- with pathIH directly (par pathRawTarget (uaToEquiv ...)).
+      -- D3.6-S3: when `cd pathRawSource = pathCompose left right`,
+      -- cdTranspCase fires the nested-transp contractum.  Use
+      -- transpComposeDeep with pathIH directly.
       -- The `first` block tries the uaToEquiv-specific tactic per
       -- remaining arm; only the uaToEquiv arm has `pathIH : par _
-      -- (uaToEquiv _)` after the rewrite, so all others fall through
-      -- to the transpCong default.
+      -- (uaToEquiv _)` after the rewrite, only the pathCompose arm
+      -- has `pathIH : par _ (pathCompose _ _)`, and all others fall
+      -- through to the transpCong default.
       all_goals first
         | (rename_i proofRaw cdPathEqn
            rw [cdPathEqn] at pathIH
            exact RawStep.par.uaBetaDeep pathIH sourceIH)
+        | (rename_i leftPathRaw rightPathRaw cdPathEqn
+           rw [cdPathEqn] at pathIH
+           exact RawStep.par.transpComposeDeep pathIH sourceIH)
         | exact RawStep.par.transpCong pathIH sourceIH
   | @uaBeta _ proofRawSource _ _ _ _ sourceStep proofIH sourceIH =>
       -- D3.6-S1 shallow: source = transp (uaToEquiv proofRawSource)
@@ -672,5 +679,47 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | equivApplyCong _ _ equivIH argIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.equivApplyCong equivIH argIH
+  | pathComposeCong _ _ leftIH rightIH =>
+      -- D3.6-S3: pure cong; cd recurses on both path raws.
+      simp only [RawTerm.cd]
+      exact RawStep.par.pathComposeCong leftIH rightIH
+  | @transpCompose _ leftRawSource _ rightRawSource _ _ _
+                   leftStep rightStep sourceStep
+                   leftIH rightIH sourceIH =>
+      -- D3.6-S3 shallow:
+      -- Source = transp (pathCompose leftRawSource rightRawSource) sourceRawSource.
+      -- Target = transp rightRawTarget (transp leftRawTarget sourceRawTarget).
+      -- leftIH : par leftRawTarget (cd leftRawSource)
+      -- rightIH : par rightRawTarget (cd rightRawSource)
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource)
+      -- Goal: par (transp rightRawTarget (transp leftRawTarget sourceRawTarget))
+      --           (cd (transp (pathCompose leftRawSource rightRawSource)
+      --                       sourceRawSource))
+      -- The cd of `transp (pathCompose left right) source` unfolds to
+      -- cdTranspCase, which fires the pathCompose arm yielding
+      -- transp (cd right) (transp (cd left) (cd source)).  Conclude
+      -- via two transpCong applications threading leftIH/rightIH/sourceIH.
+      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      exact RawStep.par.transpCong rightIH (RawStep.par.transpCong leftIH sourceIH)
+  | @transpComposeDeep _ pathRawSource _ _ _ _
+                       pathStep sourceStep pathIH sourceIH =>
+      -- D3.6-S3 deep:
+      -- Source = transp pathRawSource sourceRawSource.
+      -- Target = transp rightRawTarget (transp leftRawTarget sourceRawTarget).
+      -- pathStep : par pathRawSource (pathCompose leftRawTarget rightRawTarget)
+      -- pathIH : par (pathCompose leftRawTarget rightRawTarget) (cd pathRawSource)
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource)
+      -- Goal: par (transp rightRawTarget (transp leftRawTarget sourceRawTarget))
+      --           (cdTranspCase (cd pathRawSource) (cd sourceRawSource))
+      -- By pathCompose_inv on pathIH: cd pathRawSource = pathCompose lInner rInner
+      -- with par leftRawTarget lInner and par rightRawTarget rInner.
+      -- cdTranspCase fires the pathCompose arm yielding
+      -- transp rInner (transp lInner (cd sourceRawSource)).
+      obtain ⟨lInner, rInner, cdPathEq, leftParStep, rightParStep⟩ :=
+        RawStep.par.pathCompose_inv pathIH
+      simp only [RawTerm.cd, RawTerm.cdTranspCase]
+      rw [cdPathEq]
+      exact RawStep.par.transpCong rightParStep
+        (RawStep.par.transpCong leftParStep sourceIH)
 
 end LeanFX2
