@@ -2051,6 +2051,263 @@ def RawTerm.cdIdToEquivCase {scope : Nat}
         (RawTerm.idToEquiv secondProof)
   | RawTerm.equivCompose _ _ => RawTerm.idToEquiv developedProof
 
+/-- D3.6-S6 uaToEquiv-of-witness redex (inner dispatch under
+`cdEquivApplyCase`'s `uaToEquiv` arm): `uaToEquiv (oeqRefl _)` is the
+identity-equivalence-via-univalence; applying it to a value yields
+the value unchanged.  When the inner `proof` is syntactically
+`oeqRefl witness`, the contractum is `developedArg` directly.
+Otherwise rebuild `equivApply (uaToEquiv proof) developedArg`.
+67-arm full enumeration keeps the match propext-clean. -/
+def RawTerm.cdUaToEquivApplyCase {scope : Nat}
+    (proof developedArg : RawTerm scope) : RawTerm scope :=
+  match proof with
+  -- HEADLINE: equivApply (uaToEquiv (oeqRefl _)) developedArg ⟶ developedArg
+  | RawTerm.oeqRefl _ => developedArg
+  | RawTerm.var _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.unit =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.lam _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.app _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.pair _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.fst _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.snd _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.boolTrue =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.boolFalse =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.boolElim _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.natZero =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.natSucc _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.natElim _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.natRec _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.listNil =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.listCons _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.listElim _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.optionNone =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.optionSome _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.optionMatch _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.eitherInl _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.eitherInr _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.eitherMatch _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.refl _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.idJ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.modIntro _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.modElim _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.subsume _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.interval0 =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.interval1 =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.intervalOpp _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.intervalMeet _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.intervalJoin _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.pathLam _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.pathApp _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.glueIntro _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.glueElim _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.transp _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.hcomp _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.oeqJ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.oeqFunext _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.idStrictRefl _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.idStrictRec _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.equivIntro _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.equivApp _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.refineIntro _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.refineElim _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.recordIntro _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.recordProj _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.codataUnfold _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.codataDest _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.sessionSend _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.sessionRecv _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.effectPerform _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.universeCode _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.arrowCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.piTyCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.sigmaTyCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.productCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.sumCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.listCode _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.optionCode _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.eitherCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.idCode _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.equivCode _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.cumulUpMarker _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.uaToEquiv _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.equivApply _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.pathCompose _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.idToEquiv _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.oeqTrans _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.equivCompose _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+
+/-- D3.6-S6 outer dispatch: `equivApply` reduces directly when the
+developed equiv is `uaToEquiv (oeqRefl _)` (the
+identity-equivalence-via-univalence shape).  Dispatches through
+`cdUaToEquivApplyCase` for the `uaToEquiv` arm; all other 66 ctors
+rebuild as plain cong `equivApply developedEquiv developedArg`.
+67-arm full enumeration keeps the match propext-clean. -/
+def RawTerm.cdEquivApplyCase {scope : Nat}
+    (developedEquiv developedArg : RawTerm scope) : RawTerm scope :=
+  match developedEquiv with
+  -- HEADLINE: dispatch the round-trip-β rule when developed equiv has
+  -- shape uaToEquiv (oeqRefl _).
+  | RawTerm.uaToEquiv proof =>
+    RawTerm.cdUaToEquivApplyCase proof developedArg
+  | RawTerm.var _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.unit => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.lam _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.app _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.pair _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.fst _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.snd _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.boolTrue => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.boolFalse => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.boolElim _ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.natZero => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.natSucc _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.natElim _ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.natRec _ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.listNil => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.listCons _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.listElim _ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.optionNone => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.optionSome _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.optionMatch _ _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.eitherInl _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.eitherInr _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.eitherMatch _ _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.refl _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.idJ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.modIntro _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.modElim _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.subsume _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.interval0 => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.interval1 => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.intervalOpp _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.intervalMeet _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.intervalJoin _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.pathLam _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.pathApp _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.glueIntro _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.glueElim _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.transp _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.hcomp _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.oeqRefl _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.oeqJ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.oeqFunext _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.idStrictRefl _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.idStrictRec _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.equivIntro _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.equivApp _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.refineIntro _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.refineElim _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.recordIntro _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.recordProj _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.codataUnfold _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.codataDest _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.sessionSend _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.sessionRecv _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.effectPerform _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.universeCode _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.arrowCode _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.piTyCode _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.sigmaTyCode _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.productCode _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.sumCode _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.listCode _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.optionCode _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.eitherCode _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.idCode _ _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.equivCode _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.cumulUpMarker _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.equivApply _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.pathCompose _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.idToEquiv _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.oeqTrans _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.equivCompose _ _ =>
+    RawTerm.equivApply developedEquiv developedArg
+
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
 developed.  Zero axioms: full enumeration in every inner match
@@ -2195,9 +2452,12 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
   -- D3.6-P1: uaToEquiv recurses on inner proof raw.
   | _, .uaToEquiv proofRaw =>
       RawTerm.uaToEquiv (RawTerm.cd proofRaw)
-  -- D3.6-P2: equivApply recurses on equiv and arg raws.
+  -- D3.6-P2/S6: equivApply recurses on equiv and arg raws and
+  -- dispatches through `cdEquivApplyCase` which fires the round-trip-β
+  -- rule when the developed equiv is `uaToEquiv (oeqRefl _)`.
+  -- Otherwise rebuilds plain `equivApply` cong.
   | _, .equivApply equivRaw argRaw =>
-      RawTerm.equivApply (RawTerm.cd equivRaw) (RawTerm.cd argRaw)
+      RawTerm.cdEquivApplyCase (RawTerm.cd equivRaw) (RawTerm.cd argRaw)
   -- D3.6-S3: pathCompose recurses on left and right path raws.  Pure
   -- cong; the actual β rule fires through `cdTranspCase` when this
   -- pathCompose appears as the developed path of a transp.

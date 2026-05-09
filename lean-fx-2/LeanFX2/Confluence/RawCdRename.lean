@@ -281,6 +281,40 @@ theorem RawTerm.cdIdToEquivCase_rename {sourceScope targetScope : Nat}
     RawTerm.cdIdToEquivCase (developedProof.rename rho) := by
   cases developedProof <;> rfl
 
+/-! ## D3.6-S6 helper-rename lemmas 20 + 21:
+`cdUaToEquivApplyCase` + `cdEquivApplyCase`. -/
+
+/-- `cdUaToEquivApplyCase` commutes with `rename`.  When the inner
+proof is `oeqRefl _`, both sides reduce to `developedArg.rename rho`
+(the contractum is just the developed source, which renames
+distributively).  All other arms rebuild
+`equivApply (uaToEquiv proof) developedArg` and rename
+distributes. -/
+theorem RawTerm.cdUaToEquivApplyCase_rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (proof developedArg : RawTerm sourceScope) :
+    (RawTerm.cdUaToEquivApplyCase proof developedArg).rename rho =
+    RawTerm.cdUaToEquivApplyCase (proof.rename rho) (developedArg.rename rho) := by
+  cases proof <;> rfl
+
+/-- `cdEquivApplyCase` commutes with `rename`.  The `uaToEquiv` arm
+dispatches through `cdUaToEquivApplyCase`; rename commutes via the
+above lemma.  All other 66 arms rebuild as plain `equivApply` cong
+and close by `rfl`. -/
+theorem RawTerm.cdEquivApplyCase_rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (developedEquiv developedArg : RawTerm sourceScope) :
+    (RawTerm.cdEquivApplyCase developedEquiv developedArg).rename rho =
+    RawTerm.cdEquivApplyCase (developedEquiv.rename rho)
+      (developedArg.rename rho) := by
+  cases developedEquiv
+  case uaToEquiv proof =>
+      show (RawTerm.cdUaToEquivApplyCase proof developedArg).rename rho =
+           RawTerm.cdUaToEquivApplyCase (proof.rename rho)
+             (developedArg.rename rho)
+      exact RawTerm.cdUaToEquivApplyCase_rename rho proof developedArg
+  all_goals rfl
+
 /-! ## Helper-rename lemma 18 of 18: cdTranspCase.
 
 The `pathLam` arm dispatches on `unweaken? pathBody`; both branches
@@ -699,10 +733,11 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
       rw [proofIH rho]
   | equivApply equivRaw argRaw equivIH argIH =>
       intro _ rho
-      show (RawTerm.equivApply (RawTerm.cd equivRaw) (RawTerm.cd argRaw)).rename rho =
+      show (RawTerm.cdEquivApplyCase (RawTerm.cd equivRaw) (RawTerm.cd argRaw)).rename rho =
            RawTerm.cd (RawTerm.equivApply (equivRaw.rename rho) (argRaw.rename rho))
-      simp only [RawTerm.rename, RawTerm.cd]
-      rw [equivIH rho, argIH rho]
+      simp only [RawTerm.cd]
+      rw [RawTerm.cdEquivApplyCase_rename rho (RawTerm.cd equivRaw) (RawTerm.cd argRaw),
+        equivIH rho, argIH rho]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       intro _ rho
       show (RawTerm.pathCompose (RawTerm.cd leftPathRaw) (RawTerm.cd rightPathRaw)).rename rho =

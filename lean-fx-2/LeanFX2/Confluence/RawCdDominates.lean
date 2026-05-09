@@ -418,11 +418,75 @@ theorem RawStep.par.cd_dominates :
   | _, .uaToEquiv proofRaw =>
       RawStep.par.uaToEquivCong
         (RawStep.par.cd_dominates proofRaw)
-  -- D3.6-P2: equivApply — pure cong, recurse on equiv and arg raws.
-  | _, .equivApply equivRaw argRaw =>
-      RawStep.par.equivApplyCong
-        (RawStep.par.cd_dominates equivRaw)
-        (RawStep.par.cd_dominates argRaw)
+  -- D3.6-P2/S6: equivApply — when cd equivRaw = uaToEquiv (oeqRefl _),
+  -- fire the deep round-trip-β rule (uaReflEquivApplyDeep).  Otherwise
+  -- default cong.  Dispatch by pattern-matching on `cd equivRaw` first;
+  -- the inner `uaToEquiv` arm then matches the proof against `oeqRefl`
+  -- so cdEquivApplyCase / cdUaToEquivApplyCase see the expected ctor
+  -- shape.
+  | _, .equivApply equivRaw argRaw => by
+      let equivParStep := RawStep.par.cd_dominates equivRaw
+      let argParStep := RawStep.par.cd_dominates argRaw
+      unfold RawTerm.cd
+      match hCdEquiv : RawTerm.cd equivRaw with
+      | .uaToEquiv innerProof =>
+          rw [hCdEquiv] at equivParStep
+          show RawStep.par (RawTerm.equivApply equivRaw argRaw)
+                           (RawTerm.cdEquivApplyCase
+                             (RawTerm.uaToEquiv innerProof)
+                             (RawTerm.cd argRaw))
+          unfold RawTerm.cdEquivApplyCase
+          match innerProof with
+          | .oeqRefl witnessRaw =>
+              show RawStep.par (RawTerm.equivApply equivRaw argRaw)
+                               (RawTerm.cdUaToEquivApplyCase
+                                 (RawTerm.oeqRefl witnessRaw)
+                                 (RawTerm.cd argRaw))
+              unfold RawTerm.cdUaToEquivApplyCase
+              exact RawStep.par.uaReflEquivApplyDeep equivParStep argParStep
+          | .var _ | .unit | .lam _ | .app _ _ | .pair _ _ | .fst _ | .snd _
+          | .boolTrue | .boolFalse | .boolElim _ _ _ | .natZero | .natSucc _
+          | .natElim _ _ _ | .natRec _ _ _ | .listNil | .listCons _ _
+          | .listElim _ _ _ | .optionNone | .optionSome _ | .optionMatch _ _ _
+          | .eitherInl _ | .eitherInr _ | .eitherMatch _ _ _ | .refl _
+          | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
+          | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
+          | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
+          | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqJ _ _ | .oeqFunext _
+          | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
+          | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
+          | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _
+          | .effectPerform _ _ | .universeCode _ | .arrowCode _ _ | .piTyCode _ _
+          | .sigmaTyCode _ _ | .productCode _ _ | .sumCode _ _ | .listCode _
+          | .optionCode _ | .eitherCode _ _ | .idCode _ _ _ | .equivCode _ _
+          | .cumulUpMarker _ | .uaToEquiv _ | .equivApply _ _ | .pathCompose _ _
+          | .idToEquiv _ | .oeqTrans _ _ | .equivCompose _ _ =>
+              show RawStep.par (RawTerm.equivApply equivRaw argRaw)
+                               (RawTerm.cdUaToEquivApplyCase _ (RawTerm.cd argRaw))
+              unfold RawTerm.cdUaToEquivApplyCase
+              exact RawStep.par.equivApplyCong equivParStep argParStep
+      | .var _ | .unit | .lam _ | .app _ _ | .pair _ _ | .fst _ | .snd _
+      | .boolTrue | .boolFalse | .boolElim _ _ _ | .natZero | .natSucc _
+      | .natElim _ _ _ | .natRec _ _ _ | .listNil | .listCons _ _
+      | .listElim _ _ _ | .optionNone | .optionSome _ | .optionMatch _ _ _
+      | .eitherInl _ | .eitherInr _ | .eitherMatch _ _ _ | .refl _
+      | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
+      | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
+      | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
+      | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _
+      | .oeqFunext _ | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _
+      | .equivApp _ _ | .refineIntro _ _ | .refineElim _ | .recordIntro _
+      | .recordProj _ | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _
+      | .sessionRecv _ | .effectPerform _ _ | .universeCode _ | .arrowCode _ _
+      | .piTyCode _ _ | .sigmaTyCode _ _ | .productCode _ _ | .sumCode _ _
+      | .listCode _ | .optionCode _ | .eitherCode _ _ | .idCode _ _ _
+      | .equivCode _ _ | .cumulUpMarker _ | .equivApply _ _ | .pathCompose _ _
+      | .idToEquiv _ | .oeqTrans _ _ | .equivCompose _ _ =>
+          rw [hCdEquiv] at equivParStep
+          show RawStep.par (RawTerm.equivApply equivRaw argRaw)
+                           (RawTerm.cdEquivApplyCase _ (RawTerm.cd argRaw))
+          unfold RawTerm.cdEquivApplyCase
+          exact RawStep.par.equivApplyCong equivParStep argParStep
   -- D3.6-S3: pathCompose — pure cong, recurse on left and right path raws.
   -- The actual β rule fires through `cdTranspCase` when pathCompose is
   -- the developed path of a transp.
