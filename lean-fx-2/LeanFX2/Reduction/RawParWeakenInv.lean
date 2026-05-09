@@ -2657,16 +2657,33 @@ theorem RawStep.par.rename_inj_inv :
       refine ⟨RawTerm.uaToEquiv innerInner, ?_⟩
       rw [hInnerInner]; rfl
   | equivApply equivRaw argRaw equivIH argIH =>
+    -- D3.6-S6: equivApply now has a redex parent — `equivApply
+    -- (uaToEquiv (oeqRefl _)) _` reduces to its source argument via
+    -- `uaReflEquivApply` / `uaReflEquivApplyDeep`.  Dispatch via the
+    -- four-arm `equivApply_inv` and cover all cases.
     intro _ rho rhoInj _ parStep
     change RawStep.par
       (RawTerm.equivApply (equivRaw.rename rho) (argRaw.rename rho)) _ at parStep
-    cases parStep with
-    | refl _ => exact ⟨RawTerm.equivApply equivRaw argRaw, rfl⟩
-    | equivApplyCong equivStep argStep =>
+    rcases RawStep.par.equivApply_inv parStep with
+      ⟨equivTarget, argTarget, hTarget, equivStep, argStep⟩ |
+      ⟨_witnessSource, _witnessTarget, _sourceTarget, _hShape, hTarget,
+        _witnessStep, sourceStep⟩ |
+      ⟨_witnessTarget, _sourceTarget, hTarget, _equivStep, sourceStep⟩
+    · -- equivApplyCong arm: target is `equivApply equivTarget argTarget`.
       obtain ⟨equivInner, hEquivInner⟩ := equivIH rho rhoInj equivStep
       obtain ⟨argInner, hArgInner⟩ := argIH rho rhoInj argStep
       refine ⟨RawTerm.equivApply equivInner argInner, ?_⟩
-      rw [hEquivInner, hArgInner]; rfl
+      rw [hTarget, hEquivInner, hArgInner]; rfl
+    · -- D3.6-S6 uaReflEquivApply shallow arm: target is `_sourceTarget`
+      -- (the developed source).  argIH applied to sourceStep returns the
+      -- source-side image directly.
+      obtain ⟨argInner, hArgInner⟩ := argIH rho rhoInj sourceStep
+      refine ⟨argInner, ?_⟩
+      rw [hTarget, hArgInner]
+    · -- D3.6-S6 uaReflEquivApplyDeep arm: same target shape as shallow.
+      obtain ⟨argInner, hArgInner⟩ := argIH rho rhoInj sourceStep
+      refine ⟨argInner, ?_⟩
+      rw [hTarget, hArgInner]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
     -- D3.6-S3: pathCompose is pure cong (no redex parent at this layer
     -- — the β rule fires under transp, not inside pathCompose itself).

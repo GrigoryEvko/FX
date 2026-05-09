@@ -1234,6 +1234,96 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
         (RawTerm.equivCompose
           (RawTerm.idToEquiv firstTarget)
           (RawTerm.idToEquiv secondTarget))
+  /-- D3.6-S6 raw univalence-refl-roundtrip-β rule: applying the
+  identity equivalence (encoded as `uaToEquiv (oeqRefl _)`) yields the
+  argument unchanged.
+
+  ```
+  equivApply (uaToEquiv (oeqRefl witness)) source ⟶ source
+  ```
+
+  This is the kernel-internal univalence-refl-roundtrip-β rule: when
+  the `equivApply`'s equiv argument is syntactically `uaToEquiv
+  (oeqRefl witness)` (the identity-equivalence-via-univalence shape),
+  applying that equivalence to a value `source` reduces directly to
+  `source`.  Conceptually closes the round-trip:
+  `idToEquiv ∘ oeqRefl = identityEquiv` from the S4 angle, paired with
+  `uaToEquiv ∘ oeqRefl ∘ apply = identity` from the S6 angle.
+
+  ## Why both witness and source step
+
+  Inner reduction on `witness` proceeds via the witnessStep premise
+  (the inner refl's witness can develop independently); inner
+  reduction on `source` proceeds via sourceStep.  The β fires on the
+  outer `equivApply` head with the equiv argument's nested
+  `uaToEquiv (oeqRefl _)` ctor matching syntactically.  This is the
+  shallow form; the deep variant (equiv develops to
+  `uaToEquiv (oeqRefl _)` via parallel reduction) is
+  `uaReflEquivApplyDeep` below.
+
+  ## Connection to S4 / S5 / uaBeta
+
+  S4 ships `idToEquiv (refl _) ⟶ equivIntro (lam id) (lam id)` —
+  identity-as-built-from-id-type.  S6 ships the dual round-trip:
+  applying the univalence-of-refl equivalence reduces to identity
+  directly.  Together these close the univalence round-trip cycle at
+  the kernel-syntactic level.  The cd cascade integrates via the new
+  helper `cdEquivApplyCase` that dispatches on the developed
+  `equivRaw`'s shape.
+
+  ## Raw-only cascade (matches uaBeta architecture)
+
+  At the typed level, `Term.equivApply` requires its equiv argument at
+  type `Ty.equiv ...` and `Term.uaToEquiv` produces type `Ty.equiv
+  ...`, but `Term.oeqRefl` produces type `Ty.oeq ...` (NOT the
+  `Ty.id ...` that `uaToEquiv` would consume).  Therefore no typed
+  `Term.equivApply` can have an equiv-raw of `RawTerm.uaToEquiv
+  (RawTerm.oeqRefl ...)` — the typed parity gate would block it
+  structurally.  Listed in `isDocumentedRawOnlyParity` Section H
+  alongside `uaBeta`/`idToEquivRefl`.  Once typed mirrors land
+  (v1.1's D3.10 univalence-composition-closure), this rule will move
+  out of the raw-only whitelist.
+
+  ## Connection to meta-level rule
+
+  At the meta-level, `Univalence.idToEquivMeta_refl` proves that
+  `idToEquivMeta rfl = Equiv.refl _` and `Equiv.refl.apply x = x` is
+  a direct unfold.  The kernel-syntactic raw rule shipped here is the
+  cubical analog firing through the cd cascade. -/
+  | uaReflEquivApply {scope : Nat}
+      {witnessSource witnessTarget sourceRawSource sourceRawTarget :
+        RawTerm scope} :
+      RawStep.par witnessSource witnessTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.equivApply
+          (RawTerm.uaToEquiv (RawTerm.oeqRefl witnessSource))
+          sourceRawSource)
+        sourceRawTarget
+  /-- D3.6-S6 deep raw univalence-refl-roundtrip-β rule: when the
+  equiv develops via parallel reduction to a `uaToEquiv (oeqRefl
+  witnessTarget)`, the entire `equivApply` reduces directly to the
+  developed source.  Required for `cd_dominates` to discharge
+  `cdEquivApplyCase`'s `uaToEquiv (oeqRefl _)`-firing branch when the
+  equiv was NOT literally `uaToEquiv (oeqRefl _)` on the LHS but
+  reaches that shape under cd development.
+
+  Discharge in `cd_lemma` requires the typical equiv-shape inversion
+  on `equivStep` (uaToEquiv_inv composed with oeqRefl_inv) —
+  analogous to `idToEquivReflDeep` for the S4 refl-β case.
+  Documented `raw-only` (`isDocumentedRawOnlyParity`) — a
+  confluence-only mechanism with no typed mirror because the rule's
+  own typed structure is blocked by the `oeq` vs `id` typed-Ty
+  mismatch at the equiv argument. -/
+  | uaReflEquivApplyDeep {scope : Nat}
+      {equivRawSource witnessTarget sourceRawSource sourceRawTarget :
+        RawTerm scope} :
+      RawStep.par equivRawSource
+        (RawTerm.uaToEquiv (RawTerm.oeqRefl witnessTarget)) →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.equivApply equivRawSource sourceRawSource)
+        sourceRawTarget
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/

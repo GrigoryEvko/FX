@@ -428,6 +428,22 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       have proofRenameStep := proofIH rawRenaming
       simp only [RawTerm.rename] at proofRenameStep
       exact RawStep.par.idToEquivComposeDeep proofRenameStep
+  | uaReflEquivApply _ _ witnessIH sourceIH =>
+      -- D3.6-S6 shallow round-trip-β: rename commutes through the
+      -- equivApply/uaToEquiv/oeqRefl chain at the source side, and
+      -- through the bare source raw at the target side.  Both sides
+      -- mechanical via `RawTerm.rename` on the involved ctors.
+      simp only [RawTerm.rename]
+      exact RawStep.par.uaReflEquivApply (witnessIH _) (sourceIH _)
+  | uaReflEquivApplyDeep _ _ equivIH sourceIH =>
+      -- D3.6-S6 deep round-trip-β: rename commutes via `RawTerm.rename`
+      -- on equivApply/uaToEquiv/oeqRefl.  equivIH renamed gives a par
+      -- step on the renamed equiv landing at uaToEquiv (oeqRefl _) of
+      -- the renamed witness; the simp + RawTerm.rename pushes through.
+      simp only [RawTerm.rename]
+      have equivRenameStep := equivIH rawRenaming
+      simp only [RawTerm.rename] at equivRenameStep
+      exact RawStep.par.uaReflEquivApplyDeep equivRenameStep (sourceIH _)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)
   | funextReflAtIdCong _ applyIH =>

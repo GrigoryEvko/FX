@@ -782,6 +782,25 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       have proofSubstStep := proofIH substsRelated
       simp only [RawTerm.subst] at proofSubstStep
       exact RawStep.par.idToEquivComposeDeep proofSubstStep
+  | uaReflEquivApply _ _ witnessIH sourceIH =>
+      -- D3.6-S6 shallow round-trip-β: parallel substitution preserves
+      -- the round-trip contractum.  LHS subst pushes through
+      -- equivApply/uaToEquiv/oeqRefl heads; RHS subst pushes through
+      -- bare source raw.  Both mechanical via `RawTerm.subst` on the
+      -- involved ctors (no binder shift since none carry binders here).
+      simp only [RawTerm.subst]
+      exact RawStep.par.uaReflEquivApply
+        (witnessIH substsRelated) (sourceIH substsRelated)
+  | uaReflEquivApplyDeep _ _ equivIH sourceIH =>
+      -- D3.6-S6 deep round-trip-β: parallel substitution pushes through
+      -- equivApply heads.  equivIH substituted gives a par step on the
+      -- substituted equiv landing at uaToEquiv (oeqRefl _) of the
+      -- substituted witness, then assemble.
+      simp only [RawTerm.subst]
+      have equivSubstStep := equivIH substsRelated
+      simp only [RawTerm.subst] at equivSubstStep
+      exact RawStep.par.uaReflEquivApplyDeep
+        equivSubstStep (sourceIH substsRelated)
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

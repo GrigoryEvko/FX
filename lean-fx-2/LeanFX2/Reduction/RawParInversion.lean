@@ -1341,4 +1341,41 @@ theorem RawStep.par.equivCode_inv {scope : Nat}
   | equivCodeCong leftStep rightStep =>
       exact ⟨_, _, rfl, leftStep, rightStep⟩
 
+/-- D3.6-S6 `RawStep.par (equivApply equivRaw argRaw) target` admits
+four disjunctive arms: a congruent `equivApply` (cong arm), shallow
+round-trip-β when the equiv is syntactically `uaToEquiv (oeqRefl
+witness)` (`uaReflEquivApply` arm), or deep round-trip-β when the
+equiv develops to `uaToEquiv (oeqRefl _)` via parallel reduction
+(`uaReflEquivApplyDeep` arm).  Required by `RawCdLemma`'s β arms and
+the `cdEquivApplyCase` activation. -/
+theorem RawStep.par.equivApply_inv {scope : Nat}
+    {equivRaw argRaw : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.equivApply equivRaw argRaw) target) :
+    (∃ equivTarget argTarget,
+        target = RawTerm.equivApply equivTarget argTarget ∧
+          RawStep.par equivRaw equivTarget ∧
+          RawStep.par argRaw argTarget) ∨
+    (∃ (witnessSource witnessTarget sourceTarget : RawTerm scope),
+        equivRaw = RawTerm.uaToEquiv (RawTerm.oeqRefl witnessSource) ∧
+        target = sourceTarget ∧
+        RawStep.par witnessSource witnessTarget ∧
+        RawStep.par argRaw sourceTarget) ∨
+    (∃ (witnessTarget sourceTarget : RawTerm scope),
+        target = sourceTarget ∧
+        RawStep.par equivRaw
+          (RawTerm.uaToEquiv (RawTerm.oeqRefl witnessTarget)) ∧
+        RawStep.par argRaw sourceTarget) := by
+  cases parallelStep with
+  | refl _ =>
+      exact Or.inl ⟨equivRaw, argRaw, rfl,
+        RawStep.par.refl _, RawStep.par.refl _⟩
+  | equivApplyCong equivStep argStep =>
+      exact Or.inl ⟨_, _, rfl, equivStep, argStep⟩
+  | uaReflEquivApply witnessStep sourceStep =>
+      exact Or.inr (Or.inl
+        ⟨_, _, _, rfl, rfl, witnessStep, sourceStep⟩)
+  | uaReflEquivApplyDeep equivStep sourceStep =>
+      exact Or.inr (Or.inr
+        ⟨_, _, rfl, equivStep, sourceStep⟩)
+
 end LeanFX2
