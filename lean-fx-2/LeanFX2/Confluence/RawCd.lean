@@ -1872,15 +1872,27 @@ def RawTerm.cdTranspPathLamBody {scope : Nat}
   | RawTerm.piTyCode domainCode codomainCode =>
     match RawTerm.unweaken? codomainCode with
     | some codomainUnweakened =>
-        RawTerm.lam
-          (RawTerm.app developedSource.weaken
-            (RawTerm.transp
-              (RawTerm.pathLam
-                (RawTerm.pathApp
-                  (RawTerm.pathLam codomainUnweakened).weaken.weaken
-                  (RawTerm.intervalOpp
-                    (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
-              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)))
+        -- D2.5.5 guard: the kernel ctor `transpPiBetaSimple{,Deep}`
+        -- requires the path's domain and (unweakened) codomain to be
+        -- syntactically the same.  Without this guard the dispatcher
+        -- fires the contractum even when domainCode ≠ codomainUnweakened,
+        -- which produces a target no par rule can prove against an
+        -- arbitrary developed path.  Use decidable equality of RawTerm
+        -- (auto-derived) to gate the firing on the structural match.
+        match decide (domainCode = codomainUnweakened) with
+        | true =>
+            RawTerm.lam
+              (RawTerm.app developedSource.weaken
+                (RawTerm.transp
+                  (RawTerm.pathLam
+                    (RawTerm.pathApp
+                      (RawTerm.pathLam codomainUnweakened).weaken.weaken
+                      (RawTerm.intervalOpp
+                        (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+                  (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)))
+        | false =>
+            RawTerm.transp (RawTerm.pathLam (RawTerm.piTyCode domainCode codomainCode))
+              developedSource
     | none =>
         RawTerm.transp (RawTerm.pathLam (RawTerm.piTyCode domainCode codomainCode))
           developedSource
