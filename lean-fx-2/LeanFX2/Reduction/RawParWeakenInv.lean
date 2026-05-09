@@ -2176,6 +2176,104 @@ private theorem RawTerm.rename_eq_pathCompose_imp {sourceScope targetScope : Nat
   | oeqTrans _ _ => simp only [RawTerm.rename] at h; nomatch h
   | equivCompose _ _ => simp only [RawTerm.rename] at h; nomatch h
 
+/-! ## D2.5.5 shape inversion for `piTyCode`.
+
+Used by the `transpPiBetaSimple{,Deep}` arms of `rename_inj_inv` to
+invert `pathInner.rename rho.lift = piTyCode A A.weaken` into a
+structurally-decomposed `pathInner = piTyCode innerDom innerCod` with
+`innerDom.rename rho.lift = A` and `innerCod.rename rho.lift.lift =
+A.weaken`. -/
+private theorem RawTerm.rename_eq_piTyCode_imp {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    {term : RawTerm sourceScope}
+    {domainTarget : RawTerm targetScope}
+    {codomainTarget : RawTerm (targetScope + 1)}
+    (h : term.rename rho = RawTerm.piTyCode domainTarget codomainTarget) :
+    ∃ (domainInner : RawTerm sourceScope)
+      (codomainInner : RawTerm (sourceScope + 1)),
+      term = RawTerm.piTyCode domainInner codomainInner ∧
+        domainTarget = domainInner.rename rho ∧
+        codomainTarget = codomainInner.rename rho.lift := by
+  cases term with
+  | piTyCode domainInner codomainInner =>
+    refine ⟨domainInner, codomainInner, rfl, ?_, ?_⟩
+    · simp only [RawTerm.rename] at h
+      injection h with _ h1 _; exact h1.symm
+    · simp only [RawTerm.rename] at h
+      injection h with _ _ h2; exact h2.symm
+  | var _ => simp only [RawTerm.rename] at h; nomatch h
+  | unit => simp only [RawTerm.rename] at h; nomatch h
+  | lam _ => simp only [RawTerm.rename] at h; nomatch h
+  | app _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | pair _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | fst _ => simp only [RawTerm.rename] at h; nomatch h
+  | snd _ => simp only [RawTerm.rename] at h; nomatch h
+  | boolTrue => simp only [RawTerm.rename] at h; nomatch h
+  | boolFalse => simp only [RawTerm.rename] at h; nomatch h
+  | boolElim _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | natZero => simp only [RawTerm.rename] at h; nomatch h
+  | natSucc _ => simp only [RawTerm.rename] at h; nomatch h
+  | natElim _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | natRec _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | listNil => simp only [RawTerm.rename] at h; nomatch h
+  | listCons _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | listElim _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | optionNone => simp only [RawTerm.rename] at h; nomatch h
+  | optionSome _ => simp only [RawTerm.rename] at h; nomatch h
+  | optionMatch _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | eitherInl _ => simp only [RawTerm.rename] at h; nomatch h
+  | eitherInr _ => simp only [RawTerm.rename] at h; nomatch h
+  | eitherMatch _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | refl _ => simp only [RawTerm.rename] at h; nomatch h
+  | idJ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | modIntro _ => simp only [RawTerm.rename] at h; nomatch h
+  | modElim _ => simp only [RawTerm.rename] at h; nomatch h
+  | subsume _ => simp only [RawTerm.rename] at h; nomatch h
+  | interval0 => simp only [RawTerm.rename] at h; nomatch h
+  | interval1 => simp only [RawTerm.rename] at h; nomatch h
+  | intervalOpp _ => simp only [RawTerm.rename] at h; nomatch h
+  | intervalMeet _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | intervalJoin _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | pathLam _ => simp only [RawTerm.rename] at h; nomatch h
+  | pathApp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | glueIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | glueElim _ => simp only [RawTerm.rename] at h; nomatch h
+  | transp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | hcomp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | oeqRefl _ => simp only [RawTerm.rename] at h; nomatch h
+  | oeqJ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | oeqFunext _ => simp only [RawTerm.rename] at h; nomatch h
+  | idStrictRefl _ => simp only [RawTerm.rename] at h; nomatch h
+  | idStrictRec _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | equivIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | equivApp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | refineIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | refineElim _ => simp only [RawTerm.rename] at h; nomatch h
+  | recordIntro _ => simp only [RawTerm.rename] at h; nomatch h
+  | recordProj _ => simp only [RawTerm.rename] at h; nomatch h
+  | codataUnfold _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | codataDest _ => simp only [RawTerm.rename] at h; nomatch h
+  | sessionSend _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | sessionRecv _ => simp only [RawTerm.rename] at h; nomatch h
+  | effectPerform _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | universeCode _ => simp only [RawTerm.rename] at h; nomatch h
+  | arrowCode _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | sigmaTyCode _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | productCode _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | sumCode _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | listCode _ => simp only [RawTerm.rename] at h; nomatch h
+  | optionCode _ => simp only [RawTerm.rename] at h; nomatch h
+  | eitherCode _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | idCode _ _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | equivCode _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | cumulUpMarker _ => simp only [RawTerm.rename] at h; nomatch h
+  | uaToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
+  | equivApply _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | pathCompose _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | idToEquiv _ => simp only [RawTerm.rename] at h; nomatch h
+  | oeqTrans _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | equivCompose _ _ => simp only [RawTerm.rename] at h; nomatch h
+
 /-! ## D3.6-S4 shape inversion for `idToEquiv`.
 
 Used by the `idToEquiv` arm of `rename_inj_inv` to invert
@@ -2824,7 +2922,10 @@ theorem RawStep.par.rename_inj_inv :
       ⟨_proofRawTarget, sourceTarget, hTarget, pathStep, sourceStep⟩ |
       ⟨_leftRawSource, _leftRawTarget, _rightRawSource, _rightRawTarget,
         sourceTarget, hPath, hTarget, _leftStep, _rightStep, sourceStep⟩ |
-      ⟨_leftRawTarget, _rightRawTarget, sourceTarget, hTarget, pathStep, sourceStep⟩
+      ⟨_leftRawTarget, _rightRawTarget, sourceTarget, hTarget, pathStep, sourceStep⟩ |
+      ⟨_domainCodeSource, _domainCodeTarget, _fnRawTarget,
+        hPath, hTarget, _domainStep, sourceStep⟩ |
+      ⟨_domainCodeTarget, _fnRawTarget, hTarget, pathStep, sourceStep⟩
     · -- cong arm
       obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj pathStep
       obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
@@ -2910,6 +3011,85 @@ theorem RawStep.par.rename_inj_inv :
       rw [hTarget]
       simp only [RawTerm.rename]
       rw [← hLeftFinalRename, ← hRightFinalRename, hSourceInner]
+    · -- D2.5.5 transpPiBetaSimple arm: source path = pathLam (piTyCode A
+      -- A.weaken); target = lam (app fn.weaken (transp (pathLam (pathApp
+      -- (pathLam B).weaken.weaken (intervalOpp (var 0)))) (var 0))).
+      -- Build parPath via pathLamCong + piTyCodeCong + rename-of-domainStep,
+      -- route through pathIH, recover B's pre-rename via shape inversions.
+      have parPathDevelop : RawStep.par (path.rename rho)
+          (RawTerm.pathLam
+            (RawTerm.piTyCode _domainCodeTarget _domainCodeTarget.weaken)) := by
+        rw [hPath]
+        exact RawStep.par.pathLamCong
+          (RawStep.par.piTyCodeCong _domainStep
+            (_domainStep.rename RawRenaming.weaken))
+      obtain ⟨pathInner, hPathRename⟩ := pathIH rho rhoInj parPathDevelop
+      -- pathInner.rename rho = pathLam (piTyCode B B.weaken); invert.
+      obtain ⟨pathLamInner, hPathLamShape, hLamBodyRename⟩ :=
+        RawTerm.rename_eq_pathLam_imp rho hPathRename.symm
+      obtain ⟨domainInner, codomainInner, hPiShape, hDomRename, _hCodRename⟩ :=
+        RawTerm.rename_eq_piTyCode_imp rho.lift hLamBodyRename.symm
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨RawTerm.lam
+        (RawTerm.app sourceInner.weaken
+          (RawTerm.transp
+            (RawTerm.pathLam
+              (RawTerm.pathApp
+                (RawTerm.pathLam domainInner).weaken.weaken
+                (RawTerm.intervalOpp
+                  (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+            (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))), ?_⟩
+      rw [hTarget, hSourceInner]
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute]
+      -- Need: ((domainInner.rename rho.lift).rename weaken.lift).rename weaken.lift
+      --     = ((domainInner.rename weaken.lift).rename weaken.lift).rename rho.lift.lift.lift
+      -- via fold-via-compose then rename_pointwise (same as Phase A rename arm).
+      rw [show ((domainInner.rename RawRenaming.weaken.lift).rename
+              RawRenaming.weaken.lift).rename rho.lift.lift.lift =
+            ((domainInner.rename rho.lift).rename
+              RawRenaming.weaken.lift).rename RawRenaming.weaken.lift
+        from by
+          rw [RawTerm.rename_compose, RawTerm.rename_compose,
+              RawTerm.rename_compose, RawTerm.rename_compose]
+          apply RawTerm.rename_pointwise
+          intro position
+          match position with
+          | ⟨0, _⟩ => rfl
+          | ⟨_ + 1, _⟩ => rfl]
+      rw [← hDomRename]
+    · -- D2.5.5 transpPiBetaSimpleDeep arm: pathStep develops the path to
+      -- pathLam (piTyCode B B.weaken); use pathIH directly and recover
+      -- B's pre-rename via shape inversion.
+      obtain ⟨pathInner, hPathRename⟩ := pathIH rho rhoInj pathStep
+      obtain ⟨pathLamInner, hPathLamShape, hLamBodyRename⟩ :=
+        RawTerm.rename_eq_pathLam_imp rho hPathRename.symm
+      obtain ⟨domainInner, codomainInner, hPiShape, hDomRename, _hCodRename⟩ :=
+        RawTerm.rename_eq_piTyCode_imp rho.lift hLamBodyRename.symm
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨RawTerm.lam
+        (RawTerm.app sourceInner.weaken
+          (RawTerm.transp
+            (RawTerm.pathLam
+              (RawTerm.pathApp
+                (RawTerm.pathLam domainInner).weaken.weaken
+                (RawTerm.intervalOpp
+                  (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+            (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))), ?_⟩
+      rw [hTarget, hSourceInner]
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute]
+      rw [show ((domainInner.rename RawRenaming.weaken.lift).rename
+              RawRenaming.weaken.lift).rename rho.lift.lift.lift =
+            ((domainInner.rename rho.lift).rename
+              RawRenaming.weaken.lift).rename RawRenaming.weaken.lift
+        from by
+          rw [RawTerm.rename_compose, RawTerm.rename_compose,
+              RawTerm.rename_compose, RawTerm.rename_compose]
+          apply RawTerm.rename_pointwise
+          intro position
+          match position with
+          | ⟨0, _⟩ => rfl
+          | ⟨_ + 1, _⟩ => rfl]
+      rw [← hDomRename]
   | hcomp sides cap sidesIH capIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.hcomp (sides.rename rho)
