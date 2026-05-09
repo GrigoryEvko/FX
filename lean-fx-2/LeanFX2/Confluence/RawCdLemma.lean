@@ -676,9 +676,61 @@ theorem RawStep.par.cd_lemma {scope : Nat}
   | uaToEquivCong _ innerIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.uaToEquivCong innerIH
-  | equivApplyCong _ _ equivIH argIH =>
+  | @equivApplyCong _ equivRawSource _ argRawSource _ _ _ equivIH argIH =>
+      -- D3.6-S6: cd of equivApply now dispatches through cdEquivApplyCase.
+      -- Goal: par (equivApply equivRawTarget argRawTarget)
+      --           (cdEquivApplyCase (cd equivRawSource) (cd argRawSource))
+      -- Case split on the developed equiv shape:
+      -- * uaToEquiv (oeqRefl _) → fire uaReflEquivApplyDeep
+      -- * uaToEquiv (anything else) → equivApplyCong on uaToEquiv proof
+      -- * any other shape → plain equivApplyCong
       simp only [RawTerm.cd]
-      exact RawStep.par.equivApplyCong equivIH argIH
+      unfold RawTerm.cdEquivApplyCase
+      match hCdEquiv : RawTerm.cd equivRawSource with
+      | .uaToEquiv proof =>
+          rw [hCdEquiv] at equivIH
+          show RawStep.par _ (RawTerm.cdUaToEquivApplyCase proof (RawTerm.cd argRawSource))
+          unfold RawTerm.cdUaToEquivApplyCase
+          match proof with
+          | .oeqRefl _ =>
+              exact RawStep.par.uaReflEquivApplyDeep equivIH argIH
+          | .var _ | .unit | .lam _ | .app _ _ | .pair _ _ | .fst _ | .snd _
+          | .boolTrue | .boolFalse | .boolElim _ _ _ | .natZero | .natSucc _
+          | .natElim _ _ _ | .natRec _ _ _ | .listNil | .listCons _ _
+          | .listElim _ _ _ | .optionNone | .optionSome _ | .optionMatch _ _ _
+          | .eitherInl _ | .eitherInr _ | .eitherMatch _ _ _ | .refl _
+          | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
+          | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
+          | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
+          | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqJ _ _ | .oeqFunext _
+          | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
+          | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
+          | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _
+          | .effectPerform _ _ | .universeCode _ | .arrowCode _ _ | .piTyCode _ _
+          | .sigmaTyCode _ _ | .productCode _ _ | .sumCode _ _ | .listCode _
+          | .optionCode _ | .eitherCode _ _ | .idCode _ _ _ | .equivCode _ _
+          | .cumulUpMarker _ | .uaToEquiv _ | .equivApply _ _ | .pathCompose _ _
+          | .idToEquiv _ | .oeqTrans _ _ | .equivCompose _ _ =>
+              exact RawStep.par.equivApplyCong equivIH argIH
+      | .var _ | .unit | .lam _ | .app _ _ | .pair _ _ | .fst _ | .snd _
+      | .boolTrue | .boolFalse | .boolElim _ _ _ | .natZero | .natSucc _
+      | .natElim _ _ _ | .natRec _ _ _ | .listNil | .listCons _ _
+      | .listElim _ _ _ | .optionNone | .optionSome _ | .optionMatch _ _ _
+      | .eitherInl _ | .eitherInr _ | .eitherMatch _ _ _ | .refl _
+      | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
+      | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
+      | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
+      | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _
+      | .oeqFunext _ | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _
+      | .equivApp _ _ | .refineIntro _ _ | .refineElim _ | .recordIntro _
+      | .recordProj _ | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _
+      | .sessionRecv _ | .effectPerform _ _ | .universeCode _ | .arrowCode _ _
+      | .piTyCode _ _ | .sigmaTyCode _ _ | .productCode _ _ | .sumCode _ _
+      | .listCode _ | .optionCode _ | .eitherCode _ _ | .idCode _ _ _
+      | .equivCode _ _ | .cumulUpMarker _ | .equivApply _ _ | .pathCompose _ _
+      | .idToEquiv _ | .oeqTrans _ _ | .equivCompose _ _ =>
+          rw [hCdEquiv] at equivIH
+          exact RawStep.par.equivApplyCong equivIH argIH
   | pathComposeCong _ _ leftIH rightIH =>
       -- D3.6-S3: pure cong; cd recurses on both path raws.
       simp only [RawTerm.cd]
@@ -826,5 +878,50 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       exact RawStep.par.equivComposeCong
         (RawStep.par.idToEquivCong firstStep)
         (RawStep.par.idToEquivCong secondStep)
+  | @uaReflEquivApply _ witnessSource _ sourceRawSource sourceRawTarget
+      _ _ _ sourceIH =>
+      -- D3.6-S6 shallow round-trip-β:
+      -- Source = equivApply (uaToEquiv (oeqRefl witnessSource)) sourceRawSource.
+      -- Target = sourceRawTarget.
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource).
+      -- Goal: par sourceRawTarget (cd source) where
+      --   cd source = cdEquivApplyCase
+      --                 (cd (uaToEquiv (oeqRefl witnessSource)))
+      --                 (cd sourceRawSource)
+      --             = cdEquivApplyCase
+      --                 (uaToEquiv (oeqRefl (cd witnessSource)))
+      --                 (cd sourceRawSource)
+      --             = cdUaToEquivApplyCase
+      --                 (oeqRefl (cd witnessSource))
+      --                 (cd sourceRawSource)
+      --             = cd sourceRawSource    -- headline `oeqRefl _` arm
+      -- Closed by sourceIH directly.
+      simp only [RawTerm.cd, RawTerm.cdEquivApplyCase,
+        RawTerm.cdUaToEquivApplyCase]
+      exact sourceIH
+  | @uaReflEquivApplyDeep _ equivRawSource _ sourceRawSource sourceRawTarget
+      _ _ equivIH sourceIH =>
+      -- D3.6-S6 deep round-trip-β:
+      -- Source = equivApply equivRawSource sourceRawSource.
+      -- Target = sourceRawTarget.
+      -- equivStep : par equivRawSource (uaToEquiv (oeqRefl witnessTarget)).
+      -- equivIH : par (uaToEquiv (oeqRefl witnessTarget)) (cd equivRawSource).
+      -- sourceIH : par sourceRawTarget (cd sourceRawSource).
+      --
+      -- By uaToEquiv_inv on equivIH: cd equivRawSource = uaToEquiv innerCd
+      -- with par (oeqRefl witnessTarget) innerCd.  By oeqRefl_inv on the
+      -- inner par-step: innerCd = oeqRefl witnessFinal for some witnessFinal.
+      -- Substituting back, cd equivRawSource = uaToEquiv (oeqRefl
+      -- witnessFinal); cdEquivApplyCase fires the `uaToEquiv` arm,
+      -- cdUaToEquivApplyCase fires the headline `oeqRefl _` arm,
+      -- yielding cd sourceRawSource.  Closed by sourceIH.
+      obtain ⟨innerCd, hCdEquivEq, innerStep⟩ :=
+        RawStep.par.uaToEquiv_inv equivIH
+      obtain ⟨witnessFinal, hInnerEq, _witnessStep⟩ :=
+        RawStep.par.oeqRefl_inv innerStep
+      simp only [RawTerm.cd]
+      rw [hCdEquivEq, hInnerEq]
+      simp only [RawTerm.cdEquivApplyCase, RawTerm.cdUaToEquivApplyCase]
+      exact sourceIH
 
 end LeanFX2

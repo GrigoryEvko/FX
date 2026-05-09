@@ -1815,7 +1815,27 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   suffix == "oeqTransCong" ||
   suffix == "equivComposeCong" ||
   suffix == "idToEquivCompose" ||
-  suffix == "idToEquivComposeDeep"
+  suffix == "idToEquivComposeDeep" ||
+  -- Section H: D3.6-S6 univalence-refl round-trip-β raw rules.
+  -- Headline rule: `equivApply (uaToEquiv (oeqRefl witness)) source
+  -- ⟶ source` — applying the identity-equivalence-via-univalence to
+  -- a value yields the value unchanged.  Mounted on existing
+  -- `RawTerm.equivApply` + `RawTerm.uaToEquiv` + `RawTerm.oeqRefl`
+  -- ctors; no new vocabulary.  Both shallow (`uaReflEquivApply`,
+  -- equiv-raw is syntactically `uaToEquiv (oeqRefl _)`) and deep
+  -- (`uaReflEquivApplyDeep`, equiv-raw develops to `uaToEquiv
+  -- (oeqRefl _)` via parallel reduction) ship raw-only.  Typed
+  -- `Term.equivApply` cannot have an equiv-raw of `RawTerm.uaToEquiv
+  -- (RawTerm.oeqRefl _)` because typed `Term.uaToEquiv proofTerm`
+  -- requires `proofTerm : Term ctx (Ty.id ...) ...` while typed
+  -- `Term.oeqRefl` produces `Term ctx (Ty.oeqType ...) ...` —
+  -- different typed-Ty heads, no typed bridge until v1.1's D3.10
+  -- unifies `Ty.id` and `Ty.oeqType`.  Activated through
+  -- `cdEquivApplyCase`'s `uaToEquiv` arm (firing the inner
+  -- `cdUaToEquivApplyCase`'s `oeqRefl` headline arm) in
+  -- `Confluence/RawCd.lean`.
+  suffix == "uaReflEquivApply" ||
+  suffix == "uaReflEquivApplyDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

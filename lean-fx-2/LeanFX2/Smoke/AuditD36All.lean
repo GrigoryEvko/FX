@@ -13,9 +13,9 @@ import LeanFX2.HoTT.Univalence
 /-! # Smoke/AuditD36All — D3.6 univalence-β rollup audit (#1688).
 
 Reviewer-facing comprehensive audit log spanning the entire D3.6
-phase: parametric vocabulary (P1–P6), step-level rules (S1–S5),
-typed mirrors (D3.6 univalence-as-theorem), and the structural
-deferral note for S6.
+phase: parametric vocabulary (P1–P6), step-level rules (S1–S6),
+and typed mirrors (D3.6 univalence-as-theorem).  S1–S6 close the
+univalence-β round-trip cycle at the kernel-syntactic level.
 
 This rollup file is the single point of truth for Phase D3.6 audit
 coverage.  Each section below corresponds to one shipped sub-phase
@@ -37,90 +37,51 @@ by that sub-phase, validating end-to-end zero-axiom discipline.
 | S3  | RawStep.par.transpCompose{,Deep}              | shipped (#1684)      |
 | S4  | RawStep.par.idToEquivRefl{,Deep}              | shipped (#1685)      |
 | S5  | RawStep.par.idToEquivCompose{,Deep}           | shipped (#1686)      |
-| S6  | uaToEquiv-of-oeqRefl round-trip               | DEFERRED v1.1 (#1687) |
+| S6  | RawStep.par.uaReflEquivApply{,Deep}           | shipped (#1687)      |
 
-## S6 structural deferral note
+## S6 redesigned target — composes with uaBetaDeep
 
-Phase S6 (`uaToEquiv (oeqRefl witness) ⟶ equivIntro id id`) was
-investigated as a standalone shallow + deep β cascade following
-S4's mold (`idToEquiv (refl _) ⟶ equivIntro id id`).  The
-shallow rule and its four cascade arms (RawPar / RawParCompatible /
-RawParRename / RawParWeakenInv) ship structurally without trouble.
+Phase S6 was initially attempted as `uaToEquiv (oeqRefl witness)
+⟶ equivIntro id id` (mirroring S4's `idToEquiv (refl _) ⟶
+equivIntro id id`).  That target conflicted with `uaBetaDeep`'s
+deep arm in the cd cascade — `cdTranspCase`'s default rebuilds
+`transp (equivIntro ...) ...` since `equivIntro` head does NOT
+match a `uaToEquiv`/`pathCompose` β-firing case, breaking the
+diamond.
 
-The blocker is in the **cd cascade**.  The existing `uaBetaDeep`
-rule
-
-```
-par pathRawSource (uaToEquiv proofRawTarget) →
-par sourceRawSource sourceRawTarget →
-par (transp pathRawSource sourceRawSource)
-    (equivApply (uaToEquiv proofRawTarget) sourceRawTarget)
-```
-
-asserts a parallel-reduction step from a `transp` redex to an
-`equivApply (uaToEquiv ...)` head.  When `proofRawTarget` happens
-to be `oeqRefl _`, the new S6 rule `uaToEquivOfRefl` fires on
-the inner `uaToEquiv (oeqRefl _)` head producing `equivIntro id
-id`.  The parallel-development closure `cd` must commit BOTH
-reductions at once: the maximal cd of `uaToEquiv (oeqRefl X)` is
-the closed identity-equiv `equivIntro id id`, NOT `uaToEquiv
-(oeqRefl (cd X))`.
-
-This means `cd pathRawSource = equivIntro ...` (after
-`cdUaToEquivCase`'s `oeqRefl` arm fires), and `cdTranspCase`'s
-default arm rebuilds `transp (equivIntro ...) (cd sourceRawSource)`
-since `equivIntro` does NOT match the `uaToEquiv`/`pathCompose`
-β-firing cases.  But `uaBetaDeep`'s cd_lemma proof obligation
-becomes:
+The redesigned S6 ships at the **applied** form rather than the
+intro form:
 
 ```
-par (equivApply (uaToEquiv (oeqRefl proofRawTarget)) sourceRawTarget)
-    (transp (equivIntro ...) (cd sourceRawSource))
-```
-
-Different head ctors (`equivApply` vs `transp`) on each side of
-the par-step — structurally false, with no realizable single
-parallel-reduction rule connecting them.  The cd cascade is
-broken.
-
-The fix requires adding a NEW joint reduction rule like
-
-```
-| transpUaOfReflBeta {scope : Nat} {pathRawSource ...} :
-    par pathRawSource (uaToEquiv (oeqRefl _)) →
+| uaReflEquivApply :
+    par witnessSource witnessTarget →
     par sourceRawSource sourceRawTarget →
-    par (transp pathRawSource sourceRawSource) sourceRawTarget
+    par (equivApply (uaToEquiv (oeqRefl witnessSource)) sourceRawSource)
+        sourceRawTarget
 ```
 
-(transport along the identity equivalence is the identity), plus
-a corresponding `cdTranspCase` extension recognizing the joint
-firing.  This is a multi-rule cascade extension (~250+ lines per
-the `cd_cascade_inversion_blocker` memory entry) — beyond a
-single-atom ship boundary and properly belongs to the v1.1
-follow-up that will land typed mirrors `Term.{idToEquiv,oeqRefl,
-oeqTrans,equivCompose,uaToEquiv}` together with a unified
-univalence-of-refl + transport-along-identity treatment.
+(applying the identity-equivalence-via-univalence to a value
+yields the value unchanged).  The deep variant invokes the same
+contraction when the equiv develops to `uaToEquiv (oeqRefl _)`
+via parallel reduction.
 
-Investigation work documented inline; no axioms, no wrapper
-files, no hypothesis-as-postulate placeholder.  S6 stays open
-on the issue tracker (#1687) with status DEFERRED v1.1, blocking
-on D3.10-UNIVALENCE-COMPOSITION-CLOSURE / cd-cascade-extension
-co-design.  No decl of the S6 rule lives in the kernel — the
-existing S1 cascade (where `uaToEquiv proof` reduces via
-`uaBeta` when applied as a path under transp) is the ONLY way
-the round-trip semantics fire today, and that is sound.
+This shape composes cleanly with `uaBetaDeep`: both reductions
+that originate at a `transp` redex converge on the underlying
+argument value at the `equivApply` layer.  The diamond holds:
+`cdEquivApplyCase` dispatches to `cdUaToEquivApplyCase` (67-arm
+full enumeration to keep the match propext-clean), which fires
+the headline arm `oeqRefl _ => developedArg` directly.
 
-## Round-trip closure status WITH S6 deferred
+## Round-trip closure status (S1–S6 complete)
 
 * idToEquiv-side round-trip (S4 + S5): `idToEquiv (refl _) ⟶
   equivIntro id id` and `idToEquiv (oeqTrans _ _) ⟶
   equivCompose ...` both ship.
-* uaToEquiv-side round-trip (S6): NOT YET — `uaToEquiv (oeqRefl
-  _) ⟶ equivIntro id id` is the missing dual.
-* The asymmetry is real but bounded: `idToEquiv` round-trips
-  fully at the raw layer; `uaToEquiv` round-trips only via the
-  S1 transp-applied path.  Closure under v1.1 will eliminate
-  the asymmetry. -/
+* uaToEquiv-side round-trip (S6): `equivApply (uaToEquiv (oeqRefl
+  _)) arg ⟶ arg` ships at the applied form.  Together with the
+  S1 transp-applied path (`transp (uaToEquiv ...) ...`), this
+  fully closes the univalence round-trip cycle at the kernel-
+  syntactic level. -/
 
 namespace LeanFX2
 
@@ -205,13 +166,14 @@ namespace LeanFX2
 #print axioms LeanFX2.RawStep.par.diamond
 
 -- ============================
--- Section S6 (DEFERRED v1.1): no kernel decls; structural blocker
--- documented in the docstring above.  No `#print axioms` here —
--- there is nothing to print, by design.  When S6 ships in v1.1
--- as part of D3.10-UNIVALENCE-COMPOSITION-CLOSURE, this section
--- will gain `#print axioms LeanFX2.RawStep.par.uaToEquivOfRefl`
--- and `#print axioms LeanFX2.RawStep.par.uaToEquivOfReflDeep`
--- alongside the joint `transpUaOfReflBeta` cd-cascade extension.
+-- Section S6: D3.6-S6 uaToEquiv-of-oeqRefl round-trip β
+-- (raw-only confluence-closure mechanism — typed `Step.uaReflEquivApply`
+-- mirror deferred to v1.1 alongside typed `Term.uaToEquiv`/`Term.equivApply`
+-- ctors per the docstring above; raw-only entry in
+-- `isDocumentedRawOnlyParity` Section H.)
 -- ============================
+
+#print axioms LeanFX2.RawStep.par.uaReflEquivApply
+#print axioms LeanFX2.RawStep.par.uaReflEquivApplyDeep
 
 end LeanFX2

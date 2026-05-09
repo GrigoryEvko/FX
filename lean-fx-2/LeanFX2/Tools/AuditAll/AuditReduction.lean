@@ -104,6 +104,23 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.idToEquivComposeDeep
 #assert_no_axioms LeanFX2.RawStep.par.oeqTrans_inv
 #assert_no_axioms LeanFX2.RawStep.par.equivCompose_inv
+-- D3.6-S6 univalence-refl round-trip-β raw rules (kernel-internal
+-- `equivApply (uaToEquiv (oeqRefl _)) source ⟶ source` — raw-only
+-- confluence-closure mechanism mounted on existing `RawTerm.equivApply`
+-- + `RawTerm.uaToEquiv` + `RawTerm.oeqRefl` ctors.  Listed in
+-- `isDocumentedRawOnlyParity` Section H since typed `Term.equivApply`
+-- cannot have an equiv-raw of `RawTerm.uaToEquiv (RawTerm.oeqRefl _)`
+-- (typed `Term.uaToEquiv` produces `Ty.id`-typed proofs while typed
+-- `Term.oeqRefl` produces `Ty.oeqType`-typed witnesses — different
+-- typed-Ty heads, no typed bridge until v1.1's D3.10 unifies them).
+-- Activated through `cdEquivApplyCase`'s `uaToEquiv` arm (+ the inner
+-- `cdUaToEquivApplyCase`'s `oeqRefl` headline arm) in
+-- `Confluence/RawCd.lean`.
+#assert_no_axioms LeanFX2.RawStep.par.uaReflEquivApply
+#assert_no_axioms LeanFX2.RawStep.par.uaReflEquivApplyDeep
+#assert_no_axioms LeanFX2.RawStep.par.oeqRefl_inv
+#assert_no_axioms LeanFX2.RawTerm.cdEquivApplyCase
+#assert_no_axioms LeanFX2.RawTerm.cdUaToEquivApplyCase
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp
