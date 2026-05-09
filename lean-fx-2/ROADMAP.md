@@ -83,8 +83,10 @@ Acceptance: ✅ `Step.par.toRawBridge` total; cross-theory bridges ship rfl-frag
 * [x] `HoTT/Funext.lean` — funext via `Conv.fromStep Step.eqArrow` (#1322 D3.7, #1438 CUMUL-8.7)
 * [x] `HoTT/HIT/{Spec,Setoid,Eliminator,Examples}.lean` — 7 concrete HITs (#1323, #1324)
 * [x] D3.12-ROOT-LABELS (#1576) — every HoTT/HIT/Cubical/Modal/Bridge module now exposes a `## Root status` docstring subsection (Layer / Load-bearing for / Axiom budget); 47 modules labelled across 6 commits 2026-05-08
+* [x] D3.6 univalence-β step-rule chain (#1682–#1686) — five sub-phases shipped 2026-05-08/09 covering raw-layer kernel-internal univalence-β rules: S1 (`uaBeta` / `uaBetaDeep`, #1682), S2 (`transpReflId` no-op vs #1555, #1683), S3 (`transpCompose{,Deep}`, #1684), S4 (`idToEquivRefl{,Deep}`, #1685), S5 (`idToEquivCompose{,Deep}`, #1686).  Comprehensive rollup audit at `Smoke/AuditD36All.lean` (#1688).
+* (deferred) D3.6-S6 uaToEquiv-of-oeqRefl round-trip (#1687) — investigated 2026-05-09, structurally blocked on cd-cascade extension; a new `RawStep.par.uaToEquivOfRefl` rule cleanly ships shallow but its cd cascade conflicts with `uaBetaDeep`'s cd-functoriality, requiring a joint-β rule (e.g. `transpUaOfReflBeta`) and a `cdTranspCase` extension.  Multi-rule cascade extension blocked by dep-elim wall on indexed-inductive partial matches (per `feedback_lean_cd_cascade_inversion_blocker`); deferred to v1.1's D3.10-UNIVALENCE-COMPOSITION-CLOSURE which will land typed mirrors `Term.{idToEquiv,oeqRefl,oeqTrans,equivCompose,uaToEquiv}` together with a unified univalence-of-refl + transport-along-identity treatment.  Detailed structural blocker note in `Smoke/AuditD36All.lean` docstring.
 
-Acceptance: ✅ Univalence + funext are real theorems (zero-axiom verified per #1439 CUMUL-8.8); HIT eliminators land via parallel `Step` reductions.
+Acceptance: ✅ Univalence + funext are real theorems (zero-axiom verified per #1439 CUMUL-8.8); HIT eliminators land via parallel `Step` reductions; D3.6 step-rule chain S1–S5 ships zero-axiom; S6 remains DEFERRED v1.1 with explicit structural blocker.
 
 ## Phase 7 — Modal (Layer 6) — NOT STARTED [ ]
 
