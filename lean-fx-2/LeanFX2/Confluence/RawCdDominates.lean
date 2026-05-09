@@ -271,42 +271,7 @@ theorem RawStep.par.cd_dominates :
               rw [hPath] at pathParStep
               exact RawStep.par.transpReflBetaDeep pathParStep sourceParStep
           case _ _unwknEqn =>
-              -- D2.5.5: J34's cdTranspCase pathLam arm now dispatches
-              -- through `cdTranspPathLamBody` when `unweaken? pathBody = none`.
-              -- For all non-`piTyCode` shapes (and `piTyCode` with the guard
-              -- failing), the dispatcher produces `transp (pathLam pathBody)
-              -- developedSource`, satisfied by transpCong.  For
-              -- `piTyCode A B` with `unweaken? B = some C` AND
-              -- `decide (A = C) = true`, the dispatcher fires the Pi-β
-              -- contractum and we close via `transpPiBetaSimpleDeep`.
-              unfold RawTerm.cdTranspPathLamBody
-              split
-              case _ domainCode codomainCode =>
-                  -- piTyCode arm.  Recover pathBody = piTyCode domainCode
-                  -- codomainCode from the matched scrutinee at this point
-                  -- (split-on-match gives us the pattern equation as a
-                  -- hidden hypothesis).
-                  split
-                  case _ codomainUnweakened unwknCodEqn =>
-                      have hCod : codomainCode = codomainUnweakened.weaken :=
-                        RawTerm.unweaken?_imp_weaken codomainCode codomainUnweakened
-                          unwknCodEqn
-                      split
-                      case _ decEqn =>
-                          have hDom : domainCode = codomainUnweakened :=
-                            of_decide_eq_true decEqn
-                          -- pathParStep : par pathTerm (pathLam (piTyCode
-                          --   domainCode codomainCode)) — substitute hCod
-                          --   and hDom to align with transpPiBetaSimpleDeep's
-                          --   path target.
-                          rw [hCod, hDom] at pathParStep
-                          exact RawStep.par.transpPiBetaSimpleDeep pathParStep
-                            sourceParStep
-                      case _ _decEqn =>
-                          exact RawStep.par.transpCong pathParStep sourceParStep
-                  case _ _unwknCodEqn =>
-                      exact RawStep.par.transpCong pathParStep sourceParStep
-              all_goals exact RawStep.par.transpCong pathParStep sourceParStep
+              exact RawStep.par.transpCong pathParStep sourceParStep
       -- D3.6-S1 cd activation: when cd pathTerm = uaToEquiv proofRaw,
       -- fire the deep univalence-β rule.  D3.6-S3 cd activation: when
       -- cd pathTerm = pathCompose left right, fire the deep

@@ -2,7 +2,6 @@ import LeanFX2.Confluence.RawCd
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRenameCommute
-import LeanFX2.Foundation.RawTermInjective
 
 /-! # Confluence/RawCdRename — `cd` commutes with `rename`.
 
@@ -316,116 +315,21 @@ theorem RawTerm.cdEquivApplyCase_rename {sourceScope targetScope : Nat}
       exact RawTerm.cdUaToEquivApplyCase_rename rho proof developedArg
   all_goals rfl
 
-/-! ## Helper-rename lemma 18 of 18: cdTranspCase + cdTranspPathLamBody.
+/-! ## Helper-rename lemma 18 of 18: cdTranspCase.
 
-The `pathLam` arm dispatches on `unweaken? pathBody`; in the `none`
-branch it further dispatches through `cdTranspPathLamBody`.  Both
-branches are aligned via `RawTerm.unweaken?_rename_lift_commute`
-plus a case split on `unweaken? pathBody`.  The 66 non-pathLam
-ctors all rebuild as plain `transp` cong and close by `rfl`.
+The `pathLam` arm dispatches on `unweaken? pathBody`; both branches
+are aligned via `RawTerm.unweaken?_rename_lift_commute` plus a case
+split on `unweaken? pathBody`.  The 66 non-pathLam ctors all rebuild
+as plain `transp` cong and close by `rfl`. -/
 
-The `cdTranspPathLamBody` dispatcher's piTyCode arm uses a
-`decide (domainCode = codomainUnweakened)` test that's only
-rename-equivariant under INJECTIVE renamings — so this helper
-takes `RawRenamingInjective rho` as a hypothesis.  Downstream
-`cd_weaken` supplies `RawRenamingInjective.weaken`. -/
-
-/-- `cdTranspPathLamBody` commutes with `rename` under injective
-renaming.  The piTyCode arm uses `unweaken?_rename_lift_commute`
-to align the inner Option dispatch and `rename_injective_under_
-injective_renaming` to align the decide-equality test.  The 66
-non-piTyCode arms are rebuilt as plain `transp` cong and close by
-`rfl`. -/
-theorem RawTerm.cdTranspPathLamBody_rename {sourceScope targetScope : Nat}
-    (rho : RawRenaming sourceScope targetScope)
-    (rhoInj : RawRenamingInjective rho)
-    (pathBody : RawTerm (sourceScope + 1))
-    (developedSource : RawTerm sourceScope) :
-    (RawTerm.cdTranspPathLamBody pathBody developedSource).rename rho =
-    RawTerm.cdTranspPathLamBody (pathBody.rename rho.lift)
-      (developedSource.rename rho) := by
-  cases pathBody
-  case piTyCode domainCode codomainCode =>
-      -- Dispatcher: piTyCode arm has nested matches on unweaken? + decide.
-      -- LHS shape:  match unweaken? codomainCode with
-      --   | some C => match decide (domainCode = C) with
-      --       | true => contractum-using-C
-      --       | false => transp cong (piTyCode domainCode codomainCode)
-      --   | none => transp cong (piTyCode domainCode codomainCode)
-      -- After rename rho on the result, we need RHS to dispatch
-      -- on the rho.lift'd inputs.
-      simp only [RawTerm.cdTranspPathLamBody, RawTerm.rename]
-      rw [RawTerm.unweaken?_rename_lift_commute codomainCode rho.lift]
-      cases unwknResult : RawTerm.unweaken? codomainCode with
-      | none => rfl
-      | some codomainUnweakened =>
-          simp only [Option.map]
-          -- Now: decide (domainCode = codomainUnweakened) on LHS
-          -- vs   decide (domainCode.rename rho.lift = codomainUnweakened.rename rho.lift) on RHS
-          -- These agree under injective rho.lift via rename_injective.
-          by_cases decEq : domainCode = codomainUnweakened
-          · -- both decide true — contractum on both sides
-            subst decEq
-            simp only [decide_true]
-            -- Contractum shape (with codomainUnweakened replaced by domainCode):
-            -- lam (app dS.weaken (transp (pathLam (pathApp
-            --   (pathLam domainCode).weaken.weaken
-            --   (intervalOpp (var 0)))) (var 0)))
-            -- We need rename rho on LHS to equal contractum on renamed inputs.
-            simp only [RawTerm.rename]
-            -- Normalize developedSource.weaken.rename rho.lift
-            -- to (developedSource.rename rho).weaken
-            rw [RawTerm.weaken_rename_commute rho developedSource]
-            -- Normalize the inner double-weakened domainCode.
-            -- LHS: ((domainCode.rename weaken.lift).rename weaken.lift).rename rho.lift.lift.lift
-            -- RHS: ((domainCode.rename rho.lift).rename weaken.lift).rename weaken.lift
-            -- Use rename_compose to fold all renames into one, then
-            -- show the composed renamings agree pointwise.
-            rw [RawTerm.rename_compose RawRenaming.weaken.lift
-                  RawRenaming.weaken.lift domainCode,
-                RawTerm.rename_compose
-                  (fun pos => RawRenaming.weaken.lift (RawRenaming.weaken.lift pos))
-                  rho.lift.lift.lift domainCode,
-                RawTerm.rename_compose rho.lift RawRenaming.weaken.lift
-                  domainCode,
-                RawTerm.rename_compose
-                  (fun pos => RawRenaming.weaken.lift (rho.lift pos))
-                  RawRenaming.weaken.lift domainCode]
-            -- Now both sides have a single rename; show the renamings agree.
-            -- Goal shape: (lhsTerm).lam = (rhsTerm).lam where the only
-            -- differences are inside domainCode.rename and var positions.
-            have renamesAgree : (fun pos => rho.lift.lift.lift
-                                  (RawRenaming.weaken.lift
-                                    (RawRenaming.weaken.lift pos)))
-                              = (fun pos => RawRenaming.weaken.lift
-                                  (RawRenaming.weaken.lift (rho.lift pos))) := by
-              funext position
-              cases position with
-              | mk val isLt =>
-                cases val with
-                | zero => rfl
-                | succ k1 =>
-                    cases k1 with
-                    | zero => rfl
-                    | succ k2 => rfl
-            rw [renamesAgree]
-          · -- LHS decide false; RHS decide also false (by injectivity)
-            have decEqRho : domainCode.rename rho.lift ≠ codomainUnweakened.rename rho.lift := by
-              intro h
-              apply decEq
-              exact RawTerm.rename_injective_under_injective_renaming
-                domainCode (RawRenamingInjective.lift rhoInj) codomainUnweakened h
-            simp only [decide_eq_false decEq, decide_eq_false decEqRho]
-            simp only [RawTerm.rename]
-  all_goals (simp only [RawTerm.cdTranspPathLamBody, RawTerm.rename])
-
-/-- `cdTranspCase` commutes with `rename` under injective renaming.
-The pathLam case splits on `unweaken? pathBody`: when `some _`, both
-sides reduce to `developedSource.rename rho`; when `none`, both
-sides dispatch through `cdTranspPathLamBody_rename`. -/
+/-- `cdTranspCase` commutes with `rename`.  The pathLam case splits
+on `unweaken? pathBody`: when `some inner`, both sides reduce to
+`developedSource.rename rho` (using `weaken_rename_commute` and
+`unweaken?_weaken`); when `none`, both sides reduce to
+`transp (pathLam (pathBody.rename rho.lift)) (developedSource.rename rho)`
+(using the commute lemma to align the dispatch). -/
 theorem RawTerm.cdTranspCase_rename {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
-    (rhoInj : RawRenamingInjective rho)
     (developedPath developedSource : RawTerm sourceScope) :
     (RawTerm.cdTranspCase developedPath developedSource).rename rho =
     RawTerm.cdTranspCase (developedPath.rename rho)
@@ -434,16 +338,13 @@ theorem RawTerm.cdTranspCase_rename {sourceScope targetScope : Nat}
   case pathLam pathBody =>
       show ((match RawTerm.unweaken? pathBody with
               | some _ => developedSource
-              | none => RawTerm.cdTranspPathLamBody pathBody developedSource).rename rho) =
+              | none => RawTerm.transp (RawTerm.pathLam pathBody) developedSource).rename rho) =
            (match RawTerm.unweaken? (pathBody.rename rho.lift) with
               | some _ => developedSource.rename rho
-              | none => RawTerm.cdTranspPathLamBody (pathBody.rename rho.lift)
+              | none => RawTerm.transp (RawTerm.pathLam (pathBody.rename rho.lift))
                           (developedSource.rename rho))
       rw [RawTerm.unweaken?_rename_lift_commute pathBody rho]
-      cases RawTerm.unweaken? pathBody with
-      | none =>
-          exact RawTerm.cdTranspPathLamBody_rename rho rhoInj pathBody developedSource
-      | some _ => rfl
+      cases RawTerm.unweaken? pathBody <;> rfl
   all_goals rfl
 
 /-! ## Main theorem: `cd` commutes with `rename`.
@@ -458,414 +359,413 @@ Modeled on `RawTerm.rename_compose` (`Foundation/RawSubst.lean:375`)
 helper-rename rewrite step for the 17 redex-bearing ctors. -/
 
 theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
-    ∀ {targetScope : Nat} (rho : RawRenaming sourceScope targetScope)
-      (rhoInj : RawRenamingInjective rho),
+    ∀ {targetScope : Nat} (rho : RawRenaming sourceScope targetScope),
       (RawTerm.cd term).rename rho = RawTerm.cd (term.rename rho) := by
   induction term with
-  | var position => intro _ _ _; rfl
-  | unit => intro _ _ _; rfl
+  | var position => intro _ _; rfl
+  | unit => intro _ _; rfl
   | lam body bodyIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.lam (RawTerm.cd body)).rename rho =
            RawTerm.cd (RawTerm.lam (body.rename rho.lift))
       simp only [RawTerm.rename, RawTerm.cd]
-      exact congrArg RawTerm.lam (bodyIH rho.lift (RawRenamingInjective.lift rhoInj))
+      exact congrArg RawTerm.lam (bodyIH rho.lift)
   | app fn arg fnIH argIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdAppCase (RawTerm.cd fn) (RawTerm.cd arg)).rename rho =
            RawTerm.cd (RawTerm.app (fn.rename rho) (arg.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdAppCase_rename rho (RawTerm.cd fn) (RawTerm.cd arg),
-          fnIH rho rhoInj, argIH rho rhoInj]
+          fnIH rho, argIH rho]
   | pair fv sv fvIH svIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.pair (RawTerm.cd fv) (RawTerm.cd sv)).rename rho =
            RawTerm.cd (RawTerm.pair (fv.rename rho) (sv.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [fvIH rho rhoInj, svIH rho rhoInj]
+      rw [fvIH rho, svIH rho]
   | fst pairTerm pairIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdFstCase (RawTerm.cd pairTerm)).rename rho =
            RawTerm.cd (RawTerm.fst (pairTerm.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdFstCase_rename rho (RawTerm.cd pairTerm), pairIH rho rhoInj]
+      rw [RawTerm.cdFstCase_rename rho (RawTerm.cd pairTerm), pairIH rho]
   | snd pairTerm pairIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdSndCase (RawTerm.cd pairTerm)).rename rho =
            RawTerm.cd (RawTerm.snd (pairTerm.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdSndCase_rename rho (RawTerm.cd pairTerm), pairIH rho rhoInj]
-  | boolTrue => intro _ _ _; rfl
-  | boolFalse => intro _ _ _; rfl
+      rw [RawTerm.cdSndCase_rename rho (RawTerm.cd pairTerm), pairIH rho]
+  | boolTrue => intro _ _; rfl
+  | boolFalse => intro _ _; rfl
   | boolElim s t e sIH tIH eIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdBoolElimCase (RawTerm.cd s) (RawTerm.cd t) (RawTerm.cd e)).rename rho =
            RawTerm.cd (RawTerm.boolElim (s.rename rho) (t.rename rho) (e.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdBoolElimCase_rename rho (RawTerm.cd s) (RawTerm.cd t) (RawTerm.cd e),
-          sIH rho rhoInj, tIH rho rhoInj, eIH rho rhoInj]
-  | natZero => intro _ _ _; rfl
+          sIH rho, tIH rho, eIH rho]
+  | natZero => intro _ _; rfl
   | natSucc p pIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.natSucc (RawTerm.cd p)).rename rho =
            RawTerm.cd (RawTerm.natSucc (p.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [pIH rho rhoInj]
+      rw [pIH rho]
   | natElim s z c sIH zIH cIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdNatElimCase (RawTerm.cd s) (RawTerm.cd z) (RawTerm.cd c)).rename rho =
            RawTerm.cd (RawTerm.natElim (s.rename rho) (z.rename rho) (c.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdNatElimCase_rename rho (RawTerm.cd s) (RawTerm.cd z) (RawTerm.cd c),
-          sIH rho rhoInj, zIH rho rhoInj, cIH rho rhoInj]
+          sIH rho, zIH rho, cIH rho]
   | natRec s z c sIH zIH cIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdNatRecCase (RawTerm.cd s) (RawTerm.cd z) (RawTerm.cd c)).rename rho =
            RawTerm.cd (RawTerm.natRec (s.rename rho) (z.rename rho) (c.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdNatRecCase_rename rho (RawTerm.cd s) (RawTerm.cd z) (RawTerm.cd c),
-          sIH rho rhoInj, zIH rho rhoInj, cIH rho rhoInj]
-  | listNil => intro _ _ _; rfl
+          sIH rho, zIH rho, cIH rho]
+  | listNil => intro _ _; rfl
   | listCons h t hIH tIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.listCons (RawTerm.cd h) (RawTerm.cd t)).rename rho =
            RawTerm.cd (RawTerm.listCons (h.rename rho) (t.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [hIH rho rhoInj, tIH rho rhoInj]
+      rw [hIH rho, tIH rho]
   | listElim s n c sIH nIH cIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdListElimCase (RawTerm.cd s) (RawTerm.cd n) (RawTerm.cd c)).rename rho =
            RawTerm.cd (RawTerm.listElim (s.rename rho) (n.rename rho) (c.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdListElimCase_rename rho (RawTerm.cd s) (RawTerm.cd n) (RawTerm.cd c),
-          sIH rho rhoInj, nIH rho rhoInj, cIH rho rhoInj]
-  | optionNone => intro _ _ _; rfl
+          sIH rho, nIH rho, cIH rho]
+  | optionNone => intro _ _; rfl
   | optionSome v vIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.optionSome (RawTerm.cd v)).rename rho =
            RawTerm.cd (RawTerm.optionSome (v.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [vIH rho rhoInj]
+      rw [vIH rho]
   | optionMatch s n c sIH nIH cIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdOptionMatchCase (RawTerm.cd s) (RawTerm.cd n) (RawTerm.cd c)).rename rho =
            RawTerm.cd (RawTerm.optionMatch (s.rename rho) (n.rename rho) (c.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdOptionMatchCase_rename rho (RawTerm.cd s) (RawTerm.cd n) (RawTerm.cd c),
-          sIH rho rhoInj, nIH rho rhoInj, cIH rho rhoInj]
+          sIH rho, nIH rho, cIH rho]
   | eitherInl v vIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.eitherInl (RawTerm.cd v)).rename rho =
            RawTerm.cd (RawTerm.eitherInl (v.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [vIH rho rhoInj]
+      rw [vIH rho]
   | eitherInr v vIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.eitherInr (RawTerm.cd v)).rename rho =
            RawTerm.cd (RawTerm.eitherInr (v.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [vIH rho rhoInj]
+      rw [vIH rho]
   | eitherMatch s l r sIH lIH rIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdEitherMatchCase (RawTerm.cd s) (RawTerm.cd l) (RawTerm.cd r)).rename rho =
            RawTerm.cd (RawTerm.eitherMatch (s.rename rho) (l.rename rho) (r.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdEitherMatchCase_rename rho (RawTerm.cd s) (RawTerm.cd l) (RawTerm.cd r),
-          sIH rho rhoInj, lIH rho rhoInj, rIH rho rhoInj]
+          sIH rho, lIH rho, rIH rho]
   | refl witness witnessIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.refl (RawTerm.cd witness)).rename rho =
            RawTerm.cd (RawTerm.refl (witness.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [witnessIH rho rhoInj]
+      rw [witnessIH rho]
   | idJ base witness baseIH witnessIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdIdJCase (RawTerm.cd base) (RawTerm.cd witness)).rename rho =
            RawTerm.cd (RawTerm.idJ (base.rename rho) (witness.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdIdJCase_rename rho (RawTerm.cd base) (RawTerm.cd witness),
-          baseIH rho rhoInj, witnessIH rho rhoInj]
+          baseIH rho, witnessIH rho]
   | modIntro inner innerIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.modIntro (RawTerm.cd inner)).rename rho =
            RawTerm.cd (RawTerm.modIntro (inner.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [innerIH rho rhoInj]
+      rw [innerIH rho]
   | modElim inner innerIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdModElimCase (RawTerm.cd inner)).rename rho =
            RawTerm.cd (RawTerm.modElim (inner.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdModElimCase_rename rho (RawTerm.cd inner), innerIH rho rhoInj]
+      rw [RawTerm.cdModElimCase_rename rho (RawTerm.cd inner), innerIH rho]
   | subsume inner innerIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.subsume (RawTerm.cd inner)).rename rho =
            RawTerm.cd (RawTerm.subsume (inner.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [innerIH rho rhoInj]
-  | interval0 => intro _ _ _; rfl
-  | interval1 => intro _ _ _; rfl
+      rw [innerIH rho]
+  | interval0 => intro _ _; rfl
+  | interval1 => intro _ _; rfl
   | intervalOpp i iIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.intervalOpp (RawTerm.cd i)).rename rho =
            RawTerm.cd (RawTerm.intervalOpp (i.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [iIH rho rhoInj]
+      rw [iIH rho]
   | intervalMeet l r lIH rIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.intervalMeet (RawTerm.cd l) (RawTerm.cd r)).rename rho =
            RawTerm.cd (RawTerm.intervalMeet (l.rename rho) (r.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [lIH rho rhoInj, rIH rho rhoInj]
+      rw [lIH rho, rIH rho]
   | intervalJoin l r lIH rIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.intervalJoin (RawTerm.cd l) (RawTerm.cd r)).rename rho =
            RawTerm.cd (RawTerm.intervalJoin (l.rename rho) (r.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [lIH rho rhoInj, rIH rho rhoInj]
+      rw [lIH rho, rIH rho]
   | pathLam body bodyIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.pathLam (RawTerm.cd body)).rename rho =
            RawTerm.cd (RawTerm.pathLam (body.rename rho.lift))
       simp only [RawTerm.rename, RawTerm.cd]
-      exact congrArg RawTerm.pathLam (bodyIH rho.lift (RawRenamingInjective.lift rhoInj))
+      exact congrArg RawTerm.pathLam (bodyIH rho.lift)
   | pathApp pathTerm intervalArg pathIH intervalIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdPathAppCase (RawTerm.cd pathTerm) (RawTerm.cd intervalArg)).rename rho =
            RawTerm.cd (RawTerm.pathApp (pathTerm.rename rho) (intervalArg.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdPathAppCase_rename rho (RawTerm.cd pathTerm) (RawTerm.cd intervalArg),
-          pathIH rho rhoInj, intervalIH rho rhoInj]
+          pathIH rho, intervalIH rho]
   | glueIntro baseValue partialValue baseIH partialIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.glueIntro (RawTerm.cd baseValue) (RawTerm.cd partialValue)).rename rho =
            RawTerm.cd (RawTerm.glueIntro (baseValue.rename rho) (partialValue.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [baseIH rho rhoInj, partialIH rho rhoInj]
+      rw [baseIH rho, partialIH rho]
   | glueElim gluedValue gluedIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdGlueElimCase (RawTerm.cd gluedValue)).rename rho =
            RawTerm.cd (RawTerm.glueElim (gluedValue.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdGlueElimCase_rename rho (RawTerm.cd gluedValue), gluedIH rho rhoInj]
+      rw [RawTerm.cdGlueElimCase_rename rho (RawTerm.cd gluedValue), gluedIH rho]
   | transp pathTerm sourceTerm pathIH sourceIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdTranspCase (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)).rename rho =
            RawTerm.cd (RawTerm.transp (pathTerm.rename rho) (sourceTerm.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdTranspCase_rename rho rhoInj (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm),
-          pathIH rho rhoInj, sourceIH rho rhoInj]
+      rw [RawTerm.cdTranspCase_rename rho (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm),
+          pathIH rho, sourceIH rho]
   | hcomp sides cap sidesIH capIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.hcomp (RawTerm.cd sides) (RawTerm.cd cap)).rename rho =
            RawTerm.cd (RawTerm.hcomp (sides.rename rho) (cap.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [sidesIH rho rhoInj, capIH rho rhoInj]
+      rw [sidesIH rho, capIH rho]
   | oeqRefl witness witnessIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.oeqRefl (RawTerm.cd witness)).rename rho =
            RawTerm.cd (RawTerm.oeqRefl (witness.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [witnessIH rho rhoInj]
+      rw [witnessIH rho]
   | oeqJ base witness baseIH witnessIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.oeqJ (RawTerm.cd base) (RawTerm.cd witness)).rename rho =
            RawTerm.cd (RawTerm.oeqJ (base.rename rho) (witness.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [baseIH rho rhoInj, witnessIH rho rhoInj]
+      rw [baseIH rho, witnessIH rho]
   | oeqFunext pointwise pointwiseIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.oeqFunext (RawTerm.cd pointwise)).rename rho =
            RawTerm.cd (RawTerm.oeqFunext (pointwise.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [pointwiseIH rho rhoInj]
+      rw [pointwiseIH rho]
   | idStrictRefl witness witnessIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.idStrictRefl (RawTerm.cd witness)).rename rho =
            RawTerm.cd (RawTerm.idStrictRefl (witness.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [witnessIH rho rhoInj]
+      rw [witnessIH rho]
   | idStrictRec base witness baseIH witnessIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdIdStrictRecCase (RawTerm.cd base) (RawTerm.cd witness)).rename rho =
            RawTerm.cd (RawTerm.idStrictRec (base.rename rho) (witness.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdIdStrictRecCase_rename rho (RawTerm.cd base) (RawTerm.cd witness),
-          baseIH rho rhoInj, witnessIH rho rhoInj]
+          baseIH rho, witnessIH rho]
   | equivIntro fwd bwd fwdIH bwdIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.equivIntro (RawTerm.cd fwd) (RawTerm.cd bwd)).rename rho =
            RawTerm.cd (RawTerm.equivIntro (fwd.rename rho) (bwd.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [fwdIH rho rhoInj, bwdIH rho rhoInj]
+      rw [fwdIH rho, bwdIH rho]
   | equivApp equivTerm argument equivIH argIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.equivApp (RawTerm.cd equivTerm) (RawTerm.cd argument)).rename rho =
            RawTerm.cd (RawTerm.equivApp (equivTerm.rename rho) (argument.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [equivIH rho rhoInj, argIH rho rhoInj]
+      rw [equivIH rho, argIH rho]
   | refineIntro rawValue predicateProof valueIH proofIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.refineIntro (RawTerm.cd rawValue) (RawTerm.cd predicateProof)).rename rho =
            RawTerm.cd (RawTerm.refineIntro (rawValue.rename rho) (predicateProof.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [valueIH rho rhoInj, proofIH rho rhoInj]
+      rw [valueIH rho, proofIH rho]
   | refineElim refinedValue refinedIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdRefineElimCase (RawTerm.cd refinedValue)).rename rho =
            RawTerm.cd (RawTerm.refineElim (refinedValue.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdRefineElimCase_rename rho (RawTerm.cd refinedValue), refinedIH rho rhoInj]
+      rw [RawTerm.cdRefineElimCase_rename rho (RawTerm.cd refinedValue), refinedIH rho]
   | recordIntro firstField firstIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.recordIntro (RawTerm.cd firstField)).rename rho =
            RawTerm.cd (RawTerm.recordIntro (firstField.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [firstIH rho rhoInj]
+      rw [firstIH rho]
   | recordProj recordValue recordIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdRecordProjCase (RawTerm.cd recordValue)).rename rho =
            RawTerm.cd (RawTerm.recordProj (recordValue.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdRecordProjCase_rename rho (RawTerm.cd recordValue), recordIH rho rhoInj]
+      rw [RawTerm.cdRecordProjCase_rename rho (RawTerm.cd recordValue), recordIH rho]
   | codataUnfold initialState transition stateIH transIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.codataUnfold (RawTerm.cd initialState) (RawTerm.cd transition)).rename rho =
            RawTerm.cd (RawTerm.codataUnfold (initialState.rename rho) (transition.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [stateIH rho rhoInj, transIH rho rhoInj]
+      rw [stateIH rho, transIH rho]
   | codataDest codataValue codataIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdCodataDestCase (RawTerm.cd codataValue)).rename rho =
            RawTerm.cd (RawTerm.codataDest (codataValue.rename rho))
       simp only [RawTerm.cd]
-      rw [RawTerm.cdCodataDestCase_rename rho (RawTerm.cd codataValue), codataIH rho rhoInj]
+      rw [RawTerm.cdCodataDestCase_rename rho (RawTerm.cd codataValue), codataIH rho]
   | sessionSend channel payload chIH payloadIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.sessionSend (RawTerm.cd channel) (RawTerm.cd payload)).rename rho =
            RawTerm.cd (RawTerm.sessionSend (channel.rename rho) (payload.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [chIH rho rhoInj, payloadIH rho rhoInj]
+      rw [chIH rho, payloadIH rho]
   | sessionRecv channel chIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.sessionRecv (RawTerm.cd channel)).rename rho =
            RawTerm.cd (RawTerm.sessionRecv (channel.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [chIH rho rhoInj]
+      rw [chIH rho]
   | effectPerform operationTag arguments tagIH argsIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.effectPerform (RawTerm.cd operationTag) (RawTerm.cd arguments)).rename rho =
            RawTerm.cd (RawTerm.effectPerform (operationTag.rename rho) (arguments.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [tagIH rho rhoInj, argsIH rho rhoInj]
-  | universeCode innerLevel => intro _ _ _; rfl
+      rw [tagIH rho, argsIH rho]
+  | universeCode innerLevel => intro _ _; rfl
   | arrowCode domainCode codomainCode domainIH codomainIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.arrowCode (RawTerm.cd domainCode) (RawTerm.cd codomainCode)).rename rho =
            RawTerm.cd (RawTerm.arrowCode (domainCode.rename rho) (codomainCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [domainIH rho rhoInj, codomainIH rho rhoInj]
+      rw [domainIH rho, codomainIH rho]
   | piTyCode domainCode codomainCode domainIH codomainIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.piTyCode (RawTerm.cd domainCode) (RawTerm.cd codomainCode)).rename rho =
            RawTerm.cd (RawTerm.piTyCode (domainCode.rename rho) (codomainCode.rename rho.lift))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [domainIH rho rhoInj, codomainIH rho.lift (RawRenamingInjective.lift rhoInj)]
+      rw [domainIH rho, codomainIH rho.lift]
   | sigmaTyCode domainCode codomainCode domainIH codomainIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.sigmaTyCode (RawTerm.cd domainCode) (RawTerm.cd codomainCode)).rename rho =
            RawTerm.cd (RawTerm.sigmaTyCode (domainCode.rename rho) (codomainCode.rename rho.lift))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [domainIH rho rhoInj, codomainIH rho.lift (RawRenamingInjective.lift rhoInj)]
+      rw [domainIH rho, codomainIH rho.lift]
   | productCode firstCode secondCode firstIH secondIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.productCode (RawTerm.cd firstCode) (RawTerm.cd secondCode)).rename rho =
            RawTerm.cd (RawTerm.productCode (firstCode.rename rho) (secondCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [firstIH rho rhoInj, secondIH rho rhoInj]
+      rw [firstIH rho, secondIH rho]
   | sumCode leftCode rightCode leftIH rightIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.sumCode (RawTerm.cd leftCode) (RawTerm.cd rightCode)).rename rho =
            RawTerm.cd (RawTerm.sumCode (leftCode.rename rho) (rightCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [leftIH rho rhoInj, rightIH rho rhoInj]
+      rw [leftIH rho, rightIH rho]
   | listCode elementCode elementIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.listCode (RawTerm.cd elementCode)).rename rho =
            RawTerm.cd (RawTerm.listCode (elementCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [elementIH rho rhoInj]
+      rw [elementIH rho]
   | optionCode elementCode elementIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.optionCode (RawTerm.cd elementCode)).rename rho =
            RawTerm.cd (RawTerm.optionCode (elementCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [elementIH rho rhoInj]
+      rw [elementIH rho]
   | eitherCode leftCode rightCode leftIH rightIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.eitherCode (RawTerm.cd leftCode) (RawTerm.cd rightCode)).rename rho =
            RawTerm.cd (RawTerm.eitherCode (leftCode.rename rho) (rightCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [leftIH rho rhoInj, rightIH rho rhoInj]
+      rw [leftIH rho, rightIH rho]
   | idCode typeCode leftRaw rightRaw typeIH leftIH rightIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.idCode (RawTerm.cd typeCode) (RawTerm.cd leftRaw) (RawTerm.cd rightRaw)).rename rho =
            RawTerm.cd (RawTerm.idCode (typeCode.rename rho) (leftRaw.rename rho) (rightRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [typeIH rho rhoInj, leftIH rho rhoInj, rightIH rho rhoInj]
+      rw [typeIH rho, leftIH rho, rightIH rho]
   | equivCode leftTypeCode rightTypeCode leftIH rightIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.equivCode (RawTerm.cd leftTypeCode) (RawTerm.cd rightTypeCode)).rename rho =
            RawTerm.cd (RawTerm.equivCode (leftTypeCode.rename rho) (rightTypeCode.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [leftIH rho rhoInj, rightIH rho rhoInj]
+      rw [leftIH rho, rightIH rho]
   | cumulUpMarker innerCodeRaw innerIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cumulUpMarker (RawTerm.cd innerCodeRaw)).rename rho =
            RawTerm.cd (RawTerm.cumulUpMarker (innerCodeRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [innerIH rho rhoInj]
+      rw [innerIH rho]
   | uaToEquiv proofRaw proofIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.uaToEquiv (RawTerm.cd proofRaw)).rename rho =
            RawTerm.cd (RawTerm.uaToEquiv (proofRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [proofIH rho rhoInj]
+      rw [proofIH rho]
   | equivApply equivRaw argRaw equivIH argIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdEquivApplyCase (RawTerm.cd equivRaw) (RawTerm.cd argRaw)).rename rho =
            RawTerm.cd (RawTerm.equivApply (equivRaw.rename rho) (argRaw.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdEquivApplyCase_rename rho (RawTerm.cd equivRaw) (RawTerm.cd argRaw),
-        equivIH rho rhoInj, argIH rho rhoInj]
+        equivIH rho, argIH rho]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.pathCompose (RawTerm.cd leftPathRaw) (RawTerm.cd rightPathRaw)).rename rho =
            RawTerm.cd (RawTerm.pathCompose (leftPathRaw.rename rho)
                                             (rightPathRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [leftIH rho rhoInj, rightIH rho rhoInj]
+      rw [leftIH rho, rightIH rho]
   | idToEquiv proofRaw proofIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.cdIdToEquivCase (RawTerm.cd proofRaw)).rename rho =
            RawTerm.cd (RawTerm.idToEquiv (proofRaw.rename rho))
       simp only [RawTerm.cd]
       rw [RawTerm.cdIdToEquivCase_rename rho (RawTerm.cd proofRaw),
-        proofIH rho rhoInj]
+        proofIH rho]
   | oeqTrans firstProof secondProof firstIH secondIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.oeqTrans (RawTerm.cd firstProof) (RawTerm.cd secondProof)).rename rho =
            RawTerm.cd (RawTerm.oeqTrans (firstProof.rename rho)
                                         (secondProof.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [firstIH rho rhoInj, secondIH rho rhoInj]
+      rw [firstIH rho, secondIH rho]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
-      intro _ rho rhoInj
+      intro _ rho
       show (RawTerm.equivCompose (RawTerm.cd firstEquiv) (RawTerm.cd secondEquiv)).rename rho =
            RawTerm.cd (RawTerm.equivCompose (firstEquiv.rename rho)
                                             (secondEquiv.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
-      rw [firstIH rho rhoInj, secondIH rho rhoInj]
+      rw [firstIH rho, secondIH rho]
 
 /-! ## Specialization: `cd_weaken`. -/
 
@@ -878,7 +778,7 @@ theorem RawTerm.cd_weaken {scope : Nat} (term : RawTerm scope) :
     RawTerm.cd term.weaken = (RawTerm.cd term).weaken := by
   show RawTerm.cd (term.rename RawRenaming.weaken) =
        (RawTerm.cd term).rename RawRenaming.weaken
-  exact (RawTerm.cd_rename term RawRenaming.weaken RawRenamingInjective.weaken).symm
+  exact (RawTerm.cd_rename term RawRenaming.weaken).symm
 
 /-! ## Corollary: `unweaken? ∘ cd ∘ weaken = some ∘ cd`. -/
 
