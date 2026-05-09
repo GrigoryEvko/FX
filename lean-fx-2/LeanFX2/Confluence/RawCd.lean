@@ -1846,13 +1846,137 @@ def RawTerm.cdIdStrictRecCase {scope : Nat}
   | RawTerm.oeqTrans _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.equivCompose _ _ => RawTerm.idStrictRec developedBase developedWitness
 
+/-- D2.5.5: dispatch helper for the `pathLam (piTyCode _ _)` shape
+inside `cdTranspCase`'s `pathLam` arm.  When `pathLam` body is
+`piTyCode domainCode codomainCode` AND `unweaken? codomainCode`
+succeeds (i.e. the codomain is a weakening — the function type's
+codomain does not bind the path-interval variable), fire the
+Pi-β contractum from `RawStep.par.transpPiBetaSimple`:
+
+```
+lam (app developedSource.weaken
+       (transp (pathLam
+                 (pathApp (pathLam codomainUnweakened).weaken.weaken
+                          (intervalOpp (var 0))))
+               (var 0)))
+```
+
+The dispatch falls back to plain transp cong when codomain is not
+in the image of weaken.  The 67-arm enumeration over `pathBody`
+shapes mirrors the outer match in `cdTranspCase` to keep the match
+compiler propext-clean per `feedback_lean_zero_axiom_match.md`. -/
+def RawTerm.cdTranspPathLamBody {scope : Nat}
+    (pathBody : RawTerm (scope + 1))
+    (developedSource : RawTerm scope) : RawTerm scope :=
+  match pathBody with
+  | RawTerm.piTyCode domainCode codomainCode =>
+    match RawTerm.unweaken? codomainCode with
+    | some codomainUnweakened =>
+        -- D2.5.5 guard: the kernel ctor `transpPiBetaSimple{,Deep}`
+        -- requires the path's domain and (unweakened) codomain to be
+        -- syntactically the same.  Without this guard the dispatcher
+        -- fires the contractum even when domainCode ≠ codomainUnweakened,
+        -- which produces a target no par rule can prove against an
+        -- arbitrary developed path.  Use decidable equality of RawTerm
+        -- (auto-derived) to gate the firing on the structural match.
+        match decide (domainCode = codomainUnweakened) with
+        | true =>
+            RawTerm.lam
+              (RawTerm.app developedSource.weaken
+                (RawTerm.transp
+                  (RawTerm.pathLam
+                    (RawTerm.pathApp
+                      (RawTerm.pathLam codomainUnweakened).weaken.weaken
+                      (RawTerm.intervalOpp
+                        (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+                  (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩)))
+        | false =>
+            RawTerm.transp (RawTerm.pathLam (RawTerm.piTyCode domainCode codomainCode))
+              developedSource
+    | none =>
+        RawTerm.transp (RawTerm.pathLam (RawTerm.piTyCode domainCode codomainCode))
+          developedSource
+  | RawTerm.var _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.unit => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.lam _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.app _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.pair _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.fst _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.snd _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.boolTrue => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.boolFalse => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.boolElim _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.natZero => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.natSucc _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.natElim _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.natRec _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.listNil => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.listCons _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.listElim _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.optionNone => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.optionSome _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.optionMatch _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.eitherInl _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.eitherInr _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.eitherMatch _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.refl _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.idJ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.modIntro _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.modElim _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.subsume _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.interval0 => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.interval1 => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.intervalOpp _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.intervalMeet _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.intervalJoin _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.pathLam _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.pathApp _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.glueIntro _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.glueElim _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.transp _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.hcomp _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.oeqRefl _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.oeqJ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.oeqFunext _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.idStrictRefl _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.idStrictRec _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.equivIntro _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.equivApp _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.refineIntro _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.refineElim _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.recordIntro _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.recordProj _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.codataUnfold _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.codataDest _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.sessionSend _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.sessionRecv _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.effectPerform _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.universeCode _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.arrowCode _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.sigmaTyCode _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.productCode _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.sumCode _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.listCode _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.optionCode _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.eitherCode _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.idCode _ _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.equivCode _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.cumulUpMarker _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.uaToEquiv _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.equivApply _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.pathCompose _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.idToEquiv _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.oeqTrans _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+  | RawTerm.equivCompose _ _ => RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+
 /-- Cubical transport at a syntactically constant type path:
 `transp (pathLam typeRaw.weaken) source ⟶ source` (the cubical
 analog of `transp refl x ⟶ x`).  When the developed path is
 `pathLam pathBody` and `RawTerm.unweaken? pathBody` succeeds (i.e.
 `pathBody` is a weakened type code with no interval-binder
-dependence), fire the β reduction.  Otherwise rebuild as a
-`transp` cong.
+dependence), fire the β reduction.  Otherwise dispatch through
+`cdTranspPathLamBody` to handle the D2.5.5 Pi-β shape (and fall
+through to plain transp cong otherwise).
 
 The 67-arm outer match keeps the match compiler propext-clean per
 `feedback_lean_zero_axiom_match.md`; the inner `Option (RawTerm
@@ -1864,7 +1988,7 @@ def RawTerm.cdTranspCase {scope : Nat}
     match RawTerm.unweaken? pathBody with
     | some _ => developedSource
     | none =>
-        RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+        RawTerm.cdTranspPathLamBody pathBody developedSource
   | RawTerm.var _ => RawTerm.transp developedPath developedSource
   | RawTerm.unit => RawTerm.transp developedPath developedSource
   | RawTerm.lam _ => RawTerm.transp developedPath developedSource

@@ -606,6 +606,28 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
       exact RawStep.par.transpReflBetaDeep pathSubstStep
         (sourceIH substsRelated)
+  | @transpPiBetaSimple _ domainCodeSource domainCodeTarget _ fnRawTarget
+      _ _ domainIH fnIH =>
+      -- After `simp only [RawTerm.subst, RawTerm.weaken_subst_commute]`,
+      -- the goal target has `(domainCodeTarget.subst secondSubst.lift)
+      -- .pathLam.weaken.weaken.pathApp ...` shape.  This matches the
+      -- constructor's expected RHS when domainIH delivers
+      -- `domainCodeTarget.subst secondSubst.lift` as the new
+      -- `domainCodeTarget`.  No further reshape needed.
+      simp only [RawTerm.subst, RawTerm.weaken_subst_commute]
+      exact RawStep.par.transpPiBetaSimple
+        (domainIH (RawTermSubst.par_lift substsRelated))
+        (fnIH substsRelated)
+  | @transpPiBetaSimpleDeep _ _ domainCodeTarget _ fnRawTarget
+      _ _ pathIH fnIH =>
+      -- Mirror of transpReflBetaDeep: path develops via pathIH; simp
+      -- pushes weaken_subst_commute through both pathSubstStep and the
+      -- goal contractum.
+      have pathSubstStep := pathIH substsRelated
+      simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
+      simp only [RawTerm.subst, RawTerm.weaken_subst_commute]
+      exact RawStep.par.transpPiBetaSimpleDeep pathSubstStep
+        (fnIH substsRelated)
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.hcompCong (sidesIH substsRelated) (capIH substsRelated)
   | oeqReflCong _ witnessIH =>

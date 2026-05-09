@@ -536,8 +536,11 @@ parallel step (deep-β `transpReflBetaDeep`), the LHS path was a
 (D3.6-S1), the path develops to `uaToEquiv proofRawTarget` via
 parallel step (deep ua-β `uaBetaDeep`), the LHS path was a
 `pathCompose left right` head and the rule fired through
-`transpCompose` (D3.6-S3), or the path develops to a `pathCompose`
-shape via parallel step (deep compose-β `transpComposeDeep`). -/
+`transpCompose` (D3.6-S3), the path develops to a `pathCompose`
+shape via parallel step (deep compose-β `transpComposeDeep`), the
+LHS path was `pathLam (piTyCode A A.weaken)` and the rule fired
+through `transpPiBetaSimple` (D2.5.5), or the path develops to that
+shape via parallel step (deep `transpPiBetaSimpleDeep`). -/
 theorem RawStep.par.transp_inv {scope : Nat}
     {pathTerm sourceTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.transp pathTerm sourceTerm) target) :
@@ -576,7 +579,38 @@ theorem RawStep.par.transp_inv {scope : Nat}
         target = RawTerm.transp rightRawTarget
                                 (RawTerm.transp leftRawTarget sourceTarget) ∧
         RawStep.par pathTerm (RawTerm.pathCompose leftRawTarget rightRawTarget) ∧
-        RawStep.par sourceTerm sourceTarget) := by
+        RawStep.par sourceTerm sourceTarget) ∨
+    (∃ (domainCodeSource : RawTerm (scope + 1))
+       (domainCodeTarget : RawTerm (scope + 1))
+       (fnRawTarget : RawTerm scope),
+        pathTerm = RawTerm.pathLam
+          (RawTerm.piTyCode domainCodeSource domainCodeSource.weaken) ∧
+        target = RawTerm.lam
+          (RawTerm.app fnRawTarget.weaken
+            (RawTerm.transp
+              (RawTerm.pathLam
+                (RawTerm.pathApp
+                  (RawTerm.pathLam domainCodeTarget).weaken.weaken
+                  (RawTerm.intervalOpp
+                    (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))) ∧
+        RawStep.par domainCodeSource domainCodeTarget ∧
+        RawStep.par sourceTerm fnRawTarget) ∨
+    (∃ (domainCodeTarget : RawTerm (scope + 1))
+       (fnRawTarget : RawTerm scope),
+        target = RawTerm.lam
+          (RawTerm.app fnRawTarget.weaken
+            (RawTerm.transp
+              (RawTerm.pathLam
+                (RawTerm.pathApp
+                  (RawTerm.pathLam domainCodeTarget).weaken.weaken
+                  (RawTerm.intervalOpp
+                    (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))) ∧
+        RawStep.par pathTerm
+          (RawTerm.pathLam
+            (RawTerm.piTyCode domainCodeTarget domainCodeTarget.weaken)) ∧
+        RawStep.par sourceTerm fnRawTarget) := by
   cases parallelStep with
   | refl _ =>
       exact Or.inl ⟨pathTerm, sourceTerm, rfl,
@@ -600,8 +634,17 @@ theorem RawStep.par.transp_inv {scope : Nat}
         ⟨leftRawSource, leftRawTarget, rightRawSource, rightRawTarget, _,
          rfl, rfl, leftStep, rightStep, sourceStep⟩)))))
   | @transpComposeDeep _ _ leftRawTarget rightRawTarget _ _ pathStep sourceStep =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        ⟨leftRawTarget, rightRawTarget, _, rfl, pathStep, sourceStep⟩)))))
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨leftRawTarget, rightRawTarget, _, rfl, pathStep, sourceStep⟩))))))
+  | @transpPiBetaSimple _ domainCodeSource domainCodeTarget _ fnRawTarget
+        domainStep sourceStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨domainCodeSource, domainCodeTarget, fnRawTarget,
+         rfl, rfl, domainStep, sourceStep⟩)))))))
+  | @transpPiBetaSimpleDeep _ _ domainCodeTarget _ fnRawTarget
+        pathStep sourceStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+        ⟨domainCodeTarget, fnRawTarget, rfl, pathStep, sourceStep⟩)))))))
 
 /-- `RawStep.par (hcomp s c) target → target = hcomp s' c' ∧ pars`. -/
 theorem RawStep.par.hcomp_inv {scope : Nat}

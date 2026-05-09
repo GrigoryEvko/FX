@@ -266,6 +266,54 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       have pathRenameStep := pathIH rawRenaming
       simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at pathRenameStep
       exact RawStep.par.transpReflBetaDeep pathRenameStep (sourceIH _)
+  | @transpPiBetaSimple _ domainCodeSource domainCodeTarget _ fnRawTarget
+      _ _ domainIH fnIH =>
+      -- LHS:  transp (pathLam (piTyCode A A.weaken)) fn
+      -- RHS:  lam (app fn.weaken (transp (pathLam (pathApp
+      --         (pathLam B).weaken.weaken (intervalOpp (var 0)))) (var 0)))
+      -- After `simp only [RawTerm.rename, RawTerm.weaken_rename_commute]`,
+      -- both the goal LHS and the constructor's contractum LHS reduce to
+      -- chains of three renames on `domainCodeTarget`.  We need to commute
+      -- `rawRenaming.lift.lift.lift` past two `weaken.lift`s.  The
+      -- `weaken_rename_commute` lemma only handles single (un-lifted)
+      -- `weaken`, so we collapse the three renames into one via
+      -- `rename_compose` and discharge by pointwise equality on `Fin`.
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute]
+      rw [show ((domainCodeTarget.rename RawRenaming.weaken.lift).rename
+              RawRenaming.weaken.lift).rename rawRenaming.lift.lift.lift =
+            ((domainCodeTarget.rename rawRenaming.lift).rename
+              RawRenaming.weaken.lift).rename RawRenaming.weaken.lift
+        from by
+          rw [RawTerm.rename_compose, RawTerm.rename_compose,
+              RawTerm.rename_compose, RawTerm.rename_compose]
+          apply RawTerm.rename_pointwise
+          intro position
+          match position with
+          | ⟨0, _⟩ => rfl
+          | ⟨k + 1, _⟩ => rfl]
+      exact RawStep.par.transpPiBetaSimple (domainIH rawRenaming.lift)
+        (fnIH rawRenaming)
+  | @transpPiBetaSimpleDeep _ _ domainCodeTarget _ fnRawTarget
+      _ _ pathIH fnIH =>
+      -- Mirror of transpReflBetaDeep: path develops to the piTyCode shape
+      -- via the inner pathIH; reshape both the path-step witness and the
+      -- contractum's two `.weaken` chains via `weaken_rename_commute`.
+      have pathRenameStep := pathIH rawRenaming
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at pathRenameStep
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute]
+      rw [show ((domainCodeTarget.rename RawRenaming.weaken.lift).rename
+              RawRenaming.weaken.lift).rename rawRenaming.lift.lift.lift =
+            ((domainCodeTarget.rename rawRenaming.lift).rename
+              RawRenaming.weaken.lift).rename RawRenaming.weaken.lift
+        from by
+          rw [RawTerm.rename_compose, RawTerm.rename_compose,
+              RawTerm.rename_compose, RawTerm.rename_compose]
+          apply RawTerm.rename_pointwise
+          intro position
+          match position with
+          | ⟨0, _⟩ => rfl
+          | ⟨k + 1, _⟩ => rfl]
+      exact RawStep.par.transpPiBetaSimpleDeep pathRenameStep (fnIH rawRenaming)
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.hcompCong (sidesIH _) (capIH _)
   | oeqReflCong _ witnessIH =>
