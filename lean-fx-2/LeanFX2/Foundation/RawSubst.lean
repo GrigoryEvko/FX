@@ -215,6 +215,9 @@ def RawTerm.rename : ∀ {source target : Nat},
   -- D3.6-S3 pathCompose arm.
   | _, _, .pathCompose leftPathRaw rightPathRaw, rawRenaming =>
       .pathCompose (leftPathRaw.rename rawRenaming) (rightPathRaw.rename rawRenaming)
+  -- D3.6-S4 idToEquiv arm.
+  | _, _, .idToEquiv proofRaw, rawRenaming =>
+      .idToEquiv (proofRaw.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -385,6 +388,8 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [equivIH renamingEq, argIH renamingEq]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename]; rw [proofIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -551,6 +556,8 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [equivIH rho1 rho2, argIH rho1 rho2]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename]; rw [proofIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -739,6 +746,9 @@ def RawTerm.subst : ∀ {source target : Nat},
   -- D3.6-S3 pathCompose arm.
   | _, _, .pathCompose leftPathRaw rightPathRaw, sigma =>
       .pathCompose (leftPathRaw.subst sigma) (rightPathRaw.subst sigma)
+  -- D3.6-S4 idToEquiv arm.
+  | _, _, .idToEquiv proofRaw, sigma =>
+      .idToEquiv (proofRaw.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -916,6 +926,8 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [equivIH substEq, argIH substEq]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst]; rw [proofIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -1121,6 +1133,8 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.rename, RawTerm.subst]
       rw [leftIH rho sigma, rightIH rho sigma]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename, RawTerm.subst]; rw [proofIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -1332,6 +1346,8 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.subst, RawTerm.rename]
       rw [leftIH sigma rho, rightIH sigma rho]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst, RawTerm.rename]; rw [proofIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -1537,6 +1553,8 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [equivIH sigma1 sigma2, argIH sigma1 sigma2]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -1726,6 +1744,8 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [equivIH, argIH]
   | pathCompose leftPathRaw rightPathRaw leftIH rightIH =>
       simp only [RawTerm.subst]; rw [leftIH, rightIH]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.subst]; rw [proofIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

@@ -41,7 +41,9 @@ namespace LeanFX2.Tools
 -- Step.par cong + ConvCumul cong + Allais helper + dispatch arm).
 -- D3.6-S3: raw `RawTerm.pathCompose` cascade adds one more OfNat path
 -- through new shape-inversion helper rename_eq_pathCompose_imp.
-#assert_ofnat_dependent_budget LeanFX2 986
+-- D3.6-S4: raw `RawTerm.idToEquiv` cascade adds one more OfNat path
+-- through new shape-inversion helper rename_eq_idToEquiv_imp.
+#assert_ofnat_dependent_budget LeanFX2 987
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -69,7 +71,9 @@ namespace LeanFX2.Tools
 -- Eq-rewriting paths.
 -- D3.6-S3: raw `RawTerm.pathCompose` cascade adds one more Eq-rewriting
 -- path through the new cd cascade arm + inversion helper.
-#assert_eq_rewriting_dependent_budget LeanFX2 1221
+-- D3.6-S4: raw `RawTerm.idToEquiv` cascade adds one more Eq-rewriting
+-- path through the new cdIdToEquivCase + inversion helper.
+#assert_eq_rewriting_dependent_budget LeanFX2 1222
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for

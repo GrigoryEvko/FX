@@ -721,5 +721,58 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       rw [cdPathEq]
       exact RawStep.par.transpCong rightParStep
         (RawStep.par.transpCong leftParStep sourceIH)
+  | idToEquivCong _ proofIH =>
+      -- D3.6-S4: pure cong on proof raw.
+      -- Source = idToEquiv proofRawSource; Target = idToEquiv proofRawTarget.
+      -- proofIH : par proofRawTarget (cd proofRawSource).
+      -- Goal: par (idToEquiv proofRawTarget)
+      --           (cd (idToEquiv proofRawSource))
+      --     = par (idToEquiv proofRawTarget)
+      --           (cdIdToEquivCase (cd proofRawSource))
+      -- cdIdToEquivCase splits on cd proofRawSource:
+      --   * if cd proofRawSource = refl _, the case fires the
+      --     identity-equivalence contractum, closed by idToEquivReflDeep
+      --     on proofIH.
+      --   * otherwise the case rebuilds idToEquiv (cd proofRawSource),
+      --     closed by idToEquivCong on proofIH.
+      simp only [RawTerm.cd]
+      unfold RawTerm.cdIdToEquivCase
+      split
+      case _ witnessRaw cdProofEqn =>
+          rw [cdProofEqn] at proofIH
+          -- proofIH : par proofRawTarget (refl witnessRaw).
+          -- idToEquivReflDeep fires.
+          exact RawStep.par.idToEquivReflDeep proofIH
+      all_goals exact RawStep.par.idToEquivCong proofIH
+  | @idToEquivRefl _ witnessSource _ witnessStep witnessIH =>
+      -- D3.6-S4 shallow:
+      -- Source = idToEquiv (refl witnessSource).
+      -- Target = equivIntro (lam (var 0)) (lam (var 0)).
+      -- witnessIH : par witnessTarget (cd witnessSource).
+      -- Goal: par (equivIntro (lam (var 0)) (lam (var 0)))
+      --           (cd (idToEquiv (refl witnessSource)))
+      -- cd unfolds: cdIdToEquivCase (cd (refl witnessSource))
+      --           = cdIdToEquivCase (refl (cd witnessSource))
+      --           = equivIntro (lam (var 0)) (lam (var 0))
+      -- Both sides are the closed identity equivalence — refl.
+      simp only [RawTerm.cd, RawTerm.cdIdToEquivCase]
+      exact RawStep.par.refl _
+  | @idToEquivReflDeep _ proofRawSource _ proofStep proofIH =>
+      -- D3.6-S4 deep:
+      -- Source = idToEquiv proofRawSource.
+      -- Target = equivIntro (lam (var 0)) (lam (var 0)).
+      -- proofStep : par proofRawSource (refl witnessTarget).
+      -- proofIH : par (refl witnessTarget) (cd proofRawSource).
+      -- Goal: par (equivIntro (lam (var 0)) (lam (var 0)))
+      --           (cdIdToEquivCase (cd proofRawSource))
+      -- By refl_inv on proofIH: cd proofRawSource = refl X with par
+      -- witnessTarget X.  Then cdIdToEquivCase fires the refl arm:
+      -- yields equivIntro (lam (var 0)) (lam (var 0)) — closed contractum.
+      obtain ⟨witnessFinal, hCdEq, _witnessStep⟩ :=
+        RawStep.par.refl_inv proofIH
+      simp only [RawTerm.cd]
+      rw [hCdEq]
+      simp only [RawTerm.cdIdToEquivCase]
+      exact RawStep.par.refl _
 
 end LeanFX2

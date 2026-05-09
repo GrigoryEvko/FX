@@ -324,6 +324,7 @@ def Term.infer (context : Ctx mode level scope) :
   | .uaToEquiv _        => none
   | .equivApply _ _     => none
   | .pathCompose _ _    => none
+  | .idToEquiv _        => none
 
 end LeanFX2
 

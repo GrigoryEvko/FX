@@ -389,6 +389,10 @@ def RawTerm.partialRename? : ∀ {sourceScope targetScope : Nat},
         (RawTerm.partialRename? leftPathRaw partialRenaming)
         (RawTerm.partialRename? rightPathRaw partialRenaming)
         RawTerm.pathCompose
+  | _, _, .idToEquiv proofRaw, partialRenaming =>
+      match RawTerm.partialRename? proofRaw partialRenaming with
+      | some renamedProof => some (RawTerm.idToEquiv renamedProof)
+      | none => none
 
 /-- Try to lower a raw term across one outer weakening.  This is the
 recognizer needed before any safe constant-transport computation rule:
@@ -475,6 +479,7 @@ def RawTerm.constantPathBody? {scope : Nat}
   | RawTerm.uaToEquiv _ => none
   | RawTerm.equivApply _ _ => none
   | RawTerm.pathCompose _ _ => none
+  | RawTerm.idToEquiv _ => none
 
 /-- The newest variable cannot be lowered across the dropped binder. -/
 theorem RawTerm.unweaken?_newest_var_none {scope : Nat} :
@@ -771,6 +776,9 @@ theorem RawTerm.partialRename?_rename_some
       simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [leftIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         rightIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
+  | idToEquiv proofRaw proofIH =>
+      simp only [RawTerm.rename, RawTerm.partialRename?]
+      rw [proofIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
 
 /-- Weakening followed by `unweaken?` recovers any raw term.  This is the
 generic form of the constant-path recognizer's positive case and is the
@@ -2209,6 +2217,34 @@ theorem RawTerm.partialRename?_imp_rename :
         RawTerm.pathCompose (renamedLeft.rename forwardRenaming)
                             (renamedRight.rename forwardRenaming)
       rw [eqLeft, eqRight]
+  | idToEquiv proofRaw proofIH =>
+      intro forwardRenaming partialRenaming renamingInjectsBack extracted success
+      cases hChild : RawTerm.partialRename? proofRaw partialRenaming with
+      | none =>
+          have eq :
+              RawTerm.partialRename? (RawTerm.idToEquiv proofRaw)
+                partialRenaming = (none : Option (RawTerm sourceScope)) := by
+            show (match RawTerm.partialRename? proofRaw partialRenaming with
+                  | some renamedProof => some (RawTerm.idToEquiv renamedProof)
+                  | none => none) = none
+            rw [hChild]
+          rw [eq] at success
+          cases success
+      | some renamedProof =>
+          have eq :
+              RawTerm.partialRename? (RawTerm.idToEquiv proofRaw)
+                partialRenaming = some (RawTerm.idToEquiv renamedProof) := by
+            show (match RawTerm.partialRename? proofRaw partialRenaming with
+                  | some renamedProof => some (RawTerm.idToEquiv renamedProof)
+                  | none => none) = some (RawTerm.idToEquiv renamedProof)
+            rw [hChild]
+          rw [eq] at success
+          injection success with eqExtracted
+          rw [← eqExtracted]
+          show RawTerm.idToEquiv proofRaw =
+            RawTerm.idToEquiv (renamedProof.rename forwardRenaming)
+          rw [proofIH forwardRenaming partialRenaming renamingInjectsBack
+                renamedProof hChild]
 
 /-! ### Specialization: `dropNewest` injects back into the image of
 `RawRenaming.weaken`.

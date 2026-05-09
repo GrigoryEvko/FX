@@ -388,6 +388,24 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       have pathRenameStep := pathIH rawRenaming
       simp only [RawTerm.rename] at pathRenameStep
       exact RawStep.par.transpComposeDeep pathRenameStep (sourceIH _)
+  | idToEquivCong _ proofIH =>
+      -- D3.6-S4: rename distributes over the unary idToEquiv ctor.
+      exact RawStep.par.idToEquivCong (proofIH _)
+  | idToEquivRefl _ witnessIH =>
+      -- D3.6-S4: rename commutes with the identity-equiv contractum.
+      -- LHS rename: idToEquiv (refl (witness.rename rho))
+      -- RHS rename: equivIntro (lam (var 0)) (lam (var 0)) — invariant
+      -- under rename since the bound variable references the binder.
+      simp only [RawTerm.rename]
+      exact RawStep.par.idToEquivRefl (witnessIH _)
+  | idToEquivReflDeep _ proofIH =>
+      -- D3.6-S4 deep variant: rename commutes via RawTerm.rename on
+      -- idToEquiv/refl/equivIntro/lam/var.  proofIH renamed gives a par
+      -- step on the renamed proof landing at refl of the renamed witness.
+      simp only [RawTerm.rename]
+      have proofRenameStep := proofIH rawRenaming
+      simp only [RawTerm.rename] at proofRenameStep
+      exact RawStep.par.idToEquivReflDeep proofRenameStep
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)
   | funextReflAtIdCong _ applyIH =>

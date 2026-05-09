@@ -1789,7 +1789,17 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- through `cdTranspCase`'s `pathCompose` arm in `Confluence/RawCd.lean`.
   suffix == "pathComposeCong" ||
   suffix == "transpCompose" ||
-  suffix == "transpComposeDeep"
+  suffix == "transpComposeDeep" ||
+  -- Section F: D3.6-S4 univalence-refl-β raw rules.  `RawTerm.idToEquiv`
+  -- ships at the raw layer (unary ctor, `idToEquiv proofRaw`), enabling
+  -- the headline rule `idToEquiv (refl _) ⟶ equivIntro (lam (var 0))
+  -- (lam (var 0))` to fire syntactically through the cd cascade via
+  -- `cdIdToEquivCase`.  Typed `Term.idToEquiv` is the v1.1 follow-up;
+  -- until then, `idToEquivCong` (cong), `idToEquivRefl` (shallow β),
+  -- and `idToEquivReflDeep` (proof-developed β) all ship raw-only.
+  suffix == "idToEquivCong" ||
+  suffix == "idToEquivRefl" ||
+  suffix == "idToEquivReflDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

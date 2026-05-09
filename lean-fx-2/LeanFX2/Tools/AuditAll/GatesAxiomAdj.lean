@@ -66,7 +66,10 @@ namespace LeanFX2.Tools
 -- + shallow β (transpCompose) + deep β (transpComposeDeep) + inversion
 -- (pathCompose_inv) cascade, transitively contributing one more
 -- decide-dependent path through the new cd-cascade arm in cdTranspCase.
-#assert_decide_dependent_budget LeanFX2 843
+-- D3.6-S4 ships the raw `RawTerm.idToEquiv` ctor + cong + shallow + deep
+-- β + inversion + cdIdToEquivCase, transitively contributing one more
+-- decide-dependent path.
+#assert_decide_dependent_budget LeanFX2 844
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

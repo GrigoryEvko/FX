@@ -321,6 +321,10 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
       RawStep.par.pathComposeCong
         (RawTerm.subst_par_pointwise leftPathRaw substsRelated)
         (RawTerm.subst_par_pointwise rightPathRaw substsRelated)
+  -- D3.6-S4: idToEquiv recurses on the proof raw.
+  | .idToEquiv proofRaw, _, _, substsRelated =>
+      RawStep.par.idToEquivCong
+        (RawTerm.subst_par_pointwise proofRaw substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -724,6 +728,26 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       have pathSubstStep := pathIH substsRelated
       simp only [RawTerm.subst] at pathSubstStep
       exact RawStep.par.transpComposeDeep pathSubstStep (sourceIH substsRelated)
+  | idToEquivCong _ proofIH =>
+      -- D3.6-S4: parallel substitution distributes over the unary
+      -- idToEquiv ctor.
+      exact RawStep.par.idToEquivCong (proofIH substsRelated)
+  | idToEquivRefl _ witnessIH =>
+      -- D3.6-S4: parallel substitution preserves the identity-equiv
+      -- contractum.  LHS subst pushes through idToEquiv/refl heads;
+      -- RHS subst over equivIntro/lam/var (var 0 is the bound binder
+      -- variable, so it's unchanged by the outer subst).  Mechanical
+      -- via the definition of `RawTerm.subst` on the involved ctors.
+      simp only [RawTerm.subst]
+      exact RawStep.par.idToEquivRefl (witnessIH substsRelated)
+  | idToEquivReflDeep _ proofIH =>
+      -- D3.6-S4 deep variant: parallel substitution pushes through
+      -- idToEquiv heads.  proofIH substituted gives a par step on the
+      -- substituted proof landing at refl of the substituted witness.
+      simp only [RawTerm.subst]
+      have proofSubstStep := proofIH substsRelated
+      simp only [RawTerm.subst] at proofSubstStep
+      exact RawStep.par.idToEquivReflDeep proofSubstStep
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

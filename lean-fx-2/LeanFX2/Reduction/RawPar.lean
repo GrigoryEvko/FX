@@ -1086,6 +1086,84 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
                   (RawTerm.transp rightRawTarget
                     (RawTerm.transp leftRawTarget sourceRawTarget))
+  /-- D3.6-S4 Cong: idToEquiv reduces pointwise in its proof raw payload.
+  Unary mirror of `uaToEquivCong`. -/
+  | idToEquivCong {scope : Nat}
+      {proofSource proofTarget : RawTerm scope} :
+      RawStep.par proofSource proofTarget →
+      RawStep.par (RawTerm.idToEquiv proofSource)
+                  (RawTerm.idToEquiv proofTarget)
+  /-- D3.6-S4 raw univalence-refl-β rule: identity-to-equivalence at refl
+  reduces to the identity equivalence.
+
+  ```
+  idToEquiv (refl witness) ⟶ equivIntro (lam (var 0)) (lam (var 0))
+  ```
+
+  This is the kernel-internal univalence-refl-β rule, encoding the
+  meta-level rule `Univalence.idToEquivMeta_refl : idToEquivMeta rfl
+  = Equiv.refl` (per `HoTT/Univalence.lean`) at the syntactic level.
+  The β fires when `idToEquiv`'s proof argument is syntactically a
+  `refl witness` head — both the proof and witness develop in
+  parallel, the proof becomes a refl on the developed witness, and
+  the resulting expression is the identity-equivalence shape
+  `equivIntro (lam (var 0)) (lam (var 0))` (forward and backward both
+  the identity function on the bound variable).
+
+  ## Why both witness steps and outer fires
+
+  Inner reduction on the witness raw proceeds via the witnessStep
+  premise.  The β fires on the outer `idToEquiv` head with the
+  proof's `refl` ctor matching syntactically.  This is the shallow
+  form; the deep variant (proof develops to `refl ...` via parallel
+  reduction) is `idToEquivReflDeep` below.
+
+  ## Raw-only cascade (matches uaBeta architecture)
+
+  At the typed level, `Term.idToEquiv` would require the proof to be
+  `Term context (Ty.id ...) ...` and produce a typed `Term context
+  (Ty.equiv ...)` — but the kernel's typed `Term` inductive does NOT
+  yet have an `idToEquiv` ctor (v1.1 follow-up, deferred).  Therefore
+  no typed `Term.idToEquiv` can have a proof-raw of `RawTerm.refl ...`,
+  making this β rule structurally a raw-only confluence-closure
+  mechanism — listed in `isDocumentedRawOnlyParity` alongside
+  `uaBeta`/`uaBetaDeep` and `transpCompose`/`transpComposeDeep`.
+
+  ## Connection to meta-level rule
+
+  At the meta-level, `Univalence.idToEquivMeta_refl` proves that the
+  set-level analog `(idToEquivMeta rfl) = Equiv.refl _`.  The kernel-
+  syntactic raw rule shipped here is the cubical analog firing
+  through the cd cascade. -/
+  | idToEquivRefl {scope : Nat}
+      {witnessSource witnessTarget : RawTerm scope} :
+      RawStep.par witnessSource witnessTarget →
+      RawStep.par
+        (RawTerm.idToEquiv (RawTerm.refl witnessSource))
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))))
+  /-- D3.6-S4 deep raw univalence-refl-β rule: when the proof develops
+  via parallel reduction to a `refl witnessTarget`, the entire
+  `idToEquiv` reduces to the identity-equivalence contractum.
+  Required for `cd_dominates` to discharge `cdIdToEquivCase`'s
+  `refl`-firing branch when the proof was NOT literally `refl ...`
+  on the LHS but reaches that shape under cd development.
+
+  Discharge in `cd_lemma` requires the typical proof-shape inversion
+  on the developed proofStep — analogous to `uaBetaDeep` for the
+  univalence-β case.  Documented `raw-only`
+  (`isDocumentedRawOnlyParity`) — a confluence-only mechanism with
+  no typed mirror because `idToEquivRefl` itself has no typed mirror
+  until v1.1. -/
+  | idToEquivReflDeep {scope : Nat}
+      {proofRawSource witnessTarget : RawTerm scope} :
+      RawStep.par proofRawSource (RawTerm.refl witnessTarget) →
+      RawStep.par
+        (RawTerm.idToEquiv proofRawSource)
+        (RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))))
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/

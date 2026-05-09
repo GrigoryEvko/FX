@@ -78,6 +78,18 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.transpCompose
 #assert_no_axioms LeanFX2.RawStep.par.transpComposeDeep
 #assert_no_axioms LeanFX2.RawStep.par.pathCompose_inv
+-- D3.6-S4 univalence-refl-β raw rules (kernel-internal idToEquiv refl-β —
+-- raw-only confluence-closure mechanism mounted on the new
+-- `RawTerm.idToEquiv` ctor, listed in `isDocumentedRawOnlyParity`
+-- since typed `Term.idToEquiv` is the v1.1 follow-up — once it lands,
+-- the typed mirrors `Step.idToEquivCong` / `Step.idToEquivRefl` /
+-- `Step.par.idToEquivRefl` will ship and these arms will move out of
+-- the raw-only whitelist).  Activated through `cdIdToEquivCase`'s
+-- `refl` arm in `Confluence/RawCd.lean`.
+#assert_no_axioms LeanFX2.RawStep.par.idToEquivCong
+#assert_no_axioms LeanFX2.RawStep.par.idToEquivRefl
+#assert_no_axioms LeanFX2.RawStep.par.idToEquivReflDeep
+#assert_no_axioms LeanFX2.RawStep.par.idToEquiv_inv
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp

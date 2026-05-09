@@ -57,7 +57,10 @@ namespace LeanFX2.Tools
 -- D3.6-S3 ships `RawTerm.pathCompose` (RawTerm grows by 1 to 70; Term
 -- unchanged at 77 since typed `Term.pathCompose` is the v1.1 D3.10
 -- follow-up), so the delta SHRINKS by 1 from 8 to 7.
-#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 7
+-- D3.6-S4 ships `RawTerm.idToEquiv` (RawTerm grows by 1 to 71; Term
+-- unchanged at 77 since typed `Term.idToEquiv` is the v1.1 follow-up),
+-- so the delta SHRINKS by 1 from 7 to 6.
+#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 6
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
 -- packaging types; heavy use signals existential reasoning.  1255 today
@@ -97,8 +100,13 @@ namespace LeanFX2.Tools
 -- pathComposeCong (cong), transpCompose (shallow β), transpComposeDeep
 -- (deep β), pathCompose_inv (inversion lemma), and the rename_eq_pathCompose_imp
 -- shape inversion helper transitively contribute new dependent-pair
--- existential dependents through cd cascade and inj_inv arms.  Tighten
+-- existential dependents through cd cascade and inj_inv arms.
+-- D3.6-S4 ships the raw `RawTerm.idToEquiv` ctor + cascade —
+-- idToEquivCong (cong), idToEquivRefl (shallow β), idToEquivReflDeep
+-- (deep β), idToEquiv_inv (inversion lemma), cdIdToEquivCase (helper),
+-- cdIdToEquivCase_rename + rename_eq_idToEquiv_imp transitively
+-- contribute more dependent-pair existential dependents.  Tighten
 -- the budget once full audit converges; for now allow growth.
-#assert_dependent_pair_dependent_budget LeanFX2 1450
+#assert_dependent_pair_dependent_budget LeanFX2 1500
 
 end LeanFX2.Tools

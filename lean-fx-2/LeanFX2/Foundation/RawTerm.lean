@@ -277,6 +277,38 @@ inductive RawTerm : Nat → Type
   any existing inversion lemma's case enumeration. -/
   | pathCompose {scope : Nat}
       (leftPathRaw rightPathRaw : RawTerm scope) : RawTerm scope
+  /-- Phase D3.6-S4: univalence reflexive identity-to-equivalence.
+  `idToEquiv proofRaw` represents the term-level operation that turns
+  an identity-of-types proof (`proofRaw : Id (Universe lvl) leftTy
+  rightTy` at the typing layer) into the corresponding type
+  equivalence.  At raw level the ctor is unary, carrying the
+  underlying proof term raw (no binder).
+
+  ## Why a kernel-syntactic ctor
+
+  At the meta-level, `Univalence.idToEquivMeta : (A = B) → Equiv A B`
+  is shipped in `HoTT/Univalence.lean` with the canonical refl-reduction
+  `idToEquivMeta_refl : idToEquivMeta rfl = Equiv.refl`.  Lifting that
+  computation rule to the kernel level requires a syntactic ctor that
+  the cd cascade can pattern-match on; the headline D3.6-S4 rule
+
+  ```
+  idToEquiv (refl _) ⟶ equivIntro (lam (var 0)) (lam (var 0))
+  ```
+
+  encodes "idToEquiv at refl reduces to the identity equivalence" as
+  a real β-reduction in the kernel.
+
+  ## Structural distinctness
+
+  This ctor is structurally distinct from every other `RawTerm` ctor
+  by raw-ctor mismatch — including `RawTerm.uaToEquiv` (which is
+  unary with the same shape but different field semantics: uaToEquiv
+  takes a univalence proof, idToEquiv takes any identity proof and
+  fires the β only when the proof is a syntactic refl).  Existing
+  typed inversions remain unaffected because the new ctor doesn't
+  appear in any existing inversion lemma's case enumeration. -/
+  | idToEquiv {scope : Nat} (proofRaw : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -571,5 +603,9 @@ equalities. -/
   -- the binder, if any, lives inside each path's `pathLam` body).
   | _, _, .pathCompose leftPathRaw rightPathRaw, someAction =>
       .pathCompose (leftPathRaw.act someAction) (rightPathRaw.act someAction)
+  -- D3.6-S4: idToEquiv vocabulary.  Atom-shape arm — recurse on the
+  -- single proof raw payload (no binder).
+  | _, _, .idToEquiv proofRaw, someAction =>
+      .idToEquiv (proofRaw.act someAction)
 
 end LeanFX2

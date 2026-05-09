@@ -86,6 +86,8 @@ inductive RawTerm.HeadCtor : Type
   | equivApply
   -- D3.6-S3: pathCompose vocabulary
   | pathCompose
+  -- D3.6-S4: idToEquiv vocabulary
+  | idToEquiv
 
 /-- Project a raw term to its head-ctor tag.  Full enumeration of
 all 28 RawTerm ctors keeps this propext-free. -/
@@ -140,6 +142,7 @@ def RawTerm.headCtor {scope : Nat} (term : RawTerm scope) : RawTerm.HeadCtor :=
   | .uaToEquiv _ => .uaToEquiv
   | .equivApply _ _ => .equivApply
   | .pathCompose _ _ => .pathCompose
+  | .idToEquiv _ => .idToEquiv
 
 /-! ## ?-projection helpers — full 28-arm enumeration
 
@@ -188,7 +191,7 @@ def RawTerm.lamBody? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Project the components of a `pair` term. -/
 def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
@@ -224,7 +227,7 @@ def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Project the predecessor from a `natSucc` term. -/
 def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
@@ -260,7 +263,7 @@ def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Project head/tail from a `listCons`. -/
 def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
@@ -296,7 +299,7 @@ def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Project the value from `optionSome`. -/
 def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
@@ -332,7 +335,7 @@ def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Project the value from `eitherInl`. -/
 def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
@@ -368,7 +371,7 @@ def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Project the value from `eitherInr`. -/
 def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
@@ -404,7 +407,7 @@ def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
   | .listCode _ => none | .optionCode _ => none | .eitherCode _ _ => none
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
-  | .pathCompose _ _ => none
+  | .pathCompose _ _ => none | .idToEquiv _ => none
 
 /-- Test whether a term is a `refl` (independent of the witness). -/
 def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
@@ -439,7 +442,7 @@ def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
   | .listCode _ => false | .optionCode _ => false | .eitherCode _ _ => false
   | .idCode _ _ _ => false | .equivCode _ _ => false
   | .cumulUpMarker _ => false | .uaToEquiv _ => false | .equivApply _ _ => false
-  | .pathCompose _ _ => false
+  | .pathCompose _ _ => false | .idToEquiv _ => false
 
 /-! ## Eq-witness recovery for the projection helpers
 
@@ -619,7 +622,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .boolElim scrutineeWhnf thenBranch elseBranch
     | .natZero => .natZero
     | .natSucc predecessor => .natSucc predecessor
@@ -650,7 +654,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .natElim scrutineeWhnf zeroBranch succBranch
     | .natRec scrutinee zeroBranch succBranch =>
         let scrutineeWhnf := RawTerm.whnf fuel scrutinee
@@ -681,7 +686,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .natRec scrutineeWhnf zeroBranch succBranch
     | .listNil => .listNil
     | .listCons headTerm tailTerm => .listCons headTerm tailTerm
@@ -712,7 +718,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .listElim scrutineeWhnf nilBranch consBranch
     | .optionNone => .optionNone
     | .optionSome valueTerm => .optionSome valueTerm
@@ -743,7 +750,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .optionMatch scrutineeWhnf noneBranch someBranch
     | .eitherInl valueTerm => .eitherInl valueTerm
     | .eitherInr valueTerm => .eitherInr valueTerm
@@ -778,7 +786,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .eitherMatch scrutineeWhnf leftBranch rightBranch
     | .refl rawWitness => .refl rawWitness
     | .idJ baseCase witness =>
@@ -802,7 +811,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .universeCode
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
-        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose =>
+        | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
+        | .idToEquiv =>
             .idJ baseCase witnessWhnf
     -- Modal: no reduction rules yet (Layer 6 will add iotaModal).
     | .modIntro innerTerm => .modIntro innerTerm
@@ -861,5 +871,9 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
     -- transp arm of `whnf` (raw-only confluence-closure mechanism).
     | .pathCompose leftPathRaw rightPathRaw =>
         .pathCompose leftPathRaw rightPathRaw
+    -- D3.6-S4: idToEquiv — value form at WHNF; the actual β rule
+    -- `idToEquiv (refl _) ⟶ equivIntro id id` fires through later
+    -- whnf engine integration (raw-only confluence-closure mechanism).
+    | .idToEquiv proofRaw => .idToEquiv proofRaw
 
 end LeanFX2

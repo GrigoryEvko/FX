@@ -430,5 +430,18 @@ theorem RawStep.par.cd_dominates :
       RawStep.par.pathComposeCong
         (RawStep.par.cd_dominates leftPathRaw)
         (RawStep.par.cd_dominates rightPathRaw)
+  -- D3.6-S4: idToEquiv — when cd proofRaw = refl witness, fire the
+  -- deep identity-β rule (idToEquivReflDeep); otherwise default cong.
+  | _, .idToEquiv proofRaw => by
+      let proofParStep := RawStep.par.cd_dominates proofRaw
+      unfold RawTerm.cd
+      unfold RawTerm.cdIdToEquivCase
+      split
+      case _ witnessRaw cdProofEqn =>
+          -- cd proofRaw = refl witnessRaw.  Rewrite proofParStep via
+          -- cd-eqn, then fire idToEquivReflDeep.
+          rw [cdProofEqn] at proofParStep
+          exact RawStep.par.idToEquivReflDeep proofParStep
+      all_goals exact RawStep.par.idToEquivCong proofParStep
 
 end LeanFX2

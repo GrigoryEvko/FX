@@ -369,6 +369,40 @@ theorem RawStep.par.pathCompose_inv {scope : Nat}
   | refl _ => exact ⟨leftPath, rightPath, rfl, RawStep.par.refl _, RawStep.par.refl _⟩
   | pathComposeCong leftStep rightStep => exact ⟨_, _, rfl, leftStep, rightStep⟩
 
+/-- D3.6-S4 `RawStep.par (idToEquiv proofSource) target` either stays
+a congruent `idToEquiv` (cong arm), or fires identity-β when the
+proof is syntactically a `refl witness` head (idToEquivRefl arm), or
+fires deep identity-β when the proof develops to `refl witness` via
+parallel reduction (idToEquivReflDeep arm).  Required by
+`RawCdLemma`'s `idToEquivRefl`/`idToEquivReflDeep` arms and the
+cdIdToEquivCase activation. -/
+theorem RawStep.par.idToEquiv_inv {scope : Nat}
+    {proofSource : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.idToEquiv proofSource) target) :
+    (∃ proofTarget,
+        target = RawTerm.idToEquiv proofTarget ∧
+        RawStep.par proofSource proofTarget) ∨
+    (∃ (witnessSource witnessTarget : RawTerm scope),
+        proofSource = RawTerm.refl witnessSource ∧
+        target = RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))) ∧
+        RawStep.par witnessSource witnessTarget) ∨
+    (∃ (witnessTarget : RawTerm scope),
+        target = RawTerm.equivIntro
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
+          (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))) ∧
+        RawStep.par proofSource (RawTerm.refl witnessTarget)) := by
+  cases parallelStep with
+  | refl _ =>
+      exact Or.inl ⟨proofSource, rfl, RawStep.par.refl _⟩
+  | idToEquivCong proofStep =>
+      exact Or.inl ⟨_, rfl, proofStep⟩
+  | @idToEquivRefl _ witnessSource witnessTarget witnessStep =>
+      exact Or.inr (Or.inl ⟨witnessSource, witnessTarget, rfl, rfl, witnessStep⟩)
+  | @idToEquivReflDeep _ _ witnessTarget proofStep =>
+      exact Or.inr (Or.inr ⟨witnessTarget, rfl, proofStep⟩)
+
 /-- `RawStep.par (pathApp p i) target` either stays a congruent
 `pathApp`, or fires cubical path β after the path develops to a
 `pathLam`. -/

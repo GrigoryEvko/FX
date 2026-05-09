@@ -298,6 +298,10 @@ theorem RawTerm.rename_identity {scope : Nat} :
       show (leftPathRaw.rename _).pathCompose (rightPathRaw.rename _) =
            leftPathRaw.pathCompose rightPathRaw
       rw [RawTerm.rename_identity leftPathRaw, RawTerm.rename_identity rightPathRaw]
+  -- D3.6-S4: idToEquiv — recurse on inner proof raw.
+  | .idToEquiv proofRaw => by
+      show (proofRaw.rename _).idToEquiv = proofRaw.idToEquiv
+      rw [RawTerm.rename_identity proofRaw]
 
 /-! ## Ty.rename_identity
 

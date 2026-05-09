@@ -262,6 +262,25 @@ theorem RawTerm.cdIdStrictRecCase_rename {sourceScope targetScope : Nat}
     RawTerm.cdIdStrictRecCase (developedBase.rename rho) (developedWitness.rename rho) := by
   cases developedWitness <;> rfl
 
+/-! ## Helper-rename lemma 19 of 19: cdIdToEquivCase.
+
+The `refl` arm produces a CLOSED term (`equivIntro (lam (var 0))
+(lam (var 0))`) which equals its own rename.  All 67 non-refl arms
+rebuild as plain `idToEquiv` and close by `rfl`. -/
+
+/-- `cdIdToEquivCase` commutes with `rename`.  Closed-target arm:
+when `developedProof = refl _`, both sides reduce to
+`equivIntro (lam (var 0)) (lam (var 0))` because the contractum is
+closed (no free variables — only the binder-bound `var 0`).  All
+other arms rebuild `idToEquiv developedProof` and rename
+distributes. -/
+theorem RawTerm.cdIdToEquivCase_rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (developedProof : RawTerm sourceScope) :
+    (RawTerm.cdIdToEquivCase developedProof).rename rho =
+    RawTerm.cdIdToEquivCase (developedProof.rename rho) := by
+  cases developedProof <;> rfl
+
 /-! ## Helper-rename lemma 18 of 18: cdTranspCase.
 
 The `pathLam` arm dispatches on `unweaken? pathBody`; both branches
@@ -691,6 +710,13 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
                                             (rightPathRaw.rename rho))
       simp only [RawTerm.rename, RawTerm.cd]
       rw [leftIH rho, rightIH rho]
+  | idToEquiv proofRaw proofIH =>
+      intro _ rho
+      show (RawTerm.cdIdToEquivCase (RawTerm.cd proofRaw)).rename rho =
+           RawTerm.cd (RawTerm.idToEquiv (proofRaw.rename rho))
+      simp only [RawTerm.cd]
+      rw [RawTerm.cdIdToEquivCase_rename rho (RawTerm.cd proofRaw),
+        proofIH rho]
 
 /-! ## Specialization: `cd_weaken`. -/
 
