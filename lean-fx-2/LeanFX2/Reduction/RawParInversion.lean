@@ -369,13 +369,15 @@ theorem RawStep.par.pathCompose_inv {scope : Nat}
   | refl _ => exact ⟨leftPath, rightPath, rfl, RawStep.par.refl _, RawStep.par.refl _⟩
   | pathComposeCong leftStep rightStep => exact ⟨_, _, rfl, leftStep, rightStep⟩
 
-/-- D3.6-S4 `RawStep.par (idToEquiv proofSource) target` either stays
-a congruent `idToEquiv` (cong arm), or fires identity-β when the
-proof is syntactically a `refl witness` head (idToEquivRefl arm), or
-fires deep identity-β when the proof develops to `refl witness` via
-parallel reduction (idToEquivReflDeep arm).  Required by
-`RawCdLemma`'s `idToEquivRefl`/`idToEquivReflDeep` arms and the
-cdIdToEquivCase activation. -/
+/-- D3.6-S4/S5 `RawStep.par (idToEquiv proofSource) target` admits five
+disjunctive arms: a congruent `idToEquiv` (cong arm), shallow
+identity-β when the proof is syntactically a `refl witness` head
+(idToEquivRefl arm), deep identity-β when the proof develops to
+`refl witness` (idToEquivReflDeep arm), shallow compose-β when the
+proof is syntactically an `oeqTrans first second` head
+(idToEquivCompose arm), or deep compose-β when the proof develops to
+`oeqTrans ...` (idToEquivComposeDeep arm).  Required by `RawCdLemma`'s
+β arms and the cdIdToEquivCase activation. -/
 theorem RawStep.par.idToEquiv_inv {scope : Nat}
     {proofSource : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.idToEquiv proofSource) target) :
@@ -392,7 +394,19 @@ theorem RawStep.par.idToEquiv_inv {scope : Nat}
         target = RawTerm.equivIntro
           (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
           (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))) ∧
-        RawStep.par proofSource (RawTerm.refl witnessTarget)) := by
+        RawStep.par proofSource (RawTerm.refl witnessTarget)) ∨
+    (∃ (firstSource secondSource firstTarget secondTarget : RawTerm scope),
+        proofSource = RawTerm.oeqTrans firstSource secondSource ∧
+        target = RawTerm.equivCompose
+          (RawTerm.idToEquiv firstTarget)
+          (RawTerm.idToEquiv secondTarget) ∧
+        RawStep.par firstSource firstTarget ∧
+        RawStep.par secondSource secondTarget) ∨
+    (∃ (firstTarget secondTarget : RawTerm scope),
+        target = RawTerm.equivCompose
+          (RawTerm.idToEquiv firstTarget)
+          (RawTerm.idToEquiv secondTarget) ∧
+        RawStep.par proofSource (RawTerm.oeqTrans firstTarget secondTarget)) := by
   cases parallelStep with
   | refl _ =>
       exact Or.inl ⟨proofSource, rfl, RawStep.par.refl _⟩
@@ -401,7 +415,43 @@ theorem RawStep.par.idToEquiv_inv {scope : Nat}
   | @idToEquivRefl _ witnessSource witnessTarget witnessStep =>
       exact Or.inr (Or.inl ⟨witnessSource, witnessTarget, rfl, rfl, witnessStep⟩)
   | @idToEquivReflDeep _ _ witnessTarget proofStep =>
-      exact Or.inr (Or.inr ⟨witnessTarget, rfl, proofStep⟩)
+      exact Or.inr (Or.inr (Or.inl ⟨witnessTarget, rfl, proofStep⟩))
+  | @idToEquivCompose _ firstSource firstTarget secondSource secondTarget firstStep secondStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨firstSource, secondSource, firstTarget, secondTarget,
+         rfl, rfl, firstStep, secondStep⟩)))
+  | @idToEquivComposeDeep _ _ firstTarget secondTarget proofStep =>
+      exact Or.inr (Or.inr (Or.inr (Or.inr ⟨firstTarget, secondTarget, rfl, proofStep⟩)))
+
+/-- D3.6-S5 `RawStep.par (oeqTrans first second) target → target =
+oeqTrans first' second' ∧ par first first' ∧ par second second'`.
+Required by `cd_lemma`'s `idToEquivCompose`/`idToEquivComposeDeep`
+arms and the cdIdToEquivCase activation: a parallel step landing at
+`oeqTrans X Y` admits only the `oeqTransCong` rule (or `refl`). -/
+theorem RawStep.par.oeqTrans_inv {scope : Nat}
+    {firstProof secondProof : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.oeqTrans firstProof secondProof) target) :
+    ∃ firstTarget secondTarget,
+      target = RawTerm.oeqTrans firstTarget secondTarget ∧
+      RawStep.par firstProof firstTarget ∧
+      RawStep.par secondProof secondTarget := by
+  cases parallelStep with
+  | refl _ => exact ⟨firstProof, secondProof, rfl, RawStep.par.refl _, RawStep.par.refl _⟩
+  | oeqTransCong firstStep secondStep => exact ⟨_, _, rfl, firstStep, secondStep⟩
+
+/-- D3.6-S5 `RawStep.par (equivCompose first second) target → target =
+equivCompose first' second' ∧ par first first' ∧ par second second'`.
+Mirror of `oeqTrans_inv` for the equivalence-composition ctor. -/
+theorem RawStep.par.equivCompose_inv {scope : Nat}
+    {firstEquiv secondEquiv : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.equivCompose firstEquiv secondEquiv) target) :
+    ∃ firstTarget secondTarget,
+      target = RawTerm.equivCompose firstTarget secondTarget ∧
+      RawStep.par firstEquiv firstTarget ∧
+      RawStep.par secondEquiv secondTarget := by
+  cases parallelStep with
+  | refl _ => exact ⟨firstEquiv, secondEquiv, rfl, RawStep.par.refl _, RawStep.par.refl _⟩
+  | equivComposeCong firstStep secondStep => exact ⟨_, _, rfl, firstStep, secondStep⟩
 
 /-- `RawStep.par (pathApp p i) target` either stays a congruent
 `pathApp`, or fires cubical path β after the path develops to a

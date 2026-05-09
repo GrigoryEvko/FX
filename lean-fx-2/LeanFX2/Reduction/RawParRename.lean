@@ -406,6 +406,28 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       have proofRenameStep := proofIH rawRenaming
       simp only [RawTerm.rename] at proofRenameStep
       exact RawStep.par.idToEquivReflDeep proofRenameStep
+  | oeqTransCong _ _ firstIH secondIH =>
+      -- D3.6-S5: rename distributes over the binary oeqTrans ctor.
+      exact RawStep.par.oeqTransCong (firstIH _) (secondIH _)
+  | equivComposeCong _ _ firstIH secondIH =>
+      -- D3.6-S5: rename distributes over the binary equivCompose ctor.
+      exact RawStep.par.equivComposeCong (firstIH _) (secondIH _)
+  | idToEquivCompose _ _ firstIH secondIH =>
+      -- D3.6-S5 shallow compose-β: rename commutes through both heads;
+      -- LHS = idToEquiv (oeqTrans (firstSource.rename rho) (secondSource.rename rho))
+      -- RHS = equivCompose (idToEquiv (firstTarget.rename rho))
+      --                    (idToEquiv (secondTarget.rename rho))
+      simp only [RawTerm.rename]
+      exact RawStep.par.idToEquivCompose (firstIH _) (secondIH _)
+  | idToEquivComposeDeep _ proofIH =>
+      -- D3.6-S5 deep compose-β: rename commutes via RawTerm.rename on
+      -- idToEquiv/oeqTrans/equivCompose.  proofIH renamed gives a par
+      -- step on the renamed proof landing at oeqTrans of renamed
+      -- targets.
+      simp only [RawTerm.rename]
+      have proofRenameStep := proofIH rawRenaming
+      simp only [RawTerm.rename] at proofRenameStep
+      exact RawStep.par.idToEquivComposeDeep proofRenameStep
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH _)
   | funextReflAtIdCong _ applyIH =>

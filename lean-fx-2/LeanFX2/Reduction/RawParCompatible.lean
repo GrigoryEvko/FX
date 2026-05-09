@@ -325,6 +325,16 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
   | .idToEquiv proofRaw, _, _, substsRelated =>
       RawStep.par.idToEquivCong
         (RawTerm.subst_par_pointwise proofRaw substsRelated)
+  -- D3.6-S5: oeqTrans recurses on both proof raws.
+  | .oeqTrans firstProof secondProof, _, _, substsRelated =>
+      RawStep.par.oeqTransCong
+        (RawTerm.subst_par_pointwise firstProof substsRelated)
+        (RawTerm.subst_par_pointwise secondProof substsRelated)
+  -- D3.6-S5: equivCompose recurses on both equiv raws.
+  | .equivCompose firstEquiv secondEquiv, _, _, substsRelated =>
+      RawStep.par.equivComposeCong
+        (RawTerm.subst_par_pointwise firstEquiv substsRelated)
+        (RawTerm.subst_par_pointwise secondEquiv substsRelated)
 
 /-! ## Joint substitution: parallel terms + parallel substs → parallel. -/
 
@@ -748,6 +758,30 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       have proofSubstStep := proofIH substsRelated
       simp only [RawTerm.subst] at proofSubstStep
       exact RawStep.par.idToEquivReflDeep proofSubstStep
+  | oeqTransCong _ _ firstIH secondIH =>
+      -- D3.6-S5: parallel substitution distributes over the binary
+      -- oeqTrans ctor.
+      exact RawStep.par.oeqTransCong (firstIH substsRelated) (secondIH substsRelated)
+  | equivComposeCong _ _ firstIH secondIH =>
+      -- D3.6-S5: parallel substitution distributes over the binary
+      -- equivCompose ctor.
+      exact RawStep.par.equivComposeCong (firstIH substsRelated) (secondIH substsRelated)
+  | idToEquivCompose _ _ firstIH secondIH =>
+      -- D3.6-S5 shallow compose-β: parallel substitution preserves the
+      -- equivCompose contractum.  LHS subst pushes through
+      -- idToEquiv/oeqTrans heads; RHS subst over equivCompose/idToEquiv
+      -- pushes through both arms.
+      simp only [RawTerm.subst]
+      exact RawStep.par.idToEquivCompose (firstIH substsRelated) (secondIH substsRelated)
+  | idToEquivComposeDeep _ proofIH =>
+      -- D3.6-S5 deep compose-β: parallel substitution pushes through
+      -- idToEquiv heads.  proofIH substituted gives a par step on the
+      -- substituted proof landing at oeqTrans of the substituted
+      -- targets.
+      simp only [RawTerm.subst]
+      have proofSubstStep := proofIH substsRelated
+      simp only [RawTerm.subst] at proofSubstStep
+      exact RawStep.par.idToEquivComposeDeep proofSubstStep
   | funextReflCong _ applyIH =>
       exact RawStep.par.funextReflCong (applyIH (RawTermSubst.par_lift substsRelated))
   | funextReflAtIdCong _ applyIH =>

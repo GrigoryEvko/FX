@@ -721,58 +721,110 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       rw [cdPathEq]
       exact RawStep.par.transpCong rightParStep
         (RawStep.par.transpCong leftParStep sourceIH)
-  | idToEquivCong _ proofIH =>
-      -- D3.6-S4: pure cong on proof raw.
+  | @idToEquivCong _ proofRawSource _ _ proofIH =>
+      -- D3.6-S4/S5: pure cong on proof raw.
       -- Source = idToEquiv proofRawSource; Target = idToEquiv proofRawTarget.
       -- proofIH : par proofRawTarget (cd proofRawSource).
-      -- Goal: par (idToEquiv proofRawTarget)
-      --           (cd (idToEquiv proofRawSource))
-      --     = par (idToEquiv proofRawTarget)
-      --           (cdIdToEquivCase (cd proofRawSource))
       -- cdIdToEquivCase splits on cd proofRawSource:
-      --   * if cd proofRawSource = refl _, the case fires the
-      --     identity-equivalence contractum, closed by idToEquivReflDeep
-      --     on proofIH.
-      --   * otherwise the case rebuilds idToEquiv (cd proofRawSource),
-      --     closed by idToEquivCong on proofIH.
+      --   * if cd proofRawSource = refl _, fire idToEquivReflDeep.
+      --   * if cd proofRawSource = oeqTrans first second, fire
+      --     idToEquivComposeDeep.
+      --   * otherwise rebuild idToEquiv (cd proofRawSource), close
+      --     with idToEquivCong.
       simp only [RawTerm.cd]
-      unfold RawTerm.cdIdToEquivCase
-      split
-      case _ witnessRaw cdProofEqn =>
-          rw [cdProofEqn] at proofIH
-          -- proofIH : par proofRawTarget (refl witnessRaw).
-          -- idToEquivReflDeep fires.
+      match hCd : RawTerm.cd proofRawSource with
+      | .refl witnessRaw =>
+          rw [hCd] at proofIH
+          show RawStep.par (RawTerm.idToEquiv _)
+                           (RawTerm.cdIdToEquivCase (RawTerm.refl witnessRaw))
+          unfold RawTerm.cdIdToEquivCase
           exact RawStep.par.idToEquivReflDeep proofIH
-      all_goals exact RawStep.par.idToEquivCong proofIH
+      | .oeqTrans firstRaw secondRaw =>
+          rw [hCd] at proofIH
+          show RawStep.par (RawTerm.idToEquiv _)
+                           (RawTerm.cdIdToEquivCase
+                             (RawTerm.oeqTrans firstRaw secondRaw))
+          unfold RawTerm.cdIdToEquivCase
+          exact RawStep.par.idToEquivComposeDeep proofIH
+      | .var _ | .unit | .lam _ | .app _ _ | .pair _ _ | .fst _ | .snd _
+      | .boolTrue | .boolFalse | .boolElim _ _ _ | .natZero | .natSucc _
+      | .natElim _ _ _ | .natRec _ _ _ | .listNil | .listCons _ _
+      | .listElim _ _ _ | .optionNone | .optionSome _ | .optionMatch _ _ _
+      | .eitherInl _ | .eitherInr _ | .eitherMatch _ _ _ | .idJ _ _
+      | .modIntro _ | .modElim _ | .subsume _ | .interval0 | .interval1
+      | .intervalOpp _ | .intervalMeet _ _ | .intervalJoin _ _
+      | .pathLam _ | .pathApp _ _ | .glueIntro _ _ | .glueElim _
+      | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _ | .oeqFunext _
+      | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
+      | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
+      | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _
+      | .effectPerform _ _ | .universeCode _ | .arrowCode _ _ | .piTyCode _ _
+      | .sigmaTyCode _ _ | .productCode _ _ | .sumCode _ _ | .listCode _
+      | .optionCode _ | .eitherCode _ _ | .idCode _ _ _ | .equivCode _ _
+      | .cumulUpMarker _ | .uaToEquiv _ | .equivApply _ _ | .pathCompose _ _
+      | .idToEquiv _ | .equivCompose _ _ =>
+          rw [hCd] at proofIH
+          show RawStep.par (RawTerm.idToEquiv _)
+                           (RawTerm.cdIdToEquivCase _)
+          unfold RawTerm.cdIdToEquivCase
+          exact RawStep.par.idToEquivCong proofIH
   | @idToEquivRefl _ witnessSource _ witnessStep witnessIH =>
-      -- D3.6-S4 shallow:
-      -- Source = idToEquiv (refl witnessSource).
-      -- Target = equivIntro (lam (var 0)) (lam (var 0)).
-      -- witnessIH : par witnessTarget (cd witnessSource).
-      -- Goal: par (equivIntro (lam (var 0)) (lam (var 0)))
-      --           (cd (idToEquiv (refl witnessSource)))
-      -- cd unfolds: cdIdToEquivCase (cd (refl witnessSource))
-      --           = cdIdToEquivCase (refl (cd witnessSource))
-      --           = equivIntro (lam (var 0)) (lam (var 0))
-      -- Both sides are the closed identity equivalence — refl.
+      -- D3.6-S4 shallow refl: closed identity contractum, refl-by-refl.
       simp only [RawTerm.cd, RawTerm.cdIdToEquivCase]
       exact RawStep.par.refl _
   | @idToEquivReflDeep _ proofRawSource _ proofStep proofIH =>
-      -- D3.6-S4 deep:
-      -- Source = idToEquiv proofRawSource.
-      -- Target = equivIntro (lam (var 0)) (lam (var 0)).
-      -- proofStep : par proofRawSource (refl witnessTarget).
-      -- proofIH : par (refl witnessTarget) (cd proofRawSource).
-      -- Goal: par (equivIntro (lam (var 0)) (lam (var 0)))
-      --           (cdIdToEquivCase (cd proofRawSource))
-      -- By refl_inv on proofIH: cd proofRawSource = refl X with par
-      -- witnessTarget X.  Then cdIdToEquivCase fires the refl arm:
-      -- yields equivIntro (lam (var 0)) (lam (var 0)) — closed contractum.
+      -- D3.6-S4 deep refl.  refl_inv on proofIH yields cd proofRawSource
+      -- = refl X; cdIdToEquivCase fires the refl arm to the closed
+      -- identity-equiv contractum.
       obtain ⟨witnessFinal, hCdEq, _witnessStep⟩ :=
         RawStep.par.refl_inv proofIH
       simp only [RawTerm.cd]
       rw [hCdEq]
       simp only [RawTerm.cdIdToEquivCase]
       exact RawStep.par.refl _
+  | oeqTransCong _ _ firstIH secondIH =>
+      -- D3.6-S5: pure cong on oeqTrans.
+      simp only [RawTerm.cd]
+      exact RawStep.par.oeqTransCong firstIH secondIH
+  | equivComposeCong _ _ firstIH secondIH =>
+      -- D3.6-S5: pure cong on equivCompose.
+      simp only [RawTerm.cd]
+      exact RawStep.par.equivComposeCong firstIH secondIH
+  | @idToEquivCompose _ firstSource _ secondSource _ firstStep secondStep firstIH secondIH =>
+      -- D3.6-S5 shallow compose-β:
+      -- Source = idToEquiv (oeqTrans firstSource secondSource).
+      -- Target = equivCompose (idToEquiv firstTarget) (idToEquiv secondTarget).
+      -- firstIH : par firstTarget (cd firstSource).
+      -- secondIH : par secondTarget (cd secondSource).
+      -- Goal: par (equivCompose (idToEquiv firstTarget) (idToEquiv secondTarget))
+      --           (cd (idToEquiv (oeqTrans firstSource secondSource)))
+      --     = par (...) (cdIdToEquivCase (cd (oeqTrans firstSource secondSource)))
+      --     = par (...) (cdIdToEquivCase (oeqTrans (cd firstSource) (cd secondSource)))
+      --     = par (...) (equivCompose (idToEquiv (cd firstSource))
+      --                                (idToEquiv (cd secondSource))).
+      -- Closed via equivComposeCong (idToEquivCong firstIH) (idToEquivCong secondIH).
+      simp only [RawTerm.cd, RawTerm.cdIdToEquivCase]
+      exact RawStep.par.equivComposeCong
+        (RawStep.par.idToEquivCong firstIH)
+        (RawStep.par.idToEquivCong secondIH)
+  | @idToEquivComposeDeep _ proofRawSource firstTarget secondTarget proofStep proofIH =>
+      -- D3.6-S5 deep compose-β:
+      -- Source = idToEquiv proofRawSource.
+      -- Target = equivCompose (idToEquiv firstTarget) (idToEquiv secondTarget).
+      -- proofStep : par proofRawSource (oeqTrans firstTarget secondTarget).
+      -- proofIH : par (oeqTrans firstTarget secondTarget) (cd proofRawSource).
+      -- By oeqTrans_inv on proofIH: cd proofRawSource = oeqTrans X Y
+      -- with par firstTarget X and par secondTarget Y.  Then
+      -- cdIdToEquivCase fires the oeqTrans arm to equivCompose
+      -- (idToEquiv X) (idToEquiv Y).  Closed via equivComposeCong
+      -- (idToEquivCong _) (idToEquivCong _).
+      obtain ⟨firstFinal, secondFinal, hCdEq, firstStep, secondStep⟩ :=
+        RawStep.par.oeqTrans_inv proofIH
+      simp only [RawTerm.cd]
+      rw [hCdEq]
+      simp only [RawTerm.cdIdToEquivCase]
+      exact RawStep.par.equivComposeCong
+        (RawStep.par.idToEquivCong firstStep)
+        (RawStep.par.idToEquivCong secondStep)
 
 end LeanFX2

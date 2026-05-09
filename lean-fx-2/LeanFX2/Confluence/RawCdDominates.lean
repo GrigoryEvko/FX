@@ -431,17 +431,63 @@ theorem RawStep.par.cd_dominates :
         (RawStep.par.cd_dominates leftPathRaw)
         (RawStep.par.cd_dominates rightPathRaw)
   -- D3.6-S4: idToEquiv — when cd proofRaw = refl witness, fire the
-  -- deep identity-β rule (idToEquivReflDeep); otherwise default cong.
+  -- deep identity-β rule (idToEquivReflDeep).  D3.6-S5: when cd
+  -- proofRaw = oeqTrans first second, fire the deep compose-β rule
+  -- (idToEquivComposeDeep).  Otherwise default cong.  We dispatch by
+  -- pattern-matching on `cd proofRaw` before unfolding cdIdToEquivCase
+  -- so the β arms see exactly the expected ctor shape.
   | _, .idToEquiv proofRaw => by
       let proofParStep := RawStep.par.cd_dominates proofRaw
       unfold RawTerm.cd
-      unfold RawTerm.cdIdToEquivCase
-      split
-      case _ witnessRaw cdProofEqn =>
-          -- cd proofRaw = refl witnessRaw.  Rewrite proofParStep via
-          -- cd-eqn, then fire idToEquivReflDeep.
-          rw [cdProofEqn] at proofParStep
+      match hCd : RawTerm.cd proofRaw with
+      | .refl witnessRaw =>
+          rw [hCd] at proofParStep
+          show RawStep.par (RawTerm.idToEquiv proofRaw)
+                           (RawTerm.cdIdToEquivCase (RawTerm.refl witnessRaw))
+          unfold RawTerm.cdIdToEquivCase
           exact RawStep.par.idToEquivReflDeep proofParStep
-      all_goals exact RawStep.par.idToEquivCong proofParStep
+      | .oeqTrans firstRaw secondRaw =>
+          rw [hCd] at proofParStep
+          show RawStep.par (RawTerm.idToEquiv proofRaw)
+                           (RawTerm.cdIdToEquivCase
+                             (RawTerm.oeqTrans firstRaw secondRaw))
+          unfold RawTerm.cdIdToEquivCase
+          exact RawStep.par.idToEquivComposeDeep proofParStep
+      | .var _ | .unit | .lam _ | .app _ _ | .pair _ _ | .fst _ | .snd _
+      | .boolTrue | .boolFalse | .boolElim _ _ _ | .natZero | .natSucc _
+      | .natElim _ _ _ | .natRec _ _ _ | .listNil | .listCons _ _
+      | .listElim _ _ _ | .optionNone | .optionSome _ | .optionMatch _ _ _
+      | .eitherInl _ | .eitherInr _ | .eitherMatch _ _ _ | .idJ _ _
+      | .modIntro _ | .modElim _ | .subsume _ | .interval0 | .interval1
+      | .intervalOpp _ | .intervalMeet _ _ | .intervalJoin _ _
+      | .pathLam _ | .pathApp _ _ | .glueIntro _ _ | .glueElim _
+      | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _ | .oeqFunext _
+      | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
+      | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
+      | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _
+      | .effectPerform _ _ | .universeCode _ | .arrowCode _ _ | .piTyCode _ _
+      | .sigmaTyCode _ _ | .productCode _ _ | .sumCode _ _ | .listCode _
+      | .optionCode _ | .eitherCode _ _ | .idCode _ _ _ | .equivCode _ _
+      | .cumulUpMarker _ | .uaToEquiv _ | .equivApply _ _ | .pathCompose _ _
+      | .idToEquiv _ | .equivCompose _ _ =>
+          rw [hCd] at proofParStep
+          show RawStep.par (RawTerm.idToEquiv proofRaw)
+                           (RawTerm.cdIdToEquivCase _)
+          unfold RawTerm.cdIdToEquivCase
+          exact RawStep.par.idToEquivCong proofParStep
+  -- D3.6-S5: oeqTrans — pure cong, recurse on first and second proof
+  -- raws.  The actual β rule fires through `cdIdToEquivCase` when
+  -- oeqTrans is the developed proof of an idToEquiv.
+  | _, .oeqTrans firstProof secondProof =>
+      RawStep.par.oeqTransCong
+        (RawStep.par.cd_dominates firstProof)
+        (RawStep.par.cd_dominates secondProof)
+  -- D3.6-S5: equivCompose — pure cong, recurse on first and second
+  -- equivalence raws.  This ctor is the contractum target of the
+  -- compose-β rule; no β fires when it is the source itself.
+  | _, .equivCompose firstEquiv secondEquiv =>
+      RawStep.par.equivComposeCong
+        (RawStep.par.cd_dominates firstEquiv)
+        (RawStep.par.cd_dominates secondEquiv)
 
 end LeanFX2

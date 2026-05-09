@@ -302,6 +302,16 @@ theorem RawTerm.rename_identity {scope : Nat} :
   | .idToEquiv proofRaw => by
       show (proofRaw.rename _).idToEquiv = proofRaw.idToEquiv
       rw [RawTerm.rename_identity proofRaw]
+  -- D3.6-S5: oeqTrans — recurse on first and second proof raws.
+  | .oeqTrans firstProof secondProof => by
+      show (firstProof.rename _).oeqTrans (secondProof.rename _) =
+           firstProof.oeqTrans secondProof
+      rw [RawTerm.rename_identity firstProof, RawTerm.rename_identity secondProof]
+  -- D3.6-S5: equivCompose — recurse on first and second equiv raws.
+  | .equivCompose firstEquiv secondEquiv => by
+      show (firstEquiv.rename _).equivCompose (secondEquiv.rename _) =
+           firstEquiv.equivCompose secondEquiv
+      rw [RawTerm.rename_identity firstEquiv, RawTerm.rename_identity secondEquiv]
 
 /-! ## Ty.rename_identity
 

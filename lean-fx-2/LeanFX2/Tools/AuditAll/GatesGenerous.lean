@@ -77,7 +77,11 @@ namespace LeanFX2.Tools
 -- D3.6-S4 ships the raw `RawTerm.idToEquiv` ctor + cascade adding one
 -- more absurd-using branch through `rename_eq_idToEquiv_imp` (67
 -- nomatch arms contribute through cascade dependents).
-#assert_absurd_false_dependent_budget LeanFX2 983
+-- D3.6-S5 ships TWO raw ctors `RawTerm.oeqTrans` + `RawTerm.equivCompose`
+-- + cascade adding TWO more absurd-using branches through new shape-
+-- inversion helpers `rename_eq_oeqTrans_imp` + `rename_eq_equivCompose_imp`
+-- (each with ~70 nomatch arms contributing through cascade dependents).
+#assert_absurd_false_dependent_budget LeanFX2 985
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the

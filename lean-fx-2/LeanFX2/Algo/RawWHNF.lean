@@ -88,6 +88,10 @@ inductive RawTerm.HeadCtor : Type
   | pathCompose
   -- D3.6-S4: idToEquiv vocabulary
   | idToEquiv
+  -- D3.6-S5: oeqTrans vocabulary
+  | oeqTrans
+  -- D3.6-S5: equivCompose vocabulary
+  | equivCompose
 
 /-- Project a raw term to its head-ctor tag.  Full enumeration of
 all 28 RawTerm ctors keeps this propext-free. -/
@@ -143,6 +147,8 @@ def RawTerm.headCtor {scope : Nat} (term : RawTerm scope) : RawTerm.HeadCtor :=
   | .equivApply _ _ => .equivApply
   | .pathCompose _ _ => .pathCompose
   | .idToEquiv _ => .idToEquiv
+  | .oeqTrans _ _ => .oeqTrans
+  | .equivCompose _ _ => .equivCompose
 
 /-! ## ?-projection helpers — full 28-arm enumeration
 
@@ -192,6 +198,7 @@ def RawTerm.lamBody? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Project the components of a `pair` term. -/
 def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
@@ -228,6 +235,7 @@ def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Project the predecessor from a `natSucc` term. -/
 def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
@@ -264,6 +272,7 @@ def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Project head/tail from a `listCons`. -/
 def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
@@ -300,6 +309,7 @@ def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Project the value from `optionSome`. -/
 def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
@@ -336,6 +346,7 @@ def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Project the value from `eitherInl`. -/
 def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
@@ -372,6 +383,7 @@ def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Project the value from `eitherInr`. -/
 def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
@@ -408,6 +420,7 @@ def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
   | .idCode _ _ _ => none | .equivCode _ _ => none
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
+  | .oeqTrans _ _ => none | .equivCompose _ _ => none
 
 /-- Test whether a term is a `refl` (independent of the witness). -/
 def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
@@ -443,6 +456,7 @@ def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
   | .idCode _ _ _ => false | .equivCode _ _ => false
   | .cumulUpMarker _ => false | .uaToEquiv _ => false | .equivApply _ _ => false
   | .pathCompose _ _ => false | .idToEquiv _ => false
+  | .oeqTrans _ _ => false | .equivCompose _ _ => false
 
 /-! ## Eq-witness recovery for the projection helpers
 
@@ -623,7 +637,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .boolElim scrutineeWhnf thenBranch elseBranch
     | .natZero => .natZero
     | .natSucc predecessor => .natSucc predecessor
@@ -655,7 +669,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .natElim scrutineeWhnf zeroBranch succBranch
     | .natRec scrutinee zeroBranch succBranch =>
         let scrutineeWhnf := RawTerm.whnf fuel scrutinee
@@ -687,7 +701,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .natRec scrutineeWhnf zeroBranch succBranch
     | .listNil => .listNil
     | .listCons headTerm tailTerm => .listCons headTerm tailTerm
@@ -719,7 +733,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .listElim scrutineeWhnf nilBranch consBranch
     | .optionNone => .optionNone
     | .optionSome valueTerm => .optionSome valueTerm
@@ -751,7 +765,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .optionMatch scrutineeWhnf noneBranch someBranch
     | .eitherInl valueTerm => .eitherInl valueTerm
     | .eitherInr valueTerm => .eitherInr valueTerm
@@ -787,7 +801,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .eitherMatch scrutineeWhnf leftBranch rightBranch
     | .refl rawWitness => .refl rawWitness
     | .idJ baseCase witness =>
@@ -812,7 +826,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .arrowCode | .piTyCode | .sigmaTyCode | .productCode | .sumCode
         | .listCode | .optionCode | .eitherCode | .idCode | .equivCode
         | .cumulUpMarker | .uaToEquiv | .equivApply | .pathCompose
-        | .idToEquiv =>
+        | .idToEquiv | .oeqTrans | .equivCompose =>
             .idJ baseCase witnessWhnf
     -- Modal: no reduction rules yet (Layer 6 will add iotaModal).
     | .modIntro innerTerm => .modIntro innerTerm
@@ -875,5 +889,12 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
     -- `idToEquiv (refl _) ⟶ equivIntro id id` fires through later
     -- whnf engine integration (raw-only confluence-closure mechanism).
     | .idToEquiv proofRaw => .idToEquiv proofRaw
+    -- D3.6-S5: oeqTrans — value form at WHNF; the actual β rule
+    -- `idToEquiv (oeqTrans first second) ⟶ equivCompose ...` fires
+    -- through cdIdToEquivCase, not inside oeqTrans itself.
+    | .oeqTrans firstProof secondProof => .oeqTrans firstProof secondProof
+    -- D3.6-S5: equivCompose — value form at WHNF; the contractum
+    -- target of the headline `idToEquivCompose` β rule.
+    | .equivCompose firstEquiv secondEquiv => .equivCompose firstEquiv secondEquiv
 
 end LeanFX2

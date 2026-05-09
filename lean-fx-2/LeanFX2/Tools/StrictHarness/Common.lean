@@ -1799,7 +1799,23 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- and `idToEquivReflDeep` (proof-developed β) all ship raw-only.
   suffix == "idToEquivCong" ||
   suffix == "idToEquivRefl" ||
-  suffix == "idToEquivReflDeep"
+  suffix == "idToEquivReflDeep" ||
+  -- Section G: D3.6-S5 univalence-compose-β raw rules.
+  -- `RawTerm.oeqTrans` (binary observational-equality transitivity)
+  -- and `RawTerm.equivCompose` (binary equivalence composition) ship
+  -- at the raw layer, enabling the headline rule
+  -- `idToEquiv (oeqTrans first second) ⟶ equivCompose (idToEquiv
+  -- first) (idToEquiv second)` to fire syntactically through the cd
+  -- cascade via `cdIdToEquivCase`'s `oeqTrans` arm.  Typed mirrors
+  -- (`Term.oeqTrans`, `Term.equivCompose`) are the v1.1 follow-up;
+  -- until then, `oeqTransCong` / `equivComposeCong` (cong rules),
+  -- `idToEquivCompose` (shallow compose-β), and
+  -- `idToEquivComposeDeep` (proof-developed compose-β) all ship
+  -- raw-only.
+  suffix == "oeqTransCong" ||
+  suffix == "equivComposeCong" ||
+  suffix == "idToEquivCompose" ||
+  suffix == "idToEquivComposeDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

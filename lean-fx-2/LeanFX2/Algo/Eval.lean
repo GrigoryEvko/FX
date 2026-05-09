@@ -399,7 +399,9 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
       | .uaToEquiv _
       | .equivApply _ _
       | .pathCompose _ _
-      | .idToEquiv _ => none
+      | .idToEquiv _
+      | .oeqTrans _ _
+      | .equivCompose _ _ => none
   | _, _, _, _, .natElim scrutinee zeroBranch succBranch =>
       let scrutineeHead := scrutinee.headCtor
       if scrutineeHead == .natZero then

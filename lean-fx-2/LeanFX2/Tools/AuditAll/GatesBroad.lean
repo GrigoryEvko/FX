@@ -69,7 +69,10 @@ namespace LeanFX2.Tools
 -- deep β / inversion + cd cascade extension), threading one more cast path.
 -- D3.6-S4 ships the raw `RawTerm.idToEquiv` cascade, threading one more
 -- cast path through the cdIdToEquivCase + cd cascade extension.
-#assert_cast_operator_dependent_budget LeanFX2 1316
+-- D3.6-S5 ships two raw ctors + binary cong/β/inversion cascade,
+-- threading two more cast paths through the cdIdToEquivCase oeqTrans
+-- arm + idToEquiv_inv five-disjunct extension.
+#assert_cast_operator_dependent_budget LeanFX2 1318
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

@@ -717,6 +717,20 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
       simp only [RawTerm.cd]
       rw [RawTerm.cdIdToEquivCase_rename rho (RawTerm.cd proofRaw),
         proofIH rho]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      intro _ rho
+      show (RawTerm.oeqTrans (RawTerm.cd firstProof) (RawTerm.cd secondProof)).rename rho =
+           RawTerm.cd (RawTerm.oeqTrans (firstProof.rename rho)
+                                        (secondProof.rename rho))
+      simp only [RawTerm.rename, RawTerm.cd]
+      rw [firstIH rho, secondIH rho]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      intro _ rho
+      show (RawTerm.equivCompose (RawTerm.cd firstEquiv) (RawTerm.cd secondEquiv)).rename rho =
+           RawTerm.cd (RawTerm.equivCompose (firstEquiv.rename rho)
+                                            (secondEquiv.rename rho))
+      simp only [RawTerm.rename, RawTerm.cd]
+      rw [firstIH rho, secondIH rho]
 
 /-! ## Specialization: `cd_weaken`. -/
 

@@ -518,6 +518,16 @@ theorem RawTerm.act_eq_rename :
       show RawTerm.idToEquiv (proofRaw.act someRenaming) =
            RawTerm.idToEquiv (proofRaw.rename someRenaming)
       rw [proofIH someRenaming]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      intro someRenaming
+      show RawTerm.oeqTrans (firstProof.act someRenaming) (secondProof.act someRenaming) =
+           RawTerm.oeqTrans (firstProof.rename someRenaming) (secondProof.rename someRenaming)
+      rw [firstIH someRenaming, secondIH someRenaming]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      intro someRenaming
+      show RawTerm.equivCompose (firstEquiv.act someRenaming) (secondEquiv.act someRenaming) =
+           RawTerm.equivCompose (firstEquiv.rename someRenaming) (secondEquiv.rename someRenaming)
+      rw [firstIH someRenaming, secondIH someRenaming]
 
 /-- Bridge theorem: applying `RawTerm.act` over a `Subst level`
 Container produces the same result as applying `RawTerm.subst
@@ -907,6 +917,18 @@ theorem RawTerm.act_eq_subst_forRaw {level : Nat} :
       show RawTerm.idToEquiv (proofRaw.act someSubst) =
            RawTerm.idToEquiv (proofRaw.subst someSubst.forRaw)
       rw [proofIH someSubst]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      intro someSubst
+      show RawTerm.oeqTrans (firstProof.act someSubst) (secondProof.act someSubst) =
+           RawTerm.oeqTrans (firstProof.subst someSubst.forRaw)
+                            (secondProof.subst someSubst.forRaw)
+      rw [firstIH someSubst, secondIH someSubst]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      intro someSubst
+      show RawTerm.equivCompose (firstEquiv.act someSubst) (secondEquiv.act someSubst) =
+           RawTerm.equivCompose (firstEquiv.subst someSubst.forRaw)
+                                (secondEquiv.subst someSubst.forRaw)
+      rw [firstIH someSubst, secondIH someSubst]
 
 /-! ## Smoke equivalences with existing `Ty.subst`.
 

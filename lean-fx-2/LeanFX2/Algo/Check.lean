@@ -522,6 +522,8 @@ def Term.check : ∀ {scope : Nat}
   | .equivApply _ _     => none
   | .pathCompose _ _    => none
   | .idToEquiv _        => none
+  | .oeqTrans _ _       => none
+  | .equivCompose _ _   => none
 
 end LeanFX2
 

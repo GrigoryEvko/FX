@@ -393,6 +393,16 @@ def RawTerm.partialRename? : ∀ {sourceScope targetScope : Nat},
       match RawTerm.partialRename? proofRaw partialRenaming with
       | some renamedProof => some (RawTerm.idToEquiv renamedProof)
       | none => none
+  | _, _, .oeqTrans firstProof secondProof, partialRenaming =>
+      Option.mapTwo
+        (RawTerm.partialRename? firstProof partialRenaming)
+        (RawTerm.partialRename? secondProof partialRenaming)
+        RawTerm.oeqTrans
+  | _, _, .equivCompose firstEquiv secondEquiv, partialRenaming =>
+      Option.mapTwo
+        (RawTerm.partialRename? firstEquiv partialRenaming)
+        (RawTerm.partialRename? secondEquiv partialRenaming)
+        RawTerm.equivCompose
 
 /-- Try to lower a raw term across one outer weakening.  This is the
 recognizer needed before any safe constant-transport computation rule:
@@ -480,6 +490,8 @@ def RawTerm.constantPathBody? {scope : Nat}
   | RawTerm.equivApply _ _ => none
   | RawTerm.pathCompose _ _ => none
   | RawTerm.idToEquiv _ => none
+  | RawTerm.oeqTrans _ _ => none
+  | RawTerm.equivCompose _ _ => none
 
 /-- The newest variable cannot be lowered across the dropped binder. -/
 theorem RawTerm.unweaken?_newest_var_none {scope : Nat} :
@@ -779,6 +791,14 @@ theorem RawTerm.partialRename?_rename_some
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
+        secondIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      rw [firstIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
+        secondIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
 
 /-- Weakening followed by `unweaken?` recovers any raw term.  This is the
 generic form of the constant-path recognizer's positive case and is the
@@ -2245,6 +2265,36 @@ theorem RawTerm.partialRename?_imp_rename :
             RawTerm.idToEquiv (renamedProof.rename forwardRenaming)
           rw [proofIH forwardRenaming partialRenaming renamingInjectsBack
                 renamedProof hChild]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      intro forwardRenaming partialRenaming renamingInjectsBack extracted success
+      obtain ⟨renamedFirst, renamedSecond, hFirst, hSecond, eqResult⟩ :=
+        Option.mapTwo_eq_some success
+      have eqFirst :=
+        firstIH forwardRenaming partialRenaming renamingInjectsBack
+          renamedFirst hFirst
+      have eqSecond :=
+        secondIH forwardRenaming partialRenaming renamingInjectsBack
+          renamedSecond hSecond
+      rw [eqResult]
+      show RawTerm.oeqTrans firstProof secondProof =
+        RawTerm.oeqTrans (renamedFirst.rename forwardRenaming)
+                         (renamedSecond.rename forwardRenaming)
+      rw [eqFirst, eqSecond]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      intro forwardRenaming partialRenaming renamingInjectsBack extracted success
+      obtain ⟨renamedFirst, renamedSecond, hFirst, hSecond, eqResult⟩ :=
+        Option.mapTwo_eq_some success
+      have eqFirst :=
+        firstIH forwardRenaming partialRenaming renamingInjectsBack
+          renamedFirst hFirst
+      have eqSecond :=
+        secondIH forwardRenaming partialRenaming renamingInjectsBack
+          renamedSecond hSecond
+      rw [eqResult]
+      show RawTerm.equivCompose firstEquiv secondEquiv =
+        RawTerm.equivCompose (renamedFirst.rename forwardRenaming)
+                             (renamedSecond.rename forwardRenaming)
+      rw [eqFirst, eqSecond]
 
 /-! ### Specialization: `dropNewest` injects back into the image of
 `RawRenaming.weaken`.

@@ -90,6 +90,20 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.idToEquivRefl
 #assert_no_axioms LeanFX2.RawStep.par.idToEquivReflDeep
 #assert_no_axioms LeanFX2.RawStep.par.idToEquiv_inv
+-- D3.6-S5 univalence-compose-β raw rules (kernel-internal idToEquiv
+-- compose-β — raw-only confluence-closure mechanism mounted on the
+-- two new ctors `RawTerm.oeqTrans` (binary, observational-equality
+-- transitivity) and `RawTerm.equivCompose` (binary, equivalence
+-- composition).  Listed in `isDocumentedRawOnlyParity` Section G
+-- since typed mirrors require typed Term.{idToEquiv,oeqTrans,
+-- equivCompose} ctors which are v1.1 follow-ups.  Activated through
+-- `cdIdToEquivCase`'s `oeqTrans` arm in `Confluence/RawCd.lean`. -/
+#assert_no_axioms LeanFX2.RawStep.par.oeqTransCong
+#assert_no_axioms LeanFX2.RawStep.par.equivComposeCong
+#assert_no_axioms LeanFX2.RawStep.par.idToEquivCompose
+#assert_no_axioms LeanFX2.RawStep.par.idToEquivComposeDeep
+#assert_no_axioms LeanFX2.RawStep.par.oeqTrans_inv
+#assert_no_axioms LeanFX2.RawStep.par.equivCompose_inv
 #assert_no_axioms LeanFX2.Step.par.pathLam
 #assert_no_axioms LeanFX2.Step.par.pathLamCong
 #assert_no_axioms LeanFX2.Step.par.pathApp

@@ -309,6 +309,60 @@ inductive RawTerm : Nat → Type
   typed inversions remain unaffected because the new ctor doesn't
   appear in any existing inversion lemma's case enumeration. -/
   | idToEquiv {scope : Nat} (proofRaw : RawTerm scope) : RawTerm scope
+  /-- Phase D3.6-S5: observational-equality transitivity composition.
+  `oeqTrans first second` represents the term-level operation that
+  composes two observational-equality proofs into a single proof of
+  the transitive equality.  At raw level the ctor is binary, carrying
+  the two proof terms (no binder).
+
+  ## Why a kernel-syntactic ctor
+
+  At the typing layer, given `first : OEq leftTy middleTy` and
+  `second : OEq middleTy rightTy`, `oeqTrans first second : OEq
+  leftTy rightTy`.  Lifting that composition to the kernel level
+  requires a syntactic ctor that the cd cascade can pattern-match on;
+  the headline D3.6-S5 rule
+
+  ```
+  idToEquiv (oeqTrans first second)
+    ⟶ equivCompose (idToEquiv first) (idToEquiv second)
+  ```
+
+  encodes "idToEquiv distributes over composition of observational
+  equality proofs" as a real β-reduction in the kernel.
+
+  ## Structural distinctness
+
+  This ctor is structurally distinct from every other `RawTerm` ctor
+  by raw-ctor mismatch — including binary ctors like
+  `RawTerm.pathCompose` (different field semantics: pathCompose
+  composes path proofs, oeqTrans composes observational-equality
+  proofs).  Existing typed inversions remain unaffected. -/
+  | oeqTrans {scope : Nat}
+      (firstProof secondProof : RawTerm scope) : RawTerm scope
+  /-- Phase D3.6-S5: equivalence composition.  `equivCompose
+  firstEquiv secondEquiv` represents the term-level operation that
+  composes two equivalences into a single equivalence.  At raw level
+  the ctor is binary, carrying the two equivalence terms (no binder).
+
+  ## Why a kernel-syntactic ctor
+
+  This ctor is the contractum target of the headline D3.6-S5 β rule:
+  `idToEquiv (oeqTrans first second) ⟶ equivCompose (idToEquiv first)
+  (idToEquiv second)`.  Adding it as a ctor enables the kernel to
+  syntactically express composition of equivalences without requiring
+  the equivalences to be explicit `equivIntro forward backward`
+  pairs.
+
+  ## Structural distinctness
+
+  This ctor is structurally distinct from every other `RawTerm` ctor
+  by raw-ctor mismatch — including binary ctors like
+  `RawTerm.equivApp` (which applies an equivalence to a value, while
+  equivCompose composes two equivalences).  Existing typed inversions
+  remain unaffected. -/
+  | equivCompose {scope : Nat}
+      (firstEquiv secondEquiv : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -607,5 +661,13 @@ equalities. -/
   -- single proof raw payload (no binder).
   | _, _, .idToEquiv proofRaw, someAction =>
       .idToEquiv (proofRaw.act someAction)
+  -- D3.6-S5: oeqTrans vocabulary.  Binary-shape arm — recurse on
+  -- both proof raws (no binder).
+  | _, _, .oeqTrans firstProof secondProof, someAction =>
+      .oeqTrans (firstProof.act someAction) (secondProof.act someAction)
+  -- D3.6-S5: equivCompose vocabulary.  Binary-shape arm — recurse
+  -- on both equivalence raws (no binder).
+  | _, _, .equivCompose firstEquiv secondEquiv, someAction =>
+      .equivCompose (firstEquiv.act someAction) (secondEquiv.act someAction)
 
 end LeanFX2

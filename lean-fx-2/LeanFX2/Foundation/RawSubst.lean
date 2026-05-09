@@ -218,6 +218,12 @@ def RawTerm.rename : ∀ {source target : Nat},
   -- D3.6-S4 idToEquiv arm.
   | _, _, .idToEquiv proofRaw, rawRenaming =>
       .idToEquiv (proofRaw.rename rawRenaming)
+  -- D3.6-S5 oeqTrans arm.
+  | _, _, .oeqTrans firstProof secondProof, rawRenaming =>
+      .oeqTrans (firstProof.rename rawRenaming) (secondProof.rename rawRenaming)
+  -- D3.6-S5 equivCompose arm.
+  | _, _, .equivCompose firstEquiv secondEquiv, rawRenaming =>
+      .equivCompose (firstEquiv.rename rawRenaming) (secondEquiv.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=
@@ -390,6 +396,10 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [leftIH renamingEq, rightIH renamingEq]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.rename]; rw [proofIH renamingEq]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.rename]; rw [firstIH renamingEq, secondIH renamingEq]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.rename]; rw [firstIH renamingEq, secondIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -558,6 +568,10 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [leftIH rho1 rho2, rightIH rho1 rho2]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.rename]; rw [proofIH rho1 rho2]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.rename]; rw [firstIH rho1 rho2, secondIH rho1 rho2]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.rename]; rw [firstIH rho1 rho2, secondIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/
@@ -749,6 +763,12 @@ def RawTerm.subst : ∀ {source target : Nat},
   -- D3.6-S4 idToEquiv arm.
   | _, _, .idToEquiv proofRaw, sigma =>
       .idToEquiv (proofRaw.subst sigma)
+  -- D3.6-S5 oeqTrans arm.
+  | _, _, .oeqTrans firstProof secondProof, sigma =>
+      .oeqTrans (firstProof.subst sigma) (secondProof.subst sigma)
+  -- D3.6-S5 equivCompose arm.
+  | _, _, .equivCompose firstEquiv secondEquiv, sigma =>
+      .equivCompose (firstEquiv.subst sigma) (secondEquiv.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))
@@ -928,6 +948,10 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [leftIH substEq, rightIH substEq]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.subst]; rw [proofIH substEq]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -1135,6 +1159,12 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
       rw [leftIH rho sigma, rightIH rho sigma]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.rename, RawTerm.subst]; rw [proofIH rho sigma]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [firstIH rho sigma, secondIH rho sigma]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [firstIH rho sigma, secondIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -1348,6 +1378,12 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
       rw [leftIH sigma rho, rightIH sigma rho]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.subst, RawTerm.rename]; rw [proofIH sigma rho]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [firstIH sigma rho, secondIH sigma rho]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [firstIH sigma rho, secondIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -1555,6 +1591,10 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [leftIH sigma1 sigma2, rightIH sigma1 sigma2]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.subst]; rw [proofIH sigma1 sigma2]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
 
 /-! ### Single-binder β-substitution commute (load-bearing).
 
@@ -1746,6 +1786,10 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [leftIH, rightIH]
   | idToEquiv proofRaw proofIH =>
       simp only [RawTerm.subst]; rw [proofIH]
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH, secondIH]
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      simp only [RawTerm.subst]; rw [firstIH, secondIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

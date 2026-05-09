@@ -69,7 +69,10 @@ namespace LeanFX2.Tools
 -- D3.6-S4 ships the raw `RawTerm.idToEquiv` ctor + cong + shallow + deep
 -- β + inversion + cdIdToEquivCase, transitively contributing one more
 -- decide-dependent path.
-#assert_decide_dependent_budget LeanFX2 844
+-- D3.6-S5 ships two raw ctors `RawTerm.oeqTrans` + `RawTerm.equivCompose`
+-- with cong + shallow + deep β + 2 inversion lemmas + cdIdToEquivCase
+-- extension, transitively contributing two more decide-dependent paths.
+#assert_decide_dependent_budget LeanFX2 846
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions

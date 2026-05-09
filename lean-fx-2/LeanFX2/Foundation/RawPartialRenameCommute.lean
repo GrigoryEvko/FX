@@ -490,6 +490,20 @@ theorem RawTerm.partialRename?_rename_compat :
       simp only [RawTerm.rename, RawTerm.partialRename?]
       rw [proofIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? proofRaw partialA <;> rfl
+  | oeqTrans firstProof secondProof firstIH secondIH =>
+      intro rhoVar rhoTerm partialA partialB compat
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      rw [firstIH rhoVar rhoTerm partialA partialB compat,
+        secondIH rhoVar rhoTerm partialA partialB compat]
+      cases RawTerm.partialRename? firstProof partialA <;>
+        cases RawTerm.partialRename? secondProof partialA <;> rfl
+  | equivCompose firstEquiv secondEquiv firstIH secondIH =>
+      intro rhoVar rhoTerm partialA partialB compat
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
+      rw [firstIH rhoVar rhoTerm partialA partialB compat,
+        secondIH rhoVar rhoTerm partialA partialB compat]
+      cases RawTerm.partialRename? firstEquiv partialA <;>
+        cases RawTerm.partialRename? secondEquiv partialA <;> rfl
 
 /-! ## Specialisation: `unweaken?` commutes with `rename` after `lift`. -/
 

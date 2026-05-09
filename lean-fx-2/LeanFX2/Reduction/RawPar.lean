@@ -1164,6 +1164,76 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
         (RawTerm.equivIntro
           (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _))))
           (RawTerm.lam (RawTerm.var (Fin.mk 0 (Nat.zero_lt_succ _)))))
+  /-- D3.6-S5 Cong: oeqTrans reduces pointwise in both proof raw payloads.
+  Binary cong rule for the new transitive-composition ctor. -/
+  | oeqTransCong {scope : Nat}
+      {firstSource firstTarget secondSource secondTarget : RawTerm scope} :
+      RawStep.par firstSource firstTarget →
+      RawStep.par secondSource secondTarget →
+      RawStep.par (RawTerm.oeqTrans firstSource secondSource)
+                  (RawTerm.oeqTrans firstTarget secondTarget)
+  /-- D3.6-S5 Cong: equivCompose reduces pointwise in both equivalence
+  raw payloads.  Binary cong rule for the new equivalence-composition
+  ctor. -/
+  | equivComposeCong {scope : Nat}
+      {firstSource firstTarget secondSource secondTarget : RawTerm scope} :
+      RawStep.par firstSource firstTarget →
+      RawStep.par secondSource secondTarget →
+      RawStep.par (RawTerm.equivCompose firstSource secondSource)
+                  (RawTerm.equivCompose firstTarget secondTarget)
+  /-- D3.6-S5 raw univalence-compose-β rule: identity-to-equivalence
+  distributes over composition of observational-equality proofs.
+
+  ```
+  idToEquiv (oeqTrans first second)
+    ⟶ equivCompose (idToEquiv first) (idToEquiv second)
+  ```
+
+  This is the kernel-internal univalence-compose-β rule, encoding the
+  meta-level rule "idToEquiv distributes over oeqTrans" at the
+  syntactic level.  The β fires when `idToEquiv`'s proof argument is
+  syntactically an `oeqTrans first second` head.
+
+  ## Why both inner steps and outer fires
+
+  Inner reduction on `first` and `second` proceeds via the firstStep
+  and secondStep premises.  The β fires on the outer `idToEquiv` head
+  with the proof's `oeqTrans` ctor matching syntactically.  This is
+  the shallow form; the deep variant (proof develops to `oeqTrans ...`
+  via parallel reduction) is `idToEquivComposeDeep` below.
+
+  ## Raw-only cascade (matches idToEquivRefl architecture)
+
+  At the typed level, `Term.idToEquiv` would require the proof to be
+  `Term context (Ty.id ...) ...` and produce a typed `Term context
+  (Ty.equiv ...)` — but the kernel's typed `Term` inductive does NOT
+  yet have `idToEquiv`/`oeqTrans`/`equivCompose` ctors (v1.1
+  follow-up).  Therefore this β rule is a raw-only confluence-closure
+  mechanism, listed in `isDocumentedRawOnlyParity` Section G. -/
+  | idToEquivCompose {scope : Nat}
+      {firstSource firstTarget secondSource secondTarget : RawTerm scope} :
+      RawStep.par firstSource firstTarget →
+      RawStep.par secondSource secondTarget →
+      RawStep.par
+        (RawTerm.idToEquiv (RawTerm.oeqTrans firstSource secondSource))
+        (RawTerm.equivCompose
+          (RawTerm.idToEquiv firstTarget)
+          (RawTerm.idToEquiv secondTarget))
+  /-- D3.6-S5 deep raw univalence-compose-β rule: when the proof
+  develops via parallel reduction to an `oeqTrans firstTarget
+  secondTarget`, the entire `idToEquiv` reduces to the equivCompose
+  contractum.  Required for `cd_dominates` to discharge
+  `cdIdToEquivCase`'s `oeqTrans`-firing branch when the proof was NOT
+  literally `oeqTrans ...` on the LHS but reaches that shape under cd
+  development. -/
+  | idToEquivComposeDeep {scope : Nat}
+      {proofRawSource firstTarget secondTarget : RawTerm scope} :
+      RawStep.par proofRawSource (RawTerm.oeqTrans firstTarget secondTarget) →
+      RawStep.par
+        (RawTerm.idToEquiv proofRawSource)
+        (RawTerm.equivCompose
+          (RawTerm.idToEquiv firstTarget)
+          (RawTerm.idToEquiv secondTarget))
   /-- Schematic-payload value cong (typed `Term.funextRefl`'s mirror at raw):
       `RawTerm.lam (RawTerm.refl applyRaw)` reduces in applyRaw.  Aliased
       via `lam ∘ reflCong`; typed parity gate sees a same-suffix mirror. -/

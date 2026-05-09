@@ -143,6 +143,8 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.pathCompose _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.idToEquiv _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.oeqTrans _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.equivCompose _ _ => RawTerm.app developedFunction developedArgument
 
 /-- Path application redex: `(pathLam body) @ point → body[point/i]`;
 otherwise rebuild `pathApp dp di`. -/
@@ -220,6 +222,8 @@ def RawTerm.cdPathAppCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.pathCompose _ _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.idToEquiv _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.oeqTrans _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.equivCompose _ _ => RawTerm.pathApp developedPath developedInterval
 
 /-- Glue elimination redex: `unglue (glue base partial) → base`;
 otherwise rebuild `glueElim dg`. -/
@@ -297,6 +301,8 @@ def RawTerm.cdGlueElimCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.glueElim developedGlued
   | RawTerm.pathCompose _ _ => RawTerm.glueElim developedGlued
   | RawTerm.idToEquiv _ => RawTerm.glueElim developedGlued
+  | RawTerm.oeqTrans _ _ => RawTerm.glueElim developedGlued
+  | RawTerm.equivCompose _ _ => RawTerm.glueElim developedGlued
 
 /-- Modal elimination redex: `modElim (modIntro payload) → payload`;
 otherwise rebuild `modElim developedInner`. -/
@@ -374,6 +380,8 @@ def RawTerm.cdModElimCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.modElim developedInner
   | RawTerm.pathCompose _ _ => RawTerm.modElim developedInner
   | RawTerm.idToEquiv _ => RawTerm.modElim developedInner
+  | RawTerm.oeqTrans _ _ => RawTerm.modElim developedInner
+  | RawTerm.equivCompose _ _ => RawTerm.modElim developedInner
 
 /-- Refinement elimination redex: `refineElim (refineIntro value proof)
 → value`; otherwise rebuild `refineElim dr`. -/
@@ -451,6 +459,8 @@ def RawTerm.cdRefineElimCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.refineElim developedRefined
   | RawTerm.pathCompose _ _ => RawTerm.refineElim developedRefined
   | RawTerm.idToEquiv _ => RawTerm.refineElim developedRefined
+  | RawTerm.oeqTrans _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.equivCompose _ _ => RawTerm.refineElim developedRefined
 
 /-- Record projection redex: `recordProj (recordIntro field) → field`;
 otherwise rebuild `recordProj dr`. -/
@@ -528,6 +538,8 @@ def RawTerm.cdRecordProjCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.recordProj developedRecord
   | RawTerm.pathCompose _ _ => RawTerm.recordProj developedRecord
   | RawTerm.idToEquiv _ => RawTerm.recordProj developedRecord
+  | RawTerm.oeqTrans _ _ => RawTerm.recordProj developedRecord
+  | RawTerm.equivCompose _ _ => RawTerm.recordProj developedRecord
 
 /-- Codata observation redex:
 `codataDest (codataUnfold state transition) → transition state`;
@@ -607,6 +619,8 @@ def RawTerm.cdCodataDestCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.codataDest developedCodata
   | RawTerm.pathCompose _ _ => RawTerm.codataDest developedCodata
   | RawTerm.idToEquiv _ => RawTerm.codataDest developedCodata
+  | RawTerm.oeqTrans _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.equivCompose _ _ => RawTerm.codataDest developedCodata
 
 /-- Fst redex: `fst (a, b) → a`; otherwise rebuild `fst dp`. -/
 def RawTerm.cdFstCase {scope : Nat}
@@ -683,6 +697,8 @@ def RawTerm.cdFstCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.fst developedPair
   | RawTerm.pathCompose _ _ => RawTerm.fst developedPair
   | RawTerm.idToEquiv _ => RawTerm.fst developedPair
+  | RawTerm.oeqTrans _ _ => RawTerm.fst developedPair
+  | RawTerm.equivCompose _ _ => RawTerm.fst developedPair
 
 /-- Snd redex: `snd (a, b) → b`; otherwise rebuild `snd dp`. -/
 def RawTerm.cdSndCase {scope : Nat}
@@ -759,6 +775,8 @@ def RawTerm.cdSndCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.snd developedPair
   | RawTerm.pathCompose _ _ => RawTerm.snd developedPair
   | RawTerm.idToEquiv _ => RawTerm.snd developedPair
+  | RawTerm.oeqTrans _ _ => RawTerm.snd developedPair
+  | RawTerm.equivCompose _ _ => RawTerm.snd developedPair
 
 /-- BoolElim redex: `boolElim true t e → t`, `boolElim false t e → e`;
 otherwise rebuild. -/
@@ -905,6 +923,10 @@ def RawTerm.cdBoolElimCase {scope : Nat}
   | RawTerm.pathCompose _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.idToEquiv _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.oeqTrans _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.equivCompose _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
 
 /-- NatElim redex: `natElim 0 z s → z`, `natElim (succ p) z s → s p`;
@@ -1053,6 +1075,10 @@ def RawTerm.cdNatElimCase {scope : Nat}
   | RawTerm.pathCompose _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.idToEquiv _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.oeqTrans _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.equivCompose _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
 
 /-- NatRec redex: `natRec 0 z s → z`,
@@ -1203,6 +1229,10 @@ def RawTerm.cdNatRecCase {scope : Nat}
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.idToEquiv _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.oeqTrans _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.equivCompose _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
 
 /-- ListElim redex: `listElim nil n c → n`,
 `listElim (cons h t) n c → c h t`; otherwise rebuild. -/
@@ -1350,6 +1380,10 @@ def RawTerm.cdListElimCase {scope : Nat}
   | RawTerm.pathCompose _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.idToEquiv _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.oeqTrans _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.equivCompose _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
 
 /-- OptionMatch redex: `optionMatch none n s → n`,
@@ -1499,6 +1533,10 @@ def RawTerm.cdOptionMatchCase {scope : Nat}
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.idToEquiv _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.oeqTrans _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.equivCompose _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
 
 /-- EitherMatch redex: `eitherMatch (inl v) l r → l v`,
 `eitherMatch (inr v) l r → r v`; otherwise rebuild. -/
@@ -1646,6 +1684,10 @@ def RawTerm.cdEitherMatchCase {scope : Nat}
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.idToEquiv _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.oeqTrans _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.equivCompose _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
 
 /-- IdJ redex: `idJ b (refl _) → b`; otherwise rebuild. -/
 def RawTerm.cdIdJCase {scope : Nat}
@@ -1722,6 +1764,8 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.pathCompose _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.idToEquiv _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.oeqTrans _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.equivCompose _ _ => RawTerm.idJ developedBase developedWitness
 
 /-- Strict identity recursor redex: `idStrictRec b (idStrictRefl _) → b`;
 otherwise rebuild. -/
@@ -1799,6 +1843,8 @@ def RawTerm.cdIdStrictRecCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.pathCompose _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.idToEquiv _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.oeqTrans _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.equivCompose _ _ => RawTerm.idStrictRec developedBase developedWitness
 
 /-- Cubical transport at a syntactically constant type path:
 `transp (pathLam typeRaw.weaken) source ⟶ source` (the cubical
@@ -1902,6 +1948,14 @@ def RawTerm.cdTranspCase {scope : Nat}
   -- transp β rule (idToEquiv is not a path; the β rule for idToEquiv
   -- fires through `cdIdToEquivCase` not here).  Default rebuild.
   | RawTerm.idToEquiv _ => RawTerm.transp developedPath developedSource
+  -- D3.6-S5: oeqTrans as a path argument to transp does not fire a
+  -- transp β rule (oeqTrans is not a path; the β rule for oeqTrans
+  -- fires through `cdIdToEquivCase`'s oeqTrans arm, not here).
+  -- Default rebuild.
+  | RawTerm.oeqTrans _ _ => RawTerm.transp developedPath developedSource
+  -- D3.6-S5: equivCompose as a path argument to transp does not fire a
+  -- transp β rule.  Default rebuild.
+  | RawTerm.equivCompose _ _ => RawTerm.transp developedPath developedSource
 
 /-- D3.6-S4 idToEquiv-refl redex: `idToEquiv (refl _) → equivIntro id
 id`; otherwise rebuild `idToEquiv developedProof`.
@@ -1988,6 +2042,14 @@ def RawTerm.cdIdToEquivCase {scope : Nat}
   | RawTerm.equivApply _ _ => RawTerm.idToEquiv developedProof
   | RawTerm.pathCompose _ _ => RawTerm.idToEquiv developedProof
   | RawTerm.idToEquiv _ => RawTerm.idToEquiv developedProof
+  -- HEADLINE D3.6-S5: idToEquiv (oeqTrans first second) ⟶
+  -- equivCompose (idToEquiv first) (idToEquiv second).  This is the
+  -- compose-β contractum target.
+  | RawTerm.oeqTrans firstProof secondProof =>
+      RawTerm.equivCompose
+        (RawTerm.idToEquiv firstProof)
+        (RawTerm.idToEquiv secondProof)
+  | RawTerm.equivCompose _ _ => RawTerm.idToEquiv developedProof
 
 /-- Complete development on raw terms.  Maximal parallel reduct:
 every visible redex contracts, every subterm is recursively
@@ -2143,8 +2205,18 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       RawTerm.pathCompose (RawTerm.cd leftPathRaw) (RawTerm.cd rightPathRaw)
   -- D3.6-S4: idToEquiv dispatches to `cdIdToEquivCase` so the
   -- identity-equivalence β rule fires when the developed proof is a
-  -- syntactic refl.
+  -- syntactic refl.  D3.6-S5 extends `cdIdToEquivCase` with an
+  -- oeqTrans arm that fires the compose-β rule.
   | _, .idToEquiv proofRaw =>
       RawTerm.cdIdToEquivCase (RawTerm.cd proofRaw)
+  -- D3.6-S5: oeqTrans recurses on first and second proof raws.  Pure
+  -- cong; the actual β rule fires through `cdIdToEquivCase` when this
+  -- oeqTrans appears as the developed proof of an idToEquiv.
+  | _, .oeqTrans firstProof secondProof =>
+      RawTerm.oeqTrans (RawTerm.cd firstProof) (RawTerm.cd secondProof)
+  -- D3.6-S5: equivCompose recurses on first and second equiv raws.
+  -- Pure cong; this ctor is the contractum target of `idToEquivCompose`.
+  | _, .equivCompose firstEquiv secondEquiv =>
+      RawTerm.equivCompose (RawTerm.cd firstEquiv) (RawTerm.cd secondEquiv)
 
 end LeanFX2
