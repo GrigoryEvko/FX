@@ -64,4 +64,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.TwoCell.vertRightId
 #assert_no_axioms LeanFX2.TwoCell.exchange
 
+/-! ## D4.0c — Modality.composeOpen (cross-mode compose, #1701) -/
+
+#assert_no_axioms LeanFX2.Modality.composeOpen
+#assert_no_axioms LeanFX2.Modality.composeOpen_left_identity
+#assert_no_axioms LeanFX2.Modality.composeOpen_right_identity
+#assert_no_axioms LeanFX2.Modality.composeOpen_boxK_idempotent
+#assert_no_axioms LeanFX2.Modality.composeOpen_diamondK_idempotent
+#assert_no_axioms LeanFX2.Modality.composeOpen_flat_sharp_cancel
+#assert_no_axioms LeanFX2.Modality.composeOpen_sharp_flat_cancel
+#assert_no_axioms LeanFX2.Modality.composeOpen_eq_compose_sameMode
+
 end LeanFX2.Tools

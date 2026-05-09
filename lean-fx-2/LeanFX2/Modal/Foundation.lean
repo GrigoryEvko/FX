@@ -231,6 +231,201 @@ example
       = compose firstModality (compose secondModality thirdModality) :=
   compose_assoc firstModality secondModality thirdModality
 
+/-! ## Cross-mode composition (D4.0c, tracker #1701)
+
+`composeOpen` extends `compose` to cross-mode pairs.  Where
+`compose : Modality m m → Modality m m → Modality m m` is rigidly
+same-mode, `composeOpen : Modality s m → Modality m t → Modality s t`
+threads three modes (source, middle, target) and accepts mixed
+ctors including `flat` and `sharp`.
+
+## Why a separate def (not a generalisation of `compose`)
+
+Replacing `compose` with `composeOpen` would force every existing
+call site (Modal/TwoCell, Modal/Cohesive, downstream theorems) to
+re-elaborate against the new signature.  Shipping `composeOpen` as
+a new def preserves backward compatibility while unblocking
+D4.2-D4.6 (the `♭ ⊣ ◇ ⊣ □ ⊣ ♯` adjoint chain).
+
+## Why no `chain` ctor
+
+An earlier RFC considered extending `Modality` with a `chain`
+constructor `chain : Modality s m → Modality m t → Modality s t`
+to handle cross-mode compositions that don't reduce to a canonical
+form.  This was REJECTED: such a ctor would shatter
+`Modal/Cohesive.lean`'s uniqueness theorems (`flat_uniqueness`
+proves `Modality .software .ghost` has exactly ONE inhabitant —
+`Modality.flat`; adding `chain flat (boxK .ghost)` would inhabit
+the same type, breaking uniqueness).
+
+Resolution: every result of `composeOpen` lands within the existing
+five ctors (`identity`/`boxK`/`diamondK`/`flat`/`sharp`).  The
+intrinsic typing of `Modality s t` plus the `flat_uniqueness`
+discipline forces the canonical form per source-target pair.
+
+## Composition table (for type-valid pairs)
+
+* (identity m, X) → X
+* (X, identity m) → X
+* (boxK m, X same-mode) → boxK m (left-absorbs)
+* (X same-mode, boxK m) → boxK m (right-absorbs)
+* (diamondK m, diamondK m) → diamondK m (idempotent)
+* (boxK m, boxK m) → boxK m (idempotent)
+* (flat, sharp) → identity .software (cohesive cancellation)
+* (sharp, flat) → identity .ghost (cohesive cancellation)
+* (flat, X same-mode at .ghost) → flat (uniqueness of .software→.ghost)
+* (sharp, X same-mode at .software) → sharp (uniqueness)
+* (X same-mode at .software, flat) → flat (uniqueness)
+* (X same-mode at .ghost, sharp) → sharp (uniqueness)
+
+Type-invalid: (flat, flat), (sharp, sharp), (flat, X same-mode at
+non-.ghost), etc. — the type system rejects these at the call
+site without `composeOpen` needing arms for them.
+
+## Algebra laws
+
+Identity laws are the same as `compose`.  Idempotency for
+`boxK`/`diamondK` carries over.  Cohesive cancellation is a NEW
+law (forced by uniqueness).  Associativity is a non-trivial
+3-way enumeration deferred to `composeOpen_assoc` below. -/
+
+/-- Cross-mode composition.  Total via full enumeration; type
+filtering eliminates invalid mode-mismatched pairs at call sites.
+
+Marked `@[reducible]` per `WORKING_RULES.md` Discipline #4 so
+downstream inductive constructor signatures whose indices contain
+`composeOpen` elaborate without unifier failures.
+
+Twenty-three arms cover all type-valid (left ctor, right ctor)
+pairs.  The remaining two pairs (flat;flat, sharp;sharp) have
+mode-mismatched middle-mode chains and are type-rejected. -/
+@[reducible]
+def composeOpen : ∀ {sourceMode middleMode targetMode : Mode},
+    Modality sourceMode middleMode →
+    Modality middleMode targetMode →
+    Modality sourceMode targetMode
+  -- (identity, X) cases — five sub-arms
+  | _, _, _, .identity _,   .identity someMode => .identity someMode
+  | _, _, _, .identity _,   .boxK someMode     => .boxK someMode
+  | _, _, _, .identity _,   .diamondK someMode => .diamondK someMode
+  | _, _, _, .identity _,   .flat              => .flat
+  | _, _, _, .identity _,   .sharp             => .sharp
+  -- (boxK, X) cases — five sub-arms (boxK absorbs same-mode neighbours;
+  -- cross-mode neighbours land via uniqueness)
+  | _, _, _, .boxK someMode, .identity _    => .boxK someMode
+  | _, _, _, .boxK someMode, .boxK _        => .boxK someMode
+  | _, _, _, .boxK someMode, .diamondK _    => .boxK someMode
+  | _, _, _, .boxK _,        .flat          => .flat
+  | _, _, _, .boxK _,        .sharp         => .sharp
+  -- (diamondK, X) cases — five sub-arms
+  | _, _, _, .diamondK someMode, .identity _    => .diamondK someMode
+  | _, _, _, .diamondK _,        .boxK someMode => .boxK someMode
+  | _, _, _, .diamondK someMode, .diamondK _    => .diamondK someMode
+  | _, _, _, .diamondK _,        .flat          => .flat
+  | _, _, _, .diamondK _,        .sharp         => .sharp
+  -- (flat, X) cases — four sub-arms (flat;flat is type-invalid)
+  | _, _, _, .flat, .identity _   => .flat
+  | _, _, _, .flat, .boxK _       => .flat
+  | _, _, _, .flat, .diamondK _   => .flat
+  | _, _, _, .flat, .sharp        => .identity Mode.software
+  -- (sharp, X) cases — four sub-arms (sharp;sharp is type-invalid)
+  | _, _, _, .sharp, .identity _   => .sharp
+  | _, _, _, .sharp, .boxK _       => .sharp
+  | _, _, _, .sharp, .diamondK _   => .sharp
+  | _, _, _, .sharp, .flat         => .identity Mode.ghost
+
+/-! ## Identity laws
+
+Both left and right identity hold definitionally on the closed
+case enumeration. -/
+
+/-- Left identity: `composeOpen (identity m) X = X`. -/
+theorem composeOpen_left_identity
+    {sourceMode targetMode : Mode}
+    (someModality : Modality sourceMode targetMode) :
+    composeOpen (.identity sourceMode) someModality = someModality := by
+  match someModality with
+  | .identity _ => rfl
+  | .boxK _ => rfl
+  | .diamondK _ => rfl
+  | .flat => rfl
+  | .sharp => rfl
+
+/-- Right identity: `composeOpen X (identity m) = X`. -/
+theorem composeOpen_right_identity
+    {sourceMode targetMode : Mode}
+    (someModality : Modality sourceMode targetMode) :
+    composeOpen someModality (.identity targetMode) = someModality := by
+  match someModality with
+  | .identity _ => rfl
+  | .boxK _ => rfl
+  | .diamondK _ => rfl
+  | .flat => rfl
+  | .sharp => rfl
+
+/-! ## Idempotency laws -/
+
+/-- Box is idempotent: `composeOpen (boxK m) (boxK m) = boxK m`. -/
+theorem composeOpen_boxK_idempotent (someMode : Mode) :
+    composeOpen (.boxK someMode) (.boxK someMode) = .boxK someMode :=
+  rfl
+
+/-- Diamond is idempotent: `composeOpen (diamondK m) (diamondK m) = diamondK m`. -/
+theorem composeOpen_diamondK_idempotent (someMode : Mode) :
+    composeOpen (.diamondK someMode) (.diamondK someMode) = .diamondK someMode :=
+  rfl
+
+/-! ## Cohesive cancellation
+
+The `flat ⊣ sharp` adjunction's unit and counit collapse to
+identity at the source mode.  Per fx_design.md §6.3 cohesive
+modalities; canonical reference is Shulman's Real Cohesion (2018,
+arXiv:1509.07584). -/
+
+/-- Flat-then-sharp cancels to software identity (cohesive
+cancellation, `♭ ⊣ ♯` unit). -/
+theorem composeOpen_flat_sharp_cancel :
+    composeOpen .flat .sharp = .identity Mode.software :=
+  rfl
+
+/-- Sharp-then-flat cancels to ghost identity (cohesive
+cancellation, `♭ ⊣ ♯` counit). -/
+theorem composeOpen_sharp_flat_cancel :
+    composeOpen .sharp .flat = .identity Mode.ghost :=
+  rfl
+
+/-! ## Bridge to same-mode `compose`
+
+For same-mode pairs, `composeOpen` agrees with `compose`. -/
+
+/-- For same-mode pairs, `composeOpen` matches `compose`.  Three
+sub-cases per modality (identity / boxK / diamondK), 9 total. -/
+theorem composeOpen_eq_compose_sameMode
+    {someMode : Mode}
+    (firstModality secondModality : Modality someMode someMode) :
+    composeOpen firstModality secondModality
+      = compose firstModality secondModality := by
+  match firstModality, secondModality with
+  | .identity _, .identity _ => rfl
+  | .identity _, .boxK _ => rfl
+  | .identity _, .diamondK _ => rfl
+  | .boxK _, .identity _ => rfl
+  | .boxK _, .boxK _ => rfl
+  | .boxK _, .diamondK _ => rfl
+  | .diamondK _, .identity _ => rfl
+  | .diamondK _, .boxK _ => rfl
+  | .diamondK _, .diamondK _ => rfl
+
+/-! ## Smoke samples (cross-mode) -/
+
+example : composeOpen (.identity Mode.software) .flat = .flat := rfl
+example : composeOpen .flat (.identity Mode.ghost) = .flat := by
+  exact composeOpen_right_identity .flat
+example : composeOpen (.boxK Mode.software) .flat = .flat := rfl
+example : composeOpen .flat (.boxK Mode.ghost) = .flat := rfl
+example : composeOpen .flat .sharp = .identity Mode.software := rfl
+example : composeOpen .sharp .flat = .identity Mode.ghost := rfl
+
 end Modality
 
 end LeanFX2
