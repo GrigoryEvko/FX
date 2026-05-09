@@ -688,6 +688,121 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRawSource sourceRawTarget →
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
                   sourceRawTarget
+  /-- D2.5.5 cubical transport β at a Π type code with non-dependent
+  codomain — the simplified "B does not depend on the path-interval
+  variable" variant.
+
+  Headline rule: when the path body is `piTyCode domainCode
+  domainCode.weaken` (the codomain is a syntactic weakening of the
+  domain — i.e. the function type's codomain does not bind the path's
+  interval variable) and the source value is a function `fn`, transp
+  reduces to a function-shape `lam (app fn.weaken (transp invDomain
+  (var 0)))`, where `invDomain` is the inverse-direction path along
+  the domain.
+
+  ## Why this LHS shape
+
+  The "non-dependent codomain" presentation is the safe cubical
+  fragment of the full Π β rule.  When the codomain genuinely depends
+  on the path-interval variable, transport must adjust both the
+  argument (transported backward across the domain path) and the
+  result (transported forward across the codomain path applied at
+  the appropriate point).  In the non-dependent case the codomain is
+  just `domainCode` independent of the interval, so only the
+  argument adjustment is needed and the result is the function value
+  applied to the pre-transported argument.
+
+  ## Encoding the inverse path
+
+  The inverse path `λ j ⇒ A(¬j)` is encoded as a `pathLam` whose
+  body applies the original path to `intervalOpp (var 0)`:
+  `pathLam (pathApp (pathLam domainCodeTarget).weaken.weaken
+                    (intervalOpp (var 0)))`.  The outer pathLam
+  produces a path; the inner `pathApp` plus weakening shifts the
+  ambient indices past two binders (the outer `lam` for the
+  function argument and the inner `pathLam` for the new
+  path-interval var).  No new substitution vocabulary is required —
+  `pathApp`, `pathLam`, `weaken`, and `intervalOpp` are all
+  pre-existing raw kernel ctors.
+
+  This encoding does introduce a `pathApp (pathLam ...)` redex; the
+  cd-cascade will reduce it through `cdPathAppCase`'s `pathLam`
+  arm in a follow-up step, mirroring the behavior of the
+  `betaPathApp` ctor upthread.
+
+  ## Non-overlap with `transpReflBeta`
+
+  `transpReflBeta` fires when the pathLam body is
+  `typeRaw.weaken` — i.e. the entire path body is a syntactic
+  weakening.  This rule fires when the pathLam body is
+  `piTyCode A A.weaken` — only the codomain field is a weakening,
+  while the outer pathLam body retains a `piTyCode` head.  The two
+  shapes coincide only in the (rare) corner case where `A` itself is
+  a weakening of an outer-scope term, in which case both rules
+  contract to the same source value modulo the weakening.
+
+  ## Cascade scope
+
+  This ships as Phase A of the D2.5.5 cascade — kernel ctor only.
+  Phase B (cdTranspCase Pi-arm), Phase C (transp_inv 8th disjunct),
+  Phase D (rename / compatible arms), Phase E (typed Step.par mirror
+  or raw-only whitelist entry), and Phase F (audit gates) ship in
+  follow-up commits as the cd cascade lands.
+
+  ## Reference
+
+  See memory entry `feedback_lean_transp_pi_encoding.md` for the
+  Direction A research that established this encoding, and
+  `transpReflBeta` upthread for the closest precedent. -/
+  | transpPiBetaSimple {scope : Nat}
+      {domainCodeSource domainCodeTarget : RawTerm (scope + 1)}
+      {fnRawSource fnRawTarget : RawTerm scope} :
+      RawStep.par domainCodeSource domainCodeTarget →
+      RawStep.par fnRawSource fnRawTarget →
+      RawStep.par
+        (RawTerm.transp
+          (RawTerm.pathLam
+            (RawTerm.piTyCode domainCodeSource domainCodeSource.weaken))
+          fnRawSource)
+        (RawTerm.lam
+          (RawTerm.app fnRawTarget.weaken
+            (RawTerm.transp
+              (RawTerm.pathLam
+                (RawTerm.pathApp
+                  (RawTerm.pathLam domainCodeTarget).weaken.weaken
+                  (RawTerm.intervalOpp
+                    (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+  /-- D2.5.5 deep variant: when the path develops through parallel
+  reduction to `pathLam (piTyCode domainCodeTarget
+  domainCodeTarget.weaken)` (rather than being literally that on the
+  LHS) and the source steps to a target value, the whole transp
+  reduces to the lam-app contractum.  Required for `cd_dominates` to
+  discharge `cdTranspCase`'s `piTyCode`-firing branch when the path
+  was NOT literally `pathLam (piTyCode _ _.weaken)` on the LHS but
+  reaches that shape under cd development.
+
+  Mirrors `transpReflBetaDeep`'s discipline; activates the cascade
+  closure in `Confluence/RawCdLemma.lean`'s `cd_lemma`. -/
+  | transpPiBetaSimpleDeep {scope : Nat}
+      {pathRawSource : RawTerm scope}
+      {domainCodeTarget : RawTerm (scope + 1)}
+      {fnRawSource fnRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource
+        (RawTerm.pathLam
+          (RawTerm.piTyCode domainCodeTarget domainCodeTarget.weaken)) →
+      RawStep.par fnRawSource fnRawTarget →
+      RawStep.par
+        (RawTerm.transp pathRawSource fnRawSource)
+        (RawTerm.lam
+          (RawTerm.app fnRawTarget.weaken
+            (RawTerm.transp
+              (RawTerm.pathLam
+                (RawTerm.pathApp
+                  (RawTerm.pathLam domainCodeTarget).weaken.weaken
+                  (RawTerm.intervalOpp
+                    (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
+              (RawTerm.var ⟨0, Nat.zero_lt_succ _⟩))))
   /-- Cong: hcomp reduces in sides and cap. -/
   | hcompCong {scope : Nat}
       {sidesRawSource sidesRawTarget capRawSource capRawTarget : RawTerm scope} :
