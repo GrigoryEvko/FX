@@ -46,7 +46,9 @@ namespace LeanFX2.Tools
 -- D3.6-S5: raw `RawTerm.oeqTrans` + `RawTerm.equivCompose` cascade
 -- adds two more OfNat paths through new shape-inversion helpers
 -- rename_eq_oeqTrans_imp + rename_eq_equivCompose_imp.
-#assert_ofnat_dependent_budget LeanFX2 989
+-- K11.1: PolyCell Nat-indexed inductive's Repr derivation adds 13
+-- OfNat-dependent paths through the dim-index handling.
+#assert_ofnat_dependent_budget LeanFX2 1002
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -80,7 +82,9 @@ namespace LeanFX2.Tools
 -- adds two more Eq-rewriting paths through cdIdToEquivCase oeqTrans
 -- arm + idToEquiv_inv 5-disjunct extension + 2 new shape-inversion
 -- helpers.
-#assert_eq_rewriting_dependent_budget LeanFX2 1224
+-- K11.1: PolyCell indexed inductive adds 5 Eq-rewriting paths through
+-- the auto-generated recursor / injectivity helpers.
+#assert_eq_rewriting_dependent_budget LeanFX2 1229
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for
@@ -92,6 +96,8 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` cascade adds two more reducible
 -- decls (the binary typed ctor + raw-projection theorem) reflected
 -- in the live count.
-#assert_reducible_decl_budget LeanFX2 480
+-- K11.1: PolyCell inductive adds 9 reducible decls from the
+-- auto-generated injectivity / no-confusion / casesOn helpers.
+#assert_reducible_decl_budget LeanFX2 489
 
 end LeanFX2.Tools

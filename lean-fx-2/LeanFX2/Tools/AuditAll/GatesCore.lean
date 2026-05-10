@@ -34,7 +34,9 @@ namespace LeanFX2.Tools
 -- + Step.equivApplyEquiv + Step.equivApplyArgument +
 -- ConvCumul.equivApplyCong + Allais helper + toRaw_equivApply
 -- contribute two more universe-poly kernel decls.
-#assert_universe_polymorphism_budget LeanFX2 531
+-- K11.1: PolyCell indexed inductive adds 10 universe-poly kernel decls
+-- (the Nat-indexed inductive itself + its `deriving Repr` infra).
+#assert_universe_polymorphism_budget LeanFX2 541
 
 -- Quot / Quotient family dependents.  Quot is propositional truncation;
 -- Quot.lift / Quot.ind / Quot.rec are Classical-adjacent (Quot.sound IS

@@ -72,7 +72,9 @@ namespace LeanFX2.Tools
 -- D3.6-S5 ships two raw ctors + binary cong/β/inversion cascade,
 -- threading two more cast paths through the cdIdToEquivCase oeqTrans
 -- arm + idToEquiv_inv five-disjunct extension.
-#assert_cast_operator_dependent_budget LeanFX2 1318
+-- K11.1: PolyCell indexed inductive adds 6 cast-operator dependents
+-- (recursor / Repr derivation thread cast paths).
+#assert_cast_operator_dependent_budget LeanFX2 1324
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

@@ -44,4 +44,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.cdModElimCase
 #assert_no_axioms LeanFX2.RawTerm.cdCodataDestCase
 
+-- K11.1: Foundation.Polygraph.PolyCell universal n-cell type (Burroni 1993).
+-- Inductive itself is constructor-only with `deriving Repr`; DecidableEq +
+-- projections deferred to K11.2/K11.3 where the casesOn-with-index-equality
+-- motive recipe lands.
+#assert_no_axioms LeanFX2.Foundation.Polygraph.PolyCell
+
 end LeanFX2.Tools

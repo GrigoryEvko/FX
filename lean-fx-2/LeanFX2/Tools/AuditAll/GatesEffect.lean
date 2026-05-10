@@ -50,6 +50,8 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` binary cascade Allais helper +
 -- binary substHet/rename/subst arms thread one more anonymous-
 -- projection dependent.
-#assert_anonymous_projection_dependent_budget LeanFX2 179
+-- K11.1: PolyCell `deriving Repr` adds one anonymous-projection
+-- dependent through the Repr-derivation infrastructure.
+#assert_anonymous_projection_dependent_budget LeanFX2 180
 
 end LeanFX2.Tools

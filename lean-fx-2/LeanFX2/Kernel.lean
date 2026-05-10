@@ -13,6 +13,7 @@ import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Universe
 import LeanFX2.Foundation.Cofib
 import LeanFX2.Foundation.RenameIdentity
+import LeanFX2.Foundation.Polygraph.PolyCell
 
 -- Layer 1 - Term
 import LeanFX2.Term
