@@ -1292,7 +1292,7 @@ work via projection; new tooling can target polygraph directly.
 
 ---
 
-## Era III — Sharing cells in PolyTerm + stratification + BSP (Day 21–25)
+## Era III — Sharing cells in PolyTerm + stratification + BSP (Day 21–25 + 25.A)
 
 **Architectural note**: previous extended-roadmap envisioned HyperTerm
 as a separate IR. With operadic PolyTerm (Part I §1, Squier reading),
@@ -1468,6 +1468,113 @@ reduction relations.
 **Acceptance**: kernel can process any FX program via polygraph IR
 with verified equivalence to tree IR; stratification correctly
 decomposes; BSP execution model proven.
+
+### Day 25.A — Pipe-chain pipeline parallelism (CRITICAL)
+
+**Goal**: compiler pass mapping FX surface `|>` chains (spec §4.2 +
+§11.12) to BSP super-step decomposition with verified observable
+equivalence. Pipeline stages = super-steps when adjacent operations
+commute under effect-row analysis; data-dependent stages serialize.
+
+**Construction (pipe-chain to stage DAG)**:
+```
+PipeChain := e_0 |> f_1 |> f_2 |> ... |> f_n
+           = (...((e_0 |> f_1) |> f_2)...) |> f_n       -- left-assoc
+
+StageDAG := finite DAG with
+  nodes : Stage = { input_type, output_type, effect_row,
+                    function_body, latency_estimate }
+  edges : Dependency = predecessor.output ~= successor.input
+
+def schedule : PipeChain -> StageDAG
+  -- per |>-edge, classify:
+  --   sequential edge  iff effect_row(f_i) cap effect_row(f_i+1) != 0
+  --                    on conflicting access (read-after-write,
+  --                    write-after-write per §9.4 effect taxonomy)
+  --   parallel edge    iff effect_row(f_i) _|_ effect_row(f_i+1)
+  --                    (orthogonal effects)
+  --   pipeline-stage   iff data dependency holds but effects
+  --                    commute under reordering (canonical case)
+```
+
+**Effect-row commutativity (decidable)**: for `E1, E2 in Pow(BuiltInEffects)`
+the predicate `E1 _|_ E2` decides in O(|E1| · |E2|) time per §9.4:
+- `Tot _|_ X` for all X (pure-anything always commutes)
+- `Read _|_ Read` (multiple readers safe per §9.4)
+- `Write _|_ Write` iff distinct memory regions (alias-analysis-gated)
+- `IO _|_ IO` iff distinct channels (channel-type-gated)
+- `Alloc _|_ X` for all X except `Alloc(Region(r))` self-conflict
+  (thread-local allocators per §9.4)
+- `Async _|_ Async` iff distinct task groups
+
+**Stage-DAG to BSP super-step compilation**:
+```
+def compile_to_BSP : StageDAG -> BSP-super-step-sequence
+  topologicalLayers : StageDAG -> List (Set Stage)
+    -- stage s in layer k  <=>  max predecessor depth(s) = k
+  emit each layer L_k as a BSP super-step;
+  insert NVSwitch / InfiniBand sync barrier between layers
+    (per Era III Day 24 BSP cost model with FEU-style g = 1/28.8 TB/s,
+     L = 5 us per Era IV D28)
+```
+
+**Theorem (pipeline-equivalence)**:
+```
+forall (pc : PipeChain) (input : InputType pc),
+  [[ pc ]](input) =_obs [[ compile_to_BSP(schedule(pc)) ]](input)
+  -- Observable equivalence: same returned value + same observable
+  -- side-effect sequence MODULO independent-effect commutation
+  -- (Plotkin-Power 2002 algebraic effect commutativity).
+```
+
+**Theorem (latency speedup bound)**:
+```
+For pc with n stages and effect-row classification yielding k
+parallelizable stages,
+  latency_BSP(compile_to_BSP(schedule(pc)))
+    <= ceil(n/p) * stage_avg_latency
+       + ceil(log_2 p) * BSP_sync_barrier_cost
+  where p = parallelism budget bounded by min(k, num_processors).
+  Sequential baseline: n * stage_avg_latency.
+  Speedup ~ n / (n/p + log p * barrier_ratio); converges to p for
+            large n.
+```
+
+**Tasks**:
+* [ ] D25.A.1 `Foundation/Polygraph/PipeChain.lean` — PipeChain
+  inductive mirroring FX `|>` surface (spec §4.2)
+* [ ] D25.A.2 `Foundation/Polygraph/StageDAG.lean` — Stage +
+  Dependency + StageDAG well-formedness predicate
+* [ ] D25.A.3 `Effect.commutes : EffectRow -> EffectRow -> Decidable`
+  per §9.4 effect taxonomy + alias-analysis bridge
+* [ ] D25.A.4 `schedule : PipeChain -> StageDAG` decidable scheduler
+  (poly-time over |chain|)
+* [ ] D25.A.5 `compile_to_BSP : StageDAG -> BSP-super-step-sequence`
+  topological-layer compilation
+* [ ] D25.A.6 Pipeline-equivalence theorem zero-axiom (Plotkin-Power
+  2002 algebraic-effect commutativity bridge)
+* [ ] D25.A.7 Latency-bound theorem with explicit p-bounded speedup
+* [ ] D25.A.8 STRICT-65-III-PipeChain gate: pipe-chain compilation
+  soundness + commutativity-decidability
+* [ ] D25.A.9 Bridge to surface: FX §4.2 / §11.12 `|>` syntax
+  compiles via this pass (round-trip with Surface/Print verified)
+* [ ] D25.A.10 Smoke audit + commit
+
+**References**: Valiant 1990 (BSP cost model, CACM); Backus 1978 (Can
+programming be liberated from the von Neumann style?, CACM —
+FP-style composition); Hughes 1989 (Why functional programming
+matters, Comp. J. — pipeline composition); Marlow-Newton-Peyton-Jones
+2011 (Haxl monad for parallel I/O, Haskell Symp.);
+Kiselyov-Lämmel-Schupke 2004 (extensible effect rows, Haskell Symp.);
+Plotkin-Power 2002 (notions of computation, FoSSaCS — effect
+commutativity).
+
+**Acceptance**: pipe-chain compilation pass zero-axiom; observable
+equivalence proven under effect-row commutativity (Plotkin-Power);
+latency speedup bound demonstrated on representative FX pipelines
+(`map`, `filter`, `groupBy` chains from §11.12 pipeline execution
+modes); FX surface `|>` no longer just sugar but a load-bearing
+compilation target.
 
 ---
 
@@ -2014,10 +2121,48 @@ Theorem: TimingClosure(design)
 * [ ] D31.7.11 STRICT-43-IV5-Digital gate
 * [ ] D31.7.12 Smoke audit + commit
 
+**Auto-vectorization extension (SIMD-width inference per target)**:
+For Wire payload type `Vec n ScalarTy` with `n` compile-time constant,
+compiler infers SIMD lane assignment per HardwareTarget capability:
+```
+target = x86-AVX-512:  16 x FP32 / 8 x FP64 / 64 x INT8 / 32 x INT16
+target = ARM-NEON:     4 x FP32 / 2 x FP64 / 16 x INT8 / 8 x INT16
+target = RISC-V-RVV:   VLEN-bounded (VL = 128 / 256 / 512 / 1024 bits)
+target = FEU (Era IV.5): per-tile width via Era T FEU_hardware site
+                         instance (3^7 = 2187 atoms per tile; parallel
+                         SIMD lane = trit-width on Trip cores)
+target = scalar:        n = 1 (fallback)
+
+def vectorize : Wire src dst delay (Vec n ScalarTy) h
+              -> forall (target : HardwareTarget),
+                 Wire src dst delay (target.lane_pack ScalarTy n) h
+  -- decidable from n + ScalarTy + target.vector_lanes capability
+  -- preserves delay (vectorization is parallel, not sequential)
+```
+
+**Theorem (SIMD-equiv-scalar)**:
+```
+forall (w : Wire src dst delay (Vec n ScalarTy) h)
+       (target : HardwareTarget),
+  semantics(w) =_bit semantics(vectorize w target)
+  -- bit-identical for integer ops always;
+  -- bit-identical for FP under strict IEEE 754 (FX §3.11 default);
+  -- reorder permitted under `with Reassociate` opt-in only.
+```
+
+* [ ] D31.7.13 `vectorize` pass per HardwareTarget instance
+* [ ] D31.7.14 SIMD-equiv-scalar theorem zero-axiom (per ScalarTy:
+  bool / u8 / u16 / u32 / u64 / i8 / i16 / i32 / i64 / f32 / f64)
+* [ ] D31.7.15 Verified SIMD intrinsic mapping (AVX-512 / NEON / RVV
+  intrinsics auto-emit from Wire vector types)
+* [ ] D31.7.16 Bridge to Vertical I: FEU lane width inferred from
+  Era T FEU_hardware site per-tile dim-4 hardware fibres
+
 **References**: Hennessy-Patterson 6th ed. §C.2 (pipelining
 hazards); Sapatnekar 2004 (timing); Wood-Atkey 2022 (graded linear
 calculus); Tofte-Talpin 1997 (region-based memory analog for
-linear-resource discipline).
+linear-resource discipline); Intel AVX-512 / ARM NEON / RISC-V RVV
+ISA manuals (vendor-published).
 
 **Acceptance**: Polygraph_Digital + spacetime-typed primitives
 zero-axiom; KCL Kirchhoff theorem from Noether; setup/hold + 4
@@ -2771,6 +2916,121 @@ Era III Day 21.
 
 **Acceptance**: OptStep ↔ Step simulation proven; STRICT-28 green;
 Lévy optimality witnessed at polygraph level.
+
+### Day 39.5 — User-facing `@[strategy(S)]` attribute (CRITICAL)
+
+**Goal**: surface-level annotation exposing Era V Day 39
+optimal-reduction machinery + Era I Day 14 strategy 3-cells to user
+code; per-strategy SN proofs + strategy-equivalence theorem;
+deterministic compilation under explicit strategy selection.
+
+**Construction (strategy enum + StratStep)**:
+```lean
+inductive ReductionStrategy where
+  | Leftmost      -- leftmost-outermost (call-by-name standard)
+  | Outermost     -- normal-order
+  | Applicative   -- call-by-value (innermost-leftmost)
+  | Lazy          -- WHNF + memoization (Haskell-style)
+  | Optimal       -- Levy-Lamping per Era V Day 39
+
+inductive StratStep : ReductionStrategy -> Term -> Term -> Type where
+  | leftmost     (h : isLeftmost_redex source)
+                 (step : Step source target)
+                 : StratStep .Leftmost source target
+  | outermost    (h : isOutermost_redex source)
+                 (step : Step source target)
+                 : StratStep .Outermost source target
+  | applicative  (h : isInnermostLeftmost_redex source)
+                 (step : Step source target)
+                 : StratStep .Applicative source target
+  | lazy         (h : isWHNF_target source target)
+                 (step : Step source target)
+                 : StratStep .Lazy source target
+  | optimal      (h : OptStep source target)  -- per Day 39
+                 : StratStep .Optimal source target
+
+-- User-facing attribute (FX §17.4 custom-attribute infrastructure)
+syntax "@[strategy(" reductionStrategyIdent ")]" : attr
+-- Examples:
+--   @[strategy(Lazy)]    def fib : Nat -> Nat := ...
+--   @[strategy(Optimal)] def complex_pipeline := ...
+--   (no annotation): compiler picks via cost-tropical default
+```
+
+**Per-strategy SN theorems**:
+```
+forall (S : ReductionStrategy) (t : Term ctx ty raw),
+  exists (nf : Term ctx ty raw_nf),
+    StratStep.star S t nf  /\  isNF nf
+
+S = Leftmost     : Plotkin 1975 standardization theorem
+S = Outermost    : normal-order normalization (Curry-Feys 1958)
+S = Applicative  : call-by-value; SN holds for typed terms via
+                   Era S Day 43 Tait reducibility (RC predicate)
+S = Lazy         : WHNF reachable via Launchbury 1993 natural
+                   semantics for lazy evaluation
+S = Optimal      : Levy 1978 + Lamping 1990 per Era V Day 39
+                   (sharing-cell well-foundedness, STRICT-28)
+```
+
+**Strategy-equivalence theorem (Church-Rosser corollary)**:
+```
+forall (t : Term ctx ty raw) (S1 S2 : ReductionStrategy),
+  let nf_S1 := normalize S1 t
+  let nf_S2 := normalize S2 t
+  nf_S1  =_{beta, eta, iota}  nf_S2
+
+  -- By per-strategy SN (above) + Church-Rosser (Era II Day 17),
+  -- any two strategies produce the SAME normal form up to
+  -- alpha-equivalence.
+  -- Strategy choice affects PERFORMANCE (compile-time cost +
+  -- runtime behavior under lazy / eager), not OBSERVATIONAL RESULTS.
+```
+
+**Cost-tropical strategy ranking (default selector)**:
+```
+For each Term t and each S, cost(S, t) in (R-hat, min, +) per
+Era I D14 cost-tropical semiring on strategy 3-cells.
+Compiler default: pick argmin_S cost(S, t).
+User override @[strategy(S)]: force compilation through StratStep S
+  regardless of cost.
+Tie-break: prefer S with strictest SN witness (Optimal > Leftmost > ...).
+```
+
+**Tasks**:
+* [ ] D39.5.1 `Foundation/Reduction/StratStep.lean` — strategy-indexed
+  Step relation (5 ctors)
+* [ ] D39.5.2 `ReductionStrategy` enum + per-strategy redex predicates
+  (isLeftmost / isOutermost / isInnermostLeftmost / isWHNF_target)
+* [ ] D39.5.3 Per-strategy SN theorems via Era S Day 43 Tait
+  reducibility + Plotkin 1975 standardization
+* [ ] D39.5.4 Strategy-equivalence theorem (Church-Rosser corollary)
+  zero-axiom
+* [ ] D39.5.5 `@[strategy(S)]` attribute parser + elaborator
+  integration (FX §17.4 custom-attribute infrastructure)
+* [ ] D39.5.6 Cost-tropical strategy ranking via Era I D14
+  cost-tropical semiring lift
+* [ ] D39.5.7 Compiler-side strategy selection: default = cost-min;
+  `@[strategy(S)]` = forced; diagnostic on cost-discrepant override
+* [ ] D39.5.8 STRICT-66-V-Strategy gate: per-strategy SN + equivalence
+  + attribute-elaboration soundness
+* [ ] D39.5.9 Bridge to FX §22 sketch mode: sketch-mode default =
+  `@[strategy(Lazy)]`; release default = `@[strategy(Optimal)]`
+* [ ] D39.5.10 Smoke audit + commit; update FX §17.4 docs
+
+**References**: Plotkin 1975 (Call-by-name, call-by-value and the
+lambda-calculus, TCS); Curry-Feys 1958 (Combinatory Logic Vol. 1 —
+normal-order); Launchbury 1993 (A natural semantics for lazy
+evaluation, POPL); Levy 1978 (Reductions correctes et optimales dans
+le lambda-calcul, PhD); Lamping 1990 (interaction nets, POPL);
+Asperti-Mascari-Guerrini 1998 (BOHM, JFP).
+
+**Acceptance**: `@[strategy(S)]` operational on user functions;
+per-strategy SN proven zero-axiom for all 5 strategies; strategy
+equivalence theorem proven via Church-Rosser; cost-tropical ranking
+integrated as default selector; FX sketch-mode (§22) maps to Lazy by
+default while release maps to Optimal — full surface-to-strategy
+pipeline operational.
 
 ### Day 40 — Era V close-out (CRITICAL)
 
@@ -5960,13 +6220,35 @@ demonstrate practical applicability.
 Speculative / research-frontier. Open-ended.
 
 ### Day 91+ — Stable ∞-categories / spectra (exploratory)
+
+Bousfield localization computational (Bousfield 1979, "Localization
+of spectra with respect to homology"); algebraic K-theory primitives;
+spectra as types with Σ-Ω invertibility (Lurie 2017 *Higher Algebra*
+§1 ambient framework).
+
 ### Day 92+ — Synthetic algebraic geometry (exploratory)
 ### Day 93+ — Motivic homotopy theory (exploratory)
 ### Day 94+ — Quantum HoTT (parallel, exploratory)
 ### Day 95+ — Self-reflective kernel (exploratory)
 ### Day 96+ — Probabilistic ∞-types (exploratory)
 ### Day 97+ — Game-theoretic ∞-types (exploratory)
+
+Game semantics at ∞-dim (Hyland-Ong 2000 fully-abstract model for
+PCF adapted); causal nets, Petri nets, interaction nets (Lafont 1990
+already a special case of Era I Day 21 sharing-cell family; this Day
+extends to game-theoretic semantics); concurrent algorithm
+verification via game-model.
+
 ### Day 98+ — Anti-foundation / paraconsistent extensions (exploratory)
+
+Aczel's AFA axiom (Aczel 1988, "Non-Well-Founded Sets") —
+non-well-founded types; streams without termination via productivity
+(dual to Era IV.5 D31.9 Bennett-1973 reversible-computing target);
+controlled inconsistency for spec resolution (Belnap-Dunn FOUR per
+Era IV D30 already in kernel — Day 98+ extension generalizes to full
+paraconsistent logic per da Costa 1974, "On the theory of
+inconsistent formal systems").
+
 ### Day 99+ — Type theory as physical reality (speculative)
 
 ---
@@ -6141,8 +6423,8 @@ Era II (kernel retrofit)
   Day 18, 19 (parallel)
   Day 20 (close-out)
 
-Era III (hypergraph IR)
-  Day 21 → 22 → 23 → 24 → 25
+Era III (sharing cells + stratification + BSP)
+  Day 21 → 22 → 23 → 24 → 25 → 25.A (pipe-chain pipeline parallelism)
 
 Era IV (hardware retrofit)
   Day 26 → 27 → 28 → 29 → 30 → 31
@@ -6159,6 +6441,7 @@ Era V (reduction completion)
   Day 38.B (Energy dim-23 / Landauer) — parallel after D38
   Day 38.C (Side-channel typing extension) — parallel after D38
   Day 39 (optimal reduction) — parallel
+  Day 39.5 (@[strategy(S)] user-facing attribute) — parallel after D39
   Day 40 (close-out)
 
 Era S (semantic substrate / Path 2 staged)
