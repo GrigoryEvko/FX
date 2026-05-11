@@ -640,6 +640,16 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.isStronglyNormalizing_weaken
 #print axioms Term.isStronglyNormalizing_weaken
 #print axioms Reducible.weaken_isStronglyNormalizing
+#print axioms Reducible.weaken_unit
+#print axioms Reducible.weaken_bool
+#print axioms Reducible.weaken_nat
+#print axioms Reducible.weaken_empty
+#print axioms Reducible.weaken_interval
+#print axioms Reducible.weaken_universe
+#print axioms Reducible.weaken_tyVar
+#print axioms Reducible.weaken_session
+#print axioms Reducible.weaken_effect
+#print axioms Reducible.weaken_modal
 #print axioms RawTerm.app_lam_isStronglyNormalizing
 #print axioms RawTerm.app_function_isStronglyNormalizing_aux
 #print axioms RawTerm.app_function_isStronglyNormalizing

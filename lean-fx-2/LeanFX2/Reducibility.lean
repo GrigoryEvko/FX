@@ -2041,6 +2041,146 @@ theorem Reducible.weaken_isStronglyNormalizing
   Term.isStronglyNormalizing_weaken
     (Reducible.isStronglyNormalizing sourceReducible)
 
+/-- **K12.20.U3.monotone SN-fallback arm**: unit reducibility is stable
+under one-binder weakening. -/
+theorem Reducible.weaken_unit
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.unit : Ty level scope) sourceRaw}
+    (sourceReducible : Reducible (Ty.unit : Ty level scope) sourceTerm) :
+    Reducible ((Ty.unit : Ty level scope).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: bool reducibility is stable
+under one-binder weakening. -/
+theorem Reducible.weaken_bool
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.bool : Ty level scope) sourceRaw}
+    (sourceReducible : Reducible (Ty.bool : Ty level scope) sourceTerm) :
+    Reducible ((Ty.bool : Ty level scope).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: nat reducibility is stable
+under one-binder weakening. -/
+theorem Reducible.weaken_nat
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.nat : Ty level scope) sourceRaw}
+    (sourceReducible : Reducible (Ty.nat : Ty level scope) sourceTerm) :
+    Reducible ((Ty.nat : Ty level scope).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: empty reducibility is stable
+under one-binder weakening. -/
+theorem Reducible.weaken_empty
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.empty : Ty level scope) sourceRaw}
+    (sourceReducible : Reducible (Ty.empty : Ty level scope) sourceTerm) :
+    Reducible ((Ty.empty : Ty level scope).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: interval reducibility is
+stable under one-binder weakening. -/
+theorem Reducible.weaken_interval
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.interval : Ty level scope) sourceRaw}
+    (sourceReducible : Reducible (Ty.interval : Ty level scope) sourceTerm) :
+    Reducible ((Ty.interval : Ty level scope).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: universe-code
+reducibility is stable under one-binder weakening. -/
+theorem Reducible.weaken_universe
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {universeLevel : UniverseLevel}
+    {levelLe : universeLevel.toNat + 1 ≤ level}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm :
+      Term context (Ty.universe universeLevel levelLe : Ty level scope)
+        sourceRaw}
+    (sourceReducible :
+      Reducible (Ty.universe universeLevel levelLe : Ty level scope)
+        sourceTerm) :
+    Reducible
+      ((Ty.universe universeLevel levelLe : Ty level scope).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: type-variable fallback
+reducibility is stable under one-binder weakening. -/
+theorem Reducible.weaken_tyVar
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {position : Fin scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.tyVar position) sourceRaw}
+    (sourceReducible : Reducible (Ty.tyVar position) sourceTerm) :
+    Reducible ((Ty.tyVar position).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: session reducibility is
+stable under one-binder weakening. -/
+theorem Reducible.weaken_session
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {protocolStep sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.session protocolStep) sourceRaw}
+    (sourceReducible : Reducible (Ty.session protocolStep) sourceTerm) :
+    Reducible ((Ty.session protocolStep).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: effect reducibility is
+stable under one-binder weakening. -/
+theorem Reducible.weaken_effect
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {effectTag sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.effect carrierType effectTag) sourceRaw}
+    (sourceReducible : Reducible (Ty.effect carrierType effectTag) sourceTerm) :
+    Reducible ((Ty.effect carrierType effectTag).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
+/-- **K12.20.U3.monotone SN-fallback arm**: modal reducibility is
+stable under one-binder weakening. -/
+theorem Reducible.weaken_modal
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType carrierType : Ty level scope}
+    {modalityTag : Nat}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.modal modalityTag carrierType) sourceRaw}
+    (sourceReducible :
+      Reducible (Ty.modal modalityTag carrierType) sourceTerm) :
+    Reducible ((Ty.modal modalityTag carrierType).weaken)
+      (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken sourceReducible
+
 /-- Head-β SN expansion for non-dependent application.
 
 If the lambda body, argument, and β-contractum are all strongly
