@@ -47,7 +47,9 @@ Every Day's deliverable must satisfy `computability-rules.md`:
 * No axioms (`#print axioms` reports zero)
 * No `noncomputable`/`@[extern]`/`@[implemented_by]`/`opaque` markers
 * Constructor-driven dispatch + well-founded recursion
-* Decidable judgments for the 22 graded dimensions
+* Decidable judgments for the active graded dimensions; the roadmap
+  target is the 24-dimensional vector in Part I §5, while any
+  earlier slice must state which prefix/subset is implemented
 
 The deep load-bearing principle is the **Brouwer-Heyting-Kolmogorov
 interpretation lifted to (∞,n)-categorical level**: every connective,
@@ -55,6 +57,30 @@ every modality, every coherence, every reduction has an explicit
 computational construction. **Computability is maintained by
 REFUSING TO INTRODUCE ANYTHING WITHOUT EXPLICIT COMPUTATIONAL
 CONTENT.**
+
+**Rigor boundary** (load-bearing, not rhetorical):
+* A **kernel theorem** is a Lean theorem over finite, explicitly
+  represented syntax/data, with zero axioms and no hidden oracle.
+* A **model theorem** is a kernel theorem conditional on an explicit
+  mathematical model supplied as data (for example a finite site, a
+  finite thermodynamic model, a bounded hardware timing model). The
+  theorem proves consequences inside that model, not that the physical
+  world satisfies the model.
+* A **certificate theorem** checks a finite certificate emitted by an
+  external solver, optimizer, simulator, ML search, or hardware
+  measurement pipeline. The external tool proposes; the kernel checks.
+* A **realization assumption / TCB extension** records trust in a
+  physical implementation or vendor library. It cannot be promoted to
+  `Root-FX1` by prose; it needs a bridge theorem plus a checked
+  certificate format.
+* `opaque` in user-facing prose means sealed API / private concrete
+  constructor only. Kernel code may not use Lean `opaque` for shipped
+  zero-axiom artifacts.
+* Physics-facing work (Maxwell/RLC/STA, energy/Landauer, M-theory
+  search) is valid roadmap material only when phrased as
+  computational model construction, finite search, and certificate
+  checking. It must not claim real-world truth before an explicit
+  model and validation boundary are stated.
 
 **Status legend** (matches `ROADMAP.md`):
 * `[x]` — shipped, zero-axiom verified
@@ -105,7 +131,8 @@ lean-fx-2 should have:
     / Register / Instruction; light-cone constraint, setup/hold +
     hazards as type errors, Kirchhoff KCL via Noether on
     time-translation, side-channel typing (7 channels), discrete
-    Stokes + Landauer bound.
+    Stokes theorem for represented calculi + Landauer-style checked
+    model certificates.
 14. **Site-parametric kernel (Era T)**: `Term : (S : CausalSite) →
     Ctx → Ty → RawTerm → Type`; 10+ verified site instances
     (sequential ℕ/ℝ, parallel monoidal, branching tree, dagger
@@ -119,7 +146,8 @@ lean-fx-2 should have:
     monad with verified-correctness theorem (Era VI tactics
     re-implementable as reflective programs); macros + DSL embedding;
     FX-in-FX self-hosting (B13 bootstrap unblocked).
-16. **World-as-type (Era W)**: World opaque + peek/poke + Iris-
+16. **World-as-type (Era W)**: World as a sealed interface with
+    concrete finite/Kripke implementations + peek/poke + Iris-
     style step-indexed Kripke worlds (constructive fragment);
     effect-as-world-transition iso preserving existing FX programs;
     counterfactual operators with verified non-interference;
@@ -128,9 +156,10 @@ lean-fx-2 should have:
     (Willsey et al. 2021) with verified subsumption lattice +
     cost-minimal extraction.
 18. **24-dim grade vector**: 21 original + dim-22 (Belnap-Dunn FOUR
-    consistency from Era IV) + dim-23 (Energy / Landauer floor on
-    irreversible Steps; Bennett-1973 reversible path = 0) + dim-24
-    (Incrementality / ILC change calculus, Cai et al. ICFP 2014).
+    consistency from Era IV) + dim-23 (Energy / Landauer as an
+    explicit finite thermodynamic-model/certificate layer, not a
+    blanket physical claim) + dim-24 (Incrementality / ILC change
+    calculus, Cai et al. ICFP 2014).
 19. **Promise/Guard/Fallback runtime properties (Era VIII D63.A)**:
     compile-time loose bound + runtime measurement + adaptive
     fallback for analog ENOB / actual delay / actual power /
@@ -143,10 +172,13 @@ lean-fx-2 should have:
     (3⁷ = 2187 atoms per tile) maps to polygraph dim 0..6; 27-die
     ternary cube as polygraph dim-6 parallel-strategy distribution.
 
-Everything zero-axiom. Everything computable per
-`computability-rules.md`. Everything hardware-lottery-retrofit per
-the SHK-B200 design + multi-level Maxwell-grounded framework
-(Era IV.5).
+Every kernel theorem is zero-axiom and computable per
+`computability-rules.md`. Model theorems, external certificates, and
+hardware realizations carry their trust boundary explicitly. Hardware
+retrofit work is pursued through the SHK-B200 design + multi-level
+Maxwell-grounded framework (Era IV.5), but physical adequacy is never
+promoted without a checked model/certificate and a TCB record where
+needed.
 
 **FX1 trust anchor**: every Day's output is classified per
 `kernel-metaplan.md` root-status labels (`Root-FX1`,
@@ -458,7 +490,7 @@ incrementality from Era V D38.A change calculus extension):
 | # | Dimension | Algebraic structure | Decidability |
 |---|-----------|---------------------|--------------|
 | 1 | Type | Indexed family of types | Bidirectional algorithm |
-| 2 | Refinement | Σ-type w/ Decidable predicate | SMT or constructive |
+| 2 | Refinement | Σ-type w/ Decidable predicate | Constructive checker; SMT may emit certificates only |
 | 3 | Usage | Semiring {0,1,ω} | Finite, constant time |
 | 4 | Effect | Free commutative monoid | Decidable join |
 | 5 | Security | Boolean lattice | Trivially decidable |
@@ -479,15 +511,20 @@ incrementality from Era V D38.A change calculus extension):
 | 20 | Size | (ℕ, ≤) | Decidable order |
 | 21 | Version | Finite ordered labels | Decidable order |
 | 22 | Consistency | Belnap-Dunn FOUR (bilattice) | Decidable bilattice ops |
-| 23 | Energy | (ℝ⁺, +, 0) graded with Landauer floor | Decidable on closed forms (lower bound k_B·T·ΔS·ln 2 for irreversible Steps; 0 for reversible per Bennett 1973) |
+| 23 | Energy | Finite energy model / certificate layer over (ℝ⁺, +, 0) | Decidable only for bounded closed models with explicit entropy/cost certificates |
 | 24 | Incrementality | Δ-types (Cai et al. ICFP 2014) | Δ-decidable per ILC framework |
 
 **Dimension 23 (Energy)** — added per Era IV.5 / Era V D38.B:
-each Step carries a computable energy cost ≥ k_B · T · entropy_decrease · ln 2
-for irreversible Steps; 0 for reversible (Bennett 1973). Total
-energy along a reduction path is a 1-cochain in H¹(reduction-graph; ℝ⁺)
-classifying path-dependence. Used for energy-minimal compilation,
-reversible-computing target, quantum-computing as asymptotic limit.
+speculative but worth approaching because it is the physics-grounded
+dimension. The kernel obligation is deliberately narrower than the
+physical ambition: for a finite reduction graph and an explicitly
+provided thermodynamic model/certificate, each Step may carry a
+checked energy lower-bound witness. Landauer-style statements are
+model theorems inside that supplied model; they are not blanket claims
+that real hardware obeys the model. Total energy along a reduction
+path is represented as a finite path cost / 1-cochain on the reduction
+graph. This supports energy-minimal search inside checked models and
+keeps the physical-realization boundary explicit.
 
 **Dimension 24 (Incrementality)** — added per Era V D38.A:
 ILC-style change calculus (Cai-Giarrusso-Rendel-Ostermann ICFP 2014).
@@ -497,18 +534,27 @@ case where every iteration is a change, not a fresh start; for
 incremental editor support; for incremental verification
 (re-typecheck only changed regions).
 
-**Theorem 5.1** (FX dimensional decidability). The product
-∏_{i=1}^{24} D_i, with D_i the decidability of dimension i, is
-decidable iff every D_i is decidable, with combined complexity
-≤ ∑_i T_i (sum of per-dimension decision times).
+**Theorem 5.1** (FX dimensional decidability, bounded form). For a
+finite term, finite context, bounded unfolding budget, finite
+user-rule database, and active dimension set I ⊆ {1..24}, the product
+∏_{i∈I} D_i is decidable when every active D_i supplies a total
+decider returning either a proof or a finite counterexample. Combined
+checking time is bounded by the sum of active decider costs plus the
+cost of cross-dimension compatibility checks.
 
-**Corollary 5.2**. FX type-checking is decidable in time polynomial
-in the term size + sum of per-dimension decision times.
+**Corollary 5.2**. FX kernel checking is decidable for the bounded,
+certificate-checked fragment above. Polynomial-time claims require
+per-dimension polynomial deciders and bounded search depth; they are
+not global claims about arbitrary SMT, arbitrary user rules, or
+unbounded optimization search.
 
-**Corollary 5.3** (Energy-bounded compilation): For any program
-`p` with Energy budget ε > 0, the kernel can decide whether ∃ an
-equivalent program p' (modulo dim-13 Complexity equivalence) with
-total Step.energy_cost ≤ ε, in time poly(|p|, ε / Landauer_floor).
+**Corollary 5.3** (Energy-bounded compilation, bounded form). Given a
+finite equivalence class/search graph, a finite energy model, checked
+per-Step energy certificates, and budget ε > 0, the kernel can decide
+whether one of the enumerated equivalent programs has total checked
+energy ≤ ε. Discovering the equivalence class or validating the
+physical model is outside this theorem and remains a proposal/
+measurement/TCB boundary.
 
 ### §6. Constructor-driven dispatch (the engine)
 
@@ -648,7 +694,7 @@ terminating, hence CR by Newman's lemma.
 
 Definitionally equal terms are reducible to a common normal form via
 δ. **FX**: definitions can be marked `@[reducible]` (auto-unfold) or
-opaque (no unfolding). δ is non-confluent if combined with η in
+`@[sealed]` (no unfolding; not Lean `opaque`). δ is non-confluent if combined with η in
 some pathological cases; standard practice (Coq, Lean) is to delay
 δ until other reductions stabilize.
 
@@ -1643,20 +1689,25 @@ Realization` with verified equivalence.
 
 ### Day 28 — B200 GPU realization for GEMM stratum (CRITICAL)
 
-**Goal**: bind tropical/Boolean GEMM to cuBLAS with verified
-encoding; ship FP8/INT8 tensor-core paths.
+**Goal**: bind tropical/Boolean GEMM to hardware kernels with
+verified input/output certificate formats; cuBLAS/cuDNN paths are
+TCB extensions unless independently checked by reference/certificate
+comparison. Ship FP8/INT8 tensor-core paths with explicit realization
+status.
 
 **Tasks**:
-* [ ] D28.1 cuBLAS/cuDNN binding via verified encoding
+* [ ] D28.1 cuBLAS/cuDNN binding via verified encoding plus
+  realization-assumption record / output certificate checker
 * [ ] D28.2 Tropical-GEMM custom CUDA kernel (FP8/INT8 paths)
 * [ ] D28.3 Boolean-GEMM kernel for reachability problems
 * [ ] D28.4 NVSwitch-aware multi-GPU coordination
 * [ ] D28.5 Realization equivalence proof
 * [ ] D28.6 Performance audit on B200 reference workloads
 
-**Key trust assumption**: cuBLAS is correctly-implemented matrix
-multiplication. Validated externally; documented as TCB extension
-(per Part VI §C7 hardware retrofit row).
+**Key trust boundary**: cuBLAS is not a proof source. Either its
+output is checked against a small verified certificate/reference
+checker for the relevant semiring fragment, or the call is recorded
+as a TCB extension (per Part VI §C7 hardware retrofit row).
 
 **Theorems to ship**:
 1. **Encoding correctness**: `GemmSubgraph.toMatrix` produces a
@@ -1895,9 +1946,11 @@ F_M→RLC(F):
 cohomology in a cohesive ∞-topos); Frankel 2011 (Geometry of
 Physics); Eldering 2013 (normally hyperbolic invariant manifolds).
 
-**Acceptance**: Polygraph_EM + Polygraph_RLC + F_M→RLC ship
-zero-axiom modulo SDG (Era X Day 72 dependency); higher-level work
-references Level 0 for soundness; doesn't routinely compute in it.
+**Acceptance**: Polygraph_EM + Polygraph_RLC + F_M→RLC ship as
+explicit model artifacts after the SDG dependency is available. The
+kernel proves the formal consequences of the supplied model and
+quasi-static witness; real-chip adequacy remains a measured
+realization boundary, not a kernel theorem.
 
 ### Day 31.6 — STA event polygraph + light cone constraint (CRITICAL)
 
@@ -1997,8 +2050,9 @@ Biere 2009 (QF_BV decision procedure for bit-vector timing);
 Brayton-Hachtel-Sangiovanni-Vincentelli 1981 (logic synthesis).
 
 **Acceptance**: Polygraph_STA + tropical critical-path GEMM +
-light cone + setup/hold typing ship zero-axiom; Era IX Day 65
-B200 acceleration extends to STA workloads.
+light cone + setup/hold typing ship zero-axiom for the represented
+timing model; Era IX Day 65 B200 acceleration extends to STA
+workloads only through realization certificates / TCB records.
 
 ### Day 31.7 — Digital (Node × Cycle) polygraph + spacetime-typed primitives (CRITICAL)
 
@@ -2044,16 +2098,17 @@ def Instruction (encoding : InstrEncoding) (shape : InstrShape)
                 (issue : Cycle) : Type
 ```
 
-**Kirchhoff conservation theorem (Noether on time-translation)**:
+**Kirchhoff conservation theorem (model-level Noether witness)**:
 ```
 ∀ (node : NodeId) (cyc : Cycle),
   Σ (incoming charges at ⟨node, cyc⟩)
   = Σ (outgoing charges at ⟨node, cyc⟩)
 
-Proof: time-translation symmetry of Polygraph_Digital + Wood-Atkey
-linear-graded discipline ⟹ charge magnitude conserved through
-Wire flow (graded resource invariance lifted from Era I Day 14
-cost-tropical to (ℝ⁺, +, ·) magnitude semiring).
+Proof obligation: the supplied digital hardware model carries a
+time-translation symmetry witness; combined with Wood-Atkey
+linear-graded discipline this proves charge magnitude is conserved
+through Wire flow inside the model. Real silicon still requires
+measurement/realization certificates.
 ```
 
 **Pipeline linearity (hazards-as-type-errors)**:
@@ -2105,8 +2160,8 @@ Theorem: TimingClosure(design)
 * [ ] D31.7.3 Charge type with split/combine/flow + graded linear
   discipline lifted from Wood-Atkey 2022 to (ℝ⁺, +, ·) magnitude
   semiring
-* [ ] D31.7.4 Kirchhoff KCL theorem (dim-2 cell) zero-axiom via
-  Noether on time-translation
+* [ ] D31.7.4 Kirchhoff KCL theorem (dim-2 cell) zero-axiom for
+  supplied digital model with explicit time-translation symmetry
 * [ ] D31.7.5 Wire as dim-1 morphism with Picoseconds delay;
   composition with delay sum; cycle-advance witness
 * [ ] D31.7.6 Register as time-indexed function with StableOver
@@ -2165,9 +2220,9 @@ linear-resource discipline); Intel AVX-512 / ARM NEON / RISC-V RVV
 ISA manuals (vendor-published).
 
 **Acceptance**: Polygraph_Digital + spacetime-typed primitives
-zero-axiom; KCL Kirchhoff theorem from Noether; setup/hold + 4
-hazard-classes as type errors; F_STA→Digital sound under
-TimingClosure.
+zero-axiom as model data; KCL/Kirchhoff theorem from an explicit
+Noether-style symmetry witness; setup/hold + 4 hazard-classes as
+type errors; F_STA→Digital sound under TimingClosure certificate.
 
 ### Day 31.8 — μArch polygraph + side-channel typing (CRITICAL)
 
@@ -2278,15 +2333,17 @@ Kwong-Genkin-Gruss-Yarom 2020 (RAMBleed); Yarom-Falkner 2014
 constant-time crypto).
 
 **Acceptance**: full multi-level abstraction stack from Maxwell to
-μArch zero-axiom; cross-level integration consistent; side-channel
-typing operational for crypto primitives in fx-net Era IX vertical.
+μArch represented as explicit model data with zero-axiom morphism
+theorems where certificates are supplied; cross-level integration
+consistent inside the model; side-channel typing operational for
+crypto primitives in fx-net Era IX vertical.
 
 ### Day 31.9 — Era IV.5 close-out + multi-level calculus (CRITICAL)
 
 **Goal**: per-level differentiation and integration appropriate to
-each level + cross-level naturality (∫_n = ∫_{n+1} ∘ F push-forward)
-+ discrete Stokes + Landauer bound (links to F1 dimension 23) +
-close Era IV.5.
+each level; cross-level naturality (∫_n = ∫_{n+1} ∘ F push-forward);
+discrete Stokes for represented calculi; Landauer-style model
+certificates (links to F1 dimension 23); close Era IV.5.
 
 **Per-level calculus catalog**:
 ```
@@ -2299,7 +2356,8 @@ close Era IV.5.
 | 4 | per-instr  | stages   | Δ between instr's     | Σ over instructions      | (ℕ, +)             |
 ```
 
-**Discrete Stokes theorem (kernel-level, zero-axiom)**:
+**Discrete Stokes theorem (formal model theorem, zero-axiom for
+represented calculi)**:
 ```
 For finitely-presented site S with boundary ∂ and exterior d
 (de Rham at Level 0; discrete d at Level 2-4),
@@ -2330,33 +2388,36 @@ Specialized total-energy along all five levels:
   ≡ Σ_{instructions at Level 4} (E_avg · n_cycles)
 ```
 
-**Power as path-dependent 1-cochain (de Rham angle)**:
+**Power as path-dependent 1-cochain (finite-graph first; de Rham
+analogy only when a smooth model is supplied)**:
 ```
 Instantaneous power P : SpacetimePoint → Watts is a 0-cochain.
 Energy E := ∫ P dt over a reduction path is path-dependent —
 different reduction paths from program-state s to state s' yield
 different total energy despite identical functional behavior.
 
-Hence E is genuinely a 1-COCHAIN (assigns ℝ⁺ to each path), and
-its de Rham class [E] ∈ H¹(reduction-graph; ℝ) measures path-
-dependence. [E] = 0 iff energy is path-independent (only true for
-Bennett-style reversible computation).
+Hence E is represented as a finite 1-cochain (assigns a checked
+non-negative cost to each path) in the supplied reduction graph.
+Its cohomology class measures path-dependence inside that graph.
+[E] = 0 iff energy is path-independent in the supplied model; any
+physical interpretation requires a realization certificate.
 
 Compiler optimization for energy: find path in equivalence class
 [s]/(path-equivalent) minimizing ∫ P dt → tropical shortest-path
 over (ℝ⁺, +, min) on the reduction graph.
 ```
 
-**Landauer bound theorem (links to F1 dim-23 Energy)**:
+**Landauer-style model theorem (links to F1 dim-23 Energy)**:
 ```
-∀ (s : Step) (h : s.is_irreversible),
-  s.energy_cost  ≥  k_B · T · s.entropy_decrease · ln 2
+For explicit finite thermodynamic model M and Step s:
+  M proves s irreversible
+  M supplies entropy_decrease certificate
+  M supplies LandauerLowerBound law
+  ⟹ checked_energy_cost M s ≥ k_B · T · entropy_decrease M s · ln 2
 
-At T = 298.15 K: ≥ 2.85 × 10⁻²¹ J per bit erased.
-Reversible Steps (Bennett 1973, Fredkin-Toffoli 1982) have
-entropy_decrease = 0, hence cost-floor 0.
-Quantum unitary evolution: necessarily reversible, hence
-asymptotic limit of energy-minimal computation.
+At T = 298.15 K the numeric floor is checked from interval
+certificates for constants and units. Reversible/quantum claims
+require explicit finite model certificates.
 ```
 
 **Tasks**:
@@ -2374,11 +2435,13 @@ asymptotic limit of energy-minimal computation.
 * [ ] D31.9.6 Level 4 calculus: incremental Δ (links to dim-24
   ILC change calculus, Cai-Giarrusso-Rendel-Ostermann ICFP 2014)
 * [ ] D31.9.7 Cross-level naturality theorems (∫_n = ∫_{n+1} ∘ F)
-* [ ] D31.9.8 Discrete Stokes ∫_∂M ω = ∫_M dω zero-axiom for all
-  4 levels (telescoping, tropical, finite, smooth-via-SDG)
-* [ ] D31.9.9 Power 1-cochain + de Rham class [E] ∈ H¹
-* [ ] D31.9.10 Landauer k_B T ln 2 bound as type-level lower
-  bound on Step.energy_cost when irreversible
+* [ ] D31.9.8 Discrete Stokes ∫_∂M ω = ∫_M dω zero-axiom for
+  represented finite calculi; smooth-via-SDG variant only after the
+  SDG model is explicitly supplied
+* [ ] D31.9.9 Power/energy finite 1-cochain + H¹ class over the
+  represented reduction graph
+* [ ] D31.9.10 Landauer-style checker for explicit finite
+  thermodynamic models and interval-certified constants
 * [ ] D31.9.11 Smoke audit comprehensive Era IV.5
 * [ ] D31.9.12 Era IV.5 commit + status
 
@@ -2392,7 +2455,11 @@ Ostermann 2014 (incremental λ-calculus, ICFP).
 
 **Acceptance**: Era IV.5 complete; full multi-level hardware
 polygraph + per-level calculus operational; abstraction functors
-verified; discrete Stokes + Landauer bound shipped zero-axiom.
+verified as model morphisms; discrete Stokes ships as a formal
+theorem for the represented calculus. Landauer/energy statements
+ship only as checked finite thermodynamic-model theorems and
+runtime/physical adequacy remains under Promise/Guard/Fallback plus
+realization certificates.
 
 ---
 
@@ -2726,59 +2793,71 @@ changes for higher-order languages: Incrementalizing
 fundamental theorem at all 75 Term ctors; agentic-LLM use case
 unlocked (incremental kernel verification).
 
-### Day 38.B — Dimension-23 Energy / Landauer typing rule (CRITICAL)
+### Day 38.B — Dimension-23 Energy / Landauer model certificates (SPECULATIVE, MODEL-LAYER)
 
-**Goal**: ship dimension-23 (Energy) per §5 dimensional matrix;
-Landauer's bound as type-level lower bound on irreversible Steps;
-reversible-computing target per Bennett 1973.
+**Goal**: introduce dimension-23 as a computational interface for
+finite energy models and checked certificates. This is physics-
+grounded and speculative: the kernel may verify consequences of an
+explicit model, but it does not assert that real hardware, real
+thermodynamics, or quantum dynamics satisfy that model without a
+separate realization certificate.
 
-**Construction (energy as graded dimension)**:
+**Construction (energy as checked model data)**:
 ```
-EnergyCost := ℝ⁺ ∪ {0}                 -- non-negative reals + 0
-                                          for reversible
+EnergyCost := ℚ_nonneg                 -- computable representation;
+                                          real-valued physics constants
+                                          enter via rational interval
+                                          certificates
 
--- Each Step ctor carries a computable energy cost
-def Step.energy_cost : Step source target → EnergyCost
+structure EnergyModel where
+  cost_lower_bound : Step source target → EnergyCost
+  entropy_decrease : Step source target → EnergyCost
+  is_reversible    : Step source target → Decidable Bool
+  constants        : PhysicalConstantsAsIntervals
+  laws             : List CheckedModelLaw
 
--- Step entropy decrease (information erased)
-def Step.entropy_decrease : Step source target → ℝ⁺ ∪ {0}
-  -- 0 for reversible; ≥ 0 for irreversible
-
--- Reversibility predicate (decidable on Step ctors)
-def Step.is_reversible : Step → Decidable
-  -- true iff source and target have same Shannon entropy
-  -- (Bennett 1973 reversible-logic characterization)
+-- A Step has an energy meaning only relative to an EnergyModel.
+def Step.energy_cost (M : EnergyModel) (s : Step source target)
+    : EnergyCost := M.cost_lower_bound s
 ```
 
-**Theorem (Landauer-as-typing, kernel-level zero-axiom)**:
+**Model theorem (Landauer-style lower bound, conditional)**:
 ```
-∀ (s : Step source target),
-  (h : ¬ s.is_reversible) →
+For an explicit finite thermodynamic model M containing:
+  - temperature T and units/constants as data,
+  - entropy_decrease certificate for Step s,
+  - proof that s is irreversible in M,
+  - model law LandauerLowerBound M,
+the kernel checks:
   s.energy_cost  ≥  k_B · T · s.entropy_decrease · ln 2
 
-at T = 298.15 K (room temp): ≥ 2.85 × 10⁻²¹ J per bit erased.
+At T = 298.15 K, the numeric floor is a checked computation once
+the constants/units certificate is supplied.
 
 Reversible Steps (by Bennett 1973 theorem on logical
-reversibility): entropy_decrease = 0, hence cost-floor 0.
+reversibility inside M): entropy_decrease = 0, hence model
+cost-floor 0.
 
-Quantum unitary Steps: necessarily reversible (unitary
-preserves Shannon entropy of state distribution), hence
-energy-conservative as theorem.
+Quantum unitary claims require an explicit finite-dimensional
+unitary model and entropy-preservation certificate. They are not
+kernel-global facts.
 ```
 
 **Path-dependent total energy as 1-cochain**:
 ```
-For reduction path π : t →* t' = Step₁ ; Step₂ ; ... ; Stepₙ,
-total_energy(π)  :=  Σᵢ Stepᵢ.energy_cost
+For energy model M and reduction path π : t →* t' =
+Step₁ ; Step₂ ; ... ; Stepₙ,
+total_energy(M, π)  :=  Σᵢ Step.energy_cost M Stepᵢ
 
 Two paths π₁, π₂ : t →* t' may have different total_energy
 even if t and t' are identical.
 
-The de Rham class [E] ∈ H¹(reduction-graph; ℝ) classifies
-path-dependence:
+The cohomology class [E] ∈ H¹(reduction-graph; ℚ_nonneg) classifies
+path-dependence inside the finite graph model:
   [E] = 0  ⟺  energy is path-independent
-            ⟺  all reduction paths reversible (Bennett 1973)
-            ⟺  computation is thermodynamically optimal
+            ⟺  all compared reduction paths have equal checked cost.
+  Reversibility / thermodynamic optimality require additional model
+  laws and are not inferred from [E] = 0 alone.
 
 Compiler optimization for energy:
   argmin over equivalence-class representatives of total_energy(·)
@@ -2786,7 +2865,8 @@ Compiler optimization for energy:
    semiring; GEMM-encodable per Era IX Day 65)
 ```
 
-**Cumulative energy across reduction paths (Era IV.5 multi-level)**:
+**Cumulative energy across reduction paths (Era IV.5 multi-level,
+conditional on abstraction certificates)**:
 ```
 Cross-level energy consistency (Era IV.5 D31.9 multi-level
 calculus integration):
@@ -2794,31 +2874,37 @@ calculus integration):
   ≡ Σ_{Level 1} ∫₀ᵀ Σ_components (V·I) dt
   ≡ Σ_{events at Level 2} energy(event)
   ≡ Σ_{cycles at Level 3} (P_cycle · T_clk)
-  ≡ Σ_{Steps at Level 4} Step.energy_cost
+  ≡ Σ_{Steps at Level 4} Step.energy_cost M step
 
-Total energy is invariant across levels (multi-level naturality
-theorem from Era IV.5 Day 31.9).
+Total checked energy is invariant across levels only when the
+abstraction functors provide explicit energy-preservation
+certificates (multi-level naturality theorem from Era IV.5 Day
+31.9). Without those certificates, the lower levels are measurement
+inputs, not kernel facts.
 ```
 
 **Tasks**:
 * [ ] D38.B.1 `Foundation/Graded/Energy.lean` — dimension-23 graded
-  structure with (ℝ⁺, +, ·) semiring + Landauer floor
-* [ ] D38.B.2 Step.energy_cost : Step → EnergyCost per ctor
-  (~120 Step ctors, per-ctor classifications: reversible/
-  irreversible/data-dependent)
-* [ ] D38.B.3 Step.entropy_decrease + Step.is_reversible decidable
-  predicates per Bennett 1973 logical-reversibility
-  characterization
-* [ ] D38.B.4 Landauer bound as typing rule zero-axiom: irreversible
-  Step ⟹ energy_cost ≥ k_B · T · ΔS · ln 2
-* [ ] D38.B.5 Reversible Steps (η, β-app on linear, βι on canonical
-  forms): cost = 0 verified
-* [ ] D38.B.6 Path-dependent total energy as 1-cochain;
-  [E] ∈ H¹(reduction-graph; ℝ) classification
+  structure with finite energy-cost algebra and certificate formats
+* [ ] D38.B.2 EnergyModel-relative `Step.energy_cost M s` and finite
+  certificate schema per Step family
+* [ ] D38.B.3 Model-relative entropy_decrease + is_reversible
+  certificate checkers; Bennett-style characterization only when
+  the supplied model proves the required hypotheses
+* [ ] D38.B.4 Landauer-style lower-bound checker: irreversible Step
+  in explicit model M + entropy certificate ⟹ checked inequality
+* [ ] D38.B.5 Reversible-Step library: syntactic reversibility
+  witnesses for η, selected linear β, and βι-on-canonical forms;
+  cost = 0 only for EnergyModels that interpret those witnesses as
+  physically reversible
+* [ ] D38.B.6 Path-dependent total energy as finite 1-cochain;
+  [E] ∈ H¹(reduction-graph; ℚ_nonneg) classification inside the
+  supplied graph model
 * [ ] D38.B.7 Compiler argmin-energy search via tropical
   shortest-path (GEMM-encoded per Era IX Day 65)
-* [ ] D38.B.8 Cross-level energy consistency theorem (links to
-  Era IV.5 D31.9 multi-level calculus)
+* [ ] D38.B.8 Cross-level energy consistency theorem for supplied
+  abstraction certificates (links to Era IV.5 D31.9 multi-level
+  calculus)
 * [ ] D38.B.9 STRICT-57-V-Energy gate
 * [ ] D38.B.10 Smoke + commit
 
@@ -2828,10 +2914,13 @@ Bennett 1973 (Logical reversibility of computation, IBM J.);
 Fredkin-Toffoli 1982 (Conservative logic, Int. J. Theor. Phys.);
 Frank 2017 (Foundations of generalized reversible computing).
 
-**Acceptance**: dimension-23 energy zero-axiom; Landauer typing
-rule at all irreversible Steps; reversible Steps cost 0;
-path-dependent energy 1-cochain shipped; cross-level multi-level
-naturality holds.
+**Acceptance**: dimension-23 energy ships as a zero-axiom finite
+checker and model-theorem layer; Landauer-style claims are checked
+only when their finite thermodynamic model and certificates are
+present; reversible-Step cost 0 is a theorem only inside models that
+prove the Bennett reversibility hypotheses; path-dependent energy
+cost over finite reduction paths ships; physical adequacy remains a
+realization boundary.
 
 ### Day 38.C — Side-channel typing extension (parallel)
 
@@ -3458,21 +3547,25 @@ defs; STRICT-29 + STRICT-30 green.
 **Tasks**:
 * [ ] D51.1 Liquid-Haskell-style HM-refinement inference
 * [ ] D51.2 Constraint generation from AST
-* [ ] D51.3 SMT discharge with proof witnesses
+* [ ] D51.3 SMT proposal import with independently checkable proof
+  witnesses/counterexamples
 * [ ] D51.4 Refinement narrowing at call sites
 * [ ] D51.5 Smoke + inference quality benchmark
 
 **Constraint generation**: for each program point, generate
 `v : T | φ(v)` constraints from typing rules.
 
-**Constraint solving**: SMT discharge with Z3/CVC5; if discharge
-succeeds, generate proof witness; if fails, ask user.
+**Constraint solving**: Z3/CVC5 may propose a model, proof trace, or
+unsat certificate; the FX kernel accepts only certificates checked by
+a small verified checker. If no checkable certificate is produced,
+the result is advisory only and cannot close a proof obligation.
 
 **Theorem (Liquid Haskell)**: refinement inference is decidable
 for the decidable fragment of the constraint language.
 
-**Acceptance**: refinement inference + SMT discharge + witness
-generation zero-axiom on the decidable fragment.
+**Acceptance**: refinement inference + certificate-checked solver
+integration zero-axiom on the decidable fragment; raw SMT success is
+never a proof source.
 
 ### Day 52 — Loop invariant + Hoare inference (parallel)
 
@@ -3481,7 +3574,8 @@ generation zero-axiom on the decidable fragment.
 **Tasks**:
 * [ ] D52.1 Houdini's algorithm at kernel level
 * [ ] D52.2 Pre/post abduction for `let` bindings
-* [ ] D52.3 SMT-driven invariant strengthening
+* [ ] D52.3 Solver-proposed invariant strengthening with
+  kernel-checkable certificates
 * [ ] D52.4 Auto-test generation from inferred refinements
 * [ ] D52.5 Smoke audit + Dafny-comparison
 
@@ -3600,8 +3694,10 @@ memory ordering hints (dmb instructions for fences).
 **Theorem (CompCert-TSO, Sevcik thesis)**: x86 TSO compilation
 from SC source preserves semantics.
 
-**Acceptance**: per-architecture compilation zero-axiom across
-TSO/ARM/RISC-V/GPU.
+**Acceptance**: per-architecture compilation zero-axiom for the
+formal TSO/ARM/RISC-V/GPU memory models represented in the kernel;
+real hardware conformance remains a vendor/spec TCB boundary unless
+checked by separate litmus-test/certificate pipelines.
 
 ### Day 57 — WMM optimizations as polygraph cells (CRITICAL)
 
@@ -3727,12 +3823,13 @@ For each refinement-strengthening f : R → R':
    in R' \ R).
 2. Classify decidability:
    - **Auto-provable**: Decidable instance exists
-   - **Provable**: SMT can discharge
+   - **Provable**: a solver can emit a kernel-checkable certificate
    - **User-required**: needs human input
 3. Compute confidence score per goal.
 
-**Acceptance**: obligation generation + decidability classification
-+ confidence scoring zero-axiom.
+**Acceptance**: obligation generation, decidability classification,
+and confidence scoring ship zero-axiom; confidence scores and solver
+outputs are advisory until the certificate checker accepts them.
 
 ### Day 62 — Feedback API for LLM/programmer (CRITICAL)
 
@@ -4338,20 +4435,27 @@ manifold (Era XI synthetic physics), hybrid (Node × Cycle)
 (FEU per Era IV.5), branching tree (LLM dialogues, game-theoretic
 interactions).
 
-**Theorem (site-parametric universality)**:
+**Theorem (site-parametric transfer, hypothesis-bearing)**:
 ```
 For finitely-presented (∞,n)-category C with bounded dim n ≤ 6,
-finite generators per dim, and decidable cell equality, ∃ a
-CausalSite S such that:
+finite generators per dim, decidable cell equality, typed
+source/target maps, explicit substitution/renaming actions, a
+well-founded reduction measure, and local-confluence/diamond
+witnesses for every critical pair, ∃ a CausalSite S such that:
   (i)   Term @ S well-formed (Burroni 1993 polygraph data)
-  (ii)  typing decidable in poly(|term|, |generators|)
+  (ii)  typing decidable for the bounded/certificate-checked
+        fragment in poly(|term|, |generators|) only when each
+        supplied site decider is polynomial
   (iii) Tait-Martin-Löf parallel-reduction confluence holds
         for Term @ S when S has chosen monoidal+symmetric
-        structure (Geuvers 1992 βη-CR adaptation)
-  (iv)  M04 strong normalization lifts (Era S Stage 1 Tait
-        reducibility per type former in S)
-  (v)   all soundness theorems from Era I-XII transfer to
-        Term @ S preserving zero-axiom properties.
+        structure and the site supplies the needed parallel
+        reduction constructors and joinability witnesses
+  (iv)  M04 strong normalization lifts only when the site supplies a
+        reducibility interpretation for every added type former and
+        a proof that every added reduction decreases the chosen
+        measure
+  (v)   soundness theorems from Era I-XII transfer only along
+        verified site morphisms whose hypotheses match the theorem.
 ```
 
 **Why this Era exists**: Era I shipped a single polygraph as if it
@@ -4530,12 +4634,12 @@ relation: strict iso for strict monoidal F, bisimulation for
 symmetric F, observational eq on closed terms for general F.
 ```
 
-**Theorem (CompCert-style compilation as site morphism, Leroy 2009
-generalized)**:
+**Design theorem (CompCert-style compilation as site morphism, Leroy
+2009 generalized, for represented compiler passes)**:
 ```
 Verified compiler from program in Term @ SourceSite to binary in
-Term @ TargetSite is exactly a verified site morphism plus a
-soundness witness:
+Term @ TargetSite is represented as a verified site morphism plus a
+soundness witness, when the pass preserves the site structure:
   Compiler(SourceSite, TargetSite)
     := SiteMorphism SourceSite TargetSite
        with soundness_cond = "semantic preservation"
@@ -4878,21 +4982,25 @@ Era IV.5 + Era T integration: spacetime-typed primitives
   FEU_hardware's symmetries.
 ```
 
-**Headline theorem (parametric polygraph foundation)**:
+**Headline theorem (parametric polygraph foundation, bounded
+transfer form)**:
 ```
 For finitely-presented site S with bounded dim n ≤ 6, decidable
-cell equality, finite generators per dim, and chosen optional
-structure (monoidal/symmetric/dagger/choice/iteration) flags:
+cell equality, finite generators per dim, typed source/target maps,
+substitution/renaming actions, well-founded reduction measure,
+critical-pair joinability witnesses, and chosen optional structure
+(monoidal/symmetric/dagger/choice/iteration) flags:
   (a) Term @ S is well-formed (Burroni 1993)
-  (b) typing decidable in poly(|term|, |generators|, n)
-  (c) reduction confluent (Tait-Martin-Löf via S's monoidal
-      + symmetric structure when present, Geuvers 1992
-      adaptation)
-  (d) M04 strong normalization holds (Era S Stage 1 Tait
-      reducibility per S's type formers)
-  (e) all soundness theorems from Era I-XII transfer through
-      Term ≅ Term @ FX.standardSite + functorial extension
-      to Term @ S via verified site morphisms.
+  (b) typing decidable for the bounded/certificate-checked fragment
+      when every site judgment has a total checker
+  (c) reduction confluent when the supplied parallel-reduction and
+      critical-pair witnesses cover every reduction family
+  (d) M04 strong normalization holds only when the site supplies the
+      Era S reducibility interpretation and decrease proof for all
+      added reductions
+  (e) each soundness theorem from Era I-XII transfers only through
+      a verified site morphism that proves that theorem's required
+      hypotheses.
 ```
 
 **Tasks**:
@@ -4927,7 +5035,14 @@ expressible as Term @ specific_site instances.
 
 ## Era XI — Synthetic physical mechanization (Day 79–88)
 
-`fx-mtheory` library: Sati-Schreiber program mechanized. ~10 months.
+`fx-mtheory` library: formal physics-model mechanization and search.
+The rigorous target is computational: encode explicit mathematical
+models, prove theorems inside those models, and run bounded search for
+model refinements that reproduce known equations/observables. This
+does not claim that M-theory or any candidate model is the physical
+world; it creates a zero-axiom framework where such claims become
+finite hypotheses, derivations, and checked comparison certificates.
+~10 months for the initial formal-model slice.
 
 ### Day 79 — Cohomology theory types (CRITICAL)
 
@@ -5070,7 +5185,7 @@ card(O-plane G-set).
 **Acceptance**: tadpole + anomaly cancellation predicates
 decidable + zero-axiom.
 
-### Day 86 — Sati-Schreiber main theorem mechanized (CRITICAL)
+### Day 86 — Sati-Schreiber theorem inside explicit model (CRITICAL)
 
 **Goal**: mechanization of the headline theorem.
 
@@ -5081,8 +5196,10 @@ decidable + zero-axiom.
 * [ ] D86.3 Verification on Tables 1 + 2 from the paper
 * [ ] D86.4 Smoke audit theorem zero-axiom
 
-**Theorem**: brane charge quantization in unstable equivariant
-Cohomotopy implies tadpole cancellation conditions.
+**Model theorem**: in the explicitly encoded Sati-Schreiber
+hypothesis/model fragment, brane charge quantization in unstable
+equivariant Cohomotopy implies the encoded tadpole cancellation
+conditions.
 
 **Proof structure**:
 1. Apply unstable equivariant Hopf-tom Dieck.
@@ -5090,7 +5207,10 @@ Cohomotopy implies tadpole cancellation conditions.
 3. Use unstable Pontrjagin-Thom to identify brane configurations.
 4. Apply Boardman homomorphism for D-brane Chan-Paton charges.
 
-**Acceptance**: Sati-Schreiber main theorem proven zero-axiom.
+**Acceptance**: the encoded theorem is proven zero-axiom relative to
+the explicit model data. Any claim that the encoded model matches
+physical M-theory is outside the kernel theorem and belongs to the
+model-comparison/search layer.
 
 ### Day 87 — Case-by-case Table 1 mechanization (CRITICAL)
 
@@ -5121,8 +5241,10 @@ tadpole condition zero-axiom.
 * [ ] D88.3 Academic paper draft on the mechanization
 * [ ] D88.4 Era XI commit
 
-**Acceptance**: first kernel-verified mechanization of M-theory
-results. Landmark in formal theoretical physics.
+**Acceptance**: first kernel-verified mechanization of an explicit
+M-theory-inspired formal model fragment, plus comparison artifacts
+against known equations/tables. Physical adequacy remains a search
+and validation program, not an assumed premise.
 
 ---
 
@@ -5605,7 +5727,8 @@ on matrix-multiplication benchmark.
 kernel level.
 
 **Tasks**:
-* [ ] D91.1 SMT counterexample → fix proposal as dim-6 cell
+* [ ] D91.1 Solver counterexample certificate → fix proposal as
+  dim-6 cell
 * [ ] D91.2 Sketch-style synthesis at kernel level
 * [ ] D91.3 ML-guided proposal ranking
 * [ ] D91.4 User-acceptance workflow via daemon
@@ -5678,8 +5801,13 @@ discovery.
 
 **Construction (e-graph data structure)**:
 ```lean
--- E-class id: opaque handle to an equivalence class
-opaque ECId : Type with [DecidableEq ECId]
+-- E-class id: sealed handle to an equivalence class.
+-- Kernel implementation is concrete (Nat/Fin index into an array);
+-- callers use the abstract API, but shipped code does not use
+-- Lean `opaque`.
+structure ECId where
+  value : Nat
+deriving DecidableEq
 
 -- E-node: a Term ctor applied to e-class arguments (vs. nested
 --          Term recursion in Tree encoding)
@@ -5695,7 +5823,7 @@ inductive ENode where
 -- E-class: set of equivalent e-nodes
 structure EClass where
   id    : ECId
-  nodes : Set ENode      -- non-empty; congruence-closed
+  nodes : Array ENode    -- finite, non-empty; congruence-closed
   data  : EClassMetadata -- analysis state per egg (Willsey 2021)
 
 -- E-graph: union-find of e-classes + congruence-closure index
@@ -5776,8 +5904,9 @@ theorem encoding_4th_lattice :
 ```
 
 **Tasks**:
-* [ ] D93.A.1 `Foundation/EGraph/Foundation.lean` — ECId opaque
-  type, ENode inductive (mirrors 75 Term ctors via ECId children)
+* [ ] D93.A.1 `Foundation/EGraph/Foundation.lean` — ECId sealed
+  finite handle, ENode inductive (mirrors 75 Term ctors via ECId
+  children)
 * [ ] D93.A.2 EClass + EGraph structure with union-find +
   congruence-closure invariants
 * [ ] D93.A.3 saturate algorithm per Willsey 2021 Phase 1-3 (match
@@ -5867,8 +5996,9 @@ for narrow specializations with verified correctness.
 
 ## Era W — World-as-type layer (Day 96.5–96.9)
 
-Layer Ω part 2: `World : Type` as opaque first-class kernel
-primitive; effects re-cast as world transitions per Iris-style
+Layer Ω part 2: `World : Type` as a sealed first-class interface
+with concrete finite/Kripke implementations; effects re-cast as
+world transitions per Iris-style
 step-indexed Kripke worlds (Jung-Krebbers-Jourdan-Bizjak-Birkedal-
 Dreyer JFP 2018); counterfactual operators. Selective — full Iris
 parity ships only when applications justify cost. ~5 months.
@@ -5920,20 +6050,28 @@ of practical cases. Era W ships world types for the 20% requiring
 distributed-systems / concurrent-shared-state / verified-file-system
 use cases. Unused machinery doesn't bloat user-facing kernel.
 
-### Day 96.5 — World as opaque kernel type + peek/poke (CRITICAL)
+### Day 96.5 — World as sealed kernel interface + peek/poke (CRITICAL)
 
-**Goal**: ship `World` as opaque type with peek/poke primitives;
-bridge to existing FX effects.
+**Goal**: ship `World` as a sealed API with concrete computable
+implementations and peek/poke primitives; bridge to existing FX
+effects. The word "sealed" is deliberate: no Lean `opaque` in
+zero-axiom kernel code.
 
 **Construction**:
 ```lean
--- World is opaque at user level; internally a Kripke structure
-opaque World : Type
-opaque World.empty : World
-opaque World.peek  : World → Sensor → World × Reading
+-- World is abstract at user level; internally a concrete finite or
+-- Kripke-indexed structure hidden behind the module API.
+structure World where
+  state : WorldState
+-- Decidable equality is required only for finite WorldState
+-- instances used by executable checkers; Kripke/Iris instances use
+-- observation equivalence instead.
+
+def World.empty : World
+def World.peek  : World → Sensor → World × Reading
                      -- observation: world unchanged
                      (ret_world : World) = w
-opaque World.poke  : World → Effector → World
+def World.poke  : World → Effector → World
                      -- modification: world transitions
 
 -- Open : Type → Type — types that may evolve under world state
@@ -5953,8 +6091,8 @@ theorem IOEff.world_iso : ∀ {α} (e : IOEff α),
 ```
 
 **Tasks**:
-* [ ] D96.5.1 `Foundation/World/Foundation.lean` — World opaque
-  + empty/peek/poke primitives
+* [ ] D96.5.1 `Foundation/World/Foundation.lean` — World sealed API
+  + concrete WorldState + empty/peek/poke primitives
 * [ ] D96.5.2 `Open : Type → Type` for world-evolution-typed values
 * [ ] D96.5.3 WorldM monad + bind/pure laws
 * [ ] D96.5.4 Bridge to existing FX effects (Era V D5.9): IOEff,
@@ -5968,9 +6106,9 @@ theorem IOEff.world_iso : ∀ {α} (e : IOEff α),
 Jung et al. 2018 (Iris from the ground up, JFP); Plotkin-Power
 2002 (algebraic effects); Bauer-Pretnar 2015 (Eff language).
 
-**Acceptance**: World opaque + peek/poke + WorldM monad + effect-
-bridge zero-axiom; existing FX programs continue under world-typed
-framework via auto-lifted effects.
+**Acceptance**: World sealed API + peek/poke + WorldM monad +
+effect-bridge zero-axiom; existing FX programs continue under
+world-typed framework via auto-lifted effects.
 
 ### Day 96.6 — Effects as verified world transitions (CRITICAL)
 
@@ -6075,9 +6213,11 @@ def Assertion.frame (P Q : Assertion) (frame : Assertion) : Prop :=
   ∀ {n} {w : KripkeWorld},
     P n w → frame n w → Q n (combine w frame_resources)
 
--- Persistent invariant
-opaque Persistent (P : Assertion) : Prop :=
-  P n w → ∀ k, P (n - k) w  -- always holds at lower step
+-- Persistent invariant; represented as a record of closure proofs,
+-- not Lean `opaque`.
+structure Persistent (P : Assertion) : Prop where
+  down_closed : ∀ {n w}, P n w → ∀ k, P (n - k) w
+  -- always holds at lower step
 ```
 
 **Theorem (Iris soundness, Jung et al. 2018)**:
@@ -6171,7 +6311,9 @@ def safe_read (path : String) (w : World)
                 ∧ content = w.fileContent path
 
 -- Example 2: Verified concurrent counter (Iris-style)
-opaque CounterRef : Type
+structure CounterRef where
+  id : Nat
+deriving DecidableEq
 def newCounter (w : KripkeWorld) : KripkeWorld × CounterRef
 def increment (ref : CounterRef) (w : KripkeWorld)
               (h : owns ref w)  -- ownership token
@@ -6375,8 +6517,11 @@ runtime measurement infrastructure.
 | **FEU-FX (post-vertical I)**          | **~10⁹**    | **native polygraph ops** |
 | FEU-FX 27-die cube + multi-arch       | ~10¹¹       | parallel strategy search |
 
-Speed advantage over current best (FPGA): 1000-10,000× for
-polygraph workloads. Verified zero-axiom under FX1.check_sound.
+Speed advantage over current best (FPGA): 1000-10,000× target for
+polygraph workloads. Correctness claims split into FX1.check_sound
+kernel certificates, hardware realization certificates, and measured
+performance reports; no speed/physics claim is a kernel theorem by
+itself.
 
 **Tasks** (parallel to Era IV-XII; integrated with Era IV.5
 multi-level hardware framework + Era T FEU_hardware site instance):
@@ -6397,9 +6542,10 @@ multi-level hardware framework + Era T FEU_hardware site instance):
 
 **Cross-references**: Era IV.5 (multi-level hardware Maxwell→μArch
 provides the framework FEU runs in); Era T Day 78.8 catalog
-(FEU_hardware site instance); Era V D38.B (energy dimension 23 with
-Landauer floor — directly applicable to FEU's adiabatic recovery
-target ≥80× per §15.1); Era VIII D63.A (Promise/Guard/Fallback for
+(FEU_hardware site instance); Era V D38.B (energy dimension 23 as
+finite model/certificate interface for evaluating FEU adiabatic
+recovery claims, not as automatic physical truth); Era VIII D63.A
+(Promise/Guard/Fallback for
 runtime ENOB / timing / power).
 
 **References**: FEU v5 design document (this repository's
@@ -6438,7 +6584,8 @@ Era V (reduction completion)
   Day 32 → 33 (β+η + cubical)
   Day 34 → 35 → 36 → 37 → 38 (FX-unique β rules)
   Day 38.A (Incrementality dim-24 / ILC) — parallel after D38
-  Day 38.B (Energy dim-23 / Landauer) — parallel after D38
+  Day 38.B (Energy dim-23 / Landauer-style model certificates) —
+  parallel after D38
   Day 38.C (Side-channel typing extension) — parallel after D38
   Day 39 (optimal reduction) — parallel
   Day 39.5 (@[strategy(S)] user-facing attribute) — parallel after D39
@@ -6558,7 +6705,7 @@ parallel-feasibility).
 | W   | STRICT-54-W-Examples | Iris-style verified examples (file system, concurrent counter, consensus stub) zero-axiom |
 | IX  | STRICT-55-IX-EGraph | E-graph encoding well-formedness; congruence-closure soundness; saturation termination at depth d ≤ 10 (Willsey et al. 2021) |
 | IX  | STRICT-56-IX-Extract | Extraction soundness: argmin-cost representative ∈ e-class (per cost function) |
-| V   | STRICT-57-V-Energy | Dimension-23 energy arithmetic; Landauer floor enforcement on irreversible Steps |
+| V   | STRICT-57-V-Energy | Dimension-23 energy arithmetic; finite EnergyModel certificate checking; conditional Landauer-style lower-bound verification |
 | V   | STRICT-58-V-SideChannel | Per-channel constant-trace verification (Timing/Power/EM/Cache/Speculation/Thermal/Acoustic) |
 | V   | STRICT-59-V-Incremental | Dimension-24 ILC change calculus; derivative law correctness (Df ≅ ∂f / ∂Δ) |
 | VIII| STRICT-60-VIII-PromiseGuard | Promise/Guard/Fallback effect soundness (compile-bound + runtime guard + adaptive fallback) |
@@ -6665,17 +6812,19 @@ non-orderable cases.
 
 ### §C7. Decidability complexity
 
-**Per-judgment bounds**:
+**Per-judgment bounds** for the bounded/certificate-checked kernel
+fragment. Rows involving search or external solvers are budgeted
+procedures unless a total checker/certificate is supplied.
 
 | Judgment | Worst-case | Typical-case |
 |----------|------------|---------------|
 | Type-check `Γ ⊢ t : A` | PSPACE | poly(|t|) |
 | Conv `t ≡ t'` | poly via SN+CR | linear in NF size |
 | Decidable predicate | depends on instance | constant |
-| Refinement obligation | undecidable in general | poly via SMT |
-| 22-dimensional check | poly per dimension | constant per dim |
+| Refinement obligation | undecidable in general | poly only for bounded certificate-checked fragments |
+| Active grade-vector check (target 24 dimensions) | per active dimension | constant only for finite enum dimensions |
 | Strategy search (dim 3) | exp in graph size | poly with pruning |
-| Hardware retrofit (dim 4) | constant per target | constant |
+| Hardware retrofit (dim 4) | model-check constant per target | realization-dependent |
 | Refinement functor (dim 5) | poly per refinement | poly |
 | Algorithm discovery (dim 6) | semi-decidable | exp with ML guidance |
 
@@ -6748,7 +6897,7 @@ corresponding endofunctor, satisfying the recursion principle.
 | FEU v5.1 / v6 tape-out schedule | Vertical I 18-24 month + 12 month additional for v6; ~3-4 years total to FEU-FX hardware availability; FX kernel work proceeds independently with FEU as planning target |
 | Promise/Guard/Fallback false-positive rate at runtime | Adaptive fallback policies (re-calibrate / escalate / reduce-frequency / fall-back-to-digital) provide graceful degradation; runtime monitor tuning per application |
 | E-graph saturation explodes at depth d > 10 | Saturation termination theorem (Day 93.A) bounds size; programmer / LLM agent chooses depth budget; Pareto-frontier extraction provides multi-objective optimization |
-| Energy dim-23 Landauer bound enforcement misses thermal noise | Landauer is theoretical floor; practical analog hardware has additional kT/C noise (~11.7 µV at 30 pF); Promise/Guard handles via runtime measurement |
+| Energy dim-23 overclaims physical truth | Landauer-style statements are model theorems over explicit finite thermodynamic models; practical analog hardware has additional kT/C noise (~11.7 µV at 30 pF), PVT variation, and calibration drift; Promise/Guard plus measurement certificates handle runtime reality |
 | Side-channel typing incomplete for novel attacks | 7 channels (Timing/Power/EM/Cache/Speculation/Thermal/Acoustic) cover known classes; future attack discoveries require effect catalog extension |
 | Multi-die ternary cube (FEU 27-die) latency variance | PAM-3 SerDes 5-10 ns per hop fundamental; Era T site morphisms verify cross-die naturality but cannot eliminate physical latency |
 | Counterfactual operators leak observable side effects | Era W Day 96.8 verified non-interference theorem zero-axiom; counterfactual is "imagined" only, no observable mutation of actual world |
@@ -6761,8 +6910,9 @@ corresponding endofunctor, satisfying the recursion principle.
 (Days 31.5-31.9)** + **Era V D38.A/B/C extensions** — polygraph
 substrate + kernel retrofit + sharing cells / BSP + hardware
 retrofit + multi-level hardware polygraph (Maxwell-grounded) +
-reduction completion + Incrementality dim-24 + Energy dim-23 +
-side-channel typing. Without this, FX is not beyond-frontier and
+reduction completion + Incrementality dim-24 + Energy dim-23 as a
+finite model/certificate interface + side-channel typing. Without
+this, FX is not beyond-frontier and
 hardware verification has no honest substrate.
 
 **Tier 2 (should ship)**: Eras VI-IX (Days 47-68) + **Era VIII
@@ -6857,8 +7007,8 @@ Tier 1 (foundational, must ship)
 * **B10** (Day 75, Era X Day 75): synthetic Tait — kernel proves
   itself internally (B5 was external-Lean SN; B10 is FX-internal)
 * **B11** (Day 88, Era XI close-out): fx-mtheory v0.1 — first
-  kernel-verified M-theory results; Sati-Schreiber main theorem
-  zero-axiom
+  kernel-verified explicit M-theory-inspired model fragment;
+  Sati-Schreiber-style theorem zero-axiom inside the encoded model
 * **B12** (Day 96, Era XII close-out): full algorithm-discovery
   operational on representative benchmarks; user-extensible β
   rules with STRICT-35/36/37 verification gates
@@ -6870,8 +7020,9 @@ Tier 1 (foundational, must ship)
 * **B14** (Day 31.9, Era IV.5 close-out): multi-level hardware
   polygraph operational (Maxwell → RLC → STA → Digital → μArch with
   verified abstraction functors); spacetime-typed primitives
-  Charge / Wire / Register / Instruction; discrete Stokes + Landauer
-  bound at kernel level
+  Charge / Wire / Register / Instruction; discrete Stokes at the
+  formal-model level; Landauer/energy via checked finite-model
+  certificates
 * **B15** (Day 78.9, Era T close-out): site-parametric kernel
   operational (`Term : CausalSite → Ctx → Ty → RawTerm → Type`);
   10+ site instances in catalog; cross-Era reframings (Era VII,
@@ -6928,25 +7079,32 @@ polygraph-substrate + parametric + reflective + worldly iff:
 13. ✓ OT-augmented soft search with verified extraction
 14. ✓ ∞-groupoid coherences at finite dimensions
 15. ✓ Synthetic Tait operational (kernel proves itself internally)
-16. ✓ fx-mtheory mechanizing Sati-Schreiber main theorem
+16. ✓ fx-mtheory mechanizing an explicit Sati-Schreiber-style model
+   theorem, with physical adequacy handled by comparison/search
+   certificates
 17. ✓ Algorithm discovery operational on at least one benchmark
 18. ✓ User-extensible β-rule database with STRICT-35/36/37 gates
 19. ✓ All theorems zero-axiom per `computability-rules.md`
 20. ✓ **Multi-level hardware polygraph (Era IV.5)**: Maxwell at
     Level 0 + RLC + STA + Digital + μArch with 4 verified
-    abstraction functors; spacetime-typed primitives
-    Charge/Wire/Register/Instruction; discrete Stokes + Landauer
-    bound at kernel level
-21. ✓ **Site-parametric kernel (Era T)**: `Term @ S` for arbitrary
-    finitely-presented (∞,n)-polygraph site S; 10+ site instances
-    in catalog; temporal cohesion ◯⊣▷⊣⟐⊣ℑ; 8-modality spacetime
-    cohesion combining with spatial ♭⊣◇⊣□⊣♯
+    abstraction functors as explicit models; spacetime-typed
+    primitives Charge/Wire/Register/Instruction; discrete Stokes as
+    formal calculus theorem; Landauer/energy only through explicit
+    finite-model certificates
+21. ✓ **Site-parametric kernel (Era T)**: `Term @ S` for
+    finitely-presented (∞,n)-polygraph sites that supply the
+    required finite generators, typed source/target maps,
+    substitution/renaming actions, reduction measure, and
+    critical-pair witnesses; 10+ site instances in catalog;
+    temporal cohesion ◯⊣▷⊣⟐⊣ℑ; 8-modality spacetime cohesion
+    combining with spatial ♭⊣◇⊣□⊣♯
 22. ✓ **Reflection layer (Era R)**: ReflTerm + Term.reify +
     ReflTerm.elaborate roundtrip zero-axiom at all 75 ctors;
     Tactic monad with verified-correctness theorem; macros + DSL
     embedding; FX-in-FX self-hosting (B13 unblocked)
-23. ✓ **World-as-type (Era W)**: World opaque + peek/poke +
-    Iris-style step-indexed Kripke worlds (constructive fragment);
+23. ✓ **World-as-type (Era W)**: World sealed interface +
+    peek/poke + Iris-style step-indexed Kripke worlds
+    (constructive fragment);
     effect-as-world-transition iso; counterfactual operators with
     verified non-interference
 24. ✓ **Four encoding columns**: Tree + PolyTerm + ValueTerm +
@@ -7414,10 +7572,12 @@ not implementation tasks.
 ### D.1 Site-parametric Term as meta-language for type theories
 
 ```
-Theorem (Site-meta-language): For every dependently-typed system L
-with categorical model M(L) admitting a polygraphic presentation,
-∃ a CausalSite S(L) such that
-  Term @ S(L) ≅ TermsOfL via fully-faithful conservative embedding.
+Conjecture (Site-meta-language): For every dependently-typed system L
+with a finite/certificate-checkable polygraphic presentation and the
+Era T site-transfer hypotheses (typed source/target, substitution,
+renaming, reduction measure, critical-pair witnesses), ∃ a CausalSite
+S(L) such that:
+  Term @ S(L) conservatively embeds the represented fragment of L.
 
 Specific instances:
   Site_MLTT     ≅ Martin-Löf TT (Π/Σ/Id, no path types)
@@ -7427,24 +7587,26 @@ Specific instances:
   Site_modal4   ≅ Schreiber 4-modality cohesion
   Site_quantum  ≅ ZX-calculus (dagger compact, Coecke-Duncan 2008)
 ```
-Refutability: find a dependently-typed system L for which no
-finitely-presented site admits the embedding.
+Refutability: find a finite/certificate-checkable represented
+fragment L for which no site satisfying the Era T transfer hypotheses
+admits a conservative embedding.
 
 ### D.2 Verified compilers as site morphisms (CompCert-generalized)
 
 ```
-Theorem (Compiler-as-morphism, Leroy 2009 generalized):
-A verified compiler from Term @ SourceSite to Term @ TargetSite
-is exactly a verified site morphism plus a soundness witness:
+Conjecture / design target (Compiler-as-morphism, Leroy 2009
+generalized): A verified compiler from Term @ SourceSite to Term @
+TargetSite is represented by a verified site morphism plus a
+soundness witness:
   Compiler(Source, Target) := SiteMorphism Source Target
                               with cond_F = "semantic preservation"
 
 Cross-architecture (CPU vs B200 vs FPGA per Era IV D31.3) is the
 naturality square of these morphisms.
 ```
-Refutability: find a compiler optimization not expressible as a
-site morphism; conjecture (refutable): every semantics-preserving
-pass is one.
+Refutability: find a semantics-preserving compiler optimization for
+the represented fragment that cannot be encoded as a site morphism
+without adding unjustified structure.
 
 ### D.3 CAP theorem as cohomological obstruction
 
@@ -7511,36 +7673,42 @@ Complexity: O(|p|^d × catalog_size) for depth d ≤ 10.
 Pareto-frontier of (cost1, cost2) computable via lex search.
 ```
 
-### D.8 Energy as graded dimension with Landauer as typing rule
+### D.8 Energy as model-checked graded dimension
 
 ```
-Theorem (Landauer-as-typing): For irreversible Step s,
+Model theorem (Landauer-style certificate): For irreversible Step s
+inside an explicit finite thermodynamic model M,
   s.energy_cost ≥ k_B · T · s.entropy_decrease · ln 2
 
 T = 298.15 K: ≥ 2.85 × 10⁻²¹ J / bit erased.
-Reversible Steps (Bennett 1973, Fredkin-Toffoli 1982): cost ≥ 0
-(no floor).
+Reversible Steps (Bennett 1973, Fredkin-Toffoli 1982): cost floor
+0 only inside models that prove the reversibility hypotheses.
 
 Compiler can search for energy-minimal equivalent programs.
-Quantum unitary evolution = asymptotic limit (∀ Steps reversible).
+Quantum unitary evolution is represented by finite-dimensional
+unitary model certificates, not a kernel-global assumption.
 ```
 
-### D.9 Halting decidable in finitely-presented sites
+### D.9 Bounded normalization decidable in certified finite sites
 
 ```
 For finitely-presented (∞,n)-polygraph site S with bounded dim
-n ≤ 6 and finite generators per dim:
-  Halts(p in S) ⟺ NF(p) reachable in poly Step transitions
-                ⟺ decidable, EXPTIME-bounded
+n ≤ 6, finite generators per dim, a well-founded reduction
+measure, and complete critical-pair witnesses:
+  NF_reachable_within_bound(p, B) is decidable by finite search
+  M04-style total normalization is decidable only when S supplies
+  the reducibility interpretation / SN proof required by Era S.
 
 This does NOT contradict Turing's theorem (universal machine site
-is not finitely-presented). For FX programs in finitely-presented
-sites, halting IS decidable. Era V Day 43 M04 SN is the
-specialization for FX.standardSite.
+does not supply the SN certificate). For FX programs in certified
+finite/SN sites, normalization is decidable because the site carries
+the termination proof. Era S Day 43 M04 SN is the specialization for
+FX.standardSite.
 
-Tradeoff: site-finiteness vs Turing-completeness. FX chooses
-site-finiteness; Turing-completeness via embedded interpreter for
-unbounded language.
+Tradeoff: certified finite/SN sites vs unbounded universal
+interpreters. FX keeps the kernel decidable and represents unbounded
+languages through explicit fuel, coinduction/productivity, or
+external execution boundaries.
 ```
 
 ### D.10 Gödel monotonically removable via on-demand site extension
@@ -7664,17 +7832,19 @@ Lorentz transformation := infinitesimal form; FX discrete version
                           more general (no metric required).
 ```
 
-### D.19 Computational thermodynamics as kernel theorem
+### D.19 Computational thermodynamics as model theorem
 
 ```
-∀ (computation : Program → Program) (path : ReductionPath comp),
+For explicit finite thermodynamic model M and checked reduction path:
   energy_consumed(path) = ∑ energy_cost(step over path)
                         ≥ k_B · T · entropy_decrease(comp) · ln 2
 
-with equality iff every step is reversible.
+with equality iff M proves every step is reversible and the supplied
+model laws have tight certificates.
 
 Reversible computing target for energy-optimal compilation.
-Quantum computing = asymptotic limit.
+Quantum computing enters through explicit finite unitary-model
+certificates.
 ```
 
 ### D.20 2-Site as universal arena for all formal reasoning
@@ -7693,7 +7863,7 @@ Sub-2-categories specialize to:
   ML / discovery (V)          → ML-guided 2-cell construction
   Debugging / git (VI)        → 2-cell construction in patch-2-cat
   Refactoring (VII)           → cost-min representative in eq-class
-  Energy (VIII)               → grade dim 23 with Landauer floor
+  Energy (VIII)               → grade dim 23 with finite model certificates
   Halting (IX)                → reachability in finite sites
   Set-theoretic indep (XI)    → site dial
   Privacy / side-channel (XII)→ unintended 2-cell detection
