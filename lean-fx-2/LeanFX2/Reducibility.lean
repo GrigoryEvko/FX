@@ -1307,6 +1307,93 @@ theorem RawTerm.boolElim_var_isStronglyNormalizing {scope : Nat}
             (RawStep.par.var_inv scrutineeStep).symm
           nomatch varEqFalse)
 
+/-- Boolean eliminator SN preservation.  This is the generic version
+behind the neutral `boolElim_var` helper: congruence arms recurse through
+the three SN subterms, while true/false ι arms return the corresponding
+branch target. -/
+theorem RawTerm.boolElim_isStronglyNormalizing {scope : Nat}
+    {thenBranch : RawTerm scope}
+    (thenIsSN : RawTerm.isStronglyNormalizing thenBranch) :
+    ∀ {elseBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing elseBranch →
+    ∀ {scrutinee : RawTerm scope},
+      RawTerm.isStronglyNormalizing scrutinee →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.boolElim scrutinee thenBranch elseBranch) := by
+  induction thenIsSN with
+  | intro currentThen thenClosure thenIH =>
+    intro elseBranch elseIsSN
+    induction elseIsSN with
+    | intro currentElse elseClosure elseIH =>
+      intro scrutinee scrutineeIsSN
+      induction scrutineeIsSN with
+      | intro currentScrutinee scrutineeClosure scrutineeIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.boolElim currentScrutinee currentThen currentElse) ?_
+        intro target progressStep
+        cases RawStep.par.boolElim_inv progressStep.1 with
+        | inl congruentStep =>
+          rcases congruentStep with
+            ⟨scrutineeTarget, thenTarget, elseTarget, targetEq,
+              scrutineeStep, thenStep, elseStep⟩
+          subst targetEq
+          by_cases thenEq : currentThen = thenTarget
+          · subst thenEq
+            by_cases elseEq : currentElse = elseTarget
+            · subst elseEq
+              by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+              · subst scrutineeEq
+                exact (progressStep.2 rfl).elim
+              · exact scrutineeIH scrutineeTarget
+                  ⟨scrutineeStep, scrutineeEq⟩
+            · have scrutineeTargetIsSN :
+                  RawTerm.isStronglyNormalizing scrutineeTarget := by
+                by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+                · subst scrutineeEq
+                  exact RawTerm.isStronglyNormalizing.intro currentScrutinee
+                    scrutineeClosure
+                · exact scrutineeClosure scrutineeTarget
+                    ⟨scrutineeStep, scrutineeEq⟩
+              exact elseIH elseTarget ⟨elseStep, elseEq⟩
+                scrutineeTargetIsSN
+          · have elseTargetIsSN :
+                RawTerm.isStronglyNormalizing elseTarget := by
+              by_cases elseEq : currentElse = elseTarget
+              · subst elseEq
+                exact RawTerm.isStronglyNormalizing.intro currentElse
+                  elseClosure
+              · exact elseClosure elseTarget ⟨elseStep, elseEq⟩
+            have scrutineeTargetIsSN :
+                RawTerm.isStronglyNormalizing scrutineeTarget := by
+              by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+              · subst scrutineeEq
+                exact RawTerm.isStronglyNormalizing.intro currentScrutinee
+                  scrutineeClosure
+              · exact scrutineeClosure scrutineeTarget
+                  ⟨scrutineeStep, scrutineeEq⟩
+            exact thenIH thenTarget ⟨thenStep, thenEq⟩
+              elseTargetIsSN scrutineeTargetIsSN
+        | inr iotaStep =>
+          cases iotaStep with
+          | inl trueStep =>
+            rcases trueStep with
+              ⟨thenTarget, targetEq, _scrutineeStep, thenStep⟩
+            rw [targetEq]
+            by_cases thenEq : currentThen = thenTarget
+            · subst thenEq
+              exact RawTerm.isStronglyNormalizing.intro currentThen
+                thenClosure
+            · exact thenClosure thenTarget ⟨thenStep, thenEq⟩
+          | inr falseStep =>
+            rcases falseStep with
+              ⟨elseTarget, targetEq, _scrutineeStep, elseStep⟩
+            rw [targetEq]
+            by_cases elseEq : currentElse = elseTarget
+            · subst elseEq
+              exact RawTerm.isStronglyNormalizing.intro currentElse
+                elseClosure
+            · exact elseClosure elseTarget ⟨elseStep, elseEq⟩
+
 /-- **K12.20.AV.1 neutral natElim SN preservation**.  Sister to
 `boolElim_var`; nat-recursor with variable scrutinee.
 
@@ -5991,6 +6078,49 @@ theorem Reducible.fundamental_refineElim_at_refine
     Reducible (baseType.subst sigma)
               (Term.subst termSubst (Term.refineElim refinedValue)) :=
   refineIH.2
+
+/-! ## K12.22 fundamental ι-eliminator cases -/
+
+/-- Fundamental case: `Term.boolElim` at `Ty.bool` (K12.22.A,
+weak-SN).
+
+The current bool arm is an SN-direct closed-type clause.  Since the motive
+type is arbitrary rather than a structural sub-type of `Ty.bool`, this case
+returns SN of the eliminator result.  Full `Reducible motiveType` is deferred
+to the same Kripke/refined-candidate infrastructure as the other dependent
+eliminators.
+-/
+theorem Reducible.fundamental_boolElim_at_bool_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (scrutineeIH :
+      Reducible ((Ty.bool : Ty level scope).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (thenIH :
+      Reducible ((motiveType.subst0 Ty.bool RawTerm.boolTrue).subst sigma)
+        (Term.subst termSubst thenBranch))
+    (elseIH :
+      Reducible ((motiveType.subst0 Ty.bool RawTerm.boolFalse).subst sigma)
+        (Term.subst termSubst elseBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.boolElim scrutinee thenBranch elseBranch)) :=
+  RawTerm.boolElim_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing thenIH)
+    (Reducible.isStronglyNormalizing elseIH)
+    scrutineeIH
 
 /-! ## K12.23 fundamental HOTT-eliminator cases -/
 

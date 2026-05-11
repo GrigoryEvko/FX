@@ -647,6 +647,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_appPi_at_piTy_sn
 #print axioms Reducible.fundamental_recordProj_at_record
 #print axioms Reducible.fundamental_refineElim_at_refine
+#print axioms Reducible.fundamental_boolElim_at_bool_sn
 #print axioms Reducible.fundamental_idJ_at_id_sn
 #print axioms Reducible.fundamental_oeqJ_at_oeq_sn
 #print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn
@@ -680,6 +681,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.equivIntro_isStronglyNormalizing
 #print axioms RawTerm.uaToEquiv_isStronglyNormalizing
 #print axioms RawTerm.oeqFunext_isStronglyNormalizing
+#print axioms RawTerm.boolElim_isStronglyNormalizing
 #print axioms RawTerm.recordIntro_isStronglyNormalizing
 #print axioms RawTerm.refineIntro_isStronglyNormalizing
 #print axioms RawTerm.codataUnfold_isStronglyNormalizing
