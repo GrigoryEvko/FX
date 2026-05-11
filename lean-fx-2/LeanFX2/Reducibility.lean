@@ -4982,4 +4982,61 @@ theorem Reducible.fundamental_modIntro_at_effect
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
 
+/-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
+case at the homogeneous (non-dependent) arrow type
+
+First entry of the K12.21 β-redex fundamental-case batch (#1778).
+`Term.app : Term ctx (Ty.arrow A B) fnRaw → Term ctx A argRaw →
+Term ctx B (RawTerm.app fnRaw argRaw)` is the non-dependent
+function-application elimination form.
+
+The proof is a single composition of three definitional facts:
+
+1.  `(Ty.arrow A B).subst sigma = Ty.arrow (A.subst sigma)
+    (B.subst sigma)`  (`Foundation/Subst.lean:105-106`)
+2.  `Reducible (Ty.arrow A' B') f = SN(f) ∧ ∀ argTerm, Reducible
+    A' argTerm → Reducible B' (Term.app f argTerm)`  (K12.5, see
+    `Reducibility.lean:333-338`)
+3.  `Term.subst termSubst (Term.app fn arg) = Term.app
+    (Term.subst termSubst fn) (Term.subst termSubst arg)`
+    (`Term/Subst.lean:199-200`)
+
+Composing: `functionIH.2 (Term.subst termSubst argumentTerm)
+argumentIH` projects the second component of the arrow-closure
+witness from the function's IH, applied to the substituted
+argument and its argument-IH.  The result has the goal type
+modulo the three definitional reductions above. -/
+
+/-- **K12.21.A fundamental_app at `Ty.arrow`** — non-dependent
+β-redex elimination.  Direct projection of the arrow's
+Reducible-closure (K12.5 second conjunct) applied to the
+substituted argument.
+
+This is the strongest fundamental case shipped so far: it
+exercises the FULL Tait reducibility framework (not just SN
+preservation), proving that the codomain Reducible witness
+follows by composing the function's arrow-closure with the
+argument's reducibility witness. -/
+theorem Reducible.fundamental_app_at_arrow
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIH :
+        Reducible ((Ty.arrow domainType codomainType).subst sigma)
+                  (Term.subst termSubst functionTerm))
+    (argumentIH :
+        Reducible (domainType.subst sigma)
+                  (Term.subst termSubst argumentTerm)) :
+    Reducible (codomainType.subst sigma)
+              (Term.subst termSubst
+                (Term.app functionTerm argumentTerm)) :=
+  functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
 end LeanFX2
