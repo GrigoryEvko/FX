@@ -167,4 +167,8 @@ namespace LeanFX2.Tools
 -- K11.11 (#1748): PolyTerm.toTerm typed backward bijection (77 ctors).
 #assert_no_axioms LeanFX2.PolyTerm.toTerm
 
+-- K11.10-B (#1752): Term.toPoly typed forward bijection (77 ctors,
+-- 11 K11.12-driven `▸` casts on raw-in-Ty constructors).
+#assert_no_axioms LeanFX2.Term.toPoly
+
 end LeanFX2.Tools
