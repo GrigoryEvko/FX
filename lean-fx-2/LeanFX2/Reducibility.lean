@@ -2986,6 +2986,101 @@ theorem Reducible.modal_of_varShape
     Reducible (Ty.modal modalityTag carrierType) term :=
   Term.isStronglyNormalizing_of_varShape term
 
+/-! ### K12.20.AZ compound varShape — SN-only-closure compound types
+
+Four compound-Ty `_of_varShape` lemmas where Reducible's closure
+clause demands only SN of the eliminator result (not full
+Reducible).  These extend K12.20.E's SN-direct batch with the
+SN-only-closure compound arms — dependent Π, HoTT identity,
+observational equality, strict identity — each discharged by ONE
+Stage 1 neutral-head SN helper.  Compound arms with
+Reducible-on-sub-Ty closures (arrow / sigmaTy / listType /
+optionType / eitherType / path / glue / equiv / refine / record)
+require induction-on-Ty and ship later in K12.20.BA+. -/
+
+/-- **K12.20.AZ.1 piTy arm**: variables are reducible at the
+dependent-Π type.  Closure: SN(var) + ∀ argTerm, Reducible
+domainType argTerm → SN(Term.appPi (var) argTerm).  The second
+clause reduces (via Reducible.isStronglyNormalizing CR1) to
+SN(argRaw), then Stage 1's `RawTerm.app_var_isStronglyNormalizing`
+closes — Term.appPi's raw form is `RawTerm.app functionRaw
+argumentRaw`, matching app_var's signature. -/
+theorem Reducible.piTy_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.piTy domainType codomainType)
+          (RawTerm.var position)) :
+    Reducible (Ty.piTy domainType codomainType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun {_argRaw} _argTerm argIsReducible =>
+     RawTerm.app_var_isStronglyNormalizing position
+       (Reducible.isStronglyNormalizing argIsReducible)⟩
+
+/-- **K12.20.AZ.2 id arm**: variables are reducible at the HoTT
+propositional identity type.  Closure: SN(var) + ∀ baseCase,
+SN(baseCase) → SN(Term.idJ baseCase var).  Stage 1's
+`RawTerm.idJ_var_isStronglyNormalizing` discharges directly —
+Term.idJ's raw form is `RawTerm.idJ baseRaw witnessRaw` with var
+in the witness slot. -/
+theorem Reducible.id_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {position : Fin scope}
+    (witness :
+        Term context (Ty.id carrier leftEndpoint rightEndpoint)
+          (RawTerm.var position)) :
+    Reducible (Ty.id carrier leftEndpoint rightEndpoint) witness :=
+  ⟨Term.isStronglyNormalizing_of_varShape witness,
+   fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
+     RawTerm.idJ_var_isStronglyNormalizing position baseIsSN⟩
+
+/-- **K12.20.AZ.3 oeq arm**: variables are reducible at the
+observational equality type.  Closure: SN(var) + ∀ baseCase,
+SN(baseCase) → SN(Term.oeqJ baseCase var).  Discharged by Stage 1's
+`RawTerm.oeqJ_var_isStronglyNormalizing` (cong-only inversion;
+oeq-ι deferred at raw layer).  Same shape as `id_of_varShape`. -/
+theorem Reducible.oeq_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {position : Fin scope}
+    (witness :
+        Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+          (RawTerm.var position)) :
+    Reducible (Ty.oeq carrier leftEndpoint rightEndpoint) witness :=
+  ⟨Term.isStronglyNormalizing_of_varShape witness,
+   fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
+     RawTerm.oeqJ_var_isStronglyNormalizing position baseIsSN⟩
+
+/-- **K12.20.AZ.4 idStrict arm**: variables are reducible at the
+strict identity type.  Closure: SN(var) + ∀ (modeIsStrict : mode =
+Mode.strict) baseCase, SN(baseCase) → SN(Term.idStrictRec
+modeIsStrict baseCase var).  Discharged by Stage 1's
+`RawTerm.idStrictRec_var_isStronglyNormalizing`; the typed mode
+witness is universally quantified and consumed silently — the raw
+form drops it. -/
+theorem Reducible.idStrict_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {position : Fin scope}
+    (witness :
+        Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          (RawTerm.var position)) :
+    Reducible (Ty.idStrict carrier leftEndpoint rightEndpoint) witness :=
+  ⟨Term.isStronglyNormalizing_of_varShape witness,
+   fun (_modeIsStrict : mode = Mode.strict)
+       {_motiveType} {_baseRaw} _baseCase baseIsSN =>
+     RawTerm.idStrictRec_var_isStronglyNormalizing position baseIsSN⟩
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
