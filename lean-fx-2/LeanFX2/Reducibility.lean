@@ -3822,6 +3822,41 @@ Reducible-on-sub-Ty closures (arrow / sigmaTy / listType /
 optionType / eitherType / path / glue / equiv / refine / record)
 require induction-on-Ty and ship later in K12.20.BA+. -/
 
+/-- **K12.20.U2 arrow varShape arm**: variables are reducible at
+function type once the codomain CR3 step is available.
+
+This is the binder-lift entry point for the arrow candidate.  The
+function variable itself is SN by `Term.isStronglyNormalizing_of_varShape`.
+For the application closure, `app (var position) argumentRaw` is neutral;
+the raw Stage-1 lemma `RawTerm.app_var_isStronglyNormalizing` supplies the
+progress-closure needed by the codomain CR3 hook. -/
+theorem Reducible.arrow_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.arrow domainType codomainType)
+          (RawTerm.var position))
+    (codomainCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context codomainType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible codomainType sourceTerm) :
+    Reducible (Ty.arrow domainType codomainType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun {_argumentRaw} argumentTerm argumentIsReducible =>
+     codomainCR3 (Term.app term argumentTerm)
+       (RawTerm.IsNeutral.app (RawTerm.IsNeutral.var position))
+       (fun _targetRaw progressStep =>
+         RawTerm.isStronglyNormalizing.step_preserves
+           (RawTerm.app_var_isStronglyNormalizing position
+             (Reducible.isStronglyNormalizing argumentIsReducible))
+           progressStep)⟩
+
 /-- **K12.20.AZ.1 piTy arm**: variables are reducible at the
 dependent-Π type.  Closure: SN(var) + ∀ argTerm, Reducible
 domainType argTerm → SN(Term.appPi (var) argTerm).  The second

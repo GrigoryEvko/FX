@@ -728,6 +728,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.session_of_varShape
 #print axioms Reducible.effect_of_varShape
 #print axioms Reducible.modal_of_varShape
+#print axioms Reducible.arrow_of_varShape
 #print axioms Reducible.unit_of_progress_closure
 #print axioms Reducible.bool_of_progress_closure
 #print axioms Reducible.nat_of_progress_closure
