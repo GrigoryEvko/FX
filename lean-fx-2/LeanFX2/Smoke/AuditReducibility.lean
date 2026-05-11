@@ -651,6 +651,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_idJ_at_id_sn
 #print axioms Reducible.fundamental_oeqJ_at_oeq_sn
 #print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn
+#print axioms Reducible.fundamental_optionMatch_at_option_sn
+#print axioms Reducible.fundamental_eitherMatch_at_either_sn
 #print axioms Reducible.fundamental_refl_at_id_of_endpoint_sn
 #print axioms Reducible.fundamental_oeqRefl_at_oeq_of_endpoint_sn
 #print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn

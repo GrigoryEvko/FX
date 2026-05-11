@@ -6122,6 +6122,90 @@ theorem Reducible.fundamental_boolElim_at_bool_sn
     (Reducible.isStronglyNormalizing elseIH)
     scrutineeIH
 
+/-- Fundamental case: `Term.optionMatch` at `Ty.optionType` (K12.22.B,
+weak-SN).
+
+The `Ty.optionType` reducibility arm stores an eliminator closure:
+SN of the scrutinee plus SN of the none branch plus SN of each
+some-branch application at a reducible element.  The branch-application
+premise is supplied by the arrow reducibility of `someBranch`, then
+demoted to SN because the current closure returns only weak-SN at the
+arbitrary motive type.
+-/
+theorem Reducible.fundamental_optionMatch_at_option_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch :
+      Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeIH :
+      Reducible ((Ty.optionType elementType).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (noneIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst noneBranch))
+    (someIH :
+      Reducible ((Ty.arrow elementType motiveType).subst sigma)
+        (Term.subst termSubst someBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.optionMatch scrutinee noneBranch someBranch)) :=
+  scrutineeIH.2
+    (Term.subst termSubst noneBranch)
+    (Term.subst termSubst someBranch)
+    (Reducible.isStronglyNormalizing noneIH)
+    (fun valueTerm valueIH =>
+      Reducible.isStronglyNormalizing (someIH.2 valueTerm valueIH))
+
+/-- Fundamental case: `Term.eitherMatch` at `Ty.eitherType` (K12.22.C,
+weak-SN).
+
+Same weak eliminator pattern as `optionMatch`, with one arrow-typed
+branch for each side.  The current candidate can prove SN of the
+eliminator result, while full `Reducible motiveType` remains deferred
+to the Kripke/refined-candidate upgrade.
+-/
+theorem Reducible.fundamental_eitherMatch_at_either_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch :
+      Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+      Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeIH :
+      Reducible ((Ty.eitherType leftType rightType).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (leftIH :
+      Reducible ((Ty.arrow leftType motiveType).subst sigma)
+        (Term.subst termSubst leftBranch))
+    (rightIH :
+      Reducible ((Ty.arrow rightType motiveType).subst sigma)
+        (Term.subst termSubst rightBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.eitherMatch scrutinee leftBranch rightBranch)) :=
+  scrutineeIH.2
+    (Term.subst termSubst leftBranch)
+    (Term.subst termSubst rightBranch)
+    (fun valueTerm valueIH =>
+      Reducible.isStronglyNormalizing (leftIH.2 valueTerm valueIH))
+    (fun valueTerm valueIH =>
+      Reducible.isStronglyNormalizing (rightIH.2 valueTerm valueIH))
+
 /-! ## K12.23 fundamental HOTT-eliminator cases -/
 
 /-- Fundamental case: `Term.idJ` at `Ty.id` (K12.23.B, weak-SN).
