@@ -88,10 +88,18 @@ K12.10 ships (HoTT observational + strict identity weak J closures):
   the ambient mode ≠ strict, the equation is uninhabited and the
   inner ∀ is vacuous (closure reduces to SN(witness)).
 
-Future K12.11-K12.16 tighten the remaining ~9 SN-fallback arms
-(path / glue / equiv / refine / record / codata / session /
-effect / modal) to their type-former-specific closures.
-K12.18-K12.26 ship the fundamental lemma; K12.27 closes M04 /
+K12.11 ships (full K12.5-arrow-strength equivalence closure):
+* `Reducible Ty.equiv A B equivTerm = SN(equivTerm) ∧ ∀ arg,
+  Reducible A arg → Reducible B (Term.equivApp equivTerm arg)`.
+  Both A and B are strict sub-Ty of `Ty.equiv A B`, so the
+  closure recurses Reducible on both sides (NOT a weak SN
+  closure — full K12.5 arrow shape).  Term.equivApp mirrors
+  Term.app structurally.
+
+Future K12.12-K12.16 tighten the remaining ~8 SN-fallback arms
+(path / glue / refine / record / codata / session / effect /
+modal) to their type-former-specific closures.  K12.18-K12.26
+ship the fundamental lemma; K12.27 closes M04 /
 `strong_normalization`. -/
 
 #print axioms RawStep.parProgress

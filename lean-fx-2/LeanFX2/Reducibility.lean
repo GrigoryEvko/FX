@@ -115,11 +115,16 @@ This file ships:
   The idStrict arm additionally universally quantifies a
   `mode = Mode.strict` witness; when the ambient mode ≠ strict,
   this is uninhabited and the inner ∀ is vacuous.
-* **All remaining constructors** (~9 type formers: path,
-  glue, equiv, refine, record, codata, session, effect, modal):
-  SN-fallback (admissible but weak — every reducible term is at
-  least SN).  K12.11-K12.16 tighten each to its type-former-
-  specific closure.
+* **equiv carrierA carrierB** (K12.11, FULL Reducible closure):
+  `SN(equivTerm) ∧ ∀ arg, Reducible carrierA arg → Reducible
+  carrierB (Term.equivApp equivTerm arg)`.  Both carrierA and
+  carrierB are strict sub-Ty of `Ty.equiv carrierA carrierB`,
+  so the closure recurses Reducible on BOTH sides — exact mirror
+  of K12.5 RC.arrow, not the K12.6 weak shape.
+* **All remaining constructors** (~8 type formers: path, glue,
+  refine, record, codata, session, effect, modal): SN-fallback
+  (admissible but weak — every reducible term is at least SN).
+  K12.12-K12.16 tighten each to its type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -379,7 +384,23 @@ def Reducible {mode : Mode} {level scope : Nat}
         Term.isStronglyNormalizing baseCase →
         Term.isStronglyNormalizing
           (Term.idStrictRec modeIsStrict baseCase witness)
-  | Ty.equiv _ _, _, term => Term.isStronglyNormalizing term
+  -- Type equivalence (K12.11, full Reducible closure via equivApp).
+  -- `Ty.equiv carrierA carrierB` has BOTH carrierA and carrierB as
+  -- strict sub-Ty, and `Term.equivApp` mirrors `Term.app` exactly:
+  -- takes the equivalence + an argument at carrierA, produces a
+  -- result at carrierB.  Both Reducible recursions descend on strict
+  -- sub-Ty, so the closure can demand FULL Reducible on both sides
+  -- (no SN-fallback needed — same shape as K12.5 RC.arrow).
+  -- Heterogeneous equivalence laws (left/right inverse) live INSIDE
+  -- equivIntroHet's construction and are not exposed as eliminators;
+  -- so the equivApp-driven closure captures the full computational
+  -- content available at the kernel layer.
+  | Ty.equiv carrierA carrierB, _, equivTerm =>
+      Term.isStronglyNormalizing equivTerm ∧
+      ∀ {argumentRaw : RawTerm scope}
+        (argumentTerm : Term context carrierA argumentRaw),
+        Reducible carrierA argumentTerm →
+        Reducible carrierB (Term.equivApp equivTerm argumentTerm)
   | Ty.refine _ _, _, term => Term.isStronglyNormalizing term
   | Ty.record _, _, term => Term.isStronglyNormalizing term
   | Ty.codata _ _, _, term => Term.isStronglyNormalizing term
