@@ -876,11 +876,13 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.oeqJ_neutral_isStronglyNormalizing
 #print axioms RawTerm.idStrictRec_neutral_isStronglyNormalizing
 #print axioms RawTerm.equivApp_neutral_isStronglyNormalizing
+#print axioms Term.app_lam_isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.of_neutral_progress_closure
 #print axioms Reducible.of_type_eq_symm_cast
 #print axioms Reducible.of_raw_eq_symm_cast
 #print axioms Ty.weaken_subst_lift_singleton
+#print axioms RawTerm.subst_lift_singleton_eq_subst0
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
 #print axioms TermSubst.consSingleton

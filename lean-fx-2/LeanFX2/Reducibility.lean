@@ -2373,6 +2373,31 @@ theorem RawTerm.app_lam_isStronglyNormalizing {scope : Nat}
             betaContractumIsSN
             ⟨RawStep.par.subst0_par bodyStep argumentStep, contractumEq⟩
 
+/-- Typed wrapper for non-dependent head-β SN expansion.
+
+The reducibility-level lambda case needs SN of the redex
+`app (lam body) argument` after the body IH proves SN of the
+β-contractum.  Since typed SN is raw SN, this wrapper exposes the
+raw `RawTerm.app_lam_isStronglyNormalizing` lemma at the `Term` layer. -/
+theorem Term.app_lam_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {argumentRaw : RawTerm scope}
+    {bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
+    (contractumIsSN :
+      Term.isStronglyNormalizing (Term.subst0 bodyTerm argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.app (Term.lam (codomainType := codomainType) bodyTerm)
+        argumentTerm) :=
+  RawTerm.app_lam_isStronglyNormalizing bodyIsSN argumentIsSN
+    contractumIsSN
+
 /-- Shape-specialized inversion for application SN.  The induction is
 over an arbitrary SN source and receives the application shape as an
 equality, which keeps Lean's indexed-inductive eliminator in the
@@ -7371,6 +7396,28 @@ theorem Ty.weaken_subst_lift_singleton
   rw [Ty.weaken_subst_commute sigma sourceType]
   exact Ty.weaken_subst_singleton (sourceType.subst sigma)
     (domainType.subst sigma) argumentRaw
+
+/-- Raw β-contractum alignment for the β-specific substitution
+extension.
+
+Substituting a lambda body by `sigma.lift` and then the supplied
+argument has the same raw form as substituting the body once by the
+composed `consSingleton` substitution.  This is the raw-index bridge
+between the body IH under `TermSubst.consSingleton` and the β target
+of the substituted lambda redex. -/
+theorem RawTerm.subst_lift_singleton_eq_subst0
+    {level scope targetScope : Nat}
+    (bodyRaw : RawTerm (scope + 1))
+    (domainType : Ty level scope)
+    (sigma : Subst level scope targetScope)
+    (argumentRaw : RawTerm targetScope) :
+    bodyRaw.subst
+        (Subst.compose sigma.lift
+          (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw =
+      (bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw := by
+  unfold RawTerm.subst0
+  rw [RawTerm.subst_compose sigma.forRaw.lift
+    (RawTermSubst.singleton argumentRaw) bodyRaw]
 
 /-- β-specific extension of a typed substitution by a reducible
 argument.
