@@ -306,6 +306,115 @@ def Term.isStronglyNormalizing {mode : Mode} {level scope : Nat}
     (_term : Term context sourceType sourceRaw) : Prop :=
   RawTerm.isStronglyNormalizing sourceRaw
 
+/-! ## K12.20.U2 neutral vocabulary
+
+CR3 needs a syntactic class of neutral terms: variables and terms
+stuck on an eliminator whose principal scrutinee is neutral.  This
+predicate deliberately excludes introduction forms (`lam`, `pair`,
+constructors, records, refinements, codes) because those either are
+values or have their own beta/iota head rule.
+
+The predicate carries only neutrality, not strong-normalization of
+side arguments.  Later CR3 lemmas combine this neutral shape with the
+CR3 premise "every reduct is reducible" and the existing neutral-head
+SN helper family below. -/
+inductive RawTerm.IsNeutral : ∀ {scope : Nat}, RawTerm scope → Prop
+  | var {scope : Nat} (position : Fin scope) :
+      RawTerm.IsNeutral (RawTerm.var position)
+  | app {scope : Nat} {functionTerm argumentTerm : RawTerm scope}
+      (functionIsNeutral : RawTerm.IsNeutral functionTerm) :
+      RawTerm.IsNeutral (RawTerm.app functionTerm argumentTerm)
+  | fst {scope : Nat} {pairTerm : RawTerm scope}
+      (pairIsNeutral : RawTerm.IsNeutral pairTerm) :
+      RawTerm.IsNeutral (RawTerm.fst pairTerm)
+  | snd {scope : Nat} {pairTerm : RawTerm scope}
+      (pairIsNeutral : RawTerm.IsNeutral pairTerm) :
+      RawTerm.IsNeutral (RawTerm.snd pairTerm)
+  | boolElim {scope : Nat}
+      {scrutinee thenBranch elseBranch : RawTerm scope}
+      (scrutineeIsNeutral : RawTerm.IsNeutral scrutinee) :
+      RawTerm.IsNeutral
+        (RawTerm.boolElim scrutinee thenBranch elseBranch)
+  | natElim {scope : Nat}
+      {scrutinee zeroBranch succBranch : RawTerm scope}
+      (scrutineeIsNeutral : RawTerm.IsNeutral scrutinee) :
+      RawTerm.IsNeutral
+        (RawTerm.natElim scrutinee zeroBranch succBranch)
+  | natRec {scope : Nat}
+      {scrutinee zeroBranch succBranch : RawTerm scope}
+      (scrutineeIsNeutral : RawTerm.IsNeutral scrutinee) :
+      RawTerm.IsNeutral
+        (RawTerm.natRec scrutinee zeroBranch succBranch)
+  | listElim {scope : Nat}
+      {scrutinee nilBranch consBranch : RawTerm scope}
+      (scrutineeIsNeutral : RawTerm.IsNeutral scrutinee) :
+      RawTerm.IsNeutral
+        (RawTerm.listElim scrutinee nilBranch consBranch)
+  | optionMatch {scope : Nat}
+      {scrutinee noneBranch someBranch : RawTerm scope}
+      (scrutineeIsNeutral : RawTerm.IsNeutral scrutinee) :
+      RawTerm.IsNeutral
+        (RawTerm.optionMatch scrutinee noneBranch someBranch)
+  | eitherMatch {scope : Nat}
+      {scrutinee leftBranch rightBranch : RawTerm scope}
+      (scrutineeIsNeutral : RawTerm.IsNeutral scrutinee) :
+      RawTerm.IsNeutral
+        (RawTerm.eitherMatch scrutinee leftBranch rightBranch)
+  | pathApp {scope : Nat}
+      {pathTerm intervalArg : RawTerm scope}
+      (pathIsNeutral : RawTerm.IsNeutral pathTerm) :
+      RawTerm.IsNeutral (RawTerm.pathApp pathTerm intervalArg)
+  | glueElim {scope : Nat} {gluedValue : RawTerm scope}
+      (gluedValueIsNeutral : RawTerm.IsNeutral gluedValue) :
+      RawTerm.IsNeutral (RawTerm.glueElim gluedValue)
+  | transp {scope : Nat} {path source : RawTerm scope}
+      (pathIsNeutral : RawTerm.IsNeutral path) :
+      RawTerm.IsNeutral (RawTerm.transp path source)
+  | hcomp {scope : Nat} {sides cap : RawTerm scope}
+      (sidesIsNeutral : RawTerm.IsNeutral sides) :
+      RawTerm.IsNeutral (RawTerm.hcomp sides cap)
+  | idJ {scope : Nat} {baseCase witness : RawTerm scope}
+      (witnessIsNeutral : RawTerm.IsNeutral witness) :
+      RawTerm.IsNeutral (RawTerm.idJ baseCase witness)
+  | oeqJ {scope : Nat} {baseCase witness : RawTerm scope}
+      (witnessIsNeutral : RawTerm.IsNeutral witness) :
+      RawTerm.IsNeutral (RawTerm.oeqJ baseCase witness)
+  | idStrictRec {scope : Nat} {baseCase witness : RawTerm scope}
+      (witnessIsNeutral : RawTerm.IsNeutral witness) :
+      RawTerm.IsNeutral (RawTerm.idStrictRec baseCase witness)
+  | equivApp {scope : Nat} {equivTerm argument : RawTerm scope}
+      (equivIsNeutral : RawTerm.IsNeutral equivTerm) :
+      RawTerm.IsNeutral (RawTerm.equivApp equivTerm argument)
+  | equivApply {scope : Nat} {equivRaw argRaw : RawTerm scope}
+      (equivIsNeutral : RawTerm.IsNeutral equivRaw) :
+      RawTerm.IsNeutral (RawTerm.equivApply equivRaw argRaw)
+  | modElim {scope : Nat} {raw : RawTerm scope}
+      (rawIsNeutral : RawTerm.IsNeutral raw) :
+      RawTerm.IsNeutral (RawTerm.modElim raw)
+  | subsume {scope : Nat} {raw : RawTerm scope}
+      (rawIsNeutral : RawTerm.IsNeutral raw) :
+      RawTerm.IsNeutral (RawTerm.subsume raw)
+  | refineElim {scope : Nat} {refinedValue : RawTerm scope}
+      (refinedValueIsNeutral : RawTerm.IsNeutral refinedValue) :
+      RawTerm.IsNeutral (RawTerm.refineElim refinedValue)
+  | recordProj {scope : Nat} {recordValue : RawTerm scope}
+      (recordValueIsNeutral : RawTerm.IsNeutral recordValue) :
+      RawTerm.IsNeutral (RawTerm.recordProj recordValue)
+  | codataDest {scope : Nat} {codataValue : RawTerm scope}
+      (codataValueIsNeutral : RawTerm.IsNeutral codataValue) :
+      RawTerm.IsNeutral (RawTerm.codataDest codataValue)
+  | sessionSend {scope : Nat} {channel payload : RawTerm scope}
+      (channelIsNeutral : RawTerm.IsNeutral channel) :
+      RawTerm.IsNeutral (RawTerm.sessionSend channel payload)
+  | sessionRecv {scope : Nat} {channel : RawTerm scope}
+      (channelIsNeutral : RawTerm.IsNeutral channel) :
+      RawTerm.IsNeutral (RawTerm.sessionRecv channel)
+  | effectPerform {scope : Nat}
+      {operationTag arguments : RawTerm scope}
+      (operationIsNeutral : RawTerm.IsNeutral operationTag) :
+      RawTerm.IsNeutral
+        (RawTerm.effectPerform operationTag arguments)
+
 /-- The Tait reducibility-candidate predicate, defined by
 structural recursion on Ty.
 
@@ -952,6 +1061,17 @@ theorem RawTerm.var_isStronglyNormalizing {scope : Nat}
   RawTerm.isStronglyNormalizing.intro (RawTerm.var position)
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.var_inv progressStep.1).symm).elim)
+
+/-- Variables have no non-trivial parallel-progress reducts.  This is
+the vacuous CR3 base fact for `RawTerm.IsNeutral.var`: once the CR3
+proof recurses over types, the premise `∀ target, var → target →
+Reducible target` is never queried for an actual target. -/
+theorem RawTerm.var_has_no_progress {scope : Nat}
+    (position : Fin scope) :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.var position) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.var_inv progressStep.1).symm
 
 /-- **K12.20.AS neutral-app SN preservation**.  `RawTerm.app (var pos)
 arg` is strongly normalizing whenever `arg` is.

@@ -681,6 +681,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_sessionRecv
 #print axioms Reducible.fundamental_sessionSend
 #print axioms Reducible.fundamental_effectPerform
+#print axioms LeanFX2.RawTerm.IsNeutral
 #print axioms RawStep.par.universeCode_inv
 #print axioms RawTerm.universeCode_isStronglyNormalizing
 #print axioms Reducible.fundamental_universeCode
@@ -694,6 +695,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_session
 #print axioms Reducible.step_preserves_effect
 #print axioms Reducible.step_preserves_modal
+#print axioms RawTerm.var_has_no_progress
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape
