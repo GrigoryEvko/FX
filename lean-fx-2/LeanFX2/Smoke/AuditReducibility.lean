@@ -759,6 +759,9 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.pair_isStronglyNormalizing
 #print axioms RawTerm.fst_pair_isStronglyNormalizing
 #print axioms RawTerm.snd_pair_isStronglyNormalizing
+#print axioms Term.pair_isStronglyNormalizing
+#print axioms Term.fst_pair_isStronglyNormalizing
+#print axioms Term.snd_pair_isStronglyNormalizing
 #print axioms RawTerm.listCons_isStronglyNormalizing
 #print axioms RawTerm.subsume_isStronglyNormalizing
 #print axioms RawTerm.listNil_isStronglyNormalizing

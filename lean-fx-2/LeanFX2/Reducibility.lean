@@ -4951,6 +4951,64 @@ theorem RawTerm.snd_pair_isStronglyNormalizing {scope : Nat}
             currentSecond secondClosure
         · exact secondClosure secondTarget ⟨secondStepToTarget, secondEq⟩
 
+/-- Typed wrapper for pair SN expansion.
+
+The raw proof is the computational content; this lemma exposes it at
+the `Term` layer so future sigma-intro and head-expansion cases can
+consume typed component SN witnesses directly. -/
+theorem Term.pair_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term context firstType firstRaw}
+    {secondValue :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsSN : Term.isStronglyNormalizing firstValue)
+    (secondIsSN : Term.isStronglyNormalizing secondValue) :
+    Term.isStronglyNormalizing
+      (Term.pair (secondType := secondType) firstValue secondValue) :=
+  RawTerm.pair_isStronglyNormalizing firstIsSN secondIsSN
+
+/-- Typed wrapper for `fst (pair first second)` SN expansion.
+
+This is still an SN bridge, not the full sigma-intro reducibility
+middle conjunct.  Full `Reducible firstType (fst (pair ...))`
+requires typed backward closure at the result type. -/
+theorem Term.fst_pair_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term context firstType firstRaw}
+    {secondValue :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsSN : Term.isStronglyNormalizing firstValue)
+    (secondIsSN : Term.isStronglyNormalizing secondValue) :
+    Term.isStronglyNormalizing
+      (Term.fst
+        (Term.pair (secondType := secondType) firstValue secondValue)) :=
+  RawTerm.fst_pair_isStronglyNormalizing firstIsSN secondIsSN
+
+/-- Typed wrapper for `snd (pair first second)` SN expansion. -/
+theorem Term.snd_pair_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term context firstType firstRaw}
+    {secondValue :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsSN : Term.isStronglyNormalizing firstValue)
+    (secondIsSN : Term.isStronglyNormalizing secondValue) :
+    Term.isStronglyNormalizing
+      (Term.snd
+        (Term.pair (secondType := secondType) firstValue secondValue)) :=
+  RawTerm.snd_pair_isStronglyNormalizing firstIsSN secondIsSN
+
 /-- **K12.20.AA listCons SN preservation** — second binary SN
 helper.  Same nested-induction + decidable-injectivity-split template
 as `pair_isStronglyNormalizing`, applied to the cons-cell at the
