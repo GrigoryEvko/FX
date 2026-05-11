@@ -15,6 +15,7 @@ import LeanFX2.Foundation.Cofib
 import LeanFX2.Foundation.RenameIdentity
 import LeanFX2.Foundation.Polygraph.PolyCell
 import LeanFX2.Foundation.Polygraph.ParallelPair
+import LeanFX2.Foundation.Polygraph.Wellfounded
 
 -- Layer 1 - Term
 import LeanFX2.Term

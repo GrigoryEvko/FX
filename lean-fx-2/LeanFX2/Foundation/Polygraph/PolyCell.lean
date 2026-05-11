@@ -45,7 +45,14 @@ parallelism condition lifted to the type level.
   ambient cell's level).  Projections live there because they require
   the `casesOn`-with-index-equality recipe from
   `feedback_lean_indexed_partial_match.md`.
-* `DecidableEq`.  K11.3 lands DecidableEq via the same recipe.
+* `DecidableEq`.  Auto-derivation leaks `propext` on the over-
+  constrained per-ctor index shape (`dim=0` / `dim=1` /
+  `dim=dim+2`) — this is the indexed-inductive partial-match trap
+  from `feedback_lean_indexed_partial_match.md` reaching the
+  auto-derived equation lemmas.  Hand-rolled instance via
+  dim-uniqueness dispatch is required and ships in a follow-up
+  K11.3.B task.  K11.3 itself ships the well-foundedness measure
+  (which is the unblocker for K11.4 vertical composition).
 * Vertical / horizontal composition.  K11.4 / K11.5.
 * Multi-port arity (Squier 1987 / Métayer 2008 operadic reading).
   The globular fragment shipped here is single-port — `source` and

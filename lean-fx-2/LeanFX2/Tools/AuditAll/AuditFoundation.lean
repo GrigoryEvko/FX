@@ -52,5 +52,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.cellSource
 #assert_no_axioms LeanFX2.Foundation.Polygraph.cellTarget
 #assert_no_axioms LeanFX2.Foundation.Polygraph.cellIdx
+#assert_no_axioms LeanFX2.Foundation.Polygraph.dimensionMeasure
+#assert_no_axioms LeanFX2.Foundation.Polygraph.cellSource_dimensionMeasure_lt
+#assert_no_axioms LeanFX2.Foundation.Polygraph.cellTarget_dimensionMeasure_lt
+#assert_no_axioms LeanFX2.Foundation.Polygraph.arrowSource_dimensionMeasure_lt
+#assert_no_axioms LeanFX2.Foundation.Polygraph.arrowTarget_dimensionMeasure_lt
 
 end LeanFX2.Tools
