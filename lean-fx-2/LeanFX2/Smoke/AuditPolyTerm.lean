@@ -4,6 +4,7 @@ import LeanFX2.Foundation.Polygraph.PolyTermAction
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyRename
+import LeanFX2.Term.PolySubst
 
 namespace LeanFX2.Smoke
 
@@ -259,3 +260,7 @@ end LeanFX2.Smoke
 -- K11.13 Phase C-2 (#1745) — typed PolyTerm.rename via composition.
 #print axioms LeanFX2.PolyTerm.rename
 #print axioms LeanFX2.PolyTerm.weaken
+
+-- K11.13 Phase D (#1745) — typed PolyTerm.subst via composition.
+#print axioms LeanFX2.PolyTerm.subst
+#print axioms LeanFX2.PolyTerm.subst0

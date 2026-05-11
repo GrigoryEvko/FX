@@ -207,4 +207,14 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.PolyTerm.rename
 #assert_no_axioms LeanFX2.PolyTerm.weaken
 
+-- K11.13 Phase D (#1745): typed `PolyTerm.subst` via composition
+-- through `Term.subst`.  Mirrors Phase C-2's pattern: routes
+-- `polyTerm` → `toTerm` → `Term.subst` → `.toPoly` and casts the
+-- raw-payload index from `(rawPoly.toRawTerm.subst sigma.forRaw).toRawPoly`
+-- to `rawPoly.subst sigma.forRaw.toRawPolySubst` using Phase B's
+-- commute + K11.12's roundtrip.  `PolyTerm.subst0` is the canonical
+-- β-reduction corollary.
+#assert_no_axioms LeanFX2.PolyTerm.subst
+#assert_no_axioms LeanFX2.PolyTerm.subst0
+
 end LeanFX2.Tools

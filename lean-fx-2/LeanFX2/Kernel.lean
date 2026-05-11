@@ -40,6 +40,7 @@ import LeanFX2.Term.Inversion
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyRename
+import LeanFX2.Term.PolySubst
 
 -- Layer 2 - Reduction
 import LeanFX2.Reduction.Step
