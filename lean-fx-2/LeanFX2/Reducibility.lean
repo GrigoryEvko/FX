@@ -2252,4 +2252,92 @@ theorem Reducible.step_preserves_record
       injection recordProjEq
     exact singleFieldTypeCR2 sourceReducible.2 recordProjStep
 
+/-! ## K12.20.T typed CR2 lift — Ty.codata strong-codataDest-closure compound arm
+
+Fifteenth (and final) compound-arm CR2 lemma.  `Ty.codata
+stateType outputType` ships a **strong codataDest closure** in
+K12.15: the eliminator produces full `Reducible outputType
+(Term.codataDest codataValue)` from the observation projection.
+`outputType` is a strict sub-Ty of `Ty.codata stateType
+outputType` — structural-recursion-on-Ty admits the recursive
+`Reducible outputType` call.
+
+Closure shape (per Reducibility.lean:574-576):
+
+```
+Reducible (Ty.codata _ outputType) codataValue =
+  SN(codataValue) ∧
+  Reducible outputType (Term.codataDest codataValue)
+```
+
+Note: `stateType` is also a strict sub-Ty of `Ty.codata
+stateType outputType`, but the closure does NOT recurse on it
+— the stateType is packed into the unfold/initial-state and is
+never exposed by an eliminator.  Productivity-checking at higher
+observation depths lives at the codata-corecursion Layer (#1267
+K08), orthogonal to this RC closure.  So this lemma needs only
+ONE recursive-CR2 hypothesis (`outputTypeCR2`).
+
+Structurally identical to K12.20.{R refine, S record}: pure
+projection, single-substituent cong rule, no quantifier
+overhead.  Only differences: ctor name (`Ty.codata` takes two
+Ty args — `stateType` carried implicit, only `outputType`
+appears in the recursive hypothesis), eliminator
+(`codataDest` vs `recordProj`).
+
+Term.codataDest raw form is `RawTerm.codataDest codataRaw` (per
+Term.lean:460-465); `RawStep.par.codataDestCong` is a 1-arg
+cong rule (per RawPar.lean:820-825).  Distinctness via
+`injection` on `RawTerm.codataDest.injEq`.
+
+**Compound-arm CR2 sweep COMPLETE** with this lemma: all 15
+compound-arm closures shipped (arrow / piTy / sigmaTy / id /
+listType / optionType / eitherType / path / glue / oeq /
+idStrict / equiv / refine / record / codata).  Next: K12.20
+wrap-up combining all 25 arms (10 SN-direct + 15 compound) into
+a single structurally-recursive `Reducible.step_preserves`.
+-/
+
+/-- **K12.20.T codata arm**: strong-codataDest-closure CR2 for
+`Ty.codata`.  Takes `outputTypeCR2` as explicit hypothesis (the
+recursive Reducible-preservation witness on the strict sub-Ty
+`outputType` — the projection target).  SN-of-codataValue
+preserved by raw `step_preserves`; the full-Reducible
+codataDest conjunct lifted via outputTypeCR2 over the
+codataDestCong step.  Mirror of K12.20.{R refine, S record}.
+The `stateType` index is carried implicit and never reached —
+codata's state is packed into the unfold/initial-state, not
+exposed by any current eliminator. -/
+theorem Reducible.step_preserves_codata
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.codata stateType outputType) sourceRaw}
+    {target : Term context (Ty.codata stateType outputType) targetRaw}
+    (outputTypeCR2 :
+        ∀ {codataDestSourceRaw codataDestTargetRaw : RawTerm scope}
+          {codataDestSource :
+              Term context outputType codataDestSourceRaw}
+          {codataDestTarget :
+              Term context outputType codataDestTargetRaw},
+          Reducible outputType codataDestSource →
+          RawStep.parProgress codataDestSourceRaw codataDestTargetRaw →
+          Reducible outputType codataDestTarget)
+    (sourceReducible :
+        Reducible (Ty.codata stateType outputType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.codata stateType outputType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · have codataDestStep : RawStep.parProgress
+        (RawTerm.codataDest sourceRaw)
+        (RawTerm.codataDest targetRaw) := by
+      refine ⟨RawStep.par.codataDestCong rawStep.1, ?_⟩
+      intro codataDestEq
+      apply rawStep.2
+      injection codataDestEq
+    exact outputTypeCR2 sourceReducible.2 codataDestStep
+
 end LeanFX2

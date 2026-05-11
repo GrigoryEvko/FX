@@ -508,6 +508,29 @@ K12.20.S ships (typed CR2 lift — record strong-recordProj-closure compound arm
   RawPar.lean:790-795).  Fourteenth compound-arm CR2; 1
   remaining (codata).
 
+K12.20.T ships (typed CR2 lift — codata strong-codataDest-closure compound arm):
+* `Reducible.step_preserves_codata` — Reducible at `Ty.codata
+  stateType outputType` is closed under raw `parProgress`.
+  K12.15's strong codataDest closure produces full `Reducible
+  outputType (Term.codataDest codataValue)` (outputType is
+  strict sub-Ty; structural-recursion-on-Ty admits Reducible
+  recursion).  Note: stateType is ALSO a strict sub-Ty but the
+  closure does NOT recurse on it — codata's state is packed
+  into the unfold/initial-state and never exposed by an
+  eliminator (productivity-checking at higher observation
+  depths lives at #1267 K08, orthogonal to RC).  Closure:
+  SN(codataValue) + Reducible outputType (Term.codataDest
+  codataValue).  **Strong** pattern — structurally identical
+  to K12.20.{R refine, S record}.  Term.codataDest raw form is
+  `RawTerm.codataDest codataRaw` (per Term.lean:460-465);
+  `RawStep.par.codataDestCong` is a 1-arg cong rule (per
+  RawPar.lean:820-825).  **Compound-arm CR2 sweep COMPLETE**
+  with this lemma: all 15 compound-arm closures shipped
+  (arrow / piTy / sigmaTy / id / listType / optionType /
+  eitherType / path / glue / oeq / idStrict / equiv / refine /
+  record / codata).  Next: K12.20 wrap-up combining all 25
+  arms into a structurally-recursive `Reducible.step_preserves`.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -566,5 +589,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_equiv
 #print axioms Reducible.step_preserves_refine
 #print axioms Reducible.step_preserves_record
+#print axioms Reducible.step_preserves_codata
 
 end LeanFX2.Smoke
