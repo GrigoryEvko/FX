@@ -923,4 +923,57 @@ theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
   cases sourceIsSN with
   | intro _ closure => exact closure target progressStep
 
+/-! ## K12.20.C neutral & natSucc SN preservation
+
+Two more raw-level SN lemmas continuing the K12.19.B/K12.20.A
+pattern:
+
+* `RawTerm.var_isStronglyNormalizing` — every variable is SN.
+  Variables have no β/ι rules (no destructor fires on a variable
+  head); the only `RawStep.par` from `RawTerm.var position` is
+  `refl` (per `var_inv` in `RawParInversion`), so the parProgress
+  disequality contradiction discharges the SN closure.  Foundational
+  for CR3: variables are neutral terms with no progress steps, so
+  CR3's premise is vacuously satisfied → variables are reducible at
+  every SN-direct Ty arm.
+
+* `RawTerm.natSucc_isStronglyNormalizing` — `natSucc predecessor`
+  is SN whenever the predecessor is.  Same single-subterm structural
+  induction as `lam_isStronglyNormalizing`: `natSucc_inv` step
+  inversion + `RawTerm.natSucc` ctor-injectivity.
+-/
+
+/-- Variables are strongly normalizing.  No `RawStep.par` ctor has
+a variable as source other than `refl`, so any `parProgress` step
+contradicts. -/
+theorem RawTerm.var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.isStronglyNormalizing (RawTerm.var position) :=
+  RawTerm.isStronglyNormalizing.intro (RawTerm.var position)
+    (fun _ progressStep =>
+      (progressStep.2 (RawStep.par.var_inv progressStep.1).symm).elim)
+
+/-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
+proof pattern as `lam_isStronglyNormalizing`: structural induction
+on predecessor's SN witness + step inversion via `natSucc_inv` +
+ctor-injectivity for the disequality.  `natSucc` is also a unary
+cong-only ctor at parallel reduction. -/
+theorem RawTerm.natSucc_isStronglyNormalizing {scope : Nat}
+    {predecessor : RawTerm scope}
+    (predecessorIsSN : RawTerm.isStronglyNormalizing predecessor) :
+    RawTerm.isStronglyNormalizing (RawTerm.natSucc predecessor) := by
+  induction predecessorIsSN with
+  | intro currentPredecessor _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.natSucc currentPredecessor) ?_
+    intro target progressStep
+    obtain ⟨predecessorTarget, targetEq, predecessorStep⟩ :=
+      RawStep.par.natSucc_inv progressStep.1
+    subst targetEq
+    have predecessorDistinct :
+        currentPredecessor ≠ predecessorTarget := fun predecessorEq =>
+      progressStep.2 (congrArg RawTerm.natSucc predecessorEq)
+    exact inductiveHypothesis predecessorTarget
+      ⟨predecessorStep, predecessorDistinct⟩
+
 end LeanFX2

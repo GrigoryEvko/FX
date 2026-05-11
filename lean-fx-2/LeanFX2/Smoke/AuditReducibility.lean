@@ -217,6 +217,22 @@ K12.20.B ships (raw CR2 — SN closure under reduction):
   CR2 (arrow/Σ/id/list/...) needs per-Ty case analysis on the
   closure structure — those land in follow-ups.
 
+K12.20.C ships (neutral + natSucc SN preservation):
+* `RawTerm.var_isStronglyNormalizing` — every variable is SN
+  (vacuous closure: `var_inv` forces `target = var`, contradicting
+  `parProgress`'s distinctness clause).  Foundational neutral base
+  for CR3 / fundamental-lemma cases that reduce a Term to a `var`
+  in a substituted context.
+* `RawTerm.natSucc_isStronglyNormalizing` — `natSucc predecessor`
+  is SN whenever its predecessor is.  Same shape as K12.20.A
+  `lam_isStronglyNormalizing`: induct on predecessor's SN
+  witness, invert the step via `natSucc_inv`, use ctor injectivity
+  to discharge the distinctness obligation.  Mirrors the only
+  unary value-introducer pattern at the raw level; the typed
+  `Term.natSucc` fundamental-lemma case (K12.20.G) will compose
+  this raw lemma with `Reducible.isStronglyNormalizing` to lift
+  reducibility through the constructor.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -238,5 +254,7 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_natZero
 #print axioms RawTerm.lam_isStronglyNormalizing
 #print axioms RawTerm.isStronglyNormalizing.step_preserves
+#print axioms RawTerm.var_isStronglyNormalizing
+#print axioms RawTerm.natSucc_isStronglyNormalizing
 
 end LeanFX2.Smoke
