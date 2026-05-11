@@ -290,6 +290,10 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   additional syntactic exclusions
   `RawTerm.IsNeutral.not_uaToEquiv/not_pathCompose` to rule out
   D3.6 canonical-shape arms.
+* `RawTerm.IsNeutral.par_preserves` is the global structural
+  dispatcher over `RawTerm.IsNeutral`, delegating each constructor to
+  the local atom and using the recursive hypothesis for the principal
+  neutral subterm.
 
 K12.20.F ships (typed CR2 lift — arrow compound arm):
 * `Reducible.step_preserves_arrow` — Reducible at `Ty.arrow A B`
@@ -798,6 +802,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.IsNeutral.sessionSend_par_preserves
 #print axioms RawTerm.IsNeutral.sessionRecv_par_preserves
 #print axioms RawTerm.IsNeutral.effectPerform_par_preserves
+#print axioms RawTerm.IsNeutral.par_preserves
 #print axioms RawStep.par.universeCode_inv
 #print axioms RawTerm.universeCode_isStronglyNormalizing
 #print axioms Reducible.fundamental_universeCode

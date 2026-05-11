@@ -1210,6 +1210,127 @@ theorem RawTerm.IsNeutral.effectPerform_par_preserves {scope : Nat}
   exact RawTerm.IsNeutral.effectPerform
     (operationParPreserves operationStep)
 
+/-- One raw parallel step preserves neutral shape.
+
+This is the global dispatcher over the `RawTerm.IsNeutral` syntax class.
+Each eliminator case delegates to its local preservation atom, and the
+recursive hypothesis supplies preservation for the principal neutral
+subterm. -/
+theorem RawTerm.IsNeutral.par_preserves {scope : Nat}
+    {sourceRaw targetRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (parallelStep : RawStep.par sourceRaw targetRaw) :
+    RawTerm.IsNeutral targetRaw := by
+  induction sourceIsNeutral generalizing targetRaw with
+  | var position =>
+      exact RawTerm.IsNeutral.var_par_preserves parallelStep
+  | app functionIsNeutral functionParPreserves =>
+      exact RawTerm.IsNeutral.app_par_preserves
+        (fun functionStep => functionParPreserves functionStep)
+        parallelStep
+  | fst pairIsNeutral pairParPreserves =>
+      exact RawTerm.IsNeutral.fst_par_preserves
+        (fun pairStep => pairParPreserves pairStep)
+        parallelStep
+  | snd pairIsNeutral pairParPreserves =>
+      exact RawTerm.IsNeutral.snd_par_preserves
+        (fun pairStep => pairParPreserves pairStep)
+        parallelStep
+  | boolElim scrutineeIsNeutral scrutineeParPreserves =>
+      exact RawTerm.IsNeutral.boolElim_par_preserves
+        (fun scrutineeStep => scrutineeParPreserves scrutineeStep)
+        parallelStep
+  | natElim scrutineeIsNeutral scrutineeParPreserves =>
+      exact RawTerm.IsNeutral.natElim_par_preserves
+        (fun scrutineeStep => scrutineeParPreserves scrutineeStep)
+        parallelStep
+  | natRec scrutineeIsNeutral scrutineeParPreserves =>
+      exact RawTerm.IsNeutral.natRec_par_preserves
+        (fun scrutineeStep => scrutineeParPreserves scrutineeStep)
+        parallelStep
+  | listElim scrutineeIsNeutral scrutineeParPreserves =>
+      exact RawTerm.IsNeutral.listElim_par_preserves
+        (fun scrutineeStep => scrutineeParPreserves scrutineeStep)
+        parallelStep
+  | optionMatch scrutineeIsNeutral scrutineeParPreserves =>
+      exact RawTerm.IsNeutral.optionMatch_par_preserves
+        (fun scrutineeStep => scrutineeParPreserves scrutineeStep)
+        parallelStep
+  | eitherMatch scrutineeIsNeutral scrutineeParPreserves =>
+      exact RawTerm.IsNeutral.eitherMatch_par_preserves
+        (fun scrutineeStep => scrutineeParPreserves scrutineeStep)
+        parallelStep
+  | pathApp pathIsNeutral pathParPreserves =>
+      exact RawTerm.IsNeutral.pathApp_par_preserves
+        (fun pathStep => pathParPreserves pathStep)
+        parallelStep
+  | glueElim gluedValueIsNeutral gluedParPreserves =>
+      exact RawTerm.IsNeutral.glueElim_par_preserves
+        (fun gluedStep => gluedParPreserves gluedStep)
+        parallelStep
+  | transp pathIsNeutral pathParPreserves =>
+      exact RawTerm.IsNeutral.transp_par_preserves
+        pathIsNeutral
+        (fun pathStep => pathParPreserves pathStep)
+        parallelStep
+  | hcomp sidesIsNeutral sidesParPreserves =>
+      exact RawTerm.IsNeutral.hcomp_par_preserves
+        (fun sidesStep => sidesParPreserves sidesStep)
+        parallelStep
+  | idJ witnessIsNeutral witnessParPreserves =>
+      exact RawTerm.IsNeutral.idJ_par_preserves
+        (fun witnessStep => witnessParPreserves witnessStep)
+        parallelStep
+  | oeqJ witnessIsNeutral witnessParPreserves =>
+      exact RawTerm.IsNeutral.oeqJ_par_preserves
+        (fun witnessStep => witnessParPreserves witnessStep)
+        parallelStep
+  | idStrictRec witnessIsNeutral witnessParPreserves =>
+      exact RawTerm.IsNeutral.idStrictRec_par_preserves
+        (fun witnessStep => witnessParPreserves witnessStep)
+        parallelStep
+  | equivApp equivIsNeutral equivParPreserves =>
+      exact RawTerm.IsNeutral.equivApp_par_preserves
+        (fun equivStep => equivParPreserves equivStep)
+        parallelStep
+  | equivApply equivIsNeutral equivParPreserves =>
+      exact RawTerm.IsNeutral.equivApply_par_preserves
+        equivIsNeutral
+        (fun equivStep => equivParPreserves equivStep)
+        parallelStep
+  | modElim rawIsNeutral rawParPreserves =>
+      exact RawTerm.IsNeutral.modElim_par_preserves
+        (fun rawStep => rawParPreserves rawStep)
+        parallelStep
+  | subsume rawIsNeutral rawParPreserves =>
+      exact RawTerm.IsNeutral.subsume_par_preserves
+        (fun rawStep => rawParPreserves rawStep)
+        parallelStep
+  | refineElim refinedValueIsNeutral refinedParPreserves =>
+      exact RawTerm.IsNeutral.refineElim_par_preserves
+        (fun refinedStep => refinedParPreserves refinedStep)
+        parallelStep
+  | recordProj recordValueIsNeutral recordParPreserves =>
+      exact RawTerm.IsNeutral.recordProj_par_preserves
+        (fun recordStep => recordParPreserves recordStep)
+        parallelStep
+  | codataDest codataValueIsNeutral codataParPreserves =>
+      exact RawTerm.IsNeutral.codataDest_par_preserves
+        (fun codataStep => codataParPreserves codataStep)
+        parallelStep
+  | sessionSend channelIsNeutral channelParPreserves =>
+      exact RawTerm.IsNeutral.sessionSend_par_preserves
+        (fun channelStep => channelParPreserves channelStep)
+        parallelStep
+  | sessionRecv channelIsNeutral channelParPreserves =>
+      exact RawTerm.IsNeutral.sessionRecv_par_preserves
+        (fun channelStep => channelParPreserves channelStep)
+        parallelStep
+  | effectPerform operationIsNeutral operationParPreserves =>
+      exact RawTerm.IsNeutral.effectPerform_par_preserves
+        (fun operationStep => operationParPreserves operationStep)
+        parallelStep
+
 /-- The Tait reducibility-candidate predicate, defined by
 structural recursion on Ty.
 
