@@ -172,6 +172,70 @@ correct (SN IS the proper Tait clause for closed-leaf types).
 K12.5 adds the proper arrow closure.  K12.6+ refines the
 remaining ~17 weak-SN arms incrementally.
 
+## K12.16 — universe-cumulativity-aware reducibility (no separate arm)
+
+The K12.16 task description ("RC.cumulUp arm: universe-
+cumulativity-aware reducibility") would naively suggest a
+`| Ty.cumulUp ... =>` match arm.  **But there is no
+`Ty.cumulUp` constructor** — per the lean-fx-2 architectural
+commitment (CLAUDE.md §Architectural commitments):
+
+> Cumulativity is a Conv rule (Layer 3+), not a Ty constructor.
+
+Cumulativity at the kernel lives EXCLUSIVELY at the Term level
+via `Term.cumulUp`:
+
+```
+| cumulUp ... (typeCode : Term context (Ty.universe lowerLevel
+    levelLeLow) codeRaw) :
+    Term context (Ty.universe higherLevel levelLeHigh)
+                 (RawTerm.cumulUpMarker codeRaw)
+```
+
+`Term.cumulUp` consumes a Term at `Ty.universe lowerLevel` and
+produces a Term at `Ty.universe higherLevel`.  Both source and
+target Ty are matched by the K12.4 universe arm in this very
+definition:
+
+```
+| Ty.universe _ _, _, term => Term.isStronglyNormalizing term
+```
+
+Since `Reducible` dispatches on `Ty` (not on `Term` shape), a
+cumulated term `Term.cumulUp ... typeCode` of type
+`Ty.universe higherLevel _` is treated identically to any other
+typed code at that universe — its Reducible-ness reduces to
+SN of the cumulated form.  Universe-cumulativity-awareness is
+therefore INTRINSIC to the K12.4 universe arm under the
+def-by-Ty-recursion design.
+
+What this means for the fundamental lemma (K12.18-K12.26): the
+**cumulUp case** (K12.26) doesn't need to invoke a separate
+`Reducible.cumulUp` arm.  Instead, it uses the structural fact
+that SN is preserved by `Term.cumulUp` (which is a single par-
+step that doesn't introduce new redexes; verifiable from
+`RawStep.par` rules at K12.1).  Specifically:
+
+```
+Reducible (Ty.universe lower) typeCode
+  ⇔ Term.isStronglyNormalizing typeCode  (by K12.4)
+  ⇒ Term.isStronglyNormalizing (Term.cumulUp lower higher ...
+                                              typeCode)
+  ⇔ Reducible (Ty.universe higher) (Term.cumulUp ...)  (by K12.4)
+```
+
+So the cumulativity-preservation lemma is `SN-preserved-under-
+cumulUp` (a small Reduction/Compat-level lemma), not a separate
+RC arm.  K12.16 ships **architectural documentation** locking
+in this design and pointing the fundamental-lemma cumulUp case
+at the right shipping mechanism (SN-preservation lemma at the
+Reduction layer, not RC closure tightening).
+
+This documented absence-of-arm is the honest atomic shipment
+under the kernel-current architectural commitment.  No new
+match arm; no docstring claiming progress that doesn't exist;
+the K12.4 universe arm IS the cumulativity-aware closure.
+
 ## Wood/Atkey 2022 corrected Lam rule
 
 Standard Tait reducibility (Tait 1967) uses the arrow closure

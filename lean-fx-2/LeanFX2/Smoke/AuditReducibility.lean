@@ -142,9 +142,27 @@ Two semantic upgrades (record / codata) plus two documented
 Layer-deferrals (session / effect, both blocked on
 introducer-only state at Layer 1).
 
-Future K12.16 tightens the cumulUp arm; K12.17 ships RC
-decidability infrastructure.  K12.18-K12.26 ship the
-fundamental lemma; K12.27 closes M04 / `strong_normalization`. -/
+K12.16 ships (architectural documentation — no new arm):
+Per lean-fx-2 CLAUDE.md "Cumulativity is a Conv rule (Layer 3+),
+not a Ty constructor", there is NO `Ty.cumulUp` ctor.
+Cumulativity at the kernel lives EXCLUSIVELY at the Term layer
+via `Term.cumulUp`, which produces `Term ctx (Ty.universe
+higherLevel _) (RawTerm.cumulUpMarker _)` from a Term at
+`Ty.universe lowerLevel _`.  Since Reducible dispatches on Ty
+(not Term shape), the universe arm K12.4 already covers
+cumulated terms uniformly:
+`Reducible (Ty.universe _ _) (Term.cumulUp ...) =
+Term.isStronglyNormalizing (Term.cumulUp ...)`.
+Universe-cumulativity-awareness is INTRINSIC to K12.4.
+
+What the fundamental lemma's cumulUp case (K12.26) actually
+needs is a "SN-preserved-under-cumulUp" lemma at the Reduction
+layer, NOT a separate RC closure-tightening.  K12.16 ships
+documentation locking in this design.
+
+K12.17 ships RC decidability infrastructure; K12.18-K12.26
+ship the fundamental lemma; K12.27 closes M04 /
+`strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
