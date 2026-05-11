@@ -5039,4 +5039,57 @@ theorem Reducible.fundamental_app_at_arrow
                 (Term.app functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-! ## K12.21.B fundamental_fst at `Ty.sigmaTy` — Σ first-projection
+elimination
+
+Second entry of the K12.21 β-redex fundamental-case batch (#1778).
+`Term.fst : Term ctx (Ty.sigmaTy A B) pairRaw → Term ctx A
+(RawTerm.fst pairRaw)` projects the first component out of a
+dependent pair.
+
+The proof is a single triple-projection on the pair's reducibility
+witness.  Three definitional facts compose:
+
+1.  `(Ty.sigmaTy A B).subst sigma = Ty.sigmaTy (A.subst sigma)
+    (B.subst sigma.lift)`  (`Foundation/Subst.lean:109-110`)
+2.  `Reducible (Ty.sigmaTy A' B') pair = SN(pair) ∧ Reducible A'
+    (Term.fst pair) ∧ SN(Term.snd pair)`  (K12.7 asymmetric
+    closure, see `Reducibility.lean:367-370`)
+3.  `Term.subst termSubst (Term.fst pairTerm) = Term.fst
+    (Term.subst termSubst pairTerm)`  (`Term/Subst.lean:215`)
+
+Body: `pairIH.2.1` extracts the middle conjunct (full Reducible
+on the substituted firstType applied to the substituted pair's
+first projection).
+
+The sibling `fundamental_snd_at_sigmaTy` would extract `.2.2`
+(SN of `Term.snd pair`) — but its goal type involves the
+substituted-codomain wall `secondType.subst0 firstType
+(RawTerm.fst pairRaw)`, which is not a strict sub-Ty of
+`Ty.sigmaTy firstType secondType`.  Per K12.7's design, the
+snd-projection closure is reserved for the Kripke logical-
+relation refactor; the second projection ships at K12.21.snd
+with the weak SN target rather than full Reducible. -/
+
+/-- **K12.21.B fundamental_fst at `Ty.sigmaTy`** — Σ
+first-projection elimination.  Direct extraction of the middle
+conjunct from K12.7's asymmetric sigmaTy closure. -/
+theorem Reducible.fundamental_fst_at_sigmaTy
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm :
+        Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIH :
+        Reducible ((Ty.sigmaTy firstType secondType).subst sigma)
+                  (Term.subst termSubst pairTerm)) :
+    Reducible (firstType.subst sigma)
+              (Term.subst termSubst (Term.fst pairTerm)) :=
+  pairIH.2.1
+
 end LeanFX2
