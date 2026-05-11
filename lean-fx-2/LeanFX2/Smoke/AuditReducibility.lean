@@ -283,6 +283,13 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   projection/congruence eliminators.  `transp` and `equivApply` are
   intentionally not claimed here because their raw inversions have
   extra D3.6 canonical-shape arms.
+* `RawTerm.IsNeutral.var_par_preserves`,
+  `RawTerm.IsNeutral.transp_par_preserves`, and
+  `RawTerm.IsNeutral.equivApply_par_preserves` close the remaining
+  local neutral-par-preservation atoms.  The latter two use the
+  additional syntactic exclusions
+  `RawTerm.IsNeutral.not_uaToEquiv/not_pathCompose` to rule out
+  D3.6 canonical-shape arms.
 
 K12.20.F ships (typed CR2 lift — arrow compound arm):
 * `Reducible.step_preserves_arrow` — Reducible at `Ty.arrow A B`
@@ -758,10 +765,13 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.IsNeutral.not_oeqRefl
 #print axioms RawTerm.IsNeutral.not_idStrictRefl
 #print axioms RawTerm.IsNeutral.not_equivIntro
+#print axioms RawTerm.IsNeutral.not_uaToEquiv
+#print axioms RawTerm.IsNeutral.not_pathCompose
 #print axioms RawTerm.IsNeutral.not_modIntro
 #print axioms RawTerm.IsNeutral.not_refineIntro
 #print axioms RawTerm.IsNeutral.not_recordIntro
 #print axioms RawTerm.IsNeutral.not_codataUnfold
+#print axioms RawTerm.IsNeutral.var_par_preserves
 #print axioms RawTerm.IsNeutral.app_par_preserves
 #print axioms RawTerm.IsNeutral.fst_par_preserves
 #print axioms RawTerm.IsNeutral.snd_par_preserves
@@ -774,10 +784,12 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.IsNeutral.pathApp_par_preserves
 #print axioms RawTerm.IsNeutral.glueElim_par_preserves
 #print axioms RawTerm.IsNeutral.hcomp_par_preserves
+#print axioms RawTerm.IsNeutral.transp_par_preserves
 #print axioms RawTerm.IsNeutral.idJ_par_preserves
 #print axioms RawTerm.IsNeutral.oeqJ_par_preserves
 #print axioms RawTerm.IsNeutral.idStrictRec_par_preserves
 #print axioms RawTerm.IsNeutral.equivApp_par_preserves
+#print axioms RawTerm.IsNeutral.equivApply_par_preserves
 #print axioms RawTerm.IsNeutral.modElim_par_preserves
 #print axioms RawTerm.IsNeutral.subsume_par_preserves
 #print axioms RawTerm.IsNeutral.refineElim_par_preserves

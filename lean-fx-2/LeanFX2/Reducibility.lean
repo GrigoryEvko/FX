@@ -562,6 +562,22 @@ theorem RawTerm.IsNeutral.not_equivIntro {scope : Nat}
   intro sourceEq
   cases sourceIsNeutral <;> cases sourceEq
 
+/-- Neutral raw terms are never univalence-to-equivalence shaped. -/
+theorem RawTerm.IsNeutral.not_uaToEquiv {scope : Nat}
+    {source proofRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.uaToEquiv proofRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never path-composition shaped. -/
+theorem RawTerm.IsNeutral.not_pathCompose {scope : Nat}
+    {source leftRaw rightRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.pathCompose leftRaw rightRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
 /-- Neutral raw terms are never modal-intro-shaped. -/
 theorem RawTerm.IsNeutral.not_modIntro {scope : Nat}
     {source valueRaw : RawTerm scope}
@@ -604,6 +620,17 @@ wrapper.  Keeping the lemmas higher-order mirrors the `varShape` and
 dispatcher supplies the recursive hook, while these atoms discharge the
 constructor-specific beta/iota-impossible cases exactly once.
 -/
+
+/-- A variable can only parallel-develop to itself, so neutrality is
+preserved by one raw parallel step from a variable. -/
+theorem RawTerm.IsNeutral.var_par_preserves {scope : Nat}
+    {position : Fin scope} {targetRaw : RawTerm scope}
+    (parallelStep : RawStep.par (RawTerm.var position) targetRaw) :
+    RawTerm.IsNeutral targetRaw := by
+  have targetEq : targetRaw = RawTerm.var position :=
+    RawStep.par.var_inv parallelStep
+  subst targetEq
+  exact RawTerm.IsNeutral.var position
 
 /-- Neutrality is preserved by one raw parallel step from a neutral
 application, assuming preservation for the function head. -/
@@ -882,6 +909,53 @@ theorem RawTerm.IsNeutral.hcomp_par_preserves {scope : Nat}
   subst targetEq
   exact RawTerm.IsNeutral.hcomp (sidesParPreserves sidesStep)
 
+/-- Neutrality is preserved by one raw parallel step from `transp`
+with a neutral path line.  The non-congruent D3.6 arms are impossible
+because the path source or path target would have to be canonical. -/
+theorem RawTerm.IsNeutral.transp_par_preserves {scope : Nat}
+    {pathRaw sourceRaw targetRaw : RawTerm scope}
+    (pathIsNeutral : RawTerm.IsNeutral pathRaw)
+    (pathParPreserves :
+      ∀ {pathTarget : RawTerm scope},
+        RawStep.par pathRaw pathTarget →
+        RawTerm.IsNeutral pathTarget)
+    (parallelStep : RawStep.par (RawTerm.transp pathRaw sourceRaw) targetRaw) :
+    RawTerm.IsNeutral targetRaw := by
+  rcases RawStep.par.transp_inv parallelStep with
+    ⟨pathTarget, sourceTarget, targetEq,
+      pathStep, _sourceStep⟩
+    | ⟨typeRawSource, _sourceTarget, pathEq,
+        _targetEq, _sourceStep⟩
+    | ⟨typeRawTarget, _sourceTarget, _targetEq,
+        pathStep, _sourceStep⟩
+    | ⟨proofRawSource, _proofRawTarget, _sourceTarget,
+        pathEq, _targetEq, _proofStep, _sourceStep⟩
+    | ⟨proofRawTarget, _sourceTarget, _targetEq,
+        pathStep, _sourceStep⟩
+    | ⟨leftRawSource, _leftRawTarget, rightRawSource,
+        _rightRawTarget, _sourceTarget, pathEq,
+        _targetEq, _leftStep, _rightStep, _sourceStep⟩
+    | ⟨leftRawTarget, rightRawTarget, _sourceTarget, _targetEq,
+        pathStep, _sourceStep⟩
+  · subst targetEq
+    exact RawTerm.IsNeutral.transp (pathParPreserves pathStep)
+  · exact (RawTerm.IsNeutral.not_pathLam pathIsNeutral
+      (bodyRaw := typeRawSource.weaken) pathEq).elim
+  · exact (RawTerm.IsNeutral.not_pathLam
+      (pathParPreserves pathStep)
+      (bodyRaw := typeRawTarget.weaken) rfl).elim
+  · exact (RawTerm.IsNeutral.not_uaToEquiv pathIsNeutral
+      (proofRaw := proofRawSource) pathEq).elim
+  · exact (RawTerm.IsNeutral.not_uaToEquiv
+      (pathParPreserves pathStep)
+      (proofRaw := proofRawTarget) rfl).elim
+  · exact (RawTerm.IsNeutral.not_pathCompose pathIsNeutral
+      (leftRaw := leftRawSource) (rightRaw := rightRawSource)
+      pathEq).elim
+  · exact (RawTerm.IsNeutral.not_pathCompose
+      (pathParPreserves pathStep)
+      (leftRaw := leftRawTarget) (rightRaw := rightRawTarget) rfl).elim
+
 /-- Neutrality is preserved by one raw parallel step from `idJ`
 with a neutral equality witness. -/
 theorem RawTerm.IsNeutral.idJ_par_preserves {scope : Nat}
@@ -958,6 +1032,36 @@ theorem RawTerm.IsNeutral.equivApp_par_preserves {scope : Nat}
     RawStep.par.equivApp_inv parallelStep
   subst targetEq
   exact RawTerm.IsNeutral.equivApp (equivParPreserves equivStep)
+
+/-- Neutrality is preserved by one raw parallel step from `equivApply`
+with a neutral equivalence head.  The univalence-reflexivity β arms are
+impossible because the equivalence source or target would have to be
+`uaToEquiv _`. -/
+theorem RawTerm.IsNeutral.equivApply_par_preserves {scope : Nat}
+    {equivRaw argumentRaw targetRaw : RawTerm scope}
+    (equivIsNeutral : RawTerm.IsNeutral equivRaw)
+    (equivParPreserves :
+      ∀ {equivTarget : RawTerm scope},
+        RawStep.par equivRaw equivTarget →
+        RawTerm.IsNeutral equivTarget)
+    (parallelStep :
+      RawStep.par (RawTerm.equivApply equivRaw argumentRaw) targetRaw) :
+    RawTerm.IsNeutral targetRaw := by
+  rcases RawStep.par.equivApply_inv parallelStep with
+    ⟨equivTarget, argumentTarget, targetEq,
+      equivStep, _argumentStep⟩
+    | ⟨witnessSource, _witnessTarget, _sourceTarget,
+        equivEq, _targetEq, _witnessStep, _argumentStep⟩
+    | ⟨witnessTarget, _sourceTarget, _targetEq,
+        equivStep, _argumentStep⟩
+  · subst targetEq
+    exact RawTerm.IsNeutral.equivApply
+      (equivParPreserves equivStep)
+  · exact (RawTerm.IsNeutral.not_uaToEquiv equivIsNeutral
+      (proofRaw := RawTerm.oeqRefl witnessSource) equivEq).elim
+  · exact (RawTerm.IsNeutral.not_uaToEquiv
+      (equivParPreserves equivStep)
+      (proofRaw := RawTerm.oeqRefl witnessTarget) rfl).elim
 
 /-- Neutrality is preserved by one raw parallel step from `modElim`
 with a neutral modal value. -/
