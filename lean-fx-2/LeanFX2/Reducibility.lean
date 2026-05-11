@@ -953,6 +953,53 @@ theorem RawTerm.var_isStronglyNormalizing {scope : Nat}
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.var_inv progressStep.1).symm).elim)
 
+/-- **K12.20.AS neutral-app SN preservation**.  `RawTerm.app (var pos)
+arg` is strongly normalizing whenever `arg` is.
+
+This is the first **neutral-head application** SN helper — the
+foundational building block for compound-Ty CR3 (variables are
+Reducible at every type), which is in turn the prerequisite for
+`ReducibleSubst.lift` / `.singleton` and the K12.20-head fundamental
+theorem case for `Term.lam` proper.
+
+Proof: induction on `arg`'s SN witness.  Step inversion of
+`RawStep.par (app (var pos) currentArg) target` via `app_inv` gives
+two arms: (1) cong on both subterms — `var pos` only par-reduces to
+itself via `var_inv`, so the function position is rigid; the
+argument-position cong is discharged by the inductive hypothesis on
+the SN-progress of `currentArg`.  (2) shallow/deep β — would require
+`var pos` par-reducing to a `lam` form, which `var_inv` rules out
+via `RawTerm.noConfusion` on the resulting `var = lam` equation. -/
+theorem RawTerm.app_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {argRaw : RawTerm scope}
+    (argIsSN : RawTerm.isStronglyNormalizing argRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.app (RawTerm.var position) argRaw) := by
+  induction argIsSN with
+  | intro currentArg _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.app (RawTerm.var position) currentArg) ?_
+    intro target progressStep
+    rcases RawStep.par.app_inv progressStep.1 with
+      ⟨functionTarget, argumentTarget, targetEq, functionStep, argumentStep⟩
+      | ⟨bodyTarget, argumentTarget, _targetEq, functionStep, _argumentStep⟩
+    · have functionEq : functionTarget = RawTerm.var position :=
+        (RawStep.par.var_inv functionStep)
+      subst functionEq
+      subst targetEq
+      have argumentDistinct :
+          currentArg ≠ argumentTarget := fun argumentEq =>
+        progressStep.2
+          (congrArg (RawTerm.app (RawTerm.var position)) argumentEq)
+      exact inductiveHypothesis argumentTarget
+        ⟨argumentStep, argumentDistinct⟩
+    · exact (by
+        have varEqLam :
+            RawTerm.lam bodyTarget = RawTerm.var position :=
+          (RawStep.par.var_inv functionStep)
+        nomatch varEqLam)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +
