@@ -5806,4 +5806,54 @@ theorem Reducible.fundamental_pathApp_at_path
                  (Term.pathApp modeIsUnivalent pathTerm intervalTerm)) :=
   pathIH.2 modeIsUnivalent (Term.subst termSubst intervalTerm) intervalIH
 
+/-- Fundamental case: `Term.glueElim` at `Ty.glue` (K12.24.B).
+
+`Ty.glue` carries a full eliminator-output closure in K12.12:
+reducibility of a glued value includes reducibility of
+`Term.glueElim` at the strict sub-type `baseType`, gated by the
+same univalent-mode witness.  The fundamental case is therefore a
+direct projection of that closure after substitution. -/
+theorem Reducible.fundamental_glueElim_at_glue
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    {gluedValue :
+        Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (glueIH :
+        Reducible ((Ty.glue baseType boundaryWitness).subst sigma)
+                  (Term.subst termSubst gluedValue)) :
+    Reducible (baseType.subst sigma)
+              (Term.subst termSubst
+                (Term.glueElim modeIsUnivalent gluedValue)) :=
+  glueIH.2 modeIsUnivalent
+
+/-- Fundamental case: `Term.codataDest` at `Ty.codata` (K12.26.A).
+
+The codata reducibility arm stores the full observation closure at
+the strict sub-type `outputType`; `stateType` is carried by the
+codata value but is not exposed by the current one-observation
+destructor.  This fundamental case is the direct projection of that
+closure after `Term.subst` distributes over `codataDest`. -/
+theorem Reducible.fundamental_codataDest_at_codata
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+        Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataIH :
+        Reducible ((Ty.codata stateType outputType).subst sigma)
+                  (Term.subst termSubst codataValue)) :
+    Reducible (outputType.subst sigma)
+              (Term.subst termSubst (Term.codataDest codataValue)) :=
+  codataIH.2
+
 end LeanFX2
