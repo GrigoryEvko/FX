@@ -2480,6 +2480,60 @@ theorem RawTerm.var_has_no_progress {scope : Nat}
   intro target progressStep
   exact progressStep.2 (RawStep.par.var_inv progressStep.1).symm
 
+/-- Application with a neutral function head is strongly normalizing
+when both the head and argument are strongly normalizing.
+
+The beta arm is impossible because `RawTerm.IsNeutral.par_preserves`
+keeps every parallel reduct of the function head neutral, and neutral
+terms are never lambda-shaped.  The congruence arm recurses on the
+function progress when the head changes, otherwise on the argument
+progress. -/
+theorem RawTerm.app_neutral_isStronglyNormalizing {scope : Nat}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionIsNeutral : RawTerm.IsNeutral functionRaw)
+    (functionIsSN : RawTerm.isStronglyNormalizing functionRaw)
+    (argumentIsSN : RawTerm.isStronglyNormalizing argumentRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.app functionRaw argumentRaw) := by
+  induction functionIsSN generalizing argumentRaw with
+  | intro currentFunction _ functionInduction =>
+    induction argumentIsSN with
+    | intro currentArgument argumentClosure argumentInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.app currentFunction currentArgument) ?_
+      intro target progressStep
+      rcases RawStep.par.app_inv progressStep.1 with
+        ⟨functionTarget, argumentTarget, targetEq,
+          functionStep, argumentStep⟩
+        | ⟨bodyTarget, _argumentTarget, _targetEq,
+            functionStep, _argumentStep⟩
+      · subst targetEq
+        have functionTargetIsNeutral :
+            RawTerm.IsNeutral functionTarget :=
+          RawTerm.IsNeutral.par_preserves functionIsNeutral functionStep
+        have argumentTargetIsSN :
+            RawTerm.isStronglyNormalizing argumentTarget := by
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentArgument argumentClosure
+          · exact argumentClosure argumentTarget
+              ⟨argumentStep, argumentEq⟩
+        by_cases functionEq : currentFunction = functionTarget
+        · subst functionEq
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact (progressStep.2 rfl).elim
+          · exact argumentInduction argumentTarget
+              ⟨argumentStep, argumentEq⟩
+        · exact functionInduction functionTarget
+            ⟨functionStep, functionEq⟩
+            functionTargetIsNeutral
+            argumentTargetIsSN
+      · exact (RawTerm.IsNeutral.not_lam
+          (RawTerm.IsNeutral.par_preserves functionIsNeutral functionStep)
+          (bodyRaw := bodyTarget) rfl).elim
+
 /-- **K12.20.AS neutral-app SN preservation**.  `RawTerm.app (var pos)
 arg` is strongly normalizing whenever `arg` is.
 
@@ -5138,6 +5192,52 @@ theorem Reducible.arrow_of_varShape
            (RawTerm.app_var_isStronglyNormalizing position
              (Reducible.isStronglyNormalizing argumentIsReducible))
            progressStep)⟩
+
+/-- **K12.20.U2 arrow CR3 arm**: a neutral function is reducible at
+`Ty.arrow domain codomain` when every raw progress reduct is SN and
+the codomain CR3 hook is available.
+
+The function itself is SN by the neutral progress-closure wrapper.
+For an argument, `app neutral argument` is neutral and strongly
+normalizing by `RawTerm.app_neutral_isStronglyNormalizing`; that SN
+witness supplies the codomain CR3 hook's progress-closure premise. -/
+theorem Reducible.arrow_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.arrow domainType codomainType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (codomainCR3 :
+      ∀ {codomainRaw : RawTerm scope}
+        (codomainTerm : Term context codomainType codomainRaw),
+        RawTerm.IsNeutral codomainRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress codomainRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible codomainType codomainTerm) :
+    Reducible (Ty.arrow domainType codomainType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro argumentRaw argumentTerm argumentIsReducible
+  have appIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app sourceRaw argumentRaw) :=
+    RawTerm.app_neutral_isStronglyNormalizing
+      sourceIsNeutral
+      sourceIsSN
+      (Reducible.isStronglyNormalizing argumentIsReducible)
+  exact codomainCR3 (Term.app sourceTerm argumentTerm)
+    (RawTerm.IsNeutral.app sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves appIsSN progressStep)
 
 /-- **K12.20.U2 sigmaTy varShape arm**: variables are reducible at
 dependent-pair type once the first-projection CR3 step is available.
