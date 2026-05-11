@@ -531,9 +531,31 @@ K12.20.T ships (typed CR2 lift — codata strong-codataDest-closure compound arm
   record / codata).  Next: K12.20 wrap-up combining all 25
   arms into a structurally-recursive `Reducible.step_preserves`.
 
-K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
-β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
-code).  K12.27 closes M04 / `strong_normalization`. -/
+K12.20.U ships (typed CR2 wrap-up — unified `Reducible.step_preserves`):
+* `Reducible.step_preserves` — bundles all 25 per-arm CR2
+  helpers (K12.20.{C-T}) into a single structurally-recursive
+  theorem on Ty.  Each Ty constructor's arm dispatches to the
+  matching per-arm helper; the 8 strong-compound arms (arrow /
+  sigmaTy / path / glue / equiv / refine / record / codata)
+  receive their `subTyCR2` hypothesis as a recursive
+  `Reducible.step_preserves` call at the strict sub-Ty
+  position.  Every recursive call lands at the SAME (level,
+  scope) as the parent ctor — sidesteps the sibling-Ty wall
+  and the substituted-codomain wall (per
+  `feedback_lean_reducible_sibling_ty_block.md`).  The 7
+  weak-compound arms (piTy / id / idStrict / oeq / listType /
+  optionType / eitherType) and the 10 SN-direct arms make NO
+  recursive call.  Compound-arm CR2 sweep COMPLETE with this
+  wrap-up: all 25 Ty constructors covered.  This is the
+  canonical CR2 lemma downstream fundamental-theorem cases
+  will consume — no manual per-arm dispatch needed at each
+  call site.
+
+K12.20.V+ / K12.21-K12.26 will ship the remaining fundamental-
+lemma cases (lam, β-redexes, ι-recursors, HOTT, cubical, modal,
+cumul/refine/type-code), starting with ReducibleSubst.singleton
+/ lift infrastructure.  K12.27 closes M04 /
+`strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
@@ -590,5 +612,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_refine
 #print axioms Reducible.step_preserves_record
 #print axioms Reducible.step_preserves_codata
+#print axioms Reducible.step_preserves
 
 end LeanFX2.Smoke
