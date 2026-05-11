@@ -5315,4 +5315,61 @@ theorem Reducible.fundamental_refineElim_at_refine
               (Term.subst termSubst (Term.refineElim refinedValue)) :=
   refineIH.2
 
+/-! ## K12.23 fundamental HOTT-eliminator cases -/
+
+/-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
+
+First fundamental atomic over HOTT-adjacent eliminators.  Same
+binary Reducible-composition pattern as K12.21.A
+`fundamental_app_at_arrow` — `Term.equivApp` is the kernel-
+internal application form for type equivalences (per K11.B8 docs
+in `Term.lean:1029`+), mirroring `Term.app`'s shape exactly:
+takes the equivalence + an argument at carrierA, produces a
+result at carrierB.
+
+K12.11's equiv closure ships the FULL Reducible (not SN-fallback)
+on the output side, because both carriers (carrierA, carrierB)
+are strict sub-Ty of `Ty.equiv carrierA carrierB` — the closure
+can recurse on both via def-by-recursion on Ty:
+
+    Reducible (Ty.equiv carrierA carrierB) equivTerm =
+      SN(equivTerm) ∧ ∀ argumentTerm,
+        Reducible carrierA argumentTerm →
+        Reducible carrierB (Term.equivApp equivTerm argumentTerm)
+
+The fundamental atomic projects the second conjunct and applies
+to the substituted argument:
+
+    equivIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
+`Term.subst` commutes over `.equivApp` definitionally
+(`Term/Subst.lean:414` — no cast, since `Ty.equiv.subst` is
+also definitional per `Foundation/Subst.lean:142`).  Same audit
+gate as the existing K12.21 cluster.
+
+Note: `Term.equivApply` (the D3.6-P4 univalence-target ctor at
+`Term.lean:990`+) is a SEPARATE constructor projecting to a
+different raw form; its fundamental case will ship as K12.23.B
+once we audit which closure governs it. -/
+theorem Reducible.fundamental_equivApp_at_equiv
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm :
+        Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivIH :
+        Reducible ((Ty.equiv carrierA carrierB).subst sigma)
+                  (Term.subst termSubst equivTerm))
+    (argumentIH :
+        Reducible (carrierA.subst sigma)
+                  (Term.subst termSubst argumentTerm)) :
+    Reducible (carrierB.subst sigma)
+              (Term.subst termSubst (Term.equivApp equivTerm argumentTerm)) :=
+  equivIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
 end LeanFX2
