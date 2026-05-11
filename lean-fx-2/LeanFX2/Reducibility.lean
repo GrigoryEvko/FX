@@ -3298,6 +3298,40 @@ theorem RawTerm.refineElim_neutral_isStronglyNormalizing {scope : Nat}
         (RawTerm.IsNeutral.par_preserves refinedIsNeutral refinedStep)
         (valueRaw := valueTarget) (proofRaw := proofTarget) rfl).elim
 
+/-- Record projection with a neutral record value is strongly
+normalizing when the record value is strongly normalizing.
+
+The record beta arms are impossible because every parallel reduct of
+the neutral record value stays neutral, and neutral terms are never
+`recordIntro`-shaped.  The congruence arm recurses on record-value
+progress. -/
+theorem RawTerm.recordProj_neutral_isStronglyNormalizing {scope : Nat}
+    {recordRaw : RawTerm scope}
+    (recordIsNeutral : RawTerm.IsNeutral recordRaw)
+    (recordIsSN : RawTerm.isStronglyNormalizing recordRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.recordProj recordRaw) := by
+  induction recordIsSN with
+  | intro currentRecord _ recordInduction =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.recordProj currentRecord) ?_
+    intro target progressStep
+    rcases RawStep.par.recordProj_inv progressStep.1 with
+      ⟨recordTarget, targetEq, recordStep⟩
+      | ⟨fieldTarget, _targetEq, recordStep⟩
+    · have recordTargetIsNeutral :
+          RawTerm.IsNeutral recordTarget :=
+        RawTerm.IsNeutral.par_preserves recordIsNeutral recordStep
+      by_cases recordEq : currentRecord = recordTarget
+      · subst recordEq
+        subst targetEq
+        exact (progressStep.2 rfl).elim
+      · subst targetEq
+        exact recordInduction recordTarget
+          ⟨recordStep, recordEq⟩ recordTargetIsNeutral
+    · exact (RawTerm.IsNeutral.not_recordIntro
+        (RawTerm.IsNeutral.par_preserves recordIsNeutral recordStep)
+        (fieldRaw := fieldTarget) rfl).elim
+
 /-- Equivalence application with a neutral equivalence head is strongly
 normalizing when both the equivalence head and argument are strongly
 normalizing.
@@ -5850,6 +5884,51 @@ theorem Reducible.refine_of_varShape
        RawTerm.isStronglyNormalizing.step_preserves
          (RawTerm.refineElim_var_isStronglyNormalizing position)
          progressStep)⟩
+
+/-- **K12.20.U2 record CR3 arm**: a neutral single-field record is
+reducible at `Ty.record singleFieldType` when every raw progress reduct
+is SN and the field-type CR3 hook is available.
+
+The record candidate demands full Reducible for the projected field.
+The raw neutral projection helper supplies SN for `recordProj`, and the
+recursive field-type CR3 hook upgrades that neutral projection to the
+required Reducible witness. -/
+theorem Reducible.record_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.record singleFieldType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (singleFieldTypeCR3 :
+      ∀ {fieldRaw : RawTerm scope}
+        (fieldTerm : Term context singleFieldType fieldRaw),
+        RawTerm.IsNeutral fieldRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress fieldRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible singleFieldType fieldTerm) :
+    Reducible (Ty.record singleFieldType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  have recordProjIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.recordProj sourceRaw) :=
+    RawTerm.recordProj_neutral_isStronglyNormalizing
+      sourceIsNeutral sourceIsSN
+  exact singleFieldTypeCR3
+    (Term.recordProj sourceTerm)
+    (RawTerm.IsNeutral.recordProj sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves
+        recordProjIsSN progressStep)
 
 /-- **K12.20.U2 record varShape arm**: variables are reducible at
 single-field record type once field-type CR3 is available. -/
