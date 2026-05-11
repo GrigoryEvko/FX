@@ -5,6 +5,7 @@ import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.SubstActsOnTy
 import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Effect
+import LeanFX2.Foundation.TermHelpers
 
 /-! # `PolyTerm` — typed mirror of `Term` indexed by `RawPolyTerm`.
 
@@ -565,18 +566,22 @@ inductive PolyTerm : ∀ {mode : Mode} {level scope : Nat},
       PolyTerm context motiveType
         (LeanFX2.Foundation.Polygraph.RawPolyTerm.oeqJ
           basePolyRaw witnessPolyRaw)
-  /-- Funext at observational equality.  See header §"Proof-obligation
-  handling": the pointwise proof carries an opaque motive type at
-  Layer 0; the pinning to `oeqFunextPointwiseType` lives at K11.10. -/
+  /-- Funext at observational equality.  Pointwise proof carries
+  the same motive type as `Term.oeqFunext`
+  (`oeqFunextPointwiseType domainType codomainType leftFunctionRaw
+  rightFunctionRaw`), migrated to Foundation/TermHelpers for shared
+  Layer-0 access.  Strict-lossless bijection. -/
   | oeqFunext {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       (domainType codomainType : Ty level scope)
       (leftFunctionRaw rightFunctionRaw : LeanFX2.RawTerm scope)
-      {pointwiseMotive : Ty level scope}
       {pointwisePolyRaw :
         LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
       (pointwiseProof :
-        PolyTerm context pointwiseMotive pointwisePolyRaw) :
+        PolyTerm context
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwisePolyRaw) :
       PolyTerm context
         (Ty.oeq (Ty.arrow domainType codomainType)
           leftFunctionRaw rightFunctionRaw)
@@ -958,15 +963,17 @@ inductive PolyTerm : ∀ {mode : Mode} {level scope : Nat},
         (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
           (LeanFX2.Foundation.Polygraph.RawPolyTerm.refl
             applyPolyRaw))
-  /-- Heterogeneous-carrier equivalence introduction.  See header
-  §"Proof-obligation handling": leftInv / rightInv proof
-  obligations carry opaque motive types at this Layer-0 layer; the
-  pinning to `equivIntroHetLeftInverseType` /
-  `equivIntroHetRightInverseType` happens at K11.10. -/
+  /-- Heterogeneous-carrier equivalence introduction.  leftInv /
+  rightInv proof obligations carry the same motive types as
+  `Term.equivIntroHet` (`equivIntroHetLeftInverseType` /
+  `equivIntroHetRightInverseType`), migrated to
+  Foundation/TermHelpers for shared Layer-0 access.  Forward+
+  backward subterms project to the raw-level `equivIntro`; leftInv
+  / rightInv are proof-erased at the raw projection.  Strict-
+  lossless bijection. -/
   | equivIntroHet {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       {carrierA carrierB : Ty level scope}
-      {leftInvMotive rightInvMotive : Ty level scope}
       {forwardPolyRaw backwardPolyRaw leftInvPolyRaw rightInvPolyRaw :
         LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
       (forward :
@@ -974,9 +981,15 @@ inductive PolyTerm : ∀ {mode : Mode} {level scope : Nat},
       (backward :
         PolyTerm context (Ty.arrow carrierB carrierA) backwardPolyRaw)
       (leftInv :
-        PolyTerm context leftInvMotive leftInvPolyRaw)
+        PolyTerm context
+          (equivIntroHetLeftInverseType carrierA
+            forwardPolyRaw.toRawTerm backwardPolyRaw.toRawTerm)
+          leftInvPolyRaw)
       (rightInv :
-        PolyTerm context rightInvMotive rightInvPolyRaw) :
+        PolyTerm context
+          (equivIntroHetRightInverseType carrierB
+            forwardPolyRaw.toRawTerm backwardPolyRaw.toRawTerm)
+          rightInvPolyRaw) :
       PolyTerm context (Ty.equiv carrierA carrierB)
         (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivIntro
           forwardPolyRaw backwardPolyRaw)

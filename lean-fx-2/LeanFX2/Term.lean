@@ -3,6 +3,7 @@ import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.Context
 import LeanFX2.Foundation.Effect
+import LeanFX2.Foundation.TermHelpers
 
 /-! # Term — Layer 1 raw-aware typed term inductive.
 
@@ -87,68 +88,6 @@ inductive zero-axiom is the critical milestone.
 -/
 
 namespace LeanFX2
-
-/-- Codomain of the left-inverse law for `equivIntroHet`.
-
-Under one fresh `carrierA` binder, this is the identity type
-`backward (forward x) = x`.  The endpoints are raw because `Ty.id`
-currently stores raw endpoints; the proof term required by
-`Term.equivIntroHet` is still a real `Term` inhabiting this codomain. -/
-@[reducible] def equivIntroHetLeftInverseCodomain {level scope : Nat}
-    (carrierA : Ty level scope)
-    (forwardRaw backwardRaw : RawTerm scope) : Ty level (scope + 1) :=
-  Ty.id carrierA.weaken
-    (RawTerm.app backwardRaw.weaken
-      (RawTerm.app forwardRaw.weaken
-        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)))
-    (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)
-
-/-- Proof-function type for the left-inverse law of `equivIntroHet`. -/
-@[reducible] def equivIntroHetLeftInverseType {level scope : Nat}
-    (carrierA : Ty level scope)
-    (forwardRaw backwardRaw : RawTerm scope) : Ty level scope :=
-  Ty.piTy carrierA
-    (equivIntroHetLeftInverseCodomain carrierA forwardRaw backwardRaw)
-
-/-- Codomain of the right-inverse law for `equivIntroHet`.
-
-Under one fresh `carrierB` binder, this is the identity type
-`forward (backward y) = y`. -/
-@[reducible] def equivIntroHetRightInverseCodomain {level scope : Nat}
-    (carrierB : Ty level scope)
-    (forwardRaw backwardRaw : RawTerm scope) : Ty level (scope + 1) :=
-  Ty.id carrierB.weaken
-    (RawTerm.app forwardRaw.weaken
-      (RawTerm.app backwardRaw.weaken
-        (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)))
-    (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)
-
-/-- Proof-function type for the right-inverse law of `equivIntroHet`. -/
-@[reducible] def equivIntroHetRightInverseType {level scope : Nat}
-    (carrierB : Ty level scope)
-    (forwardRaw backwardRaw : RawTerm scope) : Ty level scope :=
-  Ty.piTy carrierB
-    (equivIntroHetRightInverseCodomain carrierB forwardRaw backwardRaw)
-
-/-- Codomain of the pointwise equality law for `oeqFunext`.
-
-Under one fresh `domainType` binder, this is the observational equality
-`left x = right x` at the weakened codomain. -/
-@[reducible] def oeqFunextPointwiseCodomain {level scope : Nat}
-    (codomainType : Ty level scope)
-    (leftFunctionRaw rightFunctionRaw : RawTerm scope) : Ty level (scope + 1) :=
-  Ty.oeq codomainType.weaken
-    (RawTerm.app leftFunctionRaw.weaken
-      (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
-    (RawTerm.app rightFunctionRaw.weaken
-      (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
-
-/-- Proof-function type for `oeqFunext`: pointwise equality over the domain. -/
-@[reducible] def oeqFunextPointwiseType {level scope : Nat}
-    (domainType codomainType : Ty level scope)
-    (leftFunctionRaw rightFunctionRaw : RawTerm scope) : Ty level scope :=
-  Ty.piTy domainType
-    (oeqFunextPointwiseCodomain codomainType leftFunctionRaw rightFunctionRaw)
 
 /-- Raw-aware typed term.  Each ctor's signature pins the raw form
 structurally; `Term.toRaw t = raw` is `rfl`. -/
