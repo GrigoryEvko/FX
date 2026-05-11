@@ -3346,4 +3346,62 @@ theorem Reducible.fundamental_natSucc
               (Term.subst termSubst (Term.natSucc predecessor)) :=
   RawTerm.natSucc_isStronglyNormalizing predIH
 
+/-- **K12.20.AO.1 intervalOpp fundamental case** — cubical interval
+negation.  Unary intro to the closed-leaf `Ty.interval`; identical
+single-line pattern as `fundamental_natSucc`. -/
+theorem Reducible.fundamental_intervalOpp
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerIH : Reducible ((Ty.interval : Ty level scope).subst sigma)
+                         (Term.subst termSubst innerValue)) :
+    Reducible ((Ty.interval : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.intervalOpp innerValue)) :=
+  RawTerm.intervalOpp_isStronglyNormalizing innerIH
+
+/-- **K12.20.AO.2 intervalMeet fundamental case** — cubical interval
+meet (∧).  Binary intro to `Ty.interval`; both subterms substitute
+componentwise and the binary SN helper closes both arguments. -/
+theorem Reducible.fundamental_intervalMeet
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIH : Reducible ((Ty.interval : Ty level scope).subst sigma)
+                        (Term.subst termSubst leftValue))
+    (rightIH : Reducible ((Ty.interval : Ty level scope).subst sigma)
+                         (Term.subst termSubst rightValue)) :
+    Reducible ((Ty.interval : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.intervalMeet leftValue rightValue)) :=
+  RawTerm.intervalMeet_isStronglyNormalizing leftIH rightIH
+
+/-- **K12.20.AO.3 intervalJoin fundamental case** — cubical interval
+join (∨).  Sister to intervalMeet; same binary shape. -/
+theorem Reducible.fundamental_intervalJoin
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIH : Reducible ((Ty.interval : Ty level scope).subst sigma)
+                        (Term.subst termSubst leftValue))
+    (rightIH : Reducible ((Ty.interval : Ty level scope).subst sigma)
+                         (Term.subst termSubst rightValue)) :
+    Reducible ((Ty.interval : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.intervalJoin leftValue rightValue)) :=
+  RawTerm.intervalJoin_isStronglyNormalizing leftIH rightIH
+
 end LeanFX2

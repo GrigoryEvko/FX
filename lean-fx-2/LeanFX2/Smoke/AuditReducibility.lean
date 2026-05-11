@@ -622,6 +622,9 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.glueIntro_isStronglyNormalizing
 #print axioms Reducible.fundamental_interval0
 #print axioms Reducible.fundamental_interval1
+#print axioms Reducible.fundamental_intervalOpp
+#print axioms Reducible.fundamental_intervalMeet
+#print axioms Reducible.fundamental_intervalJoin
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
