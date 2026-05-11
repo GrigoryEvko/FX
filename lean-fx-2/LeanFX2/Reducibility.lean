@@ -1112,6 +1112,76 @@ theorem RawTerm.app_argument_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing argumentRaw :=
   RawTerm.app_argument_isStronglyNormalizing_aux appIsSN rfl
 
+/-- Shape-specialized inversion for first component SN from pair SN. -/
+theorem RawTerm.pair_first_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {firstRaw secondRaw : RawTerm scope},
+      source = RawTerm.pair firstRaw secondRaw →
+      RawTerm.isStronglyNormalizing firstRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro firstRaw secondRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro firstRaw ?_
+    intro firstTarget firstProgress
+    have pairProgress :
+        RawStep.parProgress
+          (RawTerm.pair firstRaw secondRaw)
+          (RawTerm.pair firstTarget secondRaw) := by
+      refine ⟨RawStep.par.pair firstProgress.1
+        (RawStep.par.refl secondRaw), ?_⟩
+      intro pairEq
+      apply firstProgress.2
+      injection pairEq
+    exact inductiveHypothesis
+      (RawTerm.pair firstTarget secondRaw) pairProgress rfl
+
+/-- If a pair is strongly normalizing, its first component is strongly
+normalizing. -/
+theorem RawTerm.pair_first_isStronglyNormalizing {scope : Nat}
+    {firstRaw secondRaw : RawTerm scope}
+    (pairIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pair firstRaw secondRaw)) :
+    RawTerm.isStronglyNormalizing firstRaw :=
+  RawTerm.pair_first_isStronglyNormalizing_aux pairIsSN rfl
+
+/-- Shape-specialized inversion for second component SN from pair SN. -/
+theorem RawTerm.pair_second_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {firstRaw secondRaw : RawTerm scope},
+      source = RawTerm.pair firstRaw secondRaw →
+      RawTerm.isStronglyNormalizing secondRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro firstRaw secondRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro secondRaw ?_
+    intro secondTarget secondProgress
+    have pairProgress :
+        RawStep.parProgress
+          (RawTerm.pair firstRaw secondRaw)
+          (RawTerm.pair firstRaw secondTarget) := by
+      refine ⟨RawStep.par.pair (RawStep.par.refl firstRaw)
+        secondProgress.1, ?_⟩
+      intro pairEq
+      apply secondProgress.2
+      injection pairEq
+    exact inductiveHypothesis
+      (RawTerm.pair firstRaw secondTarget) pairProgress rfl
+
+/-- If a pair is strongly normalizing, its second component is strongly
+normalizing. -/
+theorem RawTerm.pair_second_isStronglyNormalizing {scope : Nat}
+    {firstRaw secondRaw : RawTerm scope}
+    (pairIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pair firstRaw secondRaw)) :
+    RawTerm.isStronglyNormalizing secondRaw :=
+  RawTerm.pair_second_isStronglyNormalizing_aux pairIsSN rfl
+
 /-- **K12.20.U2 raw CR3 skeleton**: a raw term is strongly
 normalizing when every non-trivial parallel-progress reduct is
 strongly normalizing.
