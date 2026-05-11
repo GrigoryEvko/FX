@@ -121,10 +121,24 @@ This file ships:
   carrierB are strict sub-Ty of `Ty.equiv carrierA carrierB`,
   so the closure recurses Reducible on BOTH sides — exact mirror
   of K12.5 RC.arrow, not the K12.6 weak shape.
-* **All remaining constructors** (~8 type formers: path, glue,
-  refine, record, codata, session, effect, modal): SN-fallback
-  (admissible but weak — every reducible term is at least SN).
-  K12.12-K12.16 tighten each to its type-former-specific closure.
+* **path carrier left right** (K12.12, full-output closure):
+  `SN(pathTerm) ∧ ∀ (modeIsUnivalent), ∀ intervalTerm, SN(interval)
+  → Reducible carrier (Term.pathApp pathTerm intervalTerm)`.  The
+  carrier IS strict sub-Ty so the output recurses Reducible.  The
+  input intervalTerm uses SN rather than `Reducible Ty.interval` —
+  `Ty.interval` is a sibling Ty constructor, NOT structural
+  sub-Ty of `Ty.path _ _ _`, so the recursion checker rejects
+  the recursive call.  Per K12.4, the demotion is propositionally
+  equivalent.
+* **glue baseType boundaryWitness** (K12.12, full glueElim
+  closure): `SN(gluedValue) ∧ ∀ (modeIsUnivalent), Reducible
+  baseType (Term.glueElim gluedValue)`.  baseType IS strict
+  sub-Ty so full Reducible on the projection result.  Even
+  simpler than path (no arg quantifier).
+* **All remaining constructors** (~6 type formers: refine, record,
+  codata, session, effect, modal): SN-fallback (admissible but
+  weak — every reducible term is at least SN).  K12.13-K12.16
+  tighten each to its type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -352,8 +366,40 @@ def Reducible {mode : Mode} {level scope : Nat}
            Term.isStronglyNormalizing (Term.app rightBranch valueTerm)) →
         Term.isStronglyNormalizing
           (Term.eitherMatch eitherTerm leftBranch rightBranch)
-  | Ty.path _ _ _, _, term => Term.isStronglyNormalizing term
-  | Ty.glue _ _, _, term => Term.isStronglyNormalizing term
+  -- Cubical path (K12.12, full-output pathApp closure).
+  -- `Ty.path carrier left right` has carrier as strict sub-Ty and
+  -- endpoints as RawTerm.  The eliminator `Term.pathApp` consumes
+  -- the path + an interval term, produces a result at carrier
+  -- (strict sub-Ty).  The closure recurses Reducible on carrier
+  -- (strict sub-Ty ✓), but demands only SN on intervalTerm rather
+  -- than Reducible at Ty.interval — Ty.interval is a sibling
+  -- constructor of Ty, NOT a structural sub-Ty of Ty.path, so the
+  -- structural-recursion-on-Ty checker rejects a `Reducible
+  -- Ty.interval` call here.  Per K12.4's closed-leaf arm,
+  -- `Reducible Ty.interval _ = Term.isStronglyNormalizing _`, so the
+  -- SN demotion is propositionally equivalent to the full Tait
+  -- form.  `modeIsUnivalent : mode = Mode.univalent` is universally
+  -- quantified — vacuous in non-univalent modes.
+  | Ty.path carrier _ _, _, pathTerm =>
+      Term.isStronglyNormalizing pathTerm ∧
+      ∀ (modeIsUnivalent : mode = Mode.univalent)
+        {intervalRaw : RawTerm scope}
+        (intervalTerm : Term context Ty.interval intervalRaw),
+        Term.isStronglyNormalizing intervalTerm →
+        Reducible carrier
+          (Term.pathApp modeIsUnivalent pathTerm intervalTerm)
+  -- CCHM Glue (K12.12, full glueElim closure).  `Ty.glue baseType
+  -- boundaryWitness` has baseType as strict sub-Ty.  The eliminator
+  -- `Term.glueElim` is a simple projection: consumes the glued value,
+  -- produces a result at baseType.  Even simpler closure than path
+  -- (no quantifier over argument): SN(gluedValue) + Reducible at
+  -- baseType for the projection result.  Mode-univalent constraint
+  -- universally quantified per the K12.10 idStrict pattern.
+  | Ty.glue baseType _, _, gluedValue =>
+      Term.isStronglyNormalizing gluedValue ∧
+      ∀ (modeIsUnivalent : mode = Mode.univalent),
+        Reducible baseType
+          (Term.glueElim modeIsUnivalent gluedValue)
   -- HoTT observational equality (K12.10, weak oeqJ closure).
   -- Ty.oeq mirrors Ty.id's shape exactly: carrier (strict sub-Ty) +
   -- two RawTerm endpoints.  The oeq-eliminator `Term.oeqJ` has the

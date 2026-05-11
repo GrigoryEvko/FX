@@ -96,11 +96,22 @@ K12.11 ships (full K12.5-arrow-strength equivalence closure):
   closure — full K12.5 arrow shape).  Term.equivApp mirrors
   Term.app structurally.
 
-Future K12.12-K12.16 tighten the remaining ~8 SN-fallback arms
-(path / glue / refine / record / codata / session / effect /
-modal) to their type-former-specific closures.  K12.18-K12.26
-ship the fundamental lemma; K12.27 closes M04 /
-`strong_normalization`. -/
+K12.12 ships (cubical path + glue full-output closures):
+* `Reducible Ty.path A x y pathTerm = SN(pathTerm) ∧ ∀
+  (modeIsUnivalent), ∀ intervalTerm, SN(intervalTerm) → Reducible
+  A (Term.pathApp pathTerm intervalTerm)`.  carrier is strict
+  sub-Ty so output recurses Reducible.  intervalTerm demoted to
+  SN (Ty.interval is sibling Ty ctor, NOT structural sub-Ty of
+  Ty.path — Lean recursion checker bans the call; K12.4 says SN
+  is propositionally equivalent).
+* `Reducible Ty.glue B w gluedValue = SN(gluedValue) ∧ ∀
+  (modeIsUnivalent), Reducible B (Term.glueElim gluedValue)`.
+  baseType strict sub-Ty → full Reducible on projection result.
+
+Future K12.13-K12.16 tighten the remaining ~6 SN-fallback arms
+(refine / record / codata / session / effect / modal) to their
+type-former-specific closures.  K12.18-K12.26 ship the
+fundamental lemma; K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
