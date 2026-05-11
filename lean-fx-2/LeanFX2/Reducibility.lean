@@ -2008,6 +2008,39 @@ theorem RawTerm.isStronglyNormalizing_weaken {scope : Nat}
       rw [targetEq]
       exact sourceIH targetInner ⟨innerStep, innerDistinct⟩
 
+/-- **K12.20.U3.monotone typed wrapper**: typed SN is stable under
+one-binder weakening.
+
+`Term.isStronglyNormalizing` is raw SN of the term index, and
+`Term.weaken` shifts that raw index with `RawTerm.weaken`, so this is
+the typed face of `RawTerm.isStronglyNormalizing_weaken`. -/
+theorem Term.isStronglyNormalizing_weaken
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    (sourceIsSN : Term.isStronglyNormalizing sourceTerm) :
+    Term.isStronglyNormalizing (Term.weaken newType sourceTerm) :=
+  RawTerm.isStronglyNormalizing_weaken sourceIsSN
+
+/-- **K12.20.U3.monotone Reducible SN projection**: every reducible
+term remains strongly normalizing after one-binder weakening.
+
+This is the SN half of the eventual world-monotone `Reducible.weaken`.
+Compound closures still need their own monotonicity fields; this theorem
+keeps that blocker explicit while avoiding repeated raw-SN plumbing. -/
+theorem Reducible.weaken_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    (sourceReducible : Reducible sourceType sourceTerm) :
+    Term.isStronglyNormalizing (Term.weaken newType sourceTerm) :=
+  Term.isStronglyNormalizing_weaken
+    (Reducible.isStronglyNormalizing sourceReducible)
+
 /-- Head-β SN expansion for non-dependent application.
 
 If the lambda body, argument, and β-contractum are all strongly
