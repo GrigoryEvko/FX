@@ -1032,6 +1032,46 @@ theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
   cases sourceIsSN with
   | intro _ closure => exact closure target progressStep
 
+/-- Shape-specialized inversion for application SN.  The induction is
+over an arbitrary SN source and receives the application shape as an
+equality, which keeps Lean's indexed-inductive eliminator in the
+structural fragment. -/
+theorem RawTerm.app_function_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {functionRaw argumentRaw : RawTerm scope},
+      source = RawTerm.app functionRaw argumentRaw →
+      RawTerm.isStronglyNormalizing functionRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro functionRaw argumentRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro functionRaw ?_
+    intro functionTarget functionProgress
+    have appProgress :
+        RawStep.parProgress
+          (RawTerm.app functionRaw argumentRaw)
+          (RawTerm.app functionTarget argumentRaw) := by
+      refine ⟨RawStep.par.app functionProgress.1
+        (RawStep.par.refl argumentRaw), ?_⟩
+      intro appEq
+      apply functionProgress.2
+      injection appEq
+    exact inductiveHypothesis
+      (RawTerm.app functionTarget argumentRaw) appProgress rfl
+
+/-- If an application is strongly normalizing, its function subterm is
+strongly normalizing.  This is used by weak eliminator CR3: branch
+closures often expose SN only after applying a branch, while neutral
+eliminator congruence needs SN of the branch term itself. -/
+theorem RawTerm.app_function_isStronglyNormalizing {scope : Nat}
+    {functionRaw argumentRaw : RawTerm scope}
+    (appIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app functionRaw argumentRaw)) :
+    RawTerm.isStronglyNormalizing functionRaw :=
+  RawTerm.app_function_isStronglyNormalizing_aux appIsSN rfl
+
 /-- **K12.20.U2 raw CR3 skeleton**: a raw term is strongly
 normalizing when every non-trivial parallel-progress reduct is
 strongly normalizing.
