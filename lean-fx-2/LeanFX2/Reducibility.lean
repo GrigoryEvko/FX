@@ -1136,6 +1136,29 @@ theorem RawTerm.listCons_isStronglyNormalizing {scope : Nat}
         · exact headIH headTarget headProgress
             (tailClosure tailTarget ⟨tailStep, tailEq⟩)
 
+/-- **K12.20.AB subsume SN preservation** — modal cumulativity cong.
+Sister to `modIntro_isStronglyNormalizing` — unary cong-only ctor at
+the modal-cumul-coercion position; no β rule at the raw level.
+Powers future fundamental_subsume under the K12.16 Ty.cumulUp closure
+chain. -/
+theorem RawTerm.subsume_isStronglyNormalizing {scope : Nat}
+    {innerTerm : RawTerm scope}
+    (innerIsSN : RawTerm.isStronglyNormalizing innerTerm) :
+    RawTerm.isStronglyNormalizing (RawTerm.subsume innerTerm) := by
+  induction innerIsSN with
+  | intro currentInner _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.subsume currentInner) ?_
+    intro target progressStep
+    obtain ⟨innerTarget, targetEq, innerStep⟩ :=
+      RawStep.par.subsume_inv progressStep.1
+    subst targetEq
+    have innerDistinct :
+        currentInner ≠ innerTarget := fun innerEq =>
+      progressStep.2 (congrArg RawTerm.subsume innerEq)
+    exact inductiveHypothesis innerTarget
+      ⟨innerStep, innerDistinct⟩
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
