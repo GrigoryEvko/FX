@@ -415,6 +415,15 @@ inductive RawTerm.IsNeutral : ∀ {scope : Nat}, RawTerm scope → Prop
       RawTerm.IsNeutral
         (RawTerm.effectPerform operationTag arguments)
 
+/-- Neutral raw terms are never lambda-shaped. -/
+theorem RawTerm.IsNeutral.not_lam {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source)
+    {bodyRaw : RawTerm (scope + 1)} :
+    source ≠ RawTerm.lam bodyRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
 /-- The Tait reducibility-candidate predicate, defined by
 structural recursion on Ty.
 

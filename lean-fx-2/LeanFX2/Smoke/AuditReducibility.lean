@@ -723,6 +723,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_sessionSend
 #print axioms Reducible.fundamental_effectPerform
 #print axioms LeanFX2.RawTerm.IsNeutral
+#print axioms RawTerm.IsNeutral.not_lam
 #print axioms RawStep.par.universeCode_inv
 #print axioms RawTerm.universeCode_isStronglyNormalizing
 #print axioms Reducible.fundamental_universeCode
