@@ -1886,4 +1886,73 @@ theorem Reducible.step_preserves_glue
     exact baseTypeCR2
       (sourceReducible.2 modeIsUnivalent) glueElimStep
 
+/-! ## K12.20.O typed CR2 lift — Ty.oeq weak-oeqJ-closure compound arm
+
+Tenth compound-arm CR2 lemma.  `Ty.oeq` (HoTT observational
+equality) ships a **weak oeqJ closure** in K12.10: the
+eliminator output is plain SN, not full `Reducible motiveType _`.
+The arbitrary `motiveType` is NOT a strict sub-Ty of
+`Ty.oeq carrier left right` — structural-recursion-on-Ty would
+not admit a `Reducible motiveType` recursive call (K12.6 / K12.9
+weak-J pattern, identical to K12.20.I for Ty.id and the parametric
+inductive weak elim arms K12.20.J/K/L).  Closure shape (per
+Reducibility.lean:503-509):
+
+```
+Reducible (Ty.oeq _ _ _) witness =
+  SN(witness) ∧
+  ∀ {motiveType : Ty level scope}
+    {baseRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw),
+    SN baseCase →
+    SN (Term.oeqJ baseCase witness)
+```
+
+Weak closure → **no recursive hypothesis needed**.  Eliminator
+output is SN, so the cong lift goes via
+`RawTerm.isStronglyNormalizing.step_preserves` directly.
+
+Term.oeqJ raw form is `RawTerm.oeqJ baseRaw witnessRaw` (per
+Term.lean:261); `RawStep.par.oeqJCong` takes paired par steps
+on baseCase + witness (per RawPar.lean:705-710).  For CR2 the
+baseCase rides `par.refl` (not progressing); witness rides
+`rawStep.1`.  Distinctness via `injection` on
+`RawTerm.oeqJ.injEq`.
+-/
+
+/-- **K12.20.O oeq arm**: weak-oeqJ-closure CR2 for `Ty.oeq`.
+No recursive hypothesis needed (weak elim closure produces SN,
+not Reducible).  SN-of-witnessTerm preserved by raw
+`step_preserves`; SN-of-oeqJ-applied lifted via raw
+`step_preserves` over the oeqJCong step.  Mirror of K12.20.I id
+arm; differs only in the raw cong rule name (`oeqJCong` rather
+than `idJ`). -/
+theorem Reducible.step_preserves_oeq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context
+        (Ty.oeq carrierType leftEndpoint rightEndpoint) sourceRaw}
+    {target : Term context
+        (Ty.oeq carrierType leftEndpoint rightEndpoint) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.oeq carrierType leftEndpoint rightEndpoint) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.oeq carrierType leftEndpoint rightEndpoint) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro motiveType baseRaw baseCase baseSN
+    have oeqJStep : RawStep.parProgress
+        (RawTerm.oeqJ baseRaw sourceRaw)
+        (RawTerm.oeqJ baseRaw targetRaw) := by
+      refine ⟨RawStep.par.oeqJCong (RawStep.par.refl baseRaw) rawStep.1, ?_⟩
+      intro oeqJEq
+      apply rawStep.2
+      injection oeqJEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 baseCase baseSN) oeqJStep
+
 end LeanFX2

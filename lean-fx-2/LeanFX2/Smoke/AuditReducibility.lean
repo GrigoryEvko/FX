@@ -412,6 +412,24 @@ K12.20.N ships (typed CR2 lift — glue strong-glueElim-closure compound arm):
   Term.lean:373).  Ninth compound-arm CR2; 6 remaining (oeq/
   idStrict/equiv/refine/record/codata).
 
+K12.20.O ships (typed CR2 lift — oeq weak-oeqJ-closure compound arm):
+* `Reducible.step_preserves_oeq` — Reducible at
+  `Ty.oeq carrier left right` is closed under raw `parProgress`.
+  K12.10's weak oeqJ closure produces SN(oeqJ baseCase witness)
+  from the eliminator (arbitrary `motiveType` is NOT a strict
+  sub-Ty of Ty.oeq — same K12.6/K12.9 weak-J pattern as
+  K12.20.I for Ty.id).  Closure: SN(witness) + (∀ motive
+  baseCase, SN baseCase → SN(Term.oeqJ baseCase witness)).
+  **Weak** pattern: no recursive hypothesis required — eliminator
+  output is SN, so the lift goes via `RawTerm.isStronglyNormalizing.
+  step_preserves` directly over the oeqJCong step.  Mirror of
+  K12.20.I id arm; differs only in the raw cong rule name
+  (`oeqJCong` with suffix vs `idJ` without).  Term.oeqJ raw form
+  is `RawTerm.oeqJ baseRaw witnessRaw` (per Term.lean:261);
+  `RawStep.par.oeqJCong` takes paired par steps (per
+  RawPar.lean:705-710).  Tenth compound-arm CR2; 5 remaining
+  (idStrict/equiv/refine/record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -465,5 +483,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_eitherType
 #print axioms Reducible.step_preserves_path
 #print axioms Reducible.step_preserves_glue
+#print axioms Reducible.step_preserves_oeq
 
 end LeanFX2.Smoke
