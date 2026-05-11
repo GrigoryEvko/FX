@@ -99,11 +99,20 @@ This file ships:
   so the conclusion demotes to SN of the eliminator result.
   Mirrors K12.6 piTy weak closure pattern.  Full Reducible-at-
   motiveType closure reserved for Kripke logical relation refactor.
-* **All remaining constructors** (~12 type formers: id, path,
+* **id carrier left right** (K12.9, weak idJ closure):
+  `SN(witness) ∧ ∀ motiveType baseCase, SN(baseCase) →
+  SN(Term.idJ baseCase witness)`.  The id-eliminator's output
+  type is arbitrary (motiveType), NOT a structural sub-Ty of
+  `Ty.id _ _ _`, so the conclusion demotes to SN.  Carrier is a
+  strict sub-Ty but doesn't appear directly in idJ's argument
+  signature (only in the id-type's own structure).  Mirrors
+  K12.6 piTy weak-closure pattern.  Full Reducible-motive
+  closure reserved for the Kripke logical relation refactor.
+* **All remaining constructors** (~11 type formers: path,
   glue, oeq, idStrict, equiv, refine, record, codata, session,
   effect, modal): SN-fallback (admissible but weak — every
-  reducible term is at least SN).  K12.9-K12.16 tighten each to
-  its type-former-specific closure.
+  reducible term is at least SN).  K12.10-K12.16 tighten each
+  to its type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -240,8 +249,27 @@ def Reducible {mode : Mode} {level scope : Nat}
       Term.isStronglyNormalizing pairTerm ∧
       Reducible firstType (Term.fst pairTerm) ∧
       Term.isStronglyNormalizing (Term.snd pairTerm)
-  -- Remaining type formers (K12.9-K12.16 TODO): SN-fallback
-  | Ty.id _ _ _, _, term => Term.isStronglyNormalizing term
+  -- Remaining type formers (K12.10-K12.16 TODO): SN-fallback
+  -- HoTT propositional identity type (K12.9, weak idJ closure).
+  -- The id-eliminator `Term.idJ` consumes a witness at
+  -- `Ty.id carrier leftEndpoint rightEndpoint` and a baseCase at an
+  -- arbitrary motiveType, producing `motiveType`.  motiveType is NOT
+  -- a structural sub-Ty of `Ty.id _ _ _` (eliminator-output types
+  -- never are), so Reducible at motiveType is banned by the
+  -- structural-recursion-on-Ty checker.  Carrier IS a strict sub-Ty,
+  -- but doesn't appear in idJ's argument signature directly — only in
+  -- the id-type's own structure.  The weak closure: SN(witness) +
+  -- (baseCase SN → SN(idJ baseCase witness)).  Mirrors K12.6 piTy
+  -- weak-closure pattern.  Full Reducible-motive closure reserved for
+  -- the Kripke logical relation refactor (Abel-Öhman-Vezzosi POPL'18
+  -- style — paired-environment recursion sidesteps the sub-Ty wall).
+  | Ty.id _ _ _, _, witness =>
+      Term.isStronglyNormalizing witness ∧
+      ∀ {motiveType : Ty level scope}
+        {baseRaw : RawTerm scope}
+        (baseCase : Term context motiveType baseRaw),
+        Term.isStronglyNormalizing baseCase →
+        Term.isStronglyNormalizing (Term.idJ baseCase witness)
   -- Parametric inductive: list (K12.8, weak elim closure).  Mirrors
   -- K12.6 piTy's "Reducible-arg → SN result" weak-Tait pattern.
   -- The eliminator `Term.listElim` returns at an arbitrary motiveType

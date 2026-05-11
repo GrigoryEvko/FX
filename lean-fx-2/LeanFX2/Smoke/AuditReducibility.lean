@@ -70,8 +70,15 @@ K12.8 ships (weak elim closure for parametric inductives):
   sub-Ty) so conclusion demotes to SN of the eliminator
   result.  Mirrors K12.6 piTy weak closure pattern.
 
-Future K12.9-K12.16 tighten the remaining ~12 SN-fallback arms
-(id / path / glue / oeq / idStrict / equiv / refine / record /
+K12.9 ships (HoTT identity weak idJ closure):
+* `Reducible Ty.id carrier left right witness = SN(witness) ∧
+  ∀ motiveType baseCase, SN(baseCase) → SN(Term.idJ baseCase
+  witness)`.  The id-eliminator's output `motiveType` is
+  arbitrary (NOT structural sub-Ty), so conclusion demotes to
+  SN of idJ result.  Mirrors K12.6 piTy weak closure pattern.
+
+Future K12.10-K12.16 tighten the remaining ~11 SN-fallback arms
+(path / glue / oeq / idStrict / equiv / refine / record /
 codata / session / effect / modal) to their type-former-
 specific closures.  K12.18-K12.26 ship the fundamental lemma;
 K12.27 closes M04 / `strong_normalization`. -/
