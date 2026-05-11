@@ -623,6 +623,16 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_modIntro_at_universe
 #print axioms Reducible.fundamental_modIntro_at_session
 #print axioms Reducible.fundamental_modIntro_at_modal
+#print axioms Reducible.fundamental_subsume_at_bool
+#print axioms Reducible.fundamental_subsume_at_nat
+#print axioms Reducible.fundamental_subsume_at_empty
+#print axioms Reducible.fundamental_subsume_at_interval
+#print axioms Reducible.fundamental_subsume_at_effect
+#print axioms Reducible.fundamental_modIntro_at_bool
+#print axioms Reducible.fundamental_modIntro_at_nat
+#print axioms Reducible.fundamental_modIntro_at_empty
+#print axioms Reducible.fundamental_modIntro_at_interval
+#print axioms Reducible.fundamental_modIntro_at_effect
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing
 #print axioms RawTerm.eitherInl_isStronglyNormalizing
