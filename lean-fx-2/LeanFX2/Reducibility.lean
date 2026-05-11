@@ -1508,4 +1508,65 @@ theorem Reducible.step_preserves_sigmaTy
     exact RawTerm.isStronglyNormalizing.step_preserves
       sourceReducible.2.2 sndStep
 
+/-! ## K12.20.I typed CR2 lift — Ty.id weak-idJ-closure compound arm
+
+Fourth compound-arm CR2 lemma.  `Ty.id` ships a **weak idJ
+closure** in K12.9 (motive-Reducible closure is reserved for
+the future Kripke logical-relation refactor — paired-environment
+recursion sidesteps the eliminator-output sub-Ty wall):
+
+```
+Reducible (Ty.id A x y) w =
+  SN(w) ∧ ∀ {M : Ty} {br} (bc : Term ctx M br),
+            SN(bc) → SN(Term.idJ bc w)
+```
+
+The eliminator output is `SN(Term.idJ bc w)` not full
+`Reducible motiveType (Term.idJ bc w)`.  Consequently, CR2 for
+`Ty.id` needs NO recursive motiveTypeCR2 hypothesis — both
+SN-of-witness and SN-of-idJ-result are pure-SN preservation,
+both discharged by K12.20.B's raw `step_preserves`.  Same
+weak-closure pattern as K12.20.G piTy.
+
+Term.idJ's raw projection IS `RawTerm.idJ baseRaw witnessRaw`
+(per Term.lean:245), and `RawStep.par.idJ` takes paired par
+steps on baseRaw + witnessRaw (per RawPar.lean:179).  For the
+CR2 step, baseCase is unchanged across source/target, so the
+baseRaw side gets `RawStep.par.refl baseRaw` while the witness
+side gets `rawStep.1`.
+-/
+
+/-- **K12.20.I id arm**: weak-idJ-closure CR2 for `Ty.id`.  Both
+SN-of-witness and SN-of-idJ-result are preserved by the same
+raw `step_preserves`.  Distinctness on idJ via ctor injectivity
+(injection extracts witness-side raw equality, contradicts
+rawStep.2). -/
+theorem Reducible.step_preserves_id
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context
+        (Ty.id carrierType leftEndpoint rightEndpoint) sourceRaw}
+    {target : Term context
+        (Ty.id carrierType leftEndpoint rightEndpoint) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.id carrierType leftEndpoint rightEndpoint) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.id carrierType leftEndpoint rightEndpoint) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro motiveType baseRaw baseCase baseSN
+    have idJStep : RawStep.parProgress
+        (RawTerm.idJ baseRaw sourceRaw)
+        (RawTerm.idJ baseRaw targetRaw) := by
+      refine ⟨RawStep.par.idJ (RawStep.par.refl baseRaw) rawStep.1, ?_⟩
+      intro idJEq
+      apply rawStep.2
+      injection idJEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 baseCase baseSN) idJStep
+
 end LeanFX2

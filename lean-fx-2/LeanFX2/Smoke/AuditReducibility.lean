@@ -309,6 +309,22 @@ K12.20.H ships (typed CR2 lift — sigmaTy asymmetric-closure compound arm):
   glue/oeq/idStrict/equiv/refine/record/codata) follow the same
   per-arm decomposition pattern.
 
+K12.20.I ships (typed CR2 lift — id weak-idJ-closure compound arm):
+* `Reducible.step_preserves_id` — Reducible at
+  `Ty.id A x y` is closed under raw `parProgress`.  K12.9's weak
+  idJ closure has two conjuncts: SN(witness) + (∀ motiveType
+  baseCase, SN(baseCase) → SN(idJ baseCase witness)).  Both are
+  pure-SN preservation — the eliminator output is plain SN, not
+  full Reducible, so NO recursive motiveTypeCR2 hypothesis is
+  needed (full Tait dep-J closure deferred to Kripke logical
+  relation refactor).  Same weak-closure pattern as K12.20.G
+  piTy.  Term.idJ shares raw form `RawTerm.idJ baseRaw witnessRaw`
+  (per Term.lean:245); `RawStep.par.idJ` takes paired par steps
+  on baseRaw + witnessRaw, so the baseRaw side gets `par.refl`
+  while witness side gets `rawStep.1`.  Fourth compound-arm CR2;
+  11 remaining (list/option/either/path/glue/oeq/idStrict/equiv/
+  refine/record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -356,5 +372,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_arrow
 #print axioms Reducible.step_preserves_piTy
 #print axioms Reducible.step_preserves_sigmaTy
+#print axioms Reducible.step_preserves_id
 
 end LeanFX2.Smoke
