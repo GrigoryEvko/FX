@@ -94,4 +94,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.VerticalChain.append_assoc
 #assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_assoc
 
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.compose_assoc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.identity_left
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.identity_right
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.fromGenerator
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeOneCategory.fromGenerator_length_eq_one
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.compose_assoc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.identity_left
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.identity_right
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator
+#assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator_length_eq_one
+
 end LeanFX2.Tools

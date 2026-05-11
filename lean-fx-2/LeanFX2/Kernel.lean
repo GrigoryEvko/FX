@@ -20,6 +20,7 @@ import LeanFX2.Foundation.Polygraph.DecEq
 import LeanFX2.Foundation.Polygraph.VerticalComp
 import LeanFX2.Foundation.Polygraph.HorizontalComp
 import LeanFX2.Foundation.Polygraph.Laws
+import LeanFX2.Foundation.Polygraph.FreeCategory
 
 -- Layer 1 - Term
 import LeanFX2.Term
