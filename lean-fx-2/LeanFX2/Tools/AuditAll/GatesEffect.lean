@@ -50,6 +50,6 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` binary cascade Allais helper +
 -- binary substHet/rename/subst arms thread one more anonymous-
 -- projection dependent.
-#assert_anonymous_projection_dependent_budget LeanFX2 181
+#assert_anonymous_projection_dependent_budget LeanFX2 182
 
 end LeanFX2.Tools

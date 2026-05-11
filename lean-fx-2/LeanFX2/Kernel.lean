@@ -17,6 +17,7 @@ import LeanFX2.Foundation.Polygraph.PolyCell
 import LeanFX2.Foundation.Polygraph.ParallelPair
 import LeanFX2.Foundation.Polygraph.Wellfounded
 import LeanFX2.Foundation.Polygraph.DecEq
+import LeanFX2.Foundation.Polygraph.VerticalComp
 
 -- Layer 1 - Term
 import LeanFX2.Term

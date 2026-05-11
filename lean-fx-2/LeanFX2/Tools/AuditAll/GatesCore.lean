@@ -34,7 +34,7 @@ namespace LeanFX2.Tools
 -- + Step.equivApplyEquiv + Step.equivApplyArgument +
 -- ConvCumul.equivApplyCong + Allais helper + toRaw_equivApply
 -- contribute two more universe-poly kernel decls.
-#assert_universe_polymorphism_budget LeanFX2 544
+#assert_universe_polymorphism_budget LeanFX2 554
 
 -- Quot / Quotient family dependents.  Quot is propositional truncation;
 -- Quot.lift / Quot.ind / Quot.rec are Classical-adjacent (Quot.sound IS
