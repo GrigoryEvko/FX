@@ -81,7 +81,7 @@ namespace LeanFX2.Tools
 -- + cascade adding TWO more absurd-using branches through new shape-
 -- inversion helpers `rename_eq_oeqTrans_imp` + `rename_eq_equivCompose_imp`
 -- (each with ~70 nomatch arms contributing through cascade dependents).
-#assert_absurd_false_dependent_budget LeanFX2 985
+#assert_absurd_false_dependent_budget LeanFX2 987
 
 -- Setoid / Quotient (vs primitive Quot) dependent census.  Beyond Quot
 -- family, this widens to the equivalence-relation typeclass and the

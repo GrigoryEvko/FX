@@ -1,29 +1,60 @@
-/-! # `PolyCell` — universal n-cell type per Burroni 1993 §1.1
+/-! # `PolyCell` — globular polygraph cell type (Burroni 1993 §1.1)
 
-Polygraphs (Burroni 1993, Métayer 2008; equivalently computads per
-Street 1976) are the canonical data structure for higher-dimensional
-rewriting.  An n-cell is an element at dimension `n` in the polygraph;
-`(n+1)`-cells carry source and target as `n`-cells.
+A `PolyCell dim sourceVtx targetVtx` is a cell at dimension `dim` in a
+globular polygraph whose globular dim-0 boundary is the pair of
+vertices `(sourceVtx, targetVtx)`.
 
-This file ships the BASE inductive structure.  Source/target/idx
-projections + `DecidableEq` are intentionally deferred to K11.2
-(`ParallelPair`) and K11.3 (well-foundedness + DecidableEq), where the
-parallelism predicate / index-equality motive supplies the
-dependent-index witness needed to keep partial-match constructions
-propext-clean per `feedback_lean_indexed_partial_match.md`.  This
-mirrors the discipline followed by the existing Layer-0 indexed
-inductives (`RawTerm`, `Ty`, `Subst`), which likewise defer
-`DecidableEq` to surrounding metatheory layers rather than `deriving`
-it locally.
+## Burroni 1993 parallelism — built into the type
 
-Operadic composition + interchange laws land in K11.4-K11.6.  Free
-n-category construction in K11.7.
+For Burroni 1993 §1.1, an `(n+1)`-cell `c` has source `s_{n+1}(c)` and
+target `t_{n+1}(c)` at dim `n`, satisfying the parallelism condition
 
-FX adopts the OPERADIC reading per Squier 1987 + Métayer 2008:
-1-cells carry multi-port arity `(m, n)`.  This subsumes Lafont-style
-interaction nets natively, eliminating the need for a separate
-`HyperTerm` IR in the four-encoding grid
-(Tree / PolyTerm / ValueTerm / EGraph).
+```text
+s_n(s_{n+1}(c)) = s_n(t_{n+1}(c))   and   t_n(s_{n+1}(c)) = t_n(t_{n+1}(c)).
+```
+
+The globular interpretation: every cell has a unique `(sourceVtx,
+targetVtx)` pair at dim 0 (its globular boundary), and the parallelism
+condition is the statement that `s_{n+1}(c)` and `t_{n+1}(c)` share
+their globular boundary.  By indexing `PolyCell` on this dim-0
+boundary, we make parallelism INTRINSIC — the constructor for a
+dim-`(n+2)` cell requires its source and target to be presented at the
+SAME boundary `(sourceVtx, targetVtx)`, which is exactly Burroni's
+parallelism condition lifted to the type level.
+
+## Three constructors covering dim 0, 1, and ≥ 2
+
+* `atom vtx` — a dim-0 cell at vertex `vtx`; its own boundary is the
+  trivial loop `(vtx, vtx)`.
+* `arrow source target idx` — a dim-1 cell from a dim-0 atom at
+  `sourceVtx` to a dim-0 atom at `targetVtx`.  These dim-0 atoms can
+  inhabit different vertices; the resulting 1-cell carries the pair
+  as its globular boundary.
+* `cell source target idx` — a dim-`(dim+2)` cell between two
+  dim-`(dim+1)` cells `source` and `target` that share globular
+  boundary `(sourceVtx, targetVtx)`.  Parallelism is enforced by the
+  type indices.
+
+## What is NOT in this file
+
+* Source / target / idx projections.  K11.2 (`ParallelPair`) lands the
+  projection functions plus a separate `ParallelPair source target`
+  predicate witnessing that two parallel cells of the same dim share
+  globular boundary at the dim-0 level (a stronger separate statement
+  about specific instances; the constructor only enforces it at the
+  ambient cell's level).  Projections live there because they require
+  the `casesOn`-with-index-equality recipe from
+  `feedback_lean_indexed_partial_match.md`.
+* `DecidableEq`.  K11.3 lands DecidableEq via the same recipe.
+* Vertical / horizontal composition.  K11.4 / K11.5.
+* Multi-port arity (Squier 1987 / Métayer 2008 operadic reading).
+  The globular fragment shipped here is single-port — `source` and
+  `target` are each a single cell, not a list of ports.  Multi-port
+  arity arrives with K11.5's horizontal composition, generalizing the
+  globular structure to operadic.  The K11.1 file deliberately ships
+  the globular fragment because every FX construct that consumes a
+  polygraph cell — `Step.toDim1Cell`, `cd_lemma.toDim2Cell`, strategy
+  3-cells — is globular at its boundary.
 
 ## References
 
@@ -31,7 +62,7 @@ interaction nets natively, eliminating the need for a separate
   equational logic", TCS 115.
 * Street 1976, "Limits indexed by category-valued 2-functors", JPAA 8.
 * Squier 1987, "Word problems and a homological finiteness condition
-  for monoids", JPAA 49.
+  for monoids", JPAA 49 (operadic reading — applied in K11.5).
 * Métayer 2003, "Resolutions by polygraphs", TAC 11.
 
 ## Root status
@@ -42,36 +73,46 @@ theorems.
 
 ## Task anchor
 
-K11.1 in the K-series build plan.  Pairs with K11.2 `ParallelPair`
-for projection + parallelism predicate + K11.3 well-foundedness +
-K11.7 free n-category construction.
+K11.1 in the K-series build plan.  Pairs with K11.2 `ParallelPair` for
+projections + the explicit parallel-pair predicate, K11.3
+well-foundedness + DecidableEq, K11.4-K11.5 composition, K11.6
+interchange laws, K11.7 free n-category construction.
 -/
 
 namespace LeanFX2.Foundation.Polygraph
 
-/-- Universal n-cell type indexed by dimension.
+/-- Globular polygraph cell at dimension `dim`, with globular dim-0
+boundary `(sourceVtx, targetVtx)`.
 
-A `PolyCell n` is a cell at dimension `n` in some abstract polygraph.
-At dim 0 the cell is a bare generator with a `Nat` handle.  At every
-higher dimension the cell additionally carries its own source and
-target as cells one dimension lower; the `Nat` handle distinguishes
-distinct cells sharing the same source/target pair.
+Three constructors handle the strata:
 
-The dimension index is computational `Nat` (no propositional equality)
-to keep the type `@[reducible]`-friendly per `kernel-metaplan` strict
-zero-axiom discipline and to avoid the universe-constructor blocker
-documented in `feedback_lean_universe_constructor_block.md`.
+* `atom` for dim-0 cells (boundary is a trivial self-loop).
+* `arrow` for dim-1 cells (carrier of two possibly-distinct vertices).
+* `cell` for dim-`(dim+2)` cells (parallelism enforced via shared
+  boundary indices on the source/target arguments).
 
-Source/target/idx projections live in K11.2; this file ships the
-constructors + `DecidableEq` only. -/
-inductive PolyCell : Nat → Type
-  /-- Dim-0 cell — a polygraph generator. -/
-  | gen0 (idx : Nat) : PolyCell 0
-  /-- Dim-`(dim+1)` cell with explicit source/target dim-`dim` witnesses. -/
-  | genSucc (dim : Nat)
-            (source target : PolyCell dim)
-            (idx : Nat) :
-      PolyCell (dim + 1)
+Parallelism is INTRINSIC: a dim-`(n+2)` cell built via `cell` REQUIRES
+its source and target to live at the same boundary, so the Burroni
+parallelism condition holds automatically at the type level. -/
+inductive PolyCell : (dim sourceVtx targetVtx : Nat) → Type
+  /-- A dim-0 cell at vertex `vtx`. -/
+  | atom (vtx : Nat) : PolyCell 0 vtx vtx
+  /-- A dim-1 cell (arrow) from an atom at `sourceVtx` to an atom at
+  `targetVtx`.  The dim-0 source and target are presented explicitly
+  so that downstream cell-walking machinery can recurse uniformly. -/
+  | arrow {sourceVtx targetVtx : Nat}
+          (source : PolyCell 0 sourceVtx sourceVtx)
+          (target : PolyCell 0 targetVtx targetVtx)
+          (idx : Nat) :
+      PolyCell 1 sourceVtx targetVtx
+  /-- A dim-`(dim+2)` cell whose source and target are dim-`(dim+1)`
+  cells sharing globular boundary `(sourceVtx, targetVtx)`.  The
+  parallelism condition is enforced by the shared boundary indices on
+  the `source` and `target` arguments. -/
+  | cell {dim sourceVtx targetVtx : Nat}
+         (source target : PolyCell (dim + 1) sourceVtx targetVtx)
+         (idx : Nat) :
+      PolyCell (dim + 2) sourceVtx targetVtx
   deriving Repr
 
 end LeanFX2.Foundation.Polygraph
