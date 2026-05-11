@@ -588,6 +588,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.lam_isStronglyNormalizing
 #print axioms RawTerm.isStronglyNormalizing.step_preserves
 #print axioms RawTerm.isStronglyNormalizing.of_progress_closure
+#print axioms Term.isStronglyNormalizing.of_raw_progress_closure
 #print axioms RawTerm.var_isStronglyNormalizing
 #print axioms RawTerm.app_var_isStronglyNormalizing
 #print axioms RawTerm.fst_var_isStronglyNormalizing
@@ -708,6 +709,16 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.session_of_varShape
 #print axioms Reducible.effect_of_varShape
 #print axioms Reducible.modal_of_varShape
+#print axioms Reducible.unit_of_progress_closure
+#print axioms Reducible.bool_of_progress_closure
+#print axioms Reducible.nat_of_progress_closure
+#print axioms Reducible.empty_of_progress_closure
+#print axioms Reducible.interval_of_progress_closure
+#print axioms Reducible.universe_of_progress_closure
+#print axioms Reducible.tyVar_of_progress_closure
+#print axioms Reducible.session_of_progress_closure
+#print axioms Reducible.effect_of_progress_closure
+#print axioms Reducible.modal_of_progress_closure
 #print axioms Reducible.step_preserves_arrow
 #print axioms Reducible.step_preserves_piTy
 #print axioms Reducible.step_preserves_sigmaTy
