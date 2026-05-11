@@ -3155,6 +3155,76 @@ theorem RawTerm.optionMatch_var_isStronglyNormalizing {scope : Nat}
             (RawStep.par.var_inv scrutineeStep).symm
           nomatch varEqSome)
 
+/-- Option matching with a neutral scrutinee is strongly normalizing
+when the scrutinee and both branches are strongly normalizing.
+
+The option ι arms are impossible because every parallel reduct of the
+neutral scrutinee stays neutral, and neutral terms are never
+`optionNone` or `optionSome` shaped.  The congruence arm recurses across
+scrutinee, none-branch, and some-branch progress. -/
+theorem RawTerm.optionMatch_neutral_isStronglyNormalizing {scope : Nat}
+    {scrutineeRaw noneBranch someBranch : RawTerm scope}
+    (scrutineeIsNeutral : RawTerm.IsNeutral scrutineeRaw)
+    (scrutineeIsSN : RawTerm.isStronglyNormalizing scrutineeRaw)
+    (noneIsSN : RawTerm.isStronglyNormalizing noneBranch)
+    (someIsSN : RawTerm.isStronglyNormalizing someBranch) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.optionMatch scrutineeRaw noneBranch someBranch) := by
+  induction scrutineeIsSN generalizing noneBranch someBranch with
+  | intro currentScrutinee _ scrutineeInduction =>
+    induction noneIsSN generalizing someBranch with
+    | intro currentNone noneClosure noneInduction =>
+      induction someIsSN with
+      | intro currentSome someClosure someInduction =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.optionMatch currentScrutinee currentNone currentSome) ?_
+        intro target progressStep
+        rcases RawStep.par.optionMatch_inv progressStep.1 with
+          ⟨scrutineeTarget, noneTarget, someTarget, targetEq,
+            scrutineeStep, noneStep, someStep⟩
+          | (⟨_noneTarget, _targetEq, scrutineeStep, _noneStep⟩
+            | ⟨valueRaw, _someTarget, _targetEq,
+                scrutineeStep, _someStep⟩)
+        · subst targetEq
+          have scrutineeTargetIsNeutral :
+              RawTerm.IsNeutral scrutineeTarget :=
+            RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep
+          have noneTargetIsSN :
+              RawTerm.isStronglyNormalizing noneTarget := by
+            by_cases noneEq : currentNone = noneTarget
+            · subst noneEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentNone noneClosure
+            · exact noneClosure noneTarget ⟨noneStep, noneEq⟩
+          have someTargetIsSN :
+              RawTerm.isStronglyNormalizing someTarget := by
+            by_cases someEq : currentSome = someTarget
+            · subst someEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSome someClosure
+            · exact someClosure someTarget ⟨someStep, someEq⟩
+          by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+          · subst scrutineeEq
+            by_cases noneEq : currentNone = noneTarget
+            · subst noneEq
+              by_cases someEq : currentSome = someTarget
+              · subst someEq
+                exact (progressStep.2 rfl).elim
+              · exact someInduction someTarget ⟨someStep, someEq⟩
+            · exact noneInduction noneTarget ⟨noneStep, noneEq⟩
+                someTargetIsSN
+          · exact scrutineeInduction scrutineeTarget
+              ⟨scrutineeStep, scrutineeEq⟩
+              scrutineeTargetIsNeutral noneTargetIsSN someTargetIsSN
+        · exact (RawTerm.IsNeutral.not_optionNone
+            (RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep) rfl).elim
+        · exact (RawTerm.IsNeutral.not_optionSome
+            (RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep)
+            (valueRaw := valueRaw) rfl).elim
+
 /-- **K12.20.AW.3 neutral eitherMatch SN preservation**.  Sister
 to `listElim_var` / `optionMatch_var`; either-eliminator with
 variable scrutinee.  Both ι rules carry a payload value (no
@@ -6184,6 +6254,34 @@ theorem Reducible.listType_of_varShape
    fun {_motiveType} {_nilRaw} {_consRaw}
        _nilBranch _consBranch nilIsSN consIsSN _consApplied =>
      RawTerm.listElim_var_isStronglyNormalizing position nilIsSN consIsSN⟩
+
+/-- **K12.20.U2 optionType CR3 arm**: a neutral option value is reducible
+at `Ty.optionType elementType` when every raw progress reduct is SN.
+
+The K12.8 option candidate asks for SN of each match result under SN
+branches and the some-application closure.  With a neutral scrutinee the
+none/some ι arms cannot fire, so the raw neutral option-match helper
+closes from scrutinee SN plus branch SN. -/
+theorem Reducible.optionType_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term context (Ty.optionType elementType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.optionType elementType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _motiveType _noneRaw _someRaw _noneBranch _someBranch
+    noneIsSN someIsSN _someApplied
+  exact RawTerm.optionMatch_neutral_isStronglyNormalizing
+    sourceIsNeutral sourceIsSN noneIsSN someIsSN
 
 /-- **K12.20.U2 optionType varShape arm**: variables are reducible at
 option type.
