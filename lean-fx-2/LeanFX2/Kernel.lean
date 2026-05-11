@@ -28,6 +28,7 @@ import LeanFX2.Foundation.Polygraph.PolyTermAction
 import LeanFX2.Foundation.Polygraph.StepLabel
 import LeanFX2.Foundation.Polygraph.Dim1Extraction
 import LeanFX2.Foundation.Polygraph.Dim1Equivalence
+import LeanFX2.Foundation.Polygraph.Dim2Diamond
 
 -- Layer 1 - Term
 import LeanFX2.Term
