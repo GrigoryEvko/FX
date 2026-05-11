@@ -184,6 +184,21 @@ K12.18/K12.19 ship (substitution-reducibility predicate + var case):
   position`.  Foundational base case the K12.20-K12.26 cascade
   builds on.
 
+K12.19.B ships (introducer-SN nullary base cases):
+* `RawTerm.unit_isStronglyNormalizing` / `boolTrue_` / `boolFalse_`
+  / `natZero_isStronglyNormalizing` — each nullary introducer is
+  SN.  Proof: any `parProgress` step requires `source ≠ target`,
+  but per `Reduction/RawParInversion.lean`'s `*_inv` lemmas, every
+  `RawStep.par` from a nullary canonical introducer is `refl`
+  (target = source).  Contradiction discharges the closure.
+* `Reducible.fundamental_unit` / `fundamental_boolTrue` /
+  `fundamental_boolFalse` / `fundamental_natZero` — the four
+  fundamental-lemma cases for nullary intro Term ctors.  Each body
+  is literally the corresponding raw SN lemma because Term.subst's
+  equation makes `Term.subst termSubst Term.X = Term.X`,
+  Reducible's closed-leaf arm unfolds to SN, and Term.SN unfolds
+  to RawTerm.SN at the carrier raw.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -195,5 +210,13 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.isStronglyNormalizing
 #print axioms ReducibleSubst
 #print axioms Reducible.fundamental_var
+#print axioms RawTerm.unit_isStronglyNormalizing
+#print axioms RawTerm.boolTrue_isStronglyNormalizing
+#print axioms RawTerm.boolFalse_isStronglyNormalizing
+#print axioms RawTerm.natZero_isStronglyNormalizing
+#print axioms Reducible.fundamental_unit
+#print axioms Reducible.fundamental_boolTrue
+#print axioms Reducible.fundamental_boolFalse
+#print axioms Reducible.fundamental_natZero
 
 end LeanFX2.Smoke

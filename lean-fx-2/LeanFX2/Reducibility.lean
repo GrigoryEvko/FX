@@ -1,6 +1,7 @@
 import LeanFX2.Term
 import LeanFX2.Term.Subst
 import LeanFX2.Reduction.RawPar
+import LeanFX2.Reduction.RawParInversion
 
 /-! # LeanFX2.Reducibility — Tait reducibility candidates
 
@@ -756,5 +757,99 @@ theorem Reducible.fundamental_var
     Reducible ((varType sourceCtx position).subst sigma)
               (Term.subst termSubst (Term.var position)) :=
   substReducible position
+
+/-! ## K12.19.B introducer-SN cases
+
+For nullary introducers (unit / boolTrue / boolFalse / natZero), the
+fundamental-lemma arm reduces to "the introducer is strongly
+normalizing".  Each introducer is canonical: no β/ι rule fires on
+it because there's no destructor chain through a nullary head, so
+`RawStep.par` reduces only via `refl` (target = source).  The
+`*_inv` lemmas already shipped in `Reduction/RawParInversion.lean`
+make this trivial: any step is reflexive, and `parProgress`'s
+source-≠-target requirement contradicts the inversion.
+-/
+
+/-- `RawTerm.unit` is strongly normalizing.  No β/ι rule has unit
+as a source, so any parallel step is `refl`; `parProgress` rules
+that out. -/
+theorem RawTerm.unit_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.unit : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro RawTerm.unit
+    (fun _ parStep =>
+      (parStep.2 (RawStep.par.unit_inv parStep.1).symm).elim)
+
+/-- `RawTerm.boolTrue` is strongly normalizing. -/
+theorem RawTerm.boolTrue_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.boolTrue : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro RawTerm.boolTrue
+    (fun _ parStep =>
+      (parStep.2 (RawStep.par.boolTrue_inv parStep.1).symm).elim)
+
+/-- `RawTerm.boolFalse` is strongly normalizing. -/
+theorem RawTerm.boolFalse_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.boolFalse : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro RawTerm.boolFalse
+    (fun _ parStep =>
+      (parStep.2 (RawStep.par.boolFalse_inv parStep.1).symm).elim)
+
+/-- `RawTerm.natZero` is strongly normalizing. -/
+theorem RawTerm.natZero_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.natZero : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro RawTerm.natZero
+    (fun _ parStep =>
+      (parStep.2 (RawStep.par.natZero_inv parStep.1).symm).elim)
+
+/-- **K12.19.B unit case**: substituting through `Term.unit` yields
+a reducible term at `Ty.unit`.  `Term.subst termSubst Term.unit =
+Term.unit` (by Term.subst's unit equation); `Reducible Ty.unit
+Term.unit` unfolds to `Term.isStronglyNormalizing Term.unit`, which
+is `RawTerm.unit_isStronglyNormalizing`. -/
+theorem Reducible.fundamental_unit
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    Reducible ((Ty.unit : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.unit (context := sourceCtx))) :=
+  RawTerm.unit_isStronglyNormalizing
+
+/-- **K12.19.B boolTrue case**: same shape as `fundamental_unit`. -/
+theorem Reducible.fundamental_boolTrue
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    Reducible ((Ty.bool : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.boolTrue (context := sourceCtx))) :=
+  RawTerm.boolTrue_isStronglyNormalizing
+
+/-- **K12.19.B boolFalse case**. -/
+theorem Reducible.fundamental_boolFalse
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    Reducible ((Ty.bool : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.boolFalse (context := sourceCtx))) :=
+  RawTerm.boolFalse_isStronglyNormalizing
+
+/-- **K12.19.B natZero case**. -/
+theorem Reducible.fundamental_natZero
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    Reducible ((Ty.nat : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.natZero (context := sourceCtx))) :=
+  RawTerm.natZero_isStronglyNormalizing
 
 end LeanFX2
