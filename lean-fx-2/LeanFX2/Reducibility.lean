@@ -1520,6 +1520,125 @@ theorem RawTerm.codataUnfold_isStronglyNormalizing {scope : Nat}
             (transitionClosure transitionTarget
               ⟨transitionStep, transitionEq⟩)
 
+/-- **K12.20.AK.1 pathCompose SN preservation** — cubical path
+composition.  Pure binary cong over two path witnesses;
+pair-style universal-in-conclusion. -/
+theorem RawTerm.pathCompose_isStronglyNormalizing {scope : Nat}
+    {leftPath : RawTerm scope}
+    (leftIsSN : RawTerm.isStronglyNormalizing leftPath) :
+    ∀ {rightPath : RawTerm scope},
+      RawTerm.isStronglyNormalizing rightPath →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pathCompose leftPath rightPath) := by
+  induction leftIsSN with
+  | intro currentLeft _ leftIH =>
+    intro rightPath rightIsSN
+    induction rightIsSN with
+    | intro currentRight rightClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.pathCompose currentLeft currentRight) ?_
+      intro target progressStep
+      obtain ⟨leftTarget, rightTarget, targetEq,
+              leftStep, rightStep⟩ :=
+        RawStep.par.pathCompose_inv progressStep.1
+      subst targetEq
+      by_cases leftEq : currentLeft = leftTarget
+      · subst leftEq
+        have rightDistinct :
+            currentRight ≠ rightTarget := fun rightEq =>
+          progressStep.2
+            (congrArg (RawTerm.pathCompose currentLeft) rightEq)
+        exact innerIH rightTarget ⟨rightStep, rightDistinct⟩
+      · have leftProgress :
+            RawStep.parProgress currentLeft leftTarget :=
+          ⟨leftStep, leftEq⟩
+        by_cases rightEq : currentRight = rightTarget
+        · subst rightEq
+          exact leftIH leftTarget leftProgress
+            (RawTerm.isStronglyNormalizing.intro currentRight
+              rightClosure)
+        · exact leftIH leftTarget leftProgress
+            (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+
+/-- **K12.20.AK.2 oeqTrans SN preservation** — observational
+equality transitivity.  Pure binary cong over two proof
+witnesses. -/
+theorem RawTerm.oeqTrans_isStronglyNormalizing {scope : Nat}
+    {firstProof : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstProof) :
+    ∀ {secondProof : RawTerm scope},
+      RawTerm.isStronglyNormalizing secondProof →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.oeqTrans firstProof secondProof) := by
+  induction firstIsSN with
+  | intro currentFirst _ firstIH =>
+    intro secondProof secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.oeqTrans currentFirst currentSecond) ?_
+      intro target progressStep
+      obtain ⟨firstTarget, secondTarget, targetEq,
+              firstStep, secondStep⟩ :=
+        RawStep.par.oeqTrans_inv progressStep.1
+      subst targetEq
+      by_cases firstEq : currentFirst = firstTarget
+      · subst firstEq
+        have secondDistinct :
+            currentSecond ≠ secondTarget := fun secondEq =>
+          progressStep.2
+            (congrArg (RawTerm.oeqTrans currentFirst) secondEq)
+        exact innerIH secondTarget ⟨secondStep, secondDistinct⟩
+      · have firstProgress :
+            RawStep.parProgress currentFirst firstTarget :=
+          ⟨firstStep, firstEq⟩
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact firstIH firstTarget firstProgress
+            (RawTerm.isStronglyNormalizing.intro currentSecond
+              secondClosure)
+        · exact firstIH firstTarget firstProgress
+            (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+
+/-- **K12.20.AK.3 equivCompose SN preservation** — equivalence
+composition.  Pure binary cong over two equivalence witnesses. -/
+theorem RawTerm.equivCompose_isStronglyNormalizing {scope : Nat}
+    {firstEquiv : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstEquiv) :
+    ∀ {secondEquiv : RawTerm scope},
+      RawTerm.isStronglyNormalizing secondEquiv →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.equivCompose firstEquiv secondEquiv) := by
+  induction firstIsSN with
+  | intro currentFirst _ firstIH =>
+    intro secondEquiv secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.equivCompose currentFirst currentSecond) ?_
+      intro target progressStep
+      obtain ⟨firstTarget, secondTarget, targetEq,
+              firstStep, secondStep⟩ :=
+        RawStep.par.equivCompose_inv progressStep.1
+      subst targetEq
+      by_cases firstEq : currentFirst = firstTarget
+      · subst firstEq
+        have secondDistinct :
+            currentSecond ≠ secondTarget := fun secondEq =>
+          progressStep.2
+            (congrArg (RawTerm.equivCompose currentFirst) secondEq)
+        exact innerIH secondTarget ⟨secondStep, secondDistinct⟩
+      · have firstProgress :
+            RawStep.parProgress currentFirst firstTarget :=
+          ⟨firstStep, firstEq⟩
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact firstIH firstTarget firstProgress
+            (RawTerm.isStronglyNormalizing.intro currentSecond
+              secondClosure)
+        · exact firstIH firstTarget firstProgress
+            (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+
 /-- **K12.20.AH equivIntro SN preservation** — equivalence intro
 bundles a forward and backward function.  Binary cong; uses the
 pair-style universal-in-conclusion pattern to keep the backward
