@@ -197,4 +197,50 @@ inductive Reducible : ∀ {mode : Mode} {level scope : Nat}
       Term.isStronglyNormalizing universeTerm →
       Reducible (Ty.universe universeLevel levelLe) universeTerm
 
+/-! ## K12.5 architectural blocker — inductive `Reducible` cannot
+extend to function types.
+
+Attempted on 2026-05-11: add `Reducible.arrow` constructor
+shaped per extended-roadmap.md D41.2 line 3225-3229:
+
+```
+| arrow ... (closesUnderApp :
+      ∀ arg, Reducible domainType arg →
+             Reducible codomainType (Term.app term arg)) :
+    Reducible (Ty.arrow A B) term
+```
+
+Lean 4 v4.29.1 kernel rejects with strict-positivity error:
+
+```
+error: (kernel) arg #9 of 'LeanFX2.Reducible.arrow' has a
+       non positive occurrence of the datatypes being declared
+```
+
+Diagnosis: the closure's hypothesis `Reducible domainType arg`
+sits to the LEFT of `→` inside the constructor argument, which
+is a non-positive occurrence of `Reducible` — kernel-banned for
+inductive datatype declarations.  Same wall every textbook
+Tait/Girard reducibility presentation hits.
+
+The canonical fix is to pivot `Reducible` from `inductive` to
+`def`-by-recursion on Ty (standard mathlib pattern for
+reducibility candidates).  Under this pivot:
+* Each per-Ty arm becomes a defining equation, not a
+  constructor.  `Reducible.nat`, `Reducible.bool`, etc. retire;
+  consumers pattern-match on the Ty constructor directly.
+* The closure under application (`Reducible.arrow` shape) works
+  because the recursive references descend on a structurally-
+  smaller Ty (`A` and `B` are proper sub-terms of `Ty.arrow A B`).
+* Totality requires enumerating ALL ~25 Ty constructors;
+  wildcards leak propext per `feedback_lean_zero_axiom_match.md`.
+
+This pivot affects K12.2-K12.16 atomically and is too large to
+land safely under a Ralph-loop audit-cycle tick.  Reserved for
+a dedicated multi-turn refactor where the entire Ty enumeration
+ships in one commit with all per-type closures.  Until then,
+K12.5+ is paused and K12.1-K12.4's six closed-leaf inductive
+arms remain shipped (they are zero-axiom; the architectural
+debt only blocks function-type and parametric extensions). -/
+
 end LeanFX2
