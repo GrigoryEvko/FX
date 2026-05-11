@@ -1351,6 +1351,26 @@ theorem RawTerm.intervalJoin_isStronglyNormalizing {scope : Nat}
         · exact leftIH leftTarget leftProgress
             (rightClosure rightTarget ⟨rightStep, rightEq⟩)
 
+/-- **K12.20.AG pathLam SN preservation** — cubical path lambda
+binder.  Sister to lam helper — body lives in `RawTerm (scope+1)`,
+induction on body's SN witness discharges each par step via
+pathLam_inv + congrArg-based parProgress disequality. -/
+theorem RawTerm.pathLam_isStronglyNormalizing {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    (bodyIsSN : RawTerm.isStronglyNormalizing body) :
+    RawTerm.isStronglyNormalizing (RawTerm.pathLam body) := by
+  induction bodyIsSN with
+  | intro currentBody _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.pathLam currentBody) ?_
+    intro target progressStep
+    obtain ⟨bodyTarget, targetEq, bodyStep⟩ :=
+      RawStep.par.pathLam_inv progressStep.1
+    subst targetEq
+    have bodyDistinct : currentBody ≠ bodyTarget := fun bodyEq =>
+      progressStep.2 (congrArg RawTerm.pathLam bodyEq)
+    exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
