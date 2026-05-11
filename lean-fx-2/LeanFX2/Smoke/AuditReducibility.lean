@@ -451,6 +451,23 @@ K12.20.P ships (typed CR2 lift — idStrict weak-idStrictRec-closure compound ar
   Eleventh compound-arm CR2; 4 remaining (equiv/refine/record/
   codata).
 
+K12.20.Q ships (typed CR2 lift — equiv strong-equivApp-closure compound arm):
+* `Reducible.step_preserves_equiv` — Reducible at
+  `Ty.equiv carrierA carrierB` is closed under raw `parProgress`.
+  K12.11's strong equivApp closure produces full `Reducible
+  carrierB (Term.equivApp equivT arg)` from the eliminator
+  (both carrierA AND carrierB are strict sub-Ty of Ty.equiv —
+  structural-recursion-on-Ty admits both, matching K12.5 arrow
+  shape).  Closure: SN(equivTerm) + (∀ arg, Reducible carrierA
+  arg → Reducible carrierB (Term.equivApp equivTerm arg)).
+  **Strong** pattern — structurally identical to K12.20.F arrow.
+  Takes single `carrierBCR2` hypothesis (only carrierB side
+  progresses through the cong step; argument rides `par.refl`).
+  Term.equivApp raw form is `RawTerm.equivApp equivRaw
+  argumentRaw` (per Term.lean:727); `RawStep.par.equivAppCong`
+  takes paired par steps (per RawPar.lean:738-743).  Twelfth
+  compound-arm CR2; 3 remaining (refine/record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -506,5 +523,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_glue
 #print axioms Reducible.step_preserves_oeq
 #print axioms Reducible.step_preserves_idStrict
+#print axioms Reducible.step_preserves_equiv
 
 end LeanFX2.Smoke

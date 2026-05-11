@@ -2028,4 +2028,84 @@ theorem Reducible.step_preserves_idStrict
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 modeIsStrict baseCase baseSN) idStrictRecStep
 
+/-! ## K12.20.Q typed CR2 lift — Ty.equiv strong-equivApp-closure compound arm
+
+Twelfth compound-arm CR2 lemma.  `Ty.equiv carrierA carrierB`
+(type equivalence) ships a **strong equivApp closure** in K12.11:
+the eliminator produces full `Reducible carrierB (Term.equivApp
+equivTerm argumentTerm)`.  BOTH `carrierA` and `carrierB` are
+strict sub-Ty of `Ty.equiv carrierA carrierB` — structural-
+recursion-on-Ty admits `Reducible carrierA` AND `Reducible
+carrierB` recursive calls (K12.5 RC.arrow shape).
+
+Closure shape (per Reducibility.lean:537-542):
+
+```
+Reducible (Ty.equiv carrierA carrierB) equivTerm =
+  SN(equivTerm) ∧
+  ∀ {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context carrierA argumentRaw),
+    Reducible carrierA argumentTerm →
+    Reducible carrierB
+      (Term.equivApp equivTerm argumentTerm)
+```
+
+Structurally identical to K12.20.F arrow: `SN(f) ∧ ∀ arg,
+Reducible A arg → Reducible B (Term.app f arg)`.  The argument
+side stays at carrierA — it rides `par.refl` through the cong
+step and does NOT progress.  Only `equivTerm` progresses; the
+eliminator output is at carrierB, so the proof carries an
+explicit `carrierBCR2` hypothesis to lift Reducible over the
+equivAppCong step.  No `carrierACR2` is needed — that side never
+moves in this cong step.
+
+Term.equivApp raw form is `RawTerm.equivApp equivRaw argumentRaw`
+(per Term.lean:727); `RawStep.par.equivAppCong` takes paired par
+steps on equiv + argument (per RawPar.lean:738-743).  For CR2
+the equiv side rides `rawStep.1`; argument side rides
+`par.refl`.  Distinctness via `injection` on
+`RawTerm.equivApp.injEq`.
+-/
+
+/-- **K12.20.Q equiv arm**: strong-equivApp-closure CR2 for
+`Ty.equiv`.  Takes `carrierBCR2` as explicit hypothesis (the
+recursive Reducible-preservation witness on the strict sub-Ty
+`carrierB`).  SN-of-equivTerm preserved by raw `step_preserves`;
+the full-Reducible equivApp conjunct lifted via carrierBCR2 over
+the equivAppCong step.  Structurally identical to K12.20.F arrow;
+differs only in raw cong rule name (`equivAppCong` vs `app`) and
+ctor (`equivApp` vs `app`). -/
+theorem Reducible.step_preserves_equiv
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.equiv carrierA carrierB) sourceRaw}
+    {target : Term context (Ty.equiv carrierA carrierB) targetRaw}
+    (carrierBCR2 :
+        ∀ {equivAppSourceRaw equivAppTargetRaw : RawTerm scope}
+          {equivAppSource : Term context carrierB equivAppSourceRaw}
+          {equivAppTarget : Term context carrierB equivAppTargetRaw},
+          Reducible carrierB equivAppSource →
+          RawStep.parProgress equivAppSourceRaw equivAppTargetRaw →
+          Reducible carrierB equivAppTarget)
+    (sourceReducible :
+        Reducible (Ty.equiv carrierA carrierB) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.equiv carrierA carrierB) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro argumentRaw argumentTerm argumentReducible
+    have equivAppStep : RawStep.parProgress
+        (RawTerm.equivApp sourceRaw argumentRaw)
+        (RawTerm.equivApp targetRaw argumentRaw) := by
+      refine ⟨RawStep.par.equivAppCong rawStep.1
+        (RawStep.par.refl argumentRaw), ?_⟩
+      intro equivAppEq
+      apply rawStep.2
+      injection equivAppEq
+    exact carrierBCR2
+      (sourceReducible.2 argumentTerm argumentReducible) equivAppStep
+
 end LeanFX2
