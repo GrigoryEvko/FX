@@ -430,6 +430,27 @@ K12.20.O ships (typed CR2 lift — oeq weak-oeqJ-closure compound arm):
   RawPar.lean:705-710).  Tenth compound-arm CR2; 5 remaining
   (idStrict/equiv/refine/record/codata).
 
+K12.20.P ships (typed CR2 lift — idStrict weak-idStrictRec-closure compound arm):
+* `Reducible.step_preserves_idStrict` — Reducible at
+  `Ty.idStrict carrier left right` (strict identity type) is
+  closed under raw `parProgress`.  K12.10's weak idStrictRec
+  closure produces SN(Term.idStrictRec modeIsStrict baseCase
+  witness) from the eliminator (arbitrary `motiveType` is NOT
+  a strict sub-Ty of Ty.idStrict — same K12.6/K12.9 weak-J
+  pattern as K12.20.I/O).  Closure: SN(witness) +
+  (∀ modeIsStrict motive baseCase, SN baseCase → SN(idStrictRec
+  modeIsStrict baseCase witness)).  When mode ≠ Mode.strict the
+  binder is uninhabited and the inner ∀ is vacuous.  **Weak**
+  pattern — no recursive hypothesis required.  Identical
+  structure to K12.20.O oeq plus extra `modeIsStrict` binder
+  threaded into the per-mode quantifier in closure body.
+  Term.idStrictRec raw form is `RawTerm.idStrictRec baseRaw
+  witnessRaw` (per Term.lean:294 — modeIsStrict lives at typed
+  level only).  `RawStep.par.idStrictRecCong` takes paired par
+  steps on baseCase + witness (per RawPar.lean:723-729).
+  Eleventh compound-arm CR2; 4 remaining (equiv/refine/record/
+  codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -484,5 +505,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_path
 #print axioms Reducible.step_preserves_glue
 #print axioms Reducible.step_preserves_oeq
+#print axioms Reducible.step_preserves_idStrict
 
 end LeanFX2.Smoke

@@ -1955,4 +1955,77 @@ theorem Reducible.step_preserves_oeq
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 baseCase baseSN) oeqJStep
 
+/-! ## K12.20.P typed CR2 lift — Ty.idStrict weak-idStrictRec-closure compound arm
+
+Eleventh compound-arm CR2 lemma.  `Ty.idStrict` (strict identity
+type) ships a **weak idStrictRec closure** in K12.10: the
+eliminator output is plain SN, not full `Reducible motiveType _`.
+The arbitrary `motiveType` is NOT a strict sub-Ty of
+`Ty.idStrict carrier left right` — structural-recursion-on-Ty
+cannot recurse `Reducible motiveType`.  Same K12.6 / K12.9 weak-J
+pattern as K12.20.I (id) and K12.20.O (oeq).
+
+Closure shape (per Reducibility.lean:517-525):
+
+```
+Reducible (Ty.idStrict _ _ _) witness =
+  SN(witness) ∧
+  ∀ (modeIsStrict : mode = Mode.strict)
+    {motiveType : Ty level scope}
+    {baseRaw : RawTerm scope}
+    (baseCase : Term context motiveType baseRaw),
+    SN baseCase →
+    SN (Term.idStrictRec modeIsStrict baseCase witness)
+```
+
+When `mode ≠ Mode.strict` the binder is uninhabited and the
+inner ∀ is vacuous (closure reduces to SN(witness) alone) —
+matches the conditional-elim K12.10 idStrict pattern.
+
+Weak closure → **no recursive hypothesis needed**.  Eliminator
+output is SN, so the cong lift goes via
+`RawTerm.isStronglyNormalizing.step_preserves` directly.
+
+Term.idStrictRec raw form is `RawTerm.idStrictRec baseRaw
+witnessRaw` (per Term.lean:294) — the `modeIsStrict` proof lives
+at the typed level only.  `RawStep.par.idStrictRecCong` takes
+paired par steps on baseCase + witness (per RawPar.lean:724-729).
+For CR2 the baseCase rides `par.refl`; witness rides `rawStep.1`.
+Distinctness via `injection` on `RawTerm.idStrictRec.injEq`.
+-/
+
+/-- **K12.20.P idStrict arm**: weak-idStrictRec-closure CR2 for
+`Ty.idStrict`.  No recursive hypothesis needed (weak elim
+closure produces SN, not Reducible).  Identical structure to
+K12.20.O oeq, with extra `modeIsStrict` binder threaded through
+the per-mode quantifier in the closure body. -/
+theorem Reducible.step_preserves_idStrict
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context
+        (Ty.idStrict carrierType leftEndpoint rightEndpoint) sourceRaw}
+    {target : Term context
+        (Ty.idStrict carrierType leftEndpoint rightEndpoint) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.idStrict carrierType leftEndpoint rightEndpoint) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.idStrict carrierType leftEndpoint rightEndpoint) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro modeIsStrict motiveType baseRaw baseCase baseSN
+    have idStrictRecStep : RawStep.parProgress
+        (RawTerm.idStrictRec baseRaw sourceRaw)
+        (RawTerm.idStrictRec baseRaw targetRaw) := by
+      refine ⟨RawStep.par.idStrictRecCong
+        (RawStep.par.refl baseRaw) rawStep.1, ?_⟩
+      intro idStrictRecEq
+      apply rawStep.2
+      injection idStrictRecEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 modeIsStrict baseCase baseSN) idStrictRecStep
+
 end LeanFX2
