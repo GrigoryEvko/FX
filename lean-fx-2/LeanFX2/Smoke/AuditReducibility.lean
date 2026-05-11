@@ -343,6 +343,21 @@ K12.20.J ships (typed CR2 lift — listType weak-elim-closure compound arm):
   Fifth compound-arm CR2; 10 remaining (option/either/path/glue/
   oeq/idStrict/equiv/refine/record/codata).
 
+K12.20.K ships (typed CR2 lift — optionType weak-elim-closure compound arm):
+* `Reducible.step_preserves_optionType` — Reducible at
+  `Ty.optionType A` is closed under raw `parProgress`.  K12.8's
+  optionType arm is the cleanest of the three K12.8 parametric
+  inductives: someBranch's type matches K12.6 piTy weak shape
+  exactly.  Closure: SN(optionTerm) + (∀ M noneBranch someBranch,
+  SN noneBranch → ∀ v, Reducible A v → SN(some-app v) →
+  SN(optionMatch optionTerm noneBranch someBranch)).  Same
+  mechanical shape as K12.20.J listType — Term.optionMatch raw
+  form is `RawTerm.optionMatch scrutineeRaw noneRaw someRaw`
+  (per Term.lean:216); `RawStep.par.optionMatch` takes triple
+  par steps (per RawPar.lean:136).  Sixth compound-arm CR2;
+  9 remaining (either/path/glue/oeq/idStrict/equiv/refine/
+  record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -392,5 +407,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_sigmaTy
 #print axioms Reducible.step_preserves_id
 #print axioms Reducible.step_preserves_listType
+#print axioms Reducible.step_preserves_optionType
 
 end LeanFX2.Smoke

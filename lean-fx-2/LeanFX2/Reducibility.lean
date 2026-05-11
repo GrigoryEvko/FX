@@ -1632,4 +1632,58 @@ theorem Reducible.step_preserves_listType
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 nilBranch consBranch nilSN consApplied) listElimStep
 
+/-! ## K12.20.K typed CR2 lift — Ty.optionType weak-elim-closure compound arm
+
+Sixth compound-arm CR2 lemma.  `Ty.optionType` ships a **weak
+elim closure** in K12.8, cleanest of the three K12.8 parametric
+arms: someBranch's type matches K12.6 piTy weak shape exactly
+when restricted to elementType.  Closure shape (per
+Reducibility.lean:426):
+
+```
+Reducible (Ty.optionType A) o =
+  SN(o) ∧ ∀ {M} {noneRaw someRaw} (noneBranch someBranch),
+    SN(noneBranch) →
+    (∀ v, Reducible A v → SN(Term.app someBranch v)) →
+    SN(optionMatch o noneBranch someBranch)
+```
+
+Same mechanical shape as K12.20.J listType — eliminator output
+is plain SN, NO recursive elementTypeCR2 hypothesis needed.
+Term.optionMatch raw form is `RawTerm.optionMatch scrutineeRaw
+noneRaw someRaw` (per Term.lean:216); `RawStep.par.optionMatch`
+takes triple par steps (per RawPar.lean:136).  For CR2 the
+branches use `par.refl` while scrutinee gets `rawStep.1`.
+-/
+
+/-- **K12.20.K optionType arm**: weak-elim-closure CR2 for
+`Ty.optionType`.  Both SN-of-optionTerm and SN-of-optionMatch-
+result are preserved by the same raw `step_preserves`.
+Distinctness on optionMatch via ctor injectivity. -/
+theorem Reducible.step_preserves_optionType
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.optionType elementType) sourceRaw}
+    {target : Term context (Ty.optionType elementType) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.optionType elementType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.optionType elementType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro motiveType noneRaw someRaw noneBranch someBranch noneSN someApplied
+    have optionMatchStep : RawStep.parProgress
+        (RawTerm.optionMatch sourceRaw noneRaw someRaw)
+        (RawTerm.optionMatch targetRaw noneRaw someRaw) := by
+      refine ⟨RawStep.par.optionMatch rawStep.1
+          (RawStep.par.refl noneRaw) (RawStep.par.refl someRaw), ?_⟩
+      intro optionMatchEq
+      apply rawStep.2
+      injection optionMatchEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 noneBranch someBranch noneSN someApplied) optionMatchStep
+
 end LeanFX2
