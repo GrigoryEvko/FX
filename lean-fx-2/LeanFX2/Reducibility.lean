@@ -2108,4 +2108,77 @@ theorem Reducible.step_preserves_equiv
     exact carrierBCR2
       (sourceReducible.2 argumentTerm argumentReducible) equivAppStep
 
+/-! ## K12.20.R typed CR2 lift — Ty.refine strong-refineElim-closure compound arm
+
+Thirteenth compound-arm CR2 lemma.  `Ty.refine baseType
+predicate` ships a **strong refineElim closure** in K12.14:
+the eliminator produces full `Reducible baseType (Term.refineElim
+refinedValue)` from the simple projection.  `baseType` is a
+strict sub-Ty of `Ty.refine baseType predicate` — structural-
+recursion-on-Ty admits `Reducible baseType` recursive call.
+The `predicate : RawTerm (scope+1)` is a RawTerm-binder with no
+typed dependency at the Reducible layer; the "Decidable
+predicate discharge" aspect of K12.14 lives at Layer 5 SMT-
+recheck (#1342 D5.6, #1344 D5.8) and is orthogonal to the
+Reducibility-candidate closure shipped here.
+
+Closure shape (per Reducibility.lean:554-556):
+
+```
+Reducible (Ty.refine baseType _) refinedValue =
+  SN(refinedValue) ∧
+  Reducible baseType (Term.refineElim refinedValue)
+```
+
+This is the **simplest** strong compound arm of the 15.  No
+quantifier overhead, no mode-univalent / mode-strict witness,
+no interval / motive binder.  Pure projection — directly
+analogous to K12.20.N glue but stripped down further (no
+modeIsUnivalent binder).
+
+Term.refineElim raw form is `RawTerm.refineElim refinedRaw`
+(per Term.lean:446); `RawStep.par.refineElimCong` is a 1-arg
+cong rule taking just `refinedRawStep` (per RawPar.lean:766-771).
+Single-substituent ctor → no `par.refl` companion needed.
+Distinctness via `injection` on `RawTerm.refineElim.injEq`.
+-/
+
+/-- **K12.20.R refine arm**: strong-refineElim-closure CR2 for
+`Ty.refine`.  Takes `baseTypeCR2` as explicit hypothesis (the
+recursive Reducible-preservation witness on the strict sub-Ty
+`baseType`).  SN-of-refinedValue preserved by raw
+`step_preserves`; the full-Reducible refineElim conjunct lifted
+via baseTypeCR2 over the refineElimCong step.  Simplest strong
+compound arm — no quantifier, no mode binder. -/
+theorem Reducible.step_preserves_refine
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.refine baseType predicate) sourceRaw}
+    {target : Term context (Ty.refine baseType predicate) targetRaw}
+    (baseTypeCR2 :
+        ∀ {refineElimSourceRaw refineElimTargetRaw : RawTerm scope}
+          {refineElimSource : Term context baseType refineElimSourceRaw}
+          {refineElimTarget : Term context baseType refineElimTargetRaw},
+          Reducible baseType refineElimSource →
+          RawStep.parProgress refineElimSourceRaw refineElimTargetRaw →
+          Reducible baseType refineElimTarget)
+    (sourceReducible :
+        Reducible (Ty.refine baseType predicate) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.refine baseType predicate) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · have refineElimStep : RawStep.parProgress
+        (RawTerm.refineElim sourceRaw)
+        (RawTerm.refineElim targetRaw) := by
+      refine ⟨RawStep.par.refineElimCong rawStep.1, ?_⟩
+      intro refineElimEq
+      apply rawStep.2
+      injection refineElimEq
+    exact baseTypeCR2 sourceReducible.2 refineElimStep
+
 end LeanFX2

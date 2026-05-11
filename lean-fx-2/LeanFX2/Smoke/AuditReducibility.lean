@@ -468,6 +468,27 @@ K12.20.Q ships (typed CR2 lift — equiv strong-equivApp-closure compound arm):
   takes paired par steps (per RawPar.lean:738-743).  Twelfth
   compound-arm CR2; 3 remaining (refine/record/codata).
 
+K12.20.R ships (typed CR2 lift — refine strong-refineElim-closure compound arm):
+* `Reducible.step_preserves_refine` — Reducible at
+  `Ty.refine baseType predicate` is closed under raw
+  `parProgress`.  K12.14's strong refineElim closure produces
+  full `Reducible baseType (Term.refineElim refinedValue)` from
+  the simple projection (baseType is strict sub-Ty; structural-
+  recursion-on-Ty admits Reducible recursion).  Closure:
+  SN(refinedValue) + Reducible baseType (Term.refineElim
+  refinedValue).  **Strong** pattern — explicit `baseTypeCR2`
+  hypothesis required because eliminator output is full
+  Reducible.  **Simplest strong compound arm** of the 15 — no
+  quantifier, no mode-univalent / mode-strict witness, no
+  interval / motive binder.  Single-ctor cong rule
+  `RawStep.par.refineElimCong` (per RawPar.lean:766-771).
+  Predicate is RawTerm-binder with no typed dependency; the
+  Decidable-discharge aspect of K12.14 is Layer 5 SMT-recheck
+  (#1342 D5.6, #1344 D5.8) orthogonal to this Reducibility-
+  candidate closure.  Term.refineElim raw form is
+  `RawTerm.refineElim refinedRaw` (per Term.lean:446).
+  Thirteenth compound-arm CR2; 2 remaining (record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -524,5 +545,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_oeq
 #print axioms Reducible.step_preserves_idStrict
 #print axioms Reducible.step_preserves_equiv
+#print axioms Reducible.step_preserves_refine
 
 end LeanFX2.Smoke
