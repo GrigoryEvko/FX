@@ -739,16 +739,6 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.session_of_progress_closure
 #print axioms Reducible.effect_of_progress_closure
 #print axioms Reducible.modal_of_progress_closure
-#print axioms Reducible.unit_of_neutral_progress_closure
-#print axioms Reducible.bool_of_neutral_progress_closure
-#print axioms Reducible.nat_of_neutral_progress_closure
-#print axioms Reducible.empty_of_neutral_progress_closure
-#print axioms Reducible.interval_of_neutral_progress_closure
-#print axioms Reducible.universe_of_neutral_progress_closure
-#print axioms Reducible.tyVar_of_neutral_progress_closure
-#print axioms Reducible.session_of_neutral_progress_closure
-#print axioms Reducible.effect_of_neutral_progress_closure
-#print axioms Reducible.modal_of_neutral_progress_closure
 #print axioms Reducible.step_preserves_arrow
 #print axioms Reducible.step_preserves_piTy
 #print axioms Reducible.step_preserves_sigmaTy
