@@ -358,6 +358,25 @@ K12.20.K ships (typed CR2 lift — optionType weak-elim-closure compound arm):
   9 remaining (either/path/glue/oeq/idStrict/equiv/refine/
   record/codata).
 
+K12.20.L ships (typed CR2 lift — eitherType symmetric-weak-elim-closure compound arm):
+* `Reducible.step_preserves_eitherType` — Reducible at
+  `Ty.eitherType A B` is closed under raw `parProgress`.
+  K12.8's eitherType arm is **symmetric**: both leftType and
+  rightType are strict sub-Ty of `Ty.eitherType leftType
+  rightType`, each branch's arrow shape matches K12.6 piTy weak
+  closure per side.  Closure: SN(eitherTerm) + (∀ M leftBranch
+  rightBranch, left-applied-closure → right-applied-closure →
+  SN(eitherMatch eitherTerm leftBranch rightBranch)).  Both
+  hypothesis chains propagate unchanged through sourceReducible.2
+  — NO recursive leftTypeCR2/rightTypeCR2 hypothesis needed
+  (eliminator output is plain SN).  Term.eitherMatch raw form is
+  `RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw` (per
+  Term.lean:234); `RawStep.par.eitherMatch` takes triple par
+  steps (per RawPar.lean:159).  Seventh compound-arm CR2;
+  8 remaining (path/glue/oeq/idStrict/equiv/refine/record/codata).
+  Closes the K12.8 parametric-inductive triple (list/option/
+  either) at the typed CR2 layer.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -408,5 +427,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_id
 #print axioms Reducible.step_preserves_listType
 #print axioms Reducible.step_preserves_optionType
+#print axioms Reducible.step_preserves_eitherType
 
 end LeanFX2.Smoke

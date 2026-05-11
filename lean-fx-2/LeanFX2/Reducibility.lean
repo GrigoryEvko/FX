@@ -1686,4 +1686,60 @@ theorem Reducible.step_preserves_optionType
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 noneBranch someBranch noneSN someApplied) optionMatchStep
 
+/-! ## K12.20.L typed CR2 lift — Ty.eitherType symmetric-weak-elim-closure compound arm
+
+Seventh compound-arm CR2 lemma.  `Ty.eitherType` ships a
+**symmetric weak elim closure** in K12.8: both `leftType` and
+`rightType` are strict sub-Ty of `Ty.eitherType leftType
+rightType`, so each branch's arrow shape matches K12.6 piTy weak
+closure per side.  Closure shape (per Reducibility.lean:446):
+
+```
+Reducible (Ty.eitherType A B) e =
+  SN(e) ∧ ∀ {M} {leftRaw rightRaw} (leftBranch rightBranch),
+    (∀ v, Reducible A v → SN(Term.app leftBranch v)) →
+    (∀ v, Reducible B v → SN(Term.app rightBranch v)) →
+    SN(eitherMatch e leftBranch rightBranch)
+```
+
+Same mechanical shape as K12.20.J listType / K12.20.K
+optionType — eliminator output is plain SN, NO recursive
+leftTypeCR2 / rightTypeCR2 hypothesis needed.  Term.eitherMatch
+raw form is `RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw`
+(per Term.lean:234); `RawStep.par.eitherMatch` takes triple par
+steps (per RawPar.lean:159).  For CR2 the branches use
+`par.refl` while scrutinee gets `rawStep.1`.
+-/
+
+/-- **K12.20.L eitherType arm**: symmetric-weak-elim-closure CR2
+for `Ty.eitherType`.  Both SN-of-eitherTerm and SN-of-eitherMatch-
+result are preserved by the same raw `step_preserves`.
+Distinctness on eitherMatch via ctor injectivity. -/
+theorem Reducible.step_preserves_eitherType
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.eitherType leftType rightType) sourceRaw}
+    {target : Term context (Ty.eitherType leftType rightType) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.eitherType leftType rightType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.eitherType leftType rightType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro motiveType leftRaw rightRaw leftBranch rightBranch leftApplied rightApplied
+    have eitherMatchStep : RawStep.parProgress
+        (RawTerm.eitherMatch sourceRaw leftRaw rightRaw)
+        (RawTerm.eitherMatch targetRaw leftRaw rightRaw) := by
+      refine ⟨RawStep.par.eitherMatch rawStep.1
+          (RawStep.par.refl leftRaw) (RawStep.par.refl rightRaw), ?_⟩
+      intro eitherMatchEq
+      apply rawStep.2
+      injection eitherMatchEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 leftBranch rightBranch leftApplied rightApplied)
+      eitherMatchStep
+
 end LeanFX2
