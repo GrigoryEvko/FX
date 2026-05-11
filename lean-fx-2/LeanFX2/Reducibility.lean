@@ -5274,4 +5274,45 @@ theorem Reducible.fundamental_recordProj_at_record
               (Term.subst termSubst (Term.recordProj recordValue)) :=
   recordIH.2
 
+/-- Fundamental case: `Term.refineElim` at `Ty.refine` (K12.21.F).
+
+`Term.refineElim` projects from a refinement-typed value to the
+underlying base type — `Term ctx (Ty.refine baseType predicate)
+refinedRaw → Term ctx baseType (RawTerm.refineElim refinedRaw)`.
+`Term.subst` commutes definitionally over `.refineElim` (no
+cast, since Ty.refine.subst keeps baseType intact under sigma:
+`(Ty.refine baseType predicate).subst sigma = Ty.refine
+(baseType.subst sigma) (predicate.subst sigma.forRaw.lift)`).
+
+K12.14's refine closure carries the full eliminator-output
+witness: `Reducible (Ty.refine baseType _) refinedValue =
+SN(refinedValue) ∧ Reducible baseType (Term.refineElim
+refinedValue)`.  The fundamental case extracts the second
+conjunct — `refineIH.2` — and Lean unifies it with the goal
+via the definitional Term.subst commute on `.refineElim`.
+
+Same unary-projection pattern as K12.21.E recordProj and K12.21.B
+fst-at-sigmaTy.  The Decidable-predicate discharge aspect of
+refinements (the `predicate` argument carrying an SMT obligation)
+lives at Layer 5 SMTCert (#1342 D5.6, #1344 D5.8) — orthogonal to
+this Reducibility-candidate projection, which only consults the
+base-type carrier. -/
+theorem Reducible.fundamental_refineElim_at_refine
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    {refinedValue :
+        Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (refineIH :
+        Reducible ((Ty.refine baseType predicate).subst sigma)
+                  (Term.subst termSubst refinedValue)) :
+    Reducible (baseType.subst sigma)
+              (Term.subst termSubst (Term.refineElim refinedValue)) :=
+  refineIH.2
+
 end LeanFX2
