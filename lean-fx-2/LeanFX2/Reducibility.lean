@@ -1414,6 +1414,112 @@ theorem RawTerm.oeqFunext_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis pointwiseTarget
       ⟨pointwiseStep, pointwiseDistinct⟩
 
+/-- **K12.20.AJ.1 recordIntro SN preservation** — record value
+introduction (currently single-field representative; multi-field
+records desugar to nested pairs).  Pure unary cong over the
+first-field witness. -/
+theorem RawTerm.recordIntro_isStronglyNormalizing {scope : Nat}
+    {firstField : RawTerm scope}
+    (firstFieldIsSN : RawTerm.isStronglyNormalizing firstField) :
+    RawTerm.isStronglyNormalizing (RawTerm.recordIntro firstField) := by
+  induction firstFieldIsSN with
+  | intro currentField _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.recordIntro currentField) ?_
+    intro target progressStep
+    obtain ⟨firstTarget, targetEq, firstStep⟩ :=
+      RawStep.par.recordIntro_inv progressStep.1
+    subst targetEq
+    have firstDistinct :
+        currentField ≠ firstTarget := fun firstEq =>
+      progressStep.2 (congrArg RawTerm.recordIntro firstEq)
+    exact inductiveHypothesis firstTarget
+      ⟨firstStep, firstDistinct⟩
+
+/-- **K12.20.AJ.2 refineIntro SN preservation** — refinement-type
+intro packs a value with a proof of its refinement predicate.
+Binary cong; uses the pair-style universal-in-conclusion pattern. -/
+theorem RawTerm.refineIntro_isStronglyNormalizing {scope : Nat}
+    {rawValue : RawTerm scope}
+    (valueIsSN : RawTerm.isStronglyNormalizing rawValue) :
+    ∀ {predicateProof : RawTerm scope},
+      RawTerm.isStronglyNormalizing predicateProof →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.refineIntro rawValue predicateProof) := by
+  induction valueIsSN with
+  | intro currentValue _ valueIH =>
+    intro predicateProof proofIsSN
+    induction proofIsSN with
+    | intro currentProof proofClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.refineIntro currentValue currentProof) ?_
+      intro target progressStep
+      obtain ⟨valueTarget, proofTarget, targetEq,
+              valueStep, proofStep⟩ :=
+        RawStep.par.refineIntro_inv progressStep.1
+      subst targetEq
+      by_cases valueEq : currentValue = valueTarget
+      · subst valueEq
+        have proofDistinct :
+            currentProof ≠ proofTarget := fun proofEq =>
+          progressStep.2
+            (congrArg (RawTerm.refineIntro currentValue) proofEq)
+        exact innerIH proofTarget ⟨proofStep, proofDistinct⟩
+      · have valueProgress :
+            RawStep.parProgress currentValue valueTarget :=
+          ⟨valueStep, valueEq⟩
+        by_cases proofEq : currentProof = proofTarget
+        · subst proofEq
+          exact valueIH valueTarget valueProgress
+            (RawTerm.isStronglyNormalizing.intro currentProof
+              proofClosure)
+        · exact valueIH valueTarget valueProgress
+            (proofClosure proofTarget ⟨proofStep, proofEq⟩)
+
+/-- **K12.20.AJ.3 codataUnfold SN preservation** — codata
+corecursive unfold bundles an initial state with a transition
+function.  Binary cong; pair-style universal-in-conclusion. -/
+theorem RawTerm.codataUnfold_isStronglyNormalizing {scope : Nat}
+    {initialState : RawTerm scope}
+    (stateIsSN : RawTerm.isStronglyNormalizing initialState) :
+    ∀ {transition : RawTerm scope},
+      RawTerm.isStronglyNormalizing transition →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.codataUnfold initialState transition) := by
+  induction stateIsSN with
+  | intro currentState _ stateIH =>
+    intro transition transitionIsSN
+    induction transitionIsSN with
+    | intro currentTransition transitionClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.codataUnfold currentState currentTransition) ?_
+      intro target progressStep
+      obtain ⟨stateTarget, transitionTarget, targetEq,
+              stateStep, transitionStep⟩ :=
+        RawStep.par.codataUnfold_inv progressStep.1
+      subst targetEq
+      by_cases stateEq : currentState = stateTarget
+      · subst stateEq
+        have transitionDistinct :
+            currentTransition ≠ transitionTarget :=
+          fun transitionEq =>
+            progressStep.2
+              (congrArg (RawTerm.codataUnfold currentState)
+                transitionEq)
+        exact innerIH transitionTarget
+          ⟨transitionStep, transitionDistinct⟩
+      · have stateProgress :
+            RawStep.parProgress currentState stateTarget :=
+          ⟨stateStep, stateEq⟩
+        by_cases transitionEq : currentTransition = transitionTarget
+        · subst transitionEq
+          exact stateIH stateTarget stateProgress
+            (RawTerm.isStronglyNormalizing.intro currentTransition
+              transitionClosure)
+        · exact stateIH stateTarget stateProgress
+            (transitionClosure transitionTarget
+              ⟨transitionStep, transitionEq⟩)
+
 /-- **K12.20.AH equivIntro SN preservation** — equivalence intro
 bundles a forward and backward function.  Binary cong; uses the
 pair-style universal-in-conclusion pattern to keep the backward
