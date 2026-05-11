@@ -1052,6 +1052,73 @@ theorem RawTerm.snd_var_isStronglyNormalizing {scope : Nat}
         (RawStep.par.var_inv pairStep)
       nomatch varEqPair)
 
+/-- **K12.20.AU neutral boolElim SN preservation**.  `RawTerm.boolElim
+(var pos) thenBranch elseBranch` is SN when both branches are SN.
+
+First ternary neutral-head SN helper.  boolElim has three subterms
+plus two ι rules (`iotaBoolElimTrue` / `False` for true/false
+scrutinees).  Variable scrutinee blocks both ι rules via `var_inv`
+(var doesn't par-reduce to `boolTrue` or `boolFalse`).  Cong arm
+has all three subterms moving in parallel; with the scrutinee
+rigid, the effective movement is binary on (thenBranch, elseBranch)
+— nested induction like `pair_isStronglyNormalizing`.
+
+Per `feedback_lean_induction_universal_motive.md`: state the
+`elseBranch`-side universal in the conclusion to keep the IH wide
+across nested induction on the two branches. -/
+theorem RawTerm.boolElim_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {thenBranch : RawTerm scope}
+    (thenIsSN : RawTerm.isStronglyNormalizing thenBranch) :
+    ∀ {elseBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing elseBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.boolElim (RawTerm.var position) thenBranch elseBranch) := by
+  induction thenIsSN with
+  | intro currentThen _ thenIH =>
+    intro elseBranch elseIsSN
+    induction elseIsSN with
+    | intro currentElse elseClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.boolElim (RawTerm.var position) currentThen currentElse) ?_
+      intro target progressStep
+      rcases RawStep.par.boolElim_inv progressStep.1 with
+        ⟨scrutineeTarget, thenTarget, elseTarget, targetEq,
+          scrutineeStep, thenStep, elseStep⟩
+        | (⟨thenTarget, _targetEq, scrutineeStep, _thenStep⟩
+          | ⟨elseTarget, _targetEq, scrutineeStep, _elseStep⟩)
+      · have scrutineeEq :
+            scrutineeTarget = RawTerm.var position :=
+          (RawStep.par.var_inv scrutineeStep)
+        subst scrutineeEq
+        subst targetEq
+        by_cases thenEq : currentThen = thenTarget
+        · subst thenEq
+          have elseDistinct :
+              currentElse ≠ elseTarget := fun elseEq =>
+            progressStep.2 (congrArg
+              (RawTerm.boolElim (RawTerm.var position) currentThen) elseEq)
+          exact innerIH elseTarget ⟨elseStep, elseDistinct⟩
+        · have thenProgress :
+              RawStep.parProgress currentThen thenTarget :=
+            ⟨thenStep, thenEq⟩
+          by_cases elseEq : currentElse = elseTarget
+          · subst elseEq
+            exact thenIH thenTarget thenProgress
+              (RawTerm.isStronglyNormalizing.intro currentElse elseClosure)
+          · exact thenIH thenTarget thenProgress
+              (elseClosure elseTarget ⟨elseStep, elseEq⟩)
+      · exact (by
+          have varEqTrue :
+              RawTerm.var position = RawTerm.boolTrue :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqTrue)
+      · exact (by
+          have varEqFalse :
+              RawTerm.var position = RawTerm.boolFalse :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqFalse)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +
