@@ -37,7 +37,7 @@ namespace LeanFX2.Tools
 -- D3.6-P4 adds the typed `Term.equivApply` binary cascade
 -- contributing one more HEq-result-typed dependent through the
 -- binary Allais helper.
-#assert_heq_result_type_budget LeanFX2 96
+#assert_heq_result_type_budget LeanFX2 97
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable

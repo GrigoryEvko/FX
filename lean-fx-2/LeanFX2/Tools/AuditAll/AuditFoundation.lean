@@ -79,4 +79,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.VerticalChain.composeTwoCells
 #assert_no_axioms LeanFX2.Foundation.Polygraph.VerticalChain.composeTwoCells_length_eq_two
 
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length_identity_eq_zero
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length_cons_eq_succ_length_tail
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_identity_left
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_cons_unfold
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_identity_right
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.length_append_eq_sum_of_lengths
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.composeTwoArrows
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.composeTwoArrows_length_eq_two
+
 end LeanFX2.Tools
