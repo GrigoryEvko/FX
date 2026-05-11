@@ -249,6 +249,50 @@ Expected: both targets green.  AuditAll / Smoke / Sketch gates fire
 under the `LeanFX2Audit` target only — running `lake build LeanFX2`
 alone does NOT verify zero-axiom discipline.
 
+### Build performance configuration
+
+Local config: AMD 5950X (16C / 32T) with 62 GB RAM, Lean v4.29.1.
+
+Environment:
+
+* `LEAN_NUM_THREADS=4` is exported in `~/.bashrc`.  Controls in-file
+  parallelism for v4.19+ theorem-body parallel elaboration.  Combined
+  with `lake -j` default (= nproc = 32), gives roughly 32 × 4 = 128
+  scheduler slots; Lean's task scheduler adapts to the 32-SMT
+  hardware below.
+* Lake defaults to `-j nproc` already — no need to override unless
+  fighting RAM pressure (we're not on this workload, peak ~1.6 GB
+  per process).
+
+Measured warm-cache benchmarks (cache invalidated for one file):
+
+| Target                                            | Wall  | User  | Cores |
+| ------------------------------------------------- | ----- | ----- | ----- |
+| `Foundation/Polygraph/PolyTermAction.lean` rebuild | 17.0s | 37.7s | ~2.2  |
+| `Tools/AuditAll/AuditTerm.lean` rebuild           |  2.1s |  1.6s | ~0.8  |
+| Full `LeanFX2 LeanFX2Audit` (warm, no-op)         |  0.4s |  0.3s | trace |
+| Full `LeanFX2Audit` cold (post-edit)              |  ~3m  |       |       |
+
+**Architectural bottleneck (not config-fixable):** files with a
+single deep structural induction (e.g. `PolyTermAction.lean`'s 73-case
+`RawPolyTerm.subst` + `toRawTerm_subst_commute`) max out at ~2.2 cores
+because elaboration of one induction is inherently sequential.  No
+amount of `LEAN_NUM_THREADS` tuning helps a single deep induction.
+The lever is to SPLIT such files into per-construct sub-modules so
+`lake -j` can parallelize across files.  Audit files (sequences of
+small independent `#assert_no_axioms`) parallelize naturally and
+are already ~2s rebuilds.
+
+**What does NOT help this codebase:**
+
+* `sccache` / `ccache` — Lake's caching is olean-based, not C-compiler
+  based; these tools don't integrate.
+* Remote distributed Lake cache (S3 via `LAKE_CACHE_KEY`) — useful
+  for multi-machine CI; not relevant single-developer iteration.
+* `lake exe cache get` — Mathlib-specific; we have no Mathlib dep.
+* GitHub release artifact caching (`preferReleaseBuild`) — would help
+  downstream consumers but not local iteration.
+
 ## Naming + style discipline
 
 Per `WORKING_RULES.md`:
