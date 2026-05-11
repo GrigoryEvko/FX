@@ -70,15 +70,24 @@ This file ships:
   universe / tyVar): `Term.isStronglyNormalizing term`.
   Matches Tait's base-type clause — no function structure
   forces recursion into sub-types.
-* **arrow A B**: `SN(term) ∧ ∀ arg, Reducible A arg →
+* **arrow A B** (K12.5): `SN(term) ∧ ∀ arg, Reducible A arg →
   Reducible B (Term.app term arg)`.  Bundles SN with the
   closure for use by the fundamental lemma.
-* **All remaining constructors** (~17 type formers: piTy,
-  sigmaTy, id, listType, optionType, eitherType, path, glue,
-  oeq, idStrict, equiv, refine, record, codata, session,
-  effect, modal): SN-fallback (admissible but weak — every
-  reducible term is at least SN).  K12.6-K12.16 tighten each
-  to its type-former-specific closure.
+* **piTy A B** (K12.6, weak closure): `SN(term) ∧ ∀ arg,
+  Reducible A arg → SN(Term.appPi term arg)`.  The full Tait
+  clause `Reducible (B.subst0 A arg) (Term.appPi term arg)`
+  fails structural recursion (substituted codomain is not a
+  strict sub-term), so K12.6 ships the weak variant.  Stronger
+  than SN-fallback (preserves SN under reducible application);
+  weaker than the full Tait clause (no Reducible at the
+  substituted codomain).  Full closure reserved for a future
+  Kripke logical relation refactor.
+* **All remaining constructors** (~16 type formers: sigmaTy,
+  id, listType, optionType, eitherType, path, glue, oeq,
+  idStrict, equiv, refine, record, codata, session, effect,
+  modal): SN-fallback (admissible but weak — every reducible
+  term is at least SN).  K12.7-K12.16 tighten each to its
+  type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -183,8 +192,27 @@ def Reducible {mode : Mode} {level scope : Nat}
         (argumentTerm : Term context domainType argumentRaw),
         Reducible domainType argumentTerm →
         Reducible codomainType (Term.app functionTerm argumentTerm)
-  -- Remaining type formers (K12.6-K12.16 TODO): SN-fallback
-  | Ty.piTy _ _, _, term => Term.isStronglyNormalizing term
+  -- Dependent Π type (K12.6, weak closure): SN + SN-after-app.
+  -- The full Tait dep-Π closure (`Reducible (B.subst0 A arg)
+  -- (Term.appPi f arg)`) recurses on the substituted codomain
+  -- `B.subst0 domainType argumentRaw` — NOT a structural
+  -- sub-term of `Ty.piTy A B`, so the structural-recursion
+  -- checker rejects it (probed 2026-05-11: "Please use
+  -- `termination_by` to specify a decreasing measure",
+  -- requires WellFounded.fix → Acc, banned by GatesCore
+  -- line 51).  The weak closure recurses only on `domainType`
+  -- (strict sub-term) and demands SN of the result.  Stronger
+  -- than pure SN-fallback (the function preserves SN under
+  -- reducible argument application) but weaker than the full
+  -- Tait clause.  The full closure ships in a future Kripke
+  -- logical relation refactor (reserve K12.6.full for that).
+  | Ty.piTy domainType _, _, functionTerm =>
+      Term.isStronglyNormalizing functionTerm ∧
+      ∀ {argumentRaw : RawTerm scope}
+        (argumentTerm : Term context domainType argumentRaw),
+        Reducible domainType argumentTerm →
+        Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm)
+  -- Remaining type formers (K12.7-K12.16 TODO): SN-fallback
   | Ty.sigmaTy _ _, _, term => Term.isStronglyNormalizing term
   | Ty.id _ _ _, _, term => Term.isStronglyNormalizing term
   | Ty.listType _, _, term => Term.isStronglyNormalizing term

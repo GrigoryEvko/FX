@@ -23,7 +23,7 @@ K12.2-K12.4 ship (now expressed as def-equations on Ty):
   universe,tyVar} term = Term.isStronglyNormalizing term`.
   SN matches Tait's base-type clause exactly.
 
-K12.5 ships (this pivot):
+K12.5 ships (architectural pivot):
 * `Reducible Ty.arrow A B term = SN(term) ∧ ∀ arg,
   Reducible A arg → Reducible B (Term.app term arg)`.
   Wood/Atkey 2022 corrected Lam rule's reducibility shape.
@@ -32,10 +32,22 @@ K12.5 ships (this pivot):
   strict-positivity wall (`Reducible` referenced LEFT of an
   arrow inside a constructor's argument is non-positive).
 
-Future K12.6-K12.16 tighten the remaining ~17 SN-fallback arms
-(piTy / sigmaTy / id / listType / optionType / eitherType /
-path / glue / oeq / idStrict / equiv / refine / record / codata
-/ session / effect / modal) to their type-former-specific
+K12.6 ships (weak dep-Π closure):
+* `Reducible Ty.piTy A B term = SN(term) ∧ ∀ arg,
+  Reducible A arg → SN(Term.appPi term arg)`.  Weak variant —
+  the full Tait dep-Π clause recurses on the substituted
+  codomain `B.subst0 A arg`, which fails structural recursion
+  (substituted codomain is not a strict sub-term).  Weak
+  closure recurses only on `domainType` (strict sub-term)
+  and demands SN of the application result.  Stronger than
+  pure SN-fallback (preserves SN under reducible application);
+  weaker than the full Tait clause.  Full closure reserved
+  for a future Kripke logical relation refactor.
+
+Future K12.7-K12.16 tighten the remaining ~16 SN-fallback arms
+(sigmaTy / id / listType / optionType / eitherType / path /
+glue / oeq / idStrict / equiv / refine / record / codata /
+session / effect / modal) to their type-former-specific
 closures.  K12.18-K12.26 ship the fundamental lemma;
 K12.27 closes M04 / `strong_normalization`. -/
 
