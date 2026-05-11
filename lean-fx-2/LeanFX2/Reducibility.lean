@@ -1240,6 +1240,183 @@ theorem RawTerm.natRec_var_isStronglyNormalizing {scope : Nat}
             (RawStep.par.var_inv scrutineeStep).symm
           nomatch varEqSucc)
 
+/-- **K12.20.AW.1 neutral listElim SN preservation**.  Sister to
+the K12.20.AU/AV eliminator family; parametric-list recursor.
+
+Variable scrutinee blocks both ι rules — `iotaListElimNil` needs
+`var → listNil`, `iotaListElimCons` needs `var → listCons _ _` —
+discharged via `var_inv` on each ι arm. -/
+theorem RawTerm.listElim_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {nilBranch : RawTerm scope}
+    (nilIsSN : RawTerm.isStronglyNormalizing nilBranch) :
+    ∀ {consBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing consBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listElim (RawTerm.var position) nilBranch consBranch) := by
+  induction nilIsSN with
+  | intro currentNil _ nilIH =>
+    intro consBranch consIsSN
+    induction consIsSN with
+    | intro currentCons consClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.listElim (RawTerm.var position) currentNil currentCons) ?_
+      intro target progressStep
+      rcases RawStep.par.listElim_inv progressStep.1 with
+        ⟨scrutineeTarget, nilTarget, consTarget, targetEq,
+          scrutineeStep, nilStep, consStep⟩
+        | (⟨nilTarget, _targetEq, scrutineeStep, _nilStep⟩
+          | ⟨headRaw, tailRaw, consTarget,
+              _targetEq, scrutineeStep, _consStep⟩)
+      · have scrutineeEq :
+            scrutineeTarget = RawTerm.var position :=
+          (RawStep.par.var_inv scrutineeStep)
+        subst scrutineeEq
+        subst targetEq
+        by_cases nilEq : currentNil = nilTarget
+        · subst nilEq
+          have consDistinct :
+              currentCons ≠ consTarget := fun consEq =>
+            progressStep.2 (congrArg
+              (RawTerm.listElim (RawTerm.var position) currentNil) consEq)
+          exact innerIH consTarget ⟨consStep, consDistinct⟩
+        · have nilProgress :
+              RawStep.parProgress currentNil nilTarget :=
+            ⟨nilStep, nilEq⟩
+          by_cases consEq : currentCons = consTarget
+          · subst consEq
+            exact nilIH nilTarget nilProgress
+              (RawTerm.isStronglyNormalizing.intro currentCons consClosure)
+          · exact nilIH nilTarget nilProgress
+              (consClosure consTarget ⟨consStep, consEq⟩)
+      · exact (by
+          have varEqNil :
+              RawTerm.var position = RawTerm.listNil :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqNil)
+      · exact (by
+          have varEqCons :
+              RawTerm.var position = RawTerm.listCons headRaw tailRaw :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqCons)
+
+/-- **K12.20.AW.2 neutral optionMatch SN preservation**.  Sister
+to `listElim_var`; option-eliminator with variable scrutinee.
+Same proof shape; ι rules need `var → optionNone` and
+`var → optionSome _`. -/
+theorem RawTerm.optionMatch_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {noneBranch : RawTerm scope}
+    (noneIsSN : RawTerm.isStronglyNormalizing noneBranch) :
+    ∀ {someBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing someBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.optionMatch (RawTerm.var position) noneBranch someBranch) := by
+  induction noneIsSN with
+  | intro currentNone _ noneIH =>
+    intro someBranch someIsSN
+    induction someIsSN with
+    | intro currentSome someClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.optionMatch (RawTerm.var position) currentNone currentSome) ?_
+      intro target progressStep
+      rcases RawStep.par.optionMatch_inv progressStep.1 with
+        ⟨scrutineeTarget, noneTarget, someTarget, targetEq,
+          scrutineeStep, noneStep, someStep⟩
+        | (⟨noneTarget, _targetEq, scrutineeStep, _noneStep⟩
+          | ⟨valueRaw, someTarget, _targetEq, scrutineeStep, _someStep⟩)
+      · have scrutineeEq :
+            scrutineeTarget = RawTerm.var position :=
+          (RawStep.par.var_inv scrutineeStep)
+        subst scrutineeEq
+        subst targetEq
+        by_cases noneEq : currentNone = noneTarget
+        · subst noneEq
+          have someDistinct :
+              currentSome ≠ someTarget := fun someEq =>
+            progressStep.2 (congrArg
+              (RawTerm.optionMatch (RawTerm.var position) currentNone) someEq)
+          exact innerIH someTarget ⟨someStep, someDistinct⟩
+        · have noneProgress :
+              RawStep.parProgress currentNone noneTarget :=
+            ⟨noneStep, noneEq⟩
+          by_cases someEq : currentSome = someTarget
+          · subst someEq
+            exact noneIH noneTarget noneProgress
+              (RawTerm.isStronglyNormalizing.intro currentSome someClosure)
+          · exact noneIH noneTarget noneProgress
+              (someClosure someTarget ⟨someStep, someEq⟩)
+      · exact (by
+          have varEqNone :
+              RawTerm.var position = RawTerm.optionNone :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqNone)
+      · exact (by
+          have varEqSome :
+              RawTerm.var position = RawTerm.optionSome valueRaw :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqSome)
+
+/-- **K12.20.AW.3 neutral eitherMatch SN preservation**.  Sister
+to `listElim_var` / `optionMatch_var`; either-eliminator with
+variable scrutinee.  Both ι rules carry a payload value (no
+nullary constructor on either side), so both demand
+`var → eitherInl _` / `var → eitherInr _` — both blocked by
+`var_inv`. -/
+theorem RawTerm.eitherMatch_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {leftBranch : RawTerm scope}
+    (leftIsSN : RawTerm.isStronglyNormalizing leftBranch) :
+    ∀ {rightBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing rightBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.eitherMatch (RawTerm.var position) leftBranch rightBranch) := by
+  induction leftIsSN with
+  | intro currentLeft _ leftIH =>
+    intro rightBranch rightIsSN
+    induction rightIsSN with
+    | intro currentRight rightClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.eitherMatch (RawTerm.var position)
+          currentLeft currentRight) ?_
+      intro target progressStep
+      rcases RawStep.par.eitherMatch_inv progressStep.1 with
+        ⟨scrutineeTarget, leftTarget, rightTarget, targetEq,
+          scrutineeStep, leftStep, rightStep⟩
+        | (⟨valueRaw, leftTarget, _targetEq, scrutineeStep, _leftStep⟩
+          | ⟨valueRaw, rightTarget, _targetEq, scrutineeStep, _rightStep⟩)
+      · have scrutineeEq :
+            scrutineeTarget = RawTerm.var position :=
+          (RawStep.par.var_inv scrutineeStep)
+        subst scrutineeEq
+        subst targetEq
+        by_cases leftEq : currentLeft = leftTarget
+        · subst leftEq
+          have rightDistinct :
+              currentRight ≠ rightTarget := fun rightEq =>
+            progressStep.2 (congrArg
+              (RawTerm.eitherMatch (RawTerm.var position) currentLeft) rightEq)
+          exact innerIH rightTarget ⟨rightStep, rightDistinct⟩
+        · have leftProgress :
+              RawStep.parProgress currentLeft leftTarget :=
+            ⟨leftStep, leftEq⟩
+          by_cases rightEq : currentRight = rightTarget
+          · subst rightEq
+            exact leftIH leftTarget leftProgress
+              (RawTerm.isStronglyNormalizing.intro currentRight rightClosure)
+          · exact leftIH leftTarget leftProgress
+              (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+      · exact (by
+          have varEqInl :
+              RawTerm.var position = RawTerm.eitherInl valueRaw :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqInl)
+      · exact (by
+          have varEqInr :
+              RawTerm.var position = RawTerm.eitherInr valueRaw :=
+            (RawStep.par.var_inv scrutineeStep).symm
+          nomatch varEqInr)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +
