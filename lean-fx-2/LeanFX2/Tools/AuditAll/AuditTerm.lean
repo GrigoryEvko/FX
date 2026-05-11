@@ -178,4 +178,16 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.rename_toRawPoly_commute
 #assert_no_axioms LeanFX2.RawTerm.weaken_toRawPoly_commute
 
+-- K11.13 Phase B (#1745): raw-layer `RawPolyTerm.subst` + commute
+-- with `RawTerm.toRawPoly` along the pointwise-converted
+-- substitution.
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst0
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.lift_pointwise
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst_pointwise
+#assert_no_axioms LeanFX2.RawTermSubst.toRawPolySubst
+#assert_no_axioms LeanFX2.RawTermSubst.lift_toRawPolySubst_commute
+#assert_no_axioms LeanFX2.RawTerm.subst_toRawPoly_commute
+#assert_no_axioms LeanFX2.RawTerm.subst0_toRawPoly_commute
+
 end LeanFX2.Tools

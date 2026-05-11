@@ -74,7 +74,10 @@ namespace LeanFX2.Tools
 -- arm + idToEquiv_inv five-disjunct extension.
 -- K11.13 Phase A: RawPolyTerm.rename cascade adds Eq.rec / Eq.ndrec
 -- paths through the 73 match equations + commute lemma, bumping +75.
-#assert_cast_operator_dependent_budget LeanFX2 1611
+-- K11.13 Phase B: RawPolyTerm.subst cascade adds Eq.rec / Eq.ndrec
+-- through 73 equation lemmas + subst_pointwise + commute + corollary.
+-- +79.
+#assert_cast_operator_dependent_budget LeanFX2 1690
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

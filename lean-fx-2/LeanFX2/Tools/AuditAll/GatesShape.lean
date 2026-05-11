@@ -121,6 +121,9 @@ namespace LeanFX2.Tools
 -- K11.13 Phase A: RawPolyTerm.rename adds 73-case structural recursion
 -- whose generated equation lemmas thread Σ-existentials, bumping the
 -- dependent-pair count by 75 (73 cases + the commute lemma + corollary).
-#assert_dependent_pair_dependent_budget LeanFX2 1718
+-- K11.13 Phase B: RawPolyTerm.subst adds another 73-case structural
+-- recursion + subst_pointwise + lift_toRawPolySubst_commute + the
+-- subst commute + subst0 commute corollary.  +79.
+#assert_dependent_pair_dependent_budget LeanFX2 1797
 
 end LeanFX2.Tools

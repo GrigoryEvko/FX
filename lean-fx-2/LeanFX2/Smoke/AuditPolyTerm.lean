@@ -240,3 +240,13 @@ end LeanFX2.Smoke
 #print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken
 #print axioms LeanFX2.RawTerm.rename_toRawPoly_commute
 #print axioms LeanFX2.RawTerm.weaken_toRawPoly_commute
+
+-- K11.13 Phase B (#1745) — raw-layer RawPolyTerm.subst + commute.
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst0
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.lift_pointwise
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst_pointwise
+#print axioms LeanFX2.RawTermSubst.toRawPolySubst
+#print axioms LeanFX2.RawTermSubst.lift_toRawPolySubst_commute
+#print axioms LeanFX2.RawTerm.subst_toRawPoly_commute
+#print axioms LeanFX2.RawTerm.subst0_toRawPoly_commute
