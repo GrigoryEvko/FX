@@ -1973,6 +1973,34 @@ theorem RawTerm.recordProj_var_isStronglyNormalizing {scope : Nat}
         (RawStep.par.var_inv recordStep)
       nomatch varEqRecordIntro)
 
+/-- **K12.20.BA.3 neutral codataDest SN preservation**.  Unary
+codata observation with variable codata value.  `codataDest_inv`
+gives 2 arms: congruent observation and codata β after the codata
+value develops to `codataUnfold`.  The congruent arm is reflexive
+after `var_inv`; the β arm is impossible because a variable cannot
+parallel-develop to `codataUnfold _ _`. -/
+theorem RawTerm.codataDest_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.codataDest (RawTerm.var position)) := by
+  refine RawTerm.isStronglyNormalizing.intro
+    (RawTerm.codataDest (RawTerm.var position)) ?_
+  intro target progressStep
+  rcases RawStep.par.codataDest_inv progressStep.1 with
+    ⟨codataTarget, targetEq, codataStep⟩
+    | ⟨stateTarget, transitionTarget, _targetEq, codataStep⟩
+  · have codataEq : codataTarget = RawTerm.var position :=
+      (RawStep.par.var_inv codataStep)
+    subst codataEq
+    subst targetEq
+    exact (progressStep.2 rfl).elim
+  · exact (by
+      have varEqCodataUnfold :
+          RawTerm.codataUnfold stateTarget transitionTarget =
+            RawTerm.var position :=
+        (RawStep.par.var_inv codataStep)
+      nomatch varEqCodataUnfold)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +

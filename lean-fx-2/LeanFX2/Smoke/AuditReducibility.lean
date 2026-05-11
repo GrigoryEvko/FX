@@ -616,6 +616,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.idStrict_of_varShape
 #print axioms RawTerm.refineElim_var_isStronglyNormalizing
 #print axioms RawTerm.recordProj_var_isStronglyNormalizing
+#print axioms RawTerm.codataDest_var_isStronglyNormalizing
 #print axioms RawStep.par.cumulUpMarker_inv
 #print axioms RawTerm.cumulUpMarker_isStronglyNormalizing
 #print axioms Reducible.fundamental_cumulUp
