@@ -1060,6 +1060,46 @@ theorem RawTerm.modIntro_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis innerTarget
       ⟨innerStep, innerDistinct⟩
 
+/-- **K12.20.Z pair SN preservation** — first binary cong-only SN
+helper.  Pair has two parallel subterms; the SN proof needs nested
+induction (outer on firstIsSN with `generalizing` to expose
+second's SN as IH input, inner on secondIsSN) plus a per-side
+disequality split.  When `pair currentFirst currentSecond` steps
+to `pair firstTarget secondTarget` with the pair distinct, at
+least one side must have advanced; case-split on which to discharge
+via the outer or inner IH. -/
+theorem RawTerm.pair_isStronglyNormalizing {scope : Nat}
+    {firstValue : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstValue) :
+    ∀ {secondValue : RawTerm scope},
+      RawTerm.isStronglyNormalizing secondValue →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pair firstValue secondValue) := by
+  induction firstIsSN with
+  | intro currentFirst _ firstIH =>
+    intro secondValue secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.pair currentFirst currentSecond) ?_
+      intro target progressStep
+      obtain ⟨firstTarget, secondTarget, targetEq, firstStep, secondStep⟩ :=
+        RawStep.par.pair_inv progressStep.1
+      subst targetEq
+      by_cases firstEq : currentFirst = firstTarget
+      · subst firstEq
+        have secondDistinct : currentSecond ≠ secondTarget := fun secondEq =>
+          progressStep.2 (congrArg (RawTerm.pair currentFirst) secondEq)
+        exact innerIH secondTarget ⟨secondStep, secondDistinct⟩
+      · have firstProgress : RawStep.parProgress currentFirst firstTarget :=
+          ⟨firstStep, firstEq⟩
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact firstIH firstTarget firstProgress
+            (RawTerm.isStronglyNormalizing.intro currentSecond secondClosure)
+        · exact firstIH firstTarget firstProgress
+            (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
