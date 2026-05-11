@@ -1371,6 +1371,47 @@ theorem RawTerm.pathLam_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.pathLam bodyEq)
     exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
 
+/-- **K12.20.AH equivIntro SN preservation** — equivalence intro
+bundles a forward and backward function.  Binary cong; uses the
+pair-style universal-in-conclusion pattern to keep the backward
+IH universal under outer induction on the forward SN witness. -/
+theorem RawTerm.equivIntro_isStronglyNormalizing {scope : Nat}
+    {forwardFn : RawTerm scope}
+    (forwardIsSN : RawTerm.isStronglyNormalizing forwardFn) :
+    ∀ {backwardFn : RawTerm scope},
+      RawTerm.isStronglyNormalizing backwardFn →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.equivIntro forwardFn backwardFn) := by
+  induction forwardIsSN with
+  | intro currentForward _ forwardIH =>
+    intro backwardFn backwardIsSN
+    induction backwardIsSN with
+    | intro currentBackward backwardClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.equivIntro currentForward currentBackward) ?_
+      intro target progressStep
+      obtain ⟨forwardTarget, backwardTarget, targetEq,
+              forwardStep, backwardStep⟩ :=
+        RawStep.par.equivIntro_inv progressStep.1
+      subst targetEq
+      by_cases forwardEq : currentForward = forwardTarget
+      · subst forwardEq
+        have backwardDistinct :
+            currentBackward ≠ backwardTarget := fun backwardEq =>
+          progressStep.2
+            (congrArg (RawTerm.equivIntro currentForward) backwardEq)
+        exact innerIH backwardTarget ⟨backwardStep, backwardDistinct⟩
+      · have forwardProgress :
+            RawStep.parProgress currentForward forwardTarget :=
+          ⟨forwardStep, forwardEq⟩
+        by_cases backwardEq : currentBackward = backwardTarget
+        · subst backwardEq
+          exact forwardIH forwardTarget forwardProgress
+            (RawTerm.isStronglyNormalizing.intro currentBackward
+              backwardClosure)
+        · exact forwardIH forwardTarget forwardProgress
+            (backwardClosure backwardTarget ⟨backwardStep, backwardEq⟩)
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each

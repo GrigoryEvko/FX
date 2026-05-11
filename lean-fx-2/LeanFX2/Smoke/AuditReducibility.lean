@@ -607,6 +607,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.intervalMeet_isStronglyNormalizing
 #print axioms RawTerm.intervalJoin_isStronglyNormalizing
 #print axioms RawTerm.pathLam_isStronglyNormalizing
+#print axioms RawTerm.equivIntro_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
