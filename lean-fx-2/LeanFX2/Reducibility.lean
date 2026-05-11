@@ -1260,6 +1260,39 @@ theorem RawTerm.interval1_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm).elim)
 
+/-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
+zero endpoint.  `Ty.interval` is closed (no scope dependence) so
+`Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
+nullary intro reduces to itself
+(`LeanFX2/Term/Subst.lean:306`); `Reducible Ty.interval _`
+unfolds to `Term.isStronglyNormalizing _`
+(`LeanFX2/Reducibility.lean:329`).  Closes the nullary-intro
+quartet alongside K12.19.B unit / boolTrue / boolFalse / natZero
+with the same one-liner template. -/
+theorem Reducible.fundamental_interval0
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    Reducible ((Ty.interval : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.interval0 (context := sourceCtx))) :=
+  RawTerm.interval0_isStronglyNormalizing
+
+/-- **K12.20.AN.2 interval1 fundamental case** — cubical interval
+one endpoint.  Same closed-leaf intro shape as `interval0`. -/
+theorem Reducible.fundamental_interval1
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    Reducible ((Ty.interval : Ty level scope).subst sigma)
+              (Term.subst termSubst
+                (Term.interval1 (context := sourceCtx))) :=
+  RawTerm.interval1_isStronglyNormalizing
+
 /-- **K12.20.AF.1 intervalOpp SN preservation** — cubical interval
 negation.  Unary cong over the interval term; intervalOpp_inv
 discharges each par step. -/

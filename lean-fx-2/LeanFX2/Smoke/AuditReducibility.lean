@@ -620,6 +620,8 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.sessionSend_isStronglyNormalizing
 #print axioms RawTerm.effectPerform_isStronglyNormalizing
 #print axioms RawTerm.glueIntro_isStronglyNormalizing
+#print axioms Reducible.fundamental_interval0
+#print axioms Reducible.fundamental_interval1
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
