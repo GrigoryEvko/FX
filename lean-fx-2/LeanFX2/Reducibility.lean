@@ -424,6 +424,175 @@ theorem RawTerm.IsNeutral.not_lam {scope : Nat}
   intro sourceEq
   cases sourceIsNeutral <;> cases sourceEq
 
+/-- Neutral raw terms are never pair-shaped. -/
+theorem RawTerm.IsNeutral.not_pair {scope : Nat}
+    {source firstRaw secondRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.pair firstRaw secondRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never `true`. -/
+theorem RawTerm.IsNeutral.not_boolTrue {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.boolTrue := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never `false`. -/
+theorem RawTerm.IsNeutral.not_boolFalse {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.boolFalse := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never `natZero`. -/
+theorem RawTerm.IsNeutral.not_natZero {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.natZero := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never successor-shaped. -/
+theorem RawTerm.IsNeutral.not_natSucc {scope : Nat}
+    {source predecessorRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.natSucc predecessorRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never empty-list-shaped. -/
+theorem RawTerm.IsNeutral.not_listNil {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.listNil := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never list-cons-shaped. -/
+theorem RawTerm.IsNeutral.not_listCons {scope : Nat}
+    {source headRaw tailRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.listCons headRaw tailRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never option-none-shaped. -/
+theorem RawTerm.IsNeutral.not_optionNone {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.optionNone := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never option-some-shaped. -/
+theorem RawTerm.IsNeutral.not_optionSome {scope : Nat}
+    {source valueRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.optionSome valueRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never either-left-shaped. -/
+theorem RawTerm.IsNeutral.not_eitherInl {scope : Nat}
+    {source valueRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.eitherInl valueRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never either-right-shaped. -/
+theorem RawTerm.IsNeutral.not_eitherInr {scope : Nat}
+    {source valueRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.eitherInr valueRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never cubical-path-lambda-shaped. -/
+theorem RawTerm.IsNeutral.not_pathLam {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source)
+    {bodyRaw : RawTerm (scope + 1)} :
+    source ≠ RawTerm.pathLam bodyRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never glue-intro-shaped. -/
+theorem RawTerm.IsNeutral.not_glueIntro {scope : Nat}
+    {source baseRaw partialRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.glueIntro baseRaw partialRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never identity-refl-shaped. -/
+theorem RawTerm.IsNeutral.not_refl {scope : Nat}
+    {source witnessRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.refl witnessRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never observational-refl-shaped. -/
+theorem RawTerm.IsNeutral.not_oeqRefl {scope : Nat}
+    {source witnessRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.oeqRefl witnessRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never strict-identity-refl-shaped. -/
+theorem RawTerm.IsNeutral.not_idStrictRefl {scope : Nat}
+    {source witnessRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.idStrictRefl witnessRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never equivalence-intro-shaped. -/
+theorem RawTerm.IsNeutral.not_equivIntro {scope : Nat}
+    {source forwardRaw backwardRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.equivIntro forwardRaw backwardRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never modal-intro-shaped. -/
+theorem RawTerm.IsNeutral.not_modIntro {scope : Nat}
+    {source valueRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.modIntro valueRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never refinement-intro-shaped. -/
+theorem RawTerm.IsNeutral.not_refineIntro {scope : Nat}
+    {source valueRaw proofRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.refineIntro valueRaw proofRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never record-intro-shaped. -/
+theorem RawTerm.IsNeutral.not_recordIntro {scope : Nat}
+    {source fieldRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.recordIntro fieldRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
+/-- Neutral raw terms are never codata-unfold-shaped. -/
+theorem RawTerm.IsNeutral.not_codataUnfold {scope : Nat}
+    {source initialRaw transitionRaw : RawTerm scope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    source ≠ RawTerm.codataUnfold initialRaw transitionRaw := by
+  intro sourceEq
+  cases sourceIsNeutral <;> cases sourceEq
+
 /-- The Tait reducibility-candidate predicate, defined by
 structural recursion on Ty.
 
