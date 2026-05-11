@@ -37,7 +37,14 @@ K12.3 ships:
   canonical inhabitants; reduction must terminate at a neutral
   form).
 
-Future K12.4-K12.16 fill the remaining Ty arms;
+K12.4 ships:
+* `Reducible.interval` — cubical interval reducibility = SN
+  (closed leaf at the path layer).
+* `Reducible.universe` — universe-code reducibility = SN
+  (closed leaf parameterized by universe level + cumulativity
+  proof per the Ty.universe ctor's `levelLe` witness).
+
+Future K12.5-K12.16 fill the function-type and parametric arms;
 K12.18-K12.26 ship the fundamental lemma;
 K12.27 closes M04 / `strong_normalization`. -/
 
@@ -49,5 +56,7 @@ K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.bool
 #print axioms Reducible.unit
 #print axioms Reducible.empty
+#print axioms Reducible.interval
+#print axioms Reducible.universe
 
 end LeanFX2.Smoke

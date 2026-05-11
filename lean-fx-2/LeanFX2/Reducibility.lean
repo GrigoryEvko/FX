@@ -169,5 +169,32 @@ inductive Reducible : ∀ {mode : Mode} {level scope : Nat}
       (emptyTerm : Term context Ty.empty emptyRaw) :
       Term.isStronglyNormalizing emptyTerm →
       Reducible Ty.empty emptyTerm
+  /-- K12.4: a closed interval-typed term is reducible iff it is
+  strongly normalizing.  The cubical interval `Ty.interval` has
+  two canonical inhabitants (`i0`, `i1`) plus connections; SN
+  here means reduction reaches a canonical endpoint or a stable
+  connection form. -/
+  | interval {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {intervalRaw : RawTerm scope}
+      (intervalTerm : Term context Ty.interval intervalRaw) :
+      Term.isStronglyNormalizing intervalTerm →
+      Reducible Ty.interval intervalTerm
+  /-- K12.4: a universe-coded-typed term is reducible iff it is
+  strongly normalizing.  `Ty.universe universeLevel levelLe`
+  inhabits any `Ty l scope` with `l ≥ universeLevel + 1` — its
+  inhabitants are codes for types at universe `universeLevel`.
+  Universe-typed terms are closed-leaf for the reducibility
+  induction: per Tait's base-type clause, SN suffices (no
+  function structure forces recursion). -/
+  | universe {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (universeLevel : UniverseLevel)
+      (levelLe : universeLevel.toNat + 1 ≤ level)
+      {universeRaw : RawTerm scope}
+      (universeTerm : Term context
+        (Ty.universe universeLevel levelLe) universeRaw) :
+      Term.isStronglyNormalizing universeTerm →
+      Reducible (Ty.universe universeLevel levelLe) universeTerm
 
 end LeanFX2
