@@ -247,6 +247,27 @@ K12.20.D ships (typed CR2 lift for 10 SN-direct Reducible arms):
   Each lemma's audit pin verifies the typed lift inherits raw
   step_preserves's zero-axiom status.
 
+K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
+* `Term.isStronglyNormalizing_of_varShape` — universal SN of any
+  Term whose raw projection is `RawTerm.var position`.  Foundation
+  for the cascade where var-shaped Terms (canonical Term.var OR
+  `▸`-cast forms with same raw index) need to be exhibited SN.
+  Definitional unfolding chain: Term.SN → raw SN at term.toRaw =
+  RawTerm.var position → K12.20.C's `var_isStronglyNormalizing`.
+* `Reducible.{unit,bool,nat,empty,interval,universe,tyVar,session,
+  effect,modal}_of_varShape` — variables are reducible at each of
+  the 10 SN-direct Ty arms.  Each body is
+  `Term.isStronglyNormalizing_of_varShape term`; lifts through
+  Reducible's SN-direct unfolding.
+  These 11 theorems are the typed-level "every variable is reducible
+  at an SN-direct binding type" base, foundational for
+  ReducibleSubst.identity (where every position's TermSubst value is
+  the canonical Term.var) and ReducibleSubst.singleton's k+1-positions
+  case (where the TermSubst supplies a cast-Term.var at the
+  weaken-substituted-out type).  Compound-arm neutral-reducibility
+  (var reducible at arrow/Σ/...) needs full CR3 / outer Ty induction;
+  ships in K12.20.G.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -280,5 +301,16 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_session
 #print axioms Reducible.step_preserves_effect
 #print axioms Reducible.step_preserves_modal
+#print axioms Term.isStronglyNormalizing_of_varShape
+#print axioms Reducible.unit_of_varShape
+#print axioms Reducible.bool_of_varShape
+#print axioms Reducible.nat_of_varShape
+#print axioms Reducible.empty_of_varShape
+#print axioms Reducible.interval_of_varShape
+#print axioms Reducible.universe_of_varShape
+#print axioms Reducible.tyVar_of_varShape
+#print axioms Reducible.session_of_varShape
+#print axioms Reducible.effect_of_varShape
+#print axioms Reducible.modal_of_varShape
 
 end LeanFX2.Smoke

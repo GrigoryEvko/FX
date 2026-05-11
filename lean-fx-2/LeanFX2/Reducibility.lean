@@ -1158,4 +1158,160 @@ theorem Reducible.step_preserves_modal
     Reducible (Ty.modal modalityTag carrierType) target :=
   RawTerm.isStronglyNormalizing.step_preserves sourceReducible rawStep
 
+/-! ## K12.20.E typed neutral-var reducibility at SN-direct arms
+
+Variables-as-reducible: every typed `Term` whose raw projection is
+`RawTerm.var position` is reducible at any SN-direct Reducible arm.
+Foundational for the K12.20.F `ReducibleSubst.singleton` /
+`ReducibleSubst.lift` constructors, where var-shaped Terms (cast
+through `Ty.weaken_subst_singleton` / `Ty.weaken_subst_commute`
+equalities) need to be exhibited reducible at the substituted-out
+type.
+
+Generic over the Term's type-level index — the lemmas accept ANY
+`Term context ty (RawTerm.var position)` (i.e. anything whose raw
+form is a var), not specifically `Term.var position`.  This covers:
+* The canonical `Term.var position` form when `ty = varType context
+  position` matches by definition.
+* `▸`-cast forms `h ▸ Term.var position` used in TermSubst.lift /
+  .singleton, where `h : varType context position = ty`.  The `▸`
+  preserves the raw index, so the casted term still has raw form
+  `RawTerm.var position`.
+
+Body across all 10 arms is identical: `RawTerm.var_isStronglyNormalizing
+position`.  Works by Reducible's definitional unfolding:
+`Reducible Ty.X term = Term.isStronglyNormalizing term = RawTerm.
+isStronglyNormalizing term.toRaw = RawTerm.isStronglyNormalizing
+(RawTerm.var position)` — exactly the type of
+`var_isStronglyNormalizing`.
+
+The compound Reducible arms (arrow / piTy / Σ / id / list / option /
+either / path / glue / oeq / idStrict / equiv / refine / record /
+codata) need full CR3-style neutral-reducibility (a variable applied
+to reducible arguments must be reducible at the result type),
+provable only by outer induction on Ty.  Those land in K12.20.G
+alongside compound-arm CR2.
+-/
+
+/-- **K12.20.E foundation**: any Term whose raw projection is
+`RawTerm.var position` is strongly normalizing, regardless of its
+declared type.  Body uses raw `var_isStronglyNormalizing` directly;
+`Term.isStronglyNormalizing` definitionally unfolds to the raw SN
+at the term's raw index, which is `RawTerm.var position` by the
+type-level index discipline. -/
+theorem Term.isStronglyNormalizing_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {ty : Ty level scope}
+    {position : Fin scope}
+    (_term : Term context ty (RawTerm.var position)) :
+    Term.isStronglyNormalizing _term :=
+  RawTerm.var_isStronglyNormalizing position
+
+/-- **K12.20.E unit arm**: variables are reducible at Ty.unit. -/
+theorem Reducible.unit_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {position : Fin scope}
+    (term : Term context Ty.unit (RawTerm.var position)) :
+    Reducible Ty.unit term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E bool arm**. -/
+theorem Reducible.bool_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {position : Fin scope}
+    (term : Term context Ty.bool (RawTerm.var position)) :
+    Reducible Ty.bool term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E nat arm**. -/
+theorem Reducible.nat_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {position : Fin scope}
+    (term : Term context Ty.nat (RawTerm.var position)) :
+    Reducible Ty.nat term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E empty arm**. -/
+theorem Reducible.empty_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {position : Fin scope}
+    (term : Term context Ty.empty (RawTerm.var position)) :
+    Reducible Ty.empty term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E interval arm**. -/
+theorem Reducible.interval_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {position : Fin scope}
+    (term : Term context Ty.interval (RawTerm.var position)) :
+    Reducible Ty.interval term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E universe arm**. -/
+theorem Reducible.universe_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {universeLevel : UniverseLevel}
+    {levelLe : universeLevel.toNat + 1 ≤ level}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.universe universeLevel levelLe)
+          (RawTerm.var position)) :
+    Reducible (Ty.universe universeLevel levelLe) term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E tyVar arm**. -/
+theorem Reducible.tyVar_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {tyVarPosition : Fin scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.tyVar tyVarPosition) (RawTerm.var position)) :
+    Reducible (Ty.tyVar tyVarPosition) term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E session arm**. -/
+theorem Reducible.session_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {protocolStep : RawTerm scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.session protocolStep) (RawTerm.var position)) :
+    Reducible (Ty.session protocolStep) term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E effect arm**. -/
+theorem Reducible.effect_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.effect carrierType effectTag)
+          (RawTerm.var position)) :
+    Reducible (Ty.effect carrierType effectTag) term :=
+  Term.isStronglyNormalizing_of_varShape term
+
+/-- **K12.20.E modal arm**. -/
+theorem Reducible.modal_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {modalityTag : Nat}
+    {carrierType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.modal modalityTag carrierType)
+          (RawTerm.var position)) :
+    Reducible (Ty.modal modalityTag carrierType) term :=
+  Term.isStronglyNormalizing_of_varShape term
+
 end LeanFX2
