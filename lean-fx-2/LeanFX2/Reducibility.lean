@@ -6775,6 +6775,220 @@ theorem Reducible.idStrict_of_varShape
        {_motiveType} {_baseRaw} _baseCase baseIsSN =>
      RawTerm.idStrictRec_var_isStronglyNormalizing position baseIsSN⟩
 
+/-! ### K12.20.U3 generic CR3 dispatch
+
+The per-constructor K12.20.U2 arms above are the local proof
+payloads.  Binder infrastructure needs one uniform dispatcher: given
+an arbitrary neutral term at an arbitrary type, reduce by structural
+recursion on `Ty` and pick the corresponding constructor arm. -/
+
+/-- **K12.20.U3 neutral CR3 dispatcher**: every neutral term whose
+non-trivial raw reducts are strongly normalizing is reducible at its
+type.
+
+This is the generic form consumed by `ReducibleSubst` constructors.
+Compound arms recurse only into the strict sub-types that the current
+K12 candidate actually exposes: codomain for arrow/equiv, first
+projection for sigma, carrier/base/field/output for the projection
+types.  SN-output arms (`piTy`, id-family, list/option/either) close
+without recursive result-type calls. -/
+theorem Reducible.of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    ∀ (sourceType : Ty level scope) {sourceRaw : RawTerm scope}
+      (sourceTerm : Term context sourceType sourceRaw),
+      RawTerm.IsNeutral sourceRaw →
+      (∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) →
+      Reducible sourceType sourceTerm := by
+  intro sourceType
+  induction sourceType with
+  | unit =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.unit_of_progress_closure sourceTerm closure
+  | bool =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.bool_of_progress_closure sourceTerm closure
+  | nat =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.nat_of_progress_closure sourceTerm closure
+  | arrow domainType codomainType _domainIH codomainIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.arrow_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun codomainTerm codomainIsNeutral codomainClosure =>
+          codomainIH codomainTerm codomainIsNeutral codomainClosure)
+  | piTy domainType codomainType _domainIH _codomainIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.piTy_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | sigmaTy firstType secondType firstIH _secondIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.sigmaTy_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun firstTerm firstIsNeutral firstClosure =>
+          firstIH firstTerm firstIsNeutral firstClosure)
+  | tyVar position =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.tyVar_of_progress_closure sourceTerm closure
+  | id carrier leftEndpoint rightEndpoint _carrierIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.id_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | listType elementType _elementIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.listType_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | optionType elementType _elementIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.optionType_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | eitherType leftType rightType _leftIH _rightIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.eitherType_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | «universe» universeLevel levelLe =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.universe_of_progress_closure sourceTerm closure
+  | empty =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.empty_of_progress_closure sourceTerm closure
+  | interval =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.interval_of_progress_closure sourceTerm closure
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.path_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun carrierTerm carrierIsNeutral carrierClosure =>
+          carrierIH carrierTerm carrierIsNeutral carrierClosure)
+  | glue baseType boundaryWitness baseIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.glue_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun baseTerm baseIsNeutral baseClosure =>
+          baseIH baseTerm baseIsNeutral baseClosure)
+  | oeq carrier leftEndpoint rightEndpoint _carrierIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.oeq_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | idStrict carrier leftEndpoint rightEndpoint _carrierIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.idStrict_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+  | equiv domainType codomainType _domainIH codomainIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.equiv_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun codomainTerm codomainIsNeutral codomainClosure =>
+          codomainIH codomainTerm codomainIsNeutral codomainClosure)
+  | refine baseType predicate baseIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.refine_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun baseTerm baseIsNeutral baseClosure =>
+          baseIH baseTerm baseIsNeutral baseClosure)
+  | record singleFieldType singleFieldIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.record_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun fieldTerm fieldIsNeutral fieldClosure =>
+          singleFieldIH fieldTerm fieldIsNeutral fieldClosure)
+  | codata stateType outputType _stateIH outputIH =>
+      intro sourceRaw sourceTerm sourceIsNeutral closure
+      exact Reducible.codata_of_neutral_progress_closure
+        sourceTerm sourceIsNeutral closure
+        (fun outputTerm outputIsNeutral outputClosure =>
+          outputIH outputTerm outputIsNeutral outputClosure)
+  | session protocolStep =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.session_of_progress_closure sourceTerm closure
+  | effect carrierType effectTag _carrierIH =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.effect_of_progress_closure sourceTerm closure
+  | modal modalityTag carrierType _carrierIH =>
+      intro sourceRaw sourceTerm _sourceIsNeutral closure
+      exact Reducible.modal_of_progress_closure sourceTerm closure
+
+/-- **K12.20.U3 var-shape dispatcher**: variables are reducible at
+every type. -/
+theorem Reducible.of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (sourceType : Ty level scope)
+    {position : Fin scope}
+    (sourceTerm : Term context sourceType (RawTerm.var position)) :
+    Reducible sourceType sourceTerm :=
+  Reducible.of_neutral_progress_closure sourceType sourceTerm
+    (RawTerm.IsNeutral.var position)
+    (fun targetRaw progressStep =>
+      (RawTerm.var_has_no_progress position targetRaw progressStep).elim)
+
+/-- Transport a reducibility witness across a type-index equality whose
+term side is cast by the symmetric equality.  This packages the exact
+`Eq.rec` shape emitted by `TermSubst.singleton`. -/
+theorem Reducible.of_type_eq_symm_cast
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {raw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    {targetTerm : Term context targetType raw}
+    (targetReducible : Reducible targetType targetTerm) :
+    Reducible sourceType (typeEq.symm ▸ targetTerm) := by
+  cases typeEq
+  exact targetReducible
+
+/-- **K12.20.U3 singleton ReducibleSubst**: replacing the newest
+variable by a reducible argument yields a reducible singleton
+substitution.
+
+Position zero is the supplied reducible argument.  Older positions
+survive `TermSubst.singleton` as variables in the target context, so
+they are discharged by the all-type var-shape dispatcher. -/
+theorem ReducibleSubst.singleton
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {substituent : Ty level scope}
+    {argRaw : RawTerm scope}
+    {argTerm : Term sourceCtx substituent argRaw}
+    (argIsReducible : Reducible substituent argTerm) :
+    ReducibleSubst (TermSubst.singleton argTerm) := by
+  intro position
+  cases position with
+  | mk positionIndex positionIsWithinScope =>
+      cases positionIndex with
+      | zero =>
+          change Reducible
+            (substituent.weaken.subst
+              (Subst.singleton substituent argRaw))
+            ((Ty.weaken_subst_singleton substituent substituent argRaw).symm ▸
+              argTerm)
+          exact Reducible.of_type_eq_symm_cast
+            (Ty.weaken_subst_singleton substituent substituent argRaw)
+            argIsReducible
+      | succ previousIndex =>
+          let previousPosition : Fin scope :=
+            ⟨previousIndex,
+              Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+          have previousVarReducible :
+              Reducible (varType sourceCtx previousPosition)
+                (Term.var previousPosition) :=
+            Reducible.of_varShape
+              (varType sourceCtx previousPosition)
+              (Term.var previousPosition)
+          change Reducible
+            ((varType sourceCtx previousPosition).weaken.subst
+              (Subst.singleton substituent argRaw))
+            ((Ty.weaken_subst_singleton (varType sourceCtx previousPosition)
+              substituent argRaw).symm ▸
+                Term.var previousPosition)
+          exact Reducible.of_type_eq_symm_cast
+            (Ty.weaken_subst_singleton
+              (varType sourceCtx previousPosition) substituent argRaw)
+            previousVarReducible
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
