@@ -1743,6 +1743,48 @@ theorem RawTerm.effectPerform_isStronglyNormalizing {scope : Nat}
             (argumentsClosure argumentsTarget
               ⟨argumentsStep, argumentsEq⟩)
 
+/-- **K12.20.AM glueIntro SN preservation** — cubical Glue
+introduction bundles a base value with a partial-element witness.
+Pure binary cong; pair-style universal-in-conclusion.  Closes
+the cubical/HoTT intro slice of the SN-helper rail. -/
+theorem RawTerm.glueIntro_isStronglyNormalizing {scope : Nat}
+    {baseValue : RawTerm scope}
+    (baseIsSN : RawTerm.isStronglyNormalizing baseValue) :
+    ∀ {partialValue : RawTerm scope},
+      RawTerm.isStronglyNormalizing partialValue →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.glueIntro baseValue partialValue) := by
+  induction baseIsSN with
+  | intro currentBase _ baseIH =>
+    intro partialValue partialIsSN
+    induction partialIsSN with
+    | intro currentPartial partialClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.glueIntro currentBase currentPartial) ?_
+      intro target progressStep
+      obtain ⟨baseTarget, partialTarget, targetEq,
+              baseStep, partialStep⟩ :=
+        RawStep.par.glueIntro_inv progressStep.1
+      subst targetEq
+      by_cases baseEq : currentBase = baseTarget
+      · subst baseEq
+        have partialDistinct :
+            currentPartial ≠ partialTarget := fun partialEq =>
+          progressStep.2
+            (congrArg (RawTerm.glueIntro currentBase) partialEq)
+        exact innerIH partialTarget ⟨partialStep, partialDistinct⟩
+      · have baseProgress :
+            RawStep.parProgress currentBase baseTarget :=
+          ⟨baseStep, baseEq⟩
+        by_cases partialEq : currentPartial = partialTarget
+        · subst partialEq
+          exact baseIH baseTarget baseProgress
+            (RawTerm.isStronglyNormalizing.intro currentPartial
+              partialClosure)
+        · exact baseIH baseTarget baseProgress
+            (partialClosure partialTarget
+              ⟨partialStep, partialEq⟩)
+
 /-- **K12.20.AH equivIntro SN preservation** — equivalence intro
 bundles a forward and backward function.  Binary cong; uses the
 pair-style universal-in-conclusion pattern to keep the backward
