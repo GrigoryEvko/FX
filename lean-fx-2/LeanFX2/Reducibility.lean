@@ -3028,6 +3028,76 @@ theorem RawTerm.listElim_var_isStronglyNormalizing {scope : Nat}
             (RawStep.par.var_inv scrutineeStep).symm
           nomatch varEqCons)
 
+/-- List elimination with a neutral scrutinee is strongly normalizing
+when the scrutinee and both branches are strongly normalizing.
+
+The list ι arms are impossible because every parallel reduct of the
+neutral scrutinee stays neutral, and neutral terms are never `listNil`
+or `listCons` shaped.  The congruence arm recurses lexicographically on
+scrutinee, nil-branch, and cons-branch progress. -/
+theorem RawTerm.listElim_neutral_isStronglyNormalizing {scope : Nat}
+    {scrutineeRaw nilBranch consBranch : RawTerm scope}
+    (scrutineeIsNeutral : RawTerm.IsNeutral scrutineeRaw)
+    (scrutineeIsSN : RawTerm.isStronglyNormalizing scrutineeRaw)
+    (nilIsSN : RawTerm.isStronglyNormalizing nilBranch)
+    (consIsSN : RawTerm.isStronglyNormalizing consBranch) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.listElim scrutineeRaw nilBranch consBranch) := by
+  induction scrutineeIsSN generalizing nilBranch consBranch with
+  | intro currentScrutinee _ scrutineeInduction =>
+    induction nilIsSN generalizing consBranch with
+    | intro currentNil nilClosure nilInduction =>
+      induction consIsSN with
+      | intro currentCons consClosure consInduction =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.listElim currentScrutinee currentNil currentCons) ?_
+        intro target progressStep
+        rcases RawStep.par.listElim_inv progressStep.1 with
+          ⟨scrutineeTarget, nilTarget, consTarget, targetEq,
+            scrutineeStep, nilStep, consStep⟩
+          | (⟨_nilTarget, _targetEq, scrutineeStep, _nilStep⟩
+            | ⟨headRaw, tailRaw, _consTarget, _targetEq,
+                scrutineeStep, _consStep⟩)
+        · subst targetEq
+          have scrutineeTargetIsNeutral :
+              RawTerm.IsNeutral scrutineeTarget :=
+            RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep
+          have nilTargetIsSN :
+              RawTerm.isStronglyNormalizing nilTarget := by
+            by_cases nilEq : currentNil = nilTarget
+            · subst nilEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentNil nilClosure
+            · exact nilClosure nilTarget ⟨nilStep, nilEq⟩
+          have consTargetIsSN :
+              RawTerm.isStronglyNormalizing consTarget := by
+            by_cases consEq : currentCons = consTarget
+            · subst consEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentCons consClosure
+            · exact consClosure consTarget ⟨consStep, consEq⟩
+          by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+          · subst scrutineeEq
+            by_cases nilEq : currentNil = nilTarget
+            · subst nilEq
+              by_cases consEq : currentCons = consTarget
+              · subst consEq
+                exact (progressStep.2 rfl).elim
+              · exact consInduction consTarget ⟨consStep, consEq⟩
+            · exact nilInduction nilTarget ⟨nilStep, nilEq⟩
+                consTargetIsSN
+          · exact scrutineeInduction scrutineeTarget
+              ⟨scrutineeStep, scrutineeEq⟩
+              scrutineeTargetIsNeutral nilTargetIsSN consTargetIsSN
+        · exact (RawTerm.IsNeutral.not_listNil
+            (RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep) rfl).elim
+        · exact (RawTerm.IsNeutral.not_listCons
+            (RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep)
+            (headRaw := headRaw) (tailRaw := tailRaw) rfl).elim
+
 /-- **K12.20.AW.2 neutral optionMatch SN preservation**.  Sister
 to `listElim_var`; option-eliminator with variable scrutinee.
 Same proof shape; ι rules need `var → optionNone` and
@@ -6063,6 +6133,35 @@ theorem Reducible.codata_of_varShape
        RawTerm.isStronglyNormalizing.step_preserves
          (RawTerm.codataDest_var_isStronglyNormalizing position)
          progressStep)⟩
+
+/-- **K12.20.U2 listType CR3 arm**: a neutral list is reducible at
+`Ty.listType elementType` when every raw progress reduct is SN.
+
+The K12.8 list candidate asks for SN of each eliminator result under
+SN branches and the cons-application closure.  With a neutral scrutinee
+the cons/nil ι arms cannot fire, so `RawTerm.listElim_neutral...`
+closes from scrutinee SN plus branch SN; the cons-application premise is
+reserved for canonical-cons fundamentals, not this neutral CR3 arm. -/
+theorem Reducible.listType_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term context (Ty.listType elementType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.listType elementType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _motiveType _nilRaw _consRaw _nilBranch _consBranch
+    nilIsSN consIsSN _consApplied
+  exact RawTerm.listElim_neutral_isStronglyNormalizing
+    sourceIsNeutral sourceIsSN nilIsSN consIsSN
 
 /-- **K12.20.U2 listType varShape arm**: variables are reducible at
 list type.
