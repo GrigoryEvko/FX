@@ -19,6 +19,7 @@ import LeanFX2.Foundation.Polygraph.Wellfounded
 import LeanFX2.Foundation.Polygraph.DecEq
 import LeanFX2.Foundation.Polygraph.VerticalComp
 import LeanFX2.Foundation.Polygraph.HorizontalComp
+import LeanFX2.Foundation.Polygraph.Laws
 
 -- Layer 1 - Term
 import LeanFX2.Term

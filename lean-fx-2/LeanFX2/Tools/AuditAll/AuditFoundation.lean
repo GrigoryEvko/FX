@@ -91,4 +91,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.composeTwoArrows
 #assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.composeTwoArrows_length_eq_two
 
+#assert_no_axioms LeanFX2.Foundation.Polygraph.VerticalChain.append_assoc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.HorizontalChain.append_assoc
+
 end LeanFX2.Tools
