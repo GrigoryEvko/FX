@@ -395,6 +395,23 @@ K12.20.M ships (typed CR2 lift — path strong-pathApp-closure compound arm):
   par steps (per RawPar.lean:558).  Eighth compound-arm CR2;
   7 remaining (glue/oeq/idStrict/equiv/refine/record/codata).
 
+K12.20.N ships (typed CR2 lift — glue strong-glueElim-closure compound arm):
+* `Reducible.step_preserves_glue` — Reducible at `Ty.glue A _`
+  is closed under raw `parProgress`.  K12.12's strong glueElim
+  closure produces full `Reducible baseType (glueElim ...)` from
+  the eliminator (baseType is strict sub-Ty, structural-
+  recursion-on-Ty admits it).  Closure: SN(gluedValue) +
+  (∀ modeIsUnivalent, Reducible baseType
+  (Term.glueElim modeIsUnivalent gluedValue)).  **Strong**
+  pattern from K12.20.F arrow / K12.20.M path: explicit
+  `baseTypeCR2` hypothesis required because eliminator output is
+  full Reducible (not SN).  **Simpler than K12.20.M path** — no
+  interval binder, no SN-on-arg conjunct, single-ctor cong rule
+  `RawStep.par.glueElimCong` (per RawPar.lean:633-638).
+  Term.glueElim raw form is `RawTerm.glueElim gluedRaw` (per
+  Term.lean:373).  Ninth compound-arm CR2; 6 remaining (oeq/
+  idStrict/equiv/refine/record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -447,5 +464,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_optionType
 #print axioms Reducible.step_preserves_eitherType
 #print axioms Reducible.step_preserves_path
+#print axioms Reducible.step_preserves_glue
 
 end LeanFX2.Smoke

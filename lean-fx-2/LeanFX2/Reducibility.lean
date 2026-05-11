@@ -1815,4 +1815,75 @@ theorem Reducible.step_preserves_path
     exact carrierCR2
       (sourceReducible.2 modeIsUnivalent intervalTerm intervalSN) pathAppStep
 
+/-! ## K12.20.N typed CR2 lift — Ty.glue strong-glueElim-closure compound arm
+
+Ninth compound-arm CR2 lemma.  `Ty.glue` ships a **strong
+glueElim closure** in K12.12: the eliminator produces a full
+`Reducible baseType _` verdict (NOT plain SN), because
+`baseType` is a strict sub-Ty of `Ty.glue baseType
+boundaryWitness` and the structural-recursion-on-Ty checker
+admits `Reducible baseType` recursion.  Closure shape (per
+Reducibility.lean:491):
+
+```
+Reducible (Ty.glue baseType _) gluedValue =
+  SN(gluedValue) ∧
+  ∀ (modeIsUnivalent : mode = Mode.univalent),
+    Reducible baseType
+      (Term.glueElim modeIsUnivalent gluedValue)
+```
+
+This is the **strong** pattern (mirror of K12.20.F arrow and
+K12.20.M path), but **even simpler than path** — no quantifier
+over an interval argument, no SN-on-arg conjunct.  Just the
+mode-univalent witness binder.  The proof carries an explicit
+`baseTypeCR2` hypothesis to lift Reducible across the cong step.
+
+Term.glueElim raw form is `RawTerm.glueElim gluedRaw` (per
+Term.lean:373); `RawStep.par.glueElimCong` is a 1-arg cong rule
+taking just `gluedRawStep` (per RawPar.lean:633-638).  No paired
+substituent: glueElim has only one argument.  Distinctness via
+`injection` on `RawTerm.glueElim.injEq`.
+-/
+
+/-- **K12.20.N glue arm**: strong-glueElim-closure CR2 for
+`Ty.glue`.  Takes `baseTypeCR2` as explicit hypothesis (the
+recursive Reducible-preservation witness on the strict sub-Ty
+`baseType`).  SN-of-gluedTerm preserved by raw `step_preserves`;
+the full-Reducible glueElim conjunct lifted via baseTypeCR2 over
+the glueElimCong step.  Simpler than K12.20.M path — single-
+ctor cong rule, no interval binder. -/
+theorem Reducible.step_preserves_glue
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.glue baseType boundaryWitness) sourceRaw}
+    {target : Term context (Ty.glue baseType boundaryWitness) targetRaw}
+    (baseTypeCR2 :
+        ∀ {glueElimSourceRaw glueElimTargetRaw : RawTerm scope}
+          {glueElimSource : Term context baseType glueElimSourceRaw}
+          {glueElimTarget : Term context baseType glueElimTargetRaw},
+          Reducible baseType glueElimSource →
+          RawStep.parProgress glueElimSourceRaw glueElimTargetRaw →
+          Reducible baseType glueElimTarget)
+    (sourceReducible :
+        Reducible (Ty.glue baseType boundaryWitness) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.glue baseType boundaryWitness) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro modeIsUnivalent
+    have glueElimStep : RawStep.parProgress
+        (RawTerm.glueElim sourceRaw)
+        (RawTerm.glueElim targetRaw) := by
+      refine ⟨RawStep.par.glueElimCong rawStep.1, ?_⟩
+      intro glueElimEq
+      apply rawStep.2
+      injection glueElimEq
+    exact baseTypeCR2
+      (sourceReducible.2 modeIsUnivalent) glueElimStep
+
 end LeanFX2
