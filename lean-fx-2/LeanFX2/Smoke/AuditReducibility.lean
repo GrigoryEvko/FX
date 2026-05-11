@@ -233,6 +233,10 @@ K12.20.C ships (neutral + natSucc SN preservation):
   neutral-head sigma projection SN.  Their beta arms are impossible by
   `RawTerm.IsNeutral.par_preserves` plus `not_pair`; congruence
   recurses on head progress.
+* `RawTerm.pathApp_neutral_isStronglyNormalizing` — generic
+  neutral-head path application SN.  Path β is impossible by
+  `RawTerm.IsNeutral.par_preserves` plus `not_pathLam`; congruence
+  recurses on path-head progress or interval progress.
 * `RawTerm.natSucc_isStronglyNormalizing` — `natSucc predecessor`
   is SN whenever its predecessor is.  Same shape as K12.20.A
   `lam_isStronglyNormalizing`: induct on predecessor's SN
@@ -285,6 +289,9 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   sigma typed CR3 arm: neutral pair + SN progress closure +
   first-projection CR3 hook imply reducibility at `Ty.sigmaTy`; the
   second projection remains SN-only per K12.7.
+* `Reducible.path_of_neutral_progress_closure` is the path typed CR3
+  arm: neutral path + SN progress closure + carrier CR3 hook imply
+  reducibility at `Ty.path`; the interval argument remains SN-only.
 * `RawTerm.IsNeutral.{app,fst,snd,boolElim,natElim,natRec,
   listElim,optionMatch,eitherMatch}_par_preserves` — higher-order
   one-step neutral-preservation atoms for the core eliminators.
@@ -836,6 +843,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.app_neutral_isStronglyNormalizing
 #print axioms RawTerm.fst_neutral_isStronglyNormalizing
 #print axioms RawTerm.snd_neutral_isStronglyNormalizing
+#print axioms RawTerm.pathApp_neutral_isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape
@@ -851,6 +859,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.arrow_of_neutral_progress_closure
 #print axioms Reducible.sigmaTy_of_neutral_progress_closure
 #print axioms Reducible.sigmaTy_of_varShape
+#print axioms Reducible.path_of_neutral_progress_closure
 #print axioms Reducible.path_of_varShape
 #print axioms Reducible.glue_of_varShape
 #print axioms Reducible.equiv_of_varShape

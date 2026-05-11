@@ -3180,6 +3180,57 @@ theorem RawTerm.pathApp_var_isStronglyNormalizing {scope : Nat}
           (RawStep.par.var_inv pathStep)
         nomatch varEqPathLam)
 
+/-- Path application with a neutral path head is strongly normalizing
+when both the path head and interval argument are strongly normalizing.
+
+The path beta arms are impossible because every parallel reduct of the
+neutral head stays neutral, and neutral terms are never `pathLam`-
+shaped.  The congruence arm recurses on head progress or interval
+progress. -/
+theorem RawTerm.pathApp_neutral_isStronglyNormalizing {scope : Nat}
+    {pathRaw intervalArgRaw : RawTerm scope}
+    (pathIsNeutral : RawTerm.IsNeutral pathRaw)
+    (pathIsSN : RawTerm.isStronglyNormalizing pathRaw)
+    (intervalIsSN : RawTerm.isStronglyNormalizing intervalArgRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.pathApp pathRaw intervalArgRaw) := by
+  induction pathIsSN generalizing intervalArgRaw with
+  | intro currentPath _ pathInduction =>
+    induction intervalIsSN with
+    | intro currentInterval intervalClosure intervalInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.pathApp currentPath currentInterval) ?_
+      intro target progressStep
+      rcases RawStep.par.pathApp_inv progressStep.1 with
+        ⟨pathTarget, intervalTarget, targetEq, pathStep, intervalStep⟩
+        | ⟨bodyTarget, _intervalTarget, _targetEq,
+            pathStep, _intervalStep⟩
+      · subst targetEq
+        have pathTargetIsNeutral : RawTerm.IsNeutral pathTarget :=
+          RawTerm.IsNeutral.par_preserves pathIsNeutral pathStep
+        have intervalTargetIsSN :
+            RawTerm.isStronglyNormalizing intervalTarget := by
+          by_cases intervalEq : currentInterval = intervalTarget
+          · subst intervalEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentInterval intervalClosure
+          · exact intervalClosure intervalTarget
+              ⟨intervalStep, intervalEq⟩
+        by_cases pathEq : currentPath = pathTarget
+        · subst pathEq
+          by_cases intervalEq : currentInterval = intervalTarget
+          · subst intervalEq
+            exact (progressStep.2 rfl).elim
+          · exact intervalInduction intervalTarget
+              ⟨intervalStep, intervalEq⟩
+        · exact pathInduction pathTarget
+            ⟨pathStep, pathEq⟩
+            pathTargetIsNeutral
+            intervalTargetIsSN
+      · exact (RawTerm.IsNeutral.not_pathLam
+          (RawTerm.IsNeutral.par_preserves pathIsNeutral pathStep)
+          (bodyRaw := bodyTarget) rfl).elim
+
 /-- **K12.20.AX.2 neutral equivApp SN preservation**.  Sister to
 `pathApp_var`; var sits in the equiv-term slot, argument is the SN
 witness.  `equivApp_inv` is cong-only (no β rule at raw layer yet),
@@ -5409,6 +5460,53 @@ theorem Reducible.path_of_varShape
          RawTerm.isStronglyNormalizing.step_preserves
            (RawTerm.pathApp_var_isStronglyNormalizing position intervalIsSN)
            progressStep)⟩
+
+/-- **K12.20.U2 path CR3 arm**: a neutral path is reducible at
+`Ty.path carrierType leftEndpoint rightEndpoint` when every raw
+progress reduct is SN and the carrier CR3 hook is available.
+
+The path candidate's output closure is full Reducible at the carrier
+type.  The interval argument remains SN-only, matching the current
+K12.12 closure where `Ty.interval` is a closed leaf rather than a
+structural sub-Ty of the path type. -/
+theorem Reducible.path_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (carrierCR3 :
+      ∀ {carrierRaw : RawTerm scope}
+        (carrierTerm : Term context carrierType carrierRaw),
+        RawTerm.IsNeutral carrierRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress carrierRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible carrierType carrierTerm) :
+    Reducible
+      (Ty.path carrierType leftEndpoint rightEndpoint) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro modeIsUnivalent intervalRaw intervalTerm intervalIsSN
+  have pathAppIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pathApp sourceRaw intervalRaw) :=
+    RawTerm.pathApp_neutral_isStronglyNormalizing
+      sourceIsNeutral sourceIsSN intervalIsSN
+  exact carrierCR3
+    (Term.pathApp modeIsUnivalent sourceTerm intervalTerm)
+    (RawTerm.IsNeutral.pathApp sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves pathAppIsSN progressStep)
 
 /-- **K12.20.U2 glue varShape arm**: variables are reducible at Glue
 type once base-type CR3 is available. -/
