@@ -3332,6 +3332,41 @@ theorem RawTerm.recordProj_neutral_isStronglyNormalizing {scope : Nat}
         (RawTerm.IsNeutral.par_preserves recordIsNeutral recordStep)
         (fieldRaw := fieldTarget) rfl).elim
 
+/-- Codata observation with a neutral codata value is strongly
+normalizing when the codata value is strongly normalizing.
+
+The codata beta arms are impossible because every parallel reduct of
+the neutral codata value stays neutral, and neutral terms are never
+`codataUnfold`-shaped.  The congruence arm recurses on codata-value
+progress. -/
+theorem RawTerm.codataDest_neutral_isStronglyNormalizing {scope : Nat}
+    {codataRaw : RawTerm scope}
+    (codataIsNeutral : RawTerm.IsNeutral codataRaw)
+    (codataIsSN : RawTerm.isStronglyNormalizing codataRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.codataDest codataRaw) := by
+  induction codataIsSN with
+  | intro currentCodata _ codataInduction =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.codataDest currentCodata) ?_
+    intro target progressStep
+    rcases RawStep.par.codataDest_inv progressStep.1 with
+      ⟨codataTarget, targetEq, codataStep⟩
+      | ⟨stateTarget, transitionTarget, _targetEq, codataStep⟩
+    · have codataTargetIsNeutral :
+          RawTerm.IsNeutral codataTarget :=
+        RawTerm.IsNeutral.par_preserves codataIsNeutral codataStep
+      by_cases codataEq : currentCodata = codataTarget
+      · subst codataEq
+        subst targetEq
+        exact (progressStep.2 rfl).elim
+      · subst targetEq
+        exact codataInduction codataTarget
+          ⟨codataStep, codataEq⟩ codataTargetIsNeutral
+    · exact (RawTerm.IsNeutral.not_codataUnfold
+        (RawTerm.IsNeutral.par_preserves codataIsNeutral codataStep)
+        (initialRaw := stateTarget) (transitionRaw := transitionTarget)
+        rfl).elim
+
 /-- Equivalence application with a neutral equivalence head is strongly
 normalizing when both the equivalence head and argument are strongly
 normalizing.
@@ -5956,6 +5991,51 @@ theorem Reducible.record_of_varShape
        RawTerm.isStronglyNormalizing.step_preserves
          (RawTerm.recordProj_var_isStronglyNormalizing position)
          progressStep)⟩
+
+/-- **K12.20.U2 codata CR3 arm**: a neutral codata value is reducible
+at `Ty.codata stateType outputType` when every raw progress reduct is
+SN and the output-type CR3 hook is available.
+
+The codata candidate demands full Reducible for the observed output.
+The raw neutral observation helper supplies SN for `codataDest`, and
+the recursive output-type CR3 hook upgrades that neutral observation to
+the required Reducible witness. -/
+theorem Reducible.codata_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.codata stateType outputType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (outputTypeCR3 :
+      ∀ {outputRaw : RawTerm scope}
+        (outputTerm : Term context outputType outputRaw),
+        RawTerm.IsNeutral outputRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress outputRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible outputType outputTerm) :
+    Reducible (Ty.codata stateType outputType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  have codataDestIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.codataDest sourceRaw) :=
+    RawTerm.codataDest_neutral_isStronglyNormalizing
+      sourceIsNeutral sourceIsSN
+  exact outputTypeCR3
+    (Term.codataDest sourceTerm)
+    (RawTerm.IsNeutral.codataDest sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves
+        codataDestIsSN progressStep)
 
 /-- **K12.20.U2 codata varShape arm**: variables are reducible at
 codata type once output-type CR3 is available. -/
