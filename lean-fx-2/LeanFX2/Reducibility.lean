@@ -1032,6 +1032,24 @@ theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
   cases sourceIsSN with
   | intro _ closure => exact closure target progressStep
 
+/-- **K12.20.U2 raw CR3 skeleton**: a raw term is strongly
+normalizing when every non-trivial parallel-progress reduct is
+strongly normalizing.
+
+This is the constructor direction of the SN definition, named because
+the typed CR3 proof repeatedly reduces its SN-direct arms to exactly
+this shape.  Neutrality is intentionally not required here: neutrality
+is what makes the premise provable for variables and stuck eliminators;
+the raw SN constructor itself only needs the reduct closure. -/
+theorem RawTerm.isStronglyNormalizing.of_progress_closure {scope : Nat}
+    {source : RawTerm scope}
+    (closure :
+      ∀ target : RawTerm scope,
+        RawStep.parProgress source target →
+        RawTerm.isStronglyNormalizing target) :
+    RawTerm.isStronglyNormalizing source :=
+  RawTerm.isStronglyNormalizing.intro source closure
+
 /-! ## K12.20.C neutral & natSucc SN preservation
 
 Two more raw-level SN lemmas continuing the K12.19.B/K12.20.A
