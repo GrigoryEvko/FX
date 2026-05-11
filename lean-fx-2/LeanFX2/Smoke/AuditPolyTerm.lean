@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.Polygraph.PolyTerm
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
+import LeanFX2.Foundation.Polygraph.PolyTermAction
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
 
@@ -233,3 +234,9 @@ end LeanFX2.Smoke
 
 -- K11.10-B (#1752) — typed forward bijection Term → PolyTerm.
 #print axioms LeanFX2.Term.toPoly
+
+-- K11.13 Phase A (#1745) — raw-layer RawPolyTerm.rename + commute.
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.rename
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken
+#print axioms LeanFX2.RawTerm.rename_toRawPoly_commute
+#print axioms LeanFX2.RawTerm.weaken_toRawPoly_commute

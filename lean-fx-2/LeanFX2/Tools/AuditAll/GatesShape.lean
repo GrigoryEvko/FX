@@ -118,6 +118,9 @@ namespace LeanFX2.Tools
 -- dependent-pair existential dependents through cd cascade, idToEquiv_inv
 -- (5 disjuncts now vs 3 prior), and inj_inv arms.  Tighten once full
 -- audit converges; for now allow growth.
-#assert_dependent_pair_dependent_budget LeanFX2 1643
+-- K11.13 Phase A: RawPolyTerm.rename adds 73-case structural recursion
+-- whose generated equation lemmas thread Σ-existentials, bumping the
+-- dependent-pair count by 75 (73 cases + the commute lemma + corollary).
+#assert_dependent_pair_dependent_budget LeanFX2 1718
 
 end LeanFX2.Tools

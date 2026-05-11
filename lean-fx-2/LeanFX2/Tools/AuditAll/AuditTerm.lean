@@ -171,4 +171,11 @@ namespace LeanFX2.Tools
 -- 11 K11.12-driven `▸` casts on raw-in-Ty constructors).
 #assert_no_axioms LeanFX2.Term.toPoly
 
+-- K11.13 Phase A (#1745): raw-layer `RawPolyTerm.rename` + commute
+-- with `RawTerm.toRawPoly`.
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.rename
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken
+#assert_no_axioms LeanFX2.RawTerm.rename_toRawPoly_commute
+#assert_no_axioms LeanFX2.RawTerm.weaken_toRawPoly_commute
+
 end LeanFX2.Tools
