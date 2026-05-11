@@ -3231,6 +3231,39 @@ theorem RawTerm.pathApp_neutral_isStronglyNormalizing {scope : Nat}
           (RawTerm.IsNeutral.par_preserves pathIsNeutral pathStep)
           (bodyRaw := bodyTarget) rfl).elim
 
+/-- Glue elimination with a neutral glued value is strongly normalizing
+when the glued value is strongly normalizing.
+
+The Glue beta arms are impossible because every parallel reduct of the
+neutral glued value stays neutral, and neutral terms are never
+`glueIntro`-shaped.  The congruence arm recurses on glued-value
+progress. -/
+theorem RawTerm.glueElim_neutral_isStronglyNormalizing {scope : Nat}
+    {gluedRaw : RawTerm scope}
+    (gluedIsNeutral : RawTerm.IsNeutral gluedRaw)
+    (gluedIsSN : RawTerm.isStronglyNormalizing gluedRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.glueElim gluedRaw) := by
+  induction gluedIsSN with
+  | intro currentGlued _ gluedInduction =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.glueElim currentGlued) ?_
+    intro target progressStep
+    rcases RawStep.par.glueElim_inv progressStep.1 with
+      ⟨gluedTarget, targetEq, gluedStep⟩
+      | ⟨baseTarget, partialTarget, _targetEq, gluedStep⟩
+    · have gluedTargetIsNeutral : RawTerm.IsNeutral gluedTarget :=
+        RawTerm.IsNeutral.par_preserves gluedIsNeutral gluedStep
+      by_cases gluedEq : currentGlued = gluedTarget
+      · subst gluedEq
+        subst targetEq
+        exact (progressStep.2 rfl).elim
+      · subst targetEq
+        exact gluedInduction gluedTarget
+          ⟨gluedStep, gluedEq⟩ gluedTargetIsNeutral
+    · exact (RawTerm.IsNeutral.not_glueIntro
+        (RawTerm.IsNeutral.par_preserves gluedIsNeutral gluedStep)
+        (baseRaw := baseTarget) (partialRaw := partialTarget) rfl).elim
+
 /-- **K12.20.AX.2 neutral equivApp SN preservation**.  Sister to
 `pathApp_var`; var sits in the equiv-term slot, argument is the SN
 witness.  `equivApp_inv` is cong-only (no β rule at raw layer yet),
@@ -5507,6 +5540,53 @@ theorem Reducible.path_of_neutral_progress_closure
     (RawTerm.IsNeutral.pathApp sourceIsNeutral)
     (fun _targetRaw progressStep =>
       RawTerm.isStronglyNormalizing.step_preserves pathAppIsSN progressStep)
+
+/-- **K12.20.U2 glue CR3 arm**: a neutral glued value is reducible at
+`Ty.glue baseType boundaryWitness` when every raw progress reduct is
+SN and the base-type CR3 hook is available.
+
+The Glue candidate demands full Reducible at the base type for
+`glueElim`.  Since `baseType` is a strict sub-Ty of the Glue type,
+the proof delegates that projection result to the recursive CR3 hook;
+`RawTerm.glueElim_neutral_isStronglyNormalizing` supplies the raw
+progress-closure SN premise for the neutral projection. -/
+theorem Reducible.glue_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.glue baseType boundaryWitness) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (baseTypeCR3 :
+      ∀ {baseRaw : RawTerm scope}
+        (baseTerm : Term context baseType baseRaw),
+        RawTerm.IsNeutral baseRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress baseRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible baseType baseTerm) :
+    Reducible (Ty.glue baseType boundaryWitness) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro modeIsUnivalent
+  have glueElimIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.glueElim sourceRaw) :=
+    RawTerm.glueElim_neutral_isStronglyNormalizing
+      sourceIsNeutral sourceIsSN
+  exact baseTypeCR3
+    (Term.glueElim modeIsUnivalent sourceTerm)
+    (RawTerm.IsNeutral.glueElim sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves glueElimIsSN progressStep)
 
 /-- **K12.20.U2 glue varShape arm**: variables are reducible at Glue
 type once base-type CR3 is available. -/
