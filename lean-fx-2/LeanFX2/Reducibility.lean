@@ -1260,6 +1260,97 @@ theorem RawTerm.interval1_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm).elim)
 
+/-- **K12.20.AF.1 intervalOpp SN preservation** — cubical interval
+negation.  Unary cong over the interval term; intervalOpp_inv
+discharges each par step. -/
+theorem RawTerm.intervalOpp_isStronglyNormalizing {scope : Nat}
+    {intervalTerm : RawTerm scope}
+    (intervalIsSN : RawTerm.isStronglyNormalizing intervalTerm) :
+    RawTerm.isStronglyNormalizing (RawTerm.intervalOpp intervalTerm) := by
+  induction intervalIsSN with
+  | intro currentInterval _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.intervalOpp currentInterval) ?_
+    intro target progressStep
+    obtain ⟨intervalTarget, targetEq, intervalStep⟩ :=
+      RawStep.par.intervalOpp_inv progressStep.1
+    subst targetEq
+    have intervalDistinct :
+        currentInterval ≠ intervalTarget := fun intervalEq =>
+      progressStep.2 (congrArg RawTerm.intervalOpp intervalEq)
+    exact inductiveHypothesis intervalTarget
+      ⟨intervalStep, intervalDistinct⟩
+
+/-- **K12.20.AF.2 intervalMeet SN preservation** — cubical interval
+meet (∧).  Binary cong; uses the universal-in-conclusion trick
+to keep the second-argument IH universal during induction on the
+first SN witness. -/
+theorem RawTerm.intervalMeet_isStronglyNormalizing {scope : Nat}
+    {leftInterval : RawTerm scope}
+    (leftIsSN : RawTerm.isStronglyNormalizing leftInterval) :
+    ∀ {rightInterval : RawTerm scope},
+      RawTerm.isStronglyNormalizing rightInterval →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.intervalMeet leftInterval rightInterval) := by
+  induction leftIsSN with
+  | intro currentLeft _ leftIH =>
+    intro rightInterval rightIsSN
+    induction rightIsSN with
+    | intro currentRight rightClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.intervalMeet currentLeft currentRight) ?_
+      intro target progressStep
+      obtain ⟨leftTarget, rightTarget, targetEq, leftStep, rightStep⟩ :=
+        RawStep.par.intervalMeet_inv progressStep.1
+      subst targetEq
+      by_cases leftEq : currentLeft = leftTarget
+      · subst leftEq
+        have rightDistinct : currentRight ≠ rightTarget := fun rightEq =>
+          progressStep.2 (congrArg (RawTerm.intervalMeet currentLeft) rightEq)
+        exact innerIH rightTarget ⟨rightStep, rightDistinct⟩
+      · have leftProgress : RawStep.parProgress currentLeft leftTarget :=
+          ⟨leftStep, leftEq⟩
+        by_cases rightEq : currentRight = rightTarget
+        · subst rightEq
+          exact leftIH leftTarget leftProgress
+            (RawTerm.isStronglyNormalizing.intro currentRight rightClosure)
+        · exact leftIH leftTarget leftProgress
+            (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+
+/-- **K12.20.AF.3 intervalJoin SN preservation** — cubical interval
+join (∨).  Sister to intervalMeet; same binary cong shape. -/
+theorem RawTerm.intervalJoin_isStronglyNormalizing {scope : Nat}
+    {leftInterval : RawTerm scope}
+    (leftIsSN : RawTerm.isStronglyNormalizing leftInterval) :
+    ∀ {rightInterval : RawTerm scope},
+      RawTerm.isStronglyNormalizing rightInterval →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.intervalJoin leftInterval rightInterval) := by
+  induction leftIsSN with
+  | intro currentLeft _ leftIH =>
+    intro rightInterval rightIsSN
+    induction rightIsSN with
+    | intro currentRight rightClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.intervalJoin currentLeft currentRight) ?_
+      intro target progressStep
+      obtain ⟨leftTarget, rightTarget, targetEq, leftStep, rightStep⟩ :=
+        RawStep.par.intervalJoin_inv progressStep.1
+      subst targetEq
+      by_cases leftEq : currentLeft = leftTarget
+      · subst leftEq
+        have rightDistinct : currentRight ≠ rightTarget := fun rightEq =>
+          progressStep.2 (congrArg (RawTerm.intervalJoin currentLeft) rightEq)
+        exact innerIH rightTarget ⟨rightStep, rightDistinct⟩
+      · have leftProgress : RawStep.parProgress currentLeft leftTarget :=
+          ⟨leftStep, leftEq⟩
+        by_cases rightEq : currentRight = rightTarget
+        · subst rightEq
+          exact leftIH leftTarget leftProgress
+            (RawTerm.isStronglyNormalizing.intro currentRight rightClosure)
+        · exact leftIH leftTarget leftProgress
+            (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
