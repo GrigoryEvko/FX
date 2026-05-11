@@ -2,6 +2,7 @@ import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
 import LeanFX2
+import LeanFX2.Term.PolyToTerm
 import LeanFX2.FX1.LeanKernel.Name
 import LeanFX2.FX1.LeanKernel.Level
 import LeanFX2.FX1.LeanKernel.Expr
@@ -159,5 +160,11 @@ namespace LeanFX2.Tools
 -- M05.D partial headline progress (Phase 7.D, #1645).
 #assert_no_axioms LeanFX2.Term.value_or_cong_only_progress
 #assert_no_axioms LeanFX2.Term.app_progress_or_step
+
+-- K11.10-A (#1752): RawTerm.toRawPoly raw-level forward map.
+#assert_no_axioms LeanFX2.RawTerm.toRawPoly
+
+-- K11.11 (#1748): PolyTerm.toTerm typed backward bijection (77 ctors).
+#assert_no_axioms LeanFX2.PolyTerm.toTerm
 
 end LeanFX2.Tools

@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.Polygraph.PolyTerm
+import LeanFX2.Term.PolyToTerm
 
 namespace LeanFX2.Smoke
 
@@ -118,6 +119,26 @@ theorem rawTermToPoly_roundtrip_natSucc_smoke :
     RawTerm.natSucc RawTerm.natZero := by
   rfl
 
+/-! K11.11 (#1748) — typed backward bijection `PolyTerm.toTerm`.
+Smoke witnesses check that selected typed PolyTerm constructors
+convert to their `Term` mirror with identical raw index. -/
+
+/-- Smoke witness — `PolyTerm.toTerm` on a unit value at empty scope. -/
+theorem polyToTerm_unit_smoke :
+    PolyTerm.toTerm polyUnit_smoke = Term.unit := by
+  rfl
+
+/-- Smoke witness — `PolyTerm.toTerm` on a depth-2 list constructor. -/
+theorem polyToTerm_listCons_smoke :
+    PolyTerm.toTerm polyListCons_smoke =
+    Term.listCons (Term.natZero) Term.listNil := by
+  rfl
+
+/-- Smoke witness — `PolyTerm.toTerm` on a successor (unary recursive). -/
+theorem polyToTerm_natSucc_smoke :
+    PolyTerm.toTerm polyNatSucc_smoke = Term.natSucc Term.natZero := by
+  rfl
+
 /-! Phase B — coverage witnesses for the 50 newly added typed
 constructors.  Each value below has a `#print axioms` line at the
 bottom of the file. -/
@@ -167,6 +188,12 @@ def polyEquivReflId_smoke :
         (RawPolyTerm.lam (RawPolyTerm.var ⟨0, Nat.zero_lt_succ 0⟩))) :=
   PolyTerm.equivReflId Ty.unit
 
+/-- Smoke witness — `PolyTerm.toTerm` on `equivReflId` (Phase B ctor
+with no recursive subterm, exercises the schematic-Ty branch). -/
+theorem polyToTerm_equivReflId_smoke :
+    PolyTerm.toTerm polyEquivReflId_smoke = Term.equivReflId Ty.unit := by
+  rfl
+
 end LeanFX2.Smoke
 
 #print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm
@@ -192,3 +219,8 @@ end LeanFX2.Smoke
 #print axioms LeanFX2.Smoke.rawTermToPoly_natSucc_smoke
 #print axioms LeanFX2.Smoke.rawTermToPoly_listCons_smoke
 #print axioms LeanFX2.Smoke.rawTermToPoly_roundtrip_natSucc_smoke
+#print axioms LeanFX2.PolyTerm.toTerm
+#print axioms LeanFX2.Smoke.polyToTerm_unit_smoke
+#print axioms LeanFX2.Smoke.polyToTerm_listCons_smoke
+#print axioms LeanFX2.Smoke.polyToTerm_natSucc_smoke
+#print axioms LeanFX2.Smoke.polyToTerm_equivReflId_smoke

@@ -35,6 +35,7 @@ import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Bridge
 import LeanFX2.Term.ProofIrrel
 import LeanFX2.Term.Inversion
+import LeanFX2.Term.PolyToTerm
 
 -- Layer 2 - Reduction
 import LeanFX2.Reduction.Step
