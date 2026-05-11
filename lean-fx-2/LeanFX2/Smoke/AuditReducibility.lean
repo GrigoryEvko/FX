@@ -616,6 +616,9 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.pathCompose_isStronglyNormalizing
 #print axioms RawTerm.oeqTrans_isStronglyNormalizing
 #print axioms RawTerm.equivCompose_isStronglyNormalizing
+#print axioms RawTerm.sessionRecv_isStronglyNormalizing
+#print axioms RawTerm.sessionSend_isStronglyNormalizing
+#print axioms RawTerm.effectPerform_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
