@@ -217,4 +217,17 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.PolyTerm.subst
 #assert_no_axioms LeanFX2.PolyTerm.subst0
 
+-- K11.13 Phase C-1S (#1745): reverse-direction subst commute —
+-- `RawPolyTerm.toRawTerm` commutes with `RawPolyTerm.subst`.  Mirror
+-- of Phase C-1 for subst.  Bridge `RawPolyTermSubst.toRawTermSubst`
+-- projects each substituent through `toRawTerm`; `lift_*_commute` uses
+-- Phase C-1's rename commute for the succ-position weakening case;
+-- 73-case structural induction headline uses the lift commute for
+-- binder cases (lam / pathLam / piTyCode / sigmaTyCode); `subst0`
+-- corollary closes the β-reduction singleton form.
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.toRawTermSubst
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.lift_toRawTermSubst_commute
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_subst_commute
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst0_toRawTerm_commute
+
 end LeanFX2.Tools

@@ -80,7 +80,7 @@ namespace LeanFX2.Tools
 -- K11.13 Phase C-1: reverse-direction rename commute
 -- (toRawTerm_rename_commute + weaken corollary) threads Eq.rec via
 -- congrArg over IHs. +2.
-#assert_cast_operator_dependent_budget LeanFX2 1692
+#assert_cast_operator_dependent_budget LeanFX2 1696
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

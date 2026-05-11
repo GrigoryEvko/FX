@@ -264,3 +264,9 @@ end LeanFX2.Smoke
 -- K11.13 Phase D (#1745) — typed PolyTerm.subst via composition.
 #print axioms LeanFX2.PolyTerm.subst
 #print axioms LeanFX2.PolyTerm.subst0
+
+-- K11.13 Phase C-1S (#1745) — reverse-direction subst commute.
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.toRawTermSubst
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTermSubst.lift_toRawTermSubst_commute
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_subst_commute
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.subst0_toRawTerm_commute
