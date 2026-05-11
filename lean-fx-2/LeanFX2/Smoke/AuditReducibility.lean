@@ -628,6 +628,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_sessionRecv
 #print axioms Reducible.fundamental_sessionSend
 #print axioms Reducible.fundamental_effectPerform
+#print axioms RawStep.par.universeCode_inv
+#print axioms RawTerm.universeCode_isStronglyNormalizing
+#print axioms Reducible.fundamental_universeCode
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

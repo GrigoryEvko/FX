@@ -1378,4 +1378,18 @@ theorem RawStep.par.equivApply_inv {scope : Nat}
       exact Or.inr (Or.inr
         ⟨_, _, rfl, equivStep, sourceStep⟩)
 
+/-- **K12.20.AR.1 universeCode parallel-step inversion** — universe
+code intro at outer level.  `RawTerm.universeCode innerLevel` has
+no β/ι rules and is not the source of any non-refl par ctor
+(per `RawParCompatible.lean:259` it dispatches to `refl _` under
+rename/subst), so the only step from it is reflexivity. -/
+theorem RawStep.par.universeCode_inv {scope : Nat}
+    {innerLevel : Nat} {target : RawTerm scope}
+    (parallelStep :
+      RawStep.par (RawTerm.universeCode innerLevel : RawTerm scope)
+        target) :
+    target = RawTerm.universeCode innerLevel := by
+  cases parallelStep
+  case refl _ => rfl
+
 end LeanFX2

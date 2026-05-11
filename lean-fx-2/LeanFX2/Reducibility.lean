@@ -1260,6 +1260,23 @@ theorem RawTerm.interval1_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm).elim)
 
+/-- **K12.20.AR.2 universeCode SN preservation** — universe code
+intro at outer level.  `RawTerm.universeCode innerLevel` has no
+β/ι rules; only `RawStep.par.refl` applies (per
+`RawStep.par.universeCode_inv` in
+`Reduction/RawParInversion.lean`), so `parProgress`'s
+source-≠-target requirement contradicts the inversion's
+.symm. -/
+theorem RawTerm.universeCode_isStronglyNormalizing {scope : Nat}
+    (innerLevel : Nat) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.universeCode innerLevel : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro
+    (RawTerm.universeCode innerLevel : RawTerm scope)
+    (fun _ progressStep =>
+      (progressStep.2
+        (RawStep.par.universeCode_inv progressStep.1).symm).elim)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -3495,5 +3512,26 @@ theorem Reducible.fundamental_effectPerform
           canPerformOperation operationTag arguments)) :=
   RawTerm.effectPerform_isStronglyNormalizing operationIH
     (Reducible.isStronglyNormalizing argumentsIH)
+
+/-- **K12.20.AR.3 universeCode fundamental case** — universe-code
+nullary intro at outer level.  Output `Ty.universe outerLevel
+levelLe` is SN-direct (Reducibility.lean:330); `Term.subst` on
+universeCode is identity (`LeanFX2/Term/Subst.lean:379-380`);
+`Reducible Ty.universe _` unfolds to `Term.isStronglyNormalizing
+_`.  Direct lift via the K12.20.AR.2 SN helper. -/
+theorem Reducible.fundamental_universeCode
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.universeCode (context := sourceCtx)
+                  innerLevel outerLevel cumulOk levelLe)) :=
+  RawTerm.universeCode_isStronglyNormalizing innerLevel.toNat
 
 end LeanFX2
