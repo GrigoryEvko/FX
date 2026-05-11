@@ -108,4 +108,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm
 #assert_no_axioms LeanFX2.Foundation.Polygraph.instDecidableEqRawPolyTerm
 
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm
+#assert_no_axioms LeanFX2.PolyTerm
+
 end LeanFX2.Tools
