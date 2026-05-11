@@ -26,6 +26,8 @@ import LeanFX2.Foundation.Polygraph.PolyTerm
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.Foundation.Polygraph.PolyTermAction
 import LeanFX2.Foundation.Polygraph.StepLabel
+import LeanFX2.Foundation.Polygraph.Dim1Extraction
+import LeanFX2.Foundation.Polygraph.Dim1Equivalence
 
 -- Layer 1 - Term
 import LeanFX2.Term
