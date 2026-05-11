@@ -77,11 +77,22 @@ K12.9 ships (HoTT identity weak idJ closure):
   arbitrary (NOT structural sub-Ty), so conclusion demotes to
   SN of idJ result.  Mirrors K12.6 piTy weak closure pattern.
 
-Future K12.10-K12.16 tighten the remaining ~11 SN-fallback arms
-(path / glue / oeq / idStrict / equiv / refine / record /
-codata / session / effect / modal) to their type-former-
-specific closures.  K12.18-K12.26 ship the fundamental lemma;
-K12.27 closes M04 / `strong_normalization`. -/
+K12.10 ships (HoTT observational + strict identity weak J closures):
+* `Reducible Ty.oeq carrier left right witness = SN(witness) ∧
+  ∀ motiveType baseCase, SN(baseCase) → SN(Term.oeqJ baseCase
+  witness)`.  Same shape as K12.9 RC.id.
+* `Reducible Ty.idStrict carrier left right witness = SN(witness)
+  ∧ ∀ (modeIsStrict : mode = Mode.strict) motiveType baseCase,
+  SN(baseCase) → SN(Term.idStrictRec modeIsStrict baseCase
+  witness)`.  Universal-quantifies the mode-strict witness; when
+  the ambient mode ≠ strict, the equation is uninhabited and the
+  inner ∀ is vacuous (closure reduces to SN(witness)).
+
+Future K12.11-K12.16 tighten the remaining ~9 SN-fallback arms
+(path / glue / equiv / refine / record / codata / session /
+effect / modal) to their type-former-specific closures.
+K12.18-K12.26 ship the fundamental lemma; K12.27 closes M04 /
+`strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing

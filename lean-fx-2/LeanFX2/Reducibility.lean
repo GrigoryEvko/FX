@@ -108,11 +108,18 @@ This file ships:
   signature (only in the id-type's own structure).  Mirrors
   K12.6 piTy weak-closure pattern.  Full Reducible-motive
   closure reserved for the Kripke logical relation refactor.
-* **All remaining constructors** (~11 type formers: path,
-  glue, oeq, idStrict, equiv, refine, record, codata, session,
-  effect, modal): SN-fallback (admissible but weak — every
-  reducible term is at least SN).  K12.10-K12.16 tighten each
-  to its type-former-specific closure.
+* **oeq carrier left right** / **idStrict carrier left right**
+  (K12.10, weak J closures): same shape as K12.9 RC.id — SN of
+  witness + (SN baseCase → SN(Term.oeqJ baseCase witness)) for
+  oeq, and analogously with `Term.idStrictRec` for idStrict.
+  The idStrict arm additionally universally quantifies a
+  `mode = Mode.strict` witness; when the ambient mode ≠ strict,
+  this is uninhabited and the inner ∀ is vacuous.
+* **All remaining constructors** (~9 type formers: path,
+  glue, equiv, refine, record, codata, session, effect, modal):
+  SN-fallback (admissible but weak — every reducible term is at
+  least SN).  K12.11-K12.16 tighten each to its type-former-
+  specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -249,7 +256,7 @@ def Reducible {mode : Mode} {level scope : Nat}
       Term.isStronglyNormalizing pairTerm ∧
       Reducible firstType (Term.fst pairTerm) ∧
       Term.isStronglyNormalizing (Term.snd pairTerm)
-  -- Remaining type formers (K12.10-K12.16 TODO): SN-fallback
+  -- Remaining type formers (K12.11-K12.16 TODO): SN-fallback
   -- HoTT propositional identity type (K12.9, weak idJ closure).
   -- The id-eliminator `Term.idJ` consumes a witness at
   -- `Ty.id carrier leftEndpoint rightEndpoint` and a baseCase at an
@@ -342,8 +349,36 @@ def Reducible {mode : Mode} {level scope : Nat}
           (Term.eitherMatch eitherTerm leftBranch rightBranch)
   | Ty.path _ _ _, _, term => Term.isStronglyNormalizing term
   | Ty.glue _ _, _, term => Term.isStronglyNormalizing term
-  | Ty.oeq _ _ _, _, term => Term.isStronglyNormalizing term
-  | Ty.idStrict _ _ _, _, term => Term.isStronglyNormalizing term
+  -- HoTT observational equality (K12.10, weak oeqJ closure).
+  -- Ty.oeq mirrors Ty.id's shape exactly: carrier (strict sub-Ty) +
+  -- two RawTerm endpoints.  The oeq-eliminator `Term.oeqJ` has the
+  -- same shape as `Term.idJ` — consumes a witness and a baseCase at
+  -- an arbitrary motiveType, produces motiveType.  Same K12.6 / K12.9
+  -- weak closure pattern: SN(witness) + (SN baseCase → SN(oeqJ
+  -- baseCase witness)).
+  | Ty.oeq _ _ _, _, witness =>
+      Term.isStronglyNormalizing witness ∧
+      ∀ {motiveType : Ty level scope}
+        {baseRaw : RawTerm scope}
+        (baseCase : Term context motiveType baseRaw),
+        Term.isStronglyNormalizing baseCase →
+        Term.isStronglyNormalizing (Term.oeqJ baseCase witness)
+  -- Strict identity type (K12.10, weak idStrictRec closure).
+  -- Ty.idStrict mirrors Ty.id's shape but the eliminator
+  -- `Term.idStrictRec` requires a `mode = Mode.strict` witness.  The
+  -- closure quantifies that witness universally — when the ambient
+  -- mode ≠ Mode.strict, the equation is uninhabited and the inner
+  -- ∀ is vacuous (closure reduces to SN(witness) alone).  Same
+  -- K12.6 / K12.9 weak-J pattern in the strict-mode branch.
+  | Ty.idStrict _ _ _, _, witness =>
+      Term.isStronglyNormalizing witness ∧
+      ∀ (modeIsStrict : mode = Mode.strict)
+        {motiveType : Ty level scope}
+        {baseRaw : RawTerm scope}
+        (baseCase : Term context motiveType baseRaw),
+        Term.isStronglyNormalizing baseCase →
+        Term.isStronglyNormalizing
+          (Term.idStrictRec modeIsStrict baseCase witness)
   | Ty.equiv _ _, _, term => Term.isStronglyNormalizing term
   | Ty.refine _ _, _, term => Term.isStronglyNormalizing term
   | Ty.record _, _, term => Term.isStronglyNormalizing term
