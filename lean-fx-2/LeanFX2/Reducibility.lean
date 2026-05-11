@@ -1100,6 +1100,42 @@ theorem RawTerm.pair_isStronglyNormalizing {scope : Nat}
         · exact firstIH firstTarget firstProgress
             (secondClosure secondTarget ⟨secondStep, secondEq⟩)
 
+/-- **K12.20.AA listCons SN preservation** — second binary SN
+helper.  Same nested-induction + decidable-injectivity-split template
+as `pair_isStronglyNormalizing`, applied to the cons-cell at the
+head + tail positions of `Ty.listType`. -/
+theorem RawTerm.listCons_isStronglyNormalizing {scope : Nat}
+    {headTerm : RawTerm scope}
+    (headIsSN : RawTerm.isStronglyNormalizing headTerm) :
+    ∀ {tailTerm : RawTerm scope},
+      RawTerm.isStronglyNormalizing tailTerm →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listCons headTerm tailTerm) := by
+  induction headIsSN with
+  | intro currentHead _ headIH =>
+    intro tailTerm tailIsSN
+    induction tailIsSN with
+    | intro currentTail tailClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.listCons currentHead currentTail) ?_
+      intro target progressStep
+      obtain ⟨headTarget, tailTarget, targetEq, headStep, tailStep⟩ :=
+        RawStep.par.listCons_inv progressStep.1
+      subst targetEq
+      by_cases headEq : currentHead = headTarget
+      · subst headEq
+        have tailDistinct : currentTail ≠ tailTarget := fun tailEq =>
+          progressStep.2 (congrArg (RawTerm.listCons currentHead) tailEq)
+        exact innerIH tailTarget ⟨tailStep, tailDistinct⟩
+      · have headProgress : RawStep.parProgress currentHead headTarget :=
+          ⟨headStep, headEq⟩
+        by_cases tailEq : currentTail = tailTarget
+        · subst tailEq
+          exact headIH headTarget headProgress
+            (RawTerm.isStronglyNormalizing.intro currentTail tailClosure)
+        · exact headIH headTarget headProgress
+            (tailClosure tailTarget ⟨tailStep, tailEq⟩)
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
