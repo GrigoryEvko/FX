@@ -627,6 +627,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_intervalJoin
 #print axioms Reducible.fundamental_sessionRecv
 #print axioms Reducible.fundamental_sessionSend
+#print axioms Reducible.fundamental_effectPerform
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

@@ -3453,4 +3453,47 @@ theorem Reducible.fundamental_sessionSend
   RawTerm.sessionSend_isStronglyNormalizing channelIH
     (Reducible.isStronglyNormalizing payloadIH)
 
+/-- **K12.20.AQ effectPerform fundamental case** — algebraic effect
+operation invocation bundles an operation tag with arguments.
+Both subterms have arbitrary-Ty payloads — operationTag at
+`Ty.effect operationSignature.argumentCarrier effectTag` (SN-direct
+per Reducibility.lean:668 so operationIH IS SN); arguments at
+the arbitrary `operationSignature.argumentCarrier` (needs SN
+extraction via `Reducible.isStronglyNormalizing` per K12.20.AP.2).
+Result type `Ty.effect resultCarrier effectTag` after subst is
+also SN-direct.  The K12.20.AL.3 binary SN helper closes the
+proof in one line. -/
+theorem Reducible.fundamental_effectPerform
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (operationIH :
+      Reducible
+        ((Ty.effect operationSignature.argumentCarrier effectTag).subst sigma)
+        (Term.subst termSubst operationTag))
+    (argumentsIH :
+      Reducible (operationSignature.argumentCarrier.subst sigma)
+                (Term.subst termSubst arguments)) :
+    Reducible
+      ((Ty.effect operationSignature.resultCarrier effectTag).subst sigma)
+      (Term.subst termSubst
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments)) :=
+  RawTerm.effectPerform_isStronglyNormalizing operationIH
+    (Reducible.isStronglyNormalizing argumentsIH)
+
 end LeanFX2
