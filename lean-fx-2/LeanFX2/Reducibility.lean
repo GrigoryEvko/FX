@@ -5158,4 +5158,70 @@ theorem Reducible.fundamental_snd_at_sigmaTy_sn
       (Term.subst termSubst (Term.snd pairTerm)) :=
   pairIH.2.2
 
+/-! ## K12.21.D fundamental_appPi at `Ty.piTy` — Π weak-SN
+elimination
+
+Fourth entry of the K12.21 β-redex fundamental-case batch (#1778).
+`Term.appPi : Term ctx (Ty.piTy A B) fnRaw → Term ctx A argRaw →
+Term ctx (B.subst0 A argRaw) (RawTerm.app fnRaw argRaw)` is the
+dependent function-application elimination form.
+
+Asymmetry with K12.21.A: the target type `B.subst0 A argRaw` is
+NOT a strict sub-Ty of `Ty.piTy A B` — same structural-recursion
+wall as K12.21.C's `B.subst0` codomain on Σ.snd.  Per K12.6's
+weak closure design (`Reducibility.lean:353-358`), the dep-Π
+eliminator closure ships only as SN of the application
+(not full Reducible):
+
+  Reducible (Ty.piTy A' B') f = SN(f)
+                              ∧ ∀ arg, Reducible A' arg
+                                       → SN(Term.appPi f arg)
+
+Cast-invariance: `Term.subst termSubst (Term.appPi fn arg)`
+applies a `Ty.subst0_subst_commute.symm ▸` cast (`Term/Subst.lean:
+205-208`), but `Term.isStronglyNormalizing` reads only the raw
+index (`Reducibility.lean:303-307`) — the cast preserves the
+underlying `RawTerm.app (fnRaw.subst sigma.forRaw) (argRaw.subst
+sigma.forRaw)` projection.
+
+Body: `functionIH.2 (Term.subst termSubst argumentTerm)
+argumentIH` — same composition shape as K12.21.A's
+fundamental_app_at_arrow, but the second conjunct of K12.6's
+piTy closure returns SN, not Reducible (K12.6's weak closure).
+
+The full-Reducible upgrade waits for the Kripke logical-relation
+refactor that defeats the structural-recursion barrier on
+substituted codomains. -/
+
+/-- **K12.21.D fundamental_appPi at `Ty.piTy`** — Π weak-SN
+elimination.  Dependent function application composes the
+function's weak-piTy closure with the argument's reducibility
+witness; the substituted-codomain wall blocks full-Reducible
+until the Kripke refactor.
+
+The goal is **SN of the substituted Term.appPi**, not Reducible —
+matching K12.6's documented weak closure design (`Reducibility.
+lean:339-352`). -/
+theorem Reducible.fundamental_appPi_at_piTy_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIH :
+        Reducible ((Ty.piTy domainType codomainType).subst sigma)
+                  (Term.subst termSubst functionTerm))
+    (argumentIH :
+        Reducible (domainType.subst sigma)
+                  (Term.subst termSubst argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
+  functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
 end LeanFX2
