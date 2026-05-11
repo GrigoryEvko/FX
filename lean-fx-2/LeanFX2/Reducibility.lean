@@ -624,4 +624,46 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- K12.10 idStrict pattern).
   | Ty.modal _ _, _, term => Term.isStronglyNormalizing term
 
+/-- **K12.17 universal extraction**: every reducible term is
+strongly normalizing.  Holds uniformly across all 25 Ty arms —
+every Reducible body either IS `Term.isStronglyNormalizing` (for
+closed-leaf arms K12.2-K12.4, SN-fallback arms K12.13/15-modal-
+session-effect) or starts with it as the first conjunct (for all
+type-former-specific arms K12.5-K12.15).
+
+This is the foundational extraction lemma the fundamental-lemma
+cascade (K12.18-K12.26) will invoke on every Term typing
+derivation to conclude SN from the Reducible witness. -/
+theorem Reducible.isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    : ∀ {ty : Ty level scope} {raw : RawTerm scope}
+        {term : Term context ty raw},
+        Reducible ty term → Term.isStronglyNormalizing term
+  | Ty.unit, _, _, witness => witness
+  | Ty.bool, _, _, witness => witness
+  | Ty.nat, _, _, witness => witness
+  | Ty.empty, _, _, witness => witness
+  | Ty.interval, _, _, witness => witness
+  | Ty.universe _ _, _, _, witness => witness
+  | Ty.tyVar _, _, _, witness => witness
+  | Ty.arrow _ _, _, _, witness => witness.1
+  | Ty.piTy _ _, _, _, witness => witness.1
+  | Ty.sigmaTy _ _, _, _, witness => witness.1
+  | Ty.id _ _ _, _, _, witness => witness.1
+  | Ty.listType _, _, _, witness => witness.1
+  | Ty.optionType _, _, _, witness => witness.1
+  | Ty.eitherType _ _, _, _, witness => witness.1
+  | Ty.path _ _ _, _, _, witness => witness.1
+  | Ty.glue _ _, _, _, witness => witness.1
+  | Ty.oeq _ _ _, _, _, witness => witness.1
+  | Ty.idStrict _ _ _, _, _, witness => witness.1
+  | Ty.equiv _ _, _, _, witness => witness.1
+  | Ty.refine _ _, _, _, witness => witness.1
+  | Ty.record _, _, _, witness => witness.1
+  | Ty.codata _ _, _, _, witness => witness.1
+  | Ty.session _, _, _, witness => witness
+  | Ty.effect _ _, _, _, witness => witness
+  | Ty.modal _ _, _, _, witness => witness
+
 end LeanFX2

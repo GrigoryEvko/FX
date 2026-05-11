@@ -160,13 +160,22 @@ needs is a "SN-preserved-under-cumulUp" lemma at the Reduction
 layer, NOT a separate RC closure-tightening.  K12.16 ships
 documentation locking in this design.
 
-K12.17 ships RC decidability infrastructure; K12.18-K12.26
-ship the fundamental lemma; K12.27 closes M04 /
-`strong_normalization`. -/
+K12.17 ships (universal extraction lemma):
+* `Reducible.isStronglyNormalizing : Reducible ty term →
+  Term.isStronglyNormalizing term`.  Per-Ty case-split across
+  all 25 arms: extracts the SN component from each Reducible
+  body (either the witness itself for SN-direct arms, or
+  `witness.1` for conjunctive arms K12.5-K12.15).  Foundational
+  extractor for the fundamental-lemma cascade (K12.18-K12.26)
+  to conclude SN from any Reducible witness at any Ty.
+
+Future K12.18-K12.26 ship the fundamental lemma; K12.27 closes
+M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing
 #print axioms Reducible
+#print axioms Reducible.isStronglyNormalizing
 
 end LeanFX2.Smoke
