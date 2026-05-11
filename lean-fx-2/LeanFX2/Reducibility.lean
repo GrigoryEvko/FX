@@ -3285,6 +3285,78 @@ theorem RawTerm.eitherMatch_var_isStronglyNormalizing {scope : Nat}
             (RawStep.par.var_inv scrutineeStep).symm
           nomatch varEqInr)
 
+/-- Either matching with a neutral scrutinee is strongly normalizing
+when the scrutinee and both branches are strongly normalizing.
+
+The either ι arms are impossible because every parallel reduct of the
+neutral scrutinee stays neutral, and neutral terms are never
+`eitherInl` or `eitherInr` shaped.  The congruence arm recurses across
+scrutinee, left branch, and right branch progress. -/
+theorem RawTerm.eitherMatch_neutral_isStronglyNormalizing {scope : Nat}
+    {scrutineeRaw leftBranch rightBranch : RawTerm scope}
+    (scrutineeIsNeutral : RawTerm.IsNeutral scrutineeRaw)
+    (scrutineeIsSN : RawTerm.isStronglyNormalizing scrutineeRaw)
+    (leftIsSN : RawTerm.isStronglyNormalizing leftBranch)
+    (rightIsSN : RawTerm.isStronglyNormalizing rightBranch) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.eitherMatch scrutineeRaw leftBranch rightBranch) := by
+  induction scrutineeIsSN generalizing leftBranch rightBranch with
+  | intro currentScrutinee _ scrutineeInduction =>
+    induction leftIsSN generalizing rightBranch with
+    | intro currentLeft leftClosure leftInduction =>
+      induction rightIsSN with
+      | intro currentRight rightClosure rightInduction =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.eitherMatch currentScrutinee currentLeft currentRight) ?_
+        intro target progressStep
+        rcases RawStep.par.eitherMatch_inv progressStep.1 with
+          ⟨scrutineeTarget, leftTarget, rightTarget, targetEq,
+            scrutineeStep, leftStep, rightStep⟩
+          | (⟨valueRaw, _leftTarget, _targetEq,
+                scrutineeStep, _leftStep⟩
+            | ⟨valueRaw, _rightTarget, _targetEq,
+                scrutineeStep, _rightStep⟩)
+        · subst targetEq
+          have scrutineeTargetIsNeutral :
+              RawTerm.IsNeutral scrutineeTarget :=
+            RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep
+          have leftTargetIsSN :
+              RawTerm.isStronglyNormalizing leftTarget := by
+            by_cases leftEq : currentLeft = leftTarget
+            · subst leftEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentLeft leftClosure
+            · exact leftClosure leftTarget ⟨leftStep, leftEq⟩
+          have rightTargetIsSN :
+              RawTerm.isStronglyNormalizing rightTarget := by
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentRight rightClosure
+            · exact rightClosure rightTarget ⟨rightStep, rightEq⟩
+          by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+          · subst scrutineeEq
+            by_cases leftEq : currentLeft = leftTarget
+            · subst leftEq
+              by_cases rightEq : currentRight = rightTarget
+              · subst rightEq
+                exact (progressStep.2 rfl).elim
+              · exact rightInduction rightTarget ⟨rightStep, rightEq⟩
+            · exact leftInduction leftTarget ⟨leftStep, leftEq⟩
+                rightTargetIsSN
+          · exact scrutineeInduction scrutineeTarget
+              ⟨scrutineeStep, scrutineeEq⟩
+              scrutineeTargetIsNeutral leftTargetIsSN rightTargetIsSN
+        · exact (RawTerm.IsNeutral.not_eitherInl
+            (RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep)
+            (valueRaw := valueRaw) rfl).elim
+        · exact (RawTerm.IsNeutral.not_eitherInr
+            (RawTerm.IsNeutral.par_preserves scrutineeIsNeutral
+              scrutineeStep)
+            (valueRaw := valueRaw) rfl).elim
+
 /-- **K12.20.AX.1 neutral pathApp SN preservation**.  Direct analogue
 of `app_var`: var sits in the path-term slot, interval argument is
 SN witness.  `pathApp_inv` gives 2 arms (cong + β); β arm requires
@@ -6302,6 +6374,36 @@ theorem Reducible.optionType_of_varShape
    fun {_motiveType} {_noneRaw} {_someRaw}
        _noneBranch _someBranch noneIsSN someIsSN _someApplied =>
      RawTerm.optionMatch_var_isStronglyNormalizing position noneIsSN someIsSN⟩
+
+/-- **K12.20.U2 eitherType CR3 arm**: a neutral either value is
+reducible at `Ty.eitherType leftType rightType` when every raw progress
+reduct is SN.
+
+The K12.8 either candidate asks for SN of each match result under SN
+branches and both branch-application closures.  With a neutral scrutinee
+the left/right ι arms cannot fire, so the raw neutral either-match
+helper closes from scrutinee SN plus branch SN. -/
+theorem Reducible.eitherType_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.eitherType leftType rightType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.eitherType leftType rightType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _motiveType _leftRaw _rightRaw _leftBranch _rightBranch
+    leftIsSN rightIsSN _leftApplied _rightApplied
+  exact RawTerm.eitherMatch_neutral_isStronglyNormalizing
+    sourceIsNeutral sourceIsSN leftIsSN rightIsSN
 
 /-- **K12.20.U2 eitherType varShape arm**: variables are reducible at
 either type.

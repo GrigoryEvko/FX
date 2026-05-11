@@ -850,6 +850,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.codataDest_neutral_isStronglyNormalizing
 #print axioms RawTerm.listElim_neutral_isStronglyNormalizing
 #print axioms RawTerm.optionMatch_neutral_isStronglyNormalizing
+#print axioms RawTerm.eitherMatch_neutral_isStronglyNormalizing
 #print axioms RawTerm.equivApp_neutral_isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.unit_of_varShape
@@ -882,6 +883,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.listType_of_varShape
 #print axioms Reducible.optionType_of_neutral_progress_closure
 #print axioms Reducible.optionType_of_varShape
+#print axioms Reducible.eitherType_of_neutral_progress_closure
 #print axioms Reducible.eitherType_of_varShape
 #print axioms Reducible.unit_of_progress_closure
 #print axioms Reducible.bool_of_progress_closure
