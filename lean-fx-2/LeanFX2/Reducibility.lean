@@ -1066,6 +1066,40 @@ theorem Term.isStronglyNormalizing.of_raw_progress_closure
     Term.isStronglyNormalizing sourceTerm :=
   RawTerm.isStronglyNormalizing.of_progress_closure closure
 
+/-- **K12.20.U2 raw CR3, neutral form**: a neutral raw term is SN
+when all of its non-trivial progress reducts are SN.
+
+The neutral witness is not computationally needed by the SN
+constructor; it records the Tait CR3 contract at the call site.  In
+later compound arms the neutral witness is what makes the reduct
+closure available, while this lemma performs the final SN packaging. -/
+theorem RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
+    {scope : Nat}
+    {source : RawTerm scope}
+    (_sourceIsNeutral : RawTerm.IsNeutral source)
+    (closure :
+      ∀ target : RawTerm scope,
+        RawStep.parProgress source target →
+        RawTerm.isStronglyNormalizing target) :
+    RawTerm.isStronglyNormalizing source :=
+  RawTerm.isStronglyNormalizing.of_progress_closure closure
+
+/-- Typed wrapper for the neutral raw CR3 form. -/
+theorem Term.isStronglyNormalizing_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term context sourceType sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ target : RawTerm scope,
+        RawStep.parProgress sourceRaw target →
+        RawTerm.isStronglyNormalizing target) :
+    Term.isStronglyNormalizing sourceTerm :=
+  RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
+    sourceIsNeutral closure
+
 /-! ## K12.20.C neutral & natSucc SN preservation
 
 Two more raw-level SN lemmas continuing the K12.19.B/K12.20.A
