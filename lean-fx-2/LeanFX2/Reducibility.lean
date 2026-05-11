@@ -1038,6 +1038,28 @@ theorem RawTerm.eitherInr_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis valueTarget
       ⟨valueStep, valueDistinct⟩
 
+/-- **K12.20.Y modIntro SN preservation**.  Sister to the
+optionSome / eitherInl / eitherInr helpers — unary cong-only ctor at
+the modal-introduction ctor.  Powers future fundamental_modIntro at
+parametric Ty.modal closures. -/
+theorem RawTerm.modIntro_isStronglyNormalizing {scope : Nat}
+    {innerTerm : RawTerm scope}
+    (innerIsSN : RawTerm.isStronglyNormalizing innerTerm) :
+    RawTerm.isStronglyNormalizing (RawTerm.modIntro innerTerm) := by
+  induction innerIsSN with
+  | intro currentInner _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.modIntro currentInner) ?_
+    intro target progressStep
+    obtain ⟨innerTarget, targetEq, innerStep⟩ :=
+      RawStep.par.modIntro_inv progressStep.1
+    subst targetEq
+    have innerDistinct :
+        currentInner ≠ innerTarget := fun innerEq =>
+      progressStep.2 (congrArg RawTerm.modIntro innerEq)
+    exact inductiveHypothesis innerTarget
+      ⟨innerStep, innerDistinct⟩
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
