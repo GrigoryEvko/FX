@@ -1,85 +1,119 @@
 import LeanFX2.Term
 import LeanFX2.Reduction.RawPar
 
-/-! # LeanFX2.Reducibility — Tait reducibility candidates (K12.1+K12.2)
+/-! # LeanFX2.Reducibility — Tait reducibility candidates
 
-K12.1 introduces the Tait/Girard reducibility-candidate predicate
-`Reducible` at the foundation of strong normalization (SN).
-K12.2 ships the first per-Ty arm: `Reducible.nat` for closed
-naturals.
+K12.1-K12.5 pivot: `Reducible` is a `def`-by-recursion on Ty
+covering all 25 Ty constructors.  The pivot resolves the
+strict-positivity wall that blocked the K12.5 inductive arrow
+clause — `Reducible` recursive references descend on Ty's
+sub-components via Lean's structural recursion via `Ty.rec`
+(no Acc dependency, no propext leak under full enum).
 
-## Strong normalization via inductive Prop closure
+## Architectural history
 
-`RawStep.par` is reflexive (`RawStep.par.refl` always inhabits
-`RawStep.par raw raw`).  An Acc-based SN encoding over `par`
-would therefore be trivially false — `raw → raw → ...` is an
-infinite trace under reflexivity alone.
+K12.1+K12.2 originally shipped `Reducible` as an `inductive Prop`
+with a `Reducible.nat` SN closure arm.  K12.3+K12.4 added five
+more closed-leaf arms (bool / unit / empty / interval / universe)
+identical in shape.
 
-`Acc` / `WellFounded` are also explicitly banned in the kernel
-tier (`GatesCore.lean:51` budget 0) to keep recursion
-structural.  We instead define SN directly as an inductive
-Prop whose constructor closes over non-reflexive parallel
-reductions:
+K12.5 (this commit) attempted to extend the inductive with the
+standard Tait function-type closure:
 
 ```
-RawStep.parProgress src tgt := RawStep.par src tgt ∧ src ≠ tgt
-inductive RawTerm.isStronglyNormalizing : RawTerm scope → Prop
-  | intro (raw) :
-      (∀ target, parProgress raw target →
-        RawTerm.isStronglyNormalizing target) →
-      RawTerm.isStronglyNormalizing raw
+| arrow ... (closesUnderApp :
+      ∀ arg, Reducible domainType arg →
+             Reducible codomainType (Term.app term arg)) :
+    Reducible (Ty.arrow A B) term
 ```
 
-This is the same shape as Lean's `Acc` but emits its own
-recursor `RawTerm.isStronglyNormalizing.rec` and incurs no Acc
-dependency.  Semantically: `raw` is SN iff every non-trivial
-parallel reduction from `raw` leads to a target that is itself
-SN — the smallest fixed point under the reduction closure.
+Lean 4 v4.29.1 rejected with:
 
-`Term.isStronglyNormalizing term := RawTerm.isStronglyNormalizing
-term.toRaw` — typed SN reduces to raw SN of the term's raw
-projection (lifts through `Term.toRaw` definitionally).
+```
+(kernel) arg #9 of 'LeanFX2.Reducible.arrow' has a
+non positive occurrence of the datatypes being declared
+```
+
+The closure's hypothesis `Reducible domainType arg` sits LEFT
+of an arrow inside the constructor argument — a non-positive
+occurrence the kernel rejects.  Canonical mathlib pattern:
+pivot from `inductive` to `def`-by-recursion on Ty.  This works
+because recursive references descend on a structurally-smaller
+Ty (`domainType` and `codomainType` are proper sub-terms of
+`Ty.arrow domainType codomainType`).
 
 ## The Reducible predicate (Tait 1967 / Girard 1972)
 
 Tait/Girard define reducibility by induction on type structure:
 RC at a base type is SN, RC at a function type is "maps RC to
-RC", RC at a Pi is "maps RC under substitution to RC", and so
-on.  The structure is uniform but each Ty constructor
-specializes the closure.
+RC", etc.  Each Ty constructor specializes the closure.
 
-K12.1 ships the inductive skeleton; K12.2 fills the first arm.
-Future arms K12.3-K12.16 extend `Reducible` to the remaining Ty
-constructors.  The final SN headline (`theorem
-strong_normalization : HasType ... → SN t`, task K12.27 / M04
-#1273) requires the fundamental lemma threading reducibility
-through typing derivations (K12.18-K12.26).
-
-## What ships now
+This file ships:
 
 * `RawStep.parProgress` — non-reflexive parallel reduction
-  predicate (def, not inductive — just `par ∧ ≠`).
-* `RawTerm.isStronglyNormalizing` — inductive Prop closure under
-  parProgress.
-* `Term.isStronglyNormalizing` — typed SN via raw SN of toRaw.
-* `Reducible` — inductive Prop indexed by target type.
-* `Reducible.nat` — closed-natural reducibility = SN.
+  (par AND source ≠ target).  Sidesteps the `RawStep.par.refl`
+  trivial loop in the SN encoding.
+* `RawTerm.isStronglyNormalizing` — inductive Prop closure
+  under non-trivial parallel reduction.  Same shape as Lean's
+  `Acc` but emits its own recursor, no Acc dependency
+  (satisfies `GatesCore.acc_dependent_budget` 0).
+* `Term.isStronglyNormalizing` — typed SN as raw SN of the
+  term's raw projection.
+* `Reducible` — def-by-recursion on Ty with one arm per
+  constructor (25 total).  Closed leaves use SN (Tait's
+  base-type clause); arrow uses the corrected Wood/Atkey 2022
+  closure under application bundled with SN.
+
+## Arm-by-arm semantics
+
+* **Closed leaves** (unit / bool / nat / empty / interval /
+  universe / tyVar): `Term.isStronglyNormalizing term`.
+  Matches Tait's base-type clause — no function structure
+  forces recursion into sub-types.
+* **arrow A B**: `SN(term) ∧ ∀ arg, Reducible A arg →
+  Reducible B (Term.app term arg)`.  Bundles SN with the
+  closure for use by the fundamental lemma.
+* **All remaining constructors** (~17 type formers: piTy,
+  sigmaTy, id, listType, optionType, eitherType, path, glue,
+  oeq, idStrict, equiv, refine, record, codata, session,
+  effect, modal): SN-fallback (admissible but weak — every
+  reducible term is at least SN).  K12.6-K12.16 tighten each
+  to its type-former-specific closure.
+
+The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
+correct (SN IS the proper Tait clause for closed-leaf types).
+K12.5 adds the proper arrow closure.  K12.6+ refines the
+remaining ~17 weak-SN arms incrementally.
+
+## Wood/Atkey 2022 corrected Lam rule
+
+Standard Tait reducibility (Tait 1967) uses the arrow closure
+`∀ a, RC(A, a) → RC(B, f a)`.  Atkey 2018's original graded
+Lam rule was unsound; Wood/Atkey 2022 corrected it via context
+division (§6.2 of fx_design.md).  At the reducibility layer,
+the closure formula is unchanged; the correction lives in the
+Lam typing rule itself (`Term.lam`), not in `Reducible`.
+
+## What ships
+
+* `RawStep.parProgress` (def, K12.1)
+* `RawTerm.isStronglyNormalizing` (inductive Prop, K12.1)
+* `Term.isStronglyNormalizing` (def, K12.1)
+* `Reducible` (def by recursion on 25 Ty ctors, K12.1-K12.5)
 
 ## Root status
 
-Layer 3 metatheory (top-level `LeanFX2.Reducibility` module —
-outside the `Term/` and `Reduction/` layer-contract namespaces,
-since the predicate spans both Term and RawPar imports).
+Layer 3 metatheory (top-level `LeanFX2.Reducibility` module).
 Provides foundation for the Tait SN theorem (M04 / K12.27).
+K12.6-K12.16 tighten remaining weak-SN arms.  K12.18-K12.26
+ship the fundamental lemma threading Reducible through Term
+typing derivations.
 
-Pairs with K11.x polygraph layer (orthogonal axes: polygraph
-encodes reduction coherences as cells; reducibility encodes
-termination as a Prop fixed point).
+## Task anchors
 
-## Task anchor
-
-K12.1 + K12.2 in extended-roadmap.md.  Pairs with K12.3–K12.30
-filling remaining Ty arms + the fundamental-lemma cascade.
+K12.1 (#1758), K12.2 (#1759), K12.3 (#1760), K12.4 (#1761),
+K12.5 (#1762) in the FX task tracker.  Pairs with K12.6-K12.30
+filling remaining Ty arm closures + fundamental-lemma cascade.
 -/
 
 namespace LeanFX2
@@ -96,9 +130,9 @@ closure under non-trivial parallel reduction.
 
 `isStronglyNormalizing raw` holds iff every parallel-progress
 reduction `raw → target` leads to a target that is itself SN.
-Equivalent to `Acc (inverse parProgress) raw` but emits its own
-recursor — does not depend on Lean's `Acc` machinery, satisfying
-the kernel-tier no-Acc discipline. -/
+Equivalent to `Acc (inverse parProgress) raw` but emits its
+own recursor — no Acc dependency, satisfies the kernel-tier
+no-Acc discipline. -/
 inductive RawTerm.isStronglyNormalizing : ∀ {scope : Nat},
     RawTerm scope → Prop
   /-- Constructor closes SN over the non-trivial reduction
@@ -119,128 +153,53 @@ def Term.isStronglyNormalizing {mode : Mode} {level scope : Nat}
     (_term : Term context sourceType sourceRaw) : Prop :=
   RawTerm.isStronglyNormalizing sourceRaw
 
-/-- The Tait reducibility-candidate predicate, indexed by target
-type.  Per-Ty arms ship incrementally across K12.x.
+/-- The Tait reducibility-candidate predicate, defined by
+structural recursion on Ty.
 
-K12.2 ships `Reducible.nat`: a closed natural-typed term is
-reducible iff it is strongly normalizing.  Matches Tait's
-base-type clause — at non-function types, reducibility reduces
-to plain SN because there is no sub-structure to recurse into. -/
-inductive Reducible : ∀ {mode : Mode} {level scope : Nat}
-                        {context : Ctx mode level scope}
-                        (typeIndex : Ty level scope)
-                        {raw : RawTerm scope},
-                      Term context typeIndex raw → Prop
-  /-- K12.2: a closed natural-typed term is reducible iff it is
-  strongly normalizing.  Base-type clause — no function
-  structure forces recursion into reducibility at sub-types. -/
-  | nat {mode : Mode} {level scope : Nat}
-      {context : Ctx mode level scope}
-      {natRaw : RawTerm scope}
-      (natTerm : Term context Ty.nat natRaw) :
-      Term.isStronglyNormalizing natTerm →
-      Reducible Ty.nat natTerm
-  /-- K12.3: a closed boolean-typed term is reducible iff it is
-  strongly normalizing.  Same base-type clause as `nat`. -/
-  | bool {mode : Mode} {level scope : Nat}
-      {context : Ctx mode level scope}
-      {boolRaw : RawTerm scope}
-      (boolTerm : Term context Ty.bool boolRaw) :
-      Term.isStronglyNormalizing boolTerm →
-      Reducible Ty.bool boolTerm
-  /-- K12.3: a closed unit-typed term is reducible iff it is
-  strongly normalizing.  Unit is structurally trivial (one
-  canonical inhabitant), so SN reduces to "every reduction
-  sequence terminates at `Term.unit`". -/
-  | unit {mode : Mode} {level scope : Nat}
-      {context : Ctx mode level scope}
-      {unitRaw : RawTerm scope}
-      (unitTerm : Term context Ty.unit unitRaw) :
-      Term.isStronglyNormalizing unitTerm →
-      Reducible Ty.unit unitTerm
-  /-- K12.3: a closed empty-typed term is reducible iff it is
-  strongly normalizing.  `Ty.empty` has no canonical inhabitants
-  at the value level — well-typed empty-typed terms must be
-  neutral (variables, eliminators), so SN here means "every
-  reduction terminates at a neutral form". -/
-  | empty {mode : Mode} {level scope : Nat}
-      {context : Ctx mode level scope}
-      {emptyRaw : RawTerm scope}
-      (emptyTerm : Term context Ty.empty emptyRaw) :
-      Term.isStronglyNormalizing emptyTerm →
-      Reducible Ty.empty emptyTerm
-  /-- K12.4: a closed interval-typed term is reducible iff it is
-  strongly normalizing.  The cubical interval `Ty.interval` has
-  two canonical inhabitants (`i0`, `i1`) plus connections; SN
-  here means reduction reaches a canonical endpoint or a stable
-  connection form. -/
-  | interval {mode : Mode} {level scope : Nat}
-      {context : Ctx mode level scope}
-      {intervalRaw : RawTerm scope}
-      (intervalTerm : Term context Ty.interval intervalRaw) :
-      Term.isStronglyNormalizing intervalTerm →
-      Reducible Ty.interval intervalTerm
-  /-- K12.4: a universe-coded-typed term is reducible iff it is
-  strongly normalizing.  `Ty.universe universeLevel levelLe`
-  inhabits any `Ty l scope` with `l ≥ universeLevel + 1` — its
-  inhabitants are codes for types at universe `universeLevel`.
-  Universe-typed terms are closed-leaf for the reducibility
-  induction: per Tait's base-type clause, SN suffices (no
-  function structure forces recursion). -/
-  | universe {mode : Mode} {level scope : Nat}
-      {context : Ctx mode level scope}
-      (universeLevel : UniverseLevel)
-      (levelLe : universeLevel.toNat + 1 ≤ level)
-      {universeRaw : RawTerm scope}
-      (universeTerm : Term context
-        (Ty.universe universeLevel levelLe) universeRaw) :
-      Term.isStronglyNormalizing universeTerm →
-      Reducible (Ty.universe universeLevel levelLe) universeTerm
-
-/-! ## K12.5 architectural blocker — inductive `Reducible` cannot
-extend to function types.
-
-Attempted on 2026-05-11: add `Reducible.arrow` constructor
-shaped per extended-roadmap.md D41.2 line 3225-3229:
-
-```
-| arrow ... (closesUnderApp :
-      ∀ arg, Reducible domainType arg →
-             Reducible codomainType (Term.app term arg)) :
-    Reducible (Ty.arrow A B) term
-```
-
-Lean 4 v4.29.1 kernel rejects with strict-positivity error:
-
-```
-error: (kernel) arg #9 of 'LeanFX2.Reducible.arrow' has a
-       non positive occurrence of the datatypes being declared
-```
-
-Diagnosis: the closure's hypothesis `Reducible domainType arg`
-sits to the LEFT of `→` inside the constructor argument, which
-is a non-positive occurrence of `Reducible` — kernel-banned for
-inductive datatype declarations.  Same wall every textbook
-Tait/Girard reducibility presentation hits.
-
-The canonical fix is to pivot `Reducible` from `inductive` to
-`def`-by-recursion on Ty (standard mathlib pattern for
-reducibility candidates).  Under this pivot:
-* Each per-Ty arm becomes a defining equation, not a
-  constructor.  `Reducible.nat`, `Reducible.bool`, etc. retire;
-  consumers pattern-match on the Ty constructor directly.
-* The closure under application (`Reducible.arrow` shape) works
-  because the recursive references descend on a structurally-
-  smaller Ty (`A` and `B` are proper sub-terms of `Ty.arrow A B`).
-* Totality requires enumerating ALL ~25 Ty constructors;
-  wildcards leak propext per `feedback_lean_zero_axiom_match.md`.
-
-This pivot affects K12.2-K12.16 atomically and is too large to
-land safely under a Ralph-loop audit-cycle tick.  Reserved for
-a dedicated multi-turn refactor where the entire Ty enumeration
-ships in one commit with all per-type closures.  Until then,
-K12.5+ is paused and K12.1-K12.4's six closed-leaf inductive
-arms remain shipped (they are zero-axiom; the architectural
-debt only blocks function-type and parametric extensions). -/
+Closed-leaf arms (unit / bool / nat / empty / interval /
+universe / tyVar) use plain SN per Tait's base-type clause.
+The arrow arm bundles SN with the closure under application
+per Wood/Atkey 2022's corrected Lam rule.  Remaining arms
+(piTy / sigmaTy / id / list / option / either / path / glue /
+oeq / idStrict / equiv / refine / record / codata / session /
+effect / modal) ship the SN-fallback closure; K12.6-K12.16
+tighten each to its type-former-specific shape. -/
+def Reducible {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    : ∀ (ty : Ty level scope) {raw : RawTerm scope},
+        Term context ty raw → Prop
+  -- Closed leaves (K12.2-K12.4): SN base-type clause
+  | Ty.unit, _, term => Term.isStronglyNormalizing term
+  | Ty.bool, _, term => Term.isStronglyNormalizing term
+  | Ty.nat, _, term => Term.isStronglyNormalizing term
+  | Ty.empty, _, term => Term.isStronglyNormalizing term
+  | Ty.interval, _, term => Term.isStronglyNormalizing term
+  | Ty.universe _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.tyVar _, _, term => Term.isStronglyNormalizing term
+  -- Function type (K12.5): SN + closure under application
+  | Ty.arrow domainType codomainType, _, functionTerm =>
+      Term.isStronglyNormalizing functionTerm ∧
+      ∀ {argumentRaw : RawTerm scope}
+        (argumentTerm : Term context domainType argumentRaw),
+        Reducible domainType argumentTerm →
+        Reducible codomainType (Term.app functionTerm argumentTerm)
+  -- Remaining type formers (K12.6-K12.16 TODO): SN-fallback
+  | Ty.piTy _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.sigmaTy _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.id _ _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.listType _, _, term => Term.isStronglyNormalizing term
+  | Ty.optionType _, _, term => Term.isStronglyNormalizing term
+  | Ty.eitherType _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.path _ _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.glue _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.oeq _ _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.idStrict _ _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.equiv _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.refine _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.record _, _, term => Term.isStronglyNormalizing term
+  | Ty.codata _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.session _, _, term => Term.isStronglyNormalizing term
+  | Ty.effect _ _, _, term => Term.isStronglyNormalizing term
+  | Ty.modal _ _, _, term => Term.isStronglyNormalizing term
 
 end LeanFX2

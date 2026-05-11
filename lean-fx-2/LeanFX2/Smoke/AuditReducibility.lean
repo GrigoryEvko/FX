@@ -4,59 +4,44 @@ namespace LeanFX2.Smoke
 
 open LeanFX2
 
-/-! K12.1 + K12.2 — Tait reducibility-candidate predicate
-`Reducible` indexed by target type, plus the `Reducible.nat`
-base-type arm.  Each `#print axioms` line below must report
-"does not depend on any axioms".
+/-! K12.1-K12.5 — Tait reducibility-candidate predicate
+`Reducible` defined by structural recursion on Ty (25 arms).
+Each `#print axioms` line below must report "does not depend
+on any axioms".
 
 K12.1 ships:
 * `RawStep.parProgress` — non-reflexive parallel reduction
   (a `RawStep.par` step that fires at least one redex).
-  Distinguishing source from target sidesteps the
-  `RawStep.par.refl` trivial loop in the SN encoding.
 * `RawTerm.isStronglyNormalizing` — inductive Prop closure
   under non-trivial parallel reduction.  Same shape as Lean's
-  `Acc` but emits its own recursor, no Acc dependency
-  (satisfies `GatesCore.acc_dependent_budget` 0).
+  `Acc` but emits its own recursor, no Acc dependency.
 * `Term.isStronglyNormalizing` — typed SN as raw SN of the
-  term's raw projection (lifts through `Term.toRaw`
-  definitionally).
-* `Reducible` — inductive predicate `Reducible : Term ... →
-  Prop` with per-Ty arms shipping incrementally across K12.x.
+  term's raw projection.
 
-K12.2 ships:
-* `Reducible.nat` — first per-Ty arm: a closed natural is
-  reducible iff it is strongly normalizing (Tait's base-type
-  clause).
+K12.2-K12.4 ship (now expressed as def-equations on Ty):
+* Closed-leaf arms `Reducible Ty.{unit,bool,nat,empty,interval,
+  universe,tyVar} term = Term.isStronglyNormalizing term`.
+  SN matches Tait's base-type clause exactly.
 
-K12.3 ships:
-* `Reducible.bool` — closed boolean reducibility = SN.
-* `Reducible.unit` — closed unit reducibility = SN (structurally
-  trivial: one canonical inhabitant).
-* `Reducible.empty` — closed empty reducibility = SN (no
-  canonical inhabitants; reduction must terminate at a neutral
-  form).
+K12.5 ships (this pivot):
+* `Reducible Ty.arrow A B term = SN(term) ∧ ∀ arg,
+  Reducible A arg → Reducible B (Term.app term arg)`.
+  Wood/Atkey 2022 corrected Lam rule's reducibility shape.
+* Architectural pivot from `inductive Reducible` to
+  `def Reducible` by recursion on Ty.  Resolves the
+  strict-positivity wall (`Reducible` referenced LEFT of an
+  arrow inside a constructor's argument is non-positive).
 
-K12.4 ships:
-* `Reducible.interval` — cubical interval reducibility = SN
-  (closed leaf at the path layer).
-* `Reducible.universe` — universe-code reducibility = SN
-  (closed leaf parameterized by universe level + cumulativity
-  proof per the Ty.universe ctor's `levelLe` witness).
-
-Future K12.5-K12.16 fill the function-type and parametric arms;
-K12.18-K12.26 ship the fundamental lemma;
+Future K12.6-K12.16 tighten the remaining ~17 SN-fallback arms
+(piTy / sigmaTy / id / listType / optionType / eitherType /
+path / glue / oeq / idStrict / equiv / refine / record / codata
+/ session / effect / modal) to their type-former-specific
+closures.  K12.18-K12.26 ship the fundamental lemma;
 K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing
 #print axioms Reducible
-#print axioms Reducible.nat
-#print axioms Reducible.bool
-#print axioms Reducible.unit
-#print axioms Reducible.empty
-#print axioms Reducible.interval
-#print axioms Reducible.universe
 
 end LeanFX2.Smoke
