@@ -1372,4 +1372,57 @@ theorem Reducible.step_preserves_arrow
       injection appEq
     exact codomainCR2 (sourceReducible.2 argTerm argReducible) appStep
 
+/-! ## K12.20.G typed CR2 lift — Ty.piTy weak-closure compound arm
+
+Second compound-arm CR2 lemma.  `Ty.piTy` ships a **weak closure**
+in K12.6 (full Tait dep-Π closure is reserved for the future Kripke
+logical-relation refactor):
+
+```
+Reducible (Ty.piTy A B) f =
+  SN(f) ∧ ∀ arg, Reducible A arg → SN(Term.appPi f arg)
+```
+
+The eliminator output is `SN(appPi f arg)` not `Reducible
+codomain (appPi f arg)`.  Consequently, CR2 for piTy needs NO
+recursive codomainCR2 hypothesis — both SN preservation (the SN
+conjunct) and the eliminator-output closure are pure-SN
+preservation, both discharged by K12.20.B's raw `step_preserves`.
+This is the simplest compound-arm CR2 of the 15.
+
+Term.appPi's raw projection IS `RawTerm.app` (per Term.lean:127,
+`Term.appPi : Term ctx (cod.subst0 dom arg) (RawTerm.app f a)`),
+not a separate `RawTerm.appPi`.  So the same `RawStep.par.app`
+cong rule we used in K12.20.F applies here.
+-/
+
+/-- **K12.20.G piTy arm**: weak-closure CR2 for `Ty.piTy`.  Both
+SN-of-functionTerm and SN-of-appPi-result are preserved by the same
+raw `step_preserves`.  Distinctness on app via ctor injectivity, same
+as K12.20.F. -/
+theorem Reducible.step_preserves_piTy
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.piTy domainType codomainType) sourceRaw}
+    {target : Term context (Ty.piTy domainType codomainType) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.piTy domainType codomainType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.piTy domainType codomainType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro argRaw argTerm argReducible
+    have appStep : RawStep.parProgress
+        (RawTerm.app sourceRaw argRaw) (RawTerm.app targetRaw argRaw) := by
+      refine ⟨RawStep.par.app rawStep.1 (RawStep.par.refl argRaw), ?_⟩
+      intro appEq
+      apply rawStep.2
+      injection appEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 argTerm argReducible) appStep
+
 end LeanFX2

@@ -283,6 +283,17 @@ K12.20.F ships (typed CR2 lift — arrow compound arm):
   shape and ship in K12.20.G+.  The combined structurally-recursive
   `Reducible.step_preserves` bundling all 25 arms ships in K12.20.H.
 
+K12.20.G ships (typed CR2 lift — piTy weak-closure compound arm):
+* `Reducible.step_preserves_piTy` — Reducible at `Ty.piTy A B` is
+  closed under raw `parProgress`.  Unlike arrow, piTy's K12.6
+  closure is WEAK: eliminator output is `SN(appPi f arg)` not full
+  `Reducible codomain (appPi f arg)`.  Consequence: NO codomainCR2
+  hypothesis needed — both SN-of-functionTerm and SN-of-appPi-result
+  are discharged by K12.20.B's raw `step_preserves` directly.
+  Term.appPi shares the same raw form (`RawTerm.app f a`) as
+  Term.app, so the raw `RawStep.par.app` cong rule applies
+  identically; distinctness via `injection` on RawTerm.app.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -328,5 +339,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.effect_of_varShape
 #print axioms Reducible.modal_of_varShape
 #print axioms Reducible.step_preserves_arrow
+#print axioms Reducible.step_preserves_piTy
 
 end LeanFX2.Smoke
