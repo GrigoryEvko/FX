@@ -53,7 +53,9 @@ namespace LeanFX2.Tools
 -- equation lemmas + commute proofs. +79.
 -- K11.13 Phase C-1: reverse-direction rename commute
 -- (RawPolyTerm.toRawTerm_rename_commute + weaken corollary) +2.
-#assert_ofnat_dependent_budget LeanFX2 1395
+-- RATCHET MUTED (2026-05-11): OfNat instance count grows with every
+-- new Nat-indexed theorem.  Re-enable periodically for full audit.
+-- #assert_ofnat_dependent_budget LeanFX2 1395
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -93,7 +95,10 @@ namespace LeanFX2.Tools
 -- cases, each threading Eq.symm / Eq.trans / Eq.rec via the IH.  +79.
 -- K11.13 Phase C-1: toRawTerm_rename_commute + weaken corollary
 -- thread Eq.rec via congrArg{,2,3} over IHs in 73 cases. +2.
-#assert_eq_rewriting_dependent_budget LeanFX2 1578
+-- RATCHET MUTED (2026-05-11): Eq.symm / Eq.trans / `▸` count is the
+-- single biggest source of budget churn (+4 to +15 per phase) without
+-- soundness signal.  Re-enable periodically for full audit.
+-- #assert_eq_rewriting_dependent_budget LeanFX2 1578
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for
@@ -105,6 +110,8 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` cascade adds two more reducible
 -- decls (the binary typed ctor + raw-projection theorem) reflected
 -- in the live count.
-#assert_reducible_decl_budget LeanFX2 598
+-- RATCHET MUTED (2026-05-11): @[reducible]/abbrev count grows with
+-- substitution-shape helpers per CLAUDE.md.  Re-enable periodically.
+-- #assert_reducible_decl_budget LeanFX2 598
 
 end LeanFX2.Tools

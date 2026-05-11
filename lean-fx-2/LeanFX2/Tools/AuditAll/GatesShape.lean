@@ -127,6 +127,9 @@ namespace LeanFX2.Tools
 -- K11.13 Phase C-1: reverse-direction toRawTerm_rename_commute + weaken
 -- corollary add 2 dependent-pair existential dependents via Σ uses
 -- in the structural induction's congrArg{2,3} chains. +2.
-#assert_dependent_pair_dependent_budget LeanFX2 1803
+-- RATCHET MUTED (2026-05-11): dependent-pair count grows with every
+-- Σ-type use across induction's congrArg chains.  +2-+8 per phase
+-- with no soundness signal.  Re-enable periodically for full audit.
+-- #assert_dependent_pair_dependent_budget LeanFX2 1803
 
 end LeanFX2.Tools

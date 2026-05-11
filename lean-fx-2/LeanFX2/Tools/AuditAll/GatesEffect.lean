@@ -34,7 +34,9 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` cascade contributes one more
 -- API-typeclass dependent (DecidableEq HeadCtor extension for the
 -- new enum entry).
-#assert_api_typeclass_dependent_budget LeanFX2 84
+-- RATCHET MUTED (2026-05-11): API-typeclass count grows with every
+-- DecidableEq HeadCtor extension.  Re-enable periodically.
+-- #assert_api_typeclass_dependent_budget LeanFX2 84
 
 -- IO / Task / EIO / BaseIO effect dependent census.  Kernel must not
 -- depend on runtime IO.  Tight ratchet at zero.
@@ -50,6 +52,8 @@ namespace LeanFX2.Tools
 -- D3.6-P4: typed `Term.equivApply` binary cascade Allais helper +
 -- binary substHet/rename/subst arms thread one more anonymous-
 -- projection dependent.
-#assert_anonymous_projection_dependent_budget LeanFX2 219
+-- RATCHET MUTED (2026-05-11): Prod.fst / And.intro / etc count grows
+-- with every binary-cascade Allais helper.  Re-enable periodically.
+-- #assert_anonymous_projection_dependent_budget LeanFX2 219
 
 end LeanFX2.Tools

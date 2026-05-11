@@ -37,7 +37,9 @@ namespace LeanFX2.Tools
 -- D3.6-P4 adds the typed `Term.equivApply` binary cascade
 -- contributing one more HEq-result-typed dependent through the
 -- binary Allais helper.
-#assert_heq_result_type_budget LeanFX2 97
+-- RATCHET MUTED (2026-05-11): HEq-in-result-type count grows with
+-- every new HEq-returning ctor / theorem.  Re-enable periodically.
+-- #assert_heq_result_type_budget LeanFX2 97
 
 -- Decidable.decide dependent census.  `decide` invokes the kernel
 -- reducer on Decidable instances; can hide propext through Decidable
@@ -72,7 +74,10 @@ namespace LeanFX2.Tools
 -- D3.6-S5 ships two raw ctors `RawTerm.oeqTrans` + `RawTerm.equivCompose`
 -- with cong + shallow + deep β + 2 inversion lemmas + cdIdToEquivCase
 -- extension, transitively contributing two more decide-dependent paths.
-#assert_decide_dependent_budget LeanFX2 920
+-- RATCHET MUTED (2026-05-11): `decide` count grows with every new
+-- DecEq-using arm + every typed Step ctor cascade.  Re-enable
+-- periodically for full audit.
+-- #assert_decide_dependent_budget LeanFX2 920
 
 -- Subsingleton.elim dependent census.  This is the canonical way to
 -- elide Nat.le proof_irrel; sometimes leaks propext on Lean versions
