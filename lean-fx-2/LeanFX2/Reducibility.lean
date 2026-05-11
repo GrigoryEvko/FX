@@ -3264,6 +3264,40 @@ theorem RawTerm.glueElim_neutral_isStronglyNormalizing {scope : Nat}
         (RawTerm.IsNeutral.par_preserves gluedIsNeutral gluedStep)
         (baseRaw := baseTarget) (partialRaw := partialTarget) rfl).elim
 
+/-- Refinement elimination with a neutral refined value is strongly
+normalizing when the refined value is strongly normalizing.
+
+The refinement beta arms are impossible because every parallel reduct
+of the neutral refined value stays neutral, and neutral terms are never
+`refineIntro`-shaped.  The congruence arm recurses on refined-value
+progress. -/
+theorem RawTerm.refineElim_neutral_isStronglyNormalizing {scope : Nat}
+    {refinedRaw : RawTerm scope}
+    (refinedIsNeutral : RawTerm.IsNeutral refinedRaw)
+    (refinedIsSN : RawTerm.isStronglyNormalizing refinedRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.refineElim refinedRaw) := by
+  induction refinedIsSN with
+  | intro currentRefined _ refinedInduction =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.refineElim currentRefined) ?_
+    intro target progressStep
+    rcases RawStep.par.refineElim_inv progressStep.1 with
+      ⟨refinedTarget, targetEq, refinedStep⟩
+      | ⟨valueTarget, proofTarget, _targetEq, refinedStep⟩
+    · have refinedTargetIsNeutral :
+          RawTerm.IsNeutral refinedTarget :=
+        RawTerm.IsNeutral.par_preserves refinedIsNeutral refinedStep
+      by_cases refinedEq : currentRefined = refinedTarget
+      · subst refinedEq
+        subst targetEq
+        exact (progressStep.2 rfl).elim
+      · subst targetEq
+        exact refinedInduction refinedTarget
+          ⟨refinedStep, refinedEq⟩ refinedTargetIsNeutral
+    · exact (RawTerm.IsNeutral.not_refineIntro
+        (RawTerm.IsNeutral.par_preserves refinedIsNeutral refinedStep)
+        (valueRaw := valueTarget) (proofRaw := proofTarget) rfl).elim
+
 /-- **K12.20.AX.2 neutral equivApp SN preservation**.  Sister to
 `pathApp_var`; var sits in the equiv-term slot, argument is the SN
 witness.  `equivApp_inv` is cong-only (no β rule at raw layer yet),
@@ -5645,6 +5679,52 @@ theorem Reducible.equiv_of_varShape
            (RawTerm.equivApp_var_isStronglyNormalizing position
              (Reducible.isStronglyNormalizing argumentIsReducible))
            progressStep)⟩
+
+/-- **K12.20.U2 refine CR3 arm**: a neutral refined value is reducible
+at `Ty.refine baseType predicate` when every raw progress reduct is SN
+and the base-type CR3 hook is available.
+
+The refinement candidate demands full Reducible at the base type for
+`refineElim`.  The raw neutral helper supplies SN for the neutral
+projection, and the recursive base-type CR3 hook upgrades that neutral
+projection to the required Reducible witness. -/
+theorem Reducible.refine_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.refine baseType predicate) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (baseTypeCR3 :
+      ∀ {baseRaw : RawTerm scope}
+        (baseTerm : Term context baseType baseRaw),
+        RawTerm.IsNeutral baseRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress baseRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible baseType baseTerm) :
+    Reducible (Ty.refine baseType predicate) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  have refineElimIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.refineElim sourceRaw) :=
+    RawTerm.refineElim_neutral_isStronglyNormalizing
+      sourceIsNeutral sourceIsSN
+  exact baseTypeCR3
+    (Term.refineElim sourceTerm)
+    (RawTerm.IsNeutral.refineElim sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves
+        refineElimIsSN progressStep)
 
 /-- **K12.20.U2 refine varShape arm**: variables are reducible at
 refinement type once base-type CR3 is available. -/

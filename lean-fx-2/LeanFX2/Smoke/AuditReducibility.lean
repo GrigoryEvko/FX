@@ -845,6 +845,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.snd_neutral_isStronglyNormalizing
 #print axioms RawTerm.pathApp_neutral_isStronglyNormalizing
 #print axioms RawTerm.glueElim_neutral_isStronglyNormalizing
+#print axioms RawTerm.refineElim_neutral_isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape
@@ -864,6 +865,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.path_of_varShape
 #print axioms Reducible.glue_of_neutral_progress_closure
 #print axioms Reducible.glue_of_varShape
+#print axioms Reducible.refine_of_neutral_progress_closure
 #print axioms Reducible.equiv_of_varShape
 #print axioms Reducible.refine_of_varShape
 #print axioms Reducible.record_of_varShape
