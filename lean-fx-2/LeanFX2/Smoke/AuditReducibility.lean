@@ -268,6 +268,21 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   (var reducible at arrow/Σ/...) needs full CR3 / outer Ty induction;
   ships in K12.20.G.
 
+K12.20.F ships (typed CR2 lift — arrow compound arm):
+* `Reducible.step_preserves_arrow` — Reducible at `Ty.arrow A B`
+  is closed under raw `parProgress`.  Takes `codomainCR2` as an
+  explicit hypothesis (the recursive ingredient: CR2 at codomain).
+  Body: refine into the pair conjunct, dispatch SN-preservation
+  through K12.20.B's raw `step_preserves`, dispatch closure-
+  preservation through codomainCR2 with raw app-cong + refl on the
+  unchanged arg.  Distinctness of `app source arg ≠ app target arg`
+  is discharged by `injection` (ctor injectivity at RawTerm.app —
+  propext-free in Lean 4 core).
+  First compound-arm CR2; remaining 14 (piTy/Σ/id/list/option/either/
+  path/glue/oeq/idStrict/equiv/refine/record/codata) follow the same
+  shape and ship in K12.20.G+.  The combined structurally-recursive
+  `Reducible.step_preserves` bundling all 25 arms ships in K12.20.H.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -312,5 +327,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.session_of_varShape
 #print axioms Reducible.effect_of_varShape
 #print axioms Reducible.modal_of_varShape
+#print axioms Reducible.step_preserves_arrow
 
 end LeanFX2.Smoke

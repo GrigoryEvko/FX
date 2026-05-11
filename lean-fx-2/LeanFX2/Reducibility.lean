@@ -1314,4 +1314,62 @@ theorem Reducible.modal_of_varShape
     Reducible (Ty.modal modalityTag carrierType) term :=
   Term.isStronglyNormalizing_of_varShape term
 
+/-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
+
+The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
+arms (K12.20.D), compound arms have closure structure beyond pure SN
+that must also be preserved under reduction.
+
+For `Ty.arrow A B`, `Reducible` says: SN(f) ∧ (∀ arg, Reducible A arg
+→ Reducible B (app f arg)).  Preserving this under f → f' requires:
+1. SN(f'), via K12.20.B's raw `step_preserves` on the SN conjunct.
+2. ∀ arg, Reducible A arg → Reducible B (app f' arg).  Given
+   `Reducible B (app f arg)` (from source's closure), and step
+   `app f arg → app f' arg` (via RawStep.par.app + refl on arg),
+   the new closure conclusion follows from CR2 at codomain — the
+   recursive ingredient supplied as `codomainCR2`.
+
+Per the warrior-mentality discipline of CLAUDE.md, K12.20.F ships
+the arrow case taking `codomainCR2` as an explicit hypothesis rather
+than wiring up structural recursion on Ty here.  This keeps the
+proof atomic and one-shot.  K12.20.G+ ship the remaining 14
+compound arms, each with the same shape (recursion-hypothesis
+taken as argument).  The final combined `Reducible.step_preserves`
+will be a structurally-recursive bundle wiring all 25 arms together;
+its body will invoke each per-arm helper at the right recursive
+position.
+-/
+
+/-- **K12.20.F arrow arm**: Reducible at `Ty.arrow domain codomain`
+is preserved under raw `parProgress` reduction.  Body: SN preserved
+via K12.20.B, closure preserved via codomainCR2 + raw app-cong. -/
+theorem Reducible.step_preserves_arrow
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.arrow domainType codomainType) sourceRaw}
+    {target : Term context (Ty.arrow domainType codomainType) targetRaw}
+    (sourceReducible : Reducible (Ty.arrow domainType codomainType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw)
+    (codomainCR2 :
+        ∀ {sourceRaw' targetRaw' : RawTerm scope}
+          {source' : Term context codomainType sourceRaw'}
+          {target' : Term context codomainType targetRaw'},
+          Reducible codomainType source' →
+          RawStep.parProgress sourceRaw' targetRaw' →
+          Reducible codomainType target') :
+    Reducible (Ty.arrow domainType codomainType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro argRaw argTerm argReducible
+    have appStep : RawStep.parProgress
+        (RawTerm.app sourceRaw argRaw) (RawTerm.app targetRaw argRaw) := by
+      refine ⟨RawStep.par.app rawStep.1 (RawStep.par.refl argRaw), ?_⟩
+      intro appEq
+      apply rawStep.2
+      injection appEq
+    exact codomainCR2 (sourceReducible.2 argTerm argReducible) appStep
+
 end LeanFX2
