@@ -4,6 +4,7 @@ import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.SubstActsOnTy
 import LeanFX2.Foundation.Context
+import LeanFX2.Foundation.Effect
 
 /-! # `PolyTerm` — typed mirror of `Term` indexed by `RawPolyTerm`.
 
@@ -40,21 +41,42 @@ The full bidirectional bijection (`RawTerm <-> RawPolyTerm` and
 ships ONLY the forward `toRawTerm` direction at the raw layer plus
 the typed inductive.
 
-## Phase A scope
+## Phase A + Phase B scope
 
-This Phase A commit ships:
+Phase A (commit 9af612d) shipped the structural raw converter
+`RawPolyTerm.toRawTerm` plus the typed inductive's core MLTT
+fragment (var/unit/lam/app/lamPi/appPi/pair/fst/snd/booleans/
+naturals/lists/options/eithers/refl/idJ — 27 ctors).
 
-1. `RawPolyTerm.toRawTerm` — structural raw-level converter (73
-   arms, one per `RawPolyTerm` ctor).
-2. `PolyTerm` — typed mirror with the core MLTT fragment: `var`,
-   `unit`, `lam`/`app`, `lamPi`/`appPi`, `pair`/`fst`/`snd`,
-   `boolTrue`/`False`/`boolElim`, `natZero`/`Succ`/`natElim`/
-   `natRec`, `listNil`/`Cons`/`Elim`, `optionNone`/`Some`/`Match`,
-   `eitherInl`/`Inr`/`Match`, `refl`, `idJ` (27 ctors).
+Phase B (this commit) extends `PolyTerm` to ALL 77 typed Term
+constructors, covering every frontier type theory layer in one
+typed inductive: observational equality (oeqRefl/J/Funext),
+strict identity (idStrictRefl/Rec), modal (modIntro/Elim/
+subsume), cubical (interval0/1/Opp/Meet/Join, pathLam/App,
+glueIntro/Elim, transp, hcomp), records, refinements, codata,
+sessions, effects, universe codes + 10 type-shape codes,
+cumulativity (cumulUp), and the full univalence vocabulary
+(equivReflId, funextRefl, equivReflIdAtId, funextReflAtId,
+equivIntroHet, equivApp, uaIntroHet, funextIntroHet, uaToEquiv,
+equivApply).
 
-Phase B (K11.9.B follow-up) extends with the remaining ~46 ctors
-(modal/cubical/HoTT-special/refine/record/codata/session/effect/
-type-codes/cumulUp/univalence-beta).
+## Proof-obligation handling
+
+Two Term ctors (`equivIntroHet`, `oeqFunext`) carry proof-witness
+subterms whose typed signatures use Layer-1 helpers
+(`equivIntroHetLeftInverseType`, `equivIntroHetRightInverseType`,
+`oeqFunextPointwiseType`) defined in `Term.lean`.  Because
+`Foundation/Polygraph/PolyTerm.lean` is Layer 0, it cannot import
+Layer 1 helpers.  The PolyTerm versions of these ctors take their
+proof-witness subterms with OPAQUE motive types (kept as implicit
+`Ty`-typed fields); the precise pinning to the Layer-1 helper
+types happens at K11.10 (Term → PolyTerm forward bijection), at
+which point the helpers are visible.
+
+This is architecturally clean: PolyTerm at dim-0 is the
+*computational arity* of each ctor (how many typed subterms;
+their carriers); the *coherence-obligation type pinning* is a
+property of the Term-PolyTerm bijection, not of PolyTerm itself.
 
 ## Audit
 
@@ -517,5 +539,618 @@ inductive PolyTerm : ∀ {mode : Mode} {level scope : Nat},
       PolyTerm context motiveType
         (LeanFX2.Foundation.Polygraph.RawPolyTerm.idJ basePolyRaw
           witnessPolyRaw)
+  -- Observational equality
+  | oeqRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope)
+      (rawPolyWitness :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context
+        (Ty.oeq carrier rawPolyWitness.toRawTerm
+          rawPolyWitness.toRawTerm)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.oeqRefl
+          rawPolyWitness)
+  | oeqJ {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrier : Ty level scope}
+      {leftEndpoint rightEndpoint : LeanFX2.RawTerm scope}
+      {motiveType : Ty level scope}
+      {basePolyRaw witnessPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (baseCase : PolyTerm context motiveType basePolyRaw)
+      (witness :
+        PolyTerm context
+          (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessPolyRaw) :
+      PolyTerm context motiveType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.oeqJ
+          basePolyRaw witnessPolyRaw)
+  /-- Funext at observational equality.  See header §"Proof-obligation
+  handling": the pointwise proof carries an opaque motive type at
+  Layer 0; the pinning to `oeqFunextPointwiseType` lives at K11.10. -/
+  | oeqFunext {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (leftFunctionRaw rightFunctionRaw : LeanFX2.RawTerm scope)
+      {pointwiseMotive : Ty level scope}
+      {pointwisePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (pointwiseProof :
+        PolyTerm context pointwiseMotive pointwisePolyRaw) :
+      PolyTerm context
+        (Ty.oeq (Ty.arrow domainType codomainType)
+          leftFunctionRaw rightFunctionRaw)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.oeqFunext
+          pointwisePolyRaw)
+  -- Strict identity (strict-mode J recursor)
+  | idStrictRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
+      (carrier : Ty level scope)
+      (rawPolyWitness :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context
+        (Ty.idStrict carrier rawPolyWitness.toRawTerm
+          rawPolyWitness.toRawTerm)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.idStrictRefl
+          rawPolyWitness)
+  | idStrictRec {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsStrict : mode = Mode.strict)
+      {carrier : Ty level scope}
+      {leftEndpoint rightEndpoint : LeanFX2.RawTerm scope}
+      {motiveType : Ty level scope}
+      {basePolyRaw witnessPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (baseCase : PolyTerm context motiveType basePolyRaw)
+      (witness :
+        PolyTerm context
+          (Ty.idStrict carrier leftEndpoint rightEndpoint)
+          witnessPolyRaw) :
+      PolyTerm context motiveType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.idStrictRec
+          basePolyRaw witnessPolyRaw)
+  -- Modal scaffolding (Layer 6 will refine Ty.modal interaction)
+  | modIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (innerTerm : PolyTerm context innerType innerPolyRaw) :
+      PolyTerm context innerType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.modIntro
+          innerPolyRaw)
+  | modElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (innerTerm : PolyTerm context innerType innerPolyRaw) :
+      PolyTerm context innerType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.modElim
+          innerPolyRaw)
+  | subsume {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      {innerPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (innerTerm : PolyTerm context innerType innerPolyRaw) :
+      PolyTerm context innerType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.subsume
+          innerPolyRaw)
+  -- Cubical interval algebra
+  | interval0 {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope} :
+      PolyTerm context Ty.interval
+        LeanFX2.Foundation.Polygraph.RawPolyTerm.interval0
+  | interval1 {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope} :
+      PolyTerm context Ty.interval
+        LeanFX2.Foundation.Polygraph.RawPolyTerm.interval1
+  | intervalOpp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (innerValue : PolyTerm context Ty.interval innerPolyRaw) :
+      PolyTerm context Ty.interval
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.intervalOpp
+          innerPolyRaw)
+  | intervalMeet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftPolyRaw rightPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (leftValue : PolyTerm context Ty.interval leftPolyRaw)
+      (rightValue : PolyTerm context Ty.interval rightPolyRaw) :
+      PolyTerm context Ty.interval
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.intervalMeet
+          leftPolyRaw rightPolyRaw)
+  | intervalJoin {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftPolyRaw rightPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (leftValue : PolyTerm context Ty.interval leftPolyRaw)
+      (rightValue : PolyTerm context Ty.interval rightPolyRaw) :
+      PolyTerm context Ty.interval
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.intervalJoin
+          leftPolyRaw rightPolyRaw)
+  -- Cubical paths
+  | pathLam {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (carrierType : Ty level scope)
+      (leftEndpoint rightEndpoint : LeanFX2.RawTerm scope)
+      {bodyPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm (scope + 1)}
+      (body :
+        PolyTerm (context.cons Ty.interval) carrierType.weaken
+          bodyPolyRaw) :
+      PolyTerm context (Ty.path carrierType leftEndpoint rightEndpoint)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.pathLam bodyPolyRaw)
+  | pathApp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {leftEndpoint rightEndpoint : LeanFX2.RawTerm scope}
+      {pathPolyRaw intervalPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (pathTerm :
+        PolyTerm context
+          (Ty.path carrierType leftEndpoint rightEndpoint)
+          pathPolyRaw)
+      (intervalTerm :
+        PolyTerm context Ty.interval intervalPolyRaw) :
+      PolyTerm context carrierType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.pathApp
+          pathPolyRaw intervalPolyRaw)
+  -- Cubical Glue
+  | glueIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (baseType : Ty level scope)
+      (boundaryWitness : LeanFX2.RawTerm scope)
+      {basePolyRaw partialPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (baseValue : PolyTerm context baseType basePolyRaw)
+      (partialValue : PolyTerm context baseType partialPolyRaw) :
+      PolyTerm context (Ty.glue baseType boundaryWitness)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.glueIntro
+          basePolyRaw partialPolyRaw)
+  | glueElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {baseType : Ty level scope}
+      {boundaryWitness : LeanFX2.RawTerm scope}
+      {gluedPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (gluedValue :
+        PolyTerm context (Ty.glue baseType boundaryWitness)
+          gluedPolyRaw) :
+      PolyTerm context baseType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.glueElim
+          gluedPolyRaw)
+  -- Cubical Kan ops
+  | transp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (universeLevel : UniverseLevel)
+      (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+      (sourceType targetType : Ty level scope)
+      (sourceTypeRaw targetTypeRaw : LeanFX2.RawTerm scope)
+      {pathPolyRaw sourcePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (typePath :
+        PolyTerm context
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+            sourceTypeRaw targetTypeRaw)
+          pathPolyRaw)
+      (sourceValue :
+        PolyTerm context sourceType sourcePolyRaw) :
+      PolyTerm context targetType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.transp
+          pathPolyRaw sourcePolyRaw)
+  | hcomp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {sidesPolyRaw capPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (sidesValue :
+        PolyTerm context carrierType sidesPolyRaw)
+      (capValue :
+        PolyTerm context carrierType capPolyRaw) :
+      PolyTerm context carrierType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.hcomp
+          sidesPolyRaw capPolyRaw)
+  -- Records (single-field; multi-field elaborates to nested)
+  | recordIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {firstPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (firstField :
+        PolyTerm context singleFieldType firstPolyRaw) :
+      PolyTerm context (Ty.record singleFieldType)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.recordIntro
+          firstPolyRaw)
+  | recordProj {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      {recordPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (recordValue :
+        PolyTerm context (Ty.record singleFieldType) recordPolyRaw) :
+      PolyTerm context singleFieldType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.recordProj
+          recordPolyRaw)
+  -- Refinement
+  | refineIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      (predicate : LeanFX2.RawTerm (scope + 1))
+      {valuePolyRaw proofPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (baseValue : PolyTerm context baseType valuePolyRaw)
+      (predicateProof : PolyTerm context Ty.unit proofPolyRaw) :
+      PolyTerm context (Ty.refine baseType predicate)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.refineIntro
+          valuePolyRaw proofPolyRaw)
+  | refineElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      {predicate : LeanFX2.RawTerm (scope + 1)}
+      {refinedPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (refinedValue :
+        PolyTerm context (Ty.refine baseType predicate)
+          refinedPolyRaw) :
+      PolyTerm context baseType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.refineElim
+          refinedPolyRaw)
+  -- Codata
+  | codataUnfold {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {statePolyRaw transitionPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (initialState : PolyTerm context stateType statePolyRaw)
+      (transition :
+        PolyTerm context (Ty.arrow stateType outputType)
+          transitionPolyRaw) :
+      PolyTerm context (Ty.codata stateType outputType)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.codataUnfold
+          statePolyRaw transitionPolyRaw)
+  | codataDest {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      {codataPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (codataValue :
+        PolyTerm context (Ty.codata stateType outputType)
+          codataPolyRaw) :
+      PolyTerm context outputType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.codataDest
+          codataPolyRaw)
+  -- Sessions
+  | sessionSend {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (protocolStep : LeanFX2.RawTerm scope)
+      {payloadType : Ty level scope}
+      {channelPolyRaw payloadPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (channel :
+        PolyTerm context (Ty.session protocolStep) channelPolyRaw)
+      (payload : PolyTerm context payloadType payloadPolyRaw) :
+      PolyTerm context (Ty.session protocolStep)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.sessionSend
+          channelPolyRaw payloadPolyRaw)
+  | sessionRecv {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {protocolStep : LeanFX2.RawTerm scope}
+      {channelPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (channel :
+        PolyTerm context (Ty.session protocolStep) channelPolyRaw) :
+      PolyTerm context (Ty.session protocolStep)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.sessionRecv
+          channelPolyRaw)
+  -- Effects (with row-permission evidence)
+  | effectPerform {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (effectTag : LeanFX2.RawTerm scope)
+      (effectRow : Effects.EffectRow)
+      (operationSignature :
+        Effects.OperationSignature (Ty level scope))
+      (canPerformOperation :
+        Effects.CanPerform effectRow operationSignature)
+      {operationPolyRaw argumentsPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (operationTag :
+        PolyTerm context
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationPolyRaw)
+      (arguments :
+        PolyTerm context operationSignature.argumentCarrier
+          argumentsPolyRaw) :
+      PolyTerm context
+        (Ty.effect operationSignature.resultCarrier effectTag)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.effectPerform
+          operationPolyRaw argumentsPolyRaw)
+  -- Universe code
+  | universeCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel outerLevel : UniverseLevel)
+      (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+      (levelLe : outerLevel.toNat + 1 ≤ level) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.universeCode
+          innerLevel.toNat)
+  -- Cross-level cumulativity (CUMUL-2.6 Design D)
+  | cumulUp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (lowerLevel higherLevel : UniverseLevel)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+      (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+      {codePolyRaw : LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (typeCode :
+        PolyTerm context (Ty.universe lowerLevel levelLeLow)
+          codePolyRaw) :
+      PolyTerm context (Ty.universe higherLevel levelLeHigh)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.cumulUpMarker
+          codePolyRaw)
+  /-- Canonical identity equivalence `A ≃ A`.  Mirrors
+  `Term.equivReflId`; raw form is `equivIntro (lam (var 0))
+  (lam (var 0))` in RawPolyTerm. -/
+  | equivReflId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (carrier : Ty level scope) :
+      PolyTerm context (Ty.equiv carrier carrier)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivIntro
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+            (LeanFX2.Foundation.Polygraph.RawPolyTerm.var
+              ⟨0, Nat.zero_lt_succ scope⟩))
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+            (LeanFX2.Foundation.Polygraph.RawPolyTerm.var
+              ⟨0, Nat.zero_lt_succ scope⟩)))
+  /-- Canonical pointwise-refl funext witness.  Mirrors
+  `Term.funextRefl`. -/
+  | funextRefl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType : Ty level scope) (codomainType : Ty level scope)
+      (applyPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm (scope + 1)) :
+      PolyTerm context
+        (Ty.piTy domainType
+          (Ty.id codomainType.weaken applyPolyRaw.toRawTerm
+            applyPolyRaw.toRawTerm))
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.refl
+            applyPolyRaw))
+  /-- Canonical Id-typed identity equivalence at the universe.
+  Mirrors `Term.equivReflIdAtId`. -/
+  | equivReflIdAtId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (carrier : Ty level scope)
+      (carrierRaw : LeanFX2.RawTerm scope) :
+      PolyTerm context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierRaw
+          carrierRaw)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivIntro
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+            (LeanFX2.Foundation.Polygraph.RawPolyTerm.var
+              ⟨0, Nat.zero_lt_succ scope⟩))
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+            (LeanFX2.Foundation.Polygraph.RawPolyTerm.var
+              ⟨0, Nat.zero_lt_succ scope⟩)))
+  /-- Canonical Id-typed funext witness at arrow types.  Mirrors
+  `Term.funextReflAtId`. -/
+  | funextReflAtId {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm (scope + 1)) :
+      PolyTerm context
+        (Ty.id (Ty.arrow domainType codomainType)
+          (LeanFX2.RawTerm.lam (LeanFX2.RawTerm.refl applyPolyRaw.toRawTerm))
+          (LeanFX2.RawTerm.lam (LeanFX2.RawTerm.refl applyPolyRaw.toRawTerm)))
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.refl
+            applyPolyRaw))
+  /-- Heterogeneous-carrier equivalence introduction.  See header
+  §"Proof-obligation handling": leftInv / rightInv proof
+  obligations carry opaque motive types at this Layer-0 layer; the
+  pinning to `equivIntroHetLeftInverseType` /
+  `equivIntroHetRightInverseType` happens at K11.10. -/
+  | equivIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {leftInvMotive rightInvMotive : Ty level scope}
+      {forwardPolyRaw backwardPolyRaw leftInvPolyRaw rightInvPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (forward :
+        PolyTerm context (Ty.arrow carrierA carrierB) forwardPolyRaw)
+      (backward :
+        PolyTerm context (Ty.arrow carrierB carrierA) backwardPolyRaw)
+      (leftInv :
+        PolyTerm context leftInvMotive leftInvPolyRaw)
+      (rightInv :
+        PolyTerm context rightInvMotive rightInvPolyRaw) :
+      PolyTerm context (Ty.equiv carrierA carrierB)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivIntro
+          forwardPolyRaw backwardPolyRaw)
+  /-- Equivalence application (kernel-internal form, distinct raw from
+  univalence-β `equivApply`). -/
+  | equivApp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivPolyRaw argumentPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (equivTerm :
+        PolyTerm context (Ty.equiv carrierA carrierB) equivPolyRaw)
+      (argumentTerm :
+        PolyTerm context carrierA argumentPolyRaw) :
+      PolyTerm context carrierB
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivApp
+          equivPolyRaw argumentPolyRaw)
+  /-- Heterogeneous-carrier path-from-equivalence (univalence
+  intro).  Mirrors `Term.uaIntroHet`. -/
+  | uaIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierARaw carrierBRaw : LeanFX2.RawTerm scope)
+      {forwardPolyRaw backwardPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (equivWitness :
+        PolyTerm context (Ty.equiv carrierA carrierB)
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivIntro
+            forwardPolyRaw backwardPolyRaw)) :
+      PolyTerm context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) carrierARaw
+          carrierBRaw)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivIntro
+          forwardPolyRaw backwardPolyRaw)
+  /-- Heterogeneous-carrier funext at Id-of-arrow.  Mirrors
+  `Term.funextIntroHet`. -/
+  | funextIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (domainType codomainType : Ty level scope)
+      (applyAPolyRaw applyBPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm (scope + 1)) :
+      PolyTerm context
+        (Ty.id (Ty.arrow domainType codomainType)
+          (LeanFX2.RawTerm.lam applyAPolyRaw.toRawTerm)
+          (LeanFX2.RawTerm.lam applyBPolyRaw.toRawTerm))
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.lam
+          (LeanFX2.Foundation.Polygraph.RawPolyTerm.refl
+            applyAPolyRaw))
+  -- Type-shape codes (CUMUL-2.4 schematic VALUE-shaped ctors)
+  | arrowCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (domainCodePolyRaw codomainCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.arrowCode
+          domainCodePolyRaw codomainCodePolyRaw)
+  | piTyCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (domainCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope)
+      (codomainCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm (scope + 1)) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.piTyCode
+          domainCodePolyRaw codomainCodePolyRaw)
+  | sigmaTyCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (domainCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope)
+      (codomainCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm (scope + 1)) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.sigmaTyCode
+          domainCodePolyRaw codomainCodePolyRaw)
+  | productCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (firstCodePolyRaw secondCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.productCode
+          firstCodePolyRaw secondCodePolyRaw)
+  | sumCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (leftCodePolyRaw rightCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.sumCode
+          leftCodePolyRaw rightCodePolyRaw)
+  | listCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (elementCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.listCode
+          elementCodePolyRaw)
+  | optionCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (elementCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.optionCode
+          elementCodePolyRaw)
+  | eitherCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (leftCodePolyRaw rightCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.eitherCode
+          leftCodePolyRaw rightCodePolyRaw)
+  | idCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (typeCodePolyRaw leftPolyRaw rightPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.idCode
+          typeCodePolyRaw leftPolyRaw rightPolyRaw)
+  | equivCode {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (outerLevel : UniverseLevel)
+      (levelLe : outerLevel.toNat + 1 ≤ level)
+      (leftTypeCodePolyRaw rightTypeCodePolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope) :
+      PolyTerm context (Ty.universe outerLevel levelLe)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivCode
+          leftTypeCodePolyRaw rightTypeCodePolyRaw)
+  /-- Univalence-β extractor: proof of `Id (Universe lvl) A B` to
+  `Equiv A B`.  Mirrors `Term.uaToEquiv`. -/
+  | uaToEquiv {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      (leftTy rightTy : Ty level scope)
+      (leftTyRaw rightTyRaw : LeanFX2.RawTerm scope)
+      {proofPolyRaw : LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (proof :
+        PolyTerm context
+          (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw
+            rightTyRaw)
+          proofPolyRaw) :
+      PolyTerm context (Ty.equiv leftTy rightTy)
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.uaToEquiv
+          proofPolyRaw)
+  /-- Univalence-β application.  Mirrors `Term.equivApply`. -/
+  | equivApply {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      {equivPolyRaw argumentPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (equivTerm :
+        PolyTerm context (Ty.equiv carrierA carrierB) equivPolyRaw)
+      (argumentTerm :
+        PolyTerm context carrierA argumentPolyRaw) :
+      PolyTerm context carrierB
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.equivApply
+          equivPolyRaw argumentPolyRaw)
 
 end LeanFX2
