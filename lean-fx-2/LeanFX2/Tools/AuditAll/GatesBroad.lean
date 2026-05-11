@@ -77,7 +77,10 @@ namespace LeanFX2.Tools
 -- K11.13 Phase B: RawPolyTerm.subst cascade adds Eq.rec / Eq.ndrec
 -- through 73 equation lemmas + subst_pointwise + commute + corollary.
 -- +79.
-#assert_cast_operator_dependent_budget LeanFX2 1690
+-- K11.13 Phase C-1: reverse-direction rename commute
+-- (toRawTerm_rename_commute + weaken corollary) threads Eq.rec via
+-- congrArg over IHs. +2.
+#assert_cast_operator_dependent_budget LeanFX2 1692
 
 -- Forbidden decl shape budget.  CLAUDE.md bans `partial def`,
 -- `opaque` (without rfl-reducible body), and `unsafe def` for kernel

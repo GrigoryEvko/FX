@@ -250,3 +250,7 @@ end LeanFX2.Smoke
 #print axioms LeanFX2.RawTermSubst.lift_toRawPolySubst_commute
 #print axioms LeanFX2.RawTerm.subst_toRawPoly_commute
 #print axioms LeanFX2.RawTerm.subst0_toRawPoly_commute
+
+-- K11.13 Phase C-1 (#1745) — reverse-direction rename commute.
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_rename_commute
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken_toRawTerm_commute

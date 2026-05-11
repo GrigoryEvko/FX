@@ -124,6 +124,9 @@ namespace LeanFX2.Tools
 -- K11.13 Phase B: RawPolyTerm.subst adds another 73-case structural
 -- recursion + subst_pointwise + lift_toRawPolySubst_commute + the
 -- subst commute + subst0 commute corollary.  +79.
-#assert_dependent_pair_dependent_budget LeanFX2 1797
+-- K11.13 Phase C-1: reverse-direction toRawTerm_rename_commute + weaken
+-- corollary add 2 dependent-pair existential dependents via Σ uses
+-- in the structural induction's congrArg{2,3} chains. +2.
+#assert_dependent_pair_dependent_budget LeanFX2 1799
 
 end LeanFX2.Tools

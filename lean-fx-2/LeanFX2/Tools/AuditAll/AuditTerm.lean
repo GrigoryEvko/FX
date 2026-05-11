@@ -190,4 +190,12 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.subst_toRawPoly_commute
 #assert_no_axioms LeanFX2.RawTerm.subst0_toRawPoly_commute
 
+-- K11.13 Phase C-1 (#1745): reverse-direction rename commute —
+-- `RawPolyTerm.toRawTerm` commutes with `RawPolyTerm.rename`.  Bridge
+-- lemma for the typed `PolyTerm.rename` Phase C-2 follow-up, where 11
+-- raw-in-Ty ctors embed `argumentPolyRaw.toRawTerm` inside their
+-- kernel `Ty` index and need a single rewrite at the cast.
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_rename_commute
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken_toRawTerm_commute
+
 end LeanFX2.Tools

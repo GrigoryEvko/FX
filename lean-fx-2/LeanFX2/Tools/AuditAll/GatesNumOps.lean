@@ -51,7 +51,9 @@ namespace LeanFX2.Tools
 -- and the commute lemma. +75.
 -- K11.13 Phase B: RawPolyTerm.subst threads Fin / Nat through 73
 -- equation lemmas + commute proofs. +79.
-#assert_ofnat_dependent_budget LeanFX2 1389
+-- K11.13 Phase C-1: reverse-direction rename commute
+-- (RawPolyTerm.toRawTerm_rename_commute + weaken corollary) +2.
+#assert_ofnat_dependent_budget LeanFX2 1391
 
 -- Subtype.mk / Subtype.val dependent census.  Tight ratchet at zero —
 -- the kernel doesn't use subtype-encoded reasoning.
@@ -89,7 +91,9 @@ namespace LeanFX2.Tools
 -- 73 cases, each threading Eq.symm / Eq.trans / Eq.rec. +75.
 -- K11.13 Phase B: subst_toRawPoly_commute uses simp + rw across 73
 -- cases, each threading Eq.symm / Eq.trans / Eq.rec via the IH.  +79.
-#assert_eq_rewriting_dependent_budget LeanFX2 1572
+-- K11.13 Phase C-1: toRawTerm_rename_commute + weaken corollary
+-- thread Eq.rec via congrArg{,2,3} over IHs in 73 cases. +2.
+#assert_eq_rewriting_dependent_budget LeanFX2 1574
 
 -- Reducible / abbrev kernel decl census.  476 today reflects the
 -- Action / Subst / Renaming infrastructure being abbrev-shaped for
