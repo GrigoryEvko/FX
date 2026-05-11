@@ -3815,6 +3815,50 @@ theorem RawTerm.oeqJ_isStronglyNormalizing {scope : Nat}
         · exact baseIH baseTarget baseProgress
             (witnessClosure witnessTarget ⟨witnessStep, witnessEq⟩)
 
+/-- Observational-equality eliminator with a neutral witness is
+strongly normalizing when the witness and base case are strongly
+normalizing.
+
+The current raw `oeqJ` fragment is congruence-only, so this helper
+records the neutral CR3 shape without a canonical-exclusion branch. -/
+theorem RawTerm.oeqJ_neutral_isStronglyNormalizing {scope : Nat}
+    {baseCaseRaw witnessRaw : RawTerm scope}
+    (witnessIsNeutral : RawTerm.IsNeutral witnessRaw)
+    (witnessIsSN : RawTerm.isStronglyNormalizing witnessRaw)
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.oeqJ baseCaseRaw witnessRaw) := by
+  induction witnessIsSN generalizing baseCaseRaw with
+  | intro currentWitness _ witnessInduction =>
+    induction baseCaseIsSN with
+    | intro currentBase baseClosure baseInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.oeqJ currentBase currentWitness) ?_
+      intro target progressStep
+      obtain ⟨baseTarget, witnessTarget, targetEq,
+              baseStep, witnessStep⟩ :=
+        RawStep.par.oeqJ_inv progressStep.1
+      subst targetEq
+      have witnessTargetIsNeutral :
+          RawTerm.IsNeutral witnessTarget :=
+        RawTerm.IsNeutral.par_preserves witnessIsNeutral witnessStep
+      have baseTargetIsSN :
+          RawTerm.isStronglyNormalizing baseTarget := by
+        by_cases baseEq : currentBase = baseTarget
+        · subst baseEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentBase baseClosure
+        · exact baseClosure baseTarget ⟨baseStep, baseEq⟩
+      by_cases witnessEq : currentWitness = witnessTarget
+      · subst witnessEq
+        by_cases baseEq : currentBase = baseTarget
+        · subst baseEq
+          exact (progressStep.2 rfl).elim
+        · exact baseInduction baseTarget ⟨baseStep, baseEq⟩
+      · exact witnessInduction witnessTarget
+          ⟨witnessStep, witnessEq⟩
+          witnessTargetIsNeutral baseTargetIsSN
+
 /-- Identity eliminator SN preservation.  Unlike `oeqJ`, `idJ` has
 refl-ι rules, so the iota arm returns the reduced base case directly.
 The congruence arm follows the same nested-SN induction pattern as
@@ -6546,6 +6590,34 @@ theorem Reducible.id_of_varShape
   ⟨Term.isStronglyNormalizing_of_varShape witness,
    fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
      RawTerm.idJ_var_isStronglyNormalizing position baseIsSN⟩
+
+/-- **K12.20.U2 oeq CR3 arm**: a neutral observational-equality
+witness is reducible at `Ty.oeq carrier leftEndpoint rightEndpoint`
+when every raw progress reduct is SN.
+
+The current K12.10 observational-equality candidate is SN-output and
+the raw `oeqJ` fragment is congruence-only, so the raw neutral helper
+closes from witness SN plus base-case SN. -/
+theorem Reducible.oeq_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (witness :
+      Term context (Ty.oeq carrier leftEndpoint rightEndpoint) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.oeq carrier leftEndpoint rightEndpoint) witness := by
+  have sourceIsSN : Term.isStronglyNormalizing witness :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      witness sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _motiveType _baseRaw _baseCase baseIsSN
+  exact RawTerm.oeqJ_neutral_isStronglyNormalizing
+    sourceIsNeutral sourceIsSN baseIsSN
 
 /-- **K12.20.AZ.3 oeq arm**: variables are reducible at the
 observational equality type.  Closure: SN(var) + ∀ baseCase,
