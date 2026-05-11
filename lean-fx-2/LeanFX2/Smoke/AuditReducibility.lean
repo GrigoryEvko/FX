@@ -645,6 +645,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_appPi_at_piTy_sn
 #print axioms Reducible.fundamental_recordProj_at_record
 #print axioms Reducible.fundamental_refineElim_at_refine
+#print axioms Reducible.fundamental_idJ_at_id_sn
+#print axioms Reducible.fundamental_oeqJ_at_oeq_sn
+#print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn
 #print axioms Reducible.fundamental_equivApp_at_equiv
 #print axioms Reducible.fundamental_oeqFunext_at_oeq
 #print axioms Reducible.fundamental_pathApp_at_path
