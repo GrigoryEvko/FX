@@ -233,6 +233,20 @@ K12.20.C ships (neutral + natSucc SN preservation):
   this raw lemma with `Reducible.isStronglyNormalizing` to lift
   reducibility through the constructor.
 
+K12.20.D ships (typed CR2 lift for 10 SN-direct Reducible arms):
+* `Reducible.step_preserves_{unit,bool,nat,empty,interval,
+  universe,tyVar,session,effect,modal}` — Reducible at each of the
+  10 SN-direct Ty arms is closed under raw `parProgress` reduction.
+  Each closure unfolds definitionally to `Term.isStronglyNormalizing`
+  → `RawTerm.isStronglyNormalizing _.toRaw`, so the body is a
+  one-line application of K12.20.B's raw `step_preserves`.  Signature
+  uses raw step `RawStep.parProgress sourceRaw targetRaw` (not typed
+  Step) because SN unfolds to raw SN, bypassing the typed Step
+  relation entirely — keeps K12.20.D zero-dep on typed Step's
+  cascade infrastructure.
+  Each lemma's audit pin verifies the typed lift inherits raw
+  step_preserves's zero-axiom status.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -256,5 +270,15 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms RawTerm.isStronglyNormalizing.step_preserves
 #print axioms RawTerm.var_isStronglyNormalizing
 #print axioms RawTerm.natSucc_isStronglyNormalizing
+#print axioms Reducible.step_preserves_unit
+#print axioms Reducible.step_preserves_bool
+#print axioms Reducible.step_preserves_nat
+#print axioms Reducible.step_preserves_empty
+#print axioms Reducible.step_preserves_interval
+#print axioms Reducible.step_preserves_universe
+#print axioms Reducible.step_preserves_tyVar
+#print axioms Reducible.step_preserves_session
+#print axioms Reducible.step_preserves_effect
+#print axioms Reducible.step_preserves_modal
 
 end LeanFX2.Smoke
