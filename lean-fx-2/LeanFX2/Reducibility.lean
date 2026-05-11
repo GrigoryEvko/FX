@@ -1,4 +1,5 @@
 import LeanFX2.Term
+import LeanFX2.Term.Subst
 import LeanFX2.Reduction.RawPar
 
 /-! # LeanFX2.Reducibility — Tait reducibility candidates
@@ -666,61 +667,94 @@ theorem Reducible.isStronglyNormalizing
   | Ty.effect _ _, _, _, witness => witness
   | Ty.modal _ _, _, _, witness => witness
 
-/-- **K12.18 substitution-reducibility predicate**: the universal
-quantification target of the fundamental lemma cascade
+/-- **K12.18/K12.19 substitution-reducibility predicate**: the
+universal quantification target of the fundamental lemma cascade
 (K12.19-K12.26).
 
-A substitution `sigma : Subst level scope targetScope` is *reducible*
-at the context pair `(sourceCtx, targetCtx)` when, for every variable
-position in the source scope, the joint substitution provides a typed
-term at the substituted-source-type / matched-raw view, AND that
-typed term is itself `Reducible` at the substituted type.
+A typed substitution `termSubst : TermSubst sourceCtx targetCtx sigma`
+is *reducible* when every per-position typed term it supplies is
+`Reducible` at the substituted-source-type / matched-raw view.
 
-## Why this shape (intrinsic, ∃-packaged)
+## Design (K12.19 refactor of K12.18)
 
-Tait 1967 / Girard 1972 classically state the predicate as "for each
-variable, sigma's image is reducible at the substituted type".  In an
-intrinsic-typing kernel the typed term is uniquely-up-to-defeq
-determined by `(context, type, raw)`, so its existence is data
-supplied by the caller when constructing a ReducibleSubst from
-concrete reducibility proofs (e.g. `Subst.singleton arg arg.toRaw`
-with `arg`'s own Reducible witness at position 0).
+K12.18's first cut packaged the typed witness existentially —
+`∀ position, ∃ (term : Term ...), Reducible _ term`.  K12.19's audit
+(2026-05-11) revealed the shape is wrong: the fundamental-lemma var
+case proves `Reducible _ (Term.subst termSubst (Term.var position))`,
+which definitionally reduces to `Reducible _ (termSubst position)`
+because `Term.subst termSubst (.var position) = termSubst position`
+by the var equation of `Term.subst` (LeanFX2/Term/Subst.lean:192).
+But an existential `∃ w, Reducible _ w` cannot supply reducibility
+of THAT specific term — eliminating the existential yields SOME
+reducible `w`, not the canonical `termSubst position`.
 
-## Fundamental lemma statement (K12.19+)
+K12.19 therefore reshapes the predicate to take a `TermSubst`
+directly.  Now the canonical witness at each position IS
+`termSubst position`, and `ReducibleSubst termSubst position`
+states reducibility of that exact term.  The fundamental lemma's
+var case becomes `substReducible position` (no rewriting, no
+existential elimination).
 
-The lemma the cascade proves: for any well-typed `term : Term
-sourceCtx ty raw` and any `sigma : Subst level scope targetScope`
-with `ReducibleSubst sourceCtx targetCtx sigma`, the substituted
-`term.subst sigma : Term targetCtx (ty.subst sigma) (raw.subst
-sigma.forRaw)` is `Reducible (ty.subst sigma)`.
+The K12.18 commit's body is replaced — same predicate name, same
+audit pin, same zero-axiom discipline, corrected shape.
 
-Induction proceeds on the Term ctor; each arm consumes the per-
-position witnesses ReducibleSubst supplies to discharge the IH on
-sub-terms.
+## Fundamental lemma statement (K12.19-K12.26)
 
-## Constructors (forward-referenced, K12.19+)
+```
+theorem Reducible.fundamental
+    (term : Term sourceCtx ty raw)
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (substReducible : ReducibleSubst termSubst) :
+    Reducible (ty.subst sigma) (Term.subst termSubst term)
+```
 
-K12.19+ will ship:
-* `ReducibleSubst.identity` — the identity substitution is reducible
-  at `(sourceCtx, sourceCtx)` (assumes "every variable is reducible
-  at its declared type", which K12.19's var case proves
-  simultaneously with the fundamental lemma).
-* `ReducibleSubst.consSingleton` — extending a reducible substitution
-  with a fresh Reducible witness yields a reducible substitution at
-  the extended context.
+Induction proceeds on `term`; each arm consumes `substReducible`'s
+per-position witnesses to discharge IHs on sub-terms.  K12.19 ships
+the var case (and base-leaf cases via "introducer is SN" lemmas);
+K12.20-K12.26 ship the remaining arms.
 
-K12.18 ships ONLY the predicate's definition + axiom-free audit pin.
-The constructors land alongside the fundamental-lemma cases that
-need them (var case + lam case respectively).
+## Constructors (forward-referenced, K12.20+)
+
+* `ReducibleSubst.identity` — the identity TermSubst is reducible
+  when "every variable is reducible at its declared type" holds.
+  K12.20 ships the prerequisite once the per-Ty neutral-reducibility
+  fact is in place.
+* `ReducibleSubst.consSingleton` — extending a reducible TermSubst
+  with a fresh Reducible argument (for β-reduction) yields a
+  reducible TermSubst at the extended context.  Ships in K12.20
+  alongside the Lam case (where it's first needed).
 -/
 def ReducibleSubst {mode : Mode} {level scope targetScope : Nat}
-    (sourceCtx : Ctx mode level scope)
-    (targetCtx : Ctx mode level targetScope)
-    (sigma : Subst level scope targetScope) : Prop :=
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma) : Prop :=
   ∀ (position : Fin scope),
-    ∃ (substitutedTerm : Term targetCtx
-                              ((varType sourceCtx position).subst sigma)
-                              (sigma.forRaw position)),
-      Reducible ((varType sourceCtx position).subst sigma) substitutedTerm
+    Reducible ((varType sourceCtx position).subst sigma) (termSubst position)
+
+/-- **K12.19 fundamental-lemma var case**: applying a reducible
+typed substitution to a variable term yields a reducible term at
+the substituted type.
+
+Direct unpacking of `ReducibleSubst`'s universal quantification at
+the given position.  The kernel-definitional reduction
+`Term.subst termSubst (.var position) ⇝ termSubst position`
+(`LeanFX2/Term/Subst.lean:192`) makes the body literally
+`substReducible position`.
+
+This is the foundational base case the cascade builds on; every
+later K12.20-K12.26 arm threads `substReducible` through Term-ctor
+recursion, ultimately bottoming out here at variable leaves. -/
+theorem Reducible.fundamental_var
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substReducible : ReducibleSubst termSubst)
+    (position : Fin scope) :
+    Reducible ((varType sourceCtx position).subst sigma)
+              (Term.subst termSubst (Term.var position)) :=
+  substReducible position
 
 end LeanFX2

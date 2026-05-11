@@ -169,22 +169,24 @@ K12.17 ships (universal extraction lemma):
   extractor for the fundamental-lemma cascade (K12.18-K12.26)
   to conclude SN from any Reducible witness at any Ty.
 
-K12.18 ships (substitution-reducibility predicate):
-* `ReducibleSubst sourceCtx targetCtx sigma` — for every variable
-  position in the source scope, the joint substitution provides a
-  typed term at the substituted-source-type / matched-raw view, AND
-  that typed term is Reducible at the substituted type.  The
-  fundamental-lemma cascade K12.19-K12.26 quantifies over this
-  predicate when stating the substitution-closure of Reducible.
-  K12.18 ships ONLY the predicate definition; constructors
-  (`ReducibleSubst.identity`, `ReducibleSubst.consSingleton`) and
-  the fundamental lemma's individual Term-ctor cases land in K12.19+
-  alongside the var case (which proves "every variable is reducible
-  at its declared type", the prerequisite for the identity
-  constructor).
+K12.18/K12.19 ship (substitution-reducibility predicate + var case):
+* `ReducibleSubst termSubst` — for every variable position, the
+  per-position typed term supplied by `TermSubst` is `Reducible` at
+  the substituted source-type.  K12.18's first cut ∃-packaged the
+  witness; K12.19's audit revealed the existential cannot supply
+  reducibility of the SPECIFIC term `Term.subst termSubst _` requires,
+  so the predicate is reshaped to take `TermSubst` directly.  Same
+  predicate name; same zero-axiom discipline; corrected shape.
+* `Reducible.fundamental_var` — the var case of the fundamental
+  lemma.  `Term.subst termSubst (Term.var position)` reduces
+  definitionally to `termSubst position` (via `Term.subst`'s var
+  equation), so the proof body is literally `substReducible
+  position`.  Foundational base case the K12.20-K12.26 cascade
+  builds on.
 
-K12.19-K12.26 will ship the fundamental lemma; K12.27 closes M04 /
-`strong_normalization`. -/
+K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
+β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
+code).  K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
@@ -192,5 +194,6 @@ K12.19-K12.26 will ship the fundamental lemma; K12.27 closes M04 /
 #print axioms Reducible
 #print axioms Reducible.isStronglyNormalizing
 #print axioms ReducibleSubst
+#print axioms Reducible.fundamental_var
 
 end LeanFX2.Smoke
