@@ -151,10 +151,21 @@ This file ships:
   constraint, no quantifier.  Structurally identical to K12.12
   glue.  Decidable-predicate-discharge aspect is Layer 5
   (#1342 / #1344), orthogonal to RC closure.
-* **All remaining constructors** (~4 type formers: record,
-  codata, session, effect): SN-fallback (admissible but weak —
-  every reducible term is at least SN).  K12.15-K12.16 tighten
-  each to its type-former-specific closure.
+* **record singleFieldType** (K12.15, full recordProj closure):
+  `SN(recordValue) ∧ Reducible singleFieldType
+  (Term.recordProj recordValue)`.  Plain projection — same shape
+  as K12.14 refine / K12.12 glue.
+* **codata stateType outputType** (K12.15, full codataDest
+  closure): `SN(codataValue) ∧ Reducible outputType
+  (Term.codataDest codataValue)`.  Plain projection to outputType
+  (stateType doesn't appear in any current eliminator).
+* **session protocolStep** (K12.15, Layer-1 SN-fallback):
+  Layer-1 ships only type-preserving `sessionSend`/`sessionRecv`
+  congruence ctors; protocol-state advancement awaits Sessions
+  layer (#1268 K09).
+* **effect carrierType effectTag** (K12.15, Layer-1 SN-fallback):
+  Layer-1 ships only `effectPerform` introducer; handler
+  destructor awaits Effects layer (#1345-#1346 D5.9/D5.10).
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -477,10 +488,53 @@ def Reducible {mode : Mode} {level scope : Nat}
   | Ty.refine baseType _, _, refinedValue =>
       Term.isStronglyNormalizing refinedValue ∧
       Reducible baseType (Term.refineElim refinedValue)
-  | Ty.record _, _, term => Term.isStronglyNormalizing term
-  | Ty.codata _ _, _, term => Term.isStronglyNormalizing term
-  | Ty.session _, _, term => Term.isStronglyNormalizing term
-  | Ty.effect _ _, _, term => Term.isStronglyNormalizing term
+  -- Single-field record (K12.15, full recordProj closure).
+  -- `Ty.record singleFieldType` has singleFieldType as strict sub-Ty.
+  -- `Term.recordProj` projects to singleFieldType — same structure
+  -- as K12.14 refine / K12.12 glue.  Multi-field records compose
+  -- via nested single-field records (per Term.lean docstring),
+  -- preserving this closure shape under nesting.
+  | Ty.record singleFieldType, _, recordValue =>
+      Term.isStronglyNormalizing recordValue ∧
+      Reducible singleFieldType (Term.recordProj recordValue)
+  -- Codata (K12.15, full codataDest closure).  `Ty.codata stateType
+  -- outputType` has BOTH stateType and outputType as strict sub-Ty.
+  -- `Term.codataDest` projects to outputType (the observation type).
+  -- The stateType doesn't appear in any current eliminator (it's
+  -- packed into the unfold/initial-state), so the closure recurses
+  -- only on outputType.  Productivity-checking at higher
+  -- observation depths lives at the codata-corecursion Layer
+  -- (#1267 K08), orthogonal to this RC closure.
+  | Ty.codata _ outputType, _, codataValue =>
+      Term.isStronglyNormalizing codataValue ∧
+      Reducible outputType (Term.codataDest codataValue)
+  -- Session protocol (K12.15, Layer-1 documented SN-fallback).
+  -- `Ty.session protocolStep` has protocolStep as a RawTerm — no
+  -- typed sub-Ty exposed at the Ty layer.  Layer 1 ships
+  -- `Term.sessionSend` / `Term.sessionRecv` as type-PRESERVING
+  -- congruence-only ctors: both produce `Term ctx (Ty.session
+  -- protocolStep) _` from inputs at the same session type, not a
+  -- strict sub-Ty.  No projection eliminator at Layer 1 — the
+  -- session protocol-state advancement (send → recv → end via
+  -- duality) lives at the Sessions layer (#1268 K09 - implement
+  -- session types at kernel).  K12.15.layer-sessions will then
+  -- ship per-step closures via the Sessions.advance eliminator.
+  | Ty.session _, _, sessionTerm =>
+      Term.isStronglyNormalizing sessionTerm
+  -- Effectful type (K12.15, Layer-1 documented SN-fallback).
+  -- `Ty.effect carrierType effectTag` has carrierType as a strict
+  -- sub-Ty in principle, but Layer 1 ships ONLY the
+  -- `Term.effectPerform` introducer — no `Term.effectHandle`
+  -- destructor projecting to carrierType exists yet.  The effect-
+  -- handler / row-discharge semantics belong to the Effects layer
+  -- (#1345 D5.9 Effects/Foundation.lean Op+EffectRow+effectPerform+
+  -- effectHandle infrastructure, #1346 D5.10 Effects/Step.lean
+  -- handler reduction theorems).  When Layer 5 Effects lands,
+  -- K12.15.layer-effects will tighten this arm to
+  -- `SN(term) ∧ ∀ handlerImpl, Reducible carrierType
+  -- (Term.effectHandle term handlerImpl)`.
+  | Ty.effect _ _, _, effectTerm =>
+      Term.isStronglyNormalizing effectTerm
   -- Modal type (K12.13, Layer-1 SN-fallback with Layer-6 deferral).
   -- `Ty.modal modalityTag carrierType` has carrierType as a strict
   -- sub-Ty, so structural recursion would admit a `Reducible

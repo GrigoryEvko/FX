@@ -128,10 +128,23 @@ K12.14 ships (full refineElim closure for Ty.refine):
   discharge aspect lives at Layer 5 (#1342 D5.6, #1344 D5.8
   SMTCert), orthogonal to RC closure.
 
-Future K12.15-K12.16 tighten the remaining ~4 SN-fallback arms
-(record / codata / session / effect) to their type-former-
-specific closures.  K12.18-K12.26 ship the fundamental lemma;
-K12.27 closes M04 / `strong_normalization`. -/
+K12.15 ships (4 advanced type formers — 2 full closures + 2 deferred):
+* `Reducible Ty.record A r = SN(r) ∧ Reducible A (Term.recordProj r)`
+  — full closure via projection (singleFieldType strict sub-Ty).
+* `Reducible Ty.codata S O c = SN(c) ∧ Reducible O (Term.codataDest c)`
+  — full closure via observation projection.
+* `Reducible Ty.session protocolStep t = SN(t)` — Layer-1 SN
+  fallback; Sessions layer (#1268 K09) ships per-step closures.
+* `Reducible Ty.effect carrier tag e = SN(e)` — Layer-1 SN
+  fallback; Effects layer (#1345-#1346) ships handler closures.
+
+Two semantic upgrades (record / codata) plus two documented
+Layer-deferrals (session / effect, both blocked on
+introducer-only state at Layer 1).
+
+Future K12.16 tightens the cumulUp arm; K12.17 ships RC
+decidability infrastructure.  K12.18-K12.26 ship the
+fundamental lemma; K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
