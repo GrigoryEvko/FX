@@ -687,8 +687,11 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- (strict sub-Ty, full Reducible works) for the head-element witness,
   -- demotes the tail to SN (its type is `Ty.listType elementType` —
   -- SAME Ty, recursion banned), demands SN of branches and SN of the
-  -- elim result.  Full Reducible-tail closure reserved for the future
-  -- Kripke logical relation refactor.
+  -- elim result.  The explicit branch-SN premises are load-bearing:
+  -- raw congruence reduces branches even when the scrutinee is stuck,
+  -- so neutral/list-variable CR3 cannot be sound without them.  Full
+  -- Reducible-tail closure is reserved for the future Kripke logical
+  -- relation refactor.
   | Ty.listType elementType, _, listTerm =>
       Term.isStronglyNormalizing listTerm ∧
       ∀ {motiveType : Ty level scope}
@@ -697,6 +700,7 @@ def Reducible {mode : Mode} {level scope : Nat}
         (consBranch : Term context (Ty.arrow elementType
                                       (Ty.arrow (Ty.listType elementType) motiveType)) consRaw),
         Term.isStronglyNormalizing nilBranch →
+        Term.isStronglyNormalizing consBranch →
         (∀ {headRaw tailRaw : RawTerm scope}
            (headTerm : Term context elementType headRaw)
            (tailTerm : Term context (Ty.listType elementType) tailRaw),
@@ -708,9 +712,11 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- Parametric inductive: option (K12.8, weak elim closure).  Cleanest
   -- of the three K12.8 arms: someBranch's type `Ty.arrow elementType
   -- motiveType` matches K12.6 piTy weak closure shape exactly when
-  -- restricted to elementType (strict sub-Ty).  Demands SN of noneBranch
-  -- and Reducible-arg → SN-applied of someBranch, yields SN of the
-  -- optionMatch result.
+  -- restricted to elementType (strict sub-Ty).  Demands SN of both
+  -- branches and Reducible-arg → SN-applied of someBranch, yielding SN
+  -- of the optionMatch result.  The some-branch SN premise is necessary
+  -- because optionMatch congruence can reduce it even under a stuck
+  -- neutral scrutinee.
   | Ty.optionType elementType, _, optionTerm =>
       Term.isStronglyNormalizing optionTerm ∧
       ∀ {motiveType : Ty level scope}
@@ -718,6 +724,7 @@ def Reducible {mode : Mode} {level scope : Nat}
         (noneBranch : Term context motiveType noneRaw)
         (someBranch : Term context (Ty.arrow elementType motiveType) someRaw),
         Term.isStronglyNormalizing noneBranch →
+        Term.isStronglyNormalizing someBranch →
         (∀ {valueRaw : RawTerm scope}
            (valueTerm : Term context elementType valueRaw),
            Reducible elementType valueTerm →
@@ -728,15 +735,19 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- Symmetric in leftType / rightType (both strict sub-Ty of
   -- `Ty.eitherType leftType rightType`); each branch is
   -- `Ty.arrow leftType motiveType` / `Ty.arrow rightType motiveType`
-  -- matching the K12.6 piTy weak shape per branch.  Demands
-  -- Reducible-arg → SN-applied on each side, yields SN of the
-  -- eitherMatch result.
+  -- matching the K12.6 piTy weak shape per branch.  Demands branch SN
+  -- plus Reducible-arg → SN-applied on each side, yielding SN of the
+  -- eitherMatch result.  Branch SN is required for neutral scrutinees
+  -- because eitherMatch congruence reduces both branches independently
+  -- of which ι-rule may later fire.
   | Ty.eitherType leftType rightType, _, eitherTerm =>
       Term.isStronglyNormalizing eitherTerm ∧
       ∀ {motiveType : Ty level scope}
         {leftRaw rightRaw : RawTerm scope}
         (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
         (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw),
+        Term.isStronglyNormalizing leftBranch →
+        Term.isStronglyNormalizing rightBranch →
         (∀ {valueRaw : RawTerm scope}
            (valueTerm : Term context leftType valueRaw),
            Reducible leftType valueTerm →
@@ -4065,12 +4076,15 @@ isStronglyNormalizing term.toRaw = RawTerm.isStronglyNormalizing
 (RawTerm.var position)` — exactly the type of
 `var_isStronglyNormalizing`.
 
-The compound Reducible arms (arrow / piTy / Σ / id / list / option /
-either / path / glue / oeq / idStrict / equiv / refine / record /
-codata) need full CR3-style neutral-reducibility (a variable applied
-to reducible arguments must be reducible at the result type),
-provable only by outer induction on Ty.  Those land in K12.20.G
-alongside compound-arm CR2.
+Compound Reducible arms split into two families.  Weak/SN-output
+arms whose closures only ask for SN of eliminator results can be
+closed directly from the raw neutral-eliminator SN helpers once their
+branch-SN premises are explicit.  Strong-output arms (arrow, sigmaTy,
+path, glue, equiv, refine, record, codata) use the higher-order
+varShape pattern: each arm takes the CR3 hook for its strict sub-Ty
+as an explicit parameter, mirroring `Reducible.step_preserves`'
+higher-order CR2 structure without pretending that arbitrary neutral
+CR3 has already shipped.
 -/
 
 /-- **K12.20.E foundation**: any Term whose raw projection is
@@ -4595,6 +4609,69 @@ theorem Reducible.codata_of_varShape
          (RawTerm.codataDest_var_isStronglyNormalizing position)
          progressStep)⟩
 
+/-- **K12.20.U2 listType varShape arm**: variables are reducible at
+list type.
+
+The strengthened K12.8 list closure includes SN for both eliminator
+branches.  That is exactly what the raw neutral-list eliminator helper
+needs for `listElim (var position) nilBranch consBranch`; the branch
+application hypothesis remains available for canonical cons ι-cases but
+is not needed for the stuck-variable case. -/
+theorem Reducible.listType_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.listType elementType)
+          (RawTerm.var position)) :
+    Reducible (Ty.listType elementType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun {_motiveType} {_nilRaw} {_consRaw}
+       _nilBranch _consBranch nilIsSN consIsSN _consApplied =>
+     RawTerm.listElim_var_isStronglyNormalizing position nilIsSN consIsSN⟩
+
+/-- **K12.20.U2 optionType varShape arm**: variables are reducible at
+option type.
+
+The some-branch SN premise is load-bearing for neutral scrutinees:
+`optionMatch` can reduce the some branch by congruence even when the
+scrutinee is stuck at a variable. -/
+theorem Reducible.optionType_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.optionType elementType)
+          (RawTerm.var position)) :
+    Reducible (Ty.optionType elementType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun {_motiveType} {_noneRaw} {_someRaw}
+       _noneBranch _someBranch noneIsSN someIsSN _someApplied =>
+     RawTerm.optionMatch_var_isStronglyNormalizing position noneIsSN someIsSN⟩
+
+/-- **K12.20.U2 eitherType varShape arm**: variables are reducible at
+either type.
+
+Both branches must be SN because `eitherMatch` reduces both branch
+positions by congruence under a stuck variable scrutinee. -/
+theorem Reducible.eitherType_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.eitherType leftType rightType)
+          (RawTerm.var position)) :
+    Reducible (Ty.eitherType leftType rightType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun {_motiveType} {_leftRaw} {_rightRaw}
+       _leftBranch _rightBranch leftIsSN rightIsSN
+       _leftApplied _rightApplied =>
+     RawTerm.eitherMatch_var_isStronglyNormalizing position
+       leftIsSN rightIsSN⟩
+
 /-- **K12.20.AZ.1 piTy arm**: variables are reducible at the
 dependent-Π type.  Closure: SN(var) + ∀ argTerm, Reducible
 domainType argTerm → SN(Term.appPi (var) argTerm).  The second
@@ -4945,17 +5022,17 @@ Reducibility.lean:404):
 ```
 Reducible (Ty.listType A) xs =
   SN(xs) ∧ ∀ {M} {nilRaw consRaw} (nilBranch consBranch),
-    SN(nilBranch) →
+    SN(nilBranch) → SN(consBranch) →
     (∀ head tail, Reducible A head → SN(tail) →
                   SN(consBranch head tail)) →
     SN(listElim xs nilBranch consBranch)
 ```
 
-The hypothesis chain (`Reducible A head` + `SN(tail)` for the
-cons branch) is propagated unchanged by sourceReducible.2 — CR2
-needs NO recursive elementTypeCR2 hypothesis because the
-eliminator output is plain SN, not Reducible.  Same weak-closure
-pattern as K12.20.G piTy and K12.20.I id.
+The branch-SN and application-closure hypotheses are propagated
+unchanged by sourceReducible.2 — CR2 needs NO recursive
+elementTypeCR2 hypothesis because the eliminator output is plain SN,
+not Reducible.  Same weak-closure pattern as K12.20.G piTy and
+K12.20.I id.
 
 Term.listElim shares raw form `RawTerm.listElim scrutineeRaw
 nilRaw consRaw` (per Term.lean:200); `RawStep.par.listElim`
@@ -4984,7 +5061,7 @@ theorem Reducible.step_preserves_listType
   refine ⟨?_, ?_⟩
   · exact RawTerm.isStronglyNormalizing.step_preserves
       sourceReducible.1 rawStep
-  · intro motiveType nilRaw consRaw nilBranch consBranch nilSN consApplied
+  · intro motiveType nilRaw consRaw nilBranch consBranch nilSN consSN consApplied
     have listElimStep : RawStep.parProgress
         (RawTerm.listElim sourceRaw nilRaw consRaw)
         (RawTerm.listElim targetRaw nilRaw consRaw) := by
@@ -4994,7 +5071,8 @@ theorem Reducible.step_preserves_listType
       apply rawStep.2
       injection listElimEq
     exact RawTerm.isStronglyNormalizing.step_preserves
-      (sourceReducible.2 nilBranch consBranch nilSN consApplied) listElimStep
+      (sourceReducible.2 nilBranch consBranch nilSN consSN consApplied)
+      listElimStep
 
 /-! ## K12.20.K typed CR2 lift — Ty.optionType weak-elim-closure compound arm
 
@@ -5007,7 +5085,7 @@ Reducibility.lean:426):
 ```
 Reducible (Ty.optionType A) o =
   SN(o) ∧ ∀ {M} {noneRaw someRaw} (noneBranch someBranch),
-    SN(noneBranch) →
+    SN(noneBranch) → SN(someBranch) →
     (∀ v, Reducible A v → SN(Term.app someBranch v)) →
     SN(optionMatch o noneBranch someBranch)
 ```
@@ -5038,7 +5116,7 @@ theorem Reducible.step_preserves_optionType
   refine ⟨?_, ?_⟩
   · exact RawTerm.isStronglyNormalizing.step_preserves
       sourceReducible.1 rawStep
-  · intro motiveType noneRaw someRaw noneBranch someBranch noneSN someApplied
+  · intro motiveType noneRaw someRaw noneBranch someBranch noneSN someSN someApplied
     have optionMatchStep : RawStep.parProgress
         (RawTerm.optionMatch sourceRaw noneRaw someRaw)
         (RawTerm.optionMatch targetRaw noneRaw someRaw) := by
@@ -5048,7 +5126,8 @@ theorem Reducible.step_preserves_optionType
       apply rawStep.2
       injection optionMatchEq
     exact RawTerm.isStronglyNormalizing.step_preserves
-      (sourceReducible.2 noneBranch someBranch noneSN someApplied) optionMatchStep
+      (sourceReducible.2 noneBranch someBranch noneSN someSN someApplied)
+      optionMatchStep
 
 /-! ## K12.20.L typed CR2 lift — Ty.eitherType symmetric-weak-elim-closure compound arm
 
@@ -5061,6 +5140,7 @@ closure per side.  Closure shape (per Reducibility.lean:446):
 ```
 Reducible (Ty.eitherType A B) e =
   SN(e) ∧ ∀ {M} {leftRaw rightRaw} (leftBranch rightBranch),
+    SN(leftBranch) → SN(rightBranch) →
     (∀ v, Reducible A v → SN(Term.app leftBranch v)) →
     (∀ v, Reducible B v → SN(Term.app rightBranch v)) →
     SN(eitherMatch e leftBranch rightBranch)
@@ -5093,7 +5173,8 @@ theorem Reducible.step_preserves_eitherType
   refine ⟨?_, ?_⟩
   · exact RawTerm.isStronglyNormalizing.step_preserves
       sourceReducible.1 rawStep
-  · intro motiveType leftRaw rightRaw leftBranch rightBranch leftApplied rightApplied
+  · intro motiveType leftRaw rightRaw leftBranch rightBranch
+      leftSN rightSN leftApplied rightApplied
     have eitherMatchStep : RawStep.parProgress
         (RawTerm.eitherMatch sourceRaw leftRaw rightRaw)
         (RawTerm.eitherMatch targetRaw leftRaw rightRaw) := by
@@ -5103,7 +5184,8 @@ theorem Reducible.step_preserves_eitherType
       apply rawStep.2
       injection eitherMatchEq
     exact RawTerm.isStronglyNormalizing.step_preserves
-      (sourceReducible.2 leftBranch rightBranch leftApplied rightApplied)
+      (sourceReducible.2 leftBranch rightBranch leftSN rightSN
+        leftApplied rightApplied)
       eitherMatchStep
 
 /-! ## K12.20.M typed CR2 lift — Ty.path strong-pathApp-closure compound arm
@@ -6934,6 +7016,7 @@ theorem Reducible.fundamental_optionMatch_at_option_sn
     (Term.subst termSubst noneBranch)
     (Term.subst termSubst someBranch)
     (Reducible.isStronglyNormalizing noneIH)
+    (Reducible.isStronglyNormalizing someIH)
     (fun valueTerm valueIH =>
       Reducible.isStronglyNormalizing (someIH.2 valueTerm valueIH))
 
@@ -6974,6 +7057,8 @@ theorem Reducible.fundamental_eitherMatch_at_either_sn
   scrutineeIH.2
     (Term.subst termSubst leftBranch)
     (Term.subst termSubst rightBranch)
+    (Reducible.isStronglyNormalizing leftIH)
+    (Reducible.isStronglyNormalizing rightIH)
     (fun valueTerm valueIH =>
       Reducible.isStronglyNormalizing (leftIH.2 valueTerm valueIH))
     (fun valueTerm valueIH =>

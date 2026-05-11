@@ -53,17 +53,18 @@ K12.7 ships (asymmetric Σ closure):
 
 K12.8 ships (weak elim closure for parametric inductives):
 * `Reducible Ty.listType A xs = SN(xs) ∧ ∀ motiveType
-  nilBranch consBranch, SN(nilBranch) ∧ (∀ head tail,
+  nilBranch consBranch, SN(nilBranch) ∧ SN(consBranch) ∧ (∀ head tail,
   Reducible A head → SN(tail) → SN(app(app consBranch head)
   tail)) → SN(listElim xs nilBranch consBranch)`.
 * `Reducible Ty.optionType A xs = SN(xs) ∧ ∀ motiveType
-  noneBranch someBranch, SN(noneBranch) ∧ (∀ v, Reducible A v
-  → SN(app someBranch v)) → SN(optionMatch xs noneBranch
+  noneBranch someBranch, SN(noneBranch) ∧ SN(someBranch) ∧
+  (∀ v, Reducible A v → SN(app someBranch v)) → SN(optionMatch xs noneBranch
   someBranch)`.
 * `Reducible Ty.eitherType L R xs = SN(xs) ∧ ∀ motiveType
-  leftBranch rightBranch, (∀ v, Reducible L v → SN(app
-  leftBranch v)) ∧ (∀ v, Reducible R v → SN(app rightBranch
-  v)) → SN(eitherMatch xs leftBranch rightBranch)`.
+  leftBranch rightBranch, SN(leftBranch) ∧ SN(rightBranch) ∧
+  (∀ v, Reducible L v → SN(app leftBranch v)) ∧
+  (∀ v, Reducible R v → SN(app rightBranch v)) →
+  SN(eitherMatch xs leftBranch rightBranch)`.
   Each parametric type's element / left / right sub-Ty IS
   a strict sub-Ty, so full Reducible recurses on branches'
   argument types; motiveType is arbitrary (NOT structural
@@ -264,9 +265,10 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   ReducibleSubst.identity (where every position's TermSubst value is
   the canonical Term.var) and ReducibleSubst.singleton's k+1-positions
   case (where the TermSubst supplies a cast-Term.var at the
-  weaken-substituted-out type).  Compound-arm neutral-reducibility
-  (var reducible at arrow/Σ/...) needs full CR3 / outer Ty induction;
-  ships in K12.20.G.
+  weaken-substituted-out type).  Weak/SN-output compound arms with
+  explicit branch-SN premises can close directly from raw neutral
+  eliminator SN helpers; strong-output compound arms use higher-order
+  sub-Ty CR3 hooks.
 
 K12.20.F ships (typed CR2 lift — arrow compound arm):
 * `Reducible.step_preserves_arrow` — Reducible at `Ty.arrow A B`
@@ -329,10 +331,9 @@ K12.20.J ships (typed CR2 lift — listType weak-elim-closure compound arm):
 * `Reducible.step_preserves_listType` — Reducible at
   `Ty.listType A` is closed under raw `parProgress`.  K12.8's
   weak elim closure has two conjuncts: SN(listTerm) + (∀ M
-  nilBranch consBranch, SN nilBranch → cons-applied-closure →
-  SN(listElim listTerm nilBranch consBranch)).  The hypothesis
-  chain inside the second conjunct (Reducible elementType head +
-  SN tail → SN(consBranch head tail)) propagates unchanged
+  nilBranch consBranch, SN nilBranch → SN consBranch →
+  cons-applied-closure → SN(listElim listTerm nilBranch consBranch)).
+  The branch-SN and application-closure hypotheses propagate unchanged
   through sourceReducible.2 — CR2 needs NO recursive
   elementTypeCR2 hypothesis because eliminator output is plain
   SN.  Same weak-closure pattern as K12.20.G piTy and K12.20.I
@@ -349,8 +350,8 @@ K12.20.K ships (typed CR2 lift — optionType weak-elim-closure compound arm):
   optionType arm is the cleanest of the three K12.8 parametric
   inductives: someBranch's type matches K12.6 piTy weak shape
   exactly.  Closure: SN(optionTerm) + (∀ M noneBranch someBranch,
-  SN noneBranch → ∀ v, Reducible A v → SN(some-app v) →
-  SN(optionMatch optionTerm noneBranch someBranch)).  Same
+  SN noneBranch → SN someBranch → ∀ v, Reducible A v →
+  SN(some-app v) → SN(optionMatch optionTerm noneBranch someBranch)).  Same
   mechanical shape as K12.20.J listType — Term.optionMatch raw
   form is `RawTerm.optionMatch scrutineeRaw noneRaw someRaw`
   (per Term.lean:216); `RawStep.par.optionMatch` takes triple
@@ -365,9 +366,10 @@ K12.20.L ships (typed CR2 lift — eitherType symmetric-weak-elim-closure compou
   rightType are strict sub-Ty of `Ty.eitherType leftType
   rightType`, each branch's arrow shape matches K12.6 piTy weak
   closure per side.  Closure: SN(eitherTerm) + (∀ M leftBranch
-  rightBranch, left-applied-closure → right-applied-closure →
-  SN(eitherMatch eitherTerm leftBranch rightBranch)).  Both
-  hypothesis chains propagate unchanged through sourceReducible.2
+  rightBranch, SN leftBranch → SN rightBranch → left-applied-closure →
+  right-applied-closure → SN(eitherMatch eitherTerm leftBranch rightBranch)).
+  The branch-SN and application-closure hypotheses propagate unchanged
+  through sourceReducible.2
   — NO recursive leftTypeCR2/rightTypeCR2 hypothesis needed
   (eliminator output is plain SN).  Term.eitherMatch raw form is
   `RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw` (per
@@ -779,6 +781,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.refine_of_varShape
 #print axioms Reducible.record_of_varShape
 #print axioms Reducible.codata_of_varShape
+#print axioms Reducible.listType_of_varShape
+#print axioms Reducible.optionType_of_varShape
+#print axioms Reducible.eitherType_of_varShape
 #print axioms Reducible.unit_of_progress_closure
 #print axioms Reducible.bool_of_progress_closure
 #print axioms Reducible.nat_of_progress_closure
