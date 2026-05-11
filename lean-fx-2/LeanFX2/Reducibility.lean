@@ -3683,6 +3683,213 @@ theorem Reducible.arrow_of_varShape
              (Reducible.isStronglyNormalizing argumentIsReducible))
            progressStep)⟩
 
+/-- **K12.20.U2 sigmaTy varShape arm**: variables are reducible at
+dependent-pair type once the first-projection CR3 step is available.
+
+The sigma candidate demands SN of the pair-shaped term, full Reducible
+for `fst`, and SN for `snd`.  The raw `fst_var` / `snd_var` lemmas
+provide the neutral projection SN closures; the full first projection
+is delegated to the recursive CR3 hook for `firstType`. -/
+theorem Reducible.sigmaTy_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.sigmaTy firstType secondType)
+          (RawTerm.var position))
+    (firstTypeCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context firstType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible firstType sourceTerm) :
+    Reducible (Ty.sigmaTy firstType secondType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   firstTypeCR3 (Term.fst term)
+     (RawTerm.IsNeutral.fst (RawTerm.IsNeutral.var position))
+     (fun _targetRaw progressStep =>
+       RawTerm.isStronglyNormalizing.step_preserves
+         (RawTerm.fst_var_isStronglyNormalizing position) progressStep),
+   RawTerm.snd_var_isStronglyNormalizing position⟩
+
+/-- **K12.20.U2 path varShape arm**: variables are reducible at cubical
+path type once carrier CR3 is available.
+
+The path candidate's eliminator closure returns full Reducible at the
+carrier type.  `pathApp (var position) interval` is neutral, and the
+existing raw helper supplies the progress-closure SN needed by the
+carrier CR3 hook. -/
+theorem Reducible.path_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          (RawTerm.var position))
+    (carrierCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context carrierType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible carrierType sourceTerm) :
+    Reducible (Ty.path carrierType leftEndpoint rightEndpoint) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun modeIsUnivalent {_intervalRaw} intervalTerm intervalIsSN =>
+     carrierCR3 (Term.pathApp modeIsUnivalent term intervalTerm)
+       (RawTerm.IsNeutral.pathApp (RawTerm.IsNeutral.var position))
+       (fun _targetRaw progressStep =>
+         RawTerm.isStronglyNormalizing.step_preserves
+           (RawTerm.pathApp_var_isStronglyNormalizing position intervalIsSN)
+           progressStep)⟩
+
+/-- **K12.20.U2 glue varShape arm**: variables are reducible at Glue
+type once base-type CR3 is available. -/
+theorem Reducible.glue_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.glue baseType boundaryWitness)
+          (RawTerm.var position))
+    (baseTypeCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context baseType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible baseType sourceTerm) :
+    Reducible (Ty.glue baseType boundaryWitness) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun modeIsUnivalent =>
+     baseTypeCR3 (Term.glueElim modeIsUnivalent term)
+       (RawTerm.IsNeutral.glueElim (RawTerm.IsNeutral.var position))
+       (fun _targetRaw progressStep =>
+         RawTerm.isStronglyNormalizing.step_preserves
+           (RawTerm.glueElim_var_isStronglyNormalizing position)
+           progressStep)⟩
+
+/-- **K12.20.U2 equiv varShape arm**: variables are reducible at
+equivalence type once codomain CR3 is available. -/
+theorem Reducible.equiv_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.equiv carrierA carrierB)
+          (RawTerm.var position))
+    (carrierBCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context carrierB sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible carrierB sourceTerm) :
+    Reducible (Ty.equiv carrierA carrierB) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   fun {_argumentRaw} argumentTerm argumentIsReducible =>
+     carrierBCR3 (Term.equivApp term argumentTerm)
+       (RawTerm.IsNeutral.equivApp (RawTerm.IsNeutral.var position))
+       (fun _targetRaw progressStep =>
+         RawTerm.isStronglyNormalizing.step_preserves
+           (RawTerm.equivApp_var_isStronglyNormalizing position
+             (Reducible.isStronglyNormalizing argumentIsReducible))
+           progressStep)⟩
+
+/-- **K12.20.U2 refine varShape arm**: variables are reducible at
+refinement type once base-type CR3 is available. -/
+theorem Reducible.refine_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.refine baseType predicate)
+          (RawTerm.var position))
+    (baseTypeCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context baseType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible baseType sourceTerm) :
+    Reducible (Ty.refine baseType predicate) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   baseTypeCR3 (Term.refineElim term)
+     (RawTerm.IsNeutral.refineElim (RawTerm.IsNeutral.var position))
+     (fun _targetRaw progressStep =>
+       RawTerm.isStronglyNormalizing.step_preserves
+         (RawTerm.refineElim_var_isStronglyNormalizing position)
+         progressStep)⟩
+
+/-- **K12.20.U2 record varShape arm**: variables are reducible at
+single-field record type once field-type CR3 is available. -/
+theorem Reducible.record_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.record singleFieldType)
+          (RawTerm.var position))
+    (singleFieldTypeCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context singleFieldType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible singleFieldType sourceTerm) :
+    Reducible (Ty.record singleFieldType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   singleFieldTypeCR3 (Term.recordProj term)
+     (RawTerm.IsNeutral.recordProj (RawTerm.IsNeutral.var position))
+     (fun _targetRaw progressStep =>
+       RawTerm.isStronglyNormalizing.step_preserves
+         (RawTerm.recordProj_var_isStronglyNormalizing position)
+         progressStep)⟩
+
+/-- **K12.20.U2 codata varShape arm**: variables are reducible at
+codata type once output-type CR3 is available. -/
+theorem Reducible.codata_of_varShape
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {position : Fin scope}
+    (term :
+        Term context (Ty.codata stateType outputType)
+          (RawTerm.var position))
+    (outputTypeCR3 :
+      ∀ {sourceRaw : RawTerm scope}
+        (sourceTerm : Term context outputType sourceRaw),
+        RawTerm.IsNeutral sourceRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress sourceRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible outputType sourceTerm) :
+    Reducible (Ty.codata stateType outputType) term :=
+  ⟨Term.isStronglyNormalizing_of_varShape term,
+   outputTypeCR3 (Term.codataDest term)
+     (RawTerm.IsNeutral.codataDest (RawTerm.IsNeutral.var position))
+     (fun _targetRaw progressStep =>
+       RawTerm.isStronglyNormalizing.step_preserves
+         (RawTerm.codataDest_var_isStronglyNormalizing position)
+         progressStep)⟩
+
 /-- **K12.20.AZ.1 piTy arm**: variables are reducible at the
 dependent-Π type.  Closure: SN(var) + ∀ argTerm, Reducible
 domainType argTerm → SN(Term.appPi (var) argTerm).  The second
