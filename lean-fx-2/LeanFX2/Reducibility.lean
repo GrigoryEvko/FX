@@ -1159,6 +1159,27 @@ theorem RawTerm.subsume_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis innerTarget
       ⟨innerStep, innerDistinct⟩
 
+/-- **K12.20.AC.1 listNil SN preservation** — nullary value at
+parametric Ty.listType.  Sister to natZero / unit / boolTrue —
+atomic ctor, only refl reduces, parProgress disequality contradicts
+trivially. -/
+theorem RawTerm.listNil_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.listNil : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro
+    (RawTerm.listNil : RawTerm scope)
+    (fun _ progressStep =>
+      (progressStep.2 (RawStep.par.listNil_inv progressStep.1).symm).elim)
+
+/-- **K12.20.AC.2 optionNone SN preservation** — nullary value at
+parametric Ty.optionType.  Same atomic shape as listNil. -/
+theorem RawTerm.optionNone_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.optionNone : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro
+    (RawTerm.optionNone : RawTerm scope)
+    (fun _ progressStep =>
+      (progressStep.2 (RawStep.par.optionNone_inv progressStep.1).symm).elim)
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
