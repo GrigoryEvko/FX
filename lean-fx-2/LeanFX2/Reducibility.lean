@@ -135,9 +135,19 @@ This file ships:
   baseType (Term.glueElim gluedValue)`.  baseType IS strict
   sub-Ty so full Reducible on the projection result.  Even
   simpler than path (no arg quantifier).
-* **All remaining constructors** (~6 type formers: refine, record,
-  codata, session, effect, modal): SN-fallback (admissible but
-  weak — every reducible term is at least SN).  K12.13-K12.16
+* **modal modalityTag carrierType** (K12.13, Layer-1 documented
+  SN-fallback): SN-only closure.  Layer 1 kernel ships modal
+  ctors (modIntro / modElim / subsume) as raw-side scaffolding —
+  none currently produces `Ty.modal _ _`-typed values.  The
+  modal type former exists but is uninhabited at the typed
+  layer.  Layer 6 (#1716 + #1689-1691) will add typed
+  `Term.modIntroCross` / `Term.modElimCross` producing
+  `Ty.modal modality carrierType` values, plus 8-modality
+  dispatch; K12.13.layer6 will then ship the per-modality Tait
+  closure.
+* **All remaining constructors** (~5 type formers: refine,
+  record, codata, session, effect): SN-fallback (admissible but
+  weak — every reducible term is at least SN).  K12.14-K12.16
   tighten each to its type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
@@ -452,6 +462,29 @@ def Reducible {mode : Mode} {level scope : Nat}
   | Ty.codata _ _, _, term => Term.isStronglyNormalizing term
   | Ty.session _, _, term => Term.isStronglyNormalizing term
   | Ty.effect _ _, _, term => Term.isStronglyNormalizing term
+  -- Modal type (K12.13, Layer-1 SN-fallback with Layer-6 deferral).
+  -- `Ty.modal modalityTag carrierType` has carrierType as a strict
+  -- sub-Ty, so structural recursion would admit a `Reducible
+  -- carrierType _` call in principle.  HOWEVER, the current kernel
+  -- (Layer 1) ships modal ctors as RAW-SIDE SCAFFOLDING ONLY:
+  -- `Term.modIntro innerTerm : Term ctx innerType (RawTerm.modIntro
+  -- innerRaw)` preserves innerType rather than producing
+  -- `Ty.modal _ innerType`.  Consequently, NO Term ctor at the
+  -- typed layer currently inhabits `Ty.modal _ _` — the type
+  -- former exists, but the typed kernel has zero inhabitants of
+  -- modal type.  Any putative `Reducible Ty.modal _ _ term`
+  -- application is therefore vacuous at Layer 1, and SN-fallback
+  -- is the maximally-meaningful closure available without new
+  -- ctors.  Layer 6 (#1716 Modal/Foundation.lean +
+  -- CUMUL-7.1.{1,2,3} #1689-1691) will add typed
+  -- `Term.modIntroCross` / `Term.modElimCross` producing
+  -- `Ty.modal modality carrierType`-typed values plus the
+  -- 8-modality dispatch (♭ ⊣ ◇ ⊣ □ ⊣ ♯ chain + ghost/cap/
+  -- later/clock).  K12.13.layer6 will then tighten this arm to
+  -- the per-modality Tait closure (e.g. `Reducible (modal ◇ A)
+  -- term := SN(term) ∧ Reducible A (Term.modElimCross term)` for
+  -- positive modalities, with mode-quantified eliminators per the
+  -- K12.10 idStrict pattern).
   | Ty.modal _ _, _, term => Term.isStronglyNormalizing term
 
 end LeanFX2

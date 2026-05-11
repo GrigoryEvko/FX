@@ -108,10 +108,21 @@ K12.12 ships (cubical path + glue full-output closures):
   (modeIsUnivalent), Reducible B (Term.glueElim gluedValue)`.
   baseType strict sub-Ty → full Reducible on projection result.
 
-Future K12.13-K12.16 tighten the remaining ~6 SN-fallback arms
-(refine / record / codata / session / effect / modal) to their
-type-former-specific closures.  K12.18-K12.26 ship the
-fundamental lemma; K12.27 closes M04 / `strong_normalization`. -/
+K12.13 ships (Layer-1 documented SN-fallback for Ty.modal):
+* `Reducible Ty.modal modalityTag carrierType term =
+  SN(term)`.  Layer 1 kernel has NO Term ctor producing
+  `Ty.modal _ _`-typed values (modIntro/modElim/subsume are
+  raw-side scaffolding that preserves innerType).  Modal type
+  former exists but is uninhabited at the typed layer until
+  Layer 6 (#1716 + #1689-1691) lands typed modIntroCross /
+  modElimCross with 8-modality dispatch.  K12.13.layer6 will
+  then ship the per-modality Tait closure (♭ ⊣ ◇ ⊣ □ ⊣ ♯
+  chain + ghost/cap/later/clock).
+
+Future K12.14-K12.16 tighten the remaining ~5 SN-fallback arms
+(refine / record / codata / session / effect) to their type-
+former-specific closures.  K12.18-K12.26 ship the fundamental
+lemma; K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
