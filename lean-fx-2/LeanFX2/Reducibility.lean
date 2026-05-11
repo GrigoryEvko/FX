@@ -82,11 +82,18 @@ This file ships:
   weaker than the full Tait clause (no Reducible at the
   substituted codomain).  Full closure reserved for a future
   Kripke logical relation refactor.
-* **All remaining constructors** (~16 type formers: sigmaTy,
-  id, listType, optionType, eitherType, path, glue, oeq,
+* **sigmaTy A B** (K12.7, asymmetric closure): `SN(term) ∧
+  Reducible A (Term.fst term) ∧ SN(Term.snd term)`.  Asymmetric
+  because `firstType` IS a strict sub-term of `Ty.sigmaTy
+  firstType secondType` (so full Reducible recurses), but the
+  snd projection's type is `secondType.subst0 firstType ...`
+  (substituted, same wall as K12.6 piTy codomain).  Full
+  Reducible-snd closure reserved for the Kripke refactor.
+* **All remaining constructors** (~15 type formers: id,
+  listType, optionType, eitherType, path, glue, oeq,
   idStrict, equiv, refine, record, codata, session, effect,
   modal): SN-fallback (admissible but weak — every reducible
-  term is at least SN).  K12.7-K12.16 tighten each to its
+  term is at least SN).  K12.8-K12.16 tighten each to its
   type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
@@ -212,8 +219,19 @@ def Reducible {mode : Mode} {level scope : Nat}
         (argumentTerm : Term context domainType argumentRaw),
         Reducible domainType argumentTerm →
         Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm)
-  -- Remaining type formers (K12.7-K12.16 TODO): SN-fallback
-  | Ty.sigmaTy _ _, _, term => Term.isStronglyNormalizing term
+  -- Dependent Σ type (K12.7, asymmetric closure): SN + full
+  -- Reducible on fst projection (firstType IS a strict sub-term
+  -- of `Ty.sigmaTy firstType secondType`, so structural recursion
+  -- works) + weak SN on snd projection (its type is
+  -- `secondType.subst0 firstType (RawTerm.fst pairRaw)` — same
+  -- substituted-sub-term wall as K12.6's piTy codomain).  Full
+  -- Reducible-snd closure ships in the future Kripke logical
+  -- relation refactor.
+  | Ty.sigmaTy firstType _, _, pairTerm =>
+      Term.isStronglyNormalizing pairTerm ∧
+      Reducible firstType (Term.fst pairTerm) ∧
+      Term.isStronglyNormalizing (Term.snd pairTerm)
+  -- Remaining type formers (K12.8-K12.16 TODO): SN-fallback
   | Ty.id _ _ _, _, term => Term.isStronglyNormalizing term
   | Ty.listType _, _, term => Term.isStronglyNormalizing term
   | Ty.optionType _, _, term => Term.isStronglyNormalizing term

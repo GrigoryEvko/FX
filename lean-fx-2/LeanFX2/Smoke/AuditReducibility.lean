@@ -39,17 +39,24 @@ K12.6 ships (weak dep-Π closure):
   codomain `B.subst0 A arg`, which fails structural recursion
   (substituted codomain is not a strict sub-term).  Weak
   closure recurses only on `domainType` (strict sub-term)
-  and demands SN of the application result.  Stronger than
-  pure SN-fallback (preserves SN under reducible application);
-  weaker than the full Tait clause.  Full closure reserved
-  for a future Kripke logical relation refactor.
+  and demands SN of the application result.
 
-Future K12.7-K12.16 tighten the remaining ~16 SN-fallback arms
-(sigmaTy / id / listType / optionType / eitherType / path /
-glue / oeq / idStrict / equiv / refine / record / codata /
-session / effect / modal) to their type-former-specific
-closures.  K12.18-K12.26 ship the fundamental lemma;
-K12.27 closes M04 / `strong_normalization`. -/
+K12.7 ships (asymmetric Σ closure):
+* `Reducible Ty.sigmaTy A B term = SN(term) ∧
+  Reducible A (Term.fst term) ∧ SN(Term.snd term)`.
+  Asymmetric: full Reducible on fst projection (firstType IS
+  a strict sub-term of `Ty.sigmaTy firstType secondType`,
+  structural recursion works), weak SN on snd projection (its
+  type is `secondType.subst0 firstType (RawTerm.fst pairRaw)`
+  — substituted, same wall as K12.6 piTy codomain).  Full
+  Reducible-snd closure reserved for the Kripke refactor.
+
+Future K12.8-K12.16 tighten the remaining ~15 SN-fallback arms
+(id / listType / optionType / eitherType / path / glue / oeq /
+idStrict / equiv / refine / record / codata / session /
+effect / modal) to their type-former-specific closures.
+K12.18-K12.26 ship the fundamental lemma; K12.27 closes M04 /
+`strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
