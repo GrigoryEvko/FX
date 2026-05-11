@@ -3298,6 +3298,55 @@ theorem RawTerm.refineElim_neutral_isStronglyNormalizing {scope : Nat}
         (RawTerm.IsNeutral.par_preserves refinedIsNeutral refinedStep)
         (valueRaw := valueTarget) (proofRaw := proofTarget) rfl).elim
 
+/-- Equivalence application with a neutral equivalence head is strongly
+normalizing when both the equivalence head and argument are strongly
+normalizing.
+
+Unlike raw application, `equivApp` has no beta arm at the raw layer;
+`RawStep.par.equivApp_inv` is congruence-only.  The proof therefore
+recurses on head progress or argument progress, with the no-progress
+case discharged by the strict progress witness. -/
+theorem RawTerm.equivApp_neutral_isStronglyNormalizing {scope : Nat}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivIsNeutral : RawTerm.IsNeutral equivRaw)
+    (equivIsSN : RawTerm.isStronglyNormalizing equivRaw)
+    (argumentIsSN : RawTerm.isStronglyNormalizing argumentRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.equivApp equivRaw argumentRaw) := by
+  induction equivIsSN generalizing argumentRaw with
+  | intro currentEquiv _ equivInduction =>
+    induction argumentIsSN with
+    | intro currentArgument argumentClosure argumentInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.equivApp currentEquiv currentArgument) ?_
+      intro target progressStep
+      obtain ⟨equivTarget, argumentTarget, targetEq,
+          equivStep, argumentStep⟩ :=
+        RawStep.par.equivApp_inv progressStep.1
+      subst targetEq
+      have equivTargetIsNeutral :
+          RawTerm.IsNeutral equivTarget :=
+        RawTerm.IsNeutral.par_preserves equivIsNeutral equivStep
+      have argumentTargetIsSN :
+          RawTerm.isStronglyNormalizing argumentTarget := by
+        by_cases argumentEq : currentArgument = argumentTarget
+        · subst argumentEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentArgument argumentClosure
+        · exact argumentClosure argumentTarget
+            ⟨argumentStep, argumentEq⟩
+      by_cases equivEq : currentEquiv = equivTarget
+      · subst equivEq
+        by_cases argumentEq : currentArgument = argumentTarget
+        · subst argumentEq
+          exact (progressStep.2 rfl).elim
+        · exact argumentInduction argumentTarget
+            ⟨argumentStep, argumentEq⟩
+      · exact equivInduction equivTarget
+          ⟨equivStep, equivEq⟩
+          equivTargetIsNeutral
+          argumentTargetIsSN
+
 /-- **K12.20.AX.2 neutral equivApp SN preservation**.  Sister to
 `pathApp_var`; var sits in the equiv-term slot, argument is the SN
 witness.  `equivApp_inv` is cong-only (no β rule at raw layer yet),
@@ -5679,6 +5728,54 @@ theorem Reducible.equiv_of_varShape
            (RawTerm.equivApp_var_isStronglyNormalizing position
              (Reducible.isStronglyNormalizing argumentIsReducible))
            progressStep)⟩
+
+/-- **K12.20.U2 equiv CR3 arm**: a neutral equivalence is reducible at
+`Ty.equiv carrierA carrierB` when every raw progress reduct is SN and
+the codomain CR3 hook is available.
+
+The equivalence candidate mirrors the arrow candidate: for every
+reducible argument at `carrierA`, `equivApp neutral argument` is a
+neutral term at `carrierB`.  The raw neutral application helper gives
+the progress-closure SN premise, and the recursive `carrierB` CR3 hook
+upgrades that neutral result to full Reducible. -/
+theorem Reducible.equiv_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term context (Ty.equiv carrierA carrierB) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (carrierBCR3 :
+      ∀ {carrierBRaw : RawTerm scope}
+        (carrierBTerm : Term context carrierB carrierBRaw),
+        RawTerm.IsNeutral carrierBRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress carrierBRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible carrierB carrierBTerm) :
+    Reducible (Ty.equiv carrierA carrierB) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro argumentRaw argumentTerm argumentIsReducible
+  have equivAppIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.equivApp sourceRaw argumentRaw) :=
+    RawTerm.equivApp_neutral_isStronglyNormalizing
+      sourceIsNeutral
+      sourceIsSN
+      (Reducible.isStronglyNormalizing argumentIsReducible)
+  exact carrierBCR3
+    (Term.equivApp sourceTerm argumentTerm)
+    (RawTerm.IsNeutral.equivApp sourceIsNeutral)
+    (fun _targetRaw progressStep =>
+      RawTerm.isStronglyNormalizing.step_preserves
+        equivAppIsSN progressStep)
 
 /-- **K12.20.U2 refine CR3 arm**: a neutral refined value is reducible
 at `Ty.refine baseType predicate` when every raw progress reduct is SN
