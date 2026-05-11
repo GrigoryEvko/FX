@@ -5372,4 +5372,75 @@ theorem Reducible.fundamental_equivApp_at_equiv
               (Term.subst termSubst (Term.equivApp equivTerm argumentTerm)) :=
   equivIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-! ## K12.24 fundamental cubical-eliminator cases -/
+
+/-- Fundamental case: `Term.pathApp` at `Ty.path` (K12.24.A).
+
+Cubical path application — `Term.pathApp` consumes a path
+witness at `Ty.path carrierType leftEndpoint rightEndpoint` plus
+an interval point and produces a value at carrierType.  The
+`modeIsUnivalent : mode = Mode.univalent` data parameter on the
+ctor (`Term.lean:348`) is the univalent-mode gate that protects
+the cubical β rule from firing in non-univalent modes.
+
+K12.12's path closure (`Reducibility.lean:476-483`) carries a
+quantified eliminator-output Reducible witness, threading the
+SAME mode gate plus an interval-SN argument hypothesis:
+
+    Reducible (Ty.path carrier _ _) pathTerm =
+      SN(pathTerm) ∧
+      ∀ (modeIsUnivalent : mode = Mode.univalent) intervalTerm,
+        SN(intervalTerm) →
+        Reducible carrier (Term.pathApp modeIsUnivalent pathTerm intervalTerm)
+
+The fundamental atomic projects the second conjunct and supplies
+all three pieces from the IHs:
+
+* `modeIsUnivalent` comes directly from the ctor parameter
+  (threaded as `modeIsUnivalent` here).
+* `Term.subst termSubst intervalTerm` is the post-substitution
+  interval point.
+* `intervalIH` is `Reducible (Ty.interval.subst sigma)
+  (subst intervalTerm)`; Ty.interval is a closed type so
+  `Ty.interval.subst sigma = Ty.interval` definitionally
+  (`Foundation/Subst.lean:127`), and K12.4's interval closure
+  (`Reducibility.lean:329`) is literally `SN(...)`, so intervalIH
+  IS the SN witness K12.12 demands.
+
+Term.subst commutes definitionally over `.pathApp`
+(`Term/Subst.lean:322` — no cast); Ty.path.subst is also
+definitional (`Foundation/Subst.lean:128-131`), so the substituted
+goal `(Ty.path c l r).subst sigma` unifies with the closure's
+LHS without rewriting.
+
+Same projection pattern as K12.23.A equivApp.  The interval-SN
+demand sets this atomic apart from K12.23.A's Reducible-argument
+demand — path's argument lives at the closed type Ty.interval
+where Reducible degenerates to SN. -/
+theorem Reducible.fundamental_pathApp_at_path
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+        Term sourceCtx
+             (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (pathIH :
+        Reducible
+          ((Ty.path carrierType leftEndpoint rightEndpoint).subst sigma)
+          (Term.subst termSubst pathTerm))
+    (intervalIH :
+        Reducible (Ty.interval.subst sigma)
+                  (Term.subst termSubst intervalTerm)) :
+    Reducible (carrierType.subst sigma)
+              (Term.subst termSubst
+                 (Term.pathApp modeIsUnivalent pathTerm intervalTerm)) :=
+  pathIH.2 modeIsUnivalent (Term.subst termSubst intervalTerm) intervalIH
+
 end LeanFX2
