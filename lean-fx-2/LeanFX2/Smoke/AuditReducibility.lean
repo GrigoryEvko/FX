@@ -325,6 +325,24 @@ K12.20.I ships (typed CR2 lift — id weak-idJ-closure compound arm):
   11 remaining (list/option/either/path/glue/oeq/idStrict/equiv/
   refine/record/codata).
 
+K12.20.J ships (typed CR2 lift — listType weak-elim-closure compound arm):
+* `Reducible.step_preserves_listType` — Reducible at
+  `Ty.listType A` is closed under raw `parProgress`.  K12.8's
+  weak elim closure has two conjuncts: SN(listTerm) + (∀ M
+  nilBranch consBranch, SN nilBranch → cons-applied-closure →
+  SN(listElim listTerm nilBranch consBranch)).  The hypothesis
+  chain inside the second conjunct (Reducible elementType head +
+  SN tail → SN(consBranch head tail)) propagates unchanged
+  through sourceReducible.2 — CR2 needs NO recursive
+  elementTypeCR2 hypothesis because eliminator output is plain
+  SN.  Same weak-closure pattern as K12.20.G piTy and K12.20.I
+  id.  Term.listElim raw form is `RawTerm.listElim scrutineeRaw
+  nilRaw consRaw` (per Term.lean:200); `RawStep.par.listElim`
+  takes triple par steps (per RawPar.lean:120) — for CR2 the
+  branches use `par.refl` while scrutinee gets `rawStep.1`.
+  Fifth compound-arm CR2; 10 remaining (option/either/path/glue/
+  oeq/idStrict/equiv/refine/record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -373,5 +391,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_piTy
 #print axioms Reducible.step_preserves_sigmaTy
 #print axioms Reducible.step_preserves_id
+#print axioms Reducible.step_preserves_listType
 
 end LeanFX2.Smoke

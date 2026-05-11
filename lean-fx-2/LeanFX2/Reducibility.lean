@@ -1569,4 +1569,67 @@ theorem Reducible.step_preserves_id
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 baseCase baseSN) idJStep
 
+/-! ## K12.20.J typed CR2 lift — Ty.listType weak-elim-closure compound arm
+
+Fifth compound-arm CR2 lemma.  `Ty.listType` ships a **weak elim
+closure** in K12.8: the eliminator output is plain SN, not full
+Reducible (motive-Reducible closure reserved for Kripke logical-
+relation refactor — paired-environment recursion sidesteps the
+arbitrary-motiveType sub-Ty wall).  Closure shape (per
+Reducibility.lean:404):
+
+```
+Reducible (Ty.listType A) xs =
+  SN(xs) ∧ ∀ {M} {nilRaw consRaw} (nilBranch consBranch),
+    SN(nilBranch) →
+    (∀ head tail, Reducible A head → SN(tail) →
+                  SN(consBranch head tail)) →
+    SN(listElim xs nilBranch consBranch)
+```
+
+The hypothesis chain (`Reducible A head` + `SN(tail)` for the
+cons branch) is propagated unchanged by sourceReducible.2 — CR2
+needs NO recursive elementTypeCR2 hypothesis because the
+eliminator output is plain SN, not Reducible.  Same weak-closure
+pattern as K12.20.G piTy and K12.20.I id.
+
+Term.listElim shares raw form `RawTerm.listElim scrutineeRaw
+nilRaw consRaw` (per Term.lean:200); `RawStep.par.listElim`
+takes paired par steps on all three components (per RawPar.lean:
+120).  For CR2, branches are fixed across source/target, so the
+nilRaw/consRaw sides get `par.refl` while scrutinee gets
+`rawStep.1`.
+-/
+
+/-- **K12.20.J listType arm**: weak-elim-closure CR2 for
+`Ty.listType`.  Both SN-of-listTerm and SN-of-listElim-result are
+preserved by the same raw `step_preserves`.  Distinctness on
+listElim via ctor injectivity (injection extracts scrutinee-side
+raw equality, contradicts rawStep.2). -/
+theorem Reducible.step_preserves_listType
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.listType elementType) sourceRaw}
+    {target : Term context (Ty.listType elementType) targetRaw}
+    (sourceReducible :
+        Reducible (Ty.listType elementType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.listType elementType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro motiveType nilRaw consRaw nilBranch consBranch nilSN consApplied
+    have listElimStep : RawStep.parProgress
+        (RawTerm.listElim sourceRaw nilRaw consRaw)
+        (RawTerm.listElim targetRaw nilRaw consRaw) := by
+      refine ⟨RawStep.par.listElim rawStep.1
+          (RawStep.par.refl nilRaw) (RawStep.par.refl consRaw), ?_⟩
+      intro listElimEq
+      apply rawStep.2
+      injection listElimEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      (sourceReducible.2 nilBranch consBranch nilSN consApplied) listElimStep
+
 end LeanFX2
