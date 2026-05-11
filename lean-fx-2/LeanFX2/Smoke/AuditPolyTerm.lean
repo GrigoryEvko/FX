@@ -3,6 +3,7 @@ import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.Foundation.Polygraph.PolyTermAction
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
+import LeanFX2.Term.PolyRename
 
 namespace LeanFX2.Smoke
 
@@ -254,3 +255,7 @@ end LeanFX2.Smoke
 -- K11.13 Phase C-1 (#1745) — reverse-direction rename commute.
 #print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_rename_commute
 #print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken_toRawTerm_commute
+
+-- K11.13 Phase C-2 (#1745) — typed PolyTerm.rename via composition.
+#print axioms LeanFX2.PolyTerm.rename
+#print axioms LeanFX2.PolyTerm.weaken

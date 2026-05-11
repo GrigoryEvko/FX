@@ -198,4 +198,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_rename_commute
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.weaken_toRawTerm_commute
 
+-- K11.13 Phase C-2 (#1745): typed `PolyTerm.rename` via composition
+-- through `Term.rename`.  Routes `polyTerm` → `toTerm` → `Term.rename`
+-- → `.toPoly` and casts the raw-payload index from
+-- `(rawPoly.toRawTerm.rename rho).toRawPoly` to `rawPoly.rename rho`
+-- using Phase A's commute + K11.12's roundtrip.  `PolyTerm.weaken` is
+-- the canonical single-binder corollary.
+#assert_no_axioms LeanFX2.PolyTerm.rename
+#assert_no_axioms LeanFX2.PolyTerm.weaken
+
 end LeanFX2.Tools
