@@ -169,13 +169,28 @@ K12.17 ships (universal extraction lemma):
   extractor for the fundamental-lemma cascade (K12.18-K12.26)
   to conclude SN from any Reducible witness at any Ty.
 
-Future K12.18-K12.26 ship the fundamental lemma; K12.27 closes
-M04 / `strong_normalization`. -/
+K12.18 ships (substitution-reducibility predicate):
+* `ReducibleSubst sourceCtx targetCtx sigma` — for every variable
+  position in the source scope, the joint substitution provides a
+  typed term at the substituted-source-type / matched-raw view, AND
+  that typed term is Reducible at the substituted type.  The
+  fundamental-lemma cascade K12.19-K12.26 quantifies over this
+  predicate when stating the substitution-closure of Reducible.
+  K12.18 ships ONLY the predicate definition; constructors
+  (`ReducibleSubst.identity`, `ReducibleSubst.consSingleton`) and
+  the fundamental lemma's individual Term-ctor cases land in K12.19+
+  alongside the var case (which proves "every variable is reducible
+  at its declared type", the prerequisite for the identity
+  constructor).
+
+K12.19-K12.26 will ship the fundamental lemma; K12.27 closes M04 /
+`strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing
 #print axioms Reducible
 #print axioms Reducible.isStronglyNormalizing
+#print axioms ReducibleSubst
 
 end LeanFX2.Smoke

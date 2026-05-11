@@ -666,4 +666,61 @@ theorem Reducible.isStronglyNormalizing
   | Ty.effect _ _, _, _, witness => witness
   | Ty.modal _ _, _, _, witness => witness
 
+/-- **K12.18 substitution-reducibility predicate**: the universal
+quantification target of the fundamental lemma cascade
+(K12.19-K12.26).
+
+A substitution `sigma : Subst level scope targetScope` is *reducible*
+at the context pair `(sourceCtx, targetCtx)` when, for every variable
+position in the source scope, the joint substitution provides a typed
+term at the substituted-source-type / matched-raw view, AND that
+typed term is itself `Reducible` at the substituted type.
+
+## Why this shape (intrinsic, ∃-packaged)
+
+Tait 1967 / Girard 1972 classically state the predicate as "for each
+variable, sigma's image is reducible at the substituted type".  In an
+intrinsic-typing kernel the typed term is uniquely-up-to-defeq
+determined by `(context, type, raw)`, so its existence is data
+supplied by the caller when constructing a ReducibleSubst from
+concrete reducibility proofs (e.g. `Subst.singleton arg arg.toRaw`
+with `arg`'s own Reducible witness at position 0).
+
+## Fundamental lemma statement (K12.19+)
+
+The lemma the cascade proves: for any well-typed `term : Term
+sourceCtx ty raw` and any `sigma : Subst level scope targetScope`
+with `ReducibleSubst sourceCtx targetCtx sigma`, the substituted
+`term.subst sigma : Term targetCtx (ty.subst sigma) (raw.subst
+sigma.forRaw)` is `Reducible (ty.subst sigma)`.
+
+Induction proceeds on the Term ctor; each arm consumes the per-
+position witnesses ReducibleSubst supplies to discharge the IH on
+sub-terms.
+
+## Constructors (forward-referenced, K12.19+)
+
+K12.19+ will ship:
+* `ReducibleSubst.identity` — the identity substitution is reducible
+  at `(sourceCtx, sourceCtx)` (assumes "every variable is reducible
+  at its declared type", which K12.19's var case proves
+  simultaneously with the fundamental lemma).
+* `ReducibleSubst.consSingleton` — extending a reducible substitution
+  with a fresh Reducible witness yields a reducible substitution at
+  the extended context.
+
+K12.18 ships ONLY the predicate's definition + axiom-free audit pin.
+The constructors land alongside the fundamental-lemma cases that
+need them (var case + lam case respectively).
+-/
+def ReducibleSubst {mode : Mode} {level scope targetScope : Nat}
+    (sourceCtx : Ctx mode level scope)
+    (targetCtx : Ctx mode level targetScope)
+    (sigma : Subst level scope targetScope) : Prop :=
+  ∀ (position : Fin scope),
+    ∃ (substitutedTerm : Term targetCtx
+                              ((varType sourceCtx position).subst sigma)
+                              (sigma.forRaw position)),
+      Reducible ((varType sourceCtx position).subst sigma) substitutedTerm
+
 end LeanFX2
