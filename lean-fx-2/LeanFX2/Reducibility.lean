@@ -3,6 +3,7 @@ import LeanFX2.Term.Subst
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.RawParWeakenInv
 
 /-! # LeanFX2.Reducibility — Tait reducibility candidates
 
@@ -1958,6 +1959,54 @@ theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
     RawTerm.isStronglyNormalizing target := by
   cases sourceIsSN with
   | intro _ closure => exact closure target progressStep
+
+/-! ## K12.20.U3.monotone raw weakening evidence
+
+Raw strong normalization is stable under one-binder weakening.  This is
+not the missing typed `Reducible.weaken` theorem: compound reducibility
+also needs world-monotone closure fields.  The lemma records the raw
+half of that route and is used to keep the `ReducibleSubst.lift`
+blocker precise rather than speculative.
+-/
+
+/-- **K12.20.U3.monotone raw lemma**: weakening preserves raw SN.
+
+Any progress step out of `source.weaken` lands in a weakened target by
+`RawStep.par.weaken_inv`.  Substituting a dummy singleton back through
+that weakened step reflects it to a progress step from `source`, so the
+source SN induction supplies SN of the inner target and hence of its
+weakened image. -/
+theorem RawTerm.isStronglyNormalizing_weaken {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    RawTerm.isStronglyNormalizing source.weaken := by
+  induction sourceIsSN with
+  | intro currentSource _ sourceIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        currentSource.weaken ?_
+      intro targetAfter progressStep
+      obtain ⟨targetInner, targetEq⟩ :=
+        RawStep.par.weaken_inv progressStep.1
+      have singletonStep :
+          RawStep.par
+            (currentSource.weaken.subst
+              (RawTermSubst.singleton RawTerm.unit))
+            (targetAfter.subst
+              (RawTermSubst.singleton RawTerm.unit)) :=
+        RawStep.par.subst_par
+          (fun _position => RawStep.par.refl _) progressStep.1
+      have innerStep : RawStep.par currentSource targetInner := by
+        rw [RawTerm.weaken_subst_singleton currentSource RawTerm.unit,
+            targetEq,
+            RawTerm.weaken_subst_singleton targetInner RawTerm.unit]
+          at singletonStep
+        exact singletonStep
+      have innerDistinct : currentSource ≠ targetInner := by
+        intro sourceEq
+        apply progressStep.2
+        rw [targetEq, sourceEq]
+      rw [targetEq]
+      exact sourceIH targetInner ⟨innerStep, innerDistinct⟩
 
 /-- Head-β SN expansion for non-dependent application.
 
