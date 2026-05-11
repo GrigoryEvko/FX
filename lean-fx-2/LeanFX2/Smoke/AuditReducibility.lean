@@ -551,11 +551,24 @@ K12.20.U ships (typed CR2 wrap-up — unified `Reducible.step_preserves`):
   will consume — no manual per-arm dispatch needed at each
   call site.
 
-K12.20.V+ / K12.21-K12.26 will ship the remaining fundamental-
-lemma cases (lam, β-redexes, ι-recursors, HOTT, cubical, modal,
-cumul/refine/type-code), starting with ReducibleSubst.singleton
-/ lift infrastructure.  K12.27 closes M04 /
-`strong_normalization`. -/
+K12.20.V ships (fundamental-lemma natSucc case — first recursive Term-ctor):
+* `Reducible.fundamental_natSucc` — companion to K12.19.B's
+  nullary-introducer cases (unit / boolTrue / boolFalse /
+  natZero), extended to the simplest **unary recursive
+  introducer** `Term.natSucc`.  First fundamental-theorem case
+  that threads an inductive hypothesis through Term-recursive
+  structure — canonical pattern for every K12.21+ recursive
+  case.  Body is a direct application of
+  `RawTerm.natSucc_isStronglyNormalizing` (Reducibility.lean:961)
+  to the predIH; Reducible's definitional unfolding at Ty.nat
+  to `Term.isStronglyNormalizing` → `RawTerm.isStronglyNormalizing
+  _.toRaw` plus `Term.subst`'s natSucc equation
+  (`Term/Subst.lean:237-238`) make this a one-line proof.
+
+K12.20.W+ / K12.21-K12.26 will ship the remaining fundamental-
+lemma cases (lam via ReducibleSubst.lift, β-redexes, ι-recursors,
+HOTT, cubical, modal, cumul/refine/type-code).  K12.27 closes
+M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
@@ -613,5 +626,6 @@ cumul/refine/type-code), starting with ReducibleSubst.singleton
 #print axioms Reducible.step_preserves_record
 #print axioms Reducible.step_preserves_codata
 #print axioms Reducible.step_preserves
+#print axioms Reducible.fundamental_natSucc
 
 end LeanFX2.Smoke

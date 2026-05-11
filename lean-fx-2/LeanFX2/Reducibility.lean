@@ -2446,4 +2446,21 @@ theorem Reducible.step_preserves
         Reducible.step_preserves_codata
           (Reducible.step_preserves output) reducible rawStep
 
+/-- **K12.20.V natSucc case** — first unary recursive introducer.
+Reducible at Ty.nat unfolds to SN; subst commutes with natSucc
+definitionally; raw lift via `RawTerm.natSucc_isStronglyNormalizing`. -/
+theorem Reducible.fundamental_natSucc
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {predRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predRaw}
+    (predIH : Reducible ((Ty.nat : Ty level scope).subst sigma)
+                        (Term.subst termSubst predecessor)) :
+    Reducible ((Ty.nat : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.natSucc predecessor)) :=
+  RawTerm.natSucc_isStronglyNormalizing predIH
+
 end LeanFX2
