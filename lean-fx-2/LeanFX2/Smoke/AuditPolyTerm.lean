@@ -84,6 +84,40 @@ theorem polyToRawTerm_listCons_smoke :
     RawTerm.listCons RawTerm.natZero RawTerm.listNil := by
   rfl
 
+/-! K11.10-A — raw-level forward bijection witnesses for
+`RawTerm.toRawPoly` (the converse of `RawPolyTerm.toRawTerm`).
+Each smoke verifies that the round-trip on a representative
+RawTerm constructor reduces by `rfl` thanks to the `@[reducible]`
+attribute on both directions. -/
+
+/-- Smoke witness — `RawTerm.toRawPoly` round-trip on an atomic ctor. -/
+theorem rawTermToPoly_natZero_smoke :
+    (RawTerm.natZero : RawTerm 0).toRawPoly = RawPolyTerm.natZero := by
+  rfl
+
+/-- Smoke witness — `RawTerm.toRawPoly` round-trip on a unary ctor. -/
+theorem rawTermToPoly_natSucc_smoke :
+    (RawTerm.natSucc RawTerm.natZero : RawTerm 0).toRawPoly =
+    RawPolyTerm.natSucc RawPolyTerm.natZero := by
+  rfl
+
+/-- Smoke witness — `RawTerm.toRawPoly` round-trip on a depth-3
+nested binary ctor. -/
+theorem rawTermToPoly_listCons_smoke :
+    (RawTerm.listCons RawTerm.natZero RawTerm.listNil
+      : RawTerm 0).toRawPoly =
+    RawPolyTerm.listCons RawPolyTerm.natZero RawPolyTerm.listNil := by
+  rfl
+
+/-- Smoke witness — `toRawPoly` followed by `toRawTerm` is the identity
+on a sample `RawTerm` (forward then backward roundtrip).  This is a
+preview of the K11.12 roundtrip theorems; here verified on a single
+representative ctor. -/
+theorem rawTermToPoly_roundtrip_natSucc_smoke :
+    (RawTerm.natSucc RawTerm.natZero : RawTerm 0).toRawPoly.toRawTerm =
+    RawTerm.natSucc RawTerm.natZero := by
+  rfl
+
 /-! Phase B — coverage witnesses for the 50 newly added typed
 constructors.  Each value below has a `#print axioms` line at the
 bottom of the file. -/
@@ -153,3 +187,8 @@ end LeanFX2.Smoke
 #print axioms LeanFX2.Smoke.polyUniverseCode_smoke
 #print axioms LeanFX2.Smoke.polyArrowCode_smoke
 #print axioms LeanFX2.Smoke.polyEquivReflId_smoke
+#print axioms LeanFX2.RawTerm.toRawPoly
+#print axioms LeanFX2.Smoke.rawTermToPoly_natZero_smoke
+#print axioms LeanFX2.Smoke.rawTermToPoly_natSucc_smoke
+#print axioms LeanFX2.Smoke.rawTermToPoly_listCons_smoke
+#print axioms LeanFX2.Smoke.rawTermToPoly_roundtrip_natSucc_smoke

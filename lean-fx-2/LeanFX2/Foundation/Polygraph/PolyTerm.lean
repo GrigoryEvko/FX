@@ -220,6 +220,143 @@ end LeanFX2.Foundation.Polygraph
 
 namespace LeanFX2
 
+/-- Structural raw-level converter from `RawTerm` to `RawPolyTerm` —
+the forward direction of the K11.12 raw-level bijection.  Every
+`RawTerm` constructor maps one-to-one to its `RawPolyTerm`
+counterpart.  Marked `@[reducible]` so the elaborator can chain
+definitional equalities through call sites in `Term.toPoly`
+(K11.10-B). -/
+@[reducible] def RawTerm.toRawPoly :
+    ∀ {scope : Nat}, RawTerm scope →
+      LeanFX2.Foundation.Polygraph.RawPolyTerm scope
+  | _, .var position => .var position
+  | _, .unit => .unit
+  | _, .lam body => .lam body.toRawPoly
+  | _, .app functionTerm argumentTerm =>
+      .app functionTerm.toRawPoly argumentTerm.toRawPoly
+  | _, .pair firstValue secondValue =>
+      .pair firstValue.toRawPoly secondValue.toRawPoly
+  | _, .fst pairTerm => .fst pairTerm.toRawPoly
+  | _, .snd pairTerm => .snd pairTerm.toRawPoly
+  | _, .boolTrue => .boolTrue
+  | _, .boolFalse => .boolFalse
+  | _, .boolElim scrutinee thenBranch elseBranch =>
+      .boolElim scrutinee.toRawPoly thenBranch.toRawPoly
+        elseBranch.toRawPoly
+  | _, .natZero => .natZero
+  | _, .natSucc predecessor => .natSucc predecessor.toRawPoly
+  | _, .natElim scrutinee zeroBranch succBranch =>
+      .natElim scrutinee.toRawPoly zeroBranch.toRawPoly
+        succBranch.toRawPoly
+  | _, .natRec scrutinee zeroBranch succBranch =>
+      .natRec scrutinee.toRawPoly zeroBranch.toRawPoly
+        succBranch.toRawPoly
+  | _, .listNil => .listNil
+  | _, .listCons headTerm tailTerm =>
+      .listCons headTerm.toRawPoly tailTerm.toRawPoly
+  | _, .listElim scrutinee nilBranch consBranch =>
+      .listElim scrutinee.toRawPoly nilBranch.toRawPoly
+        consBranch.toRawPoly
+  | _, .optionNone => .optionNone
+  | _, .optionSome valueTerm => .optionSome valueTerm.toRawPoly
+  | _, .optionMatch scrutinee noneBranch someBranch =>
+      .optionMatch scrutinee.toRawPoly noneBranch.toRawPoly
+        someBranch.toRawPoly
+  | _, .eitherInl valueTerm => .eitherInl valueTerm.toRawPoly
+  | _, .eitherInr valueTerm => .eitherInr valueTerm.toRawPoly
+  | _, .eitherMatch scrutinee leftBranch rightBranch =>
+      .eitherMatch scrutinee.toRawPoly leftBranch.toRawPoly
+        rightBranch.toRawPoly
+  | _, .refl rawWitness => .refl rawWitness.toRawPoly
+  | _, .idJ baseCase witness =>
+      .idJ baseCase.toRawPoly witness.toRawPoly
+  | _, .modIntro inner => .modIntro inner.toRawPoly
+  | _, .modElim inner => .modElim inner.toRawPoly
+  | _, .subsume inner => .subsume inner.toRawPoly
+  | _, .interval0 => .interval0
+  | _, .interval1 => .interval1
+  | _, .intervalOpp intervalTerm =>
+      .intervalOpp intervalTerm.toRawPoly
+  | _, .intervalMeet leftInterval rightInterval =>
+      .intervalMeet leftInterval.toRawPoly rightInterval.toRawPoly
+  | _, .intervalJoin leftInterval rightInterval =>
+      .intervalJoin leftInterval.toRawPoly rightInterval.toRawPoly
+  | _, .pathLam body => .pathLam body.toRawPoly
+  | _, .pathApp pathTerm intervalArg =>
+      .pathApp pathTerm.toRawPoly intervalArg.toRawPoly
+  | _, .glueIntro baseValue partialValue =>
+      .glueIntro baseValue.toRawPoly partialValue.toRawPoly
+  | _, .glueElim gluedValue => .glueElim gluedValue.toRawPoly
+  | _, .transp path source =>
+      .transp path.toRawPoly source.toRawPoly
+  | _, .hcomp sides cap => .hcomp sides.toRawPoly cap.toRawPoly
+  | _, .oeqRefl witness => .oeqRefl witness.toRawPoly
+  | _, .oeqJ baseCase witness =>
+      .oeqJ baseCase.toRawPoly witness.toRawPoly
+  | _, .oeqFunext pointwiseEquality =>
+      .oeqFunext pointwiseEquality.toRawPoly
+  | _, .idStrictRefl witness => .idStrictRefl witness.toRawPoly
+  | _, .idStrictRec baseCase witness =>
+      .idStrictRec baseCase.toRawPoly witness.toRawPoly
+  | _, .equivIntro forwardFn backwardFn =>
+      .equivIntro forwardFn.toRawPoly backwardFn.toRawPoly
+  | _, .equivApp equivTerm argument =>
+      .equivApp equivTerm.toRawPoly argument.toRawPoly
+  | _, .refineIntro rawValue predicateProof =>
+      .refineIntro rawValue.toRawPoly predicateProof.toRawPoly
+  | _, .refineElim refinedValue =>
+      .refineElim refinedValue.toRawPoly
+  | _, .recordIntro firstField =>
+      .recordIntro firstField.toRawPoly
+  | _, .recordProj recordValue =>
+      .recordProj recordValue.toRawPoly
+  | _, .codataUnfold initialState transition =>
+      .codataUnfold initialState.toRawPoly transition.toRawPoly
+  | _, .codataDest codataValue =>
+      .codataDest codataValue.toRawPoly
+  | _, .sessionSend channel payload =>
+      .sessionSend channel.toRawPoly payload.toRawPoly
+  | _, .sessionRecv channel =>
+      .sessionRecv channel.toRawPoly
+  | _, .effectPerform operationTag arguments =>
+      .effectPerform operationTag.toRawPoly arguments.toRawPoly
+  | _, .universeCode innerLevel => .universeCode innerLevel
+  | _, .arrowCode domainCode codomainCode =>
+      .arrowCode domainCode.toRawPoly codomainCode.toRawPoly
+  | _, .piTyCode domainCode codomainCode =>
+      .piTyCode domainCode.toRawPoly codomainCode.toRawPoly
+  | _, .sigmaTyCode domainCode codomainCode =>
+      .sigmaTyCode domainCode.toRawPoly codomainCode.toRawPoly
+  | _, .productCode firstCode secondCode =>
+      .productCode firstCode.toRawPoly secondCode.toRawPoly
+  | _, .sumCode leftCode rightCode =>
+      .sumCode leftCode.toRawPoly rightCode.toRawPoly
+  | _, .listCode elementCode => .listCode elementCode.toRawPoly
+  | _, .optionCode elementCode => .optionCode elementCode.toRawPoly
+  | _, .eitherCode leftCode rightCode =>
+      .eitherCode leftCode.toRawPoly rightCode.toRawPoly
+  | _, .idCode typeCode leftRaw rightRaw =>
+      .idCode typeCode.toRawPoly leftRaw.toRawPoly
+        rightRaw.toRawPoly
+  | _, .equivCode leftTypeCode rightTypeCode =>
+      .equivCode leftTypeCode.toRawPoly rightTypeCode.toRawPoly
+  | _, .cumulUpMarker innerCodeRaw =>
+      .cumulUpMarker innerCodeRaw.toRawPoly
+  | _, .uaToEquiv proofRaw => .uaToEquiv proofRaw.toRawPoly
+  | _, .equivApply equivRaw argRaw =>
+      .equivApply equivRaw.toRawPoly argRaw.toRawPoly
+  | _, .pathCompose leftPathRaw rightPathRaw =>
+      .pathCompose leftPathRaw.toRawPoly rightPathRaw.toRawPoly
+  | _, .idToEquiv proofRaw => .idToEquiv proofRaw.toRawPoly
+  | _, .oeqTrans firstProof secondProof =>
+      .oeqTrans firstProof.toRawPoly secondProof.toRawPoly
+  | _, .equivCompose firstEquiv secondEquiv =>
+      .equivCompose firstEquiv.toRawPoly secondEquiv.toRawPoly
+
+end LeanFX2
+
+namespace LeanFX2
+
 /-- Typed polygraph-encoding mirror of `Term`.  Indexed by the same
 typing context and kernel type as `Term`, but carries a
 `RawPolyTerm` raw payload instead of a `RawTerm`.
