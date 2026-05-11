@@ -3404,4 +3404,53 @@ theorem Reducible.fundamental_intervalJoin
                 (Term.intervalJoin leftValue rightValue)) :=
   RawTerm.intervalJoin_isStronglyNormalizing leftIH rightIH
 
+/-- **K12.20.AP.1 sessionRecv fundamental case** — session-type
+receive operation.  Result type `Ty.session protocolStep` is
+SN-direct (`Reducibility.lean:667`); `Term.subst` distributes
+componentwise over `sessionRecv`
+(`LeanFX2/Term/Subst.lean:363-364`); the unary K12.20.AL.1 SN
+helper closes the proof in one line. -/
+theorem Reducible.fundamental_sessionRecv
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (channelIH : Reducible ((Ty.session protocolStep).subst sigma)
+                           (Term.subst termSubst channel)) :
+    Reducible ((Ty.session protocolStep).subst sigma)
+              (Term.subst termSubst (Term.sessionRecv channel)) :=
+  RawTerm.sessionRecv_isStronglyNormalizing channelIH
+
+/-- **K12.20.AP.2 sessionSend fundamental case** — session-type
+send operation bundles a channel with an arbitrary-typed payload.
+Channel lives at `Ty.session protocolStep` (SN-direct) so `channelIH`
+IS SN; payload lives at arbitrary `payloadType`, so its SN witness
+is extracted via the K12.18 closure-elimination lemma
+`Reducible.isStronglyNormalizing` (lines 639-669) before feeding
+the K12.20.AL.2 binary helper. -/
+theorem Reducible.fundamental_sessionSend
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {protocolStep : RawTerm scope}
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (channelIH : Reducible ((Ty.session protocolStep).subst sigma)
+                           (Term.subst termSubst channel))
+    (payloadIH : Reducible (payloadType.subst sigma)
+                           (Term.subst termSubst payload)) :
+    Reducible ((Ty.session protocolStep).subst sigma)
+              (Term.subst termSubst
+                (Term.sessionSend protocolStep channel payload)) :=
+  RawTerm.sessionSend_isStronglyNormalizing channelIH
+    (Reducible.isStronglyNormalizing payloadIH)
+
 end LeanFX2
