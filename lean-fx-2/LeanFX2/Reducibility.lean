@@ -3694,6 +3694,56 @@ theorem RawTerm.idJ_var_isStronglyNormalizing {scope : Nat}
           (RawStep.par.var_inv witnessStep).symm
         nomatch varEqRefl)
 
+/-- Identity eliminator with a neutral witness is strongly normalizing
+when the witness and base case are strongly normalizing.
+
+The refl-ι arm is impossible because every parallel reduct of the
+neutral witness stays neutral, and neutral terms are never `refl`
+shaped.  The congruence arm recurses on witness progress or base-case
+progress. -/
+theorem RawTerm.idJ_neutral_isStronglyNormalizing {scope : Nat}
+    {baseCaseRaw witnessRaw : RawTerm scope}
+    (witnessIsNeutral : RawTerm.IsNeutral witnessRaw)
+    (witnessIsSN : RawTerm.isStronglyNormalizing witnessRaw)
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.idJ baseCaseRaw witnessRaw) := by
+  induction witnessIsSN generalizing baseCaseRaw with
+  | intro currentWitness _ witnessInduction =>
+    induction baseCaseIsSN with
+    | intro currentBase baseClosure baseInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.idJ currentBase currentWitness) ?_
+      intro target progressStep
+      rcases RawStep.par.idJ_inv progressStep.1 with
+        ⟨baseTarget, witnessTarget, targetEq,
+          baseStep, witnessStep⟩
+        | ⟨witnessReflRaw, _baseTarget, _targetEq,
+            witnessStep, _baseStep⟩
+      · subst targetEq
+        have witnessTargetIsNeutral :
+            RawTerm.IsNeutral witnessTarget :=
+          RawTerm.IsNeutral.par_preserves witnessIsNeutral witnessStep
+        have baseTargetIsSN :
+            RawTerm.isStronglyNormalizing baseTarget := by
+          by_cases baseEq : currentBase = baseTarget
+          · subst baseEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentBase baseClosure
+          · exact baseClosure baseTarget ⟨baseStep, baseEq⟩
+        by_cases witnessEq : currentWitness = witnessTarget
+        · subst witnessEq
+          by_cases baseEq : currentBase = baseTarget
+          · subst baseEq
+            exact (progressStep.2 rfl).elim
+          · exact baseInduction baseTarget ⟨baseStep, baseEq⟩
+        · exact witnessInduction witnessTarget
+            ⟨witnessStep, witnessEq⟩
+            witnessTargetIsNeutral baseTargetIsSN
+      · exact (RawTerm.IsNeutral.not_refl
+          (RawTerm.IsNeutral.par_preserves witnessIsNeutral witnessStep)
+          (witnessRaw := witnessReflRaw) rfl).elim
+
 /-- **K12.20.AX.4 neutral oeqJ SN preservation**.  Observational
 equality J eliminator with variable witness.  `oeqJ_inv` is
 cong-only (no ι rule at raw layer yet; oeq-style witness elimination
@@ -6447,6 +6497,35 @@ theorem Reducible.piTy_of_varShape
    fun {_argRaw} _argTerm argIsReducible =>
      RawTerm.app_var_isStronglyNormalizing position
        (Reducible.isStronglyNormalizing argIsReducible)⟩
+
+/-- **K12.20.U2 id CR3 arm**: a neutral identity witness is reducible
+at `Ty.id carrier leftEndpoint rightEndpoint` when every raw progress
+reduct is SN.
+
+The current K12.9 identity candidate is SN-output: it stores SN of the
+witness and SN preservation through `idJ` for any SN base case.  With a
+neutral witness, the refl-ι arm cannot fire, so the raw neutral J helper
+closes from witness SN plus base-case SN. -/
+theorem Reducible.id_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (witness :
+      Term context (Ty.id carrier leftEndpoint rightEndpoint) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.id carrier leftEndpoint rightEndpoint) witness := by
+  have sourceIsSN : Term.isStronglyNormalizing witness :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      witness sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _motiveType _baseRaw _baseCase baseIsSN
+  exact RawTerm.idJ_neutral_isStronglyNormalizing
+    sourceIsNeutral sourceIsSN baseIsSN
 
 /-- **K12.20.AZ.2 id arm**: variables are reducible at the HoTT
 propositional identity type.  Closure: SN(var) + ∀ baseCase,
