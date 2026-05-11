@@ -1180,6 +1180,67 @@ theorem RawTerm.optionNone_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.optionNone_inv progressStep.1).symm).elim)
 
+/-- **K12.20.AD.1 refl SN preservation** — HoTT identity-type
+introduction.  Unary cong over the path witness; refl_inv discharges
+each par step. -/
+theorem RawTerm.refl_isStronglyNormalizing {scope : Nat}
+    {rawWitness : RawTerm scope}
+    (witnessIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    RawTerm.isStronglyNormalizing (RawTerm.refl rawWitness) := by
+  induction witnessIsSN with
+  | intro currentWitness _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.refl currentWitness) ?_
+    intro target progressStep
+    obtain ⟨witnessTarget, targetEq, witnessStep⟩ :=
+      RawStep.par.refl_inv progressStep.1
+    subst targetEq
+    have witnessDistinct :
+        currentWitness ≠ witnessTarget := fun witnessEq =>
+      progressStep.2 (congrArg RawTerm.refl witnessEq)
+    exact inductiveHypothesis witnessTarget
+      ⟨witnessStep, witnessDistinct⟩
+
+/-- **K12.20.AD.2 oeqRefl SN preservation** — observational-equality
+reflexivity intro.  Sister to refl helper; oeqRefl_inv discharges. -/
+theorem RawTerm.oeqRefl_isStronglyNormalizing {scope : Nat}
+    {witness : RawTerm scope}
+    (witnessIsSN : RawTerm.isStronglyNormalizing witness) :
+    RawTerm.isStronglyNormalizing (RawTerm.oeqRefl witness) := by
+  induction witnessIsSN with
+  | intro currentWitness _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.oeqRefl currentWitness) ?_
+    intro target progressStep
+    obtain ⟨witnessTarget, targetEq, witnessStep⟩ :=
+      RawStep.par.oeqRefl_inv progressStep.1
+    subst targetEq
+    have witnessDistinct :
+        currentWitness ≠ witnessTarget := fun witnessEq =>
+      progressStep.2 (congrArg RawTerm.oeqRefl witnessEq)
+    exact inductiveHypothesis witnessTarget
+      ⟨witnessStep, witnessDistinct⟩
+
+/-- **K12.20.AD.3 idStrictRefl SN preservation** — strict-id
+reflexivity intro.  Same unary shape as refl / oeqRefl. -/
+theorem RawTerm.idStrictRefl_isStronglyNormalizing {scope : Nat}
+    {witness : RawTerm scope}
+    (witnessIsSN : RawTerm.isStronglyNormalizing witness) :
+    RawTerm.isStronglyNormalizing (RawTerm.idStrictRefl witness) := by
+  induction witnessIsSN with
+  | intro currentWitness _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.idStrictRefl currentWitness) ?_
+    intro target progressStep
+    obtain ⟨witnessTarget, targetEq, witnessStep⟩ :=
+      RawStep.par.idStrictRefl_inv progressStep.1
+    subst targetEq
+    have witnessDistinct :
+        currentWitness ≠ witnessTarget := fun witnessEq =>
+      progressStep.2 (congrArg RawTerm.idStrictRefl witnessEq)
+    exact inductiveHypothesis witnessTarget
+      ⟨witnessStep, witnessDistinct⟩
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
