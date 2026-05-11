@@ -257,6 +257,21 @@ theorem RawStep.par.subsume_inv {scope : Nat}
   | refl _ => exact ⟨innerTerm, rfl, RawStep.par.refl _⟩
   | subsume innerStep => exact ⟨_, rfl, innerStep⟩
 
+/-- `RawStep.par (cumulUpMarker inner) target → target = cumulUpMarker inner' ∧ par`.
+    CUMUL-2.6 `cumulUpMarkerCong` is the only non-`refl` rule with this source;
+    inversion mirrors `subsume_inv` / `modIntro_inv` (single subterm cong).
+    Originally lived in `LeanFX2.Term.PreservesTerm`; promoted to the canonical
+    inversion file (K12.20.BB) so it's importable from `LeanFX2.Reducibility`. -/
+theorem RawStep.par.cumulUpMarker_inv {scope : Nat}
+    {innerCodeRaw : RawTerm scope} {target : RawTerm scope}
+    (parallelStep :
+      RawStep.par (RawTerm.cumulUpMarker innerCodeRaw) target) :
+    ∃ innerTarget, target = RawTerm.cumulUpMarker innerTarget ∧
+      RawStep.par innerCodeRaw innerTarget := by
+  cases parallelStep with
+  | refl _ => exact ⟨innerCodeRaw, rfl, RawStep.par.refl _⟩
+  | cumulUpMarkerCong innerStep => exact ⟨_, rfl, innerStep⟩
+
 /-! ## D1.6 inversion lemmas — 27 new ctors.
 
 Each inversion follows the same skeleton as the existing ctors: `cases`

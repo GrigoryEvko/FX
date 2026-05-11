@@ -297,18 +297,6 @@ theorem RawStep.par.lift_universeCode
   cases rawStep
   case refl => exact ⟨sourceTerm, Step.par.refl sourceTerm⟩
 
-/-- Inline inversion: `RawStep.par (cumulUpMarker rw) target → ∃ wt,
-target = cumulUpMarker wt ∧ par rw wt`.  No β fires from
-cumulUpMarker — only refl + cong arms. -/
-theorem RawStep.par.cumulUpMarker_inv {scope : Nat}
-    {sourceRaw : RawTerm scope} {target : RawTerm scope}
-    (parallelStep : RawStep.par (RawTerm.cumulUpMarker sourceRaw) target) :
-    ∃ targetInner, target = RawTerm.cumulUpMarker targetInner ∧
-      RawStep.par sourceRaw targetInner := by
-  cases parallelStep with
-  | refl _ => exact ⟨sourceRaw, rfl, RawStep.par.refl _⟩
-  | cumulUpMarkerCong innerStep => exact ⟨_, rfl, innerStep⟩
-
 /-- **Tier 1 — Term.cumulUp lift.**  Single inner Term child
 (`typeCode` at `Ty.universe lowerLevel levelLeLow`).  No β fires from
 cumulUp; only `Step.par.cumulUpInnerCong` applies. -/

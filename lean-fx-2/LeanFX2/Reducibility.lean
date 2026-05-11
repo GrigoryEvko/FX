@@ -4461,4 +4461,62 @@ theorem Reducible.fundamental_universeCode
                   innerLevel outerLevel cumulOk levelLe)) :=
   RawTerm.universeCode_isStronglyNormalizing innerLevel.toNat
 
+/-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
+helper at the raw layer.  Sister to `subsume_isStronglyNormalizing`
+(K12.20.AB) and `modIntro_isStronglyNormalizing` (K12.20.Y) — unary
+cong-only ctor; `RawStep.par.cumulUpMarkerCong` is the only non-refl
+rule with `cumulUpMarker _` as source.  Powers `fundamental_cumulUp`
+at the typed cross-universe cumulativity ctor. -/
+theorem RawTerm.cumulUpMarker_isStronglyNormalizing {scope : Nat}
+    {innerCodeRaw : RawTerm scope}
+    (innerIsSN : RawTerm.isStronglyNormalizing innerCodeRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.cumulUpMarker innerCodeRaw) := by
+  induction innerIsSN with
+  | intro currentInner _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.cumulUpMarker currentInner) ?_
+    intro target progressStep
+    obtain ⟨innerTarget, targetEq, innerStep⟩ :=
+      RawStep.par.cumulUpMarker_inv progressStep.1
+    subst targetEq
+    have innerDistinct :
+        currentInner ≠ innerTarget := fun innerEq =>
+      progressStep.2 (congrArg RawTerm.cumulUpMarker innerEq)
+    exact inductiveHypothesis innerTarget
+      ⟨innerStep, innerDistinct⟩
+
+/-- **K12.20.BB.2 cumulUp fundamental case** — REAL cross-universe
+cumulativity at the typed Term level (Phase CUMUL-2.6 Design D).
+Source `Ty.universe lowerLevel levelLeLow` is SN-direct; output
+`Ty.universe higherLevel levelLeHigh` is also SN-direct (per
+`Reducibility.lean:330`).  `Term.subst` on `Term.cumulUp` reconstructs
+the cumulUp ctor at the target scope with the recursively-substituted
+inner typeCode (per `LeanFX2/Term/Subst.lean:388-393`); the typed
+raw form is `RawTerm.cumulUpMarker (codeRaw.subst sigma.forRaw)`.
+The `innerIH` is SN of the substituted inner; the K12.20.BB.1
+cumulUpMarker SN helper closes the proof. -/
+theorem Reducible.fundamental_cumulUp
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    {typeCode :
+        Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw}
+    (innerIH :
+        Reducible ((Ty.universe lowerLevel levelLeLow).subst sigma)
+                  (Term.subst termSubst typeCode)) :
+    Reducible ((Ty.universe higherLevel levelLeHigh).subst sigma)
+              (Term.subst termSubst
+                (Term.cumulUp lowerLevel higherLevel
+                              cumulMonotone levelLeLow levelLeHigh
+                              typeCode)) :=
+  RawTerm.cumulUpMarker_isStronglyNormalizing innerIH
+
 end LeanFX2
