@@ -294,6 +294,21 @@ K12.20.G ships (typed CR2 lift — piTy weak-closure compound arm):
   Term.app, so the raw `RawStep.par.app` cong rule applies
   identically; distinctness via `injection` on RawTerm.app.
 
+K12.20.H ships (typed CR2 lift — sigmaTy asymmetric-closure compound arm):
+* `Reducible.step_preserves_sigmaTy` — Reducible at
+  `Ty.sigmaTy A B` is closed under raw `parProgress`.  K12.7's
+  asymmetric closure has three conjuncts: SN(pair) + Reducible A
+  (fst pair) + SN(snd pair).  Each preservation discharged
+  independently: SN conjuncts via K12.20.B's raw `step_preserves`
+  on fst/snd-cong; the middle full-Reducible conjunct uses an
+  explicit `firstTypeCR2` hypothesis (mirrors K12.20.F arrow
+  parameterization) lifted through `RawStep.par.fst` cong.
+  Distinctness on fst/snd via `injection` on RawTerm.fst.injEq /
+  RawTerm.snd.injEq (ctor injectivity, propext-free).  Third
+  compound-arm CR2; 12 remaining (id/list/option/either/path/
+  glue/oeq/idStrict/equiv/refine/record/codata) follow the same
+  per-arm decomposition pattern.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -340,5 +355,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.modal_of_varShape
 #print axioms Reducible.step_preserves_arrow
 #print axioms Reducible.step_preserves_piTy
+#print axioms Reducible.step_preserves_sigmaTy
 
 end LeanFX2.Smoke

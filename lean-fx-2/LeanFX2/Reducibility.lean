@@ -1425,4 +1425,87 @@ theorem Reducible.step_preserves_piTy
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 argTerm argReducible) appStep
 
+/-! ## K12.20.H typed CR2 lift — Ty.sigmaTy asymmetric-closure compound arm
+
+Third compound-arm CR2 lemma.  `Ty.sigmaTy` ships an **asymmetric
+closure** in K12.7 (the second conjunct is full Reducible on the
+fst projection because `firstType` IS a strict sub-Ty of
+`Ty.sigmaTy firstType secondType` and structural recursion on
+Ty admits it; the third conjunct is weak SN on snd, because
+`secondType.subst0 firstType (RawTerm.fst pairRaw)` is a
+substituted Ty — same substituted-codomain wall as K12.6
+piTy):
+
+```
+Reducible (Ty.sigmaTy A B) p =
+  SN(p) ∧ Reducible A (Term.fst p) ∧ SN(Term.snd p)
+```
+
+The three-conjunct shape demands three independent preservation
+discharges under one raw-progress step:
+
+* **SN(p)**: pure-SN preservation, K12.20.B's raw
+  `step_preserves` handles it directly.
+* **Reducible A (fst p)**: needs `firstTypeCR2` hypothesis
+  threaded through (the structural-recursion-on-Ty bundling
+  comes later when all 15 compound CR2 arms ship as one
+  bundle).  The fst-cong step lifts `rawStep` via
+  `RawStep.par.fst`; distinctness via `injection` on
+  `RawTerm.fst.injEq` (ctor injectivity, propext-free).
+* **SN(snd p)**: pure-SN preservation again; snd-cong step
+  via `RawStep.par.snd`, distinctness via `injection` on
+  `RawTerm.snd.injEq`.
+
+Term.fst's raw projection IS `RawTerm.fst` (per Term.lean:140),
+Term.snd's IS `RawTerm.snd` (per Term.lean:145).  So the cong
+rules `RawStep.par.fst` and `RawStep.par.snd` apply directly to
+typed projections.
+-/
+
+/-- **K12.20.H sigmaTy arm**: asymmetric-closure CR2 for
+`Ty.sigmaTy`.  Takes `firstTypeCR2` as explicit hypothesis (the
+recursive Reducible-preservation witness on the smaller `firstType`
+sub-Ty — supplied externally per the per-arm decomposition; the
+unified structurally-recursive bundling ships after all 15
+compound-arm lemmas land).  Both SN conjuncts (pair + snd) are
+pure-SN preservation; the middle full-Reducible conjunct uses
+firstTypeCR2 with fst-cong. -/
+theorem Reducible.step_preserves_sigmaTy
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.sigmaTy firstType secondType) sourceRaw}
+    {target : Term context (Ty.sigmaTy firstType secondType) targetRaw}
+    (firstTypeCR2 :
+        ∀ {fstSourceRaw fstTargetRaw : RawTerm scope}
+          {fstSource : Term context firstType fstSourceRaw}
+          {fstTarget : Term context firstType fstTargetRaw},
+          Reducible firstType fstSource →
+          RawStep.parProgress fstSourceRaw fstTargetRaw →
+          Reducible firstType fstTarget)
+    (sourceReducible :
+        Reducible (Ty.sigmaTy firstType secondType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.sigmaTy firstType secondType) target := by
+  refine ⟨?_, ?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · have fstStep : RawStep.parProgress
+        (RawTerm.fst sourceRaw) (RawTerm.fst targetRaw) := by
+      refine ⟨RawStep.par.fst rawStep.1, ?_⟩
+      intro fstEq
+      apply rawStep.2
+      injection fstEq
+    exact firstTypeCR2 sourceReducible.2.1 fstStep
+  · have sndStep : RawStep.parProgress
+        (RawTerm.snd sourceRaw) (RawTerm.snd targetRaw) := by
+      refine ⟨RawStep.par.snd rawStep.1, ?_⟩
+      intro sndEq
+      apply rawStep.2
+      injection sndEq
+    exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.2.2 sndStep
+
 end LeanFX2
