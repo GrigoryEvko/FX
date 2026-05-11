@@ -852,4 +852,45 @@ theorem Reducible.fundamental_natZero
                 (Term.natZero (context := sourceCtx))) :=
   RawTerm.natZero_isStronglyNormalizing
 
+/-! ## K12.20.A unary-introducer SN preservation
+
+K12.20 (Term.lam case of the fundamental lemma) needs three
+ingredients per the standard Tait/Girard cascade:
+
+1. **SN preservation under lam** — if body is SN then `lam body`
+   is SN.  Proved here as `RawTerm.lam_isStronglyNormalizing`.
+2. **ReducibleSubst.singleton + lift** — extending a reducible
+   TermSubst with a fresh reducible witness (for β-redex unfolding
+   `(lam body) arg ⇝ body.subst0 arg`).  Blocked on CR3
+   ("neutral terms are reducible at every type") — variables in
+   the lifted TermSubst's positions need to be Reducible.
+3. **Closure under reduction (CR2)** — Reducible closed under
+   parProgress steps.  Per-Ty case split (25 arms).
+
+K12.20.A ships ingredient (1).  K12.20.B/C ship (2)/(3) once the
+neutral-reducibility chain is set up.  The full Term.lam case
+follows by combining all three.
+-/
+
+/-- `RawTerm.lam body` is strongly normalizing whenever `body` is.
+Proof: every `RawStep.par` from `lam body` lands at `lam bodyTarget`
+with `par body bodyTarget` (`RawStep.par.lam_inv`); the `parProgress`
+disequality `lam body ≠ lam bodyTarget` forces `body ≠ bodyTarget`
+(by `RawTerm.lam` injectivity), so the recursive IH on `body`'s SN
+witness handles the bodyTarget case. -/
+theorem RawTerm.lam_isStronglyNormalizing {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    (bodyIsSN : RawTerm.isStronglyNormalizing body) :
+    RawTerm.isStronglyNormalizing (RawTerm.lam body) := by
+  induction bodyIsSN with
+  | intro currentBody _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro (RawTerm.lam currentBody) ?_
+    intro target progressStep
+    obtain ⟨bodyTarget, targetEq, bodyStep⟩ :=
+      RawStep.par.lam_inv progressStep.1
+    subst targetEq
+    have bodyDistinct : currentBody ≠ bodyTarget := fun bodyEq =>
+      progressStep.2 (congrArg RawTerm.lam bodyEq)
+    exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
+
 end LeanFX2

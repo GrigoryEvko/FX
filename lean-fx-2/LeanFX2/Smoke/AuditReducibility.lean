@@ -199,6 +199,14 @@ K12.19.B ships (introducer-SN nullary base cases):
   Reducible's closed-leaf arm unfolds to SN, and Term.SN unfolds
   to RawTerm.SN at the carrier raw.
 
+K12.20.A ships (lam SN preservation):
+* `RawTerm.lam_isStronglyNormalizing` — if body is SN then
+  `RawTerm.lam body` is SN.  Standard inductive argument on body's
+  SN witness via the `lam_inv` step inversion + `RawTerm.lam`
+  ctor-injectivity.  Foundational prerequisite for K12.20's
+  Term.lam fundamental-lemma case (which still needs CR3 +
+  ReducibleSubst.singleton infrastructure to fully discharge).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -218,5 +226,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_boolTrue
 #print axioms Reducible.fundamental_boolFalse
 #print axioms Reducible.fundamental_natZero
+#print axioms RawTerm.lam_isStronglyNormalizing
 
 end LeanFX2.Smoke
