@@ -601,6 +601,8 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.refl_isStronglyNormalizing
 #print axioms RawTerm.oeqRefl_isStronglyNormalizing
 #print axioms RawTerm.idStrictRefl_isStronglyNormalizing
+#print axioms RawTerm.interval0_isStronglyNormalizing
+#print axioms RawTerm.interval1_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

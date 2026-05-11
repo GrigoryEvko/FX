@@ -1241,6 +1241,25 @@ theorem RawTerm.idStrictRefl_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis witnessTarget
       ⟨witnessStep, witnessDistinct⟩
 
+/-- **K12.20.AE.1 interval0 SN preservation** — cubical interval
+endpoint 0.  Atomic nullary, only-refl reduces, parProgress
+disequality contradicts the .symm of interval0_inv. -/
+theorem RawTerm.interval0_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.interval0 : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro
+    (RawTerm.interval0 : RawTerm scope)
+    (fun _ progressStep =>
+      (progressStep.2 (RawStep.par.interval0_inv progressStep.1).symm).elim)
+
+/-- **K12.20.AE.2 interval1 SN preservation** — cubical interval
+endpoint 1.  Sister to interval0; same atomic nullary shape. -/
+theorem RawTerm.interval1_isStronglyNormalizing {scope : Nat} :
+    RawTerm.isStronglyNormalizing (RawTerm.interval1 : RawTerm scope) :=
+  RawTerm.isStronglyNormalizing.intro
+    (RawTerm.interval1 : RawTerm scope)
+    (fun _ progressStep =>
+      (progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm).elim)
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
