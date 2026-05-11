@@ -269,6 +269,13 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   explicit branch-SN premises can close directly from raw neutral
   eliminator SN helpers; strong-output compound arms use higher-order
   sub-Ty CR3 hooks.
+* `RawTerm.IsNeutral.{app,fst,snd,boolElim,natElim,natRec,
+  listElim,optionMatch,eitherMatch}_par_preserves` — higher-order
+  one-step neutral-preservation atoms for the core eliminators.
+  Each assumes the principal neutral subterm preserves neutrality
+  across raw `par`, then rules out the beta/iota arm with the
+  canonical-shape exclusion family.  These are CR3 support lemmas,
+  not the global neutral-preservation dispatcher.
 
 K12.20.F ships (typed CR2 lift — arrow compound arm):
 * `Reducible.step_preserves_arrow` — Reducible at `Ty.arrow A B`
@@ -748,6 +755,15 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.IsNeutral.not_refineIntro
 #print axioms RawTerm.IsNeutral.not_recordIntro
 #print axioms RawTerm.IsNeutral.not_codataUnfold
+#print axioms RawTerm.IsNeutral.app_par_preserves
+#print axioms RawTerm.IsNeutral.fst_par_preserves
+#print axioms RawTerm.IsNeutral.snd_par_preserves
+#print axioms RawTerm.IsNeutral.boolElim_par_preserves
+#print axioms RawTerm.IsNeutral.natElim_par_preserves
+#print axioms RawTerm.IsNeutral.natRec_par_preserves
+#print axioms RawTerm.IsNeutral.listElim_par_preserves
+#print axioms RawTerm.IsNeutral.optionMatch_par_preserves
+#print axioms RawTerm.IsNeutral.eitherMatch_par_preserves
 #print axioms RawStep.par.universeCode_inv
 #print axioms RawTerm.universeCode_isStronglyNormalizing
 #print axioms Reducible.fundamental_universeCode
