@@ -1072,6 +1072,46 @@ theorem RawTerm.app_function_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing functionRaw :=
   RawTerm.app_function_isStronglyNormalizing_aux appIsSN rfl
 
+/-- Shape-specialized inversion for application-argument SN.  This is
+the argument-position sibling of `app_function_isStronglyNormalizing_aux`:
+the induction is over an arbitrary SN source and receives the application
+shape as an equality. -/
+theorem RawTerm.app_argument_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {functionRaw argumentRaw : RawTerm scope},
+      source = RawTerm.app functionRaw argumentRaw →
+      RawTerm.isStronglyNormalizing argumentRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro functionRaw argumentRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro argumentRaw ?_
+    intro argumentTarget argumentProgress
+    have appProgress :
+        RawStep.parProgress
+          (RawTerm.app functionRaw argumentRaw)
+          (RawTerm.app functionRaw argumentTarget) := by
+      refine ⟨RawStep.par.app (RawStep.par.refl functionRaw)
+        argumentProgress.1, ?_⟩
+      intro appEq
+      apply argumentProgress.2
+      injection appEq
+    exact inductiveHypothesis
+      (RawTerm.app functionRaw argumentTarget) appProgress rfl
+
+/-- If an application is strongly normalizing, its argument subterm is
+strongly normalizing.  Used alongside function-position inversion when
+head-β and eliminator proofs need to recover SN of raw subterms from an
+already-normalizing application. -/
+theorem RawTerm.app_argument_isStronglyNormalizing {scope : Nat}
+    {functionRaw argumentRaw : RawTerm scope}
+    (appIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app functionRaw argumentRaw)) :
+    RawTerm.isStronglyNormalizing argumentRaw :=
+  RawTerm.app_argument_isStronglyNormalizing_aux appIsSN rfl
+
 /-- **K12.20.U2 raw CR3 skeleton**: a raw term is strongly
 normalizing when every non-trivial parallel-progress reduct is
 strongly normalizing.
