@@ -893,4 +893,34 @@ theorem RawTerm.lam_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.lam bodyEq)
     exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
 
+/-! ## K12.20.B raw-level CR2 (closure under reduction)
+
+CR2 of Tait's three reducibility-candidate conditions: Reducible
+closed under reduction.  At the raw level, this is one step removed
+from SN's inductive definition — given SN of source and a progress
+step source → target, the SN constructor's closure directly gives
+SN of target.
+
+CR2 at typed Reducible reduces to this raw fact for SN-direct arms
+(unit / bool / nat / empty / interval / universe / tyVar / session /
+effect / modal) because `Reducible Ty.X term = Term.isStronglyNormalizing
+term = RawTerm.isStronglyNormalizing term.toRaw`.  The compound
+arms (arrow / piTy / Σ / id / list / option / either / path / glue /
+oeq / idStrict / equiv / refine / record / codata) need per-Ty
+case analysis on the closure structure — those land in K12.20.B
+follow-ups.
+-/
+
+/-- **K12.20.B raw CR2**: SN is preserved under parallel-progress
+reduction.  Direct destructuring of the SN constructor's closure —
+the closure says exactly "every progress step lands at SN target",
+so we apply it to the given step. -/
+theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
+    {source target : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source)
+    (progressStep : RawStep.parProgress source target) :
+    RawTerm.isStronglyNormalizing target := by
+  cases sourceIsSN with
+  | intro _ closure => exact closure target progressStep
+
 end LeanFX2

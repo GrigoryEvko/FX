@@ -207,6 +207,16 @@ K12.20.A ships (lam SN preservation):
   Term.lam fundamental-lemma case (which still needs CR3 +
   ReducibleSubst.singleton infrastructure to fully discharge).
 
+K12.20.B ships (raw CR2 — SN closure under reduction):
+* `RawTerm.isStronglyNormalizing.step_preserves` — given SN of
+  source and a parProgress step source → target, SN of target
+  follows by destructuring SN's inductive constructor.  CR2 at
+  typed Reducible for SN-direct arms (unit/bool/nat/empty/interval/
+  universe/tyVar/session/effect/modal) reduces to this raw fact
+  via Reducible's definitional unfolding chain.  Compound-arm
+  CR2 (arrow/Σ/id/list/...) needs per-Ty case analysis on the
+  closure structure — those land in follow-ups.
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -227,5 +237,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_boolFalse
 #print axioms Reducible.fundamental_natZero
 #print axioms RawTerm.lam_isStronglyNormalizing
+#print axioms RawTerm.isStronglyNormalizing.step_preserves
 
 end LeanFX2.Smoke
