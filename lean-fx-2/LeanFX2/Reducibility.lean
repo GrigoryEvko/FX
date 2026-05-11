@@ -1417,6 +1417,174 @@ theorem RawTerm.eitherMatch_var_isStronglyNormalizing {scope : Nat}
             (RawStep.par.var_inv scrutineeStep).symm
           nomatch varEqInr)
 
+/-- **K12.20.AX.1 neutral pathApp SN preservation**.  Direct analogue
+of `app_var`: var sits in the path-term slot, interval argument is
+SN witness.  `pathApp_inv` gives 2 arms (cong + β); β arm requires
+`pathTerm → pathLam _`, defeated by `var_inv` + nomatch on the
+resulting `var = pathLam _` equation. -/
+theorem RawTerm.pathApp_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {intervalArgRaw : RawTerm scope}
+    (intervalIsSN : RawTerm.isStronglyNormalizing intervalArgRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.pathApp (RawTerm.var position) intervalArgRaw) := by
+  induction intervalIsSN with
+  | intro currentInterval _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.pathApp (RawTerm.var position) currentInterval) ?_
+    intro target progressStep
+    rcases RawStep.par.pathApp_inv progressStep.1 with
+      ⟨pathTarget, intervalTarget, targetEq, pathStep, intervalStep⟩
+      | ⟨bodyTarget, _intervalTarget, _targetEq, pathStep, _intervalStep⟩
+    · have pathEq : pathTarget = RawTerm.var position :=
+        (RawStep.par.var_inv pathStep)
+      subst pathEq
+      subst targetEq
+      have intervalDistinct :
+          currentInterval ≠ intervalTarget := fun intervalEq =>
+        progressStep.2
+          (congrArg (RawTerm.pathApp (RawTerm.var position)) intervalEq)
+      exact inductiveHypothesis intervalTarget
+        ⟨intervalStep, intervalDistinct⟩
+    · exact (by
+        have varEqPathLam :
+            RawTerm.pathLam bodyTarget = RawTerm.var position :=
+          (RawStep.par.var_inv pathStep)
+        nomatch varEqPathLam)
+
+/-- **K12.20.AX.2 neutral equivApp SN preservation**.  Sister to
+`pathApp_var`; var sits in the equiv-term slot, argument is the SN
+witness.  `equivApp_inv` is cong-only (no β rule at raw layer yet),
+so no nomatch defense needed — the cong arm alone preserves SN
+via inductive hypothesis. -/
+theorem RawTerm.equivApp_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {argumentRaw : RawTerm scope}
+    (argumentIsSN : RawTerm.isStronglyNormalizing argumentRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.equivApp (RawTerm.var position) argumentRaw) := by
+  induction argumentIsSN with
+  | intro currentArgument _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.equivApp (RawTerm.var position) currentArgument) ?_
+    intro target progressStep
+    obtain ⟨equivTarget, argumentTarget, targetEq, equivStep, argumentStep⟩ :=
+      RawStep.par.equivApp_inv progressStep.1
+    have equivEq : equivTarget = RawTerm.var position :=
+      (RawStep.par.var_inv equivStep)
+    subst equivEq
+    subst targetEq
+    have argumentDistinct :
+        currentArgument ≠ argumentTarget := fun argumentEq =>
+      progressStep.2
+        (congrArg (RawTerm.equivApp (RawTerm.var position)) argumentEq)
+    exact inductiveHypothesis argumentTarget
+      ⟨argumentStep, argumentDistinct⟩
+
+/-- **K12.20.AX.3 neutral idJ SN preservation**.  HOTT J eliminator
+with variable witness (the equality being eliminated).  `idJ_inv`
+gives 2 arms (cong + iotaIdJRefl); ι arm requires
+`witness → refl _`, defeated by `var_inv` + nomatch on
+`var = refl _`.  Variable sits in the SECOND slot since
+`Term.idJ baseCase witness` destructs `witness`. -/
+theorem RawTerm.idJ_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {baseCaseRaw : RawTerm scope}
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.idJ baseCaseRaw (RawTerm.var position)) := by
+  induction baseCaseIsSN with
+  | intro currentBase _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.idJ currentBase (RawTerm.var position)) ?_
+    intro target progressStep
+    rcases RawStep.par.idJ_inv progressStep.1 with
+      ⟨baseTarget, witnessTarget, targetEq, baseStep, witnessStep⟩
+      | ⟨witnessRaw, _baseTarget, _targetEq, witnessStep, _baseStep⟩
+    · have witnessEq : witnessTarget = RawTerm.var position :=
+        (RawStep.par.var_inv witnessStep)
+      subst witnessEq
+      subst targetEq
+      have baseDistinct :
+          currentBase ≠ baseTarget := fun baseEq =>
+        progressStep.2
+          (congrArg (fun base => RawTerm.idJ base (RawTerm.var position))
+            baseEq)
+      exact inductiveHypothesis baseTarget
+        ⟨baseStep, baseDistinct⟩
+    · exact (by
+        have varEqRefl :
+            RawTerm.var position = RawTerm.refl witnessRaw :=
+          (RawStep.par.var_inv witnessStep).symm
+        nomatch varEqRefl)
+
+/-- **K12.20.AX.4 neutral oeqJ SN preservation**.  Observational
+equality J eliminator with variable witness.  `oeqJ_inv` is
+cong-only (no ι rule at raw layer yet; oeq-style witness elimination
+deferred), so no nomatch defense needed.  Same proof pattern as
+`equivApp_var` but with var in the SECOND slot. -/
+theorem RawTerm.oeqJ_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {baseCaseRaw : RawTerm scope}
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.oeqJ baseCaseRaw (RawTerm.var position)) := by
+  induction baseCaseIsSN with
+  | intro currentBase _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.oeqJ currentBase (RawTerm.var position)) ?_
+    intro target progressStep
+    obtain ⟨baseTarget, witnessTarget, targetEq, baseStep, witnessStep⟩ :=
+      RawStep.par.oeqJ_inv progressStep.1
+    have witnessEq : witnessTarget = RawTerm.var position :=
+      (RawStep.par.var_inv witnessStep)
+    subst witnessEq
+    subst targetEq
+    have baseDistinct :
+        currentBase ≠ baseTarget := fun baseEq =>
+      progressStep.2
+        (congrArg (fun base => RawTerm.oeqJ base (RawTerm.var position))
+          baseEq)
+    exact inductiveHypothesis baseTarget
+      ⟨baseStep, baseDistinct⟩
+
+/-- **K12.20.AX.5 neutral idStrictRec SN preservation**.  Strict-id
+recursor with variable witness.  `idStrictRec_inv` gives 2 arms
+(cong + iotaIdStrictRecRefl); ι arm requires
+`witness → idStrictRefl _`, defeated by `var_inv` + nomatch on
+`var = idStrictRefl _`. -/
+theorem RawTerm.idStrictRec_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope)
+    {baseCaseRaw : RawTerm scope}
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.idStrictRec baseCaseRaw (RawTerm.var position)) := by
+  induction baseCaseIsSN with
+  | intro currentBase _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.idStrictRec currentBase (RawTerm.var position)) ?_
+    intro target progressStep
+    rcases RawStep.par.idStrictRec_inv progressStep.1 with
+      ⟨baseTarget, witnessTarget, targetEq, baseStep, witnessStep⟩
+      | ⟨reflRawArgument, _baseTarget, _targetEq, witnessStep, _baseStep⟩
+    · have witnessEq : witnessTarget = RawTerm.var position :=
+        (RawStep.par.var_inv witnessStep)
+      subst witnessEq
+      subst targetEq
+      have baseDistinct :
+          currentBase ≠ baseTarget := fun baseEq =>
+        progressStep.2
+          (congrArg
+            (fun base => RawTerm.idStrictRec base (RawTerm.var position))
+            baseEq)
+      exact inductiveHypothesis baseTarget
+        ⟨baseStep, baseDistinct⟩
+    · exact (by
+        have varEqIdStrictRefl :
+            RawTerm.var position = RawTerm.idStrictRefl reflRawArgument :=
+          (RawStep.par.var_inv witnessStep).symm
+        nomatch varEqIdStrictRefl)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +
