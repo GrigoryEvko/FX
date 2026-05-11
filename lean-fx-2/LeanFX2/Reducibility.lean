@@ -1864,6 +1864,55 @@ theorem RawTerm.idStrictRec_var_isStronglyNormalizing {scope : Nat}
           (RawStep.par.var_inv witnessStep).symm
         nomatch varEqIdStrictRefl)
 
+/-- Strict identity recursor SN preservation.  This mirrors
+`RawTerm.idJ_isStronglyNormalizing`, with the strict reflexivity
+constructor in the iota arm. -/
+theorem RawTerm.idStrictRec_isStronglyNormalizing {scope : Nat}
+    {baseCaseRaw : RawTerm scope}
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    ∀ {witnessRaw : RawTerm scope},
+      RawTerm.isStronglyNormalizing witnessRaw →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.idStrictRec baseCaseRaw witnessRaw) := by
+  induction baseCaseIsSN with
+  | intro currentBase baseClosure baseIH =>
+    intro witnessRaw witnessIsSN
+    induction witnessIsSN with
+    | intro currentWitness witnessClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.idStrictRec currentBase currentWitness) ?_
+      intro target progressStep
+      cases RawStep.par.idStrictRec_inv progressStep.1 with
+      | inl congruentStep =>
+        rcases congruentStep with
+          ⟨baseTarget, witnessTarget, targetEq, baseStep, witnessStep⟩
+        subst targetEq
+        by_cases baseEq : currentBase = baseTarget
+        · subst baseEq
+          have witnessDistinct :
+              currentWitness ≠ witnessTarget := fun witnessEq =>
+            progressStep.2
+              (congrArg (RawTerm.idStrictRec currentBase) witnessEq)
+          exact innerIH witnessTarget ⟨witnessStep, witnessDistinct⟩
+        · have baseProgress :
+              RawStep.parProgress currentBase baseTarget :=
+            ⟨baseStep, baseEq⟩
+          by_cases witnessEq : currentWitness = witnessTarget
+          · subst witnessEq
+            exact baseIH baseTarget baseProgress
+              (RawTerm.isStronglyNormalizing.intro currentWitness
+                witnessClosure)
+          · exact baseIH baseTarget baseProgress
+              (witnessClosure witnessTarget ⟨witnessStep, witnessEq⟩)
+      | inr iotaStep =>
+        rcases iotaStep with
+          ⟨_reflRawArgument, baseTarget, targetEq, _witnessStep, baseStep⟩
+        rw [targetEq]
+        by_cases baseEq : currentBase = baseTarget
+        · subst baseEq
+          exact RawTerm.isStronglyNormalizing.intro currentBase baseClosure
+        · exact baseClosure baseTarget ⟨baseStep, baseEq⟩
+
 /-- **K12.20.AY.1 neutral modElim SN preservation**.  Unary modal
 destructor with variable inner term.  `modElim_inv` gives 2 arms:
 cong (innerTerm → innerTarget) and βModElimIntro (innerTerm →
