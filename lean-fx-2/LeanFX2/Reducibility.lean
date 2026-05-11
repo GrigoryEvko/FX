@@ -2415,6 +2415,120 @@ theorem RawTerm.pair_isStronglyNormalizing {scope : Nat}
         · exact firstIH firstTarget firstProgress
             (secondClosure secondTarget ⟨secondStep, secondEq⟩)
 
+/-- Head-β SN expansion for first projection over a pair.
+
+If both components are strongly normalizing, then `fst (pair first second)`
+is strongly normalizing.  Congruence reducts recurse through the pair
+components; β reducts land on a reduct of the first component. -/
+theorem RawTerm.fst_pair_isStronglyNormalizing {scope : Nat}
+    {firstValue : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstValue) :
+    ∀ {secondValue : RawTerm scope},
+      RawTerm.isStronglyNormalizing secondValue →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.fst (RawTerm.pair firstValue secondValue)) := by
+  induction firstIsSN with
+  | intro currentFirst firstClosure firstIH =>
+    intro secondValue secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.fst (RawTerm.pair currentFirst currentSecond)) ?_
+      intro target progressStep
+      rcases RawStep.par.fst_inv progressStep.1 with
+        ⟨pairTarget, targetEq, pairStep⟩
+        | ⟨firstTarget, secondTarget, targetEq, pairStep⟩
+      · obtain ⟨firstTarget, secondTarget, pairTargetEq,
+            firstStep, secondStep⟩ :=
+          RawStep.par.pair_inv pairStep
+        subst pairTargetEq
+        subst targetEq
+        by_cases firstEq : currentFirst = firstTarget
+        · subst firstEq
+          by_cases secondEq : currentSecond = secondTarget
+          · subst secondEq
+            exact False.elim (progressStep.2 rfl)
+          · exact innerIH secondTarget ⟨secondStep, secondEq⟩
+        · have firstProgress :
+              RawStep.parProgress currentFirst firstTarget :=
+            ⟨firstStep, firstEq⟩
+          by_cases secondEq : currentSecond = secondTarget
+          · subst secondEq
+            exact firstIH firstTarget firstProgress
+              (RawTerm.isStronglyNormalizing.intro currentSecond secondClosure)
+          · exact firstIH firstTarget firstProgress
+              (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+      · obtain ⟨firstPairTarget, _secondPairTarget, pairTargetEq,
+            firstStep, _secondStep⟩ :=
+          RawStep.par.pair_inv pairStep
+        injection pairTargetEq with _scopeEq firstTargetEq _secondTargetEq
+        rw [targetEq]
+        have firstStepToTarget : RawStep.par currentFirst firstTarget := by
+          rw [firstTargetEq]
+          exact firstStep
+        by_cases firstEq : currentFirst = firstTarget
+        · subst firstEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentFirst firstClosure
+        · exact firstClosure firstTarget ⟨firstStepToTarget, firstEq⟩
+
+/-- Head-β SN expansion for second projection over a pair.
+
+If both components are strongly normalizing, then `snd (pair first second)`
+is strongly normalizing.  Congruence reducts recurse through the pair
+components; β reducts land on a reduct of the second component. -/
+theorem RawTerm.snd_pair_isStronglyNormalizing {scope : Nat}
+    {firstValue : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstValue) :
+    ∀ {secondValue : RawTerm scope},
+      RawTerm.isStronglyNormalizing secondValue →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.snd (RawTerm.pair firstValue secondValue)) := by
+  induction firstIsSN with
+  | intro currentFirst firstClosure firstIH =>
+    intro secondValue secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.snd (RawTerm.pair currentFirst currentSecond)) ?_
+      intro target progressStep
+      rcases RawStep.par.snd_inv progressStep.1 with
+        ⟨pairTarget, targetEq, pairStep⟩
+        | ⟨firstTarget, secondTarget, targetEq, pairStep⟩
+      · obtain ⟨firstTarget, secondTarget, pairTargetEq,
+            firstStep, secondStep⟩ :=
+          RawStep.par.pair_inv pairStep
+        subst pairTargetEq
+        subst targetEq
+        by_cases firstEq : currentFirst = firstTarget
+        · subst firstEq
+          by_cases secondEq : currentSecond = secondTarget
+          · subst secondEq
+            exact False.elim (progressStep.2 rfl)
+          · exact innerIH secondTarget ⟨secondStep, secondEq⟩
+        · have firstProgress :
+              RawStep.parProgress currentFirst firstTarget :=
+            ⟨firstStep, firstEq⟩
+          by_cases secondEq : currentSecond = secondTarget
+          · subst secondEq
+            exact firstIH firstTarget firstProgress
+              (RawTerm.isStronglyNormalizing.intro currentSecond secondClosure)
+          · exact firstIH firstTarget firstProgress
+              (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+      · obtain ⟨_firstPairTarget, secondPairTarget, pairTargetEq,
+            _firstStep, secondStep⟩ :=
+          RawStep.par.pair_inv pairStep
+        injection pairTargetEq with _scopeEq _firstTargetEq secondTargetEq
+        rw [targetEq]
+        have secondStepToTarget : RawStep.par currentSecond secondTarget := by
+          rw [secondTargetEq]
+          exact secondStep
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSecond secondClosure
+        · exact secondClosure secondTarget ⟨secondStepToTarget, secondEq⟩
+
 /-- **K12.20.AA listCons SN preservation** — second binary SN
 helper.  Same nested-induction + decidable-injectivity-split template
 as `pair_isStronglyNormalizing`, applied to the cons-cell at the
