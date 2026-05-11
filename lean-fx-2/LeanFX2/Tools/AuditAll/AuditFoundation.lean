@@ -2,6 +2,7 @@ import LeanFX2.Tools.DependencyAudit
 import LeanFX2.Tools.AuditGen
 import LeanFX2.Tools.StrictHarness
 import LeanFX2
+import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.FX1.LeanKernel.Name
 import LeanFX2.FX1.LeanKernel.Level
 import LeanFX2.FX1.LeanKernel.Expr
@@ -110,5 +111,9 @@ namespace LeanFX2.Tools
 
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm
 #assert_no_axioms LeanFX2.PolyTerm
+
+-- K11.12 (#1749): raw-level roundtrip identity in both directions.
+#assert_no_axioms LeanFX2.RawTerm.toRawPoly_toRawTerm
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_toRawPoly
 
 end LeanFX2.Tools

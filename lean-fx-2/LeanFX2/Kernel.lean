@@ -23,6 +23,7 @@ import LeanFX2.Foundation.Polygraph.Laws
 import LeanFX2.Foundation.Polygraph.FreeCategory
 import LeanFX2.Foundation.Polygraph.RawPolyTerm
 import LeanFX2.Foundation.Polygraph.PolyTerm
+import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 
 -- Layer 1 - Term
 import LeanFX2.Term

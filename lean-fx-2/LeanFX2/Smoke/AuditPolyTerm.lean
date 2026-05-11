@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.Polygraph.PolyTerm
+import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.Term.PolyToTerm
 
 namespace LeanFX2.Smoke
@@ -224,3 +225,7 @@ end LeanFX2.Smoke
 #print axioms LeanFX2.Smoke.polyToTerm_listCons_smoke
 #print axioms LeanFX2.Smoke.polyToTerm_natSucc_smoke
 #print axioms LeanFX2.Smoke.polyToTerm_equivReflId_smoke
+
+-- K11.12 (#1749) — raw-level roundtrip identity, both directions.
+#print axioms LeanFX2.RawTerm.toRawPoly_toRawTerm
+#print axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_toRawPoly
