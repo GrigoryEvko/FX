@@ -606,6 +606,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.idJ_var_isStronglyNormalizing
 #print axioms RawTerm.oeqJ_var_isStronglyNormalizing
 #print axioms RawTerm.oeqJ_isStronglyNormalizing
+#print axioms RawTerm.idJ_isStronglyNormalizing
 #print axioms RawTerm.idStrictRec_var_isStronglyNormalizing
 #print axioms RawTerm.modElim_var_isStronglyNormalizing
 #print axioms RawTerm.glueElim_var_isStronglyNormalizing
