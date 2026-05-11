@@ -21,6 +21,7 @@ import LeanFX2.Foundation.Polygraph.VerticalComp
 import LeanFX2.Foundation.Polygraph.HorizontalComp
 import LeanFX2.Foundation.Polygraph.Laws
 import LeanFX2.Foundation.Polygraph.FreeCategory
+import LeanFX2.Foundation.Polygraph.RawPolyTerm
 
 -- Layer 1 - Term
 import LeanFX2.Term

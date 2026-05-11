@@ -105,4 +105,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator
 #assert_no_axioms LeanFX2.Foundation.Polygraph.FreeTwoCategoryAt.fromGenerator_length_eq_one
 
+#assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm
+#assert_no_axioms LeanFX2.Foundation.Polygraph.instDecidableEqRawPolyTerm
+
 end LeanFX2.Tools

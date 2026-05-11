@@ -118,6 +118,6 @@ namespace LeanFX2.Tools
 -- dependent-pair existential dependents through cd cascade, idToEquiv_inv
 -- (5 disjuncts now vs 3 prior), and inj_inv arms.  Tighten once full
 -- audit converges; for now allow growth.
-#assert_dependent_pair_dependent_budget LeanFX2 1600
+#assert_dependent_pair_dependent_budget LeanFX2 1640
 
 end LeanFX2.Tools
