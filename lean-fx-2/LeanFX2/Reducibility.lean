@@ -140,5 +140,34 @@ inductive Reducible : ∀ {mode : Mode} {level scope : Nat}
       (natTerm : Term context Ty.nat natRaw) :
       Term.isStronglyNormalizing natTerm →
       Reducible Ty.nat natTerm
+  /-- K12.3: a closed boolean-typed term is reducible iff it is
+  strongly normalizing.  Same base-type clause as `nat`. -/
+  | bool {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {boolRaw : RawTerm scope}
+      (boolTerm : Term context Ty.bool boolRaw) :
+      Term.isStronglyNormalizing boolTerm →
+      Reducible Ty.bool boolTerm
+  /-- K12.3: a closed unit-typed term is reducible iff it is
+  strongly normalizing.  Unit is structurally trivial (one
+  canonical inhabitant), so SN reduces to "every reduction
+  sequence terminates at `Term.unit`". -/
+  | unit {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {unitRaw : RawTerm scope}
+      (unitTerm : Term context Ty.unit unitRaw) :
+      Term.isStronglyNormalizing unitTerm →
+      Reducible Ty.unit unitTerm
+  /-- K12.3: a closed empty-typed term is reducible iff it is
+  strongly normalizing.  `Ty.empty` has no canonical inhabitants
+  at the value level — well-typed empty-typed terms must be
+  neutral (variables, eliminators), so SN here means "every
+  reduction terminates at a neutral form". -/
+  | empty {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {emptyRaw : RawTerm scope}
+      (emptyTerm : Term context Ty.empty emptyRaw) :
+      Term.isStronglyNormalizing emptyTerm →
+      Reducible Ty.empty emptyTerm
 
 end LeanFX2

@@ -29,7 +29,15 @@ K12.2 ships:
   reducible iff it is strongly normalizing (Tait's base-type
   clause).
 
-Future K12.3-K12.16 fill the remaining Ty arms;
+K12.3 ships:
+* `Reducible.bool` — closed boolean reducibility = SN.
+* `Reducible.unit` — closed unit reducibility = SN (structurally
+  trivial: one canonical inhabitant).
+* `Reducible.empty` — closed empty reducibility = SN (no
+  canonical inhabitants; reduction must terminate at a neutral
+  form).
+
+Future K12.4-K12.16 fill the remaining Ty arms;
 K12.18-K12.26 ship the fundamental lemma;
 K12.27 closes M04 / `strong_normalization`. -/
 
@@ -38,5 +46,8 @@ K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Term.isStronglyNormalizing
 #print axioms Reducible
 #print axioms Reducible.nat
+#print axioms Reducible.bool
+#print axioms Reducible.unit
+#print axioms Reducible.empty
 
 end LeanFX2.Smoke
