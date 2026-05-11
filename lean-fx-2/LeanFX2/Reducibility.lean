@@ -1736,6 +1736,47 @@ theorem RawTerm.oeqJ_var_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis baseTarget
       ⟨baseStep, baseDistinct⟩
 
+/-- Observational-equality eliminator SN preservation.  Unlike
+`idJ` and `idStrictRec`, the current raw `oeqJ` fragment has no
+refl-ι firing rule; `RawStep.par.oeqJ_inv` is pure congruence over
+the base case and witness. -/
+theorem RawTerm.oeqJ_isStronglyNormalizing {scope : Nat}
+    {baseCaseRaw : RawTerm scope}
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    ∀ {witnessRaw : RawTerm scope},
+      RawTerm.isStronglyNormalizing witnessRaw →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.oeqJ baseCaseRaw witnessRaw) := by
+  induction baseCaseIsSN with
+  | intro currentBase _ baseIH =>
+    intro witnessRaw witnessIsSN
+    induction witnessIsSN with
+    | intro currentWitness witnessClosure innerIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.oeqJ currentBase currentWitness) ?_
+      intro target progressStep
+      obtain ⟨baseTarget, witnessTarget, targetEq,
+              baseStep, witnessStep⟩ :=
+        RawStep.par.oeqJ_inv progressStep.1
+      subst targetEq
+      by_cases baseEq : currentBase = baseTarget
+      · subst baseEq
+        have witnessDistinct :
+            currentWitness ≠ witnessTarget := fun witnessEq =>
+          progressStep.2
+            (congrArg (RawTerm.oeqJ currentBase) witnessEq)
+        exact innerIH witnessTarget ⟨witnessStep, witnessDistinct⟩
+      · have baseProgress :
+            RawStep.parProgress currentBase baseTarget :=
+          ⟨baseStep, baseEq⟩
+        by_cases witnessEq : currentWitness = witnessTarget
+        · subst witnessEq
+          exact baseIH baseTarget baseProgress
+            (RawTerm.isStronglyNormalizing.intro currentWitness
+              witnessClosure)
+        · exact baseIH baseTarget baseProgress
+            (witnessClosure witnessTarget ⟨witnessStep, witnessEq⟩)
+
 /-- **K12.20.AX.5 neutral idStrictRec SN preservation**.  Strict-id
 recursor with variable witness.  `idStrictRec_inv` gives 2 arms
 (cong + iotaIdStrictRecRefl); ι arm requires
@@ -5734,6 +5775,47 @@ theorem Reducible.fundamental_equivApp_at_equiv
     Reducible (carrierB.subst sigma)
               (Term.subst termSubst (Term.equivApp equivTerm argumentTerm)) :=
   equivIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
+/-- Fundamental case: `Term.oeqFunext` at `Ty.oeq` (K12.23.B).
+
+The current `Ty.oeq` reducibility arm is weak-J shaped: SN of the
+witness plus SN preservation for `Term.oeqJ` over every SN base case.
+`Term.oeqFunext` has a typed pointwise proof subterm, so its SN follows
+from that subterm's reducibility by `RawTerm.oeqFunext_isStronglyNormalizing`.
+The `oeqJ` closure is pure congruence in the present raw reduction
+fragment, discharged by `RawTerm.oeqJ_isStronglyNormalizing`. -/
+theorem Reducible.fundamental_oeqFunext_at_oeq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {leftFunctionRaw rightFunctionRaw pointwiseRaw : RawTerm scope}
+    {pointwiseProof :
+        Term sourceCtx
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRaw}
+    (pointwiseIH :
+        Reducible
+          ((oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw).subst sigma)
+          (Term.subst termSubst pointwiseProof)) :
+    Reducible
+      ((Ty.oeq (Ty.arrow domainType codomainType)
+          leftFunctionRaw rightFunctionRaw).subst sigma)
+      (Term.subst termSubst
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseProof)) := by
+  let witnessIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.oeqFunext (pointwiseRaw.subst sigma.forRaw)) :=
+    RawTerm.oeqFunext_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing pointwiseIH)
+  exact ⟨witnessIsSN,
+    fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
+      RawTerm.oeqJ_isStronglyNormalizing baseIsSN witnessIsSN⟩
 
 /-! ## K12.24 fundamental cubical-eliminator cases -/
 
