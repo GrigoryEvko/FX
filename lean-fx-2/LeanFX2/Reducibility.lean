@@ -3995,6 +3995,57 @@ theorem RawTerm.idStrictRec_isStronglyNormalizing {scope : Nat}
           exact RawTerm.isStronglyNormalizing.intro currentBase baseClosure
         · exact baseClosure baseTarget ⟨baseStep, baseEq⟩
 
+/-- Strict identity recursor with a neutral witness is strongly
+normalizing when the witness and base case are strongly normalizing.
+
+The strict-refl ι arm is impossible because every parallel reduct of
+the neutral witness stays neutral, and neutral terms are never
+`idStrictRefl` shaped.  The typed mode witness for `Term.idStrictRec`
+is absent at the raw layer; this helper tracks only the computational
+base case and identity witness. -/
+theorem RawTerm.idStrictRec_neutral_isStronglyNormalizing {scope : Nat}
+    {baseCaseRaw witnessRaw : RawTerm scope}
+    (witnessIsNeutral : RawTerm.IsNeutral witnessRaw)
+    (witnessIsSN : RawTerm.isStronglyNormalizing witnessRaw)
+    (baseCaseIsSN : RawTerm.isStronglyNormalizing baseCaseRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.idStrictRec baseCaseRaw witnessRaw) := by
+  induction witnessIsSN generalizing baseCaseRaw with
+  | intro currentWitness _ witnessInduction =>
+    induction baseCaseIsSN with
+    | intro currentBase baseClosure baseInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.idStrictRec currentBase currentWitness) ?_
+      intro target progressStep
+      rcases RawStep.par.idStrictRec_inv progressStep.1 with
+        ⟨baseTarget, witnessTarget, targetEq,
+          baseStep, witnessStep⟩
+        | ⟨reflRawArgument, _baseTarget, _targetEq,
+            witnessStep, _baseStep⟩
+      · subst targetEq
+        have witnessTargetIsNeutral :
+            RawTerm.IsNeutral witnessTarget :=
+          RawTerm.IsNeutral.par_preserves witnessIsNeutral witnessStep
+        have baseTargetIsSN :
+            RawTerm.isStronglyNormalizing baseTarget := by
+          by_cases baseEq : currentBase = baseTarget
+          · subst baseEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentBase baseClosure
+          · exact baseClosure baseTarget ⟨baseStep, baseEq⟩
+        by_cases witnessEq : currentWitness = witnessTarget
+        · subst witnessEq
+          by_cases baseEq : currentBase = baseTarget
+          · subst baseEq
+            exact (progressStep.2 rfl).elim
+          · exact baseInduction baseTarget ⟨baseStep, baseEq⟩
+        · exact witnessInduction witnessTarget
+            ⟨witnessStep, witnessEq⟩
+            witnessTargetIsNeutral baseTargetIsSN
+      · exact (RawTerm.IsNeutral.not_idStrictRefl
+          (RawTerm.IsNeutral.par_preserves witnessIsNeutral witnessStep)
+          (witnessRaw := reflRawArgument) rfl).elim
+
 /-- **K12.20.AY.1 neutral modElim SN preservation**.  Unary modal
 destructor with variable inner term.  `modElim_inv` gives 2 arms:
 cong (innerTerm → innerTarget) and βModElimIntro (innerTerm →
@@ -6637,6 +6688,38 @@ theorem Reducible.oeq_of_varShape
   ⟨Term.isStronglyNormalizing_of_varShape witness,
    fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
      RawTerm.oeqJ_var_isStronglyNormalizing position baseIsSN⟩
+
+/-- **K12.20.U2 idStrict CR3 arm**: a neutral strict-identity
+witness is reducible at `Ty.idStrict carrier leftEndpoint
+rightEndpoint` when every raw progress reduct is SN.
+
+The current K12.10 strict-identity candidate is SN-output.  Its
+recursor carries a typed proof that the ambient mode is strict, but
+the raw computation only sees `idStrictRec baseCase witness`.  With a
+neutral witness, the strict-refl ι arm cannot fire, so the raw neutral
+helper closes from witness SN plus base-case SN. -/
+theorem Reducible.idStrict_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
+    (witness :
+      Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.idStrict carrier leftEndpoint rightEndpoint)
+      witness := by
+  have sourceIsSN : Term.isStronglyNormalizing witness :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      witness sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _modeIsStrict _motiveType _baseRaw _baseCase baseIsSN
+  exact RawTerm.idStrictRec_neutral_isStronglyNormalizing
+    sourceIsNeutral sourceIsSN baseIsSN
 
 /-- **K12.20.AZ.4 idStrict arm**: variables are reducible at the
 strict identity type.  Closure: SN(var) + ∀ (modeIsStrict : mode =
