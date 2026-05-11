@@ -5092,4 +5092,70 @@ theorem Reducible.fundamental_fst_at_sigmaTy
               (Term.subst termSubst (Term.fst pairTerm)) :=
   pairIH.2.1
 
+/-! ## K12.21.C fundamental_snd at `Ty.sigmaTy` — Σ second-projection
+weak-SN case
+
+Third entry of the K12.21 β-redex fundamental-case batch (#1778).
+`Term.snd : Term ctx (Ty.sigmaTy A B) pairRaw → Term ctx (B.subst0
+A (RawTerm.fst pairRaw)) (RawTerm.snd pairRaw)` projects the
+second component of a dependent pair.
+
+Asymmetry with K12.21.B: the sigmaTy second-projection target type
+`secondType.subst0 firstType (RawTerm.fst pairRaw)` is NOT a
+strict sub-Ty of `Ty.sigmaTy firstType secondType` — structural
+recursion on Ty cannot inspect it without the Kripke logical-
+relation refactor.  Per K12.7's asymmetric closure design
+(`Reducibility.lean:367-370`), the snd-projection closure ships
+only as **SN of the snd term**, not full Reducible:
+
+  Reducible (Ty.sigmaTy A' B') pair = SN(pair)
+                                    ∧ Reducible A' (Term.fst pair)
+                                    ∧ SN(Term.snd pair)
+
+This fundamental case ships at the weak-SN level matching K12.7.
+Three definitional facts compose:
+
+1.  `(Ty.sigmaTy A B).subst sigma = Ty.sigmaTy (A.subst sigma)
+    (B.subst sigma.lift)`  (`Foundation/Subst.lean:109-110`)
+2.  K12.7's third conjunct gives SN of Term.snd directly
+3.  `Term.isStronglyNormalizing` reads only the raw index
+    (`Reducibility.lean:303-307`) — the Ty.subst0_subst_commute
+    cast on `Term.subst termSubst (Term.snd ...)` (`Term/Subst.lean:
+    217-221`) is irrelevant because both cast and un-cast forms
+    share the same RawTerm.snd raw projection.
+
+Body: `pairIH.2.2` extracts the third conjunct (the SN witness on
+the snd projection).
+
+When secondType.subst0 is itself SN-direct (e.g. when secondType
+is a non-dependent variant `B.weaken` of a closed-leaf type), the
+weak SN result IS the full Reducible result.  When secondType is
+compound, the lift to full Reducible waits for K12.25's modal
+framework or the Kripke refactor. -/
+
+/-- **K12.21.C fundamental_snd at `Ty.sigmaTy`** — weak-SN
+case.  Direct extraction of the third conjunct from K12.7's
+asymmetric sigmaTy closure; the substituted-codomain wall blocks
+full-Reducible until the Kripke refactor.
+
+The goal is **SN of the substituted Term.snd**, not Reducible —
+matching K12.6/K12.7's documented design (`Reducibility.lean:339-352`).  -/
+theorem Reducible.fundamental_snd_at_sigmaTy_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm :
+        Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIH :
+        Reducible ((Ty.sigmaTy firstType secondType).subst sigma)
+                  (Term.subst termSubst pairTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.snd pairTerm)) :=
+  pairIH.2.2
+
 end LeanFX2
