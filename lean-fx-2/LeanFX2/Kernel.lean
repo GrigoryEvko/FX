@@ -25,6 +25,7 @@ import LeanFX2.Foundation.Polygraph.RawPolyTerm
 import LeanFX2.Foundation.Polygraph.PolyTerm
 import LeanFX2.Foundation.Polygraph.PolyTermRoundtrip
 import LeanFX2.Foundation.Polygraph.PolyTermAction
+import LeanFX2.Foundation.Polygraph.StepLabel
 
 -- Layer 1 - Term
 import LeanFX2.Term
