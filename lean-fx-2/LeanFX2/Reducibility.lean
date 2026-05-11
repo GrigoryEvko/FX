@@ -145,10 +145,16 @@ This file ships:
   `Ty.modal modality carrierType` values, plus 8-modality
   dispatch; K12.13.layer6 will then ship the per-modality Tait
   closure.
-* **All remaining constructors** (~5 type formers: refine,
-  record, codata, session, effect): SN-fallback (admissible but
-  weak — every reducible term is at least SN).  K12.14-K12.16
-  tighten each to its type-former-specific closure.
+* **refine baseType predicate** (K12.14, full refineElim
+  closure): `SN(refinedValue) ∧ Reducible baseType
+  (Term.refineElim refinedValue)`.  Plain projection — no mode
+  constraint, no quantifier.  Structurally identical to K12.12
+  glue.  Decidable-predicate-discharge aspect is Layer 5
+  (#1342 / #1344), orthogonal to RC closure.
+* **All remaining constructors** (~4 type formers: record,
+  codata, session, effect): SN-fallback (admissible but weak —
+  every reducible term is at least SN).  K12.15-K12.16 tighten
+  each to its type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -457,7 +463,20 @@ def Reducible {mode : Mode} {level scope : Nat}
         (argumentTerm : Term context carrierA argumentRaw),
         Reducible carrierA argumentTerm →
         Reducible carrierB (Term.equivApp equivTerm argumentTerm)
-  | Ty.refine _ _, _, term => Term.isStronglyNormalizing term
+  -- Refinement type (K12.14, full refineElim closure).
+  -- `Ty.refine baseType predicate` has baseType as strict sub-Ty
+  -- and predicate as a RawTerm-binder (no typed dependency at the
+  -- Reducible layer).  `Term.refineElim` is a pure projection from
+  -- `Ty.refine _ _` to baseType — no mode constraint, no
+  -- quantifier overhead.  Structurally identical to K12.12
+  -- Ty.glue's full-output closure: SN(refinedValue) + Reducible
+  -- baseType (Term.refineElim refinedValue).  The "Decidable
+  -- predicate discharge" aspect of K12.14 lives at Layer 5 SMT-
+  -- recheck (#1342 D5.6, #1344 D5.8 SMTCert) — orthogonal to the
+  -- Reducibility-candidate closure shipped here.
+  | Ty.refine baseType _, _, refinedValue =>
+      Term.isStronglyNormalizing refinedValue ∧
+      Reducible baseType (Term.refineElim refinedValue)
   | Ty.record _, _, term => Term.isStronglyNormalizing term
   | Ty.codata _ _, _, term => Term.isStronglyNormalizing term
   | Ty.session _, _, term => Term.isStronglyNormalizing term

@@ -119,10 +119,19 @@ K12.13 ships (Layer-1 documented SN-fallback for Ty.modal):
   then ship the per-modality Tait closure (♭ ⊣ ◇ ⊣ □ ⊣ ♯
   chain + ghost/cap/later/clock).
 
-Future K12.14-K12.16 tighten the remaining ~5 SN-fallback arms
-(refine / record / codata / session / effect) to their type-
-former-specific closures.  K12.18-K12.26 ship the fundamental
-lemma; K12.27 closes M04 / `strong_normalization`. -/
+K12.14 ships (full refineElim closure for Ty.refine):
+* `Reducible Ty.refine baseType predicate refinedValue =
+  SN(refinedValue) ∧ Reducible baseType (Term.refineElim
+  refinedValue)`.  Structurally identical to K12.12 Ty.glue:
+  plain projection from Ty.refine to baseType (strict sub-Ty).
+  No mode constraint, no quantifier.  Decidable-predicate-
+  discharge aspect lives at Layer 5 (#1342 D5.6, #1344 D5.8
+  SMTCert), orthogonal to RC closure.
+
+Future K12.15-K12.16 tighten the remaining ~4 SN-fallback arms
+(record / codata / session / effect) to their type-former-
+specific closures.  K12.18-K12.26 ship the fundamental lemma;
+K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing
