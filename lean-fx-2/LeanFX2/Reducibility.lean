@@ -5224,4 +5224,54 @@ theorem Reducible.fundamental_appPi_at_piTy_sn
       (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-! ## K12.21.E fundamental_recordProj at `Ty.record` —
+single-field record projection
+
+Fifth entry of the K12.21 β-redex fundamental-case batch (#1778).
+`Term.recordProj : Term ctx (Ty.record A) recordRaw → Term ctx A
+(RawTerm.recordProj recordRaw)` projects out the single field
+of a record.
+
+The proof is a direct second-conjunct extraction.  Three
+definitional facts compose:
+
+1.  `(Ty.record A).subst sigma = Ty.record (A.subst sigma)`
+    (`Foundation/Subst.lean:146-147`)
+2.  `Reducible (Ty.record A') record = SN(record) ∧ Reducible
+    A' (Term.recordProj record)`  (K12.15 closure, see
+    `Reducibility.lean:563-565`)
+3.  `Term.subst termSubst (Term.recordProj rec) = Term.recordProj
+    (Term.subst termSubst rec)`  (`Term/Subst.lean:346-347`)
+
+Body: `recordIH.2` — unary projection.  Closure shape parallels
+K12.21.B's `fundamental_fst_at_sigmaTy` (K12.7 first conjunct);
+record's single-field design means the eliminator target is
+exactly the strict sub-Ty `singleFieldType` with no
+substituted-codomain wall, so full Reducible (not weak SN). -/
+
+/-- **K12.21.E fundamental_recordProj at `Ty.record`** — record
+field projection.  Direct extraction of the second conjunct from
+K12.15's record closure.
+
+Multi-field records compose via nested single-field records (see
+`Term.lean:420`+ docstring), preserving this closure shape under
+nesting; no separate fundamental case needed for multi-field
+projection. -/
+theorem Reducible.fundamental_recordProj_at_record
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    {recordValue :
+        Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (recordIH :
+        Reducible ((Ty.record singleFieldType).subst sigma)
+                  (Term.subst termSubst recordValue)) :
+    Reducible (singleFieldType.subst sigma)
+              (Term.subst termSubst (Term.recordProj recordValue)) :=
+  recordIH.2
+
 end LeanFX2

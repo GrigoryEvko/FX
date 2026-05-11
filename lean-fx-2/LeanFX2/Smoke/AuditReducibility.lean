@@ -637,6 +637,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_fst_at_sigmaTy
 #print axioms Reducible.fundamental_snd_at_sigmaTy_sn
 #print axioms Reducible.fundamental_appPi_at_piTy_sn
+#print axioms Reducible.fundamental_recordProj_at_record
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing
 #print axioms RawTerm.eitherInl_isStronglyNormalizing
