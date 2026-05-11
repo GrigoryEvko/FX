@@ -6989,6 +6989,24 @@ theorem ReducibleSubst.singleton
               (varType sourceCtx previousPosition) substituent argRaw)
             previousVarReducible
 
+/-- **K12.20.U3 identity ReducibleSubst**: identity substitution is
+reducible because every variable is reducible at its declared type. -/
+theorem ReducibleSubst.identity
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    ReducibleSubst (TermSubst.identity sourceCtx) := by
+  intro position
+  have positionVarReducible :
+      Reducible (varType sourceCtx position) (Term.var position) :=
+    Reducible.of_varShape (varType sourceCtx position) (Term.var position)
+  change Reducible
+    ((varType sourceCtx position).subst Subst.identity)
+    ((Ty.subst_identity (varType sourceCtx position)).symm ▸
+      Term.var position)
+  exact Reducible.of_type_eq_symm_cast
+    (Ty.subst_identity (varType sourceCtx position))
+    positionVarReducible
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct

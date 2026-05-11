@@ -72,6 +72,16 @@ def TermSubst.lift {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
         Term.weaken (newSourceType.subst sigma)
                     (termSubst ⟨k, Nat.lt_of_succ_lt_succ h⟩)
 
+/-- Identity typed substitution: every source variable maps to the
+same variable in the same context, cast through `Ty.subst_identity`
+because `TermSubst` stores the substituted source type in its index. -/
+def TermSubst.identity {mode : Mode} {level scope : Nat}
+    (sourceCtx : Ctx mode level scope) :
+    TermSubst sourceCtx sourceCtx Subst.identity
+  | position =>
+      (Ty.subst_identity (varType sourceCtx position)).symm ▸
+        Term.var position
+
 /-- Singleton TermSubst for β-reduction: position 0 gets `argTerm`,
 positions k+1 get `Term.var k`.  Both cases use `Ty.weaken_subst_singleton`
 to discharge the type cast (weakened then substituted-by-singleton
