@@ -276,6 +276,13 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
   across raw `par`, then rules out the beta/iota arm with the
   canonical-shape exclusion family.  These are CR3 support lemmas,
   not the global neutral-preservation dispatcher.
+* `RawTerm.IsNeutral.{pathApp,glueElim,hcomp,idJ,oeqJ,
+  idStrictRec,equivApp,modElim,subsume,refineElim,recordProj,
+  codataDest,sessionSend,sessionRecv,effectPerform}_par_preserves`
+  extends the same higher-order preservation pattern to the simple
+  projection/congruence eliminators.  `transp` and `equivApply` are
+  intentionally not claimed here because their raw inversions have
+  extra D3.6 canonical-shape arms.
 
 K12.20.F ships (typed CR2 lift — arrow compound arm):
 * `Reducible.step_preserves_arrow` — Reducible at `Ty.arrow A B`
@@ -764,6 +771,21 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.IsNeutral.listElim_par_preserves
 #print axioms RawTerm.IsNeutral.optionMatch_par_preserves
 #print axioms RawTerm.IsNeutral.eitherMatch_par_preserves
+#print axioms RawTerm.IsNeutral.pathApp_par_preserves
+#print axioms RawTerm.IsNeutral.glueElim_par_preserves
+#print axioms RawTerm.IsNeutral.hcomp_par_preserves
+#print axioms RawTerm.IsNeutral.idJ_par_preserves
+#print axioms RawTerm.IsNeutral.oeqJ_par_preserves
+#print axioms RawTerm.IsNeutral.idStrictRec_par_preserves
+#print axioms RawTerm.IsNeutral.equivApp_par_preserves
+#print axioms RawTerm.IsNeutral.modElim_par_preserves
+#print axioms RawTerm.IsNeutral.subsume_par_preserves
+#print axioms RawTerm.IsNeutral.refineElim_par_preserves
+#print axioms RawTerm.IsNeutral.recordProj_par_preserves
+#print axioms RawTerm.IsNeutral.codataDest_par_preserves
+#print axioms RawTerm.IsNeutral.sessionSend_par_preserves
+#print axioms RawTerm.IsNeutral.sessionRecv_par_preserves
+#print axioms RawTerm.IsNeutral.effectPerform_par_preserves
 #print axioms RawStep.par.universeCode_inv
 #print axioms RawTerm.universeCode_isStronglyNormalizing
 #print axioms Reducible.fundamental_universeCode
