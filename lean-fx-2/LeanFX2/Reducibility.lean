@@ -2181,4 +2181,75 @@ theorem Reducible.step_preserves_refine
       injection refineElimEq
     exact baseTypeCR2 sourceReducible.2 refineElimStep
 
+/-! ## K12.20.S typed CR2 lift — Ty.record strong-recordProj-closure compound arm
+
+Fourteenth compound-arm CR2 lemma.  `Ty.record singleFieldType`
+ships a **strong recordProj closure** in K12.15: the eliminator
+produces full `Reducible singleFieldType (Term.recordProj
+recordValue)` from the simple projection.  `singleFieldType` is
+a strict sub-Ty of `Ty.record singleFieldType` — structural-
+recursion-on-Ty admits `Reducible singleFieldType` recursive
+call.  Multi-field records compose via nested single-field
+records (per Term.lean docstring), preserving this closure
+shape under nesting.
+
+Closure shape (per Reducibility.lean:563-565):
+
+```
+Reducible (Ty.record singleFieldType) recordValue =
+  SN(recordValue) ∧
+  Reducible singleFieldType (Term.recordProj recordValue)
+```
+
+Structurally identical to K12.20.R refine: pure projection,
+single-substituent cong rule, no quantifier overhead.  Only
+differences: ctor name (`Ty.record` vs `Ty.refine`), eliminator
+(`recordProj` vs `refineElim`), strict-sub-Ty field name
+(`singleFieldType` vs `baseType`).  No predicate binder (record
+has no SMT-recheck axis — purely structural).
+
+Term.recordProj raw form is `RawTerm.recordProj recordRaw` (per
+Term.lean:425); `RawStep.par.recordProjCong` is a 1-arg cong
+rule (per RawPar.lean:790-795).  Distinctness via `injection`
+on `RawTerm.recordProj.injEq`.
+-/
+
+/-- **K12.20.S record arm**: strong-recordProj-closure CR2 for
+`Ty.record`.  Takes `singleFieldTypeCR2` as explicit hypothesis
+(the recursive Reducible-preservation witness on the strict
+sub-Ty `singleFieldType`).  SN-of-recordValue preserved by raw
+`step_preserves`; the full-Reducible recordProj conjunct lifted
+via singleFieldTypeCR2 over the recordProjCong step.  Mirror of
+K12.20.R refine. -/
+theorem Reducible.step_preserves_record
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context (Ty.record singleFieldType) sourceRaw}
+    {target : Term context (Ty.record singleFieldType) targetRaw}
+    (singleFieldTypeCR2 :
+        ∀ {recordProjSourceRaw recordProjTargetRaw : RawTerm scope}
+          {recordProjSource :
+              Term context singleFieldType recordProjSourceRaw}
+          {recordProjTarget :
+              Term context singleFieldType recordProjTargetRaw},
+          Reducible singleFieldType recordProjSource →
+          RawStep.parProgress recordProjSourceRaw recordProjTargetRaw →
+          Reducible singleFieldType recordProjTarget)
+    (sourceReducible : Reducible (Ty.record singleFieldType) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.record singleFieldType) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · have recordProjStep : RawStep.parProgress
+        (RawTerm.recordProj sourceRaw)
+        (RawTerm.recordProj targetRaw) := by
+      refine ⟨RawStep.par.recordProjCong rawStep.1, ?_⟩
+      intro recordProjEq
+      apply rawStep.2
+      injection recordProjEq
+    exact singleFieldTypeCR2 sourceReducible.2 recordProjStep
+
 end LeanFX2

@@ -489,6 +489,25 @@ K12.20.R ships (typed CR2 lift — refine strong-refineElim-closure compound arm
   `RawTerm.refineElim refinedRaw` (per Term.lean:446).
   Thirteenth compound-arm CR2; 2 remaining (record/codata).
 
+K12.20.S ships (typed CR2 lift — record strong-recordProj-closure compound arm):
+* `Reducible.step_preserves_record` — Reducible at `Ty.record
+  singleFieldType` is closed under raw `parProgress`.  K12.15's
+  strong recordProj closure produces full `Reducible
+  singleFieldType (Term.recordProj recordValue)` (singleFieldType
+  is strict sub-Ty; structural-recursion-on-Ty admits Reducible
+  recursion).  Multi-field records compose via nested single-
+  field records (per Term.lean docstring), preserving closure
+  under nesting.  Closure: SN(recordValue) + Reducible
+  singleFieldType (Term.recordProj recordValue).  **Strong**
+  pattern — structurally identical to K12.20.R refine.  Only
+  differences: ctor name (Ty.record vs Ty.refine), eliminator
+  (recordProj vs refineElim), no predicate binder (record has
+  no SMT-recheck axis).  Term.recordProj raw form is
+  `RawTerm.recordProj recordRaw` (per Term.lean:425);
+  `RawStep.par.recordProjCong` is a 1-arg cong rule (per
+  RawPar.lean:790-795).  Fourteenth compound-arm CR2; 1
+  remaining (codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -546,5 +565,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_idStrict
 #print axioms Reducible.step_preserves_equiv
 #print axioms Reducible.step_preserves_refine
+#print axioms Reducible.step_preserves_record
 
 end LeanFX2.Smoke
