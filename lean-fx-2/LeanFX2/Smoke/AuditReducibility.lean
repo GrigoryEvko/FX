@@ -377,6 +377,24 @@ K12.20.L ships (typed CR2 lift — eitherType symmetric-weak-elim-closure compou
   Closes the K12.8 parametric-inductive triple (list/option/
   either) at the typed CR2 layer.
 
+K12.20.M ships (typed CR2 lift — path strong-pathApp-closure compound arm):
+* `Reducible.step_preserves_path` — Reducible at `Ty.path A x y`
+  is closed under raw `parProgress`.  K12.12's strong pathApp
+  closure produces full `Reducible carrier (pathApp ...)` from
+  the eliminator (carrier is strict sub-Ty, structural-
+  recursion-on-Ty admits it).  Closure: SN(pathTerm) +
+  (∀ modeIsUnivalent intervalTerm, SN intervalTerm →
+  Reducible carrier (pathApp p intervalTerm)).  **Strong**
+  pattern from K12.20.F arrow: explicit `carrierCR2` hypothesis
+  required because the eliminator output is full Reducible (not
+  SN).  Interval side stays SN-only (Ty.interval is sibling Ty
+  ctor, NOT strict sub-Ty — K12.4 closed-leaf gives
+  `Reducible Ty.interval _ = SN _` propositionally).
+  Term.pathApp raw form is `RawTerm.pathApp pathRaw intervalRaw`
+  (per Term.lean:355); `RawStep.par.pathAppCong` takes paired
+  par steps (per RawPar.lean:558).  Eighth compound-arm CR2;
+  7 remaining (glue/oeq/idStrict/equiv/refine/record/codata).
+
 K12.20-K12.26 will ship the remaining fundamental-lemma cases (lam,
 β-redexes, ι-recursors, HOTT, cubical, modal, cumul/refine/type-
 code).  K12.27 closes M04 / `strong_normalization`. -/
@@ -428,5 +446,6 @@ code).  K12.27 closes M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_listType
 #print axioms Reducible.step_preserves_optionType
 #print axioms Reducible.step_preserves_eitherType
+#print axioms Reducible.step_preserves_path
 
 end LeanFX2.Smoke

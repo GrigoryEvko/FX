@@ -1742,4 +1742,77 @@ theorem Reducible.step_preserves_eitherType
       (sourceReducible.2 leftBranch rightBranch leftApplied rightApplied)
       eitherMatchStep
 
+/-! ## K12.20.M typed CR2 lift — Ty.path strong-pathApp-closure compound arm
+
+Eighth compound-arm CR2 lemma.  `Ty.path` ships a **strong
+pathApp closure** in K12.12: the eliminator produces a full
+`Reducible carrier _` verdict (NOT plain SN), because `carrier`
+is a strict sub-Ty of `Ty.path carrier left right` and the
+structural-recursion-on-Ty checker admits `Reducible carrier`
+recursion.  Closure shape (per Reducibility.lean:476):
+
+```
+Reducible (Ty.path A x y) p =
+  SN(p) ∧ ∀ (modeIsUnivalent : mode = Mode.univalent)
+            {intervalRaw} (intervalTerm : Term context Ty.interval intervalRaw),
+    SN(intervalTerm) →
+    Reducible A (Term.pathApp modeIsUnivalent p intervalTerm)
+```
+
+This is the **strong** pattern from K12.20.F arrow: full
+Reducible eliminator output forces an explicit `carrierCR2`
+hypothesis to lift Reducible across the cong step.  The interval
+side stays SN-only (Ty.interval is a sibling Ty constructor, not
+a strict sub-Ty of Ty.path — K12.4's closed-leaf arm gives
+`Reducible Ty.interval _ = Term.isStronglyNormalizing _`
+propositionally, so SN demotion preserves Tait semantics).
+
+Term.pathApp raw form is `RawTerm.pathApp pathRaw intervalRaw`
+(per Term.lean:355); `RawStep.par.pathAppCong` takes paired par
+steps (per RawPar.lean:558).  For CR2, interval side gets
+`par.refl` while path side gets `rawStep.1`.  Distinctness via
+`injection` on RawTerm.pathApp.injEq.
+-/
+
+/-- **K12.20.M path arm**: strong-pathApp-closure CR2 for
+`Ty.path`.  Takes `carrierCR2` as explicit hypothesis (the
+recursive Reducible-preservation witness on the strict sub-Ty
+`carrierType`).  SN-of-pathTerm preserved by raw `step_preserves`;
+the full-Reducible pathApp conjunct lifted via carrierCR2 over
+the pathAppCong step. -/
+theorem Reducible.step_preserves_path
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {source : Term context
+        (Ty.path carrierType leftEndpoint rightEndpoint) sourceRaw}
+    {target : Term context
+        (Ty.path carrierType leftEndpoint rightEndpoint) targetRaw}
+    (carrierCR2 :
+        ∀ {pathAppSourceRaw pathAppTargetRaw : RawTerm scope}
+          {pathAppSource : Term context carrierType pathAppSourceRaw}
+          {pathAppTarget : Term context carrierType pathAppTargetRaw},
+          Reducible carrierType pathAppSource →
+          RawStep.parProgress pathAppSourceRaw pathAppTargetRaw →
+          Reducible carrierType pathAppTarget)
+    (sourceReducible :
+        Reducible (Ty.path carrierType leftEndpoint rightEndpoint) source)
+    (rawStep : RawStep.parProgress sourceRaw targetRaw) :
+    Reducible (Ty.path carrierType leftEndpoint rightEndpoint) target := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.isStronglyNormalizing.step_preserves
+      sourceReducible.1 rawStep
+  · intro modeIsUnivalent intervalRaw intervalTerm intervalSN
+    have pathAppStep : RawStep.parProgress
+        (RawTerm.pathApp sourceRaw intervalRaw)
+        (RawTerm.pathApp targetRaw intervalRaw) := by
+      refine ⟨RawStep.par.pathAppCong rawStep.1 (RawStep.par.refl intervalRaw), ?_⟩
+      intro pathAppEq
+      apply rawStep.2
+      injection pathAppEq
+    exact carrierCR2
+      (sourceReducible.2 modeIsUnivalent intervalTerm intervalSN) pathAppStep
+
 end LeanFX2
