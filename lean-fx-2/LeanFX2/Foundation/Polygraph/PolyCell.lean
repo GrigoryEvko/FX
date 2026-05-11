@@ -49,10 +49,9 @@ parallelism condition lifted to the type level.
   constrained per-ctor index shape (`dim=0` / `dim=1` /
   `dim=dim+2`) — this is the indexed-inductive partial-match trap
   from `feedback_lean_indexed_partial_match.md` reaching the
-  auto-derived equation lemmas.  Hand-rolled instance via
-  dim-uniqueness dispatch is required and ships in a follow-up
-  K11.3.B task.  K11.3 itself ships the well-foundedness measure
-  (which is the unblocker for K11.4 vertical composition).
+  auto-derived equation lemmas.  K11.3.B ships a hand-rolled
+  propext-free instance via `Foundation/Polygraph/DecEq.lean`,
+  using `Σ'`-typed cell-decomposition + dim-stratified dispatch.
 * Vertical / horizontal composition.  K11.4 / K11.5.
 * Multi-port arity (Squier 1987 / Métayer 2008 operadic reading).
   The globular fragment shipped here is single-port — `source` and

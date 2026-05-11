@@ -58,4 +58,13 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Foundation.Polygraph.arrowSource_dimensionMeasure_lt
 #assert_no_axioms LeanFX2.Foundation.Polygraph.arrowTarget_dimensionMeasure_lt
 
+#assert_no_axioms LeanFX2.Foundation.Polygraph.PolyCell.atom_unique_at_dim0
+#assert_no_axioms LeanFX2.Foundation.Polygraph.PolyCell.arrow_unique_at_dim1
+#assert_no_axioms LeanFX2.Foundation.Polygraph.PolyCell.cell_decompose_at_dimSucc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.decEqAtDim0
+#assert_no_axioms LeanFX2.Foundation.Polygraph.decEqAtDim1
+#assert_no_axioms LeanFX2.Foundation.Polygraph.decEqAtDimSucc
+#assert_no_axioms LeanFX2.Foundation.Polygraph.polyCellDecEqAt
+#assert_no_axioms LeanFX2.Foundation.Polygraph.decEqPolyCell
+
 end LeanFX2.Tools
