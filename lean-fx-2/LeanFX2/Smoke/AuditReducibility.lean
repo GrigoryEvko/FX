@@ -589,6 +589,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.isStronglyNormalizing.step_preserves
 #print axioms RawTerm.var_isStronglyNormalizing
 #print axioms RawTerm.natSucc_isStronglyNormalizing
+#print axioms RawTerm.optionSome_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

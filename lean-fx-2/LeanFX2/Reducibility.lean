@@ -976,6 +976,28 @@ theorem RawTerm.natSucc_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis predecessorTarget
       ⟨predecessorStep, predecessorDistinct⟩
 
+/-- **K12.20.W optionSome SN preservation**.  Sister to
+`natSucc_isStronglyNormalizing` — unary cong-only ctor with
+`optionSome_inv` for step inversion + `RawTerm.optionSome`
+injectivity for the parProgress disequality. -/
+theorem RawTerm.optionSome_isStronglyNormalizing {scope : Nat}
+    {valueTerm : RawTerm scope}
+    (valueIsSN : RawTerm.isStronglyNormalizing valueTerm) :
+    RawTerm.isStronglyNormalizing (RawTerm.optionSome valueTerm) := by
+  induction valueIsSN with
+  | intro currentValue _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.optionSome currentValue) ?_
+    intro target progressStep
+    obtain ⟨valueTarget, targetEq, valueStep⟩ :=
+      RawStep.par.optionSome_inv progressStep.1
+    subst targetEq
+    have valueDistinct :
+        currentValue ≠ valueTarget := fun valueEq =>
+      progressStep.2 (congrArg RawTerm.optionSome valueEq)
+    exact inductiveHypothesis valueTarget
+      ⟨valueStep, valueDistinct⟩
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
