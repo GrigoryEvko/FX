@@ -51,12 +51,30 @@ K12.7 ships (asymmetric Σ closure):
   — substituted, same wall as K12.6 piTy codomain).  Full
   Reducible-snd closure reserved for the Kripke refactor.
 
-Future K12.8-K12.16 tighten the remaining ~15 SN-fallback arms
-(id / listType / optionType / eitherType / path / glue / oeq /
-idStrict / equiv / refine / record / codata / session /
-effect / modal) to their type-former-specific closures.
-K12.18-K12.26 ship the fundamental lemma; K12.27 closes M04 /
-`strong_normalization`. -/
+K12.8 ships (weak elim closure for parametric inductives):
+* `Reducible Ty.listType A xs = SN(xs) ∧ ∀ motiveType
+  nilBranch consBranch, SN(nilBranch) ∧ (∀ head tail,
+  Reducible A head → SN(tail) → SN(app(app consBranch head)
+  tail)) → SN(listElim xs nilBranch consBranch)`.
+* `Reducible Ty.optionType A xs = SN(xs) ∧ ∀ motiveType
+  noneBranch someBranch, SN(noneBranch) ∧ (∀ v, Reducible A v
+  → SN(app someBranch v)) → SN(optionMatch xs noneBranch
+  someBranch)`.
+* `Reducible Ty.eitherType L R xs = SN(xs) ∧ ∀ motiveType
+  leftBranch rightBranch, (∀ v, Reducible L v → SN(app
+  leftBranch v)) ∧ (∀ v, Reducible R v → SN(app rightBranch
+  v)) → SN(eitherMatch xs leftBranch rightBranch)`.
+  Each parametric type's element / left / right sub-Ty IS
+  a strict sub-Ty, so full Reducible recurses on branches'
+  argument types; motiveType is arbitrary (NOT structural
+  sub-Ty) so conclusion demotes to SN of the eliminator
+  result.  Mirrors K12.6 piTy weak closure pattern.
+
+Future K12.9-K12.16 tighten the remaining ~12 SN-fallback arms
+(id / path / glue / oeq / idStrict / equiv / refine / record /
+codata / session / effect / modal) to their type-former-
+specific closures.  K12.18-K12.26 ship the fundamental lemma;
+K12.27 closes M04 / `strong_normalization`. -/
 
 #print axioms RawStep.parProgress
 #print axioms RawTerm.isStronglyNormalizing

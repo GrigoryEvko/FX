@@ -89,12 +89,21 @@ This file ships:
   snd projection's type is `secondType.subst0 firstType ...`
   (substituted, same wall as K12.6 piTy codomain).  Full
   Reducible-snd closure reserved for the Kripke refactor.
-* **All remaining constructors** (~15 type formers: id,
-  listType, optionType, eitherType, path, glue, oeq,
-  idStrict, equiv, refine, record, codata, session, effect,
-  modal): SN-fallback (admissible but weak — every reducible
-  term is at least SN).  K12.8-K12.16 tighten each to its
-  type-former-specific closure.
+* **listType A** / **optionType A** / **eitherType L R**
+  (K12.8, weak elim closure per parametric inductive):
+  `SN(term) ∧ ∀ motiveType branches, (Reducible-arg → SN-applied
+  on each elimination branch) → SN(elimResult)`.  Each
+  parametric type's element / left / right sub-Ty IS a strict
+  sub-term, so full Reducible recurses through the branch
+  hypothesis; the motiveType is arbitrary (NOT structural sub-Ty),
+  so the conclusion demotes to SN of the eliminator result.
+  Mirrors K12.6 piTy weak closure pattern.  Full Reducible-at-
+  motiveType closure reserved for Kripke logical relation refactor.
+* **All remaining constructors** (~12 type formers: id, path,
+  glue, oeq, idStrict, equiv, refine, record, codata, session,
+  effect, modal): SN-fallback (admissible but weak — every
+  reducible term is at least SN).  K12.9-K12.16 tighten each to
+  its type-former-specific closure.
 
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
@@ -231,11 +240,78 @@ def Reducible {mode : Mode} {level scope : Nat}
       Term.isStronglyNormalizing pairTerm ∧
       Reducible firstType (Term.fst pairTerm) ∧
       Term.isStronglyNormalizing (Term.snd pairTerm)
-  -- Remaining type formers (K12.8-K12.16 TODO): SN-fallback
+  -- Remaining type formers (K12.9-K12.16 TODO): SN-fallback
   | Ty.id _ _ _, _, term => Term.isStronglyNormalizing term
-  | Ty.listType _, _, term => Term.isStronglyNormalizing term
-  | Ty.optionType _, _, term => Term.isStronglyNormalizing term
-  | Ty.eitherType _ _, _, term => Term.isStronglyNormalizing term
+  -- Parametric inductive: list (K12.8, weak elim closure).  Mirrors
+  -- K12.6 piTy's "Reducible-arg → SN result" weak-Tait pattern.
+  -- The eliminator `Term.listElim` returns at an arbitrary motiveType
+  -- (NOT a strict sub-Ty of `Ty.listType elementType`), so the
+  -- structural-recursion-on-Ty checker rejects a full
+  -- Reducible-at-motiveType conclusion (would need same-or-arbitrary-Ty
+  -- recursion).  The weak closure recurses on `elementType` only
+  -- (strict sub-Ty, full Reducible works) for the head-element witness,
+  -- demotes the tail to SN (its type is `Ty.listType elementType` —
+  -- SAME Ty, recursion banned), demands SN of branches and SN of the
+  -- elim result.  Full Reducible-tail closure reserved for the future
+  -- Kripke logical relation refactor.
+  | Ty.listType elementType, _, listTerm =>
+      Term.isStronglyNormalizing listTerm ∧
+      ∀ {motiveType : Ty level scope}
+        {nilRaw consRaw : RawTerm scope}
+        (nilBranch : Term context motiveType nilRaw)
+        (consBranch : Term context (Ty.arrow elementType
+                                      (Ty.arrow (Ty.listType elementType) motiveType)) consRaw),
+        Term.isStronglyNormalizing nilBranch →
+        (∀ {headRaw tailRaw : RawTerm scope}
+           (headTerm : Term context elementType headRaw)
+           (tailTerm : Term context (Ty.listType elementType) tailRaw),
+           Reducible elementType headTerm →
+           Term.isStronglyNormalizing tailTerm →
+           Term.isStronglyNormalizing
+             (Term.app (Term.app consBranch headTerm) tailTerm)) →
+        Term.isStronglyNormalizing (Term.listElim listTerm nilBranch consBranch)
+  -- Parametric inductive: option (K12.8, weak elim closure).  Cleanest
+  -- of the three K12.8 arms: someBranch's type `Ty.arrow elementType
+  -- motiveType` matches K12.6 piTy weak closure shape exactly when
+  -- restricted to elementType (strict sub-Ty).  Demands SN of noneBranch
+  -- and Reducible-arg → SN-applied of someBranch, yields SN of the
+  -- optionMatch result.
+  | Ty.optionType elementType, _, optionTerm =>
+      Term.isStronglyNormalizing optionTerm ∧
+      ∀ {motiveType : Ty level scope}
+        {noneRaw someRaw : RawTerm scope}
+        (noneBranch : Term context motiveType noneRaw)
+        (someBranch : Term context (Ty.arrow elementType motiveType) someRaw),
+        Term.isStronglyNormalizing noneBranch →
+        (∀ {valueRaw : RawTerm scope}
+           (valueTerm : Term context elementType valueRaw),
+           Reducible elementType valueTerm →
+           Term.isStronglyNormalizing (Term.app someBranch valueTerm)) →
+        Term.isStronglyNormalizing
+          (Term.optionMatch optionTerm noneBranch someBranch)
+  -- Parametric inductive: either (K12.8, symmetric weak elim closure).
+  -- Symmetric in leftType / rightType (both strict sub-Ty of
+  -- `Ty.eitherType leftType rightType`); each branch is
+  -- `Ty.arrow leftType motiveType` / `Ty.arrow rightType motiveType`
+  -- matching the K12.6 piTy weak shape per branch.  Demands
+  -- Reducible-arg → SN-applied on each side, yields SN of the
+  -- eitherMatch result.
+  | Ty.eitherType leftType rightType, _, eitherTerm =>
+      Term.isStronglyNormalizing eitherTerm ∧
+      ∀ {motiveType : Ty level scope}
+        {leftRaw rightRaw : RawTerm scope}
+        (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+        (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw),
+        (∀ {valueRaw : RawTerm scope}
+           (valueTerm : Term context leftType valueRaw),
+           Reducible leftType valueTerm →
+           Term.isStronglyNormalizing (Term.app leftBranch valueTerm)) →
+        (∀ {valueRaw : RawTerm scope}
+           (valueTerm : Term context rightType valueRaw),
+           Reducible rightType valueTerm →
+           Term.isStronglyNormalizing (Term.app rightBranch valueTerm)) →
+        Term.isStronglyNormalizing
+          (Term.eitherMatch eitherTerm leftBranch rightBranch)
   | Ty.path _ _ _, _, term => Term.isStronglyNormalizing term
   | Ty.glue _ _, _, term => Term.isStronglyNormalizing term
   | Ty.oeq _ _ _, _, term => Term.isStronglyNormalizing term
