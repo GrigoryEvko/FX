@@ -1182,6 +1182,178 @@ theorem RawTerm.pair_second_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing secondRaw :=
   RawTerm.pair_second_isStronglyNormalizing_aux pairIsSN rfl
 
+/-- Shape-specialized inversion for option payload SN. -/
+theorem RawTerm.optionSome_value_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {valueRaw : RawTerm scope},
+      source = RawTerm.optionSome valueRaw →
+      RawTerm.isStronglyNormalizing valueRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro valueRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro valueRaw ?_
+    intro valueTarget valueProgress
+    have optionProgress :
+        RawStep.parProgress
+          (RawTerm.optionSome valueRaw)
+          (RawTerm.optionSome valueTarget) := by
+      refine ⟨RawStep.par.optionSome valueProgress.1, ?_⟩
+      intro optionEq
+      apply valueProgress.2
+      injection optionEq
+    exact inductiveHypothesis
+      (RawTerm.optionSome valueTarget) optionProgress rfl
+
+/-- If `optionSome value` is strongly normalizing, then `value` is
+strongly normalizing. -/
+theorem RawTerm.optionSome_value_isStronglyNormalizing {scope : Nat}
+    {valueRaw : RawTerm scope}
+    (optionIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.optionSome valueRaw)) :
+    RawTerm.isStronglyNormalizing valueRaw :=
+  RawTerm.optionSome_value_isStronglyNormalizing_aux optionIsSN rfl
+
+/-- Shape-specialized inversion for either-left payload SN. -/
+theorem RawTerm.eitherInl_value_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {valueRaw : RawTerm scope},
+      source = RawTerm.eitherInl valueRaw →
+      RawTerm.isStronglyNormalizing valueRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro valueRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro valueRaw ?_
+    intro valueTarget valueProgress
+    have eitherProgress :
+        RawStep.parProgress
+          (RawTerm.eitherInl valueRaw)
+          (RawTerm.eitherInl valueTarget) := by
+      refine ⟨RawStep.par.eitherInl valueProgress.1, ?_⟩
+      intro eitherEq
+      apply valueProgress.2
+      injection eitherEq
+    exact inductiveHypothesis
+      (RawTerm.eitherInl valueTarget) eitherProgress rfl
+
+/-- If `eitherInl value` is strongly normalizing, then `value` is
+strongly normalizing. -/
+theorem RawTerm.eitherInl_value_isStronglyNormalizing {scope : Nat}
+    {valueRaw : RawTerm scope}
+    (eitherIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.eitherInl valueRaw)) :
+    RawTerm.isStronglyNormalizing valueRaw :=
+  RawTerm.eitherInl_value_isStronglyNormalizing_aux eitherIsSN rfl
+
+/-- Shape-specialized inversion for either-right payload SN. -/
+theorem RawTerm.eitherInr_value_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {valueRaw : RawTerm scope},
+      source = RawTerm.eitherInr valueRaw →
+      RawTerm.isStronglyNormalizing valueRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro valueRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro valueRaw ?_
+    intro valueTarget valueProgress
+    have eitherProgress :
+        RawStep.parProgress
+          (RawTerm.eitherInr valueRaw)
+          (RawTerm.eitherInr valueTarget) := by
+      refine ⟨RawStep.par.eitherInr valueProgress.1, ?_⟩
+      intro eitherEq
+      apply valueProgress.2
+      injection eitherEq
+    exact inductiveHypothesis
+      (RawTerm.eitherInr valueTarget) eitherProgress rfl
+
+/-- If `eitherInr value` is strongly normalizing, then `value` is
+strongly normalizing. -/
+theorem RawTerm.eitherInr_value_isStronglyNormalizing {scope : Nat}
+    {valueRaw : RawTerm scope}
+    (eitherIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.eitherInr valueRaw)) :
+    RawTerm.isStronglyNormalizing valueRaw :=
+  RawTerm.eitherInr_value_isStronglyNormalizing_aux eitherIsSN rfl
+
+/-- Shape-specialized inversion for list-cons head SN. -/
+theorem RawTerm.listCons_head_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {headRaw tailRaw : RawTerm scope},
+      source = RawTerm.listCons headRaw tailRaw →
+      RawTerm.isStronglyNormalizing headRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro headRaw tailRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro headRaw ?_
+    intro headTarget headProgress
+    have consProgress :
+        RawStep.parProgress
+          (RawTerm.listCons headRaw tailRaw)
+          (RawTerm.listCons headTarget tailRaw) := by
+      refine ⟨RawStep.par.listCons headProgress.1
+        (RawStep.par.refl tailRaw), ?_⟩
+      intro consEq
+      apply headProgress.2
+      injection consEq
+    exact inductiveHypothesis
+      (RawTerm.listCons headTarget tailRaw) consProgress rfl
+
+/-- If `listCons head tail` is strongly normalizing, then `head` is
+strongly normalizing. -/
+theorem RawTerm.listCons_head_isStronglyNormalizing {scope : Nat}
+    {headRaw tailRaw : RawTerm scope}
+    (consIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listCons headRaw tailRaw)) :
+    RawTerm.isStronglyNormalizing headRaw :=
+  RawTerm.listCons_head_isStronglyNormalizing_aux consIsSN rfl
+
+/-- Shape-specialized inversion for list-cons tail SN. -/
+theorem RawTerm.listCons_tail_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {headRaw tailRaw : RawTerm scope},
+      source = RawTerm.listCons headRaw tailRaw →
+      RawTerm.isStronglyNormalizing tailRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro headRaw tailRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro tailRaw ?_
+    intro tailTarget tailProgress
+    have consProgress :
+        RawStep.parProgress
+          (RawTerm.listCons headRaw tailRaw)
+          (RawTerm.listCons headRaw tailTarget) := by
+      refine ⟨RawStep.par.listCons (RawStep.par.refl headRaw)
+        tailProgress.1, ?_⟩
+      intro consEq
+      apply tailProgress.2
+      injection consEq
+    exact inductiveHypothesis
+      (RawTerm.listCons headRaw tailTarget) consProgress rfl
+
+/-- If `listCons head tail` is strongly normalizing, then `tail` is
+strongly normalizing. -/
+theorem RawTerm.listCons_tail_isStronglyNormalizing {scope : Nat}
+    {headRaw tailRaw : RawTerm scope}
+    (consIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listCons headRaw tailRaw)) :
+    RawTerm.isStronglyNormalizing tailRaw :=
+  RawTerm.listCons_tail_isStronglyNormalizing_aux consIsSN rfl
+
 /-- **K12.20.U2 raw CR3 skeleton**: a raw term is strongly
 normalizing when every non-trivial parallel-progress reduct is
 strongly normalizing.

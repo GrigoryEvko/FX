@@ -595,6 +595,16 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.pair_first_isStronglyNormalizing
 #print axioms RawTerm.pair_second_isStronglyNormalizing_aux
 #print axioms RawTerm.pair_second_isStronglyNormalizing
+#print axioms RawTerm.optionSome_value_isStronglyNormalizing_aux
+#print axioms RawTerm.optionSome_value_isStronglyNormalizing
+#print axioms RawTerm.eitherInl_value_isStronglyNormalizing_aux
+#print axioms RawTerm.eitherInl_value_isStronglyNormalizing
+#print axioms RawTerm.eitherInr_value_isStronglyNormalizing_aux
+#print axioms RawTerm.eitherInr_value_isStronglyNormalizing
+#print axioms RawTerm.listCons_head_isStronglyNormalizing_aux
+#print axioms RawTerm.listCons_head_isStronglyNormalizing
+#print axioms RawTerm.listCons_tail_isStronglyNormalizing_aux
+#print axioms RawTerm.listCons_tail_isStronglyNormalizing
 #print axioms RawTerm.isStronglyNormalizing.of_progress_closure
 #print axioms Term.isStronglyNormalizing.of_raw_progress_closure
 #print axioms RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
