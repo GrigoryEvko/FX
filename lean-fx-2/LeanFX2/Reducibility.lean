@@ -1371,6 +1371,49 @@ theorem RawTerm.pathLam_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.pathLam bodyEq)
     exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
 
+/-- **K12.20.AI.1 uaToEquiv SN preservation** — univalence-to-
+equivalence converter (D3.6 ua_β infrastructure).  Pure unary
+cong over its proof witness; uaToEquiv_inv discharges. -/
+theorem RawTerm.uaToEquiv_isStronglyNormalizing {scope : Nat}
+    {proof : RawTerm scope}
+    (proofIsSN : RawTerm.isStronglyNormalizing proof) :
+    RawTerm.isStronglyNormalizing (RawTerm.uaToEquiv proof) := by
+  induction proofIsSN with
+  | intro currentProof _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.uaToEquiv currentProof) ?_
+    intro target progressStep
+    obtain ⟨proofTarget, targetEq, proofStep⟩ :=
+      RawStep.par.uaToEquiv_inv progressStep.1
+    subst targetEq
+    have proofDistinct :
+        currentProof ≠ proofTarget := fun proofEq =>
+      progressStep.2 (congrArg RawTerm.uaToEquiv proofEq)
+    exact inductiveHypothesis proofTarget
+      ⟨proofStep, proofDistinct⟩
+
+/-- **K12.20.AI.2 oeqFunext SN preservation** — observational
+equality functional extensionality intro.  Pure unary cong over
+the pointwise-equality witness. -/
+theorem RawTerm.oeqFunext_isStronglyNormalizing {scope : Nat}
+    {pointwiseEquality : RawTerm scope}
+    (pointwiseIsSN : RawTerm.isStronglyNormalizing pointwiseEquality) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.oeqFunext pointwiseEquality) := by
+  induction pointwiseIsSN with
+  | intro currentPointwise _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.oeqFunext currentPointwise) ?_
+    intro target progressStep
+    obtain ⟨pointwiseTarget, targetEq, pointwiseStep⟩ :=
+      RawStep.par.oeqFunext_inv progressStep.1
+    subst targetEq
+    have pointwiseDistinct :
+        currentPointwise ≠ pointwiseTarget := fun pointwiseEq =>
+      progressStep.2 (congrArg RawTerm.oeqFunext pointwiseEq)
+    exact inductiveHypothesis pointwiseTarget
+      ⟨pointwiseStep, pointwiseDistinct⟩
+
 /-- **K12.20.AH equivIntro SN preservation** — equivalence intro
 bundles a forward and backward function.  Binary cong; uses the
 pair-style universal-in-conclusion pattern to keep the backward
