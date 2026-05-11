@@ -7331,6 +7331,92 @@ theorem Reducible.of_type_eq_symm_cast
   cases typeEq
   exact targetReducible
 
+/-- Transport a reducibility witness across a raw-index equality whose
+term side is cast by the symmetric equality.  This is the raw-index
+companion to `Reducible.of_type_eq_symm_cast`; it packages the exact
+`Eq.rec` shape emitted by β-specific substitution extension. -/
+theorem Reducible.of_raw_eq_symm_cast
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (rawEq : sourceRaw = targetRaw)
+    {targetTerm : Term context sourceType targetRaw}
+    (targetReducible : Reducible sourceType targetTerm) :
+    Reducible sourceType (rawEq.symm ▸ targetTerm) := by
+  cases rawEq
+  exact targetReducible
+
+/-- Substitution law for the β-specific environment extension:
+weakening a source type, lifting an existing substitution, then
+substituting the fresh argument is propositionally the original
+substitution on that type.
+
+This is the type-index equality behind `TermSubst.consSingleton`.
+It avoids the generic world-weakening theorem needed by
+`TermSubst.lift`: successor variables collapse back to their original
+substituted types after the singleton argument is applied. -/
+theorem Ty.weaken_subst_lift_singleton
+    {level scope targetScope : Nat}
+    (sourceType domainType : Ty level scope)
+    (sigma : Subst level scope targetScope)
+    (argumentRaw : RawTerm targetScope) :
+    sourceType.weaken.subst
+        (Subst.compose sigma.lift
+          (Subst.singleton (domainType.subst sigma) argumentRaw)) =
+      sourceType.subst sigma := by
+  rw [← Ty.subst_compose sigma.lift
+        (Subst.singleton (domainType.subst sigma) argumentRaw)
+        sourceType.weaken]
+  rw [Ty.weaken_subst_commute sigma sourceType]
+  exact Ty.weaken_subst_singleton (sourceType.subst sigma)
+    (domainType.subst sigma) argumentRaw
+
+/-- β-specific extension of a typed substitution by a reducible
+argument.
+
+Unlike `TermSubst.lift`, this substitution lands back in the original
+target context: position zero maps to the supplied argument, while
+successor positions map to the original substitution witnesses.  The
+underlying substitution is `sigma.lift` followed by the singleton
+argument substitution, which is the shape needed for lambda-body
+β-contracta. -/
+def TermSubst.consSingleton
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw) :
+    TermSubst (sourceCtx.cons domainType) targetCtx
+      (Subst.compose sigma.lift
+        (Subst.singleton (domainType.subst sigma) argumentRaw))
+  | ⟨0, _⟩ =>
+      (Ty.weaken_subst_lift_singleton domainType domainType sigma
+        argumentRaw).symm ▸
+        argumentTerm
+  | ⟨positionIndex + 1, positionIsWithinScope⟩ =>
+      let previousPosition : Fin scope :=
+        ⟨positionIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+      have typeEq :
+          ((varType (sourceCtx.cons domainType)
+              ⟨positionIndex + 1, positionIsWithinScope⟩).subst
+            (Subst.compose sigma.lift
+              (Subst.singleton (domainType.subst sigma) argumentRaw))) =
+            (varType sourceCtx previousPosition).subst sigma := by
+        exact Ty.weaken_subst_lift_singleton
+          (varType sourceCtx previousPosition) domainType sigma argumentRaw
+      have rawEq :
+          (Subst.compose sigma.lift
+              (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw
+              ⟨positionIndex + 1, positionIsWithinScope⟩ =
+            sigma.forRaw previousPosition := by
+        exact RawTerm.weaken_subst_singleton
+          (sigma.forRaw previousPosition) argumentRaw
+      rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition
+
 /-- **K12.20.U3 singleton ReducibleSubst**: replacing the newest
 variable by a reducible argument yields a reducible singleton
 substitution.
@@ -7397,6 +7483,71 @@ theorem ReducibleSubst.identity
   exact Reducible.of_type_eq_symm_cast
     (Ty.subst_identity (varType sourceCtx position))
     positionVarReducible
+
+/-- **K12.20.U3 cons-singleton ReducibleSubst**: extending an existing
+reducible substitution with a reducible β argument yields a reducible
+substitution for the extended source context into the original target
+context.
+
+This is intentionally weaker and more specific than
+`ReducibleSubst.lift`.  It is the substitution shape needed by the
+lambda-body β contractum and does not require arbitrary
+world-monotone weakening of old reducibility witnesses. -/
+theorem ReducibleSubst.consSingleton
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substReducible : ReducibleSubst termSubst)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (argumentReducible : Reducible (domainType.subst sigma) argumentTerm) :
+    ReducibleSubst
+      (TermSubst.consSingleton termSubst argumentTerm) := by
+  intro position
+  cases position with
+  | mk positionIndex positionIsWithinScope =>
+      cases positionIndex with
+      | zero =>
+          change Reducible
+            (domainType.weaken.subst
+              (Subst.compose sigma.lift
+                (Subst.singleton (domainType.subst sigma) argumentRaw)))
+            ((Ty.weaken_subst_lift_singleton domainType domainType sigma
+              argumentRaw).symm ▸ argumentTerm)
+          exact Reducible.of_type_eq_symm_cast
+            (Ty.weaken_subst_lift_singleton domainType domainType sigma
+              argumentRaw)
+            argumentReducible
+      | succ previousIndex =>
+          let previousPosition : Fin scope :=
+            ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+          have typeEq :
+              ((varType (sourceCtx.cons domainType)
+                  ⟨previousIndex + 1, positionIsWithinScope⟩).subst
+                (Subst.compose sigma.lift
+                  (Subst.singleton (domainType.subst sigma) argumentRaw))) =
+                (varType sourceCtx previousPosition).subst sigma := by
+            exact Ty.weaken_subst_lift_singleton
+              (varType sourceCtx previousPosition) domainType sigma argumentRaw
+          have rawEq :
+              (Subst.compose sigma.lift
+                  (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw
+                  ⟨previousIndex + 1, positionIsWithinScope⟩ =
+                sigma.forRaw previousPosition := by
+            exact RawTerm.weaken_subst_singleton
+              (sigma.forRaw previousPosition) argumentRaw
+          change Reducible
+            ((varType (sourceCtx.cons domainType)
+                ⟨previousIndex + 1, positionIsWithinScope⟩).subst
+              (Subst.compose sigma.lift
+                (Subst.singleton (domainType.subst sigma) argumentRaw)))
+            (rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition)
+          exact Reducible.of_raw_eq_symm_cast rawEq
+            (Reducible.of_type_eq_symm_cast typeEq
+              (substReducible previousPosition))
 
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 

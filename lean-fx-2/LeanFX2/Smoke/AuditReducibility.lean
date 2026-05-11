@@ -879,10 +879,14 @@ M04 / `strong_normalization`. -/
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.of_neutral_progress_closure
 #print axioms Reducible.of_type_eq_symm_cast
+#print axioms Reducible.of_raw_eq_symm_cast
+#print axioms Ty.weaken_subst_lift_singleton
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
+#print axioms TermSubst.consSingleton
 #print axioms ReducibleSubst.singleton
 #print axioms ReducibleSubst.identity
+#print axioms ReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape
 #print axioms Reducible.nat_of_varShape
