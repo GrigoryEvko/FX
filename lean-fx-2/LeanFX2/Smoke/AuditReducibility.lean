@@ -868,6 +868,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.modal_of_varShape
 #print axioms Reducible.arrow_of_varShape
 #print axioms Reducible.arrow_of_neutral_progress_closure
+#print axioms Reducible.piTy_of_neutral_progress_closure
 #print axioms Reducible.sigmaTy_of_neutral_progress_closure
 #print axioms Reducible.sigmaTy_of_varShape
 #print axioms Reducible.path_of_neutral_progress_closure

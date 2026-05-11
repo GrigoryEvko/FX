@@ -6593,6 +6593,38 @@ theorem Reducible.piTy_of_varShape
      RawTerm.app_var_isStronglyNormalizing position
        (Reducible.isStronglyNormalizing argIsReducible)⟩
 
+/-- **K12.20.U2 piTy CR3 arm**: a neutral dependent function is
+reducible at `Ty.piTy domainType codomainType` when every raw
+progress reduct is SN.
+
+K12.6's current dependent-Π candidate is SN-output: it stores SN of
+the function plus SN of every `Term.appPi` result under a reducible
+domain argument.  Since `Term.appPi` erases to `RawTerm.app`, the raw
+neutral-app SN helper closes the eliminator result directly. -/
+theorem Reducible.piTy_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    (functionTerm :
+      Term context (Ty.piTy domainType codomainType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw) :
+    Reducible (Ty.piTy domainType codomainType) functionTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing functionTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      functionTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_⟩
+  intro _argumentRaw argumentTerm argumentIsReducible
+  exact RawTerm.app_neutral_isStronglyNormalizing
+    sourceIsNeutral
+    sourceIsSN
+    (Reducible.isStronglyNormalizing argumentIsReducible)
+
 /-- **K12.20.U2 id CR3 arm**: a neutral identity witness is reducible
 at `Ty.id carrier leftEndpoint rightEndpoint` when every raw progress
 reduct is SN.
