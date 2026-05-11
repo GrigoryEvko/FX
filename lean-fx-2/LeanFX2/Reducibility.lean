@@ -1000,6 +1000,58 @@ theorem RawTerm.app_var_isStronglyNormalizing {scope : Nat}
           (RawStep.par.var_inv functionStep)
         nomatch varEqLam)
 
+/-- **K12.20.AT.1 neutral fst SN preservation**.  `RawTerm.fst
+(var pos)` is strongly normalizing.  Sister to `app_var`; `fst` is
+a unary destructor for Σ pairs, β fires only when the inner term
+par-reduces to `pair _ _`.  For variable inner, `var_inv` rules
+that out — `var pos` only par-reduces to itself, never to a pair.
+The cong arm is vacuous: the scrutinee is fixed, so no progress
+step exists; `parProgress`'s source-≠-target requirement contradicts
+`var_inv`. -/
+theorem RawTerm.fst_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.fst (RawTerm.var position)) := by
+  refine RawTerm.isStronglyNormalizing.intro
+    (RawTerm.fst (RawTerm.var position)) ?_
+  intro target progressStep
+  rcases RawStep.par.fst_inv progressStep.1 with
+    ⟨pairTarget, targetEq, pairStep⟩
+    | ⟨firstTarget, secondTarget, _targetEq, pairStep⟩
+  · have pairEq : pairTarget = RawTerm.var position :=
+      (RawStep.par.var_inv pairStep)
+    subst pairEq
+    subst targetEq
+    exact (progressStep.2 rfl).elim
+  · exact (by
+      have varEqPair :
+          RawTerm.pair firstTarget secondTarget = RawTerm.var position :=
+        (RawStep.par.var_inv pairStep)
+      nomatch varEqPair)
+
+/-- **K12.20.AT.2 neutral snd SN preservation**.  Sister to
+`fst_var`; same proof shape, dual Σ projection. -/
+theorem RawTerm.snd_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.snd (RawTerm.var position)) := by
+  refine RawTerm.isStronglyNormalizing.intro
+    (RawTerm.snd (RawTerm.var position)) ?_
+  intro target progressStep
+  rcases RawStep.par.snd_inv progressStep.1 with
+    ⟨pairTarget, targetEq, pairStep⟩
+    | ⟨firstTarget, secondTarget, _targetEq, pairStep⟩
+  · have pairEq : pairTarget = RawTerm.var position :=
+      (RawStep.par.var_inv pairStep)
+    subst pairEq
+    subst targetEq
+    exact (progressStep.2 rfl).elim
+  · exact (by
+      have varEqPair :
+          RawTerm.pair firstTarget secondTarget = RawTerm.var position :=
+        (RawStep.par.var_inv pairStep)
+      nomatch varEqPair)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +

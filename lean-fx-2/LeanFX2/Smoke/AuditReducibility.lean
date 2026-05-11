@@ -589,6 +589,8 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.isStronglyNormalizing.step_preserves
 #print axioms RawTerm.var_isStronglyNormalizing
 #print axioms RawTerm.app_var_isStronglyNormalizing
+#print axioms RawTerm.fst_var_isStronglyNormalizing
+#print axioms RawTerm.snd_var_isStronglyNormalizing
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing
 #print axioms RawTerm.eitherInl_isStronglyNormalizing
