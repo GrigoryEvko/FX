@@ -9,9 +9,9 @@ measure.  These together let downstream constructions (vertical
 composition, free n-category, strategy 3-cells) recurse over cell
 structure via well-founded recursion on `dim`.
 
-`DecidableEq` for `PolyCell` is auto-derived directly on the inductive
-in `PolyCell.lean` (`deriving Repr, DecidableEq`); this file does not
-re-ship it.
+`DecidableEq` for `PolyCell` is hand-rolled in `DecEq.lean`; auto-
+derivation leaks `propext` through the partial-match equation lemmas
+for the over-constrained per-ctor index shape.
 -/
 
 namespace LeanFX2.Foundation.Polygraph
