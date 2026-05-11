@@ -4735,6 +4735,158 @@ theorem RawTerm.optionSome_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis valueTarget
       ⟨valueStep, valueDistinct⟩
 
+/-- Option-some ι SN expansion for the eliminator.
+
+The option candidate stores the eliminator result as an SN-output
+closure.  For the canonical `Some` branch, the ι target is
+`app someBranch value`; this lemma lifts SN of that target through
+all congruent reductions of the scrutinee and branches. -/
+theorem RawTerm.optionMatch_optionSome_isStronglyNormalizing
+    {scope : Nat}
+    {valueTerm : RawTerm scope}
+    (valueIsSN : RawTerm.isStronglyNormalizing valueTerm) :
+    ∀ {noneBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing noneBranch →
+    ∀ {someBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing someBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app someBranch valueTerm) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.optionMatch
+          (RawTerm.optionSome valueTerm) noneBranch someBranch) := by
+  induction valueIsSN with
+  | intro currentValue valueClosure valueIH =>
+    intro noneBranch noneIsSN
+    induction noneIsSN with
+    | intro currentNone noneClosure noneIH =>
+      intro someBranch someIsSN someAppIsSN
+      induction someIsSN with
+      | intro currentSome someClosure someIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.optionMatch
+            (RawTerm.optionSome currentValue) currentNone currentSome) ?_
+        intro target progressStep
+        rcases RawStep.par.optionMatch_inv progressStep.1 with
+          ⟨scrutineeTarget, noneTarget, someTarget, targetEq,
+            scrutineeStep, noneStep, someStep⟩
+          | ⟨noneTarget, targetEq, scrutineeStep, noneStep⟩
+          | ⟨valueTarget, someTarget, targetEq, scrutineeStep, someStep⟩
+        · obtain ⟨valueTarget, scrutineeTargetEq, valueStep⟩ :=
+            RawStep.par.optionSome_inv scrutineeStep
+          subst scrutineeTargetEq
+          subst targetEq
+          by_cases valueEq : currentValue = valueTarget
+          · subst valueEq
+            by_cases noneEq : currentNone = noneTarget
+            · subst noneEq
+              by_cases someEq : currentSome = someTarget
+              · subst someEq
+                exact (progressStep.2 rfl).elim
+              · have someAppTargetIsSN :
+                    RawTerm.isStronglyNormalizing
+                      (RawTerm.app someTarget currentValue) := by
+                  by_cases appEq :
+                      RawTerm.app currentSome currentValue =
+                        RawTerm.app someTarget currentValue
+                  · rw [← appEq]
+                    exact someAppIsSN
+                  · exact RawTerm.isStronglyNormalizing.step_preserves
+                      someAppIsSN
+                      ⟨RawStep.par.app someStep
+                        (RawStep.par.refl currentValue), appEq⟩
+                exact someIH someTarget ⟨someStep, someEq⟩
+                  someAppTargetIsSN
+            · have someTargetIsSN :
+                  RawTerm.isStronglyNormalizing someTarget := by
+                by_cases someEq : currentSome = someTarget
+                · subst someEq
+                  exact RawTerm.isStronglyNormalizing.intro
+                    currentSome someClosure
+                · exact someClosure someTarget ⟨someStep, someEq⟩
+              have someAppTargetIsSN :
+                  RawTerm.isStronglyNormalizing
+                    (RawTerm.app someTarget currentValue) := by
+                by_cases appEq :
+                    RawTerm.app currentSome currentValue =
+                      RawTerm.app someTarget currentValue
+                · rw [← appEq]
+                  exact someAppIsSN
+                · exact RawTerm.isStronglyNormalizing.step_preserves
+                    someAppIsSN
+                    ⟨RawStep.par.app someStep
+                      (RawStep.par.refl currentValue), appEq⟩
+              exact noneIH noneTarget ⟨noneStep, noneEq⟩
+                someTargetIsSN someAppTargetIsSN
+          · have noneTargetIsSN :
+                RawTerm.isStronglyNormalizing noneTarget := by
+              by_cases noneEq : currentNone = noneTarget
+              · subst noneEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentNone noneClosure
+              · exact noneClosure noneTarget ⟨noneStep, noneEq⟩
+            have someTargetIsSN :
+                RawTerm.isStronglyNormalizing someTarget := by
+              by_cases someEq : currentSome = someTarget
+              · subst someEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentSome someClosure
+              · exact someClosure someTarget ⟨someStep, someEq⟩
+            have someAppTargetIsSN :
+                RawTerm.isStronglyNormalizing
+                  (RawTerm.app someTarget valueTarget) := by
+              by_cases appEq :
+                  RawTerm.app currentSome currentValue =
+                    RawTerm.app someTarget valueTarget
+              · rw [← appEq]
+                exact someAppIsSN
+              · exact RawTerm.isStronglyNormalizing.step_preserves
+                  someAppIsSN
+                  ⟨RawStep.par.app someStep valueStep, appEq⟩
+            exact valueIH valueTarget ⟨valueStep, valueEq⟩
+              noneTargetIsSN someTargetIsSN someAppTargetIsSN
+        · obtain ⟨valueTarget, optionSomeEq, _valueStep⟩ :=
+            RawStep.par.optionSome_inv scrutineeStep
+          nomatch optionSomeEq
+        · obtain ⟨valueTargetFromScrutinee, optionSomeEq, valueStep⟩ :=
+            RawStep.par.optionSome_inv scrutineeStep
+          injection optionSomeEq with _scopeEq valueTargetEq
+          subst targetEq
+          have valueStepToTarget :
+              RawStep.par currentValue valueTarget := by
+            rw [valueTargetEq]
+            exact valueStep
+          have someAppTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.app someTarget valueTarget) := by
+            by_cases appEq :
+                RawTerm.app currentSome currentValue =
+                  RawTerm.app someTarget valueTarget
+            · rw [← appEq]
+              exact someAppIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                someAppIsSN
+                ⟨RawStep.par.app someStep valueStepToTarget, appEq⟩
+          exact someAppTargetIsSN
+
+/-- Typed option-some ι SN expansion for `Term.optionMatch`. -/
+theorem Term.optionMatch_optionSome_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {valueRaw noneRaw someRaw : RawTerm scope}
+    {valueTerm : Term context elementType valueRaw}
+    {noneBranch : Term context motiveType noneRaw}
+    {someBranch : Term context (Ty.arrow elementType motiveType) someRaw}
+    (valueIsSN : Term.isStronglyNormalizing valueTerm)
+    (noneIsSN : Term.isStronglyNormalizing noneBranch)
+    (someIsSN : Term.isStronglyNormalizing someBranch)
+    (someAppIsSN :
+      Term.isStronglyNormalizing (Term.app someBranch valueTerm)) :
+    Term.isStronglyNormalizing
+      (Term.optionMatch (Term.optionSome valueTerm) noneBranch someBranch) :=
+  RawTerm.optionMatch_optionSome_isStronglyNormalizing
+    valueIsSN noneIsSN someIsSN someAppIsSN
+
 /-- **K12.20.X.1 eitherInl SN preservation**.  Sister to optionSome
 helper — unary cong-only ctor at the left injection of Ty.eitherType. -/
 theorem RawTerm.eitherInl_isStronglyNormalizing {scope : Nat}
@@ -8807,6 +8959,39 @@ theorem Reducible.fundamental_natSucc
     Reducible ((Ty.nat : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.natSucc predecessor)) :=
   RawTerm.natSucc_isStronglyNormalizing predIH
+
+/-- **K12.20.W optionSome fundamental case** — canonical option
+introduction at the K12.8 SN-output candidate.
+
+The option candidate stores exactly the eliminator result needed for
+M04: when a `Some` value is scrutinized, the supplied some-branch
+application is strongly normalizing for every reducible payload. -/
+theorem Reducible.fundamental_optionSome_at_optionType
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (valueIH :
+      Reducible (elementType.subst sigma)
+        (Term.subst termSubst valueTerm)) :
+    Reducible ((Ty.optionType elementType).subst sigma)
+      (Term.subst termSubst (Term.optionSome valueTerm)) := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.optionSome_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing valueIH)
+  · intro motiveType noneRaw someRaw noneBranch someBranch
+      noneIsSN someIsSN someApplicationIsSN
+    exact Term.optionMatch_optionSome_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing valueIH)
+      noneIsSN
+      someIsSN
+      (someApplicationIsSN
+        (Term.subst termSubst valueTerm)
+        valueIH)
 
 /-- **K12.20.AO.1 intervalOpp fundamental case** — cubical interval
 negation.  Unary intro to the closed-leaf `Ty.interval`; identical

@@ -741,6 +741,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_idJ_at_id_sn
 #print axioms Reducible.fundamental_oeqJ_at_oeq_sn
 #print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn
+#print axioms Reducible.fundamental_optionSome_at_optionType
 #print axioms Reducible.fundamental_optionMatch_at_option_sn
 #print axioms Reducible.fundamental_eitherMatch_at_either_sn
 #print axioms Reducible.fundamental_refl_at_id_of_endpoint_sn
@@ -753,6 +754,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_codataDest_at_codata
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing
+#print axioms RawTerm.optionMatch_optionSome_isStronglyNormalizing
+#print axioms Term.optionMatch_optionSome_isStronglyNormalizing
 #print axioms RawTerm.eitherInl_isStronglyNormalizing
 #print axioms RawTerm.eitherInr_isStronglyNormalizing
 #print axioms RawTerm.modIntro_isStronglyNormalizing
