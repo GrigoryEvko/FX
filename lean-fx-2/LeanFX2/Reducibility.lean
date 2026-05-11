@@ -1725,6 +1725,66 @@ theorem RawTerm.transp_var_isStronglyNormalizing {scope : Nat}
         have varEqPathCompose := (RawStep.par.var_inv pathStepCompose)
         nomatch varEqPathCompose)
 
+/-- **K12.20.BA.1 neutral refineElim SN preservation**.  Stage 1
+completion (overlooked in K12.20.AY's "18/18" close-out — the
+kernel has 20 unary/binary destructors with fireable β/ι rules at
+the raw layer, including refineElim and recordProj which are
+needed for K12.20.BC+ compound refine/record varShape work).
+Unary refinement destructor with variable refined value;
+refineElim_inv gives 2 arms: cong and βRefineElimIntro
+(refinedValue → refineIntro valueTarget proofTarget).  Direct
+`fst_var`-style template — cong arm contradicts progressStep.2
+via refl-on-source; β arm defeated by `var_inv` + nomatch on
+`var = refineIntro _ _`. -/
+theorem RawTerm.refineElim_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.refineElim (RawTerm.var position)) := by
+  refine RawTerm.isStronglyNormalizing.intro
+    (RawTerm.refineElim (RawTerm.var position)) ?_
+  intro target progressStep
+  rcases RawStep.par.refineElim_inv progressStep.1 with
+    ⟨refinedTarget, targetEq, refinedStep⟩
+    | ⟨valueTarget, proofTarget, _targetEq, refinedStep⟩
+  · have refinedEq : refinedTarget = RawTerm.var position :=
+      (RawStep.par.var_inv refinedStep)
+    subst refinedEq
+    subst targetEq
+    exact (progressStep.2 rfl).elim
+  · exact (by
+      have varEqRefineIntro :
+          RawTerm.refineIntro valueTarget proofTarget =
+            RawTerm.var position :=
+        (RawStep.par.var_inv refinedStep)
+      nomatch varEqRefineIntro)
+
+/-- **K12.20.BA.2 neutral recordProj SN preservation**.  Sister to
+`refineElim_var`; unary record-field projection with variable
+record value.  `recordProj_inv` gives 2 arms: cong and
+βRecordProjIntro (recordValue → recordIntro firstTarget).  Same
+fst_var-style proof.  Closes Stage 1 honestly at 20/20 kernel
+destructors. -/
+theorem RawTerm.recordProj_var_isStronglyNormalizing {scope : Nat}
+    (position : Fin scope) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.recordProj (RawTerm.var position)) := by
+  refine RawTerm.isStronglyNormalizing.intro
+    (RawTerm.recordProj (RawTerm.var position)) ?_
+  intro target progressStep
+  rcases RawStep.par.recordProj_inv progressStep.1 with
+    ⟨recordTarget, targetEq, recordStep⟩
+    | ⟨firstTarget, _targetEq, recordStep⟩
+  · have recordEq : recordTarget = RawTerm.var position :=
+      (RawStep.par.var_inv recordStep)
+    subst recordEq
+    subst targetEq
+    exact (progressStep.2 rfl).elim
+  · exact (by
+      have varEqRecordIntro :
+          RawTerm.recordIntro firstTarget = RawTerm.var position :=
+        (RawStep.par.var_inv recordStep)
+      nomatch varEqRecordIntro)
+
 /-- `RawTerm.natSucc predecessor` is SN when predecessor is.  Same
 proof pattern as `lam_isStronglyNormalizing`: structural induction
 on predecessor's SN witness + step inversion via `natSucc_inv` +

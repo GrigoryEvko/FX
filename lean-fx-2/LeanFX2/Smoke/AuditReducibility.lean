@@ -610,6 +610,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.id_of_varShape
 #print axioms Reducible.oeq_of_varShape
 #print axioms Reducible.idStrict_of_varShape
+#print axioms RawTerm.refineElim_var_isStronglyNormalizing
+#print axioms RawTerm.recordProj_var_isStronglyNormalizing
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing
 #print axioms RawTerm.eitherInl_isStronglyNormalizing
