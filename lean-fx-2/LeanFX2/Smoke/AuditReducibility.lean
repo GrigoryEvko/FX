@@ -650,6 +650,11 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.weaken_session
 #print axioms Reducible.weaken_effect
 #print axioms Reducible.weaken_modal
+#print axioms Reducible.weaken_sigmaTy
+#print axioms Reducible.weaken_glue
+#print axioms Reducible.weaken_refine
+#print axioms Reducible.weaken_record
+#print axioms Reducible.weaken_codata
 #print axioms RawTerm.app_lam_isStronglyNormalizing
 #print axioms RawTerm.app_function_isStronglyNormalizing_aux
 #print axioms RawTerm.app_function_isStronglyNormalizing

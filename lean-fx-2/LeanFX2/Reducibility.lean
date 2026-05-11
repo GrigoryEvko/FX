@@ -2181,6 +2181,108 @@ theorem Reducible.weaken_modal
       (Term.weaken newType sourceTerm) :=
   Term.isStronglyNormalizing_weaken sourceReducible
 
+/-- **K12.20.U3.monotone projection arm**: sigma reducibility weakens
+when the first projection's reducibility weakens at the strict
+sub-type.  The second projection is SN-only in the current K12.7
+closure, so the raw SN weakening wrapper handles it directly. -/
+theorem Reducible.weaken_sigmaTy
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.sigmaTy firstType secondType) sourceRaw}
+    (firstTypeWeaken :
+      ∀ {firstRaw : RawTerm scope}
+        {firstTerm : Term context firstType firstRaw},
+        Reducible firstType firstTerm →
+        Reducible firstType.weaken (Term.weaken newType firstTerm))
+    (sourceReducible : Reducible (Ty.sigmaTy firstType secondType) sourceTerm) :
+    Reducible ((Ty.sigmaTy firstType secondType).weaken)
+      (Term.weaken newType sourceTerm) :=
+  ⟨Term.isStronglyNormalizing_weaken (newType := newType) sourceReducible.1,
+   firstTypeWeaken sourceReducible.2.1,
+   Term.isStronglyNormalizing_weaken (newType := newType) sourceReducible.2.2⟩
+
+/-- **K12.20.U3.monotone projection arm**: glue reducibility weakens
+when the base projection's reducibility weakens at the strict sub-type. -/
+theorem Reducible.weaken_glue
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType baseType : Ty level scope}
+    {boundaryWitness sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.glue baseType boundaryWitness) sourceRaw}
+    (baseTypeWeaken :
+      ∀ {baseRaw : RawTerm scope}
+        {baseTerm : Term context baseType baseRaw},
+        Reducible baseType baseTerm →
+        Reducible baseType.weaken (Term.weaken newType baseTerm))
+    (sourceReducible : Reducible (Ty.glue baseType boundaryWitness) sourceTerm) :
+    Reducible ((Ty.glue baseType boundaryWitness).weaken)
+      (Term.weaken newType sourceTerm) :=
+  ⟨Term.isStronglyNormalizing_weaken (newType := newType) sourceReducible.1,
+   fun modeIsUnivalent => baseTypeWeaken (sourceReducible.2 modeIsUnivalent)⟩
+
+/-- **K12.20.U3.monotone projection arm**: refinement reducibility
+weakens when the base projection's reducibility weakens at the strict
+sub-type. -/
+theorem Reducible.weaken_refine
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.refine baseType predicate) sourceRaw}
+    (baseTypeWeaken :
+      ∀ {baseRaw : RawTerm scope}
+        {baseTerm : Term context baseType baseRaw},
+        Reducible baseType baseTerm →
+        Reducible baseType.weaken (Term.weaken newType baseTerm))
+    (sourceReducible : Reducible (Ty.refine baseType predicate) sourceTerm) :
+    Reducible ((Ty.refine baseType predicate).weaken)
+      (Term.weaken newType sourceTerm) :=
+  ⟨Term.isStronglyNormalizing_weaken (newType := newType) sourceReducible.1,
+   baseTypeWeaken sourceReducible.2⟩
+
+/-- **K12.20.U3.monotone projection arm**: record reducibility weakens
+when the single-field projection's reducibility weakens at the strict
+sub-type. -/
+theorem Reducible.weaken_record
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType singleFieldType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.record singleFieldType) sourceRaw}
+    (singleFieldWeaken :
+      ∀ {fieldRaw : RawTerm scope}
+        {fieldTerm : Term context singleFieldType fieldRaw},
+        Reducible singleFieldType fieldTerm →
+        Reducible singleFieldType.weaken (Term.weaken newType fieldTerm))
+    (sourceReducible : Reducible (Ty.record singleFieldType) sourceTerm) :
+    Reducible ((Ty.record singleFieldType).weaken)
+      (Term.weaken newType sourceTerm) :=
+  ⟨Term.isStronglyNormalizing_weaken (newType := newType) sourceReducible.1,
+   singleFieldWeaken sourceReducible.2⟩
+
+/-- **K12.20.U3.monotone projection arm**: codata reducibility weakens
+when the destructor output's reducibility weakens at the strict sub-type. -/
+theorem Reducible.weaken_codata
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType stateType outputType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context (Ty.codata stateType outputType) sourceRaw}
+    (outputTypeWeaken :
+      ∀ {outputRaw : RawTerm scope}
+        {outputTerm : Term context outputType outputRaw},
+        Reducible outputType outputTerm →
+        Reducible outputType.weaken (Term.weaken newType outputTerm))
+    (sourceReducible : Reducible (Ty.codata stateType outputType) sourceTerm) :
+    Reducible ((Ty.codata stateType outputType).weaken)
+      (Term.weaken newType sourceTerm) :=
+  ⟨Term.isStronglyNormalizing_weaken (newType := newType) sourceReducible.1,
+   outputTypeWeaken sourceReducible.2⟩
+
 /-- Head-β SN expansion for non-dependent application.
 
 If the lambda body, argument, and β-contractum are all strongly
