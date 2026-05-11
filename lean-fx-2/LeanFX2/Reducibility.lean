@@ -2,6 +2,7 @@ import LeanFX2.Term
 import LeanFX2.Term.Subst
 import LeanFX2.Reduction.RawPar
 import LeanFX2.Reduction.RawParInversion
+import LeanFX2.Reduction.RawParCompatible
 
 /-! # LeanFX2.Reducibility — Tait reducibility candidates
 
@@ -1209,6 +1210,96 @@ theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
     RawTerm.isStronglyNormalizing target := by
   cases sourceIsSN with
   | intro _ closure => exact closure target progressStep
+
+/-- Head-β SN expansion for non-dependent application.
+
+If the lambda body, argument, and β-contractum are all strongly
+normalizing, then the whole redex `app (lam body) argument` is strongly
+normalizing.  Congruence reducts recurse through body/argument SN.
+The β arm is not dismissed syntactically: `RawStep.par.app_inv` may
+produce a deep β target after the function side parallel-reduces to a
+lambda, so the proof uses `RawStep.par.subst0_par` to relate the
+original contractum to that β target and then applies raw CR2. -/
+theorem RawTerm.app_lam_isStronglyNormalizing {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    (bodyIsSN : RawTerm.isStronglyNormalizing body) :
+    ∀ {argument : RawTerm scope},
+      RawTerm.isStronglyNormalizing argument →
+      RawTerm.isStronglyNormalizing (body.subst0 argument) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app (RawTerm.lam body) argument) := by
+  induction bodyIsSN with
+  | intro currentBody bodyClosure bodyIH =>
+    intro argument argumentIsSN betaContractumIsSN
+    induction argumentIsSN with
+    | intro currentArgument argumentClosure argumentIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.app (RawTerm.lam currentBody) currentArgument) ?_
+      intro target progressStep
+      rcases RawStep.par.app_inv progressStep.1 with
+        ⟨functionTarget, argumentTarget, targetEq,
+          functionStep, argumentStep⟩
+        | ⟨bodyTarget, argumentTarget, targetEq,
+            functionStep, argumentStep⟩
+      · obtain ⟨bodyTarget, functionTargetEq, bodyStep⟩ :=
+          RawStep.par.lam_inv functionStep
+        subst functionTargetEq
+        subst targetEq
+        by_cases bodyEq : currentBody = bodyTarget
+        · subst bodyEq
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact False.elim (progressStep.2 rfl)
+          · have argumentContractumIsSN :
+                RawTerm.isStronglyNormalizing
+                  (currentBody.subst0 argumentTarget) := by
+              by_cases contractumEq :
+                  currentBody.subst0 currentArgument =
+                    currentBody.subst0 argumentTarget
+              · rw [← contractumEq]
+                exact betaContractumIsSN
+              · exact RawTerm.isStronglyNormalizing.step_preserves
+                  betaContractumIsSN
+                  ⟨RawStep.par.subst0_par (RawStep.par.refl currentBody)
+                    argumentStep, contractumEq⟩
+            exact argumentIH argumentTarget ⟨argumentStep, argumentEq⟩
+              argumentContractumIsSN
+        · have bodyProgress :
+              RawStep.parProgress currentBody bodyTarget :=
+            ⟨bodyStep, bodyEq⟩
+          have argumentTargetIsSN :
+              RawTerm.isStronglyNormalizing argumentTarget := by
+            by_cases argumentEq : currentArgument = argumentTarget
+            · subst argumentEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentArgument argumentClosure
+            · exact argumentClosure argumentTarget ⟨argumentStep, argumentEq⟩
+          have bodyTargetContractumIsSN :
+              RawTerm.isStronglyNormalizing
+                (bodyTarget.subst0 argumentTarget) := by
+            by_cases contractumEq :
+                currentBody.subst0 currentArgument =
+                  bodyTarget.subst0 argumentTarget
+            · rw [← contractumEq]
+              exact betaContractumIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                betaContractumIsSN
+                ⟨RawStep.par.subst0_par bodyStep argumentStep,
+                  contractumEq⟩
+          exact bodyIH bodyTarget bodyProgress argumentTargetIsSN
+            bodyTargetContractumIsSN
+      · obtain ⟨bodyTargetFromLam, lamTargetEq, bodyStep⟩ :=
+          RawStep.par.lam_inv functionStep
+        cases lamTargetEq
+        subst targetEq
+        by_cases contractumEq :
+            currentBody.subst0 currentArgument =
+              bodyTarget.subst0 argumentTarget
+        · rw [← contractumEq]
+          exact betaContractumIsSN
+        · exact RawTerm.isStronglyNormalizing.step_preserves
+            betaContractumIsSN
+            ⟨RawStep.par.subst0_par bodyStep argumentStep, contractumEq⟩
 
 /-- Shape-specialized inversion for application SN.  The induction is
 over an arbitrary SN source and receives the application shape as an
