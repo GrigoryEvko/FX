@@ -2534,6 +2534,66 @@ theorem RawTerm.app_neutral_isStronglyNormalizing {scope : Nat}
           (RawTerm.IsNeutral.par_preserves functionIsNeutral functionStep)
           (bodyRaw := bodyTarget) rfl).elim
 
+/-- First projection with a neutral pair head is strongly normalizing
+when the head is strongly normalizing.
+
+The pair beta arm is impossible because any parallel reduct of a
+neutral head stays neutral, and neutral terms are never pair-shaped.
+The congruence arm recurses on head progress. -/
+theorem RawTerm.fst_neutral_isStronglyNormalizing {scope : Nat}
+    {pairRaw : RawTerm scope}
+    (pairIsNeutral : RawTerm.IsNeutral pairRaw)
+    (pairIsSN : RawTerm.isStronglyNormalizing pairRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.fst pairRaw) := by
+  induction pairIsSN with
+  | intro currentPair _ pairInduction =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.fst currentPair) ?_
+    intro target progressStep
+    rcases RawStep.par.fst_inv progressStep.1 with
+      ⟨pairTarget, targetEq, pairStep⟩
+      | ⟨firstTarget, secondTarget, _targetEq, pairStep⟩
+    · have pairTargetIsNeutral : RawTerm.IsNeutral pairTarget :=
+        RawTerm.IsNeutral.par_preserves pairIsNeutral pairStep
+      by_cases pairEq : currentPair = pairTarget
+      · subst pairEq
+        subst targetEq
+        exact (progressStep.2 rfl).elim
+      · subst targetEq
+        exact pairInduction pairTarget
+          ⟨pairStep, pairEq⟩ pairTargetIsNeutral
+    · exact (RawTerm.IsNeutral.not_pair
+        (RawTerm.IsNeutral.par_preserves pairIsNeutral pairStep)
+        (firstRaw := firstTarget) (secondRaw := secondTarget) rfl).elim
+
+/-- Second projection with a neutral pair head is strongly normalizing
+when the head is strongly normalizing. -/
+theorem RawTerm.snd_neutral_isStronglyNormalizing {scope : Nat}
+    {pairRaw : RawTerm scope}
+    (pairIsNeutral : RawTerm.IsNeutral pairRaw)
+    (pairIsSN : RawTerm.isStronglyNormalizing pairRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.snd pairRaw) := by
+  induction pairIsSN with
+  | intro currentPair _ pairInduction =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.snd currentPair) ?_
+    intro target progressStep
+    rcases RawStep.par.snd_inv progressStep.1 with
+      ⟨pairTarget, targetEq, pairStep⟩
+      | ⟨firstTarget, secondTarget, _targetEq, pairStep⟩
+    · have pairTargetIsNeutral : RawTerm.IsNeutral pairTarget :=
+        RawTerm.IsNeutral.par_preserves pairIsNeutral pairStep
+      by_cases pairEq : currentPair = pairTarget
+      · subst pairEq
+        subst targetEq
+        exact (progressStep.2 rfl).elim
+      · subst targetEq
+        exact pairInduction pairTarget
+          ⟨pairStep, pairEq⟩ pairTargetIsNeutral
+    · exact (RawTerm.IsNeutral.not_pair
+        (RawTerm.IsNeutral.par_preserves pairIsNeutral pairStep)
+        (firstRaw := firstTarget) (secondRaw := secondTarget) rfl).elim
+
 /-- **K12.20.AS neutral-app SN preservation**.  `RawTerm.app (var pos)
 arg` is strongly normalizing whenever `arg` is.
 
@@ -5271,6 +5331,50 @@ theorem Reducible.sigmaTy_of_varShape
        RawTerm.isStronglyNormalizing.step_preserves
          (RawTerm.fst_var_isStronglyNormalizing position) progressStep),
    RawTerm.snd_var_isStronglyNormalizing position⟩
+
+/-- **K12.20.U2 sigmaTy CR3 arm**: a neutral dependent pair is
+reducible at `Ty.sigmaTy firstType secondType` when every raw
+progress reduct is SN and the first-projection CR3 hook is available.
+
+This matches the asymmetric sigma candidate: SN for the pair itself,
+full Reducible for `fst`, and SN for `snd`.  The second projection
+remains SN-only by the current K12.7 closure shape. -/
+theorem Reducible.sigmaTy_of_neutral_progress_closure
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm :
+      Term context (Ty.sigmaTy firstType secondType) sourceRaw)
+    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
+    (closure :
+      ∀ targetRaw : RawTerm scope,
+        RawStep.parProgress sourceRaw targetRaw →
+        RawTerm.isStronglyNormalizing targetRaw)
+    (firstTypeCR3 :
+      ∀ {firstRaw : RawTerm scope}
+        (firstTerm : Term context firstType firstRaw),
+        RawTerm.IsNeutral firstRaw →
+        (∀ targetRaw : RawTerm scope,
+          RawStep.parProgress firstRaw targetRaw →
+          RawTerm.isStronglyNormalizing targetRaw) →
+        Reducible firstType firstTerm) :
+    Reducible (Ty.sigmaTy firstType secondType) sourceTerm := by
+  have sourceIsSN : Term.isStronglyNormalizing sourceTerm :=
+    Term.isStronglyNormalizing_of_neutral_progress_closure
+      sourceTerm sourceIsNeutral closure
+  refine ⟨sourceIsSN, ?_, ?_⟩
+  · have fstIsSN :
+        RawTerm.isStronglyNormalizing (RawTerm.fst sourceRaw) :=
+      RawTerm.fst_neutral_isStronglyNormalizing
+        sourceIsNeutral sourceIsSN
+    exact firstTypeCR3 (Term.fst sourceTerm)
+      (RawTerm.IsNeutral.fst sourceIsNeutral)
+      (fun _targetRaw progressStep =>
+        RawTerm.isStronglyNormalizing.step_preserves fstIsSN progressStep)
+  · exact RawTerm.snd_neutral_isStronglyNormalizing
+      sourceIsNeutral sourceIsSN
 
 /-- **K12.20.U2 path varShape arm**: variables are reducible at cubical
 path type once carrier CR3 is available.

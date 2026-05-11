@@ -229,6 +229,10 @@ K12.20.C ships (neutral + natSucc SN preservation):
   SN of the application.  The beta arm is impossible by
   `RawTerm.IsNeutral.par_preserves` plus `not_lam`; congruence
   recurses on head progress or argument progress.
+* `RawTerm.{fst,snd}_neutral_isStronglyNormalizing` — generic
+  neutral-head sigma projection SN.  Their beta arms are impossible by
+  `RawTerm.IsNeutral.par_preserves` plus `not_pair`; congruence
+  recurses on head progress.
 * `RawTerm.natSucc_isStronglyNormalizing` — `natSucc predecessor`
   is SN whenever its predecessor is.  Same shape as K12.20.A
   `lam_isStronglyNormalizing`: induct on predecessor's SN
@@ -277,6 +281,10 @@ K12.20.E ships (typed neutral-var reducibility at SN-direct arms):
 * `Reducible.arrow_of_neutral_progress_closure` is the first
   compound typed CR3 arm: neutral function + SN progress closure +
   codomain CR3 hook imply reducibility at `Ty.arrow`.
+* `Reducible.sigmaTy_of_neutral_progress_closure` is the asymmetric
+  sigma typed CR3 arm: neutral pair + SN progress closure +
+  first-projection CR3 hook imply reducibility at `Ty.sigmaTy`; the
+  second projection remains SN-only per K12.7.
 * `RawTerm.IsNeutral.{app,fst,snd,boolElim,natElim,natRec,
   listElim,optionMatch,eitherMatch}_par_preserves` — higher-order
   one-step neutral-preservation atoms for the core eliminators.
@@ -826,6 +834,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_modal
 #print axioms RawTerm.var_has_no_progress
 #print axioms RawTerm.app_neutral_isStronglyNormalizing
+#print axioms RawTerm.fst_neutral_isStronglyNormalizing
+#print axioms RawTerm.snd_neutral_isStronglyNormalizing
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape
@@ -839,6 +849,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.modal_of_varShape
 #print axioms Reducible.arrow_of_varShape
 #print axioms Reducible.arrow_of_neutral_progress_closure
+#print axioms Reducible.sigmaTy_of_neutral_progress_closure
 #print axioms Reducible.sigmaTy_of_varShape
 #print axioms Reducible.path_of_varShape
 #print axioms Reducible.glue_of_varShape
