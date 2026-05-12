@@ -14842,6 +14842,28 @@ theorem Reducible.fundamental_app_at_arrow
                 (Term.app functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-- Direct M04 SN endpoint for non-dependent application.
+
+Application is not SN-preserving from child SN alone: the beta arm can
+expose the function body's substituted raw term.  The precise Tait
+obligation is the arrow reducibility closure for the function plus
+reducibility of the argument. -/
+theorem Term.app_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionReducible :
+        Reducible (Ty.arrow domainType codomainType) functionTerm)
+    (argumentReducible : Reducible domainType argumentTerm) :
+    Term.isStronglyNormalizing
+      (Term.app functionTerm argumentTerm) :=
+  Reducible.isStronglyNormalizing
+    (functionReducible.2 argumentTerm argumentReducible)
+
 /-- **K12.21 pair-intro SN endpoint at `Ty.sigmaTy`**.
 
 This is the M04-facing pair introduction endpoint: substituting a pair
@@ -15066,6 +15088,28 @@ theorem Reducible.fundamental_appPi_at_piTy_sn
     Term.isStronglyNormalizing
       (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
+/-- Direct M04 SN endpoint for dependent application.
+
+The current `piTy` reducibility arm intentionally stores an SN-output
+application closure.  This theorem exposes that closure at the typed
+`Term.appPi` surface without claiming full reducibility of the
+substituted codomain. -/
+theorem Term.appPi_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionReducible :
+        Reducible (Ty.piTy domainType codomainType) functionTerm)
+    (argumentReducible : Reducible domainType argumentTerm) :
+    Term.isStronglyNormalizing
+      (Term.appPi functionTerm argumentTerm) :=
+  functionReducible.2 argumentTerm argumentReducible
 
 /-! ## K12.21.E fundamental_recordProj at `Ty.record` —
 single-field record projection
