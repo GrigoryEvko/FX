@@ -7377,6 +7377,47 @@ theorem RawTerm.piTyCode_isStronglyNormalizing {scope : Nat}
         · exact domainIH domainTarget domainProgress
             (codomainClosure codomainTarget ⟨codomainStep, codomainEq⟩)
 
+/-- Type-code dependent-Sigma constructor SN preservation.
+
+Like `piTyCode_isStronglyNormalizing`, the second code payload is scoped
+under the binder at `scope + 1`.  The proof isolates the two raw
+congruence payloads and preserves SN by nested induction over them. -/
+theorem RawTerm.sigmaTyCode_isStronglyNormalizing {scope : Nat}
+    {firstCode : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstCode) :
+    ∀ {secondCode : RawTerm (scope + 1)},
+    RawTerm.isStronglyNormalizing secondCode →
+    RawTerm.isStronglyNormalizing
+      (RawTerm.sigmaTyCode firstCode secondCode) := by
+  induction firstIsSN with
+  | intro currentFirst _ firstIH =>
+    intro secondCode secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure secondIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.sigmaTyCode currentFirst currentSecond) ?_
+      intro target progressStep
+      obtain ⟨firstTarget, secondTarget, targetEq,
+              firstStep, secondStep⟩ :=
+        RawStep.par.sigmaTyCode_inv progressStep.1
+      subst targetEq
+      by_cases firstEq : currentFirst = firstTarget
+      · subst firstEq
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact False.elim (progressStep.2 rfl)
+        · exact secondIH secondTarget ⟨secondStep, secondEq⟩
+      · have firstProgress :
+            RawStep.parProgress currentFirst firstTarget :=
+          ⟨firstStep, firstEq⟩
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact firstIH firstTarget firstProgress
+            (RawTerm.isStronglyNormalizing.intro
+              currentSecond secondClosure)
+        · exact firstIH firstTarget firstProgress
+            (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12382,6 +12423,34 @@ theorem Reducible.fundamental_piTyCode_of_payloads
                   outerLevel levelLe domainCodeRaw codomainCodeRaw)) :=
   RawTerm.piTyCode_isStronglyNormalizing
     domainCodeIsSN codomainCodeIsSN
+
+/-- Type-code dependent-Sigma fundamental endpoint with explicit
+payload SN premises.
+
+The second raw payload is scoped under the binder, so the premise uses
+`sigma.forRaw.lift`, matching `Term.subst` for `sigmaTyCode`. -/
+theorem Reducible.fundamental_sigmaTyCode_of_payloads
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw : RawTerm scope}
+    {secondCodeRaw : RawTerm (scope + 1)}
+    (firstCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (firstCodeRaw.subst sigma.forRaw))
+    (secondCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (secondCodeRaw.subst sigma.forRaw.lift)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.sigmaTyCode (context := sourceCtx)
+                  outerLevel levelLe firstCodeRaw secondCodeRaw)) :=
+  RawTerm.sigmaTyCode_isStronglyNormalizing
+    firstCodeIsSN secondCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
 helper at the raw layer.  Sister to `subsume_isStronglyNormalizing`
