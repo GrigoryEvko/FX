@@ -5603,6 +5603,169 @@ theorem Term.listElim_listNil_isStronglyNormalizing
   RawTerm.listElim_listNil_isStronglyNormalizing
     nilIsSN consIsSN
 
+/-- List-cons ι SN expansion for the eliminator.
+
+For a canonical cons scrutinee, `listElim` reduces to
+`consBranch head tail`.  The nil branch remains explicit because
+congruent reductions may step under it before the ι rule fires. -/
+theorem RawTerm.listElim_listCons_isStronglyNormalizing
+    {scope : Nat}
+    {headTerm : RawTerm scope}
+    (headIsSN : RawTerm.isStronglyNormalizing headTerm) :
+    ∀ {tailTerm : RawTerm scope},
+      RawTerm.isStronglyNormalizing tailTerm →
+    ∀ {nilBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing nilBranch →
+    ∀ {consBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing consBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app (RawTerm.app consBranch headTerm) tailTerm) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listElim
+          (RawTerm.listCons headTerm tailTerm) nilBranch consBranch) := by
+  induction headIsSN with
+  | intro currentHead headClosure headIH =>
+    intro tailTerm tailIsSN
+    induction tailIsSN with
+    | intro currentTail tailClosure tailIH =>
+      intro nilBranch nilIsSN
+      induction nilIsSN with
+      | intro currentNil nilClosure nilIH =>
+        intro consBranch consIsSN consAppIsSN
+        induction consIsSN with
+        | intro currentCons consClosure consIH =>
+          refine RawTerm.isStronglyNormalizing.intro
+            (RawTerm.listElim
+              (RawTerm.listCons currentHead currentTail)
+              currentNil currentCons) ?_
+          intro target progressStep
+          rcases RawStep.par.listElim_inv progressStep.1 with
+            ⟨scrutineeTarget, nilTarget, consTarget, targetEq,
+              scrutineeStep, nilStep, consStep⟩
+            | ⟨nilTarget, targetEq, scrutineeStep, nilStep⟩
+            | ⟨headTarget, tailTarget, consTarget, targetEq,
+                scrutineeStep, consStep⟩
+          · obtain ⟨headTarget, tailTarget, scrutineeTargetEq,
+                headStep, tailStep⟩ :=
+              RawStep.par.listCons_inv scrutineeStep
+            subst scrutineeTargetEq
+            subst targetEq
+            have headTargetIsSN :
+                RawTerm.isStronglyNormalizing headTarget := by
+              by_cases headEq : currentHead = headTarget
+              · subst headEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentHead headClosure
+              · exact headClosure headTarget ⟨headStep, headEq⟩
+            have tailTargetIsSN :
+                RawTerm.isStronglyNormalizing tailTarget := by
+              by_cases tailEq : currentTail = tailTarget
+              · subst tailEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentTail tailClosure
+              · exact tailClosure tailTarget ⟨tailStep, tailEq⟩
+            have nilTargetIsSN :
+                RawTerm.isStronglyNormalizing nilTarget := by
+              by_cases nilEq : currentNil = nilTarget
+              · subst nilEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentNil nilClosure
+              · exact nilClosure nilTarget ⟨nilStep, nilEq⟩
+            have consTargetIsSN :
+                RawTerm.isStronglyNormalizing consTarget := by
+              by_cases consEq : currentCons = consTarget
+              · subst consEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentCons consClosure
+              · exact consClosure consTarget ⟨consStep, consEq⟩
+            have consAppTargetIsSN :
+                RawTerm.isStronglyNormalizing
+                  (RawTerm.app
+                    (RawTerm.app consTarget headTarget) tailTarget) := by
+              by_cases appEq :
+                  RawTerm.app (RawTerm.app currentCons currentHead) currentTail =
+                    RawTerm.app (RawTerm.app consTarget headTarget) tailTarget
+              · rw [← appEq]
+                exact consAppIsSN
+              · exact RawTerm.isStronglyNormalizing.step_preserves
+                  consAppIsSN
+                  ⟨RawStep.par.app
+                    (RawStep.par.app consStep headStep) tailStep, appEq⟩
+            by_cases headEq : currentHead = headTarget
+            · subst headEq
+              by_cases tailEq : currentTail = tailTarget
+              · subst tailEq
+                by_cases nilEq : currentNil = nilTarget
+                · subst nilEq
+                  by_cases consEq : currentCons = consTarget
+                  · subst consEq
+                    exact (progressStep.2 rfl).elim
+                  · exact consIH consTarget ⟨consStep, consEq⟩
+                      consAppTargetIsSN
+                · exact nilIH nilTarget ⟨nilStep, nilEq⟩
+                    consTargetIsSN consAppTargetIsSN
+              · exact tailIH tailTarget ⟨tailStep, tailEq⟩
+                  nilTargetIsSN consTargetIsSN consAppTargetIsSN
+            · exact headIH headTarget ⟨headStep, headEq⟩
+                tailTargetIsSN nilTargetIsSN consTargetIsSN
+                consAppTargetIsSN
+          · obtain ⟨headTarget, tailTarget, listNilEq,
+                _headStep, _tailStep⟩ :=
+              RawStep.par.listCons_inv scrutineeStep
+            nomatch listNilEq
+          · obtain ⟨headTargetFromScrutinee, tailTargetFromScrutinee,
+                listConsEq, headStep, tailStep⟩ :=
+              RawStep.par.listCons_inv scrutineeStep
+            injection listConsEq with _scopeEq headTargetEq tailTargetEq
+            subst targetEq
+            have headStepToTarget :
+                RawStep.par currentHead headTarget := by
+              rw [headTargetEq]
+              exact headStep
+            have tailStepToTarget :
+                RawStep.par currentTail tailTarget := by
+              rw [tailTargetEq]
+              exact tailStep
+            have consAppTargetIsSN :
+                RawTerm.isStronglyNormalizing
+                  (RawTerm.app
+                    (RawTerm.app consTarget headTarget) tailTarget) := by
+              by_cases appEq :
+                  RawTerm.app (RawTerm.app currentCons currentHead) currentTail =
+                    RawTerm.app (RawTerm.app consTarget headTarget) tailTarget
+              · rw [← appEq]
+                exact consAppIsSN
+              · exact RawTerm.isStronglyNormalizing.step_preserves
+                  consAppIsSN
+                  ⟨RawStep.par.app
+                    (RawStep.par.app consStep headStepToTarget)
+                    tailStepToTarget, appEq⟩
+            exact consAppTargetIsSN
+
+/-- Typed list-cons ι SN expansion for `Term.listElim`. -/
+theorem Term.listElim_listCons_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {headRaw tailRaw nilRaw consRaw : RawTerm scope}
+    {headTerm : Term context elementType headRaw}
+    {tailTerm : Term context (Ty.listType elementType) tailRaw}
+    {nilBranch : Term context motiveType nilRaw}
+    {consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType) motiveType)) consRaw}
+    (headIsSN : Term.isStronglyNormalizing headTerm)
+    (tailIsSN : Term.isStronglyNormalizing tailTerm)
+    (nilIsSN : Term.isStronglyNormalizing nilBranch)
+    (consIsSN : Term.isStronglyNormalizing consBranch)
+    (consAppIsSN :
+      Term.isStronglyNormalizing
+        (Term.app (Term.app consBranch headTerm) tailTerm)) :
+    Term.isStronglyNormalizing
+      (Term.listElim
+        (Term.listCons headTerm tailTerm) nilBranch consBranch) :=
+  RawTerm.listElim_listCons_isStronglyNormalizing
+    headIsSN tailIsSN nilIsSN consIsSN consAppIsSN
+
 /-- **K12.20.AC.2 optionNone SN preservation** — nullary value at
 parametric Ty.optionType.  Same atomic shape as listNil. -/
 theorem RawTerm.optionNone_isStronglyNormalizing {scope : Nat} :
@@ -9428,6 +9591,44 @@ theorem Reducible.fundamental_listNil_at_listType
     exact Term.listElim_listNil_isStronglyNormalizing
       nilIsSN
       consIsSN
+
+/-- **K12.20.V.1 listCons fundamental case** — canonical list
+cons introduction at the K12.8 SN-output candidate. -/
+theorem Reducible.fundamental_listCons_at_listType
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (headIH :
+      Reducible (elementType.subst sigma)
+        (Term.subst termSubst headTerm))
+    (tailIH :
+      Reducible ((Ty.listType elementType).subst sigma)
+        (Term.subst termSubst tailTerm)) :
+    Reducible ((Ty.listType elementType).subst sigma)
+      (Term.subst termSubst
+        (Term.listCons headTerm tailTerm)) := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.listCons_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing headIH)
+      (Reducible.isStronglyNormalizing tailIH)
+  · intro motiveType nilRaw consRaw nilBranch consBranch
+      nilIsSN consIsSN consApplicationIsSN
+    exact Term.listElim_listCons_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing headIH)
+      (Reducible.isStronglyNormalizing tailIH)
+      nilIsSN
+      consIsSN
+      (consApplicationIsSN
+        (Term.subst termSubst headTerm)
+        (Term.subst termSubst tailTerm)
+        headIH
+        (Reducible.isStronglyNormalizing tailIH))
 
 /-- **K12.20.W.0 optionNone fundamental case** — canonical option
 none introduction at the K12.8 SN-output candidate. -/

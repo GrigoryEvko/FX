@@ -742,6 +742,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_oeqJ_at_oeq_sn
 #print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn
 #print axioms Reducible.fundamental_listNil_at_listType
+#print axioms Reducible.fundamental_listCons_at_listType
 #print axioms Reducible.fundamental_optionNone_at_optionType
 #print axioms Reducible.fundamental_optionSome_at_optionType
 #print axioms Reducible.fundamental_eitherInl_at_eitherType
@@ -778,6 +779,8 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.listNil_isStronglyNormalizing
 #print axioms RawTerm.listElim_listNil_isStronglyNormalizing
 #print axioms Term.listElim_listNil_isStronglyNormalizing
+#print axioms RawTerm.listElim_listCons_isStronglyNormalizing
+#print axioms Term.listElim_listCons_isStronglyNormalizing
 #print axioms RawTerm.optionNone_isStronglyNormalizing
 #print axioms RawTerm.optionMatch_optionNone_isStronglyNormalizing
 #print axioms Term.optionMatch_optionNone_isStronglyNormalizing
