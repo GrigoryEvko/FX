@@ -15446,6 +15446,61 @@ theorem Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint
   Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn
     modeIsStrict endpointIsSN
 
+/-- Direct identity-M04 SN case for identity reflexivity with an
+explicit endpoint SN premise. -/
+theorem Term.identity_refl_isStronglyNormalizing_of_endpoint
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.refl (context := sourceCtx) carrier rawWitness) :=
+  Reducible.strong_normalization_of_identity_reducible
+    (Term.refl (context := sourceCtx) carrier rawWitness)
+    (Reducible.fundamental_refl_at_id_of_endpoint
+      (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+      (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+      (RawTerm.subst_identity_isStronglyNormalizing endpointIsSN))
+
+/-- Direct identity-M04 SN case for observational reflexivity with an
+explicit endpoint SN premise. -/
+theorem Term.identity_oeqRefl_isStronglyNormalizing_of_endpoint
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.oeqRefl (context := sourceCtx) carrier rawWitness) :=
+  Reducible.strong_normalization_of_identity_reducible
+    (Term.oeqRefl (context := sourceCtx) carrier rawWitness)
+    (Reducible.fundamental_oeqRefl_at_oeq_of_endpoint
+      (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+      (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+      (RawTerm.subst_identity_isStronglyNormalizing endpointIsSN))
+
+/-- Direct identity-M04 SN case for strict reflexivity with an explicit
+endpoint SN premise. -/
+theorem Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRefl (context := sourceCtx)
+        modeIsStrict carrier rawWitness) :=
+  Reducible.strong_normalization_of_identity_reducible
+    (Term.idStrictRefl (context := sourceCtx)
+      modeIsStrict carrier rawWitness)
+    (Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint
+      (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+      (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+      modeIsStrict
+      (RawTerm.subst_identity_isStronglyNormalizing endpointIsSN))
+
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
 First fundamental atomic over HOTT-adjacent eliminators.  Same

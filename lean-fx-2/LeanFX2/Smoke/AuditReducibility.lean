@@ -1001,6 +1001,9 @@ M04 / `strong_normalization`. -/
 #print axioms Term.identity_listCode_isStronglyNormalizing_of_typeCode_payload
 #print axioms Term.identity_optionCode_isStronglyNormalizing_of_typeCode_payload
 #print axioms Term.identity_idCode_isStronglyNormalizing_of_typeCode_payloads
+#print axioms Term.identity_refl_isStronglyNormalizing_of_endpoint
+#print axioms Term.identity_oeqRefl_isStronglyNormalizing_of_endpoint
+#print axioms Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
