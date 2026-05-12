@@ -10145,6 +10145,42 @@ theorem Reducible.identity_lift_body_sn_of_identity_reducible
   rw [RawTerm.subst_identity bodyRaw] at bodyIdentityIsSN
   exact bodyIdentityIsSN
 
+/-- **K12.27 generic identity-lift body SN bridge**.
+
+This is the binder-generic form of
+`identity_lift_body_sn_of_identity_reducible` for binders whose body
+type already lives in the extended scope, such as `lamPi`.  The result
+is still SN-only and identity-only; it deliberately does not claim
+generic `ReducibleSubst.lift`. -/
+theorem Reducible.identity_lift_body_sn_of_identity_reducible_at
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {bodyType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (sourceCtx.cons domainType) bodyType bodyRaw}
+    (bodyIdentityReducible :
+      Reducible (bodyType.subst Subst.identity)
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst ((TermSubst.identity sourceCtx).lift domainType)
+        bodyTerm) := by
+  have bodyIdentityIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm) :=
+    Reducible.isStronglyNormalizing bodyIdentityReducible
+  change RawTerm.isStronglyNormalizing
+    (bodyRaw.subst ((@Subst.identity level scope).forRaw.lift))
+  rw [RawTerm.subst_identity_lift (level := level) (scope := scope) bodyRaw]
+  change RawTerm.isStronglyNormalizing bodyRaw
+  change RawTerm.isStronglyNormalizing
+    (bodyRaw.subst ((@Subst.identity level (scope + 1)).forRaw))
+    at bodyIdentityIsSN
+  rw [RawTerm.subst_identity bodyRaw] at bodyIdentityIsSN
+  exact bodyIdentityIsSN
+
 /-- **K12.27 identity-substitution lambda value SN endpoint**.
 
 This composes the identity-lift body bridge with the existing lambda
@@ -10510,6 +10546,59 @@ theorem Reducible.fundamental_pathLam_at_path_sn
     (leftEndpoint.subst sigma.forRaw)
     (rightEndpoint.subst sigma.forRaw)
     bodyIsSN
+
+/-- **K12.27 identity-substitution dependent lambda value SN endpoint**.
+
+This is the `lamPi` sibling of
+`fundamental_identity_lam_at_arrow_sn`.  It supplies the value-SN
+conjunct needed by the identity-only M04 route without asserting the
+substitution-parametric Π fundamental case. -/
+theorem Reducible.fundamental_identity_lamPi_at_piTy_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (bodyIdentityReducible :
+      Reducible (codomainType.subst Subst.identity)
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lamPi bodyTerm)) :=
+  Reducible.fundamental_lamPi_at_piTy_sn
+    (termSubst := TermSubst.identity sourceCtx)
+    (Reducible.identity_lift_body_sn_of_identity_reducible_at
+      bodyIdentityReducible)
+
+/-- **K12.27 identity-substitution path lambda value SN endpoint**.
+
+The cubical path binder has the same weakened-body shape as non-dependent
+arrow lambda, with `Ty.interval` as the binder type.  This packages only
+the identity-substitution value-SN endpoint for M04. -/
+theorem Reducible.fundamental_identity_pathLam_at_path_sn
+    {level scope : Nat}
+    {sourceCtx : Ctx Mode.univalent level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyIdentityReducible :
+      Reducible (carrierType.weaken.subst Subst.identity)
+        (Term.subst (TermSubst.identity (sourceCtx.cons Ty.interval))
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.pathLam rfl carrierType
+          leftEndpoint rightEndpoint bodyTerm)) :=
+  Reducible.fundamental_pathLam_at_path_sn
+    (termSubst := TermSubst.identity sourceCtx)
+    rfl
+    (Reducible.identity_lift_body_sn_of_identity_reducible
+      bodyIdentityReducible)
 
 /-- Fundamental SN endpoint for cubical path-lambda application.
 
