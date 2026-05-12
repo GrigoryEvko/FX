@@ -12194,6 +12194,75 @@ theorem Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
     (Reducible.fundamental_lam_at_arrow_contractum_sn
       bodyContractumReducible)
 
+/-- Lambda reducibility from the body IH for SN-recoverable codomains,
+without the typed β-contractum HEq.
+
+For codomains whose reducibility candidate can be rebuilt from strong
+normalization, the arrow application closure only needs SN of the
+β-redex.  That SN fact is already supplied by the raw-indexed
+`fundamental_lam_at_arrow_app_sn_of_body_contractum` bridge from the
+body IH under `TermSubst.consSingleton`; no typed contractum HEq is
+needed on this narrower route. -/
+theorem Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (codomainReducibleOfSN :
+      ∀ {resultRaw : RawTerm targetScope}
+        (resultTerm : Term targetCtx (codomainType.subst sigma) resultRaw),
+        Term.isStronglyNormalizing resultTerm →
+        Reducible (codomainType.subst sigma) resultTerm)
+    (substReducible : ReducibleSubst termSubst)
+    (liftSubstReducible : ReducibleSubst (termSubst.lift domainType))
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (codomainType.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType codomainType).subst sigma)
+      (Term.subst termSubst
+        (Term.lam (codomainType := codomainType) bodyTerm)) := by
+  have bodyLiftReducible :
+      Reducible ((codomainType.subst sigma).weaken)
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm) :=
+    Reducible.of_type_eq_cast
+      (Ty.weaken_subst_commute sigma codomainType)
+      (bodyIH (termSubst.lift domainType) liftSubstReducible)
+  have bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm) :=
+    Reducible.isStronglyNormalizing bodyLiftReducible
+  refine ⟨
+    Reducible.fundamental_lam_at_arrow_sn
+      (termSubst := termSubst)
+      bodyIsSN,
+    ?_⟩
+  intro _argumentRaw argumentTerm argumentReducible
+  exact codomainReducibleOfSN
+    (Term.app
+      (Term.subst termSubst
+        (Term.lam (codomainType := codomainType) bodyTerm))
+      argumentTerm)
+    (Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
+      (termSubst := termSubst)
+      bodyIsSN
+      argumentReducible
+      (bodyIH
+        (TermSubst.consSingleton termSubst argumentTerm)
+        (ReducibleSubst.consSingleton substReducible argumentReducible)))
+
 /-- Typed head-β SN expansion for dependent Π application.
 
 `Term.lamPi` shares the raw `RawTerm.lam` constructor with non-dependent
