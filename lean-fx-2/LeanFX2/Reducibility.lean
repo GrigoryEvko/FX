@@ -7996,6 +7996,36 @@ theorem RawTerm.equivIntro_isStronglyNormalizing {scope : Nat}
         · exact forwardIH forwardTarget forwardProgress
             (backwardClosure backwardTarget ⟨backwardStep, backwardEq⟩)
 
+/-- Typed wrapper for heterogeneous equivalence-introduction SN.
+
+`Term.equivIntroHet` has raw shape `RawTerm.equivIntro forward backward`;
+the proof witnesses are typed obligations and do not occur in the raw
+computational payload.  Thus SN depends only on the forward and backward
+functions.  This is an SN bridge, not the full `Ty.equiv` Reducible
+introduction closure. -/
+theorem Term.equivIntroHet_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    {forward :
+      Term context (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term context (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardIsSN : Term.isStronglyNormalizing forward)
+    (backwardIsSN : Term.isStronglyNormalizing backward) :
+    Term.isStronglyNormalizing
+      (Term.equivIntroHet forward backward leftInv rightInv) :=
+  RawTerm.equivIntro_isStronglyNormalizing forwardIsSN backwardIsSN
+
 /-! ## K12.20.D typed CR2 lift for SN-direct Reducible arms
 
 CR2 at the typed `Reducible` level for the ten SN-direct arms.  Each
@@ -13192,6 +13222,48 @@ theorem Reducible.fundamental_equivApply_at_equiv
   Term.equivApply_isStronglyNormalizing
     (Reducible.isStronglyNormalizing equivIH)
     (Reducible.isStronglyNormalizing argumentIH)
+
+/-- Fundamental SN endpoint: `Term.equivIntroHet` at `Ty.equiv`
+(K12.26 support).
+
+The current `Ty.equiv` candidate stores full `equivApp` closure.
+Building that closure for a freshly introduced equivalence would need
+a backward bridge from `equivApp (equivIntro forward backward) arg` to
+`app forward arg`, which is still tracked under the general
+head-β/ι expansion work.  This endpoint therefore records only the
+M04-relevant SN fact for the constructor raw form. -/
+theorem Reducible.fundamental_equivIntroHet_at_equiv_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardIH :
+      Reducible ((Ty.arrow carrierA carrierB).subst sigma)
+        (Term.subst termSubst forward))
+    (backwardIH :
+      Reducible ((Ty.arrow carrierB carrierA).subst sigma)
+        (Term.subst termSubst backward)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.equivIntroHet forward backward leftInv rightInv)) :=
+  Term.equivIntroHet_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing forwardIH)
+    (Reducible.isStronglyNormalizing backwardIH)
 
 /-- Fundamental case: `Term.oeqFunext` at `Ty.oeq` (K12.23.B).
 

@@ -772,6 +772,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint
 #print axioms Reducible.fundamental_equivApp_at_equiv
 #print axioms Reducible.fundamental_equivApply_at_equiv
+#print axioms Reducible.fundamental_equivIntroHet_at_equiv_sn
 #print axioms Reducible.fundamental_oeqFunext_at_oeq
 #print axioms Reducible.fundamental_pathApp_at_path
 #print axioms Reducible.fundamental_glueElim_at_glue
@@ -838,6 +839,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.pathLam_isStronglyNormalizing
 #print axioms Term.pathLam_isStronglyNormalizing
 #print axioms RawTerm.equivIntro_isStronglyNormalizing
+#print axioms Term.equivIntroHet_isStronglyNormalizing
 #print axioms RawTerm.equivApply_isStronglyNormalizing
 #print axioms Term.equivApply_isStronglyNormalizing
 #print axioms RawTerm.uaToEquiv_isStronglyNormalizing
