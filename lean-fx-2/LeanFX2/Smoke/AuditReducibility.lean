@@ -834,6 +834,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_identity_recordIntro_at_record_sn
 #print axioms Reducible.fundamental_identity_refineIntro_at_refine_sn
 #print axioms Reducible.fundamental_identity_boolElim_at_bool_sn
+#print axioms Reducible.fundamental_identity_natElim_at_nat_sn
+#print axioms Reducible.fundamental_identity_natRec_at_nat_sn
 #print axioms Reducible.fundamental_identity_idJ_at_id_sn
 #print axioms Reducible.fundamental_identity_oeqJ_at_oeq_sn
 #print axioms Reducible.fundamental_identity_idStrictRec_at_idStrict_sn
