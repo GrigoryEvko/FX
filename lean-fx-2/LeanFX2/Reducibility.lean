@@ -16428,6 +16428,45 @@ theorem Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
       modeIsStrict
       (RawTerm.subst_identity_isStronglyNormalizing endpointIsSN))
 
+/-- Direct M04 SN endpoint for identity reflexivity with explicit endpoint
+SN evidence. -/
+theorem Term.refl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.refl (context := sourceCtx) carrier rawWitness) :=
+  Term.identity_refl_isStronglyNormalizing_of_endpoint endpointIsSN
+
+/-- Direct M04 SN endpoint for observational reflexivity with explicit
+endpoint SN evidence. -/
+theorem Term.oeqRefl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.oeqRefl (context := sourceCtx) carrier rawWitness) :=
+  Term.identity_oeqRefl_isStronglyNormalizing_of_endpoint endpointIsSN
+
+/-- Direct M04 SN endpoint for strict reflexivity with explicit endpoint
+SN evidence. -/
+theorem Term.idStrictRefl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRefl (context := sourceCtx)
+        modeIsStrict carrier rawWitness) :=
+  Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
+    modeIsStrict endpointIsSN
+
 /-- M04 raw-payload evidence form of the direct identity SN case for
 identity reflexivity. -/
 theorem Term.identity_refl_isStronglyNormalizing_of_rawPayloads

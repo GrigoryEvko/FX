@@ -1026,6 +1026,9 @@ M04 / `strong_normalization`. -/
 #print axioms Term.identity_refl_isStronglyNormalizing_of_endpoint
 #print axioms Term.identity_oeqRefl_isStronglyNormalizing_of_endpoint
 #print axioms Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
+#print axioms Term.refl_isStronglyNormalizing
+#print axioms Term.oeqRefl_isStronglyNormalizing
+#print axioms Term.idStrictRefl_isStronglyNormalizing
 #print axioms Term.identity_refl_isStronglyNormalizing_of_rawPayloads
 #print axioms Term.identity_oeqRefl_isStronglyNormalizing_of_rawPayloads
 #print axioms Term.identity_idStrictRefl_isStronglyNormalizing_of_rawPayloads
