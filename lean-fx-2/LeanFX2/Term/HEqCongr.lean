@@ -565,4 +565,149 @@ theorem Term.subsume_HEq_congr
   cases innerHEq
   rfl
 
+/-- HEq congruence for `Term.cumulUp`. -/
+theorem Term.cumulUp_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {lowerLevel higherLevel : UniverseLevel}
+    {cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat}
+    {levelLeLow : lowerLevel.toNat + 1 ≤ level}
+    {levelLeHigh : higherLevel.toNat + 1 ≤ level}
+    {codeRaw1 codeRaw2 : RawTerm scope}
+    (codeRawEq : codeRaw1 = codeRaw2)
+    {typeCode1 : Term context (Ty.universe lowerLevel levelLeLow) codeRaw1}
+    {typeCode2 : Term context (Ty.universe lowerLevel levelLeLow) codeRaw2}
+    (typeCodeHEq : HEq typeCode1 typeCode2) :
+    HEq
+      (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow
+        levelLeHigh typeCode1)
+      (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow
+        levelLeHigh typeCode2) := by
+  subst codeRawEq
+  cases typeCodeHEq
+  rfl
+
+/-- HEq congruence for the canonical identity equivalence. -/
+theorem Term.equivReflId_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {carrier1 carrier2 : Ty level scope}
+    (carrierEq : carrier1 = carrier2) :
+    HEq (Term.equivReflId (context := context) carrier1)
+      (Term.equivReflId (context := context) carrier2) := by
+  subst carrierEq
+  rfl
+
+/-- HEq congruence for canonical funext reflexivity. -/
+theorem Term.funextRefl_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType1 domainType2 codomainType1 codomainType2 : Ty level scope}
+    {applyRaw1 applyRaw2 : RawTerm (scope + 1)}
+    (domainEq : domainType1 = domainType2)
+    (codomainEq : codomainType1 = codomainType2)
+    (applyRawEq : applyRaw1 = applyRaw2) :
+    HEq
+      (Term.funextRefl (context := context) domainType1 codomainType1
+        applyRaw1)
+      (Term.funextRefl (context := context) domainType2 codomainType2
+        applyRaw2) := by
+  subst domainEq
+  subst codomainEq
+  subst applyRawEq
+  rfl
+
+/-- HEq congruence for the Id-typed identity-equivalence witness. -/
+theorem Term.equivReflIdAtId_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {innerLevel : UniverseLevel}
+    {innerLevelLt : innerLevel.toNat + 1 ≤ level}
+    {carrier1 carrier2 : Ty level scope}
+    {carrierRaw1 carrierRaw2 : RawTerm scope}
+    (carrierEq : carrier1 = carrier2)
+    (carrierRawEq : carrierRaw1 = carrierRaw2) :
+    HEq
+      (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt
+        carrier1 carrierRaw1)
+      (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt
+        carrier2 carrierRaw2) := by
+  subst carrierEq
+  subst carrierRawEq
+  rfl
+
+/-- HEq congruence for the Id-typed funext witness. -/
+theorem Term.funextReflAtId_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {domainType1 domainType2 codomainType1 codomainType2 : Ty level scope}
+    {applyRaw1 applyRaw2 : RawTerm (scope + 1)}
+    (domainEq : domainType1 = domainType2)
+    (codomainEq : codomainType1 = codomainType2)
+    (applyRawEq : applyRaw1 = applyRaw2) :
+    HEq
+      (Term.funextReflAtId (context := context) domainType1 codomainType1
+        applyRaw1)
+      (Term.funextReflAtId (context := context) domainType2 codomainType2
+        applyRaw2) := by
+  subst domainEq
+  subst codomainEq
+  subst applyRawEq
+  rfl
+
+/-- HEq congruence for univalence β extraction. -/
+theorem Term.uaToEquiv_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {innerLevel : UniverseLevel}
+    {innerLevelLt : innerLevel.toNat + 1 ≤ level}
+    {leftTy1 leftTy2 rightTy1 rightTy2 : Ty level scope}
+    {leftTyRaw1 leftTyRaw2 rightTyRaw1 rightTyRaw2 proofRaw1 proofRaw2 :
+      RawTerm scope}
+    (leftTyEq : leftTy1 = leftTy2)
+    (rightTyEq : rightTy1 = rightTy2)
+    (leftTyRawEq : leftTyRaw1 = leftTyRaw2)
+    (rightTyRawEq : rightTyRaw1 = rightTyRaw2)
+    (proofRawEq : proofRaw1 = proofRaw2)
+    {proof1 :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw1 rightTyRaw1)
+        proofRaw1}
+    {proof2 :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw2 rightTyRaw2)
+        proofRaw2}
+    (proofHEq : HEq proof1 proof2) :
+    HEq
+      (Term.uaToEquiv innerLevel innerLevelLt leftTy1 rightTy1
+        leftTyRaw1 rightTyRaw1 proof1)
+      (Term.uaToEquiv innerLevel innerLevelLt leftTy2 rightTy2
+        leftTyRaw2 rightTyRaw2 proof2) := by
+  subst leftTyEq
+  subst rightTyEq
+  subst leftTyRawEq
+  subst rightTyRawEq
+  subst proofRawEq
+  cases proofHEq
+  rfl
+
+/-- HEq congruence for univalence β application. -/
+theorem Term.equivApply_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {carrierA1 carrierA2 carrierB1 carrierB2 : Ty level scope}
+    {equivRaw1 equivRaw2 argumentRaw1 argumentRaw2 : RawTerm scope}
+    (carrierAEq : carrierA1 = carrierA2)
+    (carrierBEq : carrierB1 = carrierB2)
+    (equivRawEq : equivRaw1 = equivRaw2)
+    (argumentRawEq : argumentRaw1 = argumentRaw2)
+    {equivTerm1 : Term context (Ty.equiv carrierA1 carrierB1) equivRaw1}
+    {equivTerm2 : Term context (Ty.equiv carrierA2 carrierB2) equivRaw2}
+    (equivHEq : HEq equivTerm1 equivTerm2)
+    {argumentTerm1 : Term context carrierA1 argumentRaw1}
+    {argumentTerm2 : Term context carrierA2 argumentRaw2}
+    (argumentHEq : HEq argumentTerm1 argumentTerm2) :
+    HEq (Term.equivApply equivTerm1 argumentTerm1)
+      (Term.equivApply equivTerm2 argumentTerm2) := by
+  subst carrierAEq
+  subst carrierBEq
+  subst equivRawEq
+  subst argumentRawEq
+  cases equivHEq
+  cases argumentHEq
+  rfl
+
 end LeanFX2

@@ -29,3 +29,10 @@ Each must be zero-axiom to maintain kernel discipline. -/
 #print axioms LeanFX2.Term.modIntro_HEq_congr
 #print axioms LeanFX2.Term.modElim_HEq_congr
 #print axioms LeanFX2.Term.subsume_HEq_congr
+#print axioms LeanFX2.Term.cumulUp_HEq_congr
+#print axioms LeanFX2.Term.equivReflId_HEq_congr
+#print axioms LeanFX2.Term.funextRefl_HEq_congr
+#print axioms LeanFX2.Term.equivReflIdAtId_HEq_congr
+#print axioms LeanFX2.Term.funextReflAtId_HEq_congr
+#print axioms LeanFX2.Term.uaToEquiv_HEq_congr
+#print axioms LeanFX2.Term.equivApply_HEq_congr
