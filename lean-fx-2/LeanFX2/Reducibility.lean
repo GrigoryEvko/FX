@@ -7418,6 +7418,47 @@ theorem RawTerm.sigmaTyCode_isStronglyNormalizing {scope : Nat}
         · exact firstIH firstTarget firstProgress
             (secondClosure secondTarget ⟨secondStep, secondEq⟩)
 
+/-- Type-code product constructor SN preservation.
+
+`productCode` carries two same-scope schematic raw payloads.  Raw
+parallel reduction reduces under both payloads, so SN of the product
+code follows by nested induction over the two payload SN witnesses. -/
+theorem RawTerm.productCode_isStronglyNormalizing {scope : Nat}
+    {firstCode : RawTerm scope}
+    (firstIsSN : RawTerm.isStronglyNormalizing firstCode) :
+    ∀ {secondCode : RawTerm scope},
+    RawTerm.isStronglyNormalizing secondCode →
+    RawTerm.isStronglyNormalizing
+      (RawTerm.productCode firstCode secondCode) := by
+  induction firstIsSN with
+  | intro currentFirst _ firstIH =>
+    intro secondCode secondIsSN
+    induction secondIsSN with
+    | intro currentSecond secondClosure secondIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.productCode currentFirst currentSecond) ?_
+      intro target progressStep
+      obtain ⟨firstTarget, secondTarget, targetEq,
+              firstStep, secondStep⟩ :=
+        RawStep.par.productCode_inv progressStep.1
+      subst targetEq
+      by_cases firstEq : currentFirst = firstTarget
+      · subst firstEq
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact False.elim (progressStep.2 rfl)
+        · exact secondIH secondTarget ⟨secondStep, secondEq⟩
+      · have firstProgress :
+            RawStep.parProgress currentFirst firstTarget :=
+          ⟨firstStep, firstEq⟩
+        by_cases secondEq : currentSecond = secondTarget
+        · subst secondEq
+          exact firstIH firstTarget firstProgress
+            (RawTerm.isStronglyNormalizing.intro
+              currentSecond secondClosure)
+        · exact firstIH firstTarget firstProgress
+            (secondClosure secondTarget ⟨secondStep, secondEq⟩)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12450,6 +12491,30 @@ theorem Reducible.fundamental_sigmaTyCode_of_payloads
                 (Term.sigmaTyCode (context := sourceCtx)
                   outerLevel levelLe firstCodeRaw secondCodeRaw)) :=
   RawTerm.sigmaTyCode_isStronglyNormalizing
+    firstCodeIsSN secondCodeIsSN
+
+/-- Type-code product fundamental endpoint with explicit same-scope
+payload SN premises. -/
+theorem Reducible.fundamental_productCode_of_payloads
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw secondCodeRaw : RawTerm scope}
+    (firstCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (firstCodeRaw.subst sigma.forRaw))
+    (secondCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (secondCodeRaw.subst sigma.forRaw)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.productCode (context := sourceCtx)
+                  outerLevel levelLe firstCodeRaw secondCodeRaw)) :=
+  RawTerm.productCode_isStronglyNormalizing
     firstCodeIsSN secondCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
