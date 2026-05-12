@@ -7500,6 +7500,47 @@ theorem RawTerm.sumCode_isStronglyNormalizing {scope : Nat}
         · exact leftIH leftTarget leftProgress
             (rightClosure rightTarget ⟨rightStep, rightEq⟩)
 
+/-- Type-code either constructor SN preservation.
+
+`eitherCode` is the same same-scope binary type-code shape as
+`sumCode`: raw parallel reduction only reduces congruently under the
+left and right schematic payloads. -/
+theorem RawTerm.eitherCode_isStronglyNormalizing {scope : Nat}
+    {leftCode : RawTerm scope}
+    (leftIsSN : RawTerm.isStronglyNormalizing leftCode) :
+    ∀ {rightCode : RawTerm scope},
+    RawTerm.isStronglyNormalizing rightCode →
+    RawTerm.isStronglyNormalizing
+      (RawTerm.eitherCode leftCode rightCode) := by
+  induction leftIsSN with
+  | intro currentLeft _ leftIH =>
+    intro rightCode rightIsSN
+    induction rightIsSN with
+    | intro currentRight rightClosure rightIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.eitherCode currentLeft currentRight) ?_
+      intro target progressStep
+      obtain ⟨leftTarget, rightTarget, targetEq,
+              leftStep, rightStep⟩ :=
+        RawStep.par.eitherCode_inv progressStep.1
+      subst targetEq
+      by_cases leftEq : currentLeft = leftTarget
+      · subst leftEq
+        by_cases rightEq : currentRight = rightTarget
+        · subst rightEq
+          exact False.elim (progressStep.2 rfl)
+        · exact rightIH rightTarget ⟨rightStep, rightEq⟩
+      · have leftProgress :
+            RawStep.parProgress currentLeft leftTarget :=
+          ⟨leftStep, leftEq⟩
+        by_cases rightEq : currentRight = rightTarget
+        · subst rightEq
+          exact leftIH leftTarget leftProgress
+            (RawTerm.isStronglyNormalizing.intro
+              currentRight rightClosure)
+        · exact leftIH leftTarget leftProgress
+            (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12580,6 +12621,30 @@ theorem Reducible.fundamental_sumCode_of_payloads
                 (Term.sumCode (context := sourceCtx)
                   outerLevel levelLe leftCodeRaw rightCodeRaw)) :=
   RawTerm.sumCode_isStronglyNormalizing
+    leftCodeIsSN rightCodeIsSN
+
+/-- Type-code either fundamental endpoint with explicit same-scope
+payload SN premises. -/
+theorem Reducible.fundamental_eitherCode_of_payloads
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (leftCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (leftCodeRaw.subst sigma.forRaw))
+    (rightCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (rightCodeRaw.subst sigma.forRaw)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.eitherCode (context := sourceCtx)
+                  outerLevel levelLe leftCodeRaw rightCodeRaw)) :=
+  RawTerm.eitherCode_isStronglyNormalizing
     leftCodeIsSN rightCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
