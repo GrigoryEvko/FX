@@ -12015,6 +12015,51 @@ theorem Reducible.fundamental_modElim_at_unit
               (Term.subst termSubst (Term.modElim innerTerm)) :=
   Term.modElim_isStronglyNormalizing innerIH
 
+/-- **K12.25 modElim fundamental case at `Ty.bool`**. -/
+theorem Reducible.fundamental_modElim_at_bool
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.bool innerRaw}
+    (innerIH : Reducible ((Ty.bool : Ty level scope).subst sigma)
+                         (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.bool : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
+/-- **K12.25 modElim fundamental case at `Ty.nat`**. -/
+theorem Reducible.fundamental_modElim_at_nat
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.nat innerRaw}
+    (innerIH : Reducible ((Ty.nat : Ty level scope).subst sigma)
+                         (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.nat : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
+/-- **K12.25 modElim fundamental case at `Ty.empty`**. -/
+theorem Reducible.fundamental_modElim_at_empty
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.empty innerRaw}
+    (innerIH : Reducible ((Ty.empty : Ty level scope).subst sigma)
+                         (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.empty : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
 /-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
 case at the homogeneous (non-dependent) arrow type
 
