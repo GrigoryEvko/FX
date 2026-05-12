@@ -2633,6 +2633,66 @@ theorem Term.transp_pathLam_weaken_isStronglyNormalizing
   RawTerm.transp_pathLam_weaken_isStronglyNormalizing typeCodeIsSN
     sourceIsSN
 
+/-- **K12.24 hcomp SN preservation**.
+
+The current raw `hcomp` operator has congruence only: all progress
+steps are pointwise steps in the sides and cap payloads.  Therefore SN
+of both payloads gives SN of the `hcomp` term by the same nested
+induction pattern as binary constructors.  This is not a boundary
+computation rule and does not claim full Reducible output at an
+arbitrary carrier. -/
+theorem RawTerm.hcomp_isStronglyNormalizing {scope : Nat}
+    {sidesRaw : RawTerm scope}
+    (sidesIsSN : RawTerm.isStronglyNormalizing sidesRaw) :
+    ∀ {capRaw : RawTerm scope},
+      RawTerm.isStronglyNormalizing capRaw →
+      RawTerm.isStronglyNormalizing (RawTerm.hcomp sidesRaw capRaw) := by
+  induction sidesIsSN with
+  | intro currentSides sidesClosure sidesIH =>
+    intro capRaw capIsSN
+    induction capIsSN with
+    | intro currentCap capClosure capIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.hcomp currentSides currentCap) ?_
+      intro target progressStep
+      obtain ⟨sidesTarget, capTarget, targetEq, sidesStep, capStep⟩ :=
+        RawStep.par.hcomp_inv progressStep.1
+      subst targetEq
+      by_cases sidesEq : currentSides = sidesTarget
+      · subst sidesEq
+        by_cases capEq : currentCap = capTarget
+        · subst capEq
+          exact False.elim (progressStep.2 rfl)
+        · exact capIH capTarget ⟨capStep, capEq⟩
+      · have sidesProgress :
+            RawStep.parProgress currentSides sidesTarget :=
+          ⟨sidesStep, sidesEq⟩
+        have capTargetIsSN : RawTerm.isStronglyNormalizing capTarget := by
+          by_cases capEq : currentCap = capTarget
+          · subst capEq
+            exact RawTerm.isStronglyNormalizing.intro currentCap capClosure
+          · exact capClosure capTarget ⟨capStep, capEq⟩
+        exact sidesIH sidesTarget sidesProgress capTargetIsSN
+
+/-- Typed wrapper for homogeneous-composition SN preservation.
+
+This mirrors the raw congruence-only `hcomp` fragment.  It supplies the
+SN bridge needed for cubical support work while keeping the Reducible
+carrier closure separate. -/
+theorem Term.hcomp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    {sidesValue : Term context carrierType sidesRaw}
+    {capValue : Term context carrierType capRaw}
+    (sidesIsSN : Term.isStronglyNormalizing sidesValue)
+    (capIsSN : Term.isStronglyNormalizing capValue) :
+    Term.isStronglyNormalizing
+      (Term.hcomp modeIsUnivalent sidesValue capValue) :=
+  RawTerm.hcomp_isStronglyNormalizing sidesIsSN capIsSN
+
 /-- Shape-specialized inversion for application SN.  The induction is
 over an arbitrary SN source and receives the application shape as an
 equality, which keeps Lean's indexed-inductive eliminator in the
