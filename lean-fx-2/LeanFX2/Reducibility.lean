@@ -11871,6 +11871,69 @@ theorem ReducibleSubst.consSingleton
             (Reducible.of_type_eq_symm_cast typeEq
               (substReducible previousPosition))
 
+/-- Full β-contractum reducibility bridge for the `Term.lam` arrow case,
+assuming the typed substitution-composition HEq.
+
+The body IH produces reducibility for `Term.subst` under
+`TermSubst.consSingleton`.  The arrow application closure needs
+reducibility of the concrete `Term.subst0` contractum produced from the
+substituted lambda body.  Raw and type indices already align by the
+β-specific substitution laws; the remaining non-definitional content is
+the supplied Term-level HEq. -/
+theorem Reducible.fundamental_lam_at_arrow_contractum
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (contractumHEq :
+      HEq
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)
+        (Term.subst0
+          (Ty.weaken_subst_commute sigma codomainType ▸
+            Term.subst (termSubst.lift domainType) bodyTerm)
+          argumentTerm))
+    (bodyContractumReducible :
+      Reducible
+        (codomainType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    Reducible
+      ((codomainType.subst sigma).weaken.subst0
+        (domainType.subst sigma) argumentRaw)
+      (Term.subst0
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm)
+        argumentTerm) := by
+  have typeEq :
+      codomainType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)) =
+        (codomainType.subst sigma).weaken.subst0
+          (domainType.subst sigma) argumentRaw := by
+    exact (Ty.weaken_subst_lift_singleton codomainType domainType sigma
+      argumentRaw).trans
+        (Ty.weaken_subst_singleton (codomainType.subst sigma)
+          (domainType.subst sigma) argumentRaw).symm
+  have rawEq :
+      bodyRaw.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw =
+        (bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw :=
+    RawTerm.subst_lift_singleton_eq_subst0
+      bodyRaw domainType sigma argumentRaw
+  exact Reducible.of_heq typeEq rawEq contractumHEq
+    bodyContractumReducible
+
 /-- β-contractum SN bridge for the `Term.lam` arrow case.
 
 The body IH naturally applies to `TermSubst.consSingleton`, whose raw
