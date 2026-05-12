@@ -824,6 +824,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_identity_equivApp_at_equiv_sn
 #print axioms Reducible.fundamental_identity_pathApp_at_path_sn
 #print axioms Reducible.fundamental_identity_codataDest_at_codata_sn
+#print axioms Reducible.fundamental_identity_equivApply_at_equiv_sn
+#print axioms Reducible.fundamental_identity_equivIntroHet_at_equiv_sn
+#print axioms Reducible.fundamental_identity_codataUnfold_at_codata_sn
 #print axioms Term.codataDest_isStronglyNormalizing
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing

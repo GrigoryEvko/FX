@@ -18038,4 +18038,98 @@ theorem Reducible.fundamental_identity_codataDest_at_codata_sn
         (termSubst := TermSubst.identity sourceCtx)
         codataIdentityReducible))
 
+/-- **K12.27 identity-substitution equivalence apply SN endpoint**.
+
+`equivApply` has only an M04-facing SN fundamental endpoint in the
+current univalence-target raw fragment.  This identity bridge applies
+that endpoint at identity substitution and erases the identity raw
+index back to the original typed constructor. -/
+theorem Reducible.fundamental_identity_equivApply_at_equiv_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm :
+        Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivIdentityReducible :
+        Reducible ((Ty.equiv carrierA carrierB).subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) equivTerm))
+    (argumentIdentityReducible :
+        Reducible (carrierA.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.equivApply equivTerm argumentTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.equivApply equivTerm argumentTerm)
+    (Reducible.fundamental_equivApply_at_equiv
+      (termSubst := TermSubst.identity sourceCtx)
+      equivIdentityReducible argumentIdentityReducible)
+
+/-- **K12.27 identity-substitution equivalence-intro SN endpoint**.
+
+This exposes the equivalence-introduction SN fundamental at the
+identity route.  The current SN endpoint depends on reducibility of the
+forward and backward functions; inverse-proof payloads remain typed
+children of the constructor but are erased from the raw SN obligation. -/
+theorem Reducible.fundamental_identity_equivIntroHet_at_equiv_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardIdentityReducible :
+      Reducible ((Ty.arrow carrierA carrierB).subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) forward))
+    (backwardIdentityReducible :
+      Reducible ((Ty.arrow carrierB carrierA).subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) backward)) :
+    Term.isStronglyNormalizing
+      (Term.equivIntroHet forward backward leftInv rightInv) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.equivIntroHet forward backward leftInv rightInv)
+    (Reducible.fundamental_equivIntroHet_at_equiv
+      (termSubst := TermSubst.identity sourceCtx)
+      forwardIdentityReducible backwardIdentityReducible)
+
+/-- **K12.27 identity-substitution codata unfold SN endpoint**.
+
+The codata-introduction fundamental remains SN-output: the full
+observation closure is supplied by `codataDest`.  This bridge makes the
+identity induction case consume state and transition reducibility
+witnesses directly, without claiming full codata-introduction
+reducibility. -/
+theorem Reducible.fundamental_identity_codataUnfold_at_codata_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+        Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (stateIdentityReducible :
+        Reducible (stateType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) initialState))
+    (transitionIdentityReducible :
+        Reducible ((Ty.arrow stateType outputType).subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) transition)) :
+    Term.isStronglyNormalizing
+      (Term.codataUnfold initialState transition) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.codataUnfold initialState transition)
+    (Reducible.fundamental_codataUnfold_at_codata
+      (termSubst := TermSubst.identity sourceCtx)
+      stateIdentityReducible transitionIdentityReducible)
+
 end LeanFX2
