@@ -787,6 +787,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_oeqFunext_at_oeq
 #print axioms Reducible.fundamental_pathApp_at_path
 #print axioms Reducible.fundamental_glueElim_at_glue
+#print axioms Reducible.fundamental_glueIntro_at_glue
 #print axioms Reducible.fundamental_codataDest_at_codata
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing

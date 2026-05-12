@@ -13678,6 +13678,41 @@ theorem Reducible.fundamental_glueElim_at_glue
                 (Term.glueElim modeIsUnivalent gluedValue)) :=
   glueIH.2 modeIsUnivalent
 
+/-- Fundamental SN endpoint: `Term.glueIntro` at `Ty.glue` (K12.24).
+
+Glue introduction is strongly normalizing whenever both payloads are
+reducible at the substituted base type.  This is the M04-facing intro
+endpoint for the current cubical fragment; the full `Ty.glue`
+Reducible introduction closure still needs the `glueElim/glueIntro`
+backward bridge at the base type. -/
+theorem Reducible.fundamental_glueIntro_at_glue
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness baseRaw partialRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseIH :
+        Reducible (baseType.subst sigma)
+          (Term.subst termSubst baseValue))
+    (partialIH :
+        Reducible (baseType.subst sigma)
+          (Term.subst termSubst partialValue)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue)) :=
+  Term.glueIntro_isStronglyNormalizing
+    modeIsUnivalent
+    (baseType.subst sigma)
+    (boundaryWitness.subst sigma.forRaw)
+    (Reducible.isStronglyNormalizing baseIH)
+    (Reducible.isStronglyNormalizing partialIH)
+
 /-- Fundamental case: `Term.codataDest` at `Ty.codata` (K12.26.A).
 
 The codata reducibility arm stores the full observation closure at
