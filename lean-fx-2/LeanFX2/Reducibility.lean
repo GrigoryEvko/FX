@@ -10172,6 +10172,51 @@ theorem Reducible.fundamental_lam_at_arrow_contractum_sn
     bodyRaw domainType sigma argumentRaw]
   exact bodyContractumIsSN
 
+/-- Combined SN endpoint for the `Term.lam` arrow application case.
+
+This composes the three lambda SN pieces shipped so far:
+
+* SN of the lifted body gives SN of the substituted lambda value.
+* Reducibility of the argument gives SN of the argument.
+* Reducibility of the body under `TermSubst.consSingleton` gives SN of
+  the β-contractum aligned with `Term.subst0`.
+
+The result is intentionally only the SN half of the arrow application
+closure.  Full codomain `Reducible` still needs the separate
+head-β/full-reducibility transport across the lifted-body cast. -/
+theorem Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentReducible : Reducible (domainType.subst sigma) argumentTerm)
+    (bodyContractumReducible :
+      Reducible
+        (codomainType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.app
+        (Term.subst termSubst
+          (Term.lam (codomainType := codomainType) bodyTerm))
+        argumentTerm) :=
+  Reducible.fundamental_lam_at_arrow_app_sn bodyIsSN argumentReducible
+    (Reducible.fundamental_lam_at_arrow_contractum_sn
+      bodyContractumReducible)
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
