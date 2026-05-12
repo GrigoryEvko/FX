@@ -17191,6 +17191,31 @@ theorem Reducible.fundamental_pathApp_at_path
                  (Term.pathApp modeIsUnivalent pathTerm intervalTerm)) :=
   pathIH.2 modeIsUnivalent (Term.subst termSubst intervalTerm) intervalIH
 
+/-- Direct M04 SN endpoint for cubical path application.
+
+Path application exposes the path body's endpoint when the path is a
+canonical path lambda, so the M04-facing premise is the path
+reducibility closure plus SN of the interval argument. -/
+theorem Term.pathApp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+        Term sourceCtx
+          (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (pathReducible :
+        Reducible
+          (Ty.path carrierType leftEndpoint rightEndpoint) pathTerm)
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
+  Reducible.isStronglyNormalizing
+    (pathReducible.2 modeIsUnivalent intervalTerm intervalIsSN)
+
 /-- Fundamental case: `Term.glueElim` at `Ty.glue` (K12.24.B).
 
 `Ty.glue` carries a full eliminator-output closure in K12.12:
@@ -17359,5 +17384,22 @@ theorem Reducible.fundamental_codataDest_at_codata
     Reducible (outputType.subst sigma)
               (Term.subst termSubst (Term.codataDest codataValue)) :=
   codataIH.2
+
+/-- Direct M04 SN endpoint for codata observation.
+
+The codata candidate already stores the observation closure at the
+output type.  This bridge exposes the exact M04 consequence at the
+typed `Term.codataDest` surface. -/
+theorem Term.codataDest_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+        Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataReducible :
+        Reducible (Ty.codata stateType outputType) codataValue) :
+    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
+  Reducible.isStronglyNormalizing codataReducible.2
 
 end LeanFX2
