@@ -16391,6 +16391,82 @@ theorem Term.uaToEquiv_isStronglyNormalizing
         leftTy rightTy leftTyRaw rightTyRaw proof) :=
   RawTerm.uaToEquiv_isStronglyNormalizing proofIsSN
 
+/-! ## K12.27 direct eliminator-form M04 endpoints -/
+
+/-- Direct M04 SN case for boolean elimination. -/
+theorem Term.boolElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue)
+        thenRaw}
+    {elseBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse)
+        elseRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (thenIsSN : Term.isStronglyNormalizing thenBranch)
+    (elseIsSN : Term.isStronglyNormalizing elseBranch) :
+    Term.isStronglyNormalizing
+      (Term.boolElim scrutinee thenBranch elseBranch) :=
+  RawTerm.boolElim_isStronglyNormalizing thenIsSN elseIsSN scrutineeIsSN
+
+/-- Direct M04 SN case for identity elimination. -/
+theorem Term.idJ_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing (Term.idJ baseCase witness) :=
+  RawTerm.idJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- Direct M04 SN case for observational equality elimination. -/
+theorem Term.oeqJ_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing (Term.oeqJ baseCase witness) :=
+  RawTerm.oeqJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- Direct M04 SN case for strict identity elimination. -/
+theorem Term.idStrictRec_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx
+        (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRec modeIsStrict baseCase witness) :=
+  RawTerm.idStrictRec_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
 First fundamental atomic over HOTT-adjacent eliminators.  Same
