@@ -15725,6 +15725,104 @@ theorem Reducible.fundamental_listElim_at_listType
     (Reducible.isStronglyNormalizing consIH)
     consAppIsSN
 
+/-- Direct M04 SN endpoint for list elimination.
+
+The list reducibility candidate carries the eliminator closure directly.
+The cons branch still needs an explicit application-SN premise because
+the current list closure tracks the tail only at SN, not full reducible
+tail evidence. -/
+theorem Term.listElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.listType elementType) scrutineeRaw}
+    {nilBranch : Term sourceCtx motiveType nilRaw}
+    {consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)) consRaw}
+    (scrutineeReducible :
+      Reducible (Ty.listType elementType) scrutinee)
+    (nilIsSN : Term.isStronglyNormalizing nilBranch)
+    (consIsSN : Term.isStronglyNormalizing consBranch)
+    (consAppIsSN :
+      ∀ {headRaw tailRaw : RawTerm scope}
+        (headTerm : Term sourceCtx elementType headRaw)
+        (tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw),
+        Reducible elementType headTerm →
+        Term.isStronglyNormalizing tailTerm →
+        Term.isStronglyNormalizing
+          (Term.app (Term.app consBranch headTerm) tailTerm)) :
+    Term.isStronglyNormalizing
+      (Term.listElim scrutinee nilBranch consBranch) :=
+  scrutineeReducible.2 nilBranch consBranch nilIsSN consIsSN consAppIsSN
+
+/-- Direct M04 SN endpoint for option matching.
+
+This exposes the weak eliminator closure stored in the option
+reducibility candidate: reducible scrutinee, SN branches, and an
+application-SN closure for the `Some` branch. -/
+theorem Term.optionMatch_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch :
+      Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeReducible :
+      Reducible (Ty.optionType elementType) scrutinee)
+    (noneIsSN : Term.isStronglyNormalizing noneBranch)
+    (someIsSN : Term.isStronglyNormalizing someBranch)
+    (someAppIsSN :
+      ∀ {valueRaw : RawTerm scope}
+        (valueTerm : Term sourceCtx elementType valueRaw),
+        Reducible elementType valueTerm →
+        Term.isStronglyNormalizing (Term.app someBranch valueTerm)) :
+    Term.isStronglyNormalizing
+      (Term.optionMatch scrutinee noneBranch someBranch) :=
+  scrutineeReducible.2 noneBranch someBranch
+    noneIsSN someIsSN someAppIsSN
+
+/-- Direct M04 SN endpoint for either matching.
+
+The either candidate stores symmetric weak eliminator closures for the
+left and right branches.  This theorem exposes that exact M04 endpoint
+without claiming full reducibility at the arbitrary motive type. -/
+theorem Term.eitherMatch_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch :
+      Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+      Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeReducible :
+      Reducible (Ty.eitherType leftType rightType) scrutinee)
+    (leftIsSN : Term.isStronglyNormalizing leftBranch)
+    (rightIsSN : Term.isStronglyNormalizing rightBranch)
+    (leftAppIsSN :
+      ∀ {valueRaw : RawTerm scope}
+        (valueTerm : Term sourceCtx leftType valueRaw),
+        Reducible leftType valueTerm →
+        Term.isStronglyNormalizing (Term.app leftBranch valueTerm))
+    (rightAppIsSN :
+      ∀ {valueRaw : RawTerm scope}
+        (valueTerm : Term sourceCtx rightType valueRaw),
+        Reducible rightType valueTerm →
+        Term.isStronglyNormalizing (Term.app rightBranch valueTerm)) :
+    Term.isStronglyNormalizing
+      (Term.eitherMatch scrutinee leftBranch rightBranch) :=
+  scrutineeReducible.2 leftBranch rightBranch
+    leftIsSN rightIsSN leftAppIsSN rightAppIsSN
+
 /-! ## K12.23 fundamental HOTT-eliminator cases -/
 
 /-- Fundamental case: `Term.idJ` at `Ty.id` (K12.23.B, weak-SN).

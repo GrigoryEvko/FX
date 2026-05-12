@@ -788,6 +788,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_optionMatch_at_optionType
 #print axioms Reducible.fundamental_eitherMatch_at_eitherType
 #print axioms Reducible.fundamental_listElim_at_listType
+#print axioms Term.listElim_isStronglyNormalizing
+#print axioms Term.optionMatch_isStronglyNormalizing
+#print axioms Term.eitherMatch_isStronglyNormalizing
 #print axioms Reducible.fundamental_refl_at_id_of_endpoint_sn
 #print axioms Reducible.fundamental_oeqRefl_at_oeq_of_endpoint_sn
 #print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn
