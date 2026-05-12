@@ -17377,6 +17377,91 @@ theorem Term.funextIntroHet_isStronglyNormalizing
   Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
     domainType codomainType payloads
 
+/-- **K12.27 identity-substitution funext-refl SN endpoint**.
+
+The canonical funext witness carries a schematic `applyRaw` payload in
+the raw projection.  The identity route therefore requires explicit SN
+of that payload; identity lifting preserves it before
+`Term.strong_normalization_of_identity_subst` erases the surrounding
+identity substitution. -/
+theorem Reducible.fundamental_identity_funextRefl_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.funextRefl (context := sourceCtx)
+      domainType codomainType applyRaw)
+    (by
+      change RawTerm.isStronglyNormalizing
+        (RawTerm.lam
+          (RawTerm.refl
+            (applyRaw.subst ((@Subst.identity level scope).forRaw.lift))))
+      exact RawTerm.lam_isStronglyNormalizing
+        (RawTerm.refl_isStronglyNormalizing
+          (RawTerm.subst_identity_lift_isStronglyNormalizing payloads)))
+
+/-- **K12.27 identity-substitution Id-typed funext-refl SN endpoint**. -/
+theorem Reducible.fundamental_identity_funextReflAtId_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextReflAtId (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.funextReflAtId (context := sourceCtx)
+      domainType codomainType applyRaw)
+    (by
+      change RawTerm.isStronglyNormalizing
+        (RawTerm.lam
+          (RawTerm.refl
+            (applyRaw.subst ((@Subst.identity level scope).forRaw.lift))))
+      exact RawTerm.lam_isStronglyNormalizing
+        (RawTerm.refl_isStronglyNormalizing
+          (RawTerm.subst_identity_lift_isStronglyNormalizing payloads)))
+
+/-- **K12.27 identity-substitution heterogeneous funext SN endpoint**.
+
+Only `applyARaw` appears in the projected raw term; `applyBRaw` appears
+in the static identity type and is intentionally not an M04 raw-SN
+obligation. -/
+theorem Reducible.fundamental_identity_funextIntroHet_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.funextIntroHet (context := sourceCtx)
+      domainType codomainType applyARaw applyBRaw)
+    (by
+      change RawTerm.isStronglyNormalizing
+        (RawTerm.lam
+          (RawTerm.refl
+            (applyARaw.subst ((@Subst.identity level scope).forRaw.lift))))
+      exact RawTerm.lam_isStronglyNormalizing
+        (RawTerm.refl_isStronglyNormalizing
+          (RawTerm.subst_identity_lift_isStronglyNormalizing payloads)))
+
 /-! ## K12.27 direct leaf M04 endpoints -/
 
 /-- Direct M04 SN case for typed variables. -/
