@@ -16025,6 +16025,85 @@ theorem Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
   Term.funextIntroHet_isStronglyNormalizing_of_applyLeft
     domainType codomainType payloads
 
+/-! ## K12.27 direct leaf M04 endpoints -/
+
+/-- Direct M04 SN case for typed variables. -/
+theorem Term.var_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (position : Fin scope) :
+    Term.isStronglyNormalizing
+      (Term.var (context := sourceCtx) position) :=
+  RawTerm.var_isStronglyNormalizing position
+
+/-- Direct M04 SN case for the unit value. -/
+theorem Term.unit_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    Term.isStronglyNormalizing
+      (Term.unit (context := sourceCtx)) :=
+  RawTerm.unit_isStronglyNormalizing
+
+/-- Direct M04 SN case for `true`. -/
+theorem Term.boolTrue_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    Term.isStronglyNormalizing
+      (Term.boolTrue (context := sourceCtx)) :=
+  RawTerm.boolTrue_isStronglyNormalizing
+
+/-- Direct M04 SN case for `false`. -/
+theorem Term.boolFalse_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    Term.isStronglyNormalizing
+      (Term.boolFalse (context := sourceCtx)) :=
+  RawTerm.boolFalse_isStronglyNormalizing
+
+/-- Direct M04 SN case for zero. -/
+theorem Term.natZero_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    Term.isStronglyNormalizing
+      (Term.natZero (context := sourceCtx)) :=
+  RawTerm.natZero_isStronglyNormalizing
+
+/-- Direct M04 SN case for the empty list. -/
+theorem Term.listNil_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    Term.isStronglyNormalizing
+      (Term.listNil (context := sourceCtx)
+        (elementType := elementType)) :=
+  RawTerm.listNil_isStronglyNormalizing
+
+/-- Direct M04 SN case for `None`. -/
+theorem Term.optionNone_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    Term.isStronglyNormalizing
+      (Term.optionNone (context := sourceCtx)
+        (elementType := elementType)) :=
+  RawTerm.optionNone_isStronglyNormalizing
+
+/-- Direct M04 SN case for the left interval endpoint. -/
+theorem Term.interval0_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    Term.isStronglyNormalizing
+      (Term.interval0 (context := sourceCtx)) :=
+  RawTerm.interval0_isStronglyNormalizing
+
+/-- Direct M04 SN case for the right interval endpoint. -/
+theorem Term.interval1_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    Term.isStronglyNormalizing
+      (Term.interval1 (context := sourceCtx)) :=
+  RawTerm.interval1_isStronglyNormalizing
+
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
 First fundamental atomic over HOTT-adjacent eliminators.  Same

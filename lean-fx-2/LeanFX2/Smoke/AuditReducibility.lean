@@ -1024,6 +1024,15 @@ M04 / `strong_normalization`. -/
 #print axioms Term.funextReflAtId_isStronglyNormalizing_of_rawPayloads
 #print axioms Term.funextIntroHet_isStronglyNormalizing_of_applyLeft
 #print axioms Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
+#print axioms Term.var_isStronglyNormalizing
+#print axioms Term.unit_isStronglyNormalizing
+#print axioms Term.boolTrue_isStronglyNormalizing
+#print axioms Term.boolFalse_isStronglyNormalizing
+#print axioms Term.natZero_isStronglyNormalizing
+#print axioms Term.listNil_isStronglyNormalizing
+#print axioms Term.optionNone_isStronglyNormalizing
+#print axioms Term.interval0_isStronglyNormalizing
+#print axioms Term.interval1_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
