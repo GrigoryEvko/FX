@@ -12233,6 +12233,60 @@ theorem Reducible.fundamental_eitherMatch_at_eitherType
   Reducible.fundamental_eitherMatch_at_either_sn
     scrutineeIH leftIH rightIH
 
+/-- Fundamental case: `Term.listElim` at `Ty.listType`
+(SN-output endpoint).
+
+The current list candidate intentionally asks for the cons-branch
+application SN closure at every reducible head and strongly-normalizing
+tail.  That premise is load-bearing: the tail component is SN-only in
+the K12.8 closure, so the ordinary arrow-reducibility of `consBranch`
+is not enough to manufacture this closure for arbitrary tails. -/
+theorem Reducible.fundamental_listElim_at_listType
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.listType elementType) scrutineeRaw}
+    {nilBranch : Term sourceCtx motiveType nilRaw}
+    {consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)) consRaw}
+    (scrutineeIH :
+      Reducible ((Ty.listType elementType).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (nilIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst nilBranch))
+    (consIH :
+      Reducible
+        ((Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)).subst sigma)
+        (Term.subst termSubst consBranch))
+    (consAppIsSN :
+      ∀ {headRaw tailRaw : RawTerm targetScope}
+        (headTerm : Term targetCtx (elementType.subst sigma) headRaw)
+        (tailTerm : Term targetCtx ((Ty.listType elementType).subst sigma) tailRaw),
+        Reducible (elementType.subst sigma) headTerm →
+        Term.isStronglyNormalizing tailTerm →
+        Term.isStronglyNormalizing
+          (Term.app
+            (Term.app (Term.subst termSubst consBranch) headTerm)
+            tailTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.listElim scrutinee nilBranch consBranch)) :=
+  scrutineeIH.2
+    (Term.subst termSubst nilBranch)
+    (Term.subst termSubst consBranch)
+    (Reducible.isStronglyNormalizing nilIH)
+    (Reducible.isStronglyNormalizing consIH)
+    consAppIsSN
+
 /-! ## K12.23 fundamental HOTT-eliminator cases -/
 
 /-- Fundamental case: `Term.idJ` at `Ty.id` (K12.23.B, weak-SN).
