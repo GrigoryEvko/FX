@@ -5524,6 +5524,85 @@ theorem RawTerm.listNil_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.listNil_inv progressStep.1).symm).elim)
 
+/-- List-nil ι SN expansion for the eliminator.
+
+For a canonical nil scrutinee, `listElim` reduces to the nil branch.
+The cons branch stays explicit because congruent reductions may step
+under it before the ι rule fires. -/
+theorem RawTerm.listElim_listNil_isStronglyNormalizing
+    {scope : Nat}
+    {nilBranch : RawTerm scope}
+    (nilIsSN : RawTerm.isStronglyNormalizing nilBranch) :
+    ∀ {consBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing consBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listElim RawTerm.listNil nilBranch consBranch) := by
+  induction nilIsSN with
+  | intro currentNil nilClosure nilIH =>
+    intro consBranch consIsSN
+    induction consIsSN with
+    | intro currentCons consClosure consIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.listElim RawTerm.listNil currentNil currentCons) ?_
+      intro target progressStep
+      rcases RawStep.par.listElim_inv progressStep.1 with
+        ⟨scrutineeTarget, nilTarget, consTarget, targetEq,
+          scrutineeStep, nilStep, consStep⟩
+        | ⟨nilTarget, targetEq, scrutineeStep, nilStep⟩
+        | ⟨headTarget, tailTarget, consTarget, targetEq,
+            scrutineeStep, consStep⟩
+      · have scrutineeTargetEq :
+            scrutineeTarget = (RawTerm.listNil : RawTerm scope) :=
+          RawStep.par.listNil_inv scrutineeStep
+        subst scrutineeTargetEq
+        subst targetEq
+        by_cases nilEq : currentNil = nilTarget
+        · subst nilEq
+          by_cases consEq : currentCons = consTarget
+          · subst consEq
+            exact (progressStep.2 rfl).elim
+          · exact consIH consTarget ⟨consStep, consEq⟩
+        · have consTargetIsSN :
+              RawTerm.isStronglyNormalizing consTarget := by
+            by_cases consEq : currentCons = consTarget
+            · subst consEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentCons consClosure
+            · exact consClosure consTarget ⟨consStep, consEq⟩
+          exact nilIH nilTarget ⟨nilStep, nilEq⟩ consTargetIsSN
+      · have nilTargetIsSN :
+            RawTerm.isStronglyNormalizing nilTarget := by
+          by_cases nilEq : currentNil = nilTarget
+          · subst nilEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentNil nilClosure
+          · exact nilClosure nilTarget ⟨nilStep, nilEq⟩
+        rw [targetEq]
+        exact nilTargetIsSN
+      · have nilEq :
+            RawTerm.listCons headTarget tailTarget =
+              (RawTerm.listNil : RawTerm scope) :=
+          RawStep.par.listNil_inv scrutineeStep
+        nomatch nilEq
+
+/-- Typed list-nil ι SN expansion for `Term.listElim`. -/
+theorem Term.listElim_listNil_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {nilRaw consRaw : RawTerm scope}
+    {nilBranch : Term context motiveType nilRaw}
+    {consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType) motiveType)) consRaw}
+    (nilIsSN : Term.isStronglyNormalizing nilBranch)
+    (consIsSN : Term.isStronglyNormalizing consBranch) :
+    Term.isStronglyNormalizing
+      (Term.listElim
+        (Term.listNil (elementType := elementType))
+        nilBranch consBranch) :=
+  RawTerm.listElim_listNil_isStronglyNormalizing
+    nilIsSN consIsSN
+
 /-- **K12.20.AC.2 optionNone SN preservation** — nullary value at
 parametric Ty.optionType.  Same atomic shape as listNil. -/
 theorem RawTerm.optionNone_isStronglyNormalizing {scope : Nat} :
@@ -9329,6 +9408,26 @@ theorem Reducible.fundamental_natSucc
     Reducible ((Ty.nat : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.natSucc predecessor)) :=
   RawTerm.natSucc_isStronglyNormalizing predIH
+
+/-- **K12.20.V.0 listNil fundamental case** — canonical list
+nil introduction at the K12.8 SN-output candidate. -/
+theorem Reducible.fundamental_listNil_at_listType
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope} :
+    Reducible ((Ty.listType elementType).subst sigma)
+      (Term.subst termSubst
+        (Term.listNil (elementType := elementType))) := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.listNil_isStronglyNormalizing
+  · intro motiveType nilRaw consRaw nilBranch consBranch
+      nilIsSN consIsSN _consApplicationIsSN
+    exact Term.listElim_listNil_isStronglyNormalizing
+      nilIsSN
+      consIsSN
 
 /-- **K12.20.W.0 optionNone fundamental case** — canonical option
 none introduction at the K12.8 SN-output candidate. -/
