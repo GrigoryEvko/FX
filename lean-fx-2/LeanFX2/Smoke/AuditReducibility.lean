@@ -1043,6 +1043,15 @@ M04 / `strong_normalization`. -/
 #print axioms Term.intervalJoin_isStronglyNormalizing
 #print axioms Term.modIntro_isStronglyNormalizing
 #print axioms Term.subsume_isStronglyNormalizing
+#print axioms Term.oeqFunext_isStronglyNormalizing
+#print axioms Term.sessionRecv_isStronglyNormalizing
+#print axioms Term.sessionSend_isStronglyNormalizing
+#print axioms Term.effectPerform_isStronglyNormalizing
+#print axioms Term.cumulUp_isStronglyNormalizing
+#print axioms Term.equivReflId_isStronglyNormalizing
+#print axioms Term.equivReflIdAtId_isStronglyNormalizing
+#print axioms Term.uaIntroHet_isStronglyNormalizing
+#print axioms Term.uaToEquiv_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
