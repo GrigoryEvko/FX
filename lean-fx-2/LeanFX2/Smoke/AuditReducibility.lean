@@ -999,6 +999,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.strong_normalization_of_identity_reducible
 #print axioms RawTerm.subst_identity_lift
 #print axioms Reducible.identity_lift_body_sn_of_identity_reducible
+#print axioms Reducible.fundamental_identity_lam_at_arrow_sn
 #print axioms ReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape

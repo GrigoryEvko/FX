@@ -10145,6 +10145,32 @@ theorem Reducible.identity_lift_body_sn_of_identity_reducible
   rw [RawTerm.subst_identity bodyRaw] at bodyIdentityIsSN
   exact bodyIdentityIsSN
 
+/-- **K12.27 identity-substitution lambda value SN endpoint**.
+
+This composes the identity-lift body bridge with the existing lambda
+SN endpoint.  It is the identity-only counterpart of
+`fundamental_lam_at_arrow_sn`: the body premise is the body IH under
+`TermSubst.identity` in the extended context, not a generic lifted
+substitution reducibility theorem. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (bodyIdentityReducible :
+      Reducible (codomainType.weaken.subst Subst.identity)
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := codomainType) bodyTerm)) :=
+  Reducible.fundamental_lam_at_arrow_sn
+    (termSubst := TermSubst.identity sourceCtx)
+    (Reducible.identity_lift_body_sn_of_identity_reducible
+      bodyIdentityReducible)
+
 /-- **K12.20.U3 cons-singleton ReducibleSubst**: extending an existing
 reducible substitution with a reducible β argument yields a reducible
 substitution for the extended source context into the original target
