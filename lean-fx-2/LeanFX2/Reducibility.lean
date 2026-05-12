@@ -16104,6 +16104,125 @@ theorem Term.interval1_isStronglyNormalizing
       (Term.interval1 (context := sourceCtx)) :=
   RawTerm.interval1_isStronglyNormalizing
 
+/-! ## K12.27 direct recursive-intro M04 endpoints -/
+
+/-- Direct M04 SN case for successor. -/
+theorem Term.natSucc_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {predecessorRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    (predecessorIsSN : Term.isStronglyNormalizing predecessor) :
+    Term.isStronglyNormalizing (Term.natSucc predecessor) :=
+  RawTerm.natSucc_isStronglyNormalizing predecessorIsSN
+
+/-- Direct M04 SN case for list cons. -/
+theorem Term.listCons_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (headIsSN : Term.isStronglyNormalizing headTerm)
+    (tailIsSN : Term.isStronglyNormalizing tailTerm) :
+    Term.isStronglyNormalizing
+      (Term.listCons headTerm tailTerm) :=
+  RawTerm.listCons_isStronglyNormalizing headIsSN tailIsSN
+
+/-- Direct M04 SN case for `Some`. -/
+theorem Term.optionSome_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (valueIsSN : Term.isStronglyNormalizing valueTerm) :
+    Term.isStronglyNormalizing (Term.optionSome valueTerm) :=
+  RawTerm.optionSome_isStronglyNormalizing valueIsSN
+
+/-- Direct M04 SN case for left injection. -/
+theorem Term.eitherInl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (valueIsSN : Term.isStronglyNormalizing valueTerm) :
+    Term.isStronglyNormalizing
+      (Term.eitherInl (rightType := rightType) valueTerm) :=
+  RawTerm.eitherInl_isStronglyNormalizing valueIsSN
+
+/-- Direct M04 SN case for right injection. -/
+theorem Term.eitherInr_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (valueIsSN : Term.isStronglyNormalizing valueTerm) :
+    Term.isStronglyNormalizing
+      (Term.eitherInr (leftType := leftType) valueTerm) :=
+  RawTerm.eitherInr_isStronglyNormalizing valueIsSN
+
+/-- Direct M04 SN case for interval negation. -/
+theorem Term.intervalOpp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerValue) :
+    Term.isStronglyNormalizing (Term.intervalOpp innerValue) :=
+  RawTerm.intervalOpp_isStronglyNormalizing innerIsSN
+
+/-- Direct M04 SN case for interval meet. -/
+theorem Term.intervalMeet_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsSN : Term.isStronglyNormalizing leftValue)
+    (rightIsSN : Term.isStronglyNormalizing rightValue) :
+    Term.isStronglyNormalizing
+      (Term.intervalMeet leftValue rightValue) :=
+  RawTerm.intervalMeet_isStronglyNormalizing leftIsSN rightIsSN
+
+/-- Direct M04 SN case for interval join. -/
+theorem Term.intervalJoin_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsSN : Term.isStronglyNormalizing leftValue)
+    (rightIsSN : Term.isStronglyNormalizing rightValue) :
+    Term.isStronglyNormalizing
+      (Term.intervalJoin leftValue rightValue) :=
+  RawTerm.intervalJoin_isStronglyNormalizing leftIsSN rightIsSN
+
+/-- Direct M04 SN case for modal introduction. -/
+theorem Term.modIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerTerm) :
+    Term.isStronglyNormalizing (Term.modIntro innerTerm) :=
+  RawTerm.modIntro_isStronglyNormalizing innerIsSN
+
+/-- Direct M04 SN case for modal subsumption. -/
+theorem Term.subsume_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerTerm) :
+    Term.isStronglyNormalizing (Term.subsume innerTerm) :=
+  RawTerm.subsume_isStronglyNormalizing innerIsSN
+
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
 First fundamental atomic over HOTT-adjacent eliminators.  Same

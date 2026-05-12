@@ -1033,6 +1033,16 @@ M04 / `strong_normalization`. -/
 #print axioms Term.optionNone_isStronglyNormalizing
 #print axioms Term.interval0_isStronglyNormalizing
 #print axioms Term.interval1_isStronglyNormalizing
+#print axioms Term.natSucc_isStronglyNormalizing
+#print axioms Term.listCons_isStronglyNormalizing
+#print axioms Term.optionSome_isStronglyNormalizing
+#print axioms Term.eitherInl_isStronglyNormalizing
+#print axioms Term.eitherInr_isStronglyNormalizing
+#print axioms Term.intervalOpp_isStronglyNormalizing
+#print axioms Term.intervalMeet_isStronglyNormalizing
+#print axioms Term.intervalJoin_isStronglyNormalizing
+#print axioms Term.modIntro_isStronglyNormalizing
+#print axioms Term.subsume_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
