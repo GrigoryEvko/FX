@@ -1213,6 +1213,11 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_modElim_heq
 #print axioms Term.weaken_subst_singleton_subsume_heq
 #print axioms Term.weaken_subst_singleton_app_heq
+#print axioms Term.weaken_subst_singleton_natElim_heq
+#print axioms Term.weaken_subst_singleton_natRec_heq
+#print axioms Term.weaken_subst_singleton_listElim_heq
+#print axioms Term.weaken_subst_singleton_optionMatch_heq
+#print axioms Term.weaken_subst_singleton_eitherMatch_heq
 #print axioms Term.weaken_subst_singleton_pathApp_heq
 #print axioms Term.weaken_subst_singleton_glueElim_heq
 #print axioms Term.weaken_subst_singleton_recordProj_heq

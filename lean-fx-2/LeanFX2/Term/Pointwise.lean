@@ -1030,6 +1030,213 @@ theorem Term.weaken_subst_singleton_app_heq
     (RawTerm.weaken_subst_singleton argumentValueRaw singletonRaw)
     functionHEq argumentHEq
 
+/-- Natural elimination preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_natElim_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutineeHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType scrutinee))
+        scrutinee)
+    (zeroHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType zeroBranch))
+        zeroBranch)
+    (succHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType succBranch))
+        succBranch) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.natElim scrutinee zeroBranch succBranch)))
+      (Term.natElim scrutinee zeroBranch succBranch) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.natElim_HEq_congr
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton zeroRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton succRaw singletonRaw)
+    scrutineeHEq zeroHEq succHEq
+
+/-- Natural recursion preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_natRec_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw)
+    (scrutineeHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType scrutinee))
+        scrutinee)
+    (zeroHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType zeroBranch))
+        zeroBranch)
+    (succHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType succBranch))
+        succBranch) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.natRec scrutinee zeroBranch succBranch)))
+      (Term.natRec scrutinee zeroBranch succBranch) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.natRec_HEq_congr
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton zeroRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton succRaw singletonRaw)
+    scrutineeHEq zeroHEq succHEq
+
+/-- List elimination preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_listElim_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch :
+      Term context
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRaw)
+    (scrutineeHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType scrutinee))
+        scrutinee)
+    (nilHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType nilBranch))
+        nilBranch)
+    (consHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType consBranch))
+        consBranch) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.listElim scrutinee nilBranch consBranch)))
+      (Term.listElim scrutinee nilBranch consBranch) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.listElim_HEq_congr
+    (Ty.weaken_subst_singleton elementType newType singletonRaw)
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton nilRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton consRaw singletonRaw)
+    scrutineeHEq nilHEq consHEq
+
+/-- Option matching preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_optionMatch_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (scrutinee : Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw)
+    (scrutineeHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType scrutinee))
+        scrutinee)
+    (noneHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType noneBranch))
+        noneBranch)
+    (someHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType someBranch))
+        someBranch) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.optionMatch scrutinee noneBranch someBranch)))
+      (Term.optionMatch scrutinee noneBranch someBranch) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.optionMatch_HEq_congr
+    (Ty.weaken_subst_singleton elementType newType singletonRaw)
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton noneRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton someRaw singletonRaw)
+    scrutineeHEq noneHEq someHEq
+
+/-- Either matching preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_eitherMatch_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw)
+    (scrutineeHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType scrutinee))
+        scrutinee)
+    (leftHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType leftBranch))
+        leftBranch)
+    (rightHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType rightBranch))
+        rightBranch) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.eitherMatch scrutinee leftBranch rightBranch)))
+      (Term.eitherMatch scrutinee leftBranch rightBranch) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.eitherMatch_HEq_congr
+    (Ty.weaken_subst_singleton leftType newType singletonRaw)
+    (Ty.weaken_subst_singleton rightType newType singletonRaw)
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton scrutineeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton leftRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightRaw singletonRaw)
+    scrutineeHEq leftHEq rightHEq
+
 /-- Path application preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_pathApp_heq
     {mode : Mode} {level scope : Nat}
