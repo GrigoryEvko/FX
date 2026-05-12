@@ -18132,4 +18132,82 @@ theorem Reducible.fundamental_identity_codataUnfold_at_codata_sn
       (termSubst := TermSubst.identity sourceCtx)
       stateIdentityReducible transitionIdentityReducible)
 
+/-- **K12.27 identity-substitution Glue introduction SN endpoint**.
+
+Glue introduction is still an SN-output fundamental case: building full
+`Ty.glue` reducibility for introductions would require the eliminator
+backward bridge.  The identity route only needs the honest SN
+consequence, obtained from reducibility of the base and partial
+payloads. -/
+theorem Reducible.fundamental_identity_glueIntro_at_glue_sn
+    {level scope : Nat}
+    {sourceCtx : Ctx Mode.univalent level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness baseRaw partialRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseIdentityReducible :
+        Reducible (baseType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) baseValue))
+    (partialIdentityReducible :
+        Reducible (baseType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) partialValue)) :
+    Term.isStronglyNormalizing
+      (Term.glueIntro rfl baseType boundaryWitness
+        baseValue partialValue) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.glueIntro rfl baseType boundaryWitness baseValue partialValue)
+    (Reducible.fundamental_glueIntro_at_glue
+      (termSubst := TermSubst.identity sourceCtx)
+      rfl baseIdentityReducible partialIdentityReducible)
+
+/-- **K12.27 identity-substitution record introduction SN endpoint**.
+
+The one-field record introduction fundamental is SN-output in the
+current kernel.  This wrapper lets the identity induction consume the
+field's reducibility witness directly. -/
+theorem Reducible.fundamental_identity_recordIntro_at_record_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (fieldIdentityReducible :
+        Reducible (singleFieldType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) firstField)) :
+    Term.isStronglyNormalizing (Term.recordIntro firstField) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.recordIntro firstField)
+    (Reducible.fundamental_recordIntro_at_record
+      (termSubst := TermSubst.identity sourceCtx)
+      fieldIdentityReducible)
+
+/-- **K12.27 identity-substitution refinement introduction SN endpoint**.
+
+Refinement introduction carries both the runtime value and erased proof
+payload through the raw SN relation.  This bridge exposes the exact
+identity-route SN consequence from their reducibility witnesses without
+asserting a full refinement-introduction candidate. -/
+theorem Reducible.fundamental_identity_refineIntro_at_refine_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (valueIdentityReducible :
+        Reducible (baseType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) baseValue))
+    (proofIdentityReducible :
+        Reducible (Ty.unit.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) predicateProof)) :
+    Term.isStronglyNormalizing
+      (Term.refineIntro predicate baseValue predicateProof) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.refineIntro predicate baseValue predicateProof)
+    (Reducible.fundamental_refineIntro_at_refine
+      (termSubst := TermSubst.identity sourceCtx)
+      valueIdentityReducible proofIdentityReducible)
+
 end LeanFX2
