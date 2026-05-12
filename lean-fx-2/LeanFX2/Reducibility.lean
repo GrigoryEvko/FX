@@ -3134,6 +3134,41 @@ theorem RawTerm.refineIntro_value_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing valueRaw :=
   RawTerm.refineIntro_value_isStronglyNormalizing_aux refineIsSN rfl
 
+/-- Shape-specialized inversion for Glue-intro base payload SN. -/
+theorem RawTerm.glueIntro_base_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {baseRaw partialRaw : RawTerm scope},
+      source = RawTerm.glueIntro baseRaw partialRaw →
+      RawTerm.isStronglyNormalizing baseRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro baseRaw partialRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro baseRaw ?_
+    intro baseTarget baseProgress
+    have glueProgress :
+        RawStep.parProgress
+          (RawTerm.glueIntro baseRaw partialRaw)
+          (RawTerm.glueIntro baseTarget partialRaw) := by
+      refine ⟨RawStep.par.glueIntroCong baseProgress.1
+        (RawStep.par.refl partialRaw), ?_⟩
+      intro glueEq
+      apply baseProgress.2
+      injection glueEq
+    exact inductiveHypothesis
+      (RawTerm.glueIntro baseTarget partialRaw) glueProgress rfl
+
+/-- If a Glue introduction is strongly normalizing, then its base
+payload is strongly normalizing. -/
+theorem RawTerm.glueIntro_base_isStronglyNormalizing {scope : Nat}
+    {baseRaw partialRaw : RawTerm scope}
+    (glueIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.glueIntro baseRaw partialRaw)) :
+    RawTerm.isStronglyNormalizing baseRaw :=
+  RawTerm.glueIntro_base_isStronglyNormalizing_aux glueIsSN rfl
+
 /-- Shape-specialized inversion for list-cons head SN. -/
 theorem RawTerm.listCons_head_isStronglyNormalizing_aux {scope : Nat}
     {source : RawTerm scope}
@@ -9148,6 +9183,58 @@ theorem Term.glueElim_glueIntro_isStronglyNormalizing
           baseValue partialValue)) :=
   RawTerm.glueElim_glueIntro_isStronglyNormalizing
     baseIsSN partialIsSN
+
+/-- Generic Glue-elimination SN preservation.
+
+Congruent reducts recurse through the glued term.  A β reduct first
+develops the glued term into a `glueIntro`; the eliminated base value is
+SN by the Glue-intro base inversion lemma. -/
+theorem RawTerm.glueElim_isStronglyNormalizing {scope : Nat}
+    {gluedRaw : RawTerm scope}
+    (gluedIsSN : RawTerm.isStronglyNormalizing gluedRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.glueElim gluedRaw) := by
+  induction gluedIsSN with
+  | intro currentGlued gluedClosure gluedIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.glueElim currentGlued) ?_
+    intro target progressStep
+    rcases RawStep.par.glueElim_inv progressStep.1 with
+      ⟨gluedTarget, targetEq, gluedStep⟩
+      | ⟨baseTarget, partialTarget, targetEq, gluedStep⟩
+    · subst targetEq
+      by_cases gluedEq : currentGlued = gluedTarget
+      · subst gluedEq
+        exact (progressStep.2 rfl).elim
+      · exact gluedIH gluedTarget ⟨gluedStep, gluedEq⟩
+    · rw [targetEq]
+      have developedGluedIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.glueIntro baseTarget partialTarget) := by
+        by_cases gluedEq :
+            currentGlued =
+              RawTerm.glueIntro baseTarget partialTarget
+        · rw [← gluedEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentGlued gluedClosure
+        · exact gluedClosure
+            (RawTerm.glueIntro baseTarget partialTarget)
+            ⟨gluedStep, gluedEq⟩
+      exact RawTerm.glueIntro_base_isStronglyNormalizing
+        developedGluedIsSN
+
+/-- Direct M04 SN case for Glue elimination from any SN glued term. -/
+theorem Term.glueElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    {gluedValue : Term context
+        (Ty.glue baseType boundaryWitness) gluedRaw}
+    (gluedIsSN : Term.isStronglyNormalizing gluedValue) :
+    Term.isStronglyNormalizing
+      (Term.glueElim modeIsUnivalent gluedValue) :=
+  RawTerm.glueElim_isStronglyNormalizing gluedIsSN
 
 /-- **K12.20.AH equivIntro SN preservation** — equivalence intro
 bundles a forward and backward function.  Binary cong; uses the
