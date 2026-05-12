@@ -1164,6 +1164,7 @@ M04 / `strong_normalization`. -/
 #print axioms TermSubst.consSingleton
 #print axioms ReducibleSubst.singleton
 #print axioms ReducibleSubst.identity
+#print axioms ReducibleSubst.lift_isStronglyNormalizing
 #print axioms Term.strong_normalization_of_identity_subst
 #print axioms Reducible.strong_normalization_of_identity_reducible
 #print axioms RawTerm.subst_identity_lift

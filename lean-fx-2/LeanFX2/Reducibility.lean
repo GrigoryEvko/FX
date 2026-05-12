@@ -11625,6 +11625,48 @@ theorem ReducibleSubst.identity
     (Ty.subst_identity (varType sourceCtx position))
     positionVarReducible
 
+/-- **K12.20.U3.lift SN projection**: every entry of a lifted reducible
+substitution is strongly normalizing.
+
+This is the CR1 part of `ReducibleSubst.lift`, not the full theorem.
+The fresh variable is SN by var-shape CR3; older positions are weakened
+images of already-reducible substitution entries, so raw weakening
+preserves their SN.  Compound `Reducible` closures remain the separate
+world-monotone blocker tracked by #1944. -/
+theorem ReducibleSubst.lift_isStronglyNormalizing
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substReducible : ReducibleSubst termSubst)
+    (newSourceType : Ty level scope) :
+    ∀ (position : Fin (scope + 1)),
+      Term.isStronglyNormalizing
+        ((termSubst.lift newSourceType) position) := by
+  intro position
+  cases position with
+  | mk positionIndex positionIsWithinScope =>
+      cases positionIndex with
+      | zero =>
+          change RawTerm.isStronglyNormalizing
+            (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩)
+          exact RawTerm.var_isStronglyNormalizing
+            ⟨0, Nat.zero_lt_succ targetScope⟩
+      | succ previousIndex =>
+          let previousPosition : Fin scope :=
+            ⟨previousIndex,
+              Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+          change Term.isStronglyNormalizing
+            ((Ty.weaken_subst_commute sigma
+              (varType sourceCtx previousPosition)).symm ▸
+                Term.weaken (newSourceType.subst sigma)
+                  (termSubst previousPosition))
+          exact Term.isStronglyNormalizing_weaken
+            (newType := newSourceType.subst sigma)
+            (Reducible.isStronglyNormalizing
+              (substReducible previousPosition))
+
 /-- **K12.27.M04 identity-substitution SN extraction**.
 
 The identity-only M04 route often proves SN for the term after
