@@ -493,6 +493,23 @@ theorem RawTerm.subst_lift_singleton_eq_subst0
   rw [RawTerm.subst_compose sigma.forRaw.lift
     (RawTermSubst.singleton argumentRaw) bodyRaw]
 
+/-- Weakening under one existing binder, then substituting by the lifted
+singleton, returns the original raw term. -/
+theorem RawTerm.weaken_lift_subst_singleton_lift {scope : Nat}
+    (term : RawTerm (scope + 1)) (rawArg : RawTerm scope) :
+    (term.rename RawRenaming.weaken.lift).subst
+        (RawTermSubst.singleton rawArg).lift =
+      term := by
+  rw [RawTerm.rename_subst_commute RawRenaming.weaken.lift
+      (RawTermSubst.singleton rawArg).lift term,
+    RawTerm.subst_pointwise ?_ term,
+    RawTerm.subst_identity term]
+  intro position
+  rcases position with ⟨positionIndex, positionLt⟩
+  cases positionIndex with
+  | zero => rfl
+  | succ _ => rfl
+
 /-- Beta-specific extension of a typed substitution by an argument.
 
 Unlike `TermSubst.lift`, this substitution lands back in the original
@@ -1455,6 +1472,52 @@ theorem Term.weaken_subst_singleton_arrowCode_heq
   exact Term.arrowCode_HEq_congr outerLevel levelLe
     (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
     (RawTerm.weaken_subst_singleton codomainCodeRaw singletonRaw)
+
+/-- Pi type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_piTyCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1))
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.piTyCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)))
+      (Term.piTyCode (context := context) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.piTyCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift codomainCodeRaw singletonRaw)
+
+/-- Sigma type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_sigmaTyCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm scope)
+    (codomainCodeRaw : RawTerm (scope + 1))
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.sigmaTyCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)))
+      (Term.sigmaTyCode (context := context) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.sigmaTyCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift codomainCodeRaw singletonRaw)
 
 /-- Product type-code values preserve weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_productCode_heq

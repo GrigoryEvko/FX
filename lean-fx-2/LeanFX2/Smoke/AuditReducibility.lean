@@ -1188,6 +1188,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.subst_type_eq_cast_heq
 #print axioms Ty.weaken_subst_lift_singleton
 #print axioms RawTerm.subst_lift_singleton_eq_subst0
+#print axioms RawTerm.weaken_lift_subst_singleton_lift
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
 #print axioms TermSubst.consSingleton
@@ -1226,6 +1227,8 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_idStrictRec_heq
 #print axioms Term.weaken_subst_singleton_universeCode_heq
 #print axioms Term.weaken_subst_singleton_arrowCode_heq
+#print axioms Term.weaken_subst_singleton_piTyCode_heq
+#print axioms Term.weaken_subst_singleton_sigmaTyCode_heq
 #print axioms Term.weaken_subst_singleton_productCode_heq
 #print axioms Term.weaken_subst_singleton_sumCode_heq
 #print axioms Term.weaken_subst_singleton_listCode_heq
