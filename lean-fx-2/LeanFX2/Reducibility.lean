@@ -10065,6 +10065,30 @@ theorem ReducibleSubst.identity
     (Ty.subst_identity (varType sourceCtx position))
     positionVarReducible
 
+/-- **K12.27.M04 identity-substitution SN extraction**.
+
+The final strong-normalization corollary will apply the fundamental
+theorem at `TermSubst.identity`, then erase the identity substitution
+from the raw index.  This lemma packages only that last extraction
+step: it does not assert the still-pending fundamental theorem. -/
+theorem Reducible.strong_normalization_of_identity_reducible
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term sourceCtx sourceType sourceRaw)
+    (identityReducible :
+      Reducible (sourceType.subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) sourceTerm)) :
+    Term.isStronglyNormalizing sourceTerm := by
+  have identitySubstIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (TermSubst.identity sourceCtx) sourceTerm) :=
+    Reducible.isStronglyNormalizing identityReducible
+  change RawTerm.isStronglyNormalizing sourceRaw
+  rw [← RawTerm.subst_identity sourceRaw]
+  exact identitySubstIsSN
+
 /-- **K12.20.U3 cons-singleton ReducibleSubst**: extending an existing
 reducible substitution with a reducible β argument yields a reducible
 substitution for the extended source context into the original target
