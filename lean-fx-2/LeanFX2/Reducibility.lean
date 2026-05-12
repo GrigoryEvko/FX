@@ -11998,6 +11998,73 @@ theorem Reducible.fundamental_lam_at_arrow_of_consSingleton
         (bodyContractumHEq argumentTerm)
         (bodyContractumReducible argumentTerm argumentReducible))
 
+/-- Lambda reducibility from the substitution-parametric body IH, modulo
+the two remaining infrastructure blockers.
+
+This theorem packages the Wood/Atkey lambda case up to:
+
+* `liftSubstReducible`, the generic `ReducibleSubst.lift` obligation;
+* `bodyContractumHEq`, the cast-aware β contractum substitution HEq;
+* `codomainReducibleOfSN`, needed only for codomains whose candidate is
+  recovered from SN at this frontier.
+
+The body contractum side is no longer a blocker here: it is obtained by
+calling the body IH under `TermSubst.consSingleton`, whose reducibility
+is already supplied by `ReducibleSubst.consSingleton`. -/
+theorem Reducible.fundamental_lam_at_arrow_of_bodyIH
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (codomainReducibleOfSN :
+      ∀ {resultRaw : RawTerm targetScope}
+        (resultTerm : Term targetCtx (codomainType.subst sigma) resultRaw),
+        Term.isStronglyNormalizing resultTerm →
+        Reducible (codomainType.subst sigma) resultTerm)
+    (substReducible : ReducibleSubst termSubst)
+    (liftSubstReducible : ReducibleSubst (termSubst.lift domainType))
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (codomainType.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm))
+    (bodyContractumHEq :
+      ∀ {argumentRaw : RawTerm targetScope}
+        (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw),
+        HEq
+          (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+            bodyTerm)
+          (Term.subst0
+            (Ty.weaken_subst_commute sigma codomainType ▸
+              Term.subst (termSubst.lift domainType) bodyTerm)
+            argumentTerm)) :
+    Reducible ((Ty.arrow domainType codomainType).subst sigma)
+      (Term.subst termSubst
+        (Term.lam (codomainType := codomainType) bodyTerm)) := by
+  have bodyLiftReducible :
+      Reducible ((codomainType.subst sigma).weaken)
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm) :=
+    Reducible.of_type_eq_cast
+      (Ty.weaken_subst_commute sigma codomainType)
+      (bodyIH (termSubst.lift domainType) liftSubstReducible)
+  exact Reducible.fundamental_lam_at_arrow_of_consSingleton
+    codomainReducibleOfSN
+    bodyLiftReducible
+    bodyContractumHEq
+    (fun argumentTerm argumentReducible =>
+      bodyIH (TermSubst.consSingleton termSubst argumentTerm)
+        (ReducibleSubst.consSingleton substReducible argumentReducible))
+
 /-- β-contractum SN bridge for the `Term.lam` arrow case.
 
 The body IH naturally applies to `TermSubst.consSingleton`, whose raw

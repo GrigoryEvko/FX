@@ -759,6 +759,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_lam_at_arrow_of_sn_codomain
 #print axioms Reducible.fundamental_lam_at_arrow_contractum
 #print axioms Reducible.fundamental_lam_at_arrow_of_consSingleton
+#print axioms Reducible.fundamental_lam_at_arrow_of_bodyIH
 #print axioms Reducible.fundamental_lam_at_arrow_contractum_sn
 #print axioms Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
 #print axioms Term.appPi_lamPi_isStronglyNormalizing
