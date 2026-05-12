@@ -2442,6 +2442,47 @@ theorem Reducible.fundamental_lam_at_arrow_sn
         (Term.lam (codomainType := codomainType) bodyTerm)) :=
   Term.lam_isStronglyNormalizing bodyIsSN
 
+/-- Fundamental SN endpoint for the application closure of `Term.lam`
+at `Ty.arrow`.
+
+This isolates the SN part of the arrow closure after substitution:
+once the lifted lambda body, the reducible argument, and the β
+contractum are all SN, the substituted lambda application is SN.  The
+remaining full `fundamental_lam` work is to produce the contractum
+reducibility from the body IH and then lift SN to the codomain
+`Reducible` witness. -/
+theorem Reducible.fundamental_lam_at_arrow_app_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentReducible : Reducible (domainType.subst sigma) argumentTerm)
+    (contractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst0
+          (Ty.weaken_subst_commute sigma codomainType ▸
+            Term.subst (termSubst.lift domainType) bodyTerm)
+          argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.app
+        (Term.subst termSubst
+          (Term.lam (codomainType := codomainType) bodyTerm))
+        argumentTerm) :=
+  Term.app_lam_isStronglyNormalizing bodyIsSN
+    (Reducible.isStronglyNormalizing argumentReducible)
+    contractumIsSN
+
 /-- **K12.24.U5 path β SN expansion**.
 
 If the path body, interval argument, and β-contractum are all strongly
