@@ -680,6 +680,8 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.eitherInl_value_isStronglyNormalizing
 #print axioms RawTerm.eitherInr_value_isStronglyNormalizing_aux
 #print axioms RawTerm.eitherInr_value_isStronglyNormalizing
+#print axioms RawTerm.recordIntro_field_isStronglyNormalizing_aux
+#print axioms RawTerm.recordIntro_field_isStronglyNormalizing
 #print axioms RawTerm.listCons_head_isStronglyNormalizing_aux
 #print axioms RawTerm.listCons_head_isStronglyNormalizing
 #print axioms RawTerm.listCons_tail_isStronglyNormalizing_aux
@@ -1058,6 +1060,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.idJ_isStronglyNormalizing
 #print axioms Term.oeqJ_isStronglyNormalizing
 #print axioms Term.idStrictRec_isStronglyNormalizing
+#print axioms Term.recordProj_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

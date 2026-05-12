@@ -3065,6 +3065,40 @@ theorem RawTerm.eitherInr_value_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing valueRaw :=
   RawTerm.eitherInr_value_isStronglyNormalizing_aux eitherIsSN rfl
 
+/-- Shape-specialized inversion for single-field record payload SN. -/
+theorem RawTerm.recordIntro_field_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {fieldRaw : RawTerm scope},
+      source = RawTerm.recordIntro fieldRaw →
+      RawTerm.isStronglyNormalizing fieldRaw := by
+  induction sourceIsSN with
+  | intro currentSource _ inductiveHypothesis =>
+    intro fieldRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro fieldRaw ?_
+    intro fieldTarget fieldProgress
+    have recordProgress :
+        RawStep.parProgress
+          (RawTerm.recordIntro fieldRaw)
+          (RawTerm.recordIntro fieldTarget) := by
+      refine ⟨RawStep.par.recordIntroCong fieldProgress.1, ?_⟩
+      intro recordEq
+      apply fieldProgress.2
+      injection recordEq
+    exact inductiveHypothesis
+      (RawTerm.recordIntro fieldTarget) recordProgress rfl
+
+/-- If a record introduction is strongly normalizing, then its field is
+strongly normalizing. -/
+theorem RawTerm.recordIntro_field_isStronglyNormalizing {scope : Nat}
+    {fieldRaw : RawTerm scope}
+    (recordIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.recordIntro fieldRaw)) :
+    RawTerm.isStronglyNormalizing fieldRaw :=
+  RawTerm.recordIntro_field_isStronglyNormalizing_aux recordIsSN rfl
+
 /-- Shape-specialized inversion for list-cons head SN. -/
 theorem RawTerm.listCons_head_isStronglyNormalizing_aux {scope : Nat}
     {source : RawTerm scope}
@@ -8409,6 +8443,52 @@ theorem Term.recordProj_recordIntro_isStronglyNormalizing
     Term.isStronglyNormalizing
       (Term.recordProj (Term.recordIntro firstField)) :=
   RawTerm.recordProj_recordIntro_isStronglyNormalizing firstFieldIsSN
+
+/-- Generic record-projection SN preservation.
+
+Congruent reducts recurse through the record term.  A β reduct first
+develops the record into a `recordIntro`; the projected field is SN by
+the record-intro field inversion lemma. -/
+theorem RawTerm.recordProj_isStronglyNormalizing {scope : Nat}
+    {recordRaw : RawTerm scope}
+    (recordIsSN : RawTerm.isStronglyNormalizing recordRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.recordProj recordRaw) := by
+  induction recordIsSN with
+  | intro currentRecord recordClosure recordIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.recordProj currentRecord) ?_
+    intro target progressStep
+    rcases RawStep.par.recordProj_inv progressStep.1 with
+      ⟨recordTarget, targetEq, recordStep⟩
+      | ⟨firstTarget, targetEq, recordStep⟩
+    · subst targetEq
+      by_cases recordEq : currentRecord = recordTarget
+      · subst recordEq
+        exact (progressStep.2 rfl).elim
+      · exact recordIH recordTarget ⟨recordStep, recordEq⟩
+    · rw [targetEq]
+      have developedRecordIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.recordIntro firstTarget) := by
+        by_cases recordEq : currentRecord = RawTerm.recordIntro firstTarget
+        · rw [← recordEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentRecord recordClosure
+        · exact recordClosure (RawTerm.recordIntro firstTarget)
+            ⟨recordStep, recordEq⟩
+      exact RawTerm.recordIntro_field_isStronglyNormalizing
+        developedRecordIsSN
+
+/-- Direct M04 SN case for projection from any SN record term. -/
+theorem Term.recordProj_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    {recordValue : Term context (Ty.record singleFieldType) recordRaw}
+    (recordIsSN : Term.isStronglyNormalizing recordValue) :
+    Term.isStronglyNormalizing (Term.recordProj recordValue) :=
+  RawTerm.recordProj_isStronglyNormalizing recordIsSN
 
 /-- Head-β SN expansion for refinement elimination.
 
