@@ -6678,6 +6678,62 @@ theorem RawTerm.recordIntro_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis firstTarget
       ⟨firstStep, firstDistinct⟩
 
+/-- Head-β SN expansion for single-field record projection.
+
+If the field is strongly normalizing, then
+`recordProj (recordIntro field)` is strongly normalizing.  Congruence
+reducts recurse through the record field; β reducts land on a reduct
+of the field. -/
+theorem RawTerm.recordProj_recordIntro_isStronglyNormalizing
+    {scope : Nat}
+    {firstField : RawTerm scope}
+    (firstFieldIsSN : RawTerm.isStronglyNormalizing firstField) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.recordProj (RawTerm.recordIntro firstField)) := by
+  induction firstFieldIsSN with
+  | intro currentField fieldClosure fieldIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.recordProj (RawTerm.recordIntro currentField)) ?_
+    intro target progressStep
+    rcases RawStep.par.recordProj_inv progressStep.1 with
+      ⟨_recordTarget, targetEq, recordStep⟩
+      | ⟨firstTarget, targetEq, recordStep⟩
+    · obtain ⟨firstTarget, recordTargetEq, firstStep⟩ :=
+        RawStep.par.recordIntro_inv recordStep
+      subst recordTargetEq
+      subst targetEq
+      by_cases firstEq : currentField = firstTarget
+      · subst firstEq
+        exact False.elim (progressStep.2 rfl)
+      · exact fieldIH firstTarget ⟨firstStep, firstEq⟩
+    · obtain ⟨recordFirstTarget, recordTargetEq, firstStep⟩ :=
+        RawStep.par.recordIntro_inv recordStep
+      injection recordTargetEq with _scopeEq firstTargetEq
+      rw [targetEq]
+      have firstStepToTarget : RawStep.par currentField firstTarget := by
+        rw [firstTargetEq]
+        exact firstStep
+      by_cases firstEq : currentField = firstTarget
+      · subst firstEq
+        exact RawTerm.isStronglyNormalizing.intro
+          currentField fieldClosure
+      · exact fieldClosure firstTarget ⟨firstStepToTarget, firstEq⟩
+
+/-- Typed wrapper for `recordProj (recordIntro field)` SN expansion.
+
+This is an SN bridge only.  The full record-intro reducibility theorem
+still requires typed backward closure at the projected field type. -/
+theorem Term.recordProj_recordIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term context singleFieldType firstRaw}
+    (firstFieldIsSN : Term.isStronglyNormalizing firstField) :
+    Term.isStronglyNormalizing
+      (Term.recordProj (Term.recordIntro firstField)) :=
+  RawTerm.recordProj_recordIntro_isStronglyNormalizing firstFieldIsSN
+
 /-- **K12.20.AJ.2 refineIntro SN preservation** — refinement-type
 intro packs a value with a proof of its refinement predicate.
 Binary cong; uses the pair-style universal-in-conclusion pattern. -/
