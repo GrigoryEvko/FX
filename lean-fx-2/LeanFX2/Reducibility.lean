@@ -7628,6 +7628,82 @@ theorem RawTerm.optionCode_isStronglyNormalizing {scope : Nat}
     exact elementIH elementTarget
       ⟨elementStep, elementDistinct⟩
 
+/-- Type-code identity constructor SN preservation.
+
+`idCode` is congruence-only over its schematic carrier and endpoint
+codes.  SN follows by the same payload-product induction as the
+binary type-code constructors, extended to the ternary payload. -/
+theorem RawTerm.idCode_isStronglyNormalizing {scope : Nat}
+    {typeCode : RawTerm scope}
+    (typeCodeIsSN : RawTerm.isStronglyNormalizing typeCode) :
+    ∀ {leftCode : RawTerm scope},
+    RawTerm.isStronglyNormalizing leftCode →
+    ∀ {rightCode : RawTerm scope},
+    RawTerm.isStronglyNormalizing rightCode →
+  RawTerm.isStronglyNormalizing
+      (RawTerm.idCode typeCode leftCode rightCode) := by
+  induction typeCodeIsSN with
+  | intro currentType _ typeIH =>
+    intro leftCode leftCodeIsSN
+    induction leftCodeIsSN with
+    | intro currentLeft leftClosure leftIH =>
+      intro rightCode rightCodeIsSN
+      induction rightCodeIsSN with
+      | intro currentRight rightClosure rightIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.idCode currentType currentLeft currentRight) ?_
+        intro target progressStep
+        obtain ⟨typeTarget, leftTarget, rightTarget, targetEq,
+                typeStep, leftStep, rightStep⟩ :=
+          RawStep.par.idCode_inv progressStep.1
+        subst targetEq
+        by_cases typeEq : currentType = typeTarget
+        · subst typeEq
+          by_cases leftEq : currentLeft = leftTarget
+          · subst leftEq
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact False.elim (progressStep.2 rfl)
+            · exact rightIH rightTarget ⟨rightStep, rightEq⟩
+          · have leftProgress :
+                RawStep.parProgress currentLeft leftTarget :=
+              ⟨leftStep, leftEq⟩
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact leftIH leftTarget leftProgress
+                (RawTerm.isStronglyNormalizing.intro
+                  currentRight rightClosure)
+            · exact leftIH leftTarget leftProgress
+                (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+        · have typeProgress :
+              RawStep.parProgress currentType typeTarget :=
+            ⟨typeStep, typeEq⟩
+          by_cases leftEq : currentLeft = leftTarget
+          · subst leftEq
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact typeIH typeTarget typeProgress
+                (RawTerm.isStronglyNormalizing.intro
+                  currentLeft leftClosure)
+                (RawTerm.isStronglyNormalizing.intro
+                  currentRight rightClosure)
+            · exact typeIH typeTarget typeProgress
+                (RawTerm.isStronglyNormalizing.intro
+                  currentLeft leftClosure)
+                (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+          · have leftTargetIsSN :
+                RawTerm.isStronglyNormalizing leftTarget :=
+              leftClosure leftTarget ⟨leftStep, leftEq⟩
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact typeIH typeTarget typeProgress
+                leftTargetIsSN
+                (RawTerm.isStronglyNormalizing.intro
+                  currentRight rightClosure)
+            · exact typeIH typeTarget typeProgress
+                leftTargetIsSN
+                (rightClosure rightTarget ⟨rightStep, rightEq⟩)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12798,6 +12874,34 @@ theorem Reducible.fundamental_optionCode_of_payload
                 (Term.optionCode (context := sourceCtx)
                   outerLevel levelLe elementCodeRaw)) :=
   RawTerm.optionCode_isStronglyNormalizing elementCodeIsSN
+
+/-- Type-code identity fundamental endpoint with explicit carrier and
+endpoint-code SN premises. -/
+theorem Reducible.fundamental_idCode_of_payloads
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {typeCodeRaw leftCodeRaw rightCodeRaw : RawTerm scope}
+    (typeCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (typeCodeRaw.subst sigma.forRaw))
+    (leftCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (leftCodeRaw.subst sigma.forRaw))
+    (rightCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (rightCodeRaw.subst sigma.forRaw)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.idCode (context := sourceCtx)
+                  outerLevel levelLe
+                  typeCodeRaw leftCodeRaw rightCodeRaw)) :=
+  RawTerm.idCode_isStronglyNormalizing
+    typeCodeIsSN leftCodeIsSN rightCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
 helper at the raw layer.  Sister to `subsume_isStronglyNormalizing`
