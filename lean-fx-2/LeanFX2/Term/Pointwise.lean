@@ -1414,6 +1414,242 @@ theorem Term.weaken_subst_singleton_idStrictRec_heq
     (RawTerm.weaken_subst_singleton witnessRaw singletonRaw)
     baseCaseHEq witnessHEq
 
+/-- Universe-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_universeCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.universeCode (context := context) innerLevel outerLevel
+            cumulOk levelLe)))
+      (Term.universeCode (context := context) innerLevel outerLevel
+        cumulOk levelLe) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.universeCode_HEq_congr innerLevel outerLevel cumulOk levelLe
+
+/-- Arrow type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_arrowCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.arrowCode (context := context) outerLevel levelLe
+            domainCodeRaw codomainCodeRaw)))
+      (Term.arrowCode (context := context) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.arrowCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton domainCodeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton codomainCodeRaw singletonRaw)
+
+/-- Product type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_productCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.productCode (context := context) outerLevel levelLe
+            firstCodeRaw secondCodeRaw)))
+      (Term.productCode (context := context) outerLevel levelLe
+        firstCodeRaw secondCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.productCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton firstCodeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton secondCodeRaw singletonRaw)
+
+/-- Sum type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_sumCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.sumCode (context := context) outerLevel levelLe
+            leftCodeRaw rightCodeRaw)))
+      (Term.sumCode (context := context) outerLevel levelLe
+        leftCodeRaw rightCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.sumCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton leftCodeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightCodeRaw singletonRaw)
+
+/-- List type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_listCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.listCode (context := context) outerLevel levelLe
+            elementCodeRaw)))
+      (Term.listCode (context := context) outerLevel levelLe
+        elementCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.listCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton elementCodeRaw singletonRaw)
+
+/-- Option type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_optionCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.optionCode (context := context) outerLevel levelLe
+            elementCodeRaw)))
+      (Term.optionCode (context := context) outerLevel levelLe
+        elementCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.optionCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton elementCodeRaw singletonRaw)
+
+/-- Either type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_eitherCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.eitherCode (context := context) outerLevel levelLe
+            leftCodeRaw rightCodeRaw)))
+      (Term.eitherCode (context := context) outerLevel levelLe
+        leftCodeRaw rightCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.eitherCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton leftCodeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightCodeRaw singletonRaw)
+
+/-- Identity type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_idCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.idCode (context := context) outerLevel levelLe typeCodeRaw
+            leftRaw rightRaw)))
+      (Term.idCode (context := context) outerLevel levelLe typeCodeRaw
+        leftRaw rightRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.idCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton typeCodeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton leftRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightRaw singletonRaw)
+
+/-- Equivalence type-code values preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_equivCode_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.equivCode (context := context) outerLevel levelLe
+            leftTypeCodeRaw rightTypeCodeRaw)))
+      (Term.equivCode (context := context) outerLevel levelLe
+        leftTypeCodeRaw rightTypeCodeRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.equivCode_HEq_congr outerLevel levelLe
+    (RawTerm.weaken_subst_singleton leftTypeCodeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightTypeCodeRaw singletonRaw)
+
+/-- Canonical identity equivalences preserve weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_equivReflId_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.equivReflId (context := context) carrier)))
+      (Term.equivReflId (context := context) carrier) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.equivReflId_HEq_congr
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+
+/-- Id-typed identity equivalence witnesses preserve weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_equivReflIdAtId_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt
+            carrier carrierRaw)))
+      (Term.equivReflIdAtId (context := context) innerLevel innerLevelLt
+        carrier carrierRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.equivReflIdAtId_HEq_congr
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton carrierRaw singletonRaw)
+
 /-- Path application preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_pathApp_heq
     {mode : Mode} {level scope : Nat}
