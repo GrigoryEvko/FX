@@ -2531,6 +2531,62 @@ theorem Reducible.lam_at_arrow_of_sn_codomain
     (Reducible.isStronglyNormalizing
       (bodyContractumReducible argumentReducible argumentIsReducible))
 
+/-- Substitution-parametric lambda reducibility when the codomain is
+recoverable from strong normalization.
+
+This is the current honest frontier for the full `fundamental_lam`
+case.  It packages the arrow candidate proof once callers supply:
+
+* reducibility of the substituted body under `termSubst.lift`;
+* reducibility of every β contractum; and
+* a codomain-specific bridge from SN back to `Reducible`.
+
+Closed and SN-fallback codomains can provide the last bridge directly.
+Compound codomains still need their own head-β/full-reducibility
+transport; this theorem keeps that obligation explicit in the type. -/
+theorem Reducible.fundamental_lam_at_arrow_of_sn_codomain
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (codomainReducibleOfSN :
+      ∀ {resultRaw : RawTerm targetScope}
+        (resultTerm : Term targetCtx (codomainType.subst sigma) resultRaw),
+        Term.isStronglyNormalizing resultTerm →
+        Reducible (codomainType.subst sigma) resultTerm)
+    (bodyLiftReducible :
+      Reducible ((codomainType.subst sigma).weaken)
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm))
+    (bodyContractumReducible :
+      ∀ {argumentRaw : RawTerm targetScope}
+        (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw),
+        Reducible (domainType.subst sigma) argumentTerm →
+        Reducible
+          ((codomainType.subst sigma).weaken.subst0
+            (domainType.subst sigma) argumentRaw)
+          (Term.subst0
+            (Ty.weaken_subst_commute sigma codomainType ▸
+              Term.subst (termSubst.lift domainType) bodyTerm)
+            argumentTerm)) :
+    Reducible ((Ty.arrow domainType codomainType).subst sigma)
+      (Term.subst termSubst
+        (Term.lam (codomainType := codomainType) bodyTerm)) := by
+  change Reducible
+    (Ty.arrow (domainType.subst sigma) (codomainType.subst sigma))
+    (Term.lam
+      (codomainType := codomainType.subst sigma)
+      (Ty.weaken_subst_commute sigma codomainType ▸
+        Term.subst (termSubst.lift domainType) bodyTerm))
+  exact Reducible.lam_at_arrow_of_sn_codomain codomainReducibleOfSN
+    (Reducible.isStronglyNormalizing bodyLiftReducible)
+    bodyContractumReducible
+
 /-- **K12.24.U5 path β SN expansion**.
 
 If the path body, interval argument, and β-contractum are all strongly
