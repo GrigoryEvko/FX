@@ -12952,6 +12952,46 @@ theorem Reducible.fundamental_app_at_arrow
                 (Term.app functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-- **K12.21 pair-intro SN endpoint at `Ty.sigmaTy`**.
+
+This is the M04-facing pair introduction endpoint: substituting a pair
+is strongly normalizing when both substituted components are reducible.
+It deliberately returns only SN.  The full sigma Reducible introduction
+would additionally need a backward closure proving reducibility of
+`fst (pair first second)` at the first component type; that is a
+separate CR3-style obligation, not part of this SN endpoint. -/
+theorem Reducible.fundamental_pair_at_sigmaTy_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIH :
+      Reducible (firstType.subst sigma)
+        (Term.subst termSubst firstValue))
+    (secondIH :
+      Reducible
+        ((secondType.subst0 firstType firstRaw).subst sigma)
+        (Term.subst termSubst secondValue)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.pair (secondType := secondType) firstValue secondValue)) := by
+  have secondIsSN :
+      Term.isStronglyNormalizing
+        (Ty.subst0_subst_commute secondType firstType firstRaw sigma ▸
+          Term.subst termSubst secondValue) := by
+    change RawTerm.isStronglyNormalizing (secondRaw.subst sigma.forRaw)
+    exact Reducible.isStronglyNormalizing secondIH
+  exact Term.pair_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstIH)
+    secondIsSN
+
 /-! ## K12.21.B fundamental_fst at `Ty.sigmaTy` — Σ first-projection
 elimination
 
