@@ -6908,6 +6908,26 @@ theorem RawTerm.pathLam_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.pathLam bodyEq)
     exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
 
+/-- Typed wrapper for cubical path-lambda SN preservation.
+
+This packages the raw binder SN fact for `Term.pathLam`.  It is only
+the SN half of the cubical path-introduction case; the full Reducible
+closure still needs the interval-application endpoint. -/
+theorem Term.pathLam_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
+    Term.isStronglyNormalizing
+      (Term.pathLam modeIsUnivalent carrierType leftEndpoint rightEndpoint
+        bodyTerm) :=
+  RawTerm.pathLam_isStronglyNormalizing bodyIsSN
+
 /-- **K12.20.AI.1 uaToEquiv SN preservation** — univalence-to-
 equivalence converter (D3.6 ua_β infrastructure).  Pure unary
 cong over its proof witness; uaToEquiv_inv discharges. -/
@@ -7462,6 +7482,27 @@ theorem RawTerm.glueIntro_isStronglyNormalizing {scope : Nat}
         · exact baseIH baseTarget baseProgress
             (partialClosure partialTarget
               ⟨partialStep, partialEq⟩)
+
+/-- Typed wrapper for cubical Glue-introduction SN preservation.
+
+This exposes SN for `Term.glueIntro` from SN of its base and partial
+payloads.  It deliberately does not claim the full Glue Reducible
+introduction closure. -/
+theorem Term.glueIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    {baseValue : Term context baseType baseRaw}
+    {partialValue : Term context baseType partialRaw}
+    (baseIsSN : Term.isStronglyNormalizing baseValue)
+    (partialIsSN : Term.isStronglyNormalizing partialValue) :
+    Term.isStronglyNormalizing
+      (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+        baseValue partialValue) :=
+  RawTerm.glueIntro_isStronglyNormalizing baseIsSN partialIsSN
 
 /-- Head-β SN expansion for cubical Glue elimination.
 

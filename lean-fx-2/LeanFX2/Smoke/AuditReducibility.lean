@@ -828,6 +828,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.intervalMeet_isStronglyNormalizing
 #print axioms RawTerm.intervalJoin_isStronglyNormalizing
 #print axioms RawTerm.pathLam_isStronglyNormalizing
+#print axioms Term.pathLam_isStronglyNormalizing
 #print axioms RawTerm.equivIntro_isStronglyNormalizing
 #print axioms RawTerm.uaToEquiv_isStronglyNormalizing
 #print axioms RawTerm.oeqFunext_isStronglyNormalizing
@@ -842,6 +843,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.sessionSend_isStronglyNormalizing
 #print axioms RawTerm.effectPerform_isStronglyNormalizing
 #print axioms RawTerm.glueIntro_isStronglyNormalizing
+#print axioms Term.glueIntro_isStronglyNormalizing
 #print axioms RawTerm.glueElim_glueIntro_isStronglyNormalizing
 #print axioms Term.glueElim_glueIntro_isStronglyNormalizing
 #print axioms Reducible.fundamental_interval0
