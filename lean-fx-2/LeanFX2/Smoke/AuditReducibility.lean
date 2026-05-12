@@ -788,6 +788,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_pathApp_at_path
 #print axioms Reducible.fundamental_glueElim_at_glue
 #print axioms Reducible.fundamental_glueIntro_at_glue
+#print axioms Reducible.fundamental_recordIntro_at_record
+#print axioms Reducible.fundamental_refineIntro_at_refine
+#print axioms Reducible.fundamental_codataUnfold_at_codata
 #print axioms Reducible.fundamental_codataDest_at_codata
 #print axioms RawTerm.natSucc_isStronglyNormalizing
 #print axioms RawTerm.optionSome_isStronglyNormalizing
@@ -860,8 +863,11 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.oeqFunext_isStronglyNormalizing
 #print axioms RawTerm.boolElim_isStronglyNormalizing
 #print axioms RawTerm.recordIntro_isStronglyNormalizing
+#print axioms Term.recordIntro_isStronglyNormalizing
 #print axioms RawTerm.refineIntro_isStronglyNormalizing
+#print axioms Term.refineIntro_isStronglyNormalizing
 #print axioms RawTerm.codataUnfold_isStronglyNormalizing
+#print axioms Term.codataUnfold_isStronglyNormalizing
 #print axioms RawTerm.pathCompose_isStronglyNormalizing
 #print axioms RawTerm.oeqTrans_isStronglyNormalizing
 #print axioms RawTerm.equivCompose_isStronglyNormalizing

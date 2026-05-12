@@ -7437,6 +7437,17 @@ theorem RawTerm.recordIntro_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis firstTarget
       ⟨firstStep, firstDistinct⟩
 
+/-- Typed wrapper for single-field record introduction SN preservation. -/
+theorem Term.recordIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term context singleFieldType firstRaw}
+    (firstFieldIsSN : Term.isStronglyNormalizing firstField) :
+    Term.isStronglyNormalizing (Term.recordIntro firstField) :=
+  RawTerm.recordIntro_isStronglyNormalizing firstFieldIsSN
+
 /-- Head-β SN expansion for single-field record projection.
 
 If the field is strongly normalizing, then
@@ -7618,6 +7629,21 @@ theorem RawTerm.refineIntro_isStronglyNormalizing {scope : Nat}
         · exact valueIH valueTarget valueProgress
             (proofClosure proofTarget ⟨proofStep, proofEq⟩)
 
+/-- Typed wrapper for refinement introduction SN preservation. -/
+theorem Term.refineIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term context baseType valueRaw}
+    {predicateProof : Term context Ty.unit proofRaw}
+    (valueIsSN : Term.isStronglyNormalizing baseValue)
+    (proofIsSN : Term.isStronglyNormalizing predicateProof) :
+    Term.isStronglyNormalizing
+      (Term.refineIntro predicate baseValue predicateProof) :=
+  RawTerm.refineIntro_isStronglyNormalizing valueIsSN proofIsSN
+
 /-- **K12.20.AJ.3 codataUnfold SN preservation** — codata
 corecursive unfold bundles an initial state with a transition
 function.  Binary cong; pair-style universal-in-conclusion. -/
@@ -7661,6 +7687,20 @@ theorem RawTerm.codataUnfold_isStronglyNormalizing {scope : Nat}
         · exact stateIH stateTarget stateProgress
             (transitionClosure transitionTarget
               ⟨transitionStep, transitionEq⟩)
+
+/-- Typed wrapper for codata unfold SN preservation. -/
+theorem Term.codataUnfold_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term context stateType stateRaw}
+    {transition : Term context (Ty.arrow stateType outputType) transitionRaw}
+    (stateIsSN : Term.isStronglyNormalizing initialState)
+    (transitionIsSN : Term.isStronglyNormalizing transition) :
+    Term.isStronglyNormalizing
+      (Term.codataUnfold initialState transition) :=
+  RawTerm.codataUnfold_isStronglyNormalizing stateIsSN transitionIsSN
 
 /-- **K12.20.AK.1 pathCompose SN preservation** — cubical path
 composition.  Pure binary cong over two path witnesses;
@@ -13712,6 +13752,90 @@ theorem Reducible.fundamental_glueIntro_at_glue
     (boundaryWitness.subst sigma.forRaw)
     (Reducible.isStronglyNormalizing baseIH)
     (Reducible.isStronglyNormalizing partialIH)
+
+/-- Fundamental SN endpoint: `Term.recordIntro` at `Ty.record` (K12.26).
+
+Single-field record introduction is strongly normalizing whenever its
+field is reducible at the substituted field type.  Multi-field records
+are represented by the schema layer as nested single-field records, so
+this is the M04-facing introduction endpoint for the current raw kernel
+constructor. -/
+theorem Reducible.fundamental_recordIntro_at_record
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (firstIH :
+        Reducible (singleFieldType.subst sigma)
+          (Term.subst termSubst firstField)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.recordIntro firstField)) :=
+  Term.recordIntro_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstIH)
+
+/-- Fundamental SN endpoint: `Term.refineIntro` at `Ty.refine` (K12.26).
+
+Refinement introduction is strongly normalizing when both the base value
+and erased proof payload are reducible after substitution.  This endpoint
+supports M04 strong normalization; it does not assert the full refinement
+Reducible introduction closure. -/
+theorem Reducible.fundamental_refineIntro_at_refine
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (valueIH :
+        Reducible (baseType.subst sigma)
+          (Term.subst termSubst baseValue))
+    (proofIH :
+        Reducible (Ty.unit.subst sigma)
+          (Term.subst termSubst predicateProof)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.refineIntro predicate baseValue predicateProof)) :=
+  Term.refineIntro_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing valueIH)
+    (Reducible.isStronglyNormalizing proofIH)
+
+/-- Fundamental SN endpoint: `Term.codataUnfold` at `Ty.codata` (K12.26).
+
+Codata unfold is strongly normalizing whenever the initial state and
+state-to-output transition are reducible after substitution.  The full
+codata Reducible observation closure is supplied separately by the
+destructor endpoint. -/
+theorem Reducible.fundamental_codataUnfold_at_codata
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+        Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (stateIH :
+        Reducible (stateType.subst sigma)
+          (Term.subst termSubst initialState))
+    (transitionIH :
+        Reducible ((Ty.arrow stateType outputType).subst sigma)
+          (Term.subst termSubst transition)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.codataUnfold initialState transition)) :=
+  Term.codataUnfold_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing stateIH)
+    (Reducible.isStronglyNormalizing transitionIH)
 
 /-- Fundamental case: `Term.codataDest` at `Ty.codata` (K12.26.A).
 
