@@ -1067,6 +1067,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.glueIntro_base_isStronglyNormalizing_aux
 #print axioms RawTerm.glueIntro_base_isStronglyNormalizing
 #print axioms Term.glueElim_isStronglyNormalizing
+#print axioms Term.equivApp_isStronglyNormalizing
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

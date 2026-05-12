@@ -4560,6 +4560,60 @@ theorem RawTerm.equivApp_var_isStronglyNormalizing {scope : Nat}
 
 /-- Equivalence application is strongly normalizing when both subterms are.
 
+Unlike raw application, `equivApp` has no β arm at the raw layer; every
+parallel reduct is a congruent reduct of the equivalence term and
+argument. -/
+theorem RawTerm.equivApp_isStronglyNormalizing {scope : Nat}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivIsSN : RawTerm.isStronglyNormalizing equivRaw)
+    (argumentIsSN : RawTerm.isStronglyNormalizing argumentRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.equivApp equivRaw argumentRaw) := by
+  induction equivIsSN generalizing argumentRaw with
+  | intro currentEquiv _ equivIH =>
+    induction argumentIsSN with
+    | intro currentArgument argumentClosure argumentIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.equivApp currentEquiv currentArgument) ?_
+      intro target progressStep
+      obtain ⟨equivTarget, argumentTarget, targetEq,
+          equivStep, argumentStep⟩ :=
+        RawStep.par.equivApp_inv progressStep.1
+      subst targetEq
+      have argumentTargetIsSN :
+          RawTerm.isStronglyNormalizing argumentTarget := by
+        by_cases argumentEq : currentArgument = argumentTarget
+        · subst argumentEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentArgument argumentClosure
+        · exact argumentClosure argumentTarget
+            ⟨argumentStep, argumentEq⟩
+      by_cases equivEq : currentEquiv = equivTarget
+      · subst equivEq
+        by_cases argumentEq : currentArgument = argumentTarget
+        · subst argumentEq
+          exact (progressStep.2 rfl).elim
+        · exact argumentIH argumentTarget
+            ⟨argumentStep, argumentEq⟩
+      · exact equivIH equivTarget
+          ⟨equivStep, equivEq⟩ argumentTargetIsSN
+
+/-- Typed wrapper for congruence-only equivalence application SN. -/
+theorem Term.equivApp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term context carrierA argumentRaw}
+    (equivIsSN : Term.isStronglyNormalizing equivTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm) :
+    Term.isStronglyNormalizing
+      (Term.equivApp equivTerm argumentTerm) :=
+  RawTerm.equivApp_isStronglyNormalizing equivIsSN argumentIsSN
+
+/-- Equivalence application is strongly normalizing when both subterms are.
+
 `RawTerm.equivApply` is the univalence-target application form.  Its raw
 parallel reduction is mostly binary congruence, with ua-refl beta arms that
 return a reduct of the source argument.  Thus the proof is the same binary
