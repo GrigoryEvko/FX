@@ -1018,6 +1018,12 @@ M04 / `strong_normalization`. -/
 #print axioms Term.identity_listCode_isStronglyNormalizing_of_rawPayloads
 #print axioms Term.identity_optionCode_isStronglyNormalizing_of_rawPayloads
 #print axioms Term.identity_idCode_isStronglyNormalizing_of_rawPayloads
+#print axioms Term.funextRefl_isStronglyNormalizing_of_apply
+#print axioms Term.funextRefl_isStronglyNormalizing_of_rawPayloads
+#print axioms Term.funextReflAtId_isStronglyNormalizing_of_apply
+#print axioms Term.funextReflAtId_isStronglyNormalizing_of_rawPayloads
+#print axioms Term.funextIntroHet_isStronglyNormalizing_of_applyLeft
+#print axioms Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

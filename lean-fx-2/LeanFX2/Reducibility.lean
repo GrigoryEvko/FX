@@ -15932,6 +15932,99 @@ theorem Term.identity_idCode_isStronglyNormalizing_of_rawPayloads
   Term.identity_idCode_isStronglyNormalizing_of_typeCode_payloads
     outerLevel levelLe payloads.1 payloads.2.1 payloads.2.2
 
+/-- Direct M04 SN case for the canonical pointwise reflexivity witness
+used by funext. -/
+theorem Term.funextRefl_isStronglyNormalizing_of_apply
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (applyIsSN : RawTerm.isStronglyNormalizing applyRaw) :
+    Term.isStronglyNormalizing
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  RawTerm.lam_isStronglyNormalizing
+    (RawTerm.refl_isStronglyNormalizing applyIsSN)
+
+/-- Raw-payload evidence form of the direct M04 SN case for the
+canonical pointwise reflexivity witness used by funext. -/
+theorem Term.funextRefl_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.funextRefl_isStronglyNormalizing_of_apply
+    domainType codomainType payloads
+
+/-- Direct M04 SN case for the Id-typed funext reflexivity witness. -/
+theorem Term.funextReflAtId_isStronglyNormalizing_of_apply
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (applyIsSN : RawTerm.isStronglyNormalizing applyRaw) :
+    Term.isStronglyNormalizing
+      (Term.funextReflAtId (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  RawTerm.lam_isStronglyNormalizing
+    (RawTerm.refl_isStronglyNormalizing applyIsSN)
+
+/-- Raw-payload evidence form of the direct M04 SN case for the Id-typed
+funext reflexivity witness. -/
+theorem Term.funextReflAtId_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextReflAtId (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.funextReflAtId_isStronglyNormalizing_of_apply
+    domainType codomainType payloads
+
+/-- Direct M04 SN case for heterogeneous funext introduction.  The current
+raw projection contains `applyARaw`; `applyBRaw` occurs only in the static
+type endpoints. -/
+theorem Term.funextIntroHet_isStronglyNormalizing_of_applyLeft
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (applyLeftIsSN : RawTerm.isStronglyNormalizing applyARaw) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) :=
+  RawTerm.lam_isStronglyNormalizing
+    (RawTerm.refl_isStronglyNormalizing applyLeftIsSN)
+
+/-- Raw-payload evidence form of the direct M04 SN case for heterogeneous
+funext introduction. -/
+theorem Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) :=
+  Term.funextIntroHet_isStronglyNormalizing_of_applyLeft
+    domainType codomainType payloads
+
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
 First fundamental atomic over HOTT-adjacent eliminators.  Same
