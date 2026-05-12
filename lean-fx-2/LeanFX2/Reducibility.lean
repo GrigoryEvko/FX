@@ -10089,6 +10089,62 @@ theorem Reducible.strong_normalization_of_identity_reducible
   rw [← RawTerm.subst_identity sourceRaw]
   exact identitySubstIsSN
 
+/-- **K12.27 identity-lift raw bridge**.
+
+For the identity-only M04 route, the lambda body IH is naturally
+available under `TermSubst.identity (sourceCtx.cons domainType)`, while
+`Term.subst` on a lambda uses `(TermSubst.identity sourceCtx).lift`.
+At the raw level those substitutions agree: lifting identity under one
+binder is pointwise identity. -/
+theorem RawTerm.subst_identity_lift
+    {level scope : Nat}
+    (sourceRaw : RawTerm (scope + 1)) :
+    sourceRaw.subst ((@Subst.identity level scope).forRaw.lift) =
+      sourceRaw := by
+  rw [RawTerm.subst_pointwise
+    (@Subst.identity_lift_forRaw_pointwise level scope) sourceRaw]
+  exact RawTerm.subst_identity sourceRaw
+
+/-- **K12.27 identity-lift body SN bridge**.
+
+This is the lambda-specific identity-substitution bridge for the
+M04-only route.  If the body is reducible under identity in the
+extended context, then the body produced by substituting the enclosing
+lambda with identity and entering its binder is strongly normalizing.
+
+The result deliberately concludes only SN.  It does not provide generic
+world-monotone `Reducible.weaken`; that stronger theorem remains the
+full `ReducibleSubst.lift` blocker for non-identity substitutions. -/
+theorem Reducible.identity_lift_body_sn_of_identity_reducible
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (bodyIdentityReducible :
+      Reducible (codomainType.weaken.subst Subst.identity)
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Ty.weaken_subst_commute Subst.identity codomainType ▸
+        Term.subst ((TermSubst.identity sourceCtx).lift domainType)
+          bodyTerm) := by
+  have bodyIdentityIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm) :=
+    Reducible.isStronglyNormalizing bodyIdentityReducible
+  change RawTerm.isStronglyNormalizing
+    (bodyRaw.subst ((@Subst.identity level scope).forRaw.lift))
+  rw [RawTerm.subst_identity_lift (level := level) (scope := scope) bodyRaw]
+  change RawTerm.isStronglyNormalizing bodyRaw
+  change RawTerm.isStronglyNormalizing
+    (bodyRaw.subst ((@Subst.identity level (scope + 1)).forRaw))
+    at bodyIdentityIsSN
+  rw [RawTerm.subst_identity bodyRaw] at bodyIdentityIsSN
+  exact bodyIdentityIsSN
+
 /-- **K12.20.U3 cons-singleton ReducibleSubst**: extending an existing
 reducible substitution with a reducible β argument yields a reducible
 substitution for the extended source context into the original target
