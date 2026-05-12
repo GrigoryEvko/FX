@@ -11851,6 +11851,190 @@ theorem Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn
     fun modeIsStrict' {_motiveType} {_baseRaw} _baseCase baseIsSN =>
       RawTerm.idStrictRec_isStronglyNormalizing baseIsSN witnessIsSN⟩
 
+/-! ## Remaining SN-output endpoint aliases
+
+These aliases complete the non-`_sn` naming pass for theorem statements
+whose conclusion is intentionally the M04 endpoint: strong normalization.
+The old names remain available for compatibility. -/
+
+/-- Fundamental case: `Term.snd` at `Ty.sigmaTy`
+(SN-output endpoint). -/
+theorem Reducible.fundamental_snd_at_sigmaTy
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm :
+        Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIH :
+        Reducible ((Ty.sigmaTy firstType secondType).subst sigma)
+                  (Term.subst termSubst pairTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.snd pairTerm)) :=
+  Reducible.fundamental_snd_at_sigmaTy_sn pairIH
+
+/-- Fundamental case: `Term.appPi` at `Ty.piTy`
+(SN-output endpoint). -/
+theorem Reducible.fundamental_appPi_at_piTy
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIH :
+        Reducible ((Ty.piTy domainType codomainType).subst sigma)
+                  (Term.subst termSubst functionTerm))
+    (argumentIH :
+        Reducible (domainType.subst sigma)
+                  (Term.subst termSubst argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
+  Reducible.fundamental_appPi_at_piTy_sn functionIH argumentIH
+
+/-- Fundamental case: `Term.idJ` at `Ty.id`
+(SN-output endpoint). -/
+theorem Reducible.fundamental_idJ_at_id
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIH :
+        Reducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIH :
+        Reducible ((Ty.id carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.idJ baseCase witness)) :=
+  Reducible.fundamental_idJ_at_id_sn baseIH witnessIH
+
+/-- Fundamental case: `Term.oeqJ` at `Ty.oeq`
+(SN-output endpoint). -/
+theorem Reducible.fundamental_oeqJ_at_oeq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIH :
+        Reducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIH :
+        Reducible ((Ty.oeq carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.oeqJ baseCase witness)) :=
+  Reducible.fundamental_oeqJ_at_oeq_sn baseIH witnessIH
+
+/-- Fundamental case: `Term.idStrictRec` at `Ty.idStrict`
+(SN-output endpoint). -/
+theorem Reducible.fundamental_idStrictRec_at_idStrict
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx
+          (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIH :
+        Reducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIH :
+        Reducible
+          ((Ty.idStrict carrier leftEndpoint rightEndpoint).subst sigma)
+          (Term.subst termSubst witness)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.idStrictRec modeIsStrict baseCase witness)) :=
+  Reducible.fundamental_idStrictRec_at_idStrict_sn
+    modeIsStrict baseIH witnessIH
+
+/-- Fundamental case: `Term.refl` at `Ty.id` with an explicit
+endpoint SN premise. -/
+theorem Reducible.fundamental_refl_at_id_of_endpoint
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN :
+      RawTerm.isStronglyNormalizing (rawWitness.subst sigma.forRaw)) :
+    Reducible
+      ((Ty.id carrier rawWitness rawWitness).subst sigma)
+      (Term.subst termSubst (Term.refl carrier rawWitness)) :=
+  Reducible.fundamental_refl_at_id_of_endpoint_sn endpointIsSN
+
+/-- Fundamental case: `Term.oeqRefl` at `Ty.oeq` with an explicit
+endpoint SN premise. -/
+theorem Reducible.fundamental_oeqRefl_at_oeq_of_endpoint
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN :
+      RawTerm.isStronglyNormalizing (rawWitness.subst sigma.forRaw)) :
+    Reducible
+      ((Ty.oeq carrier rawWitness rawWitness).subst sigma)
+      (Term.subst termSubst (Term.oeqRefl carrier rawWitness)) :=
+  Reducible.fundamental_oeqRefl_at_oeq_of_endpoint_sn endpointIsSN
+
+/-- Fundamental case: `Term.idStrictRefl` at `Ty.idStrict` with an
+explicit endpoint SN premise. -/
+theorem Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (endpointIsSN :
+      RawTerm.isStronglyNormalizing (rawWitness.subst sigma.forRaw)) :
+    Reducible
+      ((Ty.idStrict carrier rawWitness rawWitness).subst sigma)
+      (Term.subst termSubst
+        (Term.idStrictRefl modeIsStrict carrier rawWitness)) :=
+  Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn
+    modeIsStrict endpointIsSN
+
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
 First fundamental atomic over HOTT-adjacent eliminators.  Same
