@@ -665,6 +665,8 @@ M04 / `strong_normalization`. -/
 #print axioms Term.pathApp_pathLam_isStronglyNormalizing
 #print axioms RawTerm.transp_pathLam_weaken_isStronglyNormalizing
 #print axioms Term.transp_pathLam_weaken_isStronglyNormalizing
+#print axioms RawTerm.transp_isStronglyNormalizing
+#print axioms Term.transp_isStronglyNormalizing
 #print axioms RawTerm.hcomp_isStronglyNormalizing
 #print axioms Term.hcomp_isStronglyNormalizing
 #print axioms RawTerm.app_function_isStronglyNormalizing_aux

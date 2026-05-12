@@ -2734,6 +2734,142 @@ theorem Term.transp_pathLam_weaken_isStronglyNormalizing
   RawTerm.transp_pathLam_weaken_isStronglyNormalizing typeCodeIsSN
     sourceIsSN
 
+/-- General raw transport SN bridge with explicit non-congruence obligations.
+
+`transp` is not a congruence-only constructor: `transp_inv` has direct
+and deep beta arms for constant paths, univalence paths, and composed
+paths.  The constant-path arms reduce to a reduct of the source term,
+which follows from `sourceIsSN`.  The univalence and compose contracta
+are not derivable from child SN alone here, so callers must provide the
+two explicit contractum-SN closures. -/
+theorem RawTerm.transp_isStronglyNormalizing {scope : Nat}
+    {pathRaw : RawTerm scope}
+    (pathIsSN : RawTerm.isStronglyNormalizing pathRaw) :
+    ∀ {sourceRaw : RawTerm scope},
+      RawTerm.isStronglyNormalizing sourceRaw →
+      (∀ {currentPath currentSource proofTarget sourceTarget :
+            RawTerm scope},
+        RawStep.par currentPath (RawTerm.uaToEquiv proofTarget) →
+        RawStep.par currentSource sourceTarget →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.equivApply (RawTerm.uaToEquiv proofTarget)
+            sourceTarget)) →
+      (∀ {currentPath currentSource leftTarget rightTarget sourceTarget :
+            RawTerm scope},
+        RawStep.par currentPath
+          (RawTerm.pathCompose leftTarget rightTarget) →
+        RawStep.par currentSource sourceTarget →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.transp rightTarget
+            (RawTerm.transp leftTarget sourceTarget))) →
+      RawTerm.isStronglyNormalizing (RawTerm.transp pathRaw sourceRaw) := by
+  induction pathIsSN with
+  | intro currentPath pathClosure pathIH =>
+    intro sourceRaw sourceIsSN uaContractumIsSN composeContractumIsSN
+    induction sourceIsSN with
+    | intro currentSource sourceClosure sourceIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.transp currentPath currentSource) ?_
+      intro target progressStep
+      let sourceTargetIsSN
+          {sourceTarget : RawTerm scope}
+          (sourceStep : RawStep.par currentSource sourceTarget) :
+          RawTerm.isStronglyNormalizing sourceTarget := by
+        by_cases sourceEq : currentSource = sourceTarget
+        · subst sourceEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSource sourceClosure
+        · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+      rcases RawStep.par.transp_inv progressStep.1 with
+        ⟨pathTarget, sourceTarget, targetEq, pathStep, sourceStep⟩
+        | ⟨_typeRawSource, sourceTarget, _pathEq,
+            targetEq, sourceStep⟩
+        | ⟨_typeRawTarget, sourceTarget, targetEq,
+            _pathStep, sourceStep⟩
+        | ⟨_proofRawSource, proofRawTarget, sourceTarget,
+            pathEq, targetEq, proofStep, sourceStep⟩
+        | ⟨proofRawTarget, sourceTarget, targetEq,
+            pathStep, sourceStep⟩
+        | ⟨leftRawSource, leftRawTarget, rightRawSource,
+            rightRawTarget, sourceTarget, pathEq, targetEq,
+            leftStep, rightStep, sourceStep⟩
+        | ⟨leftRawTarget, rightRawTarget, sourceTarget,
+            targetEq, pathStep, sourceStep⟩
+      · subst targetEq
+        by_cases pathEq : currentPath = pathTarget
+        · subst pathEq
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact False.elim (progressStep.2 rfl)
+          · exact sourceIH sourceTarget ⟨sourceStep, sourceEq⟩
+        · exact pathIH pathTarget ⟨pathStep, pathEq⟩
+            (sourceTargetIsSN sourceStep)
+            uaContractumIsSN composeContractumIsSN
+      · rw [targetEq]
+        exact sourceTargetIsSN sourceStep
+      · rw [targetEq]
+        exact sourceTargetIsSN sourceStep
+      · subst targetEq
+        subst pathEq
+        exact uaContractumIsSN
+          (RawStep.par.uaToEquivCong proofStep) sourceStep
+      · rw [targetEq]
+        exact uaContractumIsSN pathStep sourceStep
+      · subst targetEq
+        subst pathEq
+        exact composeContractumIsSN
+          (RawStep.par.pathComposeCong leftStep rightStep) sourceStep
+      · rw [targetEq]
+        exact composeContractumIsSN pathStep sourceStep
+
+/-- Typed transport SN endpoint with the raw beta-contractum obligations
+kept visible.
+
+This is the honest surface endpoint for `Term.transp`: child SN proves
+the congruence and constant-path beta branches, while univalence and
+path-composition beta branches are explicit premises until their typed
+contractum closures are integrated into the relevant reducibility cases. -/
+theorem Term.transp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    {typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term context sourceType sourceRaw}
+    (pathIsSN : Term.isStronglyNormalizing typePath)
+    (sourceIsSN : Term.isStronglyNormalizing sourceValue)
+    (uaContractumIsSN :
+      ∀ {currentPath currentSource proofTarget sourceTarget :
+            RawTerm scope},
+        RawStep.par currentPath (RawTerm.uaToEquiv proofTarget) →
+        RawStep.par currentSource sourceTarget →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.equivApply (RawTerm.uaToEquiv proofTarget)
+            sourceTarget))
+    (composeContractumIsSN :
+      ∀ {currentPath currentSource leftTarget rightTarget sourceTarget :
+            RawTerm scope},
+        RawStep.par currentPath
+          (RawTerm.pathCompose leftTarget rightTarget) →
+        RawStep.par currentSource sourceTarget →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.transp rightTarget
+            (RawTerm.transp leftTarget sourceTarget))) :
+    Term.isStronglyNormalizing
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) :=
+  RawTerm.transp_isStronglyNormalizing pathIsSN sourceIsSN
+    uaContractumIsSN composeContractumIsSN
+
 /-- **K12.24 hcomp SN preservation**.
 
 The current raw `hcomp` operator has congruence only: all progress
