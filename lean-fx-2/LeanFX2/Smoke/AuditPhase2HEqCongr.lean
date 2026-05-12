@@ -48,3 +48,14 @@ Each must be zero-axiom to maintain kernel discipline. -/
 #print axioms LeanFX2.Term.intervalOpp_HEq_congr
 #print axioms LeanFX2.Term.intervalMeet_HEq_congr
 #print axioms LeanFX2.Term.intervalJoin_HEq_congr
+#print axioms LeanFX2.Term.pathLam_HEq_congr
+#print axioms LeanFX2.Term.pathApp_HEq_congr
+#print axioms LeanFX2.Term.glueIntro_HEq_congr
+#print axioms LeanFX2.Term.glueElim_HEq_congr
+#print axioms LeanFX2.Term.hcomp_HEq_congr
+#print axioms LeanFX2.Term.recordIntro_HEq_congr
+#print axioms LeanFX2.Term.recordProj_HEq_congr
+#print axioms LeanFX2.Term.refineElim_HEq_congr
+#print axioms LeanFX2.Term.codataDest_HEq_congr
+#print axioms LeanFX2.Term.sessionRecv_HEq_congr
+#print axioms LeanFX2.Term.equivApp_HEq_congr

@@ -834,4 +834,246 @@ theorem Term.intervalJoin_HEq_congr
   cases rightValueHEq
   rfl
 
+/-- HEq congruence for path introduction with shared univalence evidence. -/
+theorem Term.pathLam_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType1 carrierType2 : Ty level scope}
+    {leftEndpoint1 leftEndpoint2 rightEndpoint1 rightEndpoint2 : RawTerm scope}
+    {bodyRaw1 bodyRaw2 : RawTerm (scope + 1)}
+    (carrierTypeEq : carrierType1 = carrierType2)
+    (leftEndpointEq : leftEndpoint1 = leftEndpoint2)
+    (rightEndpointEq : rightEndpoint1 = rightEndpoint2)
+    (bodyRawEq : bodyRaw1 = bodyRaw2)
+    {body1 : Term (context.cons Ty.interval) carrierType1.weaken bodyRaw1}
+    {body2 : Term (context.cons Ty.interval) carrierType2.weaken bodyRaw2}
+    (bodyHEq : HEq body1 body2) :
+    HEq
+      (Term.pathLam modeIsUnivalent carrierType1 leftEndpoint1
+        rightEndpoint1 body1)
+      (Term.pathLam modeIsUnivalent carrierType2 leftEndpoint2
+        rightEndpoint2 body2) := by
+  subst carrierTypeEq
+  subst leftEndpointEq
+  subst rightEndpointEq
+  subst bodyRawEq
+  cases bodyHEq
+  rfl
+
+/-- HEq congruence for path application with shared univalence evidence. -/
+theorem Term.pathApp_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType1 carrierType2 : Ty level scope}
+    {leftEndpoint1 leftEndpoint2 rightEndpoint1 rightEndpoint2 : RawTerm scope}
+    {pathRaw1 pathRaw2 intervalRaw1 intervalRaw2 : RawTerm scope}
+    (carrierTypeEq : carrierType1 = carrierType2)
+    (leftEndpointEq : leftEndpoint1 = leftEndpoint2)
+    (rightEndpointEq : rightEndpoint1 = rightEndpoint2)
+    (pathRawEq : pathRaw1 = pathRaw2)
+    (intervalRawEq : intervalRaw1 = intervalRaw2)
+    {pathTerm1 :
+      Term context (Ty.path carrierType1 leftEndpoint1 rightEndpoint1)
+        pathRaw1}
+    {pathTerm2 :
+      Term context (Ty.path carrierType2 leftEndpoint2 rightEndpoint2)
+        pathRaw2}
+    (pathTermHEq : HEq pathTerm1 pathTerm2)
+    {intervalTerm1 : Term context Ty.interval intervalRaw1}
+    {intervalTerm2 : Term context Ty.interval intervalRaw2}
+    (intervalTermHEq : HEq intervalTerm1 intervalTerm2) :
+    HEq (Term.pathApp modeIsUnivalent pathTerm1 intervalTerm1)
+      (Term.pathApp modeIsUnivalent pathTerm2 intervalTerm2) := by
+  subst carrierTypeEq
+  subst leftEndpointEq
+  subst rightEndpointEq
+  subst pathRawEq
+  subst intervalRawEq
+  cases pathTermHEq
+  cases intervalTermHEq
+  rfl
+
+/-- HEq congruence for Glue introduction with shared univalence evidence. -/
+theorem Term.glueIntro_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType1 baseType2 : Ty level scope}
+    {boundaryWitness1 boundaryWitness2 baseRaw1 baseRaw2 partialRaw1 partialRaw2 :
+      RawTerm scope}
+    (baseTypeEq : baseType1 = baseType2)
+    (boundaryWitnessEq : boundaryWitness1 = boundaryWitness2)
+    (baseRawEq : baseRaw1 = baseRaw2)
+    (partialRawEq : partialRaw1 = partialRaw2)
+    {baseValue1 : Term context baseType1 baseRaw1}
+    {baseValue2 : Term context baseType2 baseRaw2}
+    (baseValueHEq : HEq baseValue1 baseValue2)
+    {partialValue1 : Term context baseType1 partialRaw1}
+    {partialValue2 : Term context baseType2 partialRaw2}
+    (partialValueHEq : HEq partialValue1 partialValue2) :
+    HEq
+      (Term.glueIntro modeIsUnivalent baseType1 boundaryWitness1
+        baseValue1 partialValue1)
+      (Term.glueIntro modeIsUnivalent baseType2 boundaryWitness2
+        baseValue2 partialValue2) := by
+  subst baseTypeEq
+  subst boundaryWitnessEq
+  subst baseRawEq
+  subst partialRawEq
+  cases baseValueHEq
+  cases partialValueHEq
+  rfl
+
+/-- HEq congruence for Glue elimination with shared univalence evidence. -/
+theorem Term.glueElim_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType1 baseType2 : Ty level scope}
+    {boundaryWitness1 boundaryWitness2 gluedRaw1 gluedRaw2 : RawTerm scope}
+    (baseTypeEq : baseType1 = baseType2)
+    (boundaryWitnessEq : boundaryWitness1 = boundaryWitness2)
+    (gluedRawEq : gluedRaw1 = gluedRaw2)
+    {gluedValue1 : Term context (Ty.glue baseType1 boundaryWitness1) gluedRaw1}
+    {gluedValue2 : Term context (Ty.glue baseType2 boundaryWitness2) gluedRaw2}
+    (gluedValueHEq : HEq gluedValue1 gluedValue2) :
+    HEq (Term.glueElim modeIsUnivalent gluedValue1)
+      (Term.glueElim modeIsUnivalent gluedValue2) := by
+  subst baseTypeEq
+  subst boundaryWitnessEq
+  subst gluedRawEq
+  cases gluedValueHEq
+  rfl
+
+/-- HEq congruence for homogeneous composition. -/
+theorem Term.hcomp_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType1 carrierType2 : Ty level scope}
+    {sidesRaw1 sidesRaw2 capRaw1 capRaw2 : RawTerm scope}
+    (carrierTypeEq : carrierType1 = carrierType2)
+    (sidesRawEq : sidesRaw1 = sidesRaw2)
+    (capRawEq : capRaw1 = capRaw2)
+    {sidesValue1 : Term context carrierType1 sidesRaw1}
+    {sidesValue2 : Term context carrierType2 sidesRaw2}
+    (sidesValueHEq : HEq sidesValue1 sidesValue2)
+    {capValue1 : Term context carrierType1 capRaw1}
+    {capValue2 : Term context carrierType2 capRaw2}
+    (capValueHEq : HEq capValue1 capValue2) :
+    HEq (Term.hcomp modeIsUnivalent sidesValue1 capValue1)
+      (Term.hcomp modeIsUnivalent sidesValue2 capValue2) := by
+  subst carrierTypeEq
+  subst sidesRawEq
+  subst capRawEq
+  cases sidesValueHEq
+  cases capValueHEq
+  rfl
+
+/-- HEq congruence for single-field record introduction. -/
+theorem Term.recordIntro_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {singleFieldType1 singleFieldType2 : Ty level scope}
+    {firstRaw1 firstRaw2 : RawTerm scope}
+    (singleFieldTypeEq : singleFieldType1 = singleFieldType2)
+    (firstRawEq : firstRaw1 = firstRaw2)
+    {firstField1 : Term context singleFieldType1 firstRaw1}
+    {firstField2 : Term context singleFieldType2 firstRaw2}
+    (firstFieldHEq : HEq firstField1 firstField2) :
+    HEq (Term.recordIntro firstField1) (Term.recordIntro firstField2) := by
+  subst singleFieldTypeEq
+  subst firstRawEq
+  cases firstFieldHEq
+  rfl
+
+/-- HEq congruence for single-field record projection. -/
+theorem Term.recordProj_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {singleFieldType1 singleFieldType2 : Ty level scope}
+    {recordRaw1 recordRaw2 : RawTerm scope}
+    (singleFieldTypeEq : singleFieldType1 = singleFieldType2)
+    (recordRawEq : recordRaw1 = recordRaw2)
+    {recordValue1 : Term context (Ty.record singleFieldType1) recordRaw1}
+    {recordValue2 : Term context (Ty.record singleFieldType2) recordRaw2}
+    (recordValueHEq : HEq recordValue1 recordValue2) :
+    HEq (Term.recordProj recordValue1) (Term.recordProj recordValue2) := by
+  subst singleFieldTypeEq
+  subst recordRawEq
+  cases recordValueHEq
+  rfl
+
+/-- HEq congruence for refinement elimination. -/
+theorem Term.refineElim_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {baseType1 baseType2 : Ty level scope}
+    {predicate1 predicate2 : RawTerm (scope + 1)}
+    {refinedRaw1 refinedRaw2 : RawTerm scope}
+    (baseTypeEq : baseType1 = baseType2)
+    (predicateEq : predicate1 = predicate2)
+    (refinedRawEq : refinedRaw1 = refinedRaw2)
+    {refinedValue1 : Term context (Ty.refine baseType1 predicate1) refinedRaw1}
+    {refinedValue2 : Term context (Ty.refine baseType2 predicate2) refinedRaw2}
+    (refinedValueHEq : HEq refinedValue1 refinedValue2) :
+    HEq (Term.refineElim refinedValue1) (Term.refineElim refinedValue2) := by
+  subst baseTypeEq
+  subst predicateEq
+  subst refinedRawEq
+  cases refinedValueHEq
+  rfl
+
+/-- HEq congruence for codata destruction. -/
+theorem Term.codataDest_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {stateType1 stateType2 outputType1 outputType2 : Ty level scope}
+    {codataRaw1 codataRaw2 : RawTerm scope}
+    (stateTypeEq : stateType1 = stateType2)
+    (outputTypeEq : outputType1 = outputType2)
+    (codataRawEq : codataRaw1 = codataRaw2)
+    {codataValue1 : Term context (Ty.codata stateType1 outputType1) codataRaw1}
+    {codataValue2 : Term context (Ty.codata stateType2 outputType2) codataRaw2}
+    (codataValueHEq : HEq codataValue1 codataValue2) :
+    HEq (Term.codataDest codataValue1) (Term.codataDest codataValue2) := by
+  subst stateTypeEq
+  subst outputTypeEq
+  subst codataRawEq
+  cases codataValueHEq
+  rfl
+
+/-- HEq congruence for session receive. -/
+theorem Term.sessionRecv_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {protocolStep1 protocolStep2 channelRaw1 channelRaw2 : RawTerm scope}
+    (protocolStepEq : protocolStep1 = protocolStep2)
+    (channelRawEq : channelRaw1 = channelRaw2)
+    {channel1 : Term context (Ty.session protocolStep1) channelRaw1}
+    {channel2 : Term context (Ty.session protocolStep2) channelRaw2}
+    (channelHEq : HEq channel1 channel2) :
+    HEq (Term.sessionRecv channel1) (Term.sessionRecv channel2) := by
+  subst protocolStepEq
+  subst channelRawEq
+  cases channelHEq
+  rfl
+
+/-- HEq congruence for equivalence application. -/
+theorem Term.equivApp_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {carrierA1 carrierA2 carrierB1 carrierB2 : Ty level scope}
+    {equivRaw1 equivRaw2 argumentRaw1 argumentRaw2 : RawTerm scope}
+    (carrierAEq : carrierA1 = carrierA2)
+    (carrierBEq : carrierB1 = carrierB2)
+    (equivRawEq : equivRaw1 = equivRaw2)
+    (argumentRawEq : argumentRaw1 = argumentRaw2)
+    {equivTerm1 : Term context (Ty.equiv carrierA1 carrierB1) equivRaw1}
+    {equivTerm2 : Term context (Ty.equiv carrierA2 carrierB2) equivRaw2}
+    (equivHEq : HEq equivTerm1 equivTerm2)
+    {argumentTerm1 : Term context carrierA1 argumentRaw1}
+    {argumentTerm2 : Term context carrierA2 argumentRaw2}
+    (argumentHEq : HEq argumentTerm1 argumentTerm2) :
+    HEq (Term.equivApp equivTerm1 argumentTerm1)
+      (Term.equivApp equivTerm2 argumentTerm2) := by
+  subst carrierAEq
+  subst carrierBEq
+  subst equivRawEq
+  subst argumentRawEq
+  cases equivHEq
+  cases argumentHEq
+  rfl
+
 end LeanFX2
