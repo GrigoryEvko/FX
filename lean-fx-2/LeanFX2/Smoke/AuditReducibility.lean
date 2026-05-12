@@ -971,6 +971,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_eitherCode_of_payloads
 #print axioms RawTerm.equivCode_isStronglyNormalizing
 #print axioms Reducible.fundamental_equivCode_of_payloads
+#print axioms RawTerm.listCode_isStronglyNormalizing
+#print axioms Reducible.fundamental_listCode_of_payload
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat

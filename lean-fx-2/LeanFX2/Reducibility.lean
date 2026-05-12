@@ -7582,6 +7582,29 @@ theorem RawTerm.equivCode_isStronglyNormalizing {scope : Nat}
         · exact leftIH leftTarget leftProgress
             (rightClosure rightTarget ⟨rightStep, rightEq⟩)
 
+/-- Type-code list constructor SN preservation.
+
+`listCode` is congruence-only over its schematic element-code
+payload, so SN follows by one induction over that payload. -/
+theorem RawTerm.listCode_isStronglyNormalizing {scope : Nat}
+    {elementCode : RawTerm scope}
+    (elementIsSN : RawTerm.isStronglyNormalizing elementCode) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.listCode elementCode) := by
+  induction elementIsSN with
+  | intro currentElement _ elementIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.listCode currentElement) ?_
+    intro target progressStep
+    obtain ⟨elementTarget, targetEq, elementStep⟩ :=
+      RawStep.par.listCode_inv progressStep.1
+    subst targetEq
+    have elementDistinct :
+        currentElement ≠ elementTarget := fun elementEq =>
+      progressStep.2 (congrArg RawTerm.listCode elementEq)
+    exact elementIH elementTarget
+      ⟨elementStep, elementDistinct⟩
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12712,6 +12735,26 @@ theorem Reducible.fundamental_equivCode_of_payloads
                   leftTypeCodeRaw rightTypeCodeRaw)) :=
   RawTerm.equivCode_isStronglyNormalizing
     leftTypeCodeIsSN rightTypeCodeIsSN
+
+/-- Type-code list fundamental endpoint with an explicit element-code
+SN premise. -/
+theorem Reducible.fundamental_listCode_of_payload
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (elementCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (elementCodeRaw.subst sigma.forRaw)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.listCode (context := sourceCtx)
+                  outerLevel levelLe elementCodeRaw)) :=
+  RawTerm.listCode_isStronglyNormalizing elementCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
 helper at the raw layer.  Sister to `subsume_isStronglyNormalizing`
