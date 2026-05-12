@@ -7818,6 +7818,209 @@ theorem RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
   rw [RawTerm.subst_identity codeRaw]
   exact RawTerm.isStronglyNormalizing_of_typeCode codeIsTypeCode
 
+/-- **K12.27 schematic raw-payload evidence for M04**.
+
+Most `Term` constructors expose every raw component through recursive
+typed children, so the eventual fundamental induction can obtain raw SN
+from those children.  A small frontier of value-shaped constructors keeps
+schematic `RawTerm` fields directly in the raw projection.  This predicate
+names exactly those residual M04 obligations.
+
+Fields that occur only in the static type are intentionally omitted: M04 is
+strong normalization of the projected raw term, not reduction inside type
+annotations. -/
+def Term.HasStronglyNormalizingRawPayloads
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} {sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term context sourceType sourceRaw) : Prop :=
+  match sourceTerm with
+  | Term.var _ => True
+  | Term.unit => True
+  | Term.lam body =>
+      Term.HasStronglyNormalizingRawPayloads body
+  | Term.app functionTerm argumentTerm =>
+      Term.HasStronglyNormalizingRawPayloads functionTerm ∧
+      Term.HasStronglyNormalizingRawPayloads argumentTerm
+  | Term.lamPi body =>
+      Term.HasStronglyNormalizingRawPayloads body
+  | Term.appPi functionTerm argumentTerm =>
+      Term.HasStronglyNormalizingRawPayloads functionTerm ∧
+      Term.HasStronglyNormalizingRawPayloads argumentTerm
+  | Term.pair firstValue secondValue =>
+      Term.HasStronglyNormalizingRawPayloads firstValue ∧
+      Term.HasStronglyNormalizingRawPayloads secondValue
+  | Term.fst pairTerm =>
+      Term.HasStronglyNormalizingRawPayloads pairTerm
+  | Term.snd pairTerm =>
+      Term.HasStronglyNormalizingRawPayloads pairTerm
+  | Term.boolTrue => True
+  | Term.boolFalse => True
+  | Term.boolElim scrutinee thenBranch elseBranch =>
+      Term.HasStronglyNormalizingRawPayloads scrutinee ∧
+      Term.HasStronglyNormalizingRawPayloads thenBranch ∧
+      Term.HasStronglyNormalizingRawPayloads elseBranch
+  | Term.natZero => True
+  | Term.natSucc predecessor =>
+      Term.HasStronglyNormalizingRawPayloads predecessor
+  | Term.natElim scrutinee zeroBranch succBranch =>
+      Term.HasStronglyNormalizingRawPayloads scrutinee ∧
+      Term.HasStronglyNormalizingRawPayloads zeroBranch ∧
+      Term.HasStronglyNormalizingRawPayloads succBranch
+  | Term.natRec scrutinee zeroBranch succBranch =>
+      Term.HasStronglyNormalizingRawPayloads scrutinee ∧
+      Term.HasStronglyNormalizingRawPayloads zeroBranch ∧
+      Term.HasStronglyNormalizingRawPayloads succBranch
+  | Term.listNil => True
+  | Term.listCons headTerm tailTerm =>
+      Term.HasStronglyNormalizingRawPayloads headTerm ∧
+      Term.HasStronglyNormalizingRawPayloads tailTerm
+  | Term.listElim scrutinee nilBranch consBranch =>
+      Term.HasStronglyNormalizingRawPayloads scrutinee ∧
+      Term.HasStronglyNormalizingRawPayloads nilBranch ∧
+      Term.HasStronglyNormalizingRawPayloads consBranch
+  | Term.optionNone => True
+  | Term.optionSome valueTerm =>
+      Term.HasStronglyNormalizingRawPayloads valueTerm
+  | Term.optionMatch scrutinee noneBranch someBranch =>
+      Term.HasStronglyNormalizingRawPayloads scrutinee ∧
+      Term.HasStronglyNormalizingRawPayloads noneBranch ∧
+      Term.HasStronglyNormalizingRawPayloads someBranch
+  | Term.eitherInl valueTerm =>
+      Term.HasStronglyNormalizingRawPayloads valueTerm
+  | Term.eitherInr valueTerm =>
+      Term.HasStronglyNormalizingRawPayloads valueTerm
+  | Term.eitherMatch scrutinee leftBranch rightBranch =>
+      Term.HasStronglyNormalizingRawPayloads scrutinee ∧
+      Term.HasStronglyNormalizingRawPayloads leftBranch ∧
+      Term.HasStronglyNormalizingRawPayloads rightBranch
+  | Term.refl _ rawWitness =>
+      RawTerm.isStronglyNormalizing rawWitness
+  | Term.idJ baseCase witness =>
+      Term.HasStronglyNormalizingRawPayloads baseCase ∧
+      Term.HasStronglyNormalizingRawPayloads witness
+  | Term.oeqRefl _ rawWitness =>
+      RawTerm.isStronglyNormalizing rawWitness
+  | Term.oeqJ baseCase witness =>
+      Term.HasStronglyNormalizingRawPayloads baseCase ∧
+      Term.HasStronglyNormalizingRawPayloads witness
+  | Term.oeqFunext _ _ _ _ pointwiseProof =>
+      Term.HasStronglyNormalizingRawPayloads pointwiseProof
+  | Term.idStrictRefl _ _ rawWitness =>
+      RawTerm.isStronglyNormalizing rawWitness
+  | Term.idStrictRec _ baseCase witness =>
+      Term.HasStronglyNormalizingRawPayloads baseCase ∧
+      Term.HasStronglyNormalizingRawPayloads witness
+  | Term.modIntro innerTerm =>
+      Term.HasStronglyNormalizingRawPayloads innerTerm
+  | Term.modElim innerTerm =>
+      Term.HasStronglyNormalizingRawPayloads innerTerm
+  | Term.subsume innerTerm =>
+      Term.HasStronglyNormalizingRawPayloads innerTerm
+  | Term.interval0 => True
+  | Term.interval1 => True
+  | Term.intervalOpp innerValue =>
+      Term.HasStronglyNormalizingRawPayloads innerValue
+  | Term.intervalMeet leftValue rightValue =>
+      Term.HasStronglyNormalizingRawPayloads leftValue ∧
+      Term.HasStronglyNormalizingRawPayloads rightValue
+  | Term.intervalJoin leftValue rightValue =>
+      Term.HasStronglyNormalizingRawPayloads leftValue ∧
+      Term.HasStronglyNormalizingRawPayloads rightValue
+  | Term.pathLam _ _ _ _ body =>
+      Term.HasStronglyNormalizingRawPayloads body
+  | Term.pathApp _ pathTerm intervalTerm =>
+      Term.HasStronglyNormalizingRawPayloads pathTerm ∧
+      Term.HasStronglyNormalizingRawPayloads intervalTerm
+  | Term.glueIntro _ _ _ baseValue partialValue =>
+      Term.HasStronglyNormalizingRawPayloads baseValue ∧
+      Term.HasStronglyNormalizingRawPayloads partialValue
+  | Term.glueElim _ gluedValue =>
+      Term.HasStronglyNormalizingRawPayloads gluedValue
+  | Term.transp _ _ _ _ _ _ _ typePath sourceValue =>
+      Term.HasStronglyNormalizingRawPayloads typePath ∧
+      Term.HasStronglyNormalizingRawPayloads sourceValue
+  | Term.hcomp _ sidesValue capValue =>
+      Term.HasStronglyNormalizingRawPayloads sidesValue ∧
+      Term.HasStronglyNormalizingRawPayloads capValue
+  | Term.recordIntro firstField =>
+      Term.HasStronglyNormalizingRawPayloads firstField
+  | Term.recordProj recordValue =>
+      Term.HasStronglyNormalizingRawPayloads recordValue
+  | Term.refineIntro _ baseValue predicateProof =>
+      Term.HasStronglyNormalizingRawPayloads baseValue ∧
+      Term.HasStronglyNormalizingRawPayloads predicateProof
+  | Term.refineElim refinedValue =>
+      Term.HasStronglyNormalizingRawPayloads refinedValue
+  | Term.codataUnfold initialState transition =>
+      Term.HasStronglyNormalizingRawPayloads initialState ∧
+      Term.HasStronglyNormalizingRawPayloads transition
+  | Term.codataDest codataValue =>
+      Term.HasStronglyNormalizingRawPayloads codataValue
+  | Term.sessionSend _ channel payload =>
+      Term.HasStronglyNormalizingRawPayloads channel ∧
+      Term.HasStronglyNormalizingRawPayloads payload
+  | Term.sessionRecv channel =>
+      Term.HasStronglyNormalizingRawPayloads channel
+  | Term.effectPerform _ _ _ _ operationTag arguments =>
+      Term.HasStronglyNormalizingRawPayloads operationTag ∧
+      Term.HasStronglyNormalizingRawPayloads arguments
+  | Term.universeCode _ _ _ _ => True
+  | Term.cumulUp _ _ _ _ _ typeCode =>
+      Term.HasStronglyNormalizingRawPayloads typeCode
+  | Term.equivReflId _ => True
+  | Term.funextRefl _ _ applyRaw =>
+      RawTerm.isStronglyNormalizing applyRaw
+  | Term.equivReflIdAtId _ _ _ _ => True
+  | Term.funextReflAtId _ _ applyRaw =>
+      RawTerm.isStronglyNormalizing applyRaw
+  | Term.equivIntroHet forward backward leftInv rightInv =>
+      Term.HasStronglyNormalizingRawPayloads forward ∧
+      Term.HasStronglyNormalizingRawPayloads backward ∧
+      Term.HasStronglyNormalizingRawPayloads leftInv ∧
+      Term.HasStronglyNormalizingRawPayloads rightInv
+  | Term.equivApp equivTerm argumentTerm =>
+      Term.HasStronglyNormalizingRawPayloads equivTerm ∧
+      Term.HasStronglyNormalizingRawPayloads argumentTerm
+  | Term.uaIntroHet _ _ _ _ equivWitness =>
+      Term.HasStronglyNormalizingRawPayloads equivWitness
+  | Term.funextIntroHet _ _ applyARaw _ =>
+      RawTerm.isStronglyNormalizing applyARaw
+  | Term.arrowCode _ _ domainCodeRaw codomainCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode domainCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode codomainCodeRaw
+  | Term.piTyCode _ _ domainCodeRaw codomainCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode domainCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode codomainCodeRaw
+  | Term.sigmaTyCode _ _ domainCodeRaw codomainCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode domainCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode codomainCodeRaw
+  | Term.productCode _ _ firstCodeRaw secondCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode firstCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode secondCodeRaw
+  | Term.sumCode _ _ leftCodeRaw rightCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode leftCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode rightCodeRaw
+  | Term.listCode _ _ elementCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode elementCodeRaw
+  | Term.optionCode _ _ elementCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode elementCodeRaw
+  | Term.eitherCode _ _ leftCodeRaw rightCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode leftCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode rightCodeRaw
+  | Term.idCode _ _ typeCodeRaw leftRaw rightRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode typeCodeRaw ∧
+      RawTerm.isStronglyNormalizing leftRaw ∧
+      RawTerm.isStronglyNormalizing rightRaw
+  | Term.equivCode _ _ leftTypeCodeRaw rightTypeCodeRaw =>
+      RawTerm.IsStronglyNormalizingTypeCode leftTypeCodeRaw ∧
+      RawTerm.IsStronglyNormalizingTypeCode rightTypeCodeRaw
+  | Term.uaToEquiv _ _ _ _ _ _ proof =>
+      Term.HasStronglyNormalizingRawPayloads proof
+  | Term.equivApply equivTerm argumentTerm =>
+      Term.HasStronglyNormalizingRawPayloads equivTerm ∧
+      Term.HasStronglyNormalizingRawPayloads argumentTerm
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -15500,6 +15703,234 @@ theorem Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
       (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
       modeIsStrict
       (RawTerm.subst_identity_isStronglyNormalizing endpointIsSN))
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+identity reflexivity. -/
+theorem Term.identity_refl_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.refl (context := sourceCtx) carrier rawWitness)) :
+    Term.isStronglyNormalizing
+      (Term.refl (context := sourceCtx) carrier rawWitness) :=
+  Term.identity_refl_isStronglyNormalizing_of_endpoint payloads
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+observational reflexivity. -/
+theorem Term.identity_oeqRefl_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.oeqRefl (context := sourceCtx) carrier rawWitness)) :
+    Term.isStronglyNormalizing
+      (Term.oeqRefl (context := sourceCtx) carrier rawWitness) :=
+  Term.identity_oeqRefl_isStronglyNormalizing_of_endpoint payloads
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+strict reflexivity. -/
+theorem Term.identity_idStrictRefl_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.idStrictRefl (context := sourceCtx)
+          modeIsStrict carrier rawWitness)) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRefl (context := sourceCtx)
+        modeIsStrict carrier rawWitness) :=
+  Term.identity_idStrictRefl_isStronglyNormalizing_of_endpoint
+    modeIsStrict payloads
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+arrow type code. -/
+theorem Term.identity_arrowCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw codomainCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.arrowCode (context := sourceCtx)
+          outerLevel levelLe domainCodeRaw codomainCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.arrowCode (context := sourceCtx)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  Term.identity_arrowCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+Pi type code. -/
+theorem Term.identity_piTyCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.piTyCode (context := sourceCtx)
+          outerLevel levelLe domainCodeRaw codomainCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.piTyCode (context := sourceCtx)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  Term.identity_piTyCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+Sigma type code. -/
+theorem Term.identity_sigmaTyCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.sigmaTyCode (context := sourceCtx)
+          outerLevel levelLe domainCodeRaw codomainCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.sigmaTyCode (context := sourceCtx)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  Term.identity_sigmaTyCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+product type code. -/
+theorem Term.identity_productCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw secondCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.productCode (context := sourceCtx)
+          outerLevel levelLe firstCodeRaw secondCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.productCode (context := sourceCtx)
+        outerLevel levelLe firstCodeRaw secondCodeRaw) :=
+  Term.identity_productCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for sum
+type code. -/
+theorem Term.identity_sumCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.sumCode (context := sourceCtx)
+          outerLevel levelLe leftCodeRaw rightCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.sumCode (context := sourceCtx)
+        outerLevel levelLe leftCodeRaw rightCodeRaw) :=
+  Term.identity_sumCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+either type code. -/
+theorem Term.identity_eitherCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.eitherCode (context := sourceCtx)
+          outerLevel levelLe leftCodeRaw rightCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.eitherCode (context := sourceCtx)
+        outerLevel levelLe leftCodeRaw rightCodeRaw) :=
+  Term.identity_eitherCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+equivalence type code. -/
+theorem Term.identity_equivCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.equivCode (context := sourceCtx)
+          outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.equivCode (context := sourceCtx)
+        outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw) :=
+  Term.identity_equivCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2
+
+/-- M04 raw-payload evidence form of the direct identity SN case for list
+type code. -/
+theorem Term.identity_listCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.listCode (context := sourceCtx)
+          outerLevel levelLe elementCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.listCode (context := sourceCtx)
+        outerLevel levelLe elementCodeRaw) :=
+  Term.identity_listCode_isStronglyNormalizing_of_typeCode_payload
+    outerLevel levelLe payloads
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+option type code. -/
+theorem Term.identity_optionCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.optionCode (context := sourceCtx)
+          outerLevel levelLe elementCodeRaw)) :
+    Term.isStronglyNormalizing
+      (Term.optionCode (context := sourceCtx)
+        outerLevel levelLe elementCodeRaw) :=
+  Term.identity_optionCode_isStronglyNormalizing_of_typeCode_payload
+    outerLevel levelLe payloads
+
+/-- M04 raw-payload evidence form of the direct identity SN case for
+identity type code. -/
+theorem Term.identity_idCode_isStronglyNormalizing_of_rawPayloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {typeCodeRaw leftRaw rightRaw : RawTerm scope}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.idCode (context := sourceCtx)
+          outerLevel levelLe typeCodeRaw leftRaw rightRaw)) :
+    Term.isStronglyNormalizing
+      (Term.idCode (context := sourceCtx)
+        outerLevel levelLe typeCodeRaw leftRaw rightRaw) :=
+  Term.identity_idCode_isStronglyNormalizing_of_typeCode_payloads
+    outerLevel levelLe payloads.1 payloads.2.1 payloads.2.2
 
 /-- Fundamental case: `Term.equivApp` at `Ty.equiv` (K12.23.A).
 
