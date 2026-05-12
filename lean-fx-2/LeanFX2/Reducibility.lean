@@ -2515,6 +2515,124 @@ theorem Term.pathApp_pathLam_isStronglyNormalizing
   RawTerm.pathApp_pathLam_isStronglyNormalizing bodyIsSN intervalIsSN
     contractumIsSN
 
+/-- **K12.24.U5 constant transport beta SN expansion**.
+
+Transport across a syntactically constant path is strongly normalizing
+whenever the transported value is.  Congruence on the constant path body
+recurses through `RawStep.par.weaken_inv`; beta branches return a reduct
+of the transported source.  The unrelated `uaToEquiv` and `pathCompose`
+transport rules are impossible from a `pathLam _` head. -/
+theorem RawTerm.transp_pathLam_weaken_isStronglyNormalizing {scope : Nat}
+    {typeRaw : RawTerm scope}
+    (typeIsSN : RawTerm.isStronglyNormalizing typeRaw) :
+    ∀ {sourceRaw : RawTerm scope},
+      RawTerm.isStronglyNormalizing sourceRaw →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.transp (RawTerm.pathLam typeRaw.weaken) sourceRaw) := by
+  induction typeIsSN with
+  | intro currentType typeClosure typeIH =>
+    intro sourceRaw sourceIsSN
+    induction sourceIsSN with
+    | intro currentSource sourceClosure sourceIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.transp (RawTerm.pathLam currentType.weaken)
+          currentSource) ?_
+      intro target progressStep
+      rcases RawStep.par.transp_inv progressStep.1 with
+        ⟨pathTarget, sourceTarget, targetEq, pathStep, sourceStep⟩
+        | ⟨typeRawSource, sourceTarget, pathEq, targetEq, sourceStep⟩
+        | ⟨typeRawTarget, sourceTarget, targetEq, pathStep, sourceStep⟩
+        | ⟨proofRawSource, proofRawTarget, sourceTarget,
+            pathEq, targetEq, _proofStep, _sourceStep⟩
+        | ⟨proofRawTarget, sourceTarget, targetEq, pathStep, _sourceStep⟩
+        | ⟨leftRawSource, leftRawTarget, rightRawSource, rightRawTarget,
+            sourceTarget, pathEq, targetEq, _leftStep, _rightStep,
+            _sourceStep⟩
+        | ⟨leftRawTarget, rightRawTarget, sourceTarget, targetEq,
+            pathStep, _sourceStep⟩
+      · obtain ⟨bodyTarget, pathTargetEq, bodyStep⟩ :=
+          RawStep.par.pathLam_inv pathStep
+        subst pathTargetEq
+        subst targetEq
+        obtain ⟨typeTarget, bodyTargetEq⟩ :=
+          RawStep.par.weaken_inv bodyStep
+        subst bodyTargetEq
+        have typeStep : RawStep.par currentType typeTarget := by
+          have singletonStep :
+              RawStep.par
+                (currentType.weaken.subst
+                  (RawTermSubst.singleton RawTerm.unit))
+                (typeTarget.weaken.subst
+                  (RawTermSubst.singleton RawTerm.unit)) :=
+            RawStep.par.subst_par
+              (fun _position => RawStep.par.refl _) bodyStep
+          rw [RawTerm.weaken_subst_singleton currentType RawTerm.unit,
+              RawTerm.weaken_subst_singleton typeTarget RawTerm.unit]
+            at singletonStep
+          exact singletonStep
+        by_cases typeEq : currentType = typeTarget
+        · subst typeEq
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact False.elim (progressStep.2 rfl)
+          · exact sourceIH sourceTarget ⟨sourceStep, sourceEq⟩
+        · have sourceTargetIsSN :
+              RawTerm.isStronglyNormalizing sourceTarget := by
+            by_cases sourceEq : currentSource = sourceTarget
+            · subst sourceEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSource sourceClosure
+            · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+          exact typeIH typeTarget ⟨typeStep, typeEq⟩ sourceTargetIsSN
+      · rw [targetEq]
+        by_cases sourceEq : currentSource = sourceTarget
+        · subst sourceEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSource sourceClosure
+        · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+      · rw [targetEq]
+        by_cases sourceEq : currentSource = sourceTarget
+        · subst sourceEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSource sourceClosure
+        · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+      · cases pathEq
+      · obtain ⟨bodyTarget, pathTargetEq, _bodyStep⟩ :=
+          RawStep.par.pathLam_inv pathStep
+        cases pathTargetEq
+      · cases pathEq
+      · obtain ⟨bodyTarget, pathTargetEq, _bodyStep⟩ :=
+          RawStep.par.pathLam_inv pathStep
+        cases pathTargetEq
+
+/-- Typed wrapper for constant cubical-transport beta SN expansion.
+
+This packages the raw fact for the typed redex
+`transp (pathLam typeCode.weaken) sourceValue`.  It is an SN bridge
+only: no full transport Reducible endpoint is claimed here. -/
+theorem Term.transp_pathLam_weaken_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    {sourceType : Ty level scope}
+    {typeRaw sourceRaw : RawTerm scope}
+    {typeCode :
+      Term context (Ty.universe universeLevel universeLevelLt) typeRaw}
+    {sourceValue : Term context sourceType sourceRaw}
+    (typeCodeIsSN : Term.isStronglyNormalizing typeCode)
+    (sourceIsSN : Term.isStronglyNormalizing sourceValue) :
+    Term.isStronglyNormalizing
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType sourceType typeRaw typeRaw
+        (Term.pathLam modeIsUnivalent
+          (Ty.universe universeLevel universeLevelLt) typeRaw typeRaw
+          (Term.weaken Ty.interval typeCode))
+        sourceValue) :=
+  RawTerm.transp_pathLam_weaken_isStronglyNormalizing typeCodeIsSN
+    sourceIsSN
+
 /-- Shape-specialized inversion for application SN.  The induction is
 over an arbitrary SN source and receives the application shape as an
 equality, which keeps Lean's indexed-inductive eliminator in the
