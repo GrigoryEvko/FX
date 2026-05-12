@@ -18210,4 +18210,125 @@ theorem Reducible.fundamental_identity_refineIntro_at_refine_sn
       (termSubst := TermSubst.identity sourceCtx)
       valueIdentityReducible proofIdentityReducible)
 
+/-- **K12.27 identity-substitution boolean eliminator SN endpoint**.
+
+Boolean elimination is SN-output at the current motive boundary.  This
+identity wrapper exposes the exact M04 consequence from reducibility of
+the scrutinee and both branches. -/
+theorem Reducible.fundamental_identity_boolElim_at_bool_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (scrutineeIdentityReducible :
+      Reducible ((Ty.bool : Ty level scope).subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) scrutinee))
+    (thenIdentityReducible :
+      Reducible
+        ((motiveType.subst0 Ty.bool RawTerm.boolTrue).subst
+          Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) thenBranch))
+    (elseIdentityReducible :
+      Reducible
+        ((motiveType.subst0 Ty.bool RawTerm.boolFalse).subst
+          Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) elseBranch)) :
+    Term.isStronglyNormalizing
+      (Term.boolElim scrutinee thenBranch elseBranch) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.boolElim scrutinee thenBranch elseBranch)
+    (Reducible.fundamental_boolElim_at_bool
+      (termSubst := TermSubst.identity sourceCtx)
+      scrutineeIdentityReducible thenIdentityReducible
+      elseIdentityReducible)
+
+/-- **K12.27 identity-substitution identity eliminator SN endpoint**. -/
+theorem Reducible.fundamental_identity_idJ_at_id_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIdentityReducible :
+        Reducible (motiveType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) baseCase))
+    (witnessIdentityReducible :
+        Reducible ((Ty.id carrier leftEndpoint rightEndpoint).subst
+          Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) witness)) :
+    Term.isStronglyNormalizing (Term.idJ baseCase witness) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.idJ baseCase witness)
+    (Reducible.fundamental_idJ_at_id
+      (termSubst := TermSubst.identity sourceCtx)
+      baseIdentityReducible witnessIdentityReducible)
+
+/-- **K12.27 identity-substitution observational equality eliminator SN
+endpoint**. -/
+theorem Reducible.fundamental_identity_oeqJ_at_oeq_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+          witnessRaw}
+    (baseIdentityReducible :
+        Reducible (motiveType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) baseCase))
+    (witnessIdentityReducible :
+        Reducible ((Ty.oeq carrier leftEndpoint rightEndpoint).subst
+          Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) witness)) :
+    Term.isStronglyNormalizing (Term.oeqJ baseCase witness) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.oeqJ baseCase witness)
+    (Reducible.fundamental_oeqJ_at_oeq
+      (termSubst := TermSubst.identity sourceCtx)
+      baseIdentityReducible witnessIdentityReducible)
+
+/-- **K12.27 identity-substitution strict identity eliminator SN
+endpoint**. -/
+theorem Reducible.fundamental_identity_idStrictRec_at_idStrict_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx
+          (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIdentityReducible :
+        Reducible (motiveType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) baseCase))
+    (witnessIdentityReducible :
+        Reducible
+          ((Ty.idStrict carrier leftEndpoint rightEndpoint).subst
+            Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) witness)) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRec modeIsStrict baseCase witness) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.idStrictRec modeIsStrict baseCase witness)
+    (Reducible.fundamental_idStrictRec_at_idStrict
+      (termSubst := TermSubst.identity sourceCtx)
+      modeIsStrict baseIdentityReducible witnessIdentityReducible)
+
 end LeanFX2
