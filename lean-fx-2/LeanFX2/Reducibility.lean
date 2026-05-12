@@ -7335,6 +7335,48 @@ theorem RawTerm.arrowCode_isStronglyNormalizing {scope : Nat}
         · exact domainIH domainTarget domainProgress
             (codomainClosure codomainTarget ⟨codomainStep, codomainEq⟩)
 
+/-- Type-code dependent-Pi constructor SN preservation.
+
+The codomain code lives under the Pi binder at `scope + 1`, so this is
+not just a specialization of `arrowCode_isStronglyNormalizing`.  The
+proof is the same two-payload congruence argument, with the second SN
+witness indexed over the lifted scope. -/
+theorem RawTerm.piTyCode_isStronglyNormalizing {scope : Nat}
+    {domainCode : RawTerm scope}
+    (domainIsSN : RawTerm.isStronglyNormalizing domainCode) :
+    ∀ {codomainCode : RawTerm (scope + 1)},
+    RawTerm.isStronglyNormalizing codomainCode →
+    RawTerm.isStronglyNormalizing
+      (RawTerm.piTyCode domainCode codomainCode) := by
+  induction domainIsSN with
+  | intro currentDomain _ domainIH =>
+    intro codomainCode codomainIsSN
+    induction codomainIsSN with
+    | intro currentCodomain codomainClosure codomainIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.piTyCode currentDomain currentCodomain) ?_
+      intro target progressStep
+      obtain ⟨domainTarget, codomainTarget, targetEq,
+              domainStep, codomainStep⟩ :=
+        RawStep.par.piTyCode_inv progressStep.1
+      subst targetEq
+      by_cases domainEq : currentDomain = domainTarget
+      · subst domainEq
+        by_cases codomainEq : currentCodomain = codomainTarget
+        · subst codomainEq
+          exact False.elim (progressStep.2 rfl)
+        · exact codomainIH codomainTarget ⟨codomainStep, codomainEq⟩
+      · have domainProgress :
+            RawStep.parProgress currentDomain domainTarget :=
+          ⟨domainStep, domainEq⟩
+        by_cases codomainEq : currentCodomain = codomainTarget
+        · subst codomainEq
+          exact domainIH domainTarget domainProgress
+            (RawTerm.isStronglyNormalizing.intro
+              currentCodomain codomainClosure)
+        · exact domainIH domainTarget domainProgress
+            (codomainClosure codomainTarget ⟨codomainStep, codomainEq⟩)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12310,6 +12352,35 @@ theorem Reducible.fundamental_arrowCode_of_payloads
                 (Term.arrowCode (context := sourceCtx)
                   outerLevel levelLe domainCodeRaw codomainCodeRaw)) :=
   RawTerm.arrowCode_isStronglyNormalizing
+    domainCodeIsSN codomainCodeIsSN
+
+/-- Type-code dependent-Pi fundamental endpoint with explicit payload
+SN premises.
+
+The codomain raw payload is scoped under the binder, so its substituted
+SN premise is over `sigma.forRaw.lift`.  This is the binder-shaped
+counterpart to `fundamental_arrowCode_of_payloads`. -/
+theorem Reducible.fundamental_piTyCode_of_payloads
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (domainCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (domainCodeRaw.subst sigma.forRaw))
+    (codomainCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (codomainCodeRaw.subst sigma.forRaw.lift)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.piTyCode (context := sourceCtx)
+                  outerLevel levelLe domainCodeRaw codomainCodeRaw)) :=
+  RawTerm.piTyCode_isStronglyNormalizing
     domainCodeIsSN codomainCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
