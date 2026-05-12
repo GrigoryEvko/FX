@@ -1698,6 +1698,125 @@ theorem Reducible.isStronglyNormalizing
   | Ty.effect _ _, _, _, witness => witness
   | Ty.modal _ _, _, _, witness => witness
 
+/-! ## K12.20.U4 SN-direct codomain recovery
+
+The lambda SN-codomain route needs a codomain-specific bridge from
+strong normalization back to `Reducible`.  This bridge is valid exactly
+for the candidate arms whose `Reducible` body is definitionally plain
+`Term.isStronglyNormalizing`: the closed leaves plus the current Layer-1
+session/effect/modal fallback arms.  Function-like and projection-like
+compound candidates are deliberately absent because they require their
+own closure fields, not just SN.
+-/
+
+/-- Unit reducibility is exactly strong normalization. -/
+theorem Reducible.unit_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {raw : RawTerm scope}
+    {term : Term context Ty.unit raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible Ty.unit term :=
+  termIsSN
+
+/-- Boolean reducibility is exactly strong normalization. -/
+theorem Reducible.bool_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {raw : RawTerm scope}
+    {term : Term context Ty.bool raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible Ty.bool term :=
+  termIsSN
+
+/-- Natural-number reducibility is exactly strong normalization. -/
+theorem Reducible.nat_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {raw : RawTerm scope}
+    {term : Term context Ty.nat raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible Ty.nat term :=
+  termIsSN
+
+/-- Empty-type reducibility is exactly strong normalization. -/
+theorem Reducible.empty_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {raw : RawTerm scope}
+    {term : Term context Ty.empty raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible Ty.empty term :=
+  termIsSN
+
+/-- Interval reducibility is exactly strong normalization. -/
+theorem Reducible.interval_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {raw : RawTerm scope}
+    {term : Term context Ty.interval raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible Ty.interval term :=
+  termIsSN
+
+/-- Universe-code reducibility is exactly strong normalization. -/
+theorem Reducible.universe_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {universeLevel : UniverseLevel}
+    {levelLe : universeLevel.toNat + 1 ≤ level}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.universe universeLevel levelLe) raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible (Ty.universe universeLevel levelLe) term :=
+  termIsSN
+
+/-- Type-variable fallback reducibility is exactly strong normalization. -/
+theorem Reducible.tyVar_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {position : Fin scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.tyVar position) raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible (Ty.tyVar position) term :=
+  termIsSN
+
+/-- Layer-1 session reducibility is exactly strong normalization. -/
+theorem Reducible.session_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {protocolStep : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.session protocolStep) raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible (Ty.session protocolStep) term :=
+  termIsSN
+
+/-- Layer-1 effect reducibility is exactly strong normalization. -/
+theorem Reducible.effect_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.effect carrierType effectTag) raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible (Ty.effect carrierType effectTag) term :=
+  termIsSN
+
+/-- Layer-1 modal reducibility is exactly strong normalization. -/
+theorem Reducible.modal_of_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {modalityTag : Nat}
+    {carrierType : Ty level scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.modal modalityTag carrierType) raw}
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible (Ty.modal modalityTag carrierType) term :=
+  termIsSN
+
 /-- **K12.18/K12.19 substitution-reducibility predicate**: the
 universal quantification target of the fundamental lemma cascade
 (K12.19-K12.26).

@@ -625,6 +625,16 @@ M04 / `strong_normalization`. -/
 #print axioms Term.isStronglyNormalizing
 #print axioms Reducible
 #print axioms Reducible.isStronglyNormalizing
+#print axioms Reducible.unit_of_isStronglyNormalizing
+#print axioms Reducible.bool_of_isStronglyNormalizing
+#print axioms Reducible.nat_of_isStronglyNormalizing
+#print axioms Reducible.empty_of_isStronglyNormalizing
+#print axioms Reducible.interval_of_isStronglyNormalizing
+#print axioms Reducible.universe_of_isStronglyNormalizing
+#print axioms Reducible.tyVar_of_isStronglyNormalizing
+#print axioms Reducible.session_of_isStronglyNormalizing
+#print axioms Reducible.effect_of_isStronglyNormalizing
+#print axioms Reducible.modal_of_isStronglyNormalizing
 #print axioms ReducibleSubst
 #print axioms Reducible.fundamental_var
 #print axioms RawTerm.unit_isStronglyNormalizing
