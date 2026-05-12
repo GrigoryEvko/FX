@@ -12060,6 +12060,57 @@ theorem Reducible.fundamental_modElim_at_empty
               (Term.subst termSubst (Term.modElim innerTerm)) :=
   Term.modElim_isStronglyNormalizing innerIH
 
+/-- **K12.25 modElim fundamental case at `Ty.interval`**. -/
+theorem Reducible.fundamental_modElim_at_interval
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.interval innerRaw}
+    (innerIH : Reducible ((Ty.interval : Ty level scope).subst sigma)
+                         (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.interval : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
+/-- **K12.25 modElim fundamental case at `Ty.universe`**. -/
+theorem Reducible.fundamental_modElim_at_universe
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.universe outerLevel levelLe) innerRaw}
+    (innerIH :
+        Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+                  (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
+/-- **K12.25 modElim fundamental case at `Ty.session`**. -/
+theorem Reducible.fundamental_modElim_at_session
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {protocolStep : RawTerm scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx (Ty.session protocolStep) innerRaw}
+    (innerIH :
+        Reducible ((Ty.session protocolStep).subst sigma)
+                  (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.session protocolStep).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
 /-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
 case at the homogeneous (non-dependent) arrow type
 

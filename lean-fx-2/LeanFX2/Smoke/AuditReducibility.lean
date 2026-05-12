@@ -742,6 +742,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_modElim_at_bool
 #print axioms Reducible.fundamental_modElim_at_nat
 #print axioms Reducible.fundamental_modElim_at_empty
+#print axioms Reducible.fundamental_modElim_at_interval
+#print axioms Reducible.fundamental_modElim_at_universe
+#print axioms Reducible.fundamental_modElim_at_session
 #print axioms Reducible.fundamental_app_at_arrow
 #print axioms Reducible.fundamental_fst_at_sigmaTy
 #print axioms Reducible.fundamental_snd_at_sigmaTy_sn
