@@ -75,3 +75,11 @@ Each must be zero-axiom to maintain kernel discipline. -/
 #print axioms LeanFX2.Term.eitherCode_HEq_congr
 #print axioms LeanFX2.Term.idCode_HEq_congr
 #print axioms LeanFX2.Term.equivCode_HEq_congr
+#print axioms LeanFX2.Term.transp_HEq_congr
+#print axioms LeanFX2.Term.refineIntro_HEq_congr
+#print axioms LeanFX2.Term.codataUnfold_HEq_congr
+#print axioms LeanFX2.Term.sessionSend_HEq_congr
+#print axioms LeanFX2.Term.effectPerform_HEq_congr
+#print axioms LeanFX2.Term.equivIntroHet_HEq_congr
+#print axioms LeanFX2.Term.uaIntroHet_HEq_congr
+#print axioms LeanFX2.Term.funextIntroHet_HEq_congr
