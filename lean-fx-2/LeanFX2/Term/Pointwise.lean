@@ -1650,6 +1650,280 @@ theorem Term.weaken_subst_singleton_equivReflIdAtId_heq
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton carrierRaw singletonRaw)
 
+/-- Glue introduction preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_glueIntro_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness baseRaw partialRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (baseValue : Term context baseType baseRaw)
+    (partialValue : Term context baseType partialRaw)
+    (baseHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType baseValue))
+        baseValue)
+    (partialHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType partialValue))
+        partialValue) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+            baseValue partialValue)))
+      (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+        baseValue partialValue) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.glueIntro_HEq_congr modeIsUnivalent
+    (Ty.weaken_subst_singleton baseType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton boundaryWitness singletonRaw)
+    (RawTerm.weaken_subst_singleton baseRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton partialRaw singletonRaw)
+    baseHEq partialHEq
+
+/-- Cubical transport preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_transp_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term context sourceType sourceRaw)
+    (pathHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType typePath))
+        typePath)
+    (sourceHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType sourceValue))
+        sourceValue) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.transp modeIsUnivalent universeLevel universeLevelLt
+            sourceType targetType sourceTypeRaw targetTypeRaw typePath
+            sourceValue)))
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw typePath
+        sourceValue) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.transp_HEq_congr modeIsUnivalent universeLevel universeLevelLt
+    (Ty.weaken_subst_singleton sourceType newType singletonRaw)
+    (Ty.weaken_subst_singleton targetType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton sourceTypeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton targetTypeRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton pathRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton sourceRaw singletonRaw)
+    pathHEq sourceHEq
+
+/-- Homogeneous composition preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_hcomp_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (sidesValue : Term context carrierType sidesRaw)
+    (capValue : Term context carrierType capRaw)
+    (sidesHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType sidesValue))
+        sidesValue)
+    (capHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType capValue))
+        capValue) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.hcomp modeIsUnivalent sidesValue capValue)))
+      (Term.hcomp modeIsUnivalent sidesValue capValue) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.hcomp_HEq_congr modeIsUnivalent
+    (Ty.weaken_subst_singleton carrierType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton sidesRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton capRaw singletonRaw)
+    sidesHEq capHEq
+
+/-- Record introduction preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_recordIntro_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (firstField : Term context singleFieldType firstRaw)
+    (firstHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType firstField))
+        firstField) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.recordIntro firstField)))
+      (Term.recordIntro firstField) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.recordIntro_HEq_congr
+    (Ty.weaken_subst_singleton singleFieldType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton firstRaw singletonRaw)
+    firstHEq
+
+/-- Codata unfold preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_codataUnfold_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (initialState : Term context stateType stateRaw)
+    (transition : Term context (Ty.arrow stateType outputType) transitionRaw)
+    (stateHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType initialState))
+        initialState)
+    (transitionHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType transition))
+        transition) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.codataUnfold initialState transition)))
+      (Term.codataUnfold initialState transition) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.codataUnfold_HEq_congr
+    (Ty.weaken_subst_singleton stateType newType singletonRaw)
+    (Ty.weaken_subst_singleton outputType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton stateRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton transitionRaw singletonRaw)
+    stateHEq transitionHEq
+
+/-- Session send preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_sessionSend_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (payload : Term context payloadType payloadRaw)
+    (channelHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType channel))
+        channel)
+    (payloadHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType payload))
+        payload) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.sessionSend protocolStep channel payload)))
+      (Term.sessionSend protocolStep channel payload) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.sessionSend_HEq_congr
+    (RawTerm.weaken_subst_singleton protocolStep singletonRaw)
+    (Ty.weaken_subst_singleton payloadType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton channelRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton payloadRaw singletonRaw)
+    channelHEq payloadHEq
+
+/-- Session receive preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_sessionRecv_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {protocolStep channelRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (channel : Term context (Ty.session protocolStep) channelRaw)
+    (channelHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType channel))
+        channel) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.sessionRecv channel)))
+      (Term.sessionRecv channel) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.sessionRecv_HEq_congr
+    (RawTerm.weaken_subst_singleton protocolStep singletonRaw)
+    (RawTerm.weaken_subst_singleton channelRaw singletonRaw)
+    channelHEq
+
+/-- Univalence-to-equivalence extraction preserves weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_uaToEquiv_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level scope)
+    (leftTyRaw rightTyRaw : RawTerm scope)
+    {proofRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (proof :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRaw)
+    (proofHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType proof))
+        proof) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy leftTyRaw
+            rightTyRaw proof)))
+      (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy leftTyRaw
+        rightTyRaw proof) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.uaToEquiv_HEq_congr
+    (Ty.weaken_subst_singleton leftTy newType singletonRaw)
+    (Ty.weaken_subst_singleton rightTy newType singletonRaw)
+    (RawTerm.weaken_subst_singleton leftTyRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightTyRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton proofRaw singletonRaw)
+    proofHEq
+
 /-- Path application preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_pathApp_heq
     {mode : Mode} {level scope : Nat}
