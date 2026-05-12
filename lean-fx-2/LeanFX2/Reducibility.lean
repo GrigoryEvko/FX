@@ -10102,6 +10102,48 @@ theorem ReducibleSubst.consSingleton
             (Reducible.of_type_eq_symm_cast typeEq
               (substReducible previousPosition))
 
+/-- β-contractum SN bridge for the `Term.lam` arrow case.
+
+The body IH naturally applies to `TermSubst.consSingleton`, whose raw
+substitution is `sigma.lift` composed with a singleton argument
+substitution.  The application SN endpoint wants the equivalent
+`Term.subst0` contractum of the lifted body.  This lemma is exactly
+that raw-alignment bridge, demoted to the SN endpoint needed by M04. -/
+theorem Reducible.fundamental_lam_at_arrow_contractum_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyContractumReducible :
+      Reducible
+        (codomainType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst0
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm)
+        argumentTerm) := by
+  have bodyContractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm) :=
+    Reducible.isStronglyNormalizing bodyContractumReducible
+  change RawTerm.isStronglyNormalizing
+    ((bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw)
+  rw [← RawTerm.subst_lift_singleton_eq_subst0
+    bodyRaw domainType sigma argumentRaw]
+  exact bodyContractumIsSN
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
