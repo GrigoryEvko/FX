@@ -7168,6 +7168,95 @@ theorem RawTerm.glueIntro_isStronglyNormalizing {scope : Nat}
             (partialClosure partialTarget
               ⟨partialStep, partialEq⟩)
 
+/-- Head-β SN expansion for cubical Glue elimination.
+
+If the Glue base value and partial value are strongly normalizing, then
+`glueElim (glueIntro base partial)` is strongly normalizing.  Congruence
+reducts recurse through both payloads; β reducts land on a reduct of the
+base payload. -/
+theorem RawTerm.glueElim_glueIntro_isStronglyNormalizing
+    {scope : Nat}
+    {baseValue : RawTerm scope}
+    (baseIsSN : RawTerm.isStronglyNormalizing baseValue) :
+    ∀ {partialValue : RawTerm scope},
+      RawTerm.isStronglyNormalizing partialValue →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.glueElim
+          (RawTerm.glueIntro baseValue partialValue)) := by
+  induction baseIsSN with
+  | intro currentBase baseClosure baseIH =>
+    intro partialValue partialIsSN
+    induction partialIsSN with
+    | intro currentPartial partialClosure partialIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.glueElim
+          (RawTerm.glueIntro currentBase currentPartial)) ?_
+      intro target progressStep
+      rcases RawStep.par.glueElim_inv progressStep.1 with
+        ⟨gluedTarget, targetEq, gluedStep⟩
+        | ⟨baseTarget, partialTarget, targetEq, gluedStep⟩
+      · obtain ⟨baseTarget, partialTarget, gluedTargetEq,
+            baseStep, partialStep⟩ :=
+          RawStep.par.glueIntro_inv gluedStep
+        subst gluedTargetEq
+        subst targetEq
+        by_cases baseEq : currentBase = baseTarget
+        · subst baseEq
+          by_cases partialEq : currentPartial = partialTarget
+          · subst partialEq
+            exact False.elim (progressStep.2 rfl)
+          · exact partialIH partialTarget
+              ⟨partialStep, partialEq⟩
+        · have baseProgress :
+              RawStep.parProgress currentBase baseTarget :=
+            ⟨baseStep, baseEq⟩
+          by_cases partialEq : currentPartial = partialTarget
+          · subst partialEq
+            exact baseIH baseTarget baseProgress
+              (RawTerm.isStronglyNormalizing.intro currentPartial
+                partialClosure)
+          · exact baseIH baseTarget baseProgress
+              (partialClosure partialTarget
+                ⟨partialStep, partialEq⟩)
+      · obtain ⟨gluedBaseTarget, _gluedPartialTarget,
+            gluedTargetEq, baseStep, _partialStep⟩ :=
+          RawStep.par.glueIntro_inv gluedStep
+        injection gluedTargetEq with _scopeEq baseTargetEq
+          _partialTargetEq
+        rw [targetEq]
+        have baseStepToTarget :
+            RawStep.par currentBase baseTarget := by
+          rw [baseTargetEq]
+          exact baseStep
+        by_cases baseEq : currentBase = baseTarget
+        · subst baseEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentBase baseClosure
+        · exact baseClosure baseTarget
+            ⟨baseStepToTarget, baseEq⟩
+
+/-- Typed wrapper for `glueElim (glueIntro base partial)` SN expansion.
+
+This is an SN bridge only.  It does not claim the full `Reducible`
+backward closure for Glue introduction. -/
+theorem Term.glueElim_glueIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    {baseValue : Term context baseType baseRaw}
+    {partialValue : Term context baseType partialRaw}
+    (baseIsSN : Term.isStronglyNormalizing baseValue)
+    (partialIsSN : Term.isStronglyNormalizing partialValue) :
+    Term.isStronglyNormalizing
+      (Term.glueElim modeIsUnivalent
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue)) :=
+  RawTerm.glueElim_glueIntro_isStronglyNormalizing
+    baseIsSN partialIsSN
+
 /-- **K12.20.AH equivIntro SN preservation** — equivalence intro
 bundles a forward and backward function.  Binary cong; uses the
 pair-style universal-in-conclusion pattern to keep the backward
