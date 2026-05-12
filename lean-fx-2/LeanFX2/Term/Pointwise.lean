@@ -390,6 +390,151 @@ theorem TermSubst.compose_position_HEq
         (Term.subst secondTermSubst (firstTermSubst position)) :=
   cast_heq _ _
 
+/-! ## Beta-specific singleton composition
+
+These lemmas package the substitution shape used by lambda beta
+contracta.  They live at the Term layer because they mention only
+`Ty`, `RawTerm`, and `TermSubst`, while downstream reducibility lemmas
+consume them to relate body IHs under an extended substitution to the
+concrete `Term.subst0` contractum. -/
+
+/-- A type-index cast on a typed term is heterogeneously equal to the
+original term. -/
+theorem Term.type_eq_cast_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {raw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term context sourceType raw) :
+    HEq (typeEq ▸ sourceTerm) sourceTerm := by
+  cases typeEq
+  exact HEq.rfl
+
+/-- Substitution ignores a pure type-index cast up to heterogeneous
+equality. -/
+theorem Term.subst_type_eq_cast_heq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {sourceType targetType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term sourceCtx sourceType raw) :
+    HEq (Term.subst termSubst (typeEq ▸ sourceTerm))
+      (Term.subst termSubst sourceTerm) := by
+  cases typeEq
+  exact HEq.rfl
+
+/-- Substitution law for the beta-specific environment extension:
+weakening a source type, lifting an existing substitution, then
+substituting the fresh argument is propositionally the original
+substitution on that type. -/
+theorem Ty.weaken_subst_lift_singleton
+    {level scope targetScope : Nat}
+    (sourceType domainType : Ty level scope)
+    (sigma : Subst level scope targetScope)
+    (argumentRaw : RawTerm targetScope) :
+    sourceType.weaken.subst
+        (Subst.compose sigma.lift
+          (Subst.singleton (domainType.subst sigma) argumentRaw)) =
+      sourceType.subst sigma := by
+  rw [← Ty.subst_compose sigma.lift
+        (Subst.singleton (domainType.subst sigma) argumentRaw)
+        sourceType.weaken]
+  rw [Ty.weaken_subst_commute sigma sourceType]
+  exact Ty.weaken_subst_singleton (sourceType.subst sigma)
+    (domainType.subst sigma) argumentRaw
+
+/-- Raw beta-contractum alignment for the beta-specific substitution
+extension. -/
+theorem RawTerm.subst_lift_singleton_eq_subst0
+    {level scope targetScope : Nat}
+    (bodyRaw : RawTerm (scope + 1))
+    (domainType : Ty level scope)
+    (sigma : Subst level scope targetScope)
+    (argumentRaw : RawTerm targetScope) :
+    bodyRaw.subst
+        (Subst.compose sigma.lift
+          (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw =
+      (bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw := by
+  unfold RawTerm.subst0
+  rw [RawTerm.subst_compose sigma.forRaw.lift
+    (RawTermSubst.singleton argumentRaw) bodyRaw]
+
+/-- Beta-specific extension of a typed substitution by an argument.
+
+Unlike `TermSubst.lift`, this substitution lands back in the original
+target context: position zero maps to the supplied argument, while
+successor positions map to the original substitution witnesses. -/
+def TermSubst.consSingleton
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw) :
+    TermSubst (sourceCtx.cons domainType) targetCtx
+      (Subst.compose sigma.lift
+        (Subst.singleton (domainType.subst sigma) argumentRaw))
+  | ⟨0, _⟩ =>
+      (Ty.weaken_subst_lift_singleton domainType domainType sigma
+        argumentRaw).symm ▸
+        argumentTerm
+  | ⟨positionIndex + 1, positionIsWithinScope⟩ =>
+      let previousPosition : Fin scope :=
+        ⟨positionIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+      have typeEq :
+          ((varType (sourceCtx.cons domainType)
+              ⟨positionIndex + 1, positionIsWithinScope⟩).subst
+            (Subst.compose sigma.lift
+              (Subst.singleton (domainType.subst sigma) argumentRaw))) =
+            (varType sourceCtx previousPosition).subst sigma := by
+        exact Ty.weaken_subst_lift_singleton
+          (varType sourceCtx previousPosition) domainType sigma argumentRaw
+      have rawEq :
+          (Subst.compose sigma.lift
+              (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw
+              ⟨positionIndex + 1, positionIsWithinScope⟩ =
+            sigma.forRaw previousPosition := by
+        exact RawTerm.weaken_subst_singleton
+          (sigma.forRaw previousPosition) argumentRaw
+      rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition
+
+/-- The fresh variable of `termSubst.lift` collapses to the singleton
+argument after substituting by `TermSubst.singleton`, up to HEq. -/
+theorem TermSubst.lift_zero_subst_singleton_heq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (termSubst.lift domainType ⟨0, Nat.zero_lt_succ scope⟩))
+      argumentTerm := by
+  simp only [TermSubst.lift, varType]
+  apply HEq.trans
+    (Term.subst_type_eq_cast_heq (TermSubst.singleton argumentTerm)
+      (Ty.weaken_subst_commute sigma domainType).symm
+      (Term.var (context := targetCtx.cons (domainType.subst sigma))
+        ⟨0, Nat.zero_lt_succ targetScope⟩))
+  change HEq
+    (TermSubst.singleton argumentTerm ⟨0, Nat.zero_lt_succ targetScope⟩)
+    argumentTerm
+  simp only [TermSubst.singleton, varType]
+  exact Term.type_eq_cast_heq
+    (Ty.weaken_subst_singleton (domainType.subst sigma)
+      (domainType.subst sigma) argumentRaw).symm
+    argumentTerm
+
 /-! ## Cast-aware HEq scaffolding for Term.subst_compose
 
 The full `Term.subst_compose` (HEq, 29 cases) is a substantial cascade
