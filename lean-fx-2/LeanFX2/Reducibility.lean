@@ -10649,6 +10649,26 @@ theorem RawTerm.subst_identity_lift
     (@Subst.identity_lift_forRaw_pointwise level scope) sourceRaw]
   exact RawTerm.subst_identity sourceRaw
 
+/-- Strong normalization survives raw identity substitution. -/
+theorem RawTerm.subst_identity_isStronglyNormalizing
+    {level scope : Nat} {sourceRaw : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing sourceRaw) :
+    RawTerm.isStronglyNormalizing
+      (sourceRaw.subst (@Subst.identity level scope).forRaw) := by
+  rw [RawTerm.subst_identity sourceRaw]
+  exact sourceIsSN
+
+/-- Strong normalization survives the lifted raw identity substitution
+under one binder. -/
+theorem RawTerm.subst_identity_lift_isStronglyNormalizing
+    {level scope : Nat} {sourceRaw : RawTerm (scope + 1)}
+    (sourceIsSN : RawTerm.isStronglyNormalizing sourceRaw) :
+    RawTerm.isStronglyNormalizing
+      (sourceRaw.subst ((@Subst.identity level scope).forRaw.lift)) := by
+  rw [RawTerm.subst_identity_lift (level := level) (scope := scope)
+    sourceRaw]
+  exact sourceIsSN
+
 /-- **K12.27 identity-lift body SN bridge**.
 
 This is the lambda-specific identity-substitution bridge for the
@@ -13016,6 +13036,252 @@ theorem Reducible.fundamental_idCode_of_payloads
                   typeCodeRaw leftCodeRaw rightCodeRaw)) :=
   RawTerm.idCode_isStronglyNormalizing
     typeCodeIsSN leftCodeIsSN rightCodeIsSN
+
+/-- Identity-substitution arrow-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_arrowCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw codomainCodeRaw : RawTerm scope}
+    (domainCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode domainCodeRaw)
+    (codomainCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode codomainCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.arrowCode (context := sourceCtx)
+                  outerLevel levelLe domainCodeRaw codomainCodeRaw)) :=
+  Reducible.fundamental_arrowCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      domainCodeIsTypeCode)
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      codomainCodeIsTypeCode)
+
+/-- Identity-substitution Pi-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_piTyCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (domainCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode domainCodeRaw)
+    (codomainCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode codomainCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.piTyCode (context := sourceCtx)
+                  outerLevel levelLe domainCodeRaw codomainCodeRaw)) :=
+  Reducible.fundamental_piTyCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      domainCodeIsTypeCode)
+    (RawTerm.subst_identity_lift_isStronglyNormalizing
+      (RawTerm.isStronglyNormalizing_of_typeCode codomainCodeIsTypeCode))
+
+/-- Identity-substitution Sigma-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_sigmaTyCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw : RawTerm scope}
+    {secondCodeRaw : RawTerm (scope + 1)}
+    (firstCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode firstCodeRaw)
+    (secondCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode secondCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.sigmaTyCode (context := sourceCtx)
+                  outerLevel levelLe firstCodeRaw secondCodeRaw)) :=
+  Reducible.fundamental_sigmaTyCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      firstCodeIsTypeCode)
+    (RawTerm.subst_identity_lift_isStronglyNormalizing
+      (RawTerm.isStronglyNormalizing_of_typeCode secondCodeIsTypeCode))
+
+/-- Identity-substitution product-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_productCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw secondCodeRaw : RawTerm scope}
+    (firstCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode firstCodeRaw)
+    (secondCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode secondCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.productCode (context := sourceCtx)
+                  outerLevel levelLe firstCodeRaw secondCodeRaw)) :=
+  Reducible.fundamental_productCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      firstCodeIsTypeCode)
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      secondCodeIsTypeCode)
+
+/-- Identity-substitution sum-code endpoint from named type-code payload
+evidence. -/
+theorem Reducible.fundamental_identity_sumCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (leftCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode leftCodeRaw)
+    (rightCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode rightCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.sumCode (context := sourceCtx)
+                  outerLevel levelLe leftCodeRaw rightCodeRaw)) :=
+  Reducible.fundamental_sumCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      leftCodeIsTypeCode)
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      rightCodeIsTypeCode)
+
+/-- Identity-substitution either-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_eitherCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (leftCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode leftCodeRaw)
+    (rightCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode rightCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.eitherCode (context := sourceCtx)
+                  outerLevel levelLe leftCodeRaw rightCodeRaw)) :=
+  Reducible.fundamental_eitherCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      leftCodeIsTypeCode)
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      rightCodeIsTypeCode)
+
+/-- Identity-substitution equivalence-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_equivCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope}
+    (leftTypeCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode leftTypeCodeRaw)
+    (rightTypeCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode rightTypeCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.equivCode (context := sourceCtx)
+                  outerLevel levelLe
+                  leftTypeCodeRaw rightTypeCodeRaw)) :=
+  Reducible.fundamental_equivCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      leftTypeCodeIsTypeCode)
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      rightTypeCodeIsTypeCode)
+
+/-- Identity-substitution list-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_listCode_of_typeCode_payload
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (elementCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode elementCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.listCode (context := sourceCtx)
+                  outerLevel levelLe elementCodeRaw)) :=
+  Reducible.fundamental_listCode_of_payload
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      elementCodeIsTypeCode)
+
+/-- Identity-substitution option-code endpoint from named type-code
+payload evidence. -/
+theorem Reducible.fundamental_identity_optionCode_of_typeCode_payload
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (elementCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode elementCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.optionCode (context := sourceCtx)
+                  outerLevel levelLe elementCodeRaw)) :=
+  Reducible.fundamental_optionCode_of_payload
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      elementCodeIsTypeCode)
+
+/-- Identity-substitution identity-code endpoint from named carrier-code
+and endpoint SN evidence. -/
+theorem Reducible.fundamental_identity_idCode_of_typeCode_payloads
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {typeCodeRaw leftCodeRaw rightCodeRaw : RawTerm scope}
+    (typeCodeIsTypeCode :
+      RawTerm.IsStronglyNormalizingTypeCode typeCodeRaw)
+    (leftCodeIsSN : RawTerm.isStronglyNormalizing leftCodeRaw)
+    (rightCodeIsSN : RawTerm.isStronglyNormalizing rightCodeRaw) :
+    Reducible ((Ty.universe outerLevel levelLe).subst Subst.identity)
+              (Term.subst (TermSubst.identity sourceCtx)
+                (Term.idCode (context := sourceCtx)
+                  outerLevel levelLe
+                  typeCodeRaw leftCodeRaw rightCodeRaw)) :=
+  Reducible.fundamental_idCode_of_payloads
+    (sourceCtx := sourceCtx) (targetCtx := sourceCtx)
+    (sigma := Subst.identity) (termSubst := TermSubst.identity sourceCtx)
+    outerLevel levelLe
+    (RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+      typeCodeIsTypeCode)
+    (RawTerm.subst_identity_isStronglyNormalizing leftCodeIsSN)
+    (RawTerm.subst_identity_isStronglyNormalizing rightCodeIsSN)
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
 helper at the raw layer.  Sister to `subsume_isStronglyNormalizing`

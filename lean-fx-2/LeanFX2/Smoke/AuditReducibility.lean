@@ -980,6 +980,16 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.IsStronglyNormalizingTypeCode
 #print axioms RawTerm.isStronglyNormalizing_of_typeCode
 #print axioms RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+#print axioms Reducible.fundamental_identity_arrowCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_piTyCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_sigmaTyCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_productCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_sumCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_eitherCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_equivCode_of_typeCode_payloads
+#print axioms Reducible.fundamental_identity_listCode_of_typeCode_payload
+#print axioms Reducible.fundamental_identity_optionCode_of_typeCode_payload
+#print axioms Reducible.fundamental_identity_idCode_of_typeCode_payloads
 #print axioms Reducible.step_preserves_unit
 #print axioms Reducible.step_preserves_bool
 #print axioms Reducible.step_preserves_nat
@@ -1023,6 +1033,8 @@ M04 / `strong_normalization`. -/
 #print axioms Term.strong_normalization_of_identity_subst
 #print axioms Reducible.strong_normalization_of_identity_reducible
 #print axioms RawTerm.subst_identity_lift
+#print axioms RawTerm.subst_identity_isStronglyNormalizing
+#print axioms RawTerm.subst_identity_lift_isStronglyNormalizing
 #print axioms Reducible.identity_lift_body_sn_of_identity_reducible
 #print axioms Reducible.identity_lift_body_sn_of_identity_reducible_at
 #print axioms Reducible.fundamental_identity_lam_at_arrow_sn
