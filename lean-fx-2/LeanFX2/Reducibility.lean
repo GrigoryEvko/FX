@@ -2398,6 +2398,123 @@ theorem Term.app_lam_isStronglyNormalizing
   RawTerm.app_lam_isStronglyNormalizing bodyIsSN argumentIsSN
     contractumIsSN
 
+/-- **K12.24.U5 path β SN expansion**.
+
+If the path body, interval argument, and β-contractum are all strongly
+normalizing, then the cubical redex `pathApp (pathLam body) interval`
+is strongly normalizing.  This mirrors `app_lam_isStronglyNormalizing`:
+congruence reducts recurse through the body/interval SN witnesses, while
+the β arm is closed by CR2 from the contractum along `subst0_par`. -/
+theorem RawTerm.pathApp_pathLam_isStronglyNormalizing {scope : Nat}
+    {body : RawTerm (scope + 1)}
+    (bodyIsSN : RawTerm.isStronglyNormalizing body) :
+    ∀ {interval : RawTerm scope},
+      RawTerm.isStronglyNormalizing interval →
+      RawTerm.isStronglyNormalizing (body.subst0 interval) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pathApp (RawTerm.pathLam body) interval) := by
+  induction bodyIsSN with
+  | intro currentBody bodyClosure bodyIH =>
+    intro interval intervalIsSN betaContractumIsSN
+    induction intervalIsSN with
+    | intro currentInterval intervalClosure intervalIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.pathApp (RawTerm.pathLam currentBody) currentInterval) ?_
+      intro target progressStep
+      rcases RawStep.par.pathApp_inv progressStep.1 with
+        ⟨pathTarget, intervalTarget, targetEq,
+          pathStep, intervalStep⟩
+        | ⟨bodyTarget, intervalTarget, targetEq,
+            pathStep, intervalStep⟩
+      · obtain ⟨bodyTarget, pathTargetEq, bodyStep⟩ :=
+          RawStep.par.pathLam_inv pathStep
+        subst pathTargetEq
+        subst targetEq
+        by_cases bodyEq : currentBody = bodyTarget
+        · subst bodyEq
+          by_cases intervalEq : currentInterval = intervalTarget
+          · subst intervalEq
+            exact False.elim (progressStep.2 rfl)
+          · have intervalContractumIsSN :
+                RawTerm.isStronglyNormalizing
+                  (currentBody.subst0 intervalTarget) := by
+              by_cases contractumEq :
+                  currentBody.subst0 currentInterval =
+                    currentBody.subst0 intervalTarget
+              · rw [← contractumEq]
+                exact betaContractumIsSN
+              · exact RawTerm.isStronglyNormalizing.step_preserves
+                  betaContractumIsSN
+                  ⟨RawStep.par.subst0_par (RawStep.par.refl currentBody)
+                    intervalStep, contractumEq⟩
+            exact intervalIH intervalTarget ⟨intervalStep, intervalEq⟩
+              intervalContractumIsSN
+        · have bodyProgress :
+              RawStep.parProgress currentBody bodyTarget :=
+            ⟨bodyStep, bodyEq⟩
+          have intervalTargetIsSN :
+              RawTerm.isStronglyNormalizing intervalTarget := by
+            by_cases intervalEq : currentInterval = intervalTarget
+            · subst intervalEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentInterval intervalClosure
+            · exact intervalClosure intervalTarget
+                ⟨intervalStep, intervalEq⟩
+          have bodyTargetContractumIsSN :
+              RawTerm.isStronglyNormalizing
+                (bodyTarget.subst0 intervalTarget) := by
+            by_cases contractumEq :
+                currentBody.subst0 currentInterval =
+                  bodyTarget.subst0 intervalTarget
+            · rw [← contractumEq]
+              exact betaContractumIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                betaContractumIsSN
+                ⟨RawStep.par.subst0_par bodyStep intervalStep,
+                  contractumEq⟩
+          exact bodyIH bodyTarget bodyProgress intervalTargetIsSN
+            bodyTargetContractumIsSN
+      · obtain ⟨bodyTargetFromPath, pathTargetEq, bodyStep⟩ :=
+          RawStep.par.pathLam_inv pathStep
+        cases pathTargetEq
+        subst targetEq
+        by_cases contractumEq :
+            currentBody.subst0 currentInterval =
+              bodyTarget.subst0 intervalTarget
+        · rw [← contractumEq]
+          exact betaContractumIsSN
+        · exact RawTerm.isStronglyNormalizing.step_preserves
+            betaContractumIsSN
+            ⟨RawStep.par.subst0_par bodyStep intervalStep, contractumEq⟩
+
+/-- Typed wrapper for cubical path β SN expansion.
+
+The theorem only exposes the SN bridge for
+`pathApp (pathLam body) interval`; Reducible-level backward closure at
+the carrier type remains a separate head-β/CR3 problem. -/
+theorem Term.pathApp_pathLam_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {intervalRaw : RawTerm scope}
+    {bodyTerm :
+      Term (context.cons Ty.interval) carrierType.weaken bodyRaw}
+    {intervalTerm : Term context Ty.interval intervalRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm)
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
+    (contractumIsSN :
+      Term.isStronglyNormalizing (Term.subst0 bodyTerm intervalTerm)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodyTerm)
+        intervalTerm) :=
+  RawTerm.pathApp_pathLam_isStronglyNormalizing bodyIsSN intervalIsSN
+    contractumIsSN
+
 /-- Shape-specialized inversion for application SN.  The induction is
 over an arbitrary SN source and receives the application shape as an
 equality, which keeps Lean's indexed-inductive eliminator in the

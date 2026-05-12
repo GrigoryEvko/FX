@@ -659,6 +659,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.weaken_oeq
 #print axioms Reducible.weaken_idStrict
 #print axioms RawTerm.app_lam_isStronglyNormalizing
+#print axioms RawTerm.pathApp_pathLam_isStronglyNormalizing
+#print axioms Term.pathApp_pathLam_isStronglyNormalizing
 #print axioms RawTerm.app_function_isStronglyNormalizing_aux
 #print axioms RawTerm.app_function_isStronglyNormalizing
 #print axioms RawTerm.app_argument_isStronglyNormalizing_aux
