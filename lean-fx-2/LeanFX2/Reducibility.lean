@@ -10217,6 +10217,163 @@ theorem Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
     (Reducible.fundamental_lam_at_arrow_contractum_sn
       bodyContractumReducible)
 
+/-- Typed head-β SN expansion for dependent Π application.
+
+`Term.lamPi` shares the raw `RawTerm.lam` constructor with non-dependent
+lambda, and `Term.appPi` shares `RawTerm.app`.  Strong normalization is
+raw-indexed, so the existing raw `app_lam` proof lifts directly to the
+dependent application form. -/
+theorem Term.appPi_lamPi_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {argumentRaw : RawTerm scope}
+    {bodyTerm :
+      Term (context.cons domainType) codomainType bodyRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
+    (contractumIsSN :
+      Term.isStronglyNormalizing (Term.subst0 bodyTerm argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.appPi (Term.lamPi bodyTerm) argumentTerm) :=
+  RawTerm.app_lam_isStronglyNormalizing bodyIsSN argumentIsSN
+    contractumIsSN
+
+/-- Fundamental SN endpoint for `Term.lamPi` at `Ty.piTy`.
+
+This is the dependent sibling of `fundamental_lam_at_arrow_sn`.  The
+premise stays explicit: callers still need SN of the body under
+`termSubst.lift domainType`. -/
+theorem Reducible.fundamental_lamPi_at_piTy_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (termSubst.lift domainType) bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.lamPi bodyTerm)) :=
+  RawTerm.lam_isStronglyNormalizing bodyIsSN
+
+/-- Fundamental SN endpoint for the application closure of `Term.lamPi`.
+
+The current `piTy` reducibility clause requires SN after dependent
+application, not full reducibility at the substituted codomain.  This
+lemma packages that exact M04-relevant obligation. -/
+theorem Reducible.fundamental_lamPi_at_piTy_app_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentReducible : Reducible (domainType.subst sigma) argumentTerm)
+    (contractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst0
+          (Term.subst (termSubst.lift domainType) bodyTerm)
+          argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.appPi
+        (Term.subst termSubst (Term.lamPi bodyTerm))
+        argumentTerm) :=
+  Term.appPi_lamPi_isStronglyNormalizing bodyIsSN
+    (Reducible.isStronglyNormalizing argumentReducible)
+    contractumIsSN
+
+/-- β-contractum SN bridge for the `Term.lamPi` weak-Π case.
+
+As in the non-dependent arrow bridge, the body IH naturally applies to
+`TermSubst.consSingleton`, while the application endpoint wants the
+`Term.subst0` contractum of the lifted body.  Since SN is raw-indexed,
+the same raw substitution alignment closes the bridge. -/
+theorem Reducible.fundamental_lamPi_at_piTy_contractum_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyContractumReducible :
+      Reducible
+        (codomainType.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst0
+        (Term.subst (termSubst.lift domainType) bodyTerm)
+        argumentTerm) := by
+  have bodyContractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm) :=
+    Reducible.isStronglyNormalizing bodyContractumReducible
+  change RawTerm.isStronglyNormalizing
+    ((bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw)
+  rw [← RawTerm.subst_lift_singleton_eq_subst0
+    bodyRaw domainType sigma argumentRaw]
+  exact bodyContractumIsSN
+
+/-- Combined SN endpoint for the `Term.lamPi` weak-Π application case. -/
+theorem Reducible.fundamental_lamPi_at_piTy_app_sn_of_body_contractum
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentReducible : Reducible (domainType.subst sigma) argumentTerm)
+    (bodyContractumReducible :
+      Reducible
+        (codomainType.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.appPi
+        (Term.subst termSubst (Term.lamPi bodyTerm))
+        argumentTerm) :=
+  Reducible.fundamental_lamPi_at_piTy_app_sn bodyIsSN argumentReducible
+    (Reducible.fundamental_lamPi_at_piTy_contractum_sn
+      bodyContractumReducible)
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
