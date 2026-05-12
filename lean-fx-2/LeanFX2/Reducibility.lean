@@ -7293,6 +7293,48 @@ theorem RawTerm.universeCode_isStronglyNormalizing {scope : Nat}
       (progressStep.2
         (RawStep.par.universeCode_inv progressStep.1).symm).elim)
 
+/-- Type-code arrow constructor SN preservation.
+
+Unlike `universeCode`, `arrowCode` carries schematic raw payloads and
+`RawStep.par` reduces under both of them.  The SN premises are therefore
+real obligations; M04 cannot treat schematic type-code payloads as
+normalizing constants. -/
+theorem RawTerm.arrowCode_isStronglyNormalizing {scope : Nat}
+    {domainCode : RawTerm scope}
+    (domainIsSN : RawTerm.isStronglyNormalizing domainCode) :
+    ∀ {codomainCode : RawTerm scope},
+    RawTerm.isStronglyNormalizing codomainCode →
+    RawTerm.isStronglyNormalizing
+      (RawTerm.arrowCode domainCode codomainCode) := by
+  induction domainIsSN with
+  | intro currentDomain _ domainIH =>
+    intro codomainCode codomainIsSN
+    induction codomainIsSN with
+    | intro currentCodomain codomainClosure codomainIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.arrowCode currentDomain currentCodomain) ?_
+      intro target progressStep
+      obtain ⟨domainTarget, codomainTarget, targetEq,
+              domainStep, codomainStep⟩ :=
+        RawStep.par.arrowCode_inv progressStep.1
+      subst targetEq
+      by_cases domainEq : currentDomain = domainTarget
+      · subst domainEq
+        by_cases codomainEq : currentCodomain = codomainTarget
+        · subst codomainEq
+          exact False.elim (progressStep.2 rfl)
+        · exact codomainIH codomainTarget ⟨codomainStep, codomainEq⟩
+      · have domainProgress :
+            RawStep.parProgress currentDomain domainTarget :=
+          ⟨domainStep, domainEq⟩
+        by_cases codomainEq : currentCodomain = codomainTarget
+        · subst codomainEq
+          exact domainIH domainTarget domainProgress
+            (RawTerm.isStronglyNormalizing.intro
+              currentCodomain codomainClosure)
+        · exact domainIH domainTarget domainProgress
+            (codomainClosure codomainTarget ⟨codomainStep, codomainEq⟩)
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
@@ -12238,6 +12280,37 @@ theorem Reducible.fundamental_universeCode
                 (Term.universeCode (context := sourceCtx)
                   innerLevel outerLevel cumulOk levelLe)) :=
   RawTerm.universeCode_isStronglyNormalizing innerLevel.toNat
+
+/-- Type-code arrow fundamental endpoint with explicit payload SN
+premises.
+
+`Term.arrowCode` stores schematic raw payloads rather than typed child
+terms.  Since the raw reduction relation has congruence under
+`RawTerm.arrowCode`, those payloads must be known strongly normalizing
+after substitution.  This theorem names that obligation for the
+identity-only M04 chain instead of hiding it behind an impossible
+unconditional constructor case. -/
+theorem Reducible.fundamental_arrowCode_of_payloads
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw codomainCodeRaw : RawTerm scope}
+    (domainCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (domainCodeRaw.subst sigma.forRaw))
+    (codomainCodeIsSN :
+      RawTerm.isStronglyNormalizing
+        (codomainCodeRaw.subst sigma.forRaw)) :
+    Reducible ((Ty.universe outerLevel levelLe).subst sigma)
+              (Term.subst termSubst
+                (Term.arrowCode (context := sourceCtx)
+                  outerLevel levelLe domainCodeRaw codomainCodeRaw)) :=
+  RawTerm.arrowCode_isStronglyNormalizing
+    domainCodeIsSN codomainCodeIsSN
 
 /-- **K12.20.BB.1 cumulUpMarker SN preservation** — CUMUL-2.6 cong
 helper at the raw layer.  Sister to `subsume_isStronglyNormalizing`
