@@ -18492,6 +18492,66 @@ theorem Reducible.fundamental_identity_eitherMatch_at_eitherType_sn
       scrutineeIdentityReducible leftIdentityReducible
       rightIdentityReducible)
 
+/-- **K12.27 identity-substitution modal introduction SN endpoint**.
+
+Layer-1 `modIntro` is type-preserving, so the M04 identity route only
+needs SN of the identity-substituted inner term.  This theorem does not
+claim a full modal reducibility introduction principle. -/
+theorem Reducible.fundamental_identity_modIntro_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIdentityReducible :
+      Reducible (innerType.subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) innerTerm)) :
+    Term.isStronglyNormalizing (Term.modIntro innerTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.modIntro innerTerm)
+    (Term.modIntro_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing innerIdentityReducible))
+
+/-- **K12.27 identity-substitution modal elimination SN endpoint**.
+
+This is the SN-output identity bridge for the current Layer-1
+type-preserving `modElim` constructor.  Full cross-modal eliminator
+reducibility remains a separate K12.25/K12.20.U4 problem. -/
+theorem Reducible.fundamental_identity_modElim_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIdentityReducible :
+      Reducible (innerType.subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) innerTerm)) :
+    Term.isStronglyNormalizing (Term.modElim innerTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.modElim innerTerm)
+    (Term.modElim_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing innerIdentityReducible))
+
+/-- **K12.27 identity-substitution modal subsumption SN endpoint**.
+
+`subsume` is also type-preserving in the present Layer-1 kernel, so this
+bridge only packages the M04 SN consequence of the child identity
+reducibility witness. -/
+theorem Reducible.fundamental_identity_subsume_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIdentityReducible :
+      Reducible (innerType.subst Subst.identity)
+        (Term.subst (TermSubst.identity sourceCtx) innerTerm)) :
+    Term.isStronglyNormalizing (Term.subsume innerTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.subsume innerTerm)
+    (Term.subsume_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing innerIdentityReducible))
+
 /-- **K12.27 identity-substitution identity eliminator SN endpoint**. -/
 theorem Reducible.fundamental_identity_idJ_at_id_sn
     {mode : Mode} {level scope : Nat}
