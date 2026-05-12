@@ -7704,6 +7704,120 @@ theorem RawTerm.idCode_isStronglyNormalizing {scope : Nat}
                 leftTargetIsSN
                 (rightClosure rightTarget ⟨rightStep, rightEq⟩)
 
+/-- **K12.27 type-code payload SN frontier**.
+
+`Term.*Code` constructors currently store schematic `RawTerm` payloads
+rather than recursive typed children.  Since raw parallel reduction
+reduces under those payloads, M04 cannot discharge their constructor
+cases from the `Term` induction alone.  This predicate names exactly
+the residual evidence a schematic type-code tree must carry for the
+raw SN endpoint.
+
+For `idCode`, the carrier must itself be a normalizing type code, while
+the endpoints only need raw SN: they are term codes at the carrier, not
+type codes. -/
+inductive RawTerm.IsStronglyNormalizingTypeCode :
+    ∀ {scope : Nat}, RawTerm scope → Prop
+  | universeCode {scope : Nat} (innerLevel : Nat) :
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.universeCode innerLevel : RawTerm scope)
+  | arrowCode {scope : Nat} {domainCode codomainCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode domainCode →
+      RawTerm.IsStronglyNormalizingTypeCode codomainCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.arrowCode domainCode codomainCode)
+  | piTyCode {scope : Nat}
+      {domainCode : RawTerm scope}
+      {codomainCode : RawTerm (scope + 1)} :
+      RawTerm.IsStronglyNormalizingTypeCode domainCode →
+      RawTerm.IsStronglyNormalizingTypeCode codomainCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.piTyCode domainCode codomainCode)
+  | sigmaTyCode {scope : Nat}
+      {domainCode : RawTerm scope}
+      {codomainCode : RawTerm (scope + 1)} :
+      RawTerm.IsStronglyNormalizingTypeCode domainCode →
+      RawTerm.IsStronglyNormalizingTypeCode codomainCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.sigmaTyCode domainCode codomainCode)
+  | productCode {scope : Nat} {firstCode secondCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode firstCode →
+      RawTerm.IsStronglyNormalizingTypeCode secondCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.productCode firstCode secondCode)
+  | sumCode {scope : Nat} {leftCode rightCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode leftCode →
+      RawTerm.IsStronglyNormalizingTypeCode rightCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.sumCode leftCode rightCode)
+  | listCode {scope : Nat} {elementCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode elementCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.listCode elementCode)
+  | optionCode {scope : Nat} {elementCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode elementCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.optionCode elementCode)
+  | eitherCode {scope : Nat} {leftCode rightCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode leftCode →
+      RawTerm.IsStronglyNormalizingTypeCode rightCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.eitherCode leftCode rightCode)
+  | idCode {scope : Nat}
+      {typeCode leftEndpoint rightEndpoint : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode typeCode →
+      RawTerm.isStronglyNormalizing leftEndpoint →
+      RawTerm.isStronglyNormalizing rightEndpoint →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.idCode typeCode leftEndpoint rightEndpoint)
+  | equivCode {scope : Nat} {leftTypeCode rightTypeCode : RawTerm scope} :
+      RawTerm.IsStronglyNormalizingTypeCode leftTypeCode →
+      RawTerm.IsStronglyNormalizingTypeCode rightTypeCode →
+      RawTerm.IsStronglyNormalizingTypeCode
+        (RawTerm.equivCode leftTypeCode rightTypeCode)
+
+/-- A type-code tree carrying the explicit K12.27 payload frontier is
+strongly normalizing at the raw layer. -/
+theorem RawTerm.isStronglyNormalizing_of_typeCode
+    {scope : Nat} {codeRaw : RawTerm scope}
+    (codeIsTypeCode : RawTerm.IsStronglyNormalizingTypeCode codeRaw) :
+    RawTerm.isStronglyNormalizing codeRaw := by
+  induction codeIsTypeCode with
+  | universeCode innerLevel =>
+      exact RawTerm.universeCode_isStronglyNormalizing innerLevel
+  | arrowCode _ _ domainIH codomainIH =>
+      exact RawTerm.arrowCode_isStronglyNormalizing domainIH codomainIH
+  | piTyCode _ _ domainIH codomainIH =>
+      exact RawTerm.piTyCode_isStronglyNormalizing domainIH codomainIH
+  | sigmaTyCode _ _ domainIH codomainIH =>
+      exact RawTerm.sigmaTyCode_isStronglyNormalizing domainIH codomainIH
+  | productCode _ _ firstIH secondIH =>
+      exact RawTerm.productCode_isStronglyNormalizing firstIH secondIH
+  | sumCode _ _ leftIH rightIH =>
+      exact RawTerm.sumCode_isStronglyNormalizing leftIH rightIH
+  | listCode _ elementIH =>
+      exact RawTerm.listCode_isStronglyNormalizing elementIH
+  | optionCode _ elementIH =>
+      exact RawTerm.optionCode_isStronglyNormalizing elementIH
+  | eitherCode _ _ leftIH rightIH =>
+      exact RawTerm.eitherCode_isStronglyNormalizing leftIH rightIH
+  | idCode _ leftEndpointIsSN rightEndpointIsSN typeIH =>
+      exact RawTerm.idCode_isStronglyNormalizing
+        typeIH leftEndpointIsSN rightEndpointIsSN
+  | equivCode _ _ leftIH rightIH =>
+      exact RawTerm.equivCode_isStronglyNormalizing leftIH rightIH
+
+/-- Identity-substitution form of
+`RawTerm.isStronglyNormalizing_of_typeCode`, matching the direct M04
+route through `TermSubst.identity`. -/
+theorem RawTerm.subst_identity_isStronglyNormalizing_of_typeCode
+    {level scope : Nat} {codeRaw : RawTerm scope}
+    (codeIsTypeCode : RawTerm.IsStronglyNormalizingTypeCode codeRaw) :
+    RawTerm.isStronglyNormalizing
+      (codeRaw.subst (@Subst.identity level scope).forRaw) := by
+  rw [RawTerm.subst_identity codeRaw]
+  exact RawTerm.isStronglyNormalizing_of_typeCode codeIsTypeCode
+
 /-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
 zero endpoint.  `Ty.interval` is closed (no scope dependence) so
 `Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
