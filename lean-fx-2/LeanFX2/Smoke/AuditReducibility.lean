@@ -783,6 +783,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_equivApp_at_equiv
 #print axioms Reducible.fundamental_equivApply_at_equiv
 #print axioms Reducible.fundamental_equivIntroHet_at_equiv_sn
+#print axioms Reducible.fundamental_equivIntroHet_at_equiv
 #print axioms Reducible.fundamental_oeqFunext_at_oeq
 #print axioms Reducible.fundamental_pathApp_at_path
 #print axioms Reducible.fundamental_glueElim_at_glue

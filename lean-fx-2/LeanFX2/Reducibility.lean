@@ -13501,6 +13501,45 @@ theorem Reducible.fundamental_equivIntroHet_at_equiv_sn
     (Reducible.isStronglyNormalizing forwardIH)
     (Reducible.isStronglyNormalizing backwardIH)
 
+/-- Fundamental SN endpoint: `Term.equivIntroHet` at `Ty.equiv`
+(K12.26 support).
+
+The conclusion is the M04-relevant Tait endpoint for the current
+equivalence-introduction constructor: the introduced equivalence is
+strongly normalizing whenever its forward and backward functions are
+reducible.  The historical `_sn` theorem remains available as a
+compatibility alias target. -/
+theorem Reducible.fundamental_equivIntroHet_at_equiv
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardIH :
+      Reducible ((Ty.arrow carrierA carrierB).subst sigma)
+        (Term.subst termSubst forward))
+    (backwardIH :
+      Reducible ((Ty.arrow carrierB carrierA).subst sigma)
+        (Term.subst termSubst backward)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.equivIntroHet forward backward leftInv rightInv)) :=
+  Reducible.fundamental_equivIntroHet_at_equiv_sn forwardIH backwardIH
+
 /-- Fundamental case: `Term.oeqFunext` at `Ty.oeq` (K12.23.B).
 
 The current `Ty.oeq` reducibility arm is weak-J shaped: SN of the
