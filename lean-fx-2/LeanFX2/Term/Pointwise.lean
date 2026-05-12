@@ -1,3 +1,4 @@
+import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Subst
 
 /-! # Term/Pointwise — substitution pointwise & commute lemmas
@@ -562,6 +563,146 @@ theorem TermSubst.lift_zero_subst_singleton_heq
     (Ty.weaken_subst_singleton (domainType.subst sigma)
       (domainType.subst sigma) argumentRaw).symm
     argumentTerm
+
+/-! ## Weakening followed by singleton substitution
+
+These lemmas build the constructor-by-constructor collapse needed by
+the lambda beta-contractum route: weaken a typed term through a fresh
+binder, then substitute that fresh binder by a singleton argument.  The
+full structural theorem is intentionally assembled in small audited
+slices because cast-bearing binders and dependent eliminators require
+their own alignment work. -/
+
+/-- Variable case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_var_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (position : Fin scope)
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.var (context := context) position)))
+      (Term.var (context := context) position) := by
+  simp only [Term.weaken, Term.rename, Term.subst, TermSubst.singleton]
+  exact Term.type_raw_eq_cast_heq
+    (Ty.weaken_subst_singleton (varType context position) newType
+      argumentRaw).symm
+    (RawTerm.weaken_subst_singleton (RawTerm.var position) argumentRaw).symm
+    (Term.var position)
+
+/-- Unit value case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_unit_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.unit (context := context))))
+      (Term.unit (context := context)) := by
+  rfl
+
+/-- Boolean true case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_boolTrue_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.boolTrue (context := context))))
+      (Term.boolTrue (context := context)) := by
+  rfl
+
+/-- Boolean false case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_boolFalse_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.boolFalse (context := context))))
+      (Term.boolFalse (context := context)) := by
+  rfl
+
+/-- Natural zero case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_natZero_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.natZero (context := context))))
+      (Term.natZero (context := context)) := by
+  rfl
+
+/-- Empty list case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_listNil_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (elementType : Ty level scope)
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType
+          (Term.listNil (context := context) (elementType := elementType))))
+      (Term.listNil (context := context) (elementType := elementType)) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.listNil_HEq_congr
+    (Ty.weaken_subst_singleton elementType newType argumentRaw)
+
+/-- Empty option case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_optionNone_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (elementType : Ty level scope)
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType
+          (Term.optionNone (context := context) (elementType := elementType))))
+      (Term.optionNone (context := context) (elementType := elementType)) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.optionNone_HEq_congr
+    (Ty.weaken_subst_singleton elementType newType argumentRaw)
+
+/-- Interval zero case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_interval0_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.interval0 (context := context))))
+      (Term.interval0 (context := context)) := by
+  rfl
+
+/-- Interval one case for weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_interval1_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.interval1 (context := context))))
+      (Term.interval1 (context := context)) := by
+  rfl
 
 /-! ## Cast-aware HEq scaffolding for Term.subst_compose
 

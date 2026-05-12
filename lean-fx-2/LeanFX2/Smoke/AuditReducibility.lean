@@ -1192,6 +1192,15 @@ M04 / `strong_normalization`. -/
 #print axioms TermSubst.identity
 #print axioms TermSubst.consSingleton
 #print axioms TermSubst.lift_zero_subst_singleton_heq
+#print axioms Term.weaken_subst_singleton_var_heq
+#print axioms Term.weaken_subst_singleton_unit_heq
+#print axioms Term.weaken_subst_singleton_boolTrue_heq
+#print axioms Term.weaken_subst_singleton_boolFalse_heq
+#print axioms Term.weaken_subst_singleton_natZero_heq
+#print axioms Term.weaken_subst_singleton_listNil_heq
+#print axioms Term.weaken_subst_singleton_optionNone_heq
+#print axioms Term.weaken_subst_singleton_interval0_heq
+#print axioms Term.weaken_subst_singleton_interval1_heq
 #print axioms ReducibleSubst.singleton
 #print axioms ReducibleSubst.identity
 #print axioms ReducibleSubst.lift_isStronglyNormalizing
