@@ -12263,6 +12263,73 @@ theorem Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
         (TermSubst.consSingleton termSubst argumentTerm)
         (ReducibleSubst.consSingleton substReducible argumentReducible)))
 
+/-- Identity-substitution lambda reducibility for SN-recoverable codomains.
+
+This is the M04-facing specialization of
+`fundamental_lam_at_arrow_of_bodyIH_sn_codomain`.  The value-SN side uses
+the existing identity-lift bridge instead of generic
+`ReducibleSubst.lift`; the application side still uses the body IH under
+`TermSubst.consSingleton`, so reducible arguments feed the β-contractum
+without requiring the typed β-contractum HEq. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (codomainReducibleOfSN :
+      ∀ {resultRaw : RawTerm scope}
+        (resultTerm :
+          Term sourceCtx (codomainType.subst Subst.identity) resultRaw),
+        Term.isStronglyNormalizing resultTerm →
+        Reducible (codomainType.subst Subst.identity) resultTerm)
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (codomainType.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType codomainType).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := codomainType) bodyTerm)) := by
+  have bodyIdentityReducible :
+      Reducible (codomainType.weaken.subst Subst.identity)
+        (Term.subst (TermSubst.identity (sourceCtx.cons domainType))
+          bodyTerm) :=
+    bodyIH (TermSubst.identity (sourceCtx.cons domainType))
+      ReducibleSubst.identity
+  have bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute Subst.identity codomainType ▸
+          Term.subst ((TermSubst.identity sourceCtx).lift domainType)
+            bodyTerm) :=
+    Reducible.identity_lift_body_sn_of_identity_reducible
+      bodyIdentityReducible
+  refine ⟨
+    Reducible.fundamental_lam_at_arrow_sn
+      (termSubst := TermSubst.identity sourceCtx)
+      bodyIsSN,
+    ?_⟩
+  intro _argumentRaw argumentTerm argumentReducible
+  exact codomainReducibleOfSN
+    (Term.app
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := codomainType) bodyTerm))
+      argumentTerm)
+    (Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
+      (termSubst := TermSubst.identity sourceCtx)
+      bodyIsSN
+      argumentReducible
+      (bodyIH
+        (TermSubst.consSingleton
+          (TermSubst.identity sourceCtx) argumentTerm)
+        (ReducibleSubst.consSingleton
+          ReducibleSubst.identity argumentReducible)))
+
 /-- Typed head-β SN expansion for dependent Π application.
 
 `Term.lamPi` shares the raw `RawTerm.lam` constructor with non-dependent
