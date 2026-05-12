@@ -757,6 +757,10 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_lamPi_at_piTy_app_sn
 #print axioms Reducible.fundamental_lamPi_at_piTy_contractum_sn
 #print axioms Reducible.fundamental_lamPi_at_piTy_app_sn_of_body_contractum
+#print axioms Reducible.fundamental_pathLam_at_path_sn
+#print axioms Reducible.fundamental_pathLam_at_path_app_sn
+#print axioms Reducible.fundamental_pathLam_at_path_contractum_sn
+#print axioms Reducible.fundamental_pathLam_at_path_app_sn_of_body_contractum
 #print axioms Reducible.fundamental_app_at_arrow
 #print axioms Reducible.fundamental_fst_at_sigmaTy
 #print axioms Reducible.fundamental_snd_at_sigmaTy_sn

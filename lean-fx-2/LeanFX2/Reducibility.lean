@@ -10374,6 +10374,161 @@ theorem Reducible.fundamental_lamPi_at_piTy_app_sn_of_body_contractum
     (Reducible.fundamental_lamPi_at_piTy_contractum_sn
       bodyContractumReducible)
 
+/-- Fundamental SN endpoint for `Term.pathLam` at cubical `Ty.path`.
+
+This is the cubical sibling of `fundamental_lam_at_arrow_sn`.  The body
+premise is explicit because generic lifted-substitution reducibility is
+still the load-bearing `ReducibleSubst.lift` / weakening blocker. -/
+theorem Reducible.fundamental_pathLam_at_path_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodyTerm)) :=
+  Term.pathLam_isStronglyNormalizing modeIsUnivalent
+    (carrierType.subst sigma)
+    (leftEndpoint.subst sigma.forRaw)
+    (rightEndpoint.subst sigma.forRaw)
+    bodyIsSN
+
+/-- Fundamental SN endpoint for cubical path-lambda application.
+
+The path closure ultimately needs full `Reducible` at the carrier after
+`pathApp`; this lemma packages only the M04-relevant SN half once the
+lifted body, interval argument, and β-contractum are SN. -/
+theorem Reducible.fundamental_pathLam_at_path_app_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    {intervalRaw : RawTerm targetScope}
+    {intervalTerm : Term targetCtx Ty.interval intervalRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) bodyTerm))
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
+    (contractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst0
+          (Ty.weaken_subst_commute sigma carrierType ▸
+            Term.subst (termSubst.lift Ty.interval) bodyTerm)
+          intervalTerm)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent
+        (Term.subst termSubst
+          (Term.pathLam modeIsUnivalent carrierType
+            leftEndpoint rightEndpoint bodyTerm))
+        intervalTerm) :=
+  Term.pathApp_pathLam_isStronglyNormalizing modeIsUnivalent
+    bodyIsSN intervalIsSN contractumIsSN
+
+/-- β-contractum SN bridge for cubical `Term.pathLam`.
+
+The body IH is naturally available under `TermSubst.consSingleton` with
+the interval argument.  As with arrow and Π, raw SN is insensitive to
+the typed cast introduced by lifted substitution, so the raw
+substitution-alignment lemma gives the target `Term.subst0` SN fact. -/
+theorem Reducible.fundamental_pathLam_at_path_contractum_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    {intervalRaw : RawTerm targetScope}
+    {intervalTerm : Term targetCtx Ty.interval intervalRaw}
+    (bodyContractumReducible :
+      Reducible
+        (carrierType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (Ty.interval.subst sigma) intervalRaw)))
+        (Term.subst
+          (TermSubst.consSingleton (domainType := Ty.interval)
+            termSubst intervalTerm)
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst0
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) bodyTerm)
+        intervalTerm) := by
+  have bodyContractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst
+          (TermSubst.consSingleton (domainType := Ty.interval)
+            termSubst intervalTerm)
+          bodyTerm) :=
+    Reducible.isStronglyNormalizing bodyContractumReducible
+  change RawTerm.isStronglyNormalizing
+    ((bodyRaw.subst sigma.forRaw.lift).subst0 intervalRaw)
+  rw [← RawTerm.subst_lift_singleton_eq_subst0
+    bodyRaw Ty.interval sigma intervalRaw]
+  exact bodyContractumIsSN
+
+/-- Combined SN endpoint for cubical `Term.pathLam` application. -/
+theorem Reducible.fundamental_pathLam_at_path_app_sn_of_body_contractum
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    {intervalRaw : RawTerm targetScope}
+    {intervalTerm : Term targetCtx Ty.interval intervalRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma carrierType ▸
+          Term.subst (termSubst.lift Ty.interval) bodyTerm))
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
+    (bodyContractumReducible :
+      Reducible
+        (carrierType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (Ty.interval.subst sigma) intervalRaw)))
+        (Term.subst
+          (TermSubst.consSingleton (domainType := Ty.interval)
+            termSubst intervalTerm)
+          bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent
+        (Term.subst termSubst
+          (Term.pathLam modeIsUnivalent carrierType
+            leftEndpoint rightEndpoint bodyTerm))
+        intervalTerm) :=
+  Reducible.fundamental_pathLam_at_path_app_sn modeIsUnivalent
+    bodyIsSN intervalIsSN
+    (Reducible.fundamental_pathLam_at_path_contractum_sn
+      bodyContractumReducible)
+
 /-! ## K12.20.F typed CR2 lift for compound Reducible arms — Ty.arrow
 
 The first of 15 compound-arm CR2 lemmas.  Unlike the 10 SN-direct
