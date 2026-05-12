@@ -2499,6 +2499,45 @@ theorem Reducible.fundamental_lam_at_arrow_app_sn
     (Reducible.isStronglyNormalizing argumentReducible)
     contractumIsSN
 
+/-- Reducibility endpoint for a lambda whose codomain reducibility is
+recoverable from strong normalization.
+
+This isolates the solved part of the `fundamental_lam` blocker.  The
+lambda value SN and head-beta application SN are already available from
+the body SN plus the beta-contractum witness.  To upgrade the
+application result from SN to `Reducible codomainType`, the caller must
+provide the codomain-specific SN-to-Reducible bridge.  Closed/SN-fallback
+codomains can supply that bridge directly; full compound codomains still
+need their own head-beta/full-reducibility work. -/
+theorem Reducible.lam_at_arrow_of_sn_codomain
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw}
+    (codomainReducibleOfSN :
+      ∀ {resultRaw : RawTerm scope}
+        (resultTerm : Term context codomainType resultRaw),
+        Term.isStronglyNormalizing resultTerm →
+        Reducible codomainType resultTerm)
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm)
+    (bodyContractumReducible :
+      ∀ {argumentRaw : RawTerm scope}
+        (argumentTerm : Term context domainType argumentRaw),
+        Reducible domainType argumentTerm →
+        Reducible (codomainType.weaken.subst0 domainType argumentRaw)
+          (Term.subst0 bodyTerm argumentTerm)) :
+    Reducible (Ty.arrow domainType codomainType)
+      (Term.lam (codomainType := codomainType) bodyTerm) := by
+  refine ⟨Term.lam_isStronglyNormalizing bodyIsSN, ?_⟩
+  intro argumentTerm argumentReducible argumentIsReducible
+  apply codomainReducibleOfSN
+  exact Term.app_lam_isStronglyNormalizing bodyIsSN
+    (Reducible.isStronglyNormalizing argumentIsReducible)
+    (Reducible.isStronglyNormalizing
+      (bodyContractumReducible argumentReducible argumentIsReducible))
+
 /-- **K12.24.U5 path β SN expansion**.
 
 If the path body, interval argument, and β-contractum are all strongly
