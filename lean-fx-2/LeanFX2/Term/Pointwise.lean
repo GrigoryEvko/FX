@@ -1237,6 +1237,183 @@ theorem Term.weaken_subst_singleton_eitherMatch_heq
     (RawTerm.weaken_subst_singleton rightRaw singletonRaw)
     scrutineeHEq leftHEq rightHEq
 
+/-- Identity reflexivity preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_refl_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope)
+    (rawWitness : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.refl (context := context) carrier rawWitness)))
+      (Term.refl (context := context) carrier rawWitness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.refl_HEq_congr
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton rawWitness singletonRaw)
+
+/-- Identity elimination preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_idJ_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (baseCase : Term context motiveType baseRaw)
+    (witness : Term context (Ty.id carrier leftEndpoint rightEndpoint)
+      witnessRaw)
+    (baseCaseHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType baseCase))
+        baseCase)
+    (witnessHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType witness))
+        witness) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.idJ baseCase witness)))
+      (Term.idJ baseCase witness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.idJ_HEq_congr
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
+    (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton baseRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton witnessRaw singletonRaw)
+    baseCaseHEq witnessHEq
+
+/-- Observational reflexivity preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_oeqRefl_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope)
+    (rawWitness : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.oeqRefl (context := context) carrier rawWitness)))
+      (Term.oeqRefl (context := context) carrier rawWitness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.oeqRefl_HEq_congr
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton rawWitness singletonRaw)
+
+/-- Observational equality elimination preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_oeqJ_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (baseCase : Term context motiveType baseRaw)
+    (witness : Term context (Ty.oeq carrier leftEndpoint rightEndpoint)
+      witnessRaw)
+    (baseCaseHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType baseCase))
+        baseCase)
+    (witnessHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType witness))
+        witness) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.oeqJ baseCase witness)))
+      (Term.oeqJ baseCase witness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.oeqJ_HEq_congr
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
+    (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton baseRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton witnessRaw singletonRaw)
+    baseCaseHEq witnessHEq
+
+/-- Strict identity reflexivity preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_idStrictRefl_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level scope)
+    (rawWitness : RawTerm scope)
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.idStrictRefl (context := context) modeIsStrict carrier
+            rawWitness)))
+      (Term.idStrictRefl (context := context) modeIsStrict carrier
+        rawWitness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.idStrictRefl_HEq_congr modeIsStrict
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton rawWitness singletonRaw)
+
+/-- Strict identity recursion preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_idStrictRec_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (baseCase : Term context motiveType baseRaw)
+    (witness :
+      Term context (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw)
+    (baseCaseHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType baseCase))
+        baseCase)
+    (witnessHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType witness))
+        witness) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.idStrictRec modeIsStrict baseCase witness)))
+      (Term.idStrictRec modeIsStrict baseCase witness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.idStrictRec_HEq_congr modeIsStrict
+    (Ty.weaken_subst_singleton carrier newType singletonRaw)
+    (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
+    (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
+    (Ty.weaken_subst_singleton motiveType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton baseRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton witnessRaw singletonRaw)
+    baseCaseHEq witnessHEq
+
 /-- Path application preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_pathApp_heq
     {mode : Mode} {level scope : Nat}
