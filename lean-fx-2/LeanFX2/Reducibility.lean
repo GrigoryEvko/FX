@@ -11585,6 +11585,46 @@ theorem Reducible.of_heq
   subst termEq
   exact sourceReducible
 
+/-! ### K12.20.U4 Term cast HEq support
+
+The full lambda reducibility route has two separate cast layers:
+reducibility witnesses move across type/raw indices, while concrete
+`Term.subst` values may also carry internal type-index casts.  The
+following helpers isolate the latter, so beta-contractum work can remove
+pure type casts before addressing the genuinely structural substitution
+composition theorem.
+-/
+
+/-- A type-index cast on a typed term is heterogeneously equal to the
+original term. -/
+theorem Term.type_eq_cast_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {raw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term context sourceType raw) :
+    HEq (typeEq ▸ sourceTerm) sourceTerm := by
+  cases typeEq
+  exact HEq.rfl
+
+/-- Substitution ignores a pure type-index cast up to heterogeneous
+equality. -/
+theorem Term.subst_type_eq_cast_heq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {sourceType targetType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term sourceCtx sourceType raw) :
+    HEq (Term.subst termSubst (typeEq ▸ sourceTerm))
+      (Term.subst termSubst sourceTerm) := by
+  cases typeEq
+  exact HEq.rfl
+
 /-- Substitution law for the β-specific environment extension:
 weakening a source type, lifting an existing substitution, then
 substituting the fresh argument is propositionally the original
@@ -11676,6 +11716,42 @@ def TermSubst.consSingleton
         exact RawTerm.weaken_subst_singleton
           (sigma.forRaw previousPosition) argumentRaw
       rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition
+
+/-- The fresh variable of `termSubst.lift` collapses to the singleton
+argument after substituting by `TermSubst.singleton`, up to HEq.
+
+This is the zero-position half of the cast-aware beta-contractum bridge:
+it removes the `Ty.weaken_subst_commute` cast introduced by
+`TermSubst.lift`, then uses the singleton substitution's own
+`Ty.weaken_subst_singleton` cast.  Successor positions still require the
+broader weaken-then-singleton substitution theorem for arbitrary Terms. -/
+theorem TermSubst.lift_zero_subst_singleton_heq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (termSubst.lift domainType ⟨0, Nat.zero_lt_succ scope⟩))
+      argumentTerm := by
+  simp only [TermSubst.lift, varType]
+  apply HEq.trans
+    (Term.subst_type_eq_cast_heq (TermSubst.singleton argumentTerm)
+      (Ty.weaken_subst_commute sigma domainType).symm
+      (Term.var (context := targetCtx.cons (domainType.subst sigma))
+        ⟨0, Nat.zero_lt_succ targetScope⟩))
+  change HEq
+    (TermSubst.singleton argumentTerm ⟨0, Nat.zero_lt_succ targetScope⟩)
+    argumentTerm
+  simp only [TermSubst.singleton, varType]
+  exact Term.type_eq_cast_heq
+    (Ty.weaken_subst_singleton (domainType.subst sigma)
+      (domainType.subst sigma) argumentRaw).symm
+    argumentTerm
 
 /-- **K12.20.U3 singleton ReducibleSubst**: replacing the newest
 variable by a reducible argument yields a reducible singleton

@@ -1182,11 +1182,14 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.of_raw_eq_symm_cast
 #print axioms Reducible.of_raw_eq_cast
 #print axioms Reducible.of_heq
+#print axioms Term.type_eq_cast_heq
+#print axioms Term.subst_type_eq_cast_heq
 #print axioms Ty.weaken_subst_lift_singleton
 #print axioms RawTerm.subst_lift_singleton_eq_subst0
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
 #print axioms TermSubst.consSingleton
+#print axioms TermSubst.lift_zero_subst_singleton_heq
 #print axioms ReducibleSubst.singleton
 #print axioms ReducibleSubst.identity
 #print axioms ReducibleSubst.lift_isStronglyNormalizing
