@@ -12111,6 +12111,43 @@ theorem Reducible.fundamental_modElim_at_session
               (Term.subst termSubst (Term.modElim innerTerm)) :=
   Term.modElim_isStronglyNormalizing innerIH
 
+/-- **K12.25 modElim fundamental case at `Ty.effect`**. -/
+theorem Reducible.fundamental_modElim_at_effect
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.effect carrierType effectTag) innerRaw}
+    (innerIH :
+        Reducible ((Ty.effect carrierType effectTag).subst sigma)
+                  (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.effect carrierType effectTag).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
+/-- **K12.25 modElim fundamental case at `Ty.modal`**. -/
+theorem Reducible.fundamental_modElim_at_modal
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modalityTag : Nat) {carrierType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.modal modalityTag carrierType) innerRaw}
+    (innerIH :
+        Reducible ((Ty.modal modalityTag carrierType).subst sigma)
+                  (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.modal modalityTag carrierType).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
+
 /-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
 case at the homogeneous (non-dependent) arrow type
 
