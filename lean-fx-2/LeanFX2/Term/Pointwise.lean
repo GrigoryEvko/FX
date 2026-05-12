@@ -704,6 +704,298 @@ theorem Term.weaken_subst_singleton_interval1_heq
       (Term.interval1 (context := context)) := by
   rfl
 
+/-- Natural successor preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_natSucc_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {predecessorRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (predecessorTerm : Term context Ty.nat predecessorRaw)
+    (predecessorHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType predecessorTerm))
+        predecessorTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.natSucc predecessorTerm)))
+      (Term.natSucc predecessorTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.natSucc_HEq_congr
+    (RawTerm.weaken_subst_singleton predecessorRaw argumentRaw)
+    predecessorHEq
+
+/-- List cons preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_listCons_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (headTerm : Term context elementType headRaw)
+    (tailTerm : Term context (Ty.listType elementType) tailRaw)
+    (headHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType headTerm))
+        headTerm)
+    (tailHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType tailTerm))
+        tailTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.listCons headTerm tailTerm)))
+      (Term.listCons headTerm tailTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.listCons_HEq_congr
+    (Ty.weaken_subst_singleton elementType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton headRaw argumentRaw)
+    (RawTerm.weaken_subst_singleton tailRaw argumentRaw)
+    headHEq tailHEq
+
+/-- Option some preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_optionSome_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (valueTerm : Term context elementType valueRaw)
+    (valueHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType valueTerm))
+        valueTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.optionSome valueTerm)))
+      (Term.optionSome valueTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.optionSome_HEq_congr
+    (Ty.weaken_subst_singleton elementType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton valueRaw argumentRaw)
+    valueHEq
+
+/-- Either-left injection preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_eitherInl_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (valueTerm : Term context leftType valueRaw)
+    (valueHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType valueTerm))
+        valueTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType
+          (Term.eitherInl (rightType := rightType) valueTerm)))
+      (Term.eitherInl (rightType := rightType) valueTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.eitherInl_HEq_congr
+    (Ty.weaken_subst_singleton leftType newType argumentRaw)
+    (Ty.weaken_subst_singleton rightType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton valueRaw argumentRaw)
+    valueHEq
+
+/-- Either-right injection preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_eitherInr_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (valueTerm : Term context rightType valueRaw)
+    (valueHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType valueTerm))
+        valueTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType
+          (Term.eitherInr (leftType := leftType) valueTerm)))
+      (Term.eitherInr (leftType := leftType) valueTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.eitherInr_HEq_congr
+    (Ty.weaken_subst_singleton leftType newType argumentRaw)
+    (Ty.weaken_subst_singleton rightType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton valueRaw argumentRaw)
+    valueHEq
+
+/-- Interval negation preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_intervalOpp_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (innerTerm : Term context Ty.interval innerRaw)
+    (innerHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType innerTerm))
+        innerTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.intervalOpp innerTerm)))
+      (Term.intervalOpp innerTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.intervalOpp_HEq_congr
+    (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
+    innerHEq
+
+/-- Interval meet preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_intervalMeet_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (leftTerm : Term context Ty.interval leftRaw)
+    (rightTerm : Term context Ty.interval rightRaw)
+    (leftHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType leftTerm))
+        leftTerm)
+    (rightHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType rightTerm))
+        rightTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.intervalMeet leftTerm rightTerm)))
+      (Term.intervalMeet leftTerm rightTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.intervalMeet_HEq_congr
+    (RawTerm.weaken_subst_singleton leftRaw argumentRaw)
+    (RawTerm.weaken_subst_singleton rightRaw argumentRaw)
+    leftHEq rightHEq
+
+/-- Interval join preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_intervalJoin_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (leftTerm : Term context Ty.interval leftRaw)
+    (rightTerm : Term context Ty.interval rightRaw)
+    (leftHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType leftTerm))
+        leftTerm)
+    (rightHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType rightTerm))
+        rightTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.intervalJoin leftTerm rightTerm)))
+      (Term.intervalJoin leftTerm rightTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.intervalJoin_HEq_congr
+    (RawTerm.weaken_subst_singleton leftRaw argumentRaw)
+    (RawTerm.weaken_subst_singleton rightRaw argumentRaw)
+    leftHEq rightHEq
+
+/-- Modal introduction preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_modIntro_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (innerTerm : Term context innerType innerRaw)
+    (innerHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType innerTerm))
+        innerTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.modIntro innerTerm)))
+      (Term.modIntro innerTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.modIntro_HEq_congr
+    (Ty.weaken_subst_singleton innerType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
+    innerHEq
+
+/-- Modal elimination preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_modElim_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (innerTerm : Term context innerType innerRaw)
+    (innerHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType innerTerm))
+        innerTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.modElim innerTerm)))
+      (Term.modElim innerTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.modElim_HEq_congr
+    (Ty.weaken_subst_singleton innerType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
+    innerHEq
+
+/-- Cumulativity subsumption preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_subsume_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {argumentRaw : RawTerm scope}
+    (argumentTerm : Term context newType argumentRaw)
+    (innerTerm : Term context innerType innerRaw)
+    (innerHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken newType innerTerm))
+        innerTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton argumentTerm)
+        (Term.weaken newType (Term.subsume innerTerm)))
+      (Term.subsume innerTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.subsume_HEq_congr
+    (Ty.weaken_subst_singleton innerType newType argumentRaw)
+    (RawTerm.weaken_subst_singleton innerRaw argumentRaw)
+    innerHEq
+
 /-! ## Cast-aware HEq scaffolding for Term.subst_compose
 
 The full `Term.subst_compose` (HEq, 29 cases) is a substantial cascade
