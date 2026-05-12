@@ -17955,4 +17955,87 @@ theorem Term.codataDest_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.codataDest codataValue) :=
   Reducible.isStronglyNormalizing codataReducible.2
 
+/-- **K12.27 identity-substitution equivalence application SN endpoint**.
+
+The identity-only M04 route gets the internal equivalence application
+case by projecting the existing `Ty.equiv` closure at identity and then
+erasing identity substitution from the raw index. -/
+theorem Reducible.fundamental_identity_equivApp_at_equiv_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm :
+        Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivIdentityReducible :
+        Reducible ((Ty.equiv carrierA carrierB).subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) equivTerm))
+    (argumentIdentityReducible :
+        Reducible (carrierA.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) argumentTerm)) :
+    Term.isStronglyNormalizing (Term.equivApp equivTerm argumentTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.equivApp equivTerm argumentTerm)
+    (Reducible.isStronglyNormalizing
+      (Reducible.fundamental_equivApp_at_equiv
+        (termSubst := TermSubst.identity sourceCtx)
+        equivIdentityReducible argumentIdentityReducible))
+
+/-- **K12.27 identity-substitution path application SN endpoint**.
+
+This is the cubical eliminator sibling of the identity application
+bridge: the existing `Ty.path` fundamental endpoint supplies reducibility
+of the identity-substituted path application, and the raw-index identity
+lemma transports that result back to the original `Term.pathApp`. -/
+theorem Reducible.fundamental_identity_pathApp_at_path_sn
+    {level scope : Nat}
+    {sourceCtx : Ctx Mode.univalent level scope}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+        Term sourceCtx
+          (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (pathIdentityReducible :
+        Reducible
+          ((Ty.path carrierType leftEndpoint rightEndpoint).subst
+            Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) pathTerm))
+    (intervalIdentityReducible :
+        Reducible (Ty.interval.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) intervalTerm)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp rfl pathTerm intervalTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.pathApp rfl pathTerm intervalTerm)
+    (Reducible.isStronglyNormalizing
+      (Reducible.fundamental_pathApp_at_path
+        (termSubst := TermSubst.identity sourceCtx)
+        rfl pathIdentityReducible intervalIdentityReducible))
+
+/-- **K12.27 identity-substitution codata observation SN endpoint**.
+
+The codata candidate stores a reducible observation closure.  This
+identity-only wrapper exposes the corresponding original-term SN fact
+for the M04 induction without introducing any generic weakening theorem. -/
+theorem Reducible.fundamental_identity_codataDest_at_codata_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+        Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataIdentityReducible :
+        Reducible ((Ty.codata stateType outputType).subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) codataValue)) :
+    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.codataDest codataValue)
+    (Reducible.isStronglyNormalizing
+      (Reducible.fundamental_codataDest_at_codata
+        (termSubst := TermSubst.identity sourceCtx)
+        codataIdentityReducible))
+
 end LeanFX2
