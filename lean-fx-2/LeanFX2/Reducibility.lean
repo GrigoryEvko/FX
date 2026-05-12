@@ -10067,6 +10067,26 @@ theorem ReducibleSubst.identity
 
 /-- **K12.27.M04 identity-substitution SN extraction**.
 
+The identity-only M04 route often proves SN for the term after
+`TermSubst.identity`, because all fundamental endpoints are stated in
+the substitution-parametric shape.  This lemma erases that identity
+substitution from the raw index. -/
+theorem Term.strong_normalization_of_identity_subst
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (sourceTerm : Term sourceCtx sourceType sourceRaw)
+    (identityIsSN :
+      Term.isStronglyNormalizing
+        (Term.subst (TermSubst.identity sourceCtx) sourceTerm)) :
+    Term.isStronglyNormalizing sourceTerm := by
+  change RawTerm.isStronglyNormalizing sourceRaw
+  rw [← RawTerm.subst_identity sourceRaw]
+  exact identityIsSN
+
+/-- **K12.27.M04 identity-substitution SN extraction**.
+
 The final strong-normalization corollary will apply the fundamental
 theorem at `TermSubst.identity`, then erase the identity substitution
 from the raw index.  This lemma packages only that last extraction
@@ -10078,16 +10098,15 @@ theorem Reducible.strong_normalization_of_identity_reducible
     {sourceRaw : RawTerm scope}
     (sourceTerm : Term sourceCtx sourceType sourceRaw)
     (identityReducible :
-      Reducible (sourceType.subst Subst.identity)
+    Reducible (sourceType.subst Subst.identity)
         (Term.subst (TermSubst.identity sourceCtx) sourceTerm)) :
     Term.isStronglyNormalizing sourceTerm := by
   have identitySubstIsSN :
       Term.isStronglyNormalizing
         (Term.subst (TermSubst.identity sourceCtx) sourceTerm) :=
     Reducible.isStronglyNormalizing identityReducible
-  change RawTerm.isStronglyNormalizing sourceRaw
-  rw [← RawTerm.subst_identity sourceRaw]
-  exact identitySubstIsSN
+  exact Term.strong_normalization_of_identity_subst sourceTerm
+    identitySubstIsSN
 
 /-- **K12.27 identity-lift raw bridge**.
 
