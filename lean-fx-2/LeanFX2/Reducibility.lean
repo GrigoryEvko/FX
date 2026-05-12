@@ -4956,6 +4956,79 @@ theorem Term.natElim_natSucc_isStronglyNormalizing
   RawTerm.natElim_natSucc_isStronglyNormalizing
     predecessorIsSN zeroIsSN succIsSN succAppIsSN
 
+/-- Nat-zero ι SN expansion for `natRec`.
+
+For a canonical zero scrutinee, `natRec` reduces to the zero branch.
+The successor branch remains in the statement because congruent
+reductions may step under it before the ι rule fires. -/
+theorem RawTerm.natRec_natZero_isStronglyNormalizing
+    {scope : Nat}
+    {zeroBranch : RawTerm scope}
+    (zeroIsSN : RawTerm.isStronglyNormalizing zeroBranch) :
+    ∀ {succBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing succBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.natRec RawTerm.natZero zeroBranch succBranch) := by
+  induction zeroIsSN with
+  | intro currentZero zeroClosure zeroIH =>
+    intro succBranch succIsSN
+    induction succIsSN with
+    | intro currentSucc succClosure succIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.natRec RawTerm.natZero currentZero currentSucc) ?_
+      intro target progressStep
+      rcases RawStep.par.natRec_inv progressStep.1 with
+        ⟨scrutineeTarget, zeroTarget, succTarget, targetEq,
+          scrutineeStep, zeroStep, succStep⟩
+        | ⟨zeroTarget, targetEq, _scrutineeStep, zeroStep⟩
+        | ⟨predecessorTarget, _zeroTarget, _succTarget, _targetEq,
+            scrutineeStep, _zeroStep, _succStep⟩
+      · have scrutineeTargetEq :
+            scrutineeTarget = (RawTerm.natZero : RawTerm scope) :=
+          RawStep.par.natZero_inv scrutineeStep
+        subst scrutineeTargetEq
+        subst targetEq
+        by_cases zeroEq : currentZero = zeroTarget
+        · subst zeroEq
+          by_cases succEq : currentSucc = succTarget
+          · subst succEq
+            exact (progressStep.2 rfl).elim
+          · exact succIH succTarget ⟨succStep, succEq⟩
+        · have succTargetIsSN :
+              RawTerm.isStronglyNormalizing succTarget := by
+            by_cases succEq : currentSucc = succTarget
+            · subst succEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSucc succClosure
+            · exact succClosure succTarget ⟨succStep, succEq⟩
+          exact zeroIH zeroTarget ⟨zeroStep, zeroEq⟩ succTargetIsSN
+      · rw [targetEq]
+        by_cases zeroEq : currentZero = zeroTarget
+        · subst zeroEq
+          exact RawTerm.isStronglyNormalizing.intro currentZero zeroClosure
+        · exact zeroClosure zeroTarget ⟨zeroStep, zeroEq⟩
+      · have succEqZero :
+            RawTerm.natSucc predecessorTarget =
+              (RawTerm.natZero : RawTerm scope) :=
+          RawStep.par.natZero_inv scrutineeStep
+        nomatch succEqZero
+
+/-- Typed nat-zero ι SN expansion for `Term.natRec`. -/
+theorem Term.natRec_natZero_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term context motiveType zeroRaw}
+    {succBranch :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw}
+    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
+    (succIsSN : Term.isStronglyNormalizing succBranch) :
+    Term.isStronglyNormalizing
+      (Term.natRec Term.natZero zeroBranch succBranch) :=
+  RawTerm.natRec_natZero_isStronglyNormalizing
+    zeroIsSN succIsSN
+
 /-- **K12.20.W optionSome SN preservation**.  Sister to
 `natSucc_isStronglyNormalizing` — unary cong-only ctor with
 `optionSome_inv` for step inversion + `RawTerm.optionSome`
@@ -11122,6 +11195,39 @@ theorem Reducible.fundamental_natElimSucc_at_nat
     (Reducible.isStronglyNormalizing succIH)
     (Reducible.isStronglyNormalizing
       (succIH.2 (Term.subst termSubst predecessor) predecessorIH))
+
+/-- Fundamental endpoint: canonical `Term.natRec` at `natZero`
+(K12.22.F).
+
+This zero ι-case mirrors `fundamental_natElimZero_at_nat`: the
+recursor contracts to the zero branch, while successor-branch
+congruence is covered by the branch SN premise.
+-/
+theorem Reducible.fundamental_natRecZero_at_nat
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (zeroIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst zeroBranch))
+    (succIH :
+      Reducible ((Ty.arrow Ty.nat
+                    (Ty.arrow motiveType motiveType)).subst sigma)
+        (Term.subst termSubst succBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.natRec Term.natZero zeroBranch succBranch)) :=
+  Term.natRec_natZero_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing zeroIH)
+    (Reducible.isStronglyNormalizing succIH)
 
 /-- Fundamental case: `Term.optionMatch` at `Ty.optionType` (K12.22.B,
 weak-SN).
