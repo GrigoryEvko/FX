@@ -636,6 +636,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_boolFalse
 #print axioms Reducible.fundamental_natZero
 #print axioms RawTerm.lam_isStronglyNormalizing
+#print axioms Term.lam_isStronglyNormalizing
 #print axioms RawTerm.isStronglyNormalizing.step_preserves
 #print axioms RawTerm.isStronglyNormalizing_weaken
 #print axioms Term.isStronglyNormalizing_weaken
@@ -747,6 +748,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_modElim_at_session
 #print axioms Reducible.fundamental_modElim_at_effect
 #print axioms Reducible.fundamental_modElim_at_modal
+#print axioms Reducible.fundamental_lam_at_arrow_sn
 #print axioms Reducible.fundamental_app_at_arrow
 #print axioms Reducible.fundamental_fst_at_sigmaTy
 #print axioms Reducible.fundamental_snd_at_sigmaTy_sn

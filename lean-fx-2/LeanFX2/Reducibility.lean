@@ -1930,6 +1930,24 @@ theorem RawTerm.lam_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.lam bodyEq)
     exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
 
+/-- Typed wrapper for non-dependent lambda SN preservation.
+
+This is the SN half of the `Term.lam` fundamental case.  The full
+arrow reducibility endpoint still needs the body under a lifted
+substitution; that remains the `ReducibleSubst.lift` / world-weakening
+blocker tracked by K12.20.U3.monotone. -/
+theorem Term.lam_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (context.cons domainType) codomainType.weaken bodyRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
+    Term.isStronglyNormalizing
+      (Term.lam (codomainType := codomainType) bodyTerm) :=
+  RawTerm.lam_isStronglyNormalizing bodyIsSN
+
 /-! ## K12.20.B raw-level CR2 (closure under reduction)
 
 CR2 of Tait's three reducibility-candidate conditions: Reducible
@@ -2397,6 +2415,32 @@ theorem Term.app_lam_isStronglyNormalizing
         argumentTerm) :=
   RawTerm.app_lam_isStronglyNormalizing bodyIsSN argumentIsSN
     contractumIsSN
+
+/-- Fundamental SN endpoint for `Term.lam` at `Ty.arrow`.
+
+This packages the lambda value's SN conjunct after substitution.  The
+premise is deliberately explicit: callers must still prove the body is
+strongly normalizing under `termSubst.lift domainType`.  That is the
+remaining load-bearing obligation for the substitution-parametric
+`fundamental_lam` theorem. -/
+theorem Reducible.fundamental_lam_at_arrow_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (bodyIsSN :
+      Term.isStronglyNormalizing
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.lam (codomainType := codomainType) bodyTerm)) :=
+  Term.lam_isStronglyNormalizing bodyIsSN
 
 /-- **K12.24.U5 path β SN expansion**.
 
