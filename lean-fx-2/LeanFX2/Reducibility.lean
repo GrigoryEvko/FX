@@ -5534,6 +5534,83 @@ theorem RawTerm.optionNone_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.optionNone_inv progressStep.1).symm).elim)
 
+/-- Option-none ι SN expansion for the eliminator.
+
+For a canonical `none` scrutinee, `optionMatch` reduces to the none
+branch.  The some branch remains in the statement because congruent
+reductions may still step under it before the ι rule fires. -/
+theorem RawTerm.optionMatch_optionNone_isStronglyNormalizing
+    {scope : Nat}
+    {noneBranch : RawTerm scope}
+    (noneIsSN : RawTerm.isStronglyNormalizing noneBranch) :
+    ∀ {someBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing someBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.optionMatch RawTerm.optionNone noneBranch someBranch) := by
+  induction noneIsSN with
+  | intro currentNone noneClosure noneIH =>
+    intro someBranch someIsSN
+    induction someIsSN with
+    | intro currentSome someClosure someIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.optionMatch RawTerm.optionNone currentNone currentSome) ?_
+      intro target progressStep
+      rcases RawStep.par.optionMatch_inv progressStep.1 with
+        ⟨scrutineeTarget, noneTarget, someTarget, targetEq,
+          scrutineeStep, noneStep, someStep⟩
+        | ⟨noneTarget, targetEq, scrutineeStep, noneStep⟩
+        | ⟨valueTarget, someTarget, targetEq, scrutineeStep, someStep⟩
+      · have scrutineeTargetEq :
+            scrutineeTarget = (RawTerm.optionNone : RawTerm scope) :=
+          RawStep.par.optionNone_inv scrutineeStep
+        subst scrutineeTargetEq
+        subst targetEq
+        by_cases noneEq : currentNone = noneTarget
+        · subst noneEq
+          by_cases someEq : currentSome = someTarget
+          · subst someEq
+            exact (progressStep.2 rfl).elim
+          · exact someIH someTarget ⟨someStep, someEq⟩
+        · have someTargetIsSN :
+              RawTerm.isStronglyNormalizing someTarget := by
+            by_cases someEq : currentSome = someTarget
+            · subst someEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSome someClosure
+            · exact someClosure someTarget ⟨someStep, someEq⟩
+          exact noneIH noneTarget ⟨noneStep, noneEq⟩ someTargetIsSN
+      · have noneTargetIsSN :
+            RawTerm.isStronglyNormalizing noneTarget := by
+          by_cases noneEq : currentNone = noneTarget
+          · subst noneEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentNone noneClosure
+          · exact noneClosure noneTarget ⟨noneStep, noneEq⟩
+        rw [targetEq]
+        exact noneTargetIsSN
+      · have noneEq :
+            RawTerm.optionSome valueTarget =
+              (RawTerm.optionNone : RawTerm scope) :=
+          RawStep.par.optionNone_inv scrutineeStep
+        nomatch noneEq
+
+/-- Typed option-none ι SN expansion for `Term.optionMatch`. -/
+theorem Term.optionMatch_optionNone_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {noneRaw someRaw : RawTerm scope}
+    {noneBranch : Term context motiveType noneRaw}
+    {someBranch : Term context (Ty.arrow elementType motiveType) someRaw}
+    (noneIsSN : Term.isStronglyNormalizing noneBranch)
+    (someIsSN : Term.isStronglyNormalizing someBranch) :
+    Term.isStronglyNormalizing
+      (Term.optionMatch
+        (Term.optionNone (elementType := elementType))
+        noneBranch someBranch) :=
+  RawTerm.optionMatch_optionNone_isStronglyNormalizing
+    noneIsSN someIsSN
+
 /-- **K12.20.AD.1 refl SN preservation** — HoTT identity-type
 introduction.  Unary cong over the path witness; refl_inv discharges
 each par step. -/
@@ -9252,6 +9329,26 @@ theorem Reducible.fundamental_natSucc
     Reducible ((Ty.nat : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.natSucc predecessor)) :=
   RawTerm.natSucc_isStronglyNormalizing predIH
+
+/-- **K12.20.W.0 optionNone fundamental case** — canonical option
+none introduction at the K12.8 SN-output candidate. -/
+theorem Reducible.fundamental_optionNone_at_optionType
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope} :
+    Reducible ((Ty.optionType elementType).subst sigma)
+      (Term.subst termSubst
+        (Term.optionNone (elementType := elementType))) := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.optionNone_isStronglyNormalizing
+  · intro motiveType noneRaw someRaw noneBranch someBranch
+      noneIsSN someIsSN _someApplicationIsSN
+    exact Term.optionMatch_optionNone_isStronglyNormalizing
+      noneIsSN
+      someIsSN
 
 /-- **K12.20.W optionSome fundamental case** — canonical option
 introduction at the K12.8 SN-output candidate.
