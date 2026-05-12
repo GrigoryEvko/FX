@@ -4336,6 +4336,79 @@ theorem RawTerm.equivApp_var_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis argumentTarget
       ⟨argumentStep, argumentDistinct⟩
 
+/-- Equivalence application is strongly normalizing when both subterms are.
+
+`RawTerm.equivApply` is the univalence-target application form.  Its raw
+parallel reduction is mostly binary congruence, with ua-refl beta arms that
+return a reduct of the source argument.  Thus the proof is the same binary
+SN induction as `hcomp`, except the beta arms discharge directly from the
+argument SN witness. -/
+theorem RawTerm.equivApply_isStronglyNormalizing {scope : Nat}
+    {equivRaw argumentRaw : RawTerm scope}
+    (equivIsSN : RawTerm.isStronglyNormalizing equivRaw)
+    (argumentIsSN : RawTerm.isStronglyNormalizing argumentRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.equivApply equivRaw argumentRaw) := by
+  induction equivIsSN generalizing argumentRaw with
+  | intro currentEquiv _ equivInduction =>
+    induction argumentIsSN with
+    | intro currentArgument argumentClosure argumentInduction =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.equivApply currentEquiv currentArgument) ?_
+      intro target progressStep
+      rcases RawStep.par.equivApply_inv progressStep.1 with
+        ⟨equivTarget, argumentTarget, targetEq, equivStep, argumentStep⟩
+        | ⟨_witnessSource, _witnessTarget, sourceTarget, _equivEq,
+            targetEq, _witnessStep, argumentStep⟩
+        | ⟨_witnessTarget, sourceTarget, targetEq, _equivStep,
+            argumentStep⟩
+      · subst targetEq
+        have argumentTargetIsSN :
+            RawTerm.isStronglyNormalizing argumentTarget := by
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentArgument argumentClosure
+          · exact argumentClosure argumentTarget
+              ⟨argumentStep, argumentEq⟩
+        by_cases equivEq : currentEquiv = equivTarget
+        · subst equivEq
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact (progressStep.2 rfl).elim
+          · exact argumentInduction argumentTarget
+              ⟨argumentStep, argumentEq⟩
+        · exact equivInduction equivTarget
+            ⟨equivStep, equivEq⟩ argumentTargetIsSN
+      · rw [targetEq]
+        by_cases argumentEq : currentArgument = sourceTarget
+        · rw [← argumentEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentArgument argumentClosure
+        · exact argumentClosure sourceTarget
+            ⟨argumentStep, argumentEq⟩
+      · rw [targetEq]
+        by_cases argumentEq : currentArgument = sourceTarget
+        · rw [← argumentEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentArgument argumentClosure
+        · exact argumentClosure sourceTarget
+            ⟨argumentStep, argumentEq⟩
+
+/-- Typed wrapper for `RawTerm.equivApply_isStronglyNormalizing`. -/
+theorem Term.equivApply_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term context carrierA argumentRaw}
+    (equivIsSN : Term.isStronglyNormalizing equivTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm) :
+    Term.isStronglyNormalizing
+      (Term.equivApply equivTerm argumentTerm) :=
+  RawTerm.equivApply_isStronglyNormalizing equivIsSN argumentIsSN
+
 /-- **K12.20.AX.3 neutral idJ SN preservation**.  HOTT J eliminator
 with variable witness (the equality being eliminated).  `idJ_inv`
 gives 2 arms (cong + iotaIdJRefl); ι arm requires
@@ -13087,6 +13160,38 @@ theorem Reducible.fundamental_equivApp_at_equiv
     Reducible (carrierB.subst sigma)
               (Term.subst termSubst (Term.equivApp equivTerm argumentTerm)) :=
   equivIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
+/-- Fundamental case: `Term.equivApply` at `Ty.equiv`
+(K12.23.E, SN-output endpoint).
+
+`Term.equivApply` is distinct from `Term.equivApp`: it projects to
+`RawTerm.equivApply`, whose current raw fragment includes ua-refl beta
+arms returning argument reducts.  The present `Ty.equiv` candidate stores
+full Reducible closure for `equivApp`, not for this univalence-target raw
+form, so this endpoint deliberately states the M04-relevant SN conclusion
+only. -/
+theorem Reducible.fundamental_equivApply_at_equiv
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm :
+        Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivIH :
+        Reducible ((Ty.equiv carrierA carrierB).subst sigma)
+                  (Term.subst termSubst equivTerm))
+    (argumentIH :
+        Reducible (carrierA.subst sigma)
+                  (Term.subst termSubst argumentTerm)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst (Term.equivApply equivTerm argumentTerm)) :=
+  Term.equivApply_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing equivIH)
+    (Reducible.isStronglyNormalizing argumentIH)
 
 /-- Fundamental case: `Term.oeqFunext` at `Ty.oeq` (K12.23.B).
 
