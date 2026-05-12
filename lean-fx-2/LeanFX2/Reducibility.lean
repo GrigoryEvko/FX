@@ -3099,6 +3099,41 @@ theorem RawTerm.recordIntro_field_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing fieldRaw :=
   RawTerm.recordIntro_field_isStronglyNormalizing_aux recordIsSN rfl
 
+/-- Shape-specialized inversion for refinement-intro value payload SN. -/
+theorem RawTerm.refineIntro_value_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {valueRaw proofRaw : RawTerm scope},
+      source = RawTerm.refineIntro valueRaw proofRaw →
+      RawTerm.isStronglyNormalizing valueRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro valueRaw proofRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro valueRaw ?_
+    intro valueTarget valueProgress
+    have refineProgress :
+        RawStep.parProgress
+          (RawTerm.refineIntro valueRaw proofRaw)
+          (RawTerm.refineIntro valueTarget proofRaw) := by
+      refine ⟨RawStep.par.refineIntroCong valueProgress.1
+        (RawStep.par.refl proofRaw), ?_⟩
+      intro refineEq
+      apply valueProgress.2
+      injection refineEq
+    exact inductiveHypothesis
+      (RawTerm.refineIntro valueTarget proofRaw) refineProgress rfl
+
+/-- If a refinement introduction is strongly normalizing, then its
+value payload is strongly normalizing. -/
+theorem RawTerm.refineIntro_value_isStronglyNormalizing {scope : Nat}
+    {valueRaw proofRaw : RawTerm scope}
+    (refineIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.refineIntro valueRaw proofRaw)) :
+    RawTerm.isStronglyNormalizing valueRaw :=
+  RawTerm.refineIntro_value_isStronglyNormalizing_aux refineIsSN rfl
+
 /-- Shape-specialized inversion for list-cons head SN. -/
 theorem RawTerm.listCons_head_isStronglyNormalizing_aux {scope : Nat}
     {source : RawTerm scope}
@@ -8574,6 +8609,57 @@ theorem Term.refineElim_refineIntro_isStronglyNormalizing
         (Term.refineIntro predicate baseValue predicateProof)) :=
   RawTerm.refineElim_refineIntro_isStronglyNormalizing
     valueIsSN proofIsSN
+
+/-- Generic refinement-elimination SN preservation.
+
+Congruent reducts recurse through the refined term.  A β reduct first
+develops the refined term into a `refineIntro`; the extracted value is
+SN by the refinement-intro value inversion lemma. -/
+theorem RawTerm.refineElim_isStronglyNormalizing {scope : Nat}
+    {refinedRaw : RawTerm scope}
+    (refinedIsSN : RawTerm.isStronglyNormalizing refinedRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.refineElim refinedRaw) := by
+  induction refinedIsSN with
+  | intro currentRefined refinedClosure refinedIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.refineElim currentRefined) ?_
+    intro target progressStep
+    rcases RawStep.par.refineElim_inv progressStep.1 with
+      ⟨refinedTarget, targetEq, refinedStep⟩
+      | ⟨valueTarget, proofTarget, targetEq, refinedStep⟩
+    · subst targetEq
+      by_cases refinedEq : currentRefined = refinedTarget
+      · subst refinedEq
+        exact (progressStep.2 rfl).elim
+      · exact refinedIH refinedTarget ⟨refinedStep, refinedEq⟩
+    · rw [targetEq]
+      have developedRefinedIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.refineIntro valueTarget proofTarget) := by
+        by_cases refinedEq :
+            currentRefined =
+              RawTerm.refineIntro valueTarget proofTarget
+        · rw [← refinedEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentRefined refinedClosure
+        · exact refinedClosure
+            (RawTerm.refineIntro valueTarget proofTarget)
+            ⟨refinedStep, refinedEq⟩
+      exact RawTerm.refineIntro_value_isStronglyNormalizing
+        developedRefinedIsSN
+
+/-- Direct M04 SN case for refinement elimination from any SN refined
+term. -/
+theorem Term.refineElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    {refinedValue : Term context (Ty.refine baseType predicate) refinedRaw}
+    (refinedIsSN : Term.isStronglyNormalizing refinedValue) :
+    Term.isStronglyNormalizing (Term.refineElim refinedValue) :=
+  RawTerm.refineElim_isStronglyNormalizing refinedIsSN
 
 /-- **K12.20.AJ.2 refineIntro SN preservation** — refinement-type
 intro packs a value with a proof of its refinement predicate.
