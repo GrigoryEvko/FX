@@ -16414,6 +16414,65 @@ theorem Reducible.fundamental_appPi_at_piTy
       (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
   Reducible.fundamental_appPi_at_piTy_sn functionIH argumentIH
 
+/-- **K12.27 identity-substitution application SN endpoint**.
+
+This packages the application case needed by the identity-only M04 route:
+if the function and argument are reducible after identity substitution,
+then the original `Term.app` is strongly normalizing.  The theorem uses
+the full arrow application endpoint at identity and then erases the
+identity substitution from the raw index; it does not claim generic
+substitution lifting or world weakening. -/
+theorem Reducible.fundamental_identity_app_at_arrow_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIdentityReducible :
+        Reducible ((Ty.arrow domainType codomainType).subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) functionTerm))
+    (argumentIdentityReducible :
+        Reducible (domainType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) argumentTerm)) :
+    Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.app functionTerm argumentTerm)
+    (Reducible.isStronglyNormalizing
+      (Reducible.fundamental_app_at_arrow
+        (termSubst := TermSubst.identity sourceCtx)
+        functionIdentityReducible argumentIdentityReducible))
+
+/-- **K12.27 identity-substitution dependent application SN endpoint**.
+
+This is the `appPi` sibling of
+`fundamental_identity_app_at_arrow_sn`.  The present `piTy` candidate
+stores an SN-output application closure, so the proof applies that
+endpoint at identity and erases identity substitution from the original
+dependent application. -/
+theorem Reducible.fundamental_identity_appPi_at_piTy_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIdentityReducible :
+        Reducible ((Ty.piTy domainType codomainType).subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) functionTerm))
+    (argumentIdentityReducible :
+        Reducible (domainType.subst Subst.identity)
+          (Term.subst (TermSubst.identity sourceCtx) argumentTerm)) :
+    Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) :=
+  Term.strong_normalization_of_identity_subst
+    (Term.appPi functionTerm argumentTerm)
+    (Reducible.fundamental_appPi_at_piTy
+      (termSubst := TermSubst.identity sourceCtx)
+      functionIdentityReducible argumentIdentityReducible)
+
 /-- Fundamental case: `Term.idJ` at `Ty.id`
 (SN-output endpoint). -/
 theorem Reducible.fundamental_idJ_at_id
