@@ -1238,10 +1238,13 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_equivCode_heq
 #print axioms Term.weaken_subst_singleton_equivReflId_heq
 #print axioms Term.weaken_subst_singleton_equivReflIdAtId_heq
+#print axioms Term.weaken_subst_singleton_funextReflAtId_heq
 #print axioms Term.weaken_subst_singleton_glueIntro_heq
 #print axioms Term.weaken_subst_singleton_transp_heq
 #print axioms Term.weaken_subst_singleton_hcomp_heq
 #print axioms Term.weaken_subst_singleton_recordIntro_heq
+#print axioms Term.weaken_subst_singleton_refineIntro_heq
+#print axioms Term.weaken_subst_singleton_refineElim_heq
 #print axioms Term.weaken_subst_singleton_codataUnfold_heq
 #print axioms Term.weaken_subst_singleton_sessionSend_heq
 #print axioms Term.weaken_subst_singleton_sessionRecv_heq
@@ -1252,6 +1255,8 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_codataDest_heq
 #print axioms Term.weaken_subst_singleton_equivApp_heq
 #print axioms Term.weaken_subst_singleton_equivApply_heq
+#print axioms Term.weaken_subst_singleton_uaIntroHet_heq
+#print axioms Term.weaken_subst_singleton_funextIntroHet_heq
 #print axioms Term.weaken_subst_singleton_cumulUp_heq
 #print axioms ReducibleSubst.singleton
 #print axioms ReducibleSubst.identity

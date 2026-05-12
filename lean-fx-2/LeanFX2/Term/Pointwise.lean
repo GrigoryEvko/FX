@@ -1713,6 +1713,29 @@ theorem Term.weaken_subst_singleton_equivReflIdAtId_heq
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton carrierRaw singletonRaw)
 
+/-- Id-typed funext reflexivity witnesses preserve weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_funextReflAtId_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1))
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.funextReflAtId (context := context) domainType codomainType
+            applyRaw)))
+      (Term.funextReflAtId (context := context) domainType codomainType
+        applyRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.funextReflAtId_HEq_congr
+    (Ty.weaken_subst_singleton domainType newType singletonRaw)
+    (Ty.weaken_subst_singleton codomainType newType singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift applyRaw singletonRaw)
+
 /-- Glue introduction preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_glueIntro_heq
     {mode : Mode} {level scope : Nat}
@@ -1856,6 +1879,68 @@ theorem Term.weaken_subst_singleton_recordIntro_heq
     (Ty.weaken_subst_singleton singleFieldType newType singletonRaw)
     (RawTerm.weaken_subst_singleton firstRaw singletonRaw)
     firstHEq
+
+/-- Refinement introduction preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_refineIntro_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (baseValue : Term context baseType valueRaw)
+    (predicateProof : Term context Ty.unit proofRaw)
+    (baseHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType baseValue))
+        baseValue)
+    (proofHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType predicateProof))
+        predicateProof) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.refineIntro predicate baseValue predicateProof)))
+      (Term.refineIntro predicate baseValue predicateProof) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.refineIntro_HEq_congr
+    (Ty.weaken_subst_singleton baseType newType singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift predicate singletonRaw)
+    (RawTerm.weaken_subst_singleton valueRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton proofRaw singletonRaw)
+    baseHEq proofHEq
+
+/-- Refinement elimination preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_refineElim_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (refinedValue : Term context (Ty.refine baseType predicate) refinedRaw)
+    (refinedHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType refinedValue))
+        refinedValue) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.refineElim refinedValue)))
+      (Term.refineElim refinedValue) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.refineElim_HEq_congr
+    (Ty.weaken_subst_singleton baseType newType singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift predicate singletonRaw)
+    (RawTerm.weaken_subst_singleton refinedRaw singletonRaw)
+    refinedHEq
 
 /-- Codata unfold preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_codataUnfold_heq
@@ -2168,6 +2253,68 @@ theorem Term.weaken_subst_singleton_equivApply_heq
     (RawTerm.weaken_subst_singleton equivRaw singletonRaw)
     (RawTerm.weaken_subst_singleton argumentValueRaw singletonRaw)
     equivHEq argumentHEq
+
+/-- Heterogeneous univalence introduction preserves weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_uaIntroHet_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (equivWitness :
+      Term context (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivWitnessHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType equivWitness))
+        equivWitness) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+            equivWitness)))
+      (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+        equivWitness) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.uaIntroHet_HEq_congr innerLevel innerLevelLt
+    (Ty.weaken_subst_singleton carrierA newType singletonRaw)
+    (Ty.weaken_subst_singleton carrierB newType singletonRaw)
+    (RawTerm.weaken_subst_singleton carrierARaw singletonRaw)
+    (RawTerm.weaken_subst_singleton carrierBRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton forwardRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton backwardRaw singletonRaw)
+    equivWitnessHEq
+
+/-- Heterogeneous funext introduction preserves weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_funextIntroHet_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyARaw applyBRaw : RawTerm (scope + 1))
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.funextIntroHet (context := context) domainType codomainType
+            applyARaw applyBRaw)))
+      (Term.funextIntroHet (context := context) domainType codomainType
+        applyARaw applyBRaw) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.funextIntroHet_HEq_congr
+    (Ty.weaken_subst_singleton domainType newType singletonRaw)
+    (Ty.weaken_subst_singleton codomainType newType singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift applyARaw singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift applyBRaw singletonRaw)
 
 /-- Universe cumulativity preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_cumulUp_heq
