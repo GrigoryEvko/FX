@@ -12449,6 +12449,293 @@ theorem Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
         (ReducibleSubst.consSingleton
           ReducibleSubst.identity argumentReducible)))
 
+/-! ## K12.20.U4 identity lambda SN-direct codomains
+
+These endpoints make the SN-codomain lambda route concrete for the
+candidate arms where `Reducible` is definitionally recoverable from
+strong normalization.  They remain identity-substitution endpoints for
+the M04 path and deliberately do not claim the arbitrary compound
+codomain case. -/
+
+/-- Identity lambda reducibility for a unit codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_unit_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (sourceCtx.cons domainType) Ty.unit.weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (Ty.unit.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType Ty.unit).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.unit) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.unit)
+    (fun _resultTerm resultIsSN =>
+      Reducible.unit_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for a boolean codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_bool_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (sourceCtx.cons domainType) Ty.bool.weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (Ty.bool.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType Ty.bool).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.bool) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.bool)
+    (fun _resultTerm resultIsSN =>
+      Reducible.bool_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for a natural-number codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_nat_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (sourceCtx.cons domainType) Ty.nat.weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (Ty.nat.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType Ty.nat).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.nat) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.nat)
+    (fun _resultTerm resultIsSN =>
+      Reducible.nat_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for an empty-type codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_empty_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (sourceCtx.cons domainType) Ty.empty.weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (Ty.empty.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType Ty.empty).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.empty) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.empty)
+    (fun _resultTerm resultIsSN =>
+      Reducible.empty_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for an interval codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_interval_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (sourceCtx.cons domainType) Ty.interval.weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (Ty.interval.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType Ty.interval).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.interval) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.interval)
+    (fun _resultTerm resultIsSN =>
+      Reducible.interval_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for a universe-code codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_universe_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {universeLevel : UniverseLevel}
+    {levelLe : universeLevel.toNat + 1 ≤ level}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType)
+        (Ty.universe universeLevel levelLe).weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible ((Ty.universe universeLevel levelLe).weaken.subst
+          bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible
+      ((Ty.arrow domainType
+        (Ty.universe universeLevel levelLe)).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam
+          (codomainType := Ty.universe universeLevel levelLe) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.universe universeLevel levelLe)
+    (fun _resultTerm resultIsSN =>
+      Reducible.universe_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for a type-variable codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_tyVar_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {position : Fin scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) (Ty.tyVar position).weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible ((Ty.tyVar position).weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType (Ty.tyVar position)).subst
+      Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.tyVar position) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.tyVar position)
+    (fun _resultTerm resultIsSN =>
+      Reducible.tyVar_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for a session codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_session_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {protocolStep : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType)
+        (Ty.session protocolStep).weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible ((Ty.session protocolStep).weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType (Ty.session protocolStep)).subst
+      Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam (codomainType := Ty.session protocolStep) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.session protocolStep)
+    (fun _resultTerm resultIsSN =>
+      Reducible.session_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for an effect codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_effect_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType)
+        (Ty.effect carrierType effectTag).weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible ((Ty.effect carrierType effectTag).weaken.subst
+          bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible
+      ((Ty.arrow domainType
+        (Ty.effect carrierType effectTag)).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam
+          (codomainType := Ty.effect carrierType effectTag) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.effect carrierType effectTag)
+    (fun _resultTerm resultIsSN =>
+      Reducible.effect_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
+/-- Identity lambda reducibility for a modal codomain. -/
+theorem Reducible.fundamental_identity_lam_at_arrow_modal_codomain
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {domainType carrierType : Ty level scope}
+    {modalityTag : Nat}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType)
+        (Ty.modal modalityTag carrierType).weaken bodyRaw}
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible ((Ty.modal modalityTag carrierType).weaken.subst
+          bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible
+      ((Ty.arrow domainType
+        (Ty.modal modalityTag carrierType)).subst Subst.identity)
+      (Term.subst (TermSubst.identity sourceCtx)
+        (Term.lam
+          (codomainType := Ty.modal modalityTag carrierType) bodyTerm)) :=
+  Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+    (codomainType := Ty.modal modalityTag carrierType)
+    (fun _resultTerm resultIsSN =>
+      Reducible.modal_of_isStronglyNormalizing resultIsSN)
+    bodyIH
+
 /-- Typed head-β SN expansion for dependent Π application.
 
 `Term.lamPi` shares the raw `RawTerm.lam` constructor with non-dependent
