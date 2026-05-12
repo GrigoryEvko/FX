@@ -795,6 +795,9 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.natRec_natZero_isStronglyNormalizing
 #print axioms Term.natRec_natZero_isStronglyNormalizing
 #print axioms Reducible.fundamental_natRecZero_at_nat
+#print axioms RawTerm.natRec_natSucc_isStronglyNormalizing
+#print axioms Term.natRec_natSucc_isStronglyNormalizing
+#print axioms Reducible.fundamental_natRecSucc_at_nat
 #print axioms RawTerm.refl_isStronglyNormalizing
 #print axioms RawTerm.oeqRefl_isStronglyNormalizing
 #print axioms RawTerm.idStrictRefl_isStronglyNormalizing

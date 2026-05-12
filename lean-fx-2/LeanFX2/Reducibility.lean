@@ -5029,6 +5029,209 @@ theorem Term.natRec_natZero_isStronglyNormalizing
   RawTerm.natRec_natZero_isStronglyNormalizing
     zeroIsSN succIsSN
 
+/-- Nat-successor ι SN expansion for `natRec`.
+
+For a canonical successor scrutinee, `natRec` reduces to
+`succBranch predecessor (natRec predecessor zeroBranch succBranch)`.
+The recursive call and the full contractum are explicit premises:
+this raw lemma only transports SN backward across the ι redex and
+congruent reducts. -/
+theorem RawTerm.natRec_natSucc_isStronglyNormalizing
+    {scope : Nat}
+    {predecessor : RawTerm scope}
+    (predecessorIsSN : RawTerm.isStronglyNormalizing predecessor) :
+    ∀ {zeroBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing zeroBranch →
+    ∀ {succBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing succBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.natRec predecessor zeroBranch succBranch) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app (RawTerm.app succBranch predecessor)
+          (RawTerm.natRec predecessor zeroBranch succBranch)) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.natRec
+          (RawTerm.natSucc predecessor) zeroBranch succBranch) := by
+  induction predecessorIsSN with
+  | intro currentPredecessor predecessorClosure predecessorIH =>
+    intro zeroBranch zeroIsSN
+    induction zeroIsSN with
+    | intro currentZero zeroClosure zeroIH =>
+      intro succBranch succIsSN recursiveCallIsSN contractumIsSN
+      induction succIsSN with
+      | intro currentSucc succClosure succIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.natRec
+            (RawTerm.natSucc currentPredecessor)
+            currentZero currentSucc) ?_
+        intro target progressStep
+        rcases RawStep.par.natRec_inv progressStep.1 with
+          ⟨scrutineeTarget, zeroTarget, succTarget, targetEq,
+            scrutineeStep, zeroStep, succStep⟩
+          | ⟨zeroTarget, _targetEq, scrutineeStep, _zeroStep⟩
+          | ⟨predecessorTarget, zeroTarget, succTarget, targetEq,
+              scrutineeStep, zeroStep, succStep⟩
+        · obtain ⟨predecessorTarget, scrutineeTargetEq,
+              predecessorStep⟩ :=
+            RawStep.par.natSucc_inv scrutineeStep
+          subst scrutineeTargetEq
+          subst targetEq
+          have predecessorTargetIsSN :
+              RawTerm.isStronglyNormalizing predecessorTarget := by
+            by_cases predecessorEq :
+                currentPredecessor = predecessorTarget
+            · subst predecessorEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentPredecessor predecessorClosure
+            · exact predecessorClosure predecessorTarget
+                ⟨predecessorStep, predecessorEq⟩
+          have zeroTargetIsSN :
+              RawTerm.isStronglyNormalizing zeroTarget := by
+            by_cases zeroEq : currentZero = zeroTarget
+            · subst zeroEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentZero zeroClosure
+            · exact zeroClosure zeroTarget ⟨zeroStep, zeroEq⟩
+          have succTargetIsSN :
+              RawTerm.isStronglyNormalizing succTarget := by
+            by_cases succEq : currentSucc = succTarget
+            · subst succEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSucc succClosure
+            · exact succClosure succTarget ⟨succStep, succEq⟩
+          have recursiveCallTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.natRec
+                  predecessorTarget zeroTarget succTarget) := by
+            by_cases recursiveCallEq :
+                RawTerm.natRec
+                    currentPredecessor currentZero currentSucc =
+                  RawTerm.natRec
+                    predecessorTarget zeroTarget succTarget
+            · rw [← recursiveCallEq]
+              exact recursiveCallIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                recursiveCallIsSN
+                ⟨RawStep.par.natRec predecessorStep zeroStep succStep,
+                  recursiveCallEq⟩
+          have contractumTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.app (RawTerm.app succTarget predecessorTarget)
+                  (RawTerm.natRec
+                    predecessorTarget zeroTarget succTarget)) := by
+            by_cases contractumEq :
+                RawTerm.app
+                    (RawTerm.app currentSucc currentPredecessor)
+                    (RawTerm.natRec
+                      currentPredecessor currentZero currentSucc) =
+                  RawTerm.app
+                    (RawTerm.app succTarget predecessorTarget)
+                    (RawTerm.natRec
+                      predecessorTarget zeroTarget succTarget)
+            · rw [← contractumEq]
+              exact contractumIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                contractumIsSN
+                ⟨RawStep.par.app
+                    (RawStep.par.app succStep predecessorStep)
+                    (RawStep.par.natRec
+                      predecessorStep zeroStep succStep),
+                  contractumEq⟩
+          by_cases predecessorEq : currentPredecessor = predecessorTarget
+          · subst predecessorEq
+            by_cases zeroEq : currentZero = zeroTarget
+            · subst zeroEq
+              by_cases succEq : currentSucc = succTarget
+              · subst succEq
+                exact (progressStep.2 rfl).elim
+              · exact succIH succTarget ⟨succStep, succEq⟩
+                  recursiveCallTargetIsSN contractumTargetIsSN
+            · exact zeroIH zeroTarget ⟨zeroStep, zeroEq⟩
+                succTargetIsSN recursiveCallTargetIsSN
+                contractumTargetIsSN
+          · exact predecessorIH predecessorTarget
+              ⟨predecessorStep, predecessorEq⟩
+              zeroTargetIsSN succTargetIsSN
+              recursiveCallTargetIsSN contractumTargetIsSN
+        · obtain ⟨_predecessorTarget, natZeroEq, _predecessorStep⟩ :=
+            RawStep.par.natSucc_inv scrutineeStep
+          nomatch natZeroEq
+        · obtain ⟨_predecessorTargetFromScrutinee, successorEq,
+              predecessorStep⟩ :=
+            RawStep.par.natSucc_inv scrutineeStep
+          injection successorEq with _scopeEq predecessorTargetEq
+          subst targetEq
+          have predecessorStepToTarget :
+              RawStep.par currentPredecessor predecessorTarget := by
+            rw [predecessorTargetEq]
+            exact predecessorStep
+          have recursiveCallTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.natRec
+                  predecessorTarget zeroTarget succTarget) := by
+            by_cases recursiveCallEq :
+                RawTerm.natRec
+                    currentPredecessor currentZero currentSucc =
+                  RawTerm.natRec
+                    predecessorTarget zeroTarget succTarget
+            · rw [← recursiveCallEq]
+              exact recursiveCallIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                recursiveCallIsSN
+                ⟨RawStep.par.natRec
+                    predecessorStepToTarget zeroStep succStep,
+                  recursiveCallEq⟩
+          have contractumTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.app (RawTerm.app succTarget predecessorTarget)
+                  (RawTerm.natRec
+                    predecessorTarget zeroTarget succTarget)) := by
+            by_cases contractumEq :
+                RawTerm.app
+                    (RawTerm.app currentSucc currentPredecessor)
+                    (RawTerm.natRec
+                      currentPredecessor currentZero currentSucc) =
+                  RawTerm.app
+                    (RawTerm.app succTarget predecessorTarget)
+                    (RawTerm.natRec
+                      predecessorTarget zeroTarget succTarget)
+            · rw [← contractumEq]
+              exact contractumIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                contractumIsSN
+                ⟨RawStep.par.app
+                    (RawStep.par.app succStep predecessorStepToTarget)
+                    (RawStep.par.natRec
+                      predecessorStepToTarget zeroStep succStep),
+                  contractumEq⟩
+          exact contractumTargetIsSN
+
+/-- Typed nat-successor ι SN expansion for `Term.natRec`. -/
+theorem Term.natRec_natSucc_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term context Ty.nat predecessorRaw}
+    {zeroBranch : Term context motiveType zeroRaw}
+    {succBranch :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw}
+    (predecessorIsSN : Term.isStronglyNormalizing predecessor)
+    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
+    (succIsSN : Term.isStronglyNormalizing succBranch)
+    (recursiveCallIsSN :
+      Term.isStronglyNormalizing
+        (Term.natRec predecessor zeroBranch succBranch))
+    (contractumIsSN :
+      Term.isStronglyNormalizing
+        (Term.app (Term.app succBranch predecessor)
+          (Term.natRec predecessor zeroBranch succBranch))) :
+    Term.isStronglyNormalizing
+      (Term.natRec
+        (Term.natSucc predecessor) zeroBranch succBranch) :=
+  RawTerm.natRec_natSucc_isStronglyNormalizing
+    predecessorIsSN zeroIsSN succIsSN recursiveCallIsSN contractumIsSN
+
 /-- **K12.20.W optionSome SN preservation**.  Sister to
 `natSucc_isStronglyNormalizing` — unary cong-only ctor with
 `optionSome_inv` for step inversion + `RawTerm.optionSome`
@@ -11228,6 +11431,55 @@ theorem Reducible.fundamental_natRecZero_at_nat
   Term.natRec_natZero_isStronglyNormalizing
     (Reducible.isStronglyNormalizing zeroIH)
     (Reducible.isStronglyNormalizing succIH)
+
+/-- Fundamental endpoint: canonical `Term.natRec` at `natSucc`
+(K12.22.G).
+
+The successor branch is arrow-reducible twice: first at the predecessor,
+then at the recursive call.  The recursive result remains an explicit
+premise because this endpoint is a local ι backward-closure, not the
+general nat-recursion fundamental theorem. -/
+theorem Reducible.fundamental_natRecSucc_at_nat
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (predecessorIH :
+      Reducible ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst predecessor))
+    (zeroIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst zeroBranch))
+    (succIH :
+      Reducible ((Ty.arrow Ty.nat
+                    (Ty.arrow motiveType motiveType)).subst sigma)
+        (Term.subst termSubst succBranch))
+    (recursiveIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst
+          (Term.natRec predecessor zeroBranch succBranch))) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.natRec
+          (Term.natSucc predecessor) zeroBranch succBranch)) :=
+  Term.natRec_natSucc_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing predecessorIH)
+    (Reducible.isStronglyNormalizing zeroIH)
+    (Reducible.isStronglyNormalizing succIH)
+    (Reducible.isStronglyNormalizing recursiveIH)
+    (Reducible.isStronglyNormalizing
+      ((succIH.2 (Term.subst termSubst predecessor) predecessorIH).2
+        (Term.subst termSubst
+          (Term.natRec predecessor zeroBranch succBranch))
+        recursiveIH))
 
 /-- Fundamental case: `Term.optionMatch` at `Ty.optionType` (K12.22.B,
 weak-SN).
