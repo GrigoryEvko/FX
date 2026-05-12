@@ -11054,6 +11054,75 @@ theorem Reducible.fundamental_boolElim_at_bool_sn
     (Reducible.isStronglyNormalizing elseIH)
     scrutineeIH
 
+/-- Fundamental endpoint: canonical `Term.natElim` at `natZero`
+(K12.22.D).
+
+This is the zero ι-case needed by the SN-output Tait endpoint: the
+eliminator result is strongly normalizing because it contracts to the
+zero branch, while congruent movement under the successor branch is
+covered by the branch SN premise.
+-/
+theorem Reducible.fundamental_natElimZero_at_nat
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (zeroIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst zeroBranch))
+    (succIH :
+      Reducible ((Ty.arrow Ty.nat motiveType).subst sigma)
+        (Term.subst termSubst succBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.natElim Term.natZero zeroBranch succBranch)) :=
+  Term.natElim_natZero_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing zeroIH)
+    (Reducible.isStronglyNormalizing succIH)
+
+/-- Fundamental endpoint: canonical `Term.natElim` at `natSucc`
+(K12.22.E).
+
+The successor branch is arrow-reducible, so applying it to the
+reducible predecessor yields a reducible motive result; CR1 then gives
+the SN premise required by the raw successor ι-expansion.
+-/
+theorem Reducible.fundamental_natElimSucc_at_nat
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (predecessorIH :
+      Reducible ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst predecessor))
+    (zeroIH :
+      Reducible (motiveType.subst sigma)
+        (Term.subst termSubst zeroBranch))
+    (succIH :
+      Reducible ((Ty.arrow Ty.nat motiveType).subst sigma)
+        (Term.subst termSubst succBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.natElim
+          (Term.natSucc predecessor) zeroBranch succBranch)) :=
+  Term.natElim_natSucc_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing predecessorIH)
+    (Reducible.isStronglyNormalizing zeroIH)
+    (Reducible.isStronglyNormalizing succIH)
+    (Reducible.isStronglyNormalizing
+      (succIH.2 (Term.subst termSubst predecessor) predecessorIH))
+
 /-- Fundamental case: `Term.optionMatch` at `Ty.optionType` (K12.22.B,
 weak-SN).
 
