@@ -6734,6 +6734,91 @@ theorem Term.recordProj_recordIntro_isStronglyNormalizing
       (Term.recordProj (Term.recordIntro firstField)) :=
   RawTerm.recordProj_recordIntro_isStronglyNormalizing firstFieldIsSN
 
+/-- Head-β SN expansion for refinement elimination.
+
+If the refined value payload and its erased proof payload are strongly
+normalizing, then `refineElim (refineIntro value proof)` is strongly
+normalizing.  Congruence reducts recurse through both payloads; β reducts
+land on a reduct of the value payload. -/
+theorem RawTerm.refineElim_refineIntro_isStronglyNormalizing
+    {scope : Nat}
+    {rawValue : RawTerm scope}
+    (valueIsSN : RawTerm.isStronglyNormalizing rawValue) :
+    ∀ {predicateProof : RawTerm scope},
+      RawTerm.isStronglyNormalizing predicateProof →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.refineElim
+          (RawTerm.refineIntro rawValue predicateProof)) := by
+  induction valueIsSN with
+  | intro currentValue valueClosure valueIH =>
+    intro predicateProof proofIsSN
+    induction proofIsSN with
+    | intro currentProof proofClosure proofIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.refineElim
+          (RawTerm.refineIntro currentValue currentProof)) ?_
+      intro target progressStep
+      rcases RawStep.par.refineElim_inv progressStep.1 with
+        ⟨refinedTarget, targetEq, refinedStep⟩
+        | ⟨valueTarget, proofTarget, targetEq, refinedStep⟩
+      · obtain ⟨valueTarget, proofTarget, refinedTargetEq,
+            valueStep, proofStep⟩ :=
+          RawStep.par.refineIntro_inv refinedStep
+        subst refinedTargetEq
+        subst targetEq
+        by_cases valueEq : currentValue = valueTarget
+        · subst valueEq
+          by_cases proofEq : currentProof = proofTarget
+          · subst proofEq
+            exact False.elim (progressStep.2 rfl)
+          · exact proofIH proofTarget ⟨proofStep, proofEq⟩
+        · have valueProgress :
+              RawStep.parProgress currentValue valueTarget :=
+            ⟨valueStep, valueEq⟩
+          by_cases proofEq : currentProof = proofTarget
+          · subst proofEq
+            exact valueIH valueTarget valueProgress
+              (RawTerm.isStronglyNormalizing.intro currentProof
+                proofClosure)
+          · exact valueIH valueTarget valueProgress
+              (proofClosure proofTarget ⟨proofStep, proofEq⟩)
+      · obtain ⟨refinedValueTarget, _refinedProofTarget,
+            refinedTargetEq, valueStep, _proofStep⟩ :=
+          RawStep.par.refineIntro_inv refinedStep
+        injection refinedTargetEq with _scopeEq valueTargetEq
+          _proofTargetEq
+        rw [targetEq]
+        have valueStepToTarget :
+            RawStep.par currentValue valueTarget := by
+          rw [valueTargetEq]
+          exact valueStep
+        by_cases valueEq : currentValue = valueTarget
+        · subst valueEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentValue valueClosure
+        · exact valueClosure valueTarget
+            ⟨valueStepToTarget, valueEq⟩
+
+/-- Typed wrapper for `refineElim (refineIntro value proof)` SN expansion.
+
+This is an SN bridge only.  It does not claim the full `Reducible`
+backward closure for refinement introduction. -/
+theorem Term.refineElim_refineIntro_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term context baseType valueRaw}
+    {predicateProof : Term context Ty.unit proofRaw}
+    (valueIsSN : Term.isStronglyNormalizing baseValue)
+    (proofIsSN : Term.isStronglyNormalizing predicateProof) :
+    Term.isStronglyNormalizing
+      (Term.refineElim
+        (Term.refineIntro predicate baseValue predicateProof)) :=
+  RawTerm.refineElim_refineIntro_isStronglyNormalizing
+    valueIsSN proofIsSN
+
 /-- **K12.20.AJ.2 refineIntro SN preservation** — refinement-type
 intro packs a value with a proof of its refinement predicate.
 Binary cong; uses the pair-style universal-in-conclusion pattern. -/
