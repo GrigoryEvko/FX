@@ -11440,6 +11440,32 @@ theorem Reducible.of_raw_eq_cast
   cases rawEq
   exact sourceReducible
 
+/-- Transport a reducibility witness across simultaneous type/raw
+index equalities plus heterogeneous equality of the underlying typed
+terms.
+
+This is the general cast-wall helper needed by beta-contractum
+transport: raw and type indices often align by separate substitution
+laws, while the `Term` values themselves only align heterogeneously
+because casts sit inside constructor arguments. -/
+theorem Reducible.of_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    {targetTerm : Term context targetType targetRaw}
+    (typeEq : sourceType = targetType)
+    (rawEq : sourceRaw = targetRaw)
+    (termHEq : HEq sourceTerm targetTerm)
+    (sourceReducible : Reducible sourceType sourceTerm) :
+    Reducible targetType targetTerm := by
+  subst typeEq
+  subst rawEq
+  have termEq : sourceTerm = targetTerm := eq_of_heq termHEq
+  subst termEq
+  exact sourceReducible
+
 /-- Substitution law for the β-specific environment extension:
 weakening a source type, lifting an existing substitution, then
 substituting the fresh argument is propositionally the original
