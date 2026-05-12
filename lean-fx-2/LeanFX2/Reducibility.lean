@@ -77,43 +77,42 @@ This file ships:
 * **arrow A B** (K12.5): `SN(term) ∧ ∀ arg, Reducible A arg →
   Reducible B (Term.app term arg)`.  Bundles SN with the
   closure for use by the fundamental lemma.
-* **piTy A B** (K12.6, weak closure): `SN(term) ∧ ∀ arg,
+* **piTy A B** (K12.6, SN-output closure): `SN(term) ∧ ∀ arg,
   Reducible A arg → SN(Term.appPi term arg)`.  The full Tait
   clause `Reducible (B.subst0 A arg) (Term.appPi term arg)`
   fails structural recursion (substituted codomain is not a
-  strict sub-term), so K12.6 ships the weak variant.  Stronger
-  than SN-fallback (preserves SN under reducible application);
-  weaker than the full Tait clause (no Reducible at the
-  substituted codomain).  Full closure reserved for a future
-  Kripke logical relation refactor.
+  strict sub-term), so K12.6 records the M04-relevant endpoint:
+  reducible arguments produce SN applications.  A richer witness
+  at the substituted codomain belongs to later motive-rich
+  beta-eta / NbE infrastructure, not to a stronger SN theorem.
 * **sigmaTy A B** (K12.7, asymmetric closure): `SN(term) ∧
   Reducible A (Term.fst term) ∧ SN(Term.snd term)`.  Asymmetric
   because `firstType` IS a strict sub-term of `Ty.sigmaTy
   firstType secondType` (so full Reducible recurses), but the
   snd projection's type is `secondType.subst0 firstType ...`
-  (substituted, same wall as K12.6 piTy codomain).  Full
-  Reducible-snd closure reserved for the Kripke refactor.
+  (substituted, same wall as K12.6 piTy codomain), so this arm
+  records the SN endpoint needed by M04 for `snd`.
 * **listType A** / **optionType A** / **eitherType L R**
-  (K12.8, weak elim closure per parametric inductive):
+  (K12.8, SN-output elim closure per parametric inductive):
   `SN(term) ∧ ∀ motiveType branches, (Reducible-arg → SN-applied
   on each elimination branch) → SN(elimResult)`.  Each
   parametric type's element / left / right sub-Ty IS a strict
   sub-term, so full Reducible recurses through the branch
   hypothesis; the motiveType is arbitrary (NOT structural sub-Ty),
   so the conclusion demotes to SN of the eliminator result.
-  Mirrors K12.6 piTy weak closure pattern.  Full Reducible-at-
-  motiveType closure reserved for Kripke logical relation refactor.
-* **id carrier left right** (K12.9, weak idJ closure):
+  Mirrors K12.6 piTy's SN-output pattern.  Full Reducible-at-
+  motiveType closure is later motive-rich infrastructure.
+* **id carrier left right** (K12.9, SN-output idJ closure):
   `SN(witness) ∧ ∀ motiveType baseCase, SN(baseCase) →
   SN(Term.idJ baseCase witness)`.  The id-eliminator's output
   type is arbitrary (motiveType), NOT a structural sub-Ty of
   `Ty.id _ _ _`, so the conclusion demotes to SN.  Carrier is a
   strict sub-Ty but doesn't appear directly in idJ's argument
   signature (only in the id-type's own structure).  Mirrors
-  K12.6 piTy weak-closure pattern.  Full Reducible-motive
-  closure reserved for the Kripke logical relation refactor.
+  K12.6 piTy's SN-output pattern.  Full Reducible-motive closure
+  is later motive-rich infrastructure.
 * **oeq carrier left right** / **idStrict carrier left right**
-  (K12.10, weak J closures): same shape as K12.9 RC.id — SN of
+  (K12.10, SN-output J closures): same shape as K12.9 RC.id — SN of
   witness + (SN baseCase → SN(Term.oeqJ baseCase witness)) for
   oeq, and analogously with `Term.idStrictRec` for idStrict.
   The idStrict arm additionally universally quantifies a
@@ -174,7 +173,7 @@ This file ships:
 The pivot keeps K12.2-K12.4's six closed-leaf arms semantically
 correct (SN IS the proper Tait clause for closed-leaf types).
 K12.5 adds the proper arrow closure.  K12.6+ refines the
-remaining ~17 weak-SN arms incrementally.
+remaining SN-output arms incrementally.
 
 ## K12.16 — universe-cumulativity-aware reducibility (no separate arm)
 
@@ -260,7 +259,7 @@ Lam typing rule itself (`Term.lam`), not in `Reducible`.
 
 Layer 3 metatheory (top-level `LeanFX2.Reducibility` module).
 Provides foundation for the Tait SN theorem (M04 / K12.27).
-K12.6-K12.16 tighten remaining weak-SN arms.  K12.18-K12.26
+K12.6-K12.16 tighten remaining SN-output arms.  K12.18-K12.26
 ship the fundamental lemma threading Reducible through Term
 typing derivations.
 
@@ -1362,7 +1361,7 @@ def Reducible {mode : Mode} {level scope : Nat}
         (argumentTerm : Term context domainType argumentRaw),
         Reducible domainType argumentTerm →
         Reducible codomainType (Term.app functionTerm argumentTerm)
-  -- Dependent Π type (K12.6, weak closure): SN + SN-after-app.
+  -- Dependent Π type (K12.6, SN-output closure): SN + SN-after-app.
   -- The full Tait dep-Π closure (`Reducible (B.subst0 A arg)
   -- (Term.appPi f arg)`) recurses on the substituted codomain
   -- `B.subst0 domainType argumentRaw` — NOT a structural
@@ -1370,12 +1369,11 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- checker rejects it (probed 2026-05-11: "Please use
   -- `termination_by` to specify a decreasing measure",
   -- requires WellFounded.fix → Acc, banned by GatesCore
-  -- line 51).  The weak closure recurses only on `domainType`
-  -- (strict sub-term) and demands SN of the result.  Stronger
-  -- than pure SN-fallback (the function preserves SN under
-  -- reducible argument application) but weaker than the full
-  -- Tait clause.  The full closure ships in a future Kripke
-  -- logical relation refactor (reserve K12.6.full for that).
+  -- line 51).  The current closure recurses only on `domainType`
+  -- (strict sub-term) and records the M04 endpoint: reducible
+  -- arguments produce SN applications.  A full substituted-codomain
+  -- Reducible witness belongs to later motive-rich beta-eta / NbE
+  -- infrastructure (reserve K12.6.full for that).
   | Ty.piTy domainType _, _, functionTerm =>
       Term.isStronglyNormalizing functionTerm ∧
       ∀ {argumentRaw : RawTerm scope}
@@ -1385,17 +1383,15 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- Dependent Σ type (K12.7, asymmetric closure): SN + full
   -- Reducible on fst projection (firstType IS a strict sub-term
   -- of `Ty.sigmaTy firstType secondType`, so structural recursion
-  -- works) + weak SN on snd projection (its type is
+  -- works) + SN on snd projection (its type is
   -- `secondType.subst0 firstType (RawTerm.fst pairRaw)` — same
-  -- substituted-sub-term wall as K12.6's piTy codomain).  Full
-  -- Reducible-snd closure ships in the future Kripke logical
-  -- relation refactor.
+  -- substituted-sub-term wall as K12.6's piTy codomain).
   | Ty.sigmaTy firstType _, _, pairTerm =>
       Term.isStronglyNormalizing pairTerm ∧
       Reducible firstType (Term.fst pairTerm) ∧
       Term.isStronglyNormalizing (Term.snd pairTerm)
   -- Remaining type formers (K12.11-K12.16 TODO): SN-fallback
-  -- HoTT propositional identity type (K12.9, weak idJ closure).
+  -- HoTT propositional identity type (K12.9, SN-output idJ closure).
   -- The id-eliminator `Term.idJ` consumes a witness at
   -- `Ty.id carrier leftEndpoint rightEndpoint` and a baseCase at an
   -- arbitrary motiveType, producing `motiveType`.  motiveType is NOT
@@ -1403,11 +1399,10 @@ def Reducible {mode : Mode} {level scope : Nat}
   -- never are), so Reducible at motiveType is banned by the
   -- structural-recursion-on-Ty checker.  Carrier IS a strict sub-Ty,
   -- but doesn't appear in idJ's argument signature directly — only in
-  -- the id-type's own structure.  The weak closure: SN(witness) +
-  -- (baseCase SN → SN(idJ baseCase witness)).  Mirrors K12.6 piTy
-  -- weak-closure pattern.  Full Reducible-motive closure reserved for
-  -- the Kripke logical relation refactor (Abel-Öhman-Vezzosi POPL'18
-  -- style — paired-environment recursion sidesteps the sub-Ty wall).
+  -- the id-type's own structure.  The closure records SN(witness) +
+  -- (baseCase SN → SN(idJ baseCase witness)), mirroring K12.6's
+  -- SN-output pattern.  Full Reducible-motive closure belongs to
+  -- later motive-rich infrastructure.
   | Ty.id _ _ _, _, witness =>
       Term.isStronglyNormalizing witness ∧
       ∀ {motiveType : Ty level scope}
@@ -1415,21 +1410,19 @@ def Reducible {mode : Mode} {level scope : Nat}
         (baseCase : Term context motiveType baseRaw),
         Term.isStronglyNormalizing baseCase →
         Term.isStronglyNormalizing (Term.idJ baseCase witness)
-  -- Parametric inductive: list (K12.8, weak elim closure).  Mirrors
-  -- K12.6 piTy's "Reducible-arg → SN result" weak-Tait pattern.
+  -- Parametric inductive: list (K12.8, SN-output elim closure).
+  -- Mirrors K12.6 piTy's "Reducible-arg → SN result" pattern.
   -- The eliminator `Term.listElim` returns at an arbitrary motiveType
   -- (NOT a strict sub-Ty of `Ty.listType elementType`), so the
   -- structural-recursion-on-Ty checker rejects a full
   -- Reducible-at-motiveType conclusion (would need same-or-arbitrary-Ty
-  -- recursion).  The weak closure recurses on `elementType` only
+  -- recursion).  The closure recurses on `elementType` only
   -- (strict sub-Ty, full Reducible works) for the head-element witness,
   -- demotes the tail to SN (its type is `Ty.listType elementType` —
   -- SAME Ty, recursion banned), demands SN of branches and SN of the
   -- elim result.  The explicit branch-SN premises are load-bearing:
   -- raw congruence reduces branches even when the scrutinee is stuck,
-  -- so neutral/list-variable CR3 cannot be sound without them.  Full
-  -- Reducible-tail closure is reserved for the future Kripke logical
-  -- relation refactor.
+  -- so neutral/list-variable CR3 cannot be sound without them.
   | Ty.listType elementType, _, listTerm =>
       Term.isStronglyNormalizing listTerm ∧
       ∀ {motiveType : Ty level scope}
@@ -1447,9 +1440,9 @@ def Reducible {mode : Mode} {level scope : Nat}
            Term.isStronglyNormalizing
              (Term.app (Term.app consBranch headTerm) tailTerm)) →
         Term.isStronglyNormalizing (Term.listElim listTerm nilBranch consBranch)
-  -- Parametric inductive: option (K12.8, weak elim closure).  Cleanest
+  -- Parametric inductive: option (K12.8, SN-output elim closure).  Cleanest
   -- of the three K12.8 arms: someBranch's type `Ty.arrow elementType
-  -- motiveType` matches K12.6 piTy weak closure shape exactly when
+  -- motiveType` matches K12.6 piTy SN-output closure shape exactly when
   -- restricted to elementType (strict sub-Ty).  Demands SN of both
   -- branches and Reducible-arg → SN-applied of someBranch, yielding SN
   -- of the optionMatch result.  The some-branch SN premise is necessary
@@ -1469,11 +1462,11 @@ def Reducible {mode : Mode} {level scope : Nat}
            Term.isStronglyNormalizing (Term.app someBranch valueTerm)) →
         Term.isStronglyNormalizing
           (Term.optionMatch optionTerm noneBranch someBranch)
-  -- Parametric inductive: either (K12.8, symmetric weak elim closure).
+  -- Parametric inductive: either (K12.8, symmetric SN-output elim closure).
   -- Symmetric in leftType / rightType (both strict sub-Ty of
   -- `Ty.eitherType leftType rightType`); each branch is
   -- `Ty.arrow leftType motiveType` / `Ty.arrow rightType motiveType`
-  -- matching the K12.6 piTy weak shape per branch.  Demands branch SN
+  -- matching the K12.6 piTy SN-output shape per branch.  Demands branch SN
   -- plus Reducible-arg → SN-applied on each side, yielding SN of the
   -- eitherMatch result.  Branch SN is required for neutral scrutinees
   -- because eitherMatch congruence reduces both branches independently
@@ -1530,12 +1523,12 @@ def Reducible {mode : Mode} {level scope : Nat}
       ∀ (modeIsUnivalent : mode = Mode.univalent),
         Reducible baseType
           (Term.glueElim modeIsUnivalent gluedValue)
-  -- HoTT observational equality (K12.10, weak oeqJ closure).
+  -- HoTT observational equality (K12.10, SN-output oeqJ closure).
   -- Ty.oeq mirrors Ty.id's shape exactly: carrier (strict sub-Ty) +
   -- two RawTerm endpoints.  The oeq-eliminator `Term.oeqJ` has the
   -- same shape as `Term.idJ` — consumes a witness and a baseCase at
   -- an arbitrary motiveType, produces motiveType.  Same K12.6 / K12.9
-  -- weak closure pattern: SN(witness) + (SN baseCase → SN(oeqJ
+  -- SN-output pattern: SN(witness) + (SN baseCase → SN(oeqJ
   -- baseCase witness)).
   | Ty.oeq _ _ _, _, witness =>
       Term.isStronglyNormalizing witness ∧
@@ -1544,13 +1537,13 @@ def Reducible {mode : Mode} {level scope : Nat}
         (baseCase : Term context motiveType baseRaw),
         Term.isStronglyNormalizing baseCase →
         Term.isStronglyNormalizing (Term.oeqJ baseCase witness)
-  -- Strict identity type (K12.10, weak idStrictRec closure).
+  -- Strict identity type (K12.10, SN-output idStrictRec closure).
   -- Ty.idStrict mirrors Ty.id's shape but the eliminator
   -- `Term.idStrictRec` requires a `mode = Mode.strict` witness.  The
   -- closure quantifies that witness universally — when the ambient
   -- mode ≠ Mode.strict, the equation is uninhabited and the inner
   -- ∀ is vacuous (closure reduces to SN(witness) alone).  Same
-  -- K12.6 / K12.9 weak-J pattern in the strict-mode branch.
+  -- K12.6 / K12.9 SN-output pattern in the strict-mode branch.
   | Ty.idStrict _ _ _, _, witness =>
       Term.isStronglyNormalizing witness ∧
       ∀ (modeIsStrict : mode = Mode.strict)
@@ -2998,7 +2991,7 @@ theorem RawTerm.app_function_isStronglyNormalizing_aux {scope : Nat}
       (RawTerm.app functionTarget argumentRaw) appProgress rfl
 
 /-- If an application is strongly normalizing, its function subterm is
-strongly normalizing.  This is used by weak eliminator CR3: branch
+strongly normalizing.  This is used by SN-output eliminator CR3: branch
 closures often expose SN only after applying a branch, while neutral
 eliminator congruence needs SN of the branch term itself. -/
 theorem RawTerm.app_function_isStronglyNormalizing {scope : Nat}
@@ -12306,11 +12299,10 @@ theorem Reducible.step_preserves_arrow
       injection appEq
     exact codomainCR2 (sourceReducible.2 argTerm argReducible) appStep
 
-/-! ## K12.20.G typed CR2 lift — Ty.piTy weak-closure compound arm
+/-! ## K12.20.G typed CR2 lift — Ty.piTy SN-output compound arm
 
-Second compound-arm CR2 lemma.  `Ty.piTy` ships a **weak closure**
-in K12.6 (full Tait dep-Π closure is reserved for the future Kripke
-logical-relation refactor):
+Second compound-arm CR2 lemma.  `Ty.piTy` ships an **SN-output
+closure** in K12.6:
 
 ```
 Reducible (Ty.piTy A B) f =
@@ -12442,12 +12434,10 @@ theorem Reducible.step_preserves_sigmaTy
     exact RawTerm.isStronglyNormalizing.step_preserves
       sourceReducible.2.2 sndStep
 
-/-! ## K12.20.I typed CR2 lift — Ty.id weak-idJ-closure compound arm
+/-! ## K12.20.I typed CR2 lift — Ty.id SN-output idJ compound arm
 
-Fourth compound-arm CR2 lemma.  `Ty.id` ships a **weak idJ
-closure** in K12.9 (motive-Reducible closure is reserved for
-the future Kripke logical-relation refactor — paired-environment
-recursion sidesteps the eliminator-output sub-Ty wall):
+Fourth compound-arm CR2 lemma.  `Ty.id` ships an **SN-output idJ
+closure** in K12.9:
 
 ```
 Reducible (Ty.id A x y) w =
@@ -12460,7 +12450,7 @@ The eliminator output is `SN(Term.idJ bc w)` not full
 `Ty.id` needs NO recursive motiveTypeCR2 hypothesis — both
 SN-of-witness and SN-of-idJ-result are pure-SN preservation,
 both discharged by K12.20.B's raw `step_preserves`.  Same
-weak-closure pattern as K12.20.G piTy.
+SN-output pattern as K12.20.G piTy.
 
 Term.idJ's raw projection IS `RawTerm.idJ baseRaw witnessRaw`
 (per Term.lean:245), and `RawStep.par.idJ` takes paired par
@@ -12470,7 +12460,7 @@ baseRaw side gets `RawStep.par.refl baseRaw` while the witness
 side gets `rawStep.1`.
 -/
 
-/-- **K12.20.I id arm**: weak-idJ-closure CR2 for `Ty.id`.  Both
+/-- **K12.20.I id arm**: SN-output idJ closure CR2 for `Ty.id`.  Both
 SN-of-witness and SN-of-idJ-result are preserved by the same
 raw `step_preserves`.  Distinctness on idJ via ctor injectivity
 (injection extracts witness-side raw equality, contradicts
@@ -12503,13 +12493,11 @@ theorem Reducible.step_preserves_id
     exact RawTerm.isStronglyNormalizing.step_preserves
       (sourceReducible.2 baseCase baseSN) idJStep
 
-/-! ## K12.20.J typed CR2 lift — Ty.listType weak-elim-closure compound arm
+/-! ## K12.20.J typed CR2 lift — Ty.listType SN-output elim compound arm
 
-Fifth compound-arm CR2 lemma.  `Ty.listType` ships a **weak elim
+Fifth compound-arm CR2 lemma.  `Ty.listType` ships an **SN-output elim
 closure** in K12.8: the eliminator output is plain SN, not full
-Reducible (motive-Reducible closure reserved for Kripke logical-
-relation refactor — paired-environment recursion sidesteps the
-arbitrary-motiveType sub-Ty wall).  Closure shape (per
+Reducible.  Closure shape (per
 Reducibility.lean:404):
 
 ```
@@ -12622,12 +12610,12 @@ theorem Reducible.step_preserves_optionType
       (sourceReducible.2 noneBranch someBranch noneSN someSN someApplied)
       optionMatchStep
 
-/-! ## K12.20.L typed CR2 lift — Ty.eitherType symmetric-weak-elim-closure compound arm
+/-! ## K12.20.L typed CR2 lift — Ty.eitherType symmetric SN-output elim compound arm
 
 Seventh compound-arm CR2 lemma.  `Ty.eitherType` ships a
-**symmetric weak elim closure** in K12.8: both `leftType` and
+**symmetric SN-output elim closure** in K12.8: both `leftType` and
 `rightType` are strict sub-Ty of `Ty.eitherType leftType
-rightType`, so each branch's arrow shape matches K12.6 piTy weak
+rightType`, so each branch's arrow shape matches K12.6 piTy SN-output
 closure per side.  Closure shape (per Reducibility.lean:446):
 
 ```
@@ -12825,16 +12813,16 @@ theorem Reducible.step_preserves_glue
     exact baseTypeCR2
       (sourceReducible.2 modeIsUnivalent) glueElimStep
 
-/-! ## K12.20.O typed CR2 lift — Ty.oeq weak-oeqJ-closure compound arm
+/-! ## K12.20.O typed CR2 lift — Ty.oeq SN-output oeqJ compound arm
 
 Tenth compound-arm CR2 lemma.  `Ty.oeq` (HoTT observational
-equality) ships a **weak oeqJ closure** in K12.10: the
+equality) ships an **SN-output oeqJ closure** in K12.10: the
 eliminator output is plain SN, not full `Reducible motiveType _`.
 The arbitrary `motiveType` is NOT a strict sub-Ty of
 `Ty.oeq carrier left right` — structural-recursion-on-Ty would
 not admit a `Reducible motiveType` recursive call (K12.6 / K12.9
-weak-J pattern, identical to K12.20.I for Ty.id and the parametric
-inductive weak elim arms K12.20.J/K/L).  Closure shape (per
+SN-output pattern, identical to K12.20.I for Ty.id and the parametric
+inductive SN-output elim arms K12.20.J/K/L).  Closure shape (per
 Reducibility.lean:503-509):
 
 ```
@@ -12847,7 +12835,7 @@ Reducible (Ty.oeq _ _ _) witness =
     SN (Term.oeqJ baseCase witness)
 ```
 
-Weak closure → **no recursive hypothesis needed**.  Eliminator
+SN-output closure → **no recursive hypothesis needed**.  Eliminator
 output is SN, so the cong lift goes via
 `RawTerm.isStronglyNormalizing.step_preserves` directly.
 
@@ -12859,8 +12847,8 @@ baseCase rides `par.refl` (not progressing); witness rides
 `RawTerm.oeqJ.injEq`.
 -/
 
-/-- **K12.20.O oeq arm**: weak-oeqJ-closure CR2 for `Ty.oeq`.
-No recursive hypothesis needed (weak elim closure produces SN,
+/-- **K12.20.O oeq arm**: SN-output oeqJ closure CR2 for `Ty.oeq`.
+No recursive hypothesis needed (SN-output closure produces SN,
 not Reducible).  SN-of-witnessTerm preserved by raw
 `step_preserves`; SN-of-oeqJ-applied lifted via raw
 `step_preserves` over the oeqJCong step.  Mirror of K12.20.I id
@@ -12933,8 +12921,8 @@ For CR2 the baseCase rides `par.refl`; witness rides `rawStep.1`.
 Distinctness via `injection` on `RawTerm.idStrictRec.injEq`.
 -/
 
-/-- **K12.20.P idStrict arm**: weak-idStrictRec-closure CR2 for
-`Ty.idStrict`.  No recursive hypothesis needed (weak elim
+/-- **K12.20.P idStrict arm**: SN-output idStrictRec closure CR2 for
+`Ty.idStrict`.  No recursive hypothesis needed (SN-output
 closure produces SN, not Reducible).  Identical structure to
 K12.20.O oeq, with extra `modeIsStrict` binder threaded through
 the per-mode quantifier in the closure body. -/
@@ -15315,7 +15303,7 @@ theorem Reducible.fundamental_fst_at_sigmaTy
   pairIH.2.1
 
 /-! ## K12.21.C fundamental_snd at `Ty.sigmaTy` — Σ second-projection
-weak-SN case
+SN-output case
 
 Third entry of the K12.21 β-redex fundamental-case batch (#1778).
 `Term.snd : Term ctx (Ty.sigmaTy A B) pairRaw → Term ctx (B.subst0
@@ -15326,7 +15314,7 @@ Asymmetry with K12.21.B: the sigmaTy second-projection target type
 `secondType.subst0 firstType (RawTerm.fst pairRaw)` is NOT a
 strict sub-Ty of `Ty.sigmaTy firstType secondType` — structural
 recursion on Ty cannot inspect it without the Kripke logical-
-relation refactor.  Per K12.7's asymmetric closure design
+candidate.  Per K12.7's asymmetric closure design
 (`Reducibility.lean:367-370`), the snd-projection closure ships
 only as **SN of the snd term**, not full Reducible:
 
@@ -15334,7 +15322,7 @@ only as **SN of the snd term**, not full Reducible:
                                     ∧ Reducible A' (Term.fst pair)
                                     ∧ SN(Term.snd pair)
 
-This fundamental case ships at the weak-SN level matching K12.7.
+This fundamental case ships at the SN-output level matching K12.7.
 Three definitional facts compose:
 
 1.  `(Ty.sigmaTy A B).subst sigma = Ty.sigmaTy (A.subst sigma)
@@ -15351,14 +15339,13 @@ the snd projection).
 
 When secondType.subst0 is itself SN-direct (e.g. when secondType
 is a non-dependent variant `B.weaken` of a closed-leaf type), the
-weak SN result IS the full Reducible result.  When secondType is
-compound, the lift to full Reducible waits for K12.25's modal
-framework or the Kripke refactor. -/
+SN-output result IS the full Reducible result.  When secondType is
+compound, the lift to full Reducible needs motive-rich infrastructure. -/
 
-/-- **K12.21.C fundamental_snd at `Ty.sigmaTy`** — weak-SN
+/-- **K12.21.C fundamental_snd at `Ty.sigmaTy`** — SN-output
 case.  Direct extraction of the third conjunct from K12.7's
 asymmetric sigmaTy closure; the substituted-codomain wall blocks
-full-Reducible until the Kripke refactor.
+full Reducible at the dependent second projection.
 
 The goal is **SN of the substituted Term.snd**, not Reducible —
 matching K12.6/K12.7's documented design (`Reducibility.lean:339-352`).  -/
@@ -15380,7 +15367,7 @@ theorem Reducible.fundamental_snd_at_sigmaTy_sn
       (Term.subst termSubst (Term.snd pairTerm)) :=
   pairIH.2.2
 
-/-! ## K12.21.D fundamental_appPi at `Ty.piTy` — Π weak-SN
+/-! ## K12.21.D fundamental_appPi at `Ty.piTy` — Π SN-output
 elimination
 
 Fourth entry of the K12.21 β-redex fundamental-case batch (#1778).
@@ -15391,7 +15378,7 @@ dependent function-application elimination form.
 Asymmetry with K12.21.A: the target type `B.subst0 A argRaw` is
 NOT a strict sub-Ty of `Ty.piTy A B` — same structural-recursion
 wall as K12.21.C's `B.subst0` codomain on Σ.snd.  Per K12.6's
-weak closure design (`Reducibility.lean:353-358`), the dep-Π
+SN-output closure design (`Reducibility.lean:353-358`), the dep-Π
 eliminator closure ships only as SN of the application
 (not full Reducible):
 
@@ -15409,20 +15396,19 @@ sigma.forRaw)` projection.
 Body: `functionIH.2 (Term.subst termSubst argumentTerm)
 argumentIH` — same composition shape as K12.21.A's
 fundamental_app_at_arrow, but the second conjunct of K12.6's
-piTy closure returns SN, not Reducible (K12.6's weak closure).
+piTy closure returns SN, not Reducible.
 
-The full-Reducible upgrade waits for the Kripke logical-relation
-refactor that defeats the structural-recursion barrier on
-substituted codomains. -/
+The full-Reducible upgrade needs infrastructure that defeats the
+structural-recursion barrier on substituted codomains. -/
 
-/-- **K12.21.D fundamental_appPi at `Ty.piTy`** — Π weak-SN
+/-- **K12.21.D fundamental_appPi at `Ty.piTy`** — Π SN-output
 elimination.  Dependent function application composes the
-function's weak-piTy closure with the argument's reducibility
+function's piTy SN-output closure with the argument's reducibility
 witness; the substituted-codomain wall blocks full-Reducible
-until the Kripke refactor.
+at the dependent application result.
 
 The goal is **SN of the substituted Term.appPi**, not Reducible —
-matching K12.6's documented weak closure design (`Reducibility.
+matching K12.6's documented SN-output closure design (`Reducibility.
 lean:339-352`). -/
 theorem Reducible.fundamental_appPi_at_piTy_sn
     {mode : Mode} {level scope targetScope : Nat}
@@ -15562,13 +15548,11 @@ theorem Reducible.fundamental_refineElim_at_refine
 /-! ## K12.22 fundamental ι-eliminator cases -/
 
 /-- Fundamental case: `Term.boolElim` at `Ty.bool` (K12.22.A,
-weak-SN).
+SN-output).
 
 The current bool arm is an SN-direct closed-type clause.  Since the motive
 type is arbitrary rather than a structural sub-type of `Ty.bool`, this case
-returns SN of the eliminator result.  Full `Reducible motiveType` is deferred
-to the same Kripke/refined-candidate infrastructure as the other dependent
-eliminators.
+returns SN of the eliminator result.
 -/
 theorem Reducible.fundamental_boolElim_at_bool_sn
     {mode : Mode} {level scope targetScope : Nat}
@@ -15843,14 +15827,14 @@ theorem Reducible.fundamental_natRec_at_nat
     contractumIsSN
 
 /-- Fundamental case: `Term.optionMatch` at `Ty.optionType` (K12.22.B,
-weak-SN).
+SN-output).
 
 The `Ty.optionType` reducibility arm stores an eliminator closure:
 SN of the scrutinee plus SN of the none branch plus SN of each
 some-branch application at a reducible element.  The branch-application
 premise is supplied by the arrow reducibility of `someBranch`, then
-demoted to SN because the current closure returns only weak-SN at the
-arbitrary motive type.
+demoted to SN because the current closure returns SN at the arbitrary
+motive type.
 -/
 theorem Reducible.fundamental_optionMatch_at_option_sn
     {mode : Mode} {level scope targetScope : Nat}
@@ -15886,12 +15870,11 @@ theorem Reducible.fundamental_optionMatch_at_option_sn
       Reducible.isStronglyNormalizing (someIH.2 valueTerm valueIH))
 
 /-- Fundamental case: `Term.eitherMatch` at `Ty.eitherType` (K12.22.C,
-weak-SN).
+SN-output).
 
-Same weak eliminator pattern as `optionMatch`, with one arrow-typed
+Same SN-output eliminator pattern as `optionMatch`, with one arrow-typed
 branch for each side.  The current candidate can prove SN of the
-eliminator result, while full `Reducible motiveType` remains deferred
-to the Kripke/refined-candidate upgrade.
+eliminator result.
 -/
 theorem Reducible.fundamental_eitherMatch_at_either_sn
     {mode : Mode} {level scope targetScope : Nat}
@@ -16118,7 +16101,7 @@ theorem Term.listElim_isStronglyNormalizing
 
 /-- Direct M04 SN endpoint for option matching.
 
-This exposes the weak eliminator closure stored in the option
+This exposes the SN-output eliminator closure stored in the option
 reducibility candidate: reducible scrutinee, SN branches, and an
 application-SN closure for the `Some` branch. -/
 theorem Term.optionMatch_isStronglyNormalizing
@@ -16147,7 +16130,7 @@ theorem Term.optionMatch_isStronglyNormalizing
 
 /-- Direct M04 SN endpoint for either matching.
 
-The either candidate stores symmetric weak eliminator closures for the
+The either candidate stores symmetric SN-output eliminator closures for the
 left and right branches.  This theorem exposes that exact M04 endpoint
 without claiming full reducibility at the arbitrary motive type. -/
 theorem Term.eitherMatch_isStronglyNormalizing
@@ -16182,9 +16165,9 @@ theorem Term.eitherMatch_isStronglyNormalizing
 
 /-! ## K12.23 fundamental HOTT-eliminator cases -/
 
-/-- Fundamental case: `Term.idJ` at `Ty.id` (K12.23.B, weak-SN).
+/-- Fundamental case: `Term.idJ` at `Ty.id` (K12.23.B, SN-output).
 
-The current `Ty.id` reducibility arm is intentionally weak: it stores
+The current `Ty.id` reducibility arm stores
 SN of the equality witness plus an eliminator closure from any SN
 base case to SN of `Term.idJ baseCase witness`.  The motive type is
 arbitrary, not a structural sub-type of `Ty.id carrier left right`, so
@@ -16215,9 +16198,9 @@ theorem Reducible.fundamental_idJ_at_id_sn
   witnessIH.2 (Term.subst termSubst baseCase)
     (Reducible.isStronglyNormalizing baseIH)
 
-/-- Fundamental case: `Term.oeqJ` at `Ty.oeq` (K12.23.C, weak-SN).
+/-- Fundamental case: `Term.oeqJ` at `Ty.oeq` (K12.23.C, SN-output).
 
-Observational equality has the same weak eliminator closure shape as
+Observational equality has the same SN-output eliminator closure shape as
 `Ty.id`: SN of the witness plus SN preservation through `oeqJ` for any
 SN base case.  The arbitrary motive wall again prevents a full
 `Reducible motiveType` conclusion in the current structural-on-`Ty`
@@ -16248,10 +16231,10 @@ theorem Reducible.fundamental_oeqJ_at_oeq_sn
     (Reducible.isStronglyNormalizing baseIH)
 
 /-- Fundamental case: `Term.idStrictRec` at `Ty.idStrict`
-(K12.23.D, weak-SN).
+(K12.23.D, SN-output).
 
 Strict identity adds the ambient `mode = Mode.strict` witness to the
-same weak eliminator closure used by `Ty.id` and `Ty.oeq`.  The result
+same SN-output eliminator closure used by `Ty.id` and `Ty.oeq`.  The result
 is SN of the substituted strict recursor, matching the closure stored in
 `Reducible (Ty.idStrict ...)`.
 -/
