@@ -6797,6 +6797,99 @@ theorem Term.snd_pair_isStronglyNormalizing
         (Term.pair (secondType := secondType) firstValue secondValue)) :=
   RawTerm.snd_pair_isStronglyNormalizing firstIsSN secondIsSN
 
+/-- Generic first-projection SN preservation.
+
+The congruence arm recurses through the projected pair.  The β arm can
+only fire after the pair term develops to an explicit `pair`; component
+SN then follows from the existing pair-component inversion lemma. -/
+theorem RawTerm.fst_isStronglyNormalizing {scope : Nat}
+    {pairRaw : RawTerm scope}
+    (pairIsSN : RawTerm.isStronglyNormalizing pairRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.fst pairRaw) := by
+  induction pairIsSN with
+  | intro currentPair pairClosure pairIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.fst currentPair) ?_
+    intro target progressStep
+    rcases RawStep.par.fst_inv progressStep.1 with
+      ⟨pairTarget, targetEq, pairStep⟩
+      | ⟨firstTarget, secondTarget, targetEq, pairStep⟩
+    · subst targetEq
+      by_cases pairEq : currentPair = pairTarget
+      · subst pairEq
+        exact (progressStep.2 rfl).elim
+      · exact pairIH pairTarget ⟨pairStep, pairEq⟩
+    · rw [targetEq]
+      have developedPairIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.pair firstTarget secondTarget) := by
+        by_cases pairEq : currentPair =
+            RawTerm.pair firstTarget secondTarget
+        · rw [← pairEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentPair pairClosure
+        · exact pairClosure (RawTerm.pair firstTarget secondTarget)
+            ⟨pairStep, pairEq⟩
+      exact RawTerm.pair_first_isStronglyNormalizing developedPairIsSN
+
+/-- Generic second-projection SN preservation.
+
+This mirrors `RawTerm.fst_isStronglyNormalizing`; the β arm extracts
+the second component from an SN developed pair. -/
+theorem RawTerm.snd_isStronglyNormalizing {scope : Nat}
+    {pairRaw : RawTerm scope}
+    (pairIsSN : RawTerm.isStronglyNormalizing pairRaw) :
+    RawTerm.isStronglyNormalizing (RawTerm.snd pairRaw) := by
+  induction pairIsSN with
+  | intro currentPair pairClosure pairIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.snd currentPair) ?_
+    intro target progressStep
+    rcases RawStep.par.snd_inv progressStep.1 with
+      ⟨pairTarget, targetEq, pairStep⟩
+      | ⟨firstTarget, secondTarget, targetEq, pairStep⟩
+    · subst targetEq
+      by_cases pairEq : currentPair = pairTarget
+      · subst pairEq
+        exact (progressStep.2 rfl).elim
+      · exact pairIH pairTarget ⟨pairStep, pairEq⟩
+    · rw [targetEq]
+      have developedPairIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.pair firstTarget secondTarget) := by
+        by_cases pairEq : currentPair =
+            RawTerm.pair firstTarget secondTarget
+        · rw [← pairEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentPair pairClosure
+        · exact pairClosure (RawTerm.pair firstTarget secondTarget)
+            ⟨pairStep, pairEq⟩
+      exact RawTerm.pair_second_isStronglyNormalizing developedPairIsSN
+
+/-- Direct M04 SN case for first projection from any SN pair term. -/
+theorem Term.fst_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsSN : Term.isStronglyNormalizing pairTerm) :
+    Term.isStronglyNormalizing (Term.fst pairTerm) :=
+  RawTerm.fst_isStronglyNormalizing pairIsSN
+
+/-- Direct M04 SN case for second projection from any SN pair term. -/
+theorem Term.snd_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsSN : Term.isStronglyNormalizing pairTerm) :
+    Term.isStronglyNormalizing (Term.snd pairTerm) :=
+  RawTerm.snd_isStronglyNormalizing pairIsSN
+
 /-- **K12.20.AA listCons SN preservation** — second binary SN
 helper.  Same nested-induction + decidable-injectivity-split template
 as `pair_isStronglyNormalizing`, applied to the cons-cell at the

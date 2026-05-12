@@ -1038,6 +1038,8 @@ M04 / `strong_normalization`. -/
 #print axioms Term.optionSome_isStronglyNormalizing
 #print axioms Term.eitherInl_isStronglyNormalizing
 #print axioms Term.eitherInr_isStronglyNormalizing
+#print axioms Term.fst_isStronglyNormalizing
+#print axioms Term.snd_isStronglyNormalizing
 #print axioms Term.intervalOpp_isStronglyNormalizing
 #print axioms Term.intervalMeet_isStronglyNormalizing
 #print axioms Term.intervalJoin_isStronglyNormalizing
