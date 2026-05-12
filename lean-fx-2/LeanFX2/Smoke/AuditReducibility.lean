@@ -976,7 +976,9 @@ M04 / `strong_normalization`. -/
 #print axioms Term.isStronglyNormalizing_of_varShape
 #print axioms Reducible.of_neutral_progress_closure
 #print axioms Reducible.of_type_eq_symm_cast
+#print axioms Reducible.of_type_eq_cast
 #print axioms Reducible.of_raw_eq_symm_cast
+#print axioms Reducible.of_raw_eq_cast
 #print axioms Ty.weaken_subst_lift_singleton
 #print axioms RawTerm.subst_lift_singleton_eq_subst0
 #print axioms Reducible.of_varShape

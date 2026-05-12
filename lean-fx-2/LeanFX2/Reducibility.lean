@@ -9862,6 +9862,20 @@ theorem Reducible.of_type_eq_symm_cast
   cases typeEq
   exact targetReducible
 
+/-- Transport a reducibility witness across a type-index equality whose
+term side is cast by the equality itself. -/
+theorem Reducible.of_type_eq_cast
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {raw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    {sourceTerm : Term context sourceType raw}
+    (sourceReducible : Reducible sourceType sourceTerm) :
+    Reducible targetType (typeEq ▸ sourceTerm) := by
+  cases typeEq
+  exact sourceReducible
+
 /-- Transport a reducibility witness across a raw-index equality whose
 term side is cast by the symmetric equality.  This is the raw-index
 companion to `Reducible.of_type_eq_symm_cast`; it packages the exact
@@ -9877,6 +9891,20 @@ theorem Reducible.of_raw_eq_symm_cast
     Reducible sourceType (rawEq.symm ▸ targetTerm) := by
   cases rawEq
   exact targetReducible
+
+/-- Transport a reducibility witness across a raw-index equality whose
+term side is cast by the equality itself. -/
+theorem Reducible.of_raw_eq_cast
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (rawEq : sourceRaw = targetRaw)
+    {sourceTerm : Term context sourceType sourceRaw}
+    (sourceReducible : Reducible sourceType sourceTerm) :
+    Reducible sourceType (rawEq ▸ sourceTerm) := by
+  cases rawEq
+  exact sourceReducible
 
 /-- Substitution law for the β-specific environment extension:
 weakening a source type, lifting an existing substitution, then
