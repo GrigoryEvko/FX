@@ -683,6 +683,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.listCons_head_isStronglyNormalizing
 #print axioms RawTerm.listCons_tail_isStronglyNormalizing_aux
 #print axioms RawTerm.listCons_tail_isStronglyNormalizing
+#print axioms RawTerm.modIntro_inner_isStronglyNormalizing
 #print axioms RawTerm.isStronglyNormalizing.of_progress_closure
 #print axioms Term.isStronglyNormalizing.of_raw_progress_closure
 #print axioms RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
@@ -737,6 +738,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_modIntro_at_empty
 #print axioms Reducible.fundamental_modIntro_at_interval
 #print axioms Reducible.fundamental_modIntro_at_effect
+#print axioms Reducible.fundamental_modElim_at_unit
 #print axioms Reducible.fundamental_app_at_arrow
 #print axioms Reducible.fundamental_fst_at_sigmaTy
 #print axioms Reducible.fundamental_snd_at_sigmaTy_sn
@@ -788,6 +790,8 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.eitherMatch_eitherInr_isStronglyNormalizing
 #print axioms Term.eitherMatch_eitherInr_isStronglyNormalizing
 #print axioms RawTerm.modIntro_isStronglyNormalizing
+#print axioms RawTerm.modElim_isStronglyNormalizing
+#print axioms Term.modElim_isStronglyNormalizing
 #print axioms RawTerm.pair_isStronglyNormalizing
 #print axioms RawTerm.fst_pair_isStronglyNormalizing
 #print axioms RawTerm.snd_pair_isStronglyNormalizing

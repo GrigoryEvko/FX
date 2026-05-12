@@ -3050,6 +3050,39 @@ theorem RawTerm.listCons_tail_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing tailRaw :=
   RawTerm.listCons_tail_isStronglyNormalizing_aux consIsSN rfl
 
+/-- Shape-specialized inversion for modal-introduction payload SN. -/
+theorem RawTerm.modIntro_inner_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {innerRaw : RawTerm scope},
+      source = RawTerm.modIntro innerRaw →
+      RawTerm.isStronglyNormalizing innerRaw := by
+  induction sourceIsSN with
+  | intro currentSource _ inductiveHypothesis =>
+    intro innerRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro innerRaw ?_
+    intro innerTarget innerProgress
+    have introProgress :
+        RawStep.parProgress
+          (RawTerm.modIntro innerRaw)
+          (RawTerm.modIntro innerTarget) := by
+      refine ⟨RawStep.par.modIntro innerProgress.1, ?_⟩
+      intro introEq
+      apply innerProgress.2
+      injection introEq
+    exact inductiveHypothesis
+      (RawTerm.modIntro innerTarget) introProgress rfl
+
+/-- If `modIntro inner` is strongly normalizing, then `inner` is
+strongly normalizing. -/
+theorem RawTerm.modIntro_inner_isStronglyNormalizing {scope : Nat}
+    {innerRaw : RawTerm scope}
+    (introIsSN :
+      RawTerm.isStronglyNormalizing (RawTerm.modIntro innerRaw)) :
+    RawTerm.isStronglyNormalizing innerRaw :=
+  RawTerm.modIntro_inner_isStronglyNormalizing_aux introIsSN rfl
+
 /-- **K12.20.U2 raw CR3 skeleton**: a raw term is strongly
 normalizing when every non-trivial parallel-progress reduct is
 strongly normalizing.
@@ -6417,6 +6450,55 @@ theorem RawTerm.modIntro_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.modIntro innerEq)
     exact inductiveHypothesis innerTarget
       ⟨innerStep, innerDistinct⟩
+
+/-- **K12.25 modal elimination SN preservation**.
+
+`modElim` has a congruence arm plus the modal β arm
+`modElim (modIntro payload) → payload`.  Congruent reducts recurse
+through the inner SN witness.  β reducts first obtain SN of the
+developed `modIntro payload`, then invert that constructor-shaped SN
+back to SN of the payload. -/
+theorem RawTerm.modElim_isStronglyNormalizing {scope : Nat}
+    {innerTerm : RawTerm scope}
+    (innerIsSN : RawTerm.isStronglyNormalizing innerTerm) :
+    RawTerm.isStronglyNormalizing (RawTerm.modElim innerTerm) := by
+  induction innerIsSN with
+  | intro currentInner innerClosure innerIH =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.modElim currentInner) ?_
+    intro target progressStep
+    rcases RawStep.par.modElim_inv progressStep.1 with
+      ⟨innerTarget, targetEq, innerStep⟩
+      | ⟨payloadTarget, targetEq, innerStep⟩
+    · subst targetEq
+      by_cases innerEq : currentInner = innerTarget
+      · subst innerEq
+        exact (progressStep.2 rfl).elim
+      · exact innerIH innerTarget ⟨innerStep, innerEq⟩
+    · rw [targetEq]
+      have introTargetIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.modIntro payloadTarget) := by
+        by_cases innerEq :
+            currentInner = RawTerm.modIntro payloadTarget
+        · rw [← innerEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentInner innerClosure
+        · exact innerClosure (RawTerm.modIntro payloadTarget)
+            ⟨innerStep, innerEq⟩
+      exact RawTerm.modIntro_inner_isStronglyNormalizing
+        introTargetIsSN
+
+/-- Typed wrapper for `RawTerm.modElim_isStronglyNormalizing`. -/
+theorem Term.modElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term context innerType innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerTerm) :
+    Term.isStronglyNormalizing (Term.modElim innerTerm) :=
+  RawTerm.modElim_isStronglyNormalizing innerIsSN
 
 /-- **K12.20.Z pair SN preservation** — first binary cong-only SN
 helper.  Pair has two parallel subterms; the SN proof needs nested
@@ -11911,6 +11993,27 @@ theorem Reducible.fundamental_modIntro_at_effect
     Reducible ((Ty.effect carrierType effectTag).subst sigma)
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
+
+/-! ## K12.25 modal destructor cases -/
+
+/-- **K12.25 modElim fundamental case at `Ty.unit`**.
+
+Layer-1 `Term.modElim` is type-preserving.  At the closed unit type,
+`Reducible` unfolds to SN, so the fundamental case is exactly the
+typed modal-elimination SN preservation lemma. -/
+theorem Reducible.fundamental_modElim_at_unit
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.unit innerRaw}
+    (innerIH : Reducible ((Ty.unit : Ty level scope).subst sigma)
+                         (Term.subst termSubst innerTerm)) :
+    Reducible ((Ty.unit : Ty level scope).subst sigma)
+              (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Term.modElim_isStronglyNormalizing innerIH
 
 /-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
 case at the homogeneous (non-dependent) arrow type
