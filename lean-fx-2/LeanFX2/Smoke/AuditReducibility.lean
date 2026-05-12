@@ -798,6 +798,9 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_refl_at_id_of_endpoint_sn
 #print axioms Reducible.fundamental_oeqRefl_at_oeq_of_endpoint_sn
 #print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn
+#print axioms Term.funextRefl_isStronglyNormalizing
+#print axioms Term.funextReflAtId_isStronglyNormalizing
+#print axioms Term.funextIntroHet_isStronglyNormalizing
 #print axioms Reducible.fundamental_snd_at_sigmaTy
 #print axioms Reducible.fundamental_appPi_at_piTy
 #print axioms Reducible.fundamental_identity_app_at_arrow_sn

@@ -16960,6 +16960,24 @@ theorem Term.funextRefl_isStronglyNormalizing_of_rawPayloads
   Term.funextRefl_isStronglyNormalizing_of_apply
     domainType codomainType payloads
 
+/-- Canonical typed SN surface endpoint for `funextRefl`, retaining the
+explicit raw-payload SN obligation carried by the schematic `applyRaw`
+field. -/
+theorem Term.funextRefl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.funextRefl_isStronglyNormalizing_of_rawPayloads
+    domainType codomainType payloads
+
 /-- Direct M04 SN case for the Id-typed funext reflexivity witness. -/
 theorem Term.funextReflAtId_isStronglyNormalizing_of_apply
     {mode : Mode} {level scope : Nat}
@@ -16988,6 +17006,24 @@ theorem Term.funextReflAtId_isStronglyNormalizing_of_rawPayloads
       (Term.funextReflAtId (context := sourceCtx)
         domainType codomainType applyRaw) :=
   Term.funextReflAtId_isStronglyNormalizing_of_apply
+    domainType codomainType payloads
+
+/-- Canonical typed SN surface endpoint for `funextReflAtId`, retaining
+the explicit raw-payload SN obligation carried by the schematic
+`applyRaw` field. -/
+theorem Term.funextReflAtId_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextReflAtId (context := sourceCtx)
+          domainType codomainType applyRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextReflAtId (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.funextReflAtId_isStronglyNormalizing_of_rawPayloads
     domainType codomainType payloads
 
 /-- Direct M04 SN case for heterogeneous funext introduction.  The current
@@ -17020,6 +17056,24 @@ theorem Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
       (Term.funextIntroHet (context := sourceCtx)
         domainType codomainType applyARaw applyBRaw) :=
   Term.funextIntroHet_isStronglyNormalizing_of_applyLeft
+    domainType codomainType payloads
+
+/-- Canonical typed SN surface endpoint for `funextIntroHet`, retaining
+the explicit raw-payload SN obligation carried by the projected
+`applyARaw` field. -/
+theorem Term.funextIntroHet_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (payloads :
+      Term.HasStronglyNormalizingRawPayloads
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw)) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) :=
+  Term.funextIntroHet_isStronglyNormalizing_of_rawPayloads
     domainType codomainType payloads
 
 /-! ## K12.27 direct leaf M04 endpoints -/
