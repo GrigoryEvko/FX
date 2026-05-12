@@ -2478,6 +2478,41 @@ theorem RawTerm.app_argument_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing argumentRaw :=
   RawTerm.app_argument_isStronglyNormalizing_aux appIsSN rfl
 
+/-- Shape-specialized inversion for predecessor SN from successor SN. -/
+theorem RawTerm.natSucc_predecessor_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {predecessorRaw : RawTerm scope},
+      source = RawTerm.natSucc predecessorRaw →
+      RawTerm.isStronglyNormalizing predecessorRaw := by
+  induction sourceIsSN with
+  | intro currentSource closure inductiveHypothesis =>
+    intro predecessorRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro predecessorRaw ?_
+    intro predecessorTarget predecessorProgress
+    have succProgress :
+        RawStep.parProgress
+          (RawTerm.natSucc predecessorRaw)
+          (RawTerm.natSucc predecessorTarget) := by
+      refine ⟨RawStep.par.natSucc predecessorProgress.1, ?_⟩
+      intro succEq
+      apply predecessorProgress.2
+      injection succEq
+    exact inductiveHypothesis
+      (RawTerm.natSucc predecessorTarget) succProgress rfl
+
+/-- If a natural successor is strongly normalizing, its predecessor is
+strongly normalizing.  Used by nat-eliminator successor ι expansions. -/
+theorem RawTerm.natSucc_predecessor_isStronglyNormalizing {scope : Nat}
+    {predecessorRaw : RawTerm scope}
+    (successorIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.natSucc predecessorRaw)) :
+    RawTerm.isStronglyNormalizing predecessorRaw :=
+  RawTerm.natSucc_predecessor_isStronglyNormalizing_aux
+    successorIsSN rfl
+
 /-- Shape-specialized inversion for first component SN from pair SN. -/
 theorem RawTerm.pair_first_isStronglyNormalizing_aux {scope : Nat}
     {source : RawTerm scope}
@@ -4712,6 +4747,214 @@ theorem RawTerm.natSucc_isStronglyNormalizing {scope : Nat}
       progressStep.2 (congrArg RawTerm.natSucc predecessorEq)
     exact inductiveHypothesis predecessorTarget
       ⟨predecessorStep, predecessorDistinct⟩
+
+/-- Nat-zero ι SN expansion for `natElim`.
+
+For a canonical zero scrutinee, `natElim` reduces to the zero branch.
+The successor branch remains in the statement because congruent
+reductions may step under it before the ι rule fires. -/
+theorem RawTerm.natElim_natZero_isStronglyNormalizing
+    {scope : Nat}
+    {zeroBranch : RawTerm scope}
+    (zeroIsSN : RawTerm.isStronglyNormalizing zeroBranch) :
+    ∀ {succBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing succBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.natElim RawTerm.natZero zeroBranch succBranch) := by
+  induction zeroIsSN with
+  | intro currentZero zeroClosure zeroIH =>
+    intro succBranch succIsSN
+    induction succIsSN with
+    | intro currentSucc succClosure succIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.natElim RawTerm.natZero currentZero currentSucc) ?_
+      intro target progressStep
+      rcases RawStep.par.natElim_inv progressStep.1 with
+        ⟨scrutineeTarget, zeroTarget, succTarget, targetEq,
+          scrutineeStep, zeroStep, succStep⟩
+        | ⟨zeroTarget, targetEq, _scrutineeStep, zeroStep⟩
+        | ⟨predecessorTarget, _succTarget, _targetEq,
+            scrutineeStep, _succStep⟩
+      · have scrutineeTargetEq :
+            scrutineeTarget = (RawTerm.natZero : RawTerm scope) :=
+          RawStep.par.natZero_inv scrutineeStep
+        subst scrutineeTargetEq
+        subst targetEq
+        by_cases zeroEq : currentZero = zeroTarget
+        · subst zeroEq
+          by_cases succEq : currentSucc = succTarget
+          · subst succEq
+            exact (progressStep.2 rfl).elim
+          · exact succIH succTarget ⟨succStep, succEq⟩
+        · have succTargetIsSN :
+              RawTerm.isStronglyNormalizing succTarget := by
+            by_cases succEq : currentSucc = succTarget
+            · subst succEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSucc succClosure
+            · exact succClosure succTarget ⟨succStep, succEq⟩
+          exact zeroIH zeroTarget ⟨zeroStep, zeroEq⟩ succTargetIsSN
+      · rw [targetEq]
+        by_cases zeroEq : currentZero = zeroTarget
+        · subst zeroEq
+          exact RawTerm.isStronglyNormalizing.intro currentZero zeroClosure
+        · exact zeroClosure zeroTarget ⟨zeroStep, zeroEq⟩
+      · have succEqZero :
+            RawTerm.natSucc predecessorTarget =
+              (RawTerm.natZero : RawTerm scope) :=
+          RawStep.par.natZero_inv scrutineeStep
+        nomatch succEqZero
+
+/-- Typed nat-zero ι SN expansion for `Term.natElim`. -/
+theorem Term.natElim_natZero_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term context motiveType zeroRaw}
+    {succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw}
+    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
+    (succIsSN : Term.isStronglyNormalizing succBranch) :
+    Term.isStronglyNormalizing
+      (Term.natElim Term.natZero zeroBranch succBranch) :=
+  RawTerm.natElim_natZero_isStronglyNormalizing
+    zeroIsSN succIsSN
+
+/-- Nat-successor ι SN expansion for `natElim`.
+
+For a canonical successor scrutinee, `natElim` reduces to
+`succBranch predecessor`.  The zero branch remains explicit because
+congruent reductions may step under it before the ι rule fires. -/
+theorem RawTerm.natElim_natSucc_isStronglyNormalizing
+    {scope : Nat}
+    {predecessor : RawTerm scope}
+    (predecessorIsSN : RawTerm.isStronglyNormalizing predecessor) :
+    ∀ {zeroBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing zeroBranch →
+    ∀ {succBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing succBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app succBranch predecessor) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.natElim
+          (RawTerm.natSucc predecessor) zeroBranch succBranch) := by
+  induction predecessorIsSN with
+  | intro currentPredecessor predecessorClosure predecessorIH =>
+    intro zeroBranch zeroIsSN
+    induction zeroIsSN with
+    | intro currentZero zeroClosure zeroIH =>
+      intro succBranch succIsSN succAppIsSN
+      induction succIsSN with
+      | intro currentSucc succClosure succIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.natElim
+            (RawTerm.natSucc currentPredecessor)
+            currentZero currentSucc) ?_
+        intro target progressStep
+        rcases RawStep.par.natElim_inv progressStep.1 with
+          ⟨scrutineeTarget, zeroTarget, succTarget, targetEq,
+            scrutineeStep, zeroStep, succStep⟩
+          | ⟨zeroTarget, _targetEq, scrutineeStep, _zeroStep⟩
+          | ⟨predecessorTarget, succTarget, targetEq,
+              scrutineeStep, succStep⟩
+        · obtain ⟨predecessorTarget, scrutineeTargetEq,
+              predecessorStep⟩ :=
+            RawStep.par.natSucc_inv scrutineeStep
+          subst scrutineeTargetEq
+          subst targetEq
+          have predecessorTargetIsSN :
+              RawTerm.isStronglyNormalizing predecessorTarget := by
+            by_cases predecessorEq :
+                currentPredecessor = predecessorTarget
+            · subst predecessorEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentPredecessor predecessorClosure
+            · exact predecessorClosure predecessorTarget
+                ⟨predecessorStep, predecessorEq⟩
+          have zeroTargetIsSN :
+              RawTerm.isStronglyNormalizing zeroTarget := by
+            by_cases zeroEq : currentZero = zeroTarget
+            · subst zeroEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentZero zeroClosure
+            · exact zeroClosure zeroTarget ⟨zeroStep, zeroEq⟩
+          have succTargetIsSN :
+              RawTerm.isStronglyNormalizing succTarget := by
+            by_cases succEq : currentSucc = succTarget
+            · subst succEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSucc succClosure
+            · exact succClosure succTarget ⟨succStep, succEq⟩
+          have succAppTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.app succTarget predecessorTarget) := by
+            by_cases appEq :
+                RawTerm.app currentSucc currentPredecessor =
+                  RawTerm.app succTarget predecessorTarget
+            · rw [← appEq]
+              exact succAppIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                succAppIsSN
+                ⟨RawStep.par.app succStep predecessorStep, appEq⟩
+          by_cases predecessorEq : currentPredecessor = predecessorTarget
+          · subst predecessorEq
+            by_cases zeroEq : currentZero = zeroTarget
+            · subst zeroEq
+              by_cases succEq : currentSucc = succTarget
+              · subst succEq
+                exact (progressStep.2 rfl).elim
+              · exact succIH succTarget ⟨succStep, succEq⟩
+                  succAppTargetIsSN
+            · exact zeroIH zeroTarget ⟨zeroStep, zeroEq⟩
+                succTargetIsSN succAppTargetIsSN
+          · exact predecessorIH predecessorTarget
+              ⟨predecessorStep, predecessorEq⟩
+              zeroTargetIsSN succTargetIsSN succAppTargetIsSN
+        · obtain ⟨_predecessorTarget, natZeroEq, _predecessorStep⟩ :=
+            RawStep.par.natSucc_inv scrutineeStep
+          nomatch natZeroEq
+        · obtain ⟨_predecessorTargetFromScrutinee, successorEq,
+              predecessorStep⟩ :=
+            RawStep.par.natSucc_inv scrutineeStep
+          injection successorEq with _scopeEq predecessorTargetEq
+          subst targetEq
+          have predecessorStepToTarget :
+              RawStep.par currentPredecessor predecessorTarget := by
+            rw [predecessorTargetEq]
+            exact predecessorStep
+          have succAppTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.app succTarget predecessorTarget) := by
+            by_cases appEq :
+                RawTerm.app currentSucc currentPredecessor =
+                  RawTerm.app succTarget predecessorTarget
+            · rw [← appEq]
+              exact succAppIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                succAppIsSN
+                ⟨RawStep.par.app succStep predecessorStepToTarget, appEq⟩
+          exact succAppTargetIsSN
+
+/-- Typed nat-successor ι SN expansion for `Term.natElim`. -/
+theorem Term.natElim_natSucc_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term context Ty.nat predecessorRaw}
+    {zeroBranch : Term context motiveType zeroRaw}
+    {succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw}
+    (predecessorIsSN : Term.isStronglyNormalizing predecessor)
+    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
+    (succIsSN : Term.isStronglyNormalizing succBranch)
+    (succAppIsSN :
+      Term.isStronglyNormalizing
+        (Term.app succBranch predecessor)) :
+    Term.isStronglyNormalizing
+      (Term.natElim
+        (Term.natSucc predecessor) zeroBranch succBranch) :=
+  RawTerm.natElim_natSucc_isStronglyNormalizing
+    predecessorIsSN zeroIsSN succIsSN succAppIsSN
 
 /-- **K12.20.W optionSome SN preservation**.  Sister to
 `natSucc_isStronglyNormalizing` — unary cong-only ctor with

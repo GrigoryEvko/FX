@@ -784,6 +784,12 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.optionNone_isStronglyNormalizing
 #print axioms RawTerm.optionMatch_optionNone_isStronglyNormalizing
 #print axioms Term.optionMatch_optionNone_isStronglyNormalizing
+#print axioms RawTerm.natSucc_predecessor_isStronglyNormalizing_aux
+#print axioms RawTerm.natSucc_predecessor_isStronglyNormalizing
+#print axioms RawTerm.natElim_natZero_isStronglyNormalizing
+#print axioms Term.natElim_natZero_isStronglyNormalizing
+#print axioms RawTerm.natElim_natSucc_isStronglyNormalizing
+#print axioms Term.natElim_natSucc_isStronglyNormalizing
 #print axioms RawTerm.refl_isStronglyNormalizing
 #print axioms RawTerm.oeqRefl_isStronglyNormalizing
 #print axioms RawTerm.idStrictRefl_isStronglyNormalizing
