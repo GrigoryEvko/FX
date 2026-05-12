@@ -4907,6 +4907,145 @@ theorem RawTerm.eitherInl_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis valueTarget
       ⟨valueStep, valueDistinct⟩
 
+/-- Either-left ι SN expansion for the eliminator.
+
+For a canonical `inl` scrutinee, `eitherMatch` reduces to the left
+branch applied to the carried value.  The right branch remains in the
+statement because congruent reductions may still step under it before
+the ι rule fires. -/
+theorem RawTerm.eitherMatch_eitherInl_isStronglyNormalizing
+    {scope : Nat}
+    {valueTerm : RawTerm scope}
+    (valueIsSN : RawTerm.isStronglyNormalizing valueTerm) :
+    ∀ {leftBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing leftBranch →
+    ∀ {rightBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing rightBranch →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app leftBranch valueTerm) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.eitherMatch
+          (RawTerm.eitherInl valueTerm) leftBranch rightBranch) := by
+  induction valueIsSN with
+  | intro currentValue valueClosure valueIH =>
+    intro leftBranch leftIsSN
+    induction leftIsSN with
+    | intro currentLeft leftClosure leftIH =>
+      intro rightBranch rightIsSN leftAppIsSN
+      induction rightIsSN with
+      | intro currentRight rightClosure rightIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.eitherMatch
+            (RawTerm.eitherInl currentValue) currentLeft currentRight) ?_
+        intro target progressStep
+        rcases RawStep.par.eitherMatch_inv progressStep.1 with
+          ⟨scrutineeTarget, leftTarget, rightTarget, targetEq,
+            scrutineeStep, leftStep, rightStep⟩
+          | ⟨valueTarget, leftTarget, targetEq, scrutineeStep, leftStep⟩
+          | ⟨valueTarget, rightTarget, targetEq, scrutineeStep, rightStep⟩
+        · obtain ⟨valueTarget, scrutineeTargetEq, valueStep⟩ :=
+            RawStep.par.eitherInl_inv scrutineeStep
+          subst scrutineeTargetEq
+          subst targetEq
+          by_cases valueEq : currentValue = valueTarget
+          · subst valueEq
+            by_cases leftEq : currentLeft = leftTarget
+            · subst leftEq
+              by_cases rightEq : currentRight = rightTarget
+              · subst rightEq
+                exact (progressStep.2 rfl).elim
+              · exact rightIH rightTarget ⟨rightStep, rightEq⟩
+            · have rightTargetIsSN :
+                  RawTerm.isStronglyNormalizing rightTarget := by
+                by_cases rightEq : currentRight = rightTarget
+                · subst rightEq
+                  exact RawTerm.isStronglyNormalizing.intro
+                    currentRight rightClosure
+                · exact rightClosure rightTarget ⟨rightStep, rightEq⟩
+              have leftAppTargetIsSN :
+                  RawTerm.isStronglyNormalizing
+                    (RawTerm.app leftTarget currentValue) := by
+                by_cases appEq :
+                    RawTerm.app currentLeft currentValue =
+                      RawTerm.app leftTarget currentValue
+                · rw [← appEq]
+                  exact leftAppIsSN
+                · exact RawTerm.isStronglyNormalizing.step_preserves
+                    leftAppIsSN
+                    ⟨RawStep.par.app leftStep
+                      (RawStep.par.refl currentValue), appEq⟩
+              exact leftIH leftTarget ⟨leftStep, leftEq⟩
+                rightTargetIsSN leftAppTargetIsSN
+          · have leftTargetIsSN :
+                RawTerm.isStronglyNormalizing leftTarget := by
+              by_cases leftEq : currentLeft = leftTarget
+              · subst leftEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentLeft leftClosure
+              · exact leftClosure leftTarget ⟨leftStep, leftEq⟩
+            have rightTargetIsSN :
+                RawTerm.isStronglyNormalizing rightTarget := by
+              by_cases rightEq : currentRight = rightTarget
+              · subst rightEq
+                exact RawTerm.isStronglyNormalizing.intro
+                  currentRight rightClosure
+              · exact rightClosure rightTarget ⟨rightStep, rightEq⟩
+            have leftAppTargetIsSN :
+                RawTerm.isStronglyNormalizing
+                  (RawTerm.app leftTarget valueTarget) := by
+              by_cases appEq :
+                  RawTerm.app currentLeft currentValue =
+                    RawTerm.app leftTarget valueTarget
+              · rw [← appEq]
+                exact leftAppIsSN
+              · exact RawTerm.isStronglyNormalizing.step_preserves
+                  leftAppIsSN
+                  ⟨RawStep.par.app leftStep valueStep, appEq⟩
+            exact valueIH valueTarget ⟨valueStep, valueEq⟩
+              leftTargetIsSN rightTargetIsSN leftAppTargetIsSN
+        · obtain ⟨valueTargetFromScrutinee, eitherInlEq, valueStep⟩ :=
+            RawStep.par.eitherInl_inv scrutineeStep
+          injection eitherInlEq with _scopeEq valueTargetEq
+          subst targetEq
+          have valueStepToTarget :
+              RawStep.par currentValue valueTarget := by
+            rw [valueTargetEq]
+            exact valueStep
+          have leftAppTargetIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.app leftTarget valueTarget) := by
+            by_cases appEq :
+                RawTerm.app currentLeft currentValue =
+                  RawTerm.app leftTarget valueTarget
+            · rw [← appEq]
+              exact leftAppIsSN
+            · exact RawTerm.isStronglyNormalizing.step_preserves
+                leftAppIsSN
+                ⟨RawStep.par.app leftStep valueStepToTarget, appEq⟩
+          exact leftAppTargetIsSN
+        · obtain ⟨valueTargetFromScrutinee, eitherInlEq, _valueStep⟩ :=
+            RawStep.par.eitherInl_inv scrutineeStep
+          nomatch eitherInlEq
+
+/-- Typed either-left ι SN expansion for `Term.eitherMatch`. -/
+theorem Term.eitherMatch_eitherInl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {valueRaw leftRaw rightRaw : RawTerm scope}
+    {valueTerm : Term context leftType valueRaw}
+    {leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw}
+    (valueIsSN : Term.isStronglyNormalizing valueTerm)
+    (leftIsSN : Term.isStronglyNormalizing leftBranch)
+    (rightIsSN : Term.isStronglyNormalizing rightBranch)
+    (leftAppIsSN :
+      Term.isStronglyNormalizing (Term.app leftBranch valueTerm)) :
+    Term.isStronglyNormalizing
+      (Term.eitherMatch (Term.eitherInl valueTerm) leftBranch rightBranch) :=
+  RawTerm.eitherMatch_eitherInl_isStronglyNormalizing
+    valueIsSN leftIsSN rightIsSN leftAppIsSN
+
 /-- **K12.20.X.2 eitherInr SN preservation**.  Mirror of
 `eitherInl_isStronglyNormalizing` — same template, right injection. -/
 theorem RawTerm.eitherInr_isStronglyNormalizing {scope : Nat}
@@ -8990,6 +9129,36 @@ theorem Reducible.fundamental_optionSome_at_optionType
       noneIsSN
       someIsSN
       (someApplicationIsSN
+        (Term.subst termSubst valueTerm)
+        valueIH)
+
+/-- **K12.20.X.1 eitherInl fundamental case** — canonical left
+injection at the K12.8 either SN-output candidate. -/
+theorem Reducible.fundamental_eitherInl_at_eitherType
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (valueIH :
+      Reducible (leftType.subst sigma)
+        (Term.subst termSubst valueTerm)) :
+    Reducible ((Ty.eitherType leftType rightType).subst sigma)
+      (Term.subst termSubst
+        (Term.eitherInl (rightType := rightType) valueTerm)) := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.eitherInl_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing valueIH)
+  · intro motiveType leftRaw rightRaw leftBranch rightBranch
+      leftIsSN rightIsSN leftApplicationIsSN _rightApplicationIsSN
+    exact Term.eitherMatch_eitherInl_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing valueIH)
+      leftIsSN
+      rightIsSN
+      (leftApplicationIsSN
         (Term.subst termSubst valueTerm)
         valueIH)
 
