@@ -411,6 +411,34 @@ theorem Term.type_eq_cast_heq
   cases typeEq
   exact HEq.rfl
 
+/-- A raw-index cast on a typed term is heterogeneously equal to the
+original term. -/
+theorem Term.raw_eq_cast_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {someType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (rawEq : sourceRaw = targetRaw)
+    (sourceTerm : Term context someType sourceRaw) :
+    HEq (rawEq ▸ sourceTerm) sourceTerm := by
+  cases rawEq
+  exact HEq.rfl
+
+/-- Combined type/raw casts on a typed term are heterogeneously equal
+to the original term. -/
+theorem Term.type_raw_eq_cast_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    (rawEq : sourceRaw = targetRaw)
+    (sourceTerm : Term context sourceType sourceRaw) :
+    HEq (rawEq ▸ typeEq ▸ sourceTerm) sourceTerm := by
+  cases typeEq
+  cases rawEq
+  exact HEq.rfl
+
 /-- Substitution ignores a pure type-index cast up to heterogeneous
 equality. -/
 theorem Term.subst_type_eq_cast_heq
