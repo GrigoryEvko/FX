@@ -99,6 +99,22 @@ theorem RawTerm.interval1_has_no_progress {scope : Nat} :
   intro target progressStep
   exact progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm
 
+/-- `RawTerm.listNil` has no non-trivial parallel-progress reducts.
+Propositional closed atom at the parametric type `Ty.listType`. -/
+theorem RawTerm.listNil_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.listNil : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.listNil_inv progressStep.1).symm
+
+/-- `RawTerm.optionNone` has no non-trivial parallel-progress reducts.
+Propositional closed atom at the parametric type `Ty.optionType`. -/
+theorem RawTerm.optionNone_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.optionNone : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.optionNone_inv progressStep.1).symm
+
 /-- Application with a neutral function head is strongly normalizing
 when both the head and argument are strongly normalizing.
 

@@ -83,6 +83,8 @@ open LeanFX2
 #print axioms RawTerm.natZero_has_no_progress
 #print axioms RawTerm.interval0_has_no_progress
 #print axioms RawTerm.interval1_has_no_progress
+#print axioms RawTerm.listNil_has_no_progress
+#print axioms RawTerm.optionNone_has_no_progress
 #print axioms RawTerm.app_neutral_isStronglyNormalizing
 #print axioms RawTerm.fst_neutral_isStronglyNormalizing
 #print axioms RawTerm.snd_neutral_isStronglyNormalizing
