@@ -12715,6 +12715,51 @@ theorem Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
         (TermSubst.consSingleton termSubst argumentTerm)
         (ReducibleSubst.consSingleton substReducible argumentReducible)))
 
+/-- Lambda reducibility from a renaming-stable substitution and the body
+IH, for SN-recoverable codomains.
+
+This removes the explicit `liftSubstReducible` frontier premise from
+`fundamental_lam_at_arrow_of_bodyIH_sn_codomain`: the lifted
+substitution is now built by `ReducibleSubst.lift_of_renamingStable`.
+The theorem is still honest about its scope: it only covers codomains
+whose reducibility can be recovered from SN, and the full
+substituted-codomain contractum reducibility route still needs the
+typed β-contractum HEq. -/
+theorem Reducible.fundamental_lam_at_arrow_of_stable_bodyIH_sn_codomain
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (codomainReducibleOfSN :
+      ∀ {resultRaw : RawTerm targetScope}
+        (resultTerm : Term targetCtx (codomainType.subst sigma) resultRaw),
+        Term.isStronglyNormalizing resultTerm →
+        Reducible (codomainType.subst sigma) resultTerm)
+    (substReducible : ReducibleSubst termSubst)
+    (substIsStable : IsRenamingStableReducibleSubst termSubst)
+    (bodyIH :
+      ∀ {bodyTargetScope : Nat}
+        {bodyTargetCtx : Ctx mode level bodyTargetScope}
+        {bodySigma : Subst level (scope + 1) bodyTargetScope}
+        (bodyTermSubst :
+          TermSubst (sourceCtx.cons domainType) bodyTargetCtx bodySigma),
+        ReducibleSubst bodyTermSubst →
+        Reducible (codomainType.weaken.subst bodySigma)
+          (Term.subst bodyTermSubst bodyTerm)) :
+    Reducible ((Ty.arrow domainType codomainType).subst sigma)
+      (Term.subst termSubst
+        (Term.lam (codomainType := codomainType) bodyTerm)) :=
+  Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
+    codomainReducibleOfSN
+    substReducible
+    (ReducibleSubst.lift_of_renamingStable substIsStable domainType)
+    bodyIH
+
 /-- Identity-substitution lambda reducibility for SN-recoverable codomains.
 
 This is the M04-facing specialization of

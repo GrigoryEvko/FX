@@ -783,6 +783,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_lam_at_arrow_contractum_sn
 #print axioms Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
 #print axioms Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
+#print axioms Reducible.fundamental_lam_at_arrow_of_stable_bodyIH_sn_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_unit_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_bool_codomain
