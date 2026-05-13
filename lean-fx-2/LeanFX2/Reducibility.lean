@@ -11755,6 +11755,15 @@ theorem ReducibleSubst.identity
     (Ty.subst_identity (varType sourceCtx position))
     positionVarReducible
 
+/-- **K12.20.U3 identity stability**: identity substitutions are
+renaming-stable pointwise because each entry is a casted variable. -/
+theorem IsRenamingStableReducibleSubst.identity
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope} :
+    IsRenamingStableReducibleSubst (TermSubst.identity sourceCtx) := by
+  intro position
+  exact IsRenamingStableReducible.of_varShape rfl
+
 /-- **K12.20.U3.lift SN projection**: every entry of a lifted reducible
 substitution is strongly normalizing.
 
