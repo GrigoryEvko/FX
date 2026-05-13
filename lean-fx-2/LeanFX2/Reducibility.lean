@@ -15226,6 +15226,23 @@ theorem Reducible.fundamental_universeCode
                   innerLevel outerLevel cumulOk levelLe)) :=
   RawTerm.universeCode_isStronglyNormalizing innerLevel.toNat
 
+/-- Universe-code introduction is stable under future-world renamings. -/
+theorem Reducible.fundamental_universeCode_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
+      (Term.subst termSubst
+        (Term.universeCode (context := sourceCtx)
+          innerLevel outerLevel cumulOk levelLe)) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.universeCode_isStronglyNormalizing innerLevel.toNat
+
 /-- Type-code arrow fundamental endpoint with explicit payload SN
 premises.
 
@@ -16006,6 +16023,34 @@ theorem Reducible.fundamental_cumulUp
                               cumulMonotone levelLeLow levelLeHigh
                               typeCode)) :=
   RawTerm.cumulUpMarker_isStronglyNormalizing innerIH
+
+/-- Cumulativity markers preserve fundamental stability. -/
+theorem Reducible.fundamental_cumulUp_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    {typeCode :
+        Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw}
+    (innerIsStable :
+        IsRenamingStableReducible
+          ((Ty.universe lowerLevel levelLeLow).subst sigma)
+          (Term.subst termSubst typeCode)) :
+    IsRenamingStableReducible
+      ((Ty.universe higherLevel levelLeHigh).subst sigma)
+      (Term.subst termSubst
+        (Term.cumulUp lowerLevel higherLevel
+                      cumulMonotone levelLeLow levelLeHigh
+                      typeCode)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.cumulUpMarker_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
 
 /-! ## K12.20.BC SN-direct fundamental cases for `Term.subsume`
 
