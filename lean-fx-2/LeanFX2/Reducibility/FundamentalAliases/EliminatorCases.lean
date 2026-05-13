@@ -327,6 +327,51 @@ theorem Reducible.fundamental_oeqFunext_at_oeq
     fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
       RawTerm.oeqJ_isStronglyNormalizing baseIsSN witnessIsSN⟩
 
+/-- Renaming-stable variant of `fundamental_oeqFunext_at_oeq`.
+
+Given a renaming-stable pointwise IH, the typed `Term.oeqFunext`
+introducer remains reducible in every injective-renamed future
+world.  Unlike the SN-direct closed-leaf cases (interval / session
+/ effect), `Reducible` at `Ty.oeq` unfolds to a conjunction of
+witness SN plus the per-motive `oeqJ` closure, so the proof rebuilds
+both conjuncts at the renamed world from the same raw SN
+infrastructure (`oeqFunext_isStronglyNormalizing`,
+`oeqJ_isStronglyNormalizing`) — mirroring `fundamental_oeqFunext_at_oeq`
+inline at the renamed-world fundamental level. -/
+theorem Reducible.fundamental_oeqFunext_at_oeq_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {leftFunctionRaw rightFunctionRaw pointwiseRaw : RawTerm scope}
+    {pointwiseProof :
+        Term sourceCtx
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRaw}
+    (pointwiseIsStable :
+        IsRenamingStableReducible
+          ((oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw).subst sigma)
+          (Term.subst termSubst pointwiseProof)) :
+    IsRenamingStableReducible
+      ((Ty.oeq (Ty.arrow domainType codomainType)
+          leftFunctionRaw rightFunctionRaw).subst sigma)
+      (Term.subst termSubst
+        (Term.oeqFunext domainType codomainType
+          leftFunctionRaw rightFunctionRaw pointwiseProof)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have pointwiseReducibleAtRho :=
+    pointwiseIsStable rhoIsInjective termRenaming
+  have witnessIsSN :=
+    RawTerm.oeqFunext_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing pointwiseReducibleAtRho)
+  exact ⟨witnessIsSN,
+    fun {_motiveType} {_baseRaw} _baseCase baseIsSN =>
+      RawTerm.oeqJ_isStronglyNormalizing baseIsSN witnessIsSN⟩
+
 
 
 end LeanFX2

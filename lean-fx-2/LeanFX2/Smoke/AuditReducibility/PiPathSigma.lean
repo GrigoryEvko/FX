@@ -80,6 +80,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_equivIntroHet_at_equiv_sn
 #print axioms Reducible.fundamental_equivIntroHet_at_equiv
 #print axioms Reducible.fundamental_oeqFunext_at_oeq
+#print axioms Reducible.fundamental_oeqFunext_at_oeq_stable
 #print axioms Reducible.fundamental_pathApp_at_path
 #print axioms Term.pathApp_isStronglyNormalizing
 
