@@ -14754,6 +14754,26 @@ theorem Reducible.fundamental_listNil_at_listType
       nilIsSN
       consIsSN
 
+/-- List nil introduction is stable under future-world renamings. -/
+theorem Reducible.fundamental_listNil_at_listType_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope} :
+    IsRenamingStableReducible ((Ty.listType elementType).subst sigma)
+      (Term.subst termSubst
+        (Term.listNil (elementType := elementType))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.listNil_isStronglyNormalizing
+  · intro motiveType nilRaw consRaw nilBranch consBranch
+      nilIsSN consIsSN _consApplicationIsSN
+    exact Term.listElim_listNil_isStronglyNormalizing
+      nilIsSN
+      consIsSN
+
 /-- **K12.20.V.1 listCons fundamental case** — canonical list
 cons introduction at the K12.8 SN-output candidate. -/
 theorem Reducible.fundamental_listCons_at_listType
@@ -14792,6 +14812,48 @@ theorem Reducible.fundamental_listCons_at_listType
         headIH
         (Reducible.isStronglyNormalizing tailIH))
 
+/-- List cons introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_listCons_at_listType_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (headIsStable :
+      IsRenamingStableReducible (elementType.subst sigma)
+        (Term.subst termSubst headTerm))
+    (tailIsStable :
+      IsRenamingStableReducible ((Ty.listType elementType).subst sigma)
+        (Term.subst termSubst tailTerm)) :
+    IsRenamingStableReducible ((Ty.listType elementType).subst sigma)
+      (Term.subst termSubst
+        (Term.listCons headTerm tailTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  let renamedHead := Term.rename termRenaming (Term.subst termSubst headTerm)
+  let renamedTail := Term.rename termRenaming (Term.subst termSubst tailTerm)
+  let renamedHeadReducible := headIsStable rhoIsInjective termRenaming
+  let renamedTailReducible := tailIsStable rhoIsInjective termRenaming
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.listCons_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedHeadReducible)
+      (Reducible.isStronglyNormalizing renamedTailReducible)
+  · intro motiveType nilRaw consRaw nilBranch consBranch
+      nilIsSN consIsSN consApplicationIsSN
+    exact Term.listElim_listCons_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedHeadReducible)
+      (Reducible.isStronglyNormalizing renamedTailReducible)
+      nilIsSN
+      consIsSN
+      (consApplicationIsSN
+        renamedHead
+        renamedTail
+        renamedHeadReducible
+        (Reducible.isStronglyNormalizing renamedTailReducible))
+
 /-- **K12.20.W.0 optionNone fundamental case** — canonical option
 none introduction at the K12.8 SN-output candidate. -/
 theorem Reducible.fundamental_optionNone_at_optionType
@@ -14804,6 +14866,26 @@ theorem Reducible.fundamental_optionNone_at_optionType
     Reducible ((Ty.optionType elementType).subst sigma)
       (Term.subst termSubst
         (Term.optionNone (elementType := elementType))) := by
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.optionNone_isStronglyNormalizing
+  · intro motiveType noneRaw someRaw noneBranch someBranch
+      noneIsSN someIsSN _someApplicationIsSN
+    exact Term.optionMatch_optionNone_isStronglyNormalizing
+      noneIsSN
+      someIsSN
+
+/-- Option none introduction is stable under future-world renamings. -/
+theorem Reducible.fundamental_optionNone_at_optionType_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope} :
+    IsRenamingStableReducible ((Ty.optionType elementType).subst sigma)
+      (Term.subst termSubst
+        (Term.optionNone (elementType := elementType))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
   refine ⟨?_, ?_⟩
   · exact RawTerm.optionNone_isStronglyNormalizing
   · intro motiveType noneRaw someRaw noneBranch someBranch
@@ -14845,6 +14927,37 @@ theorem Reducible.fundamental_optionSome_at_optionType
         (Term.subst termSubst valueTerm)
         valueIH)
 
+/-- Option some introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_optionSome_at_optionType_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (valueIsStable :
+      IsRenamingStableReducible (elementType.subst sigma)
+        (Term.subst termSubst valueTerm)) :
+    IsRenamingStableReducible ((Ty.optionType elementType).subst sigma)
+      (Term.subst termSubst (Term.optionSome valueTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  let renamedValue := Term.rename termRenaming (Term.subst termSubst valueTerm)
+  let renamedValueReducible := valueIsStable rhoIsInjective termRenaming
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.optionSome_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedValueReducible)
+  · intro motiveType noneRaw someRaw noneBranch someBranch
+      noneIsSN someIsSN someApplicationIsSN
+    exact Term.optionMatch_optionSome_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedValueReducible)
+      noneIsSN
+      someIsSN
+      (someApplicationIsSN
+        renamedValue
+        renamedValueReducible)
+
 /-- **K12.20.X.1 eitherInl fundamental case** — canonical left
 injection at the K12.8 either SN-output candidate. -/
 theorem Reducible.fundamental_eitherInl_at_eitherType
@@ -14875,6 +14988,38 @@ theorem Reducible.fundamental_eitherInl_at_eitherType
         (Term.subst termSubst valueTerm)
         valueIH)
 
+/-- Either left injection preserves fundamental stability. -/
+theorem Reducible.fundamental_eitherInl_at_eitherType_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (valueIsStable :
+      IsRenamingStableReducible (leftType.subst sigma)
+        (Term.subst termSubst valueTerm)) :
+    IsRenamingStableReducible ((Ty.eitherType leftType rightType).subst sigma)
+      (Term.subst termSubst
+        (Term.eitherInl (rightType := rightType) valueTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  let renamedValue := Term.rename termRenaming (Term.subst termSubst valueTerm)
+  let renamedValueReducible := valueIsStable rhoIsInjective termRenaming
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.eitherInl_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedValueReducible)
+  · intro motiveType leftRaw rightRaw leftBranch rightBranch
+      leftIsSN rightIsSN leftApplicationIsSN _rightApplicationIsSN
+    exact Term.eitherMatch_eitherInl_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedValueReducible)
+      leftIsSN
+      rightIsSN
+      (leftApplicationIsSN
+        renamedValue
+        renamedValueReducible)
+
 /-- **K12.20.X.2 eitherInr fundamental case** — canonical right
 injection at the K12.8 either SN-output candidate. -/
 theorem Reducible.fundamental_eitherInr_at_eitherType
@@ -14904,6 +15049,38 @@ theorem Reducible.fundamental_eitherInr_at_eitherType
       (rightApplicationIsSN
         (Term.subst termSubst valueTerm)
         valueIH)
+
+/-- Either right injection preserves fundamental stability. -/
+theorem Reducible.fundamental_eitherInr_at_eitherType_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (valueIsStable :
+      IsRenamingStableReducible (rightType.subst sigma)
+        (Term.subst termSubst valueTerm)) :
+    IsRenamingStableReducible ((Ty.eitherType leftType rightType).subst sigma)
+      (Term.subst termSubst
+        (Term.eitherInr (leftType := leftType) valueTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  let renamedValue := Term.rename termRenaming (Term.subst termSubst valueTerm)
+  let renamedValueReducible := valueIsStable rhoIsInjective termRenaming
+  refine ⟨?_, ?_⟩
+  · exact RawTerm.eitherInr_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedValueReducible)
+  · intro motiveType leftRaw rightRaw leftBranch rightBranch
+      leftIsSN rightIsSN _leftApplicationIsSN rightApplicationIsSN
+    exact Term.eitherMatch_eitherInr_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing renamedValueReducible)
+      leftIsSN
+      rightIsSN
+      (rightApplicationIsSN
+        renamedValue
+        renamedValueReducible)
 
 /-- **K12.20.AO.1 intervalOpp fundamental case** — cubical interval
 negation.  Unary intro to the closed-leaf `Ty.interval`; identical

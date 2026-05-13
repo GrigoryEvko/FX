@@ -1405,6 +1405,12 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_modElim_at_session_stable
 #print axioms Reducible.fundamental_modElim_at_effect_stable
 #print axioms Reducible.fundamental_modElim_at_modal_stable
+#print axioms Reducible.fundamental_listNil_at_listType_stable
+#print axioms Reducible.fundamental_listCons_at_listType_stable
+#print axioms Reducible.fundamental_optionNone_at_optionType_stable
+#print axioms Reducible.fundamental_optionSome_at_optionType_stable
+#print axioms Reducible.fundamental_eitherInl_at_eitherType_stable
+#print axioms Reducible.fundamental_eitherInr_at_eitherType_stable
 #print axioms Reducible.fundamental_app_at_arrow_stable
 #print axioms Reducible.fundamental_fst_at_sigmaTy_stable
 #print axioms Reducible.fundamental_recordProj_at_record_stable
