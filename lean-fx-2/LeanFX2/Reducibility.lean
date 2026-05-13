@@ -16523,6 +16523,24 @@ theorem Reducible.fundamental_subsume_at_bool
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
 
+/-- Boolean subsumption preserves fundamental stability. -/
+theorem Reducible.fundamental_subsume_at_bool_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.bool innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.subsume_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.BE.2 subsume at `Ty.nat`** — SN-direct closed-leaf.
 `(Ty.nat).subst sigma = .nat` (`Foundation/Subst.lean:104`). -/
 theorem Reducible.fundamental_subsume_at_nat
@@ -16538,6 +16556,24 @@ theorem Reducible.fundamental_subsume_at_nat
     Reducible ((Ty.nat : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
+
+/-- Natural subsumption preserves fundamental stability. -/
+theorem Reducible.fundamental_subsume_at_nat_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.nat innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.subsume_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
 
 /-- **K12.20.BE.3 subsume at `Ty.empty`** — SN-direct closed-leaf.
 `(Ty.empty).subst sigma = .empty` (`Foundation/Subst.lean:126`). -/
@@ -16555,6 +16591,24 @@ theorem Reducible.fundamental_subsume_at_empty
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
 
+/-- Empty-type subsumption preserves fundamental stability. -/
+theorem Reducible.fundamental_subsume_at_empty_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.empty innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.subsume_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.BE.4 subsume at `Ty.interval`** — SN-direct cubical
 closed-leaf.  `(Ty.interval).subst sigma = .interval`
 (`Foundation/Subst.lean:127`). -/
@@ -16571,6 +16625,24 @@ theorem Reducible.fundamental_subsume_at_interval
     Reducible ((Ty.interval : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
+
+/-- Interval subsumption preserves fundamental stability. -/
+theorem Reducible.fundamental_subsume_at_interval_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.interval innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.subsume_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
 
 /-- **K12.20.BE.5 subsume at `Ty.effect`** — SN-direct
 raw-payload-carrying.  `(Ty.effect carrier tag).subst sigma =
@@ -16595,6 +16667,27 @@ theorem Reducible.fundamental_subsume_at_effect
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
 
+/-- Effect subsumption preserves fundamental stability. -/
+theorem Reducible.fundamental_subsume_at_effect_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.effect carrierType effectTag) innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.subsume_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.BE.6 modIntro at `Ty.bool`** — sister to BE.1 via
 K12.20.Y `RawTerm.modIntro_isStronglyNormalizing`. -/
 theorem Reducible.fundamental_modIntro_at_bool
@@ -16611,6 +16704,24 @@ theorem Reducible.fundamental_modIntro_at_bool
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
 
+/-- Boolean modal introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_modIntro_at_bool_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.bool innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.modIntro_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.BE.7 modIntro at `Ty.nat`** — sister to BE.2. -/
 theorem Reducible.fundamental_modIntro_at_nat
     {mode : Mode} {level scope targetScope : Nat}
@@ -16625,6 +16736,24 @@ theorem Reducible.fundamental_modIntro_at_nat
     Reducible ((Ty.nat : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
+
+/-- Natural modal introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_modIntro_at_nat_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.nat innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.modIntro_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
 
 /-- **K12.20.BE.8 modIntro at `Ty.empty`** — sister to BE.3. -/
 theorem Reducible.fundamental_modIntro_at_empty
@@ -16641,6 +16770,24 @@ theorem Reducible.fundamental_modIntro_at_empty
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
 
+/-- Empty-type modal introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_modIntro_at_empty_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.empty innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.modIntro_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.BE.9 modIntro at `Ty.interval`** — sister to BE.4. -/
 theorem Reducible.fundamental_modIntro_at_interval
     {mode : Mode} {level scope targetScope : Nat}
@@ -16655,6 +16802,24 @@ theorem Reducible.fundamental_modIntro_at_interval
     Reducible ((Ty.interval : Ty level scope).subst sigma)
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
+
+/-- Interval modal introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_modIntro_at_interval_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.interval innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.modIntro_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
 
 /-- **K12.20.BE.10 modIntro at `Ty.effect`** — sister to BE.5. -/
 theorem Reducible.fundamental_modIntro_at_effect
@@ -16674,6 +16839,27 @@ theorem Reducible.fundamental_modIntro_at_effect
     Reducible ((Ty.effect carrierType effectTag).subst sigma)
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
+
+/-- Effect modal introduction preserves fundamental stability. -/
+theorem Reducible.fundamental_modIntro_at_effect_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.effect carrierType effectTag) innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.modIntro_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
 
 /-! ## K12.25 modal destructor cases -/
 
