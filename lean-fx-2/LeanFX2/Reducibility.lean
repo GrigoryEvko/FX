@@ -11583,6 +11583,26 @@ theorem Reducible.of_varShape
     (fun targetRaw progressStep =>
       (RawTerm.var_has_no_progress position targetRaw progressStep).elim)
 
+/-- Var-shaped reducibility is stable under every injective typed
+renaming.
+
+This is the CR3 producer for the Phase-B world-stability route:
+renaming a raw variable remains a raw variable, and `Reducible.of_varShape`
+already dispatches variables at every type. -/
+theorem IsRenamingStableReducible.of_varShape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceType : Ty level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    {position : Fin sourceScope}
+    (sourceRawEq : sourceRaw = RawTerm.var position) :
+    IsRenamingStableReducible sourceType sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.of_varShape (sourceType.rename rho)
+    (Term.rename termRenaming sourceTerm)
+
 /-- Transport a reducibility witness across a type-index equality whose
 term side is cast by the symmetric equality.  This packages the exact
 `Eq.rec` shape emitted by `TermSubst.singleton`. -/

@@ -654,6 +654,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.weaken_isStronglyNormalizing
 #print axioms IsRenamingStableReducible
 #print axioms IsRenamingStableReducible.weaken
+#print axioms IsRenamingStableReducible.of_varShape
 #print axioms IsRenamingStableReducibleSubst
 #print axioms IsRenamingStableReducibleSubst.weaken_position
 #print axioms Reducible.weaken_unit
