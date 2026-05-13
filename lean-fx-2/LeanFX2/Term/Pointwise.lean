@@ -3028,6 +3028,139 @@ theorem Term.weaken_subst_singleton_codataDest_heq
     (RawTerm.weaken_subst_singleton codataRaw singletonRaw)
     codataHEq
 
+/-- Heterogeneous equivalence introduction preserves weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_equivIntroHet_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (forward :
+      Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward :
+      Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (forwardHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType forward))
+        forward)
+    (backwardHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType backward))
+        backward)
+    (leftInvHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType leftInv))
+        leftInv)
+    (rightInvHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType rightInv))
+        rightInv) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.equivIntroHet forward backward leftInv rightInv)))
+      (Term.equivIntroHet forward backward leftInv rightInv) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  let renamedLeftInv :=
+    Term.rename (TermRenaming.weakenStep context newType) leftInv
+  let renamedRightInv :=
+    Term.rename (TermRenaming.weakenStep context newType) rightInv
+  let renamedLeftInvTypeEq :=
+    equivIntroHetLeftInverseType_rename RawRenaming.weaken carrierA
+      forwardRaw backwardRaw
+  let renamedRightInvTypeEq :=
+    equivIntroHetRightInverseType_rename RawRenaming.weaken carrierB
+      forwardRaw backwardRaw
+  let substitutedLeftInvWithCast :=
+    Term.subst (TermSubst.singleton singletonTerm)
+      (renamedLeftInvTypeEq ▸ renamedLeftInv)
+  let substitutedRightInvWithCast :=
+    Term.subst (TermSubst.singleton singletonTerm)
+      (renamedRightInvTypeEq ▸ renamedRightInv)
+  let substitutedLeftInvTypeEq :=
+    equivIntroHetLeftInverseType_subst
+      (Subst.singleton newType singletonRaw)
+      (carrierA.rename RawRenaming.weaken)
+      (forwardRaw.rename RawRenaming.weaken)
+      (backwardRaw.rename RawRenaming.weaken)
+  let substitutedRightInvTypeEq :=
+    equivIntroHetRightInverseType_subst
+      (Subst.singleton newType singletonRaw)
+      (carrierB.rename RawRenaming.weaken)
+      (forwardRaw.rename RawRenaming.weaken)
+      (backwardRaw.rename RawRenaming.weaken)
+  have leftInvInnerCastHEq :
+      HEq substitutedLeftInvWithCast
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedLeftInv) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      renamedLeftInvTypeEq
+      renamedLeftInv
+  have rightInvInnerCastHEq :
+      HEq substitutedRightInvWithCast
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedRightInv) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      renamedRightInvTypeEq
+      renamedRightInv
+  have leftInvOuterCastHEq :
+      HEq (substitutedLeftInvTypeEq ▸ substitutedLeftInvWithCast)
+        substitutedLeftInvWithCast :=
+    Term.type_eq_cast_heq substitutedLeftInvTypeEq
+      substitutedLeftInvWithCast
+  have rightInvOuterCastHEq :
+      HEq (substitutedRightInvTypeEq ▸ substitutedRightInvWithCast)
+        substitutedRightInvWithCast :=
+    Term.type_eq_cast_heq substitutedRightInvTypeEq
+      substitutedRightInvWithCast
+  have leftInvWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedLeftInv)
+        leftInv := by
+    simpa only [Term.weaken] using leftInvHEq
+  have rightInvWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedRightInv)
+        rightInv := by
+    simpa only [Term.weaken] using rightInvHEq
+  have leftInvFullHEq :
+      HEq (substitutedLeftInvTypeEq ▸ substitutedLeftInvWithCast)
+        leftInv :=
+    HEq.trans leftInvOuterCastHEq
+      (HEq.trans leftInvInnerCastHEq leftInvWithoutCastsHEq)
+  have rightInvFullHEq :
+      HEq (substitutedRightInvTypeEq ▸ substitutedRightInvWithCast)
+        rightInv :=
+    HEq.trans rightInvOuterCastHEq
+      (HEq.trans rightInvInnerCastHEq rightInvWithoutCastsHEq)
+  exact Term.equivIntroHet_HEq_congr
+    (Ty.weaken_subst_singleton carrierA newType singletonRaw)
+    (Ty.weaken_subst_singleton carrierB newType singletonRaw)
+    (RawTerm.weaken_subst_singleton forwardRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton backwardRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton leftInvRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightInvRaw singletonRaw)
+    forwardHEq backwardHEq leftInvFullHEq rightInvFullHEq
+
 /-- Equivalence application preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_equivApp_heq
     {mode : Mode} {level scope : Nat}
