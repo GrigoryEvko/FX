@@ -11638,6 +11638,47 @@ theorem Term.type_eq_symm_cast_HEq
   cases typeEq
   rfl
 
+/-- Renaming a term cast by symmetric raw and type equalities is HEq to
+casting the renamed term by the renamed equalities.
+
+This is the two-index companion to `Term.rename_type_eq_symm_cast_HEq`
+for `TermSubst.consSingleton`, whose successor entries are stored
+behind both a raw-index cast and a type-index cast. -/
+theorem Term.rename_raw_type_eq_symm_cast_HEq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {sourceType targetType : Ty level sourceScope}
+    {sourceRaw targetRaw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    (rawEq : sourceRaw = targetRaw)
+    {targetTerm : Term sourceCtx targetType targetRaw} :
+    HEq
+      (Term.rename termRenaming (rawEq.symm ▸ typeEq.symm ▸ targetTerm))
+      ((congrArg (fun someRaw => RawTerm.rename someRaw rho) rawEq).symm ▸
+        (congrArg (fun someType => Ty.rename someType rho) typeEq).symm ▸
+          Term.rename termRenaming targetTerm) := by
+  cases typeEq
+  cases rawEq
+  rfl
+
+/-- A term cast by symmetric raw and type equalities is HEq to the
+original term. -/
+theorem Term.raw_type_eq_symm_cast_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {sourceRaw targetRaw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    (rawEq : sourceRaw = targetRaw)
+    {targetTerm : Term context targetType targetRaw} :
+    HEq (rawEq.symm ▸ typeEq.symm ▸ targetTerm) targetTerm := by
+  cases typeEq
+  cases rawEq
+  rfl
+
 /-- Transport a reducibility witness across a type-index equality whose
 term side is cast by the symmetric equality.  This packages the exact
 `Eq.rec` shape emitted by `TermSubst.singleton`. -/
@@ -11835,6 +11876,135 @@ theorem IsRenamingStableReducibleSubst.singleton
             renamedArgIsReducible
       | succ previousIndex =>
           exact IsRenamingStableReducible.of_varShape rfl
+
+/-- **K12.20.U3 cons-singleton stability**: extending a
+renaming-stable substitution with a renaming-stable β argument yields a
+renaming-stable substitution for the extended source context.
+
+This is the stability companion to `ReducibleSubst.consSingleton`.
+Position zero reuses the argument's stability through the
+`Ty.weaken_subst_lift_singleton` cast.  Successor positions reuse the
+old substitution entry's stability through the raw/type casts emitted
+by `TermSubst.consSingleton`. -/
+theorem IsRenamingStableReducibleSubst.consSingleton
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substIsStable : IsRenamingStableReducibleSubst termSubst)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (argumentIsStable :
+      IsRenamingStableReducible (domainType.subst sigma) argumentTerm) :
+    IsRenamingStableReducibleSubst
+      (TermSubst.consSingleton termSubst argumentTerm) := by
+  intro position
+  cases position with
+  | mk positionIndex positionIsWithinScope =>
+      cases positionIndex with
+      | zero =>
+          change IsRenamingStableReducible
+            (domainType.weaken.subst
+              (Subst.compose sigma.lift
+                (Subst.singleton (domainType.subst sigma) argumentRaw)))
+            ((Ty.weaken_subst_lift_singleton domainType domainType sigma
+              argumentRaw).symm ▸ argumentTerm)
+          intro renamedScope renamedCtx rho rhoIsInjective termRenaming
+          have renamedArgumentIsReducible :
+              Reducible ((domainType.subst sigma).rename rho)
+                (Term.rename termRenaming argumentTerm) :=
+            argumentIsStable rhoIsInjective termRenaming
+          have typeEq :
+              domainType.weaken.subst
+                (Subst.compose sigma.lift
+                  (Subst.singleton (domainType.subst sigma) argumentRaw)) =
+                domainType.subst sigma :=
+            Ty.weaken_subst_lift_singleton domainType domainType sigma
+              argumentRaw
+          have renamedCastIsHEq :
+              HEq (Term.rename termRenaming argumentTerm)
+                (Term.rename termRenaming (typeEq.symm ▸ argumentTerm)) := by
+            have renamedCastToCastedArgument :
+                HEq
+                  (Term.rename termRenaming (typeEq.symm ▸ argumentTerm))
+                  ((congrArg (fun someType => Ty.rename someType rho)
+                      typeEq).symm ▸
+                    Term.rename termRenaming argumentTerm) :=
+              Term.rename_type_eq_symm_cast_HEq termRenaming typeEq
+            have castedArgumentToRenamedArgument :
+                HEq
+                  ((congrArg (fun someType => Ty.rename someType rho)
+                      typeEq).symm ▸
+                    Term.rename termRenaming argumentTerm)
+                  (Term.rename termRenaming argumentTerm) :=
+              Term.type_eq_symm_cast_HEq
+                (congrArg (fun someType => Ty.rename someType rho) typeEq)
+            exact (HEq.trans renamedCastToCastedArgument
+              castedArgumentToRenamedArgument).symm
+          exact Reducible.of_heq
+            (congrArg (fun someType => Ty.rename someType rho) typeEq).symm
+            rfl
+            renamedCastIsHEq
+            renamedArgumentIsReducible
+      | succ previousIndex =>
+          let previousPosition : Fin scope :=
+            ⟨previousIndex,
+              Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+          have typeEq :
+              ((varType (sourceCtx.cons domainType)
+                  ⟨previousIndex + 1, positionIsWithinScope⟩).subst
+                (Subst.compose sigma.lift
+                  (Subst.singleton (domainType.subst sigma) argumentRaw))) =
+                (varType sourceCtx previousPosition).subst sigma := by
+            exact Ty.weaken_subst_lift_singleton
+              (varType sourceCtx previousPosition) domainType sigma argumentRaw
+          have rawEq :
+              (Subst.compose sigma.lift
+                  (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw
+                  ⟨previousIndex + 1, positionIsWithinScope⟩ =
+                sigma.forRaw previousPosition := by
+            exact RawTerm.weaken_subst_singleton
+              (sigma.forRaw previousPosition) argumentRaw
+          change IsRenamingStableReducible
+            ((varType (sourceCtx.cons domainType)
+                ⟨previousIndex + 1, positionIsWithinScope⟩).subst
+              (Subst.compose sigma.lift
+                (Subst.singleton (domainType.subst sigma) argumentRaw)))
+            (rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition)
+          intro renamedScope renamedCtx rho rhoIsInjective termRenaming
+          have renamedPreviousIsReducible :
+              Reducible (((varType sourceCtx previousPosition).subst sigma).rename rho)
+                (Term.rename termRenaming (termSubst previousPosition)) :=
+            substIsStable previousPosition rhoIsInjective termRenaming
+          have renamedCastToCastedPrevious :
+              HEq
+                (Term.rename termRenaming
+                  (rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition))
+                ((congrArg (fun someRaw => RawTerm.rename someRaw rho)
+                    rawEq).symm ▸
+                  (congrArg (fun someType => Ty.rename someType rho)
+                    typeEq).symm ▸
+                    Term.rename termRenaming (termSubst previousPosition)) :=
+            Term.rename_raw_type_eq_symm_cast_HEq termRenaming typeEq rawEq
+          have castedPreviousToRenamedPrevious :
+              HEq
+                ((congrArg (fun someRaw => RawTerm.rename someRaw rho)
+                    rawEq).symm ▸
+                  (congrArg (fun someType => Ty.rename someType rho)
+                    typeEq).symm ▸
+                    Term.rename termRenaming (termSubst previousPosition))
+                (Term.rename termRenaming (termSubst previousPosition)) := by
+            exact Term.raw_type_eq_symm_cast_HEq
+              (congrArg (fun someType => Ty.rename someType rho) typeEq)
+              (congrArg (fun someRaw => RawTerm.rename someRaw rho) rawEq)
+          exact Reducible.of_heq
+            (congrArg (fun someType => Ty.rename someType rho) typeEq).symm
+            (congrArg (fun someRaw => RawTerm.rename someRaw rho) rawEq).symm
+            (HEq.trans renamedCastToCastedPrevious
+              castedPreviousToRenamedPrevious).symm
+            renamedPreviousIsReducible
 
 /-- **K12.20.U3 identity ReducibleSubst**: identity substitution is
 reducible because every variable is reducible at its declared type. -/
