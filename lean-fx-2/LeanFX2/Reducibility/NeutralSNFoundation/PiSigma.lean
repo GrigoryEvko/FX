@@ -53,6 +53,16 @@ theorem RawTerm.var_has_no_progress {scope : Nat}
   intro target progressStep
   exact progressStep.2 (RawStep.par.var_inv progressStep.1).symm
 
+/-- `RawTerm.unit` has no non-trivial parallel-progress reducts.
+Closed-atom companion to `var_has_no_progress`: `unit` has no destructor
+chain, so every `RawStep.par` from it is `refl`, contradicting the
+parProgress disequality. -/
+theorem RawTerm.unit_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.unit : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.unit_inv progressStep.1).symm
+
 /-- Application with a neutral function head is strongly normalizing
 when both the head and argument are strongly normalizing.
 

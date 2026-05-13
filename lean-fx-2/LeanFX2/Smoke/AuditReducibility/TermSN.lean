@@ -77,6 +77,7 @@ open LeanFX2
 #print axioms Reducible.step_preserves_effect
 #print axioms Reducible.step_preserves_modal
 #print axioms RawTerm.var_has_no_progress
+#print axioms RawTerm.unit_has_no_progress
 #print axioms RawTerm.app_neutral_isStronglyNormalizing
 #print axioms RawTerm.fst_neutral_isStronglyNormalizing
 #print axioms RawTerm.snd_neutral_isStronglyNormalizing

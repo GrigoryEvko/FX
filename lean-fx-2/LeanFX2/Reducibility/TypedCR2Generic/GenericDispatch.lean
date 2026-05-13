@@ -187,4 +187,25 @@ theorem IsRenamingStableReducible.of_varShape
   exact Reducible.of_varShape (sourceType.rename rho)
     (Term.rename termRenaming sourceTerm)
 
+/-- Unit-shaped reducibility is stable under every injective typed
+renaming.
+
+Closed-atom companion to `of_varShape`: `RawTerm.unit.rename rho =
+RawTerm.unit` definitionally, and `Ty.unit.rename rho = Ty.unit`
+definitionally, so the renamed term's parProgress closure follows
+from `RawTerm.unit_has_no_progress`. -/
+theorem IsRenamingStableReducible.of_unitShape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx Ty.unit sourceRaw}
+    (sourceRawEq : sourceRaw = RawTerm.unit) :
+    IsRenamingStableReducible Ty.unit sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.unit_of_progress_closure
+    (Term.rename termRenaming sourceTerm)
+    (fun targetRaw progressStep =>
+      (RawTerm.unit_has_no_progress targetRaw progressStep).elim)
+
 end LeanFX2
