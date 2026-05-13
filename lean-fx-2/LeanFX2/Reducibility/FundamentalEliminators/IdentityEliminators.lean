@@ -118,4 +118,124 @@ theorem Reducible.fundamental_idStrictRec_at_idStrict_sn
   witnessIH.2 modeIsStrict (Term.subst termSubst baseCase)
     (Reducible.isStronglyNormalizing baseIH)
 
+
+/-! ## Renaming-stable mirrors of the SN-output identity eliminators
+
+Each `_sn_stable` companion below is the `IsRenamingStableIsSN` variant
+of its `_sn` predecessor.  Conclusion stability is rebuilt inline at
+each renamed world: extract the renamed witness's `Reducible` second
+component via the `IsRenamingStableReducible` premise, then apply it to
+the renamed base case's SN — both available at the renamed world from
+the stable premises themselves.  No `RawTerm.isStronglyNormalizing_rename`
+infrastructure required. -/
+
+/-- Renaming-stable SN of `Term.idJ` at `Ty.id` — the
+`IsRenamingStableIsSN` mirror of `fundamental_idJ_at_id_sn`.  Each
+renamed world rebuilds SN by projecting the witness's eliminator
+closure at the renamed `Ty.id` and feeding it the base case's renamed
+SN witness. -/
+theorem Reducible.fundamental_idJ_at_id_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIsStable :
+        IsRenamingStableReducible
+          ((Ty.id carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.idJ baseCase witness)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have baseReducibleAtRho :=
+    baseIsStable rhoIsInjective termRenaming
+  have witnessReducibleAtRho :=
+    witnessIsStable rhoIsInjective termRenaming
+  exact witnessReducibleAtRho.2
+    (Term.rename termRenaming (Term.subst termSubst baseCase))
+    (Reducible.isStronglyNormalizing baseReducibleAtRho)
+
+/-- Renaming-stable SN of `Term.oeqJ` at `Ty.oeq` — the
+`IsRenamingStableIsSN` mirror of `fundamental_oeqJ_at_oeq_sn`.  Same
+renamed-world rebuild as the `Ty.id` case: observational equality has
+the identical SN-output closure shape. -/
+theorem Reducible.fundamental_oeqJ_at_oeq_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIsStable :
+        IsRenamingStableReducible
+          ((Ty.oeq carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.oeqJ baseCase witness)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have baseReducibleAtRho :=
+    baseIsStable rhoIsInjective termRenaming
+  have witnessReducibleAtRho :=
+    witnessIsStable rhoIsInjective termRenaming
+  exact witnessReducibleAtRho.2
+    (Term.rename termRenaming (Term.subst termSubst baseCase))
+    (Reducible.isStronglyNormalizing baseReducibleAtRho)
+
+/-- Renaming-stable SN of `Term.idStrictRec` at `Ty.idStrict` — the
+`IsRenamingStableIsSN` mirror of `fundamental_idStrictRec_at_idStrict_sn`.
+The ambient `mode = Mode.strict` premise is propagated unchanged to
+the renamed world (modes are world-invariant). -/
+theorem Reducible.fundamental_idStrictRec_at_idStrict_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx
+          (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIsStable :
+        IsRenamingStableReducible
+          ((Ty.idStrict carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.idStrictRec modeIsStrict baseCase witness)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have baseReducibleAtRho :=
+    baseIsStable rhoIsInjective termRenaming
+  have witnessReducibleAtRho :=
+    witnessIsStable rhoIsInjective termRenaming
+  exact witnessReducibleAtRho.2 modeIsStrict
+    (Term.rename termRenaming (Term.subst termSubst baseCase))
+    (Reducible.isStronglyNormalizing baseReducibleAtRho)
+
 end LeanFX2

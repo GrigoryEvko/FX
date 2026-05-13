@@ -484,5 +484,30 @@ theorem IsRenamingStableReducibleSubst.weaken_position
     (newType := newSourceType.subst sigma)
     (substIsStable position)
 
+/-- A typed term is renaming-stable strongly normalizing when its raw
+projection remains strongly normalizing in every injective typed-renamed
+future world.
+
+Companion to `IsRenamingStableReducible` for fundamental-theorem cases
+whose conclusion is SN rather than Reducible (the J-style eliminators at
+`Ty.id` / `Ty.oeq` / `Ty.idStrict` whose motive is an arbitrary outer Ty).
+The conclusion is rebuilt at each renamed world by re-applying the raw
+SN combinator (e.g. `RawTerm.idJ_isStronglyNormalizing`) to subterm IHs
+extracted from `IsRenamingStableReducible` witnesses — no
+`RawTerm.isStronglyNormalizing_rename` infrastructure is required. -/
+def IsRenamingStableIsSN
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceType : Ty level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx sourceType sourceRaw) : Prop :=
+  ∀ {targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (_rhoIsInjective : ∀ positionA positionB,
+      rho positionA = rho positionB → positionA = positionB)
+    (termRenaming : TermRenaming sourceCtx targetCtx rho),
+    Term.isStronglyNormalizing (Term.rename termRenaming sourceTerm)
+
 
 end LeanFX2

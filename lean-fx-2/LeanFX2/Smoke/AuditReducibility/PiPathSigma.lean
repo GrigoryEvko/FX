@@ -83,5 +83,8 @@ open LeanFX2
 #print axioms Reducible.fundamental_oeqFunext_at_oeq_stable
 #print axioms Reducible.fundamental_pathApp_at_path
 #print axioms Term.pathApp_isStronglyNormalizing
+#print axioms Reducible.fundamental_idJ_at_id_sn_stable
+#print axioms Reducible.fundamental_oeqJ_at_oeq_sn_stable
+#print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn_stable
 
 end LeanFX2.Smoke
