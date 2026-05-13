@@ -318,5 +318,60 @@ theorem RawTerm.IsNeutral.not_codataUnfold {scope : Nat}
   intro sourceEq
   cases sourceIsNeutral <;> cases sourceEq
 
+/-- Neutrality is preserved by every renaming.
+
+Every neutral form is congruence-shaped under `RawTerm.rename`: the
+principal scrutinee is the recursive subterm, so the renamed term is
+the same neutral form whose principal scrutinee remains neutral by
+structural induction. -/
+theorem RawTerm.IsNeutral.rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    {source : RawTerm sourceScope}
+    (sourceIsNeutral : RawTerm.IsNeutral source) :
+    RawTerm.IsNeutral (source.rename rho) := by
+  induction sourceIsNeutral with
+  | var position => exact RawTerm.IsNeutral.var (rho position)
+  | app _ functionIH => exact RawTerm.IsNeutral.app functionIH
+  | fst _ pairIH => exact RawTerm.IsNeutral.fst pairIH
+  | snd _ pairIH => exact RawTerm.IsNeutral.snd pairIH
+  | boolElim _ scrutineeIH =>
+      exact RawTerm.IsNeutral.boolElim scrutineeIH
+  | natElim _ scrutineeIH =>
+      exact RawTerm.IsNeutral.natElim scrutineeIH
+  | natRec _ scrutineeIH =>
+      exact RawTerm.IsNeutral.natRec scrutineeIH
+  | listElim _ scrutineeIH =>
+      exact RawTerm.IsNeutral.listElim scrutineeIH
+  | optionMatch _ scrutineeIH =>
+      exact RawTerm.IsNeutral.optionMatch scrutineeIH
+  | eitherMatch _ scrutineeIH =>
+      exact RawTerm.IsNeutral.eitherMatch scrutineeIH
+  | pathApp _ pathIH => exact RawTerm.IsNeutral.pathApp pathIH
+  | glueElim _ gluedValueIH =>
+      exact RawTerm.IsNeutral.glueElim gluedValueIH
+  | transp _ pathIH => exact RawTerm.IsNeutral.transp pathIH
+  | hcomp _ sidesIH => exact RawTerm.IsNeutral.hcomp sidesIH
+  | idJ _ witnessIH => exact RawTerm.IsNeutral.idJ witnessIH
+  | oeqJ _ witnessIH => exact RawTerm.IsNeutral.oeqJ witnessIH
+  | idStrictRec _ witnessIH =>
+      exact RawTerm.IsNeutral.idStrictRec witnessIH
+  | equivApp _ equivIH => exact RawTerm.IsNeutral.equivApp equivIH
+  | equivApply _ equivIH =>
+      exact RawTerm.IsNeutral.equivApply equivIH
+  | modElim _ rawIH => exact RawTerm.IsNeutral.modElim rawIH
+  | subsume _ rawIH => exact RawTerm.IsNeutral.subsume rawIH
+  | refineElim _ refinedValueIH =>
+      exact RawTerm.IsNeutral.refineElim refinedValueIH
+  | recordProj _ recordValueIH =>
+      exact RawTerm.IsNeutral.recordProj recordValueIH
+  | codataDest _ codataValueIH =>
+      exact RawTerm.IsNeutral.codataDest codataValueIH
+  | sessionSend _ channelIH =>
+      exact RawTerm.IsNeutral.sessionSend channelIH
+  | sessionRecv _ channelIH =>
+      exact RawTerm.IsNeutral.sessionRecv channelIH
+  | effectPerform _ operationIH =>
+      exact RawTerm.IsNeutral.effectPerform operationIH
+
 
 end LeanFX2

@@ -44,6 +44,7 @@ open LeanFX2
 #print axioms RawTerm.IsNeutral.not_refineIntro
 #print axioms RawTerm.IsNeutral.not_recordIntro
 #print axioms RawTerm.IsNeutral.not_codataUnfold
+#print axioms RawTerm.IsNeutral.rename
 #print axioms RawTerm.IsNeutral.var_par_preserves
 #print axioms RawTerm.IsNeutral.app_par_preserves
 #print axioms RawTerm.IsNeutral.fst_par_preserves
