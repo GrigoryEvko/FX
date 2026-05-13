@@ -63,6 +63,27 @@ theorem RawTerm.unit_has_no_progress {scope : Nat} :
   intro target progressStep
   exact progressStep.2 (RawStep.par.unit_inv progressStep.1).symm
 
+/-- `RawTerm.boolTrue` has no non-trivial parallel-progress reducts. -/
+theorem RawTerm.boolTrue_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.boolTrue : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.boolTrue_inv progressStep.1).symm
+
+/-- `RawTerm.boolFalse` has no non-trivial parallel-progress reducts. -/
+theorem RawTerm.boolFalse_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.boolFalse : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.boolFalse_inv progressStep.1).symm
+
+/-- `RawTerm.natZero` has no non-trivial parallel-progress reducts. -/
+theorem RawTerm.natZero_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.natZero : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.natZero_inv progressStep.1).symm
+
 /-- Application with a neutral function head is strongly normalizing
 when both the head and argument are strongly normalizing.
 

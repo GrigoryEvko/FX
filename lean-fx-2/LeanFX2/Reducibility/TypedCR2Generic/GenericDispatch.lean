@@ -208,4 +208,53 @@ theorem IsRenamingStableReducible.of_unitShape
     (fun targetRaw progressStep =>
       (RawTerm.unit_has_no_progress targetRaw progressStep).elim)
 
+/-- BoolTrue-shaped reducibility is stable under every injective typed
+renaming.  Mirrors `of_unitShape` against the `RawTerm.boolTrue` closed
+atom at `Ty.bool`. -/
+theorem IsRenamingStableReducible.of_boolTrueShape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx Ty.bool sourceRaw}
+    (sourceRawEq : sourceRaw = RawTerm.boolTrue) :
+    IsRenamingStableReducible Ty.bool sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.bool_of_progress_closure
+    (Term.rename termRenaming sourceTerm)
+    (fun targetRaw progressStep =>
+      (RawTerm.boolTrue_has_no_progress targetRaw progressStep).elim)
+
+/-- BoolFalse-shaped reducibility is stable under every injective typed
+renaming. -/
+theorem IsRenamingStableReducible.of_boolFalseShape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx Ty.bool sourceRaw}
+    (sourceRawEq : sourceRaw = RawTerm.boolFalse) :
+    IsRenamingStableReducible Ty.bool sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.bool_of_progress_closure
+    (Term.rename termRenaming sourceTerm)
+    (fun targetRaw progressStep =>
+      (RawTerm.boolFalse_has_no_progress targetRaw progressStep).elim)
+
+/-- NatZero-shaped reducibility is stable under every injective typed
+renaming. -/
+theorem IsRenamingStableReducible.of_natZeroShape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx Ty.nat sourceRaw}
+    (sourceRawEq : sourceRaw = RawTerm.natZero) :
+    IsRenamingStableReducible Ty.nat sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.nat_of_progress_closure
+    (Term.rename termRenaming sourceTerm)
+    (fun targetRaw progressStep =>
+      (RawTerm.natZero_has_no_progress targetRaw progressStep).elim)
+
 end LeanFX2
