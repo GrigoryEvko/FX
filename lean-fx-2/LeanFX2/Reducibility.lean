@@ -11712,6 +11712,29 @@ theorem Term.rename_type_eq_symm_cast_HEq
   cases typeEq
   rfl
 
+/-- Renaming a term cast by a forward type equality is HEq to casting
+the renamed term by the renamed type equality.
+
+This is the forward-cast companion to
+`Term.rename_type_eq_symm_cast_HEq`; `TermSubst.renameOutput` stores
+entries behind forward `Ty.subst_rename_commute` casts, so stability of
+post-composed substitutions needs this exact `Eq.rec` shape. -/
+theorem Term.rename_type_eq_cast_HEq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {sourceType targetType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    {sourceTerm : Term sourceCtx sourceType raw} :
+    HEq (Term.rename termRenaming (typeEq ▸ sourceTerm))
+      ((congrArg (fun someType => Ty.rename someType rho) typeEq) ▸
+        Term.rename termRenaming sourceTerm) := by
+  cases typeEq
+  rfl
+
 /-- A term cast by a symmetric type equality is HEq to the original
 term. -/
 theorem Term.type_eq_symm_cast_HEq

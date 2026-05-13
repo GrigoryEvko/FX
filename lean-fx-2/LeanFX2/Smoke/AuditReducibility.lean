@@ -662,6 +662,7 @@ M04 / `strong_normalization`. -/
 #print axioms TermRenaming.dropWeaken
 #print axioms TermRenaming.compose
 #print axioms Term.rename_type_eq_symm_cast_HEq
+#print axioms Term.rename_type_eq_cast_HEq
 #print axioms Term.type_eq_symm_cast_HEq
 #print axioms Term.rename_raw_type_eq_symm_cast_HEq
 #print axioms Term.raw_type_eq_symm_cast_HEq
