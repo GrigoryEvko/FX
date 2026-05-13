@@ -510,6 +510,29 @@ theorem RawTerm.weaken_lift_subst_singleton_lift {scope : Nat}
   | zero => rfl
   | succ _ => rfl
 
+/-- Weakening under one existing binder, then substituting by the lifted
+singleton, returns the original type. -/
+theorem Ty.weaken_lift_subst_singleton_lift {level scope : Nat}
+    (someType : Ty level (scope + 1))
+    (substituent : Ty level scope)
+    (rawArg : RawTerm scope) :
+    (someType.rename RawRenaming.weaken.lift).subst
+        (Subst.singleton substituent rawArg).lift =
+      someType := by
+  rw [Ty.rename_subst_commute RawRenaming.weaken.lift
+      (Subst.singleton substituent rawArg).lift someType]
+  rw [Ty.subst_pointwise ?_ ?_ someType, Ty.subst_identity someType]
+  · intro position
+    rcases position with ⟨positionIndex, positionLt⟩
+    cases positionIndex with
+    | zero => rfl
+    | succ _ => rfl
+  · intro position
+    rcases position with ⟨positionIndex, positionLt⟩
+    cases positionIndex with
+    | zero => rfl
+    | succ _ => rfl
+
 /-- Beta-specific extension of a typed substitution by an argument.
 
 Unlike `TermSubst.lift`, this substitution lands back in the original
@@ -1046,6 +1069,33 @@ theorem Term.weaken_subst_singleton_app_heq
     (RawTerm.weaken_subst_singleton functionRaw singletonRaw)
     (RawTerm.weaken_subst_singleton argumentValueRaw singletonRaw)
     functionHEq argumentHEq
+
+/-- Sigma first projection preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_fst_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType pairTerm))
+        pairTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.fst pairTerm)))
+      (Term.fst pairTerm) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.fst_HEq_congr
+    (Ty.weaken_subst_singleton firstType newType singletonRaw)
+    (Ty.weaken_lift_subst_singleton_lift secondType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton pairRaw singletonRaw)
+    pairHEq
 
 /-- Natural elimination preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_natElim_heq
