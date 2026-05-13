@@ -2188,6 +2188,81 @@ theorem Reducible.weaken_isStronglyNormalizing
   Term.isStronglyNormalizing_weaken
     (Reducible.isStronglyNormalizing sourceReducible)
 
+/-! ## K12.20.U3.monotone world-stability invariant
+
+The direct theorem
+
+```
+Reducible sourceType sourceTerm →
+Reducible sourceType.weaken (Term.weaken newType sourceTerm)
+```
+
+is not derivable from the current non-Kripke candidate shape at
+function-like types.  Already at `Ty.arrow`, the old closure accepts
+arguments in the old context, while the weakened closure must quantify
+over arbitrary arguments in the extended context.
+
+`IsRenamingStableReducible` records the missing invariant explicitly:
+a term is stable when every typed renaming of it is reducible in the
+target world.  One-step weakening is then just the
+canonical `TermRenaming.weakenStep` instance.  This is intentionally a
+separate predicate for Phase B: it does not retrofit `Reducible`, and it
+does not hide the arrow/world-monotonicity proof obligation.
+-/
+
+/-- A term is reducible in every typed-renamed future world. -/
+def IsRenamingStableReducible
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    (sourceType : Ty level sourceScope)
+    {sourceRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx sourceType sourceRaw) : Prop :=
+  ∀ {targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho),
+    Reducible (sourceType.rename rho) (Term.rename termRenaming sourceTerm)
+
+/-- Renaming-stable reducibility specializes to one-binder weakening. -/
+theorem IsRenamingStableReducible.weaken
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    {sourceTerm : Term context sourceType sourceRaw}
+    (sourceIsStable : IsRenamingStableReducible sourceType sourceTerm) :
+    Reducible sourceType.weaken (Term.weaken newType sourceTerm) :=
+  sourceIsStable (TermRenaming.weakenStep context newType)
+
+/-- A typed substitution is renaming-stable pointwise. -/
+def IsRenamingStableReducibleSubst
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma) : Prop :=
+  ∀ position,
+    IsRenamingStableReducible
+      ((varType sourceCtx position).subst sigma) (termSubst position)
+
+/-- Pointwise renaming-stable substitutions give the old-variable
+weakening premise used by `TermSubst.lift` before its unavoidable type
+commute cast. -/
+theorem IsRenamingStableReducibleSubst.weaken_position
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substIsStable : IsRenamingStableReducibleSubst termSubst)
+    (newSourceType : Ty level sourceScope)
+    (position : Fin sourceScope) :
+    Reducible ((varType sourceCtx position).subst sigma).weaken
+      (Term.weaken (newSourceType.subst sigma) (termSubst position)) :=
+  IsRenamingStableReducible.weaken
+    (newType := newSourceType.subst sigma)
+    (substIsStable position)
+
 /-- **K12.20.U3.monotone SN-fallback arm**: unit reducibility is stable
 under one-binder weakening. -/
 theorem Reducible.weaken_unit
