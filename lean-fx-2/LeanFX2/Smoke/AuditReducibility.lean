@@ -1373,5 +1373,8 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_intervalOpp_stable
 #print axioms Reducible.fundamental_intervalMeet_stable
 #print axioms Reducible.fundamental_intervalJoin_stable
+#print axioms Reducible.fundamental_sessionRecv_stable
+#print axioms Reducible.fundamental_sessionSend_stable
+#print axioms Reducible.fundamental_effectPerform_stable
 
 end LeanFX2.Smoke

@@ -15050,6 +15050,25 @@ theorem Reducible.fundamental_sessionRecv
               (Term.subst termSubst (Term.sessionRecv channel)) :=
   RawTerm.sessionRecv_isStronglyNormalizing channelIH
 
+/-- Session receive preserves fundamental stability. -/
+theorem Reducible.fundamental_sessionRecv_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (channelIsStable :
+      IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
+        (Term.subst termSubst channel)) :
+    IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
+      (Term.subst termSubst (Term.sessionRecv channel)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.sessionRecv_isStronglyNormalizing
+    (channelIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.AP.2 sessionSend fundamental case** — session-type
 send operation bundles a channel with an arbitrary-typed payload.
 Channel lives at `Ty.session protocolStep` (SN-direct) so `channelIH`
@@ -15077,6 +15096,33 @@ theorem Reducible.fundamental_sessionSend
                 (Term.sessionSend protocolStep channel payload)) :=
   RawTerm.sessionSend_isStronglyNormalizing channelIH
     (Reducible.isStronglyNormalizing payloadIH)
+
+/-- Session send preserves fundamental stability. -/
+theorem Reducible.fundamental_sessionSend_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {protocolStep : RawTerm scope}
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (channelIsStable :
+      IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
+        (Term.subst termSubst channel))
+    (payloadIsStable :
+      IsRenamingStableReducible (payloadType.subst sigma)
+        (Term.subst termSubst payload)) :
+    IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
+      (Term.subst termSubst
+        (Term.sessionSend protocolStep channel payload)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.sessionSend_isStronglyNormalizing
+    (channelIsStable rhoIsInjective termRenaming)
+    (Reducible.isStronglyNormalizing
+      (payloadIsStable rhoIsInjective termRenaming))
 
 /-- **K12.20.AQ effectPerform fundamental case** — algebraic effect
 operation invocation bundles an operation tag with arguments.
@@ -15120,6 +15166,44 @@ theorem Reducible.fundamental_effectPerform
           canPerformOperation operationTag arguments)) :=
   RawTerm.effectPerform_isStronglyNormalizing operationIH
     (Reducible.isStronglyNormalizing argumentsIH)
+
+/-- Effect performance preserves fundamental stability. -/
+theorem Reducible.fundamental_effectPerform_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (operationIsStable :
+      IsRenamingStableReducible
+        ((Ty.effect operationSignature.argumentCarrier effectTag).subst sigma)
+        (Term.subst termSubst operationTag))
+    (argumentsAreStable :
+      IsRenamingStableReducible
+        (operationSignature.argumentCarrier.subst sigma)
+        (Term.subst termSubst arguments)) :
+    IsRenamingStableReducible
+      ((Ty.effect operationSignature.resultCarrier effectTag).subst sigma)
+      (Term.subst termSubst
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.effectPerform_isStronglyNormalizing
+    (operationIsStable rhoIsInjective termRenaming)
+    (Reducible.isStronglyNormalizing
+      (argumentsAreStable rhoIsInjective termRenaming))
 
 /-- **K12.20.AR.3 universeCode fundamental case** — universe-code
 nullary intro at outer level.  Output `Ty.universe outerLevel
