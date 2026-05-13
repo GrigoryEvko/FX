@@ -14689,6 +14689,25 @@ theorem Reducible.fundamental_natSucc
               (Term.subst termSubst (Term.natSucc predecessor)) :=
   RawTerm.natSucc_isStronglyNormalizing predIH
 
+/-- Natural successor preserves fundamental stability when the
+predecessor is stable. -/
+theorem Reducible.fundamental_natSucc_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {predRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predRaw}
+    (predecessorIsStable :
+      IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst predecessor)) :
+    IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.natSucc predecessor)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.natSucc_isStronglyNormalizing
+    (predecessorIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.V.0 listNil fundamental case** — canonical list
 nil introduction at the K12.8 SN-output candidate. -/
 theorem Reducible.fundamental_listNil_at_listType

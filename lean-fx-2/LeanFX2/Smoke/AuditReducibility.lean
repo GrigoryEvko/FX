@@ -1367,5 +1367,6 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.step_preserves_codata
 #print axioms Reducible.step_preserves
 #print axioms Reducible.fundamental_natSucc
+#print axioms Reducible.fundamental_natSucc_stable
 
 end LeanFX2.Smoke
