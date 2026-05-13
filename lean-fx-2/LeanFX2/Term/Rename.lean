@@ -175,6 +175,19 @@ theorem oeqFunextPointwiseType_rename {level : Nat}
   exact oeqFunextPointwiseCodomain_rename rho codomainType
     leftFunctionRaw rightFunctionRaw
 
+/-- `funextReflType` commutes with raw renaming. -/
+theorem funextReflType_rename {level : Nat}
+    {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    (funextReflType domainType codomainType applyRaw).rename rho =
+      funextReflType (domainType.rename rho) (codomainType.rename rho)
+        (applyRaw.rename rho.lift) := by
+  unfold funextReflType
+  simp only [Ty.rename]
+  rw [Ty.weaken_rename_commute rho codomainType]
+
 /-! ## Term.rename -/
 
 /-- Apply a typed termRenaming to a typed term.  The output's raw index is
@@ -429,26 +442,8 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .equivApp equivTerm argumentTerm =>
       Term.equivApp (Term.rename termRenaming equivTerm)
                     (Term.rename termRenaming argumentTerm)
-  -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
-  -- carrier types rename via `rho`; the schematic `applyRaw` payload
-  -- (at scope+1) renames via `rho.lift`.  The result type involves
-  -- `codomainType.weaken.id ...`, which after rename matches the
-  -- `funextRefl` ctor's expected type via `Ty.weaken_rename_commute`.
-  -- We build the term at `(codomainType.rename rho).weaken.id ...`
-  -- via the ctor, then transport the type through the eqn
-  -- `(codomainType.rename rho).weaken = codomainType.weaken.rename rho.lift`
-  -- using `show` to expose the post-rename shape that needs the cast.
   | _, _, .funextRefl domainType codomainType applyRaw =>
-      show Term targetCtx
-        (Ty.piTy (domainType.rename rho)
-          (Ty.id (codomainType.weaken.rename rho.lift)
-            (applyRaw.rename rho.lift) (applyRaw.rename rho.lift)))
-        (RawTerm.lam (RawTerm.refl (applyRaw.rename rho.lift))) from
-      let codomainEqInverse :
-          (codomainType.rename rho).weaken =
-            codomainType.weaken.rename rho.lift :=
-        (Ty.weaken_rename_commute rho codomainType).symm
-      codomainEqInverse ▸
+      (funextReflType_rename rho domainType codomainType applyRaw).symm ▸
         Term.funextRefl (domainType.rename rho)
                         (codomainType.rename rho)
                         (applyRaw.rename rho.lift)

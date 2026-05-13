@@ -705,40 +705,16 @@ theorem rename_compatible
       (Term.rename termRenaming
         (Term.funextRefl (context := sourceCtx)
                          domainType codomainType applyRawTarget)) :=
-  -- Per `Term.rename`'s funextRefl arm (`Term/Rename.lean:441-454`),
-  -- both Terms unfold to `(Ty.weaken_rename_commute rho codomainType).symm
-  -- ▸ Term.funextRefl (domainType.rename rho) (codomainType.rename rho)
-  -- (applyRaw.rename rho.lift)`.  We use Eq.rec on the symmetric
-  -- equality `commuteSymmEq : (codomainType.rename rho).weaken =
-  -- codomainType.weaken.rename rho.lift` with a motive `weakRenamedCo
-  -- ↦ Step.par (eqProof ▸ Term.funextRefl ... weakRenamedCo ...) (...)`.
-  -- The variable `weakRenamedCo` is the LHS of the equality, which
-  -- appears (definitionally) as `(codomainType.rename rho).weaken`
-  -- inside the un-cast Term.funextRefl's Ty index.  At the rfl
-  -- branch, `eqProof = rfl` and the cast vanishes; the constructor
-  -- closes the goal directly.
-  let commuteSymm :
-      (codomainType.rename rho).weaken =
-        codomainType.weaken.rename rho.lift :=
-    (Ty.weaken_rename_commute rho codomainType).symm
-  @Eq.rec (Ty level (targetScope + 1))
-    ((codomainType.rename rho).weaken)
-    (motive := fun (weakRenamedCodomain : Ty level (targetScope + 1))
-      (eqProof : (codomainType.rename rho).weaken = weakRenamedCodomain) =>
-      Step.par
-        (eqProof ▸
-          Term.funextRefl (context := targetCtx)
-            (domainType.rename rho) (codomainType.rename rho)
-            (applyRawSource.rename rho.lift))
-        (eqProof ▸
-          Term.funextRefl (context := targetCtx)
-            (domainType.rename rho) (codomainType.rename rho)
-            (applyRawTarget.rename rho.lift)))
-    (Step.par.funextReflCong (domainType.rename rho)
-                             (codomainType.rename rho)
-                             renamedApplyRawStep)
-    (codomainType.weaken.rename rho.lift)
-    commuteSymm
+  by
+    simp only [Term.rename]
+    exact Step.par.castTargetType
+      (funextReflType_rename rho domainType codomainType
+        applyRawTarget).symm
+      (Step.par.castSourceType
+        (funextReflType_rename rho domainType codomainType
+          applyRawSource).symm
+        (Step.par.funextReflCong (domainType.rename rho)
+          (codomainType.rename rho) renamedApplyRawStep))
 
 theorem subst_compatible
     {mode : Mode} {level : Nat}
@@ -759,32 +735,16 @@ theorem subst_compatible
       (Term.subst termSubst
         (Term.funextRefl (context := sourceCtx)
                          domainType codomainType applyRawTarget)) :=
-  -- Mirror of `rename_compatible`: the substituted Terms unfold to
-  -- `codomainEqInverse ▸ Term.funextRefl ...` per `Term/Subst.lean`'s
-  -- funextRefl arm (lines 422-436).  Bridge via Eq.rec over the
-  -- symmetric equality with motive lifting both source/target casts.
-  let commuteSymm :
-      (codomainType.subst sigma).weaken =
-        codomainType.weaken.subst sigma.lift :=
-    (Ty.weaken_subst_commute sigma codomainType).symm
-  @Eq.rec (Ty level (targetScope + 1))
-    ((codomainType.subst sigma).weaken)
-    (motive := fun (weakSubstCodomain : Ty level (targetScope + 1))
-      (eqProof : (codomainType.subst sigma).weaken = weakSubstCodomain) =>
-      Step.par
-        (eqProof ▸
-          Term.funextRefl (context := targetCtx)
-            (domainType.subst sigma) (codomainType.subst sigma)
-            (applyRawSource.subst sigma.forRaw.lift))
-        (eqProof ▸
-          Term.funextRefl (context := targetCtx)
-            (domainType.subst sigma) (codomainType.subst sigma)
-            (applyRawTarget.subst sigma.forRaw.lift)))
-    (Step.par.funextReflCong (domainType.subst sigma)
-                             (codomainType.subst sigma)
-                             substitutedApplyRawStep)
-    (codomainType.weaken.subst sigma.lift)
-    commuteSymm
+  by
+    simp only [Term.subst]
+    exact Step.par.castTargetType
+      (funextReflType_subst sigma domainType codomainType
+        applyRawTarget).symm
+      (Step.par.castSourceType
+        (funextReflType_subst sigma domainType codomainType
+          applyRawSource).symm
+        (Step.par.funextReflCong (domainType.subst sigma)
+          (codomainType.subst sigma) substitutedApplyRawStep))
 
 end funextReflCong
 

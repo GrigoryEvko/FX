@@ -4,9 +4,10 @@ import LeanFX2.Foundation.Ty
 /-! # Foundation/TermHelpers — proof-obligation types for HoTT/HOTT
 ctors at Layer 0.
 
-Three `@[reducible]` defs (plus their codomain helpers) that name the
+Four `@[reducible]` defs (plus their codomain helpers) that name the
 typed-proof-witness signatures for `equivIntroHet` (HoTT heterogeneous
-equivalence) and `oeqFunext` (observational equality funext).
+equivalence), `oeqFunext` (observational equality funext), and
+`funextRefl` (canonical function-extensionality reflexivity).
 
 ## Why at Layer 0 (Foundation) rather than Layer 1 (Term.lean)
 
@@ -77,5 +78,11 @@ Under one fresh `carrierA` binder, this is the identity type
     (leftFunctionRaw rightFunctionRaw : RawTerm scope) : Ty level scope :=
   Ty.piTy domainType
     (oeqFunextPointwiseCodomain codomainType leftFunctionRaw rightFunctionRaw)
+
+/-- Type of the canonical funext reflexivity witness. -/
+@[reducible] def funextReflType {level scope : Nat}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) : Ty level scope :=
+  Ty.piTy domainType (Ty.id codomainType.weaken applyRaw applyRaw)
 
 end LeanFX2

@@ -185,6 +185,19 @@ theorem oeqFunextPointwiseType_subst {level : Nat}
   exact oeqFunextPointwiseCodomain_subst sigma codomainType
     leftFunctionRaw rightFunctionRaw
 
+/-- `funextReflType` commutes with substitution. -/
+theorem funextReflType_subst {level : Nat}
+    {sourceScope targetScope : Nat}
+    (sigma : Subst level sourceScope targetScope)
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    (funextReflType domainType codomainType applyRaw).subst sigma =
+      funextReflType (domainType.subst sigma) (codomainType.subst sigma)
+        (applyRaw.subst sigma.forRaw.lift) := by
+  unfold funextReflType
+  simp only [Ty.subst]
+  rw [Ty.weaken_subst_commute sigma codomainType]
+
 /-! ## Term.subst -/
 
 /-- Apply a typed substitution to a typed term.  29-case structural
@@ -424,23 +437,8 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .equivApp equivTerm argumentTerm =>
       Term.equivApp (Term.subst termSubst equivTerm)
                     (Term.subst termSubst argumentTerm)
-  -- HoTT canonical funext refl-fragment witness (Phase 12.A.B8.2):
-  -- carrier types substitute via `sigma`; the schematic `applyRaw`
-  -- payload (at scope+1) substitutes via `sigma.forRaw.lift`.  The
-  -- result type involves `codomainType.weaken.id ...`; we cast via
-  -- `Ty.weaken_subst_commute` like the `lam` arm.
   | _, _, .funextRefl domainType codomainType applyRaw =>
-      show Term targetCtx
-        (Ty.piTy (domainType.subst sigma)
-          (Ty.id (codomainType.weaken.subst sigma.lift)
-            (applyRaw.subst sigma.forRaw.lift)
-            (applyRaw.subst sigma.forRaw.lift)))
-        (RawTerm.lam (RawTerm.refl (applyRaw.subst sigma.forRaw.lift))) from
-      let codomainEqInverse :
-          (codomainType.subst sigma).weaken =
-            codomainType.weaken.subst sigma.lift :=
-        (Ty.weaken_subst_commute sigma codomainType).symm
-      codomainEqInverse ▸
+      (funextReflType_subst sigma domainType codomainType applyRaw).symm ▸
         Term.funextRefl (domainType.subst sigma)
                         (codomainType.subst sigma)
                         (applyRaw.subst sigma.forRaw.lift)

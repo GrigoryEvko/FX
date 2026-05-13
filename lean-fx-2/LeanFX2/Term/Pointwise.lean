@@ -697,7 +697,7 @@ theorem Term.weaken_subst_singleton_listNil_heq
         (Term.weaken newType
           (Term.listNil (context := context) (elementType := elementType))))
       (Term.listNil (context := context) (elementType := elementType)) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  simp only [Term.weaken, Term.rename]
   exact Term.listNil_HEq_congr
     (Ty.weaken_subst_singleton elementType newType argumentRaw)
 
@@ -714,7 +714,7 @@ theorem Term.weaken_subst_singleton_optionNone_heq
         (Term.weaken newType
           (Term.optionNone (context := context) (elementType := elementType))))
       (Term.optionNone (context := context) (elementType := elementType)) := by
-  simp only [Term.weaken, Term.rename, Term.subst]
+  simp only [Term.weaken, Term.rename]
   exact Term.optionNone_HEq_congr
     (Ty.weaken_subst_singleton elementType newType argumentRaw)
 
@@ -2376,6 +2376,84 @@ theorem Term.weaken_subst_singleton_equivReflIdAtId_heq
   exact Term.equivReflIdAtId_HEq_congr
     (Ty.weaken_subst_singleton carrier newType singletonRaw)
     (RawTerm.weaken_subst_singleton carrierRaw singletonRaw)
+
+/-- Canonical funext reflexivity preserves weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_funextRefl_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1))
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.funextRefl (context := context) domainType codomainType
+            applyRaw)))
+      (Term.funextRefl (context := context) domainType codomainType
+        applyRaw) := by
+  simp only [Term.weaken, Term.rename]
+  let renamedFunext :=
+    Term.funextRefl (context := context.cons newType)
+      (domainType.rename RawRenaming.weaken)
+      (codomainType.rename RawRenaming.weaken)
+      (applyRaw.rename RawRenaming.weaken.lift)
+  let renamedTypeEq :=
+    funextReflType_rename RawRenaming.weaken domainType codomainType
+      applyRaw
+  let substitutedFunextWithCast :=
+    Term.subst (TermSubst.singleton singletonTerm)
+      (renamedTypeEq.symm ▸ renamedFunext)
+  let substitutedTypeEq :=
+    funextReflType_subst (Subst.singleton newType singletonRaw)
+      (domainType.rename RawRenaming.weaken)
+      (codomainType.rename RawRenaming.weaken)
+      (applyRaw.rename RawRenaming.weaken.lift)
+  have innerCastHEq :
+      HEq substitutedFunextWithCast
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedFunext) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      renamedTypeEq.symm
+      renamedFunext
+  have outerCastHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedFunext)
+        (Term.funextRefl (context := context)
+          ((domainType.rename RawRenaming.weaken).subst
+            (Subst.singleton newType singletonRaw))
+          ((codomainType.rename RawRenaming.weaken).subst
+            (Subst.singleton newType singletonRaw))
+          ((applyRaw.rename RawRenaming.weaken.lift).subst
+            (Subst.singleton newType singletonRaw).forRaw.lift)) := by
+    exact Term.type_eq_cast_heq substitutedTypeEq.symm
+      (Term.funextRefl (context := context)
+        ((domainType.rename RawRenaming.weaken).subst
+          (Subst.singleton newType singletonRaw))
+        ((codomainType.rename RawRenaming.weaken).subst
+          (Subst.singleton newType singletonRaw))
+        ((applyRaw.rename RawRenaming.weaken.lift).subst
+          (Subst.singleton newType singletonRaw).forRaw.lift))
+  have constructorHEq :
+      HEq
+        (Term.funextRefl (context := context)
+          ((domainType.rename RawRenaming.weaken).subst
+            (Subst.singleton newType singletonRaw))
+          ((codomainType.rename RawRenaming.weaken).subst
+            (Subst.singleton newType singletonRaw))
+          ((applyRaw.rename RawRenaming.weaken.lift).subst
+            (Subst.singleton newType singletonRaw).forRaw.lift))
+        (Term.funextRefl (context := context) domainType codomainType
+          applyRaw) := by
+    exact Term.funextRefl_HEq_congr
+      (Ty.weaken_subst_singleton domainType newType singletonRaw)
+      (Ty.weaken_subst_singleton codomainType newType singletonRaw)
+      (RawTerm.weaken_lift_subst_singleton_lift applyRaw singletonRaw)
+  exact HEq.trans innerCastHEq (HEq.trans outerCastHEq constructorHEq)
 
 /-- Id-typed funext reflexivity witnesses preserve weaken-then-singleton
 collapse. -/

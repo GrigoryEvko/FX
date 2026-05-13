@@ -609,9 +609,7 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       {context : Ctx mode level scope}
       (domainType : Ty level scope) (codomainType : Ty level scope)
       (applyRaw : RawTerm (scope + 1)) :
-      Term context
-        (Ty.piTy domainType
-          (Ty.id codomainType.weaken applyRaw applyRaw))
+      Term context (funextReflType domainType codomainType applyRaw)
         (RawTerm.lam (RawTerm.refl applyRaw))
   /-- **The canonical Id-typed identity-equivalence proof at the universe.**
       Inhabitant of `Ty.id (Ty.universe lvl) carrierRaw carrierRaw` — that

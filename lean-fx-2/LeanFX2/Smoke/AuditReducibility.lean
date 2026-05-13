@@ -1239,6 +1239,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_equivCode_heq
 #print axioms Term.weaken_subst_singleton_equivReflId_heq
 #print axioms Term.weaken_subst_singleton_equivReflIdAtId_heq
+#print axioms Term.weaken_subst_singleton_funextRefl_heq
 #print axioms Term.weaken_subst_singleton_funextReflAtId_heq
 #print axioms Term.weaken_subst_singleton_glueIntro_heq
 #print axioms Term.weaken_subst_singleton_transp_heq
