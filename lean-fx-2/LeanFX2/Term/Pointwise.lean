@@ -1198,6 +1198,94 @@ theorem Term.weaken_subst_singleton_fst_heq
     (RawTerm.weaken_subst_singleton pairRaw singletonRaw)
     pairHEq
 
+/-- Sigma second projection preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_snd_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType pairTerm))
+        pairTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.snd (secondType := secondType) pairTerm)))
+      (Term.snd (secondType := secondType) pairTerm) := by
+  simp only [Term.weaken, Term.rename]
+  have pairWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            pairTerm))
+        pairTerm := by
+    simpa only [Term.weaken] using pairHEq
+  have innerCastHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          ((Ty.subst0_rename_commute secondType firstType
+            (RawTerm.fst pairRaw) RawRenaming.weaken).symm ▸
+            Term.snd
+              (Term.rename (TermRenaming.weakenStep context newType)
+                pairTerm)))
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.snd
+            (Term.rename (TermRenaming.weakenStep context newType)
+              pairTerm))) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      (Ty.subst0_rename_commute secondType firstType
+        (RawTerm.fst pairRaw) RawRenaming.weaken).symm
+      (Term.snd
+        (Term.rename (TermRenaming.weakenStep context newType)
+          pairTerm))
+  have sndWithoutCastsHEq :
+      HEq
+        (Term.snd
+          (Term.subst (TermSubst.singleton singletonTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              pairTerm)))
+        (Term.snd (secondType := secondType) pairTerm) :=
+    Term.snd_HEq_congr
+      (Ty.weaken_subst_singleton firstType newType singletonRaw)
+      (Ty.weaken_lift_subst_singleton_lift secondType newType singletonRaw)
+      (RawTerm.weaken_subst_singleton pairRaw singletonRaw)
+      pairWithoutCastsHEq
+  have outerCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute
+            (secondType.rename RawRenaming.weaken.lift)
+            (firstType.rename RawRenaming.weaken)
+            (RawTerm.fst (pairRaw.rename RawRenaming.weaken))
+            (Subst.singleton newType singletonRaw)).symm ▸
+          Term.snd
+            (Term.subst (TermSubst.singleton singletonTerm)
+              (Term.rename (TermRenaming.weakenStep context newType)
+                pairTerm)))
+        (Term.snd
+          (Term.subst (TermSubst.singleton singletonTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              pairTerm))) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute
+        (secondType.rename RawRenaming.weaken.lift)
+        (firstType.rename RawRenaming.weaken)
+        (RawTerm.fst (pairRaw.rename RawRenaming.weaken))
+        (Subst.singleton newType singletonRaw)).symm
+      (Term.snd
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            pairTerm)))
+  exact HEq.trans innerCastHEq
+    (HEq.trans outerCastHEq sndWithoutCastsHEq)
+
 /-- Natural elimination preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_natElim_heq
     {mode : Mode} {level scope : Nat}
