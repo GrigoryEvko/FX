@@ -86,5 +86,8 @@ open LeanFX2
 #print axioms Reducible.fundamental_idJ_at_id_sn_stable
 #print axioms Reducible.fundamental_oeqJ_at_oeq_sn_stable
 #print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn_stable
+#print axioms Reducible.fundamental_boolElim_at_bool_sn_stable
+#print axioms Reducible.fundamental_optionMatch_at_option_sn_stable
+#print axioms Reducible.fundamental_eitherMatch_at_either_sn_stable
 
 end LeanFX2.Smoke

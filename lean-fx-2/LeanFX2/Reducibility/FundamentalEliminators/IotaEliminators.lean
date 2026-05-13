@@ -634,4 +634,170 @@ theorem Term.eitherMatch_isStronglyNormalizing
   scrutineeReducible.2 leftBranch rightBranch
     leftIsSN rightIsSN leftAppIsSN rightAppIsSN
 
+
+/-! ## Renaming-stable mirrors of the SN-output ι-eliminator
+fundamentals (K12.22.A / K12.22.B / K12.22.C)
+
+Each `_sn_stable` companion below mirrors the `IsRenamingStableIsSN`
+pattern from `IdentityEliminators`: rebuild SN at every injective-
+renamed future world by re-deriving the underlying SN closure inputs
+from `IsRenamingStableReducible` premises at the renamed world.  The
+branch-application SN witnesses fall out of the arrow Reducibility's
+second component evaluated at the renamed world, then `.isStronglyNormalizing`
+projects SN — no external SN premises required.
+
+Coverage of the K12.22 batch:
+
+* `fundamental_boolElim_at_bool_sn_stable` — bool eliminator, all three
+  IH Reducibles at the renamed world feed `RawTerm.boolElim_isStronglyNormalizing`.
+* `fundamental_optionMatch_at_option_sn_stable` — option eliminator,
+  the some-branch's arrow closure produces the value-application SN
+  at every renamed world.
+* `fundamental_eitherMatch_at_either_sn_stable` — either eliminator,
+  same arrow-closure derivation for both left and right branches. -/
+
+/-- Renaming-stable SN of `Term.boolElim` at `Ty.bool` —
+`IsRenamingStableIsSN` mirror of `fundamental_boolElim_at_bool_sn`.
+At each renamed world `Reducible Ty.bool` reduces to `Term.isStronglyNormalizing`
+definitionally (Ty.bool is a closed leaf), so the three renamed-world
+Reducibles feed `RawTerm.boolElim_isStronglyNormalizing` directly. -/
+theorem Reducible.fundamental_boolElim_at_bool_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (scrutineeIsStable :
+      IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (thenIsStable :
+      IsRenamingStableReducible
+        ((motiveType.subst0 Ty.bool RawTerm.boolTrue).subst sigma)
+        (Term.subst termSubst thenBranch))
+    (elseIsStable :
+      IsRenamingStableReducible
+        ((motiveType.subst0 Ty.bool RawTerm.boolFalse).subst sigma)
+        (Term.subst termSubst elseBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.boolElim scrutinee thenBranch elseBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have scrutineeReducibleAtRho :=
+    scrutineeIsStable rhoIsInjective termRenaming
+  have thenReducibleAtRho :=
+    thenIsStable rhoIsInjective termRenaming
+  have elseReducibleAtRho :=
+    elseIsStable rhoIsInjective termRenaming
+  exact RawTerm.boolElim_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing thenReducibleAtRho)
+    (Reducible.isStronglyNormalizing elseReducibleAtRho)
+    scrutineeReducibleAtRho
+
+/-- Renaming-stable SN of `Term.optionMatch` at `Ty.optionType` —
+`IsRenamingStableIsSN` mirror of `fundamental_optionMatch_at_option_sn`.
+The some-branch arrow Reducibility at the renamed world is consumed
+by `_at_option_sn` to derive the value-application SN closure
+internally — no external lifting required. -/
+theorem Reducible.fundamental_optionMatch_at_option_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch :
+      Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeIsStable :
+      IsRenamingStableReducible ((Ty.optionType elementType).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (noneIsStable :
+      IsRenamingStableReducible (motiveType.subst sigma)
+        (Term.subst termSubst noneBranch))
+    (someIsStable :
+      IsRenamingStableReducible ((Ty.arrow elementType motiveType).subst sigma)
+        (Term.subst termSubst someBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.optionMatch scrutinee noneBranch someBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have scrutineeReducibleAtRho :=
+    scrutineeIsStable rhoIsInjective termRenaming
+  have noneReducibleAtRho :=
+    noneIsStable rhoIsInjective termRenaming
+  have someReducibleAtRho :=
+    someIsStable rhoIsInjective termRenaming
+  exact scrutineeReducibleAtRho.2
+    (Term.rename termRenaming (Term.subst termSubst noneBranch))
+    (Term.rename termRenaming (Term.subst termSubst someBranch))
+    (Reducible.isStronglyNormalizing noneReducibleAtRho)
+    (Reducible.isStronglyNormalizing someReducibleAtRho)
+    (fun valueTerm valueIH =>
+      Reducible.isStronglyNormalizing
+        (someReducibleAtRho.2 valueTerm valueIH))
+
+/-- Renaming-stable SN of `Term.eitherMatch` at `Ty.eitherType` —
+`IsRenamingStableIsSN` mirror of `fundamental_eitherMatch_at_either_sn`.
+Both left and right branches' arrow Reducibilities at the renamed
+world feed the corresponding application-SN closures. -/
+theorem Reducible.fundamental_eitherMatch_at_either_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    {scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch :
+      Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+      Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeIsStable :
+      IsRenamingStableReducible
+        ((Ty.eitherType leftType rightType).subst sigma)
+        (Term.subst termSubst scrutinee))
+    (leftIsStable :
+      IsRenamingStableReducible
+        ((Ty.arrow leftType motiveType).subst sigma)
+        (Term.subst termSubst leftBranch))
+    (rightIsStable :
+      IsRenamingStableReducible
+        ((Ty.arrow rightType motiveType).subst sigma)
+        (Term.subst termSubst rightBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.eitherMatch scrutinee leftBranch rightBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have scrutineeReducibleAtRho :=
+    scrutineeIsStable rhoIsInjective termRenaming
+  have leftReducibleAtRho :=
+    leftIsStable rhoIsInjective termRenaming
+  have rightReducibleAtRho :=
+    rightIsStable rhoIsInjective termRenaming
+  exact scrutineeReducibleAtRho.2
+    (Term.rename termRenaming (Term.subst termSubst leftBranch))
+    (Term.rename termRenaming (Term.subst termSubst rightBranch))
+    (Reducible.isStronglyNormalizing leftReducibleAtRho)
+    (Reducible.isStronglyNormalizing rightReducibleAtRho)
+    (fun valueTerm valueIH =>
+      Reducible.isStronglyNormalizing
+        (leftReducibleAtRho.2 valueTerm valueIH))
+    (fun valueTerm valueIH =>
+      Reducible.isStronglyNormalizing
+        (rightReducibleAtRho.2 valueTerm valueIH))
+
 end LeanFX2
