@@ -12075,6 +12075,50 @@ theorem ReducibleSubst.lift_isStronglyNormalizing
             (Reducible.isStronglyNormalizing
               (substReducible previousPosition))
 
+/-- **K12.20.U3.lift under renaming stability**: a renaming-stable
+reducible substitution lifts under one binder.
+
+This is the first full-reducibility version of `ReducibleSubst.lift`.
+The extra stability premise is the honest Kripke/world monotonicity
+needed by old variables: after lifting, successor positions are exactly
+the old substitution entries weakened into the extended target context.
+Fresh position zero is a neutral variable and is reducible by CR3. -/
+theorem ReducibleSubst.lift_of_renamingStable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substIsStable : IsRenamingStableReducibleSubst termSubst)
+    (newSourceType : Ty level scope) :
+    ReducibleSubst (termSubst.lift newSourceType) := by
+  intro position
+  cases position with
+  | mk positionIndex positionIsWithinScope =>
+      cases positionIndex with
+      | zero =>
+          exact Reducible.of_type_eq_symm_cast
+            (Ty.weaken_subst_commute sigma newSourceType)
+            (Reducible.of_varShape
+              ((newSourceType.subst sigma).weaken)
+              (Term.var (context := targetCtx.cons (newSourceType.subst sigma))
+                ⟨0, Nat.zero_lt_succ targetScope⟩))
+      | succ previousIndex =>
+          let previousPosition : Fin scope :=
+            ⟨previousIndex,
+              Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+          change Reducible
+            ((varType sourceCtx previousPosition).weaken.subst sigma.lift)
+            ((Ty.weaken_subst_commute sigma
+              (varType sourceCtx previousPosition)).symm ▸
+                Term.weaken (newSourceType.subst sigma)
+                  (termSubst previousPosition))
+          exact Reducible.of_type_eq_symm_cast
+            (Ty.weaken_subst_commute sigma
+              (varType sourceCtx previousPosition))
+            (IsRenamingStableReducibleSubst.weaken_position
+              substIsStable newSourceType previousPosition)
+
 /-- **K12.27.M04 identity-substitution SN extraction**.
 
 The identity-only M04 route often proves SN for the term after
