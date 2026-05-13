@@ -812,7 +812,19 @@ def isAllowedFX1CoreExactDirectImport
   else if sourceModuleName == `LeanFX2.FX1.Core.WellFormed then
     importedModuleName == `LeanFX2.FX1.Core.HasType
   else if sourceModuleName == `LeanFX2.FX1.Core.Check then
+    importedModuleName == `LeanFX2.FX1.Core.Check.CheckEntry
+  else if sourceModuleName == `LeanFX2.FX1.Core.Check.CheckBeq then
     importedModuleName == `LeanFX2.FX1.Core.HasType
+  else if sourceModuleName == `LeanFX2.FX1.Core.Check.CheckLookup then
+    importedModuleName == `LeanFX2.FX1.Core.Check.CheckBeq
+  else if sourceModuleName == `LeanFX2.FX1.Core.Check.CheckReduction then
+    importedModuleName == `LeanFX2.FX1.Core.Check.CheckLookup
+  else if sourceModuleName == `LeanFX2.FX1.Core.Check.CheckInferCore then
+    importedModuleName == `LeanFX2.FX1.Core.Check.CheckReduction
+  else if sourceModuleName == `LeanFX2.FX1.Core.Check.CheckInferApp then
+    importedModuleName == `LeanFX2.FX1.Core.Check.CheckInferCore
+  else if sourceModuleName == `LeanFX2.FX1.Core.Check.CheckEntry then
+    importedModuleName == `LeanFX2.FX1.Core.Check.CheckInferApp
   else if sourceModuleName == `LeanFX2.FX1.Core.Soundness then
     importedModuleName == `LeanFX2.FX1.Core.Check
   else
