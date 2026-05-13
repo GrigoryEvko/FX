@@ -660,6 +660,7 @@ M04 / `strong_normalization`. -/
 #print axioms IsRenamingStableReducible.weaken
 #print axioms IsRenamingStableReducible.of_varShape
 #print axioms TermRenaming.dropWeaken
+#print axioms TermRenaming.compose
 #print axioms Term.rename_type_eq_symm_cast_HEq
 #print axioms Term.type_eq_symm_cast_HEq
 #print axioms Term.rename_raw_type_eq_symm_cast_HEq
@@ -1206,6 +1207,7 @@ M04 / `strong_normalization`. -/
 #print axioms RawTerm.weaken_lift_subst_singleton_lift
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
+#print axioms TermSubst.renameOutput
 #print axioms TermSubst.consSingleton
 #print axioms TermSubst.lift_zero_subst_singleton_heq
 #print axioms Term.weaken_subst_singleton_var_heq
@@ -1302,6 +1304,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_boolElim_heq
 #print axioms Term.weaken_subst_singleton_effectPerform_heq
 #print axioms ReducibleSubst.consSingleton
+#print axioms ReducibleSubst.renameOutput_of_renamingStable
 #print axioms IsRenamingStableReducibleSubst.singleton
 #print axioms IsRenamingStableReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape

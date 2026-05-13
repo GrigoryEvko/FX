@@ -99,6 +99,26 @@ def TermSubst.singleton {mode : Mode} {level scope : Nat}
         substituent argRaw).symm ▸
           Term.var ⟨k, Nat.lt_of_succ_lt_succ h⟩
 
+/-- Post-compose a typed substitution with a typed renaming on the
+target context.
+
+This is the typed companion to `Subst.renameOutput`: each substituted
+variable term is renamed into the later target context, then cast through
+`Ty.subst_rename_commute` so its type index is exactly the
+post-composed substitution type. -/
+def TermSubst.renameOutput {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope middleScope}
+    {rho : RawRenaming middleScope targetScope}
+    (termSubst : TermSubst sourceCtx middleCtx sigma)
+    (termRenaming : TermRenaming middleCtx targetCtx rho) :
+    TermSubst sourceCtx targetCtx (Subst.renameOutput sigma rho)
+  | position =>
+      Ty.subst_rename_commute sigma rho (varType sourceCtx position) ▸
+        Term.rename termRenaming (termSubst position)
+
 theorem equivIntroHetLeftInverseCodomain_subst {level : Nat}
     {sourceScope targetScope : Nat}
     (sigma : Subst level sourceScope targetScope)

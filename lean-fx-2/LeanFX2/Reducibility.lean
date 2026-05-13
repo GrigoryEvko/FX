@@ -11851,6 +11851,31 @@ theorem Reducible.of_heq
   subst termEq
   exact sourceReducible
 
+/-- A renaming-stable substitution remains reducible after post-composing
+its output with an injective typed renaming. -/
+theorem ReducibleSubst.renameOutput_of_renamingStable
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope middleScope}
+    {rho : RawRenaming middleScope targetScope}
+    {termSubst : TermSubst sourceCtx middleCtx sigma}
+    (substIsStable : IsRenamingStableReducibleSubst termSubst)
+    (rhoIsInjective : ∀ positionA positionB,
+      rho positionA = rho positionB → positionA = positionB)
+    (termRenaming : TermRenaming middleCtx targetCtx rho) :
+    ReducibleSubst
+      (TermSubst.renameOutput termSubst termRenaming) := by
+  intro position
+  change Reducible
+    ((varType sourceCtx position).subst (Subst.renameOutput sigma rho))
+    (Ty.subst_rename_commute sigma rho (varType sourceCtx position) ▸
+      Term.rename termRenaming (termSubst position))
+  exact Reducible.of_type_eq_cast
+    (Ty.subst_rename_commute sigma rho (varType sourceCtx position))
+    (substIsStable position rhoIsInjective termRenaming)
+
 /-- **K12.20.U3 singleton ReducibleSubst**: replacing the newest
 variable by a reducible argument yields a reducible singleton
 substitution.

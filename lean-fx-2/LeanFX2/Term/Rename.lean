@@ -116,6 +116,26 @@ theorem TermRenaming.dropWeaken
       (RawRenaming.compose RawRenaming.weaken rho)
   exact Ty.rename_compose RawRenaming.weaken rho (varType targetCtx position)
 
+/-- Compose two typed renamings. -/
+theorem TermRenaming.compose
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstRenaming : RawRenaming sourceScope middleScope}
+    {secondRenaming : RawRenaming middleScope targetScope}
+    (firstTermRenaming :
+      TermRenaming sourceCtx middleCtx firstRenaming)
+    (secondTermRenaming :
+      TermRenaming middleCtx targetCtx secondRenaming) :
+    TermRenaming sourceCtx targetCtx
+      (RawRenaming.compose firstRenaming secondRenaming) := by
+  intro position
+  rw [secondTermRenaming (firstRenaming position),
+      firstTermRenaming position,
+      Ty.rename_compose firstRenaming secondRenaming
+        (varType sourceCtx position)]
+
 theorem equivIntroHetLeftInverseCodomain_rename {level : Nat}
     {scope targetScope : Nat}
     (rho : RawRenaming scope targetScope)
