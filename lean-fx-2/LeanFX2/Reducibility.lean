@@ -17245,6 +17245,37 @@ theorem Reducible.fundamental_app_at_arrow
                 (Term.app functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-- Non-dependent application preserves fundamental stability.
+
+This is the renaming-stable counterpart of
+`fundamental_app_at_arrow`: after any injective typed renaming, the
+renamed function remains reducible at the renamed arrow type, and its
+arrow-closure consumes the renamed argument reducibility witness. -/
+theorem Reducible.fundamental_app_at_arrow_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIsStable :
+      IsRenamingStableReducible
+        ((Ty.arrow domainType codomainType).subst sigma)
+        (Term.subst termSubst functionTerm))
+    (argumentIsStable :
+      IsRenamingStableReducible (domainType.subst sigma)
+        (Term.subst termSubst argumentTerm)) :
+    IsRenamingStableReducible (codomainType.subst sigma)
+      (Term.subst termSubst (Term.app functionTerm argumentTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (functionIsStable rhoIsInjective termRenaming).2
+    (Term.rename termRenaming (Term.subst termSubst argumentTerm))
+    (argumentIsStable rhoIsInjective termRenaming)
+
 /-- Direct M04 SN endpoint for non-dependent application.
 
 Application is not SN-preserving from child SN alone: the beta arm can
@@ -17359,6 +17390,27 @@ theorem Reducible.fundamental_fst_at_sigmaTy
     Reducible (firstType.subst sigma)
               (Term.subst termSubst (Term.fst pairTerm)) :=
   pairIH.2.1
+
+/-- Sigma first projection preserves fundamental stability. -/
+theorem Reducible.fundamental_fst_at_sigmaTy_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm :
+        Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsStable :
+      IsRenamingStableReducible
+        ((Ty.sigmaTy firstType secondType).subst sigma)
+        (Term.subst termSubst pairTerm)) :
+    IsRenamingStableReducible (firstType.subst sigma)
+      (Term.subst termSubst (Term.fst pairTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (pairIsStable rhoIsInjective termRenaming).2.1
 
 /-! ## K12.21.C fundamental_snd at `Ty.sigmaTy` — Σ second-projection
 SN-output case
@@ -17562,6 +17614,26 @@ theorem Reducible.fundamental_recordProj_at_record
               (Term.subst termSubst (Term.recordProj recordValue)) :=
   recordIH.2
 
+/-- Record projection preserves fundamental stability. -/
+theorem Reducible.fundamental_recordProj_at_record_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    {recordValue :
+        Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (recordIsStable :
+      IsRenamingStableReducible
+        ((Ty.record singleFieldType).subst sigma)
+        (Term.subst termSubst recordValue)) :
+    IsRenamingStableReducible (singleFieldType.subst sigma)
+      (Term.subst termSubst (Term.recordProj recordValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (recordIsStable rhoIsInjective termRenaming).2
+
 /-- Fundamental case: `Term.refineElim` at `Ty.refine` (K12.21.F).
 
 `Term.refineElim` projects from a refinement-typed value to the
@@ -17602,6 +17674,27 @@ theorem Reducible.fundamental_refineElim_at_refine
     Reducible (baseType.subst sigma)
               (Term.subst termSubst (Term.refineElim refinedValue)) :=
   refineIH.2
+
+/-- Refinement elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_refineElim_at_refine_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    {refinedValue :
+        Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (refinedIsStable :
+      IsRenamingStableReducible
+        ((Ty.refine baseType predicate).subst sigma)
+        (Term.subst termSubst refinedValue)) :
+    IsRenamingStableReducible (baseType.subst sigma)
+      (Term.subst termSubst (Term.refineElim refinedValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (refinedIsStable rhoIsInjective termRenaming).2
 
 /-! ## K12.22 fundamental ι-eliminator cases -/
 
@@ -19699,6 +19792,33 @@ theorem Reducible.fundamental_equivApp_at_equiv
               (Term.subst termSubst (Term.equivApp equivTerm argumentTerm)) :=
   equivIH.2 (Term.subst termSubst argumentTerm) argumentIH
 
+/-- Equivalence application preserves fundamental stability. -/
+theorem Reducible.fundamental_equivApp_at_equiv_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm :
+        Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (equivIsStable :
+      IsRenamingStableReducible
+        ((Ty.equiv carrierA carrierB).subst sigma)
+        (Term.subst termSubst equivTerm))
+    (argumentIsStable :
+      IsRenamingStableReducible (carrierA.subst sigma)
+        (Term.subst termSubst argumentTerm)) :
+    IsRenamingStableReducible (carrierB.subst sigma)
+      (Term.subst termSubst
+        (Term.equivApp equivTerm argumentTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (equivIsStable rhoIsInjective termRenaming).2
+    (Term.rename termRenaming (Term.subst termSubst argumentTerm))
+    (argumentIsStable rhoIsInjective termRenaming)
+
 /-- Fundamental case: `Term.equivApply` at `Ty.equiv`
 (K12.23.E, SN-output endpoint).
 
@@ -19924,6 +20044,37 @@ theorem Reducible.fundamental_pathApp_at_path
                  (Term.pathApp modeIsUnivalent pathTerm intervalTerm)) :=
   pathIH.2 modeIsUnivalent (Term.subst termSubst intervalTerm) intervalIH
 
+/-- Cubical path application preserves fundamental stability. -/
+theorem Reducible.fundamental_pathApp_at_path_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+        Term sourceCtx
+             (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (pathIsStable :
+      IsRenamingStableReducible
+        ((Ty.path carrierType leftEndpoint rightEndpoint).subst sigma)
+        (Term.subst termSubst pathTerm))
+    (intervalIsStable :
+      IsRenamingStableReducible (Ty.interval.subst sigma)
+        (Term.subst termSubst intervalTerm)) :
+    IsRenamingStableReducible (carrierType.subst sigma)
+      (Term.subst termSubst
+        (Term.pathApp modeIsUnivalent pathTerm intervalTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (pathIsStable rhoIsInjective termRenaming).2 modeIsUnivalent
+    (Term.rename termRenaming (Term.subst termSubst intervalTerm))
+    (Reducible.isStronglyNormalizing
+      (intervalIsStable rhoIsInjective termRenaming))
+
 /-- Direct M04 SN endpoint for cubical path application.
 
 Path application exposes the path body's endpoint when the path is a
@@ -19974,6 +20125,28 @@ theorem Reducible.fundamental_glueElim_at_glue
               (Term.subst termSubst
                 (Term.glueElim modeIsUnivalent gluedValue)) :=
   glueIH.2 modeIsUnivalent
+
+/-- Glue elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_glueElim_at_glue_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    {gluedValue :
+        Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (glueIsStable :
+      IsRenamingStableReducible
+        ((Ty.glue baseType boundaryWitness).subst sigma)
+        (Term.subst termSubst gluedValue)) :
+    IsRenamingStableReducible (baseType.subst sigma)
+      (Term.subst termSubst
+        (Term.glueElim modeIsUnivalent gluedValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (glueIsStable rhoIsInjective termRenaming).2 modeIsUnivalent
 
 /-- Fundamental SN endpoint: `Term.glueIntro` at `Ty.glue` (K12.24).
 
@@ -20117,6 +20290,26 @@ theorem Reducible.fundamental_codataDest_at_codata
     Reducible (outputType.subst sigma)
               (Term.subst termSubst (Term.codataDest codataValue)) :=
   codataIH.2
+
+/-- Codata observation preserves fundamental stability. -/
+theorem Reducible.fundamental_codataDest_at_codata_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+        Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataIsStable :
+      IsRenamingStableReducible
+        ((Ty.codata stateType outputType).subst sigma)
+        (Term.subst termSubst codataValue)) :
+    IsRenamingStableReducible (outputType.subst sigma)
+      (Term.subst termSubst (Term.codataDest codataValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (codataIsStable rhoIsInjective termRenaming).2
 
 /-- Direct M04 SN endpoint for codata observation.
 

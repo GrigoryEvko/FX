@@ -1405,5 +1405,13 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_modElim_at_session_stable
 #print axioms Reducible.fundamental_modElim_at_effect_stable
 #print axioms Reducible.fundamental_modElim_at_modal_stable
+#print axioms Reducible.fundamental_app_at_arrow_stable
+#print axioms Reducible.fundamental_fst_at_sigmaTy_stable
+#print axioms Reducible.fundamental_recordProj_at_record_stable
+#print axioms Reducible.fundamental_refineElim_at_refine_stable
+#print axioms Reducible.fundamental_pathApp_at_path_stable
+#print axioms Reducible.fundamental_glueElim_at_glue_stable
+#print axioms Reducible.fundamental_equivApp_at_equiv_stable
+#print axioms Reducible.fundamental_codataDest_at_codata_stable
 
 end LeanFX2.Smoke
