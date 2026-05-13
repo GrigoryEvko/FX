@@ -645,6 +645,10 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_boolTrue
 #print axioms Reducible.fundamental_boolFalse
 #print axioms Reducible.fundamental_natZero
+#print axioms Reducible.fundamental_unit_stable
+#print axioms Reducible.fundamental_boolTrue_stable
+#print axioms Reducible.fundamental_boolFalse_stable
+#print axioms Reducible.fundamental_natZero_stable
 #print axioms RawTerm.lam_isStronglyNormalizing
 #print axioms Term.lam_isStronglyNormalizing
 #print axioms Term.lamPi_isStronglyNormalizing

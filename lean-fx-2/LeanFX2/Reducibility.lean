@@ -2270,6 +2270,67 @@ theorem IsRenamingStableReducibleSubst.weaken_position
     (newType := newSourceType.subst sigma)
     (substIsStable position)
 
+/-! ## K12.20.U4 stable fundamental base cases
+
+The lambda route now consumes renaming-stable substitutions to build
+`ReducibleSubst.lift`.  The eventual fundamental induction therefore
+needs stable counterparts for the base cases, not only reducibility
+endpoints.  Closed canonical introducers are stable directly: every
+typed injective renaming of their substituted form is the same
+canonical raw term, and the corresponding candidate is the base SN
+clause. -/
+
+/-- Unit fundamental result is stable under future-world renamings. -/
+theorem Reducible.fundamental_unit_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.unit (context := sourceCtx))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.unit_isStronglyNormalizing
+
+/-- Boolean true fundamental result is stable under future-world
+renamings. -/
+theorem Reducible.fundamental_boolTrue_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.boolTrue (context := sourceCtx))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.boolTrue_isStronglyNormalizing
+
+/-- Boolean false fundamental result is stable under future-world
+renamings. -/
+theorem Reducible.fundamental_boolFalse_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.boolFalse (context := sourceCtx))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.boolFalse_isStronglyNormalizing
+
+/-- Natural zero fundamental result is stable under future-world
+renamings. -/
+theorem Reducible.fundamental_natZero_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.natZero (context := sourceCtx))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.natZero_isStronglyNormalizing
+
 /-- **K12.20.U3.monotone SN-fallback arm**: unit reducibility is stable
 under one-binder weakening. -/
 theorem Reducible.weaken_unit
