@@ -1818,6 +1818,61 @@ theorem Reducible.modal_of_isStronglyNormalizing
     Reducible (Ty.modal modalityTag carrierType) term :=
   termIsSN
 
+/-! ## K12.20.U4 SN-direct reducibility classifier
+
+The stable fundamental cases for type-preserving wrappers (`subsume`,
+`modIntro`, `modElim`) should not be sliced once per closed type.
+They only need the invariant that the current `Reducible` arm is
+definitionally just `Term.isStronglyNormalizing`.  `Ty.tyVar` is
+intentionally excluded: after substitution it can become any type, so
+it does not preserve this invariant at the fundamental-call boundary.
+-/
+
+/-- Types whose current `Reducible` candidate is plain strong
+normalization. -/
+def Reducible.IsSNDirect {level scope : Nat} : Ty level scope → Prop
+  | Ty.unit => True
+  | Ty.bool => True
+  | Ty.nat => True
+  | Ty.empty => True
+  | Ty.interval => True
+  | Ty.universe _ _ => True
+  | Ty.session _ => True
+  | Ty.effect _ _ => True
+  | Ty.modal _ _ => True
+  | _ => False
+
+/-- SN-directness is preserved by typed renaming because every admitted
+arm keeps the same outer type constructor under `Ty.rename`. -/
+theorem Reducible.IsSNDirect.rename
+    {level sourceScope targetScope : Nat}
+    {sourceType : Ty level sourceScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (sourceTypeIsSNDirect : Reducible.IsSNDirect sourceType) :
+    Reducible.IsSNDirect (sourceType.rename rho) := by
+  cases sourceType <;>
+    first
+    | exact trivial
+    | change False at sourceTypeIsSNDirect
+      cases sourceTypeIsSNDirect
+
+/-- On SN-direct candidate arms, strong normalization recovers the full
+`Reducible` witness. -/
+theorem Reducible.of_isStronglyNormalizing_when_SNDirect
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType : Ty level scope}
+    {raw : RawTerm scope}
+    {term : Term context sourceType raw}
+    (sourceTypeIsSNDirect : Reducible.IsSNDirect sourceType)
+    (termIsSN : Term.isStronglyNormalizing term) :
+    Reducible sourceType term := by
+  cases sourceType <;>
+    first
+    | exact termIsSN
+    | change False at sourceTypeIsSNDirect
+      cases sourceTypeIsSNDirect
+
 /-- **K12.18/K12.19 substitution-reducibility predicate**: the
 universal quantification target of the fundamental lemma cascade
 (K12.19-K12.26).
@@ -16307,6 +16362,150 @@ are NOT covered here — those require the full
 substituted Ty and step-closure under elimination forms.  Such
 arms ship at K12.25 alongside the full modal-cases milestone. -/
 
+/-- Type-preserving subsumption preserves reducibility at any SN-direct
+candidate arm. -/
+theorem Reducible.fundamental_subsume_SNDirect
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {sourceType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx sourceType innerRaw}
+    (sourceTypeIsSNDirect :
+      Reducible.IsSNDirect (sourceType.subst sigma))
+    (innerIH :
+      Reducible (sourceType.subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    Reducible (sourceType.subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) :=
+  Reducible.of_isStronglyNormalizing_when_SNDirect
+    sourceTypeIsSNDirect
+    (RawTerm.subsume_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing innerIH))
+
+/-- Type-preserving modal introduction preserves reducibility at any
+SN-direct candidate arm. -/
+theorem Reducible.fundamental_modIntro_SNDirect
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {sourceType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx sourceType innerRaw}
+    (sourceTypeIsSNDirect :
+      Reducible.IsSNDirect (sourceType.subst sigma))
+    (innerIH :
+      Reducible (sourceType.subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    Reducible (sourceType.subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) :=
+  Reducible.of_isStronglyNormalizing_when_SNDirect
+    sourceTypeIsSNDirect
+    (RawTerm.modIntro_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing innerIH))
+
+/-- Type-preserving modal elimination preserves reducibility at any
+SN-direct candidate arm. -/
+theorem Reducible.fundamental_modElim_SNDirect
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {sourceType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx sourceType innerRaw}
+    (sourceTypeIsSNDirect :
+      Reducible.IsSNDirect (sourceType.subst sigma))
+    (innerIH :
+      Reducible (sourceType.subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    Reducible (sourceType.subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) :=
+  Reducible.of_isStronglyNormalizing_when_SNDirect
+    sourceTypeIsSNDirect
+    (Term.modElim_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing innerIH))
+
+/-- Stable subsumption uses only the SN-direct candidate classifier,
+not one theorem per closed type. -/
+theorem Reducible.fundamental_subsume_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {sourceType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx sourceType innerRaw}
+    (sourceTypeIsSNDirect :
+      Reducible.IsSNDirect (sourceType.subst sigma))
+    (innerIsStable :
+      IsRenamingStableReducible (sourceType.subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible (sourceType.subst sigma)
+      (Term.subst termSubst (Term.subsume innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Reducible.of_isStronglyNormalizing_when_SNDirect
+    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
+    (RawTerm.subsume_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing
+        (innerIsStable rhoIsInjective termRenaming)))
+
+/-- Stable modal introduction uses only the SN-direct candidate
+classifier, not one theorem per closed type. -/
+theorem Reducible.fundamental_modIntro_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {sourceType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx sourceType innerRaw}
+    (sourceTypeIsSNDirect :
+      Reducible.IsSNDirect (sourceType.subst sigma))
+    (innerIsStable :
+      IsRenamingStableReducible (sourceType.subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible (sourceType.subst sigma)
+      (Term.subst termSubst (Term.modIntro innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Reducible.of_isStronglyNormalizing_when_SNDirect
+    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
+    (RawTerm.modIntro_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing
+        (innerIsStable rhoIsInjective termRenaming)))
+
+/-- Stable modal elimination uses only the SN-direct candidate
+classifier, not one theorem per closed type. -/
+theorem Reducible.fundamental_modElim_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {sourceType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx sourceType innerRaw}
+    (sourceTypeIsSNDirect :
+      Reducible.IsSNDirect (sourceType.subst sigma))
+    (innerIsStable :
+      IsRenamingStableReducible (sourceType.subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible (sourceType.subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Reducible.of_isStronglyNormalizing_when_SNDirect
+    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
+    (Term.modElim_isStronglyNormalizing
+      (Reducible.isStronglyNormalizing
+        (innerIsStable rhoIsInjective termRenaming)))
+
 /-- **K12.20.BC.1 subsume fundamental case at `Ty.unit`** —
 canonical SN-direct closed-leaf coverage.  Layer 1
 type-preserving wrapper at the unit type.  `(Ty.unit).subst
@@ -16345,9 +16544,9 @@ theorem Reducible.fundamental_subsume_at_unit_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (sourceType := (Ty.unit : Ty level scope))
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BC.2 subsume fundamental case at `Ty.universe`** —
 SN-direct level-parameterized coverage.  `(Ty.universe lvl
@@ -16391,9 +16590,8 @@ theorem Reducible.fundamental_subsume_at_universe_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BC.3 subsume fundamental case at `Ty.session`** —
 SN-direct raw-payload coverage.  `(Ty.session protocolStep).subst
@@ -16435,9 +16633,8 @@ theorem Reducible.fundamental_subsume_at_session_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BC.4 subsume fundamental case at `Ty.modal`** —
 SN-direct modal coverage (K12.25 milestone target).
@@ -16487,9 +16684,8 @@ theorem Reducible.fundamental_subsume_at_modal_stable
     IsRenamingStableReducible
       ((Ty.modal modalityTag carrierType).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-! ## K12.20.BD SN-direct fundamental cases for `Term.modIntro`
 
@@ -16551,9 +16747,8 @@ theorem Reducible.fundamental_modIntro_at_unit_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BD.2 modIntro fundamental case at `Ty.universe`** —
 SN-direct level-parameterized.  `(Ty.universe outerLevel
@@ -16595,9 +16790,8 @@ theorem Reducible.fundamental_modIntro_at_universe_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BD.3 modIntro fundamental case at `Ty.session`** —
 SN-direct raw-payload-carrying.  `(Ty.session protocolStep).subst
@@ -16637,9 +16831,8 @@ theorem Reducible.fundamental_modIntro_at_session_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BD.4 modIntro fundamental case at `Ty.modal`** —
 SN-direct modal (K12.25 milestone target).  `(Ty.modal
@@ -16686,9 +16879,8 @@ theorem Reducible.fundamental_modIntro_at_modal_stable
     IsRenamingStableReducible
       ((Ty.modal modalityTag carrierType).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-! ## K12.20.BE Remaining SN-direct fundamental cases — subsume / modIntro
 
@@ -16762,9 +16954,8 @@ theorem Reducible.fundamental_subsume_at_bool_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.2 subsume at `Ty.nat`** — SN-direct closed-leaf.
 `(Ty.nat).subst sigma = .nat` (`Foundation/Subst.lean:104`). -/
@@ -16796,9 +16987,8 @@ theorem Reducible.fundamental_subsume_at_nat_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.3 subsume at `Ty.empty`** — SN-direct closed-leaf.
 `(Ty.empty).subst sigma = .empty` (`Foundation/Subst.lean:126`). -/
@@ -16830,9 +17020,8 @@ theorem Reducible.fundamental_subsume_at_empty_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.4 subsume at `Ty.interval`** — SN-direct cubical
 closed-leaf.  `(Ty.interval).subst sigma = .interval`
@@ -16865,9 +17054,8 @@ theorem Reducible.fundamental_subsume_at_interval_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.5 subsume at `Ty.effect`** — SN-direct
 raw-payload-carrying.  `(Ty.effect carrier tag).subst sigma =
@@ -16909,9 +17097,8 @@ theorem Reducible.fundamental_subsume_at_effect_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.subsume_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_subsume_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.6 modIntro at `Ty.bool`** — sister to BE.1 via
 K12.20.Y `RawTerm.modIntro_isStronglyNormalizing`. -/
@@ -16943,9 +17130,8 @@ theorem Reducible.fundamental_modIntro_at_bool_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.7 modIntro at `Ty.nat`** — sister to BE.2. -/
 theorem Reducible.fundamental_modIntro_at_nat
@@ -16976,9 +17162,8 @@ theorem Reducible.fundamental_modIntro_at_nat_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.8 modIntro at `Ty.empty`** — sister to BE.3. -/
 theorem Reducible.fundamental_modIntro_at_empty
@@ -17009,9 +17194,8 @@ theorem Reducible.fundamental_modIntro_at_empty_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.9 modIntro at `Ty.interval`** — sister to BE.4. -/
 theorem Reducible.fundamental_modIntro_at_interval
@@ -17042,9 +17226,8 @@ theorem Reducible.fundamental_modIntro_at_interval_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BE.10 modIntro at `Ty.effect`** — sister to BE.5. -/
 theorem Reducible.fundamental_modIntro_at_effect
@@ -17082,9 +17265,8 @@ theorem Reducible.fundamental_modIntro_at_effect_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact RawTerm.modIntro_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modIntro_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-! ## K12.25 modal destructor cases -/
 
@@ -17254,9 +17436,8 @@ theorem Reducible.fundamental_modElim_at_unit_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Boolean modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_bool_stable
@@ -17272,9 +17453,8 @@ theorem Reducible.fundamental_modElim_at_bool_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Natural modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_nat_stable
@@ -17290,9 +17470,8 @@ theorem Reducible.fundamental_modElim_at_nat_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Empty-type modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_empty_stable
@@ -17308,9 +17487,8 @@ theorem Reducible.fundamental_modElim_at_empty_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Interval modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_interval_stable
@@ -17326,9 +17504,8 @@ theorem Reducible.fundamental_modElim_at_interval_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Universe modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_universe_stable
@@ -17347,9 +17524,8 @@ theorem Reducible.fundamental_modElim_at_universe_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Session modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_session_stable
@@ -17366,9 +17542,8 @@ theorem Reducible.fundamental_modElim_at_session_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Effect modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_effect_stable
@@ -17387,9 +17562,8 @@ theorem Reducible.fundamental_modElim_at_effect_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- Modal elimination preserves fundamental stability. -/
 theorem Reducible.fundamental_modElim_at_modal_stable
@@ -17409,9 +17583,8 @@ theorem Reducible.fundamental_modElim_at_modal_stable
     IsRenamingStableReducible
       ((Ty.modal modalityTag carrierType).subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Term.modElim_isStronglyNormalizing
-    (innerIsStable rhoIsInjective termRenaming)
+  exact Reducible.fundamental_modElim_stable
+    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
 case at the homogeneous (non-dependent) arrow type

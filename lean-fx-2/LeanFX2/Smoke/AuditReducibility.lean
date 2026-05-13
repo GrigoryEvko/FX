@@ -1307,6 +1307,7 @@ M04 / `strong_normalization`. -/
 #print axioms ReducibleSubst.consSingleton
 #print axioms ReducibleSubst.renameOutput_of_renamingStable
 #print axioms TermSubst.renameOutput_position_HEq
+#print axioms Term.rename_type_eq_symm_cast_heq
 #print axioms IsRenamingStableReducibleSubst.singleton
 #print axioms IsRenamingStableReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape
@@ -1383,6 +1384,14 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_effectPerform_stable
 #print axioms Reducible.fundamental_universeCode_stable
 #print axioms Reducible.fundamental_cumulUp_stable
+#print axioms Reducible.IsSNDirect.rename
+#print axioms Reducible.of_isStronglyNormalizing_when_SNDirect
+#print axioms Reducible.fundamental_subsume_SNDirect
+#print axioms Reducible.fundamental_modIntro_SNDirect
+#print axioms Reducible.fundamental_modElim_SNDirect
+#print axioms Reducible.fundamental_subsume_stable
+#print axioms Reducible.fundamental_modIntro_stable
+#print axioms Reducible.fundamental_modElim_stable
 #print axioms Reducible.fundamental_subsume_at_unit_stable
 #print axioms Reducible.fundamental_subsume_at_universe_stable
 #print axioms Reducible.fundamental_subsume_at_session_stable

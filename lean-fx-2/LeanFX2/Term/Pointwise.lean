@@ -412,6 +412,24 @@ theorem Term.type_eq_cast_heq
   cases typeEq
   exact HEq.rfl
 
+/-- Renaming ignores a pure symmetric type-index cast up to the
+corresponding renamed type-index cast. -/
+theorem Term.rename_type_eq_symm_cast_heq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {sourceType targetType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    {targetTerm : Term sourceCtx targetType raw} :
+    HEq (Term.rename termRenaming (typeEq.symm ▸ targetTerm))
+      ((congrArg (fun someType => Ty.rename someType rho) typeEq).symm ▸
+        Term.rename termRenaming targetTerm) := by
+  cases typeEq
+  exact HEq.rfl
+
 /-- The cast in `TermSubst.renameOutput` changes only the type index.
 
 This packages the exact `Ty.subst_rename_commute` transport used by
