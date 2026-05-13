@@ -655,6 +655,7 @@ M04 / `strong_normalization`. -/
 #print axioms IsRenamingStableReducible
 #print axioms IsRenamingStableReducible.weaken
 #print axioms IsRenamingStableReducible.of_varShape
+#print axioms TermRenaming.dropWeaken
 #print axioms Term.rename_type_eq_symm_cast_HEq
 #print axioms Term.type_eq_symm_cast_HEq
 #print axioms Term.rename_raw_type_eq_symm_cast_HEq

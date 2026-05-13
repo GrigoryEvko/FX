@@ -91,6 +91,31 @@ theorem TermRenaming.weakenStep {mode : Mode} {level scope : Nat}
     TermRenaming context (context.cons newType) RawRenaming.weaken :=
   fun _ => rfl
 
+/-- Restrict a typed renaming whose source context has one extra head
+binding to the old variables below that binding.
+
+This is the inverse-direction companion to the successor branch of
+`TermRenaming.lift`: if a renaming is valid from `targetCtx.cons
+newType`, then composing its raw map after `RawRenaming.weaken` is a
+valid renaming from `targetCtx`. -/
+theorem TermRenaming.dropWeaken
+    {mode : Mode} {level targetScope renamedScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    {renamedCtx : Ctx mode level renamedScope}
+    {newType : Ty level targetScope}
+    {rho : RawRenaming (targetScope + 1) renamedScope}
+    (termRenaming :
+      TermRenaming (targetCtx.cons newType) renamedCtx rho) :
+    TermRenaming targetCtx renamedCtx
+      (RawRenaming.compose RawRenaming.weaken rho) := by
+  intro position
+  have liftedPositionEq := termRenaming (Fin.succ position)
+  rw [liftedPositionEq]
+  show ((varType targetCtx position).rename RawRenaming.weaken).rename rho =
+    (varType targetCtx position).rename
+      (RawRenaming.compose RawRenaming.weaken rho)
+  exact Ty.rename_compose RawRenaming.weaken rho (varType targetCtx position)
+
 theorem equivIntroHetLeftInverseCodomain_rename {level : Nat}
     {scope targetScope : Nat}
     (rho : RawRenaming scope targetScope)
