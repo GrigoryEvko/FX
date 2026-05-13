@@ -2203,14 +2203,18 @@ arguments in the old context, while the weakened closure must quantify
 over arbitrary arguments in the extended context.
 
 `IsRenamingStableReducible` records the missing invariant explicitly:
-a term is stable when every typed renaming of it is reducible in the
-target world.  One-step weakening is then just the
-canonical `TermRenaming.weakenStep` instance.  This is intentionally a
+a term is stable when every injective typed renaming of it is reducible
+in the target world.  The injectivity premise is load-bearing: the
+raw-step reflection API (`RawStep.par.rename_inj_inv`) only reflects
+reducts out of renamed terms through injective renamings, and Phase B
+only needs future-world extensions such as one-step weakening.
+One-step weakening is then just the canonical `TermRenaming.weakenStep`
+instance plus `RawRenaming.weaken_injective`.  This is intentionally a
 separate predicate for Phase B: it does not retrofit `Reducible`, and it
 does not hide the arrow/world-monotonicity proof obligation.
 -/
 
-/-- A term is reducible in every typed-renamed future world. -/
+/-- A term is reducible in every injective typed-renamed future world. -/
 def IsRenamingStableReducible
     {mode : Mode} {level sourceScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -2220,6 +2224,8 @@ def IsRenamingStableReducible
   ∀ {targetScope : Nat}
     {targetCtx : Ctx mode level targetScope}
     {rho : RawRenaming sourceScope targetScope}
+    (_rhoIsInjective : ∀ positionA positionB,
+      rho positionA = rho positionB → positionA = positionB)
     (termRenaming : TermRenaming sourceCtx targetCtx rho),
     Reducible (sourceType.rename rho) (Term.rename termRenaming sourceTerm)
 
@@ -2232,7 +2238,8 @@ theorem IsRenamingStableReducible.weaken
     {sourceTerm : Term context sourceType sourceRaw}
     (sourceIsStable : IsRenamingStableReducible sourceType sourceTerm) :
     Reducible sourceType.weaken (Term.weaken newType sourceTerm) :=
-  sourceIsStable (TermRenaming.weakenStep context newType)
+  sourceIsStable RawRenaming.weaken_injective
+    (TermRenaming.weakenStep context newType)
 
 /-- A typed substitution is renaming-stable pointwise. -/
 def IsRenamingStableReducibleSubst
