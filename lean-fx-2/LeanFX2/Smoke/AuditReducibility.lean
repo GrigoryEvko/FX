@@ -1306,6 +1306,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_effectPerform_heq
 #print axioms ReducibleSubst.consSingleton
 #print axioms ReducibleSubst.renameOutput_of_renamingStable
+#print axioms TermSubst.renameOutput_position_HEq
 #print axioms IsRenamingStableReducibleSubst.singleton
 #print axioms IsRenamingStableReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape

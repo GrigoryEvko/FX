@@ -412,6 +412,32 @@ theorem Term.type_eq_cast_heq
   cases typeEq
   exact HEq.rfl
 
+/-- The cast in `TermSubst.renameOutput` changes only the type index.
+
+This packages the exact `Ty.subst_rename_commute` transport used by
+`TermSubst.renameOutput`, so downstream binder-stability proofs can
+reason about the renamed substitution entry without unfolding the
+definition at every position. -/
+theorem TermSubst.renameOutput_position_HEq
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope middleScope}
+    {rho : RawRenaming middleScope targetScope}
+    (termSubst : TermSubst sourceCtx middleCtx sigma)
+    (termRenaming : TermRenaming middleCtx targetCtx rho)
+    (position : Fin sourceScope) :
+    HEq (TermSubst.renameOutput termSubst termRenaming position)
+      (Term.rename termRenaming (termSubst position)) := by
+  change HEq
+    (Ty.subst_rename_commute sigma rho (varType sourceCtx position) ▸
+      Term.rename termRenaming (termSubst position))
+    (Term.rename termRenaming (termSubst position))
+  exact Term.type_eq_cast_heq
+    (Ty.subst_rename_commute sigma rho (varType sourceCtx position))
+    (Term.rename termRenaming (termSubst position))
+
 /-- A raw-index cast on a typed term is heterogeneously equal to the
 original term. -/
 theorem Term.raw_eq_cast_heq
