@@ -1275,6 +1275,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_pair_heq
 #print axioms Term.weaken_subst_singleton_fst_heq
 #print axioms Term.weaken_subst_singleton_snd_heq
+#print axioms Term.weaken_subst_singleton_appPi_heq
 #print axioms ReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape
 #print axioms Reducible.bool_of_varShape

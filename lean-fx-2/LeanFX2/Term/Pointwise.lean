@@ -1070,6 +1070,128 @@ theorem Term.weaken_subst_singleton_app_heq
     (RawTerm.weaken_subst_singleton argumentValueRaw singletonRaw)
     functionHEq argumentHEq
 
+/-- Dependent function application preserves weaken-then-singleton
+collapse. -/
+theorem Term.weaken_subst_singleton_appPi_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (functionTerm :
+      Term context (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType functionTerm))
+        functionTerm)
+    (argumentHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType argumentTerm))
+        argumentTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.appPi functionTerm argumentTerm)))
+      (Term.appPi functionTerm argumentTerm) := by
+  simp only [Term.weaken, Term.rename]
+  have functionWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            functionTerm))
+        functionTerm := by
+    simpa only [Term.weaken] using functionHEq
+  have argumentWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            argumentTerm))
+        argumentTerm := by
+    simpa only [Term.weaken] using argumentHEq
+  have innerCastHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          ((Ty.subst0_rename_commute codomainType domainType
+            argumentRaw RawRenaming.weaken).symm ▸
+            Term.appPi
+              (Term.rename (TermRenaming.weakenStep context newType)
+                functionTerm)
+              (Term.rename (TermRenaming.weakenStep context newType)
+                argumentTerm)))
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.appPi
+            (Term.rename (TermRenaming.weakenStep context newType)
+              functionTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              argumentTerm))) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      (Ty.subst0_rename_commute codomainType domainType
+        argumentRaw RawRenaming.weaken).symm
+      (Term.appPi
+        (Term.rename (TermRenaming.weakenStep context newType)
+          functionTerm)
+        (Term.rename (TermRenaming.weakenStep context newType)
+          argumentTerm))
+  have appPiWithoutCastsHEq :
+      HEq
+        (Term.appPi
+          (Term.subst (TermSubst.singleton singletonTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              functionTerm))
+          (Term.subst (TermSubst.singleton singletonTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              argumentTerm)))
+        (Term.appPi functionTerm argumentTerm) :=
+    Term.appPi_HEq_congr
+      (Ty.weaken_subst_singleton domainType newType singletonRaw)
+      (Ty.weaken_lift_subst_singleton_lift codomainType newType singletonRaw)
+      (RawTerm.weaken_subst_singleton functionRaw singletonRaw)
+      (RawTerm.weaken_subst_singleton argumentRaw singletonRaw)
+      functionWithoutCastsHEq argumentWithoutCastsHEq
+  have outerCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute
+            (codomainType.rename RawRenaming.weaken.lift)
+            (domainType.rename RawRenaming.weaken)
+            (argumentRaw.rename RawRenaming.weaken)
+            (Subst.singleton newType singletonRaw)).symm ▸
+          Term.appPi
+            (Term.subst (TermSubst.singleton singletonTerm)
+              (Term.rename (TermRenaming.weakenStep context newType)
+                functionTerm))
+            (Term.subst (TermSubst.singleton singletonTerm)
+              (Term.rename (TermRenaming.weakenStep context newType)
+                argumentTerm)))
+        (Term.appPi
+          (Term.subst (TermSubst.singleton singletonTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              functionTerm))
+          (Term.subst (TermSubst.singleton singletonTerm)
+            (Term.rename (TermRenaming.weakenStep context newType)
+              argumentTerm))) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute
+        (codomainType.rename RawRenaming.weaken.lift)
+        (domainType.rename RawRenaming.weaken)
+        (argumentRaw.rename RawRenaming.weaken)
+        (Subst.singleton newType singletonRaw)).symm
+      (Term.appPi
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            functionTerm))
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            argumentTerm)))
+  exact HEq.trans innerCastHEq
+    (HEq.trans outerCastHEq appPiWithoutCastsHEq)
+
 /-- Sigma pair introduction preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_pair_heq
     {mode : Mode} {level scope : Nat}
