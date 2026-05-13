@@ -1959,6 +1959,79 @@ theorem Term.weaken_subst_singleton_oeqJ_heq
     (RawTerm.weaken_subst_singleton witnessRaw singletonRaw)
     baseCaseHEq witnessHEq
 
+/-- Observational funext preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_oeqFunext_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {leftFunctionRaw rightFunctionRaw pointwiseRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (pointwiseProof :
+      Term context
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw)
+    (pointwiseProofHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType pointwiseProof))
+        pointwiseProof) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.oeqFunext domainType codomainType leftFunctionRaw
+            rightFunctionRaw pointwiseProof)))
+      (Term.oeqFunext domainType codomainType leftFunctionRaw
+        rightFunctionRaw pointwiseProof) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  let renamedPointwiseProof :=
+    Term.rename (TermRenaming.weakenStep context newType) pointwiseProof
+  let renamedPointwiseTypeEq :=
+    oeqFunextPointwiseType_rename RawRenaming.weaken domainType
+      codomainType leftFunctionRaw rightFunctionRaw
+  let substitutedPointwiseProofWithCast :=
+    Term.subst (TermSubst.singleton singletonTerm)
+      (renamedPointwiseTypeEq ▸ renamedPointwiseProof)
+  let substitutedPointwiseTypeEq :=
+    oeqFunextPointwiseType_subst (Subst.singleton newType singletonRaw)
+      (domainType.rename RawRenaming.weaken)
+      (codomainType.rename RawRenaming.weaken)
+      (leftFunctionRaw.rename RawRenaming.weaken)
+      (rightFunctionRaw.rename RawRenaming.weaken)
+  have pointwiseInnerCastHEq :
+      HEq substitutedPointwiseProofWithCast
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedPointwiseProof) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      renamedPointwiseTypeEq
+      renamedPointwiseProof
+  have pointwiseOuterCastHEq :
+      HEq (substitutedPointwiseTypeEq ▸ substitutedPointwiseProofWithCast)
+        substitutedPointwiseProofWithCast :=
+    Term.type_eq_cast_heq substitutedPointwiseTypeEq
+      substitutedPointwiseProofWithCast
+  have pointwiseWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          renamedPointwiseProof)
+        pointwiseProof := by
+    simpa only [Term.weaken] using pointwiseProofHEq
+  have pointwiseFullHEq :
+      HEq (substitutedPointwiseTypeEq ▸ substitutedPointwiseProofWithCast)
+        pointwiseProof :=
+    HEq.trans pointwiseOuterCastHEq
+      (HEq.trans pointwiseInnerCastHEq pointwiseWithoutCastsHEq)
+  exact Term.oeqFunext_HEq_congr
+    (Ty.weaken_subst_singleton domainType newType singletonRaw)
+    (Ty.weaken_subst_singleton codomainType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton leftFunctionRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton rightFunctionRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton pointwiseRaw singletonRaw)
+    pointwiseFullHEq
+
 /-- Strict identity reflexivity preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_idStrictRefl_heq
     {mode : Mode} {level scope : Nat}
