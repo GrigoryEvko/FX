@@ -11603,6 +11603,41 @@ theorem IsRenamingStableReducible.of_varShape
   exact Reducible.of_varShape (sourceType.rename rho)
     (Term.rename termRenaming sourceTerm)
 
+/-- Renaming a term cast by a symmetric type equality is HEq to casting
+the renamed term by the renamed type equality.
+
+This isolates the common cast-commutation step needed when stability
+proofs pass through `TermSubst` entries whose implementation stores
+typed terms behind `Eq.rec` casts. -/
+theorem Term.rename_type_eq_symm_cast_HEq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {sourceType targetType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    {targetTerm : Term sourceCtx targetType raw} :
+    HEq (Term.rename termRenaming (typeEq.symm ▸ targetTerm))
+      ((congrArg (fun someType => Ty.rename someType rho) typeEq).symm ▸
+        Term.rename termRenaming targetTerm) := by
+  cases typeEq
+  rfl
+
+/-- A term cast by a symmetric type equality is HEq to the original
+term. -/
+theorem Term.type_eq_symm_cast_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {raw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    {targetTerm : Term context targetType raw} :
+    HEq (typeEq.symm ▸ targetTerm) targetTerm := by
+  cases typeEq
+  rfl
+
 /-- Transport a reducibility witness across a type-index equality whose
 term side is cast by the symmetric equality.  This packages the exact
 `Eq.rec` shape emitted by `TermSubst.singleton`. -/
@@ -11736,6 +11771,70 @@ theorem ReducibleSubst.singleton
             (Ty.weaken_subst_singleton
               (varType sourceCtx previousPosition) substituent argRaw)
             previousVarReducible
+
+/-- **K12.20.U3 singleton stability**: a singleton substitution is
+renaming-stable when its substituted argument is renaming-stable.
+
+Position zero transports the stable argument through the same
+`Ty.weaken_subst_singleton` cast used by `TermSubst.singleton`; older
+positions are casted variables and therefore use the var-shape
+stability producer. -/
+theorem IsRenamingStableReducibleSubst.singleton
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {substituent : Ty level scope}
+    {argRaw : RawTerm scope}
+    {argTerm : Term sourceCtx substituent argRaw}
+    (argIsStable : IsRenamingStableReducible substituent argTerm) :
+    IsRenamingStableReducibleSubst (TermSubst.singleton argTerm) := by
+  intro position
+  cases position with
+  | mk positionIndex positionIsWithinScope =>
+      cases positionIndex with
+      | zero =>
+          change IsRenamingStableReducible
+            (substituent.weaken.subst
+              (Subst.singleton substituent argRaw))
+            ((Ty.weaken_subst_singleton substituent substituent argRaw).symm ▸
+              argTerm)
+          intro targetScope targetCtx rho rhoIsInjective termRenaming
+          have renamedArgIsReducible :
+              Reducible (substituent.rename rho)
+                (Term.rename termRenaming argTerm) :=
+            argIsStable rhoIsInjective termRenaming
+          have singletonTypeEq :
+              substituent.weaken.subst
+                (Subst.singleton substituent argRaw) = substituent :=
+            Ty.weaken_subst_singleton substituent substituent argRaw
+          have renamedCastIsHEq :
+              HEq (Term.rename termRenaming argTerm)
+                (Term.rename termRenaming (singletonTypeEq.symm ▸ argTerm)) := by
+            have renamedCastToCastedArg :
+                HEq
+                  (Term.rename termRenaming (singletonTypeEq.symm ▸ argTerm))
+                  ((congrArg (fun someType => Ty.rename someType rho)
+                      singletonTypeEq).symm ▸
+                    Term.rename termRenaming argTerm) :=
+              Term.rename_type_eq_symm_cast_HEq termRenaming singletonTypeEq
+            have castedArgToRenamedArg :
+                HEq
+                  ((congrArg (fun someType => Ty.rename someType rho)
+                      singletonTypeEq).symm ▸
+                    Term.rename termRenaming argTerm)
+                  (Term.rename termRenaming argTerm) :=
+              Term.type_eq_symm_cast_HEq
+                (congrArg (fun someType => Ty.rename someType rho)
+                  singletonTypeEq)
+            exact (HEq.trans renamedCastToCastedArg
+              castedArgToRenamedArg).symm
+          exact Reducible.of_heq
+            (congrArg (fun someType => Ty.rename someType rho)
+              singletonTypeEq).symm
+            rfl
+            renamedCastIsHEq
+            renamedArgIsReducible
+      | succ previousIndex =>
+          exact IsRenamingStableReducible.of_varShape rfl
 
 /-- **K12.20.U3 identity ReducibleSubst**: identity substitution is
 reducible because every variable is reducible at its declared type. -/
