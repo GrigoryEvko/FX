@@ -645,6 +645,77 @@ theorem Term.weaken_subst_singleton_unit_heq
       (Term.unit (context := context)) := by
   rfl
 
+/-- Lambda introduction preserves weaken-then-singleton collapse.
+
+The body premise is intentionally stated under the lifted singleton:
+after weakening a lambda, its body lives under the original lambda binder
+and the newly inserted outer binder.  Collapsing that body is the
+substitution-parametric shape needed later by `ReducibleSubst.lift`. -/
+theorem Term.weaken_subst_singleton_lam_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (body : Term (context.cons domainType) codomainType.weaken bodyRaw)
+    (bodyHEq :
+      HEq
+        (Ty.weaken_subst_commute
+          (Subst.singleton newType singletonRaw)
+          (codomainType.rename RawRenaming.weaken) ▸
+          Term.subst
+            ((TermSubst.singleton singletonTerm).lift
+              (domainType.rename RawRenaming.weaken))
+            (Ty.weaken_rename_commute RawRenaming.weaken codomainType ▸
+              Term.rename
+                ((TermRenaming.weakenStep context newType).lift domainType)
+                body))
+        body) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.lam body)))
+      (Term.lam body) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.lam_HEq_congr
+    (Ty.weaken_subst_singleton domainType newType singletonRaw)
+    (Ty.weaken_subst_singleton codomainType newType singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift bodyRaw singletonRaw)
+    bodyHEq
+
+/-- Dependent lambda introduction preserves weaken-then-singleton
+collapse under the lifted-singleton body premise. -/
+theorem Term.weaken_subst_singleton_lamPi_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (body : Term (context.cons domainType) codomainType bodyRaw)
+    (bodyHEq :
+      HEq
+        (Term.subst
+          ((TermSubst.singleton singletonTerm).lift
+            (domainType.rename RawRenaming.weaken))
+          (Term.rename
+            ((TermRenaming.weakenStep context newType).lift domainType)
+            body))
+        body) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType (Term.lamPi body)))
+      (Term.lamPi body) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.lamPi_HEq_congr
+    (Ty.weaken_subst_singleton domainType newType singletonRaw)
+    (Ty.weaken_lift_subst_singleton_lift codomainType newType singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift bodyRaw singletonRaw)
+    bodyHEq
+
 /-- Boolean true case for weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_boolTrue_heq
     {mode : Mode} {level scope : Nat}
@@ -960,6 +1031,46 @@ theorem Term.weaken_subst_singleton_intervalJoin_heq
     (RawTerm.weaken_subst_singleton leftRaw argumentRaw)
     (RawTerm.weaken_subst_singleton rightRaw argumentRaw)
     leftHEq rightHEq
+
+/-- Path lambda introduction preserves weaken-then-singleton collapse
+under the lifted-singleton body premise. -/
+theorem Term.weaken_subst_singleton_pathLam_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (body : Term (context.cons Ty.interval) carrierType.weaken bodyRaw)
+    (bodyHEq :
+      HEq
+        (Ty.weaken_subst_commute
+          (Subst.singleton newType singletonRaw)
+          (carrierType.rename RawRenaming.weaken) ▸
+          Term.subst
+            ((TermSubst.singleton singletonTerm).lift Ty.interval)
+            (Ty.weaken_rename_commute RawRenaming.weaken carrierType ▸
+              Term.rename
+                ((TermRenaming.weakenStep context newType).lift Ty.interval)
+                body))
+        body) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+            rightEndpoint body)))
+      (Term.pathLam modeIsUnivalent carrierType leftEndpoint
+        rightEndpoint body) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  exact Term.pathLam_HEq_congr modeIsUnivalent
+    (Ty.weaken_subst_singleton carrierType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton leftEndpoint singletonRaw)
+    (RawTerm.weaken_subst_singleton rightEndpoint singletonRaw)
+    (RawTerm.weaken_lift_subst_singleton_lift bodyRaw singletonRaw)
+    bodyHEq
 
 /-- Modal introduction preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_modIntro_heq

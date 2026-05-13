@@ -1198,6 +1198,8 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_boolTrue_heq
 #print axioms Term.weaken_subst_singleton_boolFalse_heq
 #print axioms Term.weaken_subst_singleton_natZero_heq
+#print axioms Term.weaken_subst_singleton_lam_heq
+#print axioms Term.weaken_subst_singleton_lamPi_heq
 #print axioms Term.weaken_subst_singleton_listNil_heq
 #print axioms Term.weaken_subst_singleton_optionNone_heq
 #print axioms Term.weaken_subst_singleton_interval0_heq
@@ -1210,6 +1212,7 @@ M04 / `strong_normalization`. -/
 #print axioms Term.weaken_subst_singleton_intervalOpp_heq
 #print axioms Term.weaken_subst_singleton_intervalMeet_heq
 #print axioms Term.weaken_subst_singleton_intervalJoin_heq
+#print axioms Term.weaken_subst_singleton_pathLam_heq
 #print axioms Term.weaken_subst_singleton_modIntro_heq
 #print axioms Term.weaken_subst_singleton_modElim_heq
 #print axioms Term.weaken_subst_singleton_subsume_heq
