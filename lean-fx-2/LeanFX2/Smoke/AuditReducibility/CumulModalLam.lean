@@ -1,0 +1,71 @@
+import LeanFX2.Reducibility
+
+/-! # LeanFX2.Smoke.AuditReducibility.CumulModalLam
+
+Tait reducibility — cumulUp, subsume, modIntro/modElim
+fundamental cases at every closed-leaf target type, plus the
+`lam_at_arrow` cascade and identity-lam fundamental gates at
+each codomain.
+
+## Root status
+
+Layer S smoke audit log.  Pre-merge gating. -/
+
+namespace LeanFX2.Smoke
+
+open LeanFX2
+
+#print axioms RawStep.par.cumulUpMarker_inv
+#print axioms RawTerm.cumulUpMarker_isStronglyNormalizing
+#print axioms Reducible.fundamental_cumulUp
+#print axioms Reducible.fundamental_subsume_at_unit
+#print axioms Reducible.fundamental_subsume_at_universe
+#print axioms Reducible.fundamental_subsume_at_session
+#print axioms Reducible.fundamental_subsume_at_modal
+#print axioms Reducible.fundamental_modIntro_at_unit
+#print axioms Reducible.fundamental_modIntro_at_universe
+#print axioms Reducible.fundamental_modIntro_at_session
+#print axioms Reducible.fundamental_modIntro_at_modal
+#print axioms Reducible.fundamental_subsume_at_bool
+#print axioms Reducible.fundamental_subsume_at_nat
+#print axioms Reducible.fundamental_subsume_at_empty
+#print axioms Reducible.fundamental_subsume_at_interval
+#print axioms Reducible.fundamental_subsume_at_effect
+#print axioms Reducible.fundamental_modIntro_at_bool
+#print axioms Reducible.fundamental_modIntro_at_nat
+#print axioms Reducible.fundamental_modIntro_at_empty
+#print axioms Reducible.fundamental_modIntro_at_interval
+#print axioms Reducible.fundamental_modIntro_at_effect
+#print axioms Reducible.fundamental_modElim_at_unit
+#print axioms Reducible.fundamental_modElim_at_bool
+#print axioms Reducible.fundamental_modElim_at_nat
+#print axioms Reducible.fundamental_modElim_at_empty
+#print axioms Reducible.fundamental_modElim_at_interval
+#print axioms Reducible.fundamental_modElim_at_universe
+#print axioms Reducible.fundamental_modElim_at_session
+#print axioms Reducible.fundamental_modElim_at_effect
+#print axioms Reducible.fundamental_modElim_at_modal
+#print axioms Reducible.fundamental_lam_at_arrow_sn
+#print axioms Reducible.fundamental_lam_at_arrow_app_sn
+#print axioms Reducible.lam_at_arrow_of_sn_codomain
+#print axioms Reducible.fundamental_lam_at_arrow_of_sn_codomain
+#print axioms Reducible.fundamental_lam_at_arrow_contractum
+#print axioms Reducible.fundamental_lam_at_arrow_of_consSingleton
+#print axioms Reducible.fundamental_lam_at_arrow_of_bodyIH
+#print axioms Reducible.fundamental_lam_at_arrow_contractum_sn
+#print axioms Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
+#print axioms Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
+#print axioms Reducible.fundamental_lam_at_arrow_of_stable_bodyIH_sn_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_unit_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_bool_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_nat_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_empty_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_interval_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_universe_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_tyVar_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_session_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_effect_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_modal_codomain
+
+end LeanFX2.Smoke

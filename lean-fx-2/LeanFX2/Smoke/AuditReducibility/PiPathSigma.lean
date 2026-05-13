@@ -1,0 +1,86 @@
+import LeanFX2.Reducibility
+
+/-! # LeanFX2.Smoke.AuditReducibility.PiPathSigma
+
+Tait reducibility — dependent Π, cubical path, Σ, record,
+refine fundamental cases.  Covers `lamPi_at_piTy`,
+`pathLam_at_path`, `app_at_arrow`, `pair`/`fst`/`snd` at
+sigmaTy, `appPi_at_piTy`, `recordProj_at_record`,
+`refineElim_at_refine`, `boolElim_at_bool`, `idJ_at_id`,
+`oeqJ_at_oeq`, `idStrictRec_at_idStrict`, and the parametric
+inductive introducers `listNil`/`listCons`/`optionNone`/
+`optionSome`/`eitherInl`/`eitherInr` at their carrier types.
+
+## Root status
+
+Layer S smoke audit log.  Pre-merge gating. -/
+
+namespace LeanFX2.Smoke
+
+open LeanFX2
+
+#print axioms Term.appPi_lamPi_isStronglyNormalizing
+#print axioms Reducible.fundamental_lamPi_at_piTy_sn
+#print axioms Reducible.fundamental_lamPi_at_piTy_app_sn
+#print axioms Reducible.fundamental_lamPi_at_piTy_contractum_sn
+#print axioms Reducible.fundamental_lamPi_at_piTy_app_sn_of_body_contractum
+#print axioms Reducible.fundamental_pathLam_at_path_sn
+#print axioms Reducible.fundamental_pathLam_at_path_app_sn
+#print axioms Reducible.fundamental_pathLam_at_path_contractum_sn
+#print axioms Reducible.fundamental_pathLam_at_path_app_sn_of_body_contractum
+#print axioms Reducible.fundamental_app_at_arrow
+#print axioms Term.app_isStronglyNormalizing
+#print axioms Reducible.fundamental_pair_at_sigmaTy_sn
+#print axioms Reducible.fundamental_fst_at_sigmaTy
+#print axioms Reducible.fundamental_snd_at_sigmaTy_sn
+#print axioms Reducible.fundamental_appPi_at_piTy_sn
+#print axioms Term.appPi_isStronglyNormalizing
+#print axioms Reducible.fundamental_recordProj_at_record
+#print axioms Reducible.fundamental_refineElim_at_refine
+#print axioms Reducible.fundamental_boolElim_at_bool_sn
+#print axioms Reducible.fundamental_idJ_at_id_sn
+#print axioms Reducible.fundamental_oeqJ_at_oeq_sn
+#print axioms Reducible.fundamental_idStrictRec_at_idStrict_sn
+#print axioms Reducible.fundamental_listNil_at_listType
+#print axioms Reducible.fundamental_listCons_at_listType
+#print axioms Reducible.fundamental_optionNone_at_optionType
+#print axioms Reducible.fundamental_optionSome_at_optionType
+#print axioms Reducible.fundamental_eitherInl_at_eitherType
+#print axioms Reducible.fundamental_eitherInr_at_eitherType
+#print axioms Reducible.fundamental_optionMatch_at_option_sn
+#print axioms Reducible.fundamental_eitherMatch_at_either_sn
+#print axioms Reducible.fundamental_boolElim_at_bool
+#print axioms Reducible.fundamental_optionMatch_at_optionType
+#print axioms Reducible.fundamental_eitherMatch_at_eitherType
+#print axioms Reducible.fundamental_listElim_at_listType
+#print axioms Term.listElim_isStronglyNormalizing
+#print axioms Term.optionMatch_isStronglyNormalizing
+#print axioms Term.eitherMatch_isStronglyNormalizing
+#print axioms Reducible.fundamental_refl_at_id_of_endpoint_sn
+#print axioms Reducible.fundamental_oeqRefl_at_oeq_of_endpoint_sn
+#print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint_sn
+#print axioms Term.funextRefl_isStronglyNormalizing
+#print axioms Term.funextReflAtId_isStronglyNormalizing
+#print axioms Term.funextIntroHet_isStronglyNormalizing
+#print axioms Reducible.fundamental_identity_funextRefl_sn
+#print axioms Reducible.fundamental_identity_funextReflAtId_sn
+#print axioms Reducible.fundamental_identity_funextIntroHet_sn
+#print axioms Reducible.fundamental_snd_at_sigmaTy
+#print axioms Reducible.fundamental_appPi_at_piTy
+#print axioms Reducible.fundamental_identity_app_at_arrow_sn
+#print axioms Reducible.fundamental_identity_appPi_at_piTy_sn
+#print axioms Reducible.fundamental_idJ_at_id
+#print axioms Reducible.fundamental_oeqJ_at_oeq
+#print axioms Reducible.fundamental_idStrictRec_at_idStrict
+#print axioms Reducible.fundamental_refl_at_id_of_endpoint
+#print axioms Reducible.fundamental_oeqRefl_at_oeq_of_endpoint
+#print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint
+#print axioms Reducible.fundamental_equivApp_at_equiv
+#print axioms Reducible.fundamental_equivApply_at_equiv
+#print axioms Reducible.fundamental_equivIntroHet_at_equiv_sn
+#print axioms Reducible.fundamental_equivIntroHet_at_equiv
+#print axioms Reducible.fundamental_oeqFunext_at_oeq
+#print axioms Reducible.fundamental_pathApp_at_path
+#print axioms Term.pathApp_isStronglyNormalizing
+
+end LeanFX2.Smoke
