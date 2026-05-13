@@ -63,6 +63,8 @@ open LeanFX2
 #print axioms IsRenamingStableReducible.of_boolTrueShape
 #print axioms IsRenamingStableReducible.of_boolFalseShape
 #print axioms IsRenamingStableReducible.of_natZeroShape
+#print axioms IsRenamingStableReducible.of_interval0Shape
+#print axioms IsRenamingStableReducible.of_interval1Shape
 #print axioms TermRenaming.dropWeaken
 #print axioms TermRenaming.compose
 #print axioms Term.rename_type_eq_symm_cast_HEq

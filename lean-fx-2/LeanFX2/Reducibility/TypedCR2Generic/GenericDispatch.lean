@@ -257,4 +257,40 @@ theorem IsRenamingStableReducible.of_natZeroShape
     (fun targetRaw progressStep =>
       (RawTerm.natZero_has_no_progress targetRaw progressStep).elim)
 
+/-- Interval0-shaped reducibility is stable under every injective typed
+renaming.  Cubical closed-endpoint companion: `RawTerm.interval0.rename rho =
+RawTerm.interval0` definitionally, and `Ty.interval.rename rho = Ty.interval`
+definitionally, so the renamed term's progress closure is discharged by
+`RawTerm.interval0_has_no_progress`. -/
+theorem IsRenamingStableReducible.of_interval0Shape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx Ty.interval sourceRaw}
+    (sourceRawEq : sourceRaw = RawTerm.interval0) :
+    IsRenamingStableReducible Ty.interval sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.interval_of_progress_closure
+    (Term.rename termRenaming sourceTerm)
+    (fun targetRaw progressStep =>
+      (RawTerm.interval0_has_no_progress targetRaw progressStep).elim)
+
+/-- Interval1-shaped reducibility is stable under every injective typed
+renaming.  Mirrors `of_interval0Shape` against the `RawTerm.interval1`
+closed atom at `Ty.interval`. -/
+theorem IsRenamingStableReducible.of_interval1Shape
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx Ty.interval sourceRaw}
+    (sourceRawEq : sourceRaw = RawTerm.interval1) :
+    IsRenamingStableReducible Ty.interval sourceTerm := by
+  subst sourceRawEq
+  intro _targetScope _targetCtx rho _rhoIsInjective termRenaming
+  exact Reducible.interval_of_progress_closure
+    (Term.rename termRenaming sourceTerm)
+    (fun targetRaw progressStep =>
+      (RawTerm.interval1_has_no_progress targetRaw progressStep).elim)
+
 end LeanFX2

@@ -84,6 +84,21 @@ theorem RawTerm.natZero_has_no_progress {scope : Nat} :
   intro target progressStep
   exact progressStep.2 (RawStep.par.natZero_inv progressStep.1).symm
 
+/-- `RawTerm.interval0` has no non-trivial parallel-progress reducts.
+Cubical closed-endpoint companion to the bool/nat propositional atoms. -/
+theorem RawTerm.interval0_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.interval0 : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.interval0_inv progressStep.1).symm
+
+/-- `RawTerm.interval1` has no non-trivial parallel-progress reducts. -/
+theorem RawTerm.interval1_has_no_progress {scope : Nat} :
+    ∀ target : RawTerm scope,
+      ¬ RawStep.parProgress (RawTerm.interval1 : RawTerm scope) target := by
+  intro target progressStep
+  exact progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm
+
 /-- Application with a neutral function head is strongly normalizing
 when both the head and argument are strongly normalizing.
 
