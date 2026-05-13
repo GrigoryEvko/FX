@@ -1378,5 +1378,13 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_effectPerform_stable
 #print axioms Reducible.fundamental_universeCode_stable
 #print axioms Reducible.fundamental_cumulUp_stable
+#print axioms Reducible.fundamental_subsume_at_unit_stable
+#print axioms Reducible.fundamental_subsume_at_universe_stable
+#print axioms Reducible.fundamental_subsume_at_session_stable
+#print axioms Reducible.fundamental_subsume_at_modal_stable
+#print axioms Reducible.fundamental_modIntro_at_unit_stable
+#print axioms Reducible.fundamental_modIntro_at_universe_stable
+#print axioms Reducible.fundamental_modIntro_at_session_stable
+#print axioms Reducible.fundamental_modIntro_at_modal_stable
 
 end LeanFX2.Smoke
