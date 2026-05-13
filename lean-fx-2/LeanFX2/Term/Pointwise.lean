@@ -1070,6 +1070,107 @@ theorem Term.weaken_subst_singleton_app_heq
     (RawTerm.weaken_subst_singleton argumentValueRaw singletonRaw)
     functionHEq argumentHEq
 
+/-- Sigma pair introduction preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_pair_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (firstValue : Term context firstType firstRaw)
+    (secondValue :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType firstValue))
+        firstValue)
+    (secondHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType secondValue))
+        secondValue) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.pair (secondType := secondType) firstValue secondValue)))
+      (Term.pair (secondType := secondType) firstValue secondValue) := by
+  simp only [Term.weaken, Term.rename, Term.subst]
+  have secondWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            secondValue))
+        secondValue := by
+    simpa only [Term.weaken] using secondHEq
+  have secondInnerCastHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          ((Ty.subst0_rename_commute secondType firstType firstRaw
+            RawRenaming.weaken) ▸
+            Term.rename (TermRenaming.weakenStep context newType)
+              secondValue))
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            secondValue)) := by
+    exact Term.subst_type_eq_cast_heq
+      (TermSubst.singleton singletonTerm)
+      (Ty.subst0_rename_commute secondType firstType firstRaw
+        RawRenaming.weaken)
+      (Term.rename (TermRenaming.weakenStep context newType) secondValue)
+  have secondOuterCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute
+            (secondType.rename RawRenaming.weaken.lift)
+            (firstType.rename RawRenaming.weaken)
+            (firstRaw.rename RawRenaming.weaken)
+            (Subst.singleton newType singletonRaw)) ▸
+          Term.subst (TermSubst.singleton singletonTerm)
+            ((Ty.subst0_rename_commute secondType firstType firstRaw
+              RawRenaming.weaken) ▸
+              Term.rename (TermRenaming.weakenStep context newType)
+                secondValue))
+        (Term.subst (TermSubst.singleton singletonTerm)
+          ((Ty.subst0_rename_commute secondType firstType firstRaw
+            RawRenaming.weaken) ▸
+            Term.rename (TermRenaming.weakenStep context newType)
+              secondValue)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute
+        (secondType.rename RawRenaming.weaken.lift)
+        (firstType.rename RawRenaming.weaken)
+        (firstRaw.rename RawRenaming.weaken)
+        (Subst.singleton newType singletonRaw))
+      (Term.subst (TermSubst.singleton singletonTerm)
+        ((Ty.subst0_rename_commute secondType firstType firstRaw
+          RawRenaming.weaken) ▸
+          Term.rename (TermRenaming.weakenStep context newType)
+            secondValue))
+  have secondCastsHEq :
+      HEq
+        ((Ty.subst0_subst_commute
+            (secondType.rename RawRenaming.weaken.lift)
+            (firstType.rename RawRenaming.weaken)
+            (firstRaw.rename RawRenaming.weaken)
+            (Subst.singleton newType singletonRaw)) ▸
+          Term.subst (TermSubst.singleton singletonTerm)
+            ((Ty.subst0_rename_commute secondType firstType firstRaw
+              RawRenaming.weaken) ▸
+              Term.rename (TermRenaming.weakenStep context newType)
+                secondValue))
+        secondValue :=
+    HEq.trans secondOuterCastHEq
+      (HEq.trans secondInnerCastHEq secondWithoutCastsHEq)
+  exact Term.pair_HEq_congr
+    (Ty.weaken_subst_singleton firstType newType singletonRaw)
+    (Ty.weaken_lift_subst_singleton_lift secondType newType singletonRaw)
+    (RawTerm.weaken_subst_singleton firstRaw singletonRaw)
+    (RawTerm.weaken_subst_singleton secondRaw singletonRaw)
+    firstHEq secondCastsHEq
+
 /-- Sigma first projection preserves weaken-then-singleton collapse. -/
 theorem Term.weaken_subst_singleton_fst_heq
     {mode : Mode} {level scope : Nat}

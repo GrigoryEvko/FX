@@ -1272,6 +1272,7 @@ M04 / `strong_normalization`. -/
 #print axioms Reducible.fundamental_identity_lamPi_at_piTy_sn
 #print axioms Reducible.fundamental_identity_pathLam_at_path_sn
 #print axioms Ty.weaken_lift_subst_singleton_lift
+#print axioms Term.weaken_subst_singleton_pair_heq
 #print axioms Term.weaken_subst_singleton_fst_heq
 #print axioms ReducibleSubst.consSingleton
 #print axioms Reducible.unit_of_varShape
