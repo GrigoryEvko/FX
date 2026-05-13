@@ -2625,6 +2625,182 @@ theorem Term.weaken_subst_singleton_sessionRecv_heq
     (RawTerm.weaken_subst_singleton channelRaw singletonRaw)
     channelHEq
 
+/-- Direct effect-performance congruence with propositionally equal
+operation carriers. -/
+private theorem Term.effectPerform_direct_carrier_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {effectTag1 effectTag2 : RawTerm scope}
+    (effectRow : Effects.EffectRow)
+    (effectLabel : Effects.EffectLabel)
+    (rowMember : Effects.EffectRow.Member effectLabel effectRow)
+    {argumentCarrier1 argumentCarrier2 resultCarrier1 resultCarrier2 :
+      Ty level scope}
+    {operationRaw1 operationRaw2 argumentsRaw1 argumentsRaw2 :
+      RawTerm scope}
+    (effectTagEq : effectTag1 = effectTag2)
+    (argumentCarrierEq : argumentCarrier1 = argumentCarrier2)
+    (resultCarrierEq : resultCarrier1 = resultCarrier2)
+    (operationRawEq : operationRaw1 = operationRaw2)
+    (argumentsRawEq : argumentsRaw1 = argumentsRaw2)
+    {operationTag1 :
+      Term context (Ty.effect argumentCarrier1 effectTag1)
+        operationRaw1}
+    {operationTag2 :
+      Term context (Ty.effect argumentCarrier2 effectTag2)
+        operationRaw2}
+    (operationTagHEq : HEq operationTag1 operationTag2)
+    {arguments1 : Term context argumentCarrier1 argumentsRaw1}
+    {arguments2 : Term context argumentCarrier2 argumentsRaw2}
+    (argumentsHEq : HEq arguments1 arguments2) :
+    HEq
+      (Term.effectPerform effectTag1 effectRow
+        { effectLabel := effectLabel
+          argumentCarrier := argumentCarrier1
+          resultCarrier := resultCarrier1 }
+        (Effects.CanPerform.direct rowMember) operationTag1 arguments1)
+      (Term.effectPerform effectTag2 effectRow
+        { effectLabel := effectLabel
+          argumentCarrier := argumentCarrier2
+          resultCarrier := resultCarrier2 }
+        (Effects.CanPerform.direct rowMember) operationTag2 arguments2) := by
+  subst effectTagEq
+  subst argumentCarrierEq
+  subst resultCarrierEq
+  subst operationRawEq
+  subst argumentsRawEq
+  cases operationTagHEq
+  cases argumentsHEq
+  rfl
+
+/-- Read-via-write effect-performance congruence with propositionally
+equal operation carriers. -/
+private theorem Term.effectPerform_readViaWrite_carrier_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {effectTag1 effectTag2 : RawTerm scope}
+    (effectRow : Effects.EffectRow)
+    (rowMember : Effects.EffectRow.Member Effects.EffectLabel.write
+      effectRow)
+    {argumentCarrier1 argumentCarrier2 resultCarrier1 resultCarrier2 :
+      Ty level scope}
+    {operationRaw1 operationRaw2 argumentsRaw1 argumentsRaw2 :
+      RawTerm scope}
+    (effectTagEq : effectTag1 = effectTag2)
+    (argumentCarrierEq : argumentCarrier1 = argumentCarrier2)
+    (resultCarrierEq : resultCarrier1 = resultCarrier2)
+    (operationRawEq : operationRaw1 = operationRaw2)
+    (argumentsRawEq : argumentsRaw1 = argumentsRaw2)
+    {operationTag1 :
+      Term context (Ty.effect argumentCarrier1 effectTag1)
+        operationRaw1}
+    {operationTag2 :
+      Term context (Ty.effect argumentCarrier2 effectTag2)
+        operationRaw2}
+    (operationTagHEq : HEq operationTag1 operationTag2)
+    {arguments1 : Term context argumentCarrier1 argumentsRaw1}
+    {arguments2 : Term context argumentCarrier2 argumentsRaw2}
+    (argumentsHEq : HEq arguments1 arguments2) :
+    HEq
+      (Term.effectPerform effectTag1 effectRow
+        { effectLabel := Effects.EffectLabel.read
+          argumentCarrier := argumentCarrier1
+          resultCarrier := resultCarrier1 }
+        (Effects.CanPerform.readViaWrite argumentCarrier1
+          resultCarrier1 rowMember)
+        operationTag1 arguments1)
+      (Term.effectPerform effectTag2 effectRow
+        { effectLabel := Effects.EffectLabel.read
+          argumentCarrier := argumentCarrier2
+          resultCarrier := resultCarrier2 }
+        (Effects.CanPerform.readViaWrite argumentCarrier2
+          resultCarrier2 rowMember)
+        operationTag2 arguments2) := by
+  subst effectTagEq
+  subst argumentCarrierEq
+  subst resultCarrierEq
+  subst operationRawEq
+  subst argumentsRawEq
+  cases operationTagHEq
+  cases argumentsHEq
+  rfl
+
+/-- Effect performance preserves weaken-then-singleton collapse. -/
+theorem Term.weaken_subst_singleton_effectPerform_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {effectTag : RawTerm scope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature : Effects.OperationSignature (Ty level scope)}
+    {canPerformOperation :
+      Effects.CanPerform effectRow operationSignature}
+    {operationRaw argumentsRaw : RawTerm scope}
+    (newType : Ty level scope)
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (operationTag :
+      Term context
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term context operationSignature.argumentCarrier argumentsRaw)
+    (operationTagHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType operationTag))
+        operationTag)
+    (argumentsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType arguments))
+        arguments) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType
+          (Term.effectPerform effectTag effectRow operationSignature
+            canPerformOperation operationTag arguments)))
+      (Term.effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments) := by
+  have operationTagWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            operationTag))
+        operationTag := by
+    simpa only [Term.weaken] using operationTagHEq
+  have argumentsWithoutCastsHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.rename (TermRenaming.weakenStep context newType)
+            arguments))
+        arguments := by
+    simpa only [Term.weaken] using argumentsHEq
+  cases operationSignature with
+  | mk effectLabel argumentCarrier resultCarrier =>
+    cases canPerformOperation with
+    | direct rowMember =>
+      simp only [Term.weaken, Term.rename, Term.subst,
+        Effects.OperationSignature.map]
+      exact Term.effectPerform_direct_carrier_HEq_congr
+        effectRow effectLabel rowMember
+        (RawTerm.weaken_subst_singleton effectTag singletonRaw)
+        (Ty.weaken_subst_singleton argumentCarrier newType singletonRaw)
+        (Ty.weaken_subst_singleton resultCarrier newType singletonRaw)
+        (RawTerm.weaken_subst_singleton operationRaw singletonRaw)
+        (RawTerm.weaken_subst_singleton argumentsRaw singletonRaw)
+        operationTagWithoutCastsHEq
+        argumentsWithoutCastsHEq
+    | readViaWrite argumentCarrier resultCarrier rowMember =>
+      simp only [Term.weaken, Term.rename, Term.subst,
+        Effects.OperationSignature.map]
+      exact Term.effectPerform_readViaWrite_carrier_HEq_congr
+        effectRow rowMember
+        (RawTerm.weaken_subst_singleton effectTag singletonRaw)
+        (Ty.weaken_subst_singleton argumentCarrier newType singletonRaw)
+        (Ty.weaken_subst_singleton resultCarrier newType singletonRaw)
+        (RawTerm.weaken_subst_singleton operationRaw singletonRaw)
+        (RawTerm.weaken_subst_singleton argumentsRaw singletonRaw)
+        operationTagWithoutCastsHEq
+        argumentsWithoutCastsHEq
+
 /-- Univalence-to-equivalence extraction preserves weaken-then-singleton
 collapse. -/
 theorem Term.weaken_subst_singleton_uaToEquiv_heq
