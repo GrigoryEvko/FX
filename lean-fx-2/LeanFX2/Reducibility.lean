@@ -17015,6 +17015,179 @@ theorem Reducible.fundamental_modElim_at_modal
               (Term.subst termSubst (Term.modElim innerTerm)) :=
   Term.modElim_isStronglyNormalizing innerIH
 
+/-- Unit modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_unit_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.unit innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Boolean modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_bool_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.bool innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.bool : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Natural modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_nat_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.nat innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.nat : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Empty-type modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_empty_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.empty innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.empty : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Interval modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_interval_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx Ty.interval innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Universe modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_universe_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.universe outerLevel levelLe) innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Session modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_session_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {protocolStep : RawTerm scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx (Ty.session protocolStep) innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Effect modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_effect_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierType : Ty level scope}
+    {effectTag : RawTerm scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.effect carrierType effectTag) innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible ((Ty.effect carrierType effectTag).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
+/-- Modal elimination preserves fundamental stability. -/
+theorem Reducible.fundamental_modElim_at_modal_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modalityTag : Nat) {carrierType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm :
+        Term sourceCtx (Ty.modal modalityTag carrierType) innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible
+        ((Ty.modal modalityTag carrierType).subst sigma)
+        (Term.subst termSubst innerTerm)) :
+    IsRenamingStableReducible
+      ((Ty.modal modalityTag carrierType).subst sigma)
+      (Term.subst termSubst (Term.modElim innerTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact Term.modElim_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-! ## K12.21.A fundamental_app at `Ty.arrow` — β-redex elimination
 case at the homogeneous (non-dependent) arrow type
 
