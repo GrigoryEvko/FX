@@ -8961,6 +8961,19 @@ theorem Reducible.fundamental_interval0
                 (Term.interval0 (context := sourceCtx))) :=
   RawTerm.interval0_isStronglyNormalizing
 
+/-- Interval zero is stable under future-world renamings. -/
+theorem Reducible.fundamental_interval0_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst
+        (Term.interval0 (context := sourceCtx))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.interval0_isStronglyNormalizing
+
 /-- **K12.20.AN.2 interval1 fundamental case** — cubical interval
 one endpoint.  Same closed-leaf intro shape as `interval0`. -/
 theorem Reducible.fundamental_interval1
@@ -8973,6 +8986,19 @@ theorem Reducible.fundamental_interval1
               (Term.subst termSubst
                 (Term.interval1 (context := sourceCtx))) :=
   RawTerm.interval1_isStronglyNormalizing
+
+/-- Interval one is stable under future-world renamings. -/
+theorem Reducible.fundamental_interval1_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma} :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst
+        (Term.interval1 (context := sourceCtx))) := by
+  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
+  exact RawTerm.interval1_isStronglyNormalizing
 
 /-- **K12.20.AF.1 intervalOpp SN preservation** — cubical interval
 negation.  Unary cong over the interval term; intervalOpp_inv
@@ -14896,6 +14922,24 @@ theorem Reducible.fundamental_intervalOpp
               (Term.subst termSubst (Term.intervalOpp innerValue)) :=
   RawTerm.intervalOpp_isStronglyNormalizing innerIH
 
+/-- Interval negation preserves fundamental stability. -/
+theorem Reducible.fundamental_intervalOpp_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {innerRaw : RawTerm scope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst innerValue)) :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst (Term.intervalOpp innerValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.intervalOpp_isStronglyNormalizing
+    (innerIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.AO.2 intervalMeet fundamental case** — cubical interval
 meet (∧).  Binary intro to `Ty.interval`; both subterms substitute
 componentwise and the binary SN helper closes both arguments. -/
@@ -14917,6 +14961,30 @@ theorem Reducible.fundamental_intervalMeet
                 (Term.intervalMeet leftValue rightValue)) :=
   RawTerm.intervalMeet_isStronglyNormalizing leftIH rightIH
 
+/-- Interval meet preserves fundamental stability. -/
+theorem Reducible.fundamental_intervalMeet_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst leftValue))
+    (rightIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst rightValue)) :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst
+        (Term.intervalMeet leftValue rightValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.intervalMeet_isStronglyNormalizing
+    (leftIsStable rhoIsInjective termRenaming)
+    (rightIsStable rhoIsInjective termRenaming)
+
 /-- **K12.20.AO.3 intervalJoin fundamental case** — cubical interval
 join (∨).  Sister to intervalMeet; same binary shape. -/
 theorem Reducible.fundamental_intervalJoin
@@ -14936,6 +15004,30 @@ theorem Reducible.fundamental_intervalJoin
               (Term.subst termSubst
                 (Term.intervalJoin leftValue rightValue)) :=
   RawTerm.intervalJoin_isStronglyNormalizing leftIH rightIH
+
+/-- Interval join preserves fundamental stability. -/
+theorem Reducible.fundamental_intervalJoin_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst leftValue))
+    (rightIsStable :
+      IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+        (Term.subst termSubst rightValue)) :
+    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
+      (Term.subst termSubst
+        (Term.intervalJoin leftValue rightValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact RawTerm.intervalJoin_isStronglyNormalizing
+    (leftIsStable rhoIsInjective termRenaming)
+    (rightIsStable rhoIsInjective termRenaming)
 
 /-- **K12.20.AP.1 sessionRecv fundamental case** — session-type
 receive operation.  Result type `Ty.session protocolStep` is
