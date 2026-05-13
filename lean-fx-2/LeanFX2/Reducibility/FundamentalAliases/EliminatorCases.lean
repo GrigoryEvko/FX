@@ -1,10 +1,11 @@
-import LeanFX2.Reducibility.FundamentalAliases.M04Cases
+import LeanFX2.Reducibility.FundamentalAliases.DirectCases
 
-/-! # LeanFX2.Reducibility.FundamentalAliases.M04Eliminators
+/-! # LeanFX2.Reducibility.FundamentalAliases.EliminatorCases
 
-K12.27 direct M04 eliminator-form endpoints — eliminator closures
-of M04 SN witnesses (app / fst / snd / boolElim / natElim /
-listElim / optionMatch / eitherMatch / idJ / oeqJ / etc.).
+Direct eliminator-form endpoints for strong normalization —
+eliminator closures of SN witnesses (app / fst / snd / boolElim /
+natElim / listElim / optionMatch / eitherMatch / idJ / oeqJ /
+etc.).
 
 ## Root status
 
@@ -14,9 +15,9 @@ namespace LeanFX2
 
 
 
-/-! ## K12.27 direct eliminator-form M04 endpoints -/
+/-! ## Direct eliminator-form SN endpoints -/
 
-/-- Direct M04 SN case for boolean elimination. -/
+/-- Direct SN case for boolean elimination. -/
 theorem Term.boolElim_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -38,7 +39,7 @@ theorem Term.boolElim_isStronglyNormalizing
       (Term.boolElim scrutinee thenBranch elseBranch) :=
   RawTerm.boolElim_isStronglyNormalizing thenIsSN elseIsSN scrutineeIsSN
 
-/-- Direct M04 SN case for identity elimination. -/
+/-- Direct SN case for identity elimination. -/
 theorem Term.idJ_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -54,7 +55,7 @@ theorem Term.idJ_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.idJ baseCase witness) :=
   RawTerm.idJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
 
-/-- Direct M04 SN case for observational equality elimination. -/
+/-- Direct SN case for observational equality elimination. -/
 theorem Term.oeqJ_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -70,7 +71,7 @@ theorem Term.oeqJ_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.oeqJ baseCase witness) :=
   RawTerm.oeqJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
 
-/-- Direct M04 SN case for strict identity elimination. -/
+/-- Direct SN case for strict identity elimination. -/
 theorem Term.idStrictRec_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -179,7 +180,7 @@ theorem Reducible.fundamental_equivApp_at_equiv_stable
 `RawTerm.equivApply`, whose current raw fragment includes ua-refl beta
 arms returning argument reducts.  The present `Ty.equiv` candidate stores
 full Reducible closure for `equivApp`, not for this univalence-target raw
-form, so this endpoint deliberately states the M04-relevant SN conclusion
+form, so this endpoint deliberately states the Tait-relevant SN conclusion
 only. -/
 theorem Reducible.fundamental_equivApply_at_equiv
     {mode : Mode} {level scope targetScope : Nat}
@@ -212,7 +213,7 @@ Building that closure for a freshly introduced equivalence would need
 a backward bridge from `equivApp (equivIntro forward backward) arg` to
 `app forward arg`, which is still tracked under the general
 head-β/ι expansion work.  This endpoint therefore records only the
-M04-relevant SN fact for the constructor raw form. -/
+Tait-relevant SN fact for the constructor raw form. -/
 theorem Reducible.fundamental_equivIntroHet_at_equiv_sn
     {mode : Mode} {level scope targetScope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -249,7 +250,7 @@ theorem Reducible.fundamental_equivIntroHet_at_equiv_sn
 /-- Fundamental SN endpoint: `Term.equivIntroHet` at `Ty.equiv`
 (K12.26 support).
 
-The conclusion is the M04-relevant Tait endpoint for the current
+The conclusion is the Tait-relevant Tait endpoint for the current
 equivalence-introduction constructor: the introduced equivalence is
 strongly normalizing whenever its forward and backward functions are
 reducible.  The historical `_sn` theorem remains available as a

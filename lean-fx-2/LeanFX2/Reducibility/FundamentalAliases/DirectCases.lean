@@ -1,12 +1,15 @@
 import LeanFX2.Reducibility.FundamentalAliases.RawPayloads
 
-/-! # LeanFX2.Reducibility.FundamentalAliases.M04Cases
+/-! # LeanFX2.Reducibility.FundamentalAliases.DirectCases
 
-K12.27 direct M04 endpoints — base-case SN witnesses (unit,
-boolTrue, boolFalse, natZero, intervals, universe code, etc.)
-plus the recursive-intro M04 endpoints (lam, pair, listCons,
-optionSome, natSucc, eitherInl/Inr, refl trinity) plus the
-congruence-form closures.
+Direct fundamental endpoints for strong normalization.  Three
+families ship here:
+
+* base-case SN witnesses (unit, boolTrue, boolFalse, natZero,
+  interval endpoints, universe code, etc.)
+* recursive-intro endpoints (lam, pair, listCons, optionSome,
+  natSucc, eitherInl/Inr, refl trinity)
+* congruence-form closures
 
 ## Root status
 
@@ -16,9 +19,9 @@ namespace LeanFX2
 
 
 
-/-! ## K12.27 direct leaf M04 endpoints -/
+/-! ## Direct leaf SN endpoints -/
 
-/-- Direct M04 SN case for typed variables. -/
+/-- Direct SN case for typed variables. -/
 theorem Term.var_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -27,7 +30,7 @@ theorem Term.var_isStronglyNormalizing
       (Term.var (context := sourceCtx) position) :=
   RawTerm.var_isStronglyNormalizing position
 
-/-- Direct M04 SN case for the unit value. -/
+/-- Direct SN case for the unit value. -/
 theorem Term.unit_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
@@ -35,7 +38,7 @@ theorem Term.unit_isStronglyNormalizing
       (Term.unit (context := sourceCtx)) :=
   RawTerm.unit_isStronglyNormalizing
 
-/-- Direct M04 SN case for `true`. -/
+/-- Direct SN case for `true`. -/
 theorem Term.boolTrue_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
@@ -43,7 +46,7 @@ theorem Term.boolTrue_isStronglyNormalizing
       (Term.boolTrue (context := sourceCtx)) :=
   RawTerm.boolTrue_isStronglyNormalizing
 
-/-- Direct M04 SN case for `false`. -/
+/-- Direct SN case for `false`. -/
 theorem Term.boolFalse_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
@@ -51,7 +54,7 @@ theorem Term.boolFalse_isStronglyNormalizing
       (Term.boolFalse (context := sourceCtx)) :=
   RawTerm.boolFalse_isStronglyNormalizing
 
-/-- Direct M04 SN case for zero. -/
+/-- Direct SN case for zero. -/
 theorem Term.natZero_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
@@ -59,7 +62,7 @@ theorem Term.natZero_isStronglyNormalizing
       (Term.natZero (context := sourceCtx)) :=
   RawTerm.natZero_isStronglyNormalizing
 
-/-- Direct M04 SN case for the empty list. -/
+/-- Direct SN case for the empty list. -/
 theorem Term.listNil_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -69,7 +72,7 @@ theorem Term.listNil_isStronglyNormalizing
         (elementType := elementType)) :=
   RawTerm.listNil_isStronglyNormalizing
 
-/-- Direct M04 SN case for `None`. -/
+/-- Direct SN case for `None`. -/
 theorem Term.optionNone_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -79,7 +82,7 @@ theorem Term.optionNone_isStronglyNormalizing
         (elementType := elementType)) :=
   RawTerm.optionNone_isStronglyNormalizing
 
-/-- Direct M04 SN case for the left interval endpoint. -/
+/-- Direct SN case for the left interval endpoint. -/
 theorem Term.interval0_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
@@ -87,7 +90,7 @@ theorem Term.interval0_isStronglyNormalizing
       (Term.interval0 (context := sourceCtx)) :=
   RawTerm.interval0_isStronglyNormalizing
 
-/-- Direct M04 SN case for the right interval endpoint. -/
+/-- Direct SN case for the right interval endpoint. -/
 theorem Term.interval1_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
@@ -95,9 +98,9 @@ theorem Term.interval1_isStronglyNormalizing
       (Term.interval1 (context := sourceCtx)) :=
   RawTerm.interval1_isStronglyNormalizing
 
-/-! ## K12.27 direct recursive-intro M04 endpoints -/
+/-! ## Direct recursive-intro SN endpoints -/
 
-/-- Direct M04 SN case for successor. -/
+/-- Direct SN case for successor. -/
 theorem Term.natSucc_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -107,7 +110,7 @@ theorem Term.natSucc_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.natSucc predecessor) :=
   RawTerm.natSucc_isStronglyNormalizing predecessorIsSN
 
-/-- Direct M04 SN case for list cons. -/
+/-- Direct SN case for list cons. -/
 theorem Term.listCons_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -121,7 +124,7 @@ theorem Term.listCons_isStronglyNormalizing
       (Term.listCons headTerm tailTerm) :=
   RawTerm.listCons_isStronglyNormalizing headIsSN tailIsSN
 
-/-- Direct M04 SN case for `Some`. -/
+/-- Direct SN case for `Some`. -/
 theorem Term.optionSome_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -132,7 +135,7 @@ theorem Term.optionSome_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.optionSome valueTerm) :=
   RawTerm.optionSome_isStronglyNormalizing valueIsSN
 
-/-- Direct M04 SN case for left injection. -/
+/-- Direct SN case for left injection. -/
 theorem Term.eitherInl_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -144,7 +147,7 @@ theorem Term.eitherInl_isStronglyNormalizing
       (Term.eitherInl (rightType := rightType) valueTerm) :=
   RawTerm.eitherInl_isStronglyNormalizing valueIsSN
 
-/-- Direct M04 SN case for right injection. -/
+/-- Direct SN case for right injection. -/
 theorem Term.eitherInr_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -156,7 +159,7 @@ theorem Term.eitherInr_isStronglyNormalizing
       (Term.eitherInr (leftType := leftType) valueTerm) :=
   RawTerm.eitherInr_isStronglyNormalizing valueIsSN
 
-/-- Direct M04 SN case for interval negation. -/
+/-- Direct SN case for interval negation. -/
 theorem Term.intervalOpp_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -166,7 +169,7 @@ theorem Term.intervalOpp_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.intervalOpp innerValue) :=
   RawTerm.intervalOpp_isStronglyNormalizing innerIsSN
 
-/-- Direct M04 SN case for interval meet. -/
+/-- Direct SN case for interval meet. -/
 theorem Term.intervalMeet_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -179,7 +182,7 @@ theorem Term.intervalMeet_isStronglyNormalizing
       (Term.intervalMeet leftValue rightValue) :=
   RawTerm.intervalMeet_isStronglyNormalizing leftIsSN rightIsSN
 
-/-- Direct M04 SN case for interval join. -/
+/-- Direct SN case for interval join. -/
 theorem Term.intervalJoin_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -192,7 +195,7 @@ theorem Term.intervalJoin_isStronglyNormalizing
       (Term.intervalJoin leftValue rightValue) :=
   RawTerm.intervalJoin_isStronglyNormalizing leftIsSN rightIsSN
 
-/-- Direct M04 SN case for modal introduction. -/
+/-- Direct SN case for modal introduction. -/
 theorem Term.modIntro_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -203,7 +206,7 @@ theorem Term.modIntro_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.modIntro innerTerm) :=
   RawTerm.modIntro_isStronglyNormalizing innerIsSN
 
-/-- Direct M04 SN case for modal subsumption. -/
+/-- Direct SN case for modal subsumption. -/
 theorem Term.subsume_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -214,9 +217,9 @@ theorem Term.subsume_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.subsume innerTerm) :=
   RawTerm.subsume_isStronglyNormalizing innerIsSN
 
-/-! ## K12.27 direct congruence-form M04 endpoints -/
+/-! ## Direct congruence-form endpoints -/
 
-/-- Direct M04 SN case for observational funext. -/
+/-- Direct SN case for observational funext. -/
 theorem Term.oeqFunext_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -234,7 +237,7 @@ theorem Term.oeqFunext_isStronglyNormalizing
         leftFunctionRaw rightFunctionRaw pointwiseProof) :=
   RawTerm.oeqFunext_isStronglyNormalizing pointwiseIsSN
 
-/-- Direct M04 SN case for session receive. -/
+/-- Direct SN case for session receive. -/
 theorem Term.sessionRecv_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -245,7 +248,7 @@ theorem Term.sessionRecv_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.sessionRecv channel) :=
   RawTerm.sessionRecv_isStronglyNormalizing channelIsSN
 
-/-- Direct M04 SN case for session send. -/
+/-- Direct SN case for session send. -/
 theorem Term.sessionSend_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -260,7 +263,7 @@ theorem Term.sessionSend_isStronglyNormalizing
       (Term.sessionSend protocolStep channel payload) :=
   RawTerm.sessionSend_isStronglyNormalizing channelIsSN payloadIsSN
 
-/-- Direct M04 SN case for algebraic effect perform. -/
+/-- Direct SN case for algebraic effect perform. -/
 theorem Term.effectPerform_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -283,7 +286,7 @@ theorem Term.effectPerform_isStronglyNormalizing
         canPerformOperation operationTag arguments) :=
   RawTerm.effectPerform_isStronglyNormalizing operationIsSN argumentsAreSN
 
-/-- Direct M04 SN case for universe cumulativity markers. -/
+/-- Direct SN case for universe cumulativity markers. -/
 theorem Term.cumulUp_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -300,7 +303,7 @@ theorem Term.cumulUp_isStronglyNormalizing
         levelLeLow levelLeHigh typeCode) :=
   RawTerm.cumulUpMarker_isStronglyNormalizing typeCodeIsSN
 
-/-- Direct M04 SN case for the canonical identity equivalence. -/
+/-- Direct SN case for the canonical identity equivalence. -/
 theorem Term.equivReflId_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -318,7 +321,7 @@ theorem Term.equivReflId_isStronglyNormalizing
   exact RawTerm.equivIntro_isStronglyNormalizing
     identityFunctionIsSN identityFunctionIsSN
 
-/-- Direct M04 SN case for the universe-identity view of the canonical
+/-- Direct SN case for the universe-identity view of the canonical
 identity equivalence. -/
 theorem Term.equivReflIdAtId_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
@@ -341,7 +344,7 @@ theorem Term.equivReflIdAtId_isStronglyNormalizing
   exact RawTerm.equivIntro_isStronglyNormalizing
     identityFunctionIsSN identityFunctionIsSN
 
-/-- Direct M04 SN case for heterogeneous univalence introduction.
+/-- Direct SN case for heterogeneous univalence introduction.
 
 The raw projection is definitionally the same as the packaged equivalence
 witness, so the SN evidence is reused directly. -/
@@ -362,7 +365,7 @@ theorem Term.uaIntroHet_isStronglyNormalizing
         carrierARaw carrierBRaw equivWitness) :=
   equivWitnessIsSN
 
-/-- Direct M04 SN case for univalence-to-equivalence extraction. -/
+/-- Direct SN case for univalence-to-equivalence extraction. -/
 theorem Term.uaToEquiv_isStronglyNormalizing
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
