@@ -96,5 +96,8 @@ open LeanFX2
 #print axioms Reducible.fundamental_pair_at_sigmaTy_sn_stable
 #print axioms Reducible.fundamental_lamPi_at_piTy_sn_stable
 #print axioms Reducible.fundamental_pathLam_at_path_sn_stable
+#print axioms Reducible.fundamental_lam_at_arrow_sn_stable
+#print axioms Reducible.fundamental_snd_at_sigmaTy_sn_stable
+#print axioms Reducible.fundamental_appPi_at_piTy_sn_stable
 
 end LeanFX2.Smoke

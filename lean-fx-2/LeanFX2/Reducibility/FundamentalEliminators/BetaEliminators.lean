@@ -346,6 +346,31 @@ theorem Reducible.fundamental_snd_at_sigmaTy_sn
       (Term.subst termSubst (Term.snd pairTerm)) :=
   pairIH.2.2
 
+/-- Renaming-stable SN of `Term.snd` at `Ty.sigmaTy` —
+`IsRenamingStableIsSN` mirror of `fundamental_snd_at_sigmaTy_sn`.
+
+Direct `.2.2` projection over the pair's renaming-stable
+reducibility witness at each renamed world. -/
+theorem Reducible.fundamental_snd_at_sigmaTy_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm :
+        Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsStable :
+        IsRenamingStableReducible
+          ((Ty.sigmaTy firstType secondType).subst sigma)
+          (Term.subst termSubst pairTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.snd pairTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (pairIsStable rhoIsInjective termRenaming).2.2
+
 /-! ## K12.21.D fundamental_appPi at `Ty.piTy` — Π SN-output
 elimination
 
@@ -410,6 +435,43 @@ theorem Reducible.fundamental_appPi_at_piTy_sn
     Term.isStronglyNormalizing
       (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
   functionIH.2 (Term.subst termSubst argumentTerm) argumentIH
+
+/-- Renaming-stable SN of `Term.appPi` at `Ty.piTy` —
+`IsRenamingStableIsSN` mirror of `fundamental_appPi_at_piTy_sn`.
+
+Composes function-side and argument-side renaming-stable
+reducibility at each renamed world: feed the renamed argument
+term and the renamed-argument reducibility witness into the
+function's piTy SN-output closure.  K12.6's piTy second
+conjunct stores SN, not full Reducible — the substituted-
+codomain wall blocks full-Reducible at the dependent
+application result, but SN ships cleanly. -/
+theorem Reducible.fundamental_appPi_at_piTy_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIsStable :
+        IsRenamingStableReducible
+          ((Ty.piTy domainType codomainType).subst sigma)
+          (Term.subst termSubst functionTerm))
+    (argumentIsStable :
+        IsRenamingStableReducible (domainType.subst sigma)
+          (Term.subst termSubst argumentTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.appPi functionTerm argumentTerm)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  exact (functionIsStable rhoIsInjective termRenaming).2
+    (Term.rename termRenaming (Term.subst termSubst argumentTerm))
+    (argumentIsStable rhoIsInjective termRenaming)
 
 /-- Direct M04 SN endpoint for dependent application.
 
