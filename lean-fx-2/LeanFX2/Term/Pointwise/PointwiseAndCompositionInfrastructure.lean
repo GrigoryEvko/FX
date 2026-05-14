@@ -728,6 +728,55 @@ theorem Term.subst_precompose_weaken_singleton_eq_identity
     (TermSubst.precompose_weaken_singleton_pointwise singletonTerm)
     someTerm
 
+/-- Old-entry weaken/singleton collapse from the typed precomposition
+factorization.
+
+The beta-contractum bridge needs old substitution entries to collapse
+after `Term.weaken` followed by singleton substitution.  This theorem
+separates the problem into the real hard part and the already-solved
+pointwise identity part:
+
+* `factorHEq` aligns the concrete `weaken`-then-singleton expression
+  with substitution by the input-precomposed substitution;
+* `Term.subst_precompose_weaken_singleton_eq_identity` then reduces
+  that precomposed substitution to identity;
+* `identityHEq` erases identity substitution for the specific term.
+
+This keeps the next blocker precise instead of hiding it inside the
+`compose_lift_singleton_consSingleton` comparison. -/
+theorem Term.weaken_subst_singleton_of_precompose_factor_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    {someType : Ty level scope}
+    {raw : RawTerm scope}
+    (someTerm : Term context someType raw)
+    (factorHEq :
+      HEq
+        (Term.subst (TermSubst.singleton singletonTerm)
+          (Term.weaken newType someTerm))
+        (Term.subst
+          (TermSubst.precomposeRenaming
+            (TermRenaming.weakenStep context newType)
+            (TermSubst.singleton singletonTerm))
+          someTerm))
+    (identityHEq :
+      HEq (Term.subst (TermSubst.identity context) someTerm)
+        someTerm) :
+    HEq
+      (Term.subst (TermSubst.singleton singletonTerm)
+        (Term.weaken newType someTerm))
+      someTerm := by
+  exact HEq.trans factorHEq
+    (HEq.trans
+      (by
+        rw [Term.subst_precompose_weaken_singleton_eq_identity
+          singletonTerm someTerm]
+        exact HEq.rfl)
+      identityHEq)
+
 /-- The underlying type-substitution component of lifted weakening
 followed by lifted singleton is pointwise identity under the original
 binder. -/
