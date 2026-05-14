@@ -1,12 +1,10 @@
 import LeanFX2.Reducibility.Kripke.Predicate
 import LeanFX2.Reducibility.Kripke.Basic
 import LeanFX2.Reducibility.Kripke.Weaken
+import LeanFX2.Reducibility.Kripke.Monotone
+import LeanFX2.Reducibility.Kripke.Project
 
-/-! Kripke Tait reducibility zero-axiom audit log.
-
-Pins for each Kripke `Reducibility.Kripke.*` declaration verifying
-zero-axiom discipline (no propext, no Quot.sound, no Classical.choice,
-no Acc/WellFounded dependents). -/
+/-! Kripke Tait reducibility zero-axiom audit log. -/
 
 #print axioms LeanFX2.ReducibleK
 #print axioms LeanFX2.ReducibleKBody
@@ -21,3 +19,13 @@ no Acc/WellFounded dependents). -/
 #print axioms LeanFX2.ReducibleK.weaken_nat
 #print axioms LeanFX2.ReducibleK.weaken_empty
 #print axioms LeanFX2.ReducibleK.weaken_interval
+#print axioms LeanFX2.ReducibleK.mono_unit
+#print axioms LeanFX2.ReducibleK.mono_bool
+#print axioms LeanFX2.ReducibleK.mono_nat
+#print axioms LeanFX2.ReducibleK.mono_empty
+#print axioms LeanFX2.ReducibleK.mono_interval
+#print axioms LeanFX2.ReducibleK.sn_of_unit
+#print axioms LeanFX2.ReducibleK.sn_of_bool
+#print axioms LeanFX2.ReducibleK.sn_of_nat
+#print axioms LeanFX2.ReducibleK.sn_of_empty
+#print axioms LeanFX2.ReducibleK.sn_of_interval
