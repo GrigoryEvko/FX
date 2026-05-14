@@ -405,6 +405,39 @@ theorem TermSubst.IsIdentityLike.lift
   · exact substitutionIsIdentityLike.lift_forRawPointwise
   · exact substitutionIsIdentityLike.lift_entryHEq newType
 
+/-- An identity-like typed substitution acts as identity on types. -/
+theorem TermSubst.IsIdentityLike.tySubst_eq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (someType : Ty level scope) :
+    someType.subst sigma = someType :=
+  Eq.trans
+    (Ty.subst_pointwise
+      substitutionIsIdentityLike.forTyPointwise
+      substitutionIsIdentityLike.forRawPointwise
+      someType)
+    (Ty.subst_identity someType)
+
+/-- An identity-like typed substitution acts as identity on raw terms. -/
+theorem TermSubst.IsIdentityLike.rawSubst_eq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (raw : RawTerm scope) :
+    raw.subst sigma.forRaw = raw :=
+  Eq.trans
+    (RawTerm.subst_pointwise
+      substitutionIsIdentityLike.forRawPointwise
+      raw)
+    (RawTerm.subst_identity raw)
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/
