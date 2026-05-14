@@ -52,3 +52,6 @@ import LeanFX2.Reducibility.Kripke.Headline
 #print axioms LeanFX2.ReducibleK.fundamental_var_nat
 #print axioms LeanFX2.ReducibleK.fundamental_var_empty
 #print axioms LeanFX2.ReducibleK.fundamental_var_interval
+#print axioms LeanFX2.ReducibleK.fundamental_natSucc
+#print axioms LeanFX2.ReducibleK.fundamental_listNil
+#print axioms LeanFX2.ReducibleK.fundamental_optionNone

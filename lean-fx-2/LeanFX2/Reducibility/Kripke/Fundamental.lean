@@ -116,4 +116,49 @@ theorem ReducibleK.fundamental_var_interval
   | succ subCount =>
     exact RawTerm.var_isStronglyNormalizing position
 
+/-- natSucc preserves ReducibleK at Ty.nat: SN(pred) → SN(natSucc pred). -/
+theorem ReducibleK.fundamental_natSucc
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stepCount : Nat} {predecessorRaw : RawTerm scope}
+    {predecessorTerm : Term sourceCtx Ty.nat predecessorRaw}
+    (predIsR :
+      @ReducibleK mode level scope sourceCtx stepCount Ty.nat
+        predecessorRaw predecessorTerm) :
+    @ReducibleK mode level scope sourceCtx stepCount Ty.nat
+      (RawTerm.natSucc predecessorRaw) (Term.natSucc predecessorTerm) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    have predSN : Term.isStronglyNormalizing predecessorTerm := predIsR
+    exact RawTerm.natSucc_isStronglyNormalizing predSN
+
+/-- listNil at any element type: SN at the SN-fallback Kripke arm. -/
+theorem ReducibleK.fundamental_listNil
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (stepCount : Nat) :
+    @ReducibleK mode level scope sourceCtx stepCount (Ty.listType elementType)
+      RawTerm.listNil (Term.listNil) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    exact (Term.listNil_isStronglyNormalizing
+      (sourceCtx := sourceCtx) (elementType := elementType))
+
+/-- optionNone at any element type. -/
+theorem ReducibleK.fundamental_optionNone
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {elementType : Ty level scope}
+    (stepCount : Nat) :
+    @ReducibleK mode level scope sourceCtx stepCount (Ty.optionType elementType)
+      RawTerm.optionNone (Term.optionNone) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    exact (Term.optionNone_isStronglyNormalizing
+      (sourceCtx := sourceCtx) (elementType := elementType))
+
 end LeanFX2
