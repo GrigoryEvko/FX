@@ -148,3 +148,12 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.effectPerform_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.uaIntroHet_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.equivReflIdAtId_strong_normalization_via_kripke
+
+-- SN-only eliminator headlines via Kripke (7 wrappers)
+#print axioms LeanFX2.Term.boolElim_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.idJ_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.oeqJ_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.idStrictRec_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.equivApp_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.equivApply_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.modElim_strong_normalization_via_kripke

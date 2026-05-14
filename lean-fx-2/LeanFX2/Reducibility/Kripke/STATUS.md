@@ -4,7 +4,7 @@ Now on master under `LeanFX2/Reducibility/Kripke/`.
 
 ## What ships today (zero-axiom verified)
 
-138 declarations under `LeanFX2.Reducibility.Kripke.*` + `LeanFX2.Term.X_strong_normalization_via_kripke` user-facing headlines, all pinned in `LeanFX2/Smoke/AuditKripke.lean`.
+152 declarations under `LeanFX2.Reducibility.Kripke.*` + `LeanFX2.Term.X_strong_normalization_via_kripke` user-facing headlines, all pinned in `LeanFX2/Smoke/AuditKripke.lean`.
 
 | File                | Decls | Description                                                            |
 | ------------------- | ----- | ---------------------------------------------------------------------- |
@@ -15,10 +15,10 @@ Now on master under `LeanFX2/Reducibility/Kripke/`.
 | `Monotone.lean`     | 5     | step-index monotonicity                                                |
 | `SNClosure.lean`    | 7     | CR2 forward closure + raw/typed `step_closure`                         |
 | `Arrow.lean`        | 2     | `arrow_sn` + `arrow_apply` (Kripke closure-application combinator)     |
-| `Fundamental.lean`  | 55    | per-ctor `fundamental_X` + `fundamental_X_sn` preservation wrappers    |
-| `Headline.lean`     | 51    | user-facing `Term.X_strong_normalization_via_kripke` per Term ctor     |
+| `Fundamental.lean`  | 62    | per-ctor `fundamental_X` + `fundamental_X_sn` preservation wrappers    |
+| `Headline.lean`     | 58    | user-facing `Term.X_strong_normalization_via_kripke` per Term ctor     |
 
-All 138 audit gates report `does not depend on any axioms`.
+All 152 audit gates report `does not depend on any axioms`.
 
 ## Coverage matrix (per Term ctor)
 
@@ -47,14 +47,16 @@ All 138 audit gates report `does not depend on any axioms`.
 | oeqFunext                          | yes (SN-only)  | yes            |
 | effectPerform                      | yes (SN-only)  | yes            |
 | uaIntroHet / equivReflIdAtId       | yes (SN-only)  | yes            |
+| boolElim                           | yes (SN-only)  | yes            |
+| idJ / oeqJ / idStrictRec           | yes (SN-only)  | yes            |
+| equivApp / equivApply              | yes (SN-only)  | yes            |
+| modElim                            | yes (SN-only)  | yes            |
 | **app / appPi (Π-elim)**           | NO             | NO             |
-| **boolElim / natElim / natRec**    | NO             | NO             |
+| **natElim / natRec**               | NO             | NO             |
 | **listElim / optionMatch**         | NO             | NO             |
 | **eitherMatch**                    | NO             | NO             |
-| **idJ / oeqJ / idStrictRec**       | NO             | NO             |
-| **equivApply / pathApp**           | NO             | NO             |
+| **pathApp**                        | NO             | NO             |
 | **transp / hcomp (cubical β)**     | NO             | NO             |
-| **modElim**                        | NO             | NO             |
 
 ## Architectural decisions
 

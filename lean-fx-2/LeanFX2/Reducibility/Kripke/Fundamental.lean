@@ -812,4 +812,129 @@ theorem ReducibleK.fundamental_equivReflIdAtId_sn
   Term.equivReflIdAtId_isStronglyNormalizing
     innerLevel innerLevelLt carrier carrierRaw
 
+/-! ## SN-preservation wrappers for SN-only eliminators
+
+Eliminators whose underlying SN preservation requires only SN of their
+subterms (no full Reducible closure) ship as Kripke-namespace
+fundamentals via direct delegation to `Term.X_isStronglyNormalizing`.
+Eliminators that require a full `Reducible` scrutinee or arrow
+application closure (`app`, `appPi`, `natElim`, `natRec`, `listElim`,
+`optionMatch`, `eitherMatch`, `pathApp`) remain Phase B targets that
+ship through `arrow_apply` chains. -/
+
+/-- SN of boolElim via Kripke: SN(scrutinee), SN(then), SN(else) →
+SN(boolElim scrutinee then else). -/
+theorem ReducibleK.fundamental_boolElim_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue)
+        thenRaw}
+    {elseBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse)
+        elseRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (thenIsSN : Term.isStronglyNormalizing thenBranch)
+    (elseIsSN : Term.isStronglyNormalizing elseBranch) :
+    Term.isStronglyNormalizing
+      (Term.boolElim scrutinee thenBranch elseBranch) :=
+  Term.boolElim_isStronglyNormalizing scrutineeIsSN thenIsSN elseIsSN
+
+/-- SN of idJ via Kripke: SN(base), SN(witness) → SN(idJ base witness). -/
+theorem ReducibleK.fundamental_idJ_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing (Term.idJ baseCase witness) :=
+  Term.idJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- SN of oeqJ via Kripke: SN(base), SN(witness) → SN(oeqJ base witness). -/
+theorem ReducibleK.fundamental_oeqJ_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing (Term.oeqJ baseCase witness) :=
+  Term.oeqJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- SN of idStrictRec via Kripke: SN(base), SN(witness) → SN. -/
+theorem ReducibleK.fundamental_idStrictRec_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx
+        (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRec modeIsStrict baseCase witness) :=
+  Term.idStrictRec_isStronglyNormalizing modeIsStrict
+    baseCaseIsSN witnessIsSN
+
+/-- SN of equivApp via Kripke: SN(equiv), SN(argument) → SN. -/
+theorem ReducibleK.fundamental_equivApp_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term context carrierA argumentRaw}
+    (equivIsSN : Term.isStronglyNormalizing equivTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm) :
+    Term.isStronglyNormalizing
+      (Term.equivApp equivTerm argumentTerm) :=
+  Term.equivApp_isStronglyNormalizing equivIsSN argumentIsSN
+
+/-- SN of equivApply via Kripke: SN(equiv), SN(argument) → SN. -/
+theorem ReducibleK.fundamental_equivApply_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {equivRaw argumentRaw : RawTerm scope}
+    {equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term context carrierA argumentRaw}
+    (equivIsSN : Term.isStronglyNormalizing equivTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm) :
+    Term.isStronglyNormalizing
+      (Term.equivApply equivTerm argumentTerm) :=
+  Term.equivApply_isStronglyNormalizing equivIsSN argumentIsSN
+
+/-- SN of modElim via Kripke: SN(inner) → SN(modElim inner). -/
+theorem ReducibleK.fundamental_modElim_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term context innerType innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerTerm) :
+    Term.isStronglyNormalizing (Term.modElim innerTerm) :=
+  Term.modElim_isStronglyNormalizing innerIsSN
+
 end LeanFX2
