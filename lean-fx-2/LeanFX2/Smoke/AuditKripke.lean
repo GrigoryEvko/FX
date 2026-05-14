@@ -6,6 +6,7 @@ import LeanFX2.Reducibility.Kripke.Project
 import LeanFX2.Reducibility.Kripke.SNClosure
 import LeanFX2.Reducibility.Kripke.Fundamental
 import LeanFX2.Reducibility.Kripke.Headline
+import LeanFX2.Reducibility.Kripke.Arrow
 
 /-! Kripke Tait reducibility zero-axiom audit log. -/
 
@@ -59,3 +60,5 @@ import LeanFX2.Reducibility.Kripke.Headline
 #print axioms LeanFX2.ReducibleK.fundamental_optionSome_sn
 #print axioms LeanFX2.ReducibleK.fundamental_eitherInl_sn
 #print axioms LeanFX2.ReducibleK.fundamental_eitherInr_sn
+#print axioms LeanFX2.ReducibleK.arrow_sn
+#print axioms LeanFX2.ReducibleK.arrow_apply
