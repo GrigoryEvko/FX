@@ -524,6 +524,36 @@ theorem TermSubst.renameOutput_position_HEq
     (Ty.subst_rename_commute sigma rho (varType sourceCtx position))
     (Term.rename termRenaming (termSubst position))
 
+/-- The cast in `TermSubst.precomposeRenaming` changes only the type
+index.
+
+This is the input-side companion to `TermSubst.renameOutput_position_HEq`:
+the raw substituted entry is exactly `termSubst (rho position)`, while
+the type index is transported through `Ty.rename_subst_commute` and the
+typed renaming lookup equation. -/
+theorem TermSubst.precomposeRenaming_position_HEq
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope middleScope}
+    {sigma : Subst level middleScope targetScope}
+    (termRenaming : TermRenaming sourceCtx middleCtx rho)
+    (termSubst : TermSubst middleCtx targetCtx sigma)
+    (position : Fin sourceScope) :
+    HEq (TermSubst.precomposeRenaming termRenaming termSubst position)
+      (termSubst (rho position)) := by
+  unfold TermSubst.precomposeRenaming
+  exact Term.type_eq_cast_heq
+    (by
+      show (varType middleCtx (rho position)).subst sigma =
+        (varType sourceCtx position).subst
+          (Subst.precomposeRenaming rho sigma)
+      rw [termRenaming position]
+      exact Ty.rename_subst_commute rho sigma
+        (varType sourceCtx position))
+    (termSubst (rho position))
+
 /-- A raw-index cast on a typed term is heterogeneously equal to the
 original term. -/
 theorem Term.raw_eq_cast_heq

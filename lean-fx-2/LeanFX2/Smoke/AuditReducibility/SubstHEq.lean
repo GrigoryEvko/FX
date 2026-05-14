@@ -146,5 +146,6 @@ open LeanFX2
 #print axioms ReducibleSubst.renameOutput_of_renamingStable
 #print axioms TermSubst.renameOutput_position_HEq
 #print axioms Term.rename_type_eq_symm_cast_heq
+#print axioms TermSubst.precomposeRenaming_position_HEq
 
 end LeanFX2.Smoke
