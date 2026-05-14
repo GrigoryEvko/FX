@@ -509,5 +509,26 @@ def IsRenamingStableIsSN
     (termRenaming : TermRenaming sourceCtx targetCtx rho),
     Term.isStronglyNormalizing (Term.rename termRenaming sourceTerm)
 
+/-- On SN-direct candidate arms, renaming-stable strong normalization
+recovers renaming-stable reducibility.
+
+This is the stable analogue of
+`Reducible.of_isStronglyNormalizing_when_SNDirect`: callers prove the
+raw SN transport once, while the classifier discharges the reducibility
+candidate at every renamed world. -/
+theorem IsRenamingStableReducible.of_stableSN_when_SNDirect
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceType : Ty level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    {sourceTerm : Term sourceCtx sourceType sourceRaw}
+    (sourceTypeIsSNDirect : Reducible.IsSNDirect sourceType)
+    (sourceTermIsStableSN : IsRenamingStableIsSN sourceTerm) :
+    IsRenamingStableReducible sourceType sourceTerm := by
+  intro _targetScope _targetCtx _rho rhoIsInjective termRenaming
+  exact Reducible.of_isStronglyNormalizing_when_SNDirect
+    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
+    (sourceTermIsStableSN rhoIsInjective termRenaming)
+
 
 end LeanFX2

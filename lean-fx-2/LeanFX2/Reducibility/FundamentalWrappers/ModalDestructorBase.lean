@@ -131,12 +131,13 @@ theorem Reducible.fundamental_subsume_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible (sourceType.subst sigma)
       (Term.subst termSubst (Term.subsume innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Reducible.of_isStronglyNormalizing_when_SNDirect
-    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
-    (RawTerm.subsume_isStronglyNormalizing
-      (Reducible.isStronglyNormalizing
-        (innerIsStable rhoIsInjective termRenaming)))
+  exact IsRenamingStableReducible.of_stableSN_when_SNDirect
+    sourceTypeIsSNDirect
+    (by
+      intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+      exact RawTerm.subsume_isStronglyNormalizing
+        (Reducible.isStronglyNormalizing
+          (innerIsStable rhoIsInjective termRenaming)))
 
 /-- Stable modal introduction uses only the SN-direct candidate
 classifier, not one theorem per closed type. -/
@@ -156,12 +157,13 @@ theorem Reducible.fundamental_modIntro_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible (sourceType.subst sigma)
       (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Reducible.of_isStronglyNormalizing_when_SNDirect
-    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
-    (RawTerm.modIntro_isStronglyNormalizing
-      (Reducible.isStronglyNormalizing
-        (innerIsStable rhoIsInjective termRenaming)))
+  exact IsRenamingStableReducible.of_stableSN_when_SNDirect
+    sourceTypeIsSNDirect
+    (by
+      intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+      exact RawTerm.modIntro_isStronglyNormalizing
+        (Reducible.isStronglyNormalizing
+          (innerIsStable rhoIsInjective termRenaming)))
 
 /-- Stable modal elimination uses only the SN-direct candidate
 classifier, not one theorem per closed type. -/
@@ -181,11 +183,12 @@ theorem Reducible.fundamental_modElim_stable
         (Term.subst termSubst innerTerm)) :
     IsRenamingStableReducible (sourceType.subst sigma)
       (Term.subst termSubst (Term.modElim innerTerm)) := by
-  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
-  exact Reducible.of_isStronglyNormalizing_when_SNDirect
-    (Reducible.IsSNDirect.rename sourceTypeIsSNDirect)
-    (Term.modElim_isStronglyNormalizing
-      (Reducible.isStronglyNormalizing
-        (innerIsStable rhoIsInjective termRenaming)))
+  exact IsRenamingStableReducible.of_stableSN_when_SNDirect
+    sourceTypeIsSNDirect
+    (by
+      intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+      exact Term.modElim_isStronglyNormalizing
+        (Reducible.isStronglyNormalizing
+          (innerIsStable rhoIsInjective termRenaming)))
 
 end LeanFX2

@@ -100,6 +100,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_cumulUp_stable
 #print axioms Reducible.IsSNDirect.rename
 #print axioms Reducible.of_isStronglyNormalizing_when_SNDirect
+#print axioms IsRenamingStableReducible.of_stableSN_when_SNDirect
 #print axioms Reducible.fundamental_subsume_SNDirect
 #print axioms Reducible.fundamental_modIntro_SNDirect
 #print axioms Reducible.fundamental_modElim_SNDirect
