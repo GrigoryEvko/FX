@@ -800,4 +800,109 @@ theorem Reducible.fundamental_eitherMatch_at_either_sn_stable
       Reducible.isStronglyNormalizing
         (rightReducibleAtRho.2 valueTerm valueIH))
 
+/-! ## K12.21.U5 renaming-stable mirrors for natRec head-β endpoints
+
+`fundamental_natRecZero_at_nat` and `fundamental_natRecSucc_at_nat`
+ship per-canonical-introducer ι head-β endpoints at the `_sn` level
+(K12.22).  The K12.21.U5 contract supplies the matching
+`IsRenamingStableIsSN` mirrors: every typed Reducible IH becomes a
+`IsRenamingStableReducible` premise, and the renamed-world SN
+discharge runs through the raw endpoint
+`RawTerm.natRec_natZero_isStronglyNormalizing` /
+`RawTerm.natRec_natSucc_isStronglyNormalizing`. -/
+
+/-- Renaming-stable variant of `fundamental_natRecZero_at_nat`. -/
+theorem Reducible.fundamental_natRecZero_at_nat_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (zeroIsStable :
+      IsRenamingStableReducible (motiveType.subst sigma)
+        (Term.subst termSubst zeroBranch))
+    (succIsStable :
+      IsRenamingStableReducible
+        ((Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)).subst sigma)
+        (Term.subst termSubst succBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.natRec Term.natZero zeroBranch succBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have zeroReducibleAtRho :=
+    zeroIsStable rhoIsInjective termRenaming
+  have succReducibleAtRho :=
+    succIsStable rhoIsInjective termRenaming
+  exact RawTerm.natRec_natZero_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing zeroReducibleAtRho)
+    (Reducible.isStronglyNormalizing succReducibleAtRho)
+
+/-- Renaming-stable variant of `fundamental_natRecSucc_at_nat`. -/
+theorem Reducible.fundamental_natRecSucc_at_nat_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (predecessorIsStable :
+      IsRenamingStableReducible
+        ((Ty.nat : Ty level scope).subst sigma)
+        (Term.subst termSubst predecessor))
+    (zeroIsStable :
+      IsRenamingStableReducible (motiveType.subst sigma)
+        (Term.subst termSubst zeroBranch))
+    (succIsStable :
+      IsRenamingStableReducible
+        ((Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)).subst sigma)
+        (Term.subst termSubst succBranch))
+    (recursiveIsStable :
+      IsRenamingStableReducible (motiveType.subst sigma)
+        (Term.subst termSubst
+          (Term.natRec predecessor zeroBranch succBranch))) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.natRec
+          (Term.natSucc predecessor) zeroBranch succBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have predecessorReducibleAtRho :=
+    predecessorIsStable rhoIsInjective termRenaming
+  have zeroReducibleAtRho :=
+    zeroIsStable rhoIsInjective termRenaming
+  have succReducibleAtRho :=
+    succIsStable rhoIsInjective termRenaming
+  have recursiveReducibleAtRho :=
+    recursiveIsStable rhoIsInjective termRenaming
+  have predecessorIsSN :=
+    Reducible.isStronglyNormalizing predecessorReducibleAtRho
+  have zeroIsSN :=
+    Reducible.isStronglyNormalizing zeroReducibleAtRho
+  have succIsSN :=
+    Reducible.isStronglyNormalizing succReducibleAtRho
+  have recursiveIsSN :=
+    Reducible.isStronglyNormalizing recursiveReducibleAtRho
+  have contractumIsSN :=
+    Reducible.isStronglyNormalizing
+      ((succReducibleAtRho.2
+          (Term.rename termRenaming (Term.subst termSubst predecessor))
+          predecessorReducibleAtRho).2
+        (Term.rename termRenaming
+          (Term.subst termSubst
+            (Term.natRec predecessor zeroBranch succBranch)))
+        recursiveReducibleAtRho)
+  exact RawTerm.natRec_natSucc_isStronglyNormalizing
+    predecessorIsSN zeroIsSN succIsSN recursiveIsSN contractumIsSN
+
 end LeanFX2
