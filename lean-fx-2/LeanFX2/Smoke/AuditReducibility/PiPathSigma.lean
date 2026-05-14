@@ -132,5 +132,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_eitherMatch_eitherInr_at_eitherType_sn_stable
 #print axioms Reducible.fundamental_listElim_listNil_at_listType_sn
 #print axioms Reducible.fundamental_listElim_listNil_at_listType_sn_stable
+#print axioms Reducible.fundamental_listElim_listCons_at_listType_sn
+#print axioms Reducible.fundamental_listElim_listCons_at_listType_sn_stable
 
 end LeanFX2.Smoke

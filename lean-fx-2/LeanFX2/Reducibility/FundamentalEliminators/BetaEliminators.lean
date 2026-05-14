@@ -1361,4 +1361,134 @@ theorem Reducible.fundamental_listElim_listNil_at_listType_sn_stable
   exact RawTerm.listElim_listNil_isStronglyNormalizing
     nilIsSN consIsSN
 
+/-! ## K12.21.U5 head-ι at list-cons — fundamental wrapper
+
+`Term.listElim (Term.listCons headTerm tailTerm) nilBranch consBranch`
+ι-reduces to `Term.app (Term.app consBranch headTerm) tailTerm`.
+The cons branch carries a curried-two-arg arrow type
+`Ty.arrow elementType (Ty.arrow (Ty.listType elementType)
+motiveType)`, so the application SN witness needs **two** uses of
+arrow-closure:
+
+```
+consIH.2 (subst head) headIH
+  : Reducible (Ty.arrow (listType ...) motiveType)
+              (Term.app (subst consBranch) (subst head))
+(.2 above).2 (subst tail) tailIH
+  : Reducible motiveType
+              (Term.app (Term.app (subst consBranch) (subst head))
+                        (subst tail))
+```
+
+Raw endpoint `Term.listElim_listCons_isStronglyNormalizing`
+(NeutralSNIntro/Lists.lean:307). -/
+
+/-- **K12.21.U5 head-ι at list-cons** — fundamental wrapper for
+`Term.listElim (Term.listCons headTerm tailTerm) nilBranch
+consBranch` consuming `Reducible` witnesses of the substituted
+head, tail, nil branch, and curried cons branch.  Double
+arrow-closure use supplies the nested-app SN witness. -/
+theorem Reducible.fundamental_listElim_listCons_at_listType_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {headRaw tailRaw nilRaw consRaw : RawTerm scope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    {nilBranch : Term sourceCtx motiveType nilRaw}
+    {consBranch :
+        Term sourceCtx
+          (Ty.arrow elementType
+            (Ty.arrow (Ty.listType elementType) motiveType))
+          consRaw}
+    (headIH :
+        Reducible (elementType.subst sigma)
+          (Term.subst termSubst headTerm))
+    (tailIH :
+        Reducible ((Ty.listType elementType).subst sigma)
+          (Term.subst termSubst tailTerm))
+    (nilIH :
+        Reducible (motiveType.subst sigma)
+          (Term.subst termSubst nilBranch))
+    (consIH :
+        Reducible
+          ((Ty.arrow elementType
+            (Ty.arrow (Ty.listType elementType) motiveType)).subst sigma)
+          (Term.subst termSubst consBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.listElim
+          (Term.listCons headTerm tailTerm) nilBranch consBranch)) :=
+  Term.listElim_listCons_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing headIH)
+    (Reducible.isStronglyNormalizing tailIH)
+    (Reducible.isStronglyNormalizing nilIH)
+    (Reducible.isStronglyNormalizing consIH)
+    (Reducible.isStronglyNormalizing
+      ((consIH.2 (Term.subst termSubst headTerm) headIH).2
+        (Term.subst termSubst tailTerm) tailIH))
+
+/-- Renaming-stable variant of
+`fundamental_listElim_listCons_at_listType_sn`. -/
+theorem Reducible.fundamental_listElim_listCons_at_listType_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {headRaw tailRaw nilRaw consRaw : RawTerm scope}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    {nilBranch : Term sourceCtx motiveType nilRaw}
+    {consBranch :
+        Term sourceCtx
+          (Ty.arrow elementType
+            (Ty.arrow (Ty.listType elementType) motiveType))
+          consRaw}
+    (headIsStable :
+        IsRenamingStableReducible (elementType.subst sigma)
+          (Term.subst termSubst headTerm))
+    (tailIsStable :
+        IsRenamingStableReducible
+          ((Ty.listType elementType).subst sigma)
+          (Term.subst termSubst tailTerm))
+    (nilIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+          (Term.subst termSubst nilBranch))
+    (consIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow elementType
+            (Ty.arrow (Ty.listType elementType) motiveType)).subst sigma)
+          (Term.subst termSubst consBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.listElim
+          (Term.listCons headTerm tailTerm) nilBranch consBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have headReducibleAtRho :=
+    headIsStable rhoIsInjective termRenaming
+  have tailReducibleAtRho :=
+    tailIsStable rhoIsInjective termRenaming
+  have nilReducibleAtRho :=
+    nilIsStable rhoIsInjective termRenaming
+  have consReducibleAtRho :=
+    consIsStable rhoIsInjective termRenaming
+  have headIsSN := Reducible.isStronglyNormalizing headReducibleAtRho
+  have tailIsSN := Reducible.isStronglyNormalizing tailReducibleAtRho
+  have nilIsSN := Reducible.isStronglyNormalizing nilReducibleAtRho
+  have consIsSN := Reducible.isStronglyNormalizing consReducibleAtRho
+  have consAppIsSN :=
+    Reducible.isStronglyNormalizing
+      ((consReducibleAtRho.2
+          (Term.rename termRenaming (Term.subst termSubst headTerm))
+          headReducibleAtRho).2
+        (Term.rename termRenaming (Term.subst termSubst tailTerm))
+        tailReducibleAtRho)
+  exact RawTerm.listElim_listCons_isStronglyNormalizing
+    headIsSN tailIsSN nilIsSN consIsSN consAppIsSN
+
 end LeanFX2
