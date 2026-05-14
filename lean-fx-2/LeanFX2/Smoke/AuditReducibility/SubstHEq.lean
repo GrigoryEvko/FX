@@ -147,6 +147,9 @@ open LeanFX2
 #print axioms TermSubst.renameOutput_position_HEq
 #print axioms Term.rename_type_eq_symm_cast_heq
 #print axioms TermSubst.precomposeRenaming_position_HEq
+#print axioms Subst.precompose_weaken_singleton_forTy_pointwise
+#print axioms Subst.precompose_weaken_singleton_forRaw_pointwise
+#print axioms TermSubst.precompose_weaken_singleton_position_HEq
 #print axioms Subst.precompose_lift_weaken_singleton_lift_forTy_pointwise
 #print axioms Subst.precompose_lift_weaken_singleton_lift_forRaw_pointwise
 #print axioms Term.rename_var_HEq

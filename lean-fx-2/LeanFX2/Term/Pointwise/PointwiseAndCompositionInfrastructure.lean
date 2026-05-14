@@ -570,6 +570,71 @@ theorem TermSubst.precomposeRenaming_position_HEq
         (varType sourceCtx position))
     (termSubst (rho position))
 
+/-- The underlying type-substitution component of weakening followed
+by singleton substitution is pointwise identity. -/
+theorem Subst.precompose_weaken_singleton_forTy_pointwise
+    {level scope : Nat}
+    (newType : Ty level scope)
+    (singletonRaw : RawTerm scope) :
+    ∀ position,
+      (Subst.precomposeRenaming RawRenaming.weaken
+        (Subst.singleton newType singletonRaw)).forTy position =
+        (@Subst.identity level scope).forTy position
+  | ⟨_, _⟩ => rfl
+
+/-- The underlying raw-substitution component of weakening followed
+by singleton substitution is pointwise identity. -/
+theorem Subst.precompose_weaken_singleton_forRaw_pointwise
+    {level scope : Nat}
+    (newType : Ty level scope)
+    (singletonRaw : RawTerm scope) :
+    ∀ position,
+      (Subst.precomposeRenaming RawRenaming.weaken
+        (Subst.singleton newType singletonRaw)).forRaw position =
+        (@Subst.identity level scope).forRaw position
+  | ⟨_, _⟩ => rfl
+
+/-- Precomposing weakening with singleton substitution is entrywise the
+identity typed substitution.
+
+This is the depth-zero counterpart of
+`TermSubst.precompose_lift_weaken_singleton_lift_position_HEq`; together
+they are the variable-entry base cases for the general cancel theorem
+needed by the M04 lambda route. -/
+theorem TermSubst.precompose_weaken_singleton_position_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (position : Fin scope) :
+    HEq
+      (TermSubst.precomposeRenaming
+        (TermRenaming.weakenStep context newType)
+        (TermSubst.singleton singletonTerm)
+        position)
+      (TermSubst.identity context position) := by
+  apply HEq.trans
+  · exact TermSubst.precomposeRenaming_position_HEq
+      (TermRenaming.weakenStep context newType)
+      (TermSubst.singleton singletonTerm)
+      position
+  · rcases position with ⟨positionIndex, positionIsWithinScope⟩
+    simp only [RawRenaming.weaken, TermSubst.singleton, TermSubst.identity]
+    exact HEq.trans
+      (Term.type_eq_symm_cast_heq
+        (Ty.weaken_subst_singleton
+          (varType context ⟨positionIndex, positionIsWithinScope⟩)
+          newType singletonRaw))
+      (HEq.symm
+        (Term.type_eq_symm_cast_heq
+          (context := context)
+          (typeEq := Ty.subst_identity
+            (varType context ⟨positionIndex, positionIsWithinScope⟩))
+          (targetTerm := Term.var
+            (context := context)
+            ⟨positionIndex, positionIsWithinScope⟩)))
+
 /-- The underlying type-substitution component of lifted weakening
 followed by lifted singleton is pointwise identity under the original
 binder. -/
