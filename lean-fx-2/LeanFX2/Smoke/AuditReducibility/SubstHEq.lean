@@ -39,6 +39,9 @@ open LeanFX2
 #print axioms RawTerm.weaken_lift_subst_singleton_lift
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
+#print axioms TermSubst.identity_lift_zero_HEq
+#print axioms TermSubst.identity_lift_succ_HEq
+#print axioms TermSubst.identity_lift_position_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton

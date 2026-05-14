@@ -1,4 +1,5 @@
 import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
+import LeanFX2.Term.Pointwise.IdentitySubst
 import LeanFX2.Term.Pointwise.VariableAndIntroArms
 import LeanFX2.Term.Pointwise.ApplicationAndSigmaArms
 import LeanFX2.Term.Pointwise.EliminatorArms
@@ -8,7 +9,7 @@ import LeanFX2.Term.Pointwise.EffectAndHoTTHetArms
 
 /-! # LeanFX2.Term.Pointwise — Term pointwise congruence (shim)
 
-Carved into 7 sub-modules along the constructor-family axis.  Each
+Carved into 8 sub-modules along the constructor-family axis.  Each
 sub-module ships a coherent group of weaken-subst-singleton arms (plus,
 in slice 1, the shared pointwise/composition infrastructure that every
 arm consumes).
@@ -16,6 +17,7 @@ arm consumes).
 | Sub-module | Family |
 | --- | --- |
 | `PointwiseAndCompositionInfrastructure` | TermSubst pointwise equality + composition + cast HEq + consSingleton |
+| `IdentitySubst` | typed identity-substitution erasure helpers |
 | `VariableAndIntroArms` | var, unit, lambdas, booleans, nats zero/succ, list nil/cons, option none/some, eithers, intervals + ops, path lambda, modal intro/elim/subsume |
 | `ApplicationAndSigmaArms` | app, appPi, pair, fst, snd |
 | `EliminatorArms` | boolElim, natElim, natRec, listElim, optionMatch, eitherMatch |
@@ -25,4 +27,4 @@ arm consumes).
 
 ## Root status
 
-Kernel — shim re-exporting the seven Pointwise sub-modules. -/
+Kernel — shim re-exporting the eight Pointwise sub-modules. -/
