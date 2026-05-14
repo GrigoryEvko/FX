@@ -570,6 +570,34 @@ theorem TermSubst.precomposeRenaming_position_HEq
         (varType sourceCtx position))
     (termSubst (rho position))
 
+/-- The underlying type-substitution component of lifted weakening
+followed by lifted singleton is pointwise identity under the original
+binder. -/
+theorem Subst.precompose_lift_weaken_singleton_lift_forTy_pointwise
+    {level scope : Nat}
+    (newType : Ty level scope)
+    (singletonRaw : RawTerm scope) :
+    ∀ position,
+      (Subst.precomposeRenaming RawRenaming.weaken.lift
+        ((Subst.singleton newType singletonRaw).lift)).forTy position =
+        (@Subst.identity level (scope + 1)).forTy position
+  | ⟨0, _⟩ => rfl
+  | ⟨_ + 1, _⟩ => rfl
+
+/-- The underlying raw-substitution component of lifted weakening
+followed by lifted singleton is pointwise identity under the original
+binder. -/
+theorem Subst.precompose_lift_weaken_singleton_lift_forRaw_pointwise
+    {level scope : Nat}
+    (newType : Ty level scope)
+    (singletonRaw : RawTerm scope) :
+    ∀ position,
+      (Subst.precomposeRenaming RawRenaming.weaken.lift
+        ((Subst.singleton newType singletonRaw).lift)).forRaw position =
+        (@Subst.identity level (scope + 1)).forRaw position
+  | ⟨0, _⟩ => rfl
+  | ⟨_ + 1, _⟩ => rfl
+
 /-- Precomposing the lifted weakening renaming with a lifted singleton
 substitution is entrywise the identity substitution under the original
 binder.
