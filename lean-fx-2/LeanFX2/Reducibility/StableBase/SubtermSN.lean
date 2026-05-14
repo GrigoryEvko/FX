@@ -98,41 +98,6 @@ theorem RawTerm.app_argument_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing argumentRaw :=
   RawTerm.app_argument_isStronglyNormalizing_aux appIsSN rfl
 
-/-- Shape-specialized inversion for predecessor SN from successor SN. -/
-theorem RawTerm.natSucc_predecessor_isStronglyNormalizing_aux {scope : Nat}
-    {source : RawTerm scope}
-    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
-    ∀ {predecessorRaw : RawTerm scope},
-      source = RawTerm.natSucc predecessorRaw →
-      RawTerm.isStronglyNormalizing predecessorRaw := by
-  induction sourceIsSN with
-  | intro currentSource closure inductiveHypothesis =>
-    intro predecessorRaw sourceEq
-    cases sourceEq
-    refine RawTerm.isStronglyNormalizing.intro predecessorRaw ?_
-    intro predecessorTarget predecessorProgress
-    have succProgress :
-        RawStep.parProgress
-          (RawTerm.natSucc predecessorRaw)
-          (RawTerm.natSucc predecessorTarget) := by
-      refine ⟨RawStep.par.natSucc predecessorProgress.1, ?_⟩
-      intro succEq
-      apply predecessorProgress.2
-      injection succEq
-    exact inductiveHypothesis
-      (RawTerm.natSucc predecessorTarget) succProgress rfl
-
-/-- If a natural successor is strongly normalizing, its predecessor is
-strongly normalizing.  Used by nat-eliminator successor ι expansions. -/
-theorem RawTerm.natSucc_predecessor_isStronglyNormalizing {scope : Nat}
-    {predecessorRaw : RawTerm scope}
-    (successorIsSN :
-      RawTerm.isStronglyNormalizing
-        (RawTerm.natSucc predecessorRaw)) :
-    RawTerm.isStronglyNormalizing predecessorRaw :=
-  RawTerm.natSucc_predecessor_isStronglyNormalizing_aux
-    successorIsSN rfl
-
 /-- Shape-specialized inversion for first component SN from pair SN. -/
 theorem RawTerm.pair_first_isStronglyNormalizing_aux {scope : Nat}
     {source : RawTerm scope}
