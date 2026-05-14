@@ -844,4 +844,93 @@ theorem Term.natRec_strong_normalization_via_kripke
   ReducibleK.fundamental_natRec_sn scrutineeIsSN zeroIsSN succIsSN
     contractumIsSN
 
+/-- SN of `Term.interval0` via Kripke.  Closed leaf — no premises. -/
+theorem Term.interval0_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Term.isStronglyNormalizing (Term.interval0 (context := context)) :=
+  Term.interval0_isStronglyNormalizing
+
+/-- SN of `Term.interval1` via Kripke.  Closed leaf — no premises. -/
+theorem Term.interval1_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Term.isStronglyNormalizing (Term.interval1 (context := context)) :=
+  Term.interval1_isStronglyNormalizing
+
+/-- SN of `Term.universeCode` via Kripke.  Closed type-code former. -/
+theorem Term.universeCode_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Term.isStronglyNormalizing
+      (Term.universeCode (context := context)
+        innerLevel outerLevel cumulOk levelLe) :=
+  ReducibleK.fundamental_universeCode_sn
+    innerLevel outerLevel cumulOk levelLe
+
+/-- SN of `Term.piTyCode` via Kripke. -/
+theorem Term.piTyCode_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (domainCodeIsSN : RawTerm.isStronglyNormalizing domainCodeRaw)
+    (codomainCodeIsSN : RawTerm.isStronglyNormalizing codomainCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.piTyCode (context := context)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  ReducibleK.fundamental_piTyCode_sn outerLevel levelLe
+    domainCodeIsSN codomainCodeIsSN
+
+/-- SN of `Term.sigmaTyCode` via Kripke. -/
+theorem Term.sigmaTyCode_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (domainCodeIsSN : RawTerm.isStronglyNormalizing domainCodeRaw)
+    (codomainCodeIsSN : RawTerm.isStronglyNormalizing codomainCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.sigmaTyCode (context := context)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  ReducibleK.fundamental_sigmaTyCode_sn outerLevel levelLe
+    domainCodeIsSN codomainCodeIsSN
+
+/-- SN of `Term.productCode` via Kripke. -/
+theorem Term.productCode_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw secondCodeRaw : RawTerm scope}
+    (firstCodeIsSN : RawTerm.isStronglyNormalizing firstCodeRaw)
+    (secondCodeIsSN : RawTerm.isStronglyNormalizing secondCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.productCode (context := context)
+        outerLevel levelLe firstCodeRaw secondCodeRaw) :=
+  ReducibleK.fundamental_productCode_sn outerLevel levelLe
+    firstCodeIsSN secondCodeIsSN
+
+/-- SN of `Term.sumCode` via Kripke. -/
+theorem Term.sumCode_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (leftCodeIsSN : RawTerm.isStronglyNormalizing leftCodeRaw)
+    (rightCodeIsSN : RawTerm.isStronglyNormalizing rightCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.sumCode (context := context)
+        outerLevel levelLe leftCodeRaw rightCodeRaw) :=
+  ReducibleK.fundamental_sumCode_sn outerLevel levelLe
+    leftCodeIsSN rightCodeIsSN
+
 end LeanFX2

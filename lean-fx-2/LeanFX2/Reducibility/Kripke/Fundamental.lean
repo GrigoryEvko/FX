@@ -990,4 +990,104 @@ theorem ReducibleK.fundamental_natRec_sn
   Term.natRec_isStronglyNormalizing
     scrutineeIsSN zeroIsSN succIsSN contractumIsSN
 
+/-! ## Closed-leaf type-code fundamentals
+
+The five `Term.X_isStronglyNormalizing` lemmas in `NeutralSNClosure.TypeCodeSN`
+plus the two `Term.intervalN_isStronglyNormalizing` lemmas in
+`FundamentalAliases.DirectCases` give the Kripke fundamental cases
+for the seven closed-leaf canonical-value Term ctors that the
+upstream cascade left out. -/
+
+theorem ReducibleK.fundamental_interval0
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (stepCount : Nat) :
+    @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+      RawTerm.interval0 (Term.interval0 (context := sourceCtx)) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    exact (Term.interval0_isStronglyNormalizing (sourceCtx := sourceCtx))
+
+theorem ReducibleK.fundamental_interval1
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (stepCount : Nat) :
+    @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+      RawTerm.interval1 (Term.interval1 (context := sourceCtx)) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    exact (Term.interval1_isStronglyNormalizing (sourceCtx := sourceCtx))
+
+theorem ReducibleK.fundamental_universeCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Term.isStronglyNormalizing
+      (Term.universeCode (context := sourceCtx)
+        innerLevel outerLevel cumulOk levelLe) :=
+  Term.universeCode_isStronglyNormalizing
+    innerLevel outerLevel cumulOk levelLe
+
+theorem ReducibleK.fundamental_piTyCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (domainCodeIsSN : RawTerm.isStronglyNormalizing domainCodeRaw)
+    (codomainCodeIsSN : RawTerm.isStronglyNormalizing codomainCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.piTyCode (context := sourceCtx)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  Term.piTyCode_isStronglyNormalizing outerLevel levelLe
+    domainCodeIsSN codomainCodeIsSN
+
+theorem ReducibleK.fundamental_sigmaTyCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw : RawTerm scope}
+    {codomainCodeRaw : RawTerm (scope + 1)}
+    (domainCodeIsSN : RawTerm.isStronglyNormalizing domainCodeRaw)
+    (codomainCodeIsSN : RawTerm.isStronglyNormalizing codomainCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.sigmaTyCode (context := sourceCtx)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  Term.sigmaTyCode_isStronglyNormalizing outerLevel levelLe
+    domainCodeIsSN codomainCodeIsSN
+
+theorem ReducibleK.fundamental_productCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {firstCodeRaw secondCodeRaw : RawTerm scope}
+    (firstCodeIsSN : RawTerm.isStronglyNormalizing firstCodeRaw)
+    (secondCodeIsSN : RawTerm.isStronglyNormalizing secondCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.productCode (context := sourceCtx)
+        outerLevel levelLe firstCodeRaw secondCodeRaw) :=
+  Term.productCode_isStronglyNormalizing outerLevel levelLe
+    firstCodeIsSN secondCodeIsSN
+
+theorem ReducibleK.fundamental_sumCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (leftCodeIsSN : RawTerm.isStronglyNormalizing leftCodeRaw)
+    (rightCodeIsSN : RawTerm.isStronglyNormalizing rightCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.sumCode (context := sourceCtx)
+        outerLevel levelLe leftCodeRaw rightCodeRaw) :=
+  Term.sumCode_isStronglyNormalizing outerLevel levelLe
+    leftCodeIsSN rightCodeIsSN
+
 end LeanFX2
