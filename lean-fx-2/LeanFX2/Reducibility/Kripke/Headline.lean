@@ -163,4 +163,106 @@ theorem Term.recordProj_strong_normalization_via_kripke
     Term.isStronglyNormalizing (Term.recordProj recordValue) :=
   ReducibleK.fundamental_recordProj_sn recordIsSN
 
+/-- SN of refineIntro via Kripke. -/
+theorem Term.refineIntro_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term context baseType valueRaw}
+    {predicateProof : Term context Ty.unit proofRaw}
+    (valueIsSN : Term.isStronglyNormalizing baseValue)
+    (proofIsSN : Term.isStronglyNormalizing predicateProof) :
+    Term.isStronglyNormalizing
+      (Term.refineIntro (predicate := predicate) baseValue predicateProof) :=
+  ReducibleK.fundamental_refineIntro_sn valueIsSN proofIsSN
+
+/-- SN of refineElim via Kripke. -/
+theorem Term.refineElim_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    {refinedValue : Term context (Ty.refine baseType predicate) refinedRaw}
+    (refinedIsSN : Term.isStronglyNormalizing refinedValue) :
+    Term.isStronglyNormalizing (Term.refineElim refinedValue) :=
+  ReducibleK.fundamental_refineElim_sn refinedIsSN
+
+/-- SN of codataUnfold via Kripke. -/
+theorem Term.codataUnfold_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term context stateType stateRaw}
+    {transition :
+        Term context (Ty.arrow stateType outputType) transitionRaw}
+    (stateIsSN : Term.isStronglyNormalizing initialState)
+    (transitionIsSN : Term.isStronglyNormalizing transition) :
+    Term.isStronglyNormalizing
+      (Term.codataUnfold initialState transition) :=
+  ReducibleK.fundamental_codataUnfold_sn stateIsSN transitionIsSN
+
+/-- SN of sessionRecv via Kripke. -/
+theorem Term.sessionRecv_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (channelIsSN : Term.isStronglyNormalizing channel) :
+    Term.isStronglyNormalizing (Term.sessionRecv channel) :=
+  ReducibleK.fundamental_sessionRecv_sn channelIsSN
+
+/-- SN of sessionSend via Kripke. -/
+theorem Term.sessionSend_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (channelIsSN : Term.isStronglyNormalizing channel)
+    (payloadIsSN : Term.isStronglyNormalizing payload) :
+    Term.isStronglyNormalizing
+      (Term.sessionSend protocolStep channel payload) :=
+  ReducibleK.fundamental_sessionSend_sn protocolStep channelIsSN payloadIsSN
+
+/-- SN of intervalOpp via Kripke. -/
+theorem Term.intervalOpp_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerRaw : RawTerm scope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerValue) :
+    Term.isStronglyNormalizing (Term.intervalOpp innerValue) :=
+  Term.intervalOpp_isStronglyNormalizing innerIsSN
+
+/-- SN of intervalMeet via Kripke. -/
+theorem Term.intervalMeet_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsSN : Term.isStronglyNormalizing leftValue)
+    (rightIsSN : Term.isStronglyNormalizing rightValue) :
+    Term.isStronglyNormalizing (Term.intervalMeet leftValue rightValue) :=
+  Term.intervalMeet_isStronglyNormalizing leftIsSN rightIsSN
+
+/-- SN of intervalJoin via Kripke. -/
+theorem Term.intervalJoin_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsSN : Term.isStronglyNormalizing leftValue)
+    (rightIsSN : Term.isStronglyNormalizing rightValue) :
+    Term.isStronglyNormalizing (Term.intervalJoin leftValue rightValue) :=
+  Term.intervalJoin_isStronglyNormalizing leftIsSN rightIsSN
+
 end LeanFX2

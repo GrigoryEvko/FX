@@ -112,3 +112,11 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.subsume_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.recordIntro_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.recordProj_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.refineIntro_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.refineElim_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.codataUnfold_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.sessionRecv_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.sessionSend_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.intervalOpp_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.intervalMeet_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.intervalJoin_strong_normalization_via_kripke
