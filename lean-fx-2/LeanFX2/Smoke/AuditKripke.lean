@@ -47,3 +47,8 @@ import LeanFX2.Reducibility.Kripke.Headline
 #print axioms LeanFX2.Term.boolTrue_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.boolFalse_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.natZero_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_var_unit
+#print axioms LeanFX2.ReducibleK.fundamental_var_bool
+#print axioms LeanFX2.ReducibleK.fundamental_var_nat
+#print axioms LeanFX2.ReducibleK.fundamental_var_empty
+#print axioms LeanFX2.ReducibleK.fundamental_var_interval
