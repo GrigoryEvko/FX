@@ -7,9 +7,11 @@ family for every term constructor, plus the supporting cast/HEq
 glue (`of_neutral_progress_closure`, `of_type_eq_*_cast`,
 `of_heq`, `Term.type_eq_cast_heq`, `Term.raw_eq_cast_heq`,
 `Term.type_raw_eq_cast_heq`, `Term.subst_type_eq_cast_heq`,
+`Term.rename_type_eq_cast_heq`, `Term.weaken_head_type_eq_heq`,
 `Ty.weaken_subst_lift_singleton`, `RawTerm.subst_lift_singleton_eq_subst0`,
 `RawTerm.weaken_lift_subst_singleton_lift`),
 `Reducible.of_varShape`, `TermSubst.identity` / `renameOutput`
+/ `precomposeRenaming`
 / `consSingleton`, and `TermSubst.lift_zero_subst_singleton_heq`.
 
 ## Root status
@@ -26,12 +28,15 @@ open LeanFX2
 #print axioms Term.raw_eq_cast_heq
 #print axioms Term.type_raw_eq_cast_heq
 #print axioms Term.subst_type_eq_cast_heq
+#print axioms Term.rename_type_eq_cast_heq
+#print axioms Term.weaken_head_type_eq_heq
 #print axioms Ty.weaken_subst_lift_singleton
 #print axioms RawTerm.subst_lift_singleton_eq_subst0
 #print axioms RawTerm.weaken_lift_subst_singleton_lift
 #print axioms Reducible.of_varShape
 #print axioms TermSubst.identity
 #print axioms TermSubst.renameOutput
+#print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton
 #print axioms TermSubst.lift_zero_subst_singleton_heq
 #print axioms Term.weaken_subst_singleton_var_heq

@@ -14,6 +14,37 @@ singleton constructor arm. -/
 
 namespace LeanFX2
 
+/-! ## Pre-composing typed substitutions by renamings
+
+The beta-contractum path needs to compare "rename, then substitute" with
+substituting by the corresponding input-precomposed substitution.  This
+is the typed companion of `Subst.precomposeRenaming`: the raw component
+is definitional, while the type index is transported through
+`Ty.rename_subst_commute` and the typed renaming's variable lookup
+equality. -/
+
+/-- Pull a typed substitution back along a typed renaming on its source
+context. -/
+def TermSubst.precomposeRenaming
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope middleScope}
+    {sigma : Subst level middleScope targetScope}
+    (termRenaming : TermRenaming sourceCtx middleCtx rho)
+    (termSubst : TermSubst middleCtx targetCtx sigma) :
+    TermSubst sourceCtx targetCtx (Subst.precomposeRenaming rho sigma) :=
+  fun position =>
+    (by
+      show (varType middleCtx (rho position)).subst sigma =
+        (varType sourceCtx position).subst
+          (Subst.precomposeRenaming rho sigma)
+      rw [termRenaming position]
+      exact Ty.rename_subst_commute rho sigma
+        (varType sourceCtx position)) ▸
+      termSubst (rho position)
+
 /-! ## Pointwise lemmas — TermSubsts agreeing on every position
 
 When two TermSubsts over the *same* underlying `Subst` agree pointwise,
@@ -432,6 +463,38 @@ theorem Term.rename_type_eq_symm_cast_heq
     HEq (Term.rename termRenaming (typeEq.symm ▸ targetTerm))
       ((congrArg (fun someType => Ty.rename someType rho) typeEq).symm ▸
         Term.rename termRenaming targetTerm) := by
+  cases typeEq
+  exact HEq.rfl
+
+/-- Renaming ignores a pure forward type-index cast up to the
+corresponding renamed type-index cast. -/
+theorem Term.rename_type_eq_cast_heq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {sourceType targetType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (typeEq : sourceType = targetType)
+    (sourceTerm : Term sourceCtx sourceType raw) :
+    HEq (Term.rename termRenaming (typeEq ▸ sourceTerm))
+      ((congrArg (fun someType => Ty.rename someType rho) typeEq) ▸
+        Term.rename termRenaming sourceTerm) := by
+  cases typeEq
+  exact HEq.rfl
+
+/-- Weakening a term is stable under equality of the new head type. -/
+theorem Term.weaken_head_type_eq_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType secondType : Ty level scope}
+    (typeEq : firstType = secondType)
+    {sourceType : Ty level scope}
+    {raw : RawTerm scope}
+    (sourceTerm : Term context sourceType raw) :
+    HEq (Term.weaken firstType sourceTerm)
+      (Term.weaken secondType sourceTerm) := by
   cases typeEq
   exact HEq.rfl
 
