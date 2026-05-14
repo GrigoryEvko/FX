@@ -50,6 +50,8 @@ open LeanFX2
 #print axioms Term.subst_identity_natZero_HEq
 #print axioms Term.subst_identity_interval0_HEq
 #print axioms Term.subst_identity_interval1_HEq
+#print axioms Term.subst_identity_listNil_HEq
+#print axioms Term.subst_identity_optionNone_HEq
 #print axioms Term.subst_identity_natSucc_HEq
 #print axioms Term.subst_identity_listCons_HEq
 #print axioms Term.subst_identity_optionSome_HEq
@@ -61,6 +63,12 @@ open LeanFX2
 #print axioms Term.subst_identity_modIntro_HEq
 #print axioms Term.subst_identity_modElim_HEq
 #print axioms Term.subst_identity_subsume_HEq
+#print axioms Term.subst_identity_app_HEq
+#print axioms Term.subst_identity_natElim_HEq
+#print axioms Term.subst_identity_natRec_HEq
+#print axioms Term.subst_identity_listElim_HEq
+#print axioms Term.subst_identity_optionMatch_HEq
+#print axioms Term.subst_identity_eitherMatch_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton

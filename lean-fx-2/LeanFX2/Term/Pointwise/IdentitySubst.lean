@@ -227,6 +227,30 @@ theorem Term.subst_identity_interval1_HEq
       (Term.interval1 (context := context)) := by
   rfl
 
+/-- Empty list case for ordinary identity substitution. -/
+theorem Term.subst_identity_listNil_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.listNil (context := context) (elementType := elementType)))
+      (Term.listNil (context := context) (elementType := elementType)) := by
+  simp only [Term.subst]
+  exact Term.listNil_HEq_congr (Ty.subst_identity elementType)
+
+/-- Empty option case for ordinary identity substitution. -/
+theorem Term.subst_identity_optionNone_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.optionNone (context := context) (elementType := elementType)))
+      (Term.optionNone (context := context) (elementType := elementType)) := by
+  simp only [Term.subst]
+  exact Term.optionNone_HEq_congr (Ty.subst_identity elementType)
+
 /-! ## Recursive value cases -/
 
 /-- Natural successor case for ordinary identity substitution. -/
@@ -455,5 +479,193 @@ theorem Term.subst_identity_subsume_HEq
     (Ty.subst_identity innerType)
     (RawTerm.subst_identity innerRaw)
     innerHEq
+
+/-! ## Non-dependent eliminator cases -/
+
+/-- Application case for ordinary identity substitution. -/
+theorem Term.subst_identity_app_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm :
+      Term context (Ty.arrow domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionHEq :
+      HEq (Term.subst (TermSubst.identity context) functionTerm)
+        functionTerm)
+    (argumentHEq :
+      HEq (Term.subst (TermSubst.identity context) argumentTerm)
+        argumentTerm) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.app functionTerm argumentTerm))
+      (Term.app functionTerm argumentTerm) := by
+  simp only [Term.subst]
+  exact Term.app_HEq_congr
+    (Ty.subst_identity domainType)
+    (Ty.subst_identity codomainType)
+    (RawTerm.subst_identity functionRaw)
+    (RawTerm.subst_identity argumentRaw)
+    functionHEq argumentHEq
+
+/-- Natural eliminator case for ordinary identity substitution. -/
+theorem Term.subst_identity_natElim_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutineeHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee)
+        scrutinee)
+    (zeroHEq :
+      HEq (Term.subst (TermSubst.identity context) zeroBranch)
+        zeroBranch)
+    (succHEq :
+      HEq (Term.subst (TermSubst.identity context) succBranch)
+        succBranch) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.natElim scrutinee zeroBranch succBranch))
+      (Term.natElim scrutinee zeroBranch succBranch) := by
+  simp only [Term.subst]
+  exact Term.natElim_HEq_congr
+    (Ty.subst_identity motiveType)
+    (RawTerm.subst_identity scrutineeRaw)
+    (RawTerm.subst_identity zeroRaw)
+    (RawTerm.subst_identity succRaw)
+    scrutineeHEq zeroHEq succHEq
+
+/-- Primitive natural recursor case for ordinary identity substitution. -/
+theorem Term.subst_identity_natRec_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw)
+    (scrutineeHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee)
+        scrutinee)
+    (zeroHEq :
+      HEq (Term.subst (TermSubst.identity context) zeroBranch)
+        zeroBranch)
+    (succHEq :
+      HEq (Term.subst (TermSubst.identity context) succBranch)
+        succBranch) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.natRec scrutinee zeroBranch succBranch))
+      (Term.natRec scrutinee zeroBranch succBranch) := by
+  simp only [Term.subst]
+  exact Term.natRec_HEq_congr
+    (Ty.subst_identity motiveType)
+    (RawTerm.subst_identity scrutineeRaw)
+    (RawTerm.subst_identity zeroRaw)
+    (RawTerm.subst_identity succRaw)
+    scrutineeHEq zeroHEq succHEq
+
+/-- List eliminator case for ordinary identity substitution. -/
+theorem Term.subst_identity_listElim_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch : Term context
+      (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+      consRaw)
+    (scrutineeHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee)
+        scrutinee)
+    (nilHEq :
+      HEq (Term.subst (TermSubst.identity context) nilBranch)
+        nilBranch)
+    (consHEq :
+      HEq (Term.subst (TermSubst.identity context) consBranch)
+        consBranch) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.listElim scrutinee nilBranch consBranch))
+      (Term.listElim scrutinee nilBranch consBranch) := by
+  simp only [Term.subst]
+  exact Term.listElim_HEq_congr
+    (Ty.subst_identity elementType)
+    (Ty.subst_identity motiveType)
+    (RawTerm.subst_identity scrutineeRaw)
+    (RawTerm.subst_identity nilRaw)
+    (RawTerm.subst_identity consRaw)
+    scrutineeHEq nilHEq consHEq
+
+/-- Option match case for ordinary identity substitution. -/
+theorem Term.subst_identity_optionMatch_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw)
+    (scrutineeHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee)
+        scrutinee)
+    (noneHEq :
+      HEq (Term.subst (TermSubst.identity context) noneBranch)
+        noneBranch)
+    (someHEq :
+      HEq (Term.subst (TermSubst.identity context) someBranch)
+        someBranch) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.optionMatch scrutinee noneBranch someBranch))
+      (Term.optionMatch scrutinee noneBranch someBranch) := by
+  simp only [Term.subst]
+  exact Term.optionMatch_HEq_congr
+    (Ty.subst_identity elementType)
+    (Ty.subst_identity motiveType)
+    (RawTerm.subst_identity scrutineeRaw)
+    (RawTerm.subst_identity noneRaw)
+    (RawTerm.subst_identity someRaw)
+    scrutineeHEq noneHEq someHEq
+
+/-- Either match case for ordinary identity substitution. -/
+theorem Term.subst_identity_eitherMatch_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    (scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw)
+    (scrutineeHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee)
+        scrutinee)
+    (leftHEq :
+      HEq (Term.subst (TermSubst.identity context) leftBranch)
+        leftBranch)
+    (rightHEq :
+      HEq (Term.subst (TermSubst.identity context) rightBranch)
+        rightBranch) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.eitherMatch scrutinee leftBranch rightBranch))
+      (Term.eitherMatch scrutinee leftBranch rightBranch) := by
+  simp only [Term.subst]
+  exact Term.eitherMatch_HEq_congr
+    (Ty.subst_identity leftType)
+    (Ty.subst_identity rightType)
+    (Ty.subst_identity motiveType)
+    (RawTerm.subst_identity scrutineeRaw)
+    (RawTerm.subst_identity leftRaw)
+    (RawTerm.subst_identity rightRaw)
+    scrutineeHEq leftHEq rightHEq
 
 end LeanFX2
