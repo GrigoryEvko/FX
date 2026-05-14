@@ -467,4 +467,91 @@ theorem ReducibleK.fundamental_uaToEquiv_sn
   Term.uaToEquiv_isStronglyNormalizing innerLevel innerLevelLt
     leftTy rightTy leftTyRaw rightTyRaw proofIsSN
 
+/-- arrowCode preserves SN: both domain/codomain SN → arrowCode SN. -/
+theorem ReducibleK.fundamental_arrowCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {domainCodeRaw codomainCodeRaw : RawTerm scope}
+    (domainCodeIsSN : RawTerm.isStronglyNormalizing domainCodeRaw)
+    (codomainCodeIsSN : RawTerm.isStronglyNormalizing codomainCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.arrowCode (context := sourceCtx)
+        outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
+  Term.arrowCode_isStronglyNormalizing outerLevel levelLe
+    domainCodeIsSN codomainCodeIsSN
+
+/-- eitherCode preserves SN: left/right SN → eitherCode SN. -/
+theorem ReducibleK.fundamental_eitherCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftCodeRaw rightCodeRaw : RawTerm scope}
+    (leftCodeIsSN : RawTerm.isStronglyNormalizing leftCodeRaw)
+    (rightCodeIsSN : RawTerm.isStronglyNormalizing rightCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.eitherCode (context := sourceCtx)
+        outerLevel levelLe leftCodeRaw rightCodeRaw) :=
+  Term.eitherCode_isStronglyNormalizing outerLevel levelLe
+    leftCodeIsSN rightCodeIsSN
+
+/-- equivCode preserves SN: left/right SN → equivCode SN. -/
+theorem ReducibleK.fundamental_equivCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {leftTypeCodeRaw rightTypeCodeRaw : RawTerm scope}
+    (leftTypeCodeIsSN : RawTerm.isStronglyNormalizing leftTypeCodeRaw)
+    (rightTypeCodeIsSN : RawTerm.isStronglyNormalizing rightTypeCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.equivCode (context := sourceCtx)
+        outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw) :=
+  Term.equivCode_isStronglyNormalizing outerLevel levelLe
+    leftTypeCodeIsSN rightTypeCodeIsSN
+
+/-- listCode preserves SN: element SN → listCode SN. -/
+theorem ReducibleK.fundamental_listCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (elementCodeIsSN : RawTerm.isStronglyNormalizing elementCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.listCode (context := sourceCtx)
+        outerLevel levelLe elementCodeRaw) :=
+  Term.listCode_isStronglyNormalizing outerLevel levelLe elementCodeIsSN
+
+/-- optionCode preserves SN: element SN → optionCode SN. -/
+theorem ReducibleK.fundamental_optionCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {elementCodeRaw : RawTerm scope}
+    (elementCodeIsSN : RawTerm.isStronglyNormalizing elementCodeRaw) :
+    Term.isStronglyNormalizing
+      (Term.optionCode (context := sourceCtx)
+        outerLevel levelLe elementCodeRaw) :=
+  Term.optionCode_isStronglyNormalizing outerLevel levelLe elementCodeIsSN
+
+/-- idCode preserves SN: typeCode + left + right SN → idCode SN. -/
+theorem ReducibleK.fundamental_idCode_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    {typeCodeRaw leftRaw rightRaw : RawTerm scope}
+    (typeCodeIsSN : RawTerm.isStronglyNormalizing typeCodeRaw)
+    (leftIsSN : RawTerm.isStronglyNormalizing leftRaw)
+    (rightIsSN : RawTerm.isStronglyNormalizing rightRaw) :
+    Term.isStronglyNormalizing
+      (Term.idCode (context := sourceCtx)
+        outerLevel levelLe typeCodeRaw leftRaw rightRaw) :=
+  Term.idCode_isStronglyNormalizing outerLevel levelLe
+    typeCodeIsSN leftIsSN rightIsSN
+
 end LeanFX2

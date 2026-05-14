@@ -79,3 +79,9 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_cumulUp_sn
 #print axioms LeanFX2.ReducibleK.fundamental_equivReflId_sn
 #print axioms LeanFX2.ReducibleK.fundamental_uaToEquiv_sn
+#print axioms LeanFX2.ReducibleK.fundamental_arrowCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_eitherCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_equivCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_listCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_optionCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_idCode_sn
