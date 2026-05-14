@@ -64,6 +64,11 @@ open LeanFX2
 #print axioms Term.subst_identity_modElim_HEq
 #print axioms Term.subst_identity_subsume_HEq
 #print axioms Term.subst_identity_app_HEq
+#print axioms Term.subst_identity_appPi_HEq
+#print axioms Term.subst_identity_pair_HEq
+#print axioms Term.subst_identity_fst_HEq
+#print axioms Term.subst_identity_snd_HEq
+#print axioms Term.subst_identity_boolElim_HEq
 #print axioms Term.subst_identity_natElim_HEq
 #print axioms Term.subst_identity_natRec_HEq
 #print axioms Term.subst_identity_listElim_HEq

@@ -509,6 +509,289 @@ theorem Term.subst_identity_app_HEq
     (RawTerm.subst_identity argumentRaw)
     functionHEq argumentHEq
 
+/-- Dependent function application case for ordinary identity substitution. -/
+theorem Term.subst_identity_appPi_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm :
+      Term context (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term context domainType argumentRaw)
+    (functionHEq :
+      HEq (Term.subst (TermSubst.identity context) functionTerm)
+        functionTerm)
+    (argumentHEq :
+      HEq (Term.subst (TermSubst.identity context) argumentTerm)
+        argumentTerm) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.appPi functionTerm argumentTerm))
+      (Term.appPi functionTerm argumentTerm) := by
+  simp only [Term.subst]
+  have codomainIdentity :
+      codomainType.subst (@Subst.identity level scope).lift = codomainType := by
+    rw [Ty.subst_pointwise
+      (@Subst.identity_lift_forTy_pointwise level scope)
+      (@Subst.identity_lift_forRaw_pointwise level scope)
+      codomainType]
+    exact Ty.subst_identity codomainType
+  have appPiWithoutCastHEq :
+      HEq
+        (Term.appPi
+          (Term.subst (TermSubst.identity context) functionTerm)
+          (Term.subst (TermSubst.identity context) argumentTerm))
+        (Term.appPi functionTerm argumentTerm) :=
+    Term.appPi_HEq_congr
+      (Ty.subst_identity domainType)
+      codomainIdentity
+      (RawTerm.subst_identity functionRaw)
+      (RawTerm.subst_identity argumentRaw)
+      functionHEq argumentHEq
+  have resultCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute codomainType domainType argumentRaw
+          Subst.identity).symm ▸
+          Term.appPi
+            (Term.subst (TermSubst.identity context) functionTerm)
+            (Term.subst (TermSubst.identity context) argumentTerm))
+        (Term.appPi
+          (Term.subst (TermSubst.identity context) functionTerm)
+          (Term.subst (TermSubst.identity context) argumentTerm)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute codomainType domainType argumentRaw
+        Subst.identity).symm
+      (Term.appPi
+        (Term.subst (TermSubst.identity context) functionTerm)
+        (Term.subst (TermSubst.identity context) argumentTerm))
+  exact HEq.trans resultCastHEq appPiWithoutCastHEq
+
+/-- Sigma pair introduction case for ordinary identity substitution. -/
+theorem Term.subst_identity_pair_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (firstValue : Term context firstType firstRaw)
+    (secondValue :
+      Term context (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstHEq :
+      HEq (Term.subst (TermSubst.identity context) firstValue) firstValue)
+    (secondHEq :
+      HEq (Term.subst (TermSubst.identity context) secondValue)
+        secondValue) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.pair (secondType := secondType) firstValue secondValue))
+      (Term.pair (secondType := secondType) firstValue secondValue) := by
+  simp only [Term.subst]
+  have secondTypeIdentity :
+      secondType.subst (@Subst.identity level scope).lift = secondType := by
+    rw [Ty.subst_pointwise
+      (@Subst.identity_lift_forTy_pointwise level scope)
+      (@Subst.identity_lift_forRaw_pointwise level scope)
+      secondType]
+    exact Ty.subst_identity secondType
+  have secondCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute secondType firstType firstRaw
+          Subst.identity) ▸
+          Term.subst (TermSubst.identity context) secondValue)
+        secondValue :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (Ty.subst0_subst_commute secondType firstType firstRaw
+          Subst.identity)
+        (Term.subst (TermSubst.identity context) secondValue))
+      secondHEq
+  exact Term.pair_HEq_congr
+    (Ty.subst_identity firstType)
+    secondTypeIdentity
+    (RawTerm.subst_identity firstRaw)
+    (RawTerm.subst_identity secondRaw)
+    firstHEq secondCastHEq
+
+/-- Sigma first projection case for ordinary identity substitution. -/
+theorem Term.subst_identity_fst_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairHEq :
+      HEq (Term.subst (TermSubst.identity context) pairTerm) pairTerm) :
+    HEq
+      (Term.subst (TermSubst.identity context) (Term.fst pairTerm))
+      (Term.fst pairTerm) := by
+  simp only [Term.subst]
+  have secondTypeIdentity :
+      secondType.subst (@Subst.identity level scope).lift = secondType := by
+    rw [Ty.subst_pointwise
+      (@Subst.identity_lift_forTy_pointwise level scope)
+      (@Subst.identity_lift_forRaw_pointwise level scope)
+      secondType]
+    exact Ty.subst_identity secondType
+  exact Term.fst_HEq_congr
+    (Ty.subst_identity firstType)
+    secondTypeIdentity
+    (RawTerm.subst_identity pairRaw)
+    pairHEq
+
+/-- Sigma second projection case for ordinary identity substitution. -/
+theorem Term.subst_identity_snd_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairHEq :
+      HEq (Term.subst (TermSubst.identity context) pairTerm) pairTerm) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.snd (secondType := secondType) pairTerm))
+      (Term.snd (secondType := secondType) pairTerm) := by
+  simp only [Term.subst]
+  have secondTypeIdentity :
+      secondType.subst (@Subst.identity level scope).lift = secondType := by
+    rw [Ty.subst_pointwise
+      (@Subst.identity_lift_forTy_pointwise level scope)
+      (@Subst.identity_lift_forRaw_pointwise level scope)
+      secondType]
+    exact Ty.subst_identity secondType
+  have sndWithoutCastHEq :
+      HEq
+        (Term.snd
+          (Term.subst (TermSubst.identity context) pairTerm))
+        (Term.snd (secondType := secondType) pairTerm) :=
+    Term.snd_HEq_congr
+      (Ty.subst_identity firstType)
+      secondTypeIdentity
+      (RawTerm.subst_identity pairRaw)
+      pairHEq
+  have resultCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute secondType firstType
+          (RawTerm.fst pairRaw) Subst.identity).symm ▸
+          Term.snd (Term.subst (TermSubst.identity context) pairTerm))
+        (Term.snd (Term.subst (TermSubst.identity context) pairTerm)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute secondType firstType
+        (RawTerm.fst pairRaw) Subst.identity).symm
+      (Term.snd (Term.subst (TermSubst.identity context) pairTerm))
+  exact HEq.trans resultCastHEq sndWithoutCastHEq
+
+/-- Dependent boolean eliminator case for ordinary identity substitution. -/
+theorem Term.subst_identity_boolElim_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutineeHEq :
+      HEq (Term.subst (TermSubst.identity context) scrutinee) scrutinee)
+    (thenHEq :
+      HEq (Term.subst (TermSubst.identity context) thenBranch) thenBranch)
+    (elseHEq :
+      HEq (Term.subst (TermSubst.identity context) elseBranch) elseBranch) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.boolElim scrutinee thenBranch elseBranch))
+      (Term.boolElim scrutinee thenBranch elseBranch) := by
+  simp only [Term.subst]
+  have motiveIdentity :
+      motiveType.subst (@Subst.identity level scope).lift = motiveType := by
+    rw [Ty.subst_pointwise
+      (@Subst.identity_lift_forTy_pointwise level scope)
+      (@Subst.identity_lift_forRaw_pointwise level scope)
+      motiveType]
+    exact Ty.subst_identity motiveType
+  have thenCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+          Subst.identity) ▸
+          Term.subst (TermSubst.identity context) thenBranch)
+        thenBranch :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+          Subst.identity)
+        (Term.subst (TermSubst.identity context) thenBranch))
+      thenHEq
+  have elseCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+          Subst.identity) ▸
+          Term.subst (TermSubst.identity context) elseBranch)
+        elseBranch :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+          Subst.identity)
+        (Term.subst (TermSubst.identity context) elseBranch))
+      elseHEq
+  have boolElimWithoutCastHEq :
+      HEq
+        (Term.boolElim
+          (motiveType := motiveType.subst (@Subst.identity level scope).lift)
+          (Term.subst (TermSubst.identity context) scrutinee)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+            Subst.identity) ▸
+            Term.subst (TermSubst.identity context) thenBranch)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+            Subst.identity) ▸
+            Term.subst (TermSubst.identity context) elseBranch))
+        (Term.boolElim scrutinee thenBranch elseBranch) :=
+    Term.boolElim_HEq_congr
+      motiveIdentity
+      (RawTerm.subst_identity scrutineeRaw)
+      (RawTerm.subst_identity thenRaw)
+      (RawTerm.subst_identity elseRaw)
+      scrutineeHEq thenCastHEq elseCastHEq
+  have resultCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute motiveType Ty.bool scrutineeRaw
+          Subst.identity).symm ▸
+          Term.boolElim
+            (motiveType := motiveType.subst
+              (@Subst.identity level scope).lift)
+            (Term.subst (TermSubst.identity context) scrutinee)
+            ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+              Subst.identity) ▸
+              Term.subst (TermSubst.identity context) thenBranch)
+            ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+              Subst.identity) ▸
+              Term.subst (TermSubst.identity context) elseBranch))
+        (Term.boolElim
+          (motiveType := motiveType.subst (@Subst.identity level scope).lift)
+          (Term.subst (TermSubst.identity context) scrutinee)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+            Subst.identity) ▸
+            Term.subst (TermSubst.identity context) thenBranch)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+            Subst.identity) ▸
+            Term.subst (TermSubst.identity context) elseBranch)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute motiveType Ty.bool scrutineeRaw
+        Subst.identity).symm
+      (Term.boolElim
+        (motiveType := motiveType.subst (@Subst.identity level scope).lift)
+        (Term.subst (TermSubst.identity context) scrutinee)
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+          Subst.identity) ▸
+          Term.subst (TermSubst.identity context) thenBranch)
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+          Subst.identity) ▸
+          Term.subst (TermSubst.identity context) elseBranch))
+  exact HEq.trans resultCastHEq boolElimWithoutCastHEq
+
 /-- Natural eliminator case for ordinary identity substitution. -/
 theorem Term.subst_identity_natElim_HEq
     {mode : Mode} {level scope : Nat}
