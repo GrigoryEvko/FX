@@ -85,3 +85,8 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_listCode_sn
 #print axioms LeanFX2.ReducibleK.fundamental_optionCode_sn
 #print axioms LeanFX2.ReducibleK.fundamental_idCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_recordIntro_sn
+#print axioms LeanFX2.ReducibleK.fundamental_recordProj_sn
+#print axioms LeanFX2.ReducibleK.fundamental_refineIntro_sn
+#print axioms LeanFX2.ReducibleK.fundamental_refineElim_sn
+#print axioms LeanFX2.ReducibleK.fundamental_codataUnfold_sn

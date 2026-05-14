@@ -554,4 +554,68 @@ theorem ReducibleK.fundamental_idCode_sn
   Term.idCode_isStronglyNormalizing outerLevel levelLe
     typeCodeIsSN leftIsSN rightIsSN
 
+/-- recordIntro preserves SN: field SN → recordIntro SN. -/
+theorem ReducibleK.fundamental_recordIntro_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term context singleFieldType firstRaw}
+    (firstFieldIsSN : Term.isStronglyNormalizing firstField) :
+    Term.isStronglyNormalizing (Term.recordIntro firstField) :=
+  Term.recordIntro_isStronglyNormalizing firstFieldIsSN
+
+/-- recordProj preserves SN: record SN → recordProj SN. -/
+theorem ReducibleK.fundamental_recordProj_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {singleFieldType : Ty level scope}
+    {recordRaw : RawTerm scope}
+    {recordValue : Term context (Ty.record singleFieldType) recordRaw}
+    (recordIsSN : Term.isStronglyNormalizing recordValue) :
+    Term.isStronglyNormalizing (Term.recordProj recordValue) :=
+  Term.recordProj_isStronglyNormalizing recordIsSN
+
+/-- refineIntro preserves SN: base + proof SN → refineIntro SN. -/
+theorem ReducibleK.fundamental_refineIntro_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term context baseType valueRaw}
+    {predicateProof : Term context Ty.unit proofRaw}
+    (valueIsSN : Term.isStronglyNormalizing baseValue)
+    (proofIsSN : Term.isStronglyNormalizing predicateProof) :
+    Term.isStronglyNormalizing
+      (Term.refineIntro (predicate := predicate) baseValue predicateProof) :=
+  Term.refineIntro_isStronglyNormalizing valueIsSN proofIsSN
+
+/-- refineElim preserves SN: refined SN → refineElim SN. -/
+theorem ReducibleK.fundamental_refineElim_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {refinedRaw : RawTerm scope}
+    {refinedValue : Term context (Ty.refine baseType predicate) refinedRaw}
+    (refinedIsSN : Term.isStronglyNormalizing refinedValue) :
+    Term.isStronglyNormalizing (Term.refineElim refinedValue) :=
+  Term.refineElim_isStronglyNormalizing refinedIsSN
+
+/-- codataUnfold preserves SN: state + transition SN → codataUnfold SN. -/
+theorem ReducibleK.fundamental_codataUnfold_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term context stateType stateRaw}
+    {transition :
+        Term context (Ty.arrow stateType outputType) transitionRaw}
+    (stateIsSN : Term.isStronglyNormalizing initialState)
+    (transitionIsSN : Term.isStronglyNormalizing transition) :
+    Term.isStronglyNormalizing
+      (Term.codataUnfold initialState transition) :=
+  Term.codataUnfold_isStronglyNormalizing stateIsSN transitionIsSN
+
 end LeanFX2
