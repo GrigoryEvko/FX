@@ -45,6 +45,9 @@ open LeanFX2
 #print axioms Term.subst_identity_var_HEq
 #print axioms Term.subst_identity_lift_var_HEq
 #print axioms Term.subst_identity_unit_HEq
+#print axioms Term.subst_identity_lam_HEq
+#print axioms Term.subst_identity_lamPi_HEq
+#print axioms Term.subst_identity_pathLam_HEq
 #print axioms Term.subst_identity_boolTrue_HEq
 #print axioms Term.subst_identity_boolFalse_HEq
 #print axioms Term.subst_identity_natZero_HEq
