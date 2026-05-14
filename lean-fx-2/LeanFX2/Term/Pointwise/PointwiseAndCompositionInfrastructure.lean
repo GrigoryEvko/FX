@@ -867,6 +867,43 @@ theorem Term.subst_type_eq_cast_heq
   cases typeEq
   exact HEq.rfl
 
+/-- Variable base case for heterogeneous rename/substitution
+cancellation.
+
+If the substitution entry selected by the typed renaming is HEq to the
+identity entry, then substituting the renamed variable returns the
+original variable.  This is the base case of the stronger
+rename-then-substitute cancellation theorem needed by the beta
+contractum route. -/
+theorem Term.subst_rename_cancel_var_HEq
+    {mode : Mode} {level sourceScope middleScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {rho : RawRenaming sourceScope middleScope}
+    {sigma : Subst level middleScope sourceScope}
+    (termRenaming : TermRenaming sourceCtx middleCtx rho)
+    (termSubst : TermSubst middleCtx sourceCtx sigma)
+    (entryHEq :
+      ∀ position,
+        HEq (termSubst (rho position))
+          (TermSubst.identity sourceCtx position))
+    (position : Fin sourceScope) :
+    HEq
+      (Term.subst termSubst
+        (Term.rename termRenaming
+          (Term.var (context := sourceCtx) position)))
+      (Term.var (context := sourceCtx) position) := by
+  simp only [Term.rename]
+  exact HEq.trans
+    (Term.subst_type_eq_cast_heq termSubst (termRenaming position)
+      (Term.var (context := middleCtx) (rho position)))
+    (HEq.trans
+      (by simpa only [Term.subst] using entryHEq position)
+      (Term.type_eq_symm_cast_heq
+        (context := sourceCtx)
+        (typeEq := Ty.subst_identity (varType sourceCtx position))
+        (targetTerm := Term.var (context := sourceCtx) position)))
+
 /-! ## Lift/compose alignment
 
 These lemmas compare the two substitution shapes exposed by binder
