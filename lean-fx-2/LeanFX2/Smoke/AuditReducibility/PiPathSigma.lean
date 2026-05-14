@@ -101,5 +101,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_appPi_at_piTy_sn_stable
 #print axioms Reducible.fundamental_equivIntroHet_at_equiv_sn_stable
 #print axioms Reducible.fundamental_lam_at_arrow_app_sn_stable
+#print axioms Reducible.fundamental_lamPi_at_piTy_app_sn_stable
+#print axioms Reducible.fundamental_pathLam_at_path_app_sn_stable
 
 end LeanFX2.Smoke

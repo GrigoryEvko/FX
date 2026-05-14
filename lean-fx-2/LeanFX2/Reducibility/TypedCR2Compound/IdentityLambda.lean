@@ -420,6 +420,62 @@ theorem Reducible.fundamental_lamPi_at_piTy_app_sn
     (Reducible.isStronglyNormalizing argumentReducible)
     contractumIsSN
 
+/-- Renaming-stable head-β SN of `Term.appPi (Term.lamPi body) argument`
+at `Ty.piTy` — `IsRenamingStableIsSN` mirror of
+`fundamental_lamPi_at_piTy_app_sn`.
+
+Same template as the non-dependent arrow variant: project the three
+stable witnesses at each renamed world, align the contractum raw form
+via `RawTerm.subst0_rename_commute`, then close with the raw head-β
+combinator `RawTerm.app_lam_isStronglyNormalizing` — both `Term.app`
+and `Term.appPi` share `RawTerm.app` raw, so the same combinator
+closes the dependent variant. -/
+theorem Reducible.fundamental_lamPi_at_piTy_app_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentIsStable :
+        IsRenamingStableReducible (domainType.subst sigma) argumentTerm)
+    (contractumIsStable :
+        IsRenamingStableIsSN
+          (Term.subst0
+            (Term.subst (termSubst.lift domainType) bodyTerm)
+            argumentTerm)) :
+    IsRenamingStableIsSN
+      (Term.appPi
+        (Term.subst termSubst (Term.lamPi bodyTerm))
+        argumentTerm) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have liftedInjective :=
+    RawRenaming.lift_injective rho rhoIsInjective
+  have liftedTermRenaming :=
+    termRenaming.lift (domainType.subst sigma)
+  have bodySNAtRho :=
+    bodyIsStable liftedInjective liftedTermRenaming
+  have argumentReducibleAtRho :=
+    argumentIsStable rhoIsInjective termRenaming
+  have argumentSNAtRho :=
+    Reducible.isStronglyNormalizing argumentReducibleAtRho
+  have contractumSNAtRho :
+      RawTerm.isStronglyNormalizing
+        (((bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw).rename rho) :=
+    contractumIsStable rhoIsInjective termRenaming
+  rw [RawTerm.subst0_rename_commute] at contractumSNAtRho
+  exact RawTerm.app_lam_isStronglyNormalizing bodySNAtRho
+    argumentSNAtRho contractumSNAtRho
+
 /-- β-contractum SN bridge for the `Term.lamPi` weak-Π case.
 
 As in the non-dependent arrow bridge, the body IH naturally applies to
@@ -654,6 +710,63 @@ theorem Reducible.fundamental_pathLam_at_path_app_sn
         intervalTerm) :=
   Term.pathApp_pathLam_isStronglyNormalizing modeIsUnivalent
     bodyIsSN intervalIsSN contractumIsSN
+
+/-- Renaming-stable head-β SN of `Term.pathApp (Term.pathLam body) interval`
+at `Ty.path` — `IsRenamingStableIsSN` mirror of
+`fundamental_pathLam_at_path_app_sn`.
+
+The interval binder is over closed `Ty.interval`, so the lifted
+renaming uses `termRenaming.lift Ty.interval` directly.  Contractum
+alignment reuses `RawTerm.subst0_rename_commute`; closure goes through
+the raw cubical combinator `RawTerm.pathApp_pathLam_isStronglyNormalizing`
+which K12.24.U5 already ships. -/
+theorem Reducible.fundamental_pathLam_at_path_app_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    {intervalRaw : RawTerm targetScope}
+    {intervalTerm : Term targetCtx Ty.interval intervalRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Ty.weaken_subst_commute sigma carrierType ▸
+            Term.subst (termSubst.lift Ty.interval) bodyTerm))
+    (intervalIsStable : IsRenamingStableIsSN intervalTerm)
+    (contractumIsStable :
+        IsRenamingStableIsSN
+          (Term.subst0
+            (Ty.weaken_subst_commute sigma carrierType ▸
+              Term.subst (termSubst.lift Ty.interval) bodyTerm)
+            intervalTerm)) :
+    IsRenamingStableIsSN
+      (Term.pathApp modeIsUnivalent
+        (Term.subst termSubst
+          (Term.pathLam modeIsUnivalent carrierType
+            leftEndpoint rightEndpoint bodyTerm))
+        intervalTerm) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have liftedInjective :=
+    RawRenaming.lift_injective rho rhoIsInjective
+  have liftedTermRenaming :=
+    termRenaming.lift Ty.interval
+  have bodySNAtRho :=
+    bodyIsStable liftedInjective liftedTermRenaming
+  have intervalSNAtRho :=
+    intervalIsStable rhoIsInjective termRenaming
+  have contractumSNAtRho :
+      RawTerm.isStronglyNormalizing
+        (((bodyRaw.subst sigma.forRaw.lift).subst0 intervalRaw).rename rho) :=
+    contractumIsStable rhoIsInjective termRenaming
+  rw [RawTerm.subst0_rename_commute] at contractumSNAtRho
+  exact RawTerm.pathApp_pathLam_isStronglyNormalizing bodySNAtRho
+    intervalSNAtRho contractumSNAtRho
 
 /-- β-contractum SN bridge for cubical `Term.pathLam`.
 
