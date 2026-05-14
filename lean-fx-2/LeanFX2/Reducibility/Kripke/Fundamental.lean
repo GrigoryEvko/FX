@@ -710,4 +710,73 @@ theorem ReducibleK.fundamental_equivIntroHet_sn
       (Term.equivIntroHet forward backward leftInv rightInv) :=
   Term.equivIntroHet_isStronglyNormalizing forwardIsSN backwardIsSN
 
+/-- funextRefl preserves SN: raw apply SN → funextRefl SN. -/
+theorem ReducibleK.fundamental_funextRefl_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (applyIsSN : RawTerm.isStronglyNormalizing applyRaw) :
+    Term.isStronglyNormalizing
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.funextRefl_isStronglyNormalizing_of_apply
+    domainType codomainType applyIsSN
+
+/-- funextReflAtId preserves SN: raw apply SN → funextReflAtId SN. -/
+theorem ReducibleK.fundamental_funextReflAtId_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (applyIsSN : RawTerm.isStronglyNormalizing applyRaw) :
+    Term.isStronglyNormalizing
+      (Term.funextReflAtId (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  Term.funextReflAtId_isStronglyNormalizing_of_apply
+    domainType codomainType applyIsSN
+
+/-- oeqFunext preserves SN: pointwise SN → oeqFunext SN. -/
+theorem ReducibleK.fundamental_oeqFunext_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+    {pointwiseRaw : RawTerm scope}
+    {pointwiseProof :
+        Term sourceCtx
+          (oeqFunextPointwiseType domainType codomainType
+            leftFunctionRaw rightFunctionRaw)
+          pointwiseRaw}
+    (pointwiseIsSN : Term.isStronglyNormalizing pointwiseProof) :
+    Term.isStronglyNormalizing
+      (Term.oeqFunext domainType codomainType
+        leftFunctionRaw rightFunctionRaw pointwiseProof) :=
+  Term.oeqFunext_isStronglyNormalizing
+    domainType codomainType leftFunctionRaw rightFunctionRaw pointwiseIsSN
+
+/-- effectPerform preserves SN: operation + arguments SN → SN. -/
+theorem ReducibleK.fundamental_effectPerform_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (effectTag : RawTerm scope)
+    (effectRow : Effects.EffectRow)
+    (operationSignature : Effects.OperationSignature (Ty level scope))
+    (canPerformOperation :
+        Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm scope}
+    {operationTag :
+        Term sourceCtx
+          (Ty.effect operationSignature.argumentCarrier effectTag)
+          operationRaw}
+    {arguments :
+        Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    (operationIsSN : Term.isStronglyNormalizing operationTag)
+    (argumentsAreSN : Term.isStronglyNormalizing arguments) :
+    Term.isStronglyNormalizing
+      (Term.effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments) :=
+  Term.effectPerform_isStronglyNormalizing effectTag effectRow
+    operationSignature canPerformOperation operationIsSN argumentsAreSN
+
 end LeanFX2
