@@ -678,5 +678,36 @@ theorem TermSubst.lift_zero_subst_singleton_heq
       (domainType.subst sigma) argumentRaw).symm
     argumentTerm
 
+/-- The fresh entry of the composed lift-then-singleton substitution
+agrees with the beta-specific `consSingleton` substitution.
+
+This is the zero-position half of the entrywise comparison needed by
+the typed beta-contractum bridge.  The successor half requires the
+general weaken-then-singleton collapse for arbitrary substituted terms
+and is intentionally left to that structural theorem. -/
+theorem TermSubst.compose_lift_singleton_consSingleton_zero_HEq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw) :
+    HEq
+      (TermSubst.compose (termSubst.lift domainType)
+        (TermSubst.singleton argumentTerm)
+        ⟨0, Nat.zero_lt_succ scope⟩)
+      (TermSubst.consSingleton termSubst argumentTerm
+        ⟨0, Nat.zero_lt_succ scope⟩) := by
+  exact HEq.trans
+    (TermSubst.compose_position_HEq
+      (termSubst.lift domainType)
+      (TermSubst.singleton argumentTerm)
+      ⟨0, Nat.zero_lt_succ scope⟩)
+    (HEq.trans
+      (TermSubst.lift_zero_subst_singleton_heq termSubst argumentTerm)
+      (TermSubst.consSingleton_zero_HEq termSubst argumentTerm).symm)
+
 
 end LeanFX2
