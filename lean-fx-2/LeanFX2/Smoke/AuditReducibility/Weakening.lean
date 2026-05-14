@@ -33,9 +33,6 @@ open LeanFX2
 #print axioms Reducible.weaken_refine
 #print axioms Reducible.weaken_record
 #print axioms Reducible.weaken_codata
-#print axioms Reducible.weaken_id
-#print axioms Reducible.weaken_oeq
-#print axioms Reducible.weaken_idStrict
 #print axioms RawTerm.app_lam_isStronglyNormalizing
 #print axioms RawTerm.pathApp_pathLam_isStronglyNormalizing
 #print axioms Term.pathApp_pathLam_isStronglyNormalizing

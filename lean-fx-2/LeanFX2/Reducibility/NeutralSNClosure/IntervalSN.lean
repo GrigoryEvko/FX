@@ -2,77 +2,15 @@ import LeanFX2.Reducibility.NeutralSNClosure.TypeCodeSN
 
 /-! # LeanFX2.Reducibility.NeutralSNClosure.IntervalSN
 
-K12.20.AN cubical interval fundamental cases + raw SN witnesses
-for the interval operations: `fundamental_interval0` /
-`fundamental_interval1` + stable variants, `intervalOpp` /
-`intervalMeet` / `intervalJoin`, `pathLam` (raw + Term),
-`uaToEquiv`, `oeqFunext`.
+Raw SN witnesses for the cubical interval operations:
+`intervalOpp` / `intervalMeet` / `intervalJoin`, `pathLam` (raw +
+Term), `uaToEquiv`, `oeqFunext`.
 
 ## Root status
 
 Layer 3 metatheory leaf.  Second slice of NeutralSNClosure. -/
 
 namespace LeanFX2
-
-
-/-- **K12.20.AN.1 interval0 fundamental case** — cubical interval
-zero endpoint.  `Ty.interval` is closed (no scope dependence) so
-`Ty.interval.subst sigma = Ty.interval`; `Term.subst` on the
-nullary intro reduces to itself
-(`LeanFX2/Term/Subst.lean:306`); `Reducible Ty.interval _`
-unfolds to `Term.isStronglyNormalizing _`
-(`LeanFX2/Reducibility.lean:329`).  Closes the nullary-intro
-quartet alongside K12.19.B unit / boolTrue / boolFalse / natZero
-with the same one-liner template. -/
-theorem Reducible.fundamental_interval0
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma} :
-    Reducible ((Ty.interval : Ty level scope).subst sigma)
-              (Term.subst termSubst
-                (Term.interval0 (context := sourceCtx))) :=
-  RawTerm.interval0_isStronglyNormalizing
-
-/-- Interval zero is stable under future-world renamings. -/
-theorem Reducible.fundamental_interval0_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma} :
-    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
-      (Term.subst termSubst
-        (Term.interval0 (context := sourceCtx))) := by
-  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
-  exact RawTerm.interval0_isStronglyNormalizing
-
-/-- **K12.20.AN.2 interval1 fundamental case** — cubical interval
-one endpoint.  Same closed-leaf intro shape as `interval0`. -/
-theorem Reducible.fundamental_interval1
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma} :
-    Reducible ((Ty.interval : Ty level scope).subst sigma)
-              (Term.subst termSubst
-                (Term.interval1 (context := sourceCtx))) :=
-  RawTerm.interval1_isStronglyNormalizing
-
-/-- Interval one is stable under future-world renamings. -/
-theorem Reducible.fundamental_interval1_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma} :
-    IsRenamingStableReducible ((Ty.interval : Ty level scope).subst sigma)
-      (Term.subst termSubst
-        (Term.interval1 (context := sourceCtx))) := by
-  intro _renamedScope _renamedCtx _rho _rhoIsInjective _termRenaming
-  exact RawTerm.interval1_isStronglyNormalizing
 
 /-- **K12.20.AF.1 intervalOpp SN preservation** — cubical interval
 negation.  Unary cong over the interval term; intervalOpp_inv

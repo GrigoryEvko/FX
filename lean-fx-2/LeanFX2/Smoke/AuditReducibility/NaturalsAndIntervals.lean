@@ -82,8 +82,6 @@ open LeanFX2
 #print axioms Term.glueIntro_isStronglyNormalizing
 #print axioms RawTerm.glueElim_glueIntro_isStronglyNormalizing
 #print axioms Term.glueElim_glueIntro_isStronglyNormalizing
-#print axioms Reducible.fundamental_interval0
-#print axioms Reducible.fundamental_interval1
 #print axioms Reducible.fundamental_intervalOpp
 #print axioms Reducible.fundamental_intervalMeet
 #print axioms Reducible.fundamental_intervalJoin

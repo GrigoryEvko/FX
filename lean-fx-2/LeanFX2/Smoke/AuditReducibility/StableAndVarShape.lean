@@ -88,8 +88,6 @@ open LeanFX2
 #print axioms Reducible.step_preserves
 #print axioms Reducible.fundamental_natSucc
 #print axioms Reducible.fundamental_natSucc_stable
-#print axioms Reducible.fundamental_interval0_stable
-#print axioms Reducible.fundamental_interval1_stable
 #print axioms Reducible.fundamental_intervalOpp_stable
 #print axioms Reducible.fundamental_intervalMeet_stable
 #print axioms Reducible.fundamental_intervalJoin_stable

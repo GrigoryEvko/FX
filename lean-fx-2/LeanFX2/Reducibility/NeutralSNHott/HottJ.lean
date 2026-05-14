@@ -1,5 +1,4 @@
 import LeanFX2.Reducibility.NeutralSNFoundation
-import LeanFX2.Reducibility.StableBase
 
 /-! # LeanFX2.Reducibility.NeutralSNHott.HottJ
 
@@ -317,73 +316,5 @@ theorem RawTerm.idStrictRec_neutral_isStronglyNormalizing {scope : Nat}
       · exact (RawTerm.IsNeutral.not_idStrictRefl
           (RawTerm.IsNeutral.par_preserves witnessIsNeutral witnessStep)
           (witnessRaw := reflRawArgument) rfl).elim
-
-/-- **K12.20.U3.monotone weak-J arm**: HoTT identity
-reducibility weakens without a full world-monotone recursive
-candidate.  The closure output is SN, so the extended-context J
-case is rebuilt from raw `idJ` SN preservation. -/
-theorem Reducible.weaken_id
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {newType carrierType : Ty level scope}
-    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
-    {sourceTerm :
-      Term context (Ty.id carrierType leftEndpoint rightEndpoint) sourceRaw}
-    (sourceReducible :
-      Reducible (Ty.id carrierType leftEndpoint rightEndpoint) sourceTerm) :
-    Reducible ((Ty.id carrierType leftEndpoint rightEndpoint).weaken)
-      (Term.weaken newType sourceTerm) := by
-  refine
-    ⟨Term.isStronglyNormalizing_weaken (newType := newType)
-      sourceReducible.1, ?_⟩
-  intro _motiveType _baseRaw _baseCase baseIsSN
-  exact RawTerm.idJ_isStronglyNormalizing baseIsSN
-    (Term.isStronglyNormalizing_weaken (newType := newType)
-      sourceReducible.1)
-
-/-- **K12.20.U3.monotone weak-J arm**: observational equality
-reducibility weakens by rebuilding the SN-output eliminator closure
-from raw `oeqJ` SN preservation. -/
-theorem Reducible.weaken_oeq
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {newType carrierType : Ty level scope}
-    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
-    {sourceTerm :
-      Term context (Ty.oeq carrierType leftEndpoint rightEndpoint) sourceRaw}
-    (sourceReducible :
-      Reducible (Ty.oeq carrierType leftEndpoint rightEndpoint) sourceTerm) :
-    Reducible ((Ty.oeq carrierType leftEndpoint rightEndpoint).weaken)
-      (Term.weaken newType sourceTerm) := by
-  refine
-    ⟨Term.isStronglyNormalizing_weaken (newType := newType)
-      sourceReducible.1, ?_⟩
-  intro _motiveType _baseRaw _baseCase baseIsSN
-  exact RawTerm.oeqJ_isStronglyNormalizing baseIsSN
-    (Term.isStronglyNormalizing_weaken (newType := newType)
-      sourceReducible.1)
-
-/-- **K12.20.U3.monotone weak-J arm**: strict identity
-reducibility weakens by rebuilding the strict recursor's SN-output
-closure from raw `idStrictRec` SN preservation. -/
-theorem Reducible.weaken_idStrict
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {newType carrierType : Ty level scope}
-    {leftEndpoint rightEndpoint sourceRaw : RawTerm scope}
-    {sourceTerm :
-      Term context (Ty.idStrict carrierType leftEndpoint rightEndpoint) sourceRaw}
-    (sourceReducible :
-      Reducible (Ty.idStrict carrierType leftEndpoint rightEndpoint) sourceTerm) :
-    Reducible ((Ty.idStrict carrierType leftEndpoint rightEndpoint).weaken)
-      (Term.weaken newType sourceTerm) := by
-  refine
-    ⟨Term.isStronglyNormalizing_weaken (newType := newType)
-      sourceReducible.1, ?_⟩
-  intro _modeIsStrict _motiveType _baseRaw _baseCase baseIsSN
-  exact RawTerm.idStrictRec_isStronglyNormalizing baseIsSN
-    (Term.isStronglyNormalizing_weaken (newType := newType)
-      sourceReducible.1)
-
 
 end LeanFX2
