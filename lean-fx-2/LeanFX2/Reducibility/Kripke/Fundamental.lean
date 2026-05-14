@@ -320,4 +320,55 @@ theorem ReducibleK.fundamental_subsume_sn
     Term.isStronglyNormalizing (Term.subsume innerTerm) :=
   Term.subsume_isStronglyNormalizing innerIsSN
 
+/-- pair preserves SN: both component SN → pair SN. -/
+theorem ReducibleK.fundamental_pair_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term context firstType firstRaw}
+    {secondValue :
+        Term context (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsSN : Term.isStronglyNormalizing firstValue)
+    (secondIsSN : Term.isStronglyNormalizing secondValue) :
+    Term.isStronglyNormalizing
+      (Term.pair (secondType := secondType) firstValue secondValue) :=
+  Term.pair_isStronglyNormalizing firstIsSN secondIsSN
+
+/-- fst preserves SN: pair SN → fst SN. -/
+theorem ReducibleK.fundamental_fst_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsSN : Term.isStronglyNormalizing pairTerm) :
+    Term.isStronglyNormalizing (Term.fst pairTerm) :=
+  Term.fst_isStronglyNormalizing pairIsSN
+
+/-- snd preserves SN: pair SN → snd SN. -/
+theorem ReducibleK.fundamental_snd_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsSN : Term.isStronglyNormalizing pairTerm) :
+    Term.isStronglyNormalizing (Term.snd pairTerm) :=
+  Term.snd_isStronglyNormalizing pairIsSN
+
+/-- refl preserves SN: raw endpoint SN → refl SN. -/
+theorem ReducibleK.fundamental_refl_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (carrier : Ty level scope)
+    (rawWitness : RawTerm scope)
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.refl (context := sourceCtx) carrier rawWitness) :=
+  Term.refl_isStronglyNormalizing endpointIsSN
+
 end LeanFX2
