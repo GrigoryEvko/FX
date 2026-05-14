@@ -29,7 +29,10 @@ open LeanFX2
 #print axioms Term.type_raw_eq_cast_heq
 #print axioms Term.subst_type_eq_cast_heq
 #print axioms Term.rename_type_eq_cast_heq
+#print axioms Term.rename_heq_of_eq
 #print axioms Term.weaken_head_type_eq_heq
+#print axioms Term.weaken_heq_of_eq
+#print axioms Term.subst_heq_of_eq
 #print axioms Ty.weaken_subst_lift_singleton
 #print axioms RawTerm.subst_lift_singleton_eq_subst0
 #print axioms RawTerm.weaken_lift_subst_singleton_lift

@@ -484,6 +484,29 @@ theorem Term.rename_type_eq_cast_heq
   cases typeEq
   exact HEq.rfl
 
+/-- Renaming preserves heterogeneous equality once source indices are
+aligned by explicit type/raw equalities. -/
+theorem Term.rename_heq_of_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    {firstType secondType : Ty level sourceScope}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (typeEq : firstType = secondType)
+    (rawEq : firstRaw = secondRaw)
+    {firstTerm : Term sourceCtx firstType firstRaw}
+    {secondTerm : Term sourceCtx secondType secondRaw}
+    (termsHEq : HEq firstTerm secondTerm) :
+    HEq (Term.rename termRenaming firstTerm)
+      (Term.rename termRenaming secondTerm) := by
+  subst typeEq
+  subst rawEq
+  have termsEq : firstTerm = secondTerm := eq_of_heq termsHEq
+  subst termsEq
+  rfl
+
 /-- Weakening a term is stable under equality of the new head type. -/
 theorem Term.weaken_head_type_eq_heq
     {mode : Mode} {level scope : Nat}
@@ -497,6 +520,27 @@ theorem Term.weaken_head_type_eq_heq
       (Term.weaken secondType sourceTerm) := by
   cases typeEq
   exact HEq.rfl
+
+/-- Weakening preserves heterogeneous equality once source indices are
+aligned by explicit type/raw equalities. -/
+theorem Term.weaken_heq_of_eq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    {firstType secondType : Ty level scope}
+    {firstRaw secondRaw : RawTerm scope}
+    (typeEq : firstType = secondType)
+    (rawEq : firstRaw = secondRaw)
+    {firstTerm : Term context firstType firstRaw}
+    {secondTerm : Term context secondType secondRaw}
+    (termsHEq : HEq firstTerm secondTerm) :
+    HEq (Term.weaken newType firstTerm)
+      (Term.weaken newType secondTerm) := by
+  subst typeEq
+  subst rawEq
+  have termsEq : firstTerm = secondTerm := eq_of_heq termsHEq
+  subst termsEq
+  rfl
 
 /-- Renaming a variable changes only the variable position and the
 typed lookup cast. -/
@@ -903,6 +947,29 @@ theorem Term.subst_type_eq_cast_heq
       (Term.subst termSubst sourceTerm) := by
   cases typeEq
   exact HEq.rfl
+
+/-- Substitution preserves heterogeneous equality once source indices
+are aligned by explicit type/raw equalities. -/
+theorem Term.subst_heq_of_eq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {firstType secondType : Ty level sourceScope}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    (typeEq : firstType = secondType)
+    (rawEq : firstRaw = secondRaw)
+    {firstTerm : Term sourceCtx firstType firstRaw}
+    {secondTerm : Term sourceCtx secondType secondRaw}
+    (termsHEq : HEq firstTerm secondTerm) :
+    HEq (Term.subst termSubst firstTerm)
+      (Term.subst termSubst secondTerm) := by
+  subst typeEq
+  subst rawEq
+  have termsEq : firstTerm = secondTerm := eq_of_heq termsHEq
+  subst termsEq
+  rfl
 
 /-- Variable base case for heterogeneous rename/substitution
 cancellation.
