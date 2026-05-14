@@ -993,4 +993,29 @@ theorem Term.listElim_strong_normalization_via_kripke
   ReducibleK.fundamental_listElim_sn
     scrutineeIsSN nilIsSN consIsSN contractumIsSN
 
+/-- SN of `Term.optionMatch` via Kripke.  Requires the contractum-SN
+closure for the some-ι fire `optionMatch (optionSome v) n s →
+app s v`. -/
+theorem Term.optionMatch_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    {scrutinee : Term context (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term context motiveType noneRaw}
+    {someBranch : Term context (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (noneIsSN : Term.isStronglyNormalizing noneBranch)
+    (someIsSN : Term.isStronglyNormalizing someBranch)
+    (contractumIsSN :
+      ∀ {valueRaw someTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing someTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app someTargetRaw valueRaw)) :
+    Term.isStronglyNormalizing
+      (Term.optionMatch scrutinee noneBranch someBranch) :=
+  ReducibleK.fundamental_optionMatch_sn
+    scrutineeIsSN noneIsSN someIsSN contractumIsSN
+
 end LeanFX2

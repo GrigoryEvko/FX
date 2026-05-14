@@ -608,5 +608,128 @@ theorem Term.listElim_isStronglyNormalizing
   RawTerm.listElim_isStronglyNormalizing
     scrutineeIsSN nilIsSN consIsSN contractumIsSN
 
+/-- **optionMatch generic-closure SN preservation**.  Same shape as
+listElim, with the cons-ι slot replaced by some-ι firing on a single
+payload.  The contractum closure discharges
+`optionMatch (optionSome v) n s → app s v`. -/
+theorem RawTerm.optionMatch_isStronglyNormalizing {scope : Nat}
+    {scrutinee : RawTerm scope}
+    (scrutineeIsSN : RawTerm.isStronglyNormalizing scrutinee) :
+    ∀ {noneBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing noneBranch →
+    ∀ {someBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing someBranch →
+      (∀ {valueRaw someTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing someTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app someTargetRaw valueRaw)) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.optionMatch scrutinee noneBranch someBranch) := by
+  induction scrutineeIsSN with
+  | intro currentScrutinee scrutineeClosure scrutineeIH =>
+    intro noneBranch noneIsSN
+    induction noneIsSN with
+    | intro currentNone noneClosure noneIH =>
+      intro someBranch someIsSN contractumClosure
+      induction someIsSN with
+      | intro currentSome someClosure someIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.optionMatch currentScrutinee currentNone currentSome) ?_
+        intro target progressStep
+        rcases RawStep.par.optionMatch_inv progressStep.1 with
+          ⟨scrutineeTarget, noneTarget, someTarget, targetEq,
+            scrutineeStep, noneStep, someStep⟩
+          | ⟨noneTarget, targetEq, scrutineeStep, noneStep⟩
+          | ⟨valueTarget, someTarget, targetEq, scrutineeStep, someStep⟩
+        · subst targetEq
+          have scrutineeTargetIsSN :
+              RawTerm.isStronglyNormalizing scrutineeTarget := by
+            by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+            · subst scrutineeEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure scrutineeTarget
+                ⟨scrutineeStep, scrutineeEq⟩
+          have noneTargetIsSN :
+              RawTerm.isStronglyNormalizing noneTarget := by
+            by_cases noneEq : currentNone = noneTarget
+            · subst noneEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentNone noneClosure
+            · exact noneClosure noneTarget ⟨noneStep, noneEq⟩
+          have someTargetIsSN :
+              RawTerm.isStronglyNormalizing someTarget := by
+            by_cases someEq : currentSome = someTarget
+            · subst someEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSome someClosure
+            · exact someClosure someTarget ⟨someStep, someEq⟩
+          by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+          · subst scrutineeEq
+            by_cases noneEq : currentNone = noneTarget
+            · subst noneEq
+              by_cases someEq : currentSome = someTarget
+              · subst someEq
+                exact (progressStep.2 rfl).elim
+              · exact someIH someTarget ⟨someStep, someEq⟩
+            · exact noneIH noneTarget ⟨noneStep, noneEq⟩
+                someTargetIsSN contractumClosure
+          · exact scrutineeIH scrutineeTarget
+              ⟨scrutineeStep, scrutineeEq⟩
+              noneTargetIsSN someTargetIsSN contractumClosure
+        · rw [targetEq]
+          by_cases noneEq : currentNone = noneTarget
+          · subst noneEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentNone noneClosure
+          · exact noneClosure noneTarget ⟨noneStep, noneEq⟩
+        · subst targetEq
+          have optionSomeScrutineeIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.optionSome valueTarget) := by
+            by_cases scrutineeEq :
+                currentScrutinee = RawTerm.optionSome valueTarget
+            · rw [← scrutineeEq]
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure (RawTerm.optionSome valueTarget)
+                ⟨scrutineeStep, scrutineeEq⟩
+          have valueTargetIsSN :
+              RawTerm.isStronglyNormalizing valueTarget :=
+            RawTerm.optionSome_value_isStronglyNormalizing
+              optionSomeScrutineeIsSN
+          have someTargetIsSN :
+              RawTerm.isStronglyNormalizing someTarget := by
+            by_cases someEq : currentSome = someTarget
+            · subst someEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentSome someClosure
+            · exact someClosure someTarget ⟨someStep, someEq⟩
+          exact contractumClosure valueTargetIsSN someTargetIsSN
+
+/-- Typed wrapper for optionMatch generic-closure SN preservation. -/
+theorem Term.optionMatch_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    {scrutinee : Term context (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term context motiveType noneRaw}
+    {someBranch : Term context (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (noneIsSN : Term.isStronglyNormalizing noneBranch)
+    (someIsSN : Term.isStronglyNormalizing someBranch)
+    (contractumIsSN :
+      ∀ {valueRaw someTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing someTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app someTargetRaw valueRaw)) :
+    Term.isStronglyNormalizing
+      (Term.optionMatch scrutinee noneBranch someBranch) :=
+  RawTerm.optionMatch_isStronglyNormalizing
+    scrutineeIsSN noneIsSN someIsSN contractumIsSN
+
 
 end LeanFX2
