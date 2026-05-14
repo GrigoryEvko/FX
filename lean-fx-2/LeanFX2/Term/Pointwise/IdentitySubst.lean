@@ -1417,4 +1417,161 @@ theorem Term.subst_identity_funextReflAtId_HEq
         (@Subst.identity_lift_forRaw_pointwise level scope) applyRaw]
       exact RawTerm.subst_identity applyRaw)
 
+/-- Cubical transport case for ordinary identity substitution. -/
+theorem Term.subst_identity_transp_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term context sourceType sourceRaw)
+    (typePathHEq :
+      HEq (Term.subst (TermSubst.identity context) typePath)
+        typePath)
+    (sourceValueHEq :
+      HEq (Term.subst (TermSubst.identity context) sourceValue)
+        sourceValue) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType sourceTypeRaw targetTypeRaw typePath
+          sourceValue))
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw typePath
+        sourceValue) := by
+  simp only [Term.subst]
+  exact Term.transp_HEq_congr
+    modeIsUnivalent universeLevel universeLevelLt
+    (Ty.subst_identity sourceType)
+    (Ty.subst_identity targetType)
+    (RawTerm.subst_identity sourceTypeRaw)
+    (RawTerm.subst_identity targetTypeRaw)
+    (RawTerm.subst_identity pathRaw)
+    (RawTerm.subst_identity sourceRaw)
+    typePathHEq sourceValueHEq
+
+/-- Refinement introduction case for ordinary identity substitution. -/
+theorem Term.subst_identity_refineIntro_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (baseValue : Term context baseType valueRaw)
+    (predicateProof : Term context Ty.unit proofRaw)
+    (baseValueHEq :
+      HEq (Term.subst (TermSubst.identity context) baseValue)
+        baseValue)
+    (predicateProofHEq :
+      HEq (Term.subst (TermSubst.identity context) predicateProof)
+        predicateProof) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.refineIntro predicate baseValue predicateProof))
+      (Term.refineIntro predicate baseValue predicateProof) := by
+  simp only [Term.subst]
+  exact Term.refineIntro_HEq_congr
+    (Ty.subst_identity baseType)
+    (by
+      rw [RawTerm.subst_pointwise
+        (@Subst.identity_lift_forRaw_pointwise level scope) predicate]
+      exact RawTerm.subst_identity predicate)
+    (RawTerm.subst_identity valueRaw)
+    (RawTerm.subst_identity proofRaw)
+    baseValueHEq predicateProofHEq
+
+/-- Heterogeneous univalence introduction case for ordinary identity substitution. -/
+theorem Term.subst_identity_uaIntroHet_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (equivWitness : Term context (Ty.equiv carrierA carrierB)
+      (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivWitnessHEq :
+      HEq (Term.subst (TermSubst.identity context) equivWitness)
+        equivWitness) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitness))
+      (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+        equivWitness) := by
+  simp only [Term.subst]
+  exact Term.uaIntroHet_HEq_congr
+    innerLevel innerLevelLt
+    (Ty.subst_identity carrierA)
+    (Ty.subst_identity carrierB)
+    (RawTerm.subst_identity carrierARaw)
+    (RawTerm.subst_identity carrierBRaw)
+    (RawTerm.subst_identity forwardRaw)
+    (RawTerm.subst_identity backwardRaw)
+    equivWitnessHEq
+
+/-- Heterogeneous funext introduction case for ordinary identity substitution. -/
+theorem Term.subst_identity_funextIntroHet_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyARaw applyBRaw : RawTerm (scope + 1)) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.funextIntroHet (context := context)
+          domainType codomainType applyARaw applyBRaw))
+      (Term.funextIntroHet (context := context)
+        domainType codomainType applyARaw applyBRaw) := by
+  simp only [Term.subst]
+  exact Term.funextIntroHet_HEq_congr
+    (Ty.subst_identity domainType)
+    (Ty.subst_identity codomainType)
+    (by
+      rw [RawTerm.subst_pointwise
+        (@Subst.identity_lift_forRaw_pointwise level scope) applyARaw]
+      exact RawTerm.subst_identity applyARaw)
+    (by
+      rw [RawTerm.subst_pointwise
+        (@Subst.identity_lift_forRaw_pointwise level scope) applyBRaw]
+      exact RawTerm.subst_identity applyBRaw)
+
+/-- Univalence beta extraction case for ordinary identity substitution. -/
+theorem Term.subst_identity_uaToEquiv_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level scope)
+    (leftTyRaw rightTyRaw : RawTerm scope)
+    {proofRaw : RawTerm scope}
+    (proof :
+      Term context
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRaw)
+    (proofHEq :
+      HEq (Term.subst (TermSubst.identity context) proof) proof) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
+          leftTyRaw rightTyRaw proof))
+      (Term.uaToEquiv innerLevel innerLevelLt leftTy rightTy
+        leftTyRaw rightTyRaw proof) := by
+  simp only [Term.subst]
+  exact Term.uaToEquiv_HEq_congr
+    (Ty.subst_identity leftTy)
+    (Ty.subst_identity rightTy)
+    (RawTerm.subst_identity leftTyRaw)
+    (RawTerm.subst_identity rightTyRaw)
+    (RawTerm.subst_identity proofRaw)
+    proofHEq
+
 end LeanFX2

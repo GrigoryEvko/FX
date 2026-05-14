@@ -103,6 +103,11 @@ open LeanFX2
 #print axioms Term.subst_identity_equivReflId_HEq
 #print axioms Term.subst_identity_equivReflIdAtId_HEq
 #print axioms Term.subst_identity_funextReflAtId_HEq
+#print axioms Term.subst_identity_transp_HEq
+#print axioms Term.subst_identity_refineIntro_HEq
+#print axioms Term.subst_identity_uaIntroHet_HEq
+#print axioms Term.subst_identity_funextIntroHet_HEq
+#print axioms Term.subst_identity_uaToEquiv_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton
