@@ -341,6 +341,53 @@ theorem Reducible.fundamental_lam_at_arrow_contractum_sn
     bodyRaw domainType sigma argumentRaw]
   exact bodyContractumIsSN
 
+/-- Renaming-stable β-contractum SN bridge for `Term.lam` at `Ty.arrow`
+— `IsRenamingStableIsSN` mirror of `fundamental_lam_at_arrow_contractum_sn`.
+
+At each renamed world, project the stable consSingleton-form Reducible
+witness, demote to raw SN, and align the raw form via
+`RawTerm.subst_lift_singleton_eq_subst0` (which expresses the
+consSingleton substitution as a lift-then-subst0 composition).  Rename
+factors through both sides, so the bridge composes through `rename`. -/
+theorem Reducible.fundamental_lam_at_arrow_contractum_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyContractumIsStable :
+      IsRenamingStableReducible
+        (codomainType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst0
+        (Ty.weaken_subst_commute sigma codomainType ▸
+          Term.subst (termSubst.lift domainType) bodyTerm)
+        argumentTerm) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have bodyContractumReducibleAtRho :=
+    bodyContractumIsStable rhoIsInjective termRenaming
+  have bodyContractumSNAtRho :
+      RawTerm.isStronglyNormalizing
+        ((bodyRaw.subst (Subst.compose sigma.lift
+          (Subst.singleton (domainType.subst sigma) argumentRaw)).forRaw).rename
+            rho) :=
+    Reducible.isStronglyNormalizing bodyContractumReducibleAtRho
+  show RawTerm.isStronglyNormalizing
+    (((bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw).rename rho)
+  rw [← RawTerm.subst_lift_singleton_eq_subst0
+    bodyRaw domainType sigma argumentRaw]
+  exact bodyContractumSNAtRho
+
 /-- Combined SN endpoint for the `Term.lam` arrow application case.
 
 This composes the three lambda SN pieces shipped so far:
