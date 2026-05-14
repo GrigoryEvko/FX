@@ -134,6 +134,36 @@ theorem TermSubst.identity_lift_position_HEq
         ⟨previousIndex,
           Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
 
+/-- Plain weakening of an identity-substitution entry agrees with the
+successor entry of the lifted identity substitution. -/
+theorem TermSubst.identity_lift_succ_plain_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    (position : Fin scope) :
+    HEq
+      (Term.weaken newType
+        (TermSubst.identity context position))
+      ((TermSubst.identity context).lift newType
+        (Fin.succ position)) := by
+  rcases position with ⟨positionIndex, positionIsWithinScope⟩
+  simp only [TermSubst.lift]
+  exact HEq.trans
+    (Term.weaken_head_type_eq_heq
+      (context := context)
+      (sourceTerm := TermSubst.identity context
+        ⟨positionIndex, positionIsWithinScope⟩)
+      (Ty.subst_identity newType).symm)
+    (HEq.symm
+      (Term.type_eq_symm_cast_heq
+        (context := context.cons (newType.subst (@Subst.identity level scope)))
+        (typeEq := Ty.weaken_subst_commute (@Subst.identity level scope)
+          (varType context ⟨positionIndex, positionIsWithinScope⟩))
+        (targetTerm := Term.weaken
+          (newType.subst (@Subst.identity level scope))
+          (TermSubst.identity context
+            ⟨positionIndex, positionIsWithinScope⟩))))
+
 /-! ## Identity-like substitutions -/
 
 /-- A typed substitution that behaves like identity up to the casts
@@ -256,6 +286,124 @@ theorem TermSubst.IsIdentityLike.lift_forRawPointwise
       rw [substitutionIsIdentityLike.forRawPointwise
         ⟨positionIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩]
       rfl
+
+/-- The term-entry component of an identity-like substitution remains
+identity-like after lifting under a binder. -/
+theorem TermSubst.IsIdentityLike.lift_entryHEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (newType : Ty level scope) :
+    ∀ position,
+      HEq
+        (termSubst.lift newType position)
+        (TermSubst.identity (sourceCtx.cons newType) position)
+  | ⟨0, _⟩ => by
+      have contextsEq : targetCtx = sourceCtx :=
+        eq_of_heq substitutionIsIdentityLike.contextHEq
+      subst contextsEq
+      have newTypeSubstEq : newType.subst sigma = newType := by
+        exact Eq.trans
+          (Ty.subst_pointwise
+            substitutionIsIdentityLike.forTyPointwise
+            substitutionIsIdentityLike.forRawPointwise
+            newType)
+          (Ty.subst_identity newType)
+      simp only [TermSubst.lift, TermSubst.identity]
+      exact HEq.trans
+        (Term.type_eq_symm_cast_heq
+          (context := targetCtx.cons (newType.subst sigma))
+          (typeEq := Ty.weaken_subst_commute sigma newType)
+          (targetTerm := Term.var
+            (context := targetCtx.cons (newType.subst sigma))
+            ⟨0, Nat.zero_lt_succ scope⟩))
+        (HEq.trans
+          (Term.var_zero_cons_type_eq_heq
+            (context := targetCtx)
+            newTypeSubstEq)
+          (HEq.symm
+            (Term.type_eq_symm_cast_heq
+              (context := targetCtx.cons newType)
+              (typeEq := Ty.subst_identity (newType.weaken))
+              (targetTerm := Term.var
+                (context := targetCtx.cons newType)
+                ⟨0, Nat.zero_lt_succ scope⟩))))
+  | ⟨positionIndex + 1, positionIsWithinScope⟩ => by
+      let oldPosition : Fin scope :=
+        ⟨positionIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+      have contextsEq : targetCtx = sourceCtx :=
+        eq_of_heq substitutionIsIdentityLike.contextHEq
+      subst contextsEq
+      have newTypeSubstEq : newType.subst sigma = newType := by
+        exact Eq.trans
+          (Ty.subst_pointwise
+            substitutionIsIdentityLike.forTyPointwise
+            substitutionIsIdentityLike.forRawPointwise
+            newType)
+          (Ty.subst_identity newType)
+      have oldTypeSubstEq :
+          (varType targetCtx oldPosition).subst sigma =
+            (varType targetCtx oldPosition).subst
+              (@Subst.identity level scope) :=
+        Ty.subst_pointwise
+          substitutionIsIdentityLike.forTyPointwise
+          substitutionIsIdentityLike.forRawPointwise
+          (varType targetCtx oldPosition)
+      have oldRawSubstEq :
+          sigma.forRaw oldPosition =
+            (@Subst.identity level scope).forRaw oldPosition :=
+        substitutionIsIdentityLike.forRawPointwise oldPosition
+      simp only [TermSubst.lift]
+      exact HEq.trans
+        (Term.type_eq_symm_cast_heq
+          (context := targetCtx.cons (newType.subst sigma))
+          (typeEq := Ty.weaken_subst_commute sigma
+            (varType targetCtx oldPosition))
+          (targetTerm := Term.weaken (newType.subst sigma)
+            (termSubst oldPosition)))
+        (HEq.trans
+          (Term.weaken_head_type_eq_heq
+            (context := targetCtx)
+            (sourceTerm := termSubst oldPosition)
+            newTypeSubstEq)
+          (HEq.trans
+            (Term.weaken_heq_of_eq
+              (context := targetCtx)
+              newType
+              oldTypeSubstEq
+              oldRawSubstEq
+              (substitutionIsIdentityLike.entryHEq oldPosition))
+            (HEq.trans
+              (TermSubst.identity_lift_succ_plain_HEq
+                (context := targetCtx)
+                newType oldPosition)
+              (TermSubst.identity_lift_succ_HEq
+                (context := targetCtx)
+                newType oldPosition))))
+
+/-- Identity-like substitutions remain identity-like after lifting under
+a binder. -/
+theorem TermSubst.IsIdentityLike.lift
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (newType : Ty level scope) :
+    TermSubst.IsIdentityLike (termSubst.lift newType) := by
+  refine
+    { contextHEq := ?_
+      forTyPointwise := ?_
+      forRawPointwise := ?_
+      entryHEq := ?_ }
+  · exact substitutionIsIdentityLike.lift_contextHEq newType
+  · exact substitutionIsIdentityLike.lift_forTyPointwise
+  · exact substitutionIsIdentityLike.lift_forRawPointwise
+  · exact substitutionIsIdentityLike.lift_entryHEq newType
 
 /-! ## Lifted identity at the term surface -/
 
