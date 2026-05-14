@@ -5,6 +5,7 @@ import LeanFX2.Reducibility.Kripke.Monotone
 import LeanFX2.Reducibility.Kripke.Project
 import LeanFX2.Reducibility.Kripke.SNClosure
 import LeanFX2.Reducibility.Kripke.Fundamental
+import LeanFX2.Reducibility.Kripke.Headline
 
 /-! Kripke Tait reducibility zero-axiom audit log. -/
 
@@ -42,3 +43,7 @@ import LeanFX2.Reducibility.Kripke.Fundamental
 #print axioms LeanFX2.ReducibleK.fundamental_boolTrue
 #print axioms LeanFX2.ReducibleK.fundamental_boolFalse
 #print axioms LeanFX2.ReducibleK.fundamental_natZero
+#print axioms LeanFX2.Term.unit_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.boolTrue_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.boolFalse_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.natZero_strong_normalization_via_kripke
