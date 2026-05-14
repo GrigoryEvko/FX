@@ -1039,6 +1039,297 @@ theorem Term.subst_identityLike_app_HEq
     (substitutionIsIdentityLike.rawSubst_eq argumentRaw)
     functionHEq argumentHEq
 
+/-- Dependent function application case for an identity-like substitution. -/
+theorem Term.subst_identityLike_appPi_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    (functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw)
+    (argumentTerm : Term sourceCtx domainType argumentRaw)
+    (functionHEq :
+      HEq (Term.subst termSubst functionTerm) functionTerm)
+    (argumentHEq :
+      HEq (Term.subst termSubst argumentTerm) argumentTerm) :
+    HEq
+      (Term.subst termSubst (Term.appPi functionTerm argumentTerm))
+      (Term.appPi functionTerm argumentTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  have codomainIdentity :
+      codomainType.subst sigma.lift = codomainType :=
+    (substitutionIsIdentityLike.lift domainType).tySubst_eq codomainType
+  have appPiWithoutCastHEq :
+      HEq
+        (Term.appPi
+          (Term.subst termSubst functionTerm)
+          (Term.subst termSubst argumentTerm))
+        (Term.appPi functionTerm argumentTerm) :=
+    Term.appPi_HEq_congr
+      (substitutionIsIdentityLike.tySubst_eq domainType)
+      codomainIdentity
+      (substitutionIsIdentityLike.rawSubst_eq functionRaw)
+      (substitutionIsIdentityLike.rawSubst_eq argumentRaw)
+      functionHEq argumentHEq
+  have resultCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute codomainType domainType argumentRaw
+          sigma).symm ▸
+          Term.appPi
+            (Term.subst termSubst functionTerm)
+            (Term.subst termSubst argumentTerm))
+        (Term.appPi
+          (Term.subst termSubst functionTerm)
+          (Term.subst termSubst argumentTerm)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute codomainType domainType argumentRaw
+        sigma).symm
+      (Term.appPi
+        (Term.subst termSubst functionTerm)
+        (Term.subst termSubst argumentTerm))
+  exact HEq.trans resultCastHEq appPiWithoutCastHEq
+
+/-- Sigma pair introduction case for an identity-like substitution. -/
+theorem Term.subst_identityLike_pair_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    (firstValue : Term sourceCtx firstType firstRaw)
+    (secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw)
+    (firstHEq :
+      HEq (Term.subst termSubst firstValue) firstValue)
+    (secondHEq :
+      HEq (Term.subst termSubst secondValue) secondValue) :
+    HEq
+      (Term.subst termSubst
+        (Term.pair (secondType := secondType) firstValue secondValue))
+      (Term.pair (secondType := secondType) firstValue secondValue) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  have secondTypeIdentity :
+      secondType.subst sigma.lift = secondType :=
+    (substitutionIsIdentityLike.lift firstType).tySubst_eq secondType
+  have secondCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute secondType firstType firstRaw sigma) ▸
+          Term.subst termSubst secondValue)
+        secondValue :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (Ty.subst0_subst_commute secondType firstType firstRaw sigma)
+        (Term.subst termSubst secondValue))
+      secondHEq
+  exact Term.pair_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq firstType)
+    secondTypeIdentity
+    (substitutionIsIdentityLike.rawSubst_eq firstRaw)
+    (substitutionIsIdentityLike.rawSubst_eq secondRaw)
+    firstHEq secondCastHEq
+
+/-- Sigma first projection case for an identity-like substitution. -/
+theorem Term.subst_identityLike_fst_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairHEq :
+      HEq (Term.subst termSubst pairTerm) pairTerm) :
+    HEq
+      (Term.subst termSubst (Term.fst pairTerm))
+      (Term.fst pairTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  have secondTypeIdentity :
+      secondType.subst sigma.lift = secondType :=
+    (substitutionIsIdentityLike.lift firstType).tySubst_eq secondType
+  exact Term.fst_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq firstType)
+    secondTypeIdentity
+    (substitutionIsIdentityLike.rawSubst_eq pairRaw)
+    pairHEq
+
+/-- Sigma second projection case for an identity-like substitution. -/
+theorem Term.subst_identityLike_snd_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm :
+      Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairHEq :
+      HEq (Term.subst termSubst pairTerm) pairTerm) :
+    HEq
+      (Term.subst termSubst
+        (Term.snd (secondType := secondType) pairTerm))
+      (Term.snd (secondType := secondType) pairTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  have secondTypeIdentity :
+      secondType.subst sigma.lift = secondType :=
+    (substitutionIsIdentityLike.lift firstType).tySubst_eq secondType
+  have sndWithoutCastHEq :
+      HEq
+        (Term.snd (Term.subst termSubst pairTerm))
+        (Term.snd (secondType := secondType) pairTerm) :=
+    Term.snd_HEq_congr
+      (substitutionIsIdentityLike.tySubst_eq firstType)
+      secondTypeIdentity
+      (substitutionIsIdentityLike.rawSubst_eq pairRaw)
+      pairHEq
+  have resultCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute secondType firstType
+          (RawTerm.fst pairRaw) sigma).symm ▸
+          Term.snd (Term.subst termSubst pairTerm))
+        (Term.snd (Term.subst termSubst pairTerm)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute secondType firstType
+        (RawTerm.fst pairRaw) sigma).symm
+      (Term.snd (Term.subst termSubst pairTerm))
+  exact HEq.trans resultCastHEq sndWithoutCastHEq
+
+/-- Dependent boolean eliminator case for an identity-like substitution. -/
+theorem Term.subst_identityLike_boolElim_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term sourceCtx Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutineeHEq :
+      HEq (Term.subst termSubst scrutinee) scrutinee)
+    (thenHEq :
+      HEq (Term.subst termSubst thenBranch) thenBranch)
+    (elseHEq :
+      HEq (Term.subst termSubst elseBranch) elseBranch) :
+    HEq
+      (Term.subst termSubst
+        (Term.boolElim scrutinee thenBranch elseBranch))
+      (Term.boolElim scrutinee thenBranch elseBranch) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  have motiveIdentity :
+      motiveType.subst sigma.lift = motiveType :=
+    (substitutionIsIdentityLike.lift Ty.bool).tySubst_eq motiveType
+  have thenCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+          sigma) ▸
+          Term.subst termSubst thenBranch)
+        thenBranch :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+          sigma)
+        (Term.subst termSubst thenBranch))
+      thenHEq
+  have elseCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+          sigma) ▸
+          Term.subst termSubst elseBranch)
+        elseBranch :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+          sigma)
+        (Term.subst termSubst elseBranch))
+      elseHEq
+  have boolElimWithoutCastHEq :
+      HEq
+        (Term.boolElim
+          (motiveType := motiveType.subst sigma.lift)
+          (Term.subst termSubst scrutinee)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+            sigma) ▸
+            Term.subst termSubst thenBranch)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+            sigma) ▸
+            Term.subst termSubst elseBranch))
+        (Term.boolElim scrutinee thenBranch elseBranch) :=
+    Term.boolElim_HEq_congr
+      motiveIdentity
+      (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
+      (substitutionIsIdentityLike.rawSubst_eq thenRaw)
+      (substitutionIsIdentityLike.rawSubst_eq elseRaw)
+      scrutineeHEq thenCastHEq elseCastHEq
+  have resultCastHEq :
+      HEq
+        ((Ty.subst0_subst_commute motiveType Ty.bool scrutineeRaw
+          sigma).symm ▸
+          Term.boolElim
+            (motiveType := motiveType.subst sigma.lift)
+            (Term.subst termSubst scrutinee)
+            ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+              sigma) ▸
+              Term.subst termSubst thenBranch)
+            ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+              sigma) ▸
+              Term.subst termSubst elseBranch))
+        (Term.boolElim
+          (motiveType := motiveType.subst sigma.lift)
+          (Term.subst termSubst scrutinee)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+            sigma) ▸
+            Term.subst termSubst thenBranch)
+          ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+            sigma) ▸
+            Term.subst termSubst elseBranch)) := by
+    exact Term.type_eq_cast_heq
+      (Ty.subst0_subst_commute motiveType Ty.bool scrutineeRaw sigma).symm
+      (Term.boolElim
+        (motiveType := motiveType.subst sigma.lift)
+        (Term.subst termSubst scrutinee)
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolTrue
+          sigma) ▸
+          Term.subst termSubst thenBranch)
+        ((Ty.subst0_subst_commute motiveType Ty.bool RawTerm.boolFalse
+          sigma) ▸
+          Term.subst termSubst elseBranch))
+  exact HEq.trans resultCastHEq boolElimWithoutCastHEq
+
 /-- Natural eliminator case for an identity-like substitution. -/
 theorem Term.subst_identityLike_natElim_HEq
     {mode : Mode} {level scope : Nat}
