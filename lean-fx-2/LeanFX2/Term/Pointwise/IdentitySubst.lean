@@ -1039,6 +1039,187 @@ theorem Term.subst_identityLike_app_HEq
     (substitutionIsIdentityLike.rawSubst_eq argumentRaw)
     functionHEq argumentHEq
 
+/-- Natural eliminator case for an identity-like substitution. -/
+theorem Term.subst_identityLike_natElim_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    (succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutineeHEq :
+      HEq (Term.subst termSubst scrutinee) scrutinee)
+    (zeroHEq :
+      HEq (Term.subst termSubst zeroBranch) zeroBranch)
+    (succHEq :
+      HEq (Term.subst termSubst succBranch) succBranch) :
+    HEq
+      (Term.subst termSubst
+        (Term.natElim scrutinee zeroBranch succBranch))
+      (Term.natElim scrutinee zeroBranch succBranch) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.natElim_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq zeroRaw)
+    (substitutionIsIdentityLike.rawSubst_eq succRaw)
+    scrutineeHEq zeroHEq succHEq
+
+/-- Primitive natural recursor case for an identity-like substitution. -/
+theorem Term.subst_identityLike_natRec_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term sourceCtx Ty.nat scrutineeRaw)
+    (zeroBranch : Term sourceCtx motiveType zeroRaw)
+    (succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw)
+    (scrutineeHEq :
+      HEq (Term.subst termSubst scrutinee) scrutinee)
+    (zeroHEq :
+      HEq (Term.subst termSubst zeroBranch) zeroBranch)
+    (succHEq :
+      HEq (Term.subst termSubst succBranch) succBranch) :
+    HEq
+      (Term.subst termSubst
+        (Term.natRec scrutinee zeroBranch succBranch))
+      (Term.natRec scrutinee zeroBranch succBranch) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.natRec_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq zeroRaw)
+    (substitutionIsIdentityLike.rawSubst_eq succRaw)
+    scrutineeHEq zeroHEq succHEq
+
+/-- List eliminator case for an identity-like substitution. -/
+theorem Term.subst_identityLike_listElim_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee :
+      Term sourceCtx (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term sourceCtx motiveType nilRaw)
+    (consBranch : Term sourceCtx
+      (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+      consRaw)
+    (scrutineeHEq :
+      HEq (Term.subst termSubst scrutinee) scrutinee)
+    (nilHEq :
+      HEq (Term.subst termSubst nilBranch) nilBranch)
+    (consHEq :
+      HEq (Term.subst termSubst consBranch) consBranch) :
+    HEq
+      (Term.subst termSubst
+        (Term.listElim scrutinee nilBranch consBranch))
+      (Term.listElim scrutinee nilBranch consBranch) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.listElim_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq elementType)
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq nilRaw)
+    (substitutionIsIdentityLike.rawSubst_eq consRaw)
+    scrutineeHEq nilHEq consHEq
+
+/-- Option match case for an identity-like substitution. -/
+theorem Term.subst_identityLike_optionMatch_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee :
+      Term sourceCtx (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term sourceCtx motiveType noneRaw)
+    (someBranch : Term sourceCtx (Ty.arrow elementType motiveType) someRaw)
+    (scrutineeHEq :
+      HEq (Term.subst termSubst scrutinee) scrutinee)
+    (noneHEq :
+      HEq (Term.subst termSubst noneBranch) noneBranch)
+    (someHEq :
+      HEq (Term.subst termSubst someBranch) someBranch) :
+    HEq
+      (Term.subst termSubst
+        (Term.optionMatch scrutinee noneBranch someBranch))
+      (Term.optionMatch scrutinee noneBranch someBranch) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.optionMatch_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq elementType)
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq noneRaw)
+    (substitutionIsIdentityLike.rawSubst_eq someRaw)
+    scrutineeHEq noneHEq someHEq
+
+/-- Either match case for an identity-like substitution. -/
+theorem Term.subst_identityLike_eitherMatch_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    (scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw)
+    (scrutineeHEq :
+      HEq (Term.subst termSubst scrutinee) scrutinee)
+    (leftHEq :
+      HEq (Term.subst termSubst leftBranch) leftBranch)
+    (rightHEq :
+      HEq (Term.subst termSubst rightBranch) rightBranch) :
+    HEq
+      (Term.subst termSubst
+        (Term.eitherMatch scrutinee leftBranch rightBranch))
+      (Term.eitherMatch scrutinee leftBranch rightBranch) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.eitherMatch_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq leftType)
+    (substitutionIsIdentityLike.tySubst_eq rightType)
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq scrutineeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq leftRaw)
+    (substitutionIsIdentityLike.rawSubst_eq rightRaw)
+    scrutineeHEq leftHEq rightHEq
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/

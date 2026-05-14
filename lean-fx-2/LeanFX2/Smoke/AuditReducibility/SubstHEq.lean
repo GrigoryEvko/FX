@@ -75,6 +75,11 @@ open LeanFX2
 #print axioms Term.subst_identityLike_modElim_HEq
 #print axioms Term.subst_identityLike_subsume_HEq
 #print axioms Term.subst_identityLike_app_HEq
+#print axioms Term.subst_identityLike_natElim_HEq
+#print axioms Term.subst_identityLike_natRec_HEq
+#print axioms Term.subst_identityLike_listElim_HEq
+#print axioms Term.subst_identityLike_optionMatch_HEq
+#print axioms Term.subst_identityLike_eitherMatch_HEq
 #print axioms Term.subst_identity_var_HEq
 #print axioms Term.subst_identity_lift_var_HEq
 #print axioms Term.subst_identity_unit_HEq
