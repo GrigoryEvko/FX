@@ -159,3 +159,23 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.modElim_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.natElim_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.natRec_strong_normalization_via_kripke
+
+-- K12.26 closed-leaf Kripke headlines (7 new aliases for interval0,
+-- interval1, universeCode, piTyCode, sigmaTyCode, productCode, sumCode)
+#print axioms LeanFX2.Term.interval0_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.interval1_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.universeCode_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.piTyCode_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.sigmaTyCode_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.productCode_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.sumCode_strong_normalization_via_kripke
+
+-- K12.26 closed-leaf ReducibleK fundamentals delegating to existing
+-- Term-level SN helpers (7 new wrappers)
+#print axioms LeanFX2.ReducibleK.fundamental_interval0
+#print axioms LeanFX2.ReducibleK.fundamental_interval1
+#print axioms LeanFX2.ReducibleK.fundamental_universeCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_piTyCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_sigmaTyCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_productCode_sn
+#print axioms LeanFX2.ReducibleK.fundamental_sumCode_sn
