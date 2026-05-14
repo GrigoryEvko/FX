@@ -1363,4 +1363,58 @@ theorem Term.subst_identity_equivCode_HEq
     (RawTerm.subst_identity leftTypeCodeRaw)
     (RawTerm.subst_identity rightTypeCodeRaw)
 
+/-! ## HoTT canonical value cases -/
+
+/-- Canonical identity equivalence case for ordinary identity substitution. -/
+theorem Term.subst_identity_equivReflId_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.equivReflId (context := context) carrier))
+      (Term.equivReflId (context := context) carrier) := by
+  simp only [Term.subst]
+  exact Term.equivReflId_HEq_congr (Ty.subst_identity carrier)
+
+/-- Id-typed identity equivalence case for ordinary identity substitution. -/
+theorem Term.subst_identity_equivReflIdAtId_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.equivReflIdAtId (context := context) innerLevel
+          innerLevelLt carrier carrierRaw))
+      (Term.equivReflIdAtId (context := context) innerLevel
+        innerLevelLt carrier carrierRaw) := by
+  simp only [Term.subst]
+  exact Term.equivReflIdAtId_HEq_congr
+    (Ty.subst_identity carrier)
+    (RawTerm.subst_identity carrierRaw)
+
+/-- Id-typed funext witness case for ordinary identity substitution. -/
+theorem Term.subst_identity_funextReflAtId_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.funextReflAtId (context := context)
+          domainType codomainType applyRaw))
+      (Term.funextReflAtId (context := context)
+        domainType codomainType applyRaw) := by
+  simp only [Term.subst]
+  exact Term.funextReflAtId_HEq_congr
+    (Ty.subst_identity domainType)
+    (Ty.subst_identity codomainType)
+    (by
+      rw [RawTerm.subst_pointwise
+        (@Subst.identity_lift_forRaw_pointwise level scope) applyRaw]
+      exact RawTerm.subst_identity applyRaw)
+
 end LeanFX2

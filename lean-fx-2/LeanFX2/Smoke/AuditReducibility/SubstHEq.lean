@@ -100,6 +100,9 @@ open LeanFX2
 #print axioms Term.subst_identity_eitherCode_HEq
 #print axioms Term.subst_identity_idCode_HEq
 #print axioms Term.subst_identity_equivCode_HEq
+#print axioms Term.subst_identity_equivReflId_HEq
+#print axioms Term.subst_identity_equivReflIdAtId_HEq
+#print axioms Term.subst_identity_funextReflAtId_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton
