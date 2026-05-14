@@ -131,6 +131,9 @@ open LeanFX2
 #print axioms TermSubst.consSingleton_zero_HEq
 #print axioms TermSubst.consSingleton_succ_HEq
 #print axioms TermSubst.compose_position_HEq
+#print axioms Term.type_eq_symm_cast_heq
+#print axioms Term.var_zero_cons_type_eq_heq
+#print axioms TermSubst.lift_compose_zero_HEq
 #print axioms TermSubst.compose_lift_singleton_consSingleton_zero_HEq
 #print axioms TermSubst.compose_lift_singleton_consSingleton_succ_of_entry_HEq
 #print axioms TermSubst.compose_lift_singleton_consSingleton_pointwise_of_entry

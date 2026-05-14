@@ -389,6 +389,34 @@ theorem Term.type_eq_cast_heq
   cases typeEq
   exact HEq.rfl
 
+/-- A symmetric type-index cast on a typed term is heterogeneously
+equal to the original term. -/
+theorem Term.type_eq_symm_cast_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {sourceType targetType : Ty level scope}
+    {raw : RawTerm scope}
+    (typeEq : sourceType = targetType)
+    {targetTerm : Term context targetType raw} :
+    HEq (typeEq.symm ▸ targetTerm) targetTerm := by
+  cases typeEq
+  exact HEq.rfl
+
+/-- The freshly-bound variable is stable under equality of the single
+head type added to the context. -/
+theorem Term.var_zero_cons_type_eq_heq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {firstType secondType : Ty level scope}
+    (typeEq : firstType = secondType) :
+    HEq
+      (Term.var (context := context.cons firstType)
+        ⟨0, Nat.zero_lt_succ scope⟩)
+      (Term.var (context := context.cons secondType)
+        ⟨0, Nat.zero_lt_succ scope⟩) := by
+  cases typeEq
+  exact HEq.rfl
+
 /-- Renaming ignores a pure symmetric type-index cast up to the
 corresponding renamed type-index cast. -/
 theorem Term.rename_type_eq_symm_cast_heq
@@ -477,6 +505,58 @@ theorem Term.subst_type_eq_cast_heq
       (Term.subst termSubst sourceTerm) := by
   cases typeEq
   exact HEq.rfl
+
+/-! ## Lift/compose alignment
+
+These lemmas compare the two substitution shapes exposed by binder
+composition:
+
+* lifting the already-composed substitution; and
+* composing the two individually lifted substitutions.
+
+The fresh-variable case is the first cast-bearing obstruction in the
+`Term.subst_compose` binder proof: both sides reduce to variable zero,
+but their target contexts differ by `Ty.subst_compose`. -/
+
+/-- Fresh-variable entry of lifted substitution composition.
+
+This compares `(first.compose second).lift` with
+`first.lift.compose second.lift` at position zero.  The proof strips the
+type-index casts on both sides, then relates the two variable-zero terms
+through the context-head equality supplied by `Ty.subst_compose`. -/
+theorem TermSubst.lift_compose_zero_HEq
+    {mode : Mode} {level sourceScope middleScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {middleCtx : Ctx mode level middleScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstSubst : Subst level sourceScope middleScope}
+    {secondSubst : Subst level middleScope targetScope}
+    (firstTermSubst : TermSubst sourceCtx middleCtx firstSubst)
+    (secondTermSubst : TermSubst middleCtx targetCtx secondSubst)
+    (newSourceType : Ty level sourceScope) :
+    HEq
+      ((TermSubst.compose firstTermSubst secondTermSubst).lift
+        newSourceType ⟨0, Nat.zero_lt_succ sourceScope⟩)
+      (TermSubst.compose (firstTermSubst.lift newSourceType)
+        (secondTermSubst.lift (newSourceType.subst firstSubst))
+        ⟨0, Nat.zero_lt_succ sourceScope⟩) := by
+  simp only [TermSubst.lift, TermSubst.compose]
+  apply HEq.trans
+  · exact Term.type_eq_symm_cast_heq
+      (Ty.weaken_subst_commute (Subst.compose firstSubst secondSubst)
+        newSourceType)
+  · apply HEq.symm
+    apply HEq.trans
+    · exact cast_heq _ _
+    · apply HEq.trans
+      · exact Term.subst_type_eq_cast_heq _ _ _
+      · simp only [Term.subst, TermSubst.lift]
+        apply HEq.trans
+        · exact Term.type_eq_symm_cast_heq
+            (Ty.weaken_subst_commute secondSubst
+              (newSourceType.subst firstSubst))
+        · exact Term.var_zero_cons_type_eq_heq
+            (Ty.subst_compose firstSubst secondSubst newSourceType)
 
 /-- Substitution law for the beta-specific environment extension:
 weakening a source type, lifting an existing substitution, then
