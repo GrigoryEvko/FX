@@ -530,4 +530,19 @@ theorem Term.idStrictRefl_isStronglyNormalizing
         modeIsStrict carrier rawWitness) :=
   RawTerm.idStrictRefl_isStronglyNormalizing witnessIsSN
 
+/-- Direct SN case for heterogeneous funext intro.  The raw payload is
+`lam (refl applyARaw)` — applyBRaw is schematic and does NOT appear in
+the raw projection, so SN depends only on `applyARaw`. -/
+theorem Term.funextIntroHet_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (applyAIsSN : RawTerm.isStronglyNormalizing applyARaw) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) :=
+  RawTerm.lam_isStronglyNormalizing
+    (RawTerm.refl_isStronglyNormalizing applyAIsSN)
+
 end LeanFX2

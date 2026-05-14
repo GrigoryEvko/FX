@@ -179,3 +179,8 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_sigmaTyCode_sn
 #print axioms LeanFX2.ReducibleK.fundamental_productCode_sn
 #print axioms LeanFX2.ReducibleK.fundamental_sumCode_sn
+
+-- K12.24 funextIntroHet (heterogeneous funext intro, schematic-payload)
+#print axioms LeanFX2.Term.funextIntroHet_isStronglyNormalizing
+#print axioms LeanFX2.Term.funextIntroHet_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_funextIntroHet_sn

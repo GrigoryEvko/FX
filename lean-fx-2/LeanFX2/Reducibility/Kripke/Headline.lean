@@ -933,4 +933,17 @@ theorem Term.sumCode_strong_normalization_via_kripke
   ReducibleK.fundamental_sumCode_sn outerLevel levelLe
     leftCodeIsSN rightCodeIsSN
 
+/-- SN of `Term.funextIntroHet` via Kripke. -/
+theorem Term.funextIntroHet_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (applyAIsSN : RawTerm.isStronglyNormalizing applyARaw) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := context)
+        domainType codomainType applyARaw applyBRaw) :=
+  ReducibleK.fundamental_funextIntroHet_sn
+    domainType codomainType applyAIsSN
+
 end LeanFX2

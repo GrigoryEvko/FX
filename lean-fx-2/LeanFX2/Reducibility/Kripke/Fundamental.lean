@@ -1090,4 +1090,18 @@ theorem ReducibleK.fundamental_sumCode_sn
   Term.sumCode_isStronglyNormalizing outerLevel levelLe
     leftCodeIsSN rightCodeIsSN
 
+/-- SN of funextIntroHet via Kripke.  The raw projection is
+`lam (refl applyARaw)`; applyBRaw is schematic and irrelevant. -/
+theorem ReducibleK.fundamental_funextIntroHet_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyARaw applyBRaw : RawTerm (scope + 1)}
+    (applyAIsSN : RawTerm.isStronglyNormalizing applyARaw) :
+    Term.isStronglyNormalizing
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) :=
+  Term.funextIntroHet_isStronglyNormalizing
+    domainType codomainType applyAIsSN
+
 end LeanFX2
