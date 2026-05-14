@@ -247,6 +247,50 @@ theorem Reducible.fundamental_equivIntroHet_at_equiv_sn
     (Reducible.isStronglyNormalizing forwardIH)
     (Reducible.isStronglyNormalizing backwardIH)
 
+/-- Renaming-stable SN of `Term.equivIntroHet` at `Ty.equiv` —
+`IsRenamingStableIsSN` mirror of `fundamental_equivIntroHet_at_equiv_sn`.
+
+Instantiates forward and backward renaming-stable arrow reducibility
+witnesses at each renaming and feeds raw SN to
+`Term.equivIntroHet_isStronglyNormalizing`. -/
+theorem Reducible.fundamental_equivIntroHet_at_equiv_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (forwardIsStable :
+      IsRenamingStableReducible ((Ty.arrow carrierA carrierB).subst sigma)
+        (Term.subst termSubst forward))
+    (backwardIsStable :
+      IsRenamingStableReducible ((Ty.arrow carrierB carrierA).subst sigma)
+        (Term.subst termSubst backward)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.equivIntroHet forward backward leftInv rightInv)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have forwardReducibleAtRho :=
+    forwardIsStable rhoIsInjective termRenaming
+  have backwardReducibleAtRho :=
+    backwardIsStable rhoIsInjective termRenaming
+  exact Term.equivIntroHet_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing forwardReducibleAtRho)
+    (Reducible.isStronglyNormalizing backwardReducibleAtRho)
+
 /-- Fundamental SN endpoint: `Term.equivIntroHet` at `Ty.equiv`
 (K12.26 support).
 
