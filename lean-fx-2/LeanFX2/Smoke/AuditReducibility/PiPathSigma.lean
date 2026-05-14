@@ -136,5 +136,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_listElim_listCons_at_listType_sn_stable
 #print axioms Reducible.fundamental_natElim_natZero_at_nat_sn
 #print axioms Reducible.fundamental_natElim_natZero_at_nat_sn_stable
+#print axioms Reducible.fundamental_natElim_natSucc_at_nat_sn
+#print axioms Reducible.fundamental_natElim_natSucc_at_nat_sn_stable
 
 end LeanFX2.Smoke

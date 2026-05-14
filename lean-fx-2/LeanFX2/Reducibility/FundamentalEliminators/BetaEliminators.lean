@@ -1560,4 +1560,107 @@ theorem Reducible.fundamental_natElim_natZero_at_nat_sn_stable
   exact RawTerm.natElim_natZero_isStronglyNormalizing
     zeroIsSN succIsSN
 
+/-! ## K12.21.U5 head-ι at nat-successor — fundamental wrapper
+
+`Term.natElim (Term.natSucc predecessor) zeroBranch succBranch`
+ι-reduces to `Term.app succBranch predecessor`.  The raw endpoint
+`Term.natElim_natSucc_isStronglyNormalizing`
+(`Reducibility/NeutralSNHott/NatElim.lean:203`) needs SN of
+predecessor, zero branch, succ branch, AND the curried application
+`Term.app succBranch predecessor`.
+
+The application SN witness is supplied by the arrow reducibility of
+`succBranch`: `succIH.2 (Term.subst termSubst predecessor)
+predecessorIH` projects the second component of the arrow-closure,
+yielding a `Reducible` witness at the substituted motive type for
+the application term, from which `Reducible.isStronglyNormalizing`
+extracts the SN witness. -/
+
+/-- **K12.21.U5 head-ι at nat-successor** — fundamental wrapper for
+`Term.natElim (Term.natSucc predecessor) zeroBranch succBranch`
+consuming `Reducible` witnesses of the substituted predecessor and
+branches.  Closes the natElim ι family at canonical successor
+scrutinees. -/
+theorem Reducible.fundamental_natElim_natSucc_at_nat_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+        Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (predecessorIH :
+        Reducible (Ty.nat (level := level) (scope := targetScope))
+          (Term.subst termSubst predecessor))
+    (zeroIH :
+        Reducible (motiveType.subst sigma)
+          (Term.subst termSubst zeroBranch))
+    (succIH :
+        Reducible ((Ty.arrow Ty.nat motiveType).subst sigma)
+          (Term.subst termSubst succBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.natElim
+          (Term.natSucc predecessor) zeroBranch succBranch)) :=
+  Term.natElim_natSucc_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing predecessorIH)
+    (Reducible.isStronglyNormalizing zeroIH)
+    (Reducible.isStronglyNormalizing succIH)
+    (Reducible.isStronglyNormalizing
+      (succIH.2 (Term.subst termSubst predecessor) predecessorIH))
+
+/-- Renaming-stable variant of
+`fundamental_natElim_natSucc_at_nat_sn`. -/
+theorem Reducible.fundamental_natElim_natSucc_at_nat_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {predecessorRaw zeroRaw succRaw : RawTerm scope}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+        Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (predecessorIsStable :
+        IsRenamingStableReducible
+          (Ty.nat (level := level) (scope := targetScope))
+          (Term.subst termSubst predecessor))
+    (zeroIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+          (Term.subst termSubst zeroBranch))
+    (succIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow Ty.nat motiveType).subst sigma)
+          (Term.subst termSubst succBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.natElim
+          (Term.natSucc predecessor) zeroBranch succBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have predecessorReducibleAtRho :=
+    predecessorIsStable rhoIsInjective termRenaming
+  have zeroReducibleAtRho :=
+    zeroIsStable rhoIsInjective termRenaming
+  have succReducibleAtRho :=
+    succIsStable rhoIsInjective termRenaming
+  have predecessorIsSN :=
+    Reducible.isStronglyNormalizing predecessorReducibleAtRho
+  have zeroIsSN :=
+    Reducible.isStronglyNormalizing zeroReducibleAtRho
+  have succIsSN :=
+    Reducible.isStronglyNormalizing succReducibleAtRho
+  have succAppIsSN :=
+    Reducible.isStronglyNormalizing
+      (succReducibleAtRho.2
+        (Term.rename termRenaming (Term.subst termSubst predecessor))
+        predecessorReducibleAtRho)
+  exact RawTerm.natElim_natSucc_isStronglyNormalizing
+    predecessorIsSN zeroIsSN succIsSN succAppIsSN
+
 end LeanFX2
