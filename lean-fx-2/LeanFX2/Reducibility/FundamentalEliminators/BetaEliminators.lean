@@ -371,6 +371,165 @@ theorem Reducible.fundamental_snd_at_sigmaTy_sn_stable
   intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
   exact (pairIsStable rhoIsInjective termRenaming).2.2
 
+/-! ## K12.21.U5 head-β endpoints — Σ-eliminator on Σ-introducer
+
+Head-β-expansion endpoints for `Term.fst (Term.pair _ _)` and
+`Term.snd (Term.pair _ _)` after substitution.  These are the Σ
+analogs of the existing `fundamental_lam_at_arrow_app_sn` family:
+they consume `Reducible` witnesses of the substituted components
+and produce SN of the head-β redex.
+
+Both reduce by the same composition pattern as
+`fundamental_pair_at_sigmaTy_sn`:
+1. Extract raw SN from each `Reducible` via `Reducible.isStronglyNormalizing`
+2. Realign the second component's typed SN through `Ty.subst0_subst_commute`
+3. Apply the raw head-β-expansion endpoint `Term.fst_pair_isStronglyNormalizing`
+   (resp. `Term.snd_pair_isStronglyNormalizing`)
+
+Result type is SN of the substituted head-β redex; Lean's kernel
+unfolds `Term.subst termSubst (Term.fst (Term.pair _ _))` to
+`Term.fst (Term.pair (Term.subst _ fv) (cast ▸ Term.subst _ sv))`
+via δ-ι reduction, matching `Term.fst_pair_isStronglyNormalizing`'s
+conclusion directly. -/
+
+/-- **K12.21.U5 head-β at Σ.fst** — fundamental wrapper for
+`Term.fst (Term.pair _ _)` consuming `Reducible` witnesses of
+the substituted pair components. -/
+theorem Reducible.fundamental_fst_pair_at_sigmaTy_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIH :
+      Reducible (firstType.subst sigma)
+        (Term.subst termSubst firstValue))
+    (secondIH :
+      Reducible
+        ((secondType.subst0 firstType firstRaw).subst sigma)
+        (Term.subst termSubst secondValue)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.fst
+          (Term.pair (secondType := secondType) firstValue secondValue))) := by
+  have secondIsSN :
+      Term.isStronglyNormalizing
+        (Ty.subst0_subst_commute secondType firstType firstRaw sigma ▸
+          Term.subst termSubst secondValue) := by
+    change RawTerm.isStronglyNormalizing (secondRaw.subst sigma.forRaw)
+    exact Reducible.isStronglyNormalizing secondIH
+  exact Term.fst_pair_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstIH)
+    secondIsSN
+
+/-- Renaming-stable variant of `fundamental_fst_pair_at_sigmaTy_sn`. -/
+theorem Reducible.fundamental_fst_pair_at_sigmaTy_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsStable :
+        IsRenamingStableReducible (firstType.subst sigma)
+          (Term.subst termSubst firstValue))
+    (secondIsStable :
+        IsRenamingStableReducible
+          ((secondType.subst0 firstType firstRaw).subst sigma)
+          (Term.subst termSubst secondValue)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.fst
+          (Term.pair (secondType := secondType) firstValue secondValue))) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have firstReducibleAtRho :=
+    firstIsStable rhoIsInjective termRenaming
+  have secondReducibleAtRho :=
+    secondIsStable rhoIsInjective termRenaming
+  have firstIsSN := Reducible.isStronglyNormalizing firstReducibleAtRho
+  have secondIsSN := Reducible.isStronglyNormalizing secondReducibleAtRho
+  exact RawTerm.fst_pair_isStronglyNormalizing firstIsSN secondIsSN
+
+/-- **K12.21.U5 head-β at Σ.snd** — fundamental wrapper for
+`Term.snd (Term.pair _ _)` consuming `Reducible` witnesses of
+the substituted pair components. -/
+theorem Reducible.fundamental_snd_pair_at_sigmaTy_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIH :
+      Reducible (firstType.subst sigma)
+        (Term.subst termSubst firstValue))
+    (secondIH :
+      Reducible
+        ((secondType.subst0 firstType firstRaw).subst sigma)
+        (Term.subst termSubst secondValue)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.snd
+          (Term.pair (secondType := secondType) firstValue secondValue))) := by
+  have secondIsSN :
+      Term.isStronglyNormalizing
+        (Ty.subst0_subst_commute secondType firstType firstRaw sigma ▸
+          Term.subst termSubst secondValue) := by
+    change RawTerm.isStronglyNormalizing (secondRaw.subst sigma.forRaw)
+    exact Reducible.isStronglyNormalizing secondIH
+  exact Term.snd_pair_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstIH)
+    secondIsSN
+
+/-- Renaming-stable variant of `fundamental_snd_pair_at_sigmaTy_sn`. -/
+theorem Reducible.fundamental_snd_pair_at_sigmaTy_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsStable :
+        IsRenamingStableReducible (firstType.subst sigma)
+          (Term.subst termSubst firstValue))
+    (secondIsStable :
+        IsRenamingStableReducible
+          ((secondType.subst0 firstType firstRaw).subst sigma)
+          (Term.subst termSubst secondValue)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.snd
+          (Term.pair (secondType := secondType) firstValue secondValue))) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have firstReducibleAtRho :=
+    firstIsStable rhoIsInjective termRenaming
+  have secondReducibleAtRho :=
+    secondIsStable rhoIsInjective termRenaming
+  have firstIsSN := Reducible.isStronglyNormalizing firstReducibleAtRho
+  have secondIsSN := Reducible.isStronglyNormalizing secondReducibleAtRho
+  exact RawTerm.snd_pair_isStronglyNormalizing firstIsSN secondIsSN
+
 /-! ## K12.21.D fundamental_appPi at `Ty.piTy` — Π SN-output
 elimination
 
