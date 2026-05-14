@@ -34,4 +34,16 @@ theorem Term.natZero_strong_normalization_via_kripke
     Term.isStronglyNormalizing (Term.natZero (context := sourceCtx)) :=
   ReducibleK.sn_of_nat (ReducibleK.fundamental_natZero (sourceCtx := sourceCtx) 1)
 
+/-- SN of natSucc via Kripke: SN(pred) → SN(natSucc pred). -/
+theorem Term.natSucc_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {predRaw : RawTerm scope}
+    {predTerm : Term sourceCtx Ty.nat predRaw}
+    (predIsSN : Term.isStronglyNormalizing predTerm) :
+    Term.isStronglyNormalizing (Term.natSucc predTerm) :=
+  ReducibleK.sn_of_nat
+    (ReducibleK.fundamental_natSucc (predIsR :=
+      show @ReducibleK _ _ _ sourceCtx 1 Ty.nat predRaw predTerm from predIsSN))
+
 end LeanFX2
