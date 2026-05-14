@@ -430,4 +430,22 @@ theorem RawStep.parStar.var_inv {position : Fin scope}
     target = RawTerm.var position :=
   RawStep.parStar.canonical_inv_helper RawStep.par.var_inv chain
 
+/-- `RawStep.parStar (universeCode innerLevel) target → target =
+universeCode innerLevel`.
+
+Universe codes are atomic type-code heads with no β/ι reduction —
+`RawStep.par.universeCode_inv` (`Reduction/RawParInversion/TypeCodes.lean:235`)
+forces the single-step target to be the same code, so any chain
+stays at the same code.  Completes the canonical-head inversion
+family across the type-code atomic head alongside the value
+canonical heads above. -/
+theorem RawStep.parStar.universeCode_inv {innerLevel : Nat}
+    {target : RawTerm scope}
+    (chain :
+      RawStep.parStar (RawTerm.universeCode innerLevel : RawTerm scope)
+        target) :
+    target = RawTerm.universeCode innerLevel :=
+  RawStep.parStar.canonical_inv_helper
+    RawStep.par.universeCode_inv chain
+
 end LeanFX2
