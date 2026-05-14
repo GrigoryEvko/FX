@@ -907,4 +907,81 @@ theorem Reducible.fundamental_refineElim_at_refine_stable
   intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
   exact (refinedIsStable rhoIsInjective termRenaming).2
 
+/-! ## K12.21.U5 head-ι at option-none — fundamental wrapper
+
+`Term.optionMatch (Term.optionNone) noneBranch someBranch` ι-reduces
+to `noneBranch`.  The raw endpoint
+`Term.optionMatch_optionNone_isStronglyNormalizing` (NeutralSNIntro/
+Lists.lean) discharges SN from SN of the two branches alone; the
+scrutinee carries no payload to demote.
+
+`Term.subst` distributes definitionally through `Term.optionMatch`
+and `Term.optionNone` (see `Term/Subst.lean:300-303`), so the
+substituted goal matches the raw endpoint's conclusion. -/
+
+/-- **K12.21.U5 head-ι at option-none** — fundamental wrapper for
+`Term.optionMatch (Term.optionNone) noneBranch someBranch` consuming
+`Reducible` witnesses of the substituted branches.  No payload on the
+scrutinee side. -/
+theorem Reducible.fundamental_optionMatch_optionNone_at_optionType_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {noneRaw someRaw : RawTerm scope}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch :
+        Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (noneIH :
+        Reducible (motiveType.subst sigma)
+          (Term.subst termSubst noneBranch))
+    (someIH :
+        Reducible ((Ty.arrow elementType motiveType).subst sigma)
+          (Term.subst termSubst someBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.optionMatch
+          (Term.optionNone (elementType := elementType))
+          noneBranch someBranch)) :=
+  Term.optionMatch_optionNone_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing noneIH)
+    (Reducible.isStronglyNormalizing someIH)
+
+/-- Renaming-stable variant of
+`fundamental_optionMatch_optionNone_at_optionType_sn`. -/
+theorem Reducible.fundamental_optionMatch_optionNone_at_optionType_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {elementType motiveType : Ty level scope}
+    {noneRaw someRaw : RawTerm scope}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch :
+        Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (noneIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+          (Term.subst termSubst noneBranch))
+    (someIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow elementType motiveType).subst sigma)
+          (Term.subst termSubst someBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.optionMatch
+          (Term.optionNone (elementType := elementType))
+          noneBranch someBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have noneReducibleAtRho :=
+    noneIsStable rhoIsInjective termRenaming
+  have someReducibleAtRho :=
+    someIsStable rhoIsInjective termRenaming
+  have noneIsSN := Reducible.isStronglyNormalizing noneReducibleAtRho
+  have someIsSN := Reducible.isStronglyNormalizing someReducibleAtRho
+  exact RawTerm.optionMatch_optionNone_isStronglyNormalizing
+    noneIsSN someIsSN
+
 end LeanFX2

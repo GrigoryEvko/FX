@@ -122,5 +122,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_recordProj_recordIntro_at_record_sn_stable
 #print axioms Reducible.fundamental_refineElim_refineIntro_at_refine_sn
 #print axioms Reducible.fundamental_refineElim_refineIntro_at_refine_sn_stable
+#print axioms Reducible.fundamental_optionMatch_optionNone_at_optionType_sn
+#print axioms Reducible.fundamental_optionMatch_optionNone_at_optionType_sn_stable
 
 end LeanFX2.Smoke
