@@ -763,5 +763,86 @@ theorem TermSubst.compose_lift_singleton_consSingleton_succ_of_entry_HEq
         (TermSubst.consSingleton_succ_HEq termSubst argumentTerm
           previousIndex positionIsWithinScope).symm))
 
+/-- Pointwise equality between the composed lift-then-singleton
+substitution and the beta-specific `consSingleton` substitution.
+
+The theorem packages the already-audited zero and successor HEq entries
+into the exact same-index equality needed by `Term.subst_pointwise`.
+It still exposes the real remaining obligation: every old substitution
+entry must collapse after weakening and singleton substitution. -/
+theorem TermSubst.compose_lift_singleton_consSingleton_pointwise_of_entry
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw)
+    (entryHEq :
+      ∀ previousPosition : Fin scope,
+        HEq
+          (Term.subst (TermSubst.singleton argumentTerm)
+            (Term.weaken (domainType.subst sigma)
+              (termSubst previousPosition)))
+          (termSubst previousPosition)) :
+    ∀ position,
+      TermSubst.compose (termSubst.lift domainType)
+        (TermSubst.singleton argumentTerm) position =
+      TermSubst.consSingleton termSubst argumentTerm position := by
+  intro position
+  rcases position with ⟨positionIndex, positionIsWithinScope⟩
+  cases positionIndex with
+  | zero =>
+      exact eq_of_heq
+        (TermSubst.compose_lift_singleton_consSingleton_zero_HEq
+          termSubst argumentTerm)
+  | succ previousIndex =>
+      exact eq_of_heq
+        (TermSubst.compose_lift_singleton_consSingleton_succ_of_entry_HEq
+          termSubst argumentTerm previousIndex positionIsWithinScope
+          (entryHEq
+            ⟨previousIndex,
+              Nat.lt_of_succ_lt_succ positionIsWithinScope⟩))
+
+/-- Substituting a term with the composed lift-then-singleton
+substitution is the same as substituting it with the beta-specific
+`consSingleton` substitution, assuming the old substitution entries
+collapse after weaken-then-singleton.
+
+This is the body-level form needed by the lambda contractum route:
+after the entry theorem is available, `Term.subst_pointwise` can
+transport every body in one step instead of re-opening constructor
+cases. -/
+theorem Term.subst_compose_lift_singleton_eq_consSingleton_of_entry
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw)
+    (entryHEq :
+      ∀ previousPosition : Fin scope,
+        HEq
+          (Term.subst (TermSubst.singleton argumentTerm)
+            (Term.weaken (domainType.subst sigma)
+              (termSubst previousPosition)))
+          (termSubst previousPosition))
+    {bodyType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    (bodyTerm : Term (sourceCtx.cons domainType) bodyType bodyRaw) :
+    Term.subst
+        (TermSubst.compose (termSubst.lift domainType)
+          (TermSubst.singleton argumentTerm))
+        bodyTerm =
+      Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+        bodyTerm := by
+  exact Term.subst_pointwise
+    (TermSubst.compose_lift_singleton_consSingleton_pointwise_of_entry
+      termSubst argumentTerm entryHEq)
+    bodyTerm
+
 
 end LeanFX2

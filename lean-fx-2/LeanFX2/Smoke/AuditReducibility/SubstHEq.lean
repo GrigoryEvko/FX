@@ -133,6 +133,8 @@ open LeanFX2
 #print axioms TermSubst.compose_position_HEq
 #print axioms TermSubst.compose_lift_singleton_consSingleton_zero_HEq
 #print axioms TermSubst.compose_lift_singleton_consSingleton_succ_of_entry_HEq
+#print axioms TermSubst.compose_lift_singleton_consSingleton_pointwise_of_entry
+#print axioms Term.subst_compose_lift_singleton_eq_consSingleton_of_entry
 #print axioms ReducibleSubst.renameOutput_of_renamingStable
 #print axioms TermSubst.renameOutput_position_HEq
 #print axioms Term.rename_type_eq_symm_cast_heq
