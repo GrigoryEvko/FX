@@ -51,6 +51,9 @@ open LeanFX2
 #print axioms TermSubst.IsIdentityLike.lift
 #print axioms TermSubst.IsIdentityLike.tySubst_eq
 #print axioms TermSubst.IsIdentityLike.rawSubst_eq
+#print axioms Term.subst_identityLike_lam_HEq
+#print axioms Term.subst_identityLike_lamPi_HEq
+#print axioms Term.subst_identityLike_pathLam_HEq
 #print axioms Term.subst_identity_var_HEq
 #print axioms Term.subst_identity_lift_var_HEq
 #print axioms Term.subst_identity_unit_HEq
