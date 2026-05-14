@@ -1181,4 +1181,102 @@ theorem Reducible.fundamental_eitherMatch_eitherInl_at_eitherType_sn_stable
   exact RawTerm.eitherMatch_eitherInl_isStronglyNormalizing
     valueIsSN leftIsSN rightIsSN leftAppIsSN
 
+/-! ## K12.21.U5 head-ι at either-right — fundamental wrapper
+
+`Term.eitherMatch (Term.eitherInr valueTerm) leftBranch rightBranch`
+ι-reduces to `Term.app rightBranch valueTerm`.  Mirror of the
+either-left wrapper: the application SN witness comes from the
+arrow reducibility of `rightBranch` rather than `leftBranch`.
+
+Raw endpoint `Term.eitherMatch_eitherInr_isStronglyNormalizing`
+(NeutralSNIntro/Sums.lean:312). -/
+
+/-- **K12.21.U5 head-ι at either-right** — fundamental wrapper for
+`Term.eitherMatch (Term.eitherInr valueTerm) leftBranch rightBranch`
+consuming `Reducible` witnesses of the substituted value and both
+branches.  Arrow-closure on the right branch supplies the
+application SN witness. -/
+theorem Reducible.fundamental_eitherMatch_eitherInr_at_eitherType_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType motiveType : Ty level scope}
+    {valueRaw leftRaw rightRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    {leftBranch :
+        Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+        Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (valueIH :
+        Reducible (rightType.subst sigma)
+          (Term.subst termSubst valueTerm))
+    (leftIH :
+        Reducible ((Ty.arrow leftType motiveType).subst sigma)
+          (Term.subst termSubst leftBranch))
+    (rightIH :
+        Reducible ((Ty.arrow rightType motiveType).subst sigma)
+          (Term.subst termSubst rightBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.eitherMatch
+          (Term.eitherInr (leftType := leftType) valueTerm)
+          leftBranch rightBranch)) :=
+  Term.eitherMatch_eitherInr_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing valueIH)
+    (Reducible.isStronglyNormalizing leftIH)
+    (Reducible.isStronglyNormalizing rightIH)
+    (Reducible.isStronglyNormalizing
+      (rightIH.2 (Term.subst termSubst valueTerm) valueIH))
+
+/-- Renaming-stable variant of
+`fundamental_eitherMatch_eitherInr_at_eitherType_sn`. -/
+theorem Reducible.fundamental_eitherMatch_eitherInr_at_eitherType_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {leftType rightType motiveType : Ty level scope}
+    {valueRaw leftRaw rightRaw : RawTerm scope}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    {leftBranch :
+        Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch :
+        Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (valueIsStable :
+        IsRenamingStableReducible (rightType.subst sigma)
+          (Term.subst termSubst valueTerm))
+    (leftIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow leftType motiveType).subst sigma)
+          (Term.subst termSubst leftBranch))
+    (rightIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow rightType motiveType).subst sigma)
+          (Term.subst termSubst rightBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.eitherMatch
+          (Term.eitherInr (leftType := leftType) valueTerm)
+          leftBranch rightBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have valueReducibleAtRho :=
+    valueIsStable rhoIsInjective termRenaming
+  have leftReducibleAtRho :=
+    leftIsStable rhoIsInjective termRenaming
+  have rightReducibleAtRho :=
+    rightIsStable rhoIsInjective termRenaming
+  have valueIsSN := Reducible.isStronglyNormalizing valueReducibleAtRho
+  have leftIsSN := Reducible.isStronglyNormalizing leftReducibleAtRho
+  have rightIsSN := Reducible.isStronglyNormalizing rightReducibleAtRho
+  have rightAppIsSN :=
+    Reducible.isStronglyNormalizing
+      (rightReducibleAtRho.2
+        (Term.rename termRenaming (Term.subst termSubst valueTerm))
+        valueReducibleAtRho)
+  exact RawTerm.eitherMatch_eitherInr_isStronglyNormalizing
+    valueIsSN leftIsSN rightIsSN rightAppIsSN
+
 end LeanFX2
