@@ -57,6 +57,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_lam_at_arrow_of_bodyIH_sn_codomain
 #print axioms Reducible.fundamental_lam_at_arrow_of_stable_bodyIH_sn_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_of_bodyIH_sn_codomain
+#print axioms Reducible.fundamental_identity_lam_at_arrow_SNDirect_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_unit_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_bool_codomain
 #print axioms Reducible.fundamental_identity_lam_at_arrow_nat_codomain
