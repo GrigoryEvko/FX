@@ -4,6 +4,7 @@ import LeanFX2.Reducibility.Kripke.Weaken
 import LeanFX2.Reducibility.Kripke.Monotone
 import LeanFX2.Reducibility.Kripke.Project
 import LeanFX2.Reducibility.Kripke.SNClosure
+import LeanFX2.Reducibility.Kripke.Fundamental
 
 /-! Kripke Tait reducibility zero-axiom audit log. -/
 
@@ -37,3 +38,7 @@ import LeanFX2.Reducibility.Kripke.SNClosure
 #print axioms LeanFX2.ReducibleK.cr2_nat
 #print axioms LeanFX2.ReducibleK.cr2_empty
 #print axioms LeanFX2.ReducibleK.cr2_interval
+#print axioms LeanFX2.ReducibleK.fundamental_unit
+#print axioms LeanFX2.ReducibleK.fundamental_boolTrue
+#print axioms LeanFX2.ReducibleK.fundamental_boolFalse
+#print axioms LeanFX2.ReducibleK.fundamental_natZero
