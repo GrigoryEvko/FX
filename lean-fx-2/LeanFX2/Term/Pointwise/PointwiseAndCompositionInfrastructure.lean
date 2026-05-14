@@ -635,6 +635,55 @@ theorem TermSubst.precompose_weaken_singleton_position_HEq
             (context := context)
             ⟨positionIndex, positionIsWithinScope⟩)))
 
+/-- Precomposing weakening with singleton substitution is pointwise the
+identity typed substitution.
+
+The underlying `Subst` is definitionally `Subst.identity`; this theorem
+turns the entrywise HEq alignment into the ordinary equality consumed by
+`Term.subst_pointwise`. -/
+theorem TermSubst.precompose_weaken_singleton_pointwise
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw) :
+    ∀ position,
+      TermSubst.precomposeRenaming
+        (TermRenaming.weakenStep context newType)
+        (TermSubst.singleton singletonTerm)
+        position =
+      TermSubst.identity context position := by
+  intro position
+  exact eq_of_heq
+    (TermSubst.precompose_weaken_singleton_position_HEq
+      singletonTerm position)
+
+/-- Substituting by the weakening/singleton precomposition agrees with
+identity substitution on every term.
+
+This is the reusable substitution-level half of the old-entry collapse
+needed by `Term.subst_compose_lift_singleton_eq_consSingleton_of_entry`.
+The remaining half is the typed factorization from `weaken` followed by
+`singleton` into this precomposed substitution. -/
+theorem Term.subst_precompose_weaken_singleton_eq_identity
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    {someType : Ty level scope}
+    {raw : RawTerm scope}
+    (someTerm : Term context someType raw) :
+    Term.subst
+        (TermSubst.precomposeRenaming
+          (TermRenaming.weakenStep context newType)
+          (TermSubst.singleton singletonTerm))
+        someTerm =
+      Term.subst (TermSubst.identity context) someTerm :=
+  Term.subst_pointwise
+    (TermSubst.precompose_weaken_singleton_pointwise singletonTerm)
+    someTerm
+
 /-- The underlying type-substitution component of lifted weakening
 followed by lifted singleton is pointwise identity under the original
 binder. -/
