@@ -748,6 +748,191 @@ theorem Term.subst_identityLike_natSucc_HEq
     (substitutionIsIdentityLike.rawSubst_eq predecessorRaw)
     predecessorHEq
 
+/-- List cons case for an identity-like substitution. -/
+theorem Term.subst_identityLike_listCons_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    (headTerm : Term sourceCtx elementType headRaw)
+    (tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw)
+    (headHEq :
+      HEq (Term.subst termSubst headTerm) headTerm)
+    (tailHEq :
+      HEq (Term.subst termSubst tailTerm) tailTerm) :
+    HEq
+      (Term.subst termSubst (Term.listCons headTerm tailTerm))
+      (Term.listCons headTerm tailTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.listCons_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq elementType)
+    (substitutionIsIdentityLike.rawSubst_eq headRaw)
+    (substitutionIsIdentityLike.rawSubst_eq tailRaw)
+    headHEq tailHEq
+
+/-- Option some case for an identity-like substitution. -/
+theorem Term.subst_identityLike_optionSome_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {elementType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term sourceCtx elementType valueRaw)
+    (valueHEq :
+      HEq (Term.subst termSubst valueTerm) valueTerm) :
+    HEq
+      (Term.subst termSubst (Term.optionSome valueTerm))
+      (Term.optionSome valueTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.optionSome_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq elementType)
+    (substitutionIsIdentityLike.rawSubst_eq valueRaw)
+    valueHEq
+
+/-- Either-left injection case for an identity-like substitution. -/
+theorem Term.subst_identityLike_eitherInl_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term sourceCtx leftType valueRaw)
+    (valueHEq :
+      HEq (Term.subst termSubst valueTerm) valueTerm) :
+    HEq
+      (Term.subst termSubst
+        (Term.eitherInl (rightType := rightType) valueTerm))
+      (Term.eitherInl (rightType := rightType) valueTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.eitherInl_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq leftType)
+    (substitutionIsIdentityLike.tySubst_eq rightType)
+    (substitutionIsIdentityLike.rawSubst_eq valueRaw)
+    valueHEq
+
+/-- Either-right injection case for an identity-like substitution. -/
+theorem Term.subst_identityLike_eitherInr_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {leftType rightType : Ty level scope}
+    {valueRaw : RawTerm scope}
+    (valueTerm : Term sourceCtx rightType valueRaw)
+    (valueHEq :
+      HEq (Term.subst termSubst valueTerm) valueTerm) :
+    HEq
+      (Term.subst termSubst
+        (Term.eitherInr (leftType := leftType) valueTerm))
+      (Term.eitherInr (leftType := leftType) valueTerm) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.eitherInr_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq leftType)
+    (substitutionIsIdentityLike.tySubst_eq rightType)
+    (substitutionIsIdentityLike.rawSubst_eq valueRaw)
+    valueHEq
+
+/-- Interval negation case for an identity-like substitution. -/
+theorem Term.subst_identityLike_intervalOpp_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {innerRaw : RawTerm scope}
+    (innerValue : Term sourceCtx Ty.interval innerRaw)
+    (innerHEq :
+      HEq (Term.subst termSubst innerValue) innerValue) :
+    HEq
+      (Term.subst termSubst (Term.intervalOpp innerValue))
+      (Term.intervalOpp innerValue) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.intervalOpp_HEq_congr
+    (substitutionIsIdentityLike.rawSubst_eq innerRaw)
+    innerHEq
+
+/-- Interval meet case for an identity-like substitution. -/
+theorem Term.subst_identityLike_intervalMeet_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term sourceCtx Ty.interval leftRaw)
+    (rightValue : Term sourceCtx Ty.interval rightRaw)
+    (leftHEq :
+      HEq (Term.subst termSubst leftValue) leftValue)
+    (rightHEq :
+      HEq (Term.subst termSubst rightValue) rightValue) :
+    HEq
+      (Term.subst termSubst (Term.intervalMeet leftValue rightValue))
+      (Term.intervalMeet leftValue rightValue) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.intervalMeet_HEq_congr
+    (substitutionIsIdentityLike.rawSubst_eq leftRaw)
+    (substitutionIsIdentityLike.rawSubst_eq rightRaw)
+    leftHEq rightHEq
+
+/-- Interval join case for an identity-like substitution. -/
+theorem Term.subst_identityLike_intervalJoin_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {leftRaw rightRaw : RawTerm scope}
+    (leftValue : Term sourceCtx Ty.interval leftRaw)
+    (rightValue : Term sourceCtx Ty.interval rightRaw)
+    (leftHEq :
+      HEq (Term.subst termSubst leftValue) leftValue)
+    (rightHEq :
+      HEq (Term.subst termSubst rightValue) rightValue) :
+    HEq
+      (Term.subst termSubst (Term.intervalJoin leftValue rightValue))
+      (Term.intervalJoin leftValue rightValue) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.intervalJoin_HEq_congr
+    (substitutionIsIdentityLike.rawSubst_eq leftRaw)
+    (substitutionIsIdentityLike.rawSubst_eq rightRaw)
+    leftHEq rightHEq
+
 /-- Modal introduction wrapper case for an identity-like substitution. -/
 theorem Term.subst_identityLike_modIntro_HEq
     {mode : Mode} {level scope : Nat}
