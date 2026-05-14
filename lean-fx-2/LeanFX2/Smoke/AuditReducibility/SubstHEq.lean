@@ -147,5 +147,7 @@ open LeanFX2
 #print axioms TermSubst.renameOutput_position_HEq
 #print axioms Term.rename_type_eq_symm_cast_heq
 #print axioms TermSubst.precomposeRenaming_position_HEq
+#print axioms Term.rename_var_HEq
+#print axioms TermSubst.precompose_lift_weaken_singleton_lift_position_HEq
 
 end LeanFX2.Smoke

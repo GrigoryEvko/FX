@@ -498,6 +498,22 @@ theorem Term.weaken_head_type_eq_heq
   cases typeEq
   exact HEq.rfl
 
+/-- Renaming a variable changes only the variable position and the
+typed lookup cast. -/
+theorem Term.rename_var_HEq
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (position : Fin sourceScope) :
+    HEq (Term.rename termRenaming (Term.var position))
+      (Term.var (context := targetCtx) (rho position)) := by
+  simp only [Term.rename]
+  exact Term.type_eq_cast_heq
+    (typeEq := termRenaming position)
+    (sourceTerm := Term.var (context := targetCtx) (rho position))
+
 /-- The cast in `TermSubst.renameOutput` changes only the type index.
 
 This packages the exact `Ty.subst_rename_commute` transport used by
@@ -553,6 +569,116 @@ theorem TermSubst.precomposeRenaming_position_HEq
       exact Ty.rename_subst_commute rho sigma
         (varType sourceCtx position))
     (termSubst (rho position))
+
+/-- Precomposing the lifted weakening renaming with a lifted singleton
+substitution is entrywise the identity substitution under the original
+binder.
+
+This is the binder-body entry alignment behind
+`Term.weaken_subst_singleton_lam_heq`: the raw operation weakens under
+an existing binder and then substitutes the inserted outer variable
+away, so old and binder-local variables return to their original
+positions. -/
+theorem TermSubst.precompose_lift_weaken_singleton_lift_position_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType newType : Ty level scope}
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (position : Fin (scope + 1)) :
+    HEq
+      (TermSubst.precomposeRenaming
+        ((TermRenaming.weakenStep context newType).lift domainType)
+        ((TermSubst.singleton singletonTerm).lift
+          (domainType.rename RawRenaming.weaken))
+        position)
+      (TermSubst.identity (context.cons domainType) position) := by
+  apply HEq.trans
+  · exact TermSubst.precomposeRenaming_position_HEq
+      ((TermRenaming.weakenStep context newType).lift domainType)
+      ((TermSubst.singleton singletonTerm).lift
+        (domainType.rename RawRenaming.weaken))
+      position
+  · rcases position with ⟨positionIndex, positionIsWithinScope⟩
+    cases positionIndex with
+    | zero =>
+        simp only [RawRenaming.lift, TermSubst.lift, TermSubst.identity,
+          varType]
+        exact HEq.trans
+          (Term.type_eq_symm_cast_heq
+            (Ty.weaken_subst_commute
+              (Subst.singleton newType singletonRaw)
+              (domainType.rename RawRenaming.weaken)))
+          (HEq.trans
+            (Term.var_zero_cons_type_eq_heq
+              (Ty.weaken_subst_singleton domainType newType singletonRaw))
+            (HEq.symm
+              (Term.type_eq_symm_cast_heq
+                (context := context.cons domainType)
+                (typeEq := Ty.subst_identity (domainType.weaken))
+                (targetTerm := Term.var
+                  (context := context.cons domainType)
+                  ⟨0, Nat.zero_lt_succ scope⟩))))
+    | succ previousIndex =>
+        simp only [RawRenaming.lift, RawRenaming.weaken, TermSubst.lift,
+          TermSubst.singleton, TermSubst.identity, varType]
+        exact HEq.trans
+          (Term.type_eq_symm_cast_heq
+            (Ty.weaken_subst_commute
+              (Subst.singleton newType singletonRaw)
+              (varType (context.cons newType)
+                ⟨previousIndex + 1, positionIsWithinScope⟩)))
+          (HEq.trans
+            (Term.weaken_head_type_eq_heq
+              (Ty.weaken_subst_singleton domainType newType singletonRaw)
+              ((Ty.weaken_subst_singleton
+                (varType context
+                  ⟨previousIndex,
+                    Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+                newType singletonRaw).symm ▸
+                  Term.var
+                    ⟨previousIndex,
+                      Nat.lt_of_succ_lt_succ positionIsWithinScope⟩))
+            (HEq.trans
+              (Term.rename_type_eq_cast_heq
+                (TermRenaming.weakenStep context domainType)
+                (Ty.weaken_subst_singleton
+                  (varType context
+                    ⟨previousIndex,
+                      Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+                  newType singletonRaw).symm
+                (Term.var
+                  ⟨previousIndex,
+                    Nat.lt_of_succ_lt_succ positionIsWithinScope⟩))
+              (HEq.trans
+                (Term.type_eq_cast_heq
+                  (context := context.cons domainType)
+                  (typeEq := congrArg
+                    (fun someType => Ty.rename someType RawRenaming.weaken)
+                    (Ty.weaken_subst_singleton
+                      (varType context
+                        ⟨previousIndex,
+                          Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+                      newType singletonRaw).symm)
+                  (sourceTerm :=
+                    Term.rename (TermRenaming.weakenStep context domainType)
+                      (Term.var
+                        ⟨previousIndex,
+                          Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)))
+                (HEq.trans
+                  (Term.rename_var_HEq
+                    (TermRenaming.weakenStep context domainType)
+                    ⟨previousIndex,
+                      Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+                  (HEq.symm
+                    (Term.type_eq_symm_cast_heq
+                      (context := context.cons domainType)
+                      (typeEq := Ty.subst_identity
+                        (varType (context.cons domainType)
+                          ⟨previousIndex + 1, positionIsWithinScope⟩))
+                      (targetTerm := Term.var
+                        (context := context.cons domainType)
+                        ⟨previousIndex + 1, positionIsWithinScope⟩)))))))
 
 /-- A raw-index cast on a typed term is heterogeneously equal to the
 original term. -/
