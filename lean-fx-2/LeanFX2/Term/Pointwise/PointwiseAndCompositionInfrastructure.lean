@@ -822,6 +822,43 @@ theorem TermSubst.precompose_lift_weaken_singleton_lift_position_HEq
                         (context := context.cons domainType)
                         ⟨previousIndex + 1, positionIsWithinScope⟩)))))))
 
+/-- Variable surface case for lifted weaken/singleton precomposition.
+
+This packages `TermSubst.precompose_lift_weaken_singleton_lift_position_HEq`
+at the `Term.subst` layer.  It is the base case for the binder-body
+rename/substitution cancellation theorem: after weakening under an
+existing binder and substituting by the lifted singleton, every variable
+in the original binder context returns to itself up to heterogeneous
+equality. -/
+theorem Term.subst_precompose_lift_weaken_singleton_lift_var_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType newType : Ty level scope}
+    {singletonRaw : RawTerm scope}
+    (singletonTerm : Term context newType singletonRaw)
+    (position : Fin (scope + 1)) :
+    HEq
+      (Term.subst
+        (TermSubst.precomposeRenaming
+          ((TermRenaming.weakenStep context newType).lift domainType)
+          ((TermSubst.singleton singletonTerm).lift
+            (domainType.rename RawRenaming.weaken)))
+        (Term.var (context := context.cons domainType) position))
+      (Term.var (context := context.cons domainType) position) := by
+  exact HEq.trans
+    (by
+      simpa only [Term.subst] using
+        TermSubst.precompose_lift_weaken_singleton_lift_position_HEq
+          (domainType := domainType) singletonTerm position)
+    (by
+      simp only [TermSubst.identity]
+      exact Term.type_eq_symm_cast_heq
+        (context := context.cons domainType)
+        (typeEq := Ty.subst_identity
+          (varType (context.cons domainType) position))
+        (targetTerm := Term.var
+          (context := context.cons domainType) position))
+
 /-- A raw-index cast on a typed term is heterogeneously equal to the
 original term. -/
 theorem Term.raw_eq_cast_heq
