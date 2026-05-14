@@ -42,7 +42,14 @@ open LeanFX2
 #print axioms TermSubst.identity_lift_zero_HEq
 #print axioms TermSubst.identity_lift_succ_HEq
 #print axioms TermSubst.identity_lift_position_HEq
+#print axioms Term.subst_identity_var_HEq
 #print axioms Term.subst_identity_lift_var_HEq
+#print axioms Term.subst_identity_unit_HEq
+#print axioms Term.subst_identity_boolTrue_HEq
+#print axioms Term.subst_identity_boolFalse_HEq
+#print axioms Term.subst_identity_natZero_HEq
+#print axioms Term.subst_identity_interval0_HEq
+#print axioms Term.subst_identity_interval1_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton

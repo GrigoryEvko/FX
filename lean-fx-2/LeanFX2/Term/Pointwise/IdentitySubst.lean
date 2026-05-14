@@ -129,6 +129,21 @@ theorem TermSubst.identity_lift_position_HEq
 
 /-! ## Lifted identity at the term surface -/
 
+/-- Variable surface case for ordinary identity substitution. -/
+theorem Term.subst_identity_var_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (position : Fin scope) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.var (context := context) position))
+      (Term.var (context := context) position) := by
+  simp only [Term.subst, TermSubst.identity]
+  exact Term.type_eq_symm_cast_heq
+    (context := context)
+    (typeEq := Ty.subst_identity (varType context position))
+    (targetTerm := Term.var (context := context) position)
+
 /-- Variable surface case for lifted identity substitution. -/
 theorem Term.subst_identity_lift_var_HEq
     {mode : Mode} {level scope : Nat}
@@ -149,5 +164,67 @@ theorem Term.subst_identity_lift_var_HEq
         (varType (context.cons newType) position))
       (targetTerm := Term.var
         (context := context.cons newType) position))
+
+/-! ## Nullary value cases -/
+
+/-- Unit value case for ordinary identity substitution. -/
+theorem Term.subst_identity_unit_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.unit (context := context)))
+      (Term.unit (context := context)) := by
+  rfl
+
+/-- Boolean true case for ordinary identity substitution. -/
+theorem Term.subst_identity_boolTrue_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.boolTrue (context := context)))
+      (Term.boolTrue (context := context)) := by
+  rfl
+
+/-- Boolean false case for ordinary identity substitution. -/
+theorem Term.subst_identity_boolFalse_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.boolFalse (context := context)))
+      (Term.boolFalse (context := context)) := by
+  rfl
+
+/-- Natural zero case for ordinary identity substitution. -/
+theorem Term.subst_identity_natZero_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.natZero (context := context)))
+      (Term.natZero (context := context)) := by
+  rfl
+
+/-- Left interval endpoint case for ordinary identity substitution. -/
+theorem Term.subst_identity_interval0_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.interval0 (context := context)))
+      (Term.interval0 (context := context)) := by
+  rfl
+
+/-- Right interval endpoint case for ordinary identity substitution. -/
+theorem Term.subst_identity_interval1_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.interval1 (context := context)))
+      (Term.interval1 (context := context)) := by
+  rfl
 
 end LeanFX2
