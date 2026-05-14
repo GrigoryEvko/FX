@@ -109,3 +109,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.listNil_unique_sameType
 #print axioms LeanFX2.Term.optionNone_unique_sameType
 #print axioms LeanFX2.Term.listElim_progress_or_step
+#print axioms LeanFX2.Term.optionMatch_progress_or_step
