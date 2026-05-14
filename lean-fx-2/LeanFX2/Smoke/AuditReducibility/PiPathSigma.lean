@@ -126,5 +126,7 @@ open LeanFX2
 #print axioms Reducible.fundamental_optionMatch_optionNone_at_optionType_sn_stable
 #print axioms Reducible.fundamental_optionMatch_optionSome_at_optionType_sn
 #print axioms Reducible.fundamental_optionMatch_optionSome_at_optionType_sn_stable
+#print axioms Reducible.fundamental_eitherMatch_eitherInl_at_eitherType_sn
+#print axioms Reducible.fundamental_eitherMatch_eitherInl_at_eitherType_sn_stable
 
 end LeanFX2.Smoke
