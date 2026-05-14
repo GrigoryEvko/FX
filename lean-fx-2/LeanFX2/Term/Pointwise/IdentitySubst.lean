@@ -10,6 +10,13 @@ through the large composition-infrastructure module. -/
 
 namespace LeanFX2
 
+private theorem heq_of_eq_local.{universeLevel}
+    {SomeType : Sort universeLevel} {firstValue secondValue : SomeType}
+    (valuesEq : firstValue = secondValue) :
+    HEq firstValue secondValue := by
+  cases valuesEq
+  exact HEq.rfl
+
 /-! ## Lifted identity entries -/
 
 /-- Fresh entry of lifted identity substitution. -/
@@ -134,13 +141,21 @@ introduced by the type and raw substitution indices.
 
 The pointwise `Subst` fields are kept explicit because term-entry HEq
 alone is not enough to lift the invariant through binders: the fresh
-variable case also needs type/raw substitution to remain identity. -/
+variable case also needs type/raw substitution to remain identity.
+
+The context HEq is equally load-bearing.  A lifted substitution maps the
+fresh variable into `targetCtx.cons (newType.subst sigma)`, while the
+identity substitution maps it into `sourceCtx.cons newType`; relating
+those two variables requires the old contexts to agree as well as the
+new head type. -/
 structure TermSubst.IsIdentityLike
     {mode : Mode} {level sourceScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
     {targetCtx : Ctx mode level sourceScope}
     {sigma : Subst level sourceScope sourceScope}
     (termSubst : TermSubst sourceCtx targetCtx sigma) : Prop where
+  contextHEq :
+    HEq targetCtx sourceCtx
   forTyPointwise :
     ∀ position,
       sigma.forTy position = (@Subst.identity level sourceScope).forTy position
@@ -157,15 +172,43 @@ theorem TermSubst.IsIdentityLike.identity
     (context : Ctx mode level scope) :
     TermSubst.IsIdentityLike (TermSubst.identity context) := by
   refine
-    { forTyPointwise := ?_
+    { contextHEq := ?_
+      forTyPointwise := ?_
       forRawPointwise := ?_
       entryHEq := ?_ }
+  · exact HEq.rfl
   · intro position
     rfl
   · intro position
     rfl
   · intro position
     exact HEq.rfl
+
+/-- The context component of an identity-like substitution remains
+identity-like after lifting under a binder. -/
+theorem TermSubst.IsIdentityLike.lift_contextHEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (newType : Ty level scope) :
+    HEq
+      (targetCtx.cons (newType.subst sigma))
+      (sourceCtx.cons newType) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  have newTypeSubstEq : newType.subst sigma = newType := by
+    exact Eq.trans
+      (Ty.subst_pointwise
+        substitutionIsIdentityLike.forTyPointwise
+        substitutionIsIdentityLike.forRawPointwise
+        newType)
+      (Ty.subst_identity newType)
+  exact heq_of_eq_local (congrArg (fun headType => Ctx.cons targetCtx headType)
+    newTypeSubstEq)
 
 /-- The type-substitution field of an identity-like substitution remains
 pointwise identity after lifting under a binder. -/
