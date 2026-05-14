@@ -399,5 +399,77 @@ theorem Term.codataUnfold_isStronglyNormalizing
       (Term.codataUnfold initialState transition) :=
   RawTerm.codataUnfold_isStronglyNormalizing stateIsSN transitionIsSN
 
+/-- **codata destructor SN preservation**.  The destructor has a
+cong arm + the β arm `codataDest (codataUnfold state transition) →
+app transition state` (plus its Deep variant).  When the codataValue
+reduces to `codataUnfold state' transition'`, SN of the unfold form
+yields SN of state' and transition' via the SubtermSN inversions;
+the contractum-SN hypothesis then discharges the β reduct. -/
+theorem RawTerm.codataDest_isStronglyNormalizing {scope : Nat}
+    {codataValue : RawTerm scope}
+    (codataIsSN : RawTerm.isStronglyNormalizing codataValue)
+    (contractumIsSN :
+      ∀ {stateRaw transitionRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing stateRaw →
+        RawTerm.isStronglyNormalizing transitionRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app transitionRaw stateRaw)) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.codataDest codataValue) := by
+  induction codataIsSN with
+  | intro currentCodata codataClosure inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.codataDest currentCodata) ?_
+    intro target progressStep
+    rcases RawStep.par.codataDest_inv progressStep.1 with
+      ⟨codataTarget, targetEq, codataStep⟩
+      | ⟨stateTarget, transitionTarget, targetEq, codataStep⟩
+    · subst targetEq
+      by_cases codataEq : currentCodata = codataTarget
+      · subst codataEq
+        exact (progressStep.2 rfl).elim
+      · exact inductiveHypothesis codataTarget
+          ⟨codataStep, codataEq⟩
+    · subst targetEq
+      have unfoldTargetIsSN :
+          RawTerm.isStronglyNormalizing
+            (RawTerm.codataUnfold stateTarget transitionTarget) := by
+        by_cases codataEq :
+            currentCodata =
+              RawTerm.codataUnfold stateTarget transitionTarget
+        · rw [← codataEq]
+          exact RawTerm.isStronglyNormalizing.intro
+            currentCodata codataClosure
+        · exact codataClosure
+            (RawTerm.codataUnfold stateTarget transitionTarget)
+            ⟨codataStep, codataEq⟩
+      have stateTargetIsSN :
+          RawTerm.isStronglyNormalizing stateTarget :=
+        RawTerm.codataUnfold_state_isStronglyNormalizing
+          unfoldTargetIsSN
+      have transitionTargetIsSN :
+          RawTerm.isStronglyNormalizing transitionTarget :=
+        RawTerm.codataUnfold_transition_isStronglyNormalizing
+          unfoldTargetIsSN
+      exact contractumIsSN stateTargetIsSN transitionTargetIsSN
+
+/-- Typed wrapper for codataDest SN preservation. -/
+theorem Term.codataDest_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+      Term context (Ty.codata stateType outputType) codataRaw}
+    (codataIsSN : Term.isStronglyNormalizing codataValue)
+    (contractumIsSN :
+      ∀ {stateRaw transitionRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing stateRaw →
+        RawTerm.isStronglyNormalizing transitionRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app transitionRaw stateRaw)) :
+    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
+  RawTerm.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
+
 
 end LeanFX2

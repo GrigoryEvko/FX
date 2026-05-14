@@ -1104,4 +1104,23 @@ theorem ReducibleK.fundamental_funextIntroHet_sn
   Term.funextIntroHet_isStronglyNormalizing
     domainType codomainType applyAIsSN
 
+/-- SN of codataDest via Kripke.  The contractum-SN closure
+hypothesis covers the β arm `codataDest (codataUnfold s t) → app t s`. -/
+theorem ReducibleK.fundamental_codataDest_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+      Term context (Ty.codata stateType outputType) codataRaw}
+    (codataIsSN : Term.isStronglyNormalizing codataValue)
+    (contractumIsSN :
+      ∀ {stateRaw transitionRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing stateRaw →
+        RawTerm.isStronglyNormalizing transitionRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app transitionRaw stateRaw)) :
+    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
+  Term.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
+
 end LeanFX2

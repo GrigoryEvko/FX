@@ -946,4 +946,23 @@ theorem Term.funextIntroHet_strong_normalization_via_kripke
   ReducibleK.fundamental_funextIntroHet_sn
     domainType codomainType applyAIsSN
 
+/-- SN of `Term.codataDest` via Kripke.  Requires the contractum-SN
+closure for the β-fire `codataDest (codataUnfold s t) → app t s`. -/
+theorem Term.codataDest_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {codataRaw : RawTerm scope}
+    {codataValue :
+      Term context (Ty.codata stateType outputType) codataRaw}
+    (codataIsSN : Term.isStronglyNormalizing codataValue)
+    (contractumIsSN :
+      ∀ {stateRaw transitionRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing stateRaw →
+        RawTerm.isStronglyNormalizing transitionRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app transitionRaw stateRaw)) :
+    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
+  ReducibleK.fundamental_codataDest_sn codataIsSN contractumIsSN
+
 end LeanFX2

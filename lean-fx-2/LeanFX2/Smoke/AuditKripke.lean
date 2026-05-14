@@ -184,3 +184,11 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.funextIntroHet_isStronglyNormalizing
 #print axioms LeanFX2.Term.funextIntroHet_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_funextIntroHet_sn
+
+-- K12.25 codataDest (codata destructor with β-fire on codataUnfold)
+#print axioms LeanFX2.RawTerm.codataUnfold_state_isStronglyNormalizing
+#print axioms LeanFX2.RawTerm.codataUnfold_transition_isStronglyNormalizing
+#print axioms LeanFX2.RawTerm.codataDest_isStronglyNormalizing
+#print axioms LeanFX2.Term.codataDest_isStronglyNormalizing
+#print axioms LeanFX2.Term.codataDest_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_codataDest_sn

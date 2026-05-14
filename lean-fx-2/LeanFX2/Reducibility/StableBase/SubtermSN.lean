@@ -545,6 +545,72 @@ theorem Term.isStronglyNormalizing_of_neutral_progress_closure
   RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
     sourceIsNeutral closure
 
+/-- Shape-specialized inversion for codata state SN. -/
+theorem RawTerm.codataUnfold_state_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {stateRaw transitionRaw : RawTerm scope},
+      source = RawTerm.codataUnfold stateRaw transitionRaw →
+      RawTerm.isStronglyNormalizing stateRaw := by
+  induction sourceIsSN with
+  | intro currentSource _ inductiveHypothesis =>
+    intro stateRaw transitionRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro stateRaw ?_
+    intro stateTarget stateProgress
+    have unfoldProgress :
+        RawStep.parProgress
+          (RawTerm.codataUnfold stateRaw transitionRaw)
+          (RawTerm.codataUnfold stateTarget transitionRaw) := by
+      refine ⟨RawStep.par.codataUnfoldCong stateProgress.1
+        (RawStep.par.refl transitionRaw), ?_⟩
+      intro unfoldEq
+      apply stateProgress.2
+      injection unfoldEq
+    exact inductiveHypothesis
+      (RawTerm.codataUnfold stateTarget transitionRaw) unfoldProgress rfl
 
+/-- If a codataUnfold is SN, its state component is SN. -/
+theorem RawTerm.codataUnfold_state_isStronglyNormalizing {scope : Nat}
+    {stateRaw transitionRaw : RawTerm scope}
+    (unfoldIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.codataUnfold stateRaw transitionRaw)) :
+    RawTerm.isStronglyNormalizing stateRaw :=
+  RawTerm.codataUnfold_state_isStronglyNormalizing_aux unfoldIsSN rfl
+
+/-- Shape-specialized inversion for codata transition SN. -/
+theorem RawTerm.codataUnfold_transition_isStronglyNormalizing_aux
+    {scope : Nat} {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {stateRaw transitionRaw : RawTerm scope},
+      source = RawTerm.codataUnfold stateRaw transitionRaw →
+      RawTerm.isStronglyNormalizing transitionRaw := by
+  induction sourceIsSN with
+  | intro currentSource _ inductiveHypothesis =>
+    intro stateRaw transitionRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro transitionRaw ?_
+    intro transitionTarget transitionProgress
+    have unfoldProgress :
+        RawStep.parProgress
+          (RawTerm.codataUnfold stateRaw transitionRaw)
+          (RawTerm.codataUnfold stateRaw transitionTarget) := by
+      refine ⟨RawStep.par.codataUnfoldCong (RawStep.par.refl stateRaw)
+        transitionProgress.1, ?_⟩
+      intro unfoldEq
+      apply transitionProgress.2
+      injection unfoldEq
+    exact inductiveHypothesis
+      (RawTerm.codataUnfold stateRaw transitionTarget) unfoldProgress rfl
+
+/-- If a codataUnfold is SN, its transition component is SN. -/
+theorem RawTerm.codataUnfold_transition_isStronglyNormalizing {scope : Nat}
+    {stateRaw transitionRaw : RawTerm scope}
+    (unfoldIsSN :
+      RawTerm.isStronglyNormalizing
+        (RawTerm.codataUnfold stateRaw transitionRaw)) :
+    RawTerm.isStronglyNormalizing transitionRaw :=
+  RawTerm.codataUnfold_transition_isStronglyNormalizing_aux unfoldIsSN rfl
 
 end LeanFX2
