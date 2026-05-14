@@ -43,6 +43,8 @@ open LeanFX2
 #print axioms TermSubst.identity_lift_succ_HEq
 #print axioms TermSubst.identity_lift_position_HEq
 #print axioms TermSubst.IsIdentityLike.identity
+#print axioms TermSubst.IsIdentityLike.lift_forTyPointwise
+#print axioms TermSubst.IsIdentityLike.lift_forRawPointwise
 #print axioms Term.subst_identity_var_HEq
 #print axioms Term.subst_identity_lift_var_HEq
 #print axioms Term.subst_identity_unit_HEq

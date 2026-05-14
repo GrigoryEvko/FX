@@ -167,6 +167,53 @@ theorem TermSubst.IsIdentityLike.identity
   · intro position
     exact HEq.rfl
 
+/-- The type-substitution field of an identity-like substitution remains
+pointwise identity after lifting under a binder. -/
+theorem TermSubst.IsIdentityLike.lift_forTyPointwise
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst) :
+    ∀ position,
+      sigma.lift.forTy position =
+        (@Subst.identity level (scope + 1)).forTy position
+  | ⟨0, _⟩ => rfl
+  | ⟨positionIndex + 1, positionIsWithinScope⟩ => by
+      change
+        (sigma.forTy
+          ⟨positionIndex,
+            Nat.lt_of_succ_lt_succ positionIsWithinScope⟩).weaken =
+          Ty.tyVar ⟨positionIndex + 1, positionIsWithinScope⟩
+      rw [substitutionIsIdentityLike.forTyPointwise
+        ⟨positionIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩]
+      rfl
+
+/-- The raw-substitution field of an identity-like substitution remains
+pointwise identity after lifting under a binder. -/
+theorem TermSubst.IsIdentityLike.lift_forRawPointwise
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst) :
+    ∀ position,
+      sigma.lift.forRaw position =
+        (@Subst.identity level (scope + 1)).forRaw position
+  | ⟨0, _⟩ => rfl
+  | ⟨positionIndex + 1, positionIsWithinScope⟩ => by
+      change
+        (sigma.forRaw
+          ⟨positionIndex,
+            Nat.lt_of_succ_lt_succ positionIsWithinScope⟩).rename
+            RawRenaming.weaken =
+          RawTerm.var ⟨positionIndex + 1, positionIsWithinScope⟩
+      rw [substitutionIsIdentityLike.forRawPointwise
+        ⟨positionIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩]
+      rfl
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/
