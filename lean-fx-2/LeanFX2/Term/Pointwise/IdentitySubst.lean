@@ -1220,6 +1220,178 @@ theorem Term.subst_identityLike_eitherMatch_HEq
     (substitutionIsIdentityLike.rawSubst_eq rightRaw)
     scrutineeHEq leftHEq rightHEq
 
+/-- Identity reflexivity case for an identity-like substitution. -/
+theorem Term.subst_identityLike_refl_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    HEq
+      (Term.subst termSubst
+        (Term.refl (context := sourceCtx) carrier rawWitness))
+      (Term.refl (context := sourceCtx) carrier rawWitness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.refl_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq carrier)
+    (substitutionIsIdentityLike.rawSubst_eq rawWitness)
+
+/-- Identity eliminator case for an identity-like substitution. -/
+theorem Term.subst_identityLike_idJ_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness : Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint)
+      witnessRaw)
+    (baseCaseHEq :
+      HEq (Term.subst termSubst baseCase) baseCase)
+    (witnessHEq :
+      HEq (Term.subst termSubst witness) witness) :
+    HEq
+      (Term.subst termSubst (Term.idJ baseCase witness))
+      (Term.idJ baseCase witness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.idJ_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq carrier)
+    (substitutionIsIdentityLike.rawSubst_eq leftEndpoint)
+    (substitutionIsIdentityLike.rawSubst_eq rightEndpoint)
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq baseRaw)
+    (substitutionIsIdentityLike.rawSubst_eq witnessRaw)
+    baseCaseHEq witnessHEq
+
+/-- Observational equality reflexivity case for an identity-like substitution. -/
+theorem Term.subst_identityLike_oeqRefl_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    HEq
+      (Term.subst termSubst
+        (Term.oeqRefl (context := sourceCtx) carrier rawWitness))
+      (Term.oeqRefl (context := sourceCtx) carrier rawWitness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.oeqRefl_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq carrier)
+    (substitutionIsIdentityLike.rawSubst_eq rawWitness)
+
+/-- Observational equality eliminator case for an identity-like substitution. -/
+theorem Term.subst_identityLike_oeqJ_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness : Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint)
+      witnessRaw)
+    (baseCaseHEq :
+      HEq (Term.subst termSubst baseCase) baseCase)
+    (witnessHEq :
+      HEq (Term.subst termSubst witness) witness) :
+    HEq
+      (Term.subst termSubst (Term.oeqJ baseCase witness))
+      (Term.oeqJ baseCase witness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.oeqJ_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq carrier)
+    (substitutionIsIdentityLike.rawSubst_eq leftEndpoint)
+    (substitutionIsIdentityLike.rawSubst_eq rightEndpoint)
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq baseRaw)
+    (substitutionIsIdentityLike.rawSubst_eq witnessRaw)
+    baseCaseHEq witnessHEq
+
+/-- Strict identity reflexivity case for an identity-like substitution. -/
+theorem Term.subst_identityLike_idStrictRefl_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (modeIsStrict : mode = Mode.strict)
+    (carrier : Ty level scope) (rawWitness : RawTerm scope) :
+    HEq
+      (Term.subst termSubst
+        (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
+          rawWitness))
+      (Term.idStrictRefl (context := sourceCtx) modeIsStrict carrier
+        rawWitness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.idStrictRefl_HEq_congr
+    modeIsStrict
+    (substitutionIsIdentityLike.tySubst_eq carrier)
+    (substitutionIsIdentityLike.rawSubst_eq rawWitness)
+
+/-- Strict identity eliminator case for an identity-like substitution. -/
+theorem Term.subst_identityLike_idStrictRec_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope} {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    (baseCase : Term sourceCtx motiveType baseRaw)
+    (witness : Term sourceCtx
+      (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw)
+    (baseCaseHEq :
+      HEq (Term.subst termSubst baseCase) baseCase)
+    (witnessHEq :
+      HEq (Term.subst termSubst witness) witness) :
+    HEq
+      (Term.subst termSubst
+        (Term.idStrictRec modeIsStrict baseCase witness))
+      (Term.idStrictRec modeIsStrict baseCase witness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.idStrictRec_HEq_congr
+    modeIsStrict
+    (substitutionIsIdentityLike.tySubst_eq carrier)
+    (substitutionIsIdentityLike.rawSubst_eq leftEndpoint)
+    (substitutionIsIdentityLike.rawSubst_eq rightEndpoint)
+    (substitutionIsIdentityLike.tySubst_eq motiveType)
+    (substitutionIsIdentityLike.rawSubst_eq baseRaw)
+    (substitutionIsIdentityLike.rawSubst_eq witnessRaw)
+    baseCaseHEq witnessHEq
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/
