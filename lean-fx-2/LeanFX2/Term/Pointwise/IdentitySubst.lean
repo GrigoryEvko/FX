@@ -1364,6 +1364,159 @@ theorem Term.subst_identity_sessionRecv_HEq
     (RawTerm.subst_identity channelRaw)
     channelHEq
 
+/-- Direct effect-performance congruence with propositionally equal
+operation carriers, scoped to ordinary identity-substitution erasure. -/
+private theorem Term.effectPerform_direct_identity_carrier_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {effectTag1 effectTag2 : RawTerm scope}
+    (effectRow : Effects.EffectRow)
+    (effectLabel : Effects.EffectLabel)
+    (rowMember : Effects.EffectRow.Member effectLabel effectRow)
+    {argumentCarrier1 argumentCarrier2 resultCarrier1 resultCarrier2 :
+      Ty level scope}
+    {operationRaw1 operationRaw2 argumentsRaw1 argumentsRaw2 :
+      RawTerm scope}
+    (effectTagEq : effectTag1 = effectTag2)
+    (argumentCarrierEq : argumentCarrier1 = argumentCarrier2)
+    (resultCarrierEq : resultCarrier1 = resultCarrier2)
+    (operationRawEq : operationRaw1 = operationRaw2)
+    (argumentsRawEq : argumentsRaw1 = argumentsRaw2)
+    {operationTag1 :
+      Term context (Ty.effect argumentCarrier1 effectTag1)
+        operationRaw1}
+    {operationTag2 :
+      Term context (Ty.effect argumentCarrier2 effectTag2)
+        operationRaw2}
+    (operationTagHEq : HEq operationTag1 operationTag2)
+    {arguments1 : Term context argumentCarrier1 argumentsRaw1}
+    {arguments2 : Term context argumentCarrier2 argumentsRaw2}
+    (argumentsHEq : HEq arguments1 arguments2) :
+    HEq
+      (Term.effectPerform effectTag1 effectRow
+        { effectLabel := effectLabel
+          argumentCarrier := argumentCarrier1
+          resultCarrier := resultCarrier1 }
+        (Effects.CanPerform.direct rowMember) operationTag1 arguments1)
+      (Term.effectPerform effectTag2 effectRow
+        { effectLabel := effectLabel
+          argumentCarrier := argumentCarrier2
+          resultCarrier := resultCarrier2 }
+        (Effects.CanPerform.direct rowMember) operationTag2 arguments2) := by
+  subst effectTagEq
+  subst argumentCarrierEq
+  subst resultCarrierEq
+  subst operationRawEq
+  subst argumentsRawEq
+  cases operationTagHEq
+  cases argumentsHEq
+  rfl
+
+/-- Read-via-write effect-performance congruence with propositionally equal
+operation carriers, scoped to ordinary identity-substitution erasure. -/
+private theorem Term.effectPerform_readViaWrite_identity_carrier_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    {effectTag1 effectTag2 : RawTerm scope}
+    (effectRow : Effects.EffectRow)
+    (rowMember : Effects.EffectRow.Member Effects.EffectLabel.write
+      effectRow)
+    {argumentCarrier1 argumentCarrier2 resultCarrier1 resultCarrier2 :
+      Ty level scope}
+    {operationRaw1 operationRaw2 argumentsRaw1 argumentsRaw2 :
+      RawTerm scope}
+    (effectTagEq : effectTag1 = effectTag2)
+    (argumentCarrierEq : argumentCarrier1 = argumentCarrier2)
+    (resultCarrierEq : resultCarrier1 = resultCarrier2)
+    (operationRawEq : operationRaw1 = operationRaw2)
+    (argumentsRawEq : argumentsRaw1 = argumentsRaw2)
+    {operationTag1 :
+      Term context (Ty.effect argumentCarrier1 effectTag1)
+        operationRaw1}
+    {operationTag2 :
+      Term context (Ty.effect argumentCarrier2 effectTag2)
+        operationRaw2}
+    (operationTagHEq : HEq operationTag1 operationTag2)
+    {arguments1 : Term context argumentCarrier1 argumentsRaw1}
+    {arguments2 : Term context argumentCarrier2 argumentsRaw2}
+    (argumentsHEq : HEq arguments1 arguments2) :
+    HEq
+      (Term.effectPerform effectTag1 effectRow
+        { effectLabel := Effects.EffectLabel.read
+          argumentCarrier := argumentCarrier1
+          resultCarrier := resultCarrier1 }
+        (Effects.CanPerform.readViaWrite argumentCarrier1
+          resultCarrier1 rowMember)
+        operationTag1 arguments1)
+      (Term.effectPerform effectTag2 effectRow
+        { effectLabel := Effects.EffectLabel.read
+          argumentCarrier := argumentCarrier2
+          resultCarrier := resultCarrier2 }
+        (Effects.CanPerform.readViaWrite argumentCarrier2
+          resultCarrier2 rowMember)
+        operationTag2 arguments2) := by
+  subst effectTagEq
+  subst argumentCarrierEq
+  subst resultCarrierEq
+  subst operationRawEq
+  subst argumentsRawEq
+  cases operationTagHEq
+  cases argumentsHEq
+  rfl
+
+/-- Effect-performance case for ordinary identity substitution. -/
+theorem Term.subst_identity_effectPerform_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {effectTag : RawTerm scope}
+    {effectRow : Effects.EffectRow}
+    {operationSignature : Effects.OperationSignature (Ty level scope)}
+    {canPerformOperation :
+      Effects.CanPerform effectRow operationSignature}
+    {operationRaw argumentsRaw : RawTerm scope}
+    (operationTag :
+      Term context
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw)
+    (arguments :
+      Term context operationSignature.argumentCarrier argumentsRaw)
+    (operationTagHEq :
+      HEq (Term.subst (TermSubst.identity context) operationTag)
+        operationTag)
+    (argumentsHEq :
+      HEq (Term.subst (TermSubst.identity context) arguments)
+        arguments) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.effectPerform effectTag effectRow operationSignature
+          canPerformOperation operationTag arguments))
+      (Term.effectPerform effectTag effectRow operationSignature
+        canPerformOperation operationTag arguments) := by
+  simp only [Term.subst]
+  cases operationSignature with
+  | mk effectLabel argumentCarrier resultCarrier =>
+    cases canPerformOperation with
+    | direct rowMember =>
+      simp only [Effects.OperationSignature.map]
+      exact Term.effectPerform_direct_identity_carrier_HEq_congr
+        effectRow effectLabel rowMember
+        (RawTerm.subst_identity effectTag)
+        (Ty.subst_identity argumentCarrier)
+        (Ty.subst_identity resultCarrier)
+        (RawTerm.subst_identity operationRaw)
+        (RawTerm.subst_identity argumentsRaw)
+        operationTagHEq
+        argumentsHEq
+    | readViaWrite argumentCarrier resultCarrier rowMember =>
+      simp only [Effects.OperationSignature.map]
+      exact Term.effectPerform_readViaWrite_identity_carrier_HEq_congr
+        effectRow rowMember
+        (RawTerm.subst_identity effectTag)
+        (Ty.subst_identity argumentCarrier)
+        (Ty.subst_identity resultCarrier)
+        (RawTerm.subst_identity operationRaw)
+        (RawTerm.subst_identity argumentsRaw)
+        operationTagHEq
+        argumentsHEq
+
 /-- Universe cumulativity marker case for ordinary identity substitution. -/
 theorem Term.subst_identity_cumulUp_HEq
     {mode : Mode} {level scope : Nat}
@@ -1700,6 +1853,107 @@ theorem Term.subst_identity_funextReflAtId_HEq
         (@Subst.identity_lift_forRaw_pointwise level scope) applyRaw]
       exact RawTerm.subst_identity applyRaw)
 
+/-- Canonical funext reflexivity case for ordinary identity substitution. -/
+theorem Term.subst_identity_funextRefl_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.funextRefl (context := context)
+          domainType codomainType applyRaw))
+      (Term.funextRefl (context := context)
+        domainType codomainType applyRaw) := by
+  simp only [Term.subst]
+  have applyRawIdentity :
+      applyRaw.subst (@Subst.identity level scope).forRaw.lift =
+        applyRaw := by
+    rw [RawTerm.subst_pointwise
+      (@Subst.identity_lift_forRaw_pointwise level scope) applyRaw]
+    exact RawTerm.subst_identity applyRaw
+  have funextWithoutCastHEq :
+      HEq
+        (Term.funextRefl
+          (context := context)
+          (domainType.subst Subst.identity)
+          (codomainType.subst Subst.identity)
+          (applyRaw.subst (@Subst.identity level scope).forRaw.lift))
+        (Term.funextRefl (context := context)
+          domainType codomainType applyRaw) :=
+    Term.funextRefl_HEq_congr
+      (Ty.subst_identity domainType)
+      (Ty.subst_identity codomainType)
+      applyRawIdentity
+  have resultCastHEq :
+      HEq
+        ((funextReflType_subst Subst.identity
+          domainType codomainType applyRaw).symm ▸
+          Term.funextRefl
+            (context := context)
+            (domainType.subst Subst.identity)
+            (codomainType.subst Subst.identity)
+            (applyRaw.subst
+              (@Subst.identity level scope).forRaw.lift))
+        (Term.funextRefl
+          (context := context)
+          (domainType.subst Subst.identity)
+          (codomainType.subst Subst.identity)
+          (applyRaw.subst
+            (@Subst.identity level scope).forRaw.lift)) := by
+    exact Term.type_eq_cast_heq
+      (funextReflType_subst Subst.identity
+        domainType codomainType applyRaw).symm
+      (Term.funextRefl
+        (context := context)
+        (domainType.subst Subst.identity)
+        (codomainType.subst Subst.identity)
+        (applyRaw.subst
+          (@Subst.identity level scope).forRaw.lift))
+  exact HEq.trans resultCastHEq funextWithoutCastHEq
+
+/-- Observational funext case for ordinary identity substitution. -/
+theorem Term.subst_identity_oeqFunext_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm scope)
+    {pointwiseRaw : RawTerm scope}
+    (pointwiseProof :
+      Term context
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw)
+    (pointwiseHEq :
+      HEq (Term.subst (TermSubst.identity context) pointwiseProof)
+        pointwiseProof) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.oeqFunext domainType codomainType leftFunctionRaw
+          rightFunctionRaw pointwiseProof))
+      (Term.oeqFunext domainType codomainType leftFunctionRaw
+        rightFunctionRaw pointwiseProof) := by
+  simp only [Term.subst]
+  have pointwiseCastHEq :
+      HEq
+        ((oeqFunextPointwiseType_subst Subst.identity domainType codomainType
+          leftFunctionRaw rightFunctionRaw) ▸
+          Term.subst (TermSubst.identity context) pointwiseProof)
+        pointwiseProof :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (oeqFunextPointwiseType_subst Subst.identity domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        (Term.subst (TermSubst.identity context) pointwiseProof))
+      pointwiseHEq
+  exact Term.oeqFunext_HEq_congr
+    (Ty.subst_identity domainType)
+    (Ty.subst_identity codomainType)
+    (RawTerm.subst_identity leftFunctionRaw)
+    (RawTerm.subst_identity rightFunctionRaw)
+    (RawTerm.subst_identity pointwiseRaw)
+    pointwiseCastHEq
+
 /-- Cubical transport case for ordinary identity substitution. -/
 theorem Term.subst_identity_transp_HEq
     {mode : Mode} {level scope : Nat}
@@ -1801,6 +2055,68 @@ theorem Term.subst_identity_uaIntroHet_HEq
     (RawTerm.subst_identity forwardRaw)
     (RawTerm.subst_identity backwardRaw)
     equivWitnessHEq
+
+/-- Heterogeneous equivalence introduction case for ordinary identity substitution. -/
+theorem Term.subst_identity_equivIntroHet_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    (forward : Term context (Ty.arrow carrierA carrierB) forwardRaw)
+    (backward : Term context (Ty.arrow carrierB carrierA) backwardRaw)
+    (leftInv :
+      Term context
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw)
+    (rightInv :
+      Term context
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw)
+    (forwardHEq :
+      HEq (Term.subst (TermSubst.identity context) forward) forward)
+    (backwardHEq :
+      HEq (Term.subst (TermSubst.identity context) backward) backward)
+    (leftInvHEq :
+      HEq (Term.subst (TermSubst.identity context) leftInv) leftInv)
+    (rightInvHEq :
+      HEq (Term.subst (TermSubst.identity context) rightInv) rightInv) :
+    HEq
+      (Term.subst (TermSubst.identity context)
+        (Term.equivIntroHet forward backward leftInv rightInv))
+      (Term.equivIntroHet forward backward leftInv rightInv) := by
+  simp only [Term.subst]
+  have leftInvCastHEq :
+      HEq
+        ((equivIntroHetLeftInverseType_subst Subst.identity
+          carrierA forwardRaw backwardRaw) ▸
+          Term.subst (TermSubst.identity context) leftInv)
+        leftInv :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (equivIntroHetLeftInverseType_subst Subst.identity
+          carrierA forwardRaw backwardRaw)
+        (Term.subst (TermSubst.identity context) leftInv))
+      leftInvHEq
+  have rightInvCastHEq :
+      HEq
+        ((equivIntroHetRightInverseType_subst Subst.identity
+          carrierB forwardRaw backwardRaw) ▸
+          Term.subst (TermSubst.identity context) rightInv)
+        rightInv :=
+    HEq.trans
+      (Term.type_eq_cast_heq
+        (equivIntroHetRightInverseType_subst Subst.identity
+          carrierB forwardRaw backwardRaw)
+        (Term.subst (TermSubst.identity context) rightInv))
+      rightInvHEq
+  exact Term.equivIntroHet_HEq_congr
+    (Ty.subst_identity carrierA)
+    (Ty.subst_identity carrierB)
+    (RawTerm.subst_identity forwardRaw)
+    (RawTerm.subst_identity backwardRaw)
+    (RawTerm.subst_identity leftInvRaw)
+    (RawTerm.subst_identity rightInvRaw)
+    forwardHEq backwardHEq leftInvCastHEq rightInvCastHEq
 
 /-- Heterogeneous funext introduction case for ordinary identity substitution. -/
 theorem Term.subst_identity_funextIntroHet_HEq

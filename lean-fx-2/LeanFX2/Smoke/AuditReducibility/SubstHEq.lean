@@ -78,6 +78,7 @@ open LeanFX2
 #print axioms Term.subst_identity_idJ_HEq
 #print axioms Term.subst_identity_oeqRefl_HEq
 #print axioms Term.subst_identity_oeqJ_HEq
+#print axioms Term.subst_identity_oeqFunext_HEq
 #print axioms Term.subst_identity_idStrictRefl_HEq
 #print axioms Term.subst_identity_idStrictRec_HEq
 #print axioms Term.subst_identity_pathApp_HEq
@@ -91,6 +92,7 @@ open LeanFX2
 #print axioms Term.subst_identity_codataDest_HEq
 #print axioms Term.subst_identity_sessionSend_HEq
 #print axioms Term.subst_identity_sessionRecv_HEq
+#print axioms Term.subst_identity_effectPerform_HEq
 #print axioms Term.subst_identity_cumulUp_HEq
 #print axioms Term.subst_identity_equivApp_HEq
 #print axioms Term.subst_identity_equivApply_HEq
@@ -107,10 +109,12 @@ open LeanFX2
 #print axioms Term.subst_identity_equivCode_HEq
 #print axioms Term.subst_identity_equivReflId_HEq
 #print axioms Term.subst_identity_equivReflIdAtId_HEq
+#print axioms Term.subst_identity_funextRefl_HEq
 #print axioms Term.subst_identity_funextReflAtId_HEq
 #print axioms Term.subst_identity_transp_HEq
 #print axioms Term.subst_identity_refineIntro_HEq
 #print axioms Term.subst_identity_uaIntroHet_HEq
+#print axioms Term.subst_identity_equivIntroHet_HEq
 #print axioms Term.subst_identity_funextIntroHet_HEq
 #print axioms Term.subst_identity_uaToEquiv_HEq
 #print axioms TermSubst.renameOutput
