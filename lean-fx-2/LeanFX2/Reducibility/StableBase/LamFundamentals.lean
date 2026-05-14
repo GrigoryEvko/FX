@@ -333,6 +333,66 @@ theorem Reducible.fundamental_lam_at_arrow_app_sn
     (Reducible.isStronglyNormalizing argumentReducible)
     contractumIsSN
 
+/-- Renaming-stable head-β SN of `Term.app (Term.lam body) argument` at
+`Ty.arrow` — `IsRenamingStableIsSN` mirror of
+`fundamental_lam_at_arrow_app_sn`.
+
+At each renamed world the body SN, argument SN (via Reducible), and
+contractum SN witnesses are projected from the three stable premises,
+then fed to the raw head-β combinator
+`RawTerm.app_lam_isStronglyNormalizing`.  The contractum's raw form at
+the renamed world is `((body.subst σ.lift).subst0 argument).rename ρ`;
+the combinator wants
+`((body.subst σ.lift).rename ρ.lift).subst0 (argument.rename ρ)`.
+`RawTerm.subst0_rename_commute` aligns the two. -/
+theorem Reducible.fundamental_lam_at_arrow_app_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Ty.weaken_subst_commute sigma codomainType ▸
+            Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentIsStable :
+        IsRenamingStableReducible (domainType.subst sigma) argumentTerm)
+    (contractumIsStable :
+        IsRenamingStableIsSN
+          (Term.subst0
+            (Ty.weaken_subst_commute sigma codomainType ▸
+              Term.subst (termSubst.lift domainType) bodyTerm)
+            argumentTerm)) :
+    IsRenamingStableIsSN
+      (Term.app
+        (Term.subst termSubst
+          (Term.lam (codomainType := codomainType) bodyTerm))
+        argumentTerm) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have liftedInjective :=
+    RawRenaming.lift_injective rho rhoIsInjective
+  have liftedTermRenaming :=
+    termRenaming.lift (domainType.subst sigma)
+  have bodySNAtRho :=
+    bodyIsStable liftedInjective liftedTermRenaming
+  have argumentReducibleAtRho :=
+    argumentIsStable rhoIsInjective termRenaming
+  have argumentSNAtRho :=
+    Reducible.isStronglyNormalizing argumentReducibleAtRho
+  have contractumSNAtRho :
+      RawTerm.isStronglyNormalizing
+        (((bodyRaw.subst sigma.forRaw.lift).subst0 argumentRaw).rename rho) :=
+    contractumIsStable rhoIsInjective termRenaming
+  rw [RawTerm.subst0_rename_commute] at contractumSNAtRho
+  exact RawTerm.app_lam_isStronglyNormalizing bodySNAtRho
+    argumentSNAtRho contractumSNAtRho
+
 /-- Reducibility endpoint for a lambda whose codomain reducibility is
 recoverable from strong normalization.
 
