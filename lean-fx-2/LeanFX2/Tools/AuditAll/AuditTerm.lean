@@ -160,6 +160,8 @@ namespace LeanFX2.Tools
 -- M05.D partial headline progress (Phase 7.D, #1645).
 #assert_no_axioms LeanFX2.Term.value_or_cong_only_progress
 #assert_no_axioms LeanFX2.Term.app_progress_or_step
+-- M05.D.2 unified Wright-Felleisen progress headline (#1565, #1737).
+#assert_no_axioms LeanFX2.Term.progress_or_step
 
 -- K11.10-A (#1752): RawTerm.toRawPoly raw-level forward map.
 #assert_no_axioms LeanFX2.RawTerm.toRawPoly

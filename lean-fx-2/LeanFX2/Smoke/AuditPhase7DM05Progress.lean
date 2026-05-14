@@ -111,3 +111,5 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.listElim_progress_or_step
 #print axioms LeanFX2.Term.optionMatch_progress_or_step
 #print axioms LeanFX2.Term.eitherMatch_progress_or_step
+-- M05.D.2 unified headline (#1565, #1737 close).
+#print axioms LeanFX2.Term.progress_or_step
