@@ -1548,4 +1548,21 @@ theorem Term.codataDest_progress_or_step
       (target : Term context targetType targetRaw),
       Step (Term.codataDest codataValue) target := Or.inl rfl
 
+/-- Focused progress theorem for the `Term.subsume` head.
+M05.D.2 conditional eliminator #9 of 17.  Trivial unconditional
+WHNF case: `Term.isWHNF (Term.subsume _) = true` holds by
+definition (no typed β rule `Step.betaSubsumeIntro` exists yet;
+spec-blocker for M05.B.5.2 `Term.subsume_modIntro_steps` per the
+docstring in `BetaIotaStepProvability.lean:326`).  Placeholder
+for future kernel extension. -/
+theorem Term.subsume_progress_or_step
+    {context : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    (innerTerm : Term context innerType innerRaw) :
+    Term.isWHNF (Term.subsume innerTerm) = true ∨
+    ∃ (targetType : Ty level scope) (targetRaw : RawTerm scope)
+      (target : Term context targetType targetRaw),
+      Step (Term.subsume innerTerm) target := Or.inl rfl
+
 end LeanFX2
