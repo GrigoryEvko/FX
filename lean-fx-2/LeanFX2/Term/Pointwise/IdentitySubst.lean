@@ -127,6 +127,46 @@ theorem TermSubst.identity_lift_position_HEq
         ⟨previousIndex,
           Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
 
+/-! ## Identity-like substitutions -/
+
+/-- A typed substitution that behaves like identity up to the casts
+introduced by the type and raw substitution indices.
+
+The pointwise `Subst` fields are kept explicit because term-entry HEq
+alone is not enough to lift the invariant through binders: the fresh
+variable case also needs type/raw substitution to remain identity. -/
+structure TermSubst.IsIdentityLike
+    {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level sourceScope}
+    {sigma : Subst level sourceScope sourceScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma) : Prop where
+  forTyPointwise :
+    ∀ position,
+      sigma.forTy position = (@Subst.identity level sourceScope).forTy position
+  forRawPointwise :
+    ∀ position,
+      sigma.forRaw position = (@Subst.identity level sourceScope).forRaw position
+  entryHEq :
+    ∀ position,
+      HEq (termSubst position) (TermSubst.identity sourceCtx position)
+
+/-- The literal identity substitution is identity-like. -/
+theorem TermSubst.IsIdentityLike.identity
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope) :
+    TermSubst.IsIdentityLike (TermSubst.identity context) := by
+  refine
+    { forTyPointwise := ?_
+      forRawPointwise := ?_
+      entryHEq := ?_ }
+  · intro position
+    rfl
+  · intro position
+    rfl
+  · intro position
+    exact HEq.rfl
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/
