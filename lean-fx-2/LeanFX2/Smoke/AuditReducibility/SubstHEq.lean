@@ -69,6 +69,12 @@ open LeanFX2
 #print axioms Term.subst_identity_listElim_HEq
 #print axioms Term.subst_identity_optionMatch_HEq
 #print axioms Term.subst_identity_eitherMatch_HEq
+#print axioms Term.subst_identity_refl_HEq
+#print axioms Term.subst_identity_idJ_HEq
+#print axioms Term.subst_identity_oeqRefl_HEq
+#print axioms Term.subst_identity_oeqJ_HEq
+#print axioms Term.subst_identity_idStrictRefl_HEq
+#print axioms Term.subst_identity_idStrictRec_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton
