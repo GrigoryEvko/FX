@@ -128,6 +128,8 @@ open LeanFX2
 #print axioms Term.weaken_subst_singleton_boolElim_heq
 #print axioms Term.weaken_subst_singleton_effectPerform_heq
 #print axioms ReducibleSubst.consSingleton
+#print axioms TermSubst.consSingleton_zero_HEq
+#print axioms TermSubst.consSingleton_succ_HEq
 #print axioms TermSubst.compose_position_HEq
 #print axioms ReducibleSubst.renameOutput_of_renamingStable
 #print axioms TermSubst.renameOutput_position_HEq

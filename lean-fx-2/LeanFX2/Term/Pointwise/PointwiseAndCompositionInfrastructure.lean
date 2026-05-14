@@ -595,6 +595,59 @@ def TermSubst.consSingleton
           (sigma.forRaw previousPosition) argumentRaw
       rawEq.symm ▸ typeEq.symm ▸ termSubst previousPosition
 
+/-- The fresh entry of `TermSubst.consSingleton` is the supplied
+argument, modulo the definitional type-index cast used by the
+substitution family. -/
+theorem TermSubst.consSingleton_zero_HEq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw) :
+    HEq
+      (TermSubst.consSingleton termSubst argumentTerm
+        ⟨0, Nat.zero_lt_succ scope⟩)
+      argumentTerm :=
+  Term.type_eq_cast_heq
+    (Ty.weaken_subst_lift_singleton domainType domainType sigma
+      argumentRaw).symm
+    argumentTerm
+
+/-- A successor entry of `TermSubst.consSingleton` is the corresponding
+old substitution entry, modulo the raw/type casts that collapse
+weakening followed by singleton substitution. -/
+theorem TermSubst.consSingleton_succ_HEq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw)
+    (previousIndex : Nat)
+    (positionIsWithinScope : previousIndex + 1 < scope + 1) :
+    HEq
+      (TermSubst.consSingleton termSubst argumentTerm
+        ⟨previousIndex + 1, positionIsWithinScope⟩)
+      (termSubst
+        ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩) := by
+  simp only [TermSubst.consSingleton]
+  exact Term.type_raw_eq_cast_heq
+    (Ty.weaken_subst_lift_singleton
+      (varType sourceCtx
+        ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+      domainType sigma argumentRaw).symm
+    (RawTerm.weaken_subst_singleton
+      (sigma.forRaw
+        ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+      argumentRaw).symm
+    (termSubst
+      ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)
+
 /-- The fresh variable of `termSubst.lift` collapses to the singleton
 argument after substituting by `TermSubst.singleton`, up to HEq. -/
 theorem TermSubst.lift_zero_subst_singleton_heq
