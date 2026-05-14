@@ -351,6 +351,40 @@ theorem Reducible.fundamental_lamPi_at_piTy_sn
       (Term.subst termSubst (Term.lamPi bodyTerm)) :=
   RawTerm.lam_isStronglyNormalizing bodyIsSN
 
+/-- Renaming-stable SN of `Term.lamPi` at `Ty.piTy` —
+`IsRenamingStableIsSN` mirror of `fundamental_lamPi_at_piTy_sn`.
+
+The body lives under one additional binder, so at each renamed world
+we extend `termRenaming` with `TermRenaming.lift (domainType.subst sigma)`
+and the raw renaming with `rho.lift`.  `RawRenaming.lift_injective`
+propagates injectivity into the binder world; the renamed body's raw
+SN is then handed to `RawTerm.lam_isStronglyNormalizing` to rebuild
+SN of the renamed `Term.lamPi` form. -/
+theorem Reducible.fundamental_lamPi_at_piTy_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Term.subst (termSubst.lift domainType) bodyTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.lamPi bodyTerm)) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have liftedInjective :=
+    RawRenaming.lift_injective rho rhoIsInjective
+  have liftedTermRenaming :=
+    termRenaming.lift (domainType.subst sigma)
+  have bodySNAtRho :=
+    bodyIsStable liftedInjective liftedTermRenaming
+  exact RawTerm.lam_isStronglyNormalizing bodySNAtRho
+
 /-- Fundamental SN endpoint for the application closure of `Term.lamPi`.
 
 The current `piTy` reducibility clause requires SN after dependent
@@ -490,6 +524,44 @@ theorem Reducible.fundamental_pathLam_at_path_sn
     (leftEndpoint.subst sigma.forRaw)
     (rightEndpoint.subst sigma.forRaw)
     bodyIsSN
+
+/-- Renaming-stable SN of `Term.pathLam` at `Ty.path` —
+`IsRenamingStableIsSN` mirror of `fundamental_pathLam_at_path_sn`.
+
+The cubical path binder sits over `Ty.interval`, which is closed,
+so `Ty.interval.subst sigma = Ty.interval` reduces definitionally
+and `termRenaming.lift Ty.interval` extends the renaming through
+the interval-indexed binder.  `RawRenaming.lift_injective` carries
+injectivity into the binder world; the raw renamed body SN then
+feeds `RawTerm.pathLam_isStronglyNormalizing` via the typed wrapper. -/
+theorem Reducible.fundamental_pathLam_at_path_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Ty.weaken_subst_commute sigma carrierType ▸
+            Term.subst (termSubst.lift Ty.interval) bodyTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.pathLam modeIsUnivalent carrierType
+          leftEndpoint rightEndpoint bodyTerm)) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have liftedInjective :=
+    RawRenaming.lift_injective rho rhoIsInjective
+  have liftedTermRenaming :=
+    termRenaming.lift Ty.interval
+  have bodySNAtRho :=
+    bodyIsStable liftedInjective liftedTermRenaming
+  exact RawTerm.pathLam_isStronglyNormalizing bodySNAtRho
 
 /-- **K12.27 identity-substitution dependent lambda value SN endpoint**.
 

@@ -93,5 +93,8 @@ open LeanFX2
 #print axioms Reducible.fundamental_refineIntro_at_refine_sn_stable
 #print axioms Reducible.fundamental_codataUnfold_at_codata_sn_stable
 #print axioms Reducible.fundamental_glueIntro_at_glue_sn_stable
+#print axioms Reducible.fundamental_pair_at_sigmaTy_sn_stable
+#print axioms Reducible.fundamental_lamPi_at_piTy_sn_stable
+#print axioms Reducible.fundamental_pathLam_at_path_sn_stable
 
 end LeanFX2.Smoke

@@ -165,6 +165,48 @@ theorem Reducible.fundamental_pair_at_sigmaTy_sn
     (Reducible.isStronglyNormalizing firstIH)
     secondIsSN
 
+/-- Renaming-stable SN of `Term.pair` at `Ty.sigmaTy` —
+`IsRenamingStableIsSN` mirror of `fundamental_pair_at_sigmaTy_sn`.
+
+The proof rebuilds the raw-level pair SN witness at each renamed
+world by projecting raw SN out of both component
+`IsRenamingStableReducible` premises instantiated at the same
+renaming, then invoking `RawTerm.pair_isStronglyNormalizing`
+directly.  Since `Term.isStronglyNormalizing` is raw-indexed, no
+typed-level alignment of the `secondType.subst0` rewrite is
+required at the renamed world — the raw `pair` constructor
+already matches both inputs by shape. -/
+theorem Reducible.fundamental_pair_at_sigmaTy_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {firstRaw secondRaw : RawTerm scope}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (firstIsStable :
+        IsRenamingStableReducible (firstType.subst sigma)
+          (Term.subst termSubst firstValue))
+    (secondIsStable :
+        IsRenamingStableReducible
+          ((secondType.subst0 firstType firstRaw).subst sigma)
+          (Term.subst termSubst secondValue)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.pair (secondType := secondType) firstValue secondValue)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have firstReducibleAtRho :=
+    firstIsStable rhoIsInjective termRenaming
+  have secondReducibleAtRho :=
+    secondIsStable rhoIsInjective termRenaming
+  exact RawTerm.pair_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstReducibleAtRho)
+    (Reducible.isStronglyNormalizing secondReducibleAtRho)
+
 /-! ## K12.21.B fundamental_fst at `Ty.sigmaTy` — Σ first-projection
 elimination
 
