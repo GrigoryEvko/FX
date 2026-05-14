@@ -204,3 +204,9 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.optionMatch_isStronglyNormalizing
 #print axioms LeanFX2.Term.optionMatch_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_optionMatch_sn
+
+-- K12.22 eitherMatch (generic ι recursor with inl-fire + inr-fire contractum closures)
+#print axioms LeanFX2.RawTerm.eitherMatch_isStronglyNormalizing
+#print axioms LeanFX2.Term.eitherMatch_isStronglyNormalizing
+#print axioms LeanFX2.Term.eitherMatch_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_eitherMatch_sn

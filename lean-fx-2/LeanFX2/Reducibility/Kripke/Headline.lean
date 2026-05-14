@@ -1018,4 +1018,36 @@ theorem Term.optionMatch_strong_normalization_via_kripke
   ReducibleK.fundamental_optionMatch_sn
     scrutineeIsSN noneIsSN someIsSN contractumIsSN
 
+/-- SN of `Term.eitherMatch` via Kripke.  Requires a pair of
+contractum-SN closures for the two ι fires:
+`eitherMatch (eitherInl v) l r → app l v` and the inr-symmetric arm. -/
+theorem Term.eitherMatch_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    {scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (leftIsSN : Term.isStronglyNormalizing leftBranch)
+    (rightIsSN : Term.isStronglyNormalizing rightBranch)
+    (inlContractumIsSN :
+      ∀ {valueRaw leftTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing leftTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app leftTargetRaw valueRaw))
+    (inrContractumIsSN :
+      ∀ {valueRaw rightTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing rightTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app rightTargetRaw valueRaw)) :
+    Term.isStronglyNormalizing
+      (Term.eitherMatch scrutinee leftBranch rightBranch) :=
+  ReducibleK.fundamental_eitherMatch_sn
+    scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
+
 end LeanFX2

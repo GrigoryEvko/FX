@@ -731,5 +731,159 @@ theorem Term.optionMatch_isStronglyNormalizing
   RawTerm.optionMatch_isStronglyNormalizing
     scrutineeIsSN noneIsSN someIsSN contractumIsSN
 
+/-- **eitherMatch generic-closure SN preservation**.  Cong arm steps
+all three children; inl-ι arm replaces with `app leftTarget value`
+after `scrutinee → eitherInl value`; inr-ι symmetrical for the right
+side.  Each ι arm's contractum closure consumes the value-SN extracted
+from the eitherInl/Inr-form scrutinee and the corresponding branch
+closure. -/
+theorem RawTerm.eitherMatch_isStronglyNormalizing {scope : Nat}
+    {scrutinee : RawTerm scope}
+    (scrutineeIsSN : RawTerm.isStronglyNormalizing scrutinee) :
+    ∀ {leftBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing leftBranch →
+    ∀ {rightBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing rightBranch →
+      (∀ {valueRaw leftTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing leftTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app leftTargetRaw valueRaw)) →
+      (∀ {valueRaw rightTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing rightTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app rightTargetRaw valueRaw)) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.eitherMatch scrutinee leftBranch rightBranch) := by
+  induction scrutineeIsSN with
+  | intro currentScrutinee scrutineeClosure scrutineeIH =>
+    intro leftBranch leftIsSN
+    induction leftIsSN with
+    | intro currentLeft leftClosure leftIH =>
+      intro rightBranch rightIsSN inlClosure inrClosure
+      induction rightIsSN with
+      | intro currentRight rightClosure rightIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.eitherMatch currentScrutinee currentLeft currentRight) ?_
+        intro target progressStep
+        rcases RawStep.par.eitherMatch_inv progressStep.1 with
+          ⟨scrutineeTarget, leftTarget, rightTarget, targetEq,
+            scrutineeStep, leftStep, rightStep⟩
+          | ⟨valueTarget, leftTarget, targetEq, scrutineeStep, leftStep⟩
+          | ⟨valueTarget, rightTarget, targetEq, scrutineeStep, rightStep⟩
+        · subst targetEq
+          have scrutineeTargetIsSN :
+              RawTerm.isStronglyNormalizing scrutineeTarget := by
+            by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+            · subst scrutineeEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure scrutineeTarget
+                ⟨scrutineeStep, scrutineeEq⟩
+          have leftTargetIsSN :
+              RawTerm.isStronglyNormalizing leftTarget := by
+            by_cases leftEq : currentLeft = leftTarget
+            · subst leftEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentLeft leftClosure
+            · exact leftClosure leftTarget ⟨leftStep, leftEq⟩
+          have rightTargetIsSN :
+              RawTerm.isStronglyNormalizing rightTarget := by
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentRight rightClosure
+            · exact rightClosure rightTarget ⟨rightStep, rightEq⟩
+          by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+          · subst scrutineeEq
+            by_cases leftEq : currentLeft = leftTarget
+            · subst leftEq
+              by_cases rightEq : currentRight = rightTarget
+              · subst rightEq
+                exact (progressStep.2 rfl).elim
+              · exact rightIH rightTarget ⟨rightStep, rightEq⟩
+            · exact leftIH leftTarget ⟨leftStep, leftEq⟩
+                rightTargetIsSN inlClosure inrClosure
+          · exact scrutineeIH scrutineeTarget
+              ⟨scrutineeStep, scrutineeEq⟩
+              leftTargetIsSN rightTargetIsSN inlClosure inrClosure
+        · subst targetEq
+          have inlScrutineeIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.eitherInl valueTarget) := by
+            by_cases scrutineeEq :
+                currentScrutinee = RawTerm.eitherInl valueTarget
+            · rw [← scrutineeEq]
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure (RawTerm.eitherInl valueTarget)
+                ⟨scrutineeStep, scrutineeEq⟩
+          have valueTargetIsSN :
+              RawTerm.isStronglyNormalizing valueTarget :=
+            RawTerm.eitherInl_value_isStronglyNormalizing
+              inlScrutineeIsSN
+          have leftTargetIsSN :
+              RawTerm.isStronglyNormalizing leftTarget := by
+            by_cases leftEq : currentLeft = leftTarget
+            · subst leftEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentLeft leftClosure
+            · exact leftClosure leftTarget ⟨leftStep, leftEq⟩
+          exact inlClosure valueTargetIsSN leftTargetIsSN
+        · subst targetEq
+          have inrScrutineeIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.eitherInr valueTarget) := by
+            by_cases scrutineeEq :
+                currentScrutinee = RawTerm.eitherInr valueTarget
+            · rw [← scrutineeEq]
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure (RawTerm.eitherInr valueTarget)
+                ⟨scrutineeStep, scrutineeEq⟩
+          have valueTargetIsSN :
+              RawTerm.isStronglyNormalizing valueTarget :=
+            RawTerm.eitherInr_value_isStronglyNormalizing
+              inrScrutineeIsSN
+          have rightTargetIsSN :
+              RawTerm.isStronglyNormalizing rightTarget := by
+            by_cases rightEq : currentRight = rightTarget
+            · subst rightEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentRight rightClosure
+            · exact rightClosure rightTarget ⟨rightStep, rightEq⟩
+          exact inrClosure valueTargetIsSN rightTargetIsSN
+
+/-- Typed wrapper for eitherMatch generic-closure SN preservation. -/
+theorem Term.eitherMatch_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    {scrutinee :
+      Term context (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (leftIsSN : Term.isStronglyNormalizing leftBranch)
+    (rightIsSN : Term.isStronglyNormalizing rightBranch)
+    (inlContractumIsSN :
+      ∀ {valueRaw leftTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing leftTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app leftTargetRaw valueRaw))
+    (inrContractumIsSN :
+      ∀ {valueRaw rightTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing valueRaw →
+        RawTerm.isStronglyNormalizing rightTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app rightTargetRaw valueRaw)) :
+    Term.isStronglyNormalizing
+      (Term.eitherMatch scrutinee leftBranch rightBranch) :=
+  RawTerm.eitherMatch_isStronglyNormalizing
+    scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
+
 
 end LeanFX2
