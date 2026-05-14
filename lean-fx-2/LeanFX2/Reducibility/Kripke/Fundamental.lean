@@ -234,4 +234,67 @@ theorem ReducibleK.fundamental_eitherInr_sn
   | succ subCount =>
     exact (Term.eitherInr_isStronglyNormalizing (leftType := leftType) valueIsSN)
 
+/-- intervalOpp preserves ReducibleK at Ty.interval. -/
+theorem ReducibleK.fundamental_intervalOpp
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stepCount : Nat} {innerRaw : RawTerm scope}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerIsR :
+      @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+        innerRaw innerValue) :
+    @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+      (RawTerm.intervalOpp innerRaw) (Term.intervalOpp innerValue) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    have innerSN : Term.isStronglyNormalizing innerValue := innerIsR
+    exact Term.intervalOpp_isStronglyNormalizing innerSN
+
+/-- intervalMeet preserves ReducibleK at Ty.interval. -/
+theorem ReducibleK.fundamental_intervalMeet
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stepCount : Nat} {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsR :
+      @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+        leftRaw leftValue)
+    (rightIsR :
+      @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+        rightRaw rightValue) :
+    @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+      (RawTerm.intervalMeet leftRaw rightRaw)
+      (Term.intervalMeet leftValue rightValue) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    have leftSN : Term.isStronglyNormalizing leftValue := leftIsR
+    have rightSN : Term.isStronglyNormalizing rightValue := rightIsR
+    exact Term.intervalMeet_isStronglyNormalizing leftSN rightSN
+
+/-- intervalJoin preserves ReducibleK at Ty.interval. -/
+theorem ReducibleK.fundamental_intervalJoin
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {stepCount : Nat} {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftIsR :
+      @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+        leftRaw leftValue)
+    (rightIsR :
+      @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+        rightRaw rightValue) :
+    @ReducibleK mode level scope sourceCtx stepCount Ty.interval
+      (RawTerm.intervalJoin leftRaw rightRaw)
+      (Term.intervalJoin leftValue rightValue) := by
+  cases stepCount with
+  | zero => trivial
+  | succ subCount =>
+    have leftSN : Term.isStronglyNormalizing leftValue := leftIsR
+    have rightSN : Term.isStronglyNormalizing rightValue := rightIsR
+    exact Term.intervalJoin_isStronglyNormalizing leftSN rightSN
+
 end LeanFX2

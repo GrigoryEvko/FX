@@ -63,3 +63,6 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.arrow_sn
 #print axioms LeanFX2.ReducibleK.arrow_apply
 #print axioms LeanFX2.Term.natSucc_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_intervalOpp
+#print axioms LeanFX2.ReducibleK.fundamental_intervalMeet
+#print axioms LeanFX2.ReducibleK.fundamental_intervalJoin
