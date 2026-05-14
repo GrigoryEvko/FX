@@ -66,3 +66,5 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_intervalOpp
 #print axioms LeanFX2.ReducibleK.fundamental_intervalMeet
 #print axioms LeanFX2.ReducibleK.fundamental_intervalJoin
+#print axioms LeanFX2.ReducibleK.fundamental_modIntro_sn
+#print axioms LeanFX2.ReducibleK.fundamental_subsume_sn

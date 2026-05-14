@@ -297,4 +297,27 @@ theorem ReducibleK.fundamental_intervalJoin
     have rightSN : Term.isStronglyNormalizing rightValue := rightIsR
     exact Term.intervalJoin_isStronglyNormalizing leftSN rightSN
 
+/-- modIntro preserves ReducibleK at any inner type (Term.modIntro
+keeps the same Ty index, only wraps the raw projection). -/
+theorem ReducibleK.fundamental_modIntro_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerTerm) :
+    Term.isStronglyNormalizing (Term.modIntro innerTerm) :=
+  Term.modIntro_isStronglyNormalizing innerIsSN
+
+/-- subsume preserves SN at any inner type. -/
+theorem ReducibleK.fundamental_subsume_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {innerType : Ty level scope}
+    {innerRaw : RawTerm scope}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerIsSN : Term.isStronglyNormalizing innerTerm) :
+    Term.isStronglyNormalizing (Term.subsume innerTerm) :=
+  Term.subsume_isStronglyNormalizing innerIsSN
+
 end LeanFX2
