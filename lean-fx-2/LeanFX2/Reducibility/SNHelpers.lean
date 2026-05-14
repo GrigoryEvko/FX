@@ -177,4 +177,26 @@ theorem Term.isStronglyNormalizing_weaken
     Term.isStronglyNormalizing (Term.weaken newType sourceTerm) :=
   RawTerm.isStronglyNormalizing_weaken sourceIsSN
 
+/-- `RawTerm.cumulUpMarker inner` is strongly normalizing whenever
+`inner` is.  Powers the cross-universe cumulUp Term-level helper.
+Body uses `RawStep.par.cumulUpMarker_inv` inversion. -/
+theorem RawTerm.cumulUpMarker_isStronglyNormalizing {scope : Nat}
+    {innerCodeRaw : RawTerm scope}
+    (innerIsSN : RawTerm.isStronglyNormalizing innerCodeRaw) :
+    RawTerm.isStronglyNormalizing
+      (RawTerm.cumulUpMarker innerCodeRaw) := by
+  induction innerIsSN with
+  | intro currentInner _ inductiveHypothesis =>
+    refine RawTerm.isStronglyNormalizing.intro
+      (RawTerm.cumulUpMarker currentInner) ?_
+    intro target progressStep
+    obtain ⟨innerTarget, targetEq, innerStep⟩ :=
+      RawStep.par.cumulUpMarker_inv progressStep.1
+    subst targetEq
+    have innerDistinct :
+        currentInner ≠ innerTarget := fun innerEq =>
+      progressStep.2 (congrArg RawTerm.cumulUpMarker innerEq)
+    exact inductiveHypothesis innerTarget
+      ⟨innerStep, innerDistinct⟩
+
 end LeanFX2

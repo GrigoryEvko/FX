@@ -1,4 +1,8 @@
-import LeanFX2.Reducibility.FundamentalAliases.RawPayloads
+import LeanFX2.Reducibility.SNHelpers
+import LeanFX2.Reducibility.NeutralSNFoundation
+import LeanFX2.Reducibility.NeutralSNHott
+import LeanFX2.Reducibility.NeutralSNIntro
+import LeanFX2.Reducibility.NeutralSNClosure
 
 /-! # LeanFX2.Reducibility.FundamentalAliases.DirectCases
 
@@ -384,5 +388,146 @@ theorem Term.uaToEquiv_isStronglyNormalizing
       (Term.uaToEquiv innerLevel innerLevelLt
         leftTy rightTy leftTyRaw rightTyRaw proof) :=
   RawTerm.uaToEquiv_isStronglyNormalizing proofIsSN
+
+/-- Direct SN case for the canonical funext reflexivity witness.
+The raw payload is `lam (refl applyRaw)`. -/
+theorem Term.funextRefl_isStronglyNormalizing_of_apply
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (applyIsSN : RawTerm.isStronglyNormalizing applyRaw) :
+    Term.isStronglyNormalizing
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  RawTerm.lam_isStronglyNormalizing
+    (RawTerm.refl_isStronglyNormalizing applyIsSN)
+
+/-- Direct SN case for the Id-typed funext reflexivity witness.
+Same raw payload as the canonical funext refl. -/
+theorem Term.funextReflAtId_isStronglyNormalizing_of_apply
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (domainType codomainType : Ty level scope)
+    {applyRaw : RawTerm (scope + 1)}
+    (applyIsSN : RawTerm.isStronglyNormalizing applyRaw) :
+    Term.isStronglyNormalizing
+      (Term.funextReflAtId (context := sourceCtx)
+        domainType codomainType applyRaw) :=
+  RawTerm.lam_isStronglyNormalizing
+    (RawTerm.refl_isStronglyNormalizing applyIsSN)
+
+/-- Direct SN case for boolean elimination. -/
+theorem Term.boolElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolTrue)
+        thenRaw}
+    {elseBranch :
+      Term sourceCtx
+        (motiveType.subst0 Ty.bool RawTerm.boolFalse)
+        elseRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (thenIsSN : Term.isStronglyNormalizing thenBranch)
+    (elseIsSN : Term.isStronglyNormalizing elseBranch) :
+    Term.isStronglyNormalizing
+      (Term.boolElim scrutinee thenBranch elseBranch) :=
+  RawTerm.boolElim_isStronglyNormalizing thenIsSN elseIsSN scrutineeIsSN
+
+/-- Direct SN case for HoTT identity elimination. -/
+theorem Term.idJ_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing (Term.idJ baseCase witness) :=
+  RawTerm.idJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- Direct SN case for observational equality elimination. -/
+theorem Term.oeqJ_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing (Term.oeqJ baseCase witness) :=
+  RawTerm.oeqJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- Direct SN case for strict identity elimination. -/
+theorem Term.idStrictRec_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx
+        (Ty.idStrict carrier leftEndpoint rightEndpoint)
+        witnessRaw}
+    (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
+    (witnessIsSN : Term.isStronglyNormalizing witness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRec modeIsStrict baseCase witness) :=
+  RawTerm.idStrictRec_isStronglyNormalizing baseCaseIsSN witnessIsSN
+
+/-- Direct SN endpoint for identity-type reflexivity.  The typed
+`Term.refl` projects to `RawTerm.refl rawWitness`, so the typed SN
+witness IS the raw one. -/
+theorem Term.refl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (witnessIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.refl (context := sourceCtx) carrier rawWitness) :=
+  RawTerm.refl_isStronglyNormalizing witnessIsSN
+
+/-- Direct SN endpoint for observational-equality reflexivity.  The
+typed `Term.oeqRefl` projects to `RawTerm.oeqRefl rawWitness`. -/
+theorem Term.oeqRefl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (witnessIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.oeqRefl (context := sourceCtx) carrier rawWitness) :=
+  RawTerm.oeqRefl_isStronglyNormalizing witnessIsSN
+
+/-- Direct SN endpoint for strict-identity reflexivity.  The typed
+`Term.idStrictRefl` projects to `RawTerm.idStrictRefl rawWitness`. -/
+theorem Term.idStrictRefl_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {rawWitness : RawTerm scope}
+    (witnessIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRefl (context := sourceCtx)
+        modeIsStrict carrier rawWitness) :=
+  RawTerm.idStrictRefl_isStronglyNormalizing witnessIsSN
 
 end LeanFX2

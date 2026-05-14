@@ -1,5 +1,5 @@
 import LeanFX2.Reducibility.Kripke.Basic
-import LeanFX2.Reducibility.FundamentalAliases
+import LeanFX2.Reducibility.FundamentalAliases.DirectCases
 
 /-! Kripke fundamental theorem — closed-leaf base cases.
 
