@@ -418,4 +418,16 @@ theorem RawStep.parStar.optionNone_inv
     target = RawTerm.optionNone :=
   RawStep.parStar.canonical_inv_helper RawStep.par.optionNone_inv chain
 
+/-- `RawStep.parStar (var position) target → target = var position`.
+
+Variables have no `RawStep.par` reduction beyond `refl` (no β/ι rule
+takes a variable as source), so any chain from `var position` stays
+at the same variable.  Completes the canonical-head inversion family
+alongside the closed-canonical shipped above. -/
+theorem RawStep.parStar.var_inv {position : Fin scope}
+    {target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.var position : RawTerm scope) target) :
+    target = RawTerm.var position :=
+  RawStep.parStar.canonical_inv_helper RawStep.par.var_inv chain
+
 end LeanFX2

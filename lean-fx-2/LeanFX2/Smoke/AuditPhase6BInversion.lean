@@ -40,3 +40,4 @@ when source has a canonical-head raw projection. -/
 #print axioms LeanFX2.RawStep.parStar.natZero_inv
 #print axioms LeanFX2.RawStep.parStar.listNil_inv
 #print axioms LeanFX2.RawStep.parStar.optionNone_inv
+#print axioms LeanFX2.RawStep.parStar.var_inv
