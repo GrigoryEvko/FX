@@ -102,3 +102,13 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_effectPerform_sn
 #print axioms LeanFX2.ReducibleK.fundamental_uaIntroHet_sn
 #print axioms LeanFX2.ReducibleK.fundamental_equivReflIdAtId_sn
+#print axioms LeanFX2.Term.var_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.pair_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.fst_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.snd_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.lam_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.lamPi_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.modIntro_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.subsume_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.recordIntro_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.recordProj_strong_normalization_via_kripke
