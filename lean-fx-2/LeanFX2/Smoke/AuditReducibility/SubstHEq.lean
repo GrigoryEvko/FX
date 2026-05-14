@@ -89,6 +89,17 @@ open LeanFX2
 #print axioms Term.subst_identity_cumulUp_HEq
 #print axioms Term.subst_identity_equivApp_HEq
 #print axioms Term.subst_identity_equivApply_HEq
+#print axioms Term.subst_identity_universeCode_HEq
+#print axioms Term.subst_identity_arrowCode_HEq
+#print axioms Term.subst_identity_piTyCode_HEq
+#print axioms Term.subst_identity_sigmaTyCode_HEq
+#print axioms Term.subst_identity_productCode_HEq
+#print axioms Term.subst_identity_sumCode_HEq
+#print axioms Term.subst_identity_listCode_HEq
+#print axioms Term.subst_identity_optionCode_HEq
+#print axioms Term.subst_identity_eitherCode_HEq
+#print axioms Term.subst_identity_idCode_HEq
+#print axioms Term.subst_identity_equivCode_HEq
 #print axioms TermSubst.renameOutput
 #print axioms TermSubst.precomposeRenaming
 #print axioms TermSubst.consSingleton
