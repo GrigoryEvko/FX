@@ -225,4 +225,42 @@ theorem Reducible.fundamental_glueIntro_at_glue
     (Reducible.isStronglyNormalizing baseIH)
     (Reducible.isStronglyNormalizing partialIH)
 
+/-- Renaming-stable SN of `Term.glueIntro` at `Ty.glue` —
+`IsRenamingStableIsSN` mirror of `fundamental_glueIntro_at_glue`.
+The ambient `modeIsUnivalent` witness is mode-invariant; the renamed-
+world raw SN witnesses are projected from the two `IsRenamingStableReducible`
+premises at the current renaming. -/
+theorem Reducible.fundamental_glueIntro_at_glue_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level scope}
+    {boundaryWitness baseRaw partialRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (baseType.subst sigma)
+          (Term.subst termSubst baseValue))
+    (partialIsStable :
+        IsRenamingStableReducible (baseType.subst sigma)
+          (Term.subst termSubst partialValue)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.glueIntro modeIsUnivalent baseType boundaryWitness
+          baseValue partialValue)) := by
+  intro _renamedScope _renamedCtx rho rhoIsInjective termRenaming
+  have baseReducibleAtRho :=
+    baseIsStable rhoIsInjective termRenaming
+  have partialReducibleAtRho :=
+    partialIsStable rhoIsInjective termRenaming
+  exact Term.glueIntro_isStronglyNormalizing
+    modeIsUnivalent
+    ((baseType.subst sigma).rename rho)
+    ((boundaryWitness.subst sigma.forRaw).rename rho)
+    (Reducible.isStronglyNormalizing baseReducibleAtRho)
+    (Reducible.isStronglyNormalizing partialReducibleAtRho)
+
 end LeanFX2

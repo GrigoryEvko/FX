@@ -159,4 +159,100 @@ theorem Term.codataDest_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.codataDest codataValue) :=
   Reducible.isStronglyNormalizing codataReducible.2
 
+
+/-! ## Renaming-stable mirrors of the record / refine / codata intros
+
+Three SN-output `_stable` companions of the SN endpoints above.  Each
+rebuilds SN at every injective-renamed future world by projecting SN
+from `IsRenamingStableReducible` premises at the renamed world and
+feeding the renamed-world raw SN witnesses to the corresponding raw
+helper.  The renamed-world raw helper application matches the goal
+because `Term.subst` distributes definitionally over each constructor's
+intro form. -/
+
+/-- Renaming-stable SN of `Term.recordIntro` at `Ty.record` —
+`IsRenamingStableIsSN` mirror of `fundamental_recordIntro_at_record`. -/
+theorem Reducible.fundamental_recordIntro_at_record_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (firstIsStable :
+        IsRenamingStableReducible (singleFieldType.subst sigma)
+          (Term.subst termSubst firstField)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.recordIntro firstField)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have firstReducibleAtRho :=
+    firstIsStable rhoIsInjective termRenaming
+  exact Term.recordIntro_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstReducibleAtRho)
+
+/-- Renaming-stable SN of `Term.refineIntro` at `Ty.refine` —
+`IsRenamingStableIsSN` mirror of `fundamental_refineIntro_at_refine`. -/
+theorem Reducible.fundamental_refineIntro_at_refine_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (valueIsStable :
+        IsRenamingStableReducible (baseType.subst sigma)
+          (Term.subst termSubst baseValue))
+    (proofIsStable :
+        IsRenamingStableReducible (Ty.unit.subst sigma)
+          (Term.subst termSubst predicateProof)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.refineIntro predicate baseValue predicateProof)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have valueReducibleAtRho :=
+    valueIsStable rhoIsInjective termRenaming
+  have proofReducibleAtRho :=
+    proofIsStable rhoIsInjective termRenaming
+  exact Term.refineIntro_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing valueReducibleAtRho)
+    (Reducible.isStronglyNormalizing proofReducibleAtRho)
+
+/-- Renaming-stable SN of `Term.codataUnfold` at `Ty.codata` —
+`IsRenamingStableIsSN` mirror of `fundamental_codataUnfold_at_codata`. -/
+theorem Reducible.fundamental_codataUnfold_at_codata_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+        Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (stateIsStable :
+        IsRenamingStableReducible (stateType.subst sigma)
+          (Term.subst termSubst initialState))
+    (transitionIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow stateType outputType).subst sigma)
+          (Term.subst termSubst transition)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.codataUnfold initialState transition)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have stateReducibleAtRho :=
+    stateIsStable rhoIsInjective termRenaming
+  have transitionReducibleAtRho :=
+    transitionIsStable rhoIsInjective termRenaming
+  exact Term.codataUnfold_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing stateReducibleAtRho)
+    (Reducible.isStronglyNormalizing transitionReducibleAtRho)
+
 end LeanFX2

@@ -89,5 +89,9 @@ open LeanFX2
 #print axioms Reducible.fundamental_boolElim_at_bool_sn_stable
 #print axioms Reducible.fundamental_optionMatch_at_option_sn_stable
 #print axioms Reducible.fundamental_eitherMatch_at_either_sn_stable
+#print axioms Reducible.fundamental_recordIntro_at_record_sn_stable
+#print axioms Reducible.fundamental_refineIntro_at_refine_sn_stable
+#print axioms Reducible.fundamental_codataUnfold_at_codata_sn_stable
+#print axioms Reducible.fundamental_glueIntro_at_glue_sn_stable
 
 end LeanFX2.Smoke
