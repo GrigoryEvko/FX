@@ -93,3 +93,6 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.snd_progress_or_step
 #print axioms LeanFX2.Term.appPi_progress_or_step
 #print axioms LeanFX2.Term.modElim_progress_or_step
+#print axioms LeanFX2.Term.recordProj_progress_or_step
+#print axioms LeanFX2.Term.refineElim_progress_or_step
+#print axioms LeanFX2.Term.codataDest_progress_or_step
