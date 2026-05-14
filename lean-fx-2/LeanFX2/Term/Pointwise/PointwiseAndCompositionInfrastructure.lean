@@ -709,5 +709,59 @@ theorem TermSubst.compose_lift_singleton_consSingleton_zero_HEq
       (TermSubst.lift_zero_subst_singleton_heq termSubst argumentTerm)
       (TermSubst.consSingleton_zero_HEq termSubst argumentTerm).symm)
 
+/-- Successor comparison for composed lift-then-singleton substitutions,
+assuming the old substitution entry itself collapses after weakening and
+singleton substitution.
+
+This theorem does not hide the hard structural obligation: `entryHEq`
+is precisely the arbitrary-term weaken-then-singleton collapse needed
+for the old substitution entry.  Once that structural theorem exists,
+this lemma turns it into the successor half of the `compose` versus
+`consSingleton` comparison. -/
+theorem TermSubst.compose_lift_singleton_consSingleton_succ_of_entry_HEq
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    {domainType : Ty level scope}
+    {argumentRaw : RawTerm targetScope}
+    (argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw)
+    (previousIndex : Nat)
+    (positionIsWithinScope : previousIndex + 1 < scope + 1)
+    (entryHEq :
+      HEq
+        (Term.subst (TermSubst.singleton argumentTerm)
+          (Term.weaken (domainType.subst sigma)
+            (termSubst
+              ⟨previousIndex,
+                Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)))
+        (termSubst
+          ⟨previousIndex,
+            Nat.lt_of_succ_lt_succ positionIsWithinScope⟩)) :
+    HEq
+      (TermSubst.compose (termSubst.lift domainType)
+        (TermSubst.singleton argumentTerm)
+        ⟨previousIndex + 1, positionIsWithinScope⟩)
+      (TermSubst.consSingleton termSubst argumentTerm
+        ⟨previousIndex + 1, positionIsWithinScope⟩) := by
+  let previousPosition : Fin scope :=
+    ⟨previousIndex, Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
+  exact HEq.trans
+    (TermSubst.compose_position_HEq
+      (termSubst.lift domainType)
+      (TermSubst.singleton argumentTerm)
+      ⟨previousIndex + 1, positionIsWithinScope⟩)
+    (HEq.trans
+      (Term.subst_type_eq_cast_heq
+        (TermSubst.singleton argumentTerm)
+        (Ty.weaken_subst_commute sigma
+          (varType sourceCtx previousPosition)).symm
+        (Term.weaken (domainType.subst sigma)
+          (termSubst previousPosition)))
+      (HEq.trans entryHEq
+        (TermSubst.consSingleton_succ_HEq termSubst argumentTerm
+          previousIndex positionIsWithinScope).symm))
+
 
 end LeanFX2
