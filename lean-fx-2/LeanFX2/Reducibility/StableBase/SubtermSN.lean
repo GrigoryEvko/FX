@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.StableBase.CubicalSN
+import LeanFX2.Reducibility.Neutral
 
 /-! # LeanFX2.Reducibility.StableBase.SubtermSN
 
