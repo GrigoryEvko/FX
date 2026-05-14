@@ -2626,6 +2626,64 @@ theorem Term.subst_identityLike_funextIntroHet_HEq
     ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq applyARaw)
     ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq applyBRaw)
 
+/-- Canonical funext reflexivity case for an identity-like substitution. -/
+theorem Term.subst_identityLike_funextRefl_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (domainType codomainType : Ty level scope)
+    (applyRaw : RawTerm (scope + 1)) :
+    HEq
+      (Term.subst termSubst
+        (Term.funextRefl (context := sourceCtx)
+          domainType codomainType applyRaw))
+      (Term.funextRefl (context := sourceCtx)
+        domainType codomainType applyRaw) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  have applyRawIdentity :
+      applyRaw.subst sigma.forRaw.lift = applyRaw :=
+    (substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq applyRaw
+  have funextWithoutCastHEq :
+      HEq
+        (Term.funextRefl
+          (context := targetCtx)
+          (domainType.subst sigma)
+          (codomainType.subst sigma)
+          (applyRaw.subst sigma.forRaw.lift))
+        (Term.funextRefl (context := targetCtx)
+          domainType codomainType applyRaw) :=
+    Term.funextRefl_HEq_congr
+      (substitutionIsIdentityLike.tySubst_eq domainType)
+      (substitutionIsIdentityLike.tySubst_eq codomainType)
+      applyRawIdentity
+  have resultCastHEq :
+      HEq
+        ((funextReflType_subst sigma domainType codomainType applyRaw).symm ▸
+          Term.funextRefl
+            (context := targetCtx)
+            (domainType.subst sigma)
+            (codomainType.subst sigma)
+            (applyRaw.subst sigma.forRaw.lift))
+        (Term.funextRefl
+          (context := targetCtx)
+          (domainType.subst sigma)
+          (codomainType.subst sigma)
+          (applyRaw.subst sigma.forRaw.lift)) := by
+    exact Term.type_eq_cast_heq
+      (funextReflType_subst sigma domainType codomainType applyRaw).symm
+      (Term.funextRefl
+        (context := targetCtx)
+        (domainType.subst sigma)
+        (codomainType.subst sigma)
+        (applyRaw.subst sigma.forRaw.lift))
+  exact HEq.trans resultCastHEq funextWithoutCastHEq
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/
