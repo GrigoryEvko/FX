@@ -42,6 +42,27 @@ theorem Reducible.fundamental_snd_at_sigmaTy
       (Term.subst termSubst (Term.snd pairTerm)) :=
   Reducible.fundamental_snd_at_sigmaTy_sn pairIH
 
+/-- Renaming-stable alias of `fundamental_snd_at_sigmaTy`.  Forwards to
+the matching `_sn_stable` companion. -/
+theorem Reducible.fundamental_snd_at_sigmaTy_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {firstType : Ty level scope}
+    {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    {pairTerm :
+        Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairIsStable :
+        IsRenamingStableReducible
+          ((Ty.sigmaTy firstType secondType).subst sigma)
+          (Term.subst termSubst pairTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.snd pairTerm)) :=
+  Reducible.fundamental_snd_at_sigmaTy_sn_stable pairIsStable
+
 /-- Fundamental case: `Term.appPi` at `Ty.piTy`
 (SN-output endpoint). -/
 theorem Reducible.fundamental_appPi_at_piTy
@@ -65,6 +86,31 @@ theorem Reducible.fundamental_appPi_at_piTy
     Term.isStronglyNormalizing
       (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
   Reducible.fundamental_appPi_at_piTy_sn functionIH argumentIH
+
+/-- Renaming-stable alias of `fundamental_appPi_at_piTy`.  Forwards to
+the matching `_sn_stable` companion. -/
+theorem Reducible.fundamental_appPi_at_piTy_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+        Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionIsStable :
+        IsRenamingStableReducible
+          ((Ty.piTy domainType codomainType).subst sigma)
+          (Term.subst termSubst functionTerm))
+    (argumentIsStable :
+        IsRenamingStableReducible (domainType.subst sigma)
+                  (Term.subst termSubst argumentTerm)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.appPi functionTerm argumentTerm)) :=
+  Reducible.fundamental_appPi_at_piTy_sn_stable functionIsStable argumentIsStable
 
 /-- **K12.27 identity-substitution application SN endpoint**.
 

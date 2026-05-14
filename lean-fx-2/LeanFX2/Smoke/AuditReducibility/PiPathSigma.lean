@@ -75,6 +75,8 @@ open LeanFX2
 #print axioms Reducible.fundamental_idJ_at_id_stable
 #print axioms Reducible.fundamental_oeqJ_at_oeq_stable
 #print axioms Reducible.fundamental_idStrictRec_at_idStrict_stable
+#print axioms Reducible.fundamental_snd_at_sigmaTy_stable
+#print axioms Reducible.fundamental_appPi_at_piTy_stable
 #print axioms Reducible.fundamental_refl_at_id_of_endpoint
 #print axioms Reducible.fundamental_oeqRefl_at_oeq_of_endpoint
 #print axioms Reducible.fundamental_idStrictRefl_at_idStrict_of_endpoint
