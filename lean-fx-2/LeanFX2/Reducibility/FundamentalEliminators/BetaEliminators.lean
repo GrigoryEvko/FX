@@ -530,6 +530,127 @@ theorem Reducible.fundamental_snd_pair_at_sigmaTy_sn_stable
   have secondIsSN := Reducible.isStronglyNormalizing secondReducibleAtRho
   exact RawTerm.snd_pair_isStronglyNormalizing firstIsSN secondIsSN
 
+/-! ## K12.21.U5 head-β endpoints — record-projection / refinement-
+elim on their introducers
+
+Two further entries in the K12.21.U5 head-β-expansion family.
+The patterns mirror the Σ-fst / Σ-snd pair above: consume a
+`Reducible` witness at the substituted introducer-component
+type, extract raw SN via `Reducible.isStronglyNormalizing`, and
+apply the corresponding raw head-β endpoint
+`Term.{recordProj_recordIntro,refineElim_refineIntro}_isStronglyNormalizing`.
+
+`Term.subst` distributes definitionally through both
+`recordProj`/`recordIntro` and `refineElim`/`refineIntro`, so the
+substituted goal matches the raw endpoint's conclusion via δ-ι
+reduction. -/
+
+/-- **K12.21.U5 head-β at record.proj-of-intro** — fundamental
+wrapper for `Term.recordProj (Term.recordIntro field)` consuming a
+`Reducible` witness of the substituted single field. -/
+theorem Reducible.fundamental_recordProj_recordIntro_at_record_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (firstIH :
+        Reducible (singleFieldType.subst sigma)
+          (Term.subst termSubst firstField)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.recordProj (Term.recordIntro firstField))) :=
+  Term.recordProj_recordIntro_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing firstIH)
+
+/-- Renaming-stable variant of
+`fundamental_recordProj_recordIntro_at_record_sn`. -/
+theorem Reducible.fundamental_recordProj_recordIntro_at_record_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {singleFieldType : Ty level scope}
+    {firstRaw : RawTerm scope}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (firstIsStable :
+        IsRenamingStableReducible (singleFieldType.subst sigma)
+          (Term.subst termSubst firstField)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.recordProj (Term.recordIntro firstField))) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have firstReducibleAtRho :=
+    firstIsStable rhoIsInjective termRenaming
+  have firstIsSN := Reducible.isStronglyNormalizing firstReducibleAtRho
+  exact RawTerm.recordProj_recordIntro_isStronglyNormalizing firstIsSN
+
+/-- **K12.21.U5 head-β at refine.elim-of-intro** — fundamental
+wrapper for `Term.refineElim (Term.refineIntro predicate value proof)`
+consuming `Reducible` witnesses of the substituted base value and
+proof payload. -/
+theorem Reducible.fundamental_refineElim_refineIntro_at_refine_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (valueIH :
+        Reducible (baseType.subst sigma)
+          (Term.subst termSubst baseValue))
+    (proofIH :
+        Reducible (Ty.unit.subst sigma)
+          (Term.subst termSubst predicateProof)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.refineElim
+          (Term.refineIntro predicate baseValue predicateProof))) :=
+  Term.refineElim_refineIntro_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing valueIH)
+    (Reducible.isStronglyNormalizing proofIH)
+
+/-- Renaming-stable variant of
+`fundamental_refineElim_refineIntro_at_refine_sn`. -/
+theorem Reducible.fundamental_refineElim_refineIntro_at_refine_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {baseType : Ty level scope}
+    {predicate : RawTerm (scope + 1)}
+    {valueRaw proofRaw : RawTerm scope}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (valueIsStable :
+        IsRenamingStableReducible (baseType.subst sigma)
+          (Term.subst termSubst baseValue))
+    (proofIsStable :
+        IsRenamingStableReducible (Ty.unit.subst sigma)
+          (Term.subst termSubst predicateProof)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.refineElim
+          (Term.refineIntro predicate baseValue predicateProof))) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have valueReducibleAtRho :=
+    valueIsStable rhoIsInjective termRenaming
+  have proofReducibleAtRho :=
+    proofIsStable rhoIsInjective termRenaming
+  have valueIsSN := Reducible.isStronglyNormalizing valueReducibleAtRho
+  have proofIsSN := Reducible.isStronglyNormalizing proofReducibleAtRho
+  exact RawTerm.refineElim_refineIntro_isStronglyNormalizing
+    valueIsSN proofIsSN
+
 /-! ## K12.21.D fundamental_appPi at `Ty.piTy` — Π SN-output
 elimination
 

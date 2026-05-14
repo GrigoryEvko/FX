@@ -118,5 +118,9 @@ open LeanFX2
 #print axioms Reducible.fundamental_fst_pair_at_sigmaTy_sn_stable
 #print axioms Reducible.fundamental_snd_pair_at_sigmaTy_sn
 #print axioms Reducible.fundamental_snd_pair_at_sigmaTy_sn_stable
+#print axioms Reducible.fundamental_recordProj_recordIntro_at_record_sn
+#print axioms Reducible.fundamental_recordProj_recordIntro_at_record_sn_stable
+#print axioms Reducible.fundamental_refineElim_refineIntro_at_refine_sn
+#print axioms Reducible.fundamental_refineElim_refineIntro_at_refine_sn_stable
 
 end LeanFX2.Smoke
