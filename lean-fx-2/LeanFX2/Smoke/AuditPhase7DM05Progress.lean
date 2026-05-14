@@ -101,3 +101,5 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.pathApp_progress_or_step
 #print axioms LeanFX2.Term.glueIntroDestructAlgo
 #print axioms LeanFX2.Term.glueElim_progress_or_step
+#print axioms LeanFX2.Term.idReflDestructAlgo
+#print axioms LeanFX2.Term.idJ_progress_or_step
