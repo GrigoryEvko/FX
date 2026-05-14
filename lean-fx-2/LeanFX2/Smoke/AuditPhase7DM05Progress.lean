@@ -105,3 +105,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 #print axioms LeanFX2.Term.idJ_progress_or_step
 #print axioms LeanFX2.Term.boolElim_progress_or_step
 #print axioms LeanFX2.Term.natElim_progress_or_step
+#print axioms LeanFX2.Term.natRec_progress_or_step
