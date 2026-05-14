@@ -1491,4 +1491,73 @@ theorem Reducible.fundamental_listElim_listCons_at_listType_sn_stable
   exact RawTerm.listElim_listCons_isStronglyNormalizing
     headIsSN tailIsSN nilIsSN consIsSN consAppIsSN
 
+/-! ## K12.21.U5 head-ι at nat-zero — fundamental wrapper
+
+`Term.natElim Term.natZero zeroBranch succBranch` ι-reduces to
+`zeroBranch`.  The raw endpoint `Term.natElim_natZero_isStronglyNormalizing`
+(`Reducibility/NeutralSNHott/NatElim.lean:73`) requires SN of both
+branches; the zero scrutinee carries no payload.  `Ty.nat.subst sigma =
+Ty.nat` definitionally, so the succ-branch arrow type substitutes
+through cleanly. -/
+
+/-- **K12.21.U5 head-ι at nat-zero** — fundamental wrapper for
+`Term.natElim Term.natZero zeroBranch succBranch` consuming `Reducible`
+witnesses of the substituted branches. -/
+theorem Reducible.fundamental_natElim_natZero_at_nat_sn
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+        Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (zeroIH :
+        Reducible (motiveType.subst sigma)
+          (Term.subst termSubst zeroBranch))
+    (succIH :
+        Reducible ((Ty.arrow Ty.nat motiveType).subst sigma)
+          (Term.subst termSubst succBranch)) :
+    Term.isStronglyNormalizing
+      (Term.subst termSubst
+        (Term.natElim Term.natZero zeroBranch succBranch)) :=
+  Term.natElim_natZero_isStronglyNormalizing
+    (Reducible.isStronglyNormalizing zeroIH)
+    (Reducible.isStronglyNormalizing succIH)
+
+/-- Renaming-stable variant of
+`fundamental_natElim_natZero_at_nat_sn`. -/
+theorem Reducible.fundamental_natElim_natZero_at_nat_sn_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {motiveType : Ty level scope}
+    {zeroRaw succRaw : RawTerm scope}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+        Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (zeroIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+          (Term.subst termSubst zeroBranch))
+    (succIsStable :
+        IsRenamingStableReducible
+          ((Ty.arrow Ty.nat motiveType).subst sigma)
+          (Term.subst termSubst succBranch)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.natElim Term.natZero zeroBranch succBranch)) := by
+  intro _renamedScope _renamedCtx _rho rhoIsInjective termRenaming
+  have zeroReducibleAtRho :=
+    zeroIsStable rhoIsInjective termRenaming
+  have succReducibleAtRho :=
+    succIsStable rhoIsInjective termRenaming
+  have zeroIsSN := Reducible.isStronglyNormalizing zeroReducibleAtRho
+  have succIsSN := Reducible.isStronglyNormalizing succReducibleAtRho
+  exact RawTerm.natElim_natZero_isStronglyNormalizing
+    zeroIsSN succIsSN
+
 end LeanFX2
