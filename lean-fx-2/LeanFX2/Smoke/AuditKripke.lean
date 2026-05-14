@@ -90,3 +90,9 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_refineIntro_sn
 #print axioms LeanFX2.ReducibleK.fundamental_refineElim_sn
 #print axioms LeanFX2.ReducibleK.fundamental_codataUnfold_sn
+#print axioms LeanFX2.ReducibleK.fundamental_lam_sn
+#print axioms LeanFX2.ReducibleK.fundamental_lamPi_sn
+#print axioms LeanFX2.ReducibleK.fundamental_pathLam_sn
+#print axioms LeanFX2.ReducibleK.fundamental_glueIntro_sn
+#print axioms LeanFX2.ReducibleK.fundamental_glueElim_sn
+#print axioms LeanFX2.ReducibleK.fundamental_equivIntroHet_sn

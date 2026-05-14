@@ -618,4 +618,96 @@ theorem ReducibleK.fundamental_codataUnfold_sn
       (Term.codataUnfold initialState transition) :=
   Term.codataUnfold_isStronglyNormalizing stateIsSN transitionIsSN
 
+/-- lam preserves SN: body SN → lam SN. -/
+theorem ReducibleK.fundamental_lam_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+        Term (context.cons domainType) codomainType.weaken bodyRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
+    Term.isStronglyNormalizing
+      (Term.lam (codomainType := codomainType) bodyTerm) :=
+  Term.lam_isStronglyNormalizing bodyIsSN
+
+/-- lamPi preserves SN: body SN → lamPi SN. -/
+theorem ReducibleK.fundamental_lamPi_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm : Term (context.cons domainType) codomainType bodyRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
+    Term.isStronglyNormalizing (Term.lamPi bodyTerm) :=
+  Term.lamPi_isStronglyNormalizing bodyIsSN
+
+/-- pathLam preserves SN at univalent mode: body SN → pathLam SN. -/
+theorem ReducibleK.fundamental_pathLam_sn
+    {level scope : Nat}
+    {context : Ctx Mode.univalent level scope}
+    (carrierType : Ty level scope)
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+        Term (context.cons Ty.interval) carrierType.weaken bodyRaw}
+    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
+    Term.isStronglyNormalizing
+      (Term.pathLam rfl carrierType leftEndpoint rightEndpoint bodyTerm) :=
+  Term.pathLam_isStronglyNormalizing rfl carrierType
+    leftEndpoint rightEndpoint bodyIsSN
+
+/-- glueIntro preserves SN at univalent mode: base + partial SN → SN. -/
+theorem ReducibleK.fundamental_glueIntro_sn
+    {level scope : Nat}
+    {context : Ctx Mode.univalent level scope}
+    (baseType : Ty level scope)
+    (boundaryWitness : RawTerm scope)
+    {baseRaw partialRaw : RawTerm scope}
+    {baseValue : Term context baseType baseRaw}
+    {partialValue : Term context baseType partialRaw}
+    (baseIsSN : Term.isStronglyNormalizing baseValue)
+    (partialIsSN : Term.isStronglyNormalizing partialValue) :
+    Term.isStronglyNormalizing
+      (Term.glueIntro rfl baseType boundaryWitness baseValue partialValue) :=
+  Term.glueIntro_isStronglyNormalizing rfl baseType boundaryWitness
+    baseIsSN partialIsSN
+
+/-- glueElim preserves SN at univalent mode: glued SN → SN. -/
+theorem ReducibleK.fundamental_glueElim_sn
+    {level scope : Nat}
+    {context : Ctx Mode.univalent level scope}
+    {baseType : Ty level scope}
+    {boundaryWitness gluedRaw : RawTerm scope}
+    {gluedValue :
+        Term context (Ty.glue baseType boundaryWitness) gluedRaw}
+    (gluedIsSN : Term.isStronglyNormalizing gluedValue) :
+    Term.isStronglyNormalizing (Term.glueElim rfl gluedValue) :=
+  Term.glueElim_isStronglyNormalizing rfl gluedIsSN
+
+/-- equivIntroHet preserves SN: forward + backward SN → SN. -/
+theorem ReducibleK.fundamental_equivIntroHet_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {carrierA carrierB : Ty level scope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm scope}
+    {forward :
+        Term context (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+        Term context (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+        Term context
+          (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+          leftInvRaw}
+    {rightInv :
+        Term context
+          (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+          rightInvRaw}
+    (forwardIsSN : Term.isStronglyNormalizing forward)
+    (backwardIsSN : Term.isStronglyNormalizing backward) :
+    Term.isStronglyNormalizing
+      (Term.equivIntroHet forward backward leftInv rightInv) :=
+  Term.equivIntroHet_isStronglyNormalizing forwardIsSN backwardIsSN
+
 end LeanFX2
