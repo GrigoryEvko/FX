@@ -779,4 +779,37 @@ theorem ReducibleK.fundamental_effectPerform_sn
   Term.effectPerform_isStronglyNormalizing effectTag effectRow
     operationSignature canPerformOperation operationIsSN argumentsAreSN
 
+/-- uaIntroHet preserves SN: equiv witness SN → uaIntroHet SN. -/
+theorem ReducibleK.fundamental_uaIntroHet_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    {equivWitness :
+        Term sourceCtx (Ty.equiv carrierA carrierB)
+          (RawTerm.equivIntro forwardRaw backwardRaw)}
+    (equivWitnessIsSN : Term.isStronglyNormalizing equivWitness) :
+    Term.isStronglyNormalizing
+      (Term.uaIntroHet innerLevel innerLevelLt
+        carrierARaw carrierBRaw equivWitness) :=
+  Term.uaIntroHet_isStronglyNormalizing innerLevel innerLevelLt
+    carrierARaw carrierBRaw equivWitnessIsSN
+
+/-- equivReflIdAtId always SN (closed term). -/
+theorem ReducibleK.fundamental_equivReflIdAtId_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope) :
+    Term.isStronglyNormalizing
+      (Term.equivReflIdAtId (context := sourceCtx)
+        innerLevel innerLevelLt carrier carrierRaw) :=
+  Term.equivReflIdAtId_isStronglyNormalizing
+    innerLevel innerLevelLt carrier carrierRaw
+
 end LeanFX2

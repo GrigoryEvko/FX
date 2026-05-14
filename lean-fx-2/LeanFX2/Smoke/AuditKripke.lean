@@ -100,3 +100,5 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_funextReflAtId_sn
 #print axioms LeanFX2.ReducibleK.fundamental_oeqFunext_sn
 #print axioms LeanFX2.ReducibleK.fundamental_effectPerform_sn
+#print axioms LeanFX2.ReducibleK.fundamental_uaIntroHet_sn
+#print axioms LeanFX2.ReducibleK.fundamental_equivReflIdAtId_sn
