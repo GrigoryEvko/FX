@@ -120,6 +120,10 @@ open LeanFX2
 #print axioms Term.subst_identityLike_equivReflIdAtId_HEq
 #print axioms Term.subst_identityLike_funextReflAtId_HEq
 #print axioms Term.subst_identityLike_uaToEquiv_HEq
+#print axioms Term.subst_identityLike_transp_HEq
+#print axioms Term.subst_identityLike_refineIntro_HEq
+#print axioms Term.subst_identityLike_uaIntroHet_HEq
+#print axioms Term.subst_identityLike_funextIntroHet_HEq
 #print axioms Term.subst_identity_var_HEq
 #print axioms Term.subst_identity_lift_var_HEq
 #print axioms Term.subst_identity_unit_HEq

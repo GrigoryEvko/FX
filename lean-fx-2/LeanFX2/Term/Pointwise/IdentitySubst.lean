@@ -2485,6 +2485,147 @@ theorem Term.subst_identityLike_uaToEquiv_HEq
     (substitutionIsIdentityLike.rawSubst_eq proofRaw)
     proofHEq
 
+/-- Cubical transport case for an identity-like substitution. -/
+theorem Term.subst_identityLike_transp_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    (typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw)
+    (sourceValue : Term sourceCtx sourceType sourceRaw)
+    (typePathHEq :
+      HEq (Term.subst termSubst typePath) typePath)
+    (sourceValueHEq :
+      HEq (Term.subst termSubst sourceValue) sourceValue) :
+    HEq
+      (Term.subst termSubst
+        (Term.transp modeIsUnivalent universeLevel universeLevelLt
+          sourceType targetType sourceTypeRaw targetTypeRaw typePath
+          sourceValue))
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw typePath
+        sourceValue) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.transp_HEq_congr
+    modeIsUnivalent universeLevel universeLevelLt
+    (substitutionIsIdentityLike.tySubst_eq sourceType)
+    (substitutionIsIdentityLike.tySubst_eq targetType)
+    (substitutionIsIdentityLike.rawSubst_eq sourceTypeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq targetTypeRaw)
+    (substitutionIsIdentityLike.rawSubst_eq pathRaw)
+    (substitutionIsIdentityLike.rawSubst_eq sourceRaw)
+    typePathHEq sourceValueHEq
+
+/-- Refinement introduction case for an identity-like substitution. -/
+theorem Term.subst_identityLike_refineIntro_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    {baseType : Ty level scope}
+    (predicate : RawTerm (scope + 1))
+    {valueRaw proofRaw : RawTerm scope}
+    (baseValue : Term sourceCtx baseType valueRaw)
+    (predicateProof : Term sourceCtx Ty.unit proofRaw)
+    (baseValueHEq :
+      HEq (Term.subst termSubst baseValue) baseValue)
+    (predicateProofHEq :
+      HEq (Term.subst termSubst predicateProof) predicateProof) :
+    HEq
+      (Term.subst termSubst
+        (Term.refineIntro predicate baseValue predicateProof))
+      (Term.refineIntro predicate baseValue predicateProof) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.refineIntro_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq baseType)
+    ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq predicate)
+    (substitutionIsIdentityLike.rawSubst_eq valueRaw)
+    (substitutionIsIdentityLike.rawSubst_eq proofRaw)
+    baseValueHEq predicateProofHEq
+
+/-- Heterogeneous univalence introduction case for an identity-like substitution. -/
+theorem Term.subst_identityLike_uaIntroHet_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level scope}
+    (carrierARaw carrierBRaw : RawTerm scope)
+    {forwardRaw backwardRaw : RawTerm scope}
+    (equivWitness : Term sourceCtx (Ty.equiv carrierA carrierB)
+      (RawTerm.equivIntro forwardRaw backwardRaw))
+    (equivWitnessHEq :
+      HEq (Term.subst termSubst equivWitness) equivWitness) :
+    HEq
+      (Term.subst termSubst
+        (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+          equivWitness))
+      (Term.uaIntroHet innerLevel innerLevelLt carrierARaw carrierBRaw
+        equivWitness) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.uaIntroHet_HEq_congr
+    innerLevel innerLevelLt
+    (substitutionIsIdentityLike.tySubst_eq carrierA)
+    (substitutionIsIdentityLike.tySubst_eq carrierB)
+    (substitutionIsIdentityLike.rawSubst_eq carrierARaw)
+    (substitutionIsIdentityLike.rawSubst_eq carrierBRaw)
+    (substitutionIsIdentityLike.rawSubst_eq forwardRaw)
+    (substitutionIsIdentityLike.rawSubst_eq backwardRaw)
+    equivWitnessHEq
+
+/-- Heterogeneous funext introduction case for an identity-like substitution. -/
+theorem Term.subst_identityLike_funextIntroHet_HEq
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx targetCtx : Ctx mode level scope}
+    {sigma : Subst level scope scope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (substitutionIsIdentityLike :
+      TermSubst.IsIdentityLike termSubst)
+    (domainType codomainType : Ty level scope)
+    (applyARaw applyBRaw : RawTerm (scope + 1)) :
+    HEq
+      (Term.subst termSubst
+        (Term.funextIntroHet (context := sourceCtx)
+          domainType codomainType applyARaw applyBRaw))
+      (Term.funextIntroHet (context := sourceCtx)
+        domainType codomainType applyARaw applyBRaw) := by
+  have contextsEq : targetCtx = sourceCtx :=
+    eq_of_heq substitutionIsIdentityLike.contextHEq
+  subst contextsEq
+  simp only [Term.subst]
+  exact Term.funextIntroHet_HEq_congr
+    (substitutionIsIdentityLike.tySubst_eq domainType)
+    (substitutionIsIdentityLike.tySubst_eq codomainType)
+    ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq applyARaw)
+    ((substitutionIsIdentityLike.lift Ty.unit).rawSubst_eq applyBRaw)
+
 /-! ## Lifted identity at the term surface -/
 
 /-- Variable surface case for ordinary identity substitution. -/
