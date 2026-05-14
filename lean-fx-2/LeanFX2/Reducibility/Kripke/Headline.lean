@@ -790,4 +790,58 @@ theorem Term.modElim_strong_normalization_via_kripke
     Term.isStronglyNormalizing (Term.modElim innerTerm) :=
   ReducibleK.fundamental_modElim_sn innerIsSN
 
+/-- SN of natElim via Kripke.  Premise `succAppIsSN` is the raw
+arrow-application closure for `succRaw` — exactly what
+`ReducibleK.arrow_apply` would supply when the full Kripke arrow
+closure for `succBranch` lands in Phase B. -/
+theorem Term.natElim_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    {scrutinee : Term context Ty.nat scrutineeRaw}
+    {zeroBranch : Term context motiveType zeroRaw}
+    {succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
+    (succIsSN : Term.isStronglyNormalizing succBranch)
+    (succAppIsSN :
+      ∀ {predecessorRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing predecessorRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app succRaw predecessorRaw)) :
+    Term.isStronglyNormalizing
+      (Term.natElim scrutinee zeroBranch succBranch) :=
+  ReducibleK.fundamental_natElim_sn scrutineeIsSN zeroIsSN succIsSN
+    succAppIsSN
+
+/-- SN of natRec via Kripke.  Same shape as `natElim` plus the
+nested-app closure for the recursor contractum. -/
+theorem Term.natRec_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    {scrutinee : Term context Ty.nat scrutineeRaw}
+    {zeroBranch : Term context motiveType zeroRaw}
+    {succBranch :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
+    (succIsSN : Term.isStronglyNormalizing succBranch)
+    (contractumIsSN :
+      ∀ {predecessorRaw zeroTargetRaw succTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing predecessorRaw →
+        RawTerm.isStronglyNormalizing zeroTargetRaw →
+        RawTerm.isStronglyNormalizing succTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app (RawTerm.app succTargetRaw predecessorRaw)
+            (RawTerm.natRec
+              predecessorRaw zeroTargetRaw succTargetRaw))) :
+    Term.isStronglyNormalizing
+      (Term.natRec scrutinee zeroBranch succBranch) :=
+  ReducibleK.fundamental_natRec_sn scrutineeIsSN zeroIsSN succIsSN
+    contractumIsSN
+
 end LeanFX2

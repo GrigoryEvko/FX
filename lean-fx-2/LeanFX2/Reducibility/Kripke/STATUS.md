@@ -4,7 +4,7 @@ Now on master under `LeanFX2/Reducibility/Kripke/`.
 
 ## What ships today (zero-axiom verified)
 
-152 declarations under `LeanFX2.Reducibility.Kripke.*` + `LeanFX2.Term.X_strong_normalization_via_kripke` user-facing headlines, all pinned in `LeanFX2/Smoke/AuditKripke.lean`.
+156 declarations under `LeanFX2.Reducibility.Kripke.*` + `LeanFX2.Term.X_strong_normalization_via_kripke` user-facing headlines, all pinned in `LeanFX2/Smoke/AuditKripke.lean`.
 
 | File                | Decls | Description                                                            |
 | ------------------- | ----- | ---------------------------------------------------------------------- |
@@ -15,10 +15,10 @@ Now on master under `LeanFX2/Reducibility/Kripke/`.
 | `Monotone.lean`     | 5     | step-index monotonicity                                                |
 | `SNClosure.lean`    | 7     | CR2 forward closure + raw/typed `step_closure`                         |
 | `Arrow.lean`        | 2     | `arrow_sn` + `arrow_apply` (Kripke closure-application combinator)     |
-| `Fundamental.lean`  | 62    | per-ctor `fundamental_X` + `fundamental_X_sn` preservation wrappers    |
-| `Headline.lean`     | 58    | user-facing `Term.X_strong_normalization_via_kripke` per Term ctor     |
+| `Fundamental.lean`  | 64    | per-ctor `fundamental_X` + `fundamental_X_sn` preservation wrappers    |
+| `Headline.lean`     | 60    | user-facing `Term.X_strong_normalization_via_kripke` per Term ctor     |
 
-All 152 audit gates report `does not depend on any axioms`.
+All 156 audit gates report `does not depend on any axioms`.
 
 ## Coverage matrix (per Term ctor)
 
@@ -51,8 +51,8 @@ All 152 audit gates report `does not depend on any axioms`.
 | idJ / oeqJ / idStrictRec           | yes (SN-only)  | yes            |
 | equivApp / equivApply              | yes (SN-only)  | yes            |
 | modElim                            | yes (SN-only)  | yes            |
+| natElim / natRec                   | yes (SN+app)   | yes (SN+app)   |
 | **app / appPi (Π-elim)**           | NO             | NO             |
-| **natElim / natRec**               | NO             | NO             |
 | **listElim / optionMatch**         | NO             | NO             |
 | **eitherMatch**                    | NO             | NO             |
 | **pathApp**                        | NO             | NO             |

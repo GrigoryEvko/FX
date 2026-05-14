@@ -157,3 +157,5 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.equivApp_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.equivApply_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.modElim_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.natElim_strong_normalization_via_kripke
+#print axioms LeanFX2.Term.natRec_strong_normalization_via_kripke
