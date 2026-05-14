@@ -471,5 +471,142 @@ theorem Term.codataDest_isStronglyNormalizing
     Term.isStronglyNormalizing (Term.codataDest codataValue) :=
   RawTerm.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
 
+/-- **listElim generic-closure SN preservation**.  Cong arm steps all
+three children; nil-ι arm replaces the eliminator with `nilBranch`;
+cons-ι arm replaces it with `app (app consBranch head) tail` after the
+scrutinee reduces to `listCons head tail`.  The contractum closure
+hypothesis discharges the cons-ι arm by consuming the head/tail/cons
+SN witnesses extracted from the listCons-form scrutinee and the cons
+branch closure. -/
+theorem RawTerm.listElim_isStronglyNormalizing {scope : Nat}
+    {scrutinee : RawTerm scope}
+    (scrutineeIsSN : RawTerm.isStronglyNormalizing scrutinee) :
+    ∀ {nilBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing nilBranch →
+    ∀ {consBranch : RawTerm scope},
+      RawTerm.isStronglyNormalizing consBranch →
+      (∀ {headRaw tailRaw consTarget : RawTerm scope},
+        RawTerm.isStronglyNormalizing headRaw →
+        RawTerm.isStronglyNormalizing tailRaw →
+        RawTerm.isStronglyNormalizing consTarget →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app (RawTerm.app consTarget headRaw) tailRaw)) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.listElim scrutinee nilBranch consBranch) := by
+  induction scrutineeIsSN with
+  | intro currentScrutinee scrutineeClosure scrutineeIH =>
+    intro nilBranch nilIsSN
+    induction nilIsSN with
+    | intro currentNil nilClosure nilIH =>
+      intro consBranch consIsSN contractumClosure
+      induction consIsSN with
+      | intro currentCons consClosure consIH =>
+        refine RawTerm.isStronglyNormalizing.intro
+          (RawTerm.listElim currentScrutinee currentNil currentCons) ?_
+        intro target progressStep
+        rcases RawStep.par.listElim_inv progressStep.1 with
+          ⟨scrutineeTarget, nilTarget, consTarget, targetEq,
+            scrutineeStep, nilStep, consStep⟩
+          | ⟨nilTarget, targetEq, scrutineeStep, nilStep⟩
+          | ⟨headTarget, tailTarget, consTarget, targetEq,
+              scrutineeStep, consStep⟩
+        · subst targetEq
+          have scrutineeTargetIsSN :
+              RawTerm.isStronglyNormalizing scrutineeTarget := by
+            by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+            · subst scrutineeEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure scrutineeTarget
+                ⟨scrutineeStep, scrutineeEq⟩
+          have nilTargetIsSN :
+              RawTerm.isStronglyNormalizing nilTarget := by
+            by_cases nilEq : currentNil = nilTarget
+            · subst nilEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentNil nilClosure
+            · exact nilClosure nilTarget ⟨nilStep, nilEq⟩
+          have consTargetIsSN :
+              RawTerm.isStronglyNormalizing consTarget := by
+            by_cases consEq : currentCons = consTarget
+            · subst consEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentCons consClosure
+            · exact consClosure consTarget ⟨consStep, consEq⟩
+          by_cases scrutineeEq : currentScrutinee = scrutineeTarget
+          · subst scrutineeEq
+            by_cases nilEq : currentNil = nilTarget
+            · subst nilEq
+              by_cases consEq : currentCons = consTarget
+              · subst consEq
+                exact (progressStep.2 rfl).elim
+              · exact consIH consTarget ⟨consStep, consEq⟩
+            · exact nilIH nilTarget ⟨nilStep, nilEq⟩
+                consTargetIsSN contractumClosure
+          · exact scrutineeIH scrutineeTarget
+              ⟨scrutineeStep, scrutineeEq⟩
+              nilTargetIsSN consTargetIsSN contractumClosure
+        · rw [targetEq]
+          by_cases nilEq : currentNil = nilTarget
+          · subst nilEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentNil nilClosure
+          · exact nilClosure nilTarget ⟨nilStep, nilEq⟩
+        · subst targetEq
+          have listConsScrutineeIsSN :
+              RawTerm.isStronglyNormalizing
+                (RawTerm.listCons headTarget tailTarget) := by
+            by_cases scrutineeEq :
+                currentScrutinee = RawTerm.listCons headTarget tailTarget
+            · rw [← scrutineeEq]
+              exact RawTerm.isStronglyNormalizing.intro
+                currentScrutinee scrutineeClosure
+            · exact scrutineeClosure
+                (RawTerm.listCons headTarget tailTarget)
+                ⟨scrutineeStep, scrutineeEq⟩
+          have headTargetIsSN :
+              RawTerm.isStronglyNormalizing headTarget :=
+            RawTerm.listCons_head_isStronglyNormalizing
+              listConsScrutineeIsSN
+          have tailTargetIsSN :
+              RawTerm.isStronglyNormalizing tailTarget :=
+            RawTerm.listCons_tail_isStronglyNormalizing
+              listConsScrutineeIsSN
+          have consTargetIsSN :
+              RawTerm.isStronglyNormalizing consTarget := by
+            by_cases consEq : currentCons = consTarget
+            · subst consEq
+              exact RawTerm.isStronglyNormalizing.intro
+                currentCons consClosure
+            · exact consClosure consTarget ⟨consStep, consEq⟩
+          exact contractumClosure
+            headTargetIsSN tailTargetIsSN consTargetIsSN
+
+/-- Typed wrapper for listElim generic-closure SN preservation. -/
+theorem Term.listElim_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    {scrutinee : Term context (Ty.listType elementType) scrutineeRaw}
+    {nilBranch : Term context motiveType nilRaw}
+    {consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType)
+                                    motiveType)) consRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (nilIsSN : Term.isStronglyNormalizing nilBranch)
+    (consIsSN : Term.isStronglyNormalizing consBranch)
+    (contractumIsSN :
+      ∀ {headRaw tailRaw consTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing headRaw →
+        RawTerm.isStronglyNormalizing tailRaw →
+        RawTerm.isStronglyNormalizing consTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app (RawTerm.app consTargetRaw headRaw) tailRaw)) :
+    Term.isStronglyNormalizing
+      (Term.listElim scrutinee nilBranch consBranch) :=
+  RawTerm.listElim_isStronglyNormalizing
+    scrutineeIsSN nilIsSN consIsSN contractumIsSN
+
 
 end LeanFX2

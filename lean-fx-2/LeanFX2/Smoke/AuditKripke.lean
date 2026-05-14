@@ -192,3 +192,9 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.codataDest_isStronglyNormalizing
 #print axioms LeanFX2.Term.codataDest_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_codataDest_sn
+
+-- K12.22 listElim (generic ι recursor with nil-fire + cons-fire contractum closure)
+#print axioms LeanFX2.RawTerm.listElim_isStronglyNormalizing
+#print axioms LeanFX2.Term.listElim_isStronglyNormalizing
+#print axioms LeanFX2.Term.listElim_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_listElim_sn

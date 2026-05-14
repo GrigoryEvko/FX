@@ -1123,4 +1123,32 @@ theorem ReducibleK.fundamental_codataDest_sn
     Term.isStronglyNormalizing (Term.codataDest codataValue) :=
   Term.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
 
+/-- SN of listElim via Kripke.  Takes SN of scrutinee/nilBranch/
+consBranch plus the contractum closure for the cons-ι arm
+`listElim (listCons h t) n c → app (app c h) t`. -/
+theorem ReducibleK.fundamental_listElim_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    {scrutinee : Term context (Ty.listType elementType) scrutineeRaw}
+    {nilBranch : Term context motiveType nilRaw}
+    {consBranch : Term context (Ty.arrow elementType
+                                  (Ty.arrow (Ty.listType elementType)
+                                    motiveType)) consRaw}
+    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
+    (nilIsSN : Term.isStronglyNormalizing nilBranch)
+    (consIsSN : Term.isStronglyNormalizing consBranch)
+    (contractumIsSN :
+      ∀ {headRaw tailRaw consTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing headRaw →
+        RawTerm.isStronglyNormalizing tailRaw →
+        RawTerm.isStronglyNormalizing consTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.app (RawTerm.app consTargetRaw headRaw) tailRaw)) :
+    Term.isStronglyNormalizing
+      (Term.listElim scrutinee nilBranch consBranch) :=
+  Term.listElim_isStronglyNormalizing
+    scrutineeIsSN nilIsSN consIsSN contractumIsSN
+
 end LeanFX2
