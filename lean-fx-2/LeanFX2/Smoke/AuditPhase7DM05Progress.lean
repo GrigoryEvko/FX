@@ -88,3 +88,5 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 -- M05.D partial headline progress (#1645).
 #print axioms LeanFX2.Term.value_or_cong_only_progress
 #print axioms LeanFX2.Term.app_progress_or_step
+-- M05.D.2 conditional-eliminator headlines (#1737 partial).
+#print axioms LeanFX2.Term.fst_progress_or_step
