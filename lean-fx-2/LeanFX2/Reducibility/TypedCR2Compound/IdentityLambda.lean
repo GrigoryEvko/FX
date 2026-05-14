@@ -595,6 +595,43 @@ theorem Reducible.fundamental_lamPi_at_piTy_app_sn_of_body_contractum
     (Reducible.fundamental_lamPi_at_piTy_contractum_sn
       bodyContractumReducible)
 
+/-- Renaming-stable combined SN endpoint for `Term.lamPi` dependent
+application — chains the three stable companions for the dependent-Π
+head-β case. -/
+theorem Reducible.fundamental_lamPi_at_piTy_app_sn_of_body_contractum_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentIsStable :
+        IsRenamingStableReducible (domainType.subst sigma) argumentTerm)
+    (bodyContractumIsStable :
+      IsRenamingStableReducible
+        (codomainType.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    IsRenamingStableIsSN
+      (Term.appPi
+        (Term.subst termSubst (Term.lamPi bodyTerm))
+        argumentTerm) :=
+  Reducible.fundamental_lamPi_at_piTy_app_sn_stable bodyIsStable
+    argumentIsStable
+    (Reducible.fundamental_lamPi_at_piTy_contractum_sn_stable
+      bodyContractumIsStable)
+
 /-- Fundamental SN endpoint for `Term.pathLam` at cubical `Ty.path`.
 
 This is the cubical sibling of `fundamental_lam_at_arrow_sn`.  The body
@@ -942,6 +979,48 @@ theorem Reducible.fundamental_pathLam_at_path_app_sn_of_body_contractum
     bodyIsSN intervalIsSN
     (Reducible.fundamental_pathLam_at_path_contractum_sn
       bodyContractumReducible)
+
+/-- Renaming-stable combined SN endpoint for cubical `Term.pathLam`
+application — chains the three stable companions for the cubical
+head-β case. -/
+theorem Reducible.fundamental_pathLam_at_path_app_sn_of_body_contractum_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    {intervalRaw : RawTerm targetScope}
+    {intervalTerm : Term targetCtx Ty.interval intervalRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Ty.weaken_subst_commute sigma carrierType ▸
+            Term.subst (termSubst.lift Ty.interval) bodyTerm))
+    (intervalIsStable : IsRenamingStableIsSN intervalTerm)
+    (bodyContractumIsStable :
+      IsRenamingStableReducible
+        (carrierType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (Ty.interval.subst sigma) intervalRaw)))
+        (Term.subst
+          (TermSubst.consSingleton (domainType := Ty.interval)
+            termSubst intervalTerm)
+          bodyTerm)) :
+    IsRenamingStableIsSN
+      (Term.pathApp modeIsUnivalent
+        (Term.subst termSubst
+          (Term.pathLam modeIsUnivalent carrierType
+            leftEndpoint rightEndpoint bodyTerm))
+        intervalTerm) :=
+  Reducible.fundamental_pathLam_at_path_app_sn_stable modeIsUnivalent
+    bodyIsStable intervalIsStable
+    (Reducible.fundamental_pathLam_at_path_contractum_sn_stable
+      bodyContractumIsStable)
 
 
 end LeanFX2

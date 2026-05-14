@@ -433,6 +433,51 @@ theorem Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum
     (Reducible.fundamental_lam_at_arrow_contractum_sn
       bodyContractumReducible)
 
+/-- Renaming-stable combined SN endpoint for `Term.lam` arrow application
+— composes the three `_stable` companions (body / argument / contractum)
+into the renaming-stable head-β SN endpoint.
+
+This is the `IsRenamingStableIsSN` counterpart to
+`fundamental_lam_at_arrow_app_sn_of_body_contractum`; the proof is a
+direct corollary of `fundamental_lam_at_arrow_app_sn_stable` (which
+takes head-β SN as a stable contractum SN) composed with
+`fundamental_lam_at_arrow_contractum_sn_stable` (which produces that
+stable contractum SN from the consSingleton-form body IH). -/
+theorem Reducible.fundamental_lam_at_arrow_app_sn_of_body_contractum_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {domainType codomainType : Ty level scope}
+    {bodyRaw : RawTerm (scope + 1)}
+    {bodyTerm :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    {argumentRaw : RawTerm targetScope}
+    {argumentTerm : Term targetCtx (domainType.subst sigma) argumentRaw}
+    (bodyIsStable :
+        IsRenamingStableIsSN
+          (Ty.weaken_subst_commute sigma codomainType ▸
+            Term.subst (termSubst.lift domainType) bodyTerm))
+    (argumentIsStable :
+        IsRenamingStableReducible (domainType.subst sigma) argumentTerm)
+    (bodyContractumIsStable :
+      IsRenamingStableReducible
+        (codomainType.weaken.subst
+          (Subst.compose sigma.lift
+            (Subst.singleton (domainType.subst sigma) argumentRaw)))
+        (Term.subst (TermSubst.consSingleton termSubst argumentTerm)
+          bodyTerm)) :
+    IsRenamingStableIsSN
+      (Term.app
+        (Term.subst termSubst
+          (Term.lam (codomainType := codomainType) bodyTerm))
+        argumentTerm) :=
+  Reducible.fundamental_lam_at_arrow_app_sn_stable bodyIsStable
+    argumentIsStable
+    (Reducible.fundamental_lam_at_arrow_contractum_sn_stable
+      bodyContractumIsStable)
+
 /-- Lambda reducibility from the body IH for SN-recoverable codomains,
 without the typed β-contractum HEq.
 
