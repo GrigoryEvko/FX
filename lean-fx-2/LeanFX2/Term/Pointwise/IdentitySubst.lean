@@ -127,4 +127,27 @@ theorem TermSubst.identity_lift_position_HEq
         ⟨previousIndex,
           Nat.lt_of_succ_lt_succ positionIsWithinScope⟩
 
+/-! ## Lifted identity at the term surface -/
+
+/-- Variable surface case for lifted identity substitution. -/
+theorem Term.subst_identity_lift_var_HEq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (newType : Ty level scope)
+    (position : Fin (scope + 1)) :
+    HEq
+      (Term.subst ((TermSubst.identity context).lift newType)
+        (Term.var (context := context.cons newType) position))
+      (Term.var (context := context.cons newType) position) := by
+  simp only [Term.subst]
+  exact HEq.trans
+    (TermSubst.identity_lift_position_HEq
+      (context := context) newType position)
+    (Term.type_eq_symm_cast_heq
+      (context := context.cons newType)
+      (typeEq := Ty.subst_identity
+        (varType (context.cons newType) position))
+      (targetTerm := Term.var
+        (context := context.cons newType) position))
+
 end LeanFX2
