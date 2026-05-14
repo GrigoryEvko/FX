@@ -971,6 +971,30 @@ theorem Term.subst_heq_of_eq
   subst termsEq
   rfl
 
+/-- Single-variable substitution preserves heterogeneous equality of
+the body once body indices are aligned by explicit type/raw equalities. -/
+theorem Term.subst0_body_heq_of_eq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {substituent : Ty level scope}
+    {argumentRaw : RawTerm scope}
+    {argumentTerm : Term context substituent argumentRaw}
+    {firstCodomain secondCodomain : Ty level (scope + 1)}
+    {firstBodyRaw secondBodyRaw : RawTerm (scope + 1)}
+    (codomainEq : firstCodomain = secondCodomain)
+    (bodyRawEq : firstBodyRaw = secondBodyRaw)
+    {firstBody :
+      Term (context.cons substituent) firstCodomain firstBodyRaw}
+    {secondBody :
+      Term (context.cons substituent) secondCodomain secondBodyRaw}
+    (bodyHEq : HEq firstBody secondBody) :
+    HEq (Term.subst0 firstBody argumentTerm)
+      (Term.subst0 secondBody argumentTerm) := by
+  unfold Term.subst0
+  exact Term.subst_heq_of_eq
+    (TermSubst.singleton argumentTerm)
+    codomainEq bodyRawEq bodyHEq
+
 /-- Variable base case for heterogeneous rename/substitution
 cancellation.
 
