@@ -91,3 +91,4 @@ shipping under the strict-zero-axiom policy of `lean-fx-2/CLAUDE.md`. -/
 -- M05.D.2 conditional-eliminator headlines (#1737 partial).
 #print axioms LeanFX2.Term.fst_progress_or_step
 #print axioms LeanFX2.Term.snd_progress_or_step
+#print axioms LeanFX2.Term.appPi_progress_or_step
