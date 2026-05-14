@@ -448,4 +448,69 @@ theorem RawStep.parStar.universeCode_inv {innerLevel : Nat}
   RawStep.parStar.canonical_inv_helper
     RawStep.par.universeCode_inv chain
 
+/-! ### Cong-family parStar inversions
+
+The canonical-head family above covers vacuous-source ctors with
+no β/ι reduction — every step from source is `refl`, so target =
+source.  The cong family (`natSucc`, `listCons`, `optionSome`,
+`eitherInl`, `eitherInr`, `pair`, `refl`, `lam`) has the
+`Wrap subterm` shape and admits one-step cong rules — so a chain
+moves through `Wrap subterm₀ → Wrap subterm₁ → ... → Wrap
+subterm_n` while the subterm itself undergoes a `parStar` chain.
+
+The cong-family lift returns existential structure
+`(∃ subtermTarget, target = Wrap subtermTarget ∧ parStar subterm
+subtermTarget)` rather than a flat equality.  This requires an
+auxiliary "fully-generalized" theorem on arbitrary `source` with
+the natSucc-shape hypothesis, since the standard `induction
+chain` motive cannot specialize the implicit `predecessor`
+inside the recursive call.
+
+Pattern documented here for future extension to the remaining
+cong-family heads. -/
+
+/-- Auxiliary fully-generalized version of `parStar.natSucc_inv`.
+Inducts on a chain with arbitrary `source`, threading the
+natSucc-shape constraint as an explicit hypothesis so the IH can
+specialize at the natSucc-shape midpoint produced by inverting
+the first step. -/
+private theorem RawStep.parStar.natSucc_inv_aux {scope : Nat}
+    {source target : RawTerm scope}
+    (chain : RawStep.parStar source target) :
+    ∀ {predecessor : RawTerm scope},
+      source = RawTerm.natSucc predecessor →
+      ∃ predecessorTarget,
+        target = RawTerm.natSucc predecessorTarget ∧
+        RawStep.parStar predecessor predecessorTarget := by
+  induction chain with
+  | refl _ =>
+      intro predecessor sourceEq
+      exact ⟨predecessor, sourceEq, RawStep.parStar.refl _⟩
+  | trans firstStep _ restIH =>
+      intro predecessor sourceEq
+      subst sourceEq
+      obtain ⟨midPredecessor, midEq, predecessorStep⟩ :=
+        RawStep.par.natSucc_inv firstStep
+      obtain ⟨finalPredecessor, finalEq, predecessorStarRest⟩ :=
+        restIH midEq
+      exact ⟨finalPredecessor, finalEq,
+             RawStep.parStar.trans predecessorStep
+               predecessorStarRest⟩
+
+/-- `RawStep.parStar (natSucc predecessor) target → ∃ target's
+predecessor with target = natSucc that predecessor and a parStar
+chain from the source predecessor to it`.
+
+Cong-family parStar lift — first entry, demonstrating the
+existential-output pattern for ctors with cong rules.  Uses the
+`natSucc_inv_aux` auxiliary above via a trivial `rfl` source
+witness. -/
+theorem RawStep.parStar.natSucc_inv {scope : Nat}
+    {predecessor target : RawTerm scope}
+    (chain : RawStep.parStar (RawTerm.natSucc predecessor) target) :
+    ∃ predecessorTarget,
+      target = RawTerm.natSucc predecessorTarget ∧
+      RawStep.parStar predecessor predecessorTarget :=
+  RawStep.parStar.natSucc_inv_aux chain rfl
+
 end LeanFX2
