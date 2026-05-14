@@ -371,4 +371,100 @@ theorem ReducibleK.fundamental_refl_sn
       (Term.refl (context := sourceCtx) carrier rawWitness) :=
   Term.refl_isStronglyNormalizing endpointIsSN
 
+/-- oeqRefl preserves SN: raw endpoint SN → oeqRefl SN. -/
+theorem ReducibleK.fundamental_oeqRefl_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (carrier : Ty level scope)
+    (rawWitness : RawTerm scope)
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.oeqRefl (context := sourceCtx) carrier rawWitness) :=
+  Term.oeqRefl_isStronglyNormalizing endpointIsSN
+
+/-- idStrictRefl preserves SN at strict mode: raw endpoint SN → SN. -/
+theorem ReducibleK.fundamental_idStrictRefl_sn
+    {level scope : Nat}
+    {sourceCtx : Ctx Mode.strict level scope}
+    (carrier : Ty level scope)
+    (rawWitness : RawTerm scope)
+    (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
+    Term.isStronglyNormalizing
+      (Term.idStrictRefl (context := sourceCtx) rfl carrier rawWitness) :=
+  Term.idStrictRefl_isStronglyNormalizing rfl endpointIsSN
+
+/-- sessionRecv preserves SN: channel SN → sessionRecv SN. -/
+theorem ReducibleK.fundamental_sessionRecv_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {protocolStep : RawTerm scope}
+    {channelRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (channelIsSN : Term.isStronglyNormalizing channel) :
+    Term.isStronglyNormalizing (Term.sessionRecv channel) :=
+  Term.sessionRecv_isStronglyNormalizing channelIsSN
+
+/-- sessionSend preserves SN: channel + payload SN → sessionSend SN. -/
+theorem ReducibleK.fundamental_sessionSend_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (channelIsSN : Term.isStronglyNormalizing channel)
+    (payloadIsSN : Term.isStronglyNormalizing payload) :
+    Term.isStronglyNormalizing
+      (Term.sessionSend protocolStep channel payload) :=
+  Term.sessionSend_isStronglyNormalizing protocolStep channelIsSN payloadIsSN
+
+/-- cumulUp preserves SN: typeCode SN → cumulUp SN. -/
+theorem ReducibleK.fundamental_cumulUp_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm scope}
+    {typeCode :
+        Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw}
+    (typeCodeIsSN : Term.isStronglyNormalizing typeCode) :
+    Term.isStronglyNormalizing
+      (Term.cumulUp lowerLevel higherLevel cumulMonotone
+        levelLeLow levelLeHigh typeCode) :=
+  Term.cumulUp_isStronglyNormalizing lowerLevel higherLevel
+    cumulMonotone levelLeLow levelLeHigh typeCodeIsSN
+
+/-- equivReflId always SN (closed term). -/
+theorem ReducibleK.fundamental_equivReflId_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (carrier : Ty level scope) :
+    Term.isStronglyNormalizing
+      (Term.equivReflId (context := sourceCtx) carrier) :=
+  Term.equivReflId_isStronglyNormalizing carrier
+
+/-- uaToEquiv preserves SN: proof SN → uaToEquiv SN. -/
+theorem ReducibleK.fundamental_uaToEquiv_sn
+    {mode : Mode} {level scope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level scope)
+    (leftTyRaw rightTyRaw : RawTerm scope)
+    {proofRaw : RawTerm scope}
+    {proof :
+        Term sourceCtx
+          (Ty.id (Ty.universe innerLevel innerLevelLt)
+            leftTyRaw rightTyRaw)
+          proofRaw}
+    (proofIsSN : Term.isStronglyNormalizing proof) :
+    Term.isStronglyNormalizing
+      (Term.uaToEquiv innerLevel innerLevelLt
+        leftTy rightTy leftTyRaw rightTyRaw proof) :=
+  Term.uaToEquiv_isStronglyNormalizing innerLevel innerLevelLt
+    leftTy rightTy leftTyRaw rightTyRaw proofIsSN
+
 end LeanFX2

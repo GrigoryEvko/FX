@@ -72,3 +72,10 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.fundamental_fst_sn
 #print axioms LeanFX2.ReducibleK.fundamental_snd_sn
 #print axioms LeanFX2.ReducibleK.fundamental_refl_sn
+#print axioms LeanFX2.ReducibleK.fundamental_oeqRefl_sn
+#print axioms LeanFX2.ReducibleK.fundamental_idStrictRefl_sn
+#print axioms LeanFX2.ReducibleK.fundamental_sessionRecv_sn
+#print axioms LeanFX2.ReducibleK.fundamental_sessionSend_sn
+#print axioms LeanFX2.ReducibleK.fundamental_cumulUp_sn
+#print axioms LeanFX2.ReducibleK.fundamental_equivReflId_sn
+#print axioms LeanFX2.ReducibleK.fundamental_uaToEquiv_sn
