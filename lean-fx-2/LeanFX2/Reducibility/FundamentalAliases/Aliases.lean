@@ -150,6 +150,33 @@ theorem Reducible.fundamental_idJ_at_id
       (Term.subst termSubst (Term.idJ baseCase witness)) :=
   Reducible.fundamental_idJ_at_id_sn baseIH witnessIH
 
+/-- Renaming-stable alias of `fundamental_idJ_at_id`.  The plain form
+above is a one-line wrapper of `_sn`; the renaming-stable mirror is the
+matching one-line wrapper of `_sn_stable`. -/
+theorem Reducible.fundamental_idJ_at_id_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIsStable :
+        IsRenamingStableReducible
+          ((Ty.id carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.idJ baseCase witness)) :=
+  Reducible.fundamental_idJ_at_id_sn_stable baseIsStable witnessIsStable
+
 /-- Fundamental case: `Term.oeqJ` at `Ty.oeq`
 (SN-output endpoint). -/
 theorem Reducible.fundamental_oeqJ_at_oeq
@@ -174,6 +201,32 @@ theorem Reducible.fundamental_oeqJ_at_oeq
     Term.isStronglyNormalizing
       (Term.subst termSubst (Term.oeqJ baseCase witness)) :=
   Reducible.fundamental_oeqJ_at_oeq_sn baseIH witnessIH
+
+/-- Renaming-stable alias of `fundamental_oeqJ_at_oeq`.  Same shape as
+the `_idJ` alias above. -/
+theorem Reducible.fundamental_oeqJ_at_oeq_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIsStable :
+        IsRenamingStableReducible
+          ((Ty.oeq carrier leftEndpoint rightEndpoint).subst sigma)
+                  (Term.subst termSubst witness)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst (Term.oeqJ baseCase witness)) :=
+  Reducible.fundamental_oeqJ_at_oeq_sn_stable baseIsStable witnessIsStable
 
 /-- Fundamental case: `Term.idStrictRec` at `Ty.idStrict`
 (SN-output endpoint). -/
@@ -204,6 +257,37 @@ theorem Reducible.fundamental_idStrictRec_at_idStrict
         (Term.idStrictRec modeIsStrict baseCase witness)) :=
   Reducible.fundamental_idStrictRec_at_idStrict_sn
     modeIsStrict baseIH witnessIH
+
+/-- Renaming-stable alias of `fundamental_idStrictRec_at_idStrict`.
+Mode equality is world-invariant, so the stable mirror propagates it
+unchanged into the underlying `_sn_stable` companion. -/
+theorem Reducible.fundamental_idStrictRec_at_idStrict_stable
+    {mode : Mode} {level scope targetScope : Nat}
+    {sourceCtx : Ctx mode level scope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level scope targetScope}
+    {termSubst : TermSubst sourceCtx targetCtx sigma}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {motiveType : Ty level scope}
+    {baseRaw witnessRaw : RawTerm scope}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+        Term sourceCtx
+          (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseIsStable :
+        IsRenamingStableReducible (motiveType.subst sigma)
+                  (Term.subst termSubst baseCase))
+    (witnessIsStable :
+        IsRenamingStableReducible
+          ((Ty.idStrict carrier leftEndpoint rightEndpoint).subst sigma)
+          (Term.subst termSubst witness)) :
+    IsRenamingStableIsSN
+      (Term.subst termSubst
+        (Term.idStrictRec modeIsStrict baseCase witness)) :=
+  Reducible.fundamental_idStrictRec_at_idStrict_sn_stable
+    modeIsStrict baseIsStable witnessIsStable
 
 /-- Fundamental case: `Term.refl` at `Ty.id` with an explicit
 endpoint SN premise. -/
