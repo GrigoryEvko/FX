@@ -1,5 +1,5 @@
 import LeanFX2.Reducibility.Kripke.Basic
-import LeanFX2.Reducibility.Foundation
+import LeanFX2.Reducibility.SNHelpers
 
 /-! # LeanFX2.Reducibility.Kripke.Weaken — world weakening for Kripke ReducibleK
 

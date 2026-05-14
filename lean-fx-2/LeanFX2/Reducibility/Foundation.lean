@@ -1,4 +1,5 @@
 import LeanFX2.Reducibility.Classifier
+import LeanFX2.Reducibility.SNHelpers
 
 /-! # LeanFX2.Reducibility.Foundation — Reducible substitution + raw foundations
 
@@ -134,36 +135,6 @@ make this trivial: any step is reflexive, and `parProgress`'s
 source-≠-target requirement contradicts the inversion.
 -/
 
-/-- `RawTerm.unit` is strongly normalizing.  No β/ι rule has unit
-as a source, so any parallel step is `refl`; `parProgress` rules
-that out. -/
-theorem RawTerm.unit_isStronglyNormalizing {scope : Nat} :
-    RawTerm.isStronglyNormalizing (RawTerm.unit : RawTerm scope) :=
-  RawTerm.isStronglyNormalizing.intro RawTerm.unit
-    (fun _ parStep =>
-      (parStep.2 (RawStep.par.unit_inv parStep.1).symm).elim)
-
-/-- `RawTerm.boolTrue` is strongly normalizing. -/
-theorem RawTerm.boolTrue_isStronglyNormalizing {scope : Nat} :
-    RawTerm.isStronglyNormalizing (RawTerm.boolTrue : RawTerm scope) :=
-  RawTerm.isStronglyNormalizing.intro RawTerm.boolTrue
-    (fun _ parStep =>
-      (parStep.2 (RawStep.par.boolTrue_inv parStep.1).symm).elim)
-
-/-- `RawTerm.boolFalse` is strongly normalizing. -/
-theorem RawTerm.boolFalse_isStronglyNormalizing {scope : Nat} :
-    RawTerm.isStronglyNormalizing (RawTerm.boolFalse : RawTerm scope) :=
-  RawTerm.isStronglyNormalizing.intro RawTerm.boolFalse
-    (fun _ parStep =>
-      (parStep.2 (RawStep.par.boolFalse_inv parStep.1).symm).elim)
-
-/-- `RawTerm.natZero` is strongly normalizing. -/
-theorem RawTerm.natZero_isStronglyNormalizing {scope : Nat} :
-    RawTerm.isStronglyNormalizing (RawTerm.natZero : RawTerm scope) :=
-  RawTerm.isStronglyNormalizing.intro RawTerm.natZero
-    (fun _ parStep =>
-      (parStep.2 (RawStep.par.natZero_inv parStep.1).symm).elim)
-
 /-- **K12.19.B unit case**: substituting through `Term.unit` yields
 a reducible term at `Ty.unit`.  `Term.subst termSubst Term.unit =
 Term.unit` (by Term.subst's unit equation); `Reducible Ty.unit
@@ -236,61 +207,6 @@ neutral-reducibility chain is set up.  The full Term.lam case
 follows by combining all three.
 -/
 
-/-- `RawTerm.lam body` is strongly normalizing whenever `body` is.
-Proof: every `RawStep.par` from `lam body` lands at `lam bodyTarget`
-with `par body bodyTarget` (`RawStep.par.lam_inv`); the `parProgress`
-disequality `lam body ≠ lam bodyTarget` forces `body ≠ bodyTarget`
-(by `RawTerm.lam` injectivity), so the recursive IH on `body`'s SN
-witness handles the bodyTarget case. -/
-theorem RawTerm.lam_isStronglyNormalizing {scope : Nat}
-    {body : RawTerm (scope + 1)}
-    (bodyIsSN : RawTerm.isStronglyNormalizing body) :
-    RawTerm.isStronglyNormalizing (RawTerm.lam body) := by
-  induction bodyIsSN with
-  | intro currentBody _ inductiveHypothesis =>
-    refine RawTerm.isStronglyNormalizing.intro (RawTerm.lam currentBody) ?_
-    intro target progressStep
-    obtain ⟨bodyTarget, targetEq, bodyStep⟩ :=
-      RawStep.par.lam_inv progressStep.1
-    subst targetEq
-    have bodyDistinct : currentBody ≠ bodyTarget := fun bodyEq =>
-      progressStep.2 (congrArg RawTerm.lam bodyEq)
-    exact inductiveHypothesis bodyTarget ⟨bodyStep, bodyDistinct⟩
-
-/-- Typed wrapper for non-dependent lambda SN preservation.
-
-This is the SN half of the `Term.lam` fundamental case.  The full
-arrow reducibility endpoint still needs the body under a lifted
-substitution; that remains the `ReducibleSubst.lift` / world-weakening
-blocker tracked by K12.20.U3.monotone. -/
-theorem Term.lam_isStronglyNormalizing
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {domainType codomainType : Ty level scope}
-    {bodyRaw : RawTerm (scope + 1)}
-    {bodyTerm :
-      Term (context.cons domainType) codomainType.weaken bodyRaw}
-    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
-    Term.isStronglyNormalizing
-      (Term.lam (codomainType := codomainType) bodyTerm) :=
-  RawTerm.lam_isStronglyNormalizing bodyIsSN
-
-/-- Typed wrapper for dependent lambda SN preservation.
-
-`Term.lamPi` projects to the same raw lambda constructor as
-`Term.lam`, so the direct M04 value-SN endpoint is the same raw
-closure over the body. -/
-theorem Term.lamPi_isStronglyNormalizing
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {domainType : Ty level scope}
-    {codomainType : Ty level (scope + 1)}
-    {bodyRaw : RawTerm (scope + 1)}
-    {bodyTerm : Term (context.cons domainType) codomainType bodyRaw}
-    (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
-    Term.isStronglyNormalizing (Term.lamPi bodyTerm) :=
-  RawTerm.lam_isStronglyNormalizing bodyIsSN
-
 /-! ## K12.20.B raw-level CR2 (closure under reduction)
 
 CR2 of Tait's three reducibility-candidate conditions: Reducible
@@ -309,18 +225,6 @@ case analysis on the closure structure — those land in K12.20.B
 follow-ups.
 -/
 
-/-- **K12.20.B raw CR2**: SN is preserved under parallel-progress
-reduction.  Direct destructuring of the SN constructor's closure —
-the closure says exactly "every progress step lands at SN target",
-so we apply it to the given step. -/
-theorem RawTerm.isStronglyNormalizing.step_preserves {scope : Nat}
-    {source target : RawTerm scope}
-    (sourceIsSN : RawTerm.isStronglyNormalizing source)
-    (progressStep : RawStep.parProgress source target) :
-    RawTerm.isStronglyNormalizing target := by
-  cases sourceIsSN with
-  | intro _ closure => exact closure target progressStep
-
 /-! ## K12.20.U3.monotone raw weakening evidence
 
 Raw strong normalization is stable under one-binder weakening.  This is
@@ -329,61 +233,6 @@ also needs world-monotone closure fields.  The lemma records the raw
 half of that route and is used to keep the `ReducibleSubst.lift`
 blocker precise rather than speculative.
 -/
-
-/-- **K12.20.U3.monotone raw lemma**: weakening preserves raw SN.
-
-Any progress step out of `source.weaken` lands in a weakened target by
-`RawStep.par.weaken_inv`.  Substituting a dummy singleton back through
-that weakened step reflects it to a progress step from `source`, so the
-source SN induction supplies SN of the inner target and hence of its
-weakened image. -/
-theorem RawTerm.isStronglyNormalizing_weaken {scope : Nat}
-    {source : RawTerm scope}
-    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
-    RawTerm.isStronglyNormalizing source.weaken := by
-  induction sourceIsSN with
-  | intro currentSource _ sourceIH =>
-      refine RawTerm.isStronglyNormalizing.intro
-        currentSource.weaken ?_
-      intro targetAfter progressStep
-      obtain ⟨targetInner, targetEq⟩ :=
-        RawStep.par.weaken_inv progressStep.1
-      have singletonStep :
-          RawStep.par
-            (currentSource.weaken.subst
-              (RawTermSubst.singleton RawTerm.unit))
-            (targetAfter.subst
-              (RawTermSubst.singleton RawTerm.unit)) :=
-        RawStep.par.subst_par
-          (fun _position => RawStep.par.refl _) progressStep.1
-      have innerStep : RawStep.par currentSource targetInner := by
-        rw [RawTerm.weaken_subst_singleton currentSource RawTerm.unit,
-            targetEq,
-            RawTerm.weaken_subst_singleton targetInner RawTerm.unit]
-          at singletonStep
-        exact singletonStep
-      have innerDistinct : currentSource ≠ targetInner := by
-        intro sourceEq
-        apply progressStep.2
-        rw [targetEq, sourceEq]
-      rw [targetEq]
-      exact sourceIH targetInner ⟨innerStep, innerDistinct⟩
-
-/-- **K12.20.U3.monotone typed wrapper**: typed SN is stable under
-one-binder weakening.
-
-`Term.isStronglyNormalizing` is raw SN of the term index, and
-`Term.weaken` shifts that raw index with `RawTerm.weaken`, so this is
-the typed face of `RawTerm.isStronglyNormalizing_weaken`. -/
-theorem Term.isStronglyNormalizing_weaken
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {newType sourceType : Ty level scope}
-    {sourceRaw : RawTerm scope}
-    {sourceTerm : Term context sourceType sourceRaw}
-    (sourceIsSN : Term.isStronglyNormalizing sourceTerm) :
-    Term.isStronglyNormalizing (Term.weaken newType sourceTerm) :=
-  RawTerm.isStronglyNormalizing_weaken sourceIsSN
 
 /-- **K12.20.U3.monotone Reducible SN projection**: every reducible
 term remains strongly normalizing after one-binder weakening.
