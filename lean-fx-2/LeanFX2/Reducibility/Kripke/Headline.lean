@@ -1050,4 +1050,27 @@ theorem Term.eitherMatch_strong_normalization_via_kripke
   ReducibleK.fundamental_eitherMatch_sn
     scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
 
+/-- SN of `Term.app` via Kripke.  Requires the contractum-SN closure
+for the β arm `app (lam body) arg → body[arg/0]`. -/
+theorem Term.app_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+      Term context (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (functionIsSN : Term.isStronglyNormalizing functionTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {argumentTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing argumentTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 argumentTargetRaw)) :
+    Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) :=
+  ReducibleK.fundamental_app_sn
+    functionIsSN argumentIsSN contractumIsSN
+
 end LeanFX2

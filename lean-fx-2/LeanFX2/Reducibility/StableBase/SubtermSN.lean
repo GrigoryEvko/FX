@@ -613,4 +613,35 @@ theorem RawTerm.codataUnfold_transition_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing transitionRaw :=
   RawTerm.codataUnfold_transition_isStronglyNormalizing_aux unfoldIsSN rfl
 
+/-- Shape-specialized inversion for lambda body SN. -/
+theorem RawTerm.lam_body_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {bodyRaw : RawTerm (scope + 1)},
+      source = RawTerm.lam bodyRaw →
+      RawTerm.isStronglyNormalizing bodyRaw := by
+  induction sourceIsSN with
+  | intro currentSource _ inductiveHypothesis =>
+    intro bodyRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro bodyRaw ?_
+    intro bodyTarget bodyProgress
+    have lamProgress :
+        RawStep.parProgress
+          (RawTerm.lam bodyRaw) (RawTerm.lam bodyTarget) := by
+      refine ⟨RawStep.par.lam bodyProgress.1, ?_⟩
+      intro lamEq
+      apply bodyProgress.2
+      injection lamEq
+    exact inductiveHypothesis (RawTerm.lam bodyTarget) lamProgress rfl
+
+/-- If `lam body` is strongly normalizing, then `body` is strongly
+normalizing. -/
+theorem RawTerm.lam_body_isStronglyNormalizing {scope : Nat}
+    {bodyRaw : RawTerm (scope + 1)}
+    (lamIsSN :
+      RawTerm.isStronglyNormalizing (RawTerm.lam bodyRaw)) :
+    RawTerm.isStronglyNormalizing bodyRaw :=
+  RawTerm.lam_body_isStronglyNormalizing_aux lamIsSN rfl
+
 end LeanFX2

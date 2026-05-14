@@ -210,3 +210,10 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.eitherMatch_isStronglyNormalizing
 #print axioms LeanFX2.Term.eitherMatch_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_eitherMatch_sn
+
+-- K12.21 app (β-redex; contractum closure consumes body+argument SN)
+#print axioms LeanFX2.RawTerm.lam_body_isStronglyNormalizing
+#print axioms LeanFX2.RawTerm.app_isStronglyNormalizing
+#print axioms LeanFX2.Term.app_isStronglyNormalizing
+#print axioms LeanFX2.Term.app_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_app_sn

@@ -885,5 +885,111 @@ theorem Term.eitherMatch_isStronglyNormalizing
   RawTerm.eitherMatch_isStronglyNormalizing
     scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
 
+/-- **app generic-closure SN preservation**.  Cong arm steps both
+function and argument; β arm fires when function reduces to a lambda:
+`app (lam body) arg → body.subst0 arg`.  The contractum closure
+consumes the body SN (extracted via `lam_body_isStronglyNormalizing`
+from the function-reduct lam-form) and the argument SN, returning SN
+of the substituted body.  Mirrors codataDest's
+contractum-closure pattern. -/
+theorem RawTerm.app_isStronglyNormalizing {scope : Nat}
+    {functionTerm : RawTerm scope}
+    (functionIsSN : RawTerm.isStronglyNormalizing functionTerm) :
+    ∀ {argumentTerm : RawTerm scope},
+      RawTerm.isStronglyNormalizing argumentTerm →
+      (∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {argumentTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing argumentTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 argumentTargetRaw)) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.app functionTerm argumentTerm) := by
+  induction functionIsSN with
+  | intro currentFunction functionClosure functionIH =>
+    intro argumentTerm argumentIsSN
+    induction argumentIsSN with
+    | intro currentArgument argumentClosure argumentIH =>
+      intro contractumClosure
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.app currentFunction currentArgument) ?_
+      intro target progressStep
+      rcases RawStep.par.app_inv progressStep.1 with
+        ⟨functionTarget, argumentTarget, targetEq,
+          functionStep, argumentStep⟩
+        | ⟨bodyTarget, argumentTarget, targetEq,
+            functionStep, argumentStep⟩
+      · subst targetEq
+        have functionTargetIsSN :
+            RawTerm.isStronglyNormalizing functionTarget := by
+          by_cases functionEq : currentFunction = functionTarget
+          · subst functionEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentFunction functionClosure
+          · exact functionClosure functionTarget
+              ⟨functionStep, functionEq⟩
+        have argumentTargetIsSN :
+            RawTerm.isStronglyNormalizing argumentTarget := by
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentArgument argumentClosure
+          · exact argumentClosure argumentTarget
+              ⟨argumentStep, argumentEq⟩
+        by_cases functionEq : currentFunction = functionTarget
+        · subst functionEq
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact (progressStep.2 rfl).elim
+          · exact argumentIH argumentTarget
+              ⟨argumentStep, argumentEq⟩ contractumClosure
+        · exact functionIH functionTarget
+            ⟨functionStep, functionEq⟩
+            argumentTargetIsSN contractumClosure
+      · subst targetEq
+        have lamFunctionIsSN :
+            RawTerm.isStronglyNormalizing
+              (RawTerm.lam bodyTarget) := by
+          by_cases functionEq :
+              currentFunction = RawTerm.lam bodyTarget
+          · rw [← functionEq]
+            exact RawTerm.isStronglyNormalizing.intro
+              currentFunction functionClosure
+          · exact functionClosure (RawTerm.lam bodyTarget)
+              ⟨functionStep, functionEq⟩
+        have bodyTargetIsSN :
+            RawTerm.isStronglyNormalizing bodyTarget :=
+          RawTerm.lam_body_isStronglyNormalizing lamFunctionIsSN
+        have argumentTargetIsSN :
+            RawTerm.isStronglyNormalizing argumentTarget := by
+          by_cases argumentEq : currentArgument = argumentTarget
+          · subst argumentEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentArgument argumentClosure
+          · exact argumentClosure argumentTarget
+              ⟨argumentStep, argumentEq⟩
+        exact contractumClosure bodyTargetIsSN argumentTargetIsSN
+
+/-- Typed wrapper for app generic-closure SN preservation. -/
+theorem Term.app_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm : Term context (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (functionIsSN : Term.isStronglyNormalizing functionTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {argumentTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing argumentTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 argumentTargetRaw)) :
+    Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) :=
+  RawTerm.app_isStronglyNormalizing
+    functionIsSN argumentIsSN contractumIsSN
+
 
 end LeanFX2
