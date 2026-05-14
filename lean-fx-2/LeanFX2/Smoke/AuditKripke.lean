@@ -55,3 +55,7 @@ import LeanFX2.Reducibility.Kripke.Headline
 #print axioms LeanFX2.ReducibleK.fundamental_natSucc
 #print axioms LeanFX2.ReducibleK.fundamental_listNil
 #print axioms LeanFX2.ReducibleK.fundamental_optionNone
+#print axioms LeanFX2.ReducibleK.fundamental_listCons_sn
+#print axioms LeanFX2.ReducibleK.fundamental_optionSome_sn
+#print axioms LeanFX2.ReducibleK.fundamental_eitherInl_sn
+#print axioms LeanFX2.ReducibleK.fundamental_eitherInr_sn
