@@ -4,7 +4,8 @@ import LeanFX2.Reducibility.FundamentalWrappers.ModalDestructorBase
 
 Fundamental cases for `Term.modIntro` at the rich-former closed
 types: `Ty.unit`, `Ty.universe`, `Ty.session`, and `Ty.modal`.
-Each ships an SN-direct case plus a renaming-stable companion.
+Each ships the SN-direct case; renaming-stable transport is handled
+once by `Reducible.fundamental_modIntro_stable`.
 
 ## Root status
 
@@ -59,23 +60,6 @@ theorem Reducible.fundamental_modIntro_at_unit
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
 
-/-- Unit modal introduction preserves fundamental stability. -/
-theorem Reducible.fundamental_modIntro_at_unit_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    {innerRaw : RawTerm scope}
-    {innerTerm : Term sourceCtx Ty.unit innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
-      (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  exact Reducible.fundamental_modIntro_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
-
 /-- **K12.20.BD.2 modIntro fundamental case at `Ty.universe`** —
 SN-direct level-parameterized.  `(Ty.universe outerLevel
 levelLe).subst sigma = Ty.universe outerLevel levelLe`
@@ -99,26 +83,6 @@ theorem Reducible.fundamental_modIntro_at_universe
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
 
-/-- Universe modal introduction preserves fundamental stability. -/
-theorem Reducible.fundamental_modIntro_at_universe_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    (outerLevel : UniverseLevel)
-    (levelLe : outerLevel.toNat + 1 ≤ level)
-    {innerRaw : RawTerm scope}
-    {innerTerm :
-        Term sourceCtx (Ty.universe outerLevel levelLe) innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
-      (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  exact Reducible.fundamental_modIntro_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
-
 /-- **K12.20.BD.3 modIntro fundamental case at `Ty.session`** —
 SN-direct raw-payload-carrying.  `(Ty.session protocolStep).subst
 sigma = Ty.session (protocolStep.subst sigma.forRaw)`
@@ -141,24 +105,6 @@ theorem Reducible.fundamental_modIntro_at_session
     Reducible ((Ty.session protocolStep).subst sigma)
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
-
-/-- Session modal introduction preserves fundamental stability. -/
-theorem Reducible.fundamental_modIntro_at_session_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    {protocolStep : RawTerm scope}
-    {innerRaw : RawTerm scope}
-    {innerTerm : Term sourceCtx (Ty.session protocolStep) innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
-      (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  exact Reducible.fundamental_modIntro_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BD.4 modIntro fundamental case at `Ty.modal`** —
 SN-direct modal (K12.25 milestone target).  `(Ty.modal
@@ -186,26 +132,5 @@ theorem Reducible.fundamental_modIntro_at_modal
     Reducible ((Ty.modal modalityTag carrierType).subst sigma)
               (Term.subst termSubst (Term.modIntro innerTerm)) :=
   RawTerm.modIntro_isStronglyNormalizing innerIH
-
-/-- Modal introduction preserves fundamental stability. -/
-theorem Reducible.fundamental_modIntro_at_modal_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    (modalityTag : Nat) {carrierType : Ty level scope}
-    {innerRaw : RawTerm scope}
-    {innerTerm :
-        Term sourceCtx (Ty.modal modalityTag carrierType) innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible
-        ((Ty.modal modalityTag carrierType).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible
-      ((Ty.modal modalityTag carrierType).subst sigma)
-      (Term.subst termSubst (Term.modIntro innerTerm)) := by
-  exact Reducible.fundamental_modIntro_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 end LeanFX2

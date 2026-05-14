@@ -6,8 +6,8 @@ Fundamental cases for `Term.subsume` at the rich-former closed
 types: `Ty.unit` (modal-leaf canonical SN-direct closure),
 `Ty.universe` (universe-polymorphism modal coercion), `Ty.session`
 (session-type modal wrapper), and `Ty.modal` (modal-on-modal
-composition).  Each ships an SN-direct case plus a
-renaming-stable companion.
+composition).  Each ships the SN-direct case; renaming-stable
+transport is handled once by `Reducible.fundamental_subsume_stable`.
 
 ## Root status
 
@@ -40,24 +40,6 @@ theorem Reducible.fundamental_subsume_at_unit
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
 
-/-- Unit subsumption preserves fundamental stability. -/
-theorem Reducible.fundamental_subsume_at_unit_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    {innerRaw : RawTerm scope}
-    {innerTerm : Term sourceCtx Ty.unit innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible ((Ty.unit : Ty level scope).subst sigma)
-      (Term.subst termSubst (Term.subsume innerTerm)) := by
-  exact Reducible.fundamental_subsume_stable
-    (sourceType := (Ty.unit : Ty level scope))
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
-
 /-- **K12.20.BC.2 subsume fundamental case at `Ty.universe`** —
 SN-direct level-parameterized coverage.  `(Ty.universe lvl
 levelLe).subst sigma = Ty.universe lvl levelLe`
@@ -83,26 +65,6 @@ theorem Reducible.fundamental_subsume_at_universe
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
 
-/-- Universe subsumption preserves fundamental stability. -/
-theorem Reducible.fundamental_subsume_at_universe_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    (outerLevel : UniverseLevel)
-    (levelLe : outerLevel.toNat + 1 ≤ level)
-    {innerRaw : RawTerm scope}
-    {innerTerm :
-        Term sourceCtx (Ty.universe outerLevel levelLe) innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible ((Ty.universe outerLevel levelLe).subst sigma)
-      (Term.subst termSubst (Term.subsume innerTerm)) := by
-  exact Reducible.fundamental_subsume_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
-
 /-- **K12.20.BC.3 subsume fundamental case at `Ty.session`** —
 SN-direct raw-payload coverage.  `(Ty.session protocolStep).subst
 sigma = Ty.session (protocolStep.subst sigma.forRaw)`
@@ -127,24 +89,6 @@ theorem Reducible.fundamental_subsume_at_session
     Reducible ((Ty.session protocolStep).subst sigma)
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
-
-/-- Session subsumption preserves fundamental stability. -/
-theorem Reducible.fundamental_subsume_at_session_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    {protocolStep : RawTerm scope}
-    {innerRaw : RawTerm scope}
-    {innerTerm : Term sourceCtx (Ty.session protocolStep) innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible ((Ty.session protocolStep).subst sigma)
-      (Term.subst termSubst (Term.subsume innerTerm)) := by
-  exact Reducible.fundamental_subsume_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 /-- **K12.20.BC.4 subsume fundamental case at `Ty.modal`** —
 SN-direct modal coverage (K12.25 milestone target).
@@ -175,27 +119,6 @@ theorem Reducible.fundamental_subsume_at_modal
     Reducible ((Ty.modal modalityTag carrierType).subst sigma)
               (Term.subst termSubst (Term.subsume innerTerm)) :=
   RawTerm.subsume_isStronglyNormalizing innerIH
-
-/-- Modal subsumption preserves fundamental stability. -/
-theorem Reducible.fundamental_subsume_at_modal_stable
-    {mode : Mode} {level scope targetScope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {targetCtx : Ctx mode level targetScope}
-    {sigma : Subst level scope targetScope}
-    {termSubst : TermSubst sourceCtx targetCtx sigma}
-    (modalityTag : Nat) {carrierType : Ty level scope}
-    {innerRaw : RawTerm scope}
-    {innerTerm :
-        Term sourceCtx (Ty.modal modalityTag carrierType) innerRaw}
-    (innerIsStable :
-      IsRenamingStableReducible
-        ((Ty.modal modalityTag carrierType).subst sigma)
-        (Term.subst termSubst innerTerm)) :
-    IsRenamingStableReducible
-      ((Ty.modal modalityTag carrierType).subst sigma)
-      (Term.subst termSubst (Term.subsume innerTerm)) := by
-  exact Reducible.fundamental_subsume_stable
-    (by simp [Reducible.IsSNDirect, Ty.subst]) innerIsStable
 
 
 end LeanFX2
