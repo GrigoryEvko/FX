@@ -1,4 +1,5 @@
 import LeanFX2.Reducibility.NeutralSNFoundation
+import LeanFX2.Reducibility.StableBase
 
 /-! # LeanFX2.Reducibility.NeutralSNHott.HottJ
 

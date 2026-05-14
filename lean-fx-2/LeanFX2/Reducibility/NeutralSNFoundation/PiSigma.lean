@@ -1,4 +1,5 @@
-import LeanFX2.Reducibility.StableBase
+import LeanFX2.Reducibility.SNHelpers
+import LeanFX2.Reducibility.Neutral
 
 /-! # LeanFX2.Reducibility.NeutralSNFoundation.PiSigma
 
