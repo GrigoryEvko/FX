@@ -271,7 +271,20 @@ theorem RawStep.par.cd_dominates :
               rw [hPath] at pathParStep
               exact RawStep.par.transpReflBetaDeep pathParStep sourceParStep
           case _ _unwknEqn =>
-              exact RawStep.par.transpCong pathParStep sourceParStep
+              -- D2.5.5 Phase C step 2: unweaken? = none, dispatch via
+              -- matchTranspPiBetaShape? to fire transpPi β when the
+              -- developed pathBody has the piTyCode shape.
+              split
+              case _ piPair shapeEqn =>
+                  obtain ⟨innerDomain, codomainCode⟩ := piPair
+                  have hPath : pathBody =
+                      RawTerm.piTyCode innerDomain.weaken codomainCode :=
+                    RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken
+                      pathBody innerDomain codomainCode shapeEqn
+                  rw [hPath] at pathParStep
+                  exact RawStep.par.transpPiBetaDeep pathParStep sourceParStep
+              case _ _shapeEqn =>
+                  exact RawStep.par.transpCong pathParStep sourceParStep
       -- D3.6-S1 cd activation: when cd pathTerm = uaToEquiv proofRaw,
       -- fire the deep univalence-β rule.  D3.6-S3 cd activation: when
       -- cd pathTerm = pathCompose left right, fire the deep

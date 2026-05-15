@@ -40,7 +40,11 @@ def RawTerm.cdTranspCase {scope : Nat}
     match RawTerm.unweaken? pathBody with
     | some _ => developedSource
     | none =>
-        RawTerm.transp (RawTerm.pathLam pathBody) developedSource
+        match RawTerm.matchTranspPiBetaShape? pathBody with
+        | some piPair =>
+            RawTerm.transpPiBetaContractum piPair.2 developedSource
+        | none =>
+            RawTerm.transp (RawTerm.pathLam pathBody) developedSource
   | RawTerm.var _ => RawTerm.transp developedPath developedSource
   | RawTerm.unit => RawTerm.transp developedPath developedSource
   | RawTerm.lam _ => RawTerm.transp developedPath developedSource
