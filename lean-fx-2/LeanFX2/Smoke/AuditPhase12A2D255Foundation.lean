@@ -120,5 +120,7 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
 -- Phase G prep: bi-directional par-step cong (codomain + source)
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
+-- Phase G prep: recognizer survives par-step
+#print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_par_some
 
 end LeanFX2.Smoke

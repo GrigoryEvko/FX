@@ -89,6 +89,14 @@ namespace LeanFX2.Tools
 -- source has a non-refl par step.  Extends `_par_cong` with a
 -- `pathLamCong` arm and a `rename swap01` lift on the codomain step.
 #assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
+-- D2.5.5 transpPi β-rule Phase G prep: recognizer survives par-step.
+-- When `matchTranspPiBetaShape? pathBody = some` and `par pathBody
+-- pathBody'`, the recognizer fires on `pathBody'` too with a
+-- par-related codomain witness.  Chains piTyCode_inv + weaken_inv +
+-- recognizer completeness.  Future cd_lemma transpCong arm uses
+-- this to lift the recognizer hit from the source pathBody to the
+-- cd-target pathBody before firing the transpPiBetaDeep rule.
+#assert_no_axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_par_some
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
 #assert_no_axioms LeanFX2.Step.hcompBeta
 #assert_no_axioms LeanFX2.Step.par.hcompBeta
