@@ -1260,18 +1260,13 @@ inductive Step :
     SHIPPED.  See documentation below.
 
   D2.5.5 (transpPi — binder-aware transp Π β rule):
-    BLOCKED on kernel infrastructure (2026-05-15 parallel agent
-    audit).  Phases A-D foundation prerequisites SHIPPED at
-    `Foundation/RawPartialRename/{Inversion, OptionPatterns,
-    UnweakenInversion}.lean` + `Foundation/RawTermInjective.lean`
-    (817 LoC).  Phases E-K NOT atomically shippable — needs
-    either (i) `cd_rename` signature change threading
-    `RawRenamingInjective rho` through 17 helpers + main +
-    cd_weaken + 4 downstream files (~200-400 LoC), or (ii)
-    propositional-premise architecture with new
-    `Foundation/RawPartialRename/UnweakenSubstCommute.lean`
-    (~60 LoC) plus novel subst-compat dispatch (~400-700 LoC
-    total).  See memory `feedback_d255_d256_blocker_2026_05_15.md`.
+    Path A foundation SHIPPED: `Foundation/RawPartialRename/
+    UnweakenSubstCommute.lean` (commute headline) +
+    `UnweakenSubstDispatch.lean` (forward dispatch corollaries).
+    Cascade Phases E-K remain pending: cd dispatcher extension,
+    par ctor `transpPiBeta` + Deep variant, compat cascade,
+    cd_lemma arms, typed Step ctor.  See memory
+    `feedback_d255_d256_blocker_2026_05_15.md`.
 
   D2.5.6 (transpSigma — transp through dependent pair):
     BLOCKED on the same `cd_lemma` dispatch ambiguity (Barrier D)
