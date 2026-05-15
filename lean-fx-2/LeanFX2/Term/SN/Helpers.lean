@@ -1,17 +1,11 @@
 import LeanFX2.Reducibility.Basic
 
-/-! # LeanFX2.Reducibility.SNHelpers — pure SN preservation lemmas
+/-! # LeanFX2.Term.SN.Helpers — pure SN preservation lemmas
 
-Pure strong-normalization preservation theorems shared between
-the legacy `Reducible` bypass and the Kripke step-indexed
-candidate.  Imports only the bare SN foundation (`Reducibility.Basic`),
-so it stays disjoint from the `Reducible`-predicate machinery and the
-`Reducibility.Classifier`/`Predicate` cascade.
-
-This module is the Phase D extraction prerequisite: once every
-Kripke consumer routes through `SNHelpers` (not through
-`Reducibility.Foundation`), the legacy bypass can be deleted without
-breaking the Kripke chain.
+Pure strong-normalization preservation theorems shared by the Kripke
+step-indexed candidate and Term-level SN endpoints.  Imports only the
+bare SN foundation (`Reducibility.Basic`), so it stays disjoint from any
+logical-relation predicate machinery.
 
 ## Contents
 

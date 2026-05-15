@@ -1,6 +1,6 @@
 import LeanFX2.Reducibility.Basic
 import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
-import LeanFX2.Reducibility.SNHelpers
+import LeanFX2.Term.SN.Helpers
 import LeanFX2.Reducibility.StableBase.SubtermSN
 import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
 import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
@@ -22,7 +22,7 @@ re-exports only the surviving bypass-free modules:
 | ------------------------------------- | ------------------------------------------------- |
 | `Reducibility.Basic`                  | `RawTerm.isStronglyNormalizing` base inductive    |
 | `Reducibility.Neutral.*`              | `RawTerm.IsNeutral` neutrality predicate          |
-| `Reducibility.SNHelpers`              | pure SN preservation lemmas (closed leaves / cong)|
+| `Term.SN.Helpers`              | pure SN preservation lemmas (closed leaves / cong)|
 | `Reducibility.StableBase.SubtermSN`   | shape-specialized subterm SN inversions           |
 | `Reducibility.NeutralSNFoundation.*`  | per-ctor neutral SN preservation (foundation)     |
 | `Reducibility.NeutralSNHott.*`        | HoTT / J-family neutral SN closures               |

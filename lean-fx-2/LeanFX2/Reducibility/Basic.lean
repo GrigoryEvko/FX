@@ -8,8 +8,8 @@ import LeanFX2.Reduction.RawParWeakenInv
 
 /-! # LeanFX2.Reducibility.Basic — strong-normalization foundation
 
-This module hosts the strong-normalization primitives that the
-Tait reducibility candidate machinery builds on:
+This module hosts the strong-normalization primitives used by the
+Kripke candidate and Term-level SN endpoints:
 
 * `RawStep.parProgress` — non-reflexive parallel-progress reduction
   (a `RawStep.par` step that actually fires at least one redex,
@@ -22,11 +22,9 @@ Tait reducibility candidate machinery builds on:
 * `Term.isStronglyNormalizing` — typed SN as raw SN of the term's
   raw projection.
 
-The module is the first slice carved out of the historical 21k-line
-`Reducibility.lean`; the predicates here are deliberately
-`Reducible`-independent so that downstream sub-modules
-(`Reducibility/Neutral.lean`, `Reducibility.lean` proper) can
-import them without forming a cycle.
+The predicates here are deliberately independent of any logical-relation
+definition so downstream neutral, closure, and Kripke modules can import
+them without forming a cycle.
 
 ## Root status
 

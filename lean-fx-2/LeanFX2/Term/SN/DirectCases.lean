@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.SNHelpers
+import LeanFX2.Term.SN.Helpers
 import LeanFX2.Reducibility.NeutralSNFoundation.PiSigma
 import LeanFX2.Reducibility.NeutralSNFoundation.BoolNat
 import LeanFX2.Reducibility.NeutralSNFoundation.ListOptionEither

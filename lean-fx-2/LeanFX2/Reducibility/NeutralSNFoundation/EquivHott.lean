@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.SNHelpers
+import LeanFX2.Term.SN.Helpers
 import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
 
 /-! # LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
