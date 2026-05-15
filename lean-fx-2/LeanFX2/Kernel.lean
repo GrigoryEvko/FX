@@ -7,6 +7,7 @@ import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstCommute
 import LeanFX2.Foundation.RawPartialRename.UnweakenSubstDispatch
 import LeanFX2.Foundation.RawPartialRename.Swap01
+import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.SubstActsOnTy
