@@ -54,4 +54,29 @@ theorem RawRenaming.swap01_involution {scope : Nat}
   | ⟨1, _⟩      => rfl
   | ⟨_ + 2, _⟩  => rfl
 
+/-- Swap-01 commutes with double-`lift` of any renaming.
+
+The transpPi β-rule's contractum nests the codomain `B` of the path
+under a `swap01` inside an outer `lam` and inner `pathLam`.  When the
+whole construct is renamed by an outer `rho`, the renaming descends
+through both binders as `rho.lift.lift`.  This lemma states that
+applying `swap01` before or after `rho.lift.lift` produces the same
+`Fin`, pointwise.
+
+Geometry: `swap01` only acts on the bottom two slots and is the
+identity above; `rho.lift.lift` keeps slots 0 and 1 fixed and maps
+slot `k + 2` to `rho k + 2`.  The two operations are disjoint at the
+slot level, so they commute pointwise.  Per-case `rfl` succeeds
+because Lean 4 has definitional Prop-irrelevance on `Fin`'s upper-
+bound proofs. -/
+theorem RawRenaming.swap01_lift_lift_commute {source target : Nat}
+    (rho : RawRenaming source target)
+    (position : Fin (source + 2)) :
+    RawRenaming.swap01 (rho.lift.lift position) =
+    rho.lift.lift (RawRenaming.swap01 position) := by
+  match position with
+  | ⟨0, _⟩      => rfl
+  | ⟨1, _⟩      => rfl
+  | ⟨_ + 2, _⟩  => rfl
+
 end LeanFX2
