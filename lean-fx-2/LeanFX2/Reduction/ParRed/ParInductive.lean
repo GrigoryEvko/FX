@@ -551,6 +551,36 @@ inductive Step.par :
           sourceType sourceType
           typeRaw typeRaw typePath sourceValueSource)
         sourceValueTarget
+  /-- D2.5.2 Phase B: par-level mirror of `Step.hcompBeta`.
+
+  Source `Term.hcompPath` at the constant-path sides `pathLam
+  capRawSource.weaken` reduces to the developed cap value.  The
+  premise `Step.par capValueSource capValueTarget` carries the inner
+  development that par-step performs on the cap.  The sides path is
+  kept syntactically fixed at `RawTerm.pathLam capRawSource.weaken`
+  (the constant path at the SOURCE cap raw); the developed cap
+  bears the post-reduction raw `capRawTarget`.
+
+  Mirrors `RawStep.par.hcompBeta` (`Reduction/RawPar.lean`).  Deep
+  variant (sides develops to constant pathLam under par reduction)
+  remains raw-only via `RawStep.par.hcompBetaDeep` per the
+  transpReflBetaDeep precedent. -/
+  | hcompBeta {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {capRawSource capRawTarget : RawTerm scope}
+      (sidesPath :
+        Term context
+          (Ty.path carrierType capRawSource capRawSource)
+          (RawTerm.pathLam capRawSource.weaken))
+      {capValueSource : Term context carrierType capRawSource}
+      {capValueTarget : Term context carrierType capRawTarget} :
+      Step.par capValueSource capValueTarget →
+      Step.par
+        (Term.hcompPath modeIsUnivalent
+          (leftEndpoint := capRawSource) (rightEndpoint := capRawSource)
+          sidesPath capValueSource)
+        capValueTarget
   /-- Parallel-cong: homogeneous composition reduces in sides and cap. -/
   | hcomp {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

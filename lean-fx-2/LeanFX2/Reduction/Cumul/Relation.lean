@@ -1213,6 +1213,27 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
           sourceType sourceType
           typeRaw typeRaw typePath sourceValue)
         sourceValue
+  /-- D2.5.2 Phase B: Conversion-layer cubical-β for homogeneous
+  composition at constant-path sides.
+
+  Mirror of `Step.hcompBeta`: `hcompPath (pathLam cap.weaken) cap ⟶
+  cap`.  Bridges `Step.hcompBeta` into `ConvCumul` via
+  `ConvCumul.ofStep` in `Reduction/ConvBridge.lean`. -/
+  | betaHcompPathCumul
+      {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {capRaw : RawTerm scope}
+      (capValue : Term context carrierType capRaw)
+      (sidesPath :
+        Term context
+          (Ty.path carrierType capRaw capRaw)
+          (RawTerm.pathLam capRaw.weaken)) :
+      ConvCumul
+        (Term.hcompPath modeIsUnivalent
+          (leftEndpoint := capRaw) (rightEndpoint := capRaw)
+          sidesPath capValue)
+        capValue
   /-- β-reduction for single-field record projection:
   `recordProj (recordIntro field) ⟶ field`. -/
   | betaRecordProjIntroCumul

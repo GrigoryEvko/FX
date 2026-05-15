@@ -1848,20 +1848,22 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- `Confluence/RawCd.lean`.
   suffix == "uaReflEquivApply" ||
   suffix == "uaReflEquivApplyDeep" ||
-  -- Section I: D2.5.2 cubical hcomp-β raw rules (Phase A: raw-layer
-  -- cascade only).  Headline rule: `hcomp (pathLam X.weaken) cap ⟶
-  -- cap` — homogeneous composition with constant-path sides reduces
-  -- to the cap (the boundary box is trivially filled).  Both shallow
-  -- (`hcompBeta`, sides is syntactically `pathLam X.weaken` on LHS)
-  -- and deep (`hcompBetaDeep`, sides develops to `pathLam X.weaken`
-  -- via parallel reduction) ship raw-only.  The typed mirror
-  -- `Step.par.hcompBeta` lands in Phase B (separate future session)
-  -- alongside `Step.hcompBeta` and the ConvBridge arm.  Activated
-  -- through `cdHcompCase`'s `pathLam` arm in `Confluence/RawCd.lean`
-  -- and discharged in cd_lemma / cd_dominates via
-  -- `RawStep.par.weaken_inv` (Phase G.0), mirroring the
-  -- transpReflBeta cascade structure.
-  suffix == "hcompBeta" ||
+  -- Section I: D2.5.2 cubical hcomp-β raw-only deep variant.
+  -- Headline rule: `hcomp (pathLam X.weaken) cap ⟶ cap` —
+  -- homogeneous composition with constant-path sides reduces to the
+  -- cap (the boundary box is trivially filled).  The shallow form
+  -- `hcompBeta` ships its typed mirror `Step.par.hcompBeta` in
+  -- Phase B (Reduction/Step.lean + ParRed/ParInductive.lean +
+  -- ParStepLift.lean + ConvBridge.lean), so the shallow form is NO
+  -- LONGER listed as documented raw-only.  The deep variant
+  -- `hcompBetaDeep` (sides develops to `pathLam X.weaken` via
+  -- parallel reduction) remains raw-only: its typed mirror would
+  -- need `Step.par.hcompBetaDeep` with a path-reduction premise
+  -- across a heterogeneous `sidesRawSource` raw shape, which is a
+  -- pure confluence-closure mechanism (parallels
+  -- `transpReflBetaDeep`).  Activated through `cdHcompCase`'s
+  -- `pathLam` arm in `Confluence/RawCd.lean` and discharged in
+  -- cd_lemma / cd_dominates via `RawStep.par.weaken_inv`.
   suffix == "hcompBetaDeep"
 
 /-- Build-failing parity gate.  For every constructor of

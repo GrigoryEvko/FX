@@ -290,6 +290,8 @@ theorem Step.toConvCumul
       sourceType typePath sourceValue =>
       exact ConvCumul.betaTranspConstantTypeCumul modeIsUnivalent
         universeLevel universeLevelLt sourceType typePath sourceValue
+  | hcompBeta modeIsUnivalent capValue sidesPath =>
+      exact ConvCumul.betaHcompPathCumul modeIsUnivalent capValue sidesPath
   | hcompSides modeIsUnivalent _ ih =>
       exact ConvCumul.hcompCong modeIsUnivalent ih (ConvCumul.refl _)
   | hcompCap modeIsUnivalent _ ih =>

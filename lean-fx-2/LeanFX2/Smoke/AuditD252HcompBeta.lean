@@ -3,6 +3,11 @@ import LeanFX2.Reduction.RawParWeakenInv
 import LeanFX2.Reduction.RawParInversion
 import LeanFX2.Reduction.RawParRename
 import LeanFX2.Reduction.RawParCompatible
+import LeanFX2.Reduction.Step
+import LeanFX2.Reduction.ParRed
+import LeanFX2.Reduction.ConvBridge
+import LeanFX2.Reduction.Cumul.Relation
+import LeanFX2.Bridge
 import LeanFX2.Confluence.RawCd
 import LeanFX2.Confluence.RawCdRename
 import LeanFX2.Confluence.RawCdDominates
@@ -13,15 +18,12 @@ import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRenameCommute
 
 /-! # AuditD252HcompBeta — D2.5.2 hcomp-β cascade zero-axiom audit
-(Phase A: raw layer only).
+(Phases A + B).
 
-Closes the raw-layer cascade for cubical hcomp at constant-path
-sides.  Phase A ships the raw ctors plus the full cd cascade
-(rename / compat / inversion / cd-rename / cd-dominates / cd-lemma).
-Phase B (typed `Step.hcompBeta` + typed par mirror + ConvBridge arm)
-lands in a separate future session.
+Closes the cubical hcomp-β cascade for constant-path sides across
+both the raw layer (Phase A) and the typed layer (Phase B).
 
-## What landed
+## What landed in Phase A (raw layer)
 
 **Raw ctors (Reduction/RawPar.lean)**
 * `RawStep.par.hcompBeta` — shallow constant-path-sides β rule.
@@ -47,6 +49,28 @@ lands in a separate future session.
 * `RawStep.par.hcomp_inv` — extended from 2-arm (refl + hcompCong) to
   4-arm (+ hcompBeta + hcompBetaDeep) disjunction.
 
+## What landed in Phase B (typed layer)
+
+**Typed ctors**
+* `Step.hcompBeta` (Reduction/Step.lean) — typed β rule firing on
+  `Term.hcompPath` (the path-shaped hcomp ctor).  Source's sides
+  path is fixed at `RawTerm.pathLam capRaw.weaken` and both
+  endpoints are pinned to `capRaw`; the target is `capValue`.
+* `Step.par.hcompBeta` (Reduction/ParRed/ParInductive.lean) —
+  par-level mirror carrying an inner cap-development premise.
+* `ConvCumul.betaHcompPathCumul` (Reduction/Cumul/Relation.lean) —
+  conversion-layer mirror used by the bridge.
+
+**Bridge arms**
+* `Step.par.ofStep` arm in `ParStepLift.lean` lifting
+  `Step.hcompBeta` to `Step.par.hcompBeta` with a `Step.par.refl`
+  inner cap step.
+* `ConvCumul.ofStep` arm in `ConvBridge.lean` lifting
+  `Step.par.hcompBeta` to `ConvCumul.betaHcompPathCumul`.
+* `Step.par.toRawBridge` arm in `Bridge.lean` projecting
+  `Step.par.hcompBeta` to `RawStep.par.hcompBeta` with refl on the
+  sides path (path body is constant `capRawSource`).
+
 ## Why this matters
 
 Cubical hcomp with constant-path sides is the cubical analog of
@@ -57,34 +81,21 @@ cubical, `hcomp [φ → λi. anything] cap` reduces to the cap when the
 sides are constant in the cube direction (the filler is the cap
 itself).
 
-The deep ctor (`hcompBetaDeep`) exists purely to close the cd
-cascade: when cd develops the sides to `pathLam X.weaken` shape via
-parallel reduction, the β must fire even though the original term
-wasn't syntactically a constant pathLam.  Standard Tait-Martin-Löf
-complete-development trick, identical in shape to
-`transpReflBetaDeep`.
+The deep ctor (`hcompBetaDeep`) remains raw-only — its typed mirror
+would need `Step.par.hcompBetaDeep` with a path-reduction premise
+across a heterogeneous `sidesRawSource` raw shape, which is a pure
+confluence-closure mechanism (parallels `transpReflBetaDeep`).
+Phase B leaves the deep ctor documented raw-only via
+`isDocumentedRawOnlyParity` Section I.
 
 ## Confluence preserved
 
 The shipped ctors do NOT regress confluence.  The four headline
-theorems remain zero-axiom after Phase A:
+theorems remain zero-axiom after Phases A + B:
 * `RawStep.par.cd_lemma`
 * `RawStep.par.diamond`
 * `RawStep.parStar.confluence`
 * `Conv.canonicalRaw` / `Conv.transRaw`
-
-## Phase B (deferred to future session)
-
-Phase B extends the cascade to the typed layer:
-* `Step.hcompBeta` — typed β ctor (parallels `Step.transpReflBeta`)
-* `Step.par.hcompBeta` — typed par mirror
-* `ParRed` / `ParInductive` mirrors
-* `ConvBridge` arm
-* Update `lift_hcomp_cong` to handle β arms (currently restricted
-  to the cong arm only — see `Term/PreservesTerm/TierTwoBinary.lean`).
-
-Until Phase B, both ctors are documented raw-only via
-`isDocumentedRawOnlyParity` Section I.
 
 ## Audit
 
@@ -102,7 +113,12 @@ Every declaration below must report "does not depend on any axioms".
 -- Inversion
 #print axioms LeanFX2.RawStep.par.hcomp_inv
 
--- Headline confluence theorems remain zero-axiom after Phase A
+-- Typed ctors + bridge mirrors (Phase B)
+#print axioms LeanFX2.Step.hcompBeta
+#print axioms LeanFX2.Step.par.hcompBeta
+#print axioms LeanFX2.ConvCumul.betaHcompPathCumul
+
+-- Headline confluence theorems remain zero-axiom after Phases A + B
 #print axioms LeanFX2.RawStep.par.cd_lemma
 #print axioms LeanFX2.RawStep.par.diamond
 #print axioms LeanFX2.RawStep.parStar.confluence

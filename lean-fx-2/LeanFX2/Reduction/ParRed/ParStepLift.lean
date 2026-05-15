@@ -251,6 +251,9 @@ theorem Step.toPar
       typePath sourceValue =>
       exact Step.par.transpReflBeta modeIsUnivalent universeLevel
         universeLevelLt sourceType typePath (Step.par.refl sourceValue)
+  | hcompBeta modeIsUnivalent capValue sidesPath =>
+      exact Step.par.hcompBeta modeIsUnivalent sidesPath
+        (Step.par.refl capValue)
   | hcompSides modeIsUnivalent singleStep singleStepIH =>
       exact Step.par.hcompCong modeIsUnivalent
         singleStepIH (Step.par.refl _)

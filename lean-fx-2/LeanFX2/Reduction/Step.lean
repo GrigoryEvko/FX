@@ -1316,6 +1316,41 @@ inductive Step :
           sourceType sourceType
           typeRaw typeRaw typePath sourceValue)
         sourceValue
+  /-- D2.5.2 Phase B: typed cubical-β for homogeneous composition at
+  constant-path sides.
+
+  `hcomp [φ → λi. cap] cap ⟶ cap` — homogeneous composition with
+  sides equal to the constant path `λi. cap.weaken` at the endpoints
+  reduces to the cap.  This is the typed mirror of
+  `RawStep.par.hcompBeta` and the typed lift of the kernel-internal
+  CCHM cubical rule "hcomp at a trivially filled box equals its cap".
+
+  ## Structural shape
+
+  Fires on `Term.hcompPath` (the path-shaped hcomp ctor in
+  `Term.lean:472`) with both `leftEndpoint` and `rightEndpoint`
+  pinned to `capRaw` and the sides path's body equal to
+  `RawTerm.pathLam capRaw.weaken` (the syntactic constant path at the
+  cap).  Reduces to the `capValue` itself.
+
+  ## ConvCumul mirror lives in `Reduction/Cumul/Relation.lean`
+
+  `ConvCumul.betaHcompPathCumul` ships alongside this Step ctor;
+  bridge arm in `Reduction/ConvBridge.lean`. -/
+  | hcompBeta {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      {capRaw : RawTerm scope}
+      (capValue : Term context carrierType capRaw)
+      (sidesPath :
+        Term context
+          (Ty.path carrierType capRaw capRaw)
+          (RawTerm.pathLam capRaw.weaken)) :
+      Step
+        (Term.hcompPath modeIsUnivalent
+          (leftEndpoint := capRaw) (rightEndpoint := capRaw)
+          sidesPath capValue)
+        capValue
   /-- Step inside homogeneous composition's side system. -/
   | hcompSides {mode level scope} {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)

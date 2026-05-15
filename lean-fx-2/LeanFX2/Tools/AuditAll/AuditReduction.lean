@@ -50,21 +50,26 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.transpReflBetaDeep
 #assert_no_axioms LeanFX2.Step.transpReflBeta
 #assert_no_axioms LeanFX2.Step.par.transpReflBeta
--- D2.5.2 hcompBeta cascade (Phase A: raw layer only).  Cubical-β rule
--- "hcomp at constant-path sides = cap" — homogeneous composition with
--- constant-path sides reduces to the cap (the boundary box is trivially
--- filled).  Phase A activated this rule across raw + cd cascade
--- (RawPar / RawParRename / RawParCompatible / RawParInversion /
--- RawCdRename / RawCdDominates / RawCdLemma).  Both shallow and deep
--- ctors documented raw-only via `isDocumentedRawOnlyParity` Section I
--- pending Phase B (typed Step.hcompBeta + Step.par.hcompBeta +
--- ConvBridge arm in a separate future session).  Structurally mirrors
--- the D2.5.4 transpReflBeta cascade above.
+-- D2.5.2 hcompBeta cascade.  Cubical-β rule "hcomp at constant-path
+-- sides = cap" — homogeneous composition with constant-path sides
+-- reduces to the cap (the boundary box is trivially filled).
+-- Phase A activated this rule across raw + cd cascade (RawPar /
+-- RawParRename / RawParCompatible / RawParInversion / RawCdRename /
+-- RawCdDominates / RawCdLemma).  Phase B (typed Step.hcompBeta,
+-- Step.par.hcompBeta, ConvCumul.betaHcompPathCumul, bridge arms in
+-- ParStepLift / ConvBridge / Bridge) extends the cascade to the
+-- typed layer, mirroring the D2.5.4 transpReflBeta cascade.  The
+-- deep raw-only ctor `hcompBetaDeep` is documented raw-only via
+-- `isDocumentedRawOnlyParity` Section I (no typed mirror — same
+-- precedent as `transpReflBetaDeep`).
 #assert_no_axioms LeanFX2.RawStep.par.hcompBeta
 #assert_no_axioms LeanFX2.RawStep.par.hcompBetaDeep
 #assert_no_axioms LeanFX2.RawTerm.cdHcompCase
 #assert_no_axioms LeanFX2.RawTerm.cdHcompCase_rename
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
+#assert_no_axioms LeanFX2.Step.hcompBeta
+#assert_no_axioms LeanFX2.Step.par.hcompBeta
+#assert_no_axioms LeanFX2.ConvCumul.betaHcompPathCumul
 -- D2.5.8 betaPathReflApp cascade (companion to D2.5.4, same shape).
 -- "(λ i ⇒ value) @ i ⟶ value" for value independent of i — the
 -- cubical path analog of `transpReflBeta`.  Shipped in commit b453df6
