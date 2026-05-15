@@ -1125,6 +1125,212 @@ theorem Term.pathApp_isStronglyNormalizing
   RawTerm.pathApp_isStronglyNormalizing
     pathIsSN intervalIsSN contractumIsSN
 
+/-- **transp generic-closure SN preservation**.  Transport has congruence
+plus three computational families at the raw layer: constant-path transport
+returns the source, univalence transport reduces to `equivApply`, and
+composed paths reduce to nested transports.  The latter two are exposed as
+contractum closures so this lemma stays independent of the later typed
+β-rule packaging. -/
+theorem RawTerm.transp_isStronglyNormalizing {scope : Nat}
+    {pathTerm : RawTerm scope}
+    (pathIsSN : RawTerm.isStronglyNormalizing pathTerm) :
+    ∀ {sourceTerm : RawTerm scope},
+      RawTerm.isStronglyNormalizing sourceTerm →
+      (∀ {equivRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing equivRaw →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.equivApply equivRaw sourceTargetRaw)) →
+      (∀ {leftPathRaw rightPathRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing
+          (RawTerm.pathCompose leftPathRaw rightPathRaw) →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.transp rightPathRaw
+            (RawTerm.transp leftPathRaw sourceTargetRaw))) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.transp pathTerm sourceTerm) := by
+  induction pathIsSN with
+  | intro currentPath pathClosure pathIH =>
+    intro sourceTerm sourceIsSN
+    induction sourceIsSN with
+    | intro currentSource sourceClosure sourceIH =>
+      intro uaContractumIsSN composeContractumIsSN
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.transp currentPath currentSource) ?_
+      intro target progressStep
+      rcases RawStep.par.transp_inv progressStep.1 with
+        ⟨pathTarget, sourceTarget, targetEq, pathStep, sourceStep⟩
+        | ⟨typeRawSource, sourceTarget, pathEq, targetEq, sourceStep⟩
+        | ⟨typeRawTarget, sourceTarget, targetEq, pathStep, sourceStep⟩
+        | ⟨proofRawSource, proofRawTarget, sourceTarget, pathEq,
+            targetEq, proofStep, sourceStep⟩
+        | ⟨proofRawTarget, sourceTarget, targetEq, pathStep, sourceStep⟩
+        | ⟨leftRawSource, leftRawTarget, rightRawSource, rightRawTarget,
+            sourceTarget, pathEq, targetEq, leftStep, rightStep,
+            sourceStep⟩
+        | ⟨leftRawTarget, rightRawTarget, sourceTarget, targetEq,
+            pathStep, sourceStep⟩
+      · subst targetEq
+        have pathTargetIsSN :
+            RawTerm.isStronglyNormalizing pathTarget := by
+          by_cases pathEq : currentPath = pathTarget
+          · subst pathEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentPath pathClosure
+          · exact pathClosure pathTarget ⟨pathStep, pathEq⟩
+        have sourceTargetIsSN :
+            RawTerm.isStronglyNormalizing sourceTarget := by
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentSource sourceClosure
+          · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+        by_cases pathEq : currentPath = pathTarget
+        · subst pathEq
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact (progressStep.2 rfl).elim
+          · exact sourceIH sourceTarget ⟨sourceStep, sourceEq⟩
+              uaContractumIsSN composeContractumIsSN
+        · exact pathIH pathTarget ⟨pathStep, pathEq⟩
+            sourceTargetIsSN uaContractumIsSN composeContractumIsSN
+      · subst pathEq
+        rw [targetEq]
+        by_cases sourceEq : currentSource = sourceTarget
+        · subst sourceEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSource sourceClosure
+        · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+      · rw [targetEq]
+        by_cases sourceEq : currentSource = sourceTarget
+        · subst sourceEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSource sourceClosure
+        · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+      · subst pathEq
+        subst targetEq
+        have equivTargetIsSN :
+            RawTerm.isStronglyNormalizing
+              (RawTerm.uaToEquiv proofRawTarget) := by
+          by_cases equivEq :
+              RawTerm.uaToEquiv proofRawSource =
+                RawTerm.uaToEquiv proofRawTarget
+          · rw [← equivEq]
+            exact RawTerm.isStronglyNormalizing.intro
+              (RawTerm.uaToEquiv proofRawSource) pathClosure
+          · exact pathClosure (RawTerm.uaToEquiv proofRawTarget)
+              ⟨RawStep.par.uaToEquivCong proofStep, equivEq⟩
+        have sourceTargetIsSN :
+            RawTerm.isStronglyNormalizing sourceTarget := by
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentSource sourceClosure
+          · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+        exact uaContractumIsSN equivTargetIsSN sourceTargetIsSN
+      · subst targetEq
+        have equivTargetIsSN :
+            RawTerm.isStronglyNormalizing
+              (RawTerm.uaToEquiv proofRawTarget) := by
+          by_cases pathEq :
+              currentPath = RawTerm.uaToEquiv proofRawTarget
+          · rw [← pathEq]
+            exact RawTerm.isStronglyNormalizing.intro
+              currentPath pathClosure
+          · exact pathClosure (RawTerm.uaToEquiv proofRawTarget)
+              ⟨pathStep, pathEq⟩
+        have sourceTargetIsSN :
+            RawTerm.isStronglyNormalizing sourceTarget := by
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentSource sourceClosure
+          · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+        exact uaContractumIsSN equivTargetIsSN sourceTargetIsSN
+      · subst pathEq
+        subst targetEq
+        have composeTargetIsSN :
+            RawTerm.isStronglyNormalizing
+              (RawTerm.pathCompose leftRawTarget rightRawTarget) := by
+          by_cases composeEq :
+              RawTerm.pathCompose leftRawSource rightRawSource =
+                RawTerm.pathCompose leftRawTarget rightRawTarget
+          · rw [← composeEq]
+            exact RawTerm.isStronglyNormalizing.intro
+              (RawTerm.pathCompose leftRawSource rightRawSource)
+              pathClosure
+          · exact pathClosure
+              (RawTerm.pathCompose leftRawTarget rightRawTarget)
+              ⟨RawStep.par.pathComposeCong leftStep rightStep, composeEq⟩
+        have sourceTargetIsSN :
+            RawTerm.isStronglyNormalizing sourceTarget := by
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentSource sourceClosure
+          · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+        exact composeContractumIsSN composeTargetIsSN sourceTargetIsSN
+      · subst targetEq
+        have composeTargetIsSN :
+            RawTerm.isStronglyNormalizing
+              (RawTerm.pathCompose leftRawTarget rightRawTarget) := by
+          by_cases pathEq :
+              currentPath = RawTerm.pathCompose leftRawTarget rightRawTarget
+          · rw [← pathEq]
+            exact RawTerm.isStronglyNormalizing.intro
+              currentPath pathClosure
+          · exact pathClosure
+              (RawTerm.pathCompose leftRawTarget rightRawTarget)
+              ⟨pathStep, pathEq⟩
+        have sourceTargetIsSN :
+            RawTerm.isStronglyNormalizing sourceTarget := by
+          by_cases sourceEq : currentSource = sourceTarget
+          · subst sourceEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentSource sourceClosure
+          · exact sourceClosure sourceTarget ⟨sourceStep, sourceEq⟩
+        exact composeContractumIsSN composeTargetIsSN sourceTargetIsSN
+
+/-- Typed wrapper for transp generic-closure SN preservation. -/
+theorem Term.transp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    {typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term context sourceType sourceRaw}
+    (pathIsSN : Term.isStronglyNormalizing typePath)
+    (sourceIsSN : Term.isStronglyNormalizing sourceValue)
+    (uaContractumIsSN :
+      ∀ {equivRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing equivRaw →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.equivApply equivRaw sourceTargetRaw))
+    (composeContractumIsSN :
+      ∀ {leftPathRaw rightPathRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing
+          (RawTerm.pathCompose leftPathRaw rightPathRaw) →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.transp rightPathRaw
+            (RawTerm.transp leftPathRaw sourceTargetRaw))) :
+    Term.isStronglyNormalizing
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) :=
+  RawTerm.transp_isStronglyNormalizing
+    pathIsSN sourceIsSN uaContractumIsSN composeContractumIsSN
+
 /-- **hcomp SN preservation**.  Homogeneous cubical composition: at the
 raw level `hcomp sidesTerm capTerm` only admits congruence reductions
 (no computational β rule on the boundary yet — that is future work

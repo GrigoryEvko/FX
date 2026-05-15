@@ -1125,6 +1125,48 @@ theorem Term.pathApp_strong_normalization_via_kripke
   ReducibleK.fundamental_pathApp_sn modeIsUnivalent
     pathIsSN intervalIsSN contractumIsSN
 
+/-- **K12.24 Kripke SN headline for transp**.  Requires contractum-SN
+closures for univalence transport and path-composition transport; the
+constant-path computational arm returns the transported source directly. -/
+theorem Term.transp_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    {typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term context sourceType sourceRaw}
+    (pathIsSN : Term.isStronglyNormalizing typePath)
+    (sourceIsSN : Term.isStronglyNormalizing sourceValue)
+    (uaContractumIsSN :
+      ∀ {equivRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing equivRaw →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.equivApply equivRaw sourceTargetRaw))
+    (composeContractumIsSN :
+      ∀ {leftPathRaw rightPathRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing
+          (RawTerm.pathCompose leftPathRaw rightPathRaw) →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.transp rightPathRaw
+            (RawTerm.transp leftPathRaw sourceTargetRaw))) :
+    Term.isStronglyNormalizing
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) :=
+  ReducibleK.fundamental_transp_sn modeIsUnivalent universeLevel
+    universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
+    pathIsSN sourceIsSN uaContractumIsSN composeContractumIsSN
+
 /-- **K12.24 Kripke SN headline for hcomp**.  At the current raw layer,
 `hcomp` is congruence-only; the future boundary-computation rule is tracked
 outside this headline. -/

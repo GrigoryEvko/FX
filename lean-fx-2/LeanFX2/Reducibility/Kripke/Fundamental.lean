@@ -1287,6 +1287,48 @@ theorem ReducibleK.fundamental_pathApp_sn
   Term.pathApp_isStronglyNormalizing modeIsUnivalent
     pathIsSN intervalIsSN contractumIsSN
 
+/-- SN of transp via Kripke.  The current raw transport relation has
+constant-path, univalence, and path-composition computational arms; the two
+nontrivial reduct families are supplied as explicit contractum closures. -/
+theorem ReducibleK.fundamental_transp_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level scope)
+    (sourceTypeRaw targetTypeRaw : RawTerm scope)
+    {pathRaw sourceRaw : RawTerm scope}
+    {typePath :
+      Term context
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term context sourceType sourceRaw}
+    (pathIsSN : Term.isStronglyNormalizing typePath)
+    (sourceIsSN : Term.isStronglyNormalizing sourceValue)
+    (uaContractumIsSN :
+      ∀ {equivRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing equivRaw →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.equivApply equivRaw sourceTargetRaw))
+    (composeContractumIsSN :
+      ∀ {leftPathRaw rightPathRaw sourceTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing
+          (RawTerm.pathCompose leftPathRaw rightPathRaw) →
+        RawTerm.isStronglyNormalizing sourceTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (RawTerm.transp rightPathRaw
+            (RawTerm.transp leftPathRaw sourceTargetRaw))) :
+    Term.isStronglyNormalizing
+      (Term.transp modeIsUnivalent universeLevel universeLevelLt
+        sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) :=
+  Term.transp_isStronglyNormalizing modeIsUnivalent universeLevel
+    universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
+    pathIsSN sourceIsSN uaContractumIsSN composeContractumIsSN
+
 /-- SN of hcomp via Kripke.  The current raw `hcomp` relation is
 congruence-only; boundary computation is still tracked separately by the
 future cubical β-rule work. -/
