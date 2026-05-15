@@ -333,6 +333,12 @@ def Term.subst_compatible_pointwise_allais
       ConvCumul.subst_compatible_hcomp_allais modeIsUnivalent sidesValue capValue
         (Term.subst_compatible_pointwise_allais compat sidesValue)
         (Term.subst_compatible_pointwise_allais compat capValue)
+  | _, _, .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue =>
+      ConvCumul.subst_compatible_hcompPath_allais modeIsUnivalent
+        leftEndpoint rightEndpoint sidesPath capValue
+        (Term.subst_compatible_pointwise_allais compat sidesPath)
+        (Term.subst_compatible_pointwise_allais compat capValue)
   | _, _, .recordIntro firstField =>
       ConvCumul.subst_compatible_recordIntro_allais firstField
         (Term.subst_compatible_pointwise_allais compat firstField)

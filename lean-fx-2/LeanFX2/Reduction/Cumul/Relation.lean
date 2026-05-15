@@ -934,6 +934,32 @@ inductive ConvCumul : ∀ {modeFirst modeSecond : Mode}
       (capRel : ConvCumul capFirst capSecond) :
       ConvCumul (Term.hcomp modeIsUnivalent sidesFirst capFirst)
                 (Term.hcomp modeIsUnivalent sidesSecond capSecond)
+  /-- Path-shaped hcomp cong (mirrors `hcompCong` for `Term.hcompPath`).
+      Two-subterm cong: ConvCumul-related path-typed sides and carrier-
+      typed cap lift to ConvCumul-related path-shaped hcomps.  Endpoints
+      are explicit so the path-type indexing aligns. -/
+  | hcompPathCong
+      {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {sidesFirstRaw sidesSecondRaw capFirstRaw capSecondRaw :
+        RawTerm scope}
+      {sidesFirst :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          sidesFirstRaw}
+      {sidesSecond :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          sidesSecondRaw}
+      {capFirst : Term context carrierType capFirstRaw}
+      {capSecond : Term context carrierType capSecondRaw}
+      (sidesRel : ConvCumul sidesFirst sidesSecond)
+      (capRel : ConvCumul capFirst capSecond) :
+      ConvCumul (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+                  sidesFirst capFirst)
+                (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+                  sidesSecond capSecond)
   /-- Homogeneous equivIntroHet: ConvCumul-related forward + backward
   subterms lift to ConvCumul-related equivIntroHet.  Two-subterm cong
   rule mirroring `pairCong` and `listConsCong`.  Phase 12.A.B8.5. -/

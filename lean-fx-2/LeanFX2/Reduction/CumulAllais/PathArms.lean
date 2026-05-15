@@ -282,4 +282,36 @@ theorem ConvCumul.subst_compatible_hcomp_allais
                 termSubstB) :=
   ConvCumul.hcompCong modeIsUnivalent sidesCompat capCompat
 
+/-- Allais arm for `hcompPath`: two-subterm cong via `hcompPathCong`. -/
+theorem ConvCumul.subst_compatible_hcompPath_allais
+    {mode : Mode}
+    {sourceLevel targetLevel sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode sourceLevel sourceScope}
+    {targetCtx : Ctx mode targetLevel targetScope}
+    {sigma : SubstHet sourceLevel targetLevel sourceScope targetScope}
+    {termSubstA termSubstB : TermSubstHet sourceCtx targetCtx sigma}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty sourceLevel sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    (sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw)
+    (capValue : Term sourceCtx carrierType capRaw)
+    (sidesCompat :
+      ConvCumul (sidesPath.substHet termSubstA)
+                (sidesPath.substHet termSubstB))
+    (capCompat :
+      ConvCumul (capValue.substHet termSubstA)
+                (capValue.substHet termSubstB)) :
+    ConvCumul ((Term.hcompPath modeIsUnivalent
+                  leftEndpoint rightEndpoint sidesPath capValue).substHet
+                termSubstA)
+              ((Term.hcompPath modeIsUnivalent
+                  leftEndpoint rightEndpoint sidesPath capValue).substHet
+                termSubstB) :=
+  ConvCumul.hcompPathCong modeIsUnivalent
+    (leftEndpoint.subst sigma.forRaw) (rightEndpoint.subst sigma.forRaw)
+    sidesCompat capCompat
+
 end LeanFX2
