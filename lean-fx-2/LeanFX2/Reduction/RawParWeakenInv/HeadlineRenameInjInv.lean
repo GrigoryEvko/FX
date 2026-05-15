@@ -380,6 +380,24 @@ theorem RawStep.par.rename_inj_inv :
     obtain ⟨rightInner, hRightInner⟩ := rightIH rho rhoInj rightStep
     refine ⟨RawTerm.intervalJoin leftInner rightInner, ?_⟩
     rw [hTarget, hLeftInner, hRightInner]; rfl
+  -- D2.5.5 Phase B step 2: the new transpPiBeta + transpPiBetaDeep
+  -- disjuncts of `transp_inv` (added in `RawParInversion/CubicalAndIdentity`
+  -- at commit landing D2.5.5 Phase B) introduce a `codomainStep` premise
+  -- at scope+2 INSIDE the developed pathLam-piTyCode-weaken-codomain
+  -- structure.  Closing those two arms requires an inductive hypothesis
+  -- at scope+2 on the codomain inner — but the OUTER structural
+  -- induction on `sourceTerm` only exposes `pathIH` / `sourceIH` at
+  -- scope, not on the deep codomain.  Two viable architectural fixes:
+  --   1. Refactor to par-step induction (induct on `parStep` instead of
+  --      `sourceTerm`); the codomainStep IH then comes for free.
+  --   2. Introduce `RawTerm.size` + well-founded recursion on size; the
+  --      codomain inner has strictly smaller size, so a recursive
+  --      `rename_inj_inv` call on it succeeds.
+  -- Both are ~hundred-line refactors that exceed a single Ralph tick's
+  -- safe-modify budget.  The transp arm below is preserved as-is, so
+  -- this file currently FAILS to elaborate for the two new disjuncts;
+  -- that failure is the load-bearing signal for the next warrior to
+  -- pick one of the two fixes above and ship it.
   | transp path source pathIH sourceIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.transp (path.rename rho)
