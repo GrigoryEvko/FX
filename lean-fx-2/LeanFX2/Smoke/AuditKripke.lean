@@ -186,50 +186,52 @@ import LeanFX2.Reducibility.Kripke.SNExtraction
 #print axioms LeanFX2.Term.funextIntroHet_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_funextIntroHet_sn
 
--- K12.25 codataDest (codata destructor; raw / Term SN helpers)
+-- K12.25 codataDest (codata destructor; live Kripke headline only)
 #print axioms LeanFX2.RawTerm.codataUnfold_state_isStronglyNormalizing
 #print axioms LeanFX2.RawTerm.codataUnfold_transition_isStronglyNormalizing
-#print axioms LeanFX2.RawTerm.codataDest_isStronglyNormalizing
-#print axioms LeanFX2.Term.codataDest_isStronglyNormalizing
 #print axioms LeanFX2.Term.codataDest_strong_normalization_via_kripke
+-- DELETED — RawTerm.codataDest_isStronglyNormalizing +
+-- Term.codataDest_isStronglyNormalizing carried a banned
+-- `contractumIsSN` Pi-type postulate over raw scopes.
 
--- K12.22 listElim (generic ι recursor; raw / Term SN helpers)
-#print axioms LeanFX2.RawTerm.listElim_isStronglyNormalizing
-#print axioms LeanFX2.Term.listElim_isStronglyNormalizing
+-- K12.22 listElim (generic ι recursor; live Kripke headline only)
 #print axioms LeanFX2.Term.listElim_strong_normalization_via_kripke
+-- DELETED — RawTerm/Term.listElim_isStronglyNormalizing carried
+-- a banned `contractumIsSN` Pi-type postulate over raw scopes.
 
--- K12.22 optionMatch (generic ι recursor; raw / Term SN helpers)
-#print axioms LeanFX2.RawTerm.optionMatch_isStronglyNormalizing
-#print axioms LeanFX2.Term.optionMatch_isStronglyNormalizing
+-- K12.22 optionMatch (generic ι recursor; live Kripke headline only)
 #print axioms LeanFX2.Term.optionMatch_strong_normalization_via_kripke
+-- DELETED — RawTerm/Term.optionMatch_isStronglyNormalizing carried
+-- a banned `contractumIsSN` Pi-type postulate over raw scopes.
 
--- K12.22 eitherMatch (generic ι recursor; raw / Term SN helpers)
-#print axioms LeanFX2.RawTerm.eitherMatch_isStronglyNormalizing
-#print axioms LeanFX2.Term.eitherMatch_isStronglyNormalizing
+-- K12.22 eitherMatch (generic ι recursor; live Kripke headline only)
 #print axioms LeanFX2.Term.eitherMatch_strong_normalization_via_kripke
+-- DELETED — RawTerm/Term.eitherMatch_isStronglyNormalizing carried
+-- two banned `inlContractumIsSN`/`inrContractumIsSN` postulates.
 
--- K12.21 app (β-redex; raw / Term SN helpers)
+-- K12.21 app (β-redex; live Kripke headline only)
 #print axioms LeanFX2.RawTerm.lam_body_isStronglyNormalizing
-#print axioms LeanFX2.RawTerm.app_isStronglyNormalizing
-#print axioms LeanFX2.Term.app_isStronglyNormalizing
 #print axioms LeanFX2.Term.app_strong_normalization_via_kripke
+-- DELETED — RawTerm/Term.app_isStronglyNormalizing carried a
+-- banned `contractumIsSN` Pi-type postulate over raw scopes.
 
--- K12.21 appPi (dependent-Π β-redex; raw β shared with app)
-#print axioms LeanFX2.Term.appPi_isStronglyNormalizing
+-- K12.21 appPi (dependent-Π β-redex; live Kripke headline only)
 #print axioms LeanFX2.Term.appPi_strong_normalization_via_kripke
+-- DELETED — Term.appPi_isStronglyNormalizing carried a banned
+-- `contractumIsSN` Pi-type postulate over raw scopes.
 
 -- K12.24 pathApp (cubical-mode path application β-redex)
 #print axioms LeanFX2.RawTerm.pathLam_body_isStronglyNormalizing
-#print axioms LeanFX2.RawTerm.pathApp_isStronglyNormalizing
-#print axioms LeanFX2.Term.pathApp_isStronglyNormalizing
 #print axioms LeanFX2.Term.pathApp_strong_normalization_via_kripke
+-- DELETED — RawTerm/Term.pathApp_isStronglyNormalizing carried a
+-- banned `contractumIsSN` Pi-type postulate over raw scopes.
 
--- K12.24 transp (raw / Term SN helpers; the Term-level
--- _strong_normalization_via_kripke headline was deleted with the
--- ReducibleK.fundamental_transp_sn wrapper — both shipped over
--- `uaContractumIsSN` / `composeContractumIsSN` banned postulates)
-#print axioms LeanFX2.RawTerm.transp_isStronglyNormalizing
-#print axioms LeanFX2.Term.transp_isStronglyNormalizing
+-- K12.24 transp DELETED — RawTerm/Term.transp_isStronglyNormalizing
+-- carried banned `uaContractumIsSN` / `composeContractumIsSN`
+-- postulates over arbitrary raw scopes.  The proper Kripke transp
+-- headline lands when `Ty.path` closure is extended (pending M04
+-- fundamental theorem cascade, see
+-- feedback_kripke_predicate_partial_closure.md).
 
 -- K12.24 hcomp (raw / Term SN helpers; the Term-level
 -- _strong_normalization_via_kripke headline was deleted with the
