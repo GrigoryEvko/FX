@@ -502,6 +502,31 @@ theorem RawTerm.matchTranspPiBetaShape?_rename
   | oeqTrans _ _ => rfl
   | equivCompose _ _ => rfl
 
+/-- Completeness for `matchTranspPiBetaShape?`: the converse of
+soundness — when `pathBody` literally has the CCHM transpPi β shape
+`piTyCode innerDomain.weaken codomainCode`, the recognizer
+succeeds and returns exactly that witness.
+
+Together with `_imp_piTyCode_weaken` (soundness), this gives the
+characterization `matchTranspPiBetaShape? pathBody = some (A, B)
+iff pathBody = piTyCode A.weaken B`.
+
+Proof: direct evaluation of the recognizer on the piTyCode shape,
+then `unweaken?_weaken` discharges the inner `unweaken?` check.
+
+Consumed by future Phase G `RawParInversion` arm for
+`transpPiBeta` — given a par step `transp (pathLam (piTyCode
+A.weaken B)) f →par target`, we need to recover that the
+recognizer fires on the LHS path body. -/
+theorem RawTerm.matchTranspPiBetaShape?_piTyCode_weaken
+    {scope : Nat} (innerDomain : RawTerm scope)
+    (codomainCode : RawTerm (scope + 2)) :
+    RawTerm.matchTranspPiBetaShape?
+        (RawTerm.piTyCode innerDomain.weaken codomainCode) =
+      some (innerDomain, codomainCode) := by
+  simp only [RawTerm.matchTranspPiBetaShape?]
+  rw [RawTerm.unweaken?_weaken]
+
 /-- Subst-preservation (forward direction) for `matchTranspPiBetaShape?`:
 when the recognizer succeeds, substitution preserves the success and
 propagates `sigma` through the witness.
