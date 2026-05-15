@@ -488,6 +488,26 @@ theorem RawStep.par.rename_inj_inv :
   -- but Prop induction via `induction parStep` achieves the same effect
   -- without WF bookkeeping.
   --
+  -- RULED-OUT escape hatch (attempted then reverted this commit):
+  -- "Drop the codomainStep premise from `transpPiBeta`+`transpPiBetaDeep`
+  -- and use a shared codomain between LHS pattern and RHS contractum"
+  -- DOES NOT WORK.  The bi-cong premise is load-bearing for
+  -- `RawStep.par.subst_par`'s `transpPiBeta` arm, NOT for `cd_lemma`
+  -- (which uses `cdTranspPiCase` with a single shared codomain and is
+  -- unaffected).  Specifically: in joint substitution, the LHS pattern's
+  -- codomain substitutes via `firstSubst.lift.lift` while the RHS
+  -- contractum's codomain substitutes via `secondSubst.lift.lift`.
+  -- Without the codomainStep premise, the two would be definitionally
+  -- different `RawTerm`s that require a par step to bridge — but the
+  -- simplified ctor only fires when codomain is literally identical.
+  -- Empirical: Phase B step 5 cascade attempt was reverted after
+  -- `RawParCompatible.lean`'s `subst_par.transpPiBeta` arm failed with
+  -- "argument has type par X.subst first.lift.lift vs expected
+  -- X.subst second.lift.lift" type-mismatch.  Conclusion: the bi-cong
+  -- premise is structurally required for the subst_par invariant; the
+  -- only way to close the rename_inj_inv blocker is the par-step
+  -- induction refactor above.
+  --
   -- Until the refactor lands, this file FAILS to elaborate at the
   -- transp arm below; that failure is the load-bearing signal for the
   -- next warrior to ship the par-step-induction version.
