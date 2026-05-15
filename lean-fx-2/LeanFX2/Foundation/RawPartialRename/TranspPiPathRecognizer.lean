@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.RawPartialRename.UnweakenInversion
 import LeanFX2.Foundation.RawPartialRenameCommute
+import LeanFX2.Foundation.RawSubst.SubstIdentityAndBeta
 
 /-! # LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 
@@ -500,5 +501,44 @@ theorem RawTerm.matchTranspPiBetaShape?_rename
   | idToEquiv _ => rfl
   | oeqTrans _ _ => rfl
   | equivCompose _ _ => rfl
+
+/-- Subst-preservation (forward direction) for `matchTranspPiBetaShape?`:
+when the recognizer succeeds, substitution preserves the success and
+propagates `sigma` through the witness.
+
+Unlike rename, the full bidirectional subst-commute is FALSE for this
+recognizer — substitution can map a variable to a `piTyCode`, in which
+case the LHS recognizes the substituted form while the RHS doesn't.
+The forward direction (success ⟹ success-after-subst) is what Phase H's
+`subst_compat` cascade extension needs, and it is true.
+
+Proof: extract `pathBody = piTyCode innerDomain.weaken codomainCode`
+via soundness theorem; substitute through the piTyCode rule; use
+`weaken_subst_commute` to push the substitution past the weakening;
+close via `unweaken?_weaken`.
+
+Consumed by future Phase H `subst_compat` cascade extension that
+mirrors the Phase F `cd transpPi` arm — when the developed transp's
+path body matches under the recognizer, substituting the cd term
+preserves the match. -/
+theorem RawTerm.matchTranspPiBetaShape?_subst_some
+    {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (pathBody : RawTerm (sourceScope + 1))
+    (innerDomain : RawTerm sourceScope)
+    (codomainCode : RawTerm (sourceScope + 2))
+    (success : RawTerm.matchTranspPiBetaShape? pathBody =
+                 some (innerDomain, codomainCode)) :
+    RawTerm.matchTranspPiBetaShape? (pathBody.subst sigma.lift) =
+    some (innerDomain.subst sigma, codomainCode.subst sigma.lift.lift) := by
+  have structureEq := RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken
+                        pathBody innerDomain codomainCode success
+  rw [structureEq]
+  show RawTerm.matchTranspPiBetaShape?
+          (RawTerm.piTyCode (innerDomain.weaken.subst sigma.lift)
+                            (codomainCode.subst sigma.lift.lift)) = _
+  simp only [RawTerm.matchTranspPiBetaShape?]
+  rw [RawTerm.weaken_subst_commute sigma innerDomain,
+      RawTerm.unweaken?_weaken]
 
 end LeanFX2

@@ -92,5 +92,6 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_rename
+#print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_subst_some
 
 end LeanFX2.Smoke
