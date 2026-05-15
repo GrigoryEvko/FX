@@ -1847,7 +1847,22 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- `cdUaToEquivApplyCase`'s `oeqRefl` headline arm) in
   -- `Confluence/RawCd.lean`.
   suffix == "uaReflEquivApply" ||
-  suffix == "uaReflEquivApplyDeep"
+  suffix == "uaReflEquivApplyDeep" ||
+  -- Section I: D2.5.2 cubical hcomp-β raw rules (Phase A: raw-layer
+  -- cascade only).  Headline rule: `hcomp (pathLam X.weaken) cap ⟶
+  -- cap` — homogeneous composition with constant-path sides reduces
+  -- to the cap (the boundary box is trivially filled).  Both shallow
+  -- (`hcompBeta`, sides is syntactically `pathLam X.weaken` on LHS)
+  -- and deep (`hcompBetaDeep`, sides develops to `pathLam X.weaken`
+  -- via parallel reduction) ship raw-only.  The typed mirror
+  -- `Step.par.hcompBeta` lands in Phase B (separate future session)
+  -- alongside `Step.hcompBeta` and the ConvBridge arm.  Activated
+  -- through `cdHcompCase`'s `pathLam` arm in `Confluence/RawCd.lean`
+  -- and discharged in cd_lemma / cd_dominates via
+  -- `RawStep.par.weaken_inv` (Phase G.0), mirroring the
+  -- transpReflBeta cascade structure.
+  suffix == "hcompBeta" ||
+  suffix == "hcompBetaDeep"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

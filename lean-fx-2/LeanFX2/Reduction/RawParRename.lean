@@ -266,6 +266,25 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       have pathRenameStep := pathIH rawRenaming
       simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at pathRenameStep
       exact RawStep.par.transpReflBetaDeep pathRenameStep (sourceIH _)
+  | @hcompBeta _ pathBodyRawSource _ _ _ _ _ pathBodyIH capIH =>
+      -- LHS: hcomp (pathLam pathBodyRawSource.weaken) capRawSource.
+      -- After rename rho: hcomp (pathLam (pathBodyRawSource.weaken.rename rho.lift))
+      --                         (capRawSource.rename rho).
+      -- Need: pathBodyRawSource.weaken.rename rho.lift =
+      --         (pathBodyRawSource.rename rho).weaken
+      -- via `weaken_rename_commute`, mirroring the transpReflBeta arm.
+      simp only [RawTerm.rename]
+      rw [RawTerm.weaken_rename_commute rawRenaming pathBodyRawSource]
+      exact RawStep.par.hcompBeta (pathBodyIH _) (capIH _)
+  | @hcompBetaDeep _ _ _ _ _ _ _ sidesIH capIH =>
+      -- sidesIH : par sidesRawSource (pathLam pathBodyRawTarget.weaken).
+      -- After rename rho, the IH gives par on renamed sides; the target
+      -- becomes pathLam ((pathBodyRawTarget.weaken).rename rho.lift), which we
+      -- rewrite via weaken_rename_commute to pathLam (pathBodyRawTarget.rename rho).weaken.
+      simp only [RawTerm.rename]
+      have sidesRenameStep := sidesIH rawRenaming
+      simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at sidesRenameStep
+      exact RawStep.par.hcompBetaDeep sidesRenameStep (capIH _)
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.hcompCong (sidesIH _) (capIH _)
   | oeqReflCong _ witnessIH =>

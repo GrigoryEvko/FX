@@ -444,8 +444,12 @@ theorem RawStep.par.lift_full_glueIntro
                                baseValue partialValue baseLift partialLift rawStep
   exact ⟨Ty.glue baseType boundaryWitness, target, step⟩
 
-/-- **Tier 2 — Term.hcomp at two-Ty.** -/
-theorem RawStep.par.lift_full_hcomp
+/-- **Tier 2 — Term.hcomp at two-Ty, cong arm only.**
+
+D2.5.2 added raw-only `hcompBeta` / `hcompBetaDeep` β arms; this
+wrapper mirrors the narrowed `lift_hcomp_cong` (cong-arm only)
+until Phase B lands typed mirrors. -/
+theorem RawStep.par.lift_full_hcomp_cong
     (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRaw capRaw : RawTerm scope}
@@ -459,13 +463,16 @@ theorem RawStep.par.lift_full_hcomp
       RawStep.par capRaw targetRawIH →
       ∃ capTarget : Term context carrierType targetRawIH,
         Step.par capValue capTarget)
-    {targetRaw : RawTerm scope}
-    (rawStep : RawStep.par (RawTerm.hcomp sidesRaw capRaw) targetRaw) :
-    ∃ (targetType : Ty level scope) (targetTerm : Term context targetType targetRaw),
+    {sidesTargetRaw capTargetRaw : RawTerm scope}
+    (sidesStep : RawStep.par sidesRaw sidesTargetRaw)
+    (capStep : RawStep.par capRaw capTargetRaw) :
+    ∃ (targetType : Ty level scope)
+      (targetTerm : Term context targetType
+        (RawTerm.hcomp sidesTargetRaw capTargetRaw)),
       Step.par (Term.hcomp modeIsUnivalent sidesValue capValue) targetTerm := by
   obtain ⟨target, step⟩ :=
-    RawStep.par.lift_hcomp modeIsUnivalent sidesValue capValue sidesLift capLift
-                           rawStep
+    RawStep.par.lift_hcomp_cong modeIsUnivalent sidesValue capValue
+                                sidesLift capLift sidesStep capStep
   exact ⟨carrierType, target, step⟩
 
 /-- **Tier 2 — Term.codataUnfold at two-Ty.** -/

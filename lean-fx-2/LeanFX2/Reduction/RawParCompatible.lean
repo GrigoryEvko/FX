@@ -606,6 +606,27 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
       exact RawStep.par.transpReflBetaDeep pathSubstStep
         (sourceIH substsRelated)
+  | @hcompBeta _ pathBodyRawSource _ _ _ _ _ pathBodyIH capIH =>
+      -- Source: hcomp (pathLam pathBodyRawSource.weaken) capRawSource.
+      -- After subst rho: hcomp (pathLam (pathBodyRawSource.weaken.subst rho.lift))
+      --                        (capRawSource.subst rho).
+      -- Need: pathBodyRawSource.weaken.subst rho.lift =
+      --         (pathBodyRawSource.subst rho).weaken
+      -- via `weaken_subst_commute`, mirroring the transpReflBeta arm.
+      simp only [RawTerm.subst]
+      rw [RawTerm.weaken_subst_commute firstSubst pathBodyRawSource]
+      exact RawStep.par.hcompBeta
+        (pathBodyIH substsRelated) (capIH substsRelated)
+  | @hcompBetaDeep _ _ _ _ _ _ _ sidesIH capIH =>
+      -- sidesIH : par sidesRawSource (pathLam pathBodyRawTarget.weaken).
+      -- After subst rho, the IH gives par on substituted sides; the target
+      -- becomes pathLam ((pathBodyRawTarget.weaken).subst rho.lift), rewritten via
+      -- weaken_subst_commute to pathLam (pathBodyRawTarget.subst rho).weaken.
+      simp only [RawTerm.subst]
+      have sidesSubstStep := sidesIH substsRelated
+      simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at sidesSubstStep
+      exact RawStep.par.hcompBetaDeep sidesSubstStep
+        (capIH substsRelated)
   | hcompCong _ _ sidesIH capIH =>
       exact RawStep.par.hcompCong (sidesIH substsRelated) (capIH substsRelated)
   | oeqReflCong _ witnessIH =>

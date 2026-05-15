@@ -374,20 +374,40 @@ theorem RawStep.par.transp_inv {scope : Nat}
       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         ⟨leftRawTarget, rightRawTarget, _, rfl, pathStep, sourceStep⟩)))))
 
-/-- `RawStep.par (hcomp s c) target → target = hcomp s' c' ∧ pars`. -/
+/-- Inversion of `RawStep.par` on an `hcomp` head: either the target
+is again a `hcomp` (refl / hcompCong cases), the LHS sides was a
+constant `pathLam pathBodyRawSource.weaken` and the rule fired through
+`hcompBeta` (D2.5.2, shallow constant-path β; the cap reduces to the
+target), or the sides develops to a constant pathLam-weaken via
+parallel step (deep `hcompBetaDeep`).  In both β arms,
+`pathBodyRawSource`/`pathBodyRawTarget` is INDEPENDENT of the cap
+target — the raw rule fires for any constant-path body and returns
+the cap's reduct.  This mirrors `transp_inv`'s transpReflBeta shape. -/
 theorem RawStep.par.hcomp_inv {scope : Nat}
     {sidesTerm capTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.hcomp sidesTerm capTerm) target) :
-    ∃ sidesTarget capTarget,
-      target = RawTerm.hcomp sidesTarget capTarget ∧
-        RawStep.par sidesTerm sidesTarget ∧
-        RawStep.par capTerm capTarget := by
+    (∃ sidesTarget capTarget,
+        target = RawTerm.hcomp sidesTarget capTarget ∧
+          RawStep.par sidesTerm sidesTarget ∧
+          RawStep.par capTerm capTarget) ∨
+    (∃ (pathBodyRawSource capTarget : RawTerm scope),
+        sidesTerm = RawTerm.pathLam pathBodyRawSource.weaken ∧
+        target = capTarget ∧
+        RawStep.par capTerm capTarget) ∨
+    (∃ (pathBodyRawTarget capTarget : RawTerm scope),
+        target = capTarget ∧
+        RawStep.par sidesTerm (RawTerm.pathLam pathBodyRawTarget.weaken) ∧
+        RawStep.par capTerm capTarget) := by
   cases parallelStep with
   | refl _ =>
-      exact ⟨sidesTerm, capTerm, rfl,
+      exact Or.inl ⟨sidesTerm, capTerm, rfl,
         RawStep.par.refl _, RawStep.par.refl _⟩
   | hcompCong sidesStep capStep =>
-      exact ⟨_, _, rfl, sidesStep, capStep⟩
+      exact Or.inl ⟨_, _, rfl, sidesStep, capStep⟩
+  | hcompBeta _ capStep =>
+      exact Or.inr (Or.inl ⟨_, _, rfl, rfl, capStep⟩)
+  | hcompBetaDeep sidesStep capStep =>
+      exact Or.inr (Or.inr ⟨_, _, rfl, sidesStep, capStep⟩)
 
 /-- `RawStep.par (oeqRefl w) target → target = oeqRefl w' ∧ par w w'`. -/
 theorem RawStep.par.oeqRefl_inv {scope : Nat}

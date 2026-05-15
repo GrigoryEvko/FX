@@ -117,7 +117,12 @@ theorem RawStep.par.cd_lemma_glueElimCong {scope : Nat}
         (gluedEqn ▸ gluedIH)
   all_goals exact RawStep.par.glueElimCong gluedIH
 
-/-- `hcompCong` arm. -/
+/-- `hcompCong` arm.
+
+D2.5.2: now dispatches on `cd sidesRawSource`'s shape via
+`cdHcompCase`.  When `cd sidesRawSource = pathLam X.weaken`,
+fire `hcompBetaDeep`; otherwise fall through to `hcompCong`.  Mirror
+of the transpCong arm. -/
 theorem RawStep.par.cd_lemma_hcompCong {scope : Nat}
     {sidesRawSource sidesRawTarget
      capRawSource capRawTarget : RawTerm scope}
@@ -125,8 +130,19 @@ theorem RawStep.par.cd_lemma_hcompCong {scope : Nat}
     (capIH : RawStep.par capRawTarget (RawTerm.cd capRawSource)) :
     RawStep.par (RawTerm.hcomp sidesRawTarget capRawTarget)
       (RawTerm.cd (RawTerm.hcomp sidesRawSource capRawSource)) := by
-  simp only [RawTerm.cd]
-  exact RawStep.par.hcompCong sidesIH capIH
+  simp only [RawTerm.cd, RawTerm.cdHcompCase]
+  split
+  case _ sidesBody sidesBodyEqn =>
+      rw [sidesBodyEqn] at sidesIH
+      split
+      case _ innerCap unwknEqn =>
+          have hSides : sidesBody = innerCap.weaken :=
+            RawTerm.unweaken?_imp_weaken sidesBody innerCap unwknEqn
+          rw [hSides] at sidesIH
+          exact RawStep.par.hcompBetaDeep sidesIH capIH
+      case _ _unwknEqn =>
+          exact RawStep.par.hcompCong sidesIH capIH
+  all_goals exact RawStep.par.hcompCong sidesIH capIH
 
 /-- `equivIntroCong` arm. -/
 theorem RawStep.par.cd_lemma_equivIntroCong {scope : Nat}

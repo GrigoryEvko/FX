@@ -101,7 +101,13 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       -- being preserved as a weakened term under par.
       RawTerm.cdTranspCase (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
   | _, .hcomp sidesTerm capTerm =>
-      RawTerm.hcomp (RawTerm.cd sidesTerm) (RawTerm.cd capTerm)
+      -- D2.5.2: cdHcompCase fires β when developed sides is
+      -- `pathLam X.weaken` (constant sides-path, body in image of weaken),
+      -- otherwise plain hcomp cong.  The β-firing branch needs
+      -- `RawStep.par.weaken_inv` (Phase G.0, shipped) to discharge
+      -- cd_lemma's hcompBeta arm via the developed sides' body
+      -- being preserved as a weakened term under par.
+      RawTerm.cdHcompCase (RawTerm.cd sidesTerm) (RawTerm.cd capTerm)
   -- D1.6: observational + strict equality (pure cong)
   | _, .oeqRefl witnessTerm => RawTerm.oeqRefl (RawTerm.cd witnessTerm)
   | _, .oeqJ baseCase witness =>

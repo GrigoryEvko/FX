@@ -125,8 +125,18 @@ theorem RawStep.par.lift_glueIntro
                         partialTarget,
          Step.par.glueIntroCong modeIsUnivalent baseStepTyped partialStepTyped⟩
 
-/-- **Tier 2 — Term.hcomp lift.** -/
-theorem RawStep.par.lift_hcomp
+/-- **Tier 2 — Term.hcomp lift, cong arm only.**
+
+D2.5.2 added raw-only `hcompBeta` / `hcompBetaDeep` β arms to
+`RawStep.par`; their typed mirrors land in Phase B (separate
+follow-up session).  Until then, this lift is restricted to the
+cong arm — callers supply `sidesStep` and `capStep` directly
+rather than inverting an opaque `RawStep.par (hcomp _ _) _`.
+
+Mirrors `lift_transp_cong` (`EliminatorShallowBeta.lean`), which
+takes the analogous narrow form for `transp` (whose β arms have
+the same "raw-only ctor, no typed mirror" status). -/
+theorem RawStep.par.lift_hcomp_cong
     (modeIsUnivalent : mode = Mode.univalent)
     {carrierType : Ty level scope}
     {sidesRaw capRaw : RawTerm scope}
@@ -140,15 +150,14 @@ theorem RawStep.par.lift_hcomp
       RawStep.par capRaw targetRawIH →
       ∃ capTarget : Term context carrierType targetRawIH,
         Step.par capValue capTarget)
-    {targetRaw : RawTerm scope}
-    (rawStep : RawStep.par (RawTerm.hcomp sidesRaw capRaw) targetRaw) :
-    ∃ targetTerm : Term context carrierType targetRaw,
+    {sidesTargetRaw capTargetRaw : RawTerm scope}
+    (sidesStep : RawStep.par sidesRaw sidesTargetRaw)
+    (capStep : RawStep.par capRaw capTargetRaw) :
+    ∃ targetTerm :
+        Term context carrierType (RawTerm.hcomp sidesTargetRaw capTargetRaw),
       Step.par (Term.hcomp modeIsUnivalent sidesValue capValue) targetTerm := by
-  obtain ⟨sidesTargetRaw, capTargetRaw, eq, sidesStep, capStep⟩ :=
-    RawStep.par.hcomp_inv rawStep
   obtain ⟨sidesTarget, sidesStepTyped⟩ := sidesLift sidesStep
   obtain ⟨capTarget, capStepTyped⟩ := capLift capStep
-  cases eq
   exact ⟨Term.hcomp modeIsUnivalent sidesTarget capTarget,
          Step.par.hcompCong modeIsUnivalent sidesStepTyped capStepTyped⟩
 

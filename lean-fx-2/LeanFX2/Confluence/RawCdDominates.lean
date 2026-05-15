@@ -289,10 +289,27 @@ theorem RawStep.par.cd_dominates :
            rw [cdPathEqn] at pathParStep
            exact RawStep.par.transpComposeDeep pathParStep sourceParStep)
         | exact RawStep.par.transpCong pathParStep sourceParStep
-  | _, .hcomp sidesTerm capTerm =>
-      RawStep.par.hcompCong
-        (RawStep.par.cd_dominates sidesTerm)
-        (RawStep.par.cd_dominates capTerm)
+  | _, .hcomp sidesTerm capTerm => by
+      -- D2.5.2: dispatch on cd-developed sides via cdHcompCase.  When
+      -- the developed sides is `pathLam X.weaken`, fire `hcompBetaDeep`
+      -- so the LHS hcomp parallel-reduces to the cap.  Otherwise fall
+      -- through to `hcompCong`.  Mirror of the transp arm above.
+      let sidesParStep := RawStep.par.cd_dominates sidesTerm
+      let capParStep := RawStep.par.cd_dominates capTerm
+      unfold RawTerm.cd
+      unfold RawTerm.cdHcompCase
+      split
+      case _ sidesBody sidesBodyEqn =>
+          rw [sidesBodyEqn] at sidesParStep
+          split
+          case _ innerCap unwknEqn =>
+              have hSides : sidesBody = innerCap.weaken :=
+                RawTerm.unweaken?_imp_weaken sidesBody innerCap unwknEqn
+              rw [hSides] at sidesParStep
+              exact RawStep.par.hcompBetaDeep sidesParStep capParStep
+          case _ _unwknEqn =>
+              exact RawStep.par.hcompCong sidesParStep capParStep
+      all_goals exact RawStep.par.hcompCong sidesParStep capParStep
   | _, .oeqRefl witnessTerm =>
       RawStep.par.oeqReflCong (RawStep.par.cd_dominates witnessTerm)
   | _, .oeqJ baseCase witness =>

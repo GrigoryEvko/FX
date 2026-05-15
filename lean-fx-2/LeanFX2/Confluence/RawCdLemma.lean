@@ -543,9 +543,61 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       rw [hWeak]
       simp only [RawTerm.unweaken?_weaken]
       exact sourceIH
-  | hcompCong _ _ sidesIH capIH =>
-      simp only [RawTerm.cd]
-      exact RawStep.par.hcompCong sidesIH capIH
+  | @hcompCong _ sidesRawSource sidesRawTarget _ _ sidesStep capStep sidesIH capIH =>
+      -- sidesIH : par sidesRawTarget (cd sidesRawSource).
+      -- Goal: par (hcomp sidesRawTarget capRawTarget)
+      --           (cdHcompCase (cd sidesRawSource) (cd capRawSource)).
+      -- Split on cdHcompCase result via cd sidesRawSource's shape.
+      -- Mirror of the transpCong arm above for hcomp.
+      simp only [RawTerm.cd, RawTerm.cdHcompCase]
+      split
+      case _ sidesBody sidesBodyEqn =>
+          rw [sidesBodyEqn] at sidesIH
+          split
+          case _ innerCap unwknEqn =>
+              -- sidesBody = innerCap.weaken; β fires via hcompBetaDeep.
+              have hSides : sidesBody = innerCap.weaken :=
+                RawTerm.unweaken?_imp_weaken sidesBody innerCap unwknEqn
+              rw [hSides] at sidesIH
+              exact RawStep.par.hcompBetaDeep sidesIH capIH
+          case _ _unwknEqn =>
+              exact RawStep.par.hcompCong sidesIH capIH
+      all_goals exact RawStep.par.hcompCong sidesIH capIH
+  | @hcompBeta _ pathBodyRawSource _ _ _ _ _ pathBodyIH capIH =>
+      -- Source = hcomp (pathLam pathBodyRawSource.weaken) capRawSource.
+      -- Target = capRawTarget.
+      -- pathBodyIH : par pathBodyRawTarget (cd pathBodyRawSource)
+      -- capIH : par capRawTarget (cd capRawSource)
+      -- Goal: par capRawTarget (cd (hcomp (pathLam pathBodyRawSource.weaken)
+      --                                   capRawSource))
+      -- = par capRawTarget (cdHcompCase (pathLam (cd pathBodyRawSource).weaken)
+      --                                  (cd capRawSource))
+      -- = par capRawTarget (cd capRawSource) [β fires; via cd-rename
+      --   commute, cd pathBodyRawSource.weaken = (cd pathBodyRawSource).weaken;
+      --   unweaken? = some]
+      -- = capIH ✓
+      simp only [RawTerm.cd, RawTerm.cdHcompCase, RawTerm.cd_weaken,
+                 RawTerm.unweaken?_weaken]
+      exact capIH
+  | @hcompBetaDeep _ sidesRawSource _ _ _ sidesStep capStep sidesIH capIH =>
+      -- Source = hcomp sidesRawSource capRawSource.
+      -- Target = capRawTarget.
+      -- sidesStep : par sidesRawSource (pathLam pathBodyRawTarget.weaken)
+      -- sidesIH : par (pathLam pathBodyRawTarget.weaken) (cd sidesRawSource)
+      -- capIH : par capRawTarget (cd capRawSource)
+      -- Goal: par capRawTarget (cd (hcomp sidesRawSource capRawSource))
+      -- = par capRawTarget (cdHcompCase (cd sidesRawSource) (cd capRawSource))
+      -- By pathLam_inv on sidesIH: cd sidesRawSource = pathLam someBody,
+      -- par (pathBodyRawTarget.weaken) someBody.  By weaken_inv: someBody =
+      -- X.weaken; so unweaken? someBody = some X, β fires, target =
+      -- cd capRawSource = capIH.
+      obtain ⟨someBody, cdSidesEq, bodyParStep⟩ := RawStep.par.pathLam_inv sidesIH
+      simp only [RawTerm.cd, RawTerm.cdHcompCase]
+      rw [cdSidesEq]
+      obtain ⟨innerBody, hWeak⟩ := RawStep.par.weaken_inv bodyParStep
+      rw [hWeak]
+      simp only [RawTerm.unweaken?_weaken]
+      exact capIH
   | oeqReflCong _ witnessIH =>
       simp only [RawTerm.cd]
       exact RawStep.par.oeqReflCong witnessIH

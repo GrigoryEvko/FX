@@ -328,32 +328,56 @@ theorem RawTerm.hcomp_isStronglyNormalizing {scope : Nat}
       refine RawTerm.isStronglyNormalizing.intro
         (RawTerm.hcomp currentSides currentCap) ?_
       intro target progressStep
-      obtain ⟨sidesTarget, capTarget, targetEq, sidesStep, capStep⟩ :=
-        RawStep.par.hcomp_inv progressStep.1
-      subst targetEq
-      have sidesTargetIsSN :
-          RawTerm.isStronglyNormalizing sidesTarget := by
+      have congArmSN :
+          ∀ (sidesTarget capTarget : RawTerm scope),
+            target = RawTerm.hcomp sidesTarget capTarget →
+            RawStep.par currentSides sidesTarget →
+            RawStep.par currentCap capTarget →
+            RawTerm.isStronglyNormalizing target := by
+        intro sidesTarget capTarget targetEq sidesStep capStep
+        subst targetEq
+        have sidesTargetIsSN :
+            RawTerm.isStronglyNormalizing sidesTarget := by
+          by_cases sidesEq : currentSides = sidesTarget
+          · subst sidesEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentSides sidesClosure
+          · exact sidesClosure sidesTarget ⟨sidesStep, sidesEq⟩
+        have capTargetIsSN :
+            RawTerm.isStronglyNormalizing capTarget := by
+          by_cases capEq : currentCap = capTarget
+          · subst capEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentCap capClosure
+          · exact capClosure capTarget ⟨capStep, capEq⟩
         by_cases sidesEq : currentSides = sidesTarget
         · subst sidesEq
-          exact RawTerm.isStronglyNormalizing.intro
-            currentSides sidesClosure
-        · exact sidesClosure sidesTarget ⟨sidesStep, sidesEq⟩
-      have capTargetIsSN :
-          RawTerm.isStronglyNormalizing capTarget := by
-        by_cases capEq : currentCap = capTarget
-        · subst capEq
+          by_cases capEq : currentCap = capTarget
+          · subst capEq
+            exact (progressStep.2 rfl).elim
+          · exact capIH capTarget ⟨capStep, capEq⟩
+        · exact sidesIH sidesTarget
+            ⟨sidesStep, sidesEq⟩
+            capTargetIsSN
+      have betaArmSN :
+          ∀ (capRawTarget : RawTerm scope),
+            target = capRawTarget →
+            RawStep.par currentCap capRawTarget →
+            RawTerm.isStronglyNormalizing target := by
+        intro capRawTarget targetEq capStep
+        rw [targetEq]
+        by_cases capEq : currentCap = capRawTarget
+        · rw [← capEq]
           exact RawTerm.isStronglyNormalizing.intro
             currentCap capClosure
-        · exact capClosure capTarget ⟨capStep, capEq⟩
-      by_cases sidesEq : currentSides = sidesTarget
-      · subst sidesEq
-        by_cases capEq : currentCap = capTarget
-        · subst capEq
-          exact (progressStep.2 rfl).elim
-        · exact capIH capTarget ⟨capStep, capEq⟩
-      · exact sidesIH sidesTarget
-          ⟨sidesStep, sidesEq⟩
-          capTargetIsSN
+        · exact capClosure capRawTarget ⟨capStep, capEq⟩
+      rcases RawStep.par.hcomp_inv progressStep.1 with
+        ⟨sidesTarget, capTarget, targetEq, sidesStep, capStep⟩ |
+        ⟨_, capTargetBeta, _, betaTargetEq, betaCapStep⟩ |
+        ⟨_, capTargetDeep, deepTargetEq, _, deepCapStep⟩
+      · exact congArmSN sidesTarget capTarget targetEq sidesStep capStep
+      · exact betaArmSN capTargetBeta betaTargetEq betaCapStep
+      · exact betaArmSN capTargetDeep deepTargetEq deepCapStep
 
 /-- Typed wrapper for hcomp SN preservation. -/
 theorem Term.hcomp_isStronglyNormalizing

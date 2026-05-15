@@ -347,6 +347,32 @@ theorem RawTerm.cdTranspCase_rename {sourceScope targetScope : Nat}
       cases RawTerm.unweaken? pathBody <;> rfl
   all_goals rfl
 
+/-- `cdHcompCase` commutes with `rename`.  Structurally identical to
+`cdTranspCase_rename` modulo `transp ↔ hcomp` and `developedSource ↔
+developedCap`.  The pathLam case splits on `unweaken? sidesBody`:
+when `some inner`, both sides reduce to `developedCap.rename rho`;
+when `none`, both sides reduce to
+`hcomp (pathLam (sidesBody.rename rho.lift)) (developedCap.rename rho)`
+(using `unweaken?_rename_lift_commute` to align the dispatch). -/
+theorem RawTerm.cdHcompCase_rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (developedSides developedCap : RawTerm sourceScope) :
+    (RawTerm.cdHcompCase developedSides developedCap).rename rho =
+    RawTerm.cdHcompCase (developedSides.rename rho)
+      (developedCap.rename rho) := by
+  cases developedSides
+  case pathLam sidesBody =>
+      show ((match RawTerm.unweaken? sidesBody with
+              | some _ => developedCap
+              | none => RawTerm.hcomp (RawTerm.pathLam sidesBody) developedCap).rename rho) =
+           (match RawTerm.unweaken? (sidesBody.rename rho.lift) with
+              | some _ => developedCap.rename rho
+              | none => RawTerm.hcomp (RawTerm.pathLam (sidesBody.rename rho.lift))
+                          (developedCap.rename rho))
+      rw [RawTerm.unweaken?_rename_lift_commute sidesBody rho]
+      cases RawTerm.unweaken? sidesBody <;> rfl
+  all_goals rfl
+
 /-! ## Main theorem: `cd` commutes with `rename`.
 
 Structural induction on `term`.  Atomic ctors close by `rfl`; pure
@@ -557,10 +583,11 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
           pathIH rho, sourceIH rho]
   | hcomp sides cap sidesIH capIH =>
       intro _ rho
-      show (RawTerm.hcomp (RawTerm.cd sides) (RawTerm.cd cap)).rename rho =
+      show (RawTerm.cdHcompCase (RawTerm.cd sides) (RawTerm.cd cap)).rename rho =
            RawTerm.cd (RawTerm.hcomp (sides.rename rho) (cap.rename rho))
-      simp only [RawTerm.rename, RawTerm.cd]
-      rw [sidesIH rho, capIH rho]
+      simp only [RawTerm.cd]
+      rw [RawTerm.cdHcompCase_rename rho (RawTerm.cd sides) (RawTerm.cd cap),
+          sidesIH rho, capIH rho]
   | oeqRefl witness witnessIH =>
       intro _ rho
       show (RawTerm.oeqRefl (RawTerm.cd witness)).rename rho =

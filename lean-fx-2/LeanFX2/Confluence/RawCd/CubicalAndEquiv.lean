@@ -131,6 +131,109 @@ def RawTerm.cdTranspCase {scope : Nat}
   -- transp β rule.  Default rebuild.
   | RawTerm.equivCompose _ _ => RawTerm.transp developedPath developedSource
 
+/-- D2.5.2 cubical hcomp at a syntactically constant sides-path:
+`hcomp (pathLam X.weaken) cap ⟶ cap` (the cubical analog of
+"trivial-box hcomp returns the cap" — the constant-path sides
+provide trivial filler so the box reduces to its cap).
+
+When the developed sides is `pathLam sidesBody` and
+`RawTerm.unweaken? sidesBody` succeeds (i.e. `sidesBody` is a
+weakened term with no interval-binder dependence), fire the β
+reduction returning `developedCap`.  Otherwise rebuild as a plain
+`hcomp` cong.
+
+The β rule is independent of `developedCap`'s value — any
+constant-path sides triggers the reduction.  This matches
+`RawStep.par.hcompBeta` whose `pathBodyRawSource` and
+`capRawSource` are independent witnesses (the raw confluence rule
+does not enforce the cubical boundary condition that the path body
+equals the cap; that is a typing concern, deferred to Phase B).
+
+Structurally mirrors `cdTranspCase`: 67-arm outer match keeps the
+match compiler propext-clean per `feedback_lean_zero_axiom_match.md`;
+the inner `Option (RawTerm scope)` match enumerates `some _` / `none`
+explicitly. -/
+def RawTerm.cdHcompCase {scope : Nat}
+    (developedSides developedCap : RawTerm scope) : RawTerm scope :=
+  match developedSides with
+  | RawTerm.pathLam sidesBody =>
+    match RawTerm.unweaken? sidesBody with
+    | some _ => developedCap
+    | none =>
+        RawTerm.hcomp (RawTerm.pathLam sidesBody) developedCap
+  | RawTerm.var _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.unit => RawTerm.hcomp developedSides developedCap
+  | RawTerm.lam _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.app _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.pair _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.fst _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.snd _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.boolTrue => RawTerm.hcomp developedSides developedCap
+  | RawTerm.boolFalse => RawTerm.hcomp developedSides developedCap
+  | RawTerm.boolElim _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.natZero => RawTerm.hcomp developedSides developedCap
+  | RawTerm.natSucc _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.natElim _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.natRec _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.listNil => RawTerm.hcomp developedSides developedCap
+  | RawTerm.listCons _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.listElim _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.optionNone => RawTerm.hcomp developedSides developedCap
+  | RawTerm.optionSome _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.optionMatch _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.eitherInl _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.eitherInr _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.eitherMatch _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.refl _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.idJ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.modIntro _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.modElim _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.subsume _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.interval0 => RawTerm.hcomp developedSides developedCap
+  | RawTerm.interval1 => RawTerm.hcomp developedSides developedCap
+  | RawTerm.intervalOpp _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.intervalMeet _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.intervalJoin _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.pathApp _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.glueIntro _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.glueElim _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.transp _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.hcomp _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.oeqRefl _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.oeqJ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.oeqFunext _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.idStrictRefl _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.idStrictRec _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.equivIntro _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.equivApp _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.refineIntro _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.refineElim _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.recordIntro _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.recordProj _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.codataUnfold _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.codataDest _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.sessionSend _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.sessionRecv _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.effectPerform _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.universeCode _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.arrowCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.piTyCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.sigmaTyCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.productCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.sumCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.listCode _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.optionCode _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.eitherCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.idCode _ _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.equivCode _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.cumulUpMarker _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.uaToEquiv _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.equivApply _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.pathCompose _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.idToEquiv _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.oeqTrans _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.equivCompose _ _ => RawTerm.hcomp developedSides developedCap
+
 /-- D3.6-S4 idToEquiv-refl redex: `idToEquiv (refl _) → equivIntro id
 id`; otherwise rebuild `idToEquiv developedProof`.
 

@@ -688,6 +688,62 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRawSource sourceRawTarget →
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
                   sourceRawTarget
+  /-- Cubical homogeneous-composition β at a syntactically constant
+  sides-path: when the sides argument is exactly
+  `RawTerm.pathLam pathBodyRawSource.weaken` (the constant path
+  `λ i ⇒ pathBody`, with body in the image of `weaken` so it does
+  not mention the bound interval variable), `hcomp` reduces to the
+  cap (which under cubical boundary typing must equal `pathBody`,
+  but the raw rule does not enforce this; raw confluence only needs
+  a confluent reduction, not a type-correctness check).
+
+  Semantic justification: in CCHM cubical, an `hcomp` with constant-
+  path sides has trivial filler (constant in the cube direction); the
+  filler reduces to the cap.  Mirrors `transpReflBeta` (transp at a
+  constant-type-path is identity on source) — the path-body's content
+  is independent of the source/cap argument at the raw level.
+
+  ## Shallow shape (single-redex β)
+
+  Shallow variant: the `hcomp` head plus the constant `pathLam`
+  sides must be exactly that pair on the LHS.  Inner reductions
+  proceed via two `RawStep.par` premises: one for the path body
+  (`pathBodyRawSource` may inner-step), one for the cap
+  (`capRawSource` may inner-step).  The deep variant (sides not
+  literally `pathLam X.weaken` on the LHS but reaches that shape
+  under cd development) is ctor `hcompBetaDeep` below. -/
+  | hcompBeta {scope : Nat}
+      {pathBodyRawSource pathBodyRawTarget capRawSource capRawTarget :
+        RawTerm scope} :
+      RawStep.par pathBodyRawSource pathBodyRawTarget →
+      RawStep.par capRawSource capRawTarget →
+      RawStep.par
+        (RawTerm.hcomp (RawTerm.pathLam pathBodyRawSource.weaken) capRawSource)
+        capRawTarget
+  /-- Deep cubical hcomp β: when the sides develop via parallel
+  reduction to a constant `pathLam pathBodyRawTarget.weaken` and the
+  cap steps to a target value, the whole hcomp reduces to that cap
+  target.  Required for `cd_dominates` to discharge `cdHcompCase`'s
+  β-firing branch when the sides was NOT literally
+  `pathLam X.weaken` on the LHS but reaches that shape under cd
+  development.
+
+  The `pathBodyRawTarget` and `capRawTarget` are independent
+  witnesses — the raw rule fires for any constant-path body, and
+  the result is just the cap's reduct.  This mirrors
+  `transpReflBetaDeep`'s shape (path body's inner is independent
+  of the source's target).
+
+  Discharge requires `RawStep.par.weaken_inv` (Phase G.0, shipped
+  via `RawParWeakenInv.lean`) to invert the sides reduction in
+  cd_lemma's arm, mirroring the transpReflBetaDeep discharge. -/
+  | hcompBetaDeep {scope : Nat}
+      {sidesRawSource pathBodyRawTarget capRawSource capRawTarget :
+        RawTerm scope} :
+      RawStep.par sidesRawSource (RawTerm.pathLam pathBodyRawTarget.weaken) →
+      RawStep.par capRawSource capRawTarget →
+      RawStep.par (RawTerm.hcomp sidesRawSource capRawSource)
+                  capRawTarget
   /-- Cong: hcomp reduces in sides and cap. -/
   | hcompCong {scope : Nat}
       {sidesRawSource sidesRawTarget capRawSource capRawTarget : RawTerm scope} :

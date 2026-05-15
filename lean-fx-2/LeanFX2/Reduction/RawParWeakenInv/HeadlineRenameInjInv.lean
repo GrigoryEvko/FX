@@ -483,12 +483,23 @@ theorem RawStep.par.rename_inj_inv :
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.hcomp (sides.rename rho)
       (cap.rename rho)) _ at parStep
-    obtain ⟨sidesTarget, capTarget, hTarget, sidesStep, capStep⟩ :=
-      RawStep.par.hcomp_inv parStep
-    obtain ⟨sidesInner, hSidesInner⟩ := sidesIH rho rhoInj sidesStep
-    obtain ⟨capInner, hCapInner⟩ := capIH rho rhoInj capStep
-    refine ⟨RawTerm.hcomp sidesInner capInner, ?_⟩
-    rw [hTarget, hSidesInner, hCapInner]; rfl
+    rcases RawStep.par.hcomp_inv parStep with
+      ⟨sidesTarget, capTarget, hTarget, sidesStep, capStep⟩ |
+      ⟨_pathBodyRawSource, _capTarget, _hSidesRaw, hTarget, capStep⟩ |
+      ⟨_pathBodyRawTarget, _capTarget, hTarget, _sidesStep, capStep⟩
+    · -- hcompCong arm
+      obtain ⟨sidesInner, hSidesInner⟩ := sidesIH rho rhoInj sidesStep
+      obtain ⟨capInner, hCapInner⟩ := capIH rho rhoInj capStep
+      refine ⟨RawTerm.hcomp sidesInner capInner, ?_⟩
+      rw [hTarget, hSidesInner, hCapInner]; rfl
+    · -- hcompBeta arm: target = capTarget; capIH gives capInner.rename rho.
+      obtain ⟨capInner, hCapInner⟩ := capIH rho rhoInj capStep
+      refine ⟨capInner, ?_⟩
+      rw [hTarget, hCapInner]
+    · -- hcompBetaDeep arm: same conclusion as shallow — capIH gives capInner.
+      obtain ⟨capInner, hCapInner⟩ := capIH rho rhoInj capStep
+      refine ⟨capInner, ?_⟩
+      rw [hTarget, hCapInner]
   | oeqJ baseCase witness baseIH witnessIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.oeqJ (baseCase.rename rho)
