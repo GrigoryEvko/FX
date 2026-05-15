@@ -1,8 +1,12 @@
 import LeanFX2.Reducibility.SNHelpers
-import LeanFX2.Reducibility.NeutralSNFoundation
-import LeanFX2.Reducibility.NeutralSNHott
-import LeanFX2.Reducibility.NeutralSNIntro
-import LeanFX2.Reducibility.NeutralSNClosure
+import LeanFX2.Reducibility.NeutralSNFoundation.PiSigma
+import LeanFX2.Reducibility.NeutralSNFoundation.BoolNat
+import LeanFX2.Reducibility.NeutralSNFoundation.ListOptionEither
+import LeanFX2.Reducibility.NeutralSNFoundation.CubicalRecord
+import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
+import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
+import LeanFX2.Reducibility.NeutralSNIntro.Codes
+import LeanFX2.Reducibility.NeutralSNClosure.GlueEquiv
 
 /-! # LeanFX2.Reducibility.FundamentalAliases.DirectCases
 

@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.NeutralSNIntro
+import LeanFX2.Reducibility.NeutralSNIntro.Codes
 
 /-! # LeanFX2.Reducibility.NeutralSNClosure.TypeCodeSN
 

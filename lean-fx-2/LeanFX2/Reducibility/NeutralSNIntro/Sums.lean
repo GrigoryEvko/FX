@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.NeutralSNHott
+import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
 
 /-! # LeanFX2.Reducibility.NeutralSNIntro.Sums
 

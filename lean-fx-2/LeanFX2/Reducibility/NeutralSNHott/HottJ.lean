@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.NeutralSNFoundation
+import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
 
 /-! # LeanFX2.Reducibility.NeutralSNHott.HottJ
 

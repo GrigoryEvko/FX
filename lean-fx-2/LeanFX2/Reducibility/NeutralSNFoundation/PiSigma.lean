@@ -1,5 +1,5 @@
 import LeanFX2.Reducibility.SNHelpers
-import LeanFX2.Reducibility.Neutral
+import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
 
 /-! # LeanFX2.Reducibility.NeutralSNFoundation.PiSigma
 

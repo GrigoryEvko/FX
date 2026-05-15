@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.Neutral
+import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
 
 /-! # LeanFX2.Reducibility.StableBase.SubtermSN
 

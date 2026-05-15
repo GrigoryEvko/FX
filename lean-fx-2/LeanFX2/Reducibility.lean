@@ -1,11 +1,11 @@
 import LeanFX2.Reducibility.Basic
-import LeanFX2.Reducibility.Neutral
+import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
 import LeanFX2.Reducibility.SNHelpers
 import LeanFX2.Reducibility.StableBase.SubtermSN
-import LeanFX2.Reducibility.NeutralSNFoundation
-import LeanFX2.Reducibility.NeutralSNHott
-import LeanFX2.Reducibility.NeutralSNIntro
-import LeanFX2.Reducibility.NeutralSNClosure
+import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
+import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
+import LeanFX2.Reducibility.NeutralSNIntro.Codes
+import LeanFX2.Reducibility.NeutralSNClosure.GlueEquiv
 import LeanFX2.Reducibility.FundamentalAliases.DirectCases
 import LeanFX2.Reducibility.Kripke.Headline
 
@@ -21,13 +21,13 @@ re-exports only the surviving bypass-free modules:
 | Module                                | Role                                              |
 | ------------------------------------- | ------------------------------------------------- |
 | `Reducibility.Basic`                  | `RawTerm.isStronglyNormalizing` base inductive    |
-| `Reducibility.Neutral`                | `RawTerm.IsNeutral` neutrality predicate          |
+| `Reducibility.Neutral.*`              | `RawTerm.IsNeutral` neutrality predicate          |
 | `Reducibility.SNHelpers`              | pure SN preservation lemmas (closed leaves / cong)|
 | `Reducibility.StableBase.SubtermSN`   | shape-specialized subterm SN inversions           |
-| `Reducibility.NeutralSNFoundation`    | per-ctor neutral SN preservation (foundation)     |
-| `Reducibility.NeutralSNHott`          | HoTT / J-family neutral SN closures               |
-| `Reducibility.NeutralSNIntro`         | Σ / modal / list-cons neutral SN closures         |
-| `Reducibility.NeutralSNClosure`       | type-code / cubical / record cong SN closures     |
+| `Reducibility.NeutralSNFoundation.*`  | per-ctor neutral SN preservation (foundation)     |
+| `Reducibility.NeutralSNHott.*`        | HoTT / J-family neutral SN closures               |
+| `Reducibility.NeutralSNIntro.*`       | Σ / modal / list-cons neutral SN closures         |
+| `Reducibility.NeutralSNClosure.*`     | type-code / cubical / record cong SN closures     |
 | `Reducibility.FundamentalAliases.DirectCases` | Term-level SN endpoints (intro / cong / elim) |
 | `Reducibility.Kripke.Headline`        | Kripke step-indexed reducibility + fundamental    |
 
