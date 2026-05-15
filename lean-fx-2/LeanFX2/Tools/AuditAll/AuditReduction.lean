@@ -469,4 +469,93 @@ the D3.6-P5 typed cong promotion above. -/
 #assert_no_axioms LeanFX2.RawStep.par.effectPerform_inv
 #assert_no_axioms LeanFX2.RawStep.par.modElim_inv
 
+/-! ### Phase 6B inversion-lemma coverage closure
+
+Phase 6 of confluence ships inversion lemmas `RawStep.par.X_inv`
+that take `RawStep.par (X args) target` and produce a structural
+witness on `args` — the inverse pattern of the cong rules above.
+These are load-bearing for `cd_lemma` / `diamond` proofs because
+they let the proof "peel" a par-step on a head ctor down to its
+arguments.
+
+All 49 entries below already verify clean in
+`Smoke/AuditPhase6BInversion.lean` (50 `#print axioms`); promoting
+to per-decl `#assert_no_axioms` closes the strict-gate coverage
+gap so a regression that introduces an axiom dependency into the
+inversion infrastructure fails the build rather than only the
+smoke log. -/
+
+-- RawStep.par inversion: variable, closed leaves, and atomic
+-- literals.  All zero-arity head ctors carry vacuous inversions
+-- (the source has no inner par-steps to recover).
+#assert_no_axioms LeanFX2.RawStep.par.var_inv
+#assert_no_axioms LeanFX2.RawStep.par.unit_inv
+#assert_no_axioms LeanFX2.RawStep.par.universeCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.boolFalse_inv
+#assert_no_axioms LeanFX2.RawStep.par.boolTrue_inv
+#assert_no_axioms LeanFX2.RawStep.par.natZero_inv
+#assert_no_axioms LeanFX2.RawStep.par.listNil_inv
+#assert_no_axioms LeanFX2.RawStep.par.optionNone_inv
+
+-- RawStep.par inversion: builder ctors (successor + cons + some +
+-- inl/inr), Π / Σ intro+elim (lam / app / pair / fst / snd), and
+-- HoTT identity (refl / idJ + equivApply).
+#assert_no_axioms LeanFX2.RawStep.par.natSucc_inv
+#assert_no_axioms LeanFX2.RawStep.par.listCons_inv
+#assert_no_axioms LeanFX2.RawStep.par.optionSome_inv
+#assert_no_axioms LeanFX2.RawStep.par.eitherInl_inv
+#assert_no_axioms LeanFX2.RawStep.par.eitherInr_inv
+#assert_no_axioms LeanFX2.RawStep.par.lam_inv
+#assert_no_axioms LeanFX2.RawStep.par.app_inv
+#assert_no_axioms LeanFX2.RawStep.par.pair_inv
+#assert_no_axioms LeanFX2.RawStep.par.fst_inv
+#assert_no_axioms LeanFX2.RawStep.par.snd_inv
+#assert_no_axioms LeanFX2.RawStep.par.refl_inv
+#assert_no_axioms LeanFX2.RawStep.par.idJ_inv
+#assert_no_axioms LeanFX2.RawStep.par.equivApply_inv
+
+-- RawStep.par inversion: eliminator ctors (boolElim / natElim /
+-- natRec / listElim / optionMatch / eitherMatch).
+#assert_no_axioms LeanFX2.RawStep.par.boolElim_inv
+#assert_no_axioms LeanFX2.RawStep.par.natElim_inv
+#assert_no_axioms LeanFX2.RawStep.par.natRec_inv
+#assert_no_axioms LeanFX2.RawStep.par.listElim_inv
+#assert_no_axioms LeanFX2.RawStep.par.optionMatch_inv
+#assert_no_axioms LeanFX2.RawStep.par.eitherMatch_inv
+
+-- RawStep.par inversion: type-code ctors (10 internal Ty-formers
+-- exposed as terms — arrow / idCode / equivCode / listCode /
+-- optionCode / eitherCode / sumCode / productCode / piTyCode /
+-- sigmaTyCode).
+#assert_no_axioms LeanFX2.RawStep.par.arrowCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.idCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.equivCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.listCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.optionCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.eitherCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.sumCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.productCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.piTyCode_inv
+#assert_no_axioms LeanFX2.RawStep.par.sigmaTyCode_inv
+
+-- RawStep.par inversion: cumul + modal + weaken helper.
+#assert_no_axioms LeanFX2.RawStep.par.cumulUpMarker_inv
+#assert_no_axioms LeanFX2.RawStep.par.modIntro_inv
+#assert_no_axioms LeanFX2.RawStep.par.subsume_inv
+#assert_no_axioms LeanFX2.RawStep.par.weaken_inv
+
+-- RawStep.parStar inversion: transitive-reflexive-closure
+-- inversions for the closed leaves and var (no parStar step can
+-- alter a closed atomic ctor's head; recovers `source = target`
+-- for the trivial reflexive case).
+#assert_no_axioms LeanFX2.RawStep.parStar.var_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.unit_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.universeCode_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.boolFalse_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.boolTrue_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.natZero_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.natSucc_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.listNil_inv
+#assert_no_axioms LeanFX2.RawStep.parStar.optionNone_inv
+
 end LeanFX2.Tools
