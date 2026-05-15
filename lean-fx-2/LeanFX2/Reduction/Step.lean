@@ -1260,16 +1260,27 @@ inductive Step :
     SHIPPED.  See documentation below.
 
   D2.5.5 (transpPi — binder-aware transp Π β rule):
-    V1.1 DEFERRED.  Needs the multi-day cascade (par ctor + raw +
-    six compat arms + cd cascade + typed mirror + bridge + smoke).
-    Not shippable as an atomic patch.
+    PHASES A-D SHIPPED (foundation prerequisites at
+    `Foundation/RawPartialRename/Inversion.lean`,
+    `OptionPatterns.lean`, `UnweakenInversion.lean`).  Phases
+    E-K (cd_rename extension, cd dispatcher, RawStep.par ctor,
+    compat, cd_lemma, typed Step ctor, audit) PENDING.  Each
+    phase ships independently as a Phase-X commit; agent runs
+    can ship E+F+G as one cascade atomically following the
+    transpReflBeta + hcompBeta templates.
 
   D2.5.6 (transpSigma — same shape as transpPi):
-    V1.1 DEFERRED.  Same scope as D2.5.5.
+    PHASES A-D SHIPPED (same foundation as D2.5.5; rename
+    injectivity is shape-agnostic).  Phases E-K PENDING with
+    the same cascade structure as D2.5.5.
 
   D2.5.7 (closed-type transps — list/option/either/record):
-    V1.1 DEFERRED.  Per-ctor recursion structure across closed
-    introducers; multi-day.
+    PENDING.  Closed-type case is structurally simpler than
+    binder-aware D2.5.5/6 (no binder/scope shift on body),
+    but still requires a cd cascade extension per closed type
+    introducer.  Note: Lane B's prior transpListBeta Phase A
+    work persists as `stash@{0}` (210 LoC across 6 files) —
+    review before launching a fresh agent.
 
   D2.5.8 (betaPathReflApp — `pathApp (pathLam value.weaken) i ⟶ value`):
     LANDED in this batch (Step ctor + raw mirror + cd cascade).
