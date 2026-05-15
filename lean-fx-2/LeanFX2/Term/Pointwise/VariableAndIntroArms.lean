@@ -61,7 +61,7 @@ theorem Term.weaken_subst_singleton_unit_heq
 The body premise is intentionally stated under the lifted singleton:
 after weakening a lambda, its body lives under the original lambda binder
 and the newly inserted outer binder.  Collapsing that body is the
-substitution-parametric shape needed later by `ReducibleSubst.lift`. -/
+substitution-parametric shape consumed by the typed-β cascade. -/
 theorem Term.weaken_subst_singleton_lam_heq
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
