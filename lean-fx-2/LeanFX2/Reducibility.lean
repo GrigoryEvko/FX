@@ -7,6 +7,7 @@ import LeanFX2.Reducibility.NeutralSNIntro.Codes
 import LeanFX2.Reducibility.NeutralSNClosure.GlueEquiv
 import LeanFX2.Term.SN.DirectCases
 import LeanFX2.Reducibility.Kripke.Headline
+import LeanFX2.Reducibility.Kripke.SNExtraction
 
 /-! # LeanFX2.Reducibility — strong-normalization predicate layer
 

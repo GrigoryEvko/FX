@@ -7,6 +7,7 @@ import LeanFX2.Reducibility.Kripke.SNClosure
 import LeanFX2.Reducibility.Kripke.Fundamental
 import LeanFX2.Reducibility.Kripke.Headline
 import LeanFX2.Reducibility.Kripke.Arrow
+import LeanFX2.Reducibility.Kripke.SNExtraction
 
 /-! Kripke Tait reducibility zero-axiom audit log. -/
 
@@ -280,3 +281,31 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.sn_of_equiv
 #print axioms LeanFX2.ReducibleK.sn_of_path
 #print axioms LeanFX2.ReducibleK.sn_of_glue
+
+-- Universal SN dispatcher + partial M04 headline (added 2026-05-15).
+-- `sn_of_any` dispatches case-by-case on Ty via the per-Ty `sn_of_X`
+-- family; `strong_normalization_from_reducibility` is the M04 partial
+-- corollary closing the SN-extraction half of the Tait pattern.
+#print axioms LeanFX2.ReducibleK.sn_of_any
+#print axioms LeanFX2.Term.strong_normalization_from_reducibility
+
+-- Priority-1 Kripke closure-application fundamentals (added
+-- 2026-05-15).  Eliminator-direction fundamentals for the remaining
+-- Ty arms not already covered by `arrow_apply`/`piTy_apply`/
+-- `sigmaTy_fst`/`sigmaTy_snd`/`listType_elim`/`optionType_match`/
+-- `eitherType_match`/`refine_elim`/`record_proj`/`codata_dest`/
+-- `session_recv`/`mod_elim`/`effect_rename`.  Direct projections from
+-- the `ReducibleK` predicate closures defined in `Predicate.lean`.
+#print axioms LeanFX2.ReducibleK.fundamental_idJ
+#print axioms LeanFX2.ReducibleK.fundamental_oeqJ
+#print axioms LeanFX2.ReducibleK.fundamental_idStrictRec
+#print axioms LeanFX2.ReducibleK.fundamental_equivApply
+#print axioms LeanFX2.ReducibleK.fundamental_pathApp
+#print axioms LeanFX2.ReducibleK.fundamental_glueElim
+
+-- AGENT STRIP HELPERS (2026-05-15): identity-renaming TermRenaming
+-- + Ty-eq transport used to discharge Kripke closure clauses at the
+-- source context for stripping `contractumIsSN` hypotheses in
+-- `Headline.lean`.
+#print axioms LeanFX2.TermRenaming.identity
+#print axioms LeanFX2.ReducibleK.transport
