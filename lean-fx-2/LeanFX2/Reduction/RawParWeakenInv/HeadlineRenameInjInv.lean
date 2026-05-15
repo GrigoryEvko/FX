@@ -380,24 +380,117 @@ theorem RawStep.par.rename_inj_inv :
     obtain ⟨rightInner, hRightInner⟩ := rightIH rho rhoInj rightStep
     refine ⟨RawTerm.intervalJoin leftInner rightInner, ?_⟩
     rw [hTarget, hLeftInner, hRightInner]; rfl
-  -- D2.5.5 Phase B step 2: the new transpPiBeta + transpPiBetaDeep
-  -- disjuncts of `transp_inv` (added in `RawParInversion/CubicalAndIdentity`
-  -- at commit landing D2.5.5 Phase B) introduce a `codomainStep` premise
-  -- at scope+2 INSIDE the developed pathLam-piTyCode-weaken-codomain
-  -- structure.  Closing those two arms requires an inductive hypothesis
-  -- at scope+2 on the codomain inner — but the OUTER structural
-  -- induction on `sourceTerm` only exposes `pathIH` / `sourceIH` at
-  -- scope, not on the deep codomain.  Two viable architectural fixes:
-  --   1. Refactor to par-step induction (induct on `parStep` instead of
-  --      `sourceTerm`); the codomainStep IH then comes for free.
-  --   2. Introduce `RawTerm.size` + well-founded recursion on size; the
-  --      codomain inner has strictly smaller size, so a recursive
-  --      `rename_inj_inv` call on it succeeds.
-  -- Both are ~hundred-line refactors that exceed a single Ralph tick's
-  -- safe-modify budget.  The transp arm below is preserved as-is, so
-  -- this file currently FAILS to elaborate for the two new disjuncts;
-  -- that failure is the load-bearing signal for the next warrior to
-  -- pick one of the two fixes above and ship it.
+  -- D2.5.5 Phase B step 3 (refined blocker analysis, this commit): the
+  -- new `transpPiBeta` + `transpPiBetaDeep` disjuncts of `transp_inv`
+  -- (added by `da170c7` D2.5.5 Phase B step 1 in
+  -- `RawParInversion/CubicalAndIdentity`) carry a `codomainStep` premise
+  -- at `scope + 2` INSIDE the developed `pathLam(piTyCode innerDom.weaken
+  -- codomainCodeMid)` structure.  Closing those two arms requires
+  -- inverting the rename at scope+2 on the codomain inner — which
+  -- demands an inductive hypothesis at scope+2.  The OUTER structural
+  -- induction on `sourceTerm : RawTerm sourceScope` only exposes
+  -- `pathIH` / `sourceIH` at scope, not at scope+2; and `pathIH` returns
+  -- an EXISTENTIAL witness `pathInner` whose sub-RawTerms (in particular
+  -- `codInner` after `rename_eq_pathLam_imp` + `rename_eq_piTyCode_imp`
+  -- — both shipped via `d92e211` Phase B step 2a) are NOT structural
+  -- subterms of the outer `sourceTerm`.  Hence no IH chain reaches them.
+  --
+  -- THE ONLY VIABLE ARCHITECTURAL FIX: par-step induction.  Refactor the
+  -- proof from `induction sourceTerm` to `induction parStep` (the
+  -- auto-generated `RawStep.par` recursor).  Each sub-par-step then
+  -- receives an IH automatically — including `codomainStep` at scope+2,
+  -- which is exactly the missing piece.  Sketch:
+  --
+  --   theorem rename_inj_inv :
+  --     ∀ {scope} {leftT rightT : RawTerm scope}
+  --       (parStep : RawStep.par leftT rightT)
+  --       {srcS} {srcT : RawTerm srcS}
+  --       (rho : RawRenaming srcS scope)
+  --       (rhoInj : ∀ a b, rho a = rho b → a = b)
+  --       (hMatch : srcT.rename rho = leftT),
+  --       ∃ rightInner : RawTerm srcS, rightT = rightInner.rename rho :=
+  --     fun parStep => by
+  --       induction parStep with
+  --       | refl _ => intro _ srcT rho _ hMatch
+  --                   exact ⟨srcT, hMatch.symm⟩
+  --       | var _ => ... -- via rename_eq_var_imp on hMatch
+  --       | transp pathStepNested sourceStepNested
+  --             pathIHNested sourceIHNested =>
+  --         intro _ srcT rho rhoInj hMatch
+  --         -- srcT.rename rho = transp pSource sSource ⇒
+  --         -- ∃ pInner sInner, srcT = transp pInner sInner with renames
+  --         obtain ⟨pInner, sInner, hSrc, hP, hS⟩ :=
+  --           RawTerm.rename_eq_transp_imp rho hMatch
+  --         obtain ⟨pInnerTgt, hPTgt⟩ := pathIHNested rho rhoInj hP
+  --         obtain ⟨sInnerTgt, hSTgt⟩ := sourceIHNested rho rhoInj hS
+  --         exact ⟨RawTerm.transp pInnerTgt sInnerTgt, ...⟩
+  --       ...
+  --       | transpPiBetaDeep pathStep codomainStep sourceStep
+  --                          pathIH codomainIH sourceIH =>
+  --         intro _ srcT rho rhoInj hMatch
+  --         obtain ⟨pInner, sInner, hSrc, hP, hS⟩ :=
+  --           RawTerm.rename_eq_transp_imp rho hMatch
+  --         obtain ⟨pInnerTgt, hPTgt⟩ := pathIH rho rhoInj hP
+  --         -- pInnerTgt.rename rho = pathLam(piTyCode innerDom.weaken
+  --         --                                codomainCodeMid)
+  --         obtain ⟨pBody, hPLam, hPBodyRename⟩ :=
+  --           RawTerm.rename_eq_pathLam_imp rho hPTgt
+  --         obtain ⟨domInner, codInner, hPBodyPi, hDom, hCodMid⟩ :=
+  --           RawTerm.rename_eq_piTyCode_imp rho.lift hPBodyRename
+  --         -- HERE: codomainIH at (srcS+2, codInner, rho.lift.lift,
+  --         -- RawRenaming.lift_injective (RawRenaming.lift_injective
+  --         -- rhoInj), hCodMid) gives codInnerTgt with
+  --         -- codInnerTgt.rename rho.lift.lift = codomainCodeTarget.
+  --         have rhoLLInj := RawRenaming.lift_injective
+  --                            (RawRenaming.lift_injective rhoInj)
+  --         obtain ⟨codInnerTgt, hCodTgt⟩ :=
+  --           codomainIH rho.lift.lift rhoLLInj hCodMid
+  --         obtain ⟨sInnerTgt, hSTgt⟩ := sourceIH rho rhoInj hS
+  --         refine ⟨RawTerm.transpPiBetaContractum codInnerTgt sInnerTgt,
+  --                 ?_⟩
+  --         rw [RawTerm.transpPiBetaContractum_rename]
+  --         rw [hCodTgt, hSTgt]
+  --       ...
+  --
+  -- Cost estimate: ~150 par ctors × ~10-25 LoC each = ~1500-2500 LoC,
+  -- one new file (e.g. `RawParWeakenInv/HeadlineRenameInjInvParStep.lean`)
+  -- that supplants this `HeadlineRenameInjInv.lean`.  Many ctor cases
+  -- discharge via shape-mismatch (`cases hMatch` on impossible
+  -- `RawTerm.var _ = RawTerm.transp _ _` etc.), reducing the per-case
+  -- cost.  The 9 transp-LHS β ctors (transp/transpReflBeta /
+  -- transpReflBetaDeep / uaBeta / uaBetaDeep / transpCompose /
+  -- transpComposeDeep / transpPiBeta / transpPiBetaDeep) and analogous
+  -- pathApp/hcomp/glue β cascades need real proofs each.
+  --
+  -- Existing infrastructure already shipped (usable as-is):
+  --   * `rename_eq_pathLam_imp` (BinderShape.lean:275)
+  --   * `rename_eq_piTyCode_imp` (BinderShape.lean:897, d92e211)
+  --   * `rename_eq_pathCompose_imp` (CubicalShape.lean:116)
+  --   * `rename_eq_uaToEquiv_imp` (CubicalShape.lean:23)
+  --   * `RawRenaming.lift_injective` (Foundation.lean:43)
+  --   * `transpPiBetaContractum_rename` (TranspPiContractum.lean:145)
+  -- Missing pieces the par-step refactor must add:
+  --   * `RawTerm.rename_eq_transp_imp` (analogue of pathLam_imp, for
+  --     transp-shape LHS — ~80 LoC ctor enumeration with 66 nomatch arms)
+  --   * `RawTerm.rename_eq_intervalRefl_imp` (for transpReflBeta arm)
+  --   * `RawTerm.rename_eq_X_imp` for every par ctor's LHS pattern that
+  --     does not already have one — most are var/atom-shape and ship as
+  --     2-3 line ctor-injectivity proofs.
+  --
+  -- INCORRECT prior analysis (corrected this commit): "well-founded
+  -- recursion on `RawTerm.size`" does NOT work.  `pathInner` returned by
+  -- `pathIH` is an existential witness whose size is NOT bounded by
+  -- `path.size` (par's β rules grow terms; e.g.
+  -- `(λ x. f x x) arg → f arg arg` produces a target whose size > LHS
+  -- size).  So recursion on `path.size` cannot reach `codInner` via
+  -- `pathInner`.  Par-step depth IS strictly decreasing through
+  -- sub-par-steps and is the right measure if WF recursion is wanted —
+  -- but Prop induction via `induction parStep` achieves the same effect
+  -- without WF bookkeeping.
+  --
+  -- Until the refactor lands, this file FAILS to elaborate at the
+  -- transp arm below; that failure is the load-bearing signal for the
+  -- next warrior to ship the par-step-induction version.
   | transp path source pathIH sourceIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.transp (path.rename rho)
