@@ -1,8 +1,6 @@
 import LeanFX2.Term.SN.Helpers
 import LeanFX2.Reducibility.NeutralSNFoundation.PiSigma
 import LeanFX2.Reducibility.NeutralSNFoundation.BoolNat
-import LeanFX2.Reducibility.NeutralSNFoundation.ListOptionEither
-import LeanFX2.Reducibility.NeutralSNFoundation.CubicalRecord
 import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
 import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
 import LeanFX2.Reducibility.NeutralSNIntro.Codes

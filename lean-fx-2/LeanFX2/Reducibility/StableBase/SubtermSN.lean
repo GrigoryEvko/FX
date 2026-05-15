@@ -1,4 +1,4 @@
-import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
+import LeanFX2.Reducibility.Basic
 
 /-! # LeanFX2.Reducibility.StableBase.SubtermSN
 
@@ -6,14 +6,12 @@ Shape-specialized SN inversions on subterms (`app` function
 and argument, `natSucc` predecessor, `pair` first/second,
 `optionSome` value, `eitherInl`/`eitherInr` value, `recordIntro`
 field, `refineIntro` value, `glueIntro` base, `listCons`
-head/tail, `modIntro` inner) plus the
-`RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure`
-raw CR3 gate and its Term wrapper.
+head/tail, `modIntro` inner).
 
 ## Root status
 
-Layer 3 metatheory leaf.  Fourth and final slice of K12.20.U4
-stable base. -/
+Layer 3 metatheory leaf consumed by Kripke generic-closure SN
+proofs. -/
 
 namespace LeanFX2
 
@@ -510,40 +508,6 @@ theorem Term.isStronglyNormalizing.of_raw_progress_closure
         RawTerm.isStronglyNormalizing target) :
     Term.isStronglyNormalizing sourceTerm :=
   RawTerm.isStronglyNormalizing.of_progress_closure closure
-
-/-- **K12.20.U2 raw CR3, neutral form**: a neutral raw term is SN
-when all of its non-trivial progress reducts are SN.
-
-The neutral witness is not computationally needed by the SN
-constructor; it records the Tait CR3 contract at the call site.  In
-later compound arms the neutral witness is what makes the reduct
-closure available, while this lemma performs the final SN packaging. -/
-theorem RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
-    {scope : Nat}
-    {source : RawTerm scope}
-    (_sourceIsNeutral : RawTerm.IsNeutral source)
-    (closure :
-      ∀ target : RawTerm scope,
-        RawStep.parProgress source target →
-        RawTerm.isStronglyNormalizing target) :
-    RawTerm.isStronglyNormalizing source :=
-  RawTerm.isStronglyNormalizing.of_progress_closure closure
-
-/-- Typed wrapper for the neutral raw CR3 form. -/
-theorem Term.isStronglyNormalizing_of_neutral_progress_closure
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {sourceType : Ty level scope}
-    {sourceRaw : RawTerm scope}
-    (sourceTerm : Term context sourceType sourceRaw)
-    (sourceIsNeutral : RawTerm.IsNeutral sourceRaw)
-    (closure :
-      ∀ target : RawTerm scope,
-        RawStep.parProgress sourceRaw target →
-        RawTerm.isStronglyNormalizing target) :
-    Term.isStronglyNormalizing sourceTerm :=
-  RawTerm.IsNeutral.isStronglyNormalizing_of_progress_closure
-    sourceIsNeutral closure
 
 /-- Shape-specialized inversion for codata state SN. -/
 theorem RawTerm.codataUnfold_state_isStronglyNormalizing_aux {scope : Nat}

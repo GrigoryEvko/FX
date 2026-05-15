@@ -1,5 +1,4 @@
 import LeanFX2.Reducibility.Basic
-import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
 import LeanFX2.Term.Rename
 
 /-! # LeanFX2.Reducibility.Kripke.Predicate — step-indexed Kripke Tait

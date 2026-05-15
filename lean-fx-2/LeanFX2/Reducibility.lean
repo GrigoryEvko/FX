@@ -1,5 +1,4 @@
 import LeanFX2.Reducibility.Basic
-import LeanFX2.Reducibility.Neutral.ModalAdvancedPreservation
 import LeanFX2.Term.SN.Helpers
 import LeanFX2.Reducibility.StableBase.SubtermSN
 import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
@@ -11,24 +10,21 @@ import LeanFX2.Reducibility.Kripke.Headline
 
 /-! # LeanFX2.Reducibility — strong-normalization predicate layer
 
-The legacy `Reducible` Tait predicate (defined by recursion on Ty)
-plus its `Classifier` / `Foundation` / `StableBase` / `TypedCR2*` /
-`FundamentalWrappers` / `FundamentalEliminators` / `FundamentalCubical`
-cascade has been deleted in favor of the bypass-free Kripke
-step-indexed predicate at `Reducibility.Kripke`.  This aggregator
-re-exports only the surviving bypass-free modules:
+The legacy `Reducible` Tait predicate plus its `IsNeutral` / `cr3` /
+`Classifier` / `Foundation` cascade has been deleted in favor of the
+bypass-free Kripke step-indexed predicate at `Reducibility.Kripke`.
+This aggregator re-exports only the surviving bypass-free modules:
 
 | Module                                | Role                                              |
 | ------------------------------------- | ------------------------------------------------- |
 | `Reducibility.Basic`                  | `RawTerm.isStronglyNormalizing` base inductive    |
-| `Reducibility.Neutral.*`              | `RawTerm.IsNeutral` neutrality predicate          |
-| `Term.SN.Helpers`              | pure SN preservation lemmas (closed leaves / cong)|
+| `Term.SN.Helpers`                     | pure SN preservation lemmas (closed leaves / cong)|
 | `Reducibility.StableBase.SubtermSN`   | shape-specialized subterm SN inversions           |
-| `Reducibility.NeutralSNFoundation.*`  | per-ctor neutral SN preservation (foundation)     |
-| `Reducibility.NeutralSNHott.*`        | HoTT / J-family neutral SN closures               |
-| `Reducibility.NeutralSNIntro.*`       | Σ / modal / list-cons neutral SN closures         |
-| `Reducibility.NeutralSNClosure.*`     | type-code / cubical / record cong SN closures     |
-| `Term.SN.DirectCases` | Term-level SN endpoints (intro / cong / elim) |
+| `Reducibility.NeutralSNFoundation.*`  | per-ctor atomic SN lemmas (Π/Σ/list/option/etc.)  |
+| `Reducibility.NeutralSNHott.*`        | HoTT / J-family atomic SN closures                |
+| `Reducibility.NeutralSNIntro.*`       | Σ / modal / list-cons atomic SN closures          |
+| `Reducibility.NeutralSNClosure.*`     | type-code / cubical / record generic-closure SN   |
+| `Term.SN.DirectCases`                 | Term-level SN endpoints (intro / cong / elim)     |
 | `Reducibility.Kripke.Headline`        | Kripke step-indexed reducibility + fundamental    |
 
 ## Root status
