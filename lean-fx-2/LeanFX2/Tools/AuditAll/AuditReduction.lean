@@ -558,4 +558,82 @@ smoke log. -/
 #assert_no_axioms LeanFX2.RawStep.parStar.listNil_inv
 #assert_no_axioms LeanFX2.RawStep.parStar.optionNone_inv
 
+/-! ### Phase G rename-injectivity weaken-inversion infrastructure
+
+29 per-ctor `RawTerm.rename_eq_<ctor>_imp` shape-inversion lemmas
+plus the `RawStep.par.rename_inj_inv` headline.  Each shape lemma
+proves: if `rho` is injective and `rename rho someTerm = <ctor> args`,
+then `someTerm` has the corresponding constructor head with
+rename-recovered arguments.  Propext-clean via toRaw-shape match
+(per `feedback_lean_zero_axiom_match.md`).
+
+Used pervasively by:
+* `RawStep.par.weaken_inv` (already gated) — Phase G inversion
+* `RawStep.par.rename_inj_inv` — headline rename-injection inversion
+* `RawTerm.cd_rename` cubical arms (cdTranspCase_rename,
+  cdTranspPiCase_rename, cdHcompCase_rename) — already gated in
+  AuditConfluence (commit 46f83e7).
+
+Atom-shape lemmas (closed/zero-arity ctors): 7 in AtomShape1, 5 in
+AtomShape2.  Binder-shape lemmas (arity-bearing ctors with binders
+or compound payloads): 12 in BinderShape.  Cubical/HoTT-specific
+shapes: 5 in CubicalShape. -/
+
+#assert_no_axioms LeanFX2.RawStep.par.rename_inj_inv
+
+-- AtomShape1: 7 closed-leaf shape inversions
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_boolTrue_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_boolFalse_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_natZero_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_listNil_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_optionNone_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_interval0_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_interval1_imp
+
+-- AtomShape2: 5 unary-payload shape inversions
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_natSucc_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_optionSome_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_eitherInl_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_eitherInr_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_refl_imp
+
+-- BinderShape: 12 binder-bearing or compound-payload shape inversions
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_modIntro_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_idStrictRefl_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_recordIntro_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_pathLam_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_lam_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_pair_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_listCons_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_refineIntro_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_glueIntro_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_codataUnfold_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_transp_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_piTyCode_imp
+
+-- CubicalShape: 5 cubical/HoTT-specific shape inversions
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_uaToEquiv_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_pathCompose_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_idToEquiv_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_oeqTrans_imp
+#assert_no_axioms LeanFX2.RawTerm.rename_eq_equivCompose_imp
+
+/-! ### Compatibility headline theorems (D2.5 cascade load-bearing)
+
+`RawStep.par.rename` is the headline rename-compat: every parallel
+step is preserved under arbitrary renaming.  `RawStep.par.subst_par`
+and `RawStep.par.subst0_par` are the substitution analogs.  The
+three supporting lemmas (`RawTerm.subst0_subst_commute`,
+`RawTermSubst.par_lift`, `RawTerm.subst_par_pointwise`) are the
+beta-substitution arithmetic that subst_par lifts.  Used pervasively
+by the typed Term cascade and by every D2.5 cubical β rule's
+compat arm. -/
+
+#assert_no_axioms LeanFX2.RawStep.par.rename
+#assert_no_axioms LeanFX2.RawStep.par.subst_par
+#assert_no_axioms LeanFX2.RawStep.par.subst0_par
+#assert_no_axioms LeanFX2.RawTerm.subst0_subst_commute
+#assert_no_axioms LeanFX2.RawTermSubst.par_lift
+#assert_no_axioms LeanFX2.RawTerm.subst_par_pointwise
+
 end LeanFX2.Tools

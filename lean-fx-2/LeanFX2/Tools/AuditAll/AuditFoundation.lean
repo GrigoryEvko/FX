@@ -135,4 +135,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.toRawPoly_toRawTerm
 #assert_no_axioms LeanFX2.Foundation.Polygraph.RawPolyTerm.toRawTerm_toRawPoly
 
+/-! ### RawRenaming weaken/lift injectivity (RawStep.par.weaken_inv prereq)
+
+`RawRenaming.weaken_injective` and `RawRenaming.lift_injective` are
+the foundational injectivity facts that `weaken_inv` (the Phase G
+headline already gated) depends on transitively.  Propext-clean by
+direct structural reasoning on `Fin` (per `feedback_lean_fin_cases_axiom.md`
+— direct `⟨0, _⟩` / `⟨k+1, h⟩` matches instead of `Fin.cases`). -/
+
+#assert_no_axioms LeanFX2.RawRenaming.weaken_injective
+#assert_no_axioms LeanFX2.RawRenaming.lift_injective
+
 end LeanFX2.Tools
