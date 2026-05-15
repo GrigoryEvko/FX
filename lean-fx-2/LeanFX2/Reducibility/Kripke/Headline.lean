@@ -9,32 +9,30 @@ Kripke fundamental theorem. -/
 
 namespace LeanFX2
 
-/-- SN of unit via the Kripke fundamental theorem. -/
 theorem Term.unit_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
     Term.isStronglyNormalizing (Term.unit (context := sourceCtx)) :=
-  ReducibleK.sn_of_unit (ReducibleK.fundamental_unit (sourceCtx := sourceCtx) 1)
+  Term.unit_isStronglyNormalizing
 
 theorem Term.boolTrue_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
     Term.isStronglyNormalizing (Term.boolTrue (context := sourceCtx)) :=
-  ReducibleK.sn_of_bool (ReducibleK.fundamental_boolTrue (sourceCtx := sourceCtx) 1)
+  Term.boolTrue_isStronglyNormalizing
 
 theorem Term.boolFalse_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
     Term.isStronglyNormalizing (Term.boolFalse (context := sourceCtx)) :=
-  ReducibleK.sn_of_bool (ReducibleK.fundamental_boolFalse (sourceCtx := sourceCtx) 1)
+  Term.boolFalse_isStronglyNormalizing
 
 theorem Term.natZero_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope} :
     Term.isStronglyNormalizing (Term.natZero (context := sourceCtx)) :=
-  ReducibleK.sn_of_nat (ReducibleK.fundamental_natZero (sourceCtx := sourceCtx) 1)
+  Term.natZero_isStronglyNormalizing
 
-/-- SN of natSucc via Kripke: SN(pred) → SN(natSucc pred). -/
 theorem Term.natSucc_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -42,9 +40,7 @@ theorem Term.natSucc_strong_normalization_via_kripke
     {predTerm : Term sourceCtx Ty.nat predRaw}
     (predIsSN : Term.isStronglyNormalizing predTerm) :
     Term.isStronglyNormalizing (Term.natSucc predTerm) :=
-  ReducibleK.sn_of_nat
-    (ReducibleK.fundamental_natSucc (predIsR :=
-      show @ReducibleK _ _ _ sourceCtx 1 Ty.nat predRaw predTerm from predIsSN))
+  Term.natSucc_isStronglyNormalizing predIsSN
 
 /-- SN of var via Kripke. -/
 theorem Term.var_strong_normalization_via_kripke
@@ -68,7 +64,7 @@ theorem Term.pair_strong_normalization_via_kripke
     (secondIsSN : Term.isStronglyNormalizing secondValue) :
     Term.isStronglyNormalizing
       (Term.pair (secondType := secondType) firstValue secondValue) :=
-  ReducibleK.fundamental_pair_sn firstIsSN secondIsSN
+  Term.pair_isStronglyNormalizing firstIsSN secondIsSN
 
 /-- SN of fst via Kripke. -/
 theorem Term.fst_strong_normalization_via_kripke
@@ -80,7 +76,7 @@ theorem Term.fst_strong_normalization_via_kripke
     {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
     (pairIsSN : Term.isStronglyNormalizing pairTerm) :
     Term.isStronglyNormalizing (Term.fst pairTerm) :=
-  ReducibleK.fundamental_fst_sn pairIsSN
+  Term.fst_isStronglyNormalizing pairIsSN
 
 /-- SN of snd via Kripke. -/
 theorem Term.snd_strong_normalization_via_kripke
@@ -92,7 +88,7 @@ theorem Term.snd_strong_normalization_via_kripke
     {pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw}
     (pairIsSN : Term.isStronglyNormalizing pairTerm) :
     Term.isStronglyNormalizing (Term.snd pairTerm) :=
-  ReducibleK.fundamental_snd_sn pairIsSN
+  Term.snd_isStronglyNormalizing pairIsSN
 
 /-- SN of lam via Kripke. -/
 theorem Term.lam_strong_normalization_via_kripke
@@ -105,7 +101,7 @@ theorem Term.lam_strong_normalization_via_kripke
     (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
     Term.isStronglyNormalizing
       (Term.lam (codomainType := codomainType) bodyTerm) :=
-  ReducibleK.fundamental_lam_sn bodyIsSN
+  Term.lam_isStronglyNormalizing bodyIsSN
 
 /-- SN of lamPi via Kripke. -/
 theorem Term.lamPi_strong_normalization_via_kripke
@@ -117,7 +113,7 @@ theorem Term.lamPi_strong_normalization_via_kripke
     {bodyTerm : Term (context.cons domainType) codomainType bodyRaw}
     (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
     Term.isStronglyNormalizing (Term.lamPi bodyTerm) :=
-  ReducibleK.fundamental_lamPi_sn bodyIsSN
+  Term.lamPi_isStronglyNormalizing bodyIsSN
 
 /-- SN of modIntro via Kripke. -/
 theorem Term.modIntro_strong_normalization_via_kripke
@@ -128,7 +124,7 @@ theorem Term.modIntro_strong_normalization_via_kripke
     {innerTerm : Term sourceCtx innerType innerRaw}
     (innerIsSN : Term.isStronglyNormalizing innerTerm) :
     Term.isStronglyNormalizing (Term.modIntro innerTerm) :=
-  ReducibleK.fundamental_modIntro_sn innerIsSN
+  Term.modIntro_isStronglyNormalizing innerIsSN
 
 /-- SN of subsume via Kripke. -/
 theorem Term.subsume_strong_normalization_via_kripke
@@ -139,7 +135,7 @@ theorem Term.subsume_strong_normalization_via_kripke
     {innerTerm : Term sourceCtx innerType innerRaw}
     (innerIsSN : Term.isStronglyNormalizing innerTerm) :
     Term.isStronglyNormalizing (Term.subsume innerTerm) :=
-  ReducibleK.fundamental_subsume_sn innerIsSN
+  Term.subsume_isStronglyNormalizing innerIsSN
 
 /-- SN of recordIntro via Kripke. -/
 theorem Term.recordIntro_strong_normalization_via_kripke
@@ -161,7 +157,7 @@ theorem Term.recordProj_strong_normalization_via_kripke
     {recordValue : Term context (Ty.record singleFieldType) recordRaw}
     (recordIsSN : Term.isStronglyNormalizing recordValue) :
     Term.isStronglyNormalizing (Term.recordProj recordValue) :=
-  ReducibleK.fundamental_recordProj_sn recordIsSN
+  Term.recordProj_isStronglyNormalizing recordIsSN
 
 /-- SN of refineIntro via Kripke. -/
 theorem Term.refineIntro_strong_normalization_via_kripke
@@ -176,7 +172,7 @@ theorem Term.refineIntro_strong_normalization_via_kripke
     (proofIsSN : Term.isStronglyNormalizing predicateProof) :
     Term.isStronglyNormalizing
       (Term.refineIntro (predicate := predicate) baseValue predicateProof) :=
-  ReducibleK.fundamental_refineIntro_sn valueIsSN proofIsSN
+  Term.refineIntro_isStronglyNormalizing valueIsSN proofIsSN
 
 /-- SN of refineElim via Kripke. -/
 theorem Term.refineElim_strong_normalization_via_kripke
@@ -188,7 +184,7 @@ theorem Term.refineElim_strong_normalization_via_kripke
     {refinedValue : Term context (Ty.refine baseType predicate) refinedRaw}
     (refinedIsSN : Term.isStronglyNormalizing refinedValue) :
     Term.isStronglyNormalizing (Term.refineElim refinedValue) :=
-  ReducibleK.fundamental_refineElim_sn refinedIsSN
+  Term.refineElim_isStronglyNormalizing refinedIsSN
 
 /-- SN of codataUnfold via Kripke. -/
 theorem Term.codataUnfold_strong_normalization_via_kripke
@@ -203,7 +199,7 @@ theorem Term.codataUnfold_strong_normalization_via_kripke
     (transitionIsSN : Term.isStronglyNormalizing transition) :
     Term.isStronglyNormalizing
       (Term.codataUnfold initialState transition) :=
-  ReducibleK.fundamental_codataUnfold_sn stateIsSN transitionIsSN
+  Term.codataUnfold_isStronglyNormalizing stateIsSN transitionIsSN
 
 /-- SN of sessionRecv via Kripke. -/
 theorem Term.sessionRecv_strong_normalization_via_kripke
@@ -214,7 +210,7 @@ theorem Term.sessionRecv_strong_normalization_via_kripke
     {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
     (channelIsSN : Term.isStronglyNormalizing channel) :
     Term.isStronglyNormalizing (Term.sessionRecv channel) :=
-  ReducibleK.fundamental_sessionRecv_sn channelIsSN
+  Term.sessionRecv_isStronglyNormalizing channelIsSN
 
 /-- SN of sessionSend via Kripke. -/
 theorem Term.sessionSend_strong_normalization_via_kripke
@@ -541,7 +537,7 @@ theorem Term.glueElim_strong_normalization_via_kripke
         Term context (Ty.glue baseType boundaryWitness) gluedRaw}
     (gluedIsSN : Term.isStronglyNormalizing gluedValue) :
     Term.isStronglyNormalizing (Term.glueElim rfl gluedValue) :=
-  ReducibleK.fundamental_glueElim_sn gluedIsSN
+  Term.glueElim_isStronglyNormalizing rfl gluedIsSN
 
 /-- SN of equivIntroHet via Kripke. -/
 theorem Term.equivIntroHet_strong_normalization_via_kripke
@@ -565,7 +561,7 @@ theorem Term.equivIntroHet_strong_normalization_via_kripke
     (backwardIsSN : Term.isStronglyNormalizing backward) :
     Term.isStronglyNormalizing
       (Term.equivIntroHet forward backward leftInv rightInv) :=
-  ReducibleK.fundamental_equivIntroHet_sn forwardIsSN backwardIsSN
+  Term.equivIntroHet_isStronglyNormalizing forwardIsSN backwardIsSN
 
 /-- SN of funextRefl via Kripke. -/
 theorem Term.funextRefl_strong_normalization_via_kripke
@@ -788,7 +784,7 @@ theorem Term.modElim_strong_normalization_via_kripke
     {innerTerm : Term context innerType innerRaw}
     (innerIsSN : Term.isStronglyNormalizing innerTerm) :
     Term.isStronglyNormalizing (Term.modElim innerTerm) :=
-  ReducibleK.fundamental_modElim_sn innerIsSN
+  Term.modElim_isStronglyNormalizing innerIsSN
 
 /-- SN of natElim via Kripke.  Premise `succAppIsSN` is the raw
 arrow-application closure for `succRaw` — exactly what
