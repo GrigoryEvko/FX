@@ -372,4 +372,101 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.equivApplyCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.equivApplyCong.subst_compatible
 
+/-! ### Raw-cascade ctor strict-gate coverage closure
+
+Promotes 53 `RawStep.par.*` ctors from smoke-only `#print axioms`
+coverage in `Smoke/AuditPhase12A2Day2.lean` to machine-enforced
+per-decl `#assert_no_axioms`.  All entries already report "does not
+depend on any axioms" under the smoke audit; this commit closes the
+strict-gate coverage gap so a future regression that introduces an
+axiom dependency fails the build rather than only the smoke log.
+
+Same shape as the K12.26 Kripke promotion (commit `3032f5b`) and
+the D3.6-P5 typed cong promotion above. -/
+
+-- Cubical interval ops — symmetry inverse, join, meet, and the two
+-- endpoint constants.  Cong arms preserve interval-level steps; the
+-- `_inv` lemmas invert a par-step on the head ctor to recover its
+-- argument's par-step (used by `cd_lemma` interval arms).
+#assert_no_axioms LeanFX2.RawStep.par.intervalOppCong
+#assert_no_axioms LeanFX2.RawStep.par.intervalOpp_inv
+#assert_no_axioms LeanFX2.RawStep.par.intervalMeetCong
+#assert_no_axioms LeanFX2.RawStep.par.intervalMeet_inv
+#assert_no_axioms LeanFX2.RawStep.par.intervalJoinCong
+#assert_no_axioms LeanFX2.RawStep.par.intervalJoin_inv
+#assert_no_axioms LeanFX2.RawStep.par.interval0_inv
+#assert_no_axioms LeanFX2.RawStep.par.interval1_inv
+
+-- Cubical path / glue / transp / hcomp cong + inv.  `pathApp` /
+-- `glueIntro` / `transp` carry inversion lemmas consumed by the
+-- cd cascade; `hcompCong` / `glueElimCong` / `pathLamCong` ship the
+-- cong premises only (their `_inv` counterparts already strict-gated
+-- above as `pathLam_inv` / `glueElim_inv`).
+#assert_no_axioms LeanFX2.RawStep.par.pathLamCong
+#assert_no_axioms LeanFX2.RawStep.par.pathAppCong
+#assert_no_axioms LeanFX2.RawStep.par.pathApp_inv
+#assert_no_axioms LeanFX2.RawStep.par.glueIntroCong
+#assert_no_axioms LeanFX2.RawStep.par.glueIntro_inv
+#assert_no_axioms LeanFX2.RawStep.par.glueElimCong
+#assert_no_axioms LeanFX2.RawStep.par.transpCong
+#assert_no_axioms LeanFX2.RawStep.par.transp_inv
+#assert_no_axioms LeanFX2.RawStep.par.hcompCong
+
+-- HOTT observational equality + strict-id family — cong + inversion
+-- for refl / J / funext / strictRec / strictRefl.  `oeqReflCong` has
+-- no inversion (zero-arity ctor); the others carry both arms.
+#assert_no_axioms LeanFX2.RawStep.par.oeqReflCong
+#assert_no_axioms LeanFX2.RawStep.par.oeqJCong
+#assert_no_axioms LeanFX2.RawStep.par.oeqJ_inv
+#assert_no_axioms LeanFX2.RawStep.par.oeqFunextCong
+#assert_no_axioms LeanFX2.RawStep.par.oeqFunext_inv
+#assert_no_axioms LeanFX2.RawStep.par.idStrictReflCong
+#assert_no_axioms LeanFX2.RawStep.par.idStrictRefl_inv
+#assert_no_axioms LeanFX2.RawStep.par.idStrictRecCong
+#assert_no_axioms LeanFX2.RawStep.par.idStrictRec_inv
+
+-- Equivalence cong + inversion.  `equivIntro` / `equivApp` mirror
+-- the Σ-type intro/elim shape (closed by `betaEquivAppIntro` β rule
+-- already strict-gated under the typed mirror block above).
+#assert_no_axioms LeanFX2.RawStep.par.equivIntroCong
+#assert_no_axioms LeanFX2.RawStep.par.equivIntro_inv
+#assert_no_axioms LeanFX2.RawStep.par.equivAppCong
+#assert_no_axioms LeanFX2.RawStep.par.equivApp_inv
+
+-- Record + refine: β rules (intro then project / intro then elim
+-- reduce to the inner content), plus cong + inv per ctor.
+#assert_no_axioms LeanFX2.RawStep.par.betaRecordProjIntro
+#assert_no_axioms LeanFX2.RawStep.par.betaRecordProjIntroDeep
+#assert_no_axioms LeanFX2.RawStep.par.recordIntroCong
+#assert_no_axioms LeanFX2.RawStep.par.recordIntro_inv
+#assert_no_axioms LeanFX2.RawStep.par.recordProjCong
+#assert_no_axioms LeanFX2.RawStep.par.recordProj_inv
+#assert_no_axioms LeanFX2.RawStep.par.betaRefineElimIntro
+#assert_no_axioms LeanFX2.RawStep.par.betaRefineElimIntroDeep
+#assert_no_axioms LeanFX2.RawStep.par.refineIntroCong
+#assert_no_axioms LeanFX2.RawStep.par.refineIntro_inv
+#assert_no_axioms LeanFX2.RawStep.par.refineElimCong
+#assert_no_axioms LeanFX2.RawStep.par.refineElim_inv
+
+-- Codata destruct / unfold cong + inversion (corecursive eliminator
+-- + introducer for `Ty.codata` shape).
+#assert_no_axioms LeanFX2.RawStep.par.codataDestCong
+#assert_no_axioms LeanFX2.RawStep.par.codataDest_inv
+#assert_no_axioms LeanFX2.RawStep.par.codataUnfoldCong
+#assert_no_axioms LeanFX2.RawStep.par.codataUnfold_inv
+
+-- Session-typed channel send / receive cong + inversion (linear
+-- protocol-state advancement for `Ty.session` chains).
+#assert_no_axioms LeanFX2.RawStep.par.sessionSendCong
+#assert_no_axioms LeanFX2.RawStep.par.sessionSend_inv
+#assert_no_axioms LeanFX2.RawStep.par.sessionRecvCong
+#assert_no_axioms LeanFX2.RawStep.par.sessionRecv_inv
+
+-- Algebraic-effect perform cong + inversion (`Ty.effect` operation
+-- invocation), plus the modal-elim inversion arm (cong already
+-- gated as part of the modal cascade above).
+#assert_no_axioms LeanFX2.RawStep.par.effectPerformCong
+#assert_no_axioms LeanFX2.RawStep.par.effectPerform_inv
+#assert_no_axioms LeanFX2.RawStep.par.modElim_inv
+
 end LeanFX2.Tools
