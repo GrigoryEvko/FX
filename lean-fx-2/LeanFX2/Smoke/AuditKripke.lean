@@ -55,12 +55,10 @@ import LeanFX2.Reducibility.Kripke.SNExtraction
 #print axioms LeanFX2.ReducibleK.fundamental_var_empty
 #print axioms LeanFX2.ReducibleK.fundamental_var_interval
 #print axioms LeanFX2.ReducibleK.fundamental_natSucc
-#print axioms LeanFX2.ReducibleK.fundamental_listNil
-#print axioms LeanFX2.ReducibleK.fundamental_optionNone
-#print axioms LeanFX2.ReducibleK.fundamental_listCons_sn
-#print axioms LeanFX2.ReducibleK.fundamental_optionSome_sn
-#print axioms LeanFX2.ReducibleK.fundamental_eitherInl_sn
-#print axioms LeanFX2.ReducibleK.fundamental_eitherInr_sn
+-- introducer-direction fundamental_{listNil,optionNone,listCons,optionSome,
+-- eitherInl,eitherInr}_sn DELETED — they shipped over banned
+-- contractum/closure postulates symmetric to the eliminator-side family.
+-- Restored once the M04 fundamental theorem lands.
 #print axioms LeanFX2.ReducibleK.arrow_sn
 #print axioms LeanFX2.ReducibleK.arrow_apply
 #print axioms LeanFX2.Term.natSucc_strong_normalization_via_kripke
@@ -158,8 +156,10 @@ import LeanFX2.Reducibility.Kripke.SNExtraction
 #print axioms LeanFX2.Term.equivApp_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.equivApply_strong_normalization_via_kripke
 #print axioms LeanFX2.Term.modElim_strong_normalization_via_kripke
-#print axioms LeanFX2.Term.natElim_strong_normalization_via_kripke
-#print axioms LeanFX2.Term.natRec_strong_normalization_via_kripke
+-- natElim_strong_normalization_via_kripke / natRec_strong_normalization_via_kripke
+-- DELETED — they shipped over a banned `succAppIsSN` / `contractumIsSN`
+-- universally-quantified raw-SN postulate.  Restored by the M04
+-- fundamental theorem once it lands.
 
 -- K12.26 closed-leaf Kripke headlines (7 new aliases for interval0,
 -- interval1, universeCode, piTyCode, sigmaTyCode, productCode, sumCode)
@@ -186,62 +186,64 @@ import LeanFX2.Reducibility.Kripke.SNExtraction
 #print axioms LeanFX2.Term.funextIntroHet_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_funextIntroHet_sn
 
--- K12.25 codataDest (codata destructor with β-fire on codataUnfold)
+-- K12.25 codataDest (codata destructor; raw / Term SN helpers)
 #print axioms LeanFX2.RawTerm.codataUnfold_state_isStronglyNormalizing
 #print axioms LeanFX2.RawTerm.codataUnfold_transition_isStronglyNormalizing
 #print axioms LeanFX2.RawTerm.codataDest_isStronglyNormalizing
 #print axioms LeanFX2.Term.codataDest_isStronglyNormalizing
 #print axioms LeanFX2.Term.codataDest_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_codataDest_sn
 
--- K12.22 listElim (generic ι recursor with nil-fire + cons-fire contractum closure)
+-- K12.22 listElim (generic ι recursor; raw / Term SN helpers)
 #print axioms LeanFX2.RawTerm.listElim_isStronglyNormalizing
 #print axioms LeanFX2.Term.listElim_isStronglyNormalizing
 #print axioms LeanFX2.Term.listElim_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_listElim_sn
 
--- K12.22 optionMatch (generic ι recursor with none-fire + some-fire contractum closure)
+-- K12.22 optionMatch (generic ι recursor; raw / Term SN helpers)
 #print axioms LeanFX2.RawTerm.optionMatch_isStronglyNormalizing
 #print axioms LeanFX2.Term.optionMatch_isStronglyNormalizing
 #print axioms LeanFX2.Term.optionMatch_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_optionMatch_sn
 
--- K12.22 eitherMatch (generic ι recursor with inl-fire + inr-fire contractum closures)
+-- K12.22 eitherMatch (generic ι recursor; raw / Term SN helpers)
 #print axioms LeanFX2.RawTerm.eitherMatch_isStronglyNormalizing
 #print axioms LeanFX2.Term.eitherMatch_isStronglyNormalizing
 #print axioms LeanFX2.Term.eitherMatch_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_eitherMatch_sn
 
--- K12.21 app (β-redex; contractum closure consumes body+argument SN)
+-- K12.21 app (β-redex; raw / Term SN helpers)
 #print axioms LeanFX2.RawTerm.lam_body_isStronglyNormalizing
 #print axioms LeanFX2.RawTerm.app_isStronglyNormalizing
 #print axioms LeanFX2.Term.app_isStronglyNormalizing
 #print axioms LeanFX2.Term.app_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_app_sn
 
--- K12.21 appPi (dependent-Π β-redex; reuses raw β rule from app)
+-- K12.21 appPi (dependent-Π β-redex; raw β shared with app)
 #print axioms LeanFX2.Term.appPi_isStronglyNormalizing
 #print axioms LeanFX2.Term.appPi_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_appPi_sn
 
 -- K12.24 pathApp (cubical-mode path application β-redex)
 #print axioms LeanFX2.RawTerm.pathLam_body_isStronglyNormalizing
 #print axioms LeanFX2.RawTerm.pathApp_isStronglyNormalizing
 #print axioms LeanFX2.Term.pathApp_isStronglyNormalizing
 #print axioms LeanFX2.Term.pathApp_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_pathApp_sn
 
--- K12.24 transp (constant-path, univalence, and path-compose β closures)
+-- K12.24 transp (raw / Term SN helpers; the Term-level
+-- _strong_normalization_via_kripke headline was deleted with the
+-- ReducibleK.fundamental_transp_sn wrapper — both shipped over
+-- `uaContractumIsSN` / `composeContractumIsSN` banned postulates)
 #print axioms LeanFX2.RawTerm.transp_isStronglyNormalizing
 #print axioms LeanFX2.Term.transp_isStronglyNormalizing
-#print axioms LeanFX2.Term.transp_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_transp_sn
 
--- K12.24 hcomp (congruence-only at the current raw cubical layer)
+-- K12.24 hcomp (raw / Term SN helpers; the Term-level
+-- _strong_normalization_via_kripke headline was deleted with the
+-- ReducibleK.fundamental_hcomp_sn wrapper — congruence-only headline
+-- added no information beyond the underlying SN helper)
 #print axioms LeanFX2.RawTerm.hcomp_isStronglyNormalizing
 #print axioms LeanFX2.Term.hcomp_isStronglyNormalizing
-#print axioms LeanFX2.Term.hcomp_strong_normalization_via_kripke
-#print axioms LeanFX2.ReducibleK.fundamental_hcomp_sn
+
+-- ReducibleK.fundamental_{codataDest,listElim,optionMatch,eitherMatch,
+-- app,appPi,pathApp,transp,hcomp}_sn DELETED — each shipped over a
+-- banned `contractumIsSN` / `inlContractumIsSN` / `inrContractumIsSN` /
+-- `uaContractumIsSN` / `composeContractumIsSN` Pi-type postulate over
+-- arbitrary raw scopes (structurally false in general).  Restored by
+-- the M04 fundamental theorem once it lands.
 
 -- K12.27 Kripke real Tait closures for piTy / sigmaTy / listType /
 -- optionType / eitherType.  Each closure is SN of the term plus a

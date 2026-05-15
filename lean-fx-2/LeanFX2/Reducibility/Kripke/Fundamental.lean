@@ -986,247 +986,38 @@ theorem ReducibleK.fundamental_funextIntroHet_sn
   Term.funextIntroHet_isStronglyNormalizing
     domainType codomainType applyAIsSN
 
-/-- SN of codataDest via Kripke.  The contractum-SN closure
-hypothesis covers the β arm `codataDest (codataUnfold s t) → app t s`. -/
-theorem ReducibleK.fundamental_codataDest_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {stateType outputType : Ty level scope}
-    {codataRaw : RawTerm scope}
-    {codataValue :
-      Term context (Ty.codata stateType outputType) codataRaw}
-    (codataIsSN : Term.isStronglyNormalizing codataValue)
-    (contractumIsSN :
-      ∀ {stateRaw transitionRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing stateRaw →
-        RawTerm.isStronglyNormalizing transitionRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app transitionRaw stateRaw)) :
-    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
-  Term.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
+/-! ## Deleted Kripke SN fundamentals (β/ι eliminator family).
 
-/-- SN of listElim via Kripke.  Takes SN of scrutinee/nilBranch/
-consBranch plus the contractum closure for the cons-ι arm
-`listElim (listCons h t) n c → app (app c h) t`. -/
-theorem ReducibleK.fundamental_listElim_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {elementType motiveType : Ty level scope}
-    {scrutineeRaw nilRaw consRaw : RawTerm scope}
-    {scrutinee : Term context (Ty.listType elementType) scrutineeRaw}
-    {nilBranch : Term context motiveType nilRaw}
-    {consBranch : Term context (Ty.arrow elementType
-                                  (Ty.arrow (Ty.listType elementType)
-                                    motiveType)) consRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (nilIsSN : Term.isStronglyNormalizing nilBranch)
-    (consIsSN : Term.isStronglyNormalizing consBranch)
-    (contractumIsSN :
-      ∀ {headRaw tailRaw consTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing headRaw →
-        RawTerm.isStronglyNormalizing tailRaw →
-        RawTerm.isStronglyNormalizing consTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app (RawTerm.app consTargetRaw headRaw) tailRaw)) :
-    Term.isStronglyNormalizing
-      (Term.listElim scrutinee nilBranch consBranch) :=
-  Term.listElim_isStronglyNormalizing
-    scrutineeIsSN nilIsSN consIsSN contractumIsSN
+The following nine `ReducibleK.fundamental_X_sn` Term-level SN wrappers
+have been DELETED:
 
-/-- SN of optionMatch via Kripke.  Takes SN of scrutinee/noneBranch/
-someBranch plus the contractum closure for the some-ι arm
-`optionMatch (optionSome v) n s → app s v`. -/
-theorem ReducibleK.fundamental_optionMatch_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {elementType motiveType : Ty level scope}
-    {scrutineeRaw noneRaw someRaw : RawTerm scope}
-    {scrutinee : Term context (Ty.optionType elementType) scrutineeRaw}
-    {noneBranch : Term context motiveType noneRaw}
-    {someBranch : Term context (Ty.arrow elementType motiveType) someRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (noneIsSN : Term.isStronglyNormalizing noneBranch)
-    (someIsSN : Term.isStronglyNormalizing someBranch)
-    (contractumIsSN :
-      ∀ {valueRaw someTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing valueRaw →
-        RawTerm.isStronglyNormalizing someTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app someTargetRaw valueRaw)) :
-    Term.isStronglyNormalizing
-      (Term.optionMatch scrutinee noneBranch someBranch) :=
-  Term.optionMatch_isStronglyNormalizing
-    scrutineeIsSN noneIsSN someIsSN contractumIsSN
+  fundamental_codataDest_sn
+  fundamental_listElim_sn
+  fundamental_optionMatch_sn
+  fundamental_eitherMatch_sn
+  fundamental_app_sn
+  fundamental_appPi_sn
+  fundamental_pathApp_sn
+  fundamental_transp_sn
+  fundamental_hcomp_sn
 
-/-- SN of eitherMatch via Kripke.  Takes SN of scrutinee/leftBranch/
-rightBranch plus a pair of contractum closures for the two ι arms:
-`eitherMatch (eitherInl v) l r → app l v` and the inr-symmetric arm. -/
-theorem ReducibleK.fundamental_eitherMatch_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {leftType rightType motiveType : Ty level scope}
-    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
-    {scrutinee :
-      Term context (Ty.eitherType leftType rightType) scrutineeRaw}
-    {leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw}
-    {rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (leftIsSN : Term.isStronglyNormalizing leftBranch)
-    (rightIsSN : Term.isStronglyNormalizing rightBranch)
-    (inlContractumIsSN :
-      ∀ {valueRaw leftTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing valueRaw →
-        RawTerm.isStronglyNormalizing leftTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app leftTargetRaw valueRaw))
-    (inrContractumIsSN :
-      ∀ {valueRaw rightTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing valueRaw →
-        RawTerm.isStronglyNormalizing rightTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app rightTargetRaw valueRaw)) :
-    Term.isStronglyNormalizing
-      (Term.eitherMatch scrutinee leftBranch rightBranch) :=
-  Term.eitherMatch_isStronglyNormalizing
-    scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
+Each shipped over universally-quantified raw SN postulates
+(`contractumIsSN` / `inlContractumIsSN` / `inrContractumIsSN` /
+`uaContractumIsSN` / `composeContractumIsSN`) — Pi-type hypotheses
+over arbitrary `RawTerm scope` that are structurally false in general.
+Per the project's banned-hypothesis-as-postulate rule (CLAUDE.md
+"Forbidden reasoning patterns"), taking such hypotheses to "ship"
+theorems vacuously is semantically identical to adding an axiom.
 
-/-- SN of app via Kripke.  Takes SN of function and argument plus the
-contractum closure for the β arm `app (lam body) arg → body[arg/0]`.
-The closure consumes SN of body (extracted from the lam-form function
-reduct) and SN of the argument reduct. -/
-theorem ReducibleK.fundamental_app_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {domainType codomainType : Ty level scope}
-    {functionRaw argumentRaw : RawTerm scope}
-    {functionTerm :
-      Term context (Ty.arrow domainType codomainType) functionRaw}
-    {argumentTerm : Term context domainType argumentRaw}
-    (functionIsSN : Term.isStronglyNormalizing functionTerm)
-    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
-    (contractumIsSN :
-      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
-          {argumentTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing bodyTargetRaw →
-        RawTerm.isStronglyNormalizing argumentTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (bodyTargetRaw.subst0 argumentTargetRaw)) :
-    Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) :=
-  Term.app_isStronglyNormalizing
-    functionIsSN argumentIsSN contractumIsSN
+The `fundamental_hcomp_sn` wrapper did not take a contractum
+hypothesis directly but delegated to
+`Term.hcomp_isStronglyNormalizing`, which itself was part of the
+same banned-pattern family from `Term.SN.DirectCases`; deleted for
+consistency.
 
-/-- SN of appPi via Kripke.  Dependent-Π elimination shares the raw
-β rule with `Term.app`; the typed signature differs only in carrying
-a dependent codomain that substitutes the argument. -/
-theorem ReducibleK.fundamental_appPi_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {domainType : Ty level scope}
-    {codomainType : Ty level (scope + 1)}
-    {functionRaw argumentRaw : RawTerm scope}
-    {functionTerm :
-      Term context (Ty.piTy domainType codomainType) functionRaw}
-    {argumentTerm : Term context domainType argumentRaw}
-    (functionIsSN : Term.isStronglyNormalizing functionTerm)
-    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
-    (contractumIsSN :
-      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
-          {argumentTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing bodyTargetRaw →
-        RawTerm.isStronglyNormalizing argumentTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (bodyTargetRaw.subst0 argumentTargetRaw)) :
-    Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) :=
-  Term.appPi_isStronglyNormalizing
-    functionIsSN argumentIsSN contractumIsSN
-
-/-- SN of pathApp via Kripke.  Cubical path application: the β rule
-fires when the path develops to a `pathLam` and the interval argument
-develops to any normal form, yielding `body.subst0 interval`.  Mirrors
-the `app` family modulo the cubical-mode parameter and the path-typed
-domain. -/
-theorem ReducibleK.fundamental_pathApp_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    (modeIsUnivalent : mode = Mode.univalent)
-    {carrierType : Ty level scope}
-    {leftEndpoint rightEndpoint : RawTerm scope}
-    {pathRaw intervalRaw : RawTerm scope}
-    {pathTerm :
-      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
-    {intervalTerm : Term context Ty.interval intervalRaw}
-    (pathIsSN : Term.isStronglyNormalizing pathTerm)
-    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
-    (contractumIsSN :
-      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
-          {intervalTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing bodyTargetRaw →
-        RawTerm.isStronglyNormalizing intervalTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (bodyTargetRaw.subst0 intervalTargetRaw)) :
-    Term.isStronglyNormalizing
-      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
-  Term.pathApp_isStronglyNormalizing modeIsUnivalent
-    pathIsSN intervalIsSN contractumIsSN
-
-/-- SN of transp via Kripke.  The current raw transport relation has
-constant-path, univalence, and path-composition computational arms; the two
-nontrivial reduct families are supplied as explicit contractum closures. -/
-theorem ReducibleK.fundamental_transp_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    (modeIsUnivalent : mode = Mode.univalent)
-    (universeLevel : UniverseLevel)
-    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
-    (sourceType targetType : Ty level scope)
-    (sourceTypeRaw targetTypeRaw : RawTerm scope)
-    {pathRaw sourceRaw : RawTerm scope}
-    {typePath :
-      Term context
-        (Ty.path (Ty.universe universeLevel universeLevelLt)
-          sourceTypeRaw targetTypeRaw)
-        pathRaw}
-    {sourceValue : Term context sourceType sourceRaw}
-    (pathIsSN : Term.isStronglyNormalizing typePath)
-    (sourceIsSN : Term.isStronglyNormalizing sourceValue)
-    (uaContractumIsSN :
-      ∀ {equivRaw sourceTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing equivRaw →
-        RawTerm.isStronglyNormalizing sourceTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.equivApply equivRaw sourceTargetRaw))
-    (composeContractumIsSN :
-      ∀ {leftPathRaw rightPathRaw sourceTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing
-          (RawTerm.pathCompose leftPathRaw rightPathRaw) →
-        RawTerm.isStronglyNormalizing sourceTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.transp rightPathRaw
-            (RawTerm.transp leftPathRaw sourceTargetRaw))) :
-    Term.isStronglyNormalizing
-      (Term.transp modeIsUnivalent universeLevel universeLevelLt
-        sourceType targetType sourceTypeRaw targetTypeRaw
-        typePath sourceValue) :=
-  Term.transp_isStronglyNormalizing modeIsUnivalent universeLevel
-    universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
-    pathIsSN sourceIsSN uaContractumIsSN composeContractumIsSN
-
-/-- SN of hcomp via Kripke.  The current raw `hcomp` relation is
-congruence-only; boundary computation is still tracked separately by the
-future cubical β-rule work. -/
-theorem ReducibleK.fundamental_hcomp_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    (modeIsUnivalent : mode = Mode.univalent)
-    {carrierType : Ty level scope}
-    {sidesRaw capRaw : RawTerm scope}
-    {sidesValue : Term context carrierType sidesRaw}
-    {capValue : Term context carrierType capRaw}
-    (sidesIsSN : Term.isStronglyNormalizing sidesValue)
-    (capIsSN : Term.isStronglyNormalizing capValue) :
-    Term.isStronglyNormalizing
-      (Term.hcomp modeIsUnivalent sidesValue capValue) :=
-  Term.hcomp_isStronglyNormalizing modeIsUnivalent sidesIsSN capIsSN
+The honest path is the M04 fundamental theorem (induction on typing
+derivation), which produces ι-reduct SN status as a real structural
+consequence.  Defer until M04. -/
 
 /-! ## Priority-1 Kripke closure-application fundamentals (eliminator-side).
 
