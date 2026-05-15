@@ -29,11 +29,8 @@ variable {scope : Nat}
 theorem RawStep.parStar.lam
     {sourceBody targetBody : RawTerm (scope + 1)}
     (chain : RawStep.parStar sourceBody targetBody) :
-    RawStep.parStar (.lam sourceBody) (.lam targetBody) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.lam firstStep) restIH
+    RawStep.parStar (.lam sourceBody) (.lam targetBody) :=
+  RawStep.parStar.mapStep RawTerm.lam RawStep.par.lam chain
 
 /-- parStar respects `app` on the function side. -/
 theorem RawStep.parStar.appLeft
@@ -41,11 +38,9 @@ theorem RawStep.parStar.appLeft
     (argument : RawTerm scope)
     (chain : RawStep.parStar sourceFunction targetFunction) :
     RawStep.parStar (.app sourceFunction argument)
-                    (.app targetFunction argument) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.app firstStep (.refl _)) restIH
+                    (.app targetFunction argument) :=
+  RawStep.parStar.mapStep (fun source => .app source argument)
+    (fun innerStep => RawStep.par.app innerStep (.refl _)) chain
 
 /-- parStar respects `app` on the argument side. -/
 theorem RawStep.parStar.appRight
@@ -53,11 +48,9 @@ theorem RawStep.parStar.appRight
     {sourceArgument targetArgument : RawTerm scope}
     (chain : RawStep.parStar sourceArgument targetArgument) :
     RawStep.parStar (.app functionTerm sourceArgument)
-                    (.app functionTerm targetArgument) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.app (.refl _) firstStep) restIH
+                    (.app functionTerm targetArgument) :=
+  RawStep.parStar.mapStep (fun source => .app functionTerm source)
+    (fun innerStep => RawStep.par.app (.refl _) innerStep) chain
 
 /-- parStar respects `app` on both sides. -/
 theorem RawStep.parStar.app
@@ -77,11 +70,9 @@ theorem RawStep.parStar.pairLeft
     (secondValue : RawTerm scope)
     (chain : RawStep.parStar sourceFirst targetFirst) :
     RawStep.parStar (.pair sourceFirst secondValue)
-                    (.pair targetFirst secondValue) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.pair firstStep (.refl _)) restIH
+                    (.pair targetFirst secondValue) :=
+  RawStep.parStar.mapStep (fun source => .pair source secondValue)
+    (fun innerStep => RawStep.par.pair innerStep (.refl _)) chain
 
 /-- parStar respects `pair` on the second component. -/
 theorem RawStep.parStar.pairRight
@@ -89,11 +80,9 @@ theorem RawStep.parStar.pairRight
     {sourceSecond targetSecond : RawTerm scope}
     (chain : RawStep.parStar sourceSecond targetSecond) :
     RawStep.parStar (.pair firstValue sourceSecond)
-                    (.pair firstValue targetSecond) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.pair (.refl _) firstStep) restIH
+                    (.pair firstValue targetSecond) :=
+  RawStep.parStar.mapStep (fun source => .pair firstValue source)
+    (fun innerStep => RawStep.par.pair (.refl _) innerStep) chain
 
 /-- parStar respects `pair` on both components. -/
 theorem RawStep.parStar.pair
@@ -110,21 +99,15 @@ theorem RawStep.parStar.pair
 theorem RawStep.parStar.fst
     {sourcePair targetPair : RawTerm scope}
     (chain : RawStep.parStar sourcePair targetPair) :
-    RawStep.parStar (.fst sourcePair) (.fst targetPair) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.fst firstStep) restIH
+    RawStep.parStar (.fst sourcePair) (.fst targetPair) :=
+  RawStep.parStar.mapStep RawTerm.fst RawStep.par.fst chain
 
 /-- parStar respects `snd`. -/
 theorem RawStep.parStar.snd
     {sourcePair targetPair : RawTerm scope}
     (chain : RawStep.parStar sourcePair targetPair) :
-    RawStep.parStar (.snd sourcePair) (.snd targetPair) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.snd firstStep) restIH
+    RawStep.parStar (.snd sourcePair) (.snd targetPair) :=
+  RawStep.parStar.mapStep RawTerm.snd RawStep.par.snd chain
 
 /-- parStar respects `boolElim` on the scrutinee. -/
 theorem RawStep.parStar.boolElimScrutinee
@@ -132,22 +115,18 @@ theorem RawStep.parStar.boolElimScrutinee
     (thenBranch elseBranch : RawTerm scope)
     (chain : RawStep.parStar sourceScrutinee targetScrutinee) :
     RawStep.parStar (.boolElim sourceScrutinee thenBranch elseBranch)
-                    (.boolElim targetScrutinee thenBranch elseBranch) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans
-        (RawStep.par.boolElim firstStep (.refl _) (.refl _)) restIH
+                    (.boolElim targetScrutinee thenBranch elseBranch) :=
+  RawStep.parStar.mapStep
+    (fun source => .boolElim source thenBranch elseBranch)
+    (fun innerStep => RawStep.par.boolElim innerStep (.refl _) (.refl _))
+    chain
 
 /-- parStar respects `natSucc`. -/
 theorem RawStep.parStar.natSucc
     {sourcePred targetPred : RawTerm scope}
     (chain : RawStep.parStar sourcePred targetPred) :
-    RawStep.parStar (.natSucc sourcePred) (.natSucc targetPred) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.natSucc firstStep) restIH
+    RawStep.parStar (.natSucc sourcePred) (.natSucc targetPred) :=
+  RawStep.parStar.mapStep RawTerm.natSucc RawStep.par.natSucc chain
 
 /-- parStar respects `natElim` on the scrutinee. -/
 theorem RawStep.parStar.natElimScrutinee
@@ -155,12 +134,11 @@ theorem RawStep.parStar.natElimScrutinee
     (zeroBranch succBranch : RawTerm scope)
     (chain : RawStep.parStar sourceScrutinee targetScrutinee) :
     RawStep.parStar (.natElim sourceScrutinee zeroBranch succBranch)
-                    (.natElim targetScrutinee zeroBranch succBranch) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans
-        (RawStep.par.natElim firstStep (.refl _) (.refl _)) restIH
+                    (.natElim targetScrutinee zeroBranch succBranch) :=
+  RawStep.parStar.mapStep
+    (fun source => .natElim source zeroBranch succBranch)
+    (fun innerStep => RawStep.par.natElim innerStep (.refl _) (.refl _))
+    chain
 
 /-- parStar respects `natRec` on the scrutinee. -/
 theorem RawStep.parStar.natRecScrutinee
@@ -168,12 +146,11 @@ theorem RawStep.parStar.natRecScrutinee
     (zeroBranch succBranch : RawTerm scope)
     (chain : RawStep.parStar sourceScrutinee targetScrutinee) :
     RawStep.parStar (.natRec sourceScrutinee zeroBranch succBranch)
-                    (.natRec targetScrutinee zeroBranch succBranch) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans
-        (RawStep.par.natRec firstStep (.refl _) (.refl _)) restIH
+                    (.natRec targetScrutinee zeroBranch succBranch) :=
+  RawStep.parStar.mapStep
+    (fun source => .natRec source zeroBranch succBranch)
+    (fun innerStep => RawStep.par.natRec innerStep (.refl _) (.refl _))
+    chain
 
 /-- parStar respects `listCons` on the head. -/
 theorem RawStep.parStar.listConsHead
@@ -181,11 +158,9 @@ theorem RawStep.parStar.listConsHead
     (tailTerm : RawTerm scope)
     (chain : RawStep.parStar sourceHead targetHead) :
     RawStep.parStar (.listCons sourceHead tailTerm)
-                    (.listCons targetHead tailTerm) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.listCons firstStep (.refl _)) restIH
+                    (.listCons targetHead tailTerm) :=
+  RawStep.parStar.mapStep (fun source => .listCons source tailTerm)
+    (fun innerStep => RawStep.par.listCons innerStep (.refl _)) chain
 
 /-- parStar respects `listCons` on the tail. -/
 theorem RawStep.parStar.listConsTail
@@ -193,11 +168,9 @@ theorem RawStep.parStar.listConsTail
     {sourceTail targetTail : RawTerm scope}
     (chain : RawStep.parStar sourceTail targetTail) :
     RawStep.parStar (.listCons headTerm sourceTail)
-                    (.listCons headTerm targetTail) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.listCons (.refl _) firstStep) restIH
+                    (.listCons headTerm targetTail) :=
+  RawStep.parStar.mapStep (fun source => .listCons headTerm source)
+    (fun innerStep => RawStep.par.listCons (.refl _) innerStep) chain
 
 /-- parStar respects `listElim` on the scrutinee. -/
 theorem RawStep.parStar.listElimScrutinee
@@ -205,22 +178,18 @@ theorem RawStep.parStar.listElimScrutinee
     (nilBranch consBranch : RawTerm scope)
     (chain : RawStep.parStar sourceScrutinee targetScrutinee) :
     RawStep.parStar (.listElim sourceScrutinee nilBranch consBranch)
-                    (.listElim targetScrutinee nilBranch consBranch) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans
-        (RawStep.par.listElim firstStep (.refl _) (.refl _)) restIH
+                    (.listElim targetScrutinee nilBranch consBranch) :=
+  RawStep.parStar.mapStep
+    (fun source => .listElim source nilBranch consBranch)
+    (fun innerStep => RawStep.par.listElim innerStep (.refl _) (.refl _))
+    chain
 
 /-- parStar respects `optionSome`. -/
 theorem RawStep.parStar.optionSome
     {sourceValue targetValue : RawTerm scope}
     (chain : RawStep.parStar sourceValue targetValue) :
-    RawStep.parStar (.optionSome sourceValue) (.optionSome targetValue) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.optionSome firstStep) restIH
+    RawStep.parStar (.optionSome sourceValue) (.optionSome targetValue) :=
+  RawStep.parStar.mapStep RawTerm.optionSome RawStep.par.optionSome chain
 
 /-- parStar respects `optionMatch` on the scrutinee. -/
 theorem RawStep.parStar.optionMatchScrutinee
@@ -228,32 +197,25 @@ theorem RawStep.parStar.optionMatchScrutinee
     (noneBranch someBranch : RawTerm scope)
     (chain : RawStep.parStar sourceScrutinee targetScrutinee) :
     RawStep.parStar (.optionMatch sourceScrutinee noneBranch someBranch)
-                    (.optionMatch targetScrutinee noneBranch someBranch) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans
-        (RawStep.par.optionMatch firstStep (.refl _) (.refl _)) restIH
+                    (.optionMatch targetScrutinee noneBranch someBranch) :=
+  RawStep.parStar.mapStep
+    (fun source => .optionMatch source noneBranch someBranch)
+    (fun innerStep => RawStep.par.optionMatch innerStep (.refl _) (.refl _))
+    chain
 
 /-- parStar respects `eitherInl`. -/
 theorem RawStep.parStar.eitherInl
     {sourceValue targetValue : RawTerm scope}
     (chain : RawStep.parStar sourceValue targetValue) :
-    RawStep.parStar (.eitherInl sourceValue) (.eitherInl targetValue) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.eitherInl firstStep) restIH
+    RawStep.parStar (.eitherInl sourceValue) (.eitherInl targetValue) :=
+  RawStep.parStar.mapStep RawTerm.eitherInl RawStep.par.eitherInl chain
 
 /-- parStar respects `eitherInr`. -/
 theorem RawStep.parStar.eitherInr
     {sourceValue targetValue : RawTerm scope}
     (chain : RawStep.parStar sourceValue targetValue) :
-    RawStep.parStar (.eitherInr sourceValue) (.eitherInr targetValue) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.eitherInr firstStep) restIH
+    RawStep.parStar (.eitherInr sourceValue) (.eitherInr targetValue) :=
+  RawStep.parStar.mapStep RawTerm.eitherInr RawStep.par.eitherInr chain
 
 /-- parStar respects `eitherMatch` on the scrutinee. -/
 theorem RawStep.parStar.eitherMatchScrutinee
@@ -261,22 +223,18 @@ theorem RawStep.parStar.eitherMatchScrutinee
     (leftBranch rightBranch : RawTerm scope)
     (chain : RawStep.parStar sourceScrutinee targetScrutinee) :
     RawStep.parStar (.eitherMatch sourceScrutinee leftBranch rightBranch)
-                    (.eitherMatch targetScrutinee leftBranch rightBranch) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans
-        (RawStep.par.eitherMatch firstStep (.refl _) (.refl _)) restIH
+                    (.eitherMatch targetScrutinee leftBranch rightBranch) :=
+  RawStep.parStar.mapStep
+    (fun source => .eitherMatch source leftBranch rightBranch)
+    (fun innerStep => RawStep.par.eitherMatch innerStep (.refl _) (.refl _))
+    chain
 
 /-- parStar respects `refl` (via reflCong on the witness). -/
 theorem RawStep.parStar.reflWitness
     {sourceWitness targetWitness : RawTerm scope}
     (chain : RawStep.parStar sourceWitness targetWitness) :
-    RawStep.parStar (.refl sourceWitness) (.refl targetWitness) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.reflCong firstStep) restIH
+    RawStep.parStar (.refl sourceWitness) (.refl targetWitness) :=
+  RawStep.parStar.mapStep RawTerm.refl RawStep.par.reflCong chain
 
 /-- parStar respects `idJ` on the witness. -/
 theorem RawStep.parStar.idJWitness
@@ -284,41 +242,30 @@ theorem RawStep.parStar.idJWitness
     {sourceWitness targetWitness : RawTerm scope}
     (chain : RawStep.parStar sourceWitness targetWitness) :
     RawStep.parStar (.idJ baseCase sourceWitness)
-                    (.idJ baseCase targetWitness) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.idJ (.refl _) firstStep) restIH
+                    (.idJ baseCase targetWitness) :=
+  RawStep.parStar.mapStep (fun source => .idJ baseCase source)
+    (fun innerStep => RawStep.par.idJ (.refl _) innerStep) chain
 
 /-- parStar respects `modIntro`. -/
 theorem RawStep.parStar.modIntro
     {sourceInner targetInner : RawTerm scope}
     (chain : RawStep.parStar sourceInner targetInner) :
-    RawStep.parStar (.modIntro sourceInner) (.modIntro targetInner) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.modIntro firstStep) restIH
+    RawStep.parStar (.modIntro sourceInner) (.modIntro targetInner) :=
+  RawStep.parStar.mapStep RawTerm.modIntro RawStep.par.modIntro chain
 
 /-- parStar respects `modElim`. -/
 theorem RawStep.parStar.modElim
     {sourceInner targetInner : RawTerm scope}
     (chain : RawStep.parStar sourceInner targetInner) :
-    RawStep.parStar (.modElim sourceInner) (.modElim targetInner) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.modElim firstStep) restIH
+    RawStep.parStar (.modElim sourceInner) (.modElim targetInner) :=
+  RawStep.parStar.mapStep RawTerm.modElim RawStep.par.modElim chain
 
 /-- parStar respects `subsume`. -/
 theorem RawStep.parStar.subsume
     {sourceInner targetInner : RawTerm scope}
     (chain : RawStep.parStar sourceInner targetInner) :
-    RawStep.parStar (.subsume sourceInner) (.subsume targetInner) := by
-  induction chain with
-  | refl _ => exact .refl _
-  | trans firstStep _ restIH =>
-      exact .trans (RawStep.par.subsume firstStep) restIH
+    RawStep.parStar (.subsume sourceInner) (.subsume targetInner) :=
+  RawStep.parStar.mapStep RawTerm.subsume RawStep.par.subsume chain
 
 /-! ## Canonical-head parStar inversions
 

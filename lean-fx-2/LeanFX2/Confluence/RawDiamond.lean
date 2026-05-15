@@ -80,6 +80,37 @@ theorem RawStep.parStar.append {scope : Nat}
   | trans firstStep _ restIH =>
       exact RawStep.parStar.trans firstStep (restIH secondChain)
 
+/-- **mapStep — the raw cong-rule lifter.**
+
+`RawStep.parStar.mapStep` takes a raw-term transformer whose action
+commutes with single `RawStep.par` reduction and lifts it into one
+that commutes with multi-step parallel reduction.  Used to collapse
+the 4-line refl/trans induction in every `parStar.<ctor>` cong rule
+to a 1-line `mapStep` invocation.
+
+The transformer is allowed to change scope (`innerScope` →
+`outerScope`).  This covers binder cong rules (e.g. `parStar.lam`
+maps `RawTerm (scope + 1)` to `RawTerm scope`) as well as
+same-scope cong rules (e.g. `parStar.fst`).
+
+The raw analog of `StepStar.mapStep` in `Reduction/StepStar.lean`.
+Per `feedback_lean_mapStep_pattern.md` discipline: this lifter
+removes mechanical induction boilerplate from cong rules. -/
+theorem RawStep.parStar.mapStep
+    {innerScope outerScope : Nat}
+    (wrapRaw : RawTerm innerScope → RawTerm outerScope)
+    (wrapStep :
+      ∀ {innerSource innerTarget : RawTerm innerScope},
+        RawStep.par innerSource innerTarget →
+        RawStep.par (wrapRaw innerSource) (wrapRaw innerTarget))
+    {innerSource innerTarget : RawTerm innerScope}
+    (chain : RawStep.parStar innerSource innerTarget) :
+    RawStep.parStar (wrapRaw innerSource) (wrapRaw innerTarget) := by
+  induction chain with
+  | refl term => exact RawStep.parStar.refl (wrapRaw term)
+  | trans firstStep _ restIH =>
+      exact RawStep.parStar.trans (wrapStep firstStep) restIH
+
 /-- **Strip lemma** for parallel reduction.  If `t` single-step
 parallel-reduces to `u` and multi-step parallel-reduces to `v`,
 there exists a common reduct `w` with `u` multi-stepping to `w`
