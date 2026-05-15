@@ -146,7 +146,7 @@ theorem Term.recordIntro_strong_normalization_via_kripke
     {firstField : Term context singleFieldType firstRaw}
     (firstFieldIsSN : Term.isStronglyNormalizing firstField) :
     Term.isStronglyNormalizing (Term.recordIntro firstField) :=
-  ReducibleK.fundamental_recordIntro_sn firstFieldIsSN
+  Term.recordIntro_isStronglyNormalizing firstFieldIsSN
 
 /-- SN of recordProj via Kripke. -/
 theorem Term.recordProj_strong_normalization_via_kripke
@@ -225,7 +225,7 @@ theorem Term.sessionSend_strong_normalization_via_kripke
     (payloadIsSN : Term.isStronglyNormalizing payload) :
     Term.isStronglyNormalizing
       (Term.sessionSend protocolStep channel payload) :=
-  ReducibleK.fundamental_sessionSend_sn protocolStep channelIsSN payloadIsSN
+  Term.sessionSend_isStronglyNormalizing protocolStep channelIsSN payloadIsSN
 
 /-- SN of intervalOpp via Kripke. -/
 theorem Term.intervalOpp_strong_normalization_via_kripke
@@ -337,7 +337,7 @@ theorem Term.refl_strong_normalization_via_kripke
     (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
     Term.isStronglyNormalizing
       (Term.refl (context := sourceCtx) carrier rawWitness) :=
-  ReducibleK.fundamental_refl_sn carrier rawWitness endpointIsSN
+  Term.refl_isStronglyNormalizing endpointIsSN
 
 /-- SN of oeqRefl via Kripke. -/
 theorem Term.oeqRefl_strong_normalization_via_kripke
@@ -348,7 +348,7 @@ theorem Term.oeqRefl_strong_normalization_via_kripke
     (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
     Term.isStronglyNormalizing
       (Term.oeqRefl (context := sourceCtx) carrier rawWitness) :=
-  ReducibleK.fundamental_oeqRefl_sn carrier rawWitness endpointIsSN
+  Term.oeqRefl_isStronglyNormalizing endpointIsSN
 
 /-- SN of idStrictRefl via Kripke (strict mode). -/
 theorem Term.idStrictRefl_strong_normalization_via_kripke
@@ -359,7 +359,7 @@ theorem Term.idStrictRefl_strong_normalization_via_kripke
     (endpointIsSN : RawTerm.isStronglyNormalizing rawWitness) :
     Term.isStronglyNormalizing
       (Term.idStrictRefl (context := sourceCtx) rfl carrier rawWitness) :=
-  ReducibleK.fundamental_idStrictRefl_sn carrier rawWitness endpointIsSN
+  Term.idStrictRefl_isStronglyNormalizing rfl endpointIsSN
 
 /-- SN of cumulUp via Kripke. -/
 theorem Term.cumulUp_strong_normalization_via_kripke
@@ -376,7 +376,7 @@ theorem Term.cumulUp_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.cumulUp lowerLevel higherLevel cumulMonotone
         levelLeLow levelLeHigh typeCode) :=
-  ReducibleK.fundamental_cumulUp_sn lowerLevel higherLevel
+  Term.cumulUp_isStronglyNormalizing lowerLevel higherLevel
     cumulMonotone levelLeLow levelLeHigh typeCodeIsSN
 
 /-- SN of equivReflId via Kripke. -/
@@ -386,7 +386,7 @@ theorem Term.equivReflId_strong_normalization_via_kripke
     (carrier : Ty level scope) :
     Term.isStronglyNormalizing
       (Term.equivReflId (context := sourceCtx) carrier) :=
-  ReducibleK.fundamental_equivReflId_sn carrier
+  Term.equivReflId_isStronglyNormalizing carrier
 
 /-- SN of uaToEquiv via Kripke. -/
 theorem Term.uaToEquiv_strong_normalization_via_kripke
@@ -406,7 +406,7 @@ theorem Term.uaToEquiv_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.uaToEquiv innerLevel innerLevelLt
         leftTy rightTy leftTyRaw rightTyRaw proof) :=
-  ReducibleK.fundamental_uaToEquiv_sn innerLevel innerLevelLt
+  Term.uaToEquiv_isStronglyNormalizing innerLevel innerLevelLt
     leftTy rightTy leftTyRaw rightTyRaw proofIsSN
 
 /-- SN of arrowCode via Kripke. -/
@@ -421,7 +421,7 @@ theorem Term.arrowCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.arrowCode (context := sourceCtx)
         outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
-  ReducibleK.fundamental_arrowCode_sn outerLevel levelLe
+  Term.arrowCode_isStronglyNormalizing outerLevel levelLe
     domainCodeIsSN codomainCodeIsSN
 
 /-- SN of eitherCode via Kripke. -/
@@ -436,7 +436,7 @@ theorem Term.eitherCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.eitherCode (context := sourceCtx)
         outerLevel levelLe leftCodeRaw rightCodeRaw) :=
-  ReducibleK.fundamental_eitherCode_sn outerLevel levelLe
+  Term.eitherCode_isStronglyNormalizing outerLevel levelLe
     leftCodeIsSN rightCodeIsSN
 
 /-- SN of equivCode via Kripke. -/
@@ -451,7 +451,7 @@ theorem Term.equivCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.equivCode (context := sourceCtx)
         outerLevel levelLe leftTypeCodeRaw rightTypeCodeRaw) :=
-  ReducibleK.fundamental_equivCode_sn outerLevel levelLe
+  Term.equivCode_isStronglyNormalizing outerLevel levelLe
     leftTypeCodeIsSN rightTypeCodeIsSN
 
 /-- SN of listCode via Kripke. -/
@@ -465,7 +465,7 @@ theorem Term.listCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.listCode (context := sourceCtx)
         outerLevel levelLe elementCodeRaw) :=
-  ReducibleK.fundamental_listCode_sn outerLevel levelLe elementCodeIsSN
+  Term.listCode_isStronglyNormalizing outerLevel levelLe elementCodeIsSN
 
 /-- SN of optionCode via Kripke. -/
 theorem Term.optionCode_strong_normalization_via_kripke
