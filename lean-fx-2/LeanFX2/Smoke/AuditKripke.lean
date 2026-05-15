@@ -241,3 +241,19 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.hcomp_isStronglyNormalizing
 #print axioms LeanFX2.Term.hcomp_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_hcomp_sn
+
+-- K12.27 Kripke real Tait closures for piTy / sigmaTy / listType /
+-- optionType / eitherType.  Each closure is SN of the term plus a
+-- Kripke clause exposing the eliminator's reducible-output structure
+-- under any future-world renaming.
+#print axioms LeanFX2.ReducibleK.sn_of_piTy
+#print axioms LeanFX2.ReducibleK.piTy_apply
+#print axioms LeanFX2.ReducibleK.sn_of_sigmaTy
+#print axioms LeanFX2.ReducibleK.sigmaTy_fst
+#print axioms LeanFX2.ReducibleK.sigmaTy_snd
+#print axioms LeanFX2.ReducibleK.sn_of_listType
+#print axioms LeanFX2.ReducibleK.listType_elim
+#print axioms LeanFX2.ReducibleK.sn_of_optionType
+#print axioms LeanFX2.ReducibleK.optionType_match
+#print axioms LeanFX2.ReducibleK.sn_of_eitherType
+#print axioms LeanFX2.ReducibleK.eitherType_match

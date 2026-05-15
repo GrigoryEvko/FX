@@ -133,38 +133,96 @@ theorem ReducibleK.fundamental_natSucc
     have predSN : Term.isStronglyNormalizing predecessorTerm := predIsR
     exact RawTerm.natSucc_isStronglyNormalizing predSN
 
-/-- listNil at any element type: SN at the SN-fallback Kripke arm. -/
+/-- listNil at any element type: SN + Kripke ι-closure for the list arm.
+The closure witness is a parameter (`elimClosureWitness`) — it states
+that for every motive and every reducible nilBranch/consBranch, the
+`Term.listElim listNil nilBranch consBranch` is reducible at the
+motive.  This is structurally identical to `contractumIsSN` on
+app/listElim: once the K12+ raw ι backward-closure lemma lands, the
+hypothesis is dischargeable for any future world from the nil-branch
+reducibility (a single ι-step plus parProgress backward closure). -/
 theorem ReducibleK.fundamental_listNil
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
     {elementType : Ty level scope}
-    (stepCount : Nat) :
-    @ReducibleK mode level scope sourceCtx stepCount (Ty.listType elementType)
-      RawTerm.listNil (Term.listNil) := by
-  cases stepCount with
-  | zero => trivial
-  | succ subCount =>
-    exact (Term.listNil_isStronglyNormalizing
+    (stepCount : Nat)
+    (elimClosureWitness :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming sourceCtx targetCtx rho)
+        (motiveType : Ty level targetScope)
+        {nilRaw consRaw : RawTerm targetScope}
+        (nilBranch : Term targetCtx motiveType nilRaw)
+        (consBranch :
+          Term targetCtx
+            (Ty.arrow (elementType.rename rho)
+              (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
+            consRaw),
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType nilRaw nilBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (elementType.rename rho)
+            (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
+          consRaw consBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType (RawTerm.listElim RawTerm.listNil nilRaw consRaw)
+          (Term.listElim (Term.rename termRenaming
+            (Term.listNil (context := sourceCtx)
+                          (elementType := elementType)))
+            nilBranch consBranch)) :
+    @ReducibleK mode level scope sourceCtx (stepCount + 1)
+      (Ty.listType elementType) RawTerm.listNil (Term.listNil) := by
+  refine ⟨?_, ?_⟩
+  · exact (Term.listNil_isStronglyNormalizing
       (sourceCtx := sourceCtx) (elementType := elementType))
+  · intro targetScope targetCtx rho termRenaming motiveType nilRaw consRaw
+      nilBranch consBranch nilIsR consIsR
+    exact elimClosureWitness termRenaming motiveType nilBranch consBranch
+      nilIsR consIsR
 
-/-- optionNone at any element type. -/
+/-- optionNone at any element type: SN + Kripke ι-closure for option.
+Closure witness is parametric over the motive and dischargeable from
+none-branch reducibility via one ι-step plus backward closure (same
+shape as `fundamental_listNil`). -/
 theorem ReducibleK.fundamental_optionNone
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
     {elementType : Ty level scope}
-    (stepCount : Nat) :
-    @ReducibleK mode level scope sourceCtx stepCount (Ty.optionType elementType)
-      RawTerm.optionNone (Term.optionNone) := by
-  cases stepCount with
-  | zero => trivial
-  | succ subCount =>
-    exact (Term.optionNone_isStronglyNormalizing
+    (stepCount : Nat)
+    (matchClosureWitness :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming sourceCtx targetCtx rho)
+        (motiveType : Ty level targetScope)
+        {noneRaw someRaw : RawTerm targetScope}
+        (noneBranch : Term targetCtx motiveType noneRaw)
+        (someBranch :
+          Term targetCtx
+            (Ty.arrow (elementType.rename rho) motiveType) someRaw),
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType noneRaw noneBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (elementType.rename rho) motiveType) someRaw someBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType
+          (RawTerm.optionMatch RawTerm.optionNone noneRaw someRaw)
+          (Term.optionMatch (Term.rename termRenaming
+            (Term.optionNone (context := sourceCtx)
+                             (elementType := elementType)))
+            noneBranch someBranch)) :
+    @ReducibleK mode level scope sourceCtx (stepCount + 1)
+      (Ty.optionType elementType) RawTerm.optionNone (Term.optionNone) := by
+  refine ⟨?_, ?_⟩
+  · exact (Term.optionNone_isStronglyNormalizing
       (sourceCtx := sourceCtx) (elementType := elementType))
+  · intro targetScope targetCtx rho termRenaming motiveType noneRaw someRaw
+      noneBranch someBranch noneIsR someIsR
+    exact matchClosureWitness termRenaming motiveType noneBranch someBranch
+      noneIsR someIsR
 
-/-- listCons preserves ReducibleK at Ty.listType (SN-fallback arm).
-SN-only variant; takes SN witnesses for both sub-terms directly
-because the elementType arm is unrestricted and head reducibility
-doesn't immediately project to SN at compound elementType. -/
+/-- listCons preserves ReducibleK at Ty.listType: SN of both sub-terms
+plus the Kripke ι-closure witness for `listElim (listCons h t) n c`.
+-/
 theorem ReducibleK.fundamental_listCons_sn
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -174,16 +232,45 @@ theorem ReducibleK.fundamental_listCons_sn
     {headTerm : Term sourceCtx elementType headRaw}
     {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
     (headIsSN : Term.isStronglyNormalizing headTerm)
-    (tailIsSN : Term.isStronglyNormalizing tailTerm) :
-    @ReducibleK mode level scope sourceCtx stepCount
+    (tailIsSN : Term.isStronglyNormalizing tailTerm)
+    (elimClosureWitness :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming sourceCtx targetCtx rho)
+        (motiveType : Ty level targetScope)
+        {nilRaw consRaw : RawTerm targetScope}
+        (nilBranch : Term targetCtx motiveType nilRaw)
+        (consBranch :
+          Term targetCtx
+            (Ty.arrow (elementType.rename rho)
+              (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
+            consRaw),
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType nilRaw nilBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (elementType.rename rho)
+            (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
+          consRaw consBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType
+          (RawTerm.listElim
+            (RawTerm.listCons (headRaw.rename rho) (tailRaw.rename rho))
+            nilRaw consRaw)
+          (Term.listElim
+            (Term.rename termRenaming (Term.listCons headTerm tailTerm))
+            nilBranch consBranch)) :
+    @ReducibleK mode level scope sourceCtx (stepCount + 1)
       (Ty.listType elementType) (RawTerm.listCons headRaw tailRaw)
       (Term.listCons headTerm tailTerm) := by
-  cases stepCount with
-  | zero => trivial
-  | succ subCount =>
-    exact Term.listCons_isStronglyNormalizing headIsSN tailIsSN
+  refine ⟨?_, ?_⟩
+  · exact Term.listCons_isStronglyNormalizing headIsSN tailIsSN
+  · intro targetScope targetCtx rho termRenaming motiveType nilRaw consRaw
+      nilBranch consBranch nilIsR consIsR
+    exact elimClosureWitness termRenaming motiveType nilBranch consBranch
+      nilIsR consIsR
 
-/-- optionSome preserves ReducibleK at Ty.optionType (SN-fallback). -/
+/-- optionSome preserves ReducibleK at Ty.optionType: SN of value plus
+the Kripke ι-closure witness for `optionMatch (optionSome v) n s`. -/
 theorem ReducibleK.fundamental_optionSome_sn
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -191,16 +278,39 @@ theorem ReducibleK.fundamental_optionSome_sn
     {stepCount : Nat}
     {valueRaw : RawTerm scope}
     {valueTerm : Term sourceCtx elementType valueRaw}
-    (valueIsSN : Term.isStronglyNormalizing valueTerm) :
-    @ReducibleK mode level scope sourceCtx stepCount
+    (valueIsSN : Term.isStronglyNormalizing valueTerm)
+    (matchClosureWitness :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming sourceCtx targetCtx rho)
+        (motiveType : Ty level targetScope)
+        {noneRaw someRaw : RawTerm targetScope}
+        (noneBranch : Term targetCtx motiveType noneRaw)
+        (someBranch :
+          Term targetCtx
+            (Ty.arrow (elementType.rename rho) motiveType) someRaw),
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType noneRaw noneBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (elementType.rename rho) motiveType) someRaw someBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType
+          (RawTerm.optionMatch (RawTerm.optionSome (valueRaw.rename rho))
+            noneRaw someRaw)
+          (Term.optionMatch
+            (Term.rename termRenaming (Term.optionSome valueTerm))
+            noneBranch someBranch)) :
+    @ReducibleK mode level scope sourceCtx (stepCount + 1)
       (Ty.optionType elementType) (RawTerm.optionSome valueRaw)
       (Term.optionSome valueTerm) := by
-  cases stepCount with
-  | zero => trivial
-  | succ subCount =>
-    exact Term.optionSome_isStronglyNormalizing valueIsSN
+  refine ⟨?_, ?_⟩
+  · exact Term.optionSome_isStronglyNormalizing valueIsSN
+  · intro targetScope targetCtx rho termRenaming motiveType noneRaw someRaw
+      noneBranch someBranch noneIsR someIsR
+    exact matchClosureWitness termRenaming motiveType noneBranch someBranch
+      noneIsR someIsR
 
-/-- eitherInl preserves ReducibleK at Ty.eitherType (SN-fallback). -/
+/-- eitherInl preserves ReducibleK at Ty.eitherType: SN + ι-closure. -/
 theorem ReducibleK.fundamental_eitherInl_sn
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -208,16 +318,43 @@ theorem ReducibleK.fundamental_eitherInl_sn
     {stepCount : Nat}
     {valueRaw : RawTerm scope}
     {valueTerm : Term sourceCtx leftType valueRaw}
-    (valueIsSN : Term.isStronglyNormalizing valueTerm) :
-    @ReducibleK mode level scope sourceCtx stepCount
+    (valueIsSN : Term.isStronglyNormalizing valueTerm)
+    (matchClosureWitness :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming sourceCtx targetCtx rho)
+        (motiveType : Ty level targetScope)
+        {leftRaw rightRaw : RawTerm targetScope}
+        (leftBranch :
+          Term targetCtx
+            (Ty.arrow (leftType.rename rho) motiveType) leftRaw)
+        (rightBranch :
+          Term targetCtx
+            (Ty.arrow (rightType.rename rho) motiveType) rightRaw),
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (leftType.rename rho) motiveType) leftRaw leftBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (rightType.rename rho) motiveType) rightRaw rightBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType
+          (RawTerm.eitherMatch (RawTerm.eitherInl (valueRaw.rename rho))
+            leftRaw rightRaw)
+          (Term.eitherMatch
+            (Term.rename termRenaming
+              (Term.eitherInl (rightType := rightType) valueTerm))
+            leftBranch rightBranch)) :
+    @ReducibleK mode level scope sourceCtx (stepCount + 1)
       (Ty.eitherType leftType rightType) (RawTerm.eitherInl valueRaw)
       (Term.eitherInl (rightType := rightType) valueTerm) := by
-  cases stepCount with
-  | zero => trivial
-  | succ subCount =>
-    exact (Term.eitherInl_isStronglyNormalizing (rightType := rightType) valueIsSN)
+  refine ⟨?_, ?_⟩
+  · exact (Term.eitherInl_isStronglyNormalizing (rightType := rightType)
+      valueIsSN)
+  · intro targetScope targetCtx rho termRenaming motiveType leftRaw rightRaw
+      leftBranch rightBranch leftIsR rightIsR
+    exact matchClosureWitness termRenaming motiveType leftBranch rightBranch
+      leftIsR rightIsR
 
-/-- eitherInr preserves ReducibleK at Ty.eitherType (SN-fallback). -/
+/-- eitherInr preserves ReducibleK at Ty.eitherType: SN + ι-closure. -/
 theorem ReducibleK.fundamental_eitherInr_sn
     {mode : Mode} {level scope : Nat}
     {sourceCtx : Ctx mode level scope}
@@ -225,14 +362,41 @@ theorem ReducibleK.fundamental_eitherInr_sn
     {stepCount : Nat}
     {valueRaw : RawTerm scope}
     {valueTerm : Term sourceCtx rightType valueRaw}
-    (valueIsSN : Term.isStronglyNormalizing valueTerm) :
-    @ReducibleK mode level scope sourceCtx stepCount
+    (valueIsSN : Term.isStronglyNormalizing valueTerm)
+    (matchClosureWitness :
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming sourceCtx targetCtx rho)
+        (motiveType : Ty level targetScope)
+        {leftRaw rightRaw : RawTerm targetScope}
+        (leftBranch :
+          Term targetCtx
+            (Ty.arrow (leftType.rename rho) motiveType) leftRaw)
+        (rightBranch :
+          Term targetCtx
+            (Ty.arrow (rightType.rename rho) motiveType) rightRaw),
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (leftType.rename rho) motiveType) leftRaw leftBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          (Ty.arrow (rightType.rename rho) motiveType) rightRaw rightBranch →
+        @ReducibleK mode level targetScope targetCtx stepCount
+          motiveType
+          (RawTerm.eitherMatch (RawTerm.eitherInr (valueRaw.rename rho))
+            leftRaw rightRaw)
+          (Term.eitherMatch
+            (Term.rename termRenaming
+              (Term.eitherInr (leftType := leftType) valueTerm))
+            leftBranch rightBranch)) :
+    @ReducibleK mode level scope sourceCtx (stepCount + 1)
       (Ty.eitherType leftType rightType) (RawTerm.eitherInr valueRaw)
       (Term.eitherInr (leftType := leftType) valueTerm) := by
-  cases stepCount with
-  | zero => trivial
-  | succ subCount =>
-    exact (Term.eitherInr_isStronglyNormalizing (leftType := leftType) valueIsSN)
+  refine ⟨?_, ?_⟩
+  · exact (Term.eitherInr_isStronglyNormalizing (leftType := leftType)
+      valueIsSN)
+  · intro targetScope targetCtx rho termRenaming motiveType leftRaw rightRaw
+      leftBranch rightBranch leftIsR rightIsR
+    exact matchClosureWitness termRenaming motiveType leftBranch rightBranch
+      leftIsR rightIsR
 
 /-- intervalOpp preserves ReducibleK at Ty.interval. -/
 theorem ReducibleK.fundamental_intervalOpp

@@ -75,4 +75,21 @@ theorem ReducibleK.succ_interval_iff_sn
   unfold ReducibleK
   exact Iff.rfl
 
+/-- Effect arm extraction: SN-only by design (see WARRIOR NOTE in
+`Predicate.lean` — `effectPerform`'s schematic
+`OperationSignature` / `CanPerform` shape blocks a natural Tait
+closure clause until the Effects-layer rewrite of `Ty.effect`). -/
+theorem ReducibleK.succ_effect_iff_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {carrierType : Ty level scope} {effectTag : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.effect carrierType effectTag) raw} :
+    @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.effect carrierType effectTag) raw term
+      ↔ Term.isStronglyNormalizing term := by
+  unfold ReducibleK
+  exact Iff.rfl
+
 end LeanFX2
