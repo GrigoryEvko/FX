@@ -1125,5 +1125,66 @@ theorem Term.pathApp_isStronglyNormalizing
   RawTerm.pathApp_isStronglyNormalizing
     pathIsSN intervalIsSN contractumIsSN
 
+/-- **hcomp SN preservation**.  Homogeneous cubical composition: at the
+raw level `hcomp sidesTerm capTerm` only admits congruence reductions
+(no computational β rule on the boundary yet — that is future work
+gated by #1528).  Pure 2-operand cong induction. -/
+theorem RawTerm.hcomp_isStronglyNormalizing {scope : Nat}
+    {sidesTerm : RawTerm scope}
+    (sidesIsSN : RawTerm.isStronglyNormalizing sidesTerm) :
+    ∀ {capTerm : RawTerm scope},
+      RawTerm.isStronglyNormalizing capTerm →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.hcomp sidesTerm capTerm) := by
+  induction sidesIsSN with
+  | intro currentSides sidesClosure sidesIH =>
+    intro capTerm capIsSN
+    induction capIsSN with
+    | intro currentCap capClosure capIH =>
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.hcomp currentSides currentCap) ?_
+      intro target progressStep
+      obtain ⟨sidesTarget, capTarget, targetEq, sidesStep, capStep⟩ :=
+        RawStep.par.hcomp_inv progressStep.1
+      subst targetEq
+      have sidesTargetIsSN :
+          RawTerm.isStronglyNormalizing sidesTarget := by
+        by_cases sidesEq : currentSides = sidesTarget
+        · subst sidesEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentSides sidesClosure
+        · exact sidesClosure sidesTarget ⟨sidesStep, sidesEq⟩
+      have capTargetIsSN :
+          RawTerm.isStronglyNormalizing capTarget := by
+        by_cases capEq : currentCap = capTarget
+        · subst capEq
+          exact RawTerm.isStronglyNormalizing.intro
+            currentCap capClosure
+        · exact capClosure capTarget ⟨capStep, capEq⟩
+      by_cases sidesEq : currentSides = sidesTarget
+      · subst sidesEq
+        by_cases capEq : currentCap = capTarget
+        · subst capEq
+          exact (progressStep.2 rfl).elim
+        · exact capIH capTarget ⟨capStep, capEq⟩
+      · exact sidesIH sidesTarget
+          ⟨sidesStep, sidesEq⟩
+          capTargetIsSN
+
+/-- Typed wrapper for hcomp SN preservation. -/
+theorem Term.hcomp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    {sidesValue : Term context carrierType sidesRaw}
+    {capValue : Term context carrierType capRaw}
+    (sidesIsSN : Term.isStronglyNormalizing sidesValue)
+    (capIsSN : Term.isStronglyNormalizing capValue) :
+    Term.isStronglyNormalizing
+      (Term.hcomp modeIsUnivalent sidesValue capValue) :=
+  RawTerm.hcomp_isStronglyNormalizing sidesIsSN capIsSN
+
 
 end LeanFX2

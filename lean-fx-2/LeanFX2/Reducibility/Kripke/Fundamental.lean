@@ -1287,4 +1287,21 @@ theorem ReducibleK.fundamental_pathApp_sn
   Term.pathApp_isStronglyNormalizing modeIsUnivalent
     pathIsSN intervalIsSN contractumIsSN
 
+/-- SN of hcomp via Kripke.  The current raw `hcomp` relation is
+congruence-only; boundary computation is still tracked separately by the
+future cubical β-rule work. -/
+theorem ReducibleK.fundamental_hcomp_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    {sidesValue : Term context carrierType sidesRaw}
+    {capValue : Term context carrierType capRaw}
+    (sidesIsSN : Term.isStronglyNormalizing sidesValue)
+    (capIsSN : Term.isStronglyNormalizing capValue) :
+    Term.isStronglyNormalizing
+      (Term.hcomp modeIsUnivalent sidesValue capValue) :=
+  Term.hcomp_isStronglyNormalizing modeIsUnivalent sidesIsSN capIsSN
+
 end LeanFX2

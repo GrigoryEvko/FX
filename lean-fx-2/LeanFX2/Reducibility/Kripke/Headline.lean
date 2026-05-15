@@ -1125,4 +1125,21 @@ theorem Term.pathApp_strong_normalization_via_kripke
   ReducibleK.fundamental_pathApp_sn modeIsUnivalent
     pathIsSN intervalIsSN contractumIsSN
 
+/-- **K12.24 Kripke SN headline for hcomp**.  At the current raw layer,
+`hcomp` is congruence-only; the future boundary-computation rule is tracked
+outside this headline. -/
+theorem Term.hcomp_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {sidesRaw capRaw : RawTerm scope}
+    {sidesValue : Term context carrierType sidesRaw}
+    {capValue : Term context carrierType capRaw}
+    (sidesIsSN : Term.isStronglyNormalizing sidesValue)
+    (capIsSN : Term.isStronglyNormalizing capValue) :
+    Term.isStronglyNormalizing
+      (Term.hcomp modeIsUnivalent sidesValue capValue) :=
+  ReducibleK.fundamental_hcomp_sn modeIsUnivalent sidesIsSN capIsSN
+
 end LeanFX2

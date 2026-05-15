@@ -229,3 +229,9 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.pathApp_isStronglyNormalizing
 #print axioms LeanFX2.Term.pathApp_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_pathApp_sn
+
+-- K12.24 hcomp (congruence-only at the current raw cubical layer)
+#print axioms LeanFX2.RawTerm.hcomp_isStronglyNormalizing
+#print axioms LeanFX2.Term.hcomp_isStronglyNormalizing
+#print axioms LeanFX2.Term.hcomp_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_hcomp_sn
