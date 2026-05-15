@@ -370,5 +370,30 @@ theorem Term.hcomp_isStronglyNormalizing
       (Term.hcomp modeIsUnivalent sidesValue capValue) :=
   RawTerm.hcomp_isStronglyNormalizing sidesIsSN capIsSN
 
+/-- Typed wrapper for `Term.hcompPath` SN preservation.  `hcompPath`
+projects to the same `RawTerm.hcomp` as the unary `Term.hcomp`,
+so the raw SN preservation lemma applies directly — the only
+difference is that `hcompPath`'s sides argument has the
+path-typed shape (`Ty.path carrierType leftEndpoint rightEndpoint`)
+rather than the carrier-typed shape, supporting the future
+"constant-path collapses" cubical β rule (#1528). -/
+theorem Term.hcompPath_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {sidesPathRaw capRaw : RawTerm scope}
+    {sidesPath :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term context carrierType capRaw}
+    (sidesIsSN : Term.isStronglyNormalizing sidesPath)
+    (capIsSN : Term.isStronglyNormalizing capValue) :
+    Term.isStronglyNormalizing
+      (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+        sidesPath capValue) :=
+  RawTerm.hcomp_isStronglyNormalizing sidesIsSN capIsSN
+
 
 end LeanFX2

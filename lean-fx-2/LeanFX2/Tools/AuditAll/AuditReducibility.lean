@@ -78,6 +78,7 @@ rather than as a generic namespace failure. -/
 #assert_no_axioms LeanFX2.Term.oeqFunext_isStronglyNormalizing
 #assert_no_axioms LeanFX2.Term.effectPerform_isStronglyNormalizing
 #assert_no_axioms LeanFX2.Term.cumulUp_isStronglyNormalizing
+#assert_no_axioms LeanFX2.Term.hcompPath_isStronglyNormalizing
 
 /-! ### Kripke step-indexed reducibility predicate -/
 
