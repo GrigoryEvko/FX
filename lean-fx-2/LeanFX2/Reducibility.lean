@@ -6,7 +6,7 @@ import LeanFX2.Reducibility.NeutralSNFoundation.EquivHott
 import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
 import LeanFX2.Reducibility.NeutralSNIntro.Codes
 import LeanFX2.Reducibility.NeutralSNClosure.GlueEquiv
-import LeanFX2.Reducibility.FundamentalAliases.DirectCases
+import LeanFX2.Term.SN.DirectCases
 import LeanFX2.Reducibility.Kripke.Headline
 
 /-! # LeanFX2.Reducibility — strong-normalization predicate layer
@@ -28,7 +28,7 @@ re-exports only the surviving bypass-free modules:
 | `Reducibility.NeutralSNHott.*`        | HoTT / J-family neutral SN closures               |
 | `Reducibility.NeutralSNIntro.*`       | Σ / modal / list-cons neutral SN closures         |
 | `Reducibility.NeutralSNClosure.*`     | type-code / cubical / record cong SN closures     |
-| `Reducibility.FundamentalAliases.DirectCases` | Term-level SN endpoints (intro / cong / elim) |
+| `Term.SN.DirectCases` | Term-level SN endpoints (intro / cong / elim) |
 | `Reducibility.Kripke.Headline`        | Kripke step-indexed reducibility + fundamental    |
 
 ## Root status

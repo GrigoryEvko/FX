@@ -1,5 +1,5 @@
 import LeanFX2.Reducibility.Kripke.Basic
-import LeanFX2.Reducibility.FundamentalAliases.DirectCases
+import LeanFX2.Term.SN.DirectCases
 
 /-! Kripke fundamental theorem — closed-leaf base cases.
 
@@ -994,7 +994,7 @@ theorem ReducibleK.fundamental_natRec_sn
 
 The five `Term.X_isStronglyNormalizing` lemmas in `NeutralSNClosure.TypeCodeSN`
 plus the two `Term.intervalN_isStronglyNormalizing` lemmas in
-`FundamentalAliases.DirectCases` give the Kripke fundamental cases
+`Term.SN.DirectCases` give the Kripke fundamental cases
 for the seven closed-leaf canonical-value Term ctors that the
 upstream cascade left out. -/
 

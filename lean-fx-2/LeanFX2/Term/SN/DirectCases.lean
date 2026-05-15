@@ -8,7 +8,7 @@ import LeanFX2.Reducibility.NeutralSNHott.NatRecAndOption
 import LeanFX2.Reducibility.NeutralSNIntro.Codes
 import LeanFX2.Reducibility.NeutralSNClosure.GlueEquiv
 
-/-! # LeanFX2.Reducibility.FundamentalAliases.DirectCases
+/-! # LeanFX2.Term.SN.DirectCases
 
 Direct fundamental endpoints for strong normalization.  Three
 families ship here:
@@ -21,7 +21,8 @@ families ship here:
 
 ## Root status
 
-Layer 3 metatheory leaf.  Third slice of FundamentalAliases. -/
+Layer 3 metatheory leaf.  Term-level SN endpoints consumed by the
+Kripke fundamental headlines. -/
 
 namespace LeanFX2
 
