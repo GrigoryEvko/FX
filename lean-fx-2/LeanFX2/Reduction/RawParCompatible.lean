@@ -622,30 +622,20 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       have liftedTwiceRelated := RawTermSubst.par_lift liftedRelated
       exact RawStep.par.transpPiBeta
         (codomainIH liftedTwiceRelated) (sourceIH substsRelated)
-  -- Deep variant.  `pathIH substsRelated` gives `par (pathRawSource.
-  -- subst firstSubst) ((pathLam (piTyCode innerDomain.weaken
-  -- codomainCodeMid)).subst secondSubst)`; `simp only [RawTerm.subst,
-  -- RawTerm.weaken_subst_commute]` lifts the path target into the
-  -- recognizer-firing shape.  Codomain bi-cong rides
-  -- `RawTermSubst.par_lift` twice for the (scope+2) binder depth.
-  | transpPiBetaDeep _ _ _ pathIH codomainIH sourceIH =>
+  -- Deep variant (Phase C step 1 redesign, 2026-05-15): `pathIH
+  -- substsRelated` gives `par (pathRawSource.subst firstSubst)
+  -- ((pathLam (piTyCode innerDomain.weaken codomainCodeTarget)).subst
+  -- secondSubst)`; `simp only [RawTerm.subst, RawTerm.weaken_subst_commute]`
+  -- lifts the path target into the recognizer-firing shape with
+  -- the FINAL `codomainCodeTarget` (no separate codomain bi-cong
+  -- needed — merged into pathStep).
+  | transpPiBetaDeep _ _ pathIH sourceIH =>
       simp only [RawTerm.subst, RawTermSubst.lift]
       have pathSubstStep := pathIH substsRelated
       simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
       rw [RawTerm.swap01_subst_lift_lift_commute]
       simp only [RawTerm.weaken_subst_commute]
-      -- The deep variant places `codomainCodeMid` in the pathStep's
-      -- RHS (RHS-side, gets `secondSubst`) and `codomainCodeTarget` in
-      -- the contractum (also RHS-side, gets `secondSubst`).  Hence
-      -- the codomainIH's two substs collapse to `secondSubst.lift.lift`
-      -- on both sides — supply a reflexivity-on-secondSubst-lift-lift
-      -- substsRelated to match.
-      have reflSecondSubstLiftLift :
-          ∀ pos, RawStep.par
-            (secondSubst.lift.lift pos) (secondSubst.lift.lift pos) :=
-        fun pos => RawStep.par.refl _
-      exact RawStep.par.transpPiBetaDeep pathSubstStep
-        (codomainIH reflSecondSubstLiftLift) (sourceIH substsRelated)
+      exact RawStep.par.transpPiBetaDeep pathSubstStep (sourceIH substsRelated)
   | @hcompBeta _ pathBodyRawSource _ _ _ _ _ pathBodyIH capIH =>
       -- Source: hcomp (pathLam pathBodyRawSource.weaken) capRawSource.
       -- After subst rho: hcomp (pathLam (pathBodyRawSource.weaken.subst rho.lift))

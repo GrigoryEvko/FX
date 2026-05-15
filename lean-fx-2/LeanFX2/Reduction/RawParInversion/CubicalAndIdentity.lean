@@ -360,18 +360,19 @@ theorem RawStep.par.transp_inv {scope : Nat}
         target = RawTerm.transpPiBetaContractum codomainCodeTarget sourceTarget ∧
         RawStep.par codomainCodeSource codomainCodeTarget ∧
         RawStep.par sourceTerm sourceTarget) ∨
-    -- D2.5.5 deep transpPi-β: path develops via parallel step to
-    -- `pathLam (piTyCode innerDomain.weaken codomainCodeMid)`; target is
-    -- the contractum on `codomainCodeTarget` (a further par-step on the
-    -- codomain from `codomainCodeMid`).
+    -- D2.5.5 deep transpPi-β (Phase C step 1, 2026-05-15): path
+    -- develops via parallel step DIRECTLY to the fully-developed
+    -- recognizer shape `pathLam (piTyCode innerDomain.weaken
+    -- codomainCodeTarget)`; target is the contractum on the SAME
+    -- `codomainCodeTarget`.  No separate intermediate `codomainCodeMid`
+    -- premise (merged into pathStep).  See ctor docstring for why.
     (∃ (innerDomain : RawTerm scope)
-       (codomainCodeMid codomainCodeTarget : RawTerm (scope + 2))
+       (codomainCodeTarget : RawTerm (scope + 2))
        (sourceTarget : RawTerm scope),
         target = RawTerm.transpPiBetaContractum codomainCodeTarget sourceTarget ∧
         RawStep.par pathTerm
           (RawTerm.pathLam
-            (RawTerm.piTyCode innerDomain.weaken codomainCodeMid)) ∧
-        RawStep.par codomainCodeMid codomainCodeTarget ∧
+            (RawTerm.piTyCode innerDomain.weaken codomainCodeTarget)) ∧
         RawStep.par sourceTerm sourceTarget) := by
   cases parallelStep with
   | refl _ =>
@@ -403,11 +404,11 @@ theorem RawStep.par.transp_inv {scope : Nat}
       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
         ⟨innerDomain, codomainCodeSource, codomainCodeTarget, _,
          rfl, rfl, codomainStep, sourceStep⟩)))))))
-  | @transpPiBetaDeep _ _ innerDomain codomainCodeMid codomainCodeTarget _ _
-                      pathStep codomainStep sourceStep =>
+  | @transpPiBetaDeep _ _ innerDomain codomainCodeTarget _ _
+                      pathStep sourceStep =>
       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        ⟨innerDomain, codomainCodeMid, codomainCodeTarget, _,
-         rfl, pathStep, codomainStep, sourceStep⟩)))))))
+        ⟨innerDomain, codomainCodeTarget, _,
+         rfl, pathStep, sourceStep⟩)))))))
 
 /-- Inversion of `RawStep.par` on an `hcomp` head: either the target
 is again a `hcomp` (refl / hcompCong cases), the LHS sides was a

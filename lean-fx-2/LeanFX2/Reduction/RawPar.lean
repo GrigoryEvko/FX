@@ -730,30 +730,41 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
           sourceRawSource)
         (RawTerm.transpPiBetaContractum codomainCodeTarget sourceRawTarget)
   /-- D2.5.5 deep variant of `transpPiBeta`: the path develops via
-  parallel reduction to the recognizer-firing shape `pathLam
-  (piTyCode innerDomain.weaken codomainCodeTarget)`, then β fires with
-  a possibly-distinct contractum codomain.
+  parallel reduction *directly* to the fully-developed recognizer
+  shape with the FINAL codomain `codomainCodeTarget`; the contractum
+  is then built from that same codomain.
 
   Required for `cd_lemma_transpCong` to discharge `cdTranspPiCase`'s
   β-firing branch when the cd-developed path body matches the
   recognizer but the source pathLam body was NOT literally the
   piTyCode shape (the path par-stepped into it).
 
-  Discharge requires `matchTranspPiBetaShape?_par_some` (already
-  shipped) to lift the recognizer hit through the par-step.  Note
-  that here the path step's RHS already names a SPECIFIC codomain
-  target (the recognizer hits a concrete shape on the par-target
-  side); the contractum's codomain may further differ when the
-  cd-cascade composes this with another par step. -/
+  Design note (Phase C step 1, 2026-05-15): the previously-shipped
+  shape had a separate `codomainCodeMid → codomainCodeTarget`
+  premise at `scope + 2`.  That worked for `subst_par` (joint
+  substitution bridges any same-shape `mid ≠ target`) but blocked
+  `rename_inj_inv` — the inversion at `scope + 2` cannot be
+  recovered from the outer structural induction's `pathIH` (at
+  scope), and the only routes to scope+2 IHs are par-step
+  induction (~1500 LoC refactor) or a recursive call to
+  `rename_inj_inv` at scope+2 (no IH chain available).  Joint
+  substitution still WORKS with the merged target: `pathIH` on the
+  merged pathStep substitutes uniformly under either `firstSubst`
+  or `secondSubst`, and the contractum's codomain becomes
+  `secondSubst.lift.lift codomainCodeTarget` — which equals the
+  ctor's `codomainCodeTarget` implicit arg chosen at the
+  joint-subst step.  The shallow `transpPiBeta` ctor RETAINS its
+  bi-cong codomain premise (it's load-bearing for shallow joint
+  substitution, see Phase B step 5 in
+  `HeadlineRenameInjInv.lean`). -/
   | transpPiBetaDeep {scope : Nat}
       {pathRawSource : RawTerm scope}
       {innerDomain : RawTerm scope}
-      {codomainCodeMid codomainCodeTarget : RawTerm (scope + 2)}
+      {codomainCodeTarget : RawTerm (scope + 2)}
       {sourceRawSource sourceRawTarget : RawTerm scope} :
       RawStep.par pathRawSource
         (RawTerm.pathLam
-          (RawTerm.piTyCode innerDomain.weaken codomainCodeMid)) →
-      RawStep.par codomainCodeMid codomainCodeTarget →
+          (RawTerm.piTyCode innerDomain.weaken codomainCodeTarget)) →
       RawStep.par sourceRawSource sourceRawTarget →
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
         (RawTerm.transpPiBetaContractum codomainCodeTarget sourceRawTarget)

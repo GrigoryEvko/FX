@@ -524,7 +524,10 @@ theorem RawStep.par.rename_inj_inv :
       ⟨_proofRawTarget, sourceTarget, hTarget, pathStep, sourceStep⟩ |
       ⟨_leftRawSource, _leftRawTarget, _rightRawSource, _rightRawTarget,
         sourceTarget, hPath, hTarget, _leftStep, _rightStep, sourceStep⟩ |
-      ⟨_leftRawTarget, _rightRawTarget, sourceTarget, hTarget, pathStep, sourceStep⟩
+      ⟨_leftRawTarget, _rightRawTarget, sourceTarget, hTarget, pathStep, sourceStep⟩ |
+      ⟨innerDom, codSrc, codTgt, sourceTarget, hPath, hTarget,
+        codomainStep, sourceStep⟩ |
+      ⟨innerDom, codTgt, sourceTarget, hTarget, pathStep, sourceStep⟩
     · -- cong arm
       obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj pathStep
       obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
@@ -610,6 +613,49 @@ theorem RawStep.par.rename_inj_inv :
       rw [hTarget]
       simp only [RawTerm.rename]
       rw [← hLeftFinalRename, ← hRightFinalRename, hSourceInner]
+    · -- D2.5.5 transpPiBeta shallow arm: source path was literally
+      -- `pathLam (piTyCode innerDom.weaken codSrc)`; target is the
+      -- contractum on `codTgt`.  The `codSrc → codTgt` bi-cong premise
+      -- lives at scope+2 (inside the pathLam binder + the piTyCode
+      -- binder).  Strategy (Phase C step 1, 2026-05-15): lift
+      -- codomainStep into a par-step on `path.rename rho` via
+      -- `pathLamCong` + `piTyCodeCong`, apply `pathIH`, then
+      -- shape-invert the renamed pathInner via
+      -- `rename_eq_pathLam_imp` + `rename_eq_piTyCode_imp` to extract
+      -- a sourceScope+2 codomain inner.  Build the contractum from
+      -- that inner.  Avoids par-step refactor by using cong-lifting
+      -- to move the codomain step UP into a path-shape par-step that
+      -- the outer structural pathIH consumes natively.
+      have parPath : RawStep.par (path.rename rho)
+          (RawTerm.pathLam
+            (RawTerm.piTyCode innerDom.weaken codTgt)) := by
+        rw [hPath]
+        exact RawStep.par.pathLamCong
+          (RawStep.par.piTyCodeCong (RawStep.par.refl _) codomainStep)
+      obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj parPath
+      obtain ⟨pathBody, _, hPathBodyRename⟩ :=
+        RawTerm.rename_eq_pathLam_imp rho hPathInner.symm
+      obtain ⟨_domInner, codInner, _, _, hCodRename⟩ :=
+        RawTerm.rename_eq_piTyCode_imp rho.lift hPathBodyRename.symm
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨RawTerm.transpPiBetaContractum codInner sourceInner, ?_⟩
+      rw [hTarget, RawTerm.transpPiBetaContractum_rename,
+          hCodRename, hSourceInner]
+    · -- D2.5.5 transpPiBetaDeep arm (Phase C step 1 redesign): pathStep
+      -- on `path.rename rho` lands DIRECTLY at the fully-developed
+      -- recognizer shape with `codTgt` (no codomainMid bridge — merged
+      -- into pathStep).  Apply pathIH directly, then shape-invert via
+      -- `rename_eq_pathLam_imp` + `rename_eq_piTyCode_imp` for the
+      -- sourceScope+2 codomain inner.  Build contractum.
+      obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj pathStep
+      obtain ⟨pathBody, _, hPathBodyRename⟩ :=
+        RawTerm.rename_eq_pathLam_imp rho hPathInner.symm
+      obtain ⟨_domInner, codInner, _, _, hCodRename⟩ :=
+        RawTerm.rename_eq_piTyCode_imp rho.lift hPathBodyRename.symm
+      obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+      refine ⟨RawTerm.transpPiBetaContractum codInner sourceInner, ?_⟩
+      rw [hTarget, RawTerm.transpPiBetaContractum_rename,
+          hCodRename, hSourceInner]
   | hcomp sides cap sidesIH capIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.hcomp (sides.rename rho)

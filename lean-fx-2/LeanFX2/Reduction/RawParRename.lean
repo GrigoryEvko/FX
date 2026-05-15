@@ -282,19 +282,19 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.transpPiBeta
         (codomainIH rawRenaming.lift.lift) (sourceIH _)
   -- Deep variant.  `pathIH rho` gives `par (pathRawSource.rename rho)
-  -- ((pathLam (piTyCode innerDomain.weaken codomainCodeMid)).rename
+  -- ((pathLam (piTyCode innerDomain.weaken codomainCodeTarget)).rename
   -- rho)`; `simp only [RawTerm.rename, RawTerm.weaken_rename_commute]`
-  -- lifts the path target into the recognizer-firing shape.  The
-  -- codomain bi-cong premise survives via `codomainIH rho.lift.lift`.
-  -- Then the swap01+weaken cascade aligns the contractum RHS.
-  | transpPiBetaDeep _ _ _ pathIH codomainIH sourceIH =>
+  -- lifts the path target into the recognizer-firing shape.  After
+  -- Phase C step 1 redesign (codomainStep merged into pathStep), no
+  -- separate codomain IH is needed.  Then the swap01+weaken cascade
+  -- aligns the contractum RHS.
+  | transpPiBetaDeep _ _ pathIH sourceIH =>
       simp only [RawTerm.rename]
       have pathRenameStep := pathIH rawRenaming
       simp only [RawTerm.rename, RawTerm.weaken_rename_commute] at pathRenameStep
       rw [RawTerm.swap01_rename_lift_lift_commute]
       simp only [RawTerm.weaken_rename_commute]
-      exact RawStep.par.transpPiBetaDeep pathRenameStep
-        (codomainIH rawRenaming.lift.lift) (sourceIH _)
+      exact RawStep.par.transpPiBetaDeep pathRenameStep (sourceIH _)
   | @hcompBeta _ pathBodyRawSource _ _ _ _ _ pathBodyIH capIH =>
       -- LHS: hcomp (pathLam pathBodyRawSource.weaken) capRawSource.
       -- After rename rho: hcomp (pathLam (pathBodyRawSource.weaken.rename rho.lift))
