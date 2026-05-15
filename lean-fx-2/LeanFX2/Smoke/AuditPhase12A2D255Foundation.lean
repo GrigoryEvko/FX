@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.RawPartialRename.Swap01
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
+import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 
 /-! # AuditPhase12A2D255Foundation — D2.5.5 foundation primitives.
 
@@ -86,5 +87,8 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum_rename
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum_subst
+
+-- Phase F dispatch recognizer (commit 2026-05-15)
+#print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?
 
 end LeanFX2.Smoke
