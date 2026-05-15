@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.RawSubst.RenameDefs
 import LeanFX2.Foundation.RawSubst.RenameLemmas
+import LeanFX2.Foundation.RawSubst.SubstLemmas
 
 /-! # LeanFX2.Foundation.RawPartialRename.Swap01
 
@@ -103,5 +104,48 @@ theorem RawTerm.swap01_rename_lift_lift_commute {source target : Nat}
   apply RawTerm.rename_pointwise
   intro position
   exact (RawRenaming.swap01_lift_lift_commute rho position).symm
+
+/-- Term-level subst commute: renaming a term by `swap01` and then
+substituting by `sigma.lift.lift` agrees with substituting first and
+then renaming.
+
+Geometry: `sigma.lift.lift` keeps slots 0 and 1 as their var-images
+and threads slot k+2 through a double-weakened copy of `sigma k`.
+`swap01` only acts on slots 0 and 1.  At slots 0/1 the
+sigma.lift.lift image is `var ⟨0/1, _⟩`, and swapping before vs.
+after the subst lands on the same `var`.  At slot k+2 the image is
+double-weakened, which is invariant under swap01 (swap01 acts as
+identity on positions ≥ 2).
+
+Derived via `rename_subst_commute` + `subst_rename_commute` to
+factor both sides through `subst_pointwise`.  The pointwise goal at
+slot k+2 needs a small `rename_compose`-based detour to show
+`(_ .rename weaken).rename weaken).rename swap01 = (_ .rename weaken).rename weaken`,
+which reduces to `swap01 ∘ weaken ∘ weaken = weaken ∘ weaken`
+pointwise — true because the composition lands in positions ≥ 2.
+
+Consumed by the future `transpPi` β cascade in
+`RawParCompatible.lean`: the par ctor's subst arm needs to align
+`(B.rename swap01).subst sigma.lift.lift` with
+`(B.subst sigma.lift.lift).rename swap01`. -/
+theorem RawTerm.swap01_subst_lift_lift_commute {source target : Nat}
+    (sigma : RawTermSubst source target)
+    (term : RawTerm (source + 2)) :
+    (term.rename RawRenaming.swap01).subst sigma.lift.lift =
+    (term.subst sigma.lift.lift).rename RawRenaming.swap01 := by
+  rw [RawTerm.rename_subst_commute, RawTerm.subst_rename_commute]
+  apply RawTerm.subst_pointwise
+  intro position
+  match position with
+  | ⟨0, _⟩      => rfl
+  | ⟨1, _⟩      => rfl
+  | ⟨_ + 2, _⟩  =>
+      show ((sigma _).rename RawRenaming.weaken).rename RawRenaming.weaken =
+           (((sigma _).rename RawRenaming.weaken).rename RawRenaming.weaken).rename
+              RawRenaming.swap01
+      rw [RawTerm.rename_compose, RawTerm.rename_compose]
+      apply RawTerm.rename_pointwise
+      intro _
+      rfl
 
 end LeanFX2
