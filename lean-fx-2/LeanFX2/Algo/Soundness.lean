@@ -430,6 +430,7 @@ theorem Term.headStep?_sound
   | glueIntro _ _ _ _ => nomatch firedEq
   | transp _ _ _ _ _ _ _ _ => nomatch firedEq
   | hcomp _ _ => nomatch firedEq
+  | hcompPath _ _ _ _ => nomatch firedEq
   | recordIntro _ => nomatch firedEq
   | recordProj _ => nomatch firedEq
   | refineIntro _ _ _ => nomatch firedEq

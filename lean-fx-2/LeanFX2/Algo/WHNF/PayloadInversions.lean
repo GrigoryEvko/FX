@@ -72,6 +72,7 @@ theorem Term.headCtor_natSucc_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -157,6 +158,7 @@ theorem Term.headCtor_listCons_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -242,6 +244,7 @@ theorem Term.headCtor_optionSome_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -327,6 +330,7 @@ theorem Term.headCtor_eitherInl_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -412,6 +416,7 @@ theorem Term.headCtor_eitherInr_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -497,6 +502,7 @@ theorem Term.headCtor_unit_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq

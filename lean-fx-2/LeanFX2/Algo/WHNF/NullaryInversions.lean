@@ -71,6 +71,7 @@ theorem Term.headCtor_boolTrue_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -156,6 +157,7 @@ theorem Term.headCtor_boolFalse_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -241,6 +243,7 @@ theorem Term.headCtor_natZero_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -326,6 +329,7 @@ theorem Term.headCtor_listNil_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -411,6 +415,7 @@ theorem Term.headCtor_optionNone_raw {mode : Mode} {level scope : Nat}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq

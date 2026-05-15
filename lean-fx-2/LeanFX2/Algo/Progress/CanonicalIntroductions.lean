@@ -87,6 +87,7 @@ theorem Term.headCtor_lam_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -178,6 +179,7 @@ theorem Term.headCtor_pair_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -266,6 +268,7 @@ theorem Term.headCtor_refl_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -356,6 +359,7 @@ theorem Term.headCtor_lamPi_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -446,6 +450,7 @@ theorem Term.headCtor_recordIntro_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => exact ⟨_, rfl⟩
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -533,6 +538,7 @@ theorem Term.headCtor_modIntro_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -622,6 +628,7 @@ theorem Term.headCtor_pathLam_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -711,6 +718,7 @@ theorem Term.headCtor_glueIntro_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq
@@ -800,6 +808,7 @@ theorem Term.headCtor_refineIntro_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => exact ⟨_, _, rfl⟩
@@ -893,6 +902,7 @@ theorem Term.headCtor_codataUnfold_raw {context : Ctx mode level scope}
   | glueElim _ _ => nomatch headEq
   | transp _ _ _ _ _ _ _ _ _ => nomatch headEq
   | hcomp _ _ _ => nomatch headEq
+  | hcompPath _ _ _ _ _ => nomatch headEq
   | recordIntro _ => nomatch headEq
   | recordProj _ => nomatch headEq
   | refineIntro _ _ _ => nomatch headEq

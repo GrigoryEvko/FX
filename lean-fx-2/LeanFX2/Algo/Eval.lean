@@ -303,6 +303,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
   | _, _, _, _, .glueIntro _ _ _ _ _ => none
   | _, _, _, _, .transp _ _ _ _ _ _ _ _ _ => none
   | _, _, _, _, .hcomp _ _ _ => none
+  | _, _, _, _, .hcompPath _ _ _ _ _ => none
   | _, _, _, _, .recordIntro _ => none
   | _, _, _, _, .refineIntro _ _ _ => none
   | _, _, _, _, .codataUnfold _ _ => none

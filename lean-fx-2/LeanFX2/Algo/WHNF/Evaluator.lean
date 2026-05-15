@@ -190,6 +190,7 @@ def Term.headCtor {mode : Mode} {level scope : Nat} {context : Ctx mode level sc
   | .glueElim _ _ => .glueElim
   | .transp _ _ _ _ _ _ _ _ _ => .transp
   | .hcomp _ _ _ => .hcomp
+  | .hcompPath _ _ _ _ _ => .hcomp
   | .recordIntro _ => .recordIntro
   | .recordProj _ => .recordProj
   | .refineIntro _ _ _ => .refineIntro
@@ -265,6 +266,7 @@ def Term.isWHNF {mode : Mode} {level scope : Nat} {context : Ctx mode level scop
   | .glueIntro _ _ _ _ _ => true
   | .transp _ _ _ _ _ _ _ _ _ => true
   | .hcomp _ _ _ => true
+  | .hcompPath _ _ _ _ _ => true
   | .recordIntro _ => true
   | .refineIntro _ _ _ => true
   | .codataUnfold _ _ => true

@@ -63,7 +63,11 @@ namespace LeanFX2.Tools
 -- D3.6-S5 ships `RawTerm.oeqTrans` + `RawTerm.equivCompose` (RawTerm
 -- grows by 2 to 73; Term unchanged at 77 since typed mirrors are v1.1
 -- follow-ups), so the delta SHRINKS by 2 from 6 to 4.
-#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 4
+-- #1528 Option B Phase A ships `Term.hcompPath` (Term grows by 1 to
+-- 78; RawTerm unchanged at 73 since `hcompPath` projects to the same
+-- `RawTerm.hcomp` head as the existing `Term.hcomp` — no RawTerm parity
+-- ctor is needed), so the delta GROWS by 1 from 4 to 5.
+#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 5
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
 -- packaging types; heavy use signals existential reasoning.  1255 today

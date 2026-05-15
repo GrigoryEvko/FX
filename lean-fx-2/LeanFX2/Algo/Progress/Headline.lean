@@ -185,6 +185,7 @@ theorem Term.value_or_cong_only_progress
   | glueIntro _ _ _ _ _ => exact Or.inl rfl
   | transp _ _ _ _ _ _ _ _ _ => exact Or.inl rfl
   | hcomp _ _ _ => exact Or.inl rfl
+  | hcompPath _ _ _ _ _ => exact Or.inl rfl
   | recordIntro _ => exact Or.inl rfl
   | refineIntro _ _ _ => exact Or.inl rfl
   | codataUnfold _ _ => exact Or.inl rfl
@@ -3560,6 +3561,7 @@ theorem Term.progress_or_step
   | glueIntro _ _ _ _ _ => exact Or.inl rfl
   | transp _ _ _ _ _ _ _ _ _ => exact Or.inl rfl
   | hcomp _ _ _ => exact Or.inl rfl
+  | hcompPath _ _ _ _ _ => exact Or.inl rfl
   | recordIntro _ => exact Or.inl rfl
   | refineIntro _ _ _ => exact Or.inl rfl
   | codataUnfold _ _ => exact Or.inl rfl

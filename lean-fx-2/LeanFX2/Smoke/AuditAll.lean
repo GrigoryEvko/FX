@@ -29,7 +29,10 @@ namespace Smoke
 -- bumps from 47 to 48 (per-ctor census heuristic for the new ctor).
 -- D3.6-P4: typed `Term.equivApply` ctor + smoke audit; smoke gate
 -- bumps from 48 to 49 (per-ctor census heuristic for the new ctor).
-#assert_smoke_reference_coverage_budget LeanFX2.Term 49
+-- #1528 Option B: typed `Term.hcompPath` ctor; smoke gate bumps from
+-- 49 to 50 (per-ctor census heuristic — no smoke reference yet for
+-- the new path-shaped composition ctor).
+#assert_smoke_reference_coverage_budget LeanFX2.Term 50
 
 end Smoke
 end LeanFX2
