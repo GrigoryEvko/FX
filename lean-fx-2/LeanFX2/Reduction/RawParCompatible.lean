@@ -606,36 +606,6 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
       exact RawStep.par.transpReflBetaDeep pathSubstStep
         (sourceIH substsRelated)
-  -- D2.5.5 transpPi β under joint substitution.  After `simp only
-  -- [RawTerm.subst]` unfolds both sides (the contractum is
-  -- `@[reducible]`), the LHS exhibits `(innerDomain.subst σ).weaken`
-  -- and the RHS exhibits `(codomainCode.rename swap01).subst σ.lift.lift`
-  -- and `sourceRawTarget.weaken.subst σ.lift` that must be reshaped
-  -- via `swap01_subst_lift_lift_commute` and `weaken_subst_commute`
-  -- to match the contractum that `transpPiBeta` produces with the
-  -- substituted implicits.
-  | transpPiBeta _ _ codomainIH sourceIH =>
-      simp only [RawTerm.subst, RawTermSubst.lift]
-      rw [RawTerm.swap01_subst_lift_lift_commute]
-      simp only [RawTerm.weaken_subst_commute]
-      have liftedRelated := RawTermSubst.par_lift substsRelated
-      have liftedTwiceRelated := RawTermSubst.par_lift liftedRelated
-      exact RawStep.par.transpPiBeta
-        (codomainIH liftedTwiceRelated) (sourceIH substsRelated)
-  -- Deep variant (Phase C step 1 redesign, 2026-05-15): `pathIH
-  -- substsRelated` gives `par (pathRawSource.subst firstSubst)
-  -- ((pathLam (piTyCode innerDomain.weaken codomainCodeTarget)).subst
-  -- secondSubst)`; `simp only [RawTerm.subst, RawTerm.weaken_subst_commute]`
-  -- lifts the path target into the recognizer-firing shape with
-  -- the FINAL `codomainCodeTarget` (no separate codomain bi-cong
-  -- needed — merged into pathStep).
-  | transpPiBetaDeep _ _ pathIH sourceIH =>
-      simp only [RawTerm.subst, RawTermSubst.lift]
-      have pathSubstStep := pathIH substsRelated
-      simp only [RawTerm.subst, RawTerm.weaken_subst_commute] at pathSubstStep
-      rw [RawTerm.swap01_subst_lift_lift_commute]
-      simp only [RawTerm.weaken_subst_commute]
-      exact RawStep.par.transpPiBetaDeep pathSubstStep (sourceIH substsRelated)
   | @hcompBeta _ pathBodyRawSource _ _ _ _ _ pathBodyIH capIH =>
       -- Source: hcomp (pathLam pathBodyRawSource.weaken) capRawSource.
       -- After subst rho: hcomp (pathLam (pathBodyRawSource.weaken.subst rho.lift))

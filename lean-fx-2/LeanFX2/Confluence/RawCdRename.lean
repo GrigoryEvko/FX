@@ -341,29 +341,16 @@ theorem RawTerm.cdTranspCase_rename {sourceScope targetScope : Nat}
       show ((match RawTerm.unweaken? pathBody with
               | some _ => developedSource
               | none =>
-                  match RawTerm.matchTranspPiBetaShape? pathBody with
-                  | some piPair =>
-                      RawTerm.transpPiBetaContractum piPair.2 developedSource
-                  | none =>
-                      RawTerm.transp (RawTerm.pathLam pathBody) developedSource).rename rho) =
+                  RawTerm.transp (RawTerm.pathLam pathBody) developedSource).rename rho) =
            (match RawTerm.unweaken? (pathBody.rename rho.lift) with
               | some _ => developedSource.rename rho
               | none =>
-                  match RawTerm.matchTranspPiBetaShape? (pathBody.rename rho.lift) with
-                  | some piPair =>
-                      RawTerm.transpPiBetaContractum piPair.2 (developedSource.rename rho)
-                  | none =>
-                      RawTerm.transp (RawTerm.pathLam (pathBody.rename rho.lift))
-                        (developedSource.rename rho))
-      rw [RawTerm.unweaken?_rename_lift_commute pathBody rho,
-          RawTerm.matchTranspPiBetaShape?_rename rho pathBody]
+                  RawTerm.transp (RawTerm.pathLam (pathBody.rename rho.lift))
+                    (developedSource.rename rho))
+      rw [RawTerm.unweaken?_rename_lift_commute pathBody rho]
       cases hUnwk : RawTerm.unweaken? pathBody with
       | some _ => rfl
-      | none =>
-          cases hShape : RawTerm.matchTranspPiBetaShape? pathBody with
-          | none => rfl
-          | some piPair =>
-              exact RawTerm.transpPiBetaContractum_rename rho piPair.2 developedSource
+      | none => rfl
   all_goals rfl
 
 /-- `cdTranspPiCase` commutes with `rename`.  The dispatch on

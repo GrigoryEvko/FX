@@ -347,32 +347,6 @@ theorem RawStep.par.transp_inv {scope : Nat}
         target = RawTerm.transp rightRawTarget
                                 (RawTerm.transp leftRawTarget sourceTarget) ∧
         RawStep.par pathTerm (RawTerm.pathCompose leftRawTarget rightRawTarget) ∧
-        RawStep.par sourceTerm sourceTarget) ∨
-    -- D2.5.5 shallow transpPi-β: LHS was literally
-    -- `pathLam (piTyCode innerDomain.weaken codomainCodeSource)`; target
-    -- is the contractum on `codomainCodeTarget` with a par step both on
-    -- the codomain (bi-cong) and the source argument.
-    (∃ (innerDomain : RawTerm scope)
-       (codomainCodeSource codomainCodeTarget : RawTerm (scope + 2))
-       (sourceTarget : RawTerm scope),
-        pathTerm = RawTerm.pathLam
-          (RawTerm.piTyCode innerDomain.weaken codomainCodeSource) ∧
-        target = RawTerm.transpPiBetaContractum codomainCodeTarget sourceTarget ∧
-        RawStep.par codomainCodeSource codomainCodeTarget ∧
-        RawStep.par sourceTerm sourceTarget) ∨
-    -- D2.5.5 deep transpPi-β (Phase C step 1, 2026-05-15): path
-    -- develops via parallel step DIRECTLY to the fully-developed
-    -- recognizer shape `pathLam (piTyCode innerDomain.weaken
-    -- codomainCodeTarget)`; target is the contractum on the SAME
-    -- `codomainCodeTarget`.  No separate intermediate `codomainCodeMid`
-    -- premise (merged into pathStep).  See ctor docstring for why.
-    (∃ (innerDomain : RawTerm scope)
-       (codomainCodeTarget : RawTerm (scope + 2))
-       (sourceTarget : RawTerm scope),
-        target = RawTerm.transpPiBetaContractum codomainCodeTarget sourceTarget ∧
-        RawStep.par pathTerm
-          (RawTerm.pathLam
-            (RawTerm.piTyCode innerDomain.weaken codomainCodeTarget)) ∧
         RawStep.par sourceTerm sourceTarget) := by
   cases parallelStep with
   | refl _ =>
@@ -397,18 +371,8 @@ theorem RawStep.par.transp_inv {scope : Nat}
         ⟨leftRawSource, leftRawTarget, rightRawSource, rightRawTarget, _,
          rfl, rfl, leftStep, rightStep, sourceStep⟩)))))
   | @transpComposeDeep _ _ leftRawTarget rightRawTarget _ _ pathStep sourceStep =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨leftRawTarget, rightRawTarget, _, rfl, pathStep, sourceStep⟩))))))
-  | @transpPiBeta _ innerDomain codomainCodeSource codomainCodeTarget _ _
-                  codomainStep sourceStep =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨innerDomain, codomainCodeSource, codomainCodeTarget, _,
-         rfl, rfl, codomainStep, sourceStep⟩)))))))
-  | @transpPiBetaDeep _ _ innerDomain codomainCodeTarget _ _
-                      pathStep sourceStep =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        ⟨innerDomain, codomainCodeTarget, _,
-         rfl, pathStep, sourceStep⟩)))))))
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+        ⟨leftRawTarget, rightRawTarget, _, rfl, pathStep, sourceStep⟩)))))
 
 /-- Inversion of `RawStep.par` on an `hcomp` head: either the target
 is again a `hcomp` (refl / hcompCong cases), the LHS sides was a

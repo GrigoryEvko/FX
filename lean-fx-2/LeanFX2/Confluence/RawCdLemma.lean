@@ -451,20 +451,7 @@ theorem RawStep.par.cd_lemma {scope : Nat}
               rw [hPath] at pathIH
               exact RawStep.par.transpReflBetaDeep pathIH sourceIH
           case _ _unwknEqn =>
-              -- D2.5.5 Phase C step 2: unweaken? = none, dispatch via
-              -- matchTranspPiBetaShape?.  When the recognizer fires on
-              -- the cd-developed pathBody, fire transpPiBetaDeep.
-              split
-              case _ piPair shapeEqn =>
-                  obtain ⟨innerDomain, codomainCode⟩ := piPair
-                  have hPath : pathBody =
-                      RawTerm.piTyCode innerDomain.weaken codomainCode :=
-                    RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken
-                      pathBody innerDomain codomainCode shapeEqn
-                  rw [hPath] at pathIH
-                  exact RawStep.par.transpPiBetaDeep pathIH sourceIH
-              case _ _shapeEqn =>
-                  exact RawStep.par.transpCong pathIH sourceIH
+              exact RawStep.par.transpCong pathIH sourceIH
       -- D3.6-S1: when `cd pathRawSource = uaToEquiv proofRawTarget`,
       -- cdTranspCase fires the equivApply contractum.  Use uaBetaDeep
       -- with pathIH directly (par pathRawTarget (uaToEquiv ...)).
