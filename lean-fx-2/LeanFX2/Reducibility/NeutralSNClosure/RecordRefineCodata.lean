@@ -991,5 +991,32 @@ theorem Term.app_isStronglyNormalizing
   RawTerm.app_isStronglyNormalizing
     functionIsSN argumentIsSN contractumIsSN
 
+/-- Typed wrapper for appPi generic-closure SN preservation.  Same
+raw projection `RawTerm.app functionRaw argumentRaw` as `Term.app`;
+only the typed signature differs (dependent codomain).  Reuses
+`RawTerm.app_isStronglyNormalizing` since the raw β rule is shared
+between non-dependent and dependent arrows. -/
+theorem Term.appPi_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+      Term context (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (functionIsSN : Term.isStronglyNormalizing functionTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {argumentTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing argumentTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 argumentTargetRaw)) :
+    Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) :=
+  RawTerm.app_isStronglyNormalizing
+    functionIsSN argumentIsSN contractumIsSN
+
 
 end LeanFX2

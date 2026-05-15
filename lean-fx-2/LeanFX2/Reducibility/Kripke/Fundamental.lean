@@ -1233,4 +1233,29 @@ theorem ReducibleK.fundamental_app_sn
   Term.app_isStronglyNormalizing
     functionIsSN argumentIsSN contractumIsSN
 
+/-- SN of appPi via Kripke.  Dependent-Π elimination shares the raw
+β rule with `Term.app`; the typed signature differs only in carrying
+a dependent codomain that substitutes the argument. -/
+theorem ReducibleK.fundamental_appPi_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType : Ty level scope}
+    {codomainType : Ty level (scope + 1)}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm :
+      Term context (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (functionIsSN : Term.isStronglyNormalizing functionTerm)
+    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {argumentTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing argumentTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 argumentTargetRaw)) :
+    Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) :=
+  Term.appPi_isStronglyNormalizing
+    functionIsSN argumentIsSN contractumIsSN
+
 end LeanFX2

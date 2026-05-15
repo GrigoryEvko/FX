@@ -217,3 +217,8 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.app_isStronglyNormalizing
 #print axioms LeanFX2.Term.app_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_app_sn
+
+-- K12.21 appPi (dependent-Π β-redex; reuses raw β rule from app)
+#print axioms LeanFX2.Term.appPi_isStronglyNormalizing
+#print axioms LeanFX2.Term.appPi_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_appPi_sn
