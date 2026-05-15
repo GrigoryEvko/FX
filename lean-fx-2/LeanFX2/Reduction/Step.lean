@@ -1260,19 +1260,28 @@ inductive Step :
     SHIPPED.  See documentation below.
 
   D2.5.5 (transpPi — binder-aware transp Π β rule):
-    PHASES A-D SHIPPED (foundation prerequisites at
-    `Foundation/RawPartialRename/Inversion.lean`,
-    `OptionPatterns.lean`, `UnweakenInversion.lean`).  Phases
-    E-K (cd_rename extension, cd dispatcher, RawStep.par ctor,
-    compat, cd_lemma, typed Step ctor, audit) PENDING.  Each
-    phase ships independently as a Phase-X commit; agent runs
-    can ship E+F+G as one cascade atomically following the
-    transpReflBeta + hcompBeta templates.
+    BLOCKED on kernel infrastructure (2026-05-15 parallel agent
+    audit).  Phases A-D foundation prerequisites SHIPPED at
+    `Foundation/RawPartialRename/{Inversion, OptionPatterns,
+    UnweakenInversion}.lean` + `Foundation/RawTermInjective.lean`
+    (817 LoC).  Phases E-K NOT atomically shippable — needs
+    either (i) `cd_rename` signature change threading
+    `RawRenamingInjective rho` through 17 helpers + main +
+    cd_weaken + 4 downstream files (~200-400 LoC), or (ii)
+    propositional-premise architecture with new
+    `Foundation/RawPartialRename/UnweakenSubstCommute.lean`
+    (~60 LoC) plus novel subst-compat dispatch (~400-700 LoC
+    total).  See memory `feedback_d255_d256_blocker_2026_05_15.md`.
 
-  D2.5.6 (transpSigma — same shape as transpPi):
-    PHASES A-D SHIPPED (same foundation as D2.5.5; rename
-    injectivity is shape-agnostic).  Phases E-K PENDING with
-    the same cascade structure as D2.5.5.
+  D2.5.6 (transpSigma — transp through dependent pair):
+    BLOCKED on the same `cd_lemma` dispatch ambiguity (Barrier D)
+    PLUS three Σ-specific barriers: (A) no `Term.transpFill`
+    ctor for inner-snd transp path argument, (B) `Term.transp`'s
+    sourceType/targetType are independent schematic data per
+    `Term.lean:397-405` docstring, (C) `Term.snd`'s typing pulls
+    FST of whole pair, not FST after transport.  Unblocker
+    deliverables: Term.transpFill (~800 LoC) OR Term.transp
+    redesign (~1500 LoC).  Defer pending kernel milestone.
 
   D2.5.7 (closed-type transps — list/option/either/record):
     PENDING.  Closed-type case is structurally simpler than
