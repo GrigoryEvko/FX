@@ -37,7 +37,63 @@ Consumed by the future D2.5.5 cascade:
 
 Per `feedback_d255_d256_blocker_2026_05_15.md`, the par cascade is
 still pending Phases E-K; this file is one of the small foundation
-primitives the par ctor's contractum design references. -/
+primitives the par ctor's contractum design references.
+
+## Phase F dispatcher design RFC (blocker #1951 resolution, Path 2)
+
+`cdTranspCase`'s `pathLam pathBody` branch currently dispatches:
+
+  `unweaken? pathBody = some _ → developedSource`  (transpReflBeta)
+  `unweaken? pathBody = none   → transp cong`     (no β fires)
+
+The transpPi β rule fires inside the `none` branch when pathBody has
+the CCHM shape `piTyCode A.weaken B` with B genuinely depending on the
+interval (i.e. the WHOLE piTyCode does NOT unweaken — otherwise
+transpReflBeta wins).  The dispatch is disjoint by construction:
+
+  * **transpReflBeta**: premise `unweaken? pathBody = some _` —
+    the entire path body is in the image of `weaken`, so the path is
+    the constant path `λ i ⇒ T`.
+  * **transpPiBeta**: premise `unweaken? pathBody = none` AND
+    pathBody syntactically equals `piTyCode A.weaken B` for some
+    `A : RawTerm scope`, `B : RawTerm (scope+2)`.
+
+These two premises cannot both hold: if pathBody equals
+`piTyCode A.weaken B`, `unweaken?` of piTyCode is the conjunctive
+check on its children — `unweaken? (A.weaken) = some A` always
+succeeds, so the disjunctive failure must come from B failing to
+unweaken-at-shifted-position-1 (i.e. B uses the interval).  Conversely,
+when pathBody DOES unweaken, B must unweaken at slot 1, which means
+the CCHM rule is vacuous (transport through a Π type whose codomain
+ignores the interval = transport through a constant type).
+
+The previous Phase A attempt (commit 067ed74, rolled back) used a
+`decide (domainCode = codomainUnweakened)` test in the dispatcher;
+that approach is Path 1 (decidable structural equality) and was
+brittle under non-injective renamings.  Path 2 (disjoint-premise
+split) avoids the structural-equality check entirely by relying on
+unweaken? disjointness.
+
+Phase F implementation outline (Phase G consumes):
+
+1. Extend `RawStep.par` with `transpPiBeta` ctor whose LHS pattern
+   is `RawTerm.transp (RawTerm.pathLam (RawTerm.piTyCode A.weaken B))
+   sourceRaw` and whose target uses `transpPiBetaContractum`.  Add a
+   premise carrying the witness `B_unweakens_at_slot1 = none` (the
+   negation of transpReflBeta's premise).
+2. Extend `cdTranspCase`'s `pathLam _` `none` branch with an inner
+   `match pathBody` checking for `piTyCode _ _` shape.  When the shape
+   matches AND `unweaken? domainCode = some A` succeeds (domain doesn't
+   use interval), fire `transpPiBetaContractum codomainCode source`.
+   Otherwise fall back to `transp cong`.
+3. The deep variant `transpPiBetaDeep` mirrors the shallow ctor with
+   `pathRaw →par pathLam (piTyCode A.weaken B)` premise — needed for
+   cd_dominates discharge when the path is not literally the β-shape
+   on the LHS but reaches it under cd development.
+
+This RFC is the design contract Phase F implements.  No code shipped
+here beyond the foundation primitives (def + commutes); Phase F lands
+the par ctors + cd extension + cd_lemma arm as a separate cascade. -/
 
 namespace LeanFX2
 
