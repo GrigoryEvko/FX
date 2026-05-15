@@ -275,6 +275,43 @@ theorem Term.hcomp_HEq_congr
   cases capValueHEq
   rfl
 
+/-- HEq congruence for path-shaped homogeneous composition. -/
+theorem Term.hcompPath_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType1 carrierType2 : Ty level scope}
+    {leftEndpoint1 leftEndpoint2 rightEndpoint1 rightEndpoint2 :
+      RawTerm scope}
+    {sidesPathRaw1 sidesPathRaw2 capRaw1 capRaw2 : RawTerm scope}
+    (carrierTypeEq : carrierType1 = carrierType2)
+    (leftEndpointEq : leftEndpoint1 = leftEndpoint2)
+    (rightEndpointEq : rightEndpoint1 = rightEndpoint2)
+    (sidesPathRawEq : sidesPathRaw1 = sidesPathRaw2)
+    (capRawEq : capRaw1 = capRaw2)
+    {sidesPath1 :
+      Term context (Ty.path carrierType1 leftEndpoint1 rightEndpoint1)
+        sidesPathRaw1}
+    {sidesPath2 :
+      Term context (Ty.path carrierType2 leftEndpoint2 rightEndpoint2)
+        sidesPathRaw2}
+    (sidesPathHEq : HEq sidesPath1 sidesPath2)
+    {capValue1 : Term context carrierType1 capRaw1}
+    {capValue2 : Term context carrierType2 capRaw2}
+    (capValueHEq : HEq capValue1 capValue2) :
+    HEq
+      (Term.hcompPath modeIsUnivalent leftEndpoint1 rightEndpoint1
+        sidesPath1 capValue1)
+      (Term.hcompPath modeIsUnivalent leftEndpoint2 rightEndpoint2
+        sidesPath2 capValue2) := by
+  subst carrierTypeEq
+  subst leftEndpointEq
+  subst rightEndpointEq
+  subst sidesPathRawEq
+  subst capRawEq
+  cases sidesPathHEq
+  cases capValueHEq
+  rfl
+
 /-- HEq congruence for single-field record introduction. -/
 theorem Term.recordIntro_HEq_congr
     {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
