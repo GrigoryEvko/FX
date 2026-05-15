@@ -58,4 +58,15 @@ files. -/
 #assert_no_axioms LeanFX2.RawStep.par.diamond
 #assert_no_axioms LeanFX2.RawStep.parStar.confluence
 
+/-! ### parStar cong-rule lifter (mapStep pattern, #1646)
+
+`RawStep.parStar.mapStep` is the raw analog of `StepStar.mapStep` —
+the foundational cong-rule lifter used to collapse 21 four-line
+refl/trans inductions in `RawParStarCong.lean` to one-line `mapStep`
+invocations.  Per `feedback_lean_mapStep_pattern.md`, this is a
+load-bearing kernel discipline reused everywhere parStar lifts a
+single-step cong rule over the reflexive-transitive closure. -/
+
+#assert_no_axioms LeanFX2.RawStep.parStar.mapStep
+
 end LeanFX2.Tools
