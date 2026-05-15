@@ -353,7 +353,30 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
         (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw)
       (intervalTerm : Term context Ty.interval intervalRaw) :
       Term context carrierType (RawTerm.pathApp pathRaw intervalRaw)
-  -- Cubical Glue fragment — typed mirror of the raw D2.5 Glue β rule.
+  /-- Cubical Glue fragment — typed mirror of the raw D2.5 Glue β rule.
+
+      ## D2.5.9 glueAtFace rep finding
+
+      The `boundaryWitness : RawTerm scope` slot is FREE raw data (no
+      typed constraint).  Lane B can write a β rule that fires when
+      `boundaryWitness` is the specific syntactic face form (e.g.
+      `RawTerm.interval1`):
+
+      ```lean
+      | betaGlueAtFace ...
+          (baseValue : Term ctx baseType baseRaw)
+          (partialValue : Term ctx baseType partialRaw) :
+          Step (Term.glueElim modeIsUnivalent
+                  (Term.glueIntro modeIsUnivalent baseType
+                    RawTerm.interval1
+                    baseValue partialValue))
+               partialValue
+      ```
+
+      The β rule's source position pins `boundaryWitness = interval1`
+      syntactically, mirroring the `transpReflBeta` template's pin on
+      `RawTerm.pathLam typeRaw.weaken`.  No Term rep change needed
+      for D2.5.9 — existing slot suffices. -/
   | glueIntro {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
       (modeIsUnivalent : mode = Mode.univalent)
