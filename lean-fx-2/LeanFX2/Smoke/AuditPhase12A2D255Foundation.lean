@@ -2,6 +2,7 @@ import LeanFX2.Foundation.RawPartialRename.Swap01
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 import LeanFX2.Confluence.RawCdRename
+import LeanFX2.Reduction.TranspPiContractumPar
 
 /-! # AuditPhase12A2D255Foundation — D2.5.5 foundation primitives.
 
@@ -114,5 +115,8 @@ namespace LeanFX2.Smoke
 -- Phase F cdTranspPiCase helper + rename commute
 #print axioms LeanFX2.RawTerm.cdTranspPiCase
 #print axioms LeanFX2.RawTerm.cdTranspPiCase_rename
+
+-- Phase G prep: par-step cong over the transpPi β contractum source
+#print axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
 
 end LeanFX2.Smoke

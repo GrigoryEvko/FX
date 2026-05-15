@@ -75,6 +75,13 @@ namespace LeanFX2.Tools
 -- gated under `AuditFoundation.lean`.
 #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase
 #assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_rename
+-- D2.5.5 transpPi β-rule Phase G prep: par-step cong over the
+-- contractum's source argument.  Future cd_lemma transpPiBetaDeep
+-- arm calls this to discharge `par (contractum cd-source) (contractum
+-- IH-target)` from a par-step hypothesis on the source.  Proven via
+-- the lam/transp/app cong rules with `RawStep.par.rename` lifting
+-- the source-step under `weaken`.
+#assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
 #assert_no_axioms LeanFX2.Step.hcompBeta
 #assert_no_axioms LeanFX2.Step.par.hcompBeta
