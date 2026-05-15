@@ -486,4 +486,128 @@ theorem ReducibleK.eitherType_match
   scrutineeIsR.2 termRenaming motiveType leftBranch rightBranch
     leftIsR rightIsR
 
+/-- Universe Kripke SN projection.  Closed-leaf direct unfolding. -/
+theorem ReducibleK.sn_of_universe
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {universeLevel : UniverseLevel}
+    {levelLe : universeLevel.toNat + 1 ≤ level}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.universe universeLevel levelLe) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.universe universeLevel levelLe) raw term) :
+    Term.isStronglyNormalizing term := termIsR
+
+/-- Type-variable Kripke SN projection.  Closed-leaf direct unfolding. -/
+theorem ReducibleK.sn_of_tyVar
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {position : Fin scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.tyVar position) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.tyVar position) raw term) :
+    Term.isStronglyNormalizing term := termIsR
+
+/-- Arrow Kripke SN projection.  Projects the first conjunct of the
+arrow closure (SN of the function value). -/
+theorem ReducibleK.sn_of_arrow
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {domainType codomainType : Ty level scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.arrow domainType codomainType) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.arrow domainType codomainType) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
+/-- Identity-type Kripke SN projection. -/
+theorem ReducibleK.sn_of_id
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.id carrier leftEndpoint rightEndpoint) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.id carrier leftEndpoint rightEndpoint) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
+/-- Observational-equality Kripke SN projection. -/
+theorem ReducibleK.sn_of_oeq
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.oeq carrier leftEndpoint rightEndpoint) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.oeq carrier leftEndpoint rightEndpoint) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
+/-- Strict-identity Kripke SN projection. -/
+theorem ReducibleK.sn_of_idStrict
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {carrier : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.idStrict carrier leftEndpoint rightEndpoint) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.idStrict carrier leftEndpoint rightEndpoint) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
+/-- Equivalence-type Kripke SN projection. -/
+theorem ReducibleK.sn_of_equiv
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {leftTy rightTy : Ty level scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.equiv leftTy rightTy) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.equiv leftTy rightTy) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
+/-- Cubical path Kripke SN projection. -/
+theorem ReducibleK.sn_of_path
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.path carrierType leftEndpoint rightEndpoint) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.path carrierType leftEndpoint rightEndpoint) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
+/-- Cubical glue Kripke SN projection. -/
+theorem ReducibleK.sn_of_glue
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {baseType : Ty level scope}
+    {boundaryWitness : RawTerm scope}
+    {raw : RawTerm scope}
+    {term : Term context (Ty.glue baseType boundaryWitness) raw}
+    (termIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.glue baseType boundaryWitness) raw term) :
+    Term.isStronglyNormalizing term := termIsR.1
+
 end LeanFX2

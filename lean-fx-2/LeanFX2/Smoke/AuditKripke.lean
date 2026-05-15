@@ -263,3 +263,20 @@ import LeanFX2.Reducibility.Kripke.Arrow
 -- Ty.effect, so the closure is renaming-stability at the same head).
 #print axioms LeanFX2.ReducibleK.sn_of_effect
 #print axioms LeanFX2.ReducibleK.effect_rename
+
+-- 9 SN-extractor wrappers added 2026-05-15 to complete the per-Ty
+-- SN projection family: 7 closed-leaf (unit/bool/nat/empty/interval
+-- already shipped; universe/tyVar added) + 7 conjunction-closure
+-- (arrow/id/oeq/idStrict/equiv/path/glue).  Together with the
+-- existing 7 conjunction-closure projections (refine/record/codata/
+-- session/modal/piTy/sigmaTy/listType/optionType/eitherType/effect)
+-- the project covers every Ty arm.
+#print axioms LeanFX2.ReducibleK.sn_of_universe
+#print axioms LeanFX2.ReducibleK.sn_of_tyVar
+#print axioms LeanFX2.ReducibleK.sn_of_arrow
+#print axioms LeanFX2.ReducibleK.sn_of_id
+#print axioms LeanFX2.ReducibleK.sn_of_oeq
+#print axioms LeanFX2.ReducibleK.sn_of_idStrict
+#print axioms LeanFX2.ReducibleK.sn_of_equiv
+#print axioms LeanFX2.ReducibleK.sn_of_path
+#print axioms LeanFX2.ReducibleK.sn_of_glue
