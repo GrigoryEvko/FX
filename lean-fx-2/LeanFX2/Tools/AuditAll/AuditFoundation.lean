@@ -34,6 +34,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawRenaming.swap01
 #assert_no_axioms LeanFX2.RawRenaming.swap01_involution
 #assert_no_axioms LeanFX2.RawRenaming.swap01_lift_lift_commute
+#assert_no_axioms LeanFX2.RawTerm.swap01_rename_lift_lift_commute
 #assert_no_axioms LeanFX2.RawTerm.partialRename?
 #assert_no_axioms LeanFX2.RawTerm.unweaken?
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?

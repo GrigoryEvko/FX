@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawSubst.RenameDefs
+import LeanFX2.Foundation.RawSubst.RenameLemmas
 
 /-! # LeanFX2.Foundation.RawPartialRename.Swap01
 
@@ -78,5 +79,29 @@ theorem RawRenaming.swap01_lift_lift_commute {source target : Nat}
   | ⟨0, _⟩      => rfl
   | ⟨1, _⟩      => rfl
   | ⟨_ + 2, _⟩  => rfl
+
+/-- Term-level lift of `swap01_lift_lift_commute`: renaming a term by
+`swap01` and then by `rho.lift.lift` agrees with the same operations
+in the reverse order.
+
+Derived by composing `RawTerm.rename_compose` (to fuse both
+double-renames) with `RawTerm.rename_pointwise` (to lift the
+function-level pointwise commute to a term-level rewrite).  No new
+structural induction over `RawTerm`'s 75 ctors — the existing
+extensionality + composition infrastructure carries the proof.
+
+Consumed by the future `transpPi` β cascade in `RawParRename.lean`:
+the par ctor's contractum embeds `B.rename swap01` inside an outer
+`lam`, and the renamed-contractum vs contractum-after-rename
+mismatch is resolved by this commute. -/
+theorem RawTerm.swap01_rename_lift_lift_commute {source target : Nat}
+    (rho : RawRenaming source target)
+    (term : RawTerm (source + 2)) :
+    (term.rename RawRenaming.swap01).rename rho.lift.lift =
+    (term.rename rho.lift.lift).rename RawRenaming.swap01 := by
+  rw [RawTerm.rename_compose, RawTerm.rename_compose]
+  apply RawTerm.rename_pointwise
+  intro position
+  exact (RawRenaming.swap01_lift_lift_commute rho position).symm
 
 end LeanFX2
