@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawSubst
+import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 
 /-! # Reduction/RawPar — raw-side parallel reduction.
 
@@ -688,6 +689,74 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRawSource sourceRawTarget →
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
                   sourceRawTarget
+  /-- D2.5.5 cubical transport through Π β rule (CCHM):
+  `transp (pathLam (piTyCode A.weaken B)) f ⟶
+   λ x. transp (pathLam (B.swap01)) (f.weaken @ x)`.
+
+  Shallow shape: the LHS path argument is literally
+  `pathLam (piTyCode innerDomain.weaken codomainCode)` — domain code
+  in the image of `weaken` (independent of pathLam interval; the Π
+  domain has its own representation outside the interval binder),
+  codomain code at `scope+2` (bound by pathLam interval + Π binder).
+
+  Inner reduction permitted on the codomain code (via `codomainStep`)
+  AND on the source argument (via `sourceStep`).  Both premises ride
+  par; the LHS path body is rigid — must literally be the
+  recognizer-firing `piTyCode innerDomain.weaken codomainCodeSource`
+  shape.
+
+  The bi-cong (codomain source ↔ target) is essential for
+  `subst_par` joint substitution: with `firstSubst ↦ secondSubst`
+  related pointwise, the codomain on the LHS substitutes via
+  `firstSubst.lift.lift` and the contractum on the RHS substitutes via
+  `secondSubst.lift.lift` — they must par-step.
+
+  Future cd_lemma transpCong arm fires this through `cdTranspPiCase`
+  dispatch when `matchTranspPiBetaShape?` recognizes the developed
+  pathLam body.  Typed mirror is deferred to D2.5.5-J (no typed
+  `Term.transp` β rule yet — raw-only confluence-closure mechanism
+  per `isDocumentedRawOnlyParity` Section C, mirroring
+  `transpReflBeta`'s discipline). -/
+  | transpPiBeta {scope : Nat}
+      {innerDomain : RawTerm scope}
+      {codomainCodeSource codomainCodeTarget : RawTerm (scope + 2)}
+      {sourceRawSource sourceRawTarget : RawTerm scope} :
+      RawStep.par codomainCodeSource codomainCodeTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.transp
+          (RawTerm.pathLam
+            (RawTerm.piTyCode innerDomain.weaken codomainCodeSource))
+          sourceRawSource)
+        (RawTerm.transpPiBetaContractum codomainCodeTarget sourceRawTarget)
+  /-- D2.5.5 deep variant of `transpPiBeta`: the path develops via
+  parallel reduction to the recognizer-firing shape `pathLam
+  (piTyCode innerDomain.weaken codomainCodeTarget)`, then β fires with
+  a possibly-distinct contractum codomain.
+
+  Required for `cd_lemma_transpCong` to discharge `cdTranspPiCase`'s
+  β-firing branch when the cd-developed path body matches the
+  recognizer but the source pathLam body was NOT literally the
+  piTyCode shape (the path par-stepped into it).
+
+  Discharge requires `matchTranspPiBetaShape?_par_some` (already
+  shipped) to lift the recognizer hit through the par-step.  Note
+  that here the path step's RHS already names a SPECIFIC codomain
+  target (the recognizer hits a concrete shape on the par-target
+  side); the contractum's codomain may further differ when the
+  cd-cascade composes this with another par step. -/
+  | transpPiBetaDeep {scope : Nat}
+      {pathRawSource : RawTerm scope}
+      {innerDomain : RawTerm scope}
+      {codomainCodeMid codomainCodeTarget : RawTerm (scope + 2)}
+      {sourceRawSource sourceRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource
+        (RawTerm.pathLam
+          (RawTerm.piTyCode innerDomain.weaken codomainCodeMid)) →
+      RawStep.par codomainCodeMid codomainCodeTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
+        (RawTerm.transpPiBetaContractum codomainCodeTarget sourceRawTarget)
   /-- Cubical homogeneous-composition β at a syntactically constant
   sides-path: when the sides argument is exactly
   `RawTerm.pathLam pathBodyRawSource.weaken` (the constant path

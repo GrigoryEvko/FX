@@ -1779,6 +1779,14 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- β-firing.  The deep par ctor exists purely to close the cd cascade
   -- via `RawStep.par.weaken_inv` (Phase G.0).
   suffix == "transpReflBetaDeep" ||
+  -- D2.5.5 transpPi β (CCHM transport through Π type).  Shallow
+  -- (`transpPiBeta`) and deep (`transpPiBetaDeep`) variants ship
+  -- raw-only; typed `Step.transpPi` mirror is deferred to ticket
+  -- D2.5.5-J (#1656).  Confluence-only mechanism activated through
+  -- `cdTranspCase`'s extended pathLam-non-weaken arm dispatching to
+  -- `cdTranspPiCase` when `matchTranspPiBetaShape?` fires.
+  suffix == "transpPiBeta" ||
+  suffix == "transpPiBetaDeep" ||
   -- Section D: D3.6-S1 univalence-β raw rules.  Typed `Term.transp` requires
   -- its path argument at type `Ty.path ...`, but typed `Term.uaToEquiv`
   -- produces type `Ty.equiv ...` (NOT `Ty.path`).  Therefore no typed
