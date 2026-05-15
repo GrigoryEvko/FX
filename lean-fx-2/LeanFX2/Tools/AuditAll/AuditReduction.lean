@@ -66,6 +66,15 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.hcompBetaDeep
 #assert_no_axioms LeanFX2.RawTerm.cdHcompCase
 #assert_no_axioms LeanFX2.RawTerm.cdHcompCase_rename
+-- D2.5.5 transpPi β-rule Phase F prep (cdTranspPiCase helper + rename
+-- commute).  Standalone confluence-layer helper consumed by future
+-- atomic Phase F+G+I cascade landing.  Disjoint-premise design with
+-- `transpReflBeta` (the caller's outer `unweaken?` check enforces
+-- ordering — see #1951 dispatch RFC).  Builds on the foundation
+-- primitives `matchTranspPiBetaShape?` + `transpPiBetaContractum`
+-- gated under `AuditFoundation.lean`.
+#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase
+#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_rename
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
 #assert_no_axioms LeanFX2.Step.hcompBeta
 #assert_no_axioms LeanFX2.Step.par.hcompBeta

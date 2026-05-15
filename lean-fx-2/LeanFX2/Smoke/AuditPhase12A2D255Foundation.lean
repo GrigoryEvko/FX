@@ -1,6 +1,7 @@
 import LeanFX2.Foundation.RawPartialRename.Swap01
 import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
 import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
+import LeanFX2.Confluence.RawCdRename
 
 /-! # AuditPhase12A2D255Foundation — D2.5.5 foundation primitives.
 
@@ -65,13 +66,28 @@ four cascade consumers stay aligned: any future change to the
 contractum's shape propagates through the def, not via diff-prone
 inline duplication.
 
+**Phase F dispatch helper (today's commit)**
+
+The Confluence-layer helper that consumes the foundation primitives
+above and dispatches the disjoint transpPi-β arm.  Built on top of
+`matchTranspPiBetaShape?` (recognizer) + `transpPiBetaContractum`
+(builder).  Will be wired into `cdTranspCase`'s pathLam arm in the
+atomic Phase F+G+I cascade landing.
+
+* `RawTerm.cdTranspPiCase` — `match matchTranspPiBetaShape?
+  pathBody`-driven dispatch returning either the β contractum or a
+  cong rebuild.
+* `RawTerm.cdTranspPiCase_rename` — rename-equivariance via
+  `matchTranspPiBetaShape?_rename` + `transpPiBetaContractum_rename`.
+
 ## Audit
 
 Every declaration below must report "does not depend on any
 axioms".  The per-decl `#assert_no_axioms` gates in
-`Tools/AuditAll/AuditFoundation.lean` already enforce this; the
-`#print axioms` invocations below are supplementary reviewer-
-facing regression records.
+`Tools/AuditAll/AuditFoundation.lean` (foundation primitives) and
+`Tools/AuditAll/AuditReduction.lean` (Confluence-layer cdTranspPiCase
+helper) already enforce this; the `#print axioms` invocations below
+are supplementary reviewer-facing regression records.
 -/
 
 namespace LeanFX2.Smoke
@@ -94,5 +110,9 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_rename
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_subst_some
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_piTyCode_weaken
+
+-- Phase F cdTranspPiCase helper + rename commute
+#print axioms LeanFX2.RawTerm.cdTranspPiCase
+#print axioms LeanFX2.RawTerm.cdTranspPiCase_rename
 
 end LeanFX2.Smoke

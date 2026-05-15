@@ -2,6 +2,8 @@ import LeanFX2.Confluence.RawCd
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RawPartialRename
 import LeanFX2.Foundation.RawPartialRenameCommute
+import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
+import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 
 /-! # Confluence/RawCdRename — `cd` commutes with `rename`.
 
@@ -346,6 +348,39 @@ theorem RawTerm.cdTranspCase_rename {sourceScope targetScope : Nat}
       rw [RawTerm.unweaken?_rename_lift_commute pathBody rho]
       cases RawTerm.unweaken? pathBody <;> rfl
   all_goals rfl
+
+/-- `cdTranspPiCase` commutes with `rename`.  The dispatch on
+`matchTranspPiBetaShape? pathBody` splits two ways: when `some
+(innerDomain, codomainCode)`, both sides reduce to
+`transpPiBetaContractum (codomainCode.rename rho.lift.lift)
+(developedSource.rename rho)` via `transpPiBetaContractum_rename`;
+when `none`, both sides reduce to `transp (pathLam (pathBody.rename
+rho.lift)) (developedSource.rename rho)` definitionally.  Bridges
+via `matchTranspPiBetaShape?_rename` to align the recognizer-image
+on each side of the equation. -/
+theorem RawTerm.cdTranspPiCase_rename {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (pathBody : RawTerm (sourceScope + 1))
+    (developedSource : RawTerm sourceScope) :
+    (RawTerm.cdTranspPiCase pathBody developedSource).rename rho =
+    RawTerm.cdTranspPiCase (pathBody.rename rho.lift)
+      (developedSource.rename rho) := by
+  show ((match RawTerm.matchTranspPiBetaShape? pathBody with
+          | some (_, codomainCode) =>
+              RawTerm.transpPiBetaContractum codomainCode developedSource
+          | none =>
+              RawTerm.transp (RawTerm.pathLam pathBody) developedSource).rename rho) =
+       (match RawTerm.matchTranspPiBetaShape? (pathBody.rename rho.lift) with
+          | some (_, codomainCode) =>
+              RawTerm.transpPiBetaContractum codomainCode (developedSource.rename rho)
+          | none =>
+              RawTerm.transp (RawTerm.pathLam (pathBody.rename rho.lift))
+                (developedSource.rename rho))
+  rw [RawTerm.matchTranspPiBetaShape?_rename rho pathBody]
+  cases RawTerm.matchTranspPiBetaShape? pathBody with
+  | none => rfl
+  | some pair =>
+      exact RawTerm.transpPiBetaContractum_rename rho pair.2 developedSource
 
 /-- `cdHcompCase` commutes with `rename`.  Structurally identical to
 `cdTranspCase_rename` modulo `transp ↔ hcomp` and `developedSource ↔

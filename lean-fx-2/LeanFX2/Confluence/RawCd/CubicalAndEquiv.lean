@@ -1,5 +1,7 @@
 import LeanFX2.Foundation.RawSubst
 import LeanFX2.Foundation.RawPartialRename
+import LeanFX2.Foundation.RawPartialRename.TranspPiContractum
+import LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 
 /-! # LeanFX2.Confluence.RawCd.CubicalAndEquiv
 
@@ -130,6 +132,38 @@ def RawTerm.cdTranspCase {scope : Nat}
   -- D3.6-S5: equivCompose as a path argument to transp does not fire a
   -- transp β rule.  Default rebuild.
   | RawTerm.equivCompose _ _ => RawTerm.transp developedPath developedSource
+
+/-- D2.5.5 transpPi β-rule dispatch helper.  Called from the `none`
+branch of `cdTranspCase`'s `unweaken? pathBody` dispatch — i.e. after
+the constant-path / `transpReflBeta` rule failed to fire.  Decides
+whether the developed path-body has the CCHM transpPi shape:
+
+  `pathBody = piTyCode (innerDomain.weaken) codomainCode`
+
+(with `innerDomain` not using the interval-binder slot), and if so
+fires the transpPi β reduction returning
+`transpPiBetaContractum codomainCode developedSource`; otherwise
+rebuilds the original transp cong.
+
+The disjoint-premise design (#1951) is enforced at the caller side
+by checking `unweaken? pathBody` first — when `cdTranspPiCase` is
+invoked, `unweaken? pathBody` is already known to be `none`, so the
+`matchTranspPiBetaShape?`-success path here cannot collide with
+`transpReflBeta`.  Even so the helper itself is total: it dispatches
+on the recognizer alone, leaving the caller to enforce ordering.
+
+Consumed by future atomic Phase F+G+I cascade landing
+(`cdTranspCase` extension + `RawStep.par.transpPiBeta` ctor +
+`cd_lemma` transpPi arm).  Shipped standalone in Phase F so the
+foundation primitive set is verified before the cascade integrates. -/
+def RawTerm.cdTranspPiCase {scope : Nat}
+    (pathBody : RawTerm (scope + 1))
+    (developedSource : RawTerm scope) : RawTerm scope :=
+  match RawTerm.matchTranspPiBetaShape? pathBody with
+  | some (_, codomainCode) =>
+      RawTerm.transpPiBetaContractum codomainCode developedSource
+  | none =>
+      RawTerm.transp (RawTerm.pathLam pathBody) developedSource
 
 /-- D2.5.2 cubical hcomp at a syntactically constant sides-path:
 `hcomp (pathLam X.weaken) cap ⟶ cap` (the cubical analog of
