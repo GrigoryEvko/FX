@@ -40,6 +40,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_rename
 #assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_subst
 #assert_no_axioms LeanFX2.RawTerm.matchTranspPiBetaShape?
+#assert_no_axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken
 #assert_no_axioms LeanFX2.RawTerm.partialRename?
 #assert_no_axioms LeanFX2.RawTerm.unweaken?
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?

@@ -130,4 +130,270 @@ def RawTerm.matchTranspPiBetaShape? {scope : Nat}
   | RawTerm.oeqTrans _ _ => none
   | RawTerm.equivCompose _ _ => none
 
+/-- Soundness for `matchTranspPiBetaShape?`: a successful recognizer
+hit witnesses that `pathBody` has exactly the CCHM transpPi β shape,
+with the domain expressed as a weaken of `innerDomain`.
+
+The proof case-analyzes `pathBody`.  Only the `piTyCode` arm permits
+a `some _` return (all 72 other arms return `none` definitionally, so
+their `success` hypotheses contradict `none = some _` via constructor
+injectivity).  Inside the `piTyCode` arm, we further case on
+`unweaken? domainCode`: success path extracts `inner` via `injection`
+and uses `unweaken?_imp_weaken` to recover `domainCode =
+innerDomain.weaken`.
+
+Consumed by future Phase F `cdTranspCase` extension to bridge the
+recognizer output to the `transpPiBetaContractum` builder. -/
+theorem RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken {scope : Nat}
+    (pathBody : RawTerm (scope + 1)) (innerDomain : RawTerm scope)
+    (codomainCode : RawTerm (scope + 2))
+    (success : RawTerm.matchTranspPiBetaShape? pathBody =
+                 some (innerDomain, codomainCode)) :
+    pathBody = RawTerm.piTyCode innerDomain.weaken codomainCode := by
+  cases pathBody with
+  | piTyCode domainCode codomainCode' =>
+      cases unweakenResult : RawTerm.unweaken? domainCode with
+      | some inner =>
+          have stepEq :
+              RawTerm.matchTranspPiBetaShape?
+                  (RawTerm.piTyCode domainCode codomainCode') =
+                some (inner, codomainCode') := by
+            show (match RawTerm.unweaken? domainCode with
+                  | some innerInner => some (innerInner, codomainCode')
+                  | none => none) = some (inner, codomainCode')
+            rw [unweakenResult]
+          rw [stepEq] at success
+          injection success with somePayload
+          injection somePayload with innerEq codomainEq
+          subst innerEq
+          subst codomainEq
+          exact congrArg (RawTerm.piTyCode · codomainCode')
+                  (RawTerm.unweaken?_imp_weaken domainCode inner unweakenResult)
+      | none =>
+          have stepEq :
+              RawTerm.matchTranspPiBetaShape?
+                  (RawTerm.piTyCode domainCode codomainCode') = none := by
+            show (match RawTerm.unweaken? domainCode with
+                  | some innerInner => some (innerInner, codomainCode')
+                  | none => none) = none
+            rw [unweakenResult]
+          rw [stepEq] at success
+          cases success
+  | var _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | unit =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | lam _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | app _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | pair _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | fst _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | snd _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | boolTrue =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | boolFalse =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | boolElim _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | natZero =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | natSucc _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | natElim _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | natRec _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | listNil =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | listCons _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | listElim _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | optionNone =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | optionSome _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | optionMatch _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | eitherInl _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | eitherInr _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | eitherMatch _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | refl _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | idJ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | modIntro _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | modElim _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | subsume _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | interval0 =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | interval1 =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | intervalOpp _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | intervalMeet _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | intervalJoin _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | pathLam _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | pathApp _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | glueIntro _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | glueElim _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | transp _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | hcomp _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | oeqRefl _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | oeqJ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | oeqFunext _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | idStrictRefl _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | idStrictRec _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | equivIntro _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | equivApp _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | refineIntro _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | refineElim _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | recordIntro _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | recordProj _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | codataUnfold _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | codataDest _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | sessionSend _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | sessionRecv _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | effectPerform _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | universeCode _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | arrowCode _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | sigmaTyCode _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | productCode _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | sumCode _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | listCode _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | optionCode _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | eitherCode _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | idCode _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | equivCode _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | cumulUpMarker _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | uaToEquiv _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | equivApply _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | pathCompose _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | idToEquiv _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | oeqTrans _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+  | equivCompose _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
+
 end LeanFX2
