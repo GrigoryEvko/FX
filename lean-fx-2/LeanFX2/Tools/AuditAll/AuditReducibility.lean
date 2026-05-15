@@ -139,4 +139,58 @@ applied at identity renaming + SN extraction) -/
 #assert_no_axioms LeanFX2.Term.glueIntro_strong_normalization_via_kripke
 #assert_no_axioms LeanFX2.Term.glueElim_strong_normalization_via_kripke
 
+/-! ### Kripke SN-via-Kripke headlines — closed-leaf intros, parametric
+intros, and HoTT/cubical/modal eliminators.  These ship in
+`Headline.lean` and the per-Ty closure files; smoke entries in
+`AuditKripke.lean` already cover them via `#print axioms`.  Strict-gate
+coverage promoted here so `lake build LeanFX2Audit` fails on any
+future axiom regression.  Added 2026-05-15 to close the 47-headline
+delta between the smoke log and the machine-enforced gate. -/
+
+#assert_no_axioms LeanFX2.Term.intervalOpp_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.intervalMeet_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.intervalJoin_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.listNil_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.optionNone_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.listCons_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.optionSome_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.eitherInl_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.eitherInr_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.recordIntro_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.recordProj_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.refineIntro_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.refineElim_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.codataUnfold_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.sessionRecv_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.sessionSend_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.effectPerform_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.modIntro_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.subsume_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.modElim_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.cumulUp_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.refl_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.oeqRefl_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.idStrictRefl_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.equivReflId_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.equivReflIdAtId_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.equivIntroHet_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.uaToEquiv_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.uaIntroHet_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.funextRefl_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.funextReflAtId_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.oeqFunext_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.pathLam_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.arrowCode_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.eitherCode_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.equivCode_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.idCode_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.listCode_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.optionCode_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.boolElim_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.idJ_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.oeqJ_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.idStrictRec_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.equivApp_strong_normalization_via_kripke
+#assert_no_axioms LeanFX2.Term.equivApply_strong_normalization_via_kripke
+
 end LeanFX2.Tools
