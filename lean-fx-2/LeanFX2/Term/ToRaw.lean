@@ -466,6 +466,21 @@ theorem Term.toRaw_hcomp {mode : Mode} {level scope : Nat}
     (Term.hcomp modeIsUnivalent sidesValue capValue).toRaw =
       RawTerm.hcomp sidesValue.toRaw capValue.toRaw := rfl
 
+/-- Raw projection of `Term.hcompPath` (Design Option B for #1528). -/
+theorem Term.toRaw_hcompPath {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    (leftEndpoint rightEndpoint : RawTerm scope)
+    {sidesPathRaw capRaw : RawTerm scope}
+    (sidesPath :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw)
+    (capValue : Term context carrierType capRaw) :
+    (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue).toRaw =
+      RawTerm.hcomp sidesPath.toRaw capValue.toRaw := rfl
+
 theorem Term.toRaw_recordIntro {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {singleFieldType : Ty level scope}
