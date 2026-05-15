@@ -122,5 +122,8 @@ namespace LeanFX2.Smoke
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
 -- Phase G prep: recognizer survives par-step
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_par_some
+-- Phase F prep: cdTranspPiCase unfolding equations (some + none)
+#print axioms LeanFX2.RawTerm.cdTranspPiCase_eq_contractum_of_some
+#print axioms LeanFX2.RawTerm.cdTranspPiCase_eq_transp_of_none
 
 end LeanFX2.Smoke

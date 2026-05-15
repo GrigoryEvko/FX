@@ -165,6 +165,47 @@ def RawTerm.cdTranspPiCase {scope : Nat}
   | none =>
       RawTerm.transp (RawTerm.pathLam pathBody) developedSource
 
+/-- Explicit unfolding: when `matchTranspPiBetaShape?` fires on
+`pathBody` with witness `(innerDomain, codomainCode)`, the dispatcher
+collapses to the `transpPiBetaContractum`-firing branch.  This is
+a simp-friendly rewrite for the future cd_lemma transpCong arm:
+after extracting `shapeEqn : matchTranspPiBetaShape? pathBody = some
+(_, codomainCode)`, the goal `par RHS (cdTranspPiCase pathBody src)`
+rewrites cleanly to `par RHS (transpPiBetaContractum codomainCode
+src)` before firing `RawStep.par.transpPiBetaDeep`. -/
+theorem RawTerm.cdTranspPiCase_eq_contractum_of_some {scope : Nat}
+    {pathBody : RawTerm (scope + 1)} (developedSource : RawTerm scope)
+    {innerDomain : RawTerm scope}
+    {codomainCode : RawTerm (scope + 2)}
+    (shapeEqn :
+      RawTerm.matchTranspPiBetaShape? pathBody =
+        some (innerDomain, codomainCode)) :
+    RawTerm.cdTranspPiCase pathBody developedSource =
+    RawTerm.transpPiBetaContractum codomainCode developedSource := by
+  show (match RawTerm.matchTranspPiBetaShape? pathBody with
+        | some (_, codomainCode') =>
+            RawTerm.transpPiBetaContractum codomainCode' developedSource
+        | none =>
+            RawTerm.transp (RawTerm.pathLam pathBody) developedSource) = _
+  rw [shapeEqn]
+
+/-- Explicit unfolding: when `matchTranspPiBetaShape?` returns `none`
+on `pathBody`, the dispatcher falls through to the `transp`-cong
+rebuild branch.  Companion to `cdTranspPiCase_eq_contractum_of_some`
+for the cd_lemma transpCong arm's non-recognizer-fires case. -/
+theorem RawTerm.cdTranspPiCase_eq_transp_of_none {scope : Nat}
+    {pathBody : RawTerm (scope + 1)} (developedSource : RawTerm scope)
+    (shapeEqn :
+      RawTerm.matchTranspPiBetaShape? pathBody = none) :
+    RawTerm.cdTranspPiCase pathBody developedSource =
+    RawTerm.transp (RawTerm.pathLam pathBody) developedSource := by
+  show (match RawTerm.matchTranspPiBetaShape? pathBody with
+        | some (_, codomainCode) =>
+            RawTerm.transpPiBetaContractum codomainCode developedSource
+        | none =>
+            RawTerm.transp (RawTerm.pathLam pathBody) developedSource) = _
+  rw [shapeEqn]
+
 /-- D2.5.2 cubical hcomp at a syntactically constant sides-path:
 `hcomp (pathLam X.weaken) cap ⟶ cap` (the cubical analog of
 "trivial-box hcomp returns the cap" — the constant-path sides

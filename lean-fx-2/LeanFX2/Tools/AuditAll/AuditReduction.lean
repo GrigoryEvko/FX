@@ -97,6 +97,14 @@ namespace LeanFX2.Tools
 -- this to lift the recognizer hit from the source pathBody to the
 -- cd-target pathBody before firing the transpPiBetaDeep rule.
 #assert_no_axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_par_some
+-- D2.5.5 transpPi β-rule Phase F prep: explicit unfolding equations
+-- for cdTranspPiCase.  Future cd_lemma transpCong arm uses these
+-- to rewrite the dispatcher to its target shape before firing the
+-- new β rule.  The `_of_some` equation collapses to the contractum
+-- when the recognizer fires; the `_of_none` equation falls through
+-- to the transp cong rebuild.  Both are zero-axiom direct unfoldings.
+#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_contractum_of_some
+#assert_no_axioms LeanFX2.RawTerm.cdTranspPiCase_eq_transp_of_none
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
 #assert_no_axioms LeanFX2.Step.hcompBeta
 #assert_no_axioms LeanFX2.Step.par.hcompBeta
