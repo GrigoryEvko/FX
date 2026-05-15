@@ -25,6 +25,10 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.PartialRawRenaming.dropNewest
 #assert_no_axioms LeanFX2.PartialRawRenaming.dropNewest_weaken
 #assert_no_axioms LeanFX2.PartialRawRenaming.lift_dropNewest_weaken_lift
+#assert_no_axioms LeanFX2.PartialRawRenaming.lift_subst_compat
+#assert_no_axioms LeanFX2.PartialRawRenaming.dropNewest_subst_lift_compat
+#assert_no_axioms LeanFX2.RawTerm.partialRename?_subst_compat
+#assert_no_axioms LeanFX2.RawTerm.unweaken?_subst_lift_commute
 #assert_no_axioms LeanFX2.RawTerm.partialRename?
 #assert_no_axioms LeanFX2.RawTerm.unweaken?
 #assert_no_axioms LeanFX2.RawTerm.constantPathBody?
