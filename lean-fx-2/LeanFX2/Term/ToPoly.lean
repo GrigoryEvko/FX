@@ -187,6 +187,10 @@ def Term.toPoly {mode : Mode} {level scope : Nat}
         typePath.toPoly sourceValue.toPoly
   | .hcomp modeIsUnivalent sidesValue capValue =>
       .hcomp modeIsUnivalent sidesValue.toPoly capValue.toPoly
+  | .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue =>
+      .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+        sidesPath.toPoly capValue.toPoly
   | .recordIntro firstField => .recordIntro firstField.toPoly
   | .recordProj recordValue => .recordProj recordValue.toPoly
   | .refineIntro predicate baseValue predicateProof =>

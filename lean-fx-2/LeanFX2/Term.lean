@@ -408,6 +408,55 @@ inductive Term : ∀ {mode : Mode} {level scope : Nat},
       (sidesValue : Term context carrierType sidesRaw)
       (capValue : Term context carrierType capRaw) :
       Term context carrierType (RawTerm.hcomp sidesRaw capRaw)
+  /-- Path-shaped homogeneous composition (Design Option B for #1528 hcompBeta).
+
+      The `Term.hcomp` ctor above takes a carrier-typed `sidesValue`, which
+      cannot be inhabited at a path-shape (no Term ctor projects to
+      `RawTerm.pathLam` at non-path carrier types).  This means the
+      semantically natural cubical β rule `hcomp (constant-path-of-cap) cap →
+      cap` is vacuous against the old rep.
+
+      `hcompPath` corrects this: its `sidesPath` is typed at
+      `Ty.path carrierType leftEndpoint rightEndpoint`, so passing a
+      `Term.pathLam` whose body is the weakened cap yields a kernel-recognized
+      "constant-path sides" shape that the D2.5.2 β rule can fire on.
+
+      ## Why path-typed sides
+
+      Cubical CCHM semantics: hcomp's sides are partial functions
+      `i → carrier`.  At the single-path simplification this kernel currently
+      ships, that becomes a `path carrier x y`.  When the path is the constant
+      one (i.e. its body is `cap.weaken`), `hcomp sides cap` is the cap.
+
+      ## Endpoints are explicit
+
+      `leftEndpoint`, `rightEndpoint` thread through `Ty.path` so the path
+      type carries its endpoints; this matches the existing `Term.pathLam`
+      and `Term.pathApp` signatures.
+
+      ## Existing `Term.hcomp` retained
+
+      The old `Term.hcomp` ctor remains for its congruence-only role and
+      for any pre-cubical-β kernel client that constructed an hcomp with a
+      carrier-typed sides slot.  This is the Option B (backward-compatible
+      add-a-ctor) design.  New cubical β work targets `hcompPath`.
+
+      ## Raw projection
+
+      Same raw form as `Term.hcomp`: both project to
+      `RawTerm.hcomp sidesPathRaw capRaw`.  Raw-layer reductions /
+      cascades are unaffected. -/
+  | hcompPath {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {sidesPathRaw capRaw : RawTerm scope}
+      (sidesPath :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          sidesPathRaw)
+      (capValue : Term context carrierType capRaw) :
+      Term context carrierType (RawTerm.hcomp sidesPathRaw capRaw)
   /-- Single-field record introduction.  Multi-field surface records elaborate
       to nested single-field records until the schema layer lands. -/
   | recordIntro {mode : Mode} {level scope : Nat}

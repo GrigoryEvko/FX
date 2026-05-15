@@ -409,6 +409,13 @@ def Term.rename {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .hcomp modeIsUnivalent sidesValue capValue =>
       Term.hcomp modeIsUnivalent (Term.rename termRenaming sidesValue)
                  (Term.rename termRenaming capValue)
+  | _, _, .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue =>
+      Term.hcompPath modeIsUnivalent
+        (leftEndpoint.rename rho)
+        (rightEndpoint.rename rho)
+        (Term.rename termRenaming sidesPath)
+        (Term.rename termRenaming capValue)
   | _, _, .recordIntro firstField =>
       Term.recordIntro (Term.rename termRenaming firstField)
   | _, _, .recordProj recordValue =>

@@ -233,6 +233,10 @@ theorem Term.subst_pointwise
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq sidesValue,
           Term.subst_pointwise pointwiseEq capValue]
+  | _, _, .hcompPath _ _ _ sidesPath capValue => by
+      simp only [Term.subst]
+      rw [Term.subst_pointwise pointwiseEq sidesPath,
+          Term.subst_pointwise pointwiseEq capValue]
   | _, _, .recordIntro firstField => by
       simp only [Term.subst]
       rw [Term.subst_pointwise pointwiseEq firstField]

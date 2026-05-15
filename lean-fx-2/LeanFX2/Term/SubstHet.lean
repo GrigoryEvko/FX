@@ -366,6 +366,13 @@ def Term.substHet {mode : Mode}
   | _, _, .hcomp modeIsUnivalent sidesValue capValue =>
       Term.hcomp modeIsUnivalent (Term.substHet termSubstHet sidesValue)
                  (Term.substHet termSubstHet capValue)
+  | _, _, .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue =>
+      Term.hcompPath modeIsUnivalent
+        (leftEndpoint.subst sigma.forRaw)
+        (rightEndpoint.subst sigma.forRaw)
+        (Term.substHet termSubstHet sidesPath)
+        (Term.substHet termSubstHet capValue)
   | _, _, .recordIntro firstField =>
       Term.recordIntro (Term.substHet termSubstHet firstField)
   | _, _, .recordProj recordValue =>

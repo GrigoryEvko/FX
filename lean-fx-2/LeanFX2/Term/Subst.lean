@@ -384,6 +384,13 @@ def Term.subst {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
   | _, _, .hcomp modeIsUnivalent sidesValue capValue =>
       Term.hcomp modeIsUnivalent (Term.subst termSubst sidesValue)
                  (Term.subst termSubst capValue)
+  | _, _, .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue =>
+      Term.hcompPath modeIsUnivalent
+        (leftEndpoint.subst sigma.forRaw)
+        (rightEndpoint.subst sigma.forRaw)
+        (Term.subst termSubst sidesPath)
+        (Term.subst termSubst capValue)
   | _, _, .recordIntro firstField =>
       Term.recordIntro (Term.subst termSubst firstField)
   | _, _, .recordProj recordValue =>

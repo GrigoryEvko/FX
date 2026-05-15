@@ -138,6 +138,10 @@ def PolyTerm.toTerm {mode : Mode} {level scope : Nat}
         typePath.toTerm sourceValue.toTerm
   | .hcomp modeIsUnivalent sidesValue capValue =>
       .hcomp modeIsUnivalent sidesValue.toTerm capValue.toTerm
+  | .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+      sidesPath capValue =>
+      .hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+        sidesPath.toTerm capValue.toTerm
   | .recordIntro firstField => .recordIntro firstField.toTerm
   | .recordProj recordValue => .recordProj recordValue.toTerm
   | .refineIntro predicate baseValue predicateProof =>

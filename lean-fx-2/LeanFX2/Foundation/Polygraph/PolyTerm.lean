@@ -903,6 +903,26 @@ inductive PolyTerm : ∀ {mode : Mode} {level scope : Nat},
       PolyTerm context carrierType
         (LeanFX2.Foundation.Polygraph.RawPolyTerm.hcomp
           sidesPolyRaw capPolyRaw)
+  /-- Path-shaped hcomp mirror for `Term.hcompPath` (Design Option B for
+      #1528 hcompBeta).  The PolyTerm round-trip preserves the path-typed
+      sides distinction so that `Term ↔ PolyTerm` is identity on the new
+      ctor. -/
+  | hcompPath {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      (leftEndpoint rightEndpoint : LeanFX2.RawTerm scope)
+      {sidesPathPolyRaw capPolyRaw :
+        LeanFX2.Foundation.Polygraph.RawPolyTerm scope}
+      (sidesPath :
+        PolyTerm context
+          (Ty.path carrierType leftEndpoint rightEndpoint)
+          sidesPathPolyRaw)
+      (capValue :
+        PolyTerm context carrierType capPolyRaw) :
+      PolyTerm context carrierType
+        (LeanFX2.Foundation.Polygraph.RawPolyTerm.hcomp
+          sidesPathPolyRaw capPolyRaw)
   -- Records (single-field; multi-field elaborates to nested)
   | recordIntro {mode : Mode} {level scope : Nat}
       {context : Ctx mode level scope}
