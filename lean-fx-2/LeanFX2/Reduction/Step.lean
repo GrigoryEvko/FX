@@ -1263,10 +1263,16 @@ inductive Step :
     Path A foundation SHIPPED: `Foundation/RawPartialRename/
     UnweakenSubstCommute.lean` (commute headline) +
     `UnweakenSubstDispatch.lean` (forward dispatch corollaries).
-    Cascade Phases E-K remain pending: cd dispatcher extension,
-    par ctor `transpPiBeta` + Deep variant, compat cascade,
-    cd_lemma arms, typed Step ctor.  See memory
-    `feedback_d255_d256_blocker_2026_05_15.md`.
+    Cascade Phases E-K remain pending.  Per J37 2026-05-15 analysis,
+    Phase E-K cannot ship via Path 2 split-ctor alone: the "cd erases
+    interval mention" case (concretely witnessed by codomain
+    `B = app (lam (var 1)) (var 1)`) produces an eta-shape contractum
+    `λ. ((cd f).weaken @ var 0)` that par-reduction cannot collapse
+    to `cd f` without `Step.eta`.  Required co-prerequisite: ship
+    `RawStep.par.eta` + `etaDeep` plus the cd cascade extension
+    recognizing eta-shape lambdas (~450 LoC).  See memory
+    `feedback_d255_d256_blocker_2026_05_15.md` for the concrete
+    eta-trap derivation.
 
   D2.5.6 (transpSigma — transp through dependent pair):
     BLOCKED on the same `cd_lemma` dispatch ambiguity (Barrier D)
