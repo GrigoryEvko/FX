@@ -133,270 +133,28 @@ theorem ReducibleK.fundamental_natSucc
     have predSN : Term.isStronglyNormalizing predecessorTerm := predIsR
     exact RawTerm.natSucc_isStronglyNormalizing predSN
 
-/-- listNil at any element type: SN + Kripke ι-closure for the list arm.
-The closure witness is a parameter (`elimClosureWitness`) — it states
-that for every motive and every reducible nilBranch/consBranch, the
-`Term.listElim listNil nilBranch consBranch` is reducible at the
-motive.  This is structurally identical to `contractumIsSN` on
-app/listElim: once the K12+ raw ι backward-closure lemma lands, the
-hypothesis is dischargeable for any future world from the nil-branch
-reducibility (a single ι-step plus parProgress backward closure). -/
-theorem ReducibleK.fundamental_listNil
-    {mode : Mode} {level scope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {elementType : Ty level scope}
-    (stepCount : Nat)
-    (elimClosureWitness :
-      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
-        {rho : RawRenaming scope targetScope}
-        (termRenaming : TermRenaming sourceCtx targetCtx rho)
-        (motiveType : Ty level targetScope)
-        {nilRaw consRaw : RawTerm targetScope}
-        (nilBranch : Term targetCtx motiveType nilRaw)
-        (consBranch :
-          Term targetCtx
-            (Ty.arrow (elementType.rename rho)
-              (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
-            consRaw),
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType nilRaw nilBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (elementType.rename rho)
-            (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
-          consRaw consBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType (RawTerm.listElim RawTerm.listNil nilRaw consRaw)
-          (Term.listElim (Term.rename termRenaming
-            (Term.listNil (context := sourceCtx)
-                          (elementType := elementType)))
-            nilBranch consBranch)) :
-    @ReducibleK mode level scope sourceCtx (stepCount + 1)
-      (Ty.listType elementType) RawTerm.listNil (Term.listNil) := by
-  refine ⟨?_, ?_⟩
-  · exact (Term.listNil_isStronglyNormalizing
-      (sourceCtx := sourceCtx) (elementType := elementType))
-  · intro targetScope targetCtx rho termRenaming motiveType nilRaw consRaw
-      nilBranch consBranch nilIsR consIsR
-    exact elimClosureWitness termRenaming motiveType nilBranch consBranch
-      nilIsR consIsR
+/-! ## Deferred Kripke-introducer fundamentals — listNil / listCons /
+optionNone / optionSome / eitherInl / eitherInr
 
-/-- optionNone at any element type: SN + Kripke ι-closure for option.
-Closure witness is parametric over the motive and dischargeable from
-none-branch reducibility via one ι-step plus backward closure (same
-shape as `fundamental_listNil`). -/
-theorem ReducibleK.fundamental_optionNone
-    {mode : Mode} {level scope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {elementType : Ty level scope}
-    (stepCount : Nat)
-    (matchClosureWitness :
-      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
-        {rho : RawRenaming scope targetScope}
-        (termRenaming : TermRenaming sourceCtx targetCtx rho)
-        (motiveType : Ty level targetScope)
-        {noneRaw someRaw : RawTerm targetScope}
-        (noneBranch : Term targetCtx motiveType noneRaw)
-        (someBranch :
-          Term targetCtx
-            (Ty.arrow (elementType.rename rho) motiveType) someRaw),
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType noneRaw noneBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (elementType.rename rho) motiveType) someRaw someBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType
-          (RawTerm.optionMatch RawTerm.optionNone noneRaw someRaw)
-          (Term.optionMatch (Term.rename termRenaming
-            (Term.optionNone (context := sourceCtx)
-                             (elementType := elementType)))
-            noneBranch someBranch)) :
-    @ReducibleK mode level scope sourceCtx (stepCount + 1)
-      (Ty.optionType elementType) RawTerm.optionNone (Term.optionNone) := by
-  refine ⟨?_, ?_⟩
-  · exact (Term.optionNone_isStronglyNormalizing
-      (sourceCtx := sourceCtx) (elementType := elementType))
-  · intro targetScope targetCtx rho termRenaming motiveType noneRaw someRaw
-      noneBranch someBranch noneIsR someIsR
-    exact matchClosureWitness termRenaming motiveType noneBranch someBranch
-      noneIsR someIsR
+Earlier this file shipped Kripke ι-introducer fundamentals taking
+an `elimClosureWitness` / `matchClosureWitness` hypothesis encoding
+"for every future world and reducible eliminator branches, the
+`listElim`/`optionMatch`/`eitherMatch` application is reducible at
+the motive."  That hypothesis is structurally a banned
+hypothesis-as-postulate — the witness universally quantifies over a
+motive and reducibility data the kernel cannot construct without the
+M04 fundamental theorem's backward ι closure on the corresponding
+Ty arms.
 
-/-- listCons preserves ReducibleK at Ty.listType: SN of both sub-terms
-plus the Kripke ι-closure witness for `listElim (listCons h t) n c`.
--/
-theorem ReducibleK.fundamental_listCons_sn
-    {mode : Mode} {level scope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {elementType : Ty level scope}
-    {stepCount : Nat}
-    {headRaw tailRaw : RawTerm scope}
-    {headTerm : Term sourceCtx elementType headRaw}
-    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
-    (headIsSN : Term.isStronglyNormalizing headTerm)
-    (tailIsSN : Term.isStronglyNormalizing tailTerm)
-    (elimClosureWitness :
-      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
-        {rho : RawRenaming scope targetScope}
-        (termRenaming : TermRenaming sourceCtx targetCtx rho)
-        (motiveType : Ty level targetScope)
-        {nilRaw consRaw : RawTerm targetScope}
-        (nilBranch : Term targetCtx motiveType nilRaw)
-        (consBranch :
-          Term targetCtx
-            (Ty.arrow (elementType.rename rho)
-              (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
-            consRaw),
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType nilRaw nilBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (elementType.rename rho)
-            (Ty.arrow (Ty.listType (elementType.rename rho)) motiveType))
-          consRaw consBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType
-          (RawTerm.listElim
-            (RawTerm.listCons (headRaw.rename rho) (tailRaw.rename rho))
-            nilRaw consRaw)
-          (Term.listElim
-            (Term.rename termRenaming (Term.listCons headTerm tailTerm))
-            nilBranch consBranch)) :
-    @ReducibleK mode level scope sourceCtx (stepCount + 1)
-      (Ty.listType elementType) (RawTerm.listCons headRaw tailRaw)
-      (Term.listCons headTerm tailTerm) := by
-  refine ⟨?_, ?_⟩
-  · exact Term.listCons_isStronglyNormalizing headIsSN tailIsSN
-  · intro targetScope targetCtx rho termRenaming motiveType nilRaw consRaw
-      nilBranch consBranch nilIsR consIsR
-    exact elimClosureWitness termRenaming motiveType nilBranch consBranch
-      nilIsR consIsR
-
-/-- optionSome preserves ReducibleK at Ty.optionType: SN of value plus
-the Kripke ι-closure witness for `optionMatch (optionSome v) n s`. -/
-theorem ReducibleK.fundamental_optionSome_sn
-    {mode : Mode} {level scope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    {elementType : Ty level scope}
-    {stepCount : Nat}
-    {valueRaw : RawTerm scope}
-    {valueTerm : Term sourceCtx elementType valueRaw}
-    (valueIsSN : Term.isStronglyNormalizing valueTerm)
-    (matchClosureWitness :
-      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
-        {rho : RawRenaming scope targetScope}
-        (termRenaming : TermRenaming sourceCtx targetCtx rho)
-        (motiveType : Ty level targetScope)
-        {noneRaw someRaw : RawTerm targetScope}
-        (noneBranch : Term targetCtx motiveType noneRaw)
-        (someBranch :
-          Term targetCtx
-            (Ty.arrow (elementType.rename rho) motiveType) someRaw),
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType noneRaw noneBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (elementType.rename rho) motiveType) someRaw someBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType
-          (RawTerm.optionMatch (RawTerm.optionSome (valueRaw.rename rho))
-            noneRaw someRaw)
-          (Term.optionMatch
-            (Term.rename termRenaming (Term.optionSome valueTerm))
-            noneBranch someBranch)) :
-    @ReducibleK mode level scope sourceCtx (stepCount + 1)
-      (Ty.optionType elementType) (RawTerm.optionSome valueRaw)
-      (Term.optionSome valueTerm) := by
-  refine ⟨?_, ?_⟩
-  · exact Term.optionSome_isStronglyNormalizing valueIsSN
-  · intro targetScope targetCtx rho termRenaming motiveType noneRaw someRaw
-      noneBranch someBranch noneIsR someIsR
-    exact matchClosureWitness termRenaming motiveType noneBranch someBranch
-      noneIsR someIsR
-
-/-- eitherInl preserves ReducibleK at Ty.eitherType: SN + ι-closure. -/
-theorem ReducibleK.fundamental_eitherInl_sn
-    {mode : Mode} {level scope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    (leftType rightType : Ty level scope)
-    {stepCount : Nat}
-    {valueRaw : RawTerm scope}
-    {valueTerm : Term sourceCtx leftType valueRaw}
-    (valueIsSN : Term.isStronglyNormalizing valueTerm)
-    (matchClosureWitness :
-      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
-        {rho : RawRenaming scope targetScope}
-        (termRenaming : TermRenaming sourceCtx targetCtx rho)
-        (motiveType : Ty level targetScope)
-        {leftRaw rightRaw : RawTerm targetScope}
-        (leftBranch :
-          Term targetCtx
-            (Ty.arrow (leftType.rename rho) motiveType) leftRaw)
-        (rightBranch :
-          Term targetCtx
-            (Ty.arrow (rightType.rename rho) motiveType) rightRaw),
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (leftType.rename rho) motiveType) leftRaw leftBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (rightType.rename rho) motiveType) rightRaw rightBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType
-          (RawTerm.eitherMatch (RawTerm.eitherInl (valueRaw.rename rho))
-            leftRaw rightRaw)
-          (Term.eitherMatch
-            (Term.rename termRenaming
-              (Term.eitherInl (rightType := rightType) valueTerm))
-            leftBranch rightBranch)) :
-    @ReducibleK mode level scope sourceCtx (stepCount + 1)
-      (Ty.eitherType leftType rightType) (RawTerm.eitherInl valueRaw)
-      (Term.eitherInl (rightType := rightType) valueTerm) := by
-  refine ⟨?_, ?_⟩
-  · exact (Term.eitherInl_isStronglyNormalizing (rightType := rightType)
-      valueIsSN)
-  · intro targetScope targetCtx rho termRenaming motiveType leftRaw rightRaw
-      leftBranch rightBranch leftIsR rightIsR
-    exact matchClosureWitness termRenaming motiveType leftBranch rightBranch
-      leftIsR rightIsR
-
-/-- eitherInr preserves ReducibleK at Ty.eitherType: SN + ι-closure. -/
-theorem ReducibleK.fundamental_eitherInr_sn
-    {mode : Mode} {level scope : Nat}
-    {sourceCtx : Ctx mode level scope}
-    (leftType rightType : Ty level scope)
-    {stepCount : Nat}
-    {valueRaw : RawTerm scope}
-    {valueTerm : Term sourceCtx rightType valueRaw}
-    (valueIsSN : Term.isStronglyNormalizing valueTerm)
-    (matchClosureWitness :
-      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
-        {rho : RawRenaming scope targetScope}
-        (termRenaming : TermRenaming sourceCtx targetCtx rho)
-        (motiveType : Ty level targetScope)
-        {leftRaw rightRaw : RawTerm targetScope}
-        (leftBranch :
-          Term targetCtx
-            (Ty.arrow (leftType.rename rho) motiveType) leftRaw)
-        (rightBranch :
-          Term targetCtx
-            (Ty.arrow (rightType.rename rho) motiveType) rightRaw),
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (leftType.rename rho) motiveType) leftRaw leftBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          (Ty.arrow (rightType.rename rho) motiveType) rightRaw rightBranch →
-        @ReducibleK mode level targetScope targetCtx stepCount
-          motiveType
-          (RawTerm.eitherMatch (RawTerm.eitherInr (valueRaw.rename rho))
-            leftRaw rightRaw)
-          (Term.eitherMatch
-            (Term.rename termRenaming
-              (Term.eitherInr (leftType := leftType) valueTerm))
-            leftBranch rightBranch)) :
-    @ReducibleK mode level scope sourceCtx (stepCount + 1)
-      (Ty.eitherType leftType rightType) (RawTerm.eitherInr valueRaw)
-      (Term.eitherInr (leftType := leftType) valueTerm) := by
-  refine ⟨?_, ?_⟩
-  · exact (Term.eitherInr_isStronglyNormalizing (leftType := leftType)
-      valueIsSN)
-  · intro targetScope targetCtx rho termRenaming motiveType leftRaw rightRaw
-      leftBranch rightBranch leftIsR rightIsR
-    exact matchClosureWitness termRenaming motiveType leftBranch rightBranch
-      leftIsR rightIsR
+All six theorems have been DELETED.  Their honest replacement is the
+M04 fundamental strong-normalization theorem inducting on typing
+derivations, which produces the eliminator closure data as a real
+consequence (not a hypothesis).  Until M04 lands, the introducer
+direction of these constructors remains deferred — the closed-leaf SN
+status of `listNil` / `optionNone` and the SN preservation of
+`listCons` / `optionSome` / `eitherInl` / `eitherInr` are unaffected
+and remain shipped via the direct cascade in
+`Term/SN/DirectCases.lean`. -/
 
 /-- intervalOpp preserves ReducibleK at Ty.interval. -/
 theorem ReducibleK.fundamental_intervalOpp
@@ -1101,58 +859,18 @@ theorem ReducibleK.fundamental_modElim_sn
     Term.isStronglyNormalizing (Term.modElim innerTerm) :=
   Term.modElim_isStronglyNormalizing innerIsSN
 
-/-- SN of natElim via Kripke.  Takes SN of scrutinee/zero/succ plus
-the raw arrow-application closure for `succRaw` applied to any SN
-predecessor (Kripke arrow at the underlying raw level). -/
-theorem ReducibleK.fundamental_natElim_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
-    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
-    {scrutinee : Term context Ty.nat scrutineeRaw}
-    {zeroBranch : Term context motiveType zeroRaw}
-    {succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
-    (succIsSN : Term.isStronglyNormalizing succBranch)
-    (succAppIsSN :
-      ∀ {predecessorRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing predecessorRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app succRaw predecessorRaw)) :
-    Term.isStronglyNormalizing
-      (Term.natElim scrutinee zeroBranch succBranch) :=
-  Term.natElim_isStronglyNormalizing
-    scrutineeIsSN zeroIsSN succIsSN succAppIsSN
+/-! ## Deferred Kripke fundamentals — natElim / natRec
 
-/-- SN of natRec via Kripke.  Takes SN of scrutinee/zero/succ plus
-the raw nested-application closure for the recursor contractum. -/
-theorem ReducibleK.fundamental_natRec_sn
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
-    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
-    {scrutinee : Term context Ty.nat scrutineeRaw}
-    {zeroBranch : Term context motiveType zeroRaw}
-    {succBranch :
-      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
-        succRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
-    (succIsSN : Term.isStronglyNormalizing succBranch)
-    (contractumIsSN :
-      ∀ {predecessorRaw zeroTargetRaw succTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing predecessorRaw →
-        RawTerm.isStronglyNormalizing zeroTargetRaw →
-        RawTerm.isStronglyNormalizing succTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app (RawTerm.app succTargetRaw predecessorRaw)
-            (RawTerm.natRec
-              predecessorRaw zeroTargetRaw succTargetRaw))) :
-    Term.isStronglyNormalizing
-      (Term.natRec scrutinee zeroBranch succBranch) :=
-  Term.natRec_isStronglyNormalizing
-    scrutineeIsSN zeroIsSN succIsSN contractumIsSN
+Earlier this file shipped `ReducibleK.fundamental_natElim_sn` and
+`ReducibleK.fundamental_natRec_sn` as Term-level SN wrappers taking
+a `succAppIsSN` / `contractumIsSN` universally-quantified raw SN
+hypothesis.  Per the project's banned-hypothesis-as-postulate rule
+those theorems vacuously shipped over raw forms the kernel cannot
+construct.  They have been DELETED.
+
+The honest path is the M04 fundamental theorem (proves reducibility
+by induction on typing), which produces the contractum-SN status of
+the ι reducts as a real consequence.  Defer until M04. -/
 
 /-! ## Closed-leaf type-code fundamentals
 

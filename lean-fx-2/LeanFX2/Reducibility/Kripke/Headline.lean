@@ -790,59 +790,26 @@ theorem Term.modElim_strong_normalization_via_kripke
     Term.isStronglyNormalizing (Term.modElim innerTerm) :=
   Term.modElim_isStronglyNormalizing innerIsSN
 
-/-- SN of natElim via Kripke.  Premise `succAppIsSN` is the raw
-arrow-application closure for `succRaw` — exactly what
-`ReducibleK.arrow_apply` would supply when the full Kripke arrow
-closure for `succBranch` lands in Phase B. -/
-theorem Term.natElim_strong_normalization_via_kripke
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
-    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
-    {scrutinee : Term context Ty.nat scrutineeRaw}
-    {zeroBranch : Term context motiveType zeroRaw}
-    {succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
-    (succIsSN : Term.isStronglyNormalizing succBranch)
-    (succAppIsSN :
-      ∀ {predecessorRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing predecessorRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app succRaw predecessorRaw)) :
-    Term.isStronglyNormalizing
-      (Term.natElim scrutinee zeroBranch succBranch) :=
-  Term.natElim_isStronglyNormalizing
-    scrutineeIsSN zeroIsSN succIsSN succAppIsSN
+/-! ## Deferred Kripke SN headlines — natElim / natRec
 
-/-- SN of natRec via Kripke.  Same shape as `natElim` plus the
-nested-app closure for the recursor contractum. -/
-theorem Term.natRec_strong_normalization_via_kripke
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    {motiveType : Ty level scope}
-    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
-    {scrutinee : Term context Ty.nat scrutineeRaw}
-    {zeroBranch : Term context motiveType zeroRaw}
-    {succBranch :
-      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
-        succRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (zeroIsSN : Term.isStronglyNormalizing zeroBranch)
-    (succIsSN : Term.isStronglyNormalizing succBranch)
-    (contractumIsSN :
-      ∀ {predecessorRaw zeroTargetRaw succTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing predecessorRaw →
-        RawTerm.isStronglyNormalizing zeroTargetRaw →
-        RawTerm.isStronglyNormalizing succTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app (RawTerm.app succTargetRaw predecessorRaw)
-            (RawTerm.natRec
-              predecessorRaw zeroTargetRaw succTargetRaw))) :
-    Term.isStronglyNormalizing
-      (Term.natRec scrutinee zeroBranch succBranch) :=
-  Term.natRec_isStronglyNormalizing
-    scrutineeIsSN zeroIsSN succIsSN contractumIsSN
+Earlier this file shipped `Term.natElim_strong_normalization_via_kripke`
+and `Term.natRec_strong_normalization_via_kripke` as theorems with a
+universally-quantified `succAppIsSN` / `contractumIsSN` postulate
+hypothesis describing the raw ι contractum's SN status.  Per the
+project's "hypothesis-as-postulate is BANNED" rule, those theorems
+were vacuous-by-input on raw terms the kernel cannot construct; they
+have been DELETED.
+
+The honest path to non-vacuous Kripke SN of natElim / natRec is the
+M04 fundamental strong-normalization theorem, which proves
+reducibility by induction on the typing derivation.  That theorem
+backward-closes the Ty.nat predicate under ι reduction, so it
+discharges the contractum-SN obligation as a real consequence (not a
+hypothesis).  Until M04 lands, these eliminator headlines remain
+deferred — there is no shorter honest route.
+
+The closed-leaf SN status of natZero (and natSucc preservation) is
+unaffected and remains shipped via the direct cascade above. -/
 
 /-- SN of `Term.interval0` via Kripke.  Closed leaf — no premises. -/
 theorem Term.interval0_strong_normalization_via_kripke
@@ -1262,63 +1229,23 @@ theorem Term.pathApp_strong_normalization_via_kripke
     rw [RawTerm.rename_identity pathRaw]
   exact rawPathAppEq ▸ appIsSN
 
-/-- **K12.24 Kripke SN headline for transp**.  Requires contractum-SN
-closures for univalence transport and path-composition transport; the
-constant-path computational arm returns the transported source directly. -/
-theorem Term.transp_strong_normalization_via_kripke
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    (modeIsUnivalent : mode = Mode.univalent)
-    (universeLevel : UniverseLevel)
-    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
-    (sourceType targetType : Ty level scope)
-    (sourceTypeRaw targetTypeRaw : RawTerm scope)
-    {pathRaw sourceRaw : RawTerm scope}
-    {typePath :
-      Term context
-        (Ty.path (Ty.universe universeLevel universeLevelLt)
-          sourceTypeRaw targetTypeRaw)
-        pathRaw}
-    {sourceValue : Term context sourceType sourceRaw}
-    (pathIsSN : Term.isStronglyNormalizing typePath)
-    (sourceIsSN : Term.isStronglyNormalizing sourceValue)
-    (uaContractumIsSN :
-      ∀ {equivRaw sourceTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing equivRaw →
-        RawTerm.isStronglyNormalizing sourceTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.equivApply equivRaw sourceTargetRaw))
-    (composeContractumIsSN :
-      ∀ {leftPathRaw rightPathRaw sourceTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing
-          (RawTerm.pathCompose leftPathRaw rightPathRaw) →
-        RawTerm.isStronglyNormalizing sourceTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.transp rightPathRaw
-            (RawTerm.transp leftPathRaw sourceTargetRaw))) :
-    Term.isStronglyNormalizing
-      (Term.transp modeIsUnivalent universeLevel universeLevelLt
-        sourceType targetType sourceTypeRaw targetTypeRaw
-        typePath sourceValue) :=
-  Term.transp_isStronglyNormalizing modeIsUnivalent universeLevel
-    universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
-    pathIsSN sourceIsSN uaContractumIsSN composeContractumIsSN
+/-! ## Deferred Kripke SN headlines — transp / hcomp
 
-/-- **K12.24 Kripke SN headline for hcomp**.  At the current raw layer,
-`hcomp` is congruence-only; the future boundary-computation rule is tracked
-outside this headline. -/
-theorem Term.hcomp_strong_normalization_via_kripke
-    {mode : Mode} {level scope : Nat}
-    {context : Ctx mode level scope}
-    (modeIsUnivalent : mode = Mode.univalent)
-    {carrierType : Ty level scope}
-    {sidesRaw capRaw : RawTerm scope}
-    {sidesValue : Term context carrierType sidesRaw}
-    {capValue : Term context carrierType capRaw}
-    (sidesIsSN : Term.isStronglyNormalizing sidesValue)
-    (capIsSN : Term.isStronglyNormalizing capValue) :
-    Term.isStronglyNormalizing
-      (Term.hcomp modeIsUnivalent sidesValue capValue) :=
-  Term.hcomp_isStronglyNormalizing modeIsUnivalent sidesIsSN capIsSN
+Earlier this file shipped `Term.transp_strong_normalization_via_kripke`
+with `uaContractumIsSN` + `composeContractumIsSN` postulates and a
+trivial `Term.hcomp_strong_normalization_via_kripke` (no cubical β
+rule yet exists — `Step.hcompBeta` is tracked pending under #1528).
+
+Both have been DELETED.  The `transp` headline shipped a banned
+hypothesis-as-postulate over universe-quantified raw `equivApply` /
+`transp` contractum shapes the kernel cannot construct; the `hcomp`
+headline, while postulate-free, was congruence-only and added no
+information beyond `Term.hcomp_isStronglyNormalizing` (the underlying
+SN helper that ships as a Term-level theorem with a real body).
+
+The honest path is the M04 fundamental theorem combined with the
+landed `Step.transpUaBeta` / `Step.transpCompose` / `Step.hcompBeta`
+computational reductions.  Once both ship, these Kripke headlines
+return as proper consequences. -/
 
 end LeanFX2
