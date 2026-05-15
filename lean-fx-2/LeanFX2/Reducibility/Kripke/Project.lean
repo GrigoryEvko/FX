@@ -52,18 +52,30 @@ theorem ReducibleK.sn_of_interval
       @ReducibleK mode level scope context (stepCount + 1) Ty.interval raw term) :
     Term.isStronglyNormalizing term := termIsR
 
-/-- Effect arm SN projection: matches the SN-only fallback shape. -/
-theorem ReducibleK.sn_of_effect
+/-- Effect Kripke closure: in any future world, the renamed
+effect-typed value is reducible at the renamed `Ty.effect` head.
+There is no typed eliminator over `Ty.effect` whose source accepts
+an arbitrary effectful value at the carrier type (the Effects-layer
+`effectPerform` is schematic in its `OperationSignature` and
+`CanPerform` witnesses), so the closure is renaming-stability of
+reducibility at the same Ty.effect head. -/
+theorem ReducibleK.effect_rename
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
     {stepCount : Nat}
     {carrierType : Ty level scope} {effectTag : RawTerm scope}
     {raw : RawTerm scope}
-    {term : Term context (Ty.effect carrierType effectTag) raw}
-    (termIsR :
+    {effectValue : Term context (Ty.effect carrierType effectTag) raw}
+    (effectIsR :
       @ReducibleK mode level scope context (stepCount + 1)
-        (Ty.effect carrierType effectTag) raw term) :
-    Term.isStronglyNormalizing term := termIsR
+        (Ty.effect carrierType effectTag) raw effectValue)
+    {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming scope targetScope}
+    (termRenaming : TermRenaming context targetCtx rho) :
+    @ReducibleK mode level targetScope targetCtx stepCount
+      (Ty.effect (carrierType.rename rho) (effectTag.rename rho)) _
+      (Term.rename termRenaming effectValue) :=
+  effectIsR.2 termRenaming
 
 /-- Refinement Kripke SN projection. -/
 theorem ReducibleK.sn_of_refine

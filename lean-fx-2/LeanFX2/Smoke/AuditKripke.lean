@@ -257,3 +257,9 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.ReducibleK.optionType_match
 #print axioms LeanFX2.ReducibleK.sn_of_eitherType
 #print axioms LeanFX2.ReducibleK.eitherType_match
+
+-- Kripke real Tait closure for effect arm: SN of the effect value
+-- plus uniform renaming-stability (no typed eliminator exists for
+-- Ty.effect, so the closure is renaming-stability at the same head).
+#print axioms LeanFX2.ReducibleK.sn_of_effect
+#print axioms LeanFX2.ReducibleK.effect_rename

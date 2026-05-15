@@ -312,24 +312,21 @@ def ReducibleKBody {mode : Mode} {level scope : Nat}
         (termRenaming : TermRenaming context targetCtx rho),
         subCallPredicate (Ty.session (protocolStep.rename rho))
           (Term.sessionRecv (Term.rename termRenaming channelValue))
-  -- Effect Kripke arm: SN-only.
-  --
-  -- WARRIOR NOTE: real closure deferred because the only typed
-  -- eliminator over `Ty.effect` is `Term.effectPerform`, whose
-  -- signature ties the input carrier to a chosen
-  -- `Effects.OperationSignature.argumentCarrier` and demands an
-  -- `Effects.CanPerform` permission witness for the ambient row.  A
-  -- Kripke closure clause would need to universally quantify over
-  -- `operationSignature`, `effectRow`, and `canPerformOperation` AND
-  -- separately mention `arguments` (a Term at
-  -- `operationSignature.argumentCarrier`), forcing the
-  -- `argumentCarrier` to coincide with our `carrierType`.  No
-  -- natural shape preserves the same-arity / closed-under-rename
-  -- structure of the other arms.  Phase 1's `Ty.effect` carrier is
-  -- itself the operation signature's argument carrier, so the typed
-  -- closure becomes meaningful only once `Ty.effect` stores
-  -- structured rows directly (deferred to the Effects layer).
-  | Ty.effect _ _, _, term => Term.isStronglyNormalizing term
+  -- Effect Kripke closure: SN of the effect-typed value plus
+  -- closure under uniform renaming.  No typed eliminator over
+  -- `Ty.effect` accepts an arbitrary effectful value at the carrier
+  -- type (the Effects-layer `effectPerform` is schematic in its
+  -- `OperationSignature` / `CanPerform` witnesses), so the closure
+  -- drops the eliminator application and reduces to renaming-
+  -- stability — in any future world the renamed effect value is
+  -- reducible at the renamed `Ty.effect` head.
+  | Ty.effect carrierType effectTag, _, effectValue =>
+      Term.isStronglyNormalizing effectValue ∧
+      ∀ {targetScope : Nat} {targetCtx : Ctx mode level targetScope}
+        {rho : RawRenaming scope targetScope}
+        (termRenaming : TermRenaming context targetCtx rho),
+        subCallPredicate (Ty.effect (carrierType.rename rho) (effectTag.rename rho))
+          (Term.rename termRenaming effectValue)
   -- Modal Kripke closure: SN of the modal value plus closure under
   -- the `modElim` eliminator.  Per Layer 1's modal scaffolding
   -- (Term.lean lines 295-300), `modElim` preserves the carrying type
