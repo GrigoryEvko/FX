@@ -1244,10 +1244,13 @@ inductive Step :
     No action required.
 
   D2.5.2 (hcompBeta — homogeneous composition β):
-    BLOCKED ON RAW PAYLOAD EXTENSION.  `hcomp` does not currently
-    carry a face/cofibration system in the raw kernel; a β rule
-    cannot be stated until that payload lands.  Deferred to v1.1
-    cubical-cofib extension; not in this kernel's surface.
+    SHIPPED via Term.hcompPath rep (Option B path-shaped ctor at
+    Term.lean:472).  Raw layer ships RawStep.par.hcompBeta +
+    hcompBetaDeep with full cd cascade; typed layer ships
+    Step.hcompBeta firing on Term.hcompPath at constant-path
+    sides (`pathLam capRaw.weaken`).  Mirrors transpReflBeta
+    template — the path body and cap are syntactically tied,
+    so one par premise suffices.
 
   D2.5.3 (pathBeta — `(pathLam body) @ i ⟶ body[i/0]`):
     SHIPPED as `Step.betaPathApp` and `RawStep.par.betaPathApp` /
