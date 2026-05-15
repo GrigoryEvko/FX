@@ -82,6 +82,13 @@ namespace LeanFX2.Tools
 -- the lam/transp/app cong rules with `RawStep.par.rename` lifting
 -- the source-step under `weaken`.
 #assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
+-- D2.5.5 transpPi β-rule Phase G prep: bi-directional par-step cong
+-- where BOTH the path-codomain code AND the developed source step
+-- simultaneously.  Future cd_lemma transpCong arm calls this when
+-- the recognizer fires on the cd-developed pathLam body AND the
+-- source has a non-refl par step.  Extends `_par_cong` with a
+-- `pathLamCong` arm and a `rename swap01` lift on the codomain step.
+#assert_no_axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
 #assert_no_axioms LeanFX2.RawStep.par.hcomp_inv
 #assert_no_axioms LeanFX2.Step.hcompBeta
 #assert_no_axioms LeanFX2.Step.par.hcompBeta

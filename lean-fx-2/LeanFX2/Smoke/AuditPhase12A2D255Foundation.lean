@@ -118,5 +118,7 @@ namespace LeanFX2.Smoke
 
 -- Phase G prep: par-step cong over the transpPi β contractum source
 #print axioms LeanFX2.RawTerm.transpPiBetaContractum_par_cong
+-- Phase G prep: bi-directional par-step cong (codomain + source)
+#print axioms LeanFX2.RawTerm.transpPiBetaContractum_par_bi_cong
 
 end LeanFX2.Smoke
