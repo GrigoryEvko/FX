@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.RawPartialRename.UnweakenInversion
+import LeanFX2.Foundation.RawPartialRenameCommute
 
 /-! # LeanFX2.Foundation.RawPartialRename.TranspPiPathRecognizer
 
@@ -395,5 +396,109 @@ theorem RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken {scope : Nat}
   | equivCompose _ _ =>
       simp only [RawTerm.matchTranspPiBetaShape?] at success
       cases success
+
+/-- Rename-commute for `matchTranspPiBetaShape?`: the recognizer is
+rename-stable.  Renaming the input via `rho.lift` (one binder for
+the pathLam interval) and then matching is the same as matching
+first and renaming the witness via `rho` (for the inner domain) and
+`rho.lift.lift` (for the codomain, which lives under both the
+pathLam interval and the Pi binder).
+
+Proof shape: 73-arm case split on `pathBody`.  Only the `piTyCode`
+arm does real work — `cases` on `unweaken? domainCode` aligned via
+`unweaken?_rename_lift_commute`.  The other 72 arms close by `rfl`
+because both sides reduce to `none` definitionally.
+
+Consumed by future Phase E `cd_rename` extension that mirrors the
+extended `cdTranspCase` (Phase F) — the `unweaken? pathBody = none`
+branch's inner `match matchTranspPiBetaShape? pathBody` dispatch
+must align under rename, and this is the alignment lemma. -/
+theorem RawTerm.matchTranspPiBetaShape?_rename
+    {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (pathBody : RawTerm (sourceScope + 1)) :
+    RawTerm.matchTranspPiBetaShape? (pathBody.rename rho.lift) =
+    (RawTerm.matchTranspPiBetaShape? pathBody).map
+      (fun pair => (pair.1.rename rho, pair.2.rename rho.lift.lift)) := by
+  cases pathBody with
+  | piTyCode domainCode codomainCode =>
+      show RawTerm.matchTranspPiBetaShape?
+              (RawTerm.piTyCode (domainCode.rename rho.lift)
+                                (codomainCode.rename rho.lift.lift)) = _
+      simp only [RawTerm.matchTranspPiBetaShape?]
+      rw [RawTerm.unweaken?_rename_lift_commute domainCode rho]
+      cases RawTerm.unweaken? domainCode <;> rfl
+  | var _ => rfl
+  | unit => rfl
+  | lam _ => rfl
+  | app _ _ => rfl
+  | pair _ _ => rfl
+  | fst _ => rfl
+  | snd _ => rfl
+  | boolTrue => rfl
+  | boolFalse => rfl
+  | boolElim _ _ _ => rfl
+  | natZero => rfl
+  | natSucc _ => rfl
+  | natElim _ _ _ => rfl
+  | natRec _ _ _ => rfl
+  | listNil => rfl
+  | listCons _ _ => rfl
+  | listElim _ _ _ => rfl
+  | optionNone => rfl
+  | optionSome _ => rfl
+  | optionMatch _ _ _ => rfl
+  | eitherInl _ => rfl
+  | eitherInr _ => rfl
+  | eitherMatch _ _ _ => rfl
+  | refl _ => rfl
+  | idJ _ _ => rfl
+  | modIntro _ => rfl
+  | modElim _ => rfl
+  | subsume _ => rfl
+  | interval0 => rfl
+  | interval1 => rfl
+  | intervalOpp _ => rfl
+  | intervalMeet _ _ => rfl
+  | intervalJoin _ _ => rfl
+  | pathLam _ => rfl
+  | pathApp _ _ => rfl
+  | glueIntro _ _ => rfl
+  | glueElim _ => rfl
+  | transp _ _ => rfl
+  | hcomp _ _ => rfl
+  | oeqRefl _ => rfl
+  | oeqJ _ _ => rfl
+  | oeqFunext _ => rfl
+  | idStrictRefl _ => rfl
+  | idStrictRec _ _ => rfl
+  | equivIntro _ _ => rfl
+  | equivApp _ _ => rfl
+  | refineIntro _ _ => rfl
+  | refineElim _ => rfl
+  | recordIntro _ => rfl
+  | recordProj _ => rfl
+  | codataUnfold _ _ => rfl
+  | codataDest _ => rfl
+  | sessionSend _ _ => rfl
+  | sessionRecv _ => rfl
+  | effectPerform _ _ => rfl
+  | universeCode _ => rfl
+  | arrowCode _ _ => rfl
+  | sigmaTyCode _ _ => rfl
+  | productCode _ _ => rfl
+  | sumCode _ _ => rfl
+  | listCode _ => rfl
+  | optionCode _ => rfl
+  | eitherCode _ _ => rfl
+  | idCode _ _ _ => rfl
+  | equivCode _ _ => rfl
+  | cumulUpMarker _ => rfl
+  | uaToEquiv _ => rfl
+  | equivApply _ _ => rfl
+  | pathCompose _ _ => rfl
+  | idToEquiv _ => rfl
+  | oeqTrans _ _ => rfl
+  | equivCompose _ _ => rfl
 
 end LeanFX2

@@ -91,5 +91,6 @@ namespace LeanFX2.Smoke
 -- Phase F dispatch recognizer (commit 2026-05-15)
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?
 #print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken
+#print axioms LeanFX2.RawTerm.matchTranspPiBetaShape?_rename
 
 end LeanFX2.Smoke
