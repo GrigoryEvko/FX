@@ -202,6 +202,11 @@ theorem RawTerm.partialRename?_rename_some
       simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [pathIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
         sourceIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
+  | transpFill pathTy currentInterval source pathTyIH intervalIH sourceIH =>
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      rw [pathTyIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
+        intervalIH sourceRenaming targetRenaming partialRenaming renamingSurvives,
+        sourceIH sourceRenaming targetRenaming partialRenaming renamingSurvives]
   | hcomp sidesTerm capTerm sidesIH capIH =>
       simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]
       rw [sidesIH sourceRenaming targetRenaming partialRenaming renamingSurvives,

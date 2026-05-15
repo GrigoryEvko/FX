@@ -199,6 +199,11 @@ def RawTerm.rename : ∀ {source target : Nat},
   -- D3.6-S5 equivCompose arm.
   | _, _, .equivCompose firstEquiv secondEquiv, rawRenaming =>
       .equivCompose (firstEquiv.rename rawRenaming) (secondEquiv.rename rawRenaming)
+  -- D2.5.6-Blocker-A transpFill arm.  Ternary atom-shape (no binder).
+  | _, _, .transpFill pathTy currentInterval source, rawRenaming =>
+      .transpFill (pathTy.rename rawRenaming)
+                  (currentInterval.rename rawRenaming)
+                  (source.rename rawRenaming)
 
 /-- Single-binder weakening on a raw term. -/
 @[reducible] def RawTerm.weaken {scope : Nat} (term : RawTerm scope) : RawTerm (scope + 1) :=

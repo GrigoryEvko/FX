@@ -59,6 +59,7 @@ def RawTerm.cdIdJCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.glueElim _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.transp _ _ => RawTerm.idJ developedBase developedWitness
+  | RawTerm.transpFill _ _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.hcomp _ _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.oeqRefl _ => RawTerm.idJ developedBase developedWitness
   | RawTerm.oeqJ _ _ => RawTerm.idJ developedBase developedWitness
@@ -139,6 +140,7 @@ def RawTerm.cdIdStrictRecCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.glueElim _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.transp _ _ => RawTerm.idStrictRec developedBase developedWitness
+  | RawTerm.transpFill _ _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.hcomp _ _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.oeqRefl _ => RawTerm.idStrictRec developedBase developedWitness
   | RawTerm.oeqJ _ _ => RawTerm.idStrictRec developedBase developedWitness

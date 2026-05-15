@@ -216,6 +216,11 @@ theorem RawPolyTerm.toRawTerm_rename_commute :
       simp only [RawPolyTerm.rename, RawPolyTerm.toRawTerm, RawTerm.rename]
       exact LeanFX2.congrArg2 RawTerm.transp
         (pathIH rawRenaming) (sourceIH rawRenaming)
+  | transpFill path interval source pathIH intervalIH sourceIH =>
+      intro rawRenaming
+      simp only [RawPolyTerm.rename, RawPolyTerm.toRawTerm, RawTerm.rename]
+      exact LeanFX2.congrArg3 RawTerm.transpFill
+        (pathIH rawRenaming) (intervalIH rawRenaming) (sourceIH rawRenaming)
   | hcomp sides cap sidesIH capIH =>
       intro rawRenaming
       simp only [RawPolyTerm.rename, RawPolyTerm.toRawTerm, RawTerm.rename]

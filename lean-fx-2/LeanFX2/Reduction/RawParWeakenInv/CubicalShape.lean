@@ -70,6 +70,7 @@ theorem RawTerm.rename_eq_uaToEquiv_imp {sourceScope targetScope : Nat}
   | glueIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
   | glueElim _ => simp only [RawTerm.rename] at h; nomatch h
   | transp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | transpFill _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | hcomp _ _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqRefl _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqJ _ _ => simp only [RawTerm.rename] at h; nomatch h
@@ -168,6 +169,7 @@ theorem RawTerm.rename_eq_pathCompose_imp {sourceScope targetScope : Nat}
   | glueIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
   | glueElim _ => simp only [RawTerm.rename] at h; nomatch h
   | transp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | transpFill _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | hcomp _ _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqRefl _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqJ _ _ => simp only [RawTerm.rename] at h; nomatch h
@@ -259,6 +261,7 @@ theorem RawTerm.rename_eq_idToEquiv_imp {sourceScope targetScope : Nat}
   | glueIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
   | glueElim _ => simp only [RawTerm.rename] at h; nomatch h
   | transp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | transpFill _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | hcomp _ _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqRefl _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqJ _ _ => simp only [RawTerm.rename] at h; nomatch h
@@ -351,6 +354,7 @@ theorem RawTerm.rename_eq_oeqTrans_imp {sourceScope targetScope : Nat}
   | glueIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
   | glueElim _ => simp only [RawTerm.rename] at h; nomatch h
   | transp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | transpFill _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | hcomp _ _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqRefl _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqJ _ _ => simp only [RawTerm.rename] at h; nomatch h
@@ -443,6 +447,7 @@ theorem RawTerm.rename_eq_equivCompose_imp {sourceScope targetScope : Nat}
   | glueIntro _ _ => simp only [RawTerm.rename] at h; nomatch h
   | glueElim _ => simp only [RawTerm.rename] at h; nomatch h
   | transp _ _ => simp only [RawTerm.rename] at h; nomatch h
+  | transpFill _ _ _ => simp only [RawTerm.rename] at h; nomatch h
   | hcomp _ _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqRefl _ => simp only [RawTerm.rename] at h; nomatch h
   | oeqJ _ _ => simp only [RawTerm.rename] at h; nomatch h

@@ -163,6 +163,10 @@ def RawPolyTerm.subst : ∀ {source target : Nat},
       .glueElim (gluedValue.subst substitution)
   | _, _, .transp path source, substitution =>
       .transp (path.subst substitution) (source.subst substitution)
+  | _, _, .transpFill path interval source, substitution =>
+      .transpFill (path.subst substitution)
+                  (interval.subst substitution)
+                  (source.subst substitution)
   | _, _, .hcomp sides cap, substitution =>
       .hcomp (sides.subst substitution) (cap.subst substitution)
   | _, _, .oeqRefl witness, substitution =>

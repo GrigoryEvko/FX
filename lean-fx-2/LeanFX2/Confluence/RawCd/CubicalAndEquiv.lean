@@ -78,6 +78,7 @@ def RawTerm.cdTranspCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.transp developedPath developedSource
   | RawTerm.glueElim _ => RawTerm.transp developedPath developedSource
   | RawTerm.transp _ _ => RawTerm.transp developedPath developedSource
+  | RawTerm.transpFill _ _ _ => RawTerm.transp developedPath developedSource
   | RawTerm.hcomp _ _ => RawTerm.transp developedPath developedSource
   | RawTerm.oeqRefl _ => RawTerm.transp developedPath developedSource
   | RawTerm.oeqJ _ _ => RawTerm.transp developedPath developedSource
@@ -273,6 +274,7 @@ def RawTerm.cdHcompCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.hcomp developedSides developedCap
   | RawTerm.glueElim _ => RawTerm.hcomp developedSides developedCap
   | RawTerm.transp _ _ => RawTerm.hcomp developedSides developedCap
+  | RawTerm.transpFill _ _ _ => RawTerm.hcomp developedSides developedCap
   | RawTerm.hcomp _ _ => RawTerm.hcomp developedSides developedCap
   | RawTerm.oeqRefl _ => RawTerm.hcomp developedSides developedCap
   | RawTerm.oeqJ _ _ => RawTerm.hcomp developedSides developedCap
@@ -361,6 +363,7 @@ def RawTerm.cdIdToEquivCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.idToEquiv developedProof
   | RawTerm.glueElim _ => RawTerm.idToEquiv developedProof
   | RawTerm.transp _ _ => RawTerm.idToEquiv developedProof
+  | RawTerm.transpFill _ _ _ => RawTerm.idToEquiv developedProof
   | RawTerm.hcomp _ _ => RawTerm.idToEquiv developedProof
   | RawTerm.oeqRefl _ => RawTerm.idToEquiv developedProof
   | RawTerm.oeqJ _ _ => RawTerm.idToEquiv developedProof
@@ -491,6 +494,8 @@ def RawTerm.cdUaToEquivApplyCase {scope : Nat}
     RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
   | RawTerm.transp _ _ =>
     RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
+  | RawTerm.transpFill _ _ _ =>
+    RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
   | RawTerm.hcomp _ _ =>
     RawTerm.equivApply (RawTerm.uaToEquiv proof) developedArg
   | RawTerm.oeqJ _ _ =>
@@ -615,6 +620,7 @@ def RawTerm.cdEquivApplyCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.equivApply developedEquiv developedArg
   | RawTerm.glueElim _ => RawTerm.equivApply developedEquiv developedArg
   | RawTerm.transp _ _ => RawTerm.equivApply developedEquiv developedArg
+  | RawTerm.transpFill _ _ _ => RawTerm.equivApply developedEquiv developedArg
   | RawTerm.hcomp _ _ => RawTerm.equivApply developedEquiv developedArg
   | RawTerm.oeqRefl _ => RawTerm.equivApply developedEquiv developedArg
   | RawTerm.oeqJ _ _ => RawTerm.equivApply developedEquiv developedArg

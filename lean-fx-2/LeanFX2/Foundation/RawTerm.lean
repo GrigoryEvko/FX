@@ -363,6 +363,55 @@ inductive RawTerm : Nat → Type
   remain unaffected. -/
   | equivCompose {scope : Nat}
       (firstEquiv secondEquiv : RawTerm scope) : RawTerm scope
+  /-- D2.5.6-Blocker-A (ticket #1948): cubical fill operation.
+
+  `transpFill pathTy currentInterval source` represents the CCHM
+  cubical fill — the path-indexed family of intermediate transports
+  whose endpoint at `i = 0` is the source and whose endpoint at
+  `i = 1` is the full `transp pathTy source`.  At the typing layer
+  (v1.1 follow-up) the result lives at `pathTy.applyInterval
+  currentInterval` for `pathTy : Path Universe sourceTy targetTy`
+  and `currentInterval : Interval`.
+
+  ## Why a kernel-syntactic ctor
+
+  Σ-transport's CCHM β rule needs to thread the path through the
+  second component's dependency on the first:
+
+  ```
+  transp (pathLam (sigmaTyCode A B)) (pair firstRaw secondRaw)
+    ⟶ pair (transp (pathLam A) firstRaw)
+           (transp (pathLam B[var0 := transpFill (pathLam A) i firstRaw])
+                   secondRaw)
+  ```
+
+  Without a `transpFill` ctor the substituent for the dependent
+  binder cannot be expressed; ticket #1948 documents this as the
+  D2.5.6 blocker.  Phase A ships the vocabulary only — no β rule
+  fires on transpFill yet.  Future Phase B ships the boundary β
+  rules at interval endpoints 0 and 1.
+
+  ## Shape
+
+  Ternary (no binder at this level; the interval binder, if any,
+  lives inside `pathTy`'s `pathLam` body):
+  * `pathTy : RawTerm scope` — the family path
+  * `currentInterval : RawTerm scope` — the interval position
+  * `source : RawTerm scope` — the source value at i = 0
+
+  Empty face system is the basic Phase A version; faces argument is
+  deferred to a future extension once the face-predicate vocabulary
+  lands (D2.5.9 #1560).
+
+  ## Structural distinctness
+
+  This ctor is structurally distinct from every other `RawTerm` ctor
+  by raw-ctor mismatch — including `RawTerm.transp` (which is binary
+  with `path source`, no current-interval component).  Existing
+  typed inversions remain unaffected because the new ctor doesn't
+  appear in any existing inversion lemma's case enumeration. -/
+  | transpFill {scope : Nat}
+      (pathTy currentInterval source : RawTerm scope) : RawTerm scope
   deriving DecidableEq
 
 /-! ## Tier 3 / MEGA-Z4.A — `ActsOnRawTermVar` typeclass + `RawTerm.act`
@@ -669,5 +718,12 @@ equalities. -/
   -- on both equivalence raws (no binder).
   | _, _, .equivCompose firstEquiv secondEquiv, someAction =>
       .equivCompose (firstEquiv.act someAction) (secondEquiv.act someAction)
+  -- D2.5.6-Blocker-A: transpFill vocabulary.  Ternary-shape arm —
+  -- recurse on path, interval, and source raws (no binder at this
+  -- level; the interval binder lives inside pathTy's pathLam body).
+  | _, _, .transpFill pathTy currentInterval source, someAction =>
+      .transpFill (pathTy.act someAction)
+                  (currentInterval.act someAction)
+                  (source.act someAction)
 
 end LeanFX2

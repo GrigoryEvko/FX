@@ -342,6 +342,13 @@ theorem RawTerm.act_eq_rename :
       show RawTerm.transp (path.act someRenaming) (source.act someRenaming) =
            RawTerm.transp (path.rename someRenaming) (source.rename someRenaming)
       rw [pathIH someRenaming, sourceIH someRenaming]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      intro someRenaming
+      show RawTerm.transpFill (pathTy.act someRenaming) (currentInterval.act someRenaming)
+             (source.act someRenaming) =
+           RawTerm.transpFill (pathTy.rename someRenaming) (currentInterval.rename someRenaming)
+             (source.rename someRenaming)
+      rw [pathIH someRenaming, intervalIH someRenaming, sourceIH someRenaming]
   | hcomp sides cap sidesIH capIH =>
       intro someRenaming
       show RawTerm.hcomp (sides.act someRenaming) (cap.act someRenaming) =
@@ -735,6 +742,14 @@ theorem RawTerm.act_eq_subst_forRaw {level : Nat} :
       show RawTerm.transp (path.act someSubst) (source.act someSubst) =
            RawTerm.transp (path.subst someSubst.forRaw) (source.subst someSubst.forRaw)
       rw [pathIH someSubst, sourceIH someSubst]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      intro someSubst
+      show RawTerm.transpFill (pathTy.act someSubst) (currentInterval.act someSubst)
+             (source.act someSubst) =
+           RawTerm.transpFill (pathTy.subst someSubst.forRaw)
+             (currentInterval.subst someSubst.forRaw)
+             (source.subst someSubst.forRaw)
+      rw [pathIH someSubst, intervalIH someSubst, sourceIH someSubst]
   | hcomp sides cap sidesIH capIH =>
       intro someSubst
       show RawTerm.hcomp (sides.act someSubst) (cap.act someSubst) =

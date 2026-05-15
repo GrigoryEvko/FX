@@ -60,6 +60,7 @@ def RawTerm.cdAppCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.glueElim _ => RawTerm.app developedFunction developedArgument
   | RawTerm.transp _ _ => RawTerm.app developedFunction developedArgument
+  | RawTerm.transpFill _ _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.hcomp _ _ => RawTerm.app developedFunction developedArgument
   | RawTerm.oeqRefl _ => RawTerm.app developedFunction developedArgument
   | RawTerm.oeqJ _ _ => RawTerm.app developedFunction developedArgument
@@ -139,6 +140,7 @@ def RawTerm.cdPathAppCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.glueElim _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.transp _ _ => RawTerm.pathApp developedPath developedInterval
+  | RawTerm.transpFill _ _ _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.hcomp _ _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.oeqRefl _ => RawTerm.pathApp developedPath developedInterval
   | RawTerm.oeqJ _ _ => RawTerm.pathApp developedPath developedInterval

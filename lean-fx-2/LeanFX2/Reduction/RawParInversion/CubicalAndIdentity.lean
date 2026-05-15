@@ -308,7 +308,11 @@ parallel step (deep-β `transpReflBetaDeep`), the LHS path was a
 parallel step (deep ua-β `uaBetaDeep`), the LHS path was a
 `pathCompose left right` head and the rule fired through
 `transpCompose` (D3.6-S3), or the path develops to a `pathCompose`
-shape via parallel step (deep compose-β `transpComposeDeep`). -/
+shape via parallel step (deep compose-β `transpComposeDeep`).
+
+Note: D2.5.7.1 `transpListBeta` (distribution over `listCons`) is
+NOT enumerated here — that ctor was rolled back pending the matching
+`transpListBetaDeep` ctor + cd_lemma dispatch (cross-blocker #1951). -/
 theorem RawStep.par.transp_inv {scope : Nat}
     {pathTerm sourceTerm : RawTerm scope} {target : RawTerm scope}
     (parallelStep : RawStep.par (RawTerm.transp pathTerm sourceTerm) target) :
@@ -507,5 +511,26 @@ theorem RawStep.par.equivApp_inv {scope : Nat}
         RawStep.par.refl _, RawStep.par.refl _⟩
   | equivAppCong equivStep argumentStep =>
       exact ⟨_, _, rfl, equivStep, argumentStep⟩
+
+/-- D2.5.6 Blocker-A: `RawStep.par (transpFill p i s) target → target =
+transpFill p' i' s' ∧ pars on all three subterms`.  Only `refl` and the
+single `transpFillCong` constructor produce a transpFill source, so the
+inversion is a pure cong shape — no β rules for transpFill (cubical fill
+is a witness-of-Kan-op constructor, not a redex). -/
+theorem RawStep.par.transpFill_inv {scope : Nat}
+    {pathTerm intervalTerm sourceTerm : RawTerm scope} {target : RawTerm scope}
+    (parallelStep : RawStep.par
+        (RawTerm.transpFill pathTerm intervalTerm sourceTerm) target) :
+    ∃ pathTarget intervalTarget sourceTarget,
+      target = RawTerm.transpFill pathTarget intervalTarget sourceTarget ∧
+        RawStep.par pathTerm pathTarget ∧
+        RawStep.par intervalTerm intervalTarget ∧
+        RawStep.par sourceTerm sourceTarget := by
+  cases parallelStep with
+  | refl _ =>
+      exact ⟨pathTerm, intervalTerm, sourceTerm, rfl,
+        RawStep.par.refl _, RawStep.par.refl _, RawStep.par.refl _⟩
+  | transpFillCong pathStep intervalStep sourceStep =>
+      exact ⟨_, _, _, rfl, pathStep, intervalStep, sourceStep⟩
 
 end LeanFX2

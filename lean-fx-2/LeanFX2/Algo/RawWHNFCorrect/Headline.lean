@@ -216,7 +216,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -290,7 +290,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -367,7 +367,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -442,7 +442,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -518,7 +518,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -597,7 +597,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -651,7 +651,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
         | interval0 | interval1 | intervalOpp _
         | intervalMeet _ _ | intervalJoin _ _
         | pathLam _ | pathApp _ _ | glueIntro _ _ | glueElim _
-        | transp _ _ | hcomp _ _
+        | transp _ _ | transpFill _ _ _ | hcomp _ _
         | oeqRefl _ | oeqJ _ _ | oeqFunext _
         | idStrictRefl _ | idStrictRec _ _
         | equivIntro _ _ | equivApp _ _
@@ -684,6 +684,7 @@ theorem RawTerm.whnf_reaches : ∀ (fuel : Nat) {scope : Nat}
     | glueIntro _ _ => exact RawStep.parStar.refl _
     | glueElim _ => exact RawStep.parStar.refl _
     | transp _ _ => exact RawStep.parStar.refl _
+    | transpFill _ _ _ => exact RawStep.parStar.refl _
     | hcomp _ _ => exact RawStep.parStar.refl _
     | oeqRefl _ => exact RawStep.parStar.refl _
     | oeqJ _ _ => exact RawStep.parStar.refl _

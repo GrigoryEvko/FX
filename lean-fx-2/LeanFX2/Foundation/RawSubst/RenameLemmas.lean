@@ -184,6 +184,9 @@ theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [firstIH renamingEq, secondIH renamingEq]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.rename]; rw [firstIH renamingEq, secondIH renamingEq]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.rename]
+      rw [pathIH renamingEq, intervalIH renamingEq, sourceIH renamingEq]
 
 /-- Compose two raw renamings into a single rename. -/
 theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
@@ -356,6 +359,9 @@ theorem RawTerm.rename_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.rename]; rw [firstIH rho1 rho2, secondIH rho1 rho2]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.rename]; rw [firstIH rho1 rho2, secondIH rho1 rho2]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.rename]
+      rw [pathIH rho1 rho2, intervalIH rho1 rho2, sourceIH rho1 rho2]
 
 /-- The load-bearing weaken/lift commute identity (pointwise).
     `weaken.compose rho.lift = rho.compose weaken` per position. -/

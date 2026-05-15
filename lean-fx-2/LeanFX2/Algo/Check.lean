@@ -487,6 +487,7 @@ def Term.check : ∀ {scope : Nat}
   | .glueIntro _ _      => none
   | .glueElim _         => none
   | .transp _ _         => none
+  | .transpFill _ _ _   => none
   | .hcomp _ _          => none
   | .oeqRefl _          => none
   | .oeqJ _ _           => none

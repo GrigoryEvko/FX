@@ -99,6 +99,8 @@ def RawTerm.cdListElimCase {scope : Nat}
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.transp _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
+  | RawTerm.transpFill _ _ _ =>
+      RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.hcomp _ _ =>
       RawTerm.listElim developedScrutinee developedNil developedCons
   | RawTerm.oeqRefl _ =>
@@ -251,6 +253,8 @@ def RawTerm.cdOptionMatchCase {scope : Nat}
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.transp _ _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
+  | RawTerm.transpFill _ _ _ =>
+      RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.hcomp _ _ =>
       RawTerm.optionMatch developedScrutinee developedNone developedSome
   | RawTerm.oeqRefl _ =>
@@ -401,6 +405,8 @@ def RawTerm.cdEitherMatchCase {scope : Nat}
   | RawTerm.glueElim _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.transp _ _ =>
+      RawTerm.eitherMatch developedScrutinee developedLeft developedRight
+  | RawTerm.transpFill _ _ _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight
   | RawTerm.hcomp _ _ =>
       RawTerm.eitherMatch developedScrutinee developedLeft developedRight

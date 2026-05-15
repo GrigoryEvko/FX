@@ -150,6 +150,8 @@ inductive RawPolyTerm : Nat → Type
       RawPolyTerm scope
   | transp {scope : Nat}
       (path source : RawPolyTerm scope) : RawPolyTerm scope
+  | transpFill {scope : Nat}
+      (pathTy currentInterval source : RawPolyTerm scope) : RawPolyTerm scope
   | hcomp {scope : Nat}
       (sides cap : RawPolyTerm scope) : RawPolyTerm scope
   -- Observational equality

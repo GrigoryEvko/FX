@@ -257,6 +257,9 @@ theorem RawStep.par.rename {scope targetScope : Nat}
       exact RawStep.par.glueElimCong (gluedIH _)
   | transpCong _ _ pathIH sourceIH =>
       exact RawStep.par.transpCong (pathIH _) (sourceIH _)
+  | transpFillCong _ _ _ pathIH intervalIH sourceIH =>
+      exact RawStep.par.transpFillCong
+        (pathIH _) (intervalIH _) (sourceIH _)
   | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
       simp only [RawTerm.rename]
       rw [RawTerm.weaken_rename_commute rawRenaming typeRawSource]

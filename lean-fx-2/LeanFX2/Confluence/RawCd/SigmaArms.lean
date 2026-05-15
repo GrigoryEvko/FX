@@ -58,6 +58,7 @@ def RawTerm.cdFstCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.fst developedPair
   | RawTerm.glueElim _ => RawTerm.fst developedPair
   | RawTerm.transp _ _ => RawTerm.fst developedPair
+  | RawTerm.transpFill _ _ _ => RawTerm.fst developedPair
   | RawTerm.hcomp _ _ => RawTerm.fst developedPair
   | RawTerm.oeqRefl _ => RawTerm.fst developedPair
   | RawTerm.oeqJ _ _ => RawTerm.fst developedPair
@@ -136,6 +137,7 @@ def RawTerm.cdSndCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.snd developedPair
   | RawTerm.glueElim _ => RawTerm.snd developedPair
   | RawTerm.transp _ _ => RawTerm.snd developedPair
+  | RawTerm.transpFill _ _ _ => RawTerm.snd developedPair
   | RawTerm.hcomp _ _ => RawTerm.snd developedPair
   | RawTerm.oeqRefl _ => RawTerm.snd developedPair
   | RawTerm.oeqJ _ _ => RawTerm.snd developedPair

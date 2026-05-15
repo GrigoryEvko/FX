@@ -97,6 +97,7 @@ def RawTerm.matchTranspPiBetaShape? {scope : Nat}
   | RawTerm.glueIntro _ _ => none
   | RawTerm.glueElim _ => none
   | RawTerm.transp _ _ => none
+  | RawTerm.transpFill _ _ _ => none
   | RawTerm.hcomp _ _ => none
   | RawTerm.oeqRefl _ => none
   | RawTerm.oeqJ _ _ => none
@@ -295,6 +296,9 @@ theorem RawTerm.matchTranspPiBetaShape?_imp_piTyCode_weaken {scope : Nat}
   | transp _ _ =>
       simp only [RawTerm.matchTranspPiBetaShape?] at success
       cases success
+  | transpFill _ _ _ =>
+      simp only [RawTerm.matchTranspPiBetaShape?] at success
+      cases success
   | hcomp _ _ =>
       simp only [RawTerm.matchTranspPiBetaShape?] at success
       cases success
@@ -467,6 +471,7 @@ theorem RawTerm.matchTranspPiBetaShape?_rename
   | glueIntro _ _ => rfl
   | glueElim _ => rfl
   | transp _ _ => rfl
+  | transpFill _ _ _ => rfl
   | hcomp _ _ => rfl
   | oeqRefl _ => rfl
   | oeqJ _ _ => rfl

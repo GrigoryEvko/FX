@@ -98,6 +98,8 @@ def RawTerm.cdBoolElimCase {scope : Nat}
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.transp _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
+  | RawTerm.transpFill _ _ _ =>
+      RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.hcomp _ _ =>
       RawTerm.boolElim developedScrutinee developedThen developedElse
   | RawTerm.oeqRefl _ =>
@@ -249,6 +251,8 @@ def RawTerm.cdNatElimCase {scope : Nat}
   | RawTerm.glueElim _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.transp _ _ =>
+      RawTerm.natElim developedScrutinee developedZero developedSucc
+  | RawTerm.transpFill _ _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
   | RawTerm.hcomp _ _ =>
       RawTerm.natElim developedScrutinee developedZero developedSucc
@@ -402,6 +406,8 @@ def RawTerm.cdNatRecCase {scope : Nat}
   | RawTerm.glueElim _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.transp _ _ =>
+      RawTerm.natRec developedScrutinee developedZero developedSucc
+  | RawTerm.transpFill _ _ _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc
   | RawTerm.hcomp _ _ =>
       RawTerm.natRec developedScrutinee developedZero developedSucc

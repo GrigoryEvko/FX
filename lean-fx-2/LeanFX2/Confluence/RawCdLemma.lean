@@ -543,6 +543,11 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       rw [hWeak]
       simp only [RawTerm.unweaken?_weaken]
       exact sourceIH
+  | transpFillCong _ _ _ pathIH intervalIH sourceIH =>
+      -- D2.5.6 Blocker-A: pure cong for transpFill (3-subterm Kan-fill
+      -- witness with no β rule).  cd recurses into each subterm.
+      simp only [RawTerm.cd]
+      exact RawStep.par.transpFillCong pathIH intervalIH sourceIH
   | @hcompCong _ sidesRawSource sidesRawTarget _ _ sidesStep capStep sidesIH capIH =>
       -- sidesIH : par sidesRawTarget (cd sidesRawSource).
       -- Goal: par (hcomp sidesRawTarget capRawTarget)
@@ -754,7 +759,8 @@ theorem RawStep.par.cd_lemma {scope : Nat}
           | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
           | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
           | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
-          | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqJ _ _ | .oeqFunext _
+          | .glueElim _ | .transp _ _ | .transpFill _ _ _
+          | .hcomp _ _ | .oeqJ _ _ | .oeqFunext _
           | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
           | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
           | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _
@@ -772,7 +778,8 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
       | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
       | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
-      | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _
+      | .glueElim _ | .transp _ _ | .transpFill _ _ _
+      | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _
       | .oeqFunext _ | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _
       | .equivApp _ _ | .refineIntro _ _ | .refineElim _ | .recordIntro _
       | .recordProj _ | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _
@@ -858,7 +865,8 @@ theorem RawStep.par.cd_lemma {scope : Nat}
       | .modIntro _ | .modElim _ | .subsume _ | .interval0 | .interval1
       | .intervalOpp _ | .intervalMeet _ _ | .intervalJoin _ _
       | .pathLam _ | .pathApp _ _ | .glueIntro _ _ | .glueElim _
-      | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _ | .oeqFunext _
+      | .transp _ _ | .transpFill _ _ _
+      | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _ | .oeqFunext _
       | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
       | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
       | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _

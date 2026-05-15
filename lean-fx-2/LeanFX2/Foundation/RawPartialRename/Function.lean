@@ -172,6 +172,12 @@ def RawTerm.partialRename? : ∀ {sourceScope targetScope : Nat},
         (RawTerm.partialRename? path partialRenaming)
         (RawTerm.partialRename? source partialRenaming)
         RawTerm.transp
+  | _, _, .transpFill pathTy currentInterval source, partialRenaming =>
+      Option.mapThree
+        (RawTerm.partialRename? pathTy partialRenaming)
+        (RawTerm.partialRename? currentInterval partialRenaming)
+        (RawTerm.partialRename? source partialRenaming)
+        RawTerm.transpFill
   | _, _, .hcomp sides cap, partialRenaming =>
       Option.mapTwo
         (RawTerm.partialRename? sides partialRenaming)
@@ -385,6 +391,177 @@ def RawTerm.constantPathBody? {scope : Nat}
   | RawTerm.glueIntro _ _ => none
   | RawTerm.glueElim _ => none
   | RawTerm.transp _ _ => none
+  | RawTerm.transpFill _ _ _ => none
+  | RawTerm.hcomp _ _ => none
+  | RawTerm.oeqRefl _ => none
+  | RawTerm.oeqJ _ _ => none
+  | RawTerm.oeqFunext _ => none
+  | RawTerm.idStrictRefl _ => none
+  | RawTerm.idStrictRec _ _ => none
+  | RawTerm.equivIntro _ _ => none
+  | RawTerm.equivApp _ _ => none
+  | RawTerm.refineIntro _ _ => none
+  | RawTerm.refineElim _ => none
+  | RawTerm.recordIntro _ => none
+  | RawTerm.recordProj _ => none
+  | RawTerm.codataUnfold _ _ => none
+  | RawTerm.codataDest _ => none
+  | RawTerm.sessionSend _ _ => none
+  | RawTerm.sessionRecv _ => none
+  | RawTerm.effectPerform _ _ => none
+  | RawTerm.universeCode _ => none
+  | RawTerm.arrowCode _ _ => none
+  | RawTerm.piTyCode _ _ => none
+  | RawTerm.sigmaTyCode _ _ => none
+  | RawTerm.productCode _ _ => none
+  | RawTerm.sumCode _ _ => none
+  | RawTerm.listCode _ => none
+  | RawTerm.optionCode _ => none
+  | RawTerm.eitherCode _ _ => none
+  | RawTerm.idCode _ _ _ => none
+  | RawTerm.equivCode _ _ => none
+  | RawTerm.cumulUpMarker _ => none
+  | RawTerm.uaToEquiv _ => none
+  | RawTerm.equivApply _ _ => none
+  | RawTerm.pathCompose _ _ => none
+  | RawTerm.idToEquiv _ => none
+  | RawTerm.oeqTrans _ _ => none
+  | RawTerm.equivCompose _ _ => none
+
+/-- D2.5.7.1 recognizer: extract the inner element-type code from a
+`listCode` path body.  Returns `some innerCode` when `pathBody =
+listCode innerCode`, else `none`.  Used by `cdTranspCase`'s new
+dispatch arm to detect the transp-over-list shape.
+
+Mirror of `constantPathBody?`: 73-arm explicit enumeration to keep
+the match compiler propext-clean per
+`feedback_lean_zero_axiom_match.md`. -/
+def RawTerm.unListCode? {scope : Nat}
+    (pathBody : RawTerm (scope + 1)) : Option (RawTerm (scope + 1)) :=
+  match pathBody with
+  | RawTerm.listCode innerCode => some innerCode
+  | RawTerm.var _ => none
+  | RawTerm.unit => none
+  | RawTerm.lam _ => none
+  | RawTerm.app _ _ => none
+  | RawTerm.pair _ _ => none
+  | RawTerm.fst _ => none
+  | RawTerm.snd _ => none
+  | RawTerm.boolTrue => none
+  | RawTerm.boolFalse => none
+  | RawTerm.boolElim _ _ _ => none
+  | RawTerm.natZero => none
+  | RawTerm.natSucc _ => none
+  | RawTerm.natElim _ _ _ => none
+  | RawTerm.natRec _ _ _ => none
+  | RawTerm.listNil => none
+  | RawTerm.listCons _ _ => none
+  | RawTerm.listElim _ _ _ => none
+  | RawTerm.optionNone => none
+  | RawTerm.optionSome _ => none
+  | RawTerm.optionMatch _ _ _ => none
+  | RawTerm.eitherInl _ => none
+  | RawTerm.eitherInr _ => none
+  | RawTerm.eitherMatch _ _ _ => none
+  | RawTerm.refl _ => none
+  | RawTerm.idJ _ _ => none
+  | RawTerm.modIntro _ => none
+  | RawTerm.modElim _ => none
+  | RawTerm.subsume _ => none
+  | RawTerm.interval0 => none
+  | RawTerm.interval1 => none
+  | RawTerm.intervalOpp _ => none
+  | RawTerm.intervalMeet _ _ => none
+  | RawTerm.intervalJoin _ _ => none
+  | RawTerm.pathLam _ => none
+  | RawTerm.pathApp _ _ => none
+  | RawTerm.glueIntro _ _ => none
+  | RawTerm.glueElim _ => none
+  | RawTerm.transp _ _ => none
+  | RawTerm.transpFill _ _ _ => none
+  | RawTerm.hcomp _ _ => none
+  | RawTerm.oeqRefl _ => none
+  | RawTerm.oeqJ _ _ => none
+  | RawTerm.oeqFunext _ => none
+  | RawTerm.idStrictRefl _ => none
+  | RawTerm.idStrictRec _ _ => none
+  | RawTerm.equivIntro _ _ => none
+  | RawTerm.equivApp _ _ => none
+  | RawTerm.refineIntro _ _ => none
+  | RawTerm.refineElim _ => none
+  | RawTerm.recordIntro _ => none
+  | RawTerm.recordProj _ => none
+  | RawTerm.codataUnfold _ _ => none
+  | RawTerm.codataDest _ => none
+  | RawTerm.sessionSend _ _ => none
+  | RawTerm.sessionRecv _ => none
+  | RawTerm.effectPerform _ _ => none
+  | RawTerm.universeCode _ => none
+  | RawTerm.arrowCode _ _ => none
+  | RawTerm.piTyCode _ _ => none
+  | RawTerm.sigmaTyCode _ _ => none
+  | RawTerm.productCode _ _ => none
+  | RawTerm.sumCode _ _ => none
+  | RawTerm.optionCode _ => none
+  | RawTerm.eitherCode _ _ => none
+  | RawTerm.idCode _ _ _ => none
+  | RawTerm.equivCode _ _ => none
+  | RawTerm.cumulUpMarker _ => none
+  | RawTerm.uaToEquiv _ => none
+  | RawTerm.equivApply _ _ => none
+  | RawTerm.pathCompose _ _ => none
+  | RawTerm.idToEquiv _ => none
+  | RawTerm.oeqTrans _ _ => none
+  | RawTerm.equivCompose _ _ => none
+
+/-- D2.5.7.1 recognizer: extract head/tail from a `listCons` developed
+source.  Returns `some (head, tail)` when `developedSource = listCons
+head tail`, else `none`.  Used by `cdTranspCase`'s new dispatch arm.
+
+73-arm explicit enumeration matching `unListCode?`. -/
+def RawTerm.unListConsParts? {scope : Nat}
+    (developedSource : RawTerm scope) :
+    Option (RawTerm scope × RawTerm scope) :=
+  match developedSource with
+  | RawTerm.listCons head tail => some (head, tail)
+  | RawTerm.var _ => none
+  | RawTerm.unit => none
+  | RawTerm.lam _ => none
+  | RawTerm.app _ _ => none
+  | RawTerm.pair _ _ => none
+  | RawTerm.fst _ => none
+  | RawTerm.snd _ => none
+  | RawTerm.boolTrue => none
+  | RawTerm.boolFalse => none
+  | RawTerm.boolElim _ _ _ => none
+  | RawTerm.natZero => none
+  | RawTerm.natSucc _ => none
+  | RawTerm.natElim _ _ _ => none
+  | RawTerm.natRec _ _ _ => none
+  | RawTerm.listNil => none
+  | RawTerm.listElim _ _ _ => none
+  | RawTerm.optionNone => none
+  | RawTerm.optionSome _ => none
+  | RawTerm.optionMatch _ _ _ => none
+  | RawTerm.eitherInl _ => none
+  | RawTerm.eitherInr _ => none
+  | RawTerm.eitherMatch _ _ _ => none
+  | RawTerm.refl _ => none
+  | RawTerm.idJ _ _ => none
+  | RawTerm.modIntro _ => none
+  | RawTerm.modElim _ => none
+  | RawTerm.subsume _ => none
+  | RawTerm.interval0 => none
+  | RawTerm.interval1 => none
+  | RawTerm.intervalOpp _ => none
+  | RawTerm.intervalMeet _ _ => none
+  | RawTerm.intervalJoin _ _ => none
+  | RawTerm.pathLam _ => none
+  | RawTerm.pathApp _ _ => none
+  | RawTerm.glueIntro _ _ => none
+  | RawTerm.glueElim _ => none
+  | RawTerm.transp _ _ => none
+  | RawTerm.transpFill _ _ _ => none
   | RawTerm.hcomp _ _ => none
   | RawTerm.oeqRefl _ => none
   | RawTerm.oeqJ _ _ => none

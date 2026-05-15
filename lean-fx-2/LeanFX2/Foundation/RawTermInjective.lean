@@ -461,6 +461,18 @@ theorem RawTerm.rename_injective_under_injective_renaming
       | _ =>
           simp only [RawTerm.rename] at renameEq
           exact RawTerm.noConfusion rfl (heq_of_eq renameEq)
+  | transpFill pathTyA intervalA sourceA pathTyIH intervalIH sourceIH =>
+      intro _ _ rhoInjective termB renameEq
+      cases termB with
+      | transpFill pathTyB intervalB sourceB =>
+          simp only [RawTerm.rename] at renameEq
+          injection renameEq with _ pathTyEq intervalEq sourceEq
+          rw [pathTyIH rhoInjective _ pathTyEq,
+              intervalIH rhoInjective _ intervalEq,
+              sourceIH rhoInjective _ sourceEq]
+      | _ =>
+          simp only [RawTerm.rename] at renameEq
+          exact RawTerm.noConfusion rfl (heq_of_eq renameEq)
   | hcomp sidesA capA sidesIH capIH =>
       intro _ _ rhoInjective termB renameEq
       cases termB with

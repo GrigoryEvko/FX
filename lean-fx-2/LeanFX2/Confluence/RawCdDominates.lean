@@ -289,6 +289,11 @@ theorem RawStep.par.cd_dominates :
            rw [cdPathEqn] at pathParStep
            exact RawStep.par.transpComposeDeep pathParStep sourceParStep)
         | exact RawStep.par.transpCong pathParStep sourceParStep
+  | _, .transpFill pathTerm intervalTerm sourceTerm =>
+      RawStep.par.transpFillCong
+        (RawStep.par.cd_dominates pathTerm)
+        (RawStep.par.cd_dominates intervalTerm)
+        (RawStep.par.cd_dominates sourceTerm)
   | _, .hcomp sidesTerm capTerm => by
       -- D2.5.2: dispatch on cd-developed sides via cdHcompCase.  When
       -- the developed sides is `pathLam X.weaken`, fire `hcompBetaDeep`
@@ -469,7 +474,8 @@ theorem RawStep.par.cd_dominates :
           | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
           | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
           | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
-          | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqJ _ _ | .oeqFunext _
+          | .glueElim _ | .transp _ _ | .transpFill _ _ _
+          | .hcomp _ _ | .oeqJ _ _ | .oeqFunext _
           | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
           | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
           | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _
@@ -490,7 +496,8 @@ theorem RawStep.par.cd_dominates :
       | .idJ _ _ | .modIntro _ | .modElim _ | .subsume _
       | .interval0 | .interval1 | .intervalOpp _ | .intervalMeet _ _
       | .intervalJoin _ _ | .pathLam _ | .pathApp _ _ | .glueIntro _ _
-      | .glueElim _ | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _
+      | .glueElim _ | .transp _ _ | .transpFill _ _ _
+      | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _
       | .oeqFunext _ | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _
       | .equivApp _ _ | .refineIntro _ _ | .refineElim _ | .recordIntro _
       | .recordProj _ | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _
@@ -542,7 +549,8 @@ theorem RawStep.par.cd_dominates :
       | .modIntro _ | .modElim _ | .subsume _ | .interval0 | .interval1
       | .intervalOpp _ | .intervalMeet _ _ | .intervalJoin _ _
       | .pathLam _ | .pathApp _ _ | .glueIntro _ _ | .glueElim _
-      | .transp _ _ | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _ | .oeqFunext _
+      | .transp _ _ | .transpFill _ _ _
+      | .hcomp _ _ | .oeqRefl _ | .oeqJ _ _ | .oeqFunext _
       | .idStrictRefl _ | .idStrictRec _ _ | .equivIntro _ _ | .equivApp _ _
       | .refineIntro _ _ | .refineElim _ | .recordIntro _ | .recordProj _
       | .codataUnfold _ _ | .codataDest _ | .sessionSend _ _ | .sessionRecv _

@@ -620,6 +620,14 @@ theorem RawTerm.cd_rename {sourceScope : Nat} (term : RawTerm sourceScope) :
       simp only [RawTerm.cd]
       rw [RawTerm.cdTranspCase_rename rho (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm),
           pathIH rho, sourceIH rho]
+  | transpFill pathTerm intervalTerm sourceTerm pathIH intervalIH sourceIH =>
+      intro _ rho
+      show (RawTerm.transpFill (RawTerm.cd pathTerm) (RawTerm.cd intervalTerm)
+              (RawTerm.cd sourceTerm)).rename rho =
+           RawTerm.cd (RawTerm.transpFill (pathTerm.rename rho)
+              (intervalTerm.rename rho) (sourceTerm.rename rho))
+      simp only [RawTerm.rename, RawTerm.cd]
+      rw [pathIH rho, intervalIH rho, sourceIH rho]
   | hcomp sides cap sidesIH capIH =>
       intro _ rho
       show (RawTerm.cdHcompCase (RawTerm.cd sides) (RawTerm.cd cap)).rename rho =

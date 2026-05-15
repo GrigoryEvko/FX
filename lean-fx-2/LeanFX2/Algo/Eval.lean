@@ -368,6 +368,7 @@ def Term.headStep? : ∀ {scope : Nat} {context : Ctx mode level scope}
       | .glueIntro _ _
       | .glueElim _
       | .transp _ _
+      | .transpFill _ _ _
       | .hcomp _ _
       | .oeqRefl _
       | .oeqJ _ _

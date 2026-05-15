@@ -206,6 +206,8 @@ theorem RawTerm.subst_identity {scope : Nat} (term : RawTerm scope) :
       simp only [RawTerm.subst]; rw [firstIH, secondIH]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.subst]; rw [firstIH, secondIH]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.subst]; rw [pathIH, intervalIH, sourceIH]
 
 /-- Pre-composing weaken with a singleton (on RawTermSubst) gives the
 identity substitution pointwise. -/

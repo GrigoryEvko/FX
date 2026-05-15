@@ -100,6 +100,13 @@ def RawTerm.cd : ∀ {scope : Nat}, RawTerm scope → RawTerm scope
       -- cd_lemma's transpReflBeta arm via the developed path's body
       -- being preserved as a weakened term under par.
       RawTerm.cdTranspCase (RawTerm.cd pathTerm) (RawTerm.cd sourceTerm)
+  | _, .transpFill pathTerm intervalTerm sourceTerm =>
+      -- D2.5.6 Blocker-A: transpFill is a kernel ctor with three
+      -- subterms (pathTy, currentInterval, source).  cd is plain
+      -- cong on its three subterms; no β recognizer yet (β rules
+      -- ship in a later phase along with Step.transpFillBeta).
+      RawTerm.transpFill (RawTerm.cd pathTerm)
+        (RawTerm.cd intervalTerm) (RawTerm.cd sourceTerm)
   | _, .hcomp sidesTerm capTerm =>
       -- D2.5.2: cdHcompCase fires β when developed sides is
       -- `pathLam X.weaken` (constant sides-path, body in image of weaken),

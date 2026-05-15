@@ -70,6 +70,7 @@ theorem RawTerm.eq_lam_of_lamBody?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.lamBody?] at witness; nomatch witness
@@ -156,6 +157,7 @@ theorem RawTerm.eq_pair_of_pairComponents?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.pairComponents?] at witness; nomatch witness
@@ -239,6 +241,7 @@ theorem RawTerm.eq_natSucc_of_natSuccPred?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.natSuccPred?] at witness; nomatch witness

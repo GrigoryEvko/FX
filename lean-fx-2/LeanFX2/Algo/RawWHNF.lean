@@ -69,7 +69,7 @@ inductive RawTerm.HeadCtor : Type
   | modIntro | modElim | subsume
   -- D1.6 cubical / HOTT / refine / record / codata / session / effect / strict
   | interval0 | interval1 | intervalOpp | intervalMeet | intervalJoin
-  | pathLam | pathApp | glueIntro | glueElim | transp | hcomp
+  | pathLam | pathApp | glueIntro | glueElim | transp | hcomp | transpFill
   | oeqRefl | oeqJ | oeqFunext | idStrictRefl | idStrictRec
   | equivIntro | equivApp | refineIntro | refineElim
   | recordIntro | recordProj | codataUnfold | codataDest
@@ -121,6 +121,7 @@ def RawTerm.headCtor {scope : Nat} (term : RawTerm scope) : RawTerm.HeadCtor :=
   | .pathLam _ => .pathLam | .pathApp _ _ => .pathApp
   | .glueIntro _ _ => .glueIntro | .glueElim _ => .glueElim
   | .transp _ _ => .transp | .hcomp _ _ => .hcomp
+  | .transpFill _ _ _ => .transpFill
   | .oeqRefl _ => .oeqRefl | .oeqJ _ _ => .oeqJ
   | .oeqFunext _ => .oeqFunext
   | .idStrictRefl _ => .idStrictRefl | .idStrictRec _ _ => .idStrictRec
@@ -199,6 +200,7 @@ def RawTerm.lamBody? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Project the components of a `pair` term. -/
 def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
@@ -236,6 +238,7 @@ def RawTerm.pairComponents? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Project the predecessor from a `natSucc` term. -/
 def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
@@ -273,6 +276,7 @@ def RawTerm.natSuccPred? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Project head/tail from a `listCons`. -/
 def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
@@ -310,6 +314,7 @@ def RawTerm.listConsParts? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Project the value from `optionSome`. -/
 def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
@@ -347,6 +352,7 @@ def RawTerm.optionSomeValue? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Project the value from `eitherInl`. -/
 def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
@@ -384,6 +390,7 @@ def RawTerm.eitherInlValue? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Project the value from `eitherInr`. -/
 def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
@@ -421,6 +428,7 @@ def RawTerm.eitherInrValue? {scope : Nat} (term : RawTerm scope) :
   | .cumulUpMarker _ => none | .uaToEquiv _ => none | .equivApply _ _ => none
   | .pathCompose _ _ => none | .idToEquiv _ => none
   | .oeqTrans _ _ => none | .equivCompose _ _ => none
+  | .transpFill _ _ _ => none
 
 /-- Test whether a term is a `refl` (independent of the witness). -/
 def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
@@ -457,6 +465,7 @@ def RawTerm.isRefl {scope : Nat} (term : RawTerm scope) : Bool :=
   | .cumulUpMarker _ => false | .uaToEquiv _ => false | .equivApply _ _ => false
   | .pathCompose _ _ => false | .idToEquiv _ => false
   | .oeqTrans _ _ => false | .equivCompose _ _ => false
+  | .transpFill _ _ _ => false
 
 /-! ## Eq-witness recovery for the projection helpers
 
@@ -628,7 +637,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherInl | .eitherInr | .eitherMatch
         | .refl | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -660,7 +669,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherInl | .eitherInr | .eitherMatch
         | .refl | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -692,7 +701,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherInl | .eitherInr | .eitherMatch
         | .refl | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -724,7 +733,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherInl | .eitherInr | .eitherMatch
         | .refl | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -756,7 +765,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherInl | .eitherInr | .eitherMatch
         | .refl | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -792,7 +801,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherMatch
         | .refl | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -817,7 +826,7 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
         | .eitherInl | .eitherInr | .eitherMatch
         | .idJ | .modIntro | .modElim | .subsume
         | .interval0 | .interval1 | .intervalOpp | .intervalMeet | .intervalJoin
-        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .hcomp
+        | .pathLam | .pathApp | .glueIntro | .glueElim | .transp | .transpFill | .hcomp
         | .oeqRefl | .oeqJ | .oeqFunext | .idStrictRefl | .idStrictRec
         | .equivIntro | .equivApp | .refineIntro | .refineElim
         | .recordIntro | .recordProj | .codataUnfold | .codataDest
@@ -845,6 +854,8 @@ def RawTerm.whnf (fuel : Nat) {scope : Nat} (term : RawTerm scope) :
     | .glueIntro baseValue partialValue => .glueIntro baseValue partialValue
     | .glueElim gluedValue => .glueElim gluedValue
     | .transp pathTerm sourceTerm => .transp pathTerm sourceTerm
+    | .transpFill pathTy currentInterval sourceTerm =>
+        .transpFill pathTy currentInterval sourceTerm
     | .hcomp sidesTerm capTerm => .hcomp sidesTerm capTerm
     | .oeqRefl witnessTerm => .oeqRefl witnessTerm
     | .oeqJ baseCase witness => .oeqJ baseCase witness

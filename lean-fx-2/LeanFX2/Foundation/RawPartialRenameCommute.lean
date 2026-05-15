@@ -287,6 +287,15 @@ theorem RawTerm.partialRename?_rename_compat :
         sourceIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? pathTerm partialA <;>
         cases RawTerm.partialRename? sourceTerm partialA <;> rfl
+  | transpFill pathTerm intervalTerm sourceTerm pathIH intervalIH sourceIH =>
+      intro rhoVar rhoTerm partialA partialB compat
+      simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapThree]
+      rw [pathIH rhoVar rhoTerm partialA partialB compat,
+        intervalIH rhoVar rhoTerm partialA partialB compat,
+        sourceIH rhoVar rhoTerm partialA partialB compat]
+      cases RawTerm.partialRename? pathTerm partialA <;>
+        cases RawTerm.partialRename? intervalTerm partialA <;>
+        cases RawTerm.partialRename? sourceTerm partialA <;> rfl
   | hcomp sidesTerm capTerm sidesIH capIH =>
       intro rhoVar rhoTerm partialA partialB compat
       simp only [RawTerm.rename, RawTerm.partialRename?, Option.mapTwo]

@@ -191,6 +191,9 @@ theorem RawTerm.subst_pointwise {sourceScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.subst]; rw [firstIH substEq, secondIH substEq]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.subst]
+      rw [pathIH substEq, intervalIH substEq, sourceIH substEq]
 
 /-! ### Cross-direction: rename-after-subst and subst-after-rename. -/
 
@@ -404,6 +407,9 @@ theorem RawTerm.rename_subst_commute {sourceScope middleScope targetScope : Nat}
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.rename, RawTerm.subst]
       rw [firstIH rho sigma, secondIH rho sigma]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.rename, RawTerm.subst]
+      rw [pathIH rho sigma, intervalIH rho sigma, sourceIH rho sigma]
 
 /-- Lifted-then-renamed substitution agrees pointwise with renamed-then-lifted. -/
 theorem RawTermSubst.lift_then_rename_lift {sourceScope middleScope targetScope : Nat}
@@ -623,6 +629,9 @@ theorem RawTerm.subst_rename_commute {sourceScope middleScope targetScope : Nat}
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.subst, RawTerm.rename]
       rw [firstIH sigma rho, secondIH sigma rho]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.subst, RawTerm.rename]
+      rw [pathIH sigma rho, intervalIH sigma rho, sourceIH sigma rho]
 
 /-! ### subst-subst composition. -/
 
@@ -834,5 +843,8 @@ theorem RawTerm.subst_compose {sourceScope middleScope targetScope : Nat}
       simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
   | equivCompose firstEquiv secondEquiv firstIH secondIH =>
       simp only [RawTerm.subst]; rw [firstIH sigma1 sigma2, secondIH sigma1 sigma2]
+  | transpFill pathTy currentInterval source pathIH intervalIH sourceIH =>
+      simp only [RawTerm.subst]
+      rw [pathIH sigma1 sigma2, intervalIH sigma1 sigma2, sourceIH sigma1 sigma2]
 
 end LeanFX2

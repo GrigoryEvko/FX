@@ -152,6 +152,8 @@ equalities through call sites in `PolyTerm` constructor types. -/
   | _, .glueElim gluedValue => .glueElim gluedValue.toRawTerm
   | _, .transp path source =>
       .transp path.toRawTerm source.toRawTerm
+  | _, .transpFill pathTy currentInterval source =>
+      .transpFill pathTy.toRawTerm currentInterval.toRawTerm source.toRawTerm
   | _, .hcomp sides cap => .hcomp sides.toRawTerm cap.toRawTerm
   | _, .oeqRefl witness => .oeqRefl witness.toRawTerm
   | _, .oeqJ baseCase witness =>
@@ -289,6 +291,8 @@ definitional equalities through call sites in `Term.toPoly`
   | _, .glueElim gluedValue => .glueElim gluedValue.toRawPoly
   | _, .transp path source =>
       .transp path.toRawPoly source.toRawPoly
+  | _, .transpFill pathTy currentInterval source =>
+      .transpFill pathTy.toRawPoly currentInterval.toRawPoly source.toRawPoly
   | _, .hcomp sides cap => .hcomp sides.toRawPoly cap.toRawPoly
   | _, .oeqRefl witness => .oeqRefl witness.toRawPoly
   | _, .oeqJ baseCase witness =>

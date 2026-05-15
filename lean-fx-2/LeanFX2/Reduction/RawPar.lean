@@ -644,6 +644,23 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par sourceRawSource sourceRawTarget →
       RawStep.par (RawTerm.transp pathRawSource sourceRawSource)
                   (RawTerm.transp pathRawTarget sourceRawTarget)
+  /-- Cong: transpFill reduces in path, interval, and source.
+
+  `Term.transpFill` (D2.5.6 Blocker-A kernel ctor) is the
+  CCHM cubical fill operation `transpFill pathTy currentInterval
+  source` with three subterms.  Parallel reduction develops each
+  subterm independently.  Pure cong rule — no β yet (β rules ship
+  in a later phase along with `Step.par.transpFillBeta`). -/
+  | transpFillCong {scope : Nat}
+      {pathRawSource pathRawTarget
+       intervalRawSource intervalRawTarget
+       sourceRawSource sourceRawTarget : RawTerm scope} :
+      RawStep.par pathRawSource pathRawTarget →
+      RawStep.par intervalRawSource intervalRawTarget →
+      RawStep.par sourceRawSource sourceRawTarget →
+      RawStep.par
+        (RawTerm.transpFill pathRawSource intervalRawSource sourceRawSource)
+        (RawTerm.transpFill pathRawTarget intervalRawTarget sourceRawTarget)
   /-- Cubical transport β at a syntactically constant type path:
   `transp (pathLam typeRaw.weaken) value ⟶ value`.
 
@@ -1403,5 +1420,4 @@ inductive RawStep.par : ∀ {scope : Nat}, RawTerm scope → RawTerm scope → P
       RawStep.par applyARawSource applyARawTarget →
       RawStep.par (RawTerm.lam (RawTerm.refl applyARawSource))
                   (RawTerm.lam (RawTerm.refl applyARawTarget))
-
 end LeanFX2

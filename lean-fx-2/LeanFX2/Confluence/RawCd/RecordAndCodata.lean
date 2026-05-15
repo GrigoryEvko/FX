@@ -61,6 +61,7 @@ def RawTerm.cdRecordProjCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.recordProj developedRecord
   | RawTerm.glueElim _ => RawTerm.recordProj developedRecord
   | RawTerm.transp _ _ => RawTerm.recordProj developedRecord
+  | RawTerm.transpFill _ _ _ => RawTerm.recordProj developedRecord
   | RawTerm.hcomp _ _ => RawTerm.recordProj developedRecord
   | RawTerm.oeqRefl _ => RawTerm.recordProj developedRecord
   | RawTerm.oeqJ _ _ => RawTerm.recordProj developedRecord
@@ -142,6 +143,7 @@ def RawTerm.cdCodataDestCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.codataDest developedCodata
   | RawTerm.glueElim _ => RawTerm.codataDest developedCodata
   | RawTerm.transp _ _ => RawTerm.codataDest developedCodata
+  | RawTerm.transpFill _ _ _ => RawTerm.codataDest developedCodata
   | RawTerm.hcomp _ _ => RawTerm.codataDest developedCodata
   | RawTerm.oeqRefl _ => RawTerm.codataDest developedCodata
   | RawTerm.oeqJ _ _ => RawTerm.codataDest developedCodata

@@ -112,6 +112,10 @@ def RawPolyTerm.rename : ∀ {sourceScope targetScope : Nat},
       .glueElim (gluedValue.rename rawRenaming)
   | _, _, .transp path source, rawRenaming =>
       .transp (path.rename rawRenaming) (source.rename rawRenaming)
+  | _, _, .transpFill path interval source, rawRenaming =>
+      .transpFill (path.rename rawRenaming)
+                  (interval.rename rawRenaming)
+                  (source.rename rawRenaming)
   | _, _, .hcomp sides cap, rawRenaming =>
       .hcomp (sides.rename rawRenaming) (cap.rename rawRenaming)
   | _, _, .oeqRefl witness, rawRenaming =>
@@ -426,6 +430,11 @@ theorem RawTerm.rename_toRawPoly_commute :
       simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
       exact congrArg2 RawPolyTerm.transp
         (pathIH rawRenaming) (sourceIH rawRenaming)
+  | transpFill path interval source pathIH intervalIH sourceIH =>
+      intro rawRenaming
+      simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]
+      exact congrArg3 RawPolyTerm.transpFill
+        (pathIH rawRenaming) (intervalIH rawRenaming) (sourceIH rawRenaming)
   | hcomp sides cap sidesIH capIH =>
       intro rawRenaming
       simp only [RawTerm.rename, RawTerm.toRawPoly, RawPolyTerm.rename]

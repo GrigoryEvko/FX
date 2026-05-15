@@ -1872,7 +1872,19 @@ def isDocumentedRawOnlyParity (rawCtorName : Name) : Bool :=
   -- `transpReflBetaDeep`).  Activated through `cdHcompCase`'s
   -- `pathLam` arm in `Confluence/RawCd.lean` and discharged in
   -- cd_lemma / cd_dominates via `RawStep.par.weaken_inv`.
-  suffix == "hcompBetaDeep"
+  suffix == "hcompBetaDeep" ||
+  -- Section J: D2.5.6-Blocker-A `transpFillCong` raw-only cong rule.
+  -- `RawTerm.transpFill pathTy currentInterval source` is the CCHM
+  -- cubical fill ctor — a raw-only vocabulary that exists to give
+  -- the transpPi β rule's contractum a stable boundary substituent
+  -- without needing typed `Term.transpFill` (whose typing rule is
+  -- the D2.5.6-Blocker-B redesign track #1949).  The structural
+  -- cong `transpFillCong` discharges 3-argument pointwise reduction
+  -- through `Step.par.transp_inv` and the rename/subst compat
+  -- cascade.  Typed mirror is the D2.5.6 follow-up; the raw cong is
+  -- enough to land the kernel ctor + cascade while the typing rule
+  -- design is settled separately.
+  suffix == "transpFillCong"
 
 /-- Build-failing parity gate.  For every constructor of
 `LeanFX2.RawStep.par` whose suffix is not in the documented raw-only

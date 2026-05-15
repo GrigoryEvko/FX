@@ -312,6 +312,12 @@ theorem RawTerm.rename_identity {scope : Nat} :
       show (firstEquiv.rename _).equivCompose (secondEquiv.rename _) =
            firstEquiv.equivCompose secondEquiv
       rw [RawTerm.rename_identity firstEquiv, RawTerm.rename_identity secondEquiv]
+  -- D2.5.6-Blocker-A: transpFill — recurse on path, interval, source.
+  | .transpFill pathTy currentInterval source => by
+      show (pathTy.rename _).transpFill (currentInterval.rename _) (source.rename _) =
+           pathTy.transpFill currentInterval source
+      rw [RawTerm.rename_identity pathTy, RawTerm.rename_identity currentInterval,
+          RawTerm.rename_identity source]
 
 /-! ## Ty.rename_identity
 

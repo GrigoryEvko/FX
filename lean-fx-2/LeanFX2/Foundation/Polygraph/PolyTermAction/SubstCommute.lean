@@ -118,6 +118,9 @@ theorem RawPolyTerm.subst_pointwise {sourceScope targetScope : Nat}
   | transp path source pathIH sourceIH =>
       simp only [RawPolyTerm.subst]
       rw [pathIH substEq, sourceIH substEq]
+  | transpFill path interval source pathIH intervalIH sourceIH =>
+      simp only [RawPolyTerm.subst]
+      rw [pathIH substEq, intervalIH substEq, sourceIH substEq]
   | hcomp sides cap sidesIH capIH =>
       simp only [RawPolyTerm.subst]; rw [sidesIH substEq, capIH substEq]
   | oeqRefl witness witnessIH =>
@@ -415,6 +418,11 @@ theorem RawTerm.subst_toRawPoly_commute :
       simp only [RawTerm.subst, RawTerm.toRawPoly, RawPolyTerm.subst]
       exact congrArg2 RawPolyTerm.transp
         (pathIH substitution) (sourceIH substitution)
+  | transpFill path interval source pathIH intervalIH sourceIH =>
+      intro substitution
+      simp only [RawTerm.subst, RawTerm.toRawPoly, RawPolyTerm.subst]
+      exact congrArg3 RawPolyTerm.transpFill
+        (pathIH substitution) (intervalIH substitution) (sourceIH substitution)
   | hcomp sides cap sidesIH capIH =>
       intro substitution
       simp only [RawTerm.subst, RawTerm.toRawPoly, RawPolyTerm.subst]

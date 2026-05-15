@@ -61,6 +61,7 @@ def RawTerm.cdGlueElimCase {scope : Nat}
   | RawTerm.pathApp _ _ => RawTerm.glueElim developedGlued
   | RawTerm.glueElim _ => RawTerm.glueElim developedGlued
   | RawTerm.transp _ _ => RawTerm.glueElim developedGlued
+  | RawTerm.transpFill _ _ _ => RawTerm.glueElim developedGlued
   | RawTerm.hcomp _ _ => RawTerm.glueElim developedGlued
   | RawTerm.oeqRefl _ => RawTerm.glueElim developedGlued
   | RawTerm.oeqJ _ _ => RawTerm.glueElim developedGlued
@@ -140,6 +141,7 @@ def RawTerm.cdModElimCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.modElim developedInner
   | RawTerm.glueElim _ => RawTerm.modElim developedInner
   | RawTerm.transp _ _ => RawTerm.modElim developedInner
+  | RawTerm.transpFill _ _ _ => RawTerm.modElim developedInner
   | RawTerm.hcomp _ _ => RawTerm.modElim developedInner
   | RawTerm.oeqRefl _ => RawTerm.modElim developedInner
   | RawTerm.oeqJ _ _ => RawTerm.modElim developedInner
@@ -220,6 +222,7 @@ def RawTerm.cdRefineElimCase {scope : Nat}
   | RawTerm.glueIntro _ _ => RawTerm.refineElim developedRefined
   | RawTerm.glueElim _ => RawTerm.refineElim developedRefined
   | RawTerm.transp _ _ => RawTerm.refineElim developedRefined
+  | RawTerm.transpFill _ _ _ => RawTerm.refineElim developedRefined
   | RawTerm.hcomp _ _ => RawTerm.refineElim developedRefined
   | RawTerm.oeqRefl _ => RawTerm.refineElim developedRefined
   | RawTerm.oeqJ _ _ => RawTerm.refineElim developedRefined

@@ -190,6 +190,11 @@ def RawTerm.subst : ∀ {source target : Nat},
   -- D3.6-S5 equivCompose arm.
   | _, _, .equivCompose firstEquiv secondEquiv, sigma =>
       .equivCompose (firstEquiv.subst sigma) (secondEquiv.subst sigma)
+  -- D2.5.6-Blocker-A transpFill arm.  Ternary atom-shape (no binder).
+  | _, _, .transpFill pathTy currentInterval source, sigma =>
+      .transpFill (pathTy.subst sigma)
+                  (currentInterval.subst sigma)
+                  (source.subst sigma)
 
 /-- Single-variable substitution: substitute `rawArg` for var 0. -/
 @[reducible] def RawTerm.subst0 {scope : Nat} (body : RawTerm (scope + 1))

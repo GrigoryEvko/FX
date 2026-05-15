@@ -838,6 +838,21 @@ theorem RawTerm.partialRename?_imp_rename :
       show RawTerm.transp path source =
         RawTerm.transp (rp.rename forwardRenaming) (rs.rename forwardRenaming)
       rw [eqp, eqs]
+  | transpFill pathTy currentInterval source pathTyIH intervalIH sourceIH =>
+      intro forwardRenaming partialRenaming renamingInjectsBack extracted success
+      obtain ⟨rpTy, rint, rs, hpTy, hint, hs, eqResult⟩ :=
+        Option.mapThree_eq_some success
+      have eqpTy := pathTyIH forwardRenaming partialRenaming
+        renamingInjectsBack rpTy hpTy
+      have eqint := intervalIH forwardRenaming partialRenaming
+        renamingInjectsBack rint hint
+      have eqs := sourceIH forwardRenaming partialRenaming
+        renamingInjectsBack rs hs
+      rw [eqResult]
+      show RawTerm.transpFill pathTy currentInterval source =
+        RawTerm.transpFill (rpTy.rename forwardRenaming)
+          (rint.rename forwardRenaming) (rs.rename forwardRenaming)
+      rw [eqpTy, eqint, eqs]
   | hcomp sides cap sidesIH capIH =>
       intro forwardRenaming partialRenaming renamingInjectsBack extracted success
       obtain ⟨rsides, rcap, hsides, hcap, eqResult⟩ := Option.mapTwo_eq_some success

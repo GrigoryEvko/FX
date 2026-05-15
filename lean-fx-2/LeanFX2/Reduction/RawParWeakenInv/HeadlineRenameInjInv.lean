@@ -610,6 +610,18 @@ theorem RawStep.par.rename_inj_inv :
       rw [hTarget]
       simp only [RawTerm.rename]
       rw [← hLeftFinalRename, ← hRightFinalRename, hSourceInner]
+  | transpFill path interval source pathIH intervalIH sourceIH =>
+    intro _ rho rhoInj _ parStep
+    change RawStep.par (RawTerm.transpFill (path.rename rho)
+      (interval.rename rho) (source.rename rho)) _ at parStep
+    obtain ⟨pathTarget, intervalTarget, sourceTarget,
+            hTarget, pathStep, intervalStep, sourceStep⟩ :=
+      RawStep.par.transpFill_inv parStep
+    obtain ⟨pathInner, hPathInner⟩ := pathIH rho rhoInj pathStep
+    obtain ⟨intervalInner, hIntervalInner⟩ := intervalIH rho rhoInj intervalStep
+    obtain ⟨sourceInner, hSourceInner⟩ := sourceIH rho rhoInj sourceStep
+    refine ⟨RawTerm.transpFill pathInner intervalInner sourceInner, ?_⟩
+    rw [hTarget, hPathInner, hIntervalInner, hSourceInner]; rfl
   | hcomp sides cap sidesIH capIH =>
     intro _ rho rhoInj _ parStep
     change RawStep.par (RawTerm.hcomp (sides.rename rho)

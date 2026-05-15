@@ -129,6 +129,8 @@ theorem RawTerm.toRawPoly_toRawTerm {scope : Nat} (rawTerm : RawTerm scope) :
   | glueElim _ ihGlued => exact congrArg RawTerm.glueElim ihGlued
   | transp _ _ ihPath ihSource =>
       exact congrArg2 RawTerm.transp ihPath ihSource
+  | transpFill _ _ _ ihPath ihInterval ihSource =>
+      exact congrArg3 RawTerm.transpFill ihPath ihInterval ihSource
   | hcomp _ _ ihSides ihCap =>
       exact congrArg2 RawTerm.hcomp ihSides ihCap
   | oeqRefl _ ihWitness => exact congrArg RawTerm.oeqRefl ihWitness
@@ -272,6 +274,8 @@ theorem RawPolyTerm.toRawTerm_toRawPoly {scope : Nat}
   | glueElim _ ihGlued => exact congrArg RawPolyTerm.glueElim ihGlued
   | transp _ _ ihPath ihSource =>
       exact congrArg2 RawPolyTerm.transp ihPath ihSource
+  | transpFill _ _ _ ihPath ihInterval ihSource =>
+      exact congrArg3 RawPolyTerm.transpFill ihPath ihInterval ihSource
   | hcomp _ _ ihSides ihCap =>
       exact congrArg2 RawPolyTerm.hcomp ihSides ihCap
   | oeqRefl _ ihWitness => exact congrArg RawPolyTerm.oeqRefl ihWitness

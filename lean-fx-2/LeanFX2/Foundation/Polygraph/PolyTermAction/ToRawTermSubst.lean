@@ -225,6 +225,11 @@ theorem RawPolyTerm.toRawTerm_subst_commute :
       simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
       exact LeanFX2.congrArg2 RawTerm.transp
         (pathIH substitution) (sourceIH substitution)
+  | transpFill path interval source pathIH intervalIH sourceIH =>
+      intro substitution
+      simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]
+      exact LeanFX2.congrArg3 RawTerm.transpFill
+        (pathIH substitution) (intervalIH substitution) (sourceIH substitution)
   | hcomp sides cap sidesIH capIH =>
       intro substitution
       simp only [RawPolyTerm.subst, RawPolyTerm.toRawTerm, RawTerm.subst]

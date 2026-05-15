@@ -196,6 +196,11 @@ theorem RawTerm.subst_par_pointwise {sourceScope targetScope : Nat} :
       RawStep.par.transpCong
         (RawTerm.subst_par_pointwise pathTerm substsRelated)
         (RawTerm.subst_par_pointwise sourceTerm substsRelated)
+  | .transpFill pathTerm intervalTerm sourceTerm, _, _, substsRelated =>
+      RawStep.par.transpFillCong
+        (RawTerm.subst_par_pointwise pathTerm substsRelated)
+        (RawTerm.subst_par_pointwise intervalTerm substsRelated)
+        (RawTerm.subst_par_pointwise sourceTerm substsRelated)
   | .hcomp sidesTerm capTerm, _, _, substsRelated =>
       RawStep.par.hcompCong
         (RawTerm.subst_par_pointwise sidesTerm substsRelated)
@@ -595,6 +600,9 @@ theorem RawStep.par.subst_par {sourceScope targetScope : Nat}
       exact RawStep.par.glueElimCong (gluedIH substsRelated)
   | transpCong _ _ pathIH sourceIH =>
       exact RawStep.par.transpCong (pathIH substsRelated) (sourceIH substsRelated)
+  | transpFillCong _ _ _ pathIH intervalIH sourceIH =>
+      exact RawStep.par.transpFillCong
+        (pathIH substsRelated) (intervalIH substsRelated) (sourceIH substsRelated)
   | @transpReflBeta _ typeRawSource _ _ _ _ _ typeIH sourceIH =>
       simp only [RawTerm.subst]
       rw [RawTerm.weaken_subst_commute firstSubst typeRawSource]

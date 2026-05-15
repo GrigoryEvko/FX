@@ -67,6 +67,7 @@ theorem RawTerm.eq_listCons_of_listConsParts?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.listConsParts?] at witness; nomatch witness
@@ -150,6 +151,7 @@ theorem RawTerm.eq_optionSome_of_optionSomeValue?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.optionSomeValue?] at witness; nomatch witness
@@ -233,6 +235,7 @@ theorem RawTerm.eq_eitherInl_of_eitherInlValue?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.eitherInlValue?] at witness; nomatch witness
@@ -316,6 +319,7 @@ theorem RawTerm.eq_eitherInr_of_eitherInrValue?_eq_some
   | glueIntro _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | glueElim _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | transp _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
+  | transpFill _ _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | hcomp _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | oeqRefl _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
   | oeqJ _ _ => dsimp only [RawTerm.eitherInrValue?] at witness; nomatch witness
