@@ -222,3 +222,10 @@ import LeanFX2.Reducibility.Kripke.Arrow
 #print axioms LeanFX2.Term.appPi_isStronglyNormalizing
 #print axioms LeanFX2.Term.appPi_strong_normalization_via_kripke
 #print axioms LeanFX2.ReducibleK.fundamental_appPi_sn
+
+-- K12.24 pathApp (cubical-mode path application β-redex)
+#print axioms LeanFX2.RawTerm.pathLam_body_isStronglyNormalizing
+#print axioms LeanFX2.RawTerm.pathApp_isStronglyNormalizing
+#print axioms LeanFX2.Term.pathApp_isStronglyNormalizing
+#print axioms LeanFX2.Term.pathApp_strong_normalization_via_kripke
+#print axioms LeanFX2.ReducibleK.fundamental_pathApp_sn

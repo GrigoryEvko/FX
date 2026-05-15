@@ -644,4 +644,36 @@ theorem RawTerm.lam_body_isStronglyNormalizing {scope : Nat}
     RawTerm.isStronglyNormalizing bodyRaw :=
   RawTerm.lam_body_isStronglyNormalizing_aux lamIsSN rfl
 
+/-- Shape-specialized inversion for pathLam body SN. -/
+theorem RawTerm.pathLam_body_isStronglyNormalizing_aux {scope : Nat}
+    {source : RawTerm scope}
+    (sourceIsSN : RawTerm.isStronglyNormalizing source) :
+    ∀ {bodyRaw : RawTerm (scope + 1)},
+      source = RawTerm.pathLam bodyRaw →
+      RawTerm.isStronglyNormalizing bodyRaw := by
+  induction sourceIsSN with
+  | intro currentSource _ inductiveHypothesis =>
+    intro bodyRaw sourceEq
+    cases sourceEq
+    refine RawTerm.isStronglyNormalizing.intro bodyRaw ?_
+    intro bodyTarget bodyProgress
+    have pathLamProgress :
+        RawStep.parProgress
+          (RawTerm.pathLam bodyRaw) (RawTerm.pathLam bodyTarget) := by
+      refine ⟨RawStep.par.pathLamCong bodyProgress.1, ?_⟩
+      intro pathLamEq
+      apply bodyProgress.2
+      injection pathLamEq
+    exact inductiveHypothesis
+      (RawTerm.pathLam bodyTarget) pathLamProgress rfl
+
+/-- If `pathLam body` is strongly normalizing, then `body` is strongly
+normalizing. -/
+theorem RawTerm.pathLam_body_isStronglyNormalizing {scope : Nat}
+    {bodyRaw : RawTerm (scope + 1)}
+    (pathLamIsSN :
+      RawTerm.isStronglyNormalizing (RawTerm.pathLam bodyRaw)) :
+    RawTerm.isStronglyNormalizing bodyRaw :=
+  RawTerm.pathLam_body_isStronglyNormalizing_aux pathLamIsSN rfl
+
 end LeanFX2

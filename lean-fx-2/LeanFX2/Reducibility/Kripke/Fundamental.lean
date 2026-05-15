@@ -1258,4 +1258,33 @@ theorem ReducibleK.fundamental_appPi_sn
   Term.appPi_isStronglyNormalizing
     functionIsSN argumentIsSN contractumIsSN
 
+/-- SN of pathApp via Kripke.  Cubical path application: the β rule
+fires when the path develops to a `pathLam` and the interval argument
+develops to any normal form, yielding `body.subst0 interval`.  Mirrors
+the `app` family modulo the cubical-mode parameter and the path-typed
+domain. -/
+theorem ReducibleK.fundamental_pathApp_sn
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term context Ty.interval intervalRaw}
+    (pathIsSN : Term.isStronglyNormalizing pathTerm)
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {intervalTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing intervalTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 intervalTargetRaw)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
+  Term.pathApp_isStronglyNormalizing modeIsUnivalent
+    pathIsSN intervalIsSN contractumIsSN
+
 end LeanFX2

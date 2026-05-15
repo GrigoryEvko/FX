@@ -1018,5 +1018,112 @@ theorem Term.appPi_isStronglyNormalizing
   RawTerm.app_isStronglyNormalizing
     functionIsSN argumentIsSN contractumIsSN
 
+/-- **pathApp generic-closure SN preservation**.  Cong arm steps both
+path term and interval argument; β arm fires when path develops to a
+`pathLam`: `pathApp (pathLam body) interval → body.subst0 interval`.
+Same closure shape as `app` modulo the constructor — uses
+`pathLam_body_isStronglyNormalizing` to extract body SN. -/
+theorem RawTerm.pathApp_isStronglyNormalizing {scope : Nat}
+    {pathTerm : RawTerm scope}
+    (pathIsSN : RawTerm.isStronglyNormalizing pathTerm) :
+    ∀ {intervalTerm : RawTerm scope},
+      RawTerm.isStronglyNormalizing intervalTerm →
+      (∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {intervalTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing intervalTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 intervalTargetRaw)) →
+      RawTerm.isStronglyNormalizing
+        (RawTerm.pathApp pathTerm intervalTerm) := by
+  induction pathIsSN with
+  | intro currentPath pathClosure pathIH =>
+    intro intervalTerm intervalIsSN
+    induction intervalIsSN with
+    | intro currentInterval intervalClosure intervalIH =>
+      intro contractumClosure
+      refine RawTerm.isStronglyNormalizing.intro
+        (RawTerm.pathApp currentPath currentInterval) ?_
+      intro target progressStep
+      rcases RawStep.par.pathApp_inv progressStep.1 with
+        ⟨pathTarget, intervalTarget, targetEq,
+          pathStep, intervalStep⟩
+        | ⟨bodyTarget, intervalTarget, targetEq,
+            pathStep, intervalStep⟩
+      · subst targetEq
+        have pathTargetIsSN :
+            RawTerm.isStronglyNormalizing pathTarget := by
+          by_cases pathEq : currentPath = pathTarget
+          · subst pathEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentPath pathClosure
+          · exact pathClosure pathTarget ⟨pathStep, pathEq⟩
+        have intervalTargetIsSN :
+            RawTerm.isStronglyNormalizing intervalTarget := by
+          by_cases intervalEq : currentInterval = intervalTarget
+          · subst intervalEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentInterval intervalClosure
+          · exact intervalClosure intervalTarget
+              ⟨intervalStep, intervalEq⟩
+        by_cases pathEq : currentPath = pathTarget
+        · subst pathEq
+          by_cases intervalEq : currentInterval = intervalTarget
+          · subst intervalEq
+            exact (progressStep.2 rfl).elim
+          · exact intervalIH intervalTarget
+              ⟨intervalStep, intervalEq⟩ contractumClosure
+        · exact pathIH pathTarget
+            ⟨pathStep, pathEq⟩
+            intervalTargetIsSN contractumClosure
+      · subst targetEq
+        have pathLamPathIsSN :
+            RawTerm.isStronglyNormalizing
+              (RawTerm.pathLam bodyTarget) := by
+          by_cases pathEq :
+              currentPath = RawTerm.pathLam bodyTarget
+          · rw [← pathEq]
+            exact RawTerm.isStronglyNormalizing.intro
+              currentPath pathClosure
+          · exact pathClosure (RawTerm.pathLam bodyTarget)
+              ⟨pathStep, pathEq⟩
+        have bodyTargetIsSN :
+            RawTerm.isStronglyNormalizing bodyTarget :=
+          RawTerm.pathLam_body_isStronglyNormalizing pathLamPathIsSN
+        have intervalTargetIsSN :
+            RawTerm.isStronglyNormalizing intervalTarget := by
+          by_cases intervalEq : currentInterval = intervalTarget
+          · subst intervalEq
+            exact RawTerm.isStronglyNormalizing.intro
+              currentInterval intervalClosure
+          · exact intervalClosure intervalTarget
+              ⟨intervalStep, intervalEq⟩
+        exact contractumClosure bodyTargetIsSN intervalTargetIsSN
+
+/-- Typed wrapper for pathApp generic-closure SN preservation. -/
+theorem Term.pathApp_isStronglyNormalizing
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term context Ty.interval intervalRaw}
+    (pathIsSN : Term.isStronglyNormalizing pathTerm)
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {intervalTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing intervalTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 intervalTargetRaw)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
+  RawTerm.pathApp_isStronglyNormalizing
+    pathIsSN intervalIsSN contractumIsSN
+
 
 end LeanFX2

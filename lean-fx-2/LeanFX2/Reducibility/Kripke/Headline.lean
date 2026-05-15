@@ -1097,4 +1097,32 @@ theorem Term.appPi_strong_normalization_via_kripke
   ReducibleK.fundamental_appPi_sn
     functionIsSN argumentIsSN contractumIsSN
 
+/-- **K12.24 Kripke SN headline for pathApp** — cubical-mode path
+application via Kripke step-indexed reducibility.  Delegates to the
+fundamental theorem; the contractum closure handles the β arm
+`pathApp (pathLam body) interval ⇒ body.subst0 interval`. -/
+theorem Term.pathApp_strong_normalization_via_kripke
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level scope}
+    {leftEndpoint rightEndpoint : RawTerm scope}
+    {pathRaw intervalRaw : RawTerm scope}
+    {pathTerm :
+      Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term context Ty.interval intervalRaw}
+    (pathIsSN : Term.isStronglyNormalizing pathTerm)
+    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
+    (contractumIsSN :
+      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
+          {intervalTargetRaw : RawTerm scope},
+        RawTerm.isStronglyNormalizing bodyTargetRaw →
+        RawTerm.isStronglyNormalizing intervalTargetRaw →
+        RawTerm.isStronglyNormalizing
+          (bodyTargetRaw.subst0 intervalTargetRaw)) :
+    Term.isStronglyNormalizing
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
+  ReducibleK.fundamental_pathApp_sn modeIsUnivalent
+    pathIsSN intervalIsSN contractumIsSN
+
 end LeanFX2
