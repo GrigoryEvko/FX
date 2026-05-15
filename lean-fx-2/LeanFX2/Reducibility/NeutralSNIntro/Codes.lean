@@ -5,20 +5,24 @@ import LeanFX2.Reducibility.NeutralSNIntro.Lists
 `refl` / `oeqRefl` / `idStrictRefl` SN preservation +
 `interval0` / `interval1` niladics + the universe / arrow / piTy
 / sigmaTy / productCode / sumCode / eitherCode / equivCode /
-listCode / optionCode / idCode type-code SN witnesses
-(raw level only — Term wrappers in `NeutralSNClosure`).
+listCode / optionCode / idCode type-code SN witnesses.
 
 ## Root status
 
-Layer 3 metatheory leaf.  K12.20.C ctor introduction SN preservation
-for the HoTT reflexivity, interval niladics, and type-code families. -/
+Layer 3 metatheory leaf.  Feeds `LeanFX2/Term/SN/DirectCases.lean`
+(reflexivity + interval atoms) and
+`LeanFX2/Reducibility/NeutralSNClosure/TypeCodeSN.lean` (per-leaf
+typed type-code wrappers) after the Kripke pivot.  The Tait-era
+`RawTerm.IsStronglyNormalizingTypeCode` payload-frontier predicate
+was excised along with its sole consumer when the bypass-free
+Kripke refactor landed. -/
 
 namespace LeanFX2
 
 
-/-- **K12.20.AD.1 refl SN preservation** — HoTT identity-type
-introduction.  Unary cong over the path witness; refl_inv discharges
-each par step. -/
+/-- HoTT identity-type reflexivity introduction SN
+preservation.  Unary cong over the path witness;
+`RawStep.par.refl_inv` discharges each par step. -/
 theorem RawTerm.refl_isStronglyNormalizing {scope : Nat}
     {rawWitness : RawTerm scope}
     (witnessIsSN : RawTerm.isStronglyNormalizing rawWitness) :
@@ -37,8 +41,9 @@ theorem RawTerm.refl_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis witnessTarget
       ⟨witnessStep, witnessDistinct⟩
 
-/-- **K12.20.AD.2 oeqRefl SN preservation** — observational-equality
-reflexivity intro.  Sister to refl helper; oeqRefl_inv discharges. -/
+/-- Observational-equality reflexivity introduction SN
+preservation.  Sister to refl helper; `RawStep.par.oeqRefl_inv`
+discharges each par step. -/
 theorem RawTerm.oeqRefl_isStronglyNormalizing {scope : Nat}
     {witness : RawTerm scope}
     (witnessIsSN : RawTerm.isStronglyNormalizing witness) :
@@ -57,8 +62,8 @@ theorem RawTerm.oeqRefl_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis witnessTarget
       ⟨witnessStep, witnessDistinct⟩
 
-/-- **K12.20.AD.3 idStrictRefl SN preservation** — strict-id
-reflexivity intro.  Same unary shape as refl / oeqRefl. -/
+/-- Strict-identity reflexivity introduction SN preservation.
+Same unary shape as refl / oeqRefl. -/
 theorem RawTerm.idStrictRefl_isStronglyNormalizing {scope : Nat}
     {witness : RawTerm scope}
     (witnessIsSN : RawTerm.isStronglyNormalizing witness) :
@@ -77,9 +82,9 @@ theorem RawTerm.idStrictRefl_isStronglyNormalizing {scope : Nat}
     exact inductiveHypothesis witnessTarget
       ⟨witnessStep, witnessDistinct⟩
 
-/-- **K12.20.AE.1 interval0 SN preservation** — cubical interval
-endpoint 0.  Atomic nullary, only-refl reduces, parProgress
-disequality contradicts the .symm of interval0_inv. -/
+/-- Cubical interval endpoint 0 SN preservation.  Atomic nullary,
+only refl reduces, parProgress disequality contradicts the
+.symm of `RawStep.par.interval0_inv`. -/
 theorem RawTerm.interval0_isStronglyNormalizing {scope : Nat} :
     RawTerm.isStronglyNormalizing (RawTerm.interval0 : RawTerm scope) :=
   RawTerm.isStronglyNormalizing.intro
@@ -87,8 +92,8 @@ theorem RawTerm.interval0_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.interval0_inv progressStep.1).symm).elim)
 
-/-- **K12.20.AE.2 interval1 SN preservation** — cubical interval
-endpoint 1.  Sister to interval0; same atomic nullary shape. -/
+/-- Cubical interval endpoint 1 SN preservation.  Sister to
+interval0; same atomic nullary shape. -/
 theorem RawTerm.interval1_isStronglyNormalizing {scope : Nat} :
     RawTerm.isStronglyNormalizing (RawTerm.interval1 : RawTerm scope) :=
   RawTerm.isStronglyNormalizing.intro
@@ -96,13 +101,10 @@ theorem RawTerm.interval1_isStronglyNormalizing {scope : Nat} :
     (fun _ progressStep =>
       (progressStep.2 (RawStep.par.interval1_inv progressStep.1).symm).elim)
 
-/-- **K12.20.AR.2 universeCode SN preservation** — universe code
-intro at outer level.  `RawTerm.universeCode innerLevel` has no
-β/ι rules; only `RawStep.par.refl` applies (per
-`RawStep.par.universeCode_inv` in
-`Reduction/RawParInversion.lean`), so `parProgress`'s
-source-≠-target requirement contradicts the inversion's
-.symm. -/
+/-- Universe code intro SN preservation.  `RawTerm.universeCode
+innerLevel` has no β/ι rules; only `RawStep.par.refl` applies, so
+`parProgress`'s source-≠-target requirement contradicts the
+`.symm` of `RawStep.par.universeCode_inv`. -/
 theorem RawTerm.universeCode_isStronglyNormalizing {scope : Nat}
     (innerLevel : Nat) :
     RawTerm.isStronglyNormalizing
@@ -117,8 +119,8 @@ theorem RawTerm.universeCode_isStronglyNormalizing {scope : Nat}
 
 Unlike `universeCode`, `arrowCode` carries schematic raw payloads and
 `RawStep.par` reduces under both of them.  The SN premises are therefore
-real obligations; M04 cannot treat schematic type-code payloads as
-normalizing constants. -/
+real obligations; schematic type-code payloads do not normalize as
+constants. -/
 theorem RawTerm.arrowCode_isStronglyNormalizing {scope : Nat}
     {domainCode : RawTerm scope}
     (domainIsSN : RawTerm.isStronglyNormalizing domainCode) :
@@ -523,79 +525,5 @@ theorem RawTerm.idCode_isStronglyNormalizing {scope : Nat}
             · exact typeIH typeTarget typeProgress
                 leftTargetIsSN
                 (rightClosure rightTarget ⟨rightStep, rightEq⟩)
-
-/-- **K12.27 type-code payload SN frontier**.
-
-`Term.*Code` constructors currently store schematic `RawTerm` payloads
-rather than recursive typed children.  Since raw parallel reduction
-reduces under those payloads, M04 cannot discharge their constructor
-cases from the `Term` induction alone.  This predicate names exactly
-the residual evidence a schematic type-code tree must carry for the
-raw SN endpoint.
-
-For `idCode`, the carrier must itself be a normalizing type code, while
-the endpoints only need raw SN: they are term codes at the carrier, not
-type codes. -/
-inductive RawTerm.IsStronglyNormalizingTypeCode :
-    ∀ {scope : Nat}, RawTerm scope → Prop
-  | universeCode {scope : Nat} (innerLevel : Nat) :
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.universeCode innerLevel : RawTerm scope)
-  | arrowCode {scope : Nat} {domainCode codomainCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode domainCode →
-      RawTerm.IsStronglyNormalizingTypeCode codomainCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.arrowCode domainCode codomainCode)
-  | piTyCode {scope : Nat}
-      {domainCode : RawTerm scope}
-      {codomainCode : RawTerm (scope + 1)} :
-      RawTerm.IsStronglyNormalizingTypeCode domainCode →
-      RawTerm.IsStronglyNormalizingTypeCode codomainCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.piTyCode domainCode codomainCode)
-  | sigmaTyCode {scope : Nat}
-      {domainCode : RawTerm scope}
-      {codomainCode : RawTerm (scope + 1)} :
-      RawTerm.IsStronglyNormalizingTypeCode domainCode →
-      RawTerm.IsStronglyNormalizingTypeCode codomainCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.sigmaTyCode domainCode codomainCode)
-  | productCode {scope : Nat} {firstCode secondCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode firstCode →
-      RawTerm.IsStronglyNormalizingTypeCode secondCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.productCode firstCode secondCode)
-  | sumCode {scope : Nat} {leftCode rightCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode leftCode →
-      RawTerm.IsStronglyNormalizingTypeCode rightCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.sumCode leftCode rightCode)
-  | listCode {scope : Nat} {elementCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode elementCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.listCode elementCode)
-  | optionCode {scope : Nat} {elementCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode elementCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.optionCode elementCode)
-  | eitherCode {scope : Nat} {leftCode rightCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode leftCode →
-      RawTerm.IsStronglyNormalizingTypeCode rightCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.eitherCode leftCode rightCode)
-  | idCode {scope : Nat}
-      {typeCode leftEndpoint rightEndpoint : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode typeCode →
-      RawTerm.isStronglyNormalizing leftEndpoint →
-      RawTerm.isStronglyNormalizing rightEndpoint →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.idCode typeCode leftEndpoint rightEndpoint)
-  | equivCode {scope : Nat} {leftTypeCode rightTypeCode : RawTerm scope} :
-      RawTerm.IsStronglyNormalizingTypeCode leftTypeCode →
-      RawTerm.IsStronglyNormalizingTypeCode rightTypeCode →
-      RawTerm.IsStronglyNormalizingTypeCode
-        (RawTerm.equivCode leftTypeCode rightTypeCode)
-
-
 
 end LeanFX2
