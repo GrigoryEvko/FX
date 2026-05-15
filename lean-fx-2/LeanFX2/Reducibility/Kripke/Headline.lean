@@ -478,7 +478,7 @@ theorem Term.optionCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.optionCode (context := sourceCtx)
         outerLevel levelLe elementCodeRaw) :=
-  ReducibleK.fundamental_optionCode_sn outerLevel levelLe elementCodeIsSN
+  Term.optionCode_isStronglyNormalizing outerLevel levelLe elementCodeIsSN
 
 /-- SN of idCode via Kripke. -/
 theorem Term.idCode_strong_normalization_via_kripke
@@ -493,7 +493,7 @@ theorem Term.idCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.idCode (context := sourceCtx)
         outerLevel levelLe typeCodeRaw leftRaw rightRaw) :=
-  ReducibleK.fundamental_idCode_sn outerLevel levelLe
+  Term.idCode_isStronglyNormalizing outerLevel levelLe
     typeCodeIsSN leftIsSN rightIsSN
 
 /-- SN of pathLam via Kripke (univalent mode). -/
@@ -508,7 +508,7 @@ theorem Term.pathLam_strong_normalization_via_kripke
     (bodyIsSN : Term.isStronglyNormalizing bodyTerm) :
     Term.isStronglyNormalizing
       (Term.pathLam rfl carrierType leftEndpoint rightEndpoint bodyTerm) :=
-  ReducibleK.fundamental_pathLam_sn carrierType
+  Term.pathLam_isStronglyNormalizing rfl carrierType
     leftEndpoint rightEndpoint bodyIsSN
 
 /-- SN of glueIntro via Kripke (univalent mode). -/
@@ -524,7 +524,7 @@ theorem Term.glueIntro_strong_normalization_via_kripke
     (partialIsSN : Term.isStronglyNormalizing partialValue) :
     Term.isStronglyNormalizing
       (Term.glueIntro rfl baseType boundaryWitness baseValue partialValue) :=
-  ReducibleK.fundamental_glueIntro_sn baseType boundaryWitness
+  Term.glueIntro_isStronglyNormalizing rfl baseType boundaryWitness
     baseIsSN partialIsSN
 
 /-- SN of glueElim via Kripke (univalent mode). -/
@@ -573,7 +573,8 @@ theorem Term.funextRefl_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.funextRefl (context := sourceCtx)
         domainType codomainType applyRaw) :=
-  ReducibleK.fundamental_funextRefl_sn domainType codomainType applyIsSN
+  Term.funextRefl_isStronglyNormalizing_of_apply
+    domainType codomainType applyIsSN
 
 /-- SN of funextReflAtId via Kripke. -/
 theorem Term.funextReflAtId_strong_normalization_via_kripke
@@ -585,7 +586,8 @@ theorem Term.funextReflAtId_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.funextReflAtId (context := sourceCtx)
         domainType codomainType applyRaw) :=
-  ReducibleK.fundamental_funextReflAtId_sn domainType codomainType applyIsSN
+  Term.funextReflAtId_isStronglyNormalizing_of_apply
+    domainType codomainType applyIsSN
 
 /-- SN of oeqFunext via Kripke. -/
 theorem Term.oeqFunext_strong_normalization_via_kripke
@@ -603,7 +605,7 @@ theorem Term.oeqFunext_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.oeqFunext domainType codomainType
         leftFunctionRaw rightFunctionRaw pointwiseProof) :=
-  ReducibleK.fundamental_oeqFunext_sn
+  Term.oeqFunext_isStronglyNormalizing
     domainType codomainType leftFunctionRaw rightFunctionRaw pointwiseIsSN
 
 /-- SN of effectPerform via Kripke. -/
@@ -627,7 +629,7 @@ theorem Term.effectPerform_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.effectPerform effectTag effectRow operationSignature
         canPerformOperation operationTag arguments) :=
-  ReducibleK.fundamental_effectPerform_sn effectTag effectRow
+  Term.effectPerform_isStronglyNormalizing effectTag effectRow
     operationSignature canPerformOperation operationIsSN argumentsAreSN
 
 /-- SN of uaIntroHet via Kripke. -/
@@ -646,7 +648,7 @@ theorem Term.uaIntroHet_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.uaIntroHet innerLevel innerLevelLt
         carrierARaw carrierBRaw equivWitness) :=
-  ReducibleK.fundamental_uaIntroHet_sn innerLevel innerLevelLt
+  Term.uaIntroHet_isStronglyNormalizing innerLevel innerLevelLt
     carrierARaw carrierBRaw equivWitnessIsSN
 
 /-- SN of equivReflIdAtId via Kripke. -/
@@ -660,7 +662,7 @@ theorem Term.equivReflIdAtId_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.equivReflIdAtId (context := sourceCtx)
         innerLevel innerLevelLt carrier carrierRaw) :=
-  ReducibleK.fundamental_equivReflIdAtId_sn
+  Term.equivReflIdAtId_isStronglyNormalizing
     innerLevel innerLevelLt carrier carrierRaw
 
 /-! ## SN-only eliminator headlines via Kripke
@@ -692,7 +694,7 @@ theorem Term.boolElim_strong_normalization_via_kripke
     (elseIsSN : Term.isStronglyNormalizing elseBranch) :
     Term.isStronglyNormalizing
       (Term.boolElim scrutinee thenBranch elseBranch) :=
-  ReducibleK.fundamental_boolElim_sn scrutineeIsSN thenIsSN elseIsSN
+  Term.boolElim_isStronglyNormalizing scrutineeIsSN thenIsSN elseIsSN
 
 /-- SN of idJ via Kripke. -/
 theorem Term.idJ_strong_normalization_via_kripke
@@ -708,7 +710,7 @@ theorem Term.idJ_strong_normalization_via_kripke
     (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
     (witnessIsSN : Term.isStronglyNormalizing witness) :
     Term.isStronglyNormalizing (Term.idJ baseCase witness) :=
-  ReducibleK.fundamental_idJ_sn baseCaseIsSN witnessIsSN
+  Term.idJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
 
 /-- SN of oeqJ via Kripke. -/
 theorem Term.oeqJ_strong_normalization_via_kripke
@@ -724,7 +726,7 @@ theorem Term.oeqJ_strong_normalization_via_kripke
     (baseCaseIsSN : Term.isStronglyNormalizing baseCase)
     (witnessIsSN : Term.isStronglyNormalizing witness) :
     Term.isStronglyNormalizing (Term.oeqJ baseCase witness) :=
-  ReducibleK.fundamental_oeqJ_sn baseCaseIsSN witnessIsSN
+  Term.oeqJ_isStronglyNormalizing baseCaseIsSN witnessIsSN
 
 /-- SN of idStrictRec via Kripke. -/
 theorem Term.idStrictRec_strong_normalization_via_kripke
@@ -744,7 +746,7 @@ theorem Term.idStrictRec_strong_normalization_via_kripke
     (witnessIsSN : Term.isStronglyNormalizing witness) :
     Term.isStronglyNormalizing
       (Term.idStrictRec modeIsStrict baseCase witness) :=
-  ReducibleK.fundamental_idStrictRec_sn modeIsStrict
+  Term.idStrictRec_isStronglyNormalizing modeIsStrict
     baseCaseIsSN witnessIsSN
 
 /-- SN of equivApp via Kripke. -/
@@ -759,7 +761,7 @@ theorem Term.equivApp_strong_normalization_via_kripke
     (argumentIsSN : Term.isStronglyNormalizing argumentTerm) :
     Term.isStronglyNormalizing
       (Term.equivApp equivTerm argumentTerm) :=
-  ReducibleK.fundamental_equivApp_sn equivIsSN argumentIsSN
+  Term.equivApp_isStronglyNormalizing equivIsSN argumentIsSN
 
 /-- SN of equivApply via Kripke. -/
 theorem Term.equivApply_strong_normalization_via_kripke
@@ -773,7 +775,7 @@ theorem Term.equivApply_strong_normalization_via_kripke
     (argumentIsSN : Term.isStronglyNormalizing argumentTerm) :
     Term.isStronglyNormalizing
       (Term.equivApply equivTerm argumentTerm) :=
-  ReducibleK.fundamental_equivApply_sn equivIsSN argumentIsSN
+  Term.equivApply_isStronglyNormalizing equivIsSN argumentIsSN
 
 /-- SN of modElim via Kripke. -/
 theorem Term.modElim_strong_normalization_via_kripke
@@ -808,8 +810,8 @@ theorem Term.natElim_strong_normalization_via_kripke
           (RawTerm.app succRaw predecessorRaw)) :
     Term.isStronglyNormalizing
       (Term.natElim scrutinee zeroBranch succBranch) :=
-  ReducibleK.fundamental_natElim_sn scrutineeIsSN zeroIsSN succIsSN
-    succAppIsSN
+  Term.natElim_isStronglyNormalizing
+    scrutineeIsSN zeroIsSN succIsSN succAppIsSN
 
 /-- SN of natRec via Kripke.  Same shape as `natElim` plus the
 nested-app closure for the recursor contractum. -/
@@ -837,8 +839,8 @@ theorem Term.natRec_strong_normalization_via_kripke
               predecessorRaw zeroTargetRaw succTargetRaw))) :
     Term.isStronglyNormalizing
       (Term.natRec scrutinee zeroBranch succBranch) :=
-  ReducibleK.fundamental_natRec_sn scrutineeIsSN zeroIsSN succIsSN
-    contractumIsSN
+  Term.natRec_isStronglyNormalizing
+    scrutineeIsSN zeroIsSN succIsSN contractumIsSN
 
 /-- SN of `Term.interval0` via Kripke.  Closed leaf — no premises. -/
 theorem Term.interval0_strong_normalization_via_kripke
@@ -864,7 +866,7 @@ theorem Term.universeCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.universeCode (context := context)
         innerLevel outerLevel cumulOk levelLe) :=
-  ReducibleK.fundamental_universeCode_sn
+  Term.universeCode_isStronglyNormalizing
     innerLevel outerLevel cumulOk levelLe
 
 /-- SN of `Term.piTyCode` via Kripke. -/
@@ -880,7 +882,7 @@ theorem Term.piTyCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.piTyCode (context := context)
         outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
-  ReducibleK.fundamental_piTyCode_sn outerLevel levelLe
+  Term.piTyCode_isStronglyNormalizing outerLevel levelLe
     domainCodeIsSN codomainCodeIsSN
 
 /-- SN of `Term.sigmaTyCode` via Kripke. -/
@@ -896,7 +898,7 @@ theorem Term.sigmaTyCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.sigmaTyCode (context := context)
         outerLevel levelLe domainCodeRaw codomainCodeRaw) :=
-  ReducibleK.fundamental_sigmaTyCode_sn outerLevel levelLe
+  Term.sigmaTyCode_isStronglyNormalizing outerLevel levelLe
     domainCodeIsSN codomainCodeIsSN
 
 /-- SN of `Term.productCode` via Kripke. -/
@@ -911,7 +913,7 @@ theorem Term.productCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.productCode (context := context)
         outerLevel levelLe firstCodeRaw secondCodeRaw) :=
-  ReducibleK.fundamental_productCode_sn outerLevel levelLe
+  Term.productCode_isStronglyNormalizing outerLevel levelLe
     firstCodeIsSN secondCodeIsSN
 
 /-- SN of `Term.sumCode` via Kripke. -/
@@ -926,7 +928,7 @@ theorem Term.sumCode_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.sumCode (context := context)
         outerLevel levelLe leftCodeRaw rightCodeRaw) :=
-  ReducibleK.fundamental_sumCode_sn outerLevel levelLe
+  Term.sumCode_isStronglyNormalizing outerLevel levelLe
     leftCodeIsSN rightCodeIsSN
 
 /-- SN of `Term.funextIntroHet` via Kripke. -/
@@ -939,7 +941,7 @@ theorem Term.funextIntroHet_strong_normalization_via_kripke
     Term.isStronglyNormalizing
       (Term.funextIntroHet (context := context)
         domainType codomainType applyARaw applyBRaw) :=
-  ReducibleK.fundamental_funextIntroHet_sn
+  Term.funextIntroHet_isStronglyNormalizing
     domainType codomainType applyAIsSN
 
 /-- SN of `Term.codataDest` via Kripke.  Requires the contractum-SN
@@ -959,7 +961,7 @@ theorem Term.codataDest_strong_normalization_via_kripke
         RawTerm.isStronglyNormalizing
           (RawTerm.app transitionRaw stateRaw)) :
     Term.isStronglyNormalizing (Term.codataDest codataValue) :=
-  ReducibleK.fundamental_codataDest_sn codataIsSN contractumIsSN
+  Term.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
 
 /-- SN of `Term.listElim` via Kripke.  Requires the contractum-SN
 closure for the cons-ι fire `listElim (listCons h t) n c →
@@ -986,7 +988,7 @@ theorem Term.listElim_strong_normalization_via_kripke
           (RawTerm.app (RawTerm.app consTargetRaw headRaw) tailRaw)) :
     Term.isStronglyNormalizing
       (Term.listElim scrutinee nilBranch consBranch) :=
-  ReducibleK.fundamental_listElim_sn
+  Term.listElim_isStronglyNormalizing
     scrutineeIsSN nilIsSN consIsSN contractumIsSN
 
 /-- SN of `Term.optionMatch` via Kripke.  Requires the contractum-SN
@@ -1011,7 +1013,7 @@ theorem Term.optionMatch_strong_normalization_via_kripke
           (RawTerm.app someTargetRaw valueRaw)) :
     Term.isStronglyNormalizing
       (Term.optionMatch scrutinee noneBranch someBranch) :=
-  ReducibleK.fundamental_optionMatch_sn
+  Term.optionMatch_isStronglyNormalizing
     scrutineeIsSN noneIsSN someIsSN contractumIsSN
 
 /-- SN of `Term.eitherMatch` via Kripke.  Requires a pair of
@@ -1043,7 +1045,7 @@ theorem Term.eitherMatch_strong_normalization_via_kripke
           (RawTerm.app rightTargetRaw valueRaw)) :
     Term.isStronglyNormalizing
       (Term.eitherMatch scrutinee leftBranch rightBranch) :=
-  ReducibleK.fundamental_eitherMatch_sn
+  Term.eitherMatch_isStronglyNormalizing
     scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
 
 /-- SN of `Term.app` via Kripke.  Requires the contractum-SN closure
@@ -1066,7 +1068,7 @@ theorem Term.app_strong_normalization_via_kripke
         RawTerm.isStronglyNormalizing
           (bodyTargetRaw.subst0 argumentTargetRaw)) :
     Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) :=
-  ReducibleK.fundamental_app_sn
+  Term.app_isStronglyNormalizing
     functionIsSN argumentIsSN contractumIsSN
 
 /-- SN of `Term.appPi` via Kripke.  Dependent-Π elimination sharing
@@ -1090,7 +1092,7 @@ theorem Term.appPi_strong_normalization_via_kripke
         RawTerm.isStronglyNormalizing
           (bodyTargetRaw.subst0 argumentTargetRaw)) :
     Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) :=
-  ReducibleK.fundamental_appPi_sn
+  Term.appPi_isStronglyNormalizing
     functionIsSN argumentIsSN contractumIsSN
 
 /-- **K12.24 Kripke SN headline for pathApp** — cubical-mode path
@@ -1118,7 +1120,7 @@ theorem Term.pathApp_strong_normalization_via_kripke
           (bodyTargetRaw.subst0 intervalTargetRaw)) :
     Term.isStronglyNormalizing
       (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
-  ReducibleK.fundamental_pathApp_sn modeIsUnivalent
+  Term.pathApp_isStronglyNormalizing modeIsUnivalent
     pathIsSN intervalIsSN contractumIsSN
 
 /-- **K12.24 Kripke SN headline for transp**.  Requires contractum-SN
@@ -1159,7 +1161,7 @@ theorem Term.transp_strong_normalization_via_kripke
       (Term.transp modeIsUnivalent universeLevel universeLevelLt
         sourceType targetType sourceTypeRaw targetTypeRaw
         typePath sourceValue) :=
-  ReducibleK.fundamental_transp_sn modeIsUnivalent universeLevel
+  Term.transp_isStronglyNormalizing modeIsUnivalent universeLevel
     universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
     pathIsSN sourceIsSN uaContractumIsSN composeContractumIsSN
 
@@ -1178,6 +1180,6 @@ theorem Term.hcomp_strong_normalization_via_kripke
     (capIsSN : Term.isStronglyNormalizing capValue) :
     Term.isStronglyNormalizing
       (Term.hcomp modeIsUnivalent sidesValue capValue) :=
-  ReducibleK.fundamental_hcomp_sn modeIsUnivalent sidesIsSN capIsSN
+  Term.hcomp_isStronglyNormalizing modeIsUnivalent sidesIsSN capIsSN
 
 end LeanFX2
