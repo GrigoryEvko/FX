@@ -1,5 +1,7 @@
 import LeanFX2.Reducibility.Kripke.Project
 import LeanFX2.Reducibility.Kripke.Fundamental
+import LeanFX2.Reducibility.Kripke.Arrow
+import LeanFX2.Reducibility.Kripke.SNExtraction
 
 /-! Kripke-derived SN of closed-leaf canonical values.
 
@@ -944,8 +946,11 @@ theorem Term.funextIntroHet_strong_normalization_via_kripke
   Term.funextIntroHet_isStronglyNormalizing
     domainType codomainType applyAIsSN
 
-/-- SN of `Term.codataDest` via Kripke.  Requires the contractum-SN
-closure for the β-fire `codataDest (codataUnfold s t) → app t s`. -/
+/-- **SN of `Term.codataDest` via Kripke (real Tait pattern, no
+`contractumIsSN` postulate)**.  Takes the codata value's reducibility
+at `Ty.codata stateType outputType`, applies the codata closure
+clause at identity renaming via `ReducibleK.codata_dest`, and projects
+SN via `sn_of_any`. -/
 theorem Term.codataDest_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -953,19 +958,29 @@ theorem Term.codataDest_strong_normalization_via_kripke
     {codataRaw : RawTerm scope}
     {codataValue :
       Term context (Ty.codata stateType outputType) codataRaw}
-    (codataIsSN : Term.isStronglyNormalizing codataValue)
-    (contractumIsSN :
-      ∀ {stateRaw transitionRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing stateRaw →
-        RawTerm.isStronglyNormalizing transitionRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app transitionRaw stateRaw)) :
-    Term.isStronglyNormalizing (Term.codataDest codataValue) :=
-  Term.codataDest_isStronglyNormalizing codataIsSN contractumIsSN
+    {stepCount : Nat}
+    (codataIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.codata stateType outputType) codataRaw codataValue) :
+    Term.isStronglyNormalizing (Term.codataDest codataValue) := by
+  have destIsR :=
+    ReducibleK.codata_dest codataIsR (TermRenaming.identity context)
+  have destIsSN := ReducibleK.sn_of_any destIsR
+  show RawTerm.isStronglyNormalizing (RawTerm.codataDest codataRaw)
+  have rawDestEq :
+      RawTerm.codataDest (codataRaw.rename RawRenaming.identity)
+        = RawTerm.codataDest codataRaw := by
+    rw [RawTerm.rename_identity codataRaw]
+  exact rawDestEq ▸ destIsSN
 
-/-- SN of `Term.listElim` via Kripke.  Requires the contractum-SN
-closure for the cons-ι fire `listElim (listCons h t) n c →
-app (app c h) t`. -/
+/-- **SN of `Term.listElim` via Kripke (real Tait pattern, no
+`contractumIsSN` postulate)**.  Takes ReducibleK premises on the
+scrutinee at `Ty.listType A`, the nilBranch at the motive, and the
+consBranch at `Ty.arrow A (Ty.arrow (Ty.listType A) motive)`;
+applies the list ι-closure at identity renaming via
+`ReducibleK.listType_elim`; projects SN via `sn_of_any`.  The
+`elementType.rename identity = elementType` rewrite is dispatched
+through `ReducibleK.transport` on the cons branch's arrow shape. -/
 theorem Term.listElim_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -976,24 +991,49 @@ theorem Term.listElim_strong_normalization_via_kripke
     {consBranch : Term context (Ty.arrow elementType
                                   (Ty.arrow (Ty.listType elementType)
                                     motiveType)) consRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (nilIsSN : Term.isStronglyNormalizing nilBranch)
-    (consIsSN : Term.isStronglyNormalizing consBranch)
-    (contractumIsSN :
-      ∀ {headRaw tailRaw consTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing headRaw →
-        RawTerm.isStronglyNormalizing tailRaw →
-        RawTerm.isStronglyNormalizing consTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app (RawTerm.app consTargetRaw headRaw) tailRaw)) :
+    {stepCount : Nat}
+    (scrutineeIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.listType elementType) scrutineeRaw scrutinee)
+    (nilIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        motiveType nilRaw nilBranch)
+    (consIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRaw consBranch) :
     Term.isStronglyNormalizing
-      (Term.listElim scrutinee nilBranch consBranch) :=
-  Term.listElim_isStronglyNormalizing
-    scrutineeIsSN nilIsSN consIsSN contractumIsSN
+      (Term.listElim scrutinee nilBranch consBranch) := by
+  -- The closure clause expects the consBranch's domain `elementType`
+  -- to be renamed at identity.  Cast through `Ty.rename_identity`.
+  have consTyEq :
+      Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType)
+        =
+      Ty.arrow (elementType.rename RawRenaming.identity)
+          (Ty.arrow (Ty.listType (elementType.rename RawRenaming.identity))
+            motiveType) := by
+    rw [Ty.rename_identity elementType]
+  have elimIsR :=
+    ReducibleK.listType_elim scrutineeIsR
+      (TermRenaming.identity context) motiveType
+      nilBranch (consTyEq ▸ consBranch)
+      nilIsR (ReducibleK.transport consTyEq consIsR)
+  have elimIsSN := ReducibleK.sn_of_any elimIsR
+  show RawTerm.isStronglyNormalizing
+        (RawTerm.listElim scrutineeRaw nilRaw consRaw)
+  have rawElimEq :
+      RawTerm.listElim (scrutineeRaw.rename RawRenaming.identity)
+          nilRaw consRaw
+        = RawTerm.listElim scrutineeRaw nilRaw consRaw := by
+    rw [RawTerm.rename_identity scrutineeRaw]
+  exact rawElimEq ▸ elimIsSN
 
-/-- SN of `Term.optionMatch` via Kripke.  Requires the contractum-SN
-closure for the some-ι fire `optionMatch (optionSome v) n s →
-app s v`. -/
+/-- **SN of `Term.optionMatch` via Kripke (real Tait pattern, no
+`contractumIsSN` postulate)**.  Same shape as `listElim` strip: takes
+ReducibleK premises on scrutinee/noneBranch/someBranch, applies the
+option ι-closure at identity via `ReducibleK.optionType_match`,
+projects SN through `sn_of_any`. -/
 theorem Term.optionMatch_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -1002,23 +1042,46 @@ theorem Term.optionMatch_strong_normalization_via_kripke
     {scrutinee : Term context (Ty.optionType elementType) scrutineeRaw}
     {noneBranch : Term context motiveType noneRaw}
     {someBranch : Term context (Ty.arrow elementType motiveType) someRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (noneIsSN : Term.isStronglyNormalizing noneBranch)
-    (someIsSN : Term.isStronglyNormalizing someBranch)
-    (contractumIsSN :
-      ∀ {valueRaw someTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing valueRaw →
-        RawTerm.isStronglyNormalizing someTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app someTargetRaw valueRaw)) :
+    {stepCount : Nat}
+    (scrutineeIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.optionType elementType) scrutineeRaw scrutinee)
+    (noneIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        motiveType noneRaw noneBranch)
+    (someIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.arrow elementType motiveType) someRaw someBranch) :
     Term.isStronglyNormalizing
-      (Term.optionMatch scrutinee noneBranch someBranch) :=
-  Term.optionMatch_isStronglyNormalizing
-    scrutineeIsSN noneIsSN someIsSN contractumIsSN
+      (Term.optionMatch scrutinee noneBranch someBranch) := by
+  have someTyEq :
+      Ty.arrow elementType motiveType
+        =
+      Ty.arrow (elementType.rename RawRenaming.identity) motiveType := by
+    rw [Ty.rename_identity elementType]
+  have matchIsR :=
+    ReducibleK.optionType_match scrutineeIsR
+      (TermRenaming.identity context) motiveType
+      noneBranch (someTyEq ▸ someBranch)
+      noneIsR (ReducibleK.transport someTyEq someIsR)
+  have matchIsSN := ReducibleK.sn_of_any matchIsR
+  show RawTerm.isStronglyNormalizing
+        (RawTerm.optionMatch scrutineeRaw noneRaw someRaw)
+  have rawMatchEq :
+      RawTerm.optionMatch (scrutineeRaw.rename RawRenaming.identity)
+          noneRaw someRaw
+        = RawTerm.optionMatch scrutineeRaw noneRaw someRaw := by
+    rw [RawTerm.rename_identity scrutineeRaw]
+  exact rawMatchEq ▸ matchIsSN
 
-/-- SN of `Term.eitherMatch` via Kripke.  Requires a pair of
-contractum-SN closures for the two ι fires:
-`eitherMatch (eitherInl v) l r → app l v` and the inr-symmetric arm. -/
+/-- **SN of `Term.eitherMatch` via Kripke (real Tait pattern, no
+`contractumIsSN` postulates)**.  Same shape as `listElim`/`optionMatch`
+strips: takes ReducibleK premises on scrutinee/leftBranch/rightBranch,
+applies the either ι-closure at identity via
+`ReducibleK.eitherType_match`, projects SN through `sn_of_any`.  The
+two contractumIsSN postulates (one per inl/inr arm) are eliminated
+together because the closure clause bakes both into its single
+reducibility output. -/
 theorem Term.eitherMatch_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -1028,28 +1091,56 @@ theorem Term.eitherMatch_strong_normalization_via_kripke
       Term context (Ty.eitherType leftType rightType) scrutineeRaw}
     {leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw}
     {rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw}
-    (scrutineeIsSN : Term.isStronglyNormalizing scrutinee)
-    (leftIsSN : Term.isStronglyNormalizing leftBranch)
-    (rightIsSN : Term.isStronglyNormalizing rightBranch)
-    (inlContractumIsSN :
-      ∀ {valueRaw leftTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing valueRaw →
-        RawTerm.isStronglyNormalizing leftTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app leftTargetRaw valueRaw))
-    (inrContractumIsSN :
-      ∀ {valueRaw rightTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing valueRaw →
-        RawTerm.isStronglyNormalizing rightTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (RawTerm.app rightTargetRaw valueRaw)) :
+    {stepCount : Nat}
+    (scrutineeIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.eitherType leftType rightType) scrutineeRaw scrutinee)
+    (leftIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.arrow leftType motiveType) leftRaw leftBranch)
+    (rightIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        (Ty.arrow rightType motiveType) rightRaw rightBranch) :
     Term.isStronglyNormalizing
-      (Term.eitherMatch scrutinee leftBranch rightBranch) :=
-  Term.eitherMatch_isStronglyNormalizing
-    scrutineeIsSN leftIsSN rightIsSN inlContractumIsSN inrContractumIsSN
+      (Term.eitherMatch scrutinee leftBranch rightBranch) := by
+  have leftTyEq :
+      Ty.arrow leftType motiveType
+        =
+      Ty.arrow (leftType.rename RawRenaming.identity) motiveType := by
+    rw [Ty.rename_identity leftType]
+  have rightTyEq :
+      Ty.arrow rightType motiveType
+        =
+      Ty.arrow (rightType.rename RawRenaming.identity) motiveType := by
+    rw [Ty.rename_identity rightType]
+  have matchIsR :=
+    ReducibleK.eitherType_match scrutineeIsR
+      (TermRenaming.identity context) motiveType
+      (leftTyEq ▸ leftBranch) (rightTyEq ▸ rightBranch)
+      (ReducibleK.transport leftTyEq leftIsR)
+      (ReducibleK.transport rightTyEq rightIsR)
+  have matchIsSN := ReducibleK.sn_of_any matchIsR
+  show RawTerm.isStronglyNormalizing
+        (RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw)
+  have rawMatchEq :
+      RawTerm.eitherMatch (scrutineeRaw.rename RawRenaming.identity)
+          leftRaw rightRaw
+        = RawTerm.eitherMatch scrutineeRaw leftRaw rightRaw := by
+    rw [RawTerm.rename_identity scrutineeRaw]
+  exact rawMatchEq ▸ matchIsSN
 
-/-- SN of `Term.app` via Kripke.  Requires the contractum-SN closure
-for the β arm `app (lam body) arg → body[arg/0]`. -/
+/-- **SN of `Term.app` via Kripke (real Tait pattern, no
+`contractumIsSN` postulate)**.  Takes the FUNCTION'S reducibility at
+`Ty.arrow A B` and the ARGUMENT'S reducibility at `A`, applies the
+arrow-closure clause at identity renaming, projects via `sn_of_any`
+to SN of the resulting (renamed) application, and rewrites the
+residual `RawTerm.rename_identity` on the function subterm to
+recover SN of `Term.app functionTerm argumentTerm`.
+
+The premises are `ReducibleK` rather than `Term.isStronglyNormalizing`
+because the arrow closure clause demands reducibility of the argument
+to produce reducibility of the application — pure Tait pattern, not
+hypothesis-as-postulate. -/
 theorem Term.app_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -1058,21 +1149,47 @@ theorem Term.app_strong_normalization_via_kripke
     {functionTerm :
       Term context (Ty.arrow domainType codomainType) functionRaw}
     {argumentTerm : Term context domainType argumentRaw}
-    (functionIsSN : Term.isStronglyNormalizing functionTerm)
-    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
-    (contractumIsSN :
-      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
-          {argumentTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing bodyTargetRaw →
-        RawTerm.isStronglyNormalizing argumentTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (bodyTargetRaw.subst0 argumentTargetRaw)) :
-    Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) :=
-  Term.app_isStronglyNormalizing
-    functionIsSN argumentIsSN contractumIsSN
+    {stepCount : Nat}
+    (functionIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.arrow domainType codomainType) functionRaw functionTerm)
+    (argumentIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        domainType argumentRaw argumentTerm) :
+    Term.isStronglyNormalizing (Term.app functionTerm argumentTerm) := by
+  -- Generalize over the renamed-domain index via `Ty.rename_identity`
+  -- so the arrow-closure's renamed-domain argument lines up with
+  -- `argumentTerm : Term context domainType argRaw`.  Using `subst`
+  -- on the equation transports both `argumentTerm` and `argumentIsR`
+  -- to the renamed-domain side simultaneously, eliminating the
+  -- separate `▸` casts and the resulting double-rename motive.
+  have domainRenameEq : domainType = domainType.rename RawRenaming.identity :=
+    (Ty.rename_identity domainType).symm
+  -- Apply arrow closure: it returns reducibility at
+  -- `codomainType.rename identity` of the renamed-function applied
+  -- to argumentTerm (cast to renamed domain).
+  have appIsR :=
+    ReducibleK.arrow_apply functionIsR
+      (TermRenaming.identity context)
+      (domainRenameEq ▸ argumentTerm)
+      (ReducibleK.transport domainRenameEq argumentIsR)
+  -- Project to SN via the universal dispatcher.
+  have appIsSN := ReducibleK.sn_of_any appIsR
+  -- Unfold typed SN to raw SN, then rewrite the residual
+  -- `functionRaw.rename identity` back to `functionRaw`.
+  show RawTerm.isStronglyNormalizing (RawTerm.app functionRaw argumentRaw)
+  have rawAppEq :
+      RawTerm.app (functionRaw.rename RawRenaming.identity) argumentRaw
+        = RawTerm.app functionRaw argumentRaw := by
+    rw [RawTerm.rename_identity functionRaw]
+  exact rawAppEq ▸ appIsSN
 
-/-- SN of `Term.appPi` via Kripke.  Dependent-Π elimination sharing
-raw β with `Term.app`. -/
+/-- **SN of `Term.appPi` via Kripke (real Tait pattern, no
+`contractumIsSN` postulate)**.  Dependent-Π elimination — same shape
+as `Term.app_strong_normalization_via_kripke` modulo `piTy_apply`
+instead of `arrow_apply` (the closure clause's output type carries a
+substitution rather than a renaming since the codomain depends on
+the argument). -/
 theorem Term.appPi_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -1082,23 +1199,35 @@ theorem Term.appPi_strong_normalization_via_kripke
     {functionTerm :
       Term context (Ty.piTy domainType codomainType) functionRaw}
     {argumentTerm : Term context domainType argumentRaw}
-    (functionIsSN : Term.isStronglyNormalizing functionTerm)
-    (argumentIsSN : Term.isStronglyNormalizing argumentTerm)
-    (contractumIsSN :
-      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
-          {argumentTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing bodyTargetRaw →
-        RawTerm.isStronglyNormalizing argumentTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (bodyTargetRaw.subst0 argumentTargetRaw)) :
-    Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) :=
-  Term.appPi_isStronglyNormalizing
-    functionIsSN argumentIsSN contractumIsSN
+    {stepCount : Nat}
+    (functionIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.piTy domainType codomainType) functionRaw functionTerm)
+    (argumentIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        domainType argumentRaw argumentTerm) :
+    Term.isStronglyNormalizing (Term.appPi functionTerm argumentTerm) := by
+  have domainRenameEq : domainType = domainType.rename RawRenaming.identity :=
+    (Ty.rename_identity domainType).symm
+  have appIsR :=
+    ReducibleK.piTy_apply functionIsR
+      (TermRenaming.identity context)
+      (domainRenameEq ▸ argumentTerm)
+      (ReducibleK.transport domainRenameEq argumentIsR)
+  have appIsSN := ReducibleK.sn_of_any appIsR
+  show RawTerm.isStronglyNormalizing (RawTerm.app functionRaw argumentRaw)
+  have rawAppEq :
+      RawTerm.app (functionRaw.rename RawRenaming.identity) argumentRaw
+        = RawTerm.app functionRaw argumentRaw := by
+    rw [RawTerm.rename_identity functionRaw]
+  exact rawAppEq ▸ appIsSN
 
 /-- **K12.24 Kripke SN headline for pathApp** — cubical-mode path
-application via Kripke step-indexed reducibility.  Delegates to the
-fundamental theorem; the contractum closure handles the β arm
-`pathApp (pathLam body) interval ⇒ body.subst0 interval`. -/
+application via Kripke step-indexed reducibility (real Tait pattern,
+no `contractumIsSN` postulate).  Takes the PATH'S reducibility at
+`Ty.path C l r` and the INTERVAL's reducibility at `Ty.interval`,
+applies the path closure clause at identity renaming, and projects
+SN via `sn_of_any`. -/
 theorem Term.pathApp_strong_normalization_via_kripke
     {mode : Mode} {level scope : Nat}
     {context : Ctx mode level scope}
@@ -1109,19 +1238,29 @@ theorem Term.pathApp_strong_normalization_via_kripke
     {pathTerm :
       Term context (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
     {intervalTerm : Term context Ty.interval intervalRaw}
-    (pathIsSN : Term.isStronglyNormalizing pathTerm)
-    (intervalIsSN : Term.isStronglyNormalizing intervalTerm)
-    (contractumIsSN :
-      ∀ {bodyTargetRaw : RawTerm (scope + 1)}
-          {intervalTargetRaw : RawTerm scope},
-        RawTerm.isStronglyNormalizing bodyTargetRaw →
-        RawTerm.isStronglyNormalizing intervalTargetRaw →
-        RawTerm.isStronglyNormalizing
-          (bodyTargetRaw.subst0 intervalTargetRaw)) :
+    {stepCount : Nat}
+    (pathIsR :
+      @ReducibleK mode level scope context (stepCount + 2)
+        (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw pathTerm)
+    (intervalIsR :
+      @ReducibleK mode level scope context (stepCount + 1)
+        Ty.interval intervalRaw intervalTerm) :
     Term.isStronglyNormalizing
-      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) :=
-  Term.pathApp_isStronglyNormalizing modeIsUnivalent
-    pathIsSN intervalIsSN contractumIsSN
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) := by
+  -- Apply the path closure (intervalTerm has type `Ty.interval`, which
+  -- is scope-polymorphic and renames to itself, so no cast is needed
+  -- on the argument side).
+  have appIsR :=
+    pathIsR.2 modeIsUnivalent
+      (TermRenaming.identity context) intervalTerm intervalIsR
+  have appIsSN := ReducibleK.sn_of_any appIsR
+  show RawTerm.isStronglyNormalizing
+        (RawTerm.pathApp pathRaw intervalRaw)
+  have rawPathAppEq :
+      RawTerm.pathApp (pathRaw.rename RawRenaming.identity) intervalRaw
+        = RawTerm.pathApp pathRaw intervalRaw := by
+    rw [RawTerm.rename_identity pathRaw]
+  exact rawPathAppEq ▸ appIsSN
 
 /-- **K12.24 Kripke SN headline for transp**.  Requires contractum-SN
 closures for univalence transport and path-composition transport; the

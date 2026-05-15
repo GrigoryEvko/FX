@@ -1,4 +1,5 @@
 import LeanFX2.Reducibility.Kripke.Basic
+import LeanFX2.Foundation.RenameIdentity
 
 /-! # ReducibleK closed-leaf SN projection.
 
@@ -609,5 +610,47 @@ theorem ReducibleK.sn_of_glue
       @ReducibleK mode level scope context (stepCount + 1)
         (Ty.glue baseType boundaryWitness) raw term) :
     Term.isStronglyNormalizing term := termIsR.1
+
+/-! ## ===== AGENT STRIP HELPERS =====
+
+Identity-renaming-based SN projection helpers used by `Headline.lean`
+to ship eliminator SN headlines without the BANNED universally-
+quantified `contractumIsSN` hypothesis-as-postulate.  Each helper
+takes ReducibleK premises at the relevant Ty arms, applies the
+corresponding Kripke closure clause at identity renaming, projects to
+SN of the eliminator-applied raw form, and rewrites via
+`RawTerm.rename_identity` to remove the residual renaming on the
+function/scrutinee subterm. -/
+
+/-- The canonical identity TermRenaming on any context.  Since
+`RawRenaming.identity i = i` definitionally, the typing equation
+reduces to `varType context i = (varType context i).rename
+RawRenaming.identity`, discharged by `Ty.rename_identity`. -/
+theorem TermRenaming.identity
+    {mode : Mode} {level scope : Nat}
+    (context : Ctx mode level scope) :
+    TermRenaming context context (RawRenaming.identity (scope := scope)) :=
+  fun position => (Ty.rename_identity (varType context position)).symm
+
+/-- Transport a `ReducibleK` witness along an equation between Ty
+indices.  Given `sourceType = targetType` and a reducibility witness
+at `sourceType`, build the corresponding witness at `targetType` with
+the term cast through the equation.
+
+The proof is by induction on the equation (`cases eqTy`) which
+reduces `targetType` to `sourceType` and the `▸ term` to `term`. -/
+theorem ReducibleK.transport
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stepCount : Nat}
+    {sourceType targetType : Ty level scope}
+    (eqTy : sourceType = targetType)
+    {raw : RawTerm scope}
+    {term : Term context sourceType raw}
+    (termIsR :
+      @ReducibleK mode level scope context stepCount sourceType raw term) :
+    @ReducibleK mode level scope context stepCount targetType raw (eqTy ▸ term) := by
+  cases eqTy
+  exact termIsR
 
 end LeanFX2
