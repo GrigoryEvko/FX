@@ -537,6 +537,57 @@ def partialStrengthenTypedIntervalJoin {mode : Mode} {level : Nat}
               rfl
           }
 
+/-- Sigma first projection strengthens by strengthening its pair payload. -/
+def partialStrengthenTypedFst {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (pairResult : StrengtheningResult strengthening pairTerm) :
+    StrengtheningResult strengthening (Term.fst pairTerm) := by
+  cases pairResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      change
+        Option.mapTwo
+          (firstType.partialStrengthen? strengthening.back)
+          (secondType.partialStrengthen? strengthening.back.lift)
+          Ty.sigmaTy = some targetType at typeStrengthens
+      cases firstSuccess : firstType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [firstSuccess] at typeStrengthens
+          cases typeStrengthens
+      | some targetFirstType =>
+          cases secondSuccess : secondType.partialStrengthen?
+              strengthening.back.lift with
+          | none =>
+              rw [firstSuccess, secondSuccess] at typeStrengthens
+              cases typeStrengthens
+          | some targetSecondType =>
+              rw [firstSuccess, secondSuccess] at typeStrengthens
+              cases typeStrengthens
+              exact {
+                targetType := targetFirstType
+                targetRaw := RawTerm.fst targetRaw
+                targetTerm := Term.fst targetTerm
+                typeStrengthens := firstSuccess
+                rawStrengthens := by
+                  change
+                    (match pairRaw.partialStrengthen? strengthening.back with
+                    | some strengthenedPair => some (RawTerm.fst strengthenedPair)
+                    | none => none) =
+                      some (RawTerm.fst targetRaw)
+                  rw [rawStrengthens]
+                typeRenames := by
+                  injection typeRenames
+                rawRenames := congrArg RawTerm.fst rawRenames
+              }
+
 /-- Record introduction strengthens by strengthening its field. -/
 def partialStrengthenTypedRecordIntro {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
