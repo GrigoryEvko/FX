@@ -345,6 +345,141 @@ def partialStrengthenTypedOptionSome {mode : Mode} {level : Nat}
   rawRenames := by
     exact congrArg RawTerm.optionSome valueResult.rawRenames
 
+/-- Natural-number eliminator strengthens by strengthening the scrutinee,
+zero branch, and successor branch, then aligning the shared motive type
+through the zero branch. -/
+def partialStrengthenTypedNatElim {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch : Term sourceCtx (Ty.arrow Ty.nat motiveType) succRaw}
+    (scrutineeResult : StrengtheningResult strengthening scrutinee)
+    (zeroResult : StrengtheningResult strengthening zeroBranch)
+    (succResult : StrengtheningResult strengthening succBranch) :
+    StrengtheningResult strengthening
+      (Term.natElim scrutinee zeroBranch succBranch) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      cases scrutineeTypeStrengthens
+      cases zeroResult with
+      | mk targetMotiveType targetZeroRaw targetZeroTerm
+          zeroTypeStrengthens zeroRawStrengthens zeroTypeRenames
+          zeroRawRenames =>
+          cases succResult with
+          | mk targetSuccType targetSuccRaw targetSuccTerm
+              succTypeStrengthens succRawStrengthens succTypeRenames
+              succRawRenames =>
+              change
+                Option.mapTwo
+                  (Ty.nat.partialStrengthen? strengthening.back)
+                  (motiveType.partialStrengthen? strengthening.back)
+                  Ty.arrow = some targetSuccType at succTypeStrengthens
+              rw [zeroTypeStrengthens] at succTypeStrengthens
+              cases succTypeStrengthens
+              exact {
+                targetType := targetMotiveType
+                targetRaw := RawTerm.natElim targetScrutineeRaw
+                  targetZeroRaw targetSuccRaw
+                targetTerm := Term.natElim targetScrutineeTerm
+                  targetZeroTerm targetSuccTerm
+                typeStrengthens := zeroTypeStrengthens
+                rawStrengthens := by
+                  change
+                    Option.mapThree
+                      (scrutineeRaw.partialStrengthen? strengthening.back)
+                      (zeroRaw.partialStrengthen? strengthening.back)
+                      (succRaw.partialStrengthen? strengthening.back)
+                      RawTerm.natElim =
+                        some (RawTerm.natElim targetScrutineeRaw
+                          targetZeroRaw targetSuccRaw)
+                  rw [scrutineeRawStrengthens, zeroRawStrengthens,
+                    succRawStrengthens]
+                  rfl
+                typeRenames := zeroTypeRenames
+                rawRenames := by
+                  cases scrutineeRawRenames
+                  cases zeroRawRenames
+                  cases succRawRenames
+                  rfl
+              }
+
+/-- Natural-number recursor strengthens by strengthening the scrutinee,
+zero branch, and binary successor branch, then aligning the nested arrow
+type through the zero branch's strengthened motive. -/
+def partialStrengthenTypedNatRec {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level sourceScope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee : Term sourceCtx Ty.nat scrutineeRaw}
+    {zeroBranch : Term sourceCtx motiveType zeroRaw}
+    {succBranch :
+      Term sourceCtx (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+        succRaw}
+    (scrutineeResult : StrengtheningResult strengthening scrutinee)
+    (zeroResult : StrengtheningResult strengthening zeroBranch)
+    (succResult : StrengtheningResult strengthening succBranch) :
+    StrengtheningResult strengthening
+      (Term.natRec scrutinee zeroBranch succBranch) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      cases scrutineeTypeStrengthens
+      cases zeroResult with
+      | mk targetMotiveType targetZeroRaw targetZeroTerm
+          zeroTypeStrengthens zeroRawStrengthens zeroTypeRenames
+          zeroRawRenames =>
+          cases succResult with
+          | mk targetSuccType targetSuccRaw targetSuccTerm
+              succTypeStrengthens succRawStrengthens succTypeRenames
+              succRawRenames =>
+              change
+                Option.mapTwo
+                  (Ty.nat.partialStrengthen? strengthening.back)
+                  (Option.mapTwo
+                    (motiveType.partialStrengthen? strengthening.back)
+                    (motiveType.partialStrengthen? strengthening.back)
+                    Ty.arrow)
+                  Ty.arrow = some targetSuccType at succTypeStrengthens
+              rw [zeroTypeStrengthens] at succTypeStrengthens
+              cases succTypeStrengthens
+              exact {
+                targetType := targetMotiveType
+                targetRaw := RawTerm.natRec targetScrutineeRaw
+                  targetZeroRaw targetSuccRaw
+                targetTerm := Term.natRec targetScrutineeTerm
+                  targetZeroTerm targetSuccTerm
+                typeStrengthens := zeroTypeStrengthens
+                rawStrengthens := by
+                  change
+                    Option.mapThree
+                      (scrutineeRaw.partialStrengthen? strengthening.back)
+                      (zeroRaw.partialStrengthen? strengthening.back)
+                      (succRaw.partialStrengthen? strengthening.back)
+                      RawTerm.natRec =
+                        some (RawTerm.natRec targetScrutineeRaw
+                          targetZeroRaw targetSuccRaw)
+                  rw [scrutineeRawStrengthens, zeroRawStrengthens,
+                    succRawStrengthens]
+                  rfl
+                typeRenames := zeroTypeRenames
+                rawRenames := by
+                  cases scrutineeRawRenames
+                  cases zeroRawRenames
+                  cases succRawRenames
+                  rfl
+              }
+
 /-- Modal introduction strengthens by strengthening its payload. -/
 def partialStrengthenTypedModIntro {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
