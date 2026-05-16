@@ -10,6 +10,7 @@ import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
 import LeanFX2.Term.PreservesTerm.HeterogeneousElim
 import LeanFX2.Term.PreservesTerm.SchematicValueCtors
 import LeanFX2.Term.PreservesTerm.TypeCodeLifts
+import LeanFX2.Term.PreservesTerm.EliminatorFunextFamily
 import LeanFX2.Term.PreservesTerm.TwoTyAtomsAndCong
 import LeanFX2.Term.PreservesTerm.TwoTyEliminators
 
@@ -35,6 +36,7 @@ Carved into 11 sub-modules along the per-tier / per-ctor-family axis:
 | `HeterogeneousElim` | Σ-type fst/snd; identity elimination (idJ/oeqJ/idStrictRec); type-changing boolElim |
 | `SchematicValueCtors` | Schematic-payload value ctors (oeqRefl/idStrictRefl/refl/equivReflId/equivReflIdAtId/uaIntroHet/equivIntroHet/oeqFunext + deferred funext stubs) |
 | `TypeCodeLifts` | Schematic-payload type-code ctors (arrowCode/piTyCode/sigmaTyCode/productCode/sumCode/listCode/optionCode/eitherCode/idCode/equivCode) |
+| `EliminatorFunextFamily` | Cong-only structured-source lifts for the four formerly-deferred HoTT-special ctors (funextRefl/funextReflAtId/funextIntroHet/uaToEquiv); sidesteps the `cases genericTerm` multi-ctor dispatch axiom leak |
 | `TwoTyAtomsAndCong` | Tier 0/1/2 lifts re-expressed at two-Ty existential |
 | `TwoTyEliminators` | Tier 3 eliminator lifts re-expressed at two-Ty existential + project-wide coverage status |
 
