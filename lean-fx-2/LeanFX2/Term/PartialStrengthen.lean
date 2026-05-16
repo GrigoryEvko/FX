@@ -170,6 +170,114 @@ def partialStrengthenTypedNatZero {mode : Mode} {level : Nat}
   typeRenames := rfl
   rawRenames := rfl
 
+/-- Closed interval-zero terms strengthen through every context strengthening. -/
+def partialStrengthenTypedInterval0 {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx) :
+    StrengtheningResult strengthening (Term.interval0 (context := sourceCtx)) where
+  targetType := Ty.interval
+  targetRaw := RawTerm.interval0
+  targetTerm := Term.interval0 (context := targetCtx)
+  typeStrengthens := rfl
+  rawStrengthens := rfl
+  typeRenames := rfl
+  rawRenames := rfl
+
+/-- Closed interval-one terms strengthen through every context strengthening. -/
+def partialStrengthenTypedInterval1 {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx) :
+    StrengtheningResult strengthening (Term.interval1 (context := sourceCtx)) where
+  targetType := Ty.interval
+  targetRaw := RawTerm.interval1
+  targetTerm := Term.interval1 (context := targetCtx)
+  typeStrengthens := rfl
+  rawStrengthens := rfl
+  typeRenames := rfl
+  rawRenames := rfl
+
+/-- List-nil strengthens when its element type strengthens. -/
+def partialStrengthenTypedListNilOfType {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (elementType : Ty level sourceScope)
+    (targetElementType : Ty level targetScope)
+    (elementTypeStrengthens :
+      elementType.partialStrengthen? strengthening.back =
+        some targetElementType) :
+    StrengtheningResult strengthening
+      (Term.listNil (context := sourceCtx) (elementType := elementType)) where
+  targetType := Ty.listType targetElementType
+  targetRaw := RawTerm.listNil
+  targetTerm := Term.listNil (context := targetCtx)
+    (elementType := targetElementType)
+  typeStrengthens := by
+    change
+      (match elementType.partialStrengthen? strengthening.back with
+      | some strengthenedElementType =>
+          some (Ty.listType strengthenedElementType)
+      | none => none) = some (Ty.listType targetElementType)
+    rw [elementTypeStrengthens]
+  rawStrengthens := rfl
+  typeRenames := by
+    exact Ty.partialStrengthen?_imp_rename
+      (Ty.listType elementType)
+      strengthening.forward strengthening.back strengthening.injectsBack
+      (Ty.listType targetElementType)
+      (by
+        change
+          (match elementType.partialStrengthen? strengthening.back with
+          | some strengthenedElementType =>
+              some (Ty.listType strengthenedElementType)
+          | none => none) = some (Ty.listType targetElementType)
+        rw [elementTypeStrengthens])
+  rawRenames := rfl
+
+/-- Option-none strengthens when its element type strengthens. -/
+def partialStrengthenTypedOptionNoneOfType {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (elementType : Ty level sourceScope)
+    (targetElementType : Ty level targetScope)
+    (elementTypeStrengthens :
+      elementType.partialStrengthen? strengthening.back =
+        some targetElementType) :
+    StrengtheningResult strengthening
+      (Term.optionNone (context := sourceCtx) (elementType := elementType)) where
+  targetType := Ty.optionType targetElementType
+  targetRaw := RawTerm.optionNone
+  targetTerm := Term.optionNone (context := targetCtx)
+    (elementType := targetElementType)
+  typeStrengthens := by
+    change
+      (match elementType.partialStrengthen? strengthening.back with
+      | some strengthenedElementType =>
+          some (Ty.optionType strengthenedElementType)
+      | none => none) = some (Ty.optionType targetElementType)
+    rw [elementTypeStrengthens]
+  rawStrengthens := rfl
+  typeRenames := by
+    exact Ty.partialStrengthen?_imp_rename
+      (Ty.optionType elementType)
+      strengthening.forward strengthening.back strengthening.injectsBack
+      (Ty.optionType targetElementType)
+      (by
+        change
+          (match elementType.partialStrengthen? strengthening.back with
+          | some strengthenedElementType =>
+              some (Ty.optionType strengthenedElementType)
+          | none => none) = some (Ty.optionType targetElementType)
+        rw [elementTypeStrengthens])
+  rawRenames := rfl
+
 end Term
 
 end LeanFX2
