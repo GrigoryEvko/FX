@@ -34,4 +34,10 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.app_inv_arrow
 #print axioms LeanFX2.Term.app_inv_pi
 
+-- Typed weaken inversion at arrow type (Option form).  Thin wrapper
+-- around `Term.unweaken?` specialized to `Ty.arrow A B` indices.
+-- The universal existence form is gated on extending
+-- `StrengtheningResult` with a `termRenames` field.
+#print axioms LeanFX2.Term.weaken_inv_arrow_option
+
 end LeanFX2.SmokeTypedInversion

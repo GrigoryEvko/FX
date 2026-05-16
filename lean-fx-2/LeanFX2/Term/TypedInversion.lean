@@ -1,4 +1,5 @@
 import LeanFX2.Term.WeakenInverse
+import LeanFX2.Term.PartialStrengthen
 
 /-! # Term/TypedInversion — typed structural inversion for `Term.app`
 shape.
@@ -40,15 +41,21 @@ this directly without re-specializing.
 
 Specialization at `targetType = Ty.piTy A B`.
 
-## Why no general `Term.weaken_inv`
+### `Term.weaken_inv_arrow_option` — typed weaken inversion (Option form)
 
-The general inversion `Term.weaken_inv : Term (ctx.cons newType)
-ty.weaken raw.weaken → ∃ inner, ... = Term.weaken inner` requires
-75-ctor structural induction with per-ctor type/raw equation
-unpacking.  Shipped scope here is the structural foundation
-(`Term.app_inv`) on which a focused eta-shape destructor builds.
-The general `Term.weaken_inv` is deferred to a follow-up commit
-once concrete consumers identify which raw shapes need it.
+Specialization of `Term.unweaken?` (`Term/PartialStrengthen.lean`)
+to arrow type and known function-raw: given `Term (context.cons
+newType) (Ty.arrow domainType codomainType).weaken fnRaw.weaken`,
+returns `Option (Term context (Ty.arrow domainType codomainType)
+fnRaw)`.
+
+Why Option rather than `∃ originalFn, ... = Term.weaken originalFn`?
+The existence form requires a 78-case parallel induction proving
+every typed-strengthening producer commutes with renaming
+(equivalent to extending `StrengtheningResult` with a `termRenames`
+HEq field).  Estimated ~5500-7000 LoC.  The Option form is the
+immediately-shippable infrastructure that downstream consumers can
+chain through their own structural information.
 
 ## Root status
 
@@ -158,5 +165,76 @@ def Term.app_inv_pi
         (argTerm : Term context innerDomainType argRaw),
         HEq genericTerm (Term.appPi fnTerm argTerm)) :=
   Term.app_inv genericTerm
+
+/-! ## `Term.weaken_inv_arrow` — typed weaken inversion at arrow type.
+
+The typed-eta redesign's `lift_lam` η-arm needs to recover the
+unweakened function from a weakened-shape `Term (ctx.cons newType)
+(Ty.arrow A B).weaken fnRaw.weaken`.  Mathematically: every
+typed term whose type and raw indices are both weakenings is in
+the image of `Term.weaken`.
+
+### Architecture
+
+The kernel already ships:
+
+* `Term.unweaken? : Term (ctx.cons newType) sourceType.weaken
+  sourceRaw.weaken → Option (Term ctx sourceType sourceRaw)` — the
+  computational inversion (`Term/PartialStrengthen.lean`).
+* `Term.usesNewestSlotTyped? : Term ... → Bool` — the boolean
+  predicate.
+* `Term.not_usesNewestSlotTyped?_imp_strengthenTyped?_some` — the
+  semantic witness exists when the slot is unused.
+
+These give the **Option-form** of typed weaken inversion at any
+type/raw indices.  The companion soundness theorem `wt = Term.weaken
+inner` when `unweaken? wt = some inner` requires extending
+`StrengtheningResult` with a `termRenames` field (HEq linking
+sourceTerm to a rename of targetTerm) — that extension cascades
+through all 78 producers, deferred to a follow-up batch.
+
+### What this section ships
+
+* `Term.weaken_inv_arrow_option` — thin arrow-typed wrapper around
+  `Term.unweaken?`.  Output: `Option (Term context (Ty.arrow
+  domainType codomainType) fnRaw)`.  Zero new infrastructure.
+  Consumers (lift_lam η-arm, decidable conversion, subject
+  reduction app cases) can refute the `none` case via structural
+  information from the context in which they invoke this lemma.
+
+### What's deferred
+
+The full **existence form** `∃ originalFn, weakenedFn = Term.weaken
+originalFn` for an OPAQUE `weakenedFn` requires extending
+`StrengtheningResult` with a `termRenames` HEq field together with
+a parallel 78-case induction proving each typed-strengthening
+producer respects renaming.  See `feedback_typed_eta_lam_inv_
+cascade_blocker_2026_05_16.md` for the structural reasoning.
+Estimated work: ~5500-7000 LoC for the full producer cascade. -/
+
+/-- **Arrow-typed Option-form weaken inversion**.  Thin wrapper
+around `Term.unweaken?` at known arrow type and known function-raw.
+Returns the unweakened typed function term if the weakened input
+genuinely came from a `Term.weaken`; otherwise `none`.
+
+Consumers that have structural information forcing the input to
+be a `Term.weaken` (e.g. the lift_lam η-arm, where the input is
+derived from a `Term.app fnTerm (Term.var 0)` body via `app_inv`)
+can refute the `none` case via their own structural analysis.
+
+This is the immediately-shippable inversion infrastructure; the
+universal existence form is gated on the `StrengtheningResult`
+`termRenames` extension. -/
+def Term.weaken_inv_arrow_option
+    {newType : Ty level scope}
+    {domainType codomainType : Ty level scope}
+    {fnRaw : RawTerm scope}
+    (weakenedFn :
+      Term (context.cons newType)
+           (Ty.arrow domainType codomainType).weaken
+           fnRaw.weaken) :
+    Option (Term context (Ty.arrow domainType codomainType) fnRaw) :=
+  LeanFX2.Term.unweaken? (sourceType := Ty.arrow domainType codomainType)
+                         (sourceRaw := fnRaw) weakenedFn
 
 end LeanFX2
