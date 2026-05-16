@@ -92,6 +92,127 @@ theorem dropNewest_toTermRenaming {mode : Mode} {level scope : Nat}
     (dropNewest context newType).toTermRenaming =
       TermRenaming.weakenStep context newType := rfl
 
+/-- Lift a context strengthening under one freshly-bound variable.
+
+The new source binding must itself strengthen to the new target binding;
+outer variables use the lifted partial/total renamings, while binder
+position zero is preserved on both sides. -/
+def lift {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx)
+    (sourceNewType : Ty level sourceScope)
+    (targetNewType : Ty level targetScope)
+    (newTypeStrengthens :
+      sourceNewType.partialStrengthen? strengthening.back =
+        some targetNewType) :
+    ContextStrengthening
+      (sourceCtx.cons sourceNewType) (targetCtx.cons targetNewType) where
+  back := strengthening.back.lift
+  forward := strengthening.forward.lift
+  back_forward := by
+    intro targetPosition
+    cases targetPosition with
+    | mk targetIndex targetIsLt =>
+        cases targetIndex with
+        | zero => rfl
+        | succ targetPriorIndex =>
+            change
+              strengthening.back.lift
+                  (RawRenaming.lift strengthening.forward
+                    ⟨targetPriorIndex + 1, targetIsLt⟩) =
+                some ⟨targetPriorIndex + 1, targetIsLt⟩
+            simp only [PartialRawRenaming.lift, RawRenaming.lift, Fin.succ]
+            rw [strengthening.back_forward
+              ⟨targetPriorIndex, Nat.lt_of_succ_lt_succ targetIsLt⟩]
+  injectsBack :=
+    PartialRawRenaming.lift_renamingInjectsBack strengthening.injectsBack
+  varTypeStrengthens := by
+    intro sourcePosition targetPosition survives
+    cases sourcePosition with
+    | mk sourceIndex sourceIsLt =>
+        cases sourceIndex with
+        | zero =>
+            cases targetPosition with
+            | mk targetIndex targetIsLt =>
+                cases targetIndex with
+                | zero =>
+                    change
+                      sourceNewType.weaken.partialStrengthen?
+                          strengthening.back.lift =
+                        some targetNewType.weaken
+                    rw [Ty.partialStrengthen?_weaken_lift
+                      sourceNewType strengthening.back,
+                      newTypeStrengthens]
+                    rfl
+                | succ targetPriorIndex =>
+                    cases survives
+        | succ sourcePriorIndex =>
+            cases targetPosition with
+            | mk targetIndex targetIsLt =>
+                cases targetIndex with
+                | zero =>
+                    simp only [PartialRawRenaming.lift] at survives
+                    cases hBack :
+                        strengthening.back
+                          ⟨sourcePriorIndex,
+                            Nat.lt_of_succ_lt_succ sourceIsLt⟩ with
+                    | none =>
+                        rw [hBack] at survives
+                        cases survives
+                    | some targetPriorPosition =>
+                        rw [hBack] at survives
+                        cases survives
+                | succ targetPriorIndex =>
+                    simp only [PartialRawRenaming.lift] at survives
+                    have innerSurvives :
+                        strengthening.back
+                            ⟨sourcePriorIndex,
+                              Nat.lt_of_succ_lt_succ sourceIsLt⟩ =
+                          some
+                            ⟨targetPriorIndex,
+                              Nat.lt_of_succ_lt_succ targetIsLt⟩ := by
+                      cases hBack :
+                          strengthening.back
+                            ⟨sourcePriorIndex,
+                              Nat.lt_of_succ_lt_succ sourceIsLt⟩ with
+                      | none =>
+                          rw [hBack] at survives
+                          cases survives
+                      | some targetPriorPosition =>
+                          cases targetPriorPosition with
+                          | mk actualTargetIndex actualTargetIsLt =>
+                              rw [hBack] at survives
+                              injection survives with succEq
+                              have indexEq :
+                                  actualTargetIndex = targetPriorIndex :=
+                                Nat.succ.inj (congrArg Fin.val succEq)
+                              cases indexEq
+                              rfl
+                    change
+                      Ty.partialStrengthen?
+                          ((varType sourceCtx
+                            ⟨sourcePriorIndex,
+                              Nat.lt_of_succ_lt_succ sourceIsLt⟩).weaken)
+                          strengthening.back.lift =
+                        some
+                          ((varType targetCtx
+                              ⟨targetPriorIndex,
+                                Nat.lt_of_succ_lt_succ targetIsLt⟩).weaken)
+                    rw [Ty.partialStrengthen?_weaken_lift
+                      (varType sourceCtx
+                        ⟨sourcePriorIndex,
+                          Nat.lt_of_succ_lt_succ sourceIsLt⟩)
+                      strengthening.back,
+                      strengthening.varTypeStrengthens
+                        ⟨sourcePriorIndex,
+                          Nat.lt_of_succ_lt_succ sourceIsLt⟩
+                        ⟨targetPriorIndex,
+                          Nat.lt_of_succ_lt_succ targetIsLt⟩
+                        innerSurvives]
+                    rfl
+
 end ContextStrengthening
 
 end LeanFX2

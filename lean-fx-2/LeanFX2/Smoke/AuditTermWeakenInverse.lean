@@ -58,6 +58,8 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.RawTerm.partialStrengthen?
 #print axioms LeanFX2.RawTerm.partialStrengthen?_imp_rename
 #print axioms LeanFX2.RawTerm.partialStrengthen?_rename_some
+#print axioms LeanFX2.PartialRawRenaming.lift_weaken_map
+#print axioms LeanFX2.RawTerm.partialStrengthen?_weaken_lift
 #print axioms LeanFX2.RawTerm.strengthen?
 #print axioms LeanFX2.RawTerm.usesNewestSlot?
 #print axioms LeanFX2.RawTerm.not_usesNewestSlot?_imp_weaken
@@ -66,6 +68,8 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Ty.strengthen?
 #print axioms LeanFX2.Ty.usesNewestSlot?
 #print axioms LeanFX2.Ty.partialStrengthen?_rename_some
+#print axioms LeanFX2.Ty.partialStrengthen?_rename_compat
+#print axioms LeanFX2.Ty.partialStrengthen?_weaken_lift
 #print axioms LeanFX2.Ty.partialStrengthen?_imp_rename
 #print axioms LeanFX2.Ty.strengthen?_weaken
 #print axioms LeanFX2.Ty.strengthen?_imp_weaken
@@ -73,6 +77,7 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.ContextStrengthening.toTermRenaming
 #print axioms LeanFX2.ContextStrengthening.dropNewest
 #print axioms LeanFX2.ContextStrengthening.dropNewest_toTermRenaming
+#print axioms LeanFX2.ContextStrengthening.lift
 #print axioms LeanFX2.Term.StrengtheningResult
 #print axioms LeanFX2.Term.StrengtheningResult.renamedTarget
 #print axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives

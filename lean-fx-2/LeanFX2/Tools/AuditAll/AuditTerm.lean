@@ -342,6 +342,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.ContextStrengthening.toTermRenaming
 #assert_no_axioms LeanFX2.ContextStrengthening.dropNewest
 #assert_no_axioms LeanFX2.ContextStrengthening.dropNewest_toTermRenaming
+#assert_no_axioms LeanFX2.ContextStrengthening.lift
 #assert_no_axioms LeanFX2.Term.StrengtheningResult
 #assert_no_axioms LeanFX2.Term.StrengtheningResult.renamedTarget
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives

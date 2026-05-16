@@ -57,6 +57,18 @@ theorem PartialRawRenaming.lift_compat
       rw [compat ⟨index, Nat.lt_of_succ_lt_succ indexLt⟩]
       cases partialA ⟨index, Nat.lt_of_succ_lt_succ indexLt⟩ <;> rfl
 
+/-- Lifted partial strengthening after ordinary weakening is the
+pointwise weakening of the unlifted result. -/
+theorem PartialRawRenaming.lift_weaken_map
+    {sourceScope targetScope : Nat}
+    (partialRenaming : PartialRawRenaming sourceScope targetScope) :
+    ∀ position : Fin sourceScope,
+      partialRenaming.lift (RawRenaming.weaken position) =
+        (partialRenaming position).map RawRenaming.weaken
+  | ⟨index, indexLt⟩ => by
+      simp only [PartialRawRenaming.lift, RawRenaming.weaken, Fin.succ]
+      cases partialRenaming ⟨index, indexLt⟩ <;> rfl
+
 /-! ## Term-level commute.
 
 Generic compatibility commute for `RawTerm.partialRename?` with a
@@ -513,6 +525,22 @@ theorem RawTerm.partialRename?_rename_compat :
         secondIH rhoVar rhoTerm partialA partialB compat]
       cases RawTerm.partialRename? firstEquiv partialA <;>
         cases RawTerm.partialRename? secondEquiv partialA <;> rfl
+
+/-! ## Strengthening after lifted weakening. -/
+
+/-- Raw partial strengthening commutes with one outer weakening when the
+partial strengthening is lifted under the new binder. -/
+theorem RawTerm.partialStrengthen?_weaken_lift
+    {sourceScope targetScope : Nat}
+    (term : RawTerm sourceScope)
+    (back : PartialRawRenaming sourceScope targetScope) :
+    RawTerm.partialStrengthen? term.weaken back.lift =
+      (RawTerm.partialStrengthen? term back).map RawTerm.weaken := by
+  unfold RawTerm.partialStrengthen?
+  unfold RawTerm.weaken
+  exact RawTerm.partialRename?_rename_compat term
+    RawRenaming.weaken RawRenaming.weaken back back.lift
+    (PartialRawRenaming.lift_weaken_map back)
 
 /-! ## Specialisation: `unweaken?` commutes with `rename` after `lift`. -/
 

@@ -1,5 +1,6 @@
 import LeanFX2.Foundation.Ty
 import LeanFX2.Foundation.RawPartialRename.Strengthen
+import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Foundation.RawPartialRename.Inversion.OptionPatterns
 
 /-! # Type partial strengthening.
@@ -282,6 +283,201 @@ theorem Ty.partialStrengthen?_rename_some {level : Nat} :
       intro sourceRenaming targetRenaming back renamingSurvives
       simp only [Ty.rename, Ty.partialStrengthen?]
       rw [carrierIH sourceRenaming targetRenaming back renamingSurvives]
+
+set_option linter.unusedVariables false in
+/-- Type partial strengthening commutes with a compatible total
+renaming.  This is the type-index analogue of
+`RawTerm.partialRename?_rename_compat`. -/
+theorem Ty.partialStrengthen?_rename_compat {level : Nat} :
+    ∀ {sourceScope sourceTarget targetScope targetTarget : Nat}
+      (someType : Ty level sourceScope)
+      (sourceRenaming : RawRenaming sourceScope sourceTarget)
+      (targetRenaming : RawRenaming targetScope targetTarget)
+      (partialSource : PartialRawRenaming sourceScope targetScope)
+      (partialTarget : PartialRawRenaming sourceTarget targetTarget),
+      (∀ position, partialTarget (sourceRenaming position) =
+        (partialSource position).map targetRenaming) →
+      (someType.rename sourceRenaming).partialStrengthen? partialTarget =
+        (someType.partialStrengthen? partialSource).map
+          (fun targetType => targetType.rename targetRenaming) := by
+  intro sourceScope sourceTarget targetScope targetTarget someType
+  induction someType generalizing sourceTarget targetScope targetTarget with
+  | unit => intros; rfl
+  | bool => intros; rfl
+  | nat => intros; rfl
+  | arrow domainType codomainType domainIH codomainIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [domainIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        codomainIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases domainType.partialStrengthen? partialSource <;>
+        cases codomainType.partialStrengthen? partialSource <;> rfl
+  | piTy domainType codomainType domainIH codomainIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [domainIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        codomainIH sourceRenaming.lift targetRenaming.lift
+          partialSource.lift partialTarget.lift
+          (PartialRawRenaming.lift_compat sourceRenaming targetRenaming
+            partialSource partialTarget compat)]
+      cases domainType.partialStrengthen? partialSource <;>
+        cases codomainType.partialStrengthen? partialSource.lift <;> rfl
+  | sigmaTy firstType secondType firstIH secondIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [firstIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        secondIH sourceRenaming.lift targetRenaming.lift
+          partialSource.lift partialTarget.lift
+          (PartialRawRenaming.lift_compat sourceRenaming targetRenaming
+            partialSource partialTarget compat)]
+      cases firstType.partialStrengthen? partialSource <;>
+        cases secondType.partialStrengthen? partialSource.lift <;> rfl
+  | tyVar position =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [compat position]
+      cases partialSource position <;> rfl
+  | id carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      unfold RawTerm.partialStrengthen?
+      rw [carrierIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat leftEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat rightEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat]
+      cases carrier.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? leftEndpoint partialSource <;>
+        cases RawTerm.partialRename? rightEndpoint partialSource <;> rfl
+  | listType elementType elementIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [elementIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases elementType.partialStrengthen? partialSource <;> rfl
+  | optionType elementType elementIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [elementIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases elementType.partialStrengthen? partialSource <;> rfl
+  | eitherType leftType rightType leftIH rightIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [leftIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        rightIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases leftType.partialStrengthen? partialSource <;>
+        cases rightType.partialStrengthen? partialSource <;> rfl
+  | «universe» universeLevel levelLe => intros; rfl
+  | empty => intros; rfl
+  | interval => intros; rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      unfold RawTerm.partialStrengthen?
+      rw [carrierIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat leftEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat rightEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat]
+      cases carrier.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? leftEndpoint partialSource <;>
+        cases RawTerm.partialRename? rightEndpoint partialSource <;> rfl
+  | glue baseType boundaryWitness baseIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      unfold RawTerm.partialStrengthen?
+      rw [baseIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat boundaryWitness sourceRenaming
+          targetRenaming partialSource partialTarget compat]
+      cases baseType.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? boundaryWitness partialSource <;> rfl
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      unfold RawTerm.partialStrengthen?
+      rw [carrierIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat leftEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat rightEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat]
+      cases carrier.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? leftEndpoint partialSource <;>
+        cases RawTerm.partialRename? rightEndpoint partialSource <;> rfl
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      unfold RawTerm.partialStrengthen?
+      rw [carrierIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat leftEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat rightEndpoint sourceRenaming
+          targetRenaming partialSource partialTarget compat]
+      cases carrier.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? leftEndpoint partialSource <;>
+        cases RawTerm.partialRename? rightEndpoint partialSource <;> rfl
+  | equiv domainType codomainType domainIH codomainIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [domainIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        codomainIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases domainType.partialStrengthen? partialSource <;>
+        cases codomainType.partialStrengthen? partialSource <;> rfl
+  | refine baseType predicate baseIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      unfold RawTerm.partialStrengthen?
+      rw [baseIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat predicate sourceRenaming.lift
+          targetRenaming.lift partialSource.lift partialTarget.lift
+          (PartialRawRenaming.lift_compat sourceRenaming targetRenaming
+            partialSource partialTarget compat)]
+      cases baseType.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? predicate partialSource.lift <;> rfl
+  | record singleFieldType singleFieldIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [singleFieldIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases singleFieldType.partialStrengthen? partialSource <;> rfl
+  | codata stateType outputType stateIH outputIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [stateIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        outputIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases stateType.partialStrengthen? partialSource <;>
+        cases outputType.partialStrengthen? partialSource <;> rfl
+  | session protocolStep =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      unfold RawTerm.partialStrengthen?
+      rw [RawTerm.partialRename?_rename_compat protocolStep sourceRenaming
+        targetRenaming partialSource partialTarget compat]
+      cases RawTerm.partialRename? protocolStep partialSource <;> rfl
+  | effect carrierType effectTag carrierIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      unfold RawTerm.partialStrengthen?
+      rw [carrierIH sourceRenaming targetRenaming partialSource partialTarget compat,
+        RawTerm.partialRename?_rename_compat effectTag sourceRenaming
+          targetRenaming partialSource partialTarget compat]
+      cases carrierType.partialStrengthen? partialSource <;>
+        cases RawTerm.partialRename? effectTag partialSource <;> rfl
+  | modal modalityTag carrierType carrierIH =>
+      intro sourceRenaming targetRenaming partialSource partialTarget compat
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [carrierIH sourceRenaming targetRenaming partialSource partialTarget compat]
+      cases carrierType.partialStrengthen? partialSource <;> rfl
+
+/-- Type partial strengthening commutes with one outer weakening when
+the partial strengthening is lifted under the new binder. -/
+theorem Ty.partialStrengthen?_weaken_lift {level : Nat}
+    {sourceScope targetScope : Nat}
+    (someType : Ty level sourceScope)
+    (back : PartialRawRenaming sourceScope targetScope) :
+    someType.weaken.partialStrengthen? back.lift =
+      (someType.partialStrengthen? back).map Ty.weaken := by
+  unfold Ty.weaken
+  exact Ty.partialStrengthen?_rename_compat someType
+    RawRenaming.weaken RawRenaming.weaken back back.lift
+    (PartialRawRenaming.lift_weaken_map back)
 
 /-- Strengthening after weakening recovers the original type. -/
 theorem Ty.strengthen?_weaken {level scope : Nat}
