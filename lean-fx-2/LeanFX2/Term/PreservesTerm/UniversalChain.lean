@@ -467,6 +467,77 @@ inductive DispatchAtom :
                                    (RawTerm.eitherMatch scrutineeRaw
                                                          leftBranchRaw
                                                          rightBranchRaw))
+  /-- Modal-intro scaffold (Layer 1 — `innerType` preserved).  Closed
+  inner-type witness propagates to the modal-intro target. -/
+  | modIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      (innerClosed : IsClosedTy innerType)
+      {innerRaw : RawTerm scope}
+      (innerTerm : Term context innerType innerRaw)
+      (innerDispatch : DispatchAtom innerTerm) :
+      DispatchAtom (Term.modIntro (context := context) innerTerm
+                    : Term context innerType
+                                   (RawTerm.modIntro innerRaw))
+  /-- Modal-elim scaffold (Layer 1 — `innerType` preserved). -/
+  | modElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      (innerClosed : IsClosedTy innerType)
+      {innerRaw : RawTerm scope}
+      (innerTerm : Term context innerType innerRaw)
+      (innerDispatch : DispatchAtom innerTerm) :
+      DispatchAtom (Term.modElim (context := context) innerTerm
+                    : Term context innerType
+                                   (RawTerm.modElim innerRaw))
+  /-- Subsumption (cumulativity Conv-rule scaffold). -/
+  | subsume {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerType : Ty level scope}
+      (innerClosed : IsClosedTy innerType)
+      {innerRaw : RawTerm scope}
+      (innerTerm : Term context innerType innerRaw)
+      (innerDispatch : DispatchAtom innerTerm) :
+      DispatchAtom (Term.subsume (context := context) innerTerm
+                    : Term context innerType
+                                   (RawTerm.subsume innerRaw))
+  /-- Single-field record introduction.  Closed field-type witness
+  propagates to `Ty.record singleFieldType` via `IsClosedTy.record`. -/
+  | recordIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      (fieldClosed : IsClosedTy singleFieldType)
+      {firstRaw : RawTerm scope}
+      (firstField : Term context singleFieldType firstRaw)
+      (fieldDispatch : DispatchAtom firstField) :
+      DispatchAtom (Term.recordIntro (context := context) firstField
+                    : Term context (Ty.record singleFieldType)
+                                   (RawTerm.recordIntro firstRaw))
+  /-- Record projection at the single-field encoding.  Source carries
+  `Ty.record singleFieldType`; target at `singleFieldType`. -/
+  | recordProj {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {singleFieldType : Ty level scope}
+      (fieldClosed : IsClosedTy singleFieldType)
+      {recordRaw : RawTerm scope}
+      (recordValue : Term context (Ty.record singleFieldType) recordRaw)
+      (recordDispatch : DispatchAtom recordValue) :
+      DispatchAtom (Term.recordProj (context := context) recordValue
+                    : Term context singleFieldType
+                                   (RawTerm.recordProj recordRaw))
+  /-- Codata destructor.  Source carries `Ty.codata stateType outputType`;
+  target at `outputType`.  Both state and output types must be closed. -/
+  | codataDest {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      (stateClosed : IsClosedTy stateType)
+      (outputClosed : IsClosedTy outputType)
+      {codataRaw : RawTerm scope}
+      (codataValue : Term context (Ty.codata stateType outputType) codataRaw)
+      (codataDispatch : DispatchAtom codataValue) :
+      DispatchAtom (Term.codataDest (context := context) codataValue
+                    : Term context outputType
+                                   (RawTerm.codataDest codataRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -786,5 +857,57 @@ theorem RawStep.par.lift_full_term
           (IsClosedTy.arrow rightClosed motiveClosed) rightStep rfl
       subst arrowEq
       exact ⟨rightTarget, rightStep⟩
+  | modIntro innerClosed innerTerm _ ihInner =>
+    refine RawStep.par.lift_full_modIntro innerTerm ?_ rawStep
+    intro _ innerRawStep
+    obtain ⟨innerTargetType, innerTarget, innerStep⟩ := ihInner innerRawStep
+    have innerEq : innerTargetType = _ :=
+      Step.par.preserves_isClosedTy innerClosed innerStep rfl
+    subst innerEq
+    exact ⟨innerTarget, innerStep⟩
+  | modElim innerClosed innerTerm _ ihInner =>
+    refine RawStep.par.lift_full_modElim innerTerm ?_ rawStep
+    intro _ innerRawStep
+    obtain ⟨innerTargetType, innerTarget, innerStep⟩ := ihInner innerRawStep
+    have innerEq : innerTargetType = _ :=
+      Step.par.preserves_isClosedTy innerClosed innerStep rfl
+    subst innerEq
+    exact ⟨innerTarget, innerStep⟩
+  | subsume innerClosed innerTerm _ ihInner =>
+    refine RawStep.par.lift_full_subsume innerTerm ?_ rawStep
+    intro _ innerRawStep
+    obtain ⟨innerTargetType, innerTarget, innerStep⟩ := ihInner innerRawStep
+    have innerEq : innerTargetType = _ :=
+      Step.par.preserves_isClosedTy innerClosed innerStep rfl
+    subst innerEq
+    exact ⟨innerTarget, innerStep⟩
+  | recordIntro fieldClosed firstField _ ihField =>
+    refine RawStep.par.lift_full_recordIntro firstField ?_ rawStep
+    intro _ fieldRawStep
+    obtain ⟨fieldTargetType, fieldTarget, fieldStep⟩ := ihField fieldRawStep
+    have fieldEq : fieldTargetType = _ :=
+      Step.par.preserves_isClosedTy fieldClosed fieldStep rfl
+    subst fieldEq
+    exact ⟨fieldTarget, fieldStep⟩
+  | recordProj fieldClosed recordValue _ ihRecord =>
+    refine RawStep.par.lift_full_recordProj recordValue ?_ rawStep
+    intro _ recordRawStep
+    obtain ⟨recordTargetType, recordTarget, recordStep⟩ :=
+      ihRecord recordRawStep
+    have recordEq : recordTargetType = _ :=
+      Step.par.preserves_isClosedTy (IsClosedTy.record fieldClosed)
+                                     recordStep rfl
+    subst recordEq
+    exact ⟨recordTarget, recordStep⟩
+  | codataDest stateClosed outputClosed codataValue _ ihCodata =>
+    refine RawStep.par.lift_full_codataDest codataValue ?_ rawStep
+    intro _ codataRawStep
+    obtain ⟨codataTargetType, codataTarget, codataStep⟩ :=
+      ihCodata codataRawStep
+    have codataEq : codataTargetType = _ :=
+      Step.par.preserves_isClosedTy
+        (IsClosedTy.codata stateClosed outputClosed) codataStep rfl
+    subst codataEq
+    exact ⟨codataTarget, codataStep⟩
 
 end LeanFX2
