@@ -4189,6 +4189,126 @@ theorem partialStrengthenTypedEquivIntroHetOfSuccess_sound
     rightInvRawRenames forwardSound backwardSound castedLeftInvSound
     castedRightInvSound
 
+/-- Soundness of `partialStrengthenTypedEffectPerformOfSuccess`: the
+result's renamed target term is heterogeneously equal to the original
+typed effect-performance application.  The proof leans on
+proof-irrelevance for `Effects.CanPerform` (a `Prop`-valued inductive)
+to align the source's `canPerformOperation` with the renamed target
+`CanPerform.map ... targetCanPerform` after operation-signature
+carriers are identified via `Ty.partialStrengthen?_imp_rename`. -/
+theorem partialStrengthenTypedEffectPerformOfSuccess_sound
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {effectTag : RawTerm sourceScope}
+    {targetEffectTag : RawTerm targetScope}
+    (effectRow : Effects.EffectRow)
+    (operationSignature :
+      Effects.OperationSignature (Ty level sourceScope))
+    {targetArgumentCarrier targetResultCarrier :
+      Ty level targetScope}
+    (canPerformOperation :
+      Effects.CanPerform effectRow operationSignature)
+    {operationRaw argumentsRaw : RawTerm sourceScope}
+    {targetOperationRaw targetArgumentsRaw : RawTerm targetScope}
+    {operationTag :
+      Term sourceCtx
+        (Ty.effect operationSignature.argumentCarrier effectTag)
+        operationRaw}
+    {arguments :
+      Term sourceCtx operationSignature.argumentCarrier argumentsRaw}
+    {targetOperationTag :
+      Term targetCtx
+        (Ty.effect targetArgumentCarrier targetEffectTag)
+        targetOperationRaw}
+    {targetArguments :
+      Term targetCtx targetArgumentCarrier targetArgumentsRaw}
+    (effectTagStrengthens :
+      effectTag.partialStrengthen? strengthening.back =
+        some targetEffectTag)
+    (argumentCarrierStrengthens :
+      operationSignature.argumentCarrier.partialStrengthen?
+          strengthening.back =
+        some targetArgumentCarrier)
+    (resultCarrierStrengthens :
+      operationSignature.resultCarrier.partialStrengthen?
+          strengthening.back =
+        some targetResultCarrier)
+    (operationRawStrengthens :
+      operationRaw.partialStrengthen? strengthening.back =
+        some targetOperationRaw)
+    (argumentsRawStrengthens :
+      argumentsRaw.partialStrengthen? strengthening.back =
+        some targetArgumentsRaw)
+    (effectTagRenames :
+      effectTag = targetEffectTag.rename strengthening.forward)
+    (operationRawRenames :
+      operationRaw = targetOperationRaw.rename strengthening.forward)
+    (argumentsRawRenames :
+      argumentsRaw = targetArgumentsRaw.rename strengthening.forward)
+    (operationTagSound :
+      HEq operationTag
+        (Term.rename strengthening.toTermRenaming targetOperationTag))
+    (argumentsSound :
+      HEq arguments
+        (Term.rename strengthening.toTermRenaming targetArguments)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEffectPerformOfSuccess
+        (effectTag := effectTag) (targetEffectTag := targetEffectTag)
+        (operationTag := operationTag) (arguments := arguments)
+        effectRow operationSignature
+        (targetArgumentCarrier := targetArgumentCarrier)
+        (targetResultCarrier := targetResultCarrier)
+        canPerformOperation targetOperationTag targetArguments
+        effectTagStrengthens argumentCarrierStrengthens
+        resultCarrierStrengthens operationRawStrengthens
+        argumentsRawStrengthens effectTagRenames operationRawRenames
+        argumentsRawRenames) := by
+  refine ⟨?_⟩
+  have argumentCarrierRenames :
+      operationSignature.argumentCarrier =
+        targetArgumentCarrier.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename operationSignature.argumentCarrier
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetArgumentCarrier argumentCarrierStrengthens
+  have resultCarrierRenames :
+      operationSignature.resultCarrier =
+        targetResultCarrier.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename operationSignature.resultCarrier
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetResultCarrier resultCarrierStrengthens
+  obtain ⟨opLabel, opArgCarrier, opResCarrier⟩ := operationSignature
+  simp only at argumentCarrierRenames resultCarrierRenames
+  subst argumentCarrierRenames
+  subst resultCarrierRenames
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedEffectPerformOfSuccess]
+  cases canPerformOperation with
+  | direct rowMember =>
+      exact Term.effectPerform_HEq_congr effectRow
+        { effectLabel := opLabel
+          argumentCarrier :=
+            targetArgumentCarrier.rename strengthening.forward
+          resultCarrier :=
+            targetResultCarrier.rename strengthening.forward }
+        (Effects.CanPerform.direct rowMember)
+        effectTagRenames operationRawRenames argumentsRawRenames
+        operationTagSound argumentsSound
+  | readViaWrite _ _ rowMember =>
+      exact Term.effectPerform_HEq_congr effectRow
+        { effectLabel := Effects.EffectLabel.read
+          argumentCarrier :=
+            targetArgumentCarrier.rename strengthening.forward
+          resultCarrier :=
+            targetResultCarrier.rename strengthening.forward }
+        (Effects.CanPerform.readViaWrite
+          (targetArgumentCarrier.rename strengthening.forward)
+          (targetResultCarrier.rename strengthening.forward)
+          rowMember)
+        effectTagRenames operationRawRenames argumentsRawRenames
+        operationTagSound argumentsSound
+
 end Term
 
 end LeanFX2

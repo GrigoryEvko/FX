@@ -349,4 +349,23 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHetOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHetOfSuccess_sound
 
+-- Phase 33: algebraic-effect performance via OfSuccess.  EffectPerform's
+-- wrapper consumes pre-strengthened children and rebuilds the operation
+-- signature + `CanPerform` evidence structurally at the target scope.
+-- The OfSuccess form lifts this to the standard schema: 2 typed targets
+-- (operationTag, arguments) + 5 strengthening witnesses (effectTag,
+-- argumentCarrier, resultCarrier, operationRaw, argumentsRaw) + 3 rename
+-- equations.  `OperationSignature.map` preserves `effectLabel` (a scope-
+-- free tag) while mapping carriers through the renaming; `CanPerform.map`
+-- dispatches on the proof's constructor (`direct` / `readViaWrite`) to
+-- transport `EffectRow.Member` evidence definitionally.  Soundness leans
+-- on `effectPerform_HEq_congr` (Atomic.lean:736) with the operation
+-- signature aligned via two `Ty.partialStrengthen?_imp_rename` derivations
+-- (argumentCarrier + resultCarrier) followed by `obtain` on the source
+-- signature's three fields then `subst` of both carrier renames; the
+-- `cases canPerformOperation` produces two branches both reduced to
+-- `Term.effectPerform_HEq_congr` applications.
+#print axioms LeanFX2.Term.partialStrengthenTypedEffectPerformOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedEffectPerformOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
