@@ -51,6 +51,18 @@ theorem heq_cast_right {indexType : Sort u} {motive : indexType → Sort v}
   cases indexEq
   rfl
 
+/-- Heterogeneous equality between a value and a cast of that same value
+on the left.  Dependent eliminators use this orientation when `Term.rename`
+casts a constructor built at the pre-commuted `subst0` type into the
+post-commuted type. -/
+theorem heq_cast_left {indexType : Sort u} {motive : indexType → Sort v}
+    {firstIndex secondIndex : indexType}
+    (indexEq : firstIndex = secondIndex)
+    (value : motive firstIndex) :
+    HEq value (indexEq ▸ value) := by
+  cases indexEq
+  rfl
+
 /-- Renaming a variable is heterogeneously equal to the variable at the
 renamed position.  `Term.rename` casts this variable across the
 `TermRenaming` proof; this lemma packages the cast proof once for
@@ -238,6 +250,157 @@ theorem partialStrengthenTypedOptionSome_sound {mode : Mode} {level : Nat}
           StrengtheningResult.renamedTarget] at valueSound ⊢
       exact Term.optionSome_HEq_congr typeRenames rawRenames
         valueSound.termRenames
+
+/-- Soundness for boolean eliminator strengthening. -/
+theorem partialStrengthenTypedBoolElim_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    {targetMotiveType : Ty level (targetScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (motiveStrengthens :
+      motiveType.partialStrengthen? strengthening.back.lift =
+        some targetMotiveType)
+    {scrutineeResult : StrengtheningResult strengthening scrutinee}
+    {thenResult : StrengtheningResult strengthening thenBranch}
+    {elseResult : StrengtheningResult strengthening elseBranch}
+    (scrutineeSound : StrengtheningSoundness scrutineeResult)
+    (thenSound : StrengtheningSoundness thenResult)
+    (elseSound : StrengtheningSoundness elseResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedBoolElim motiveStrengthens scrutineeResult
+        thenResult elseResult) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      cases scrutineeTypeStrengthens
+      cases thenResult with
+      | mk targetThenType targetThenRaw targetThenTerm thenTypeStrengthens
+          thenRawStrengthens thenTypeRenames thenRawRenames =>
+          have thenTypeExpected :
+              (motiveType.subst0 Ty.bool
+                  RawTerm.boolTrue).partialStrengthen?
+                strengthening.back =
+                some (targetMotiveType.subst0 Ty.bool
+                  RawTerm.boolTrue) :=
+            Ty.partialStrengthen?_subst0_of_success motiveType
+              targetMotiveType Ty.bool Ty.bool RawTerm.boolTrue
+              RawTerm.boolTrue strengthening.forward strengthening.back
+              strengthening.injectsBack strengthening.back_forward
+              motiveStrengthens rfl rfl
+          rw [thenTypeExpected] at thenTypeStrengthens
+          cases thenTypeStrengthens
+          cases elseResult with
+          | mk targetElseType targetElseRaw targetElseTerm elseTypeStrengthens
+              elseRawStrengthens elseTypeRenames elseRawRenames =>
+              have elseTypeExpected :
+                  (motiveType.subst0 Ty.bool
+                      RawTerm.boolFalse).partialStrengthen?
+                    strengthening.back =
+                    some (targetMotiveType.subst0 Ty.bool
+                      RawTerm.boolFalse) :=
+                Ty.partialStrengthen?_subst0_of_success motiveType
+                  targetMotiveType Ty.bool Ty.bool RawTerm.boolFalse
+                  RawTerm.boolFalse strengthening.forward strengthening.back
+                  strengthening.injectsBack strengthening.back_forward
+                  motiveStrengthens rfl rfl
+              rw [elseTypeExpected] at elseTypeStrengthens
+              cases elseTypeStrengthens
+              refine ⟨?_⟩
+              dsimp [partialStrengthenTypedBoolElim,
+                  StrengtheningResult.renamedTarget]
+                at scrutineeSound thenSound elseSound ⊢
+              have scrutineeTermRenames := scrutineeSound.termRenames
+              have thenTermRenames := thenSound.termRenames
+              have elseTermRenames := elseSound.termRenames
+              dsimp [StrengtheningResult.renamedTarget] at scrutineeTermRenames
+              dsimp [StrengtheningResult.renamedTarget] at thenTermRenames
+              dsimp [StrengtheningResult.renamedTarget] at elseTermRenames
+              have motiveRenames :
+                  motiveType = targetMotiveType.rename
+                    strengthening.forward.lift :=
+                Ty.partialStrengthen?_imp_rename motiveType
+                  strengthening.forward.lift strengthening.back.lift
+                  (strengthening.lift Ty.bool Ty.bool rfl).injectsBack
+                  targetMotiveType motiveStrengthens
+              have thenCastSound :
+                  HEq thenBranch
+                    (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                      RawTerm.boolTrue strengthening.forward ▸
+                    Term.rename strengthening.toTermRenaming
+                      targetThenTerm) :=
+                have castSound :
+                    HEq
+                      (Term.rename strengthening.toTermRenaming
+                        targetThenTerm)
+                      (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                        RawTerm.boolTrue strengthening.forward ▸
+                      Term.rename strengthening.toTermRenaming
+                        targetThenTerm) := by
+                  exact heq_cast_left
+                    (motive := fun branchType =>
+                      Term sourceCtx branchType
+                        (targetThenRaw.rename strengthening.forward))
+                    (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                      RawTerm.boolTrue strengthening.forward)
+                    (Term.rename strengthening.toTermRenaming
+                      targetThenTerm)
+                HEq.trans thenTermRenames castSound
+              have elseCastSound :
+                  HEq elseBranch
+                    (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                      RawTerm.boolFalse strengthening.forward ▸
+                    Term.rename strengthening.toTermRenaming
+                      targetElseTerm) :=
+                have castSound :
+                    HEq
+                      (Term.rename strengthening.toTermRenaming
+                        targetElseTerm)
+                      (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                        RawTerm.boolFalse strengthening.forward ▸
+                      Term.rename strengthening.toTermRenaming
+                        targetElseTerm) := by
+                  exact heq_cast_left
+                    (motive := fun branchType =>
+                      Term sourceCtx branchType
+                        (targetElseRaw.rename strengthening.forward))
+                    (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                      RawTerm.boolFalse strengthening.forward)
+                    (Term.rename strengthening.toTermRenaming
+                      targetElseTerm)
+                HEq.trans elseTermRenames castSound
+              exact HEq.trans
+                (Term.boolElim_HEq_congr motiveRenames
+                  scrutineeRawRenames thenRawRenames elseRawRenames
+                  scrutineeTermRenames thenCastSound elseCastSound)
+                (heq_cast_left
+                  (motive := fun resultType =>
+                    Term sourceCtx resultType
+                      ((RawTerm.boolElim targetScrutineeRaw targetThenRaw
+                        targetElseRaw).rename strengthening.forward))
+                  (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                    targetScrutineeRaw strengthening.forward).symm
+                  (Term.boolElim
+                    (motiveType := targetMotiveType.rename
+                      strengthening.forward.lift)
+                    (Term.rename strengthening.toTermRenaming
+                      targetScrutineeTerm)
+                    (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                      RawTerm.boolTrue strengthening.forward ▸
+                    Term.rename strengthening.toTermRenaming
+                      targetThenTerm)
+                    (Ty.subst0_rename_commute targetMotiveType Ty.bool
+                      RawTerm.boolFalse strengthening.forward ▸
+                    Term.rename strengthening.toTermRenaming
+                      targetElseTerm)))
 
 /-- Soundness for natural-number eliminator strengthening. -/
 theorem partialStrengthenTypedNatElim_sound {mode : Mode} {level : Nat}

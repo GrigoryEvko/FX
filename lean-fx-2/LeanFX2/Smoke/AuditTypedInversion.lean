@@ -48,6 +48,7 @@ namespace LeanFX2.SmokeTypedInversion
 -- Typed strengthening image soundness scaffold.
 #print axioms LeanFX2.Term.StrengtheningSoundness
 #print axioms LeanFX2.Term.heq_cast_right
+#print axioms LeanFX2.Term.heq_cast_left
 #print axioms LeanFX2.Term.rename_var_heq
 #print axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedUnit_sound
@@ -60,6 +61,7 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedOptionNoneOfType_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedNatSucc_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedOptionSome_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedBoolElim_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedNatElim_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedNatRec_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedModIntro_sound

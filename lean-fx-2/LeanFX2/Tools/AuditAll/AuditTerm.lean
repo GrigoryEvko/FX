@@ -459,6 +459,7 @@ existing computational dispatcher. -/
 
 #assert_no_axioms LeanFX2.Term.StrengtheningSoundness
 #assert_no_axioms LeanFX2.Term.heq_cast_right
+#assert_no_axioms LeanFX2.Term.heq_cast_left
 #assert_no_axioms LeanFX2.Term.rename_var_heq
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUnit_sound
@@ -471,6 +472,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionNoneOfType_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatSucc_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionSome_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedBoolElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatRec_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedModIntro_sound
