@@ -551,5 +551,9 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.pathLam_HEq_congr
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedPathAppOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedPathAppOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedTranspOfSuccess
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedTranspOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess_sound
 
 end LeanFX2.Tools

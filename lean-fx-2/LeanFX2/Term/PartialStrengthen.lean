@@ -5334,6 +5334,93 @@ def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
                 modeIsUnivalent targetGluedValue baseSuccess
                 boundarySuccess gluedRawStrengthens gluedRawRenames
 
+/-- OfSuccess variant of `partialStrengthenTypedTransp` that consumes
+pre-witnessed strengthening data for both the typed path and source
+children, sparing the soundness proof from replicating the wrapper's
+`cases pathResult` / `cases sourceResult` dance.  Reusable from any
+caller that has already extracted the typed Path / source witnesses
+via separate strengthening lookups (or constructed them directly). -/
+def partialStrengthenTypedTranspOfSuccess
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    {sourceType targetType : Ty level sourceScope}
+    {targetSourceType targetTargetType : Ty level targetScope}
+    {sourceTypeRaw targetTypeRaw : RawTerm sourceScope}
+    {targetSourceTypeRaw targetTargetTypeRaw : RawTerm targetScope}
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    {targetPathRaw targetSourceRaw : RawTerm targetScope}
+    {typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term sourceCtx sourceType sourceRaw}
+    (targetPath :
+      Term targetCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          targetSourceTypeRaw targetTargetTypeRaw)
+        targetPathRaw)
+    (targetSourceValue :
+      Term targetCtx targetSourceType targetSourceRaw)
+    (sourceTypeStrengthens :
+      sourceType.partialStrengthen? strengthening.back =
+        some targetSourceType)
+    (targetTypeStrengthens :
+      targetType.partialStrengthen? strengthening.back =
+        some targetTargetType)
+    (sourceTypeRawStrengthens :
+      sourceTypeRaw.partialStrengthen? strengthening.back =
+        some targetSourceTypeRaw)
+    (targetTypeRawStrengthens :
+      targetTypeRaw.partialStrengthen? strengthening.back =
+        some targetTargetTypeRaw)
+    (pathRawStrengthens :
+      pathRaw.partialStrengthen? strengthening.back =
+        some targetPathRaw)
+    (sourceRawStrengthens :
+      sourceRaw.partialStrengthen? strengthening.back =
+        some targetSourceRaw)
+    (pathRawRenames :
+      pathRaw = targetPathRaw.rename strengthening.forward)
+    (sourceRawRenames :
+      sourceRaw = targetSourceRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.transp (context := sourceCtx) modeIsUnivalent universeLevel
+        universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) where
+  targetType := targetTargetType
+  targetRaw := RawTerm.transp targetPathRaw targetSourceRaw
+  targetTerm :=
+    Term.transp (context := targetCtx) modeIsUnivalent
+      universeLevel universeLevelLt targetSourceType
+      targetTargetType targetSourceTypeRaw targetTargetTypeRaw
+      targetPath targetSourceValue
+  typeStrengthens := targetTypeStrengthens
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (pathRaw.partialStrengthen? strengthening.back)
+        (sourceRaw.partialStrengthen? strengthening.back)
+        RawTerm.transp =
+          some (RawTerm.transp targetPathRaw targetSourceRaw)
+    rw [pathRawStrengthens, sourceRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename targetType
+      strengthening.forward strengthening.back
+      strengthening.injectsBack targetTargetType
+      targetTypeStrengthens
+  rawRenames := by
+    cases pathRawRenames
+    cases sourceRawRenames
+    rfl
+
 /-- Cubical transport strengthens by strengthening the path proof, the
 source value, and the schematic source/target carrier data. -/
 def partialStrengthenTypedTransp {mode : Mode} {level : Nat}
@@ -5429,6 +5516,68 @@ def partialStrengthenTypedTransp {mode : Mode} {level : Nat}
               cases sourceRawRenames
               rfl
           }
+
+/-- OfSuccess variant of `partialStrengthenTypedHcomp` consuming
+pre-witnessed strengthening data for both typed children, sparing the
+soundness proof from the wrapper's nested `cases sidesResult` /
+`cases capResult` dance. -/
+def partialStrengthenTypedHcompOfSuccess
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    {targetSidesRaw targetCapRaw : RawTerm targetScope}
+    {sidesValue : Term sourceCtx carrierType sidesRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (targetSidesValue :
+      Term targetCtx targetCarrierType targetSidesRaw)
+    (targetCapValue :
+      Term targetCtx targetCarrierType targetCapRaw)
+    (carrierStrengthens :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (sidesRawStrengthens :
+      sidesRaw.partialStrengthen? strengthening.back =
+        some targetSidesRaw)
+    (capRawStrengthens :
+      capRaw.partialStrengthen? strengthening.back =
+        some targetCapRaw)
+    (sidesRawRenames :
+      sidesRaw = targetSidesRaw.rename strengthening.forward)
+    (capRawRenames :
+      capRaw = targetCapRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.hcomp (context := sourceCtx) modeIsUnivalent sidesValue
+        capValue) where
+  targetType := targetCarrierType
+  targetRaw := RawTerm.hcomp targetSidesRaw targetCapRaw
+  targetTerm :=
+    Term.hcomp (context := targetCtx) modeIsUnivalent
+      targetSidesValue targetCapValue
+  typeStrengthens := carrierStrengthens
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (sidesRaw.partialStrengthen? strengthening.back)
+        (capRaw.partialStrengthen? strengthening.back)
+        RawTerm.hcomp =
+          some (RawTerm.hcomp targetSidesRaw targetCapRaw)
+    rw [sidesRawStrengthens, capRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename carrierType
+      strengthening.forward strengthening.back
+      strengthening.injectsBack targetCarrierType
+      carrierStrengthens
+  rawRenames := by
+    cases sidesRawRenames
+    cases capRawRenames
+    rfl
 
 /-- Homogeneous composition strengthens by strengthening both carrier
 payloads at the same strengthened carrier type. -/

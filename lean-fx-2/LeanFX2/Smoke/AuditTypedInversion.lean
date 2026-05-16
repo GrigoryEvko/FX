@@ -301,4 +301,24 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedPathAppOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedPathAppOfSuccess_sound
 
+-- Phase 29: cubical transport via OfSuccess pattern.
+-- Transp's wrapper extracts pathResult + sourceResult typed witnesses
+-- and aligns them by rewriting on `expectedPathTypeStrengthens` and
+-- `sourceTypeStrengthens`.  The OfSuccess form takes the typed targets
+-- plus 6 raw-level strengthening witnesses as parameters, sparing the
+-- soundness proof from replicating that dance.  Composes via
+-- `transp_HEq_congr` with 4 type/raw equalities from
+-- `partialStrengthen?_imp_rename`.
+#print axioms LeanFX2.Term.partialStrengthenTypedTranspOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedTranspOfSuccess_sound
+
+-- Phase 30: homogeneous composition via OfSuccess pattern.
+-- Hcomp's wrapper is the simplest non-binder OfSuccess target: single
+-- carrierType pivot shared by both child terms.  The OfSuccess form
+-- takes the typed children + carrier strengthening + raw witnesses.
+-- Composes via `hcomp_HEq_congr` with one type equality from
+-- `partialStrengthen?_imp_rename`.
+#print axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
