@@ -1,4 +1,5 @@
 import LeanFX2.Term.PreservesTerm
+import LeanFX2.Term.SubjectReductionPar
 
 /-! # LeanFX2.Term.PreservesTerm.UniversalChain
 
@@ -266,6 +267,21 @@ inductive DispatchAtom :
                         (RawTerm.equivIntro
                           (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))
                           (RawTerm.lam (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩))))
+  /-- Phase A1 follow-up: closed-type single-child compound ctor.
+
+  `intervalOpp` takes one typed child at the closed type `Ty.interval`.
+  The dispatch arm calls `lift_full_intervalOpp` with a callback
+  recursively built from the inner `DispatchAtom` witness's IH —
+  bridged from two-Ty `StepParExists` to fixed-Ty `Term ctx Ty.interval`
+  via `Step.par.preserves_isClosedTy IsClosedTy.interval`. -/
+  | intervalOpp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {innerRaw : RawTerm scope}
+      (innerValue : Term context Ty.interval innerRaw)
+      (innerDispatch : DispatchAtom innerValue) :
+      DispatchAtom (Term.intervalOpp (context := context) innerValue
+                    : Term context Ty.interval
+                                   (RawTerm.intervalOpp innerRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -373,5 +389,19 @@ theorem RawStep.par.lift_full_term
             carrier carrierRaw
             (Term.equivReflIdAtId innerLevel innerLevelLt carrier carrierRaw)
             rawStep
+  | intervalOpp innerValue _innerDispatch ihInner =>
+    -- ihInner : ∀ {targetRaw}, RawStep.par innerValue.toRaw targetRaw →
+    --            StepParExists innerValue targetRaw
+    -- lift_full_intervalOpp wants a fixed-Ty callback
+    --   ∀ {tgt}, RawStep.par innerRaw tgt → ∃ innerTarget : Term ctx Ty.interval tgt,
+    --      Step.par innerValue innerTarget
+    -- Bridge two-Ty → fixed-Ty via Step.par.preserves_isClosedTy IsClosedTy.interval.
+    refine RawStep.par.lift_full_intervalOpp innerValue ?_ rawStep
+    intro targetRawIH innerRawStep
+    obtain ⟨innerTargetType, innerTarget, innerStep⟩ := ihInner innerRawStep
+    have intervalEq : innerTargetType = Ty.interval :=
+      Step.par.preserves_isClosedTy IsClosedTy.interval innerStep rfl
+    subst intervalEq
+    exact ⟨innerTarget, innerStep⟩
 
 end LeanFX2
