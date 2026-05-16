@@ -475,6 +475,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedBoolElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedAppOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedApp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedAppPiOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedAppPi_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatRec_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedModIntro_sound

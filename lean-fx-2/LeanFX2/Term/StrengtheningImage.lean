@@ -517,6 +517,137 @@ theorem partialStrengthenTypedApp_sound {mode : Mode} {level : Nat}
             (functionRawRenames := functionRawRenames)
             (argumentRawRenames := argumentRawRenames)
 
+/-- Soundness for the explicit success branch of dependent application
+strengthening. -/
+theorem partialStrengthenTypedAppPiOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {targetDomainType : Ty level targetScope}
+    {targetCodomainType : Ty level (targetScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {targetFunctionRaw targetArgumentRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    {targetFunctionTerm :
+      Term targetCtx (Ty.piTy targetDomainType targetCodomainType)
+        targetFunctionRaw}
+    {targetArgumentTerm :
+      Term targetCtx targetDomainType targetArgumentRaw}
+    {domainSuccess :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType}
+    {codomainSuccess :
+      codomainType.partialStrengthen? strengthening.back.lift =
+        some targetCodomainType}
+    {functionRawStrengthens :
+      functionRaw.partialStrengthen? strengthening.back =
+        some targetFunctionRaw}
+    {argumentRawStrengthens :
+      argumentRaw.partialStrengthen? strengthening.back =
+        some targetArgumentRaw}
+    {functionRawRenames :
+      functionRaw = targetFunctionRaw.rename strengthening.forward}
+    {argumentRawRenames :
+      argumentRaw = targetArgumentRaw.rename strengthening.forward}
+    (functionSound :
+      HEq functionTerm
+        (Term.rename strengthening.toTermRenaming targetFunctionTerm))
+    (argumentSound :
+      HEq argumentTerm
+        (Term.rename strengthening.toTermRenaming targetArgumentTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedAppPiOfSuccess
+        (functionTerm := functionTerm) (argumentTerm := argumentTerm)
+        targetFunctionTerm targetArgumentTerm domainSuccess codomainSuccess
+        functionRawStrengthens argumentRawStrengthens functionRawRenames
+        argumentRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedAppPiOfSuccess]
+  have domainRenames :
+      domainType = targetDomainType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename domainType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetDomainType domainSuccess
+  have codomainRenames :
+      codomainType = targetCodomainType.rename strengthening.forward.lift :=
+    Ty.partialStrengthen?_imp_rename codomainType
+      strengthening.forward.lift strengthening.back.lift
+      (strengthening.lift domainType targetDomainType
+        domainSuccess).injectsBack targetCodomainType codomainSuccess
+  exact HEq.trans
+    (Term.appPi_HEq_congr domainRenames codomainRenames
+      functionRawRenames argumentRawRenames functionSound argumentSound)
+    (heq_cast_left
+      (motive := fun resultType =>
+        Term sourceCtx resultType
+          ((RawTerm.app targetFunctionRaw targetArgumentRaw).rename
+            strengthening.forward))
+      (Ty.subst0_rename_commute targetCodomainType targetDomainType
+        targetArgumentRaw strengthening.forward).symm
+      (Term.appPi
+        (Term.rename strengthening.toTermRenaming targetFunctionTerm)
+        (Term.rename strengthening.toTermRenaming targetArgumentTerm)))
+
+/-- Soundness for dependent application strengthening. -/
+theorem partialStrengthenTypedAppPi_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {targetDomainType : Ty level targetScope}
+    {targetCodomainType : Ty level (targetScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (domainSuccess :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType)
+    (codomainSuccess :
+      codomainType.partialStrengthen? strengthening.back.lift =
+        some targetCodomainType)
+    {functionResult : StrengtheningResult strengthening functionTerm}
+    {argumentResult : StrengtheningResult strengthening argumentTerm}
+    (functionSound : StrengtheningSoundness functionResult)
+    (argumentSound : StrengtheningSoundness argumentResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedAppPi domainSuccess codomainSuccess
+        functionResult argumentResult) := by
+  cases functionResult with
+  | mk targetFunctionType targetFunctionRaw targetFunctionTerm
+      functionTypeStrengthens functionRawStrengthens functionTypeRenames
+      functionRawRenames =>
+      change
+        Option.mapTwo
+          (domainType.partialStrengthen? strengthening.back)
+          (codomainType.partialStrengthen? strengthening.back.lift)
+          Ty.piTy = some targetFunctionType at functionTypeStrengthens
+      rw [domainSuccess, codomainSuccess] at functionTypeStrengthens
+      cases functionTypeStrengthens
+      cases argumentResult with
+      | mk targetArgumentType targetArgumentRaw targetArgumentTerm
+          argumentTypeStrengthens argumentRawStrengthens
+          argumentTypeRenames argumentRawRenames =>
+          rw [domainSuccess] at argumentTypeStrengthens
+          cases argumentTypeStrengthens
+          exact partialStrengthenTypedAppPiOfSuccess_sound
+            (functionSound := functionSound.termRenames)
+            (argumentSound := argumentSound.termRenames)
+            (domainSuccess := domainSuccess)
+            (codomainSuccess := codomainSuccess)
+            (functionRawStrengthens := functionRawStrengthens)
+            (argumentRawStrengthens := argumentRawStrengthens)
+            (functionRawRenames := functionRawRenames)
+            (argumentRawRenames := argumentRawRenames)
+
 /-- Soundness for natural-number eliminator strengthening. -/
 theorem partialStrengthenTypedNatElim_sound {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
