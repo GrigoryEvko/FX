@@ -4298,9 +4298,67 @@ def partialStrengthenTypedFunextReflAtId {mode : Mode} {level : Nat}
           simp only [RawTerm.partialRename?]
           rw [applyStrengthens])
 
-/-- Equivalence application strengthens by strengthening the equivalence
-term and its argument, then decomposing the strengthened equivalence
-type to align the argument carrier. -/
+/-- Success branch for equivalence-application strengthening.  Mirrors
+`partialStrengthenTypedEquivApplyOfSuccess` (Phase 22) but for the
+univalence-α companion `Term.equivApp` / `RawTerm.equivApp` constructor
+pair.  Same dual Option.casesOn discriminator wall over `Ty.equiv`'s
+carrier-pair pivots. -/
+def partialStrengthenTypedEquivAppOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {targetEquivRaw targetArgumentRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (targetEquivTerm :
+      Term targetCtx (Ty.equiv targetCarrierA targetCarrierB) targetEquivRaw)
+    (targetArgumentTerm :
+      Term targetCtx targetCarrierA targetArgumentRaw)
+    (_carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
+    (equivRawStrengthens :
+      equivRaw.partialStrengthen? strengthening.back = some targetEquivRaw)
+    (argumentRawStrengthens :
+      argumentRaw.partialStrengthen? strengthening.back =
+        some targetArgumentRaw)
+    (equivRawRenames :
+      equivRaw = targetEquivRaw.rename strengthening.forward)
+    (argumentRawRenames :
+      argumentRaw = targetArgumentRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.equivApp equivTerm argumentTerm) where
+  targetType := targetCarrierB
+  targetRaw := RawTerm.equivApp targetEquivRaw targetArgumentRaw
+  targetTerm := Term.equivApp targetEquivTerm targetArgumentTerm
+  typeStrengthens := carrierBSuccess
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (equivRaw.partialStrengthen? strengthening.back)
+        (argumentRaw.partialStrengthen? strengthening.back)
+        RawTerm.equivApp =
+          some (RawTerm.equivApp targetEquivRaw targetArgumentRaw)
+    rw [equivRawStrengthens, argumentRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename carrierB
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierB carrierBSuccess
+  rawRenames := by
+    cases equivRawRenames
+    cases argumentRawRenames
+    rfl
+
+/-- Equiv-application strengthens by decomposing the strengthened
+`Ty.equiv` carrier-pair pivots and threading them into the
+`equivApp` constructor at the target context.  Wrapper delegates the
+success path to `partialStrengthenTypedEquivAppOfSuccess`. -/
 def partialStrengthenTypedEquivApp {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -4343,33 +4401,10 @@ def partialStrengthenTypedEquivApp {mode : Mode} {level : Nat}
                   argumentTypeRenames argumentRawRenames =>
                   rw [carrierASuccess] at argumentTypeStrengthens
                   cases argumentTypeStrengthens
-                  exact {
-                    targetType := targetCarrierB
-                    targetRaw :=
-                      RawTerm.equivApp targetEquivRaw targetArgumentRaw
-                    targetTerm :=
-                      Term.equivApp targetEquivTerm targetArgumentTerm
-                    typeStrengthens := carrierBSuccess
-                    rawStrengthens := by
-                      change
-                        Option.mapTwo
-                          (equivRaw.partialStrengthen? strengthening.back)
-                          (argumentRaw.partialStrengthen? strengthening.back)
-                          RawTerm.equivApp =
-                          some (RawTerm.equivApp targetEquivRaw
-                            targetArgumentRaw)
-                      rw [equivRawStrengthens, argumentRawStrengthens]
-                      rfl
-                    typeRenames :=
-                      Ty.partialStrengthen?_imp_rename carrierB
-                        strengthening.forward strengthening.back
-                        strengthening.injectsBack targetCarrierB
-                        carrierBSuccess
-                    rawRenames := by
-                      cases equivRawRenames
-                      cases argumentRawRenames
-                      rfl
-                  }
+                  exact partialStrengthenTypedEquivAppOfSuccess
+                    targetEquivTerm targetArgumentTerm carrierASuccess
+                    carrierBSuccess equivRawStrengthens argumentRawStrengthens
+                    equivRawRenames argumentRawRenames
 
 /-- Success branch for equiv-application strengthening.  Takes
 pre-decomposed witnesses for the equiv carrier-pair pivots plus the
@@ -5133,6 +5168,57 @@ def partialStrengthenTypedGlueIntro {mode : Mode} {level : Nat}
               rfl
           }
 
+/-- Success branch for cubical Glue-elimination strengthening.  Takes
+pre-decomposed witnesses for the glue carrier's base + boundary pivots
+plus the strengthened glued-value.  Splits out the term-mode body so
+soundness skips the wrapper's dual `Option.casesOn` discriminator wall
+over `Ty.glue`. -/
+def partialStrengthenTypedGlueElimOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {targetBaseType : Ty level targetScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {targetBoundaryWitness targetGluedRaw : RawTerm targetScope}
+    {gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (targetGluedValue :
+      Term targetCtx (Ty.glue targetBaseType targetBoundaryWitness)
+        targetGluedRaw)
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (_boundarySuccess :
+      boundaryWitness.partialStrengthen? strengthening.back =
+        some targetBoundaryWitness)
+    (gluedRawStrengthens :
+      gluedRaw.partialStrengthen? strengthening.back = some targetGluedRaw)
+    (gluedRawRenames :
+      gluedRaw = targetGluedRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.glueElim (context := sourceCtx) modeIsUnivalent gluedValue) where
+  targetType := targetBaseType
+  targetRaw := RawTerm.glueElim targetGluedRaw
+  targetTerm := Term.glueElim (context := targetCtx) modeIsUnivalent
+    targetGluedValue
+  typeStrengthens := baseSuccess
+  rawStrengthens := by
+    change
+      (match gluedRaw.partialStrengthen? strengthening.back with
+      | some strengthenedGlued =>
+          some (RawTerm.glueElim strengthenedGlued)
+      | none => none) =
+        some (RawTerm.glueElim targetGluedRaw)
+    rw [gluedRawStrengthens]
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename baseType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetBaseType baseSuccess
+  rawRenames := by
+    cases gluedRawRenames
+    rfl
+
 /-- Glue elimination strengthens by decomposing the strengthened glue
 carrier of the eliminated value. -/
 def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
@@ -5169,29 +5255,9 @@ def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
           | some targetBoundaryWitness =>
               rw [baseSuccess, boundarySuccess] at gluedTypeStrengthens
               cases gluedTypeStrengthens
-              exact {
-                targetType := targetBaseType
-                targetRaw := RawTerm.glueElim targetGluedRaw
-                targetTerm :=
-                  Term.glueElim (context := targetCtx) modeIsUnivalent
-                    targetGluedValue
-                typeStrengthens := baseSuccess
-                rawStrengthens := by
-                  change
-                    (match gluedRaw.partialStrengthen? strengthening.back with
-                    | some strengthenedGlued =>
-                        some (RawTerm.glueElim strengthenedGlued)
-                    | none => none) =
-                      some (RawTerm.glueElim targetGluedRaw)
-                  rw [gluedRawStrengthens]
-                typeRenames :=
-                  Ty.partialStrengthen?_imp_rename baseType
-                    strengthening.forward strengthening.back
-                    strengthening.injectsBack targetBaseType baseSuccess
-                rawRenames := by
-                  cases gluedRawRenames
-                  rfl
-              }
+              exact partialStrengthenTypedGlueElimOfSuccess
+                modeIsUnivalent targetGluedValue baseSuccess
+                boundarySuccess gluedRawStrengthens gluedRawRenames
 
 /-- Cubical transport strengthens by strengthening the path proof, the
 source value, and the schematic source/target carrier data. -/

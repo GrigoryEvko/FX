@@ -434,6 +434,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextRefl
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApp
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivAppOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApply
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv
@@ -442,6 +443,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUaIntroHet
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedGlueIntro
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedGlueElim
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedGlueElimOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedTransp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedHcomp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedHcompPath
@@ -541,5 +543,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedOeqJOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdStrictRecOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivAppOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedGlueElimOfSuccess_sound
 
 end LeanFX2.Tools

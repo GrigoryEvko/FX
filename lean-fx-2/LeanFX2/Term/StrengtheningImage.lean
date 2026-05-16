@@ -3393,6 +3393,117 @@ theorem partialStrengthenTypedEquivApplyOfSuccess_sound {mode : Mode}
   exact Term.equivApply_HEq_congr carrierARenames carrierBRenames
     equivRawRenames argumentRawRenames equivSound argumentSound
 
+/-- Soundness for the success branch of equivalence-application
+strengthening.  Mirrors `partialStrengthenTypedEquivApplyOfSuccess_sound`
+with `Term.equivApp` / `RawTerm.equivApp` in place of the
+univalence-β `equivApply`. -/
+theorem partialStrengthenTypedEquivAppOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {targetEquivRaw targetArgumentRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    {targetEquivTerm :
+      Term targetCtx (Ty.equiv targetCarrierA targetCarrierB) targetEquivRaw}
+    {targetArgumentTerm :
+      Term targetCtx targetCarrierA targetArgumentRaw}
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
+    (equivRawStrengthens :
+      equivRaw.partialStrengthen? strengthening.back = some targetEquivRaw)
+    (argumentRawStrengthens :
+      argumentRaw.partialStrengthen? strengthening.back =
+        some targetArgumentRaw)
+    (equivRawRenames :
+      equivRaw = targetEquivRaw.rename strengthening.forward)
+    (argumentRawRenames :
+      argumentRaw = targetArgumentRaw.rename strengthening.forward)
+    (equivSound :
+      HEq equivTerm
+        (Term.rename strengthening.toTermRenaming targetEquivTerm))
+    (argumentSound :
+      HEq argumentTerm
+        (Term.rename strengthening.toTermRenaming targetArgumentTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEquivAppOfSuccess
+        (equivTerm := equivTerm) (argumentTerm := argumentTerm)
+        targetEquivTerm targetArgumentTerm carrierASuccess carrierBSuccess
+        equivRawStrengthens argumentRawStrengthens equivRawRenames
+        argumentRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedEquivAppOfSuccess]
+  have carrierARenames :
+      carrierA = targetCarrierA.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierA
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierA carrierASuccess
+  have carrierBRenames :
+      carrierB = targetCarrierB.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierB
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierB carrierBSuccess
+  exact Term.equivApp_HEq_congr carrierARenames carrierBRenames
+    equivRawRenames argumentRawRenames equivSound argumentSound
+
+/-- Soundness for cubical Glue-elimination strengthening.  Mirrors the
+RefineElim/CodataDest OfSuccess pattern: the wrapper's dual
+`Option.casesOn` on `Ty.glue`'s base + boundary pivots is replaced by
+pre-witnessed `baseSuccess`/`boundarySuccess` in the OfSuccess. -/
+theorem partialStrengthenTypedGlueElimOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {targetBaseType : Ty level targetScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {targetBoundaryWitness targetGluedRaw : RawTerm targetScope}
+    {gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    {targetGluedValue :
+      Term targetCtx (Ty.glue targetBaseType targetBoundaryWitness)
+        targetGluedRaw}
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (boundarySuccess :
+      boundaryWitness.partialStrengthen? strengthening.back =
+        some targetBoundaryWitness)
+    (gluedRawStrengthens :
+      gluedRaw.partialStrengthen? strengthening.back = some targetGluedRaw)
+    (gluedRawRenames :
+      gluedRaw = targetGluedRaw.rename strengthening.forward)
+    (gluedSound :
+      HEq gluedValue
+        (Term.rename strengthening.toTermRenaming targetGluedValue)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedGlueElimOfSuccess modeIsUnivalent
+        (gluedValue := gluedValue) targetGluedValue baseSuccess
+        boundarySuccess gluedRawStrengthens gluedRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedGlueElimOfSuccess]
+  have baseRenames :
+      baseType = targetBaseType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename baseType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetBaseType baseSuccess
+  have boundaryRenames :
+      boundaryWitness =
+        targetBoundaryWitness.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename boundaryWitness
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetBoundaryWitness boundarySuccess
+  exact Term.glueElim_HEq_congr modeIsUnivalent baseRenames boundaryRenames
+    gluedRawRenames gluedSound
+
 end Term
 
 end LeanFX2

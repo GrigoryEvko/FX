@@ -233,4 +233,20 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess_sound
 
+-- Phase 23: equivalence-application soundness — second Equiv-family
+-- OfSuccess.  EquivApp mirrors EquivApply (Phase 22) exactly with the
+-- univalence-α `Term.equivApp` / `RawTerm.equivApp` constructor pair
+-- instead of the β variants.  Same dual Option.casesOn on Ty.equiv
+-- carrierA + carrierB.  Direct application of equivApp_HEq_congr.
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivAppOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivAppOfSuccess_sound
+
+-- Phase 24: cubical Glue-elimination soundness via OfSuccess split.  The
+-- wrapper's `Ty.glue` Option.casesOn over base + boundary pivots becomes
+-- pre-witnessed (baseSuccess, boundarySuccess) in the OfSuccess.  Direct
+-- application of `glueElim_HEq_congr` (Atomic) — the carrier is a closed
+-- Ty.glue ctor so `Ty.rename` distributes definitionally, no cast bridge.
+#print axioms LeanFX2.Term.partialStrengthenTypedGlueElimOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedGlueElimOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
