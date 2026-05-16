@@ -278,6 +278,38 @@ def partialStrengthenTypedOptionNoneOfType {mode : Mode} {level : Nat}
         rw [elementTypeStrengthens])
   rawRenames := rfl
 
+/-- Natural successor strengthens by strengthening its predecessor. -/
+def partialStrengthenTypedNatSucc {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {predecessorRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {predecessor : Term sourceCtx Ty.nat predecessorRaw}
+    (predecessorResult :
+      StrengtheningResult strengthening predecessor) :
+    StrengtheningResult strengthening (Term.natSucc predecessor) := by
+  cases predecessorResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      cases typeStrengthens
+      exact {
+        targetType := Ty.nat
+        targetRaw := RawTerm.natSucc targetRaw
+        targetTerm := Term.natSucc targetTerm
+        typeStrengthens := rfl
+        rawStrengthens := by
+          change
+            (match predecessorRaw.partialStrengthen? strengthening.back with
+            | some strengthenedPredecessor =>
+                some (RawTerm.natSucc strengthenedPredecessor)
+            | none => none) =
+              some (RawTerm.natSucc targetRaw)
+          rw [rawStrengthens]
+        typeRenames := rfl
+        rawRenames := congrArg RawTerm.natSucc rawRenames
+      }
+
 /-- Option-some strengthens by strengthening its payload. -/
 def partialStrengthenTypedOptionSome {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
@@ -390,6 +422,36 @@ def partialStrengthenTypedSubsume {mode : Mode} {level : Nat}
   typeRenames := innerResult.typeRenames
   rawRenames := by
     exact congrArg RawTerm.subsume innerResult.rawRenames
+
+/-- Interval negation strengthens by strengthening its payload. -/
+def partialStrengthenTypedIntervalOpp {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {innerValue : Term sourceCtx Ty.interval innerRaw}
+    (innerResult : StrengtheningResult strengthening innerValue) :
+    StrengtheningResult strengthening (Term.intervalOpp innerValue) := by
+  cases innerResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      cases typeStrengthens
+      exact {
+        targetType := Ty.interval
+        targetRaw := RawTerm.intervalOpp targetRaw
+        targetTerm := Term.intervalOpp targetTerm
+        typeStrengthens := rfl
+        rawStrengthens := by
+          change
+            (match innerRaw.partialStrengthen? strengthening.back with
+            | some strengthenedInner => some (RawTerm.intervalOpp strengthenedInner)
+            | none => none) =
+              some (RawTerm.intervalOpp targetRaw)
+          rw [rawStrengthens]
+        typeRenames := rfl
+        rawRenames := congrArg RawTerm.intervalOpp rawRenames
+      }
 
 end Term
 
