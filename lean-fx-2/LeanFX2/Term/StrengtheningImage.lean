@@ -851,6 +851,70 @@ theorem partialStrengthenTypedListCons_sound {mode : Mode} {level : Nat}
           exact Term.listCons_HEq_congr headTypeRenames headRawRenames
             tailRawRenames headSound.termRenames tailSound.termRenames
 
+/-- Soundness for either-left injection strengthening. -/
+theorem partialStrengthenTypedEitherInlOfRightType_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    {targetRightType : Ty level targetScope}
+    {valueRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (rightTypeStrengthens :
+      rightType.partialStrengthen? strengthening.back =
+        some targetRightType)
+    {valueResult : StrengtheningResult strengthening valueTerm}
+    (valueSound : StrengtheningSoundness valueResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEitherInlOfRightType rightTypeStrengthens
+        valueResult) := by
+  cases valueResult with
+  | mk targetLeftType targetValueRaw targetValueTerm valueTypeStrengthens
+      valueRawStrengthens valueTypeRenames valueRawRenames =>
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedEitherInlOfRightType,
+        StrengtheningResult.renamedTarget] at valueSound ⊢
+      have rightTypeRenames :
+          rightType = targetRightType.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename rightType
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetRightType rightTypeStrengthens
+      exact Term.eitherInl_HEq_congr valueTypeRenames rightTypeRenames
+        valueRawRenames valueSound.termRenames
+
+/-- Soundness for either-right injection strengthening. -/
+theorem partialStrengthenTypedEitherInrOfLeftType_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    {targetLeftType : Ty level targetScope}
+    {valueRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (leftTypeStrengthens :
+      leftType.partialStrengthen? strengthening.back =
+        some targetLeftType)
+    {valueResult : StrengtheningResult strengthening valueTerm}
+    (valueSound : StrengtheningSoundness valueResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEitherInrOfLeftType leftTypeStrengthens
+        valueResult) := by
+  cases valueResult with
+  | mk targetRightType targetValueRaw targetValueTerm valueTypeStrengthens
+      valueRawStrengthens valueTypeRenames valueRawRenames =>
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedEitherInrOfLeftType,
+        StrengtheningResult.renamedTarget] at valueSound ⊢
+      have leftTypeRenames :
+          leftType = targetLeftType.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename leftType
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetLeftType leftTypeStrengthens
+      exact Term.eitherInr_HEq_congr leftTypeRenames valueTypeRenames
+        valueRawRenames valueSound.termRenames
+
 /-- Soundness for interval-negation strengthening. -/
 theorem partialStrengthenTypedIntervalOpp_sound {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}

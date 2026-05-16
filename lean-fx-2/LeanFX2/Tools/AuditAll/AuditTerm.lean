@@ -483,6 +483,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedModElim_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedSubsume_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedListCons_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherInlOfRightType_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherInrOfLeftType_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin_sound
