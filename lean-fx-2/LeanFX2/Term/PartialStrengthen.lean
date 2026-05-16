@@ -2468,9 +2468,17 @@ def partialStrengthenTypedFst {mode : Mode} {level : Nat}
     {targetCtx : Ctx mode level targetScope}
     {firstType : Ty level sourceScope}
     {secondType : Ty level (sourceScope + 1)}
+    {targetFirstType : Ty level targetScope}
+    {targetSecondType : Ty level (targetScope + 1)}
     {pairRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (firstSuccess :
+      firstType.partialStrengthen? strengthening.back =
+        some targetFirstType)
+    (secondSuccess :
+      secondType.partialStrengthen? strengthening.back.lift =
+        some targetSecondType)
     (pairResult : StrengtheningResult strengthening pairTerm) :
     StrengtheningResult strengthening (Term.fst pairTerm) := by
   cases pairResult with
@@ -2481,36 +2489,24 @@ def partialStrengthenTypedFst {mode : Mode} {level : Nat}
           (firstType.partialStrengthen? strengthening.back)
           (secondType.partialStrengthen? strengthening.back.lift)
           Ty.sigmaTy = some targetType at typeStrengthens
-      cases firstSuccess : firstType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [firstSuccess] at typeStrengthens
-          cases typeStrengthens
-      | some targetFirstType =>
-          cases secondSuccess : secondType.partialStrengthen?
-              strengthening.back.lift with
-          | none =>
-              rw [firstSuccess, secondSuccess] at typeStrengthens
-              cases typeStrengthens
-          | some targetSecondType =>
-              rw [firstSuccess, secondSuccess] at typeStrengthens
-              cases typeStrengthens
-              exact {
-                targetType := targetFirstType
-                targetRaw := RawTerm.fst targetRaw
-                targetTerm := Term.fst targetTerm
-                typeStrengthens := firstSuccess
-                rawStrengthens := by
-                  change
-                    (match pairRaw.partialStrengthen? strengthening.back with
-                    | some strengthenedPair => some (RawTerm.fst strengthenedPair)
-                    | none => none) =
-                      some (RawTerm.fst targetRaw)
-                  rw [rawStrengthens]
-                typeRenames := by
-                  injection typeRenames
-                rawRenames := congrArg RawTerm.fst rawRenames
-              }
+      rw [firstSuccess, secondSuccess] at typeStrengthens
+      cases typeStrengthens
+      exact {
+        targetType := targetFirstType
+        targetRaw := RawTerm.fst targetRaw
+        targetTerm := Term.fst targetTerm
+        typeStrengthens := firstSuccess
+        rawStrengthens := by
+          change
+            (match pairRaw.partialStrengthen? strengthening.back with
+            | some strengthenedPair => some (RawTerm.fst strengthenedPair)
+            | none => none) =
+              some (RawTerm.fst targetRaw)
+          rw [rawStrengthens]
+        typeRenames := by
+          injection typeRenames
+        rawRenames := congrArg RawTerm.fst rawRenames
+      }
 
 /-- Sigma second projection strengthens by strengthening its pair payload
 and rebuilding the dependent result type with the strengthened first
@@ -2521,9 +2517,17 @@ def partialStrengthenTypedSnd {mode : Mode} {level : Nat}
     {targetCtx : Ctx mode level targetScope}
     {firstType : Ty level sourceScope}
     {secondType : Ty level (sourceScope + 1)}
+    {targetFirstType : Ty level targetScope}
+    {targetSecondType : Ty level (targetScope + 1)}
     {pairRaw : RawTerm sourceScope}
     {strengthening : ContextStrengthening sourceCtx targetCtx}
     {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (firstSuccess :
+      firstType.partialStrengthen? strengthening.back =
+        some targetFirstType)
+    (secondSuccess :
+      secondType.partialStrengthen? strengthening.back.lift =
+        some targetSecondType)
     (pairResult : StrengtheningResult strengthening pairTerm) :
     StrengtheningResult strengthening (Term.snd pairTerm) := by
   cases pairResult with
@@ -2534,65 +2538,53 @@ def partialStrengthenTypedSnd {mode : Mode} {level : Nat}
           (firstType.partialStrengthen? strengthening.back)
           (secondType.partialStrengthen? strengthening.back.lift)
           Ty.sigmaTy = some targetType at typeStrengthens
-      cases firstSuccess : firstType.partialStrengthen?
-          strengthening.back with
-      | none =>
-          rw [firstSuccess] at typeStrengthens
-          cases typeStrengthens
-      | some targetFirstType =>
-          cases secondSuccess : secondType.partialStrengthen?
-              strengthening.back.lift with
-          | none =>
-              rw [firstSuccess, secondSuccess] at typeStrengthens
-              cases typeStrengthens
-          | some targetSecondType =>
-              rw [firstSuccess, secondSuccess] at typeStrengthens
-              cases typeStrengthens
-              have fstRawStrengthens :
-                  (RawTerm.fst pairRaw).partialStrengthen?
-                      strengthening.back =
-                    some (RawTerm.fst targetRaw) := by
-                change
-                  (match pairRaw.partialStrengthen? strengthening.back with
-                  | some strengthenedPair => some (RawTerm.fst strengthenedPair)
-                  | none => none) =
-                    some (RawTerm.fst targetRaw)
-                rw [rawStrengthens]
-              have sndTypeStrengthens :
-                  (secondType.subst0 firstType
-                      (RawTerm.fst pairRaw)).partialStrengthen?
-                    strengthening.back =
-                    some (targetSecondType.subst0 targetFirstType
-                      (RawTerm.fst targetRaw)) :=
-                Ty.partialStrengthen?_subst0_of_success secondType
-                  targetSecondType firstType targetFirstType
-                  (RawTerm.fst pairRaw) (RawTerm.fst targetRaw)
-                  strengthening.forward strengthening.back
-                  strengthening.injectsBack strengthening.back_forward
-                  secondSuccess firstSuccess fstRawStrengthens
-              exact {
-                targetType := targetSecondType.subst0 targetFirstType
-                  (RawTerm.fst targetRaw)
-                targetRaw := RawTerm.snd targetRaw
-                targetTerm := Term.snd targetTerm
-                typeStrengthens := sndTypeStrengthens
-                rawStrengthens := by
-                  change
-                    (match pairRaw.partialStrengthen? strengthening.back with
-                    | some strengthenedPair => some (RawTerm.snd strengthenedPair)
-                    | none => none) =
-                      some (RawTerm.snd targetRaw)
-                  rw [rawStrengthens]
-                typeRenames :=
-                  Ty.partialStrengthen?_imp_rename
-                    (secondType.subst0 firstType (RawTerm.fst pairRaw))
-                    strengthening.forward strengthening.back
-                    strengthening.injectsBack
-                    (targetSecondType.subst0 targetFirstType
-                      (RawTerm.fst targetRaw))
-                    sndTypeStrengthens
-                rawRenames := congrArg RawTerm.snd rawRenames
-              }
+      rw [firstSuccess, secondSuccess] at typeStrengthens
+      cases typeStrengthens
+      have fstRawStrengthens :
+          (RawTerm.fst pairRaw).partialStrengthen?
+              strengthening.back =
+            some (RawTerm.fst targetRaw) := by
+        change
+          (match pairRaw.partialStrengthen? strengthening.back with
+          | some strengthenedPair => some (RawTerm.fst strengthenedPair)
+          | none => none) =
+            some (RawTerm.fst targetRaw)
+        rw [rawStrengthens]
+      have sndTypeStrengthens :
+          (secondType.subst0 firstType
+              (RawTerm.fst pairRaw)).partialStrengthen?
+            strengthening.back =
+            some (targetSecondType.subst0 targetFirstType
+              (RawTerm.fst targetRaw)) :=
+        Ty.partialStrengthen?_subst0_of_success secondType
+          targetSecondType firstType targetFirstType
+          (RawTerm.fst pairRaw) (RawTerm.fst targetRaw)
+          strengthening.forward strengthening.back
+          strengthening.injectsBack strengthening.back_forward
+          secondSuccess firstSuccess fstRawStrengthens
+      exact {
+        targetType := targetSecondType.subst0 targetFirstType
+          (RawTerm.fst targetRaw)
+        targetRaw := RawTerm.snd targetRaw
+        targetTerm := Term.snd targetTerm
+        typeStrengthens := sndTypeStrengthens
+        rawStrengthens := by
+          change
+            (match pairRaw.partialStrengthen? strengthening.back with
+            | some strengthenedPair => some (RawTerm.snd strengthenedPair)
+            | none => none) =
+              some (RawTerm.snd targetRaw)
+          rw [rawStrengthens]
+        typeRenames :=
+          Ty.partialStrengthen?_imp_rename
+            (secondType.subst0 firstType (RawTerm.fst pairRaw))
+            strengthening.forward strengthening.back
+            strengthening.injectsBack
+            (targetSecondType.subst0 targetFirstType
+              (RawTerm.fst targetRaw))
+            sndTypeStrengthens
+        rawRenames := congrArg RawTerm.snd rawRenames
+      }
 
 /-- Record introduction strengthens by strengthening its field. -/
 def partialStrengthenTypedRecordIntro {mode : Mode} {level : Nat}
@@ -5533,18 +5525,38 @@ def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
                   exact some
                     (partialStrengthenTypedPair secondTypeSuccess
                       firstResult secondResult)
-  | @Term.fst _ _ _ _ _ _ _ pairTerm => by
-      cases partialStrengthenTyped? pairTerm
-          (strengthening := strengthening) with
+  | @Term.fst _ _ _ _ firstType secondType _ pairTerm => by
+      cases firstSuccess :
+          firstType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some pairResult =>
-          exact some (partialStrengthenTypedFst pairResult)
-  | @Term.snd _ _ _ _ _ _ _ pairTerm => by
-      cases partialStrengthenTyped? pairTerm
-          (strengthening := strengthening) with
+      | some targetFirstType =>
+          cases secondSuccess :
+              secondType.partialStrengthen? strengthening.back.lift with
+          | none => exact none
+          | some targetSecondType =>
+              cases partialStrengthenTyped? pairTerm
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some pairResult =>
+                  exact some
+                    (partialStrengthenTypedFst firstSuccess secondSuccess
+                      pairResult)
+  | @Term.snd _ _ _ _ firstType secondType _ pairTerm => by
+      cases firstSuccess :
+          firstType.partialStrengthen? strengthening.back with
       | none => exact none
-      | some pairResult =>
-          exact some (partialStrengthenTypedSnd pairResult)
+      | some targetFirstType =>
+          cases secondSuccess :
+              secondType.partialStrengthen? strengthening.back.lift with
+          | none => exact none
+          | some targetSecondType =>
+              cases partialStrengthenTyped? pairTerm
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some pairResult =>
+                  exact some
+                    (partialStrengthenTypedSnd firstSuccess secondSuccess
+                      pairResult)
   | @Term.boolTrue _ _ _ _ => by
       exact some (partialStrengthenTypedBoolTrue strengthening)
   | @Term.boolFalse _ _ _ _ => by

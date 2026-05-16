@@ -997,6 +997,152 @@ theorem partialStrengthenTypedPair_sound {mode : Mode} {level : Nat}
             firstRawRenames secondRawRenames firstSound.termRenames
             secondCastSound
 
+/-- Soundness for Sigma first-projection strengthening. -/
+theorem partialStrengthenTypedFst_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {targetFirstType : Ty level targetScope}
+    {targetSecondType : Ty level (targetScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (firstSuccess :
+      firstType.partialStrengthen? strengthening.back =
+        some targetFirstType)
+    (secondSuccess :
+      secondType.partialStrengthen? strengthening.back.lift =
+        some targetSecondType)
+    {pairResult : StrengtheningResult strengthening pairTerm}
+    (pairSound : StrengtheningSoundness pairResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedFst firstSuccess secondSuccess
+        pairResult) := by
+  cases pairResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      change
+        Option.mapTwo
+          (firstType.partialStrengthen? strengthening.back)
+          (secondType.partialStrengthen? strengthening.back.lift)
+          Ty.sigmaTy = some targetType at typeStrengthens
+      rw [firstSuccess, secondSuccess] at typeStrengthens
+      cases typeStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedFst,
+        StrengtheningResult.renamedTarget] at pairSound ⊢
+      have firstTypeRenames :
+          firstType = targetFirstType.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename firstType
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetFirstType firstSuccess
+      have secondTypeRenames :
+          secondType = targetSecondType.rename
+            strengthening.forward.lift :=
+        Ty.partialStrengthen?_imp_rename secondType
+          strengthening.forward.lift strengthening.back.lift
+          (PartialRawRenaming.lift_renamingInjectsBack
+            strengthening.injectsBack)
+          targetSecondType secondSuccess
+      exact Term.fst_HEq_congr firstTypeRenames
+        secondTypeRenames rawRenames pairSound.termRenames
+
+/-- Soundness for Sigma second-projection strengthening. -/
+theorem partialStrengthenTypedSnd_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {targetFirstType : Ty level targetScope}
+    {targetSecondType : Ty level (targetScope + 1)}
+    {pairRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {pairTerm : Term sourceCtx (Ty.sigmaTy firstType secondType) pairRaw}
+    (firstSuccess :
+      firstType.partialStrengthen? strengthening.back =
+        some targetFirstType)
+    (secondSuccess :
+      secondType.partialStrengthen? strengthening.back.lift =
+        some targetSecondType)
+    {pairResult : StrengtheningResult strengthening pairTerm}
+    (pairSound : StrengtheningSoundness pairResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedSnd firstSuccess secondSuccess
+        pairResult) := by
+  cases pairResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      change
+        Option.mapTwo
+          (firstType.partialStrengthen? strengthening.back)
+          (secondType.partialStrengthen? strengthening.back.lift)
+          Ty.sigmaTy = some targetType at typeStrengthens
+      rw [firstSuccess, secondSuccess] at typeStrengthens
+      cases typeStrengthens
+      have fstRawStrengthens :
+          (RawTerm.fst pairRaw).partialStrengthen? strengthening.back =
+            some (RawTerm.fst targetRaw) := by
+        change
+          (match pairRaw.partialStrengthen? strengthening.back with
+          | some strengthenedPair => some (RawTerm.fst strengthenedPair)
+          | none => none) =
+            some (RawTerm.fst targetRaw)
+        rw [rawStrengthens]
+      have sndTypeStrengthens :
+          (secondType.subst0 firstType
+              (RawTerm.fst pairRaw)).partialStrengthen?
+            strengthening.back =
+            some (targetSecondType.subst0 targetFirstType
+              (RawTerm.fst targetRaw)) :=
+        Ty.partialStrengthen?_subst0_of_success secondType
+          targetSecondType firstType targetFirstType
+          (RawTerm.fst pairRaw) (RawTerm.fst targetRaw)
+          strengthening.forward strengthening.back
+          strengthening.injectsBack strengthening.back_forward
+          secondSuccess firstSuccess fstRawStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedSnd,
+        StrengtheningResult.renamedTarget] at pairSound ⊢
+      have firstTypeRenames :
+          firstType = targetFirstType.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename firstType
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetFirstType firstSuccess
+      have secondTypeRenames :
+          secondType = targetSecondType.rename
+            strengthening.forward.lift :=
+        Ty.partialStrengthen?_imp_rename secondType
+          strengthening.forward.lift strengthening.back.lift
+          (PartialRawRenaming.lift_renamingInjectsBack
+            strengthening.injectsBack)
+          targetSecondType secondSuccess
+      have sndWithoutCast :
+          HEq (Term.snd (secondType := secondType) pairTerm)
+            (Term.snd
+              (secondType := targetSecondType.rename
+                strengthening.forward.lift)
+              (Term.rename strengthening.toTermRenaming targetTerm)) :=
+        Term.snd_HEq_congr firstTypeRenames secondTypeRenames
+          rawRenames pairSound.termRenames
+      have castSound :
+          HEq
+            (Term.snd (Term.rename strengthening.toTermRenaming targetTerm))
+            ((Ty.subst0_rename_commute targetSecondType targetFirstType
+              (RawTerm.fst targetRaw) strengthening.forward).symm ▸
+              Term.snd
+                (Term.rename strengthening.toTermRenaming targetTerm)) := by
+        exact heq_cast_left
+          (motive := fun resultType =>
+            Term sourceCtx resultType
+              ((RawTerm.snd targetRaw).rename strengthening.forward))
+          (Ty.subst0_rename_commute targetSecondType targetFirstType
+            (RawTerm.fst targetRaw) strengthening.forward).symm
+          (Term.snd (Term.rename strengthening.toTermRenaming targetTerm))
+      exact HEq.trans sndWithoutCast castSound
+
 /-- Soundness for interval-negation strengthening. -/
 theorem partialStrengthenTypedIntervalOpp_sound {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
