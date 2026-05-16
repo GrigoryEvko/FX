@@ -2892,6 +2892,85 @@ def partialStrengthenTypedRecordProj {mode : Mode} {level : Nat}
           exact partialStrengthenTypedRecordProjOfSuccess
             targetTerm fieldSuccess rawStrengthens rawRenames
 
+/-- Success branch for codata-unfold strengthening.
+
+Takes pre-decomposed witnesses for the state type, output type, and
+both raw component strengthenings.  Splits the term-mode body so the
+strengthening-image soundness layer can prove it without traversing
+`Eq.casesOn` on the arrow-decomposed transition type strengthening. -/
+def partialStrengthenTypedCodataUnfoldOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetStateType targetOutputType : Ty level targetScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {targetStateRaw targetTransitionRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (targetStateTerm : Term targetCtx targetStateType targetStateRaw)
+    (targetTransitionTerm :
+      Term targetCtx (Ty.arrow targetStateType targetOutputType)
+        targetTransitionRaw)
+    (stateTypeStrengthens :
+      stateType.partialStrengthen? strengthening.back = some targetStateType)
+    (outputTypeStrengthens :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType)
+    (stateRawStrengthens :
+      stateRaw.partialStrengthen? strengthening.back =
+        some targetStateRaw)
+    (transitionRawStrengthens :
+      transitionRaw.partialStrengthen? strengthening.back =
+        some targetTransitionRaw)
+    (stateRawRenames :
+      stateRaw = targetStateRaw.rename strengthening.forward)
+    (transitionRawRenames :
+      transitionRaw = targetTransitionRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.codataUnfold initialState transition) := {
+  targetType := Ty.codata targetStateType targetOutputType
+  targetRaw := RawTerm.codataUnfold targetStateRaw targetTransitionRaw
+  targetTerm := Term.codataUnfold targetStateTerm targetTransitionTerm
+  typeStrengthens := by
+    change
+      Option.mapTwo
+        (stateType.partialStrengthen? strengthening.back)
+        (outputType.partialStrengthen? strengthening.back)
+        Ty.codata =
+        some (Ty.codata targetStateType targetOutputType)
+    rw [stateTypeStrengthens, outputTypeStrengthens]
+    rfl
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (stateRaw.partialStrengthen? strengthening.back)
+        (transitionRaw.partialStrengthen? strengthening.back)
+        RawTerm.codataUnfold =
+        some (RawTerm.codataUnfold targetStateRaw targetTransitionRaw)
+    rw [stateRawStrengthens, transitionRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename (Ty.codata stateType outputType)
+      strengthening.forward strengthening.back strengthening.injectsBack
+      (Ty.codata targetStateType targetOutputType)
+      (by
+        change
+          Option.mapTwo
+            (stateType.partialStrengthen? strengthening.back)
+            (outputType.partialStrengthen? strengthening.back)
+            Ty.codata =
+            some (Ty.codata targetStateType targetOutputType)
+        rw [stateTypeStrengthens, outputTypeStrengthens]
+        rfl)
+  rawRenames := by
+    cases stateRawRenames
+    cases transitionRawRenames
+    rfl
+}
+
 /-- Codata unfold strengthens by strengthening the initial state, the
 transition function, and the output type index used by the codata
 carrier. -/
@@ -2925,53 +3004,64 @@ def partialStrengthenTypedCodataUnfold {mode : Mode} {level : Nat}
               (stateType.partialStrengthen? strengthening.back)
               (outputType.partialStrengthen? strengthening.back)
               Ty.arrow = some targetTransitionType at transitionTypeStrengthens
-          rw [stateTypeStrengthens, outputTypeStrengthens] at transitionTypeStrengthens
+          rw [stateTypeStrengthens, outputTypeStrengthens]
+            at transitionTypeStrengthens
           cases transitionTypeStrengthens
-          exact {
-            targetType := Ty.codata targetStateType targetOutputType
-            targetRaw := RawTerm.codataUnfold targetStateRaw
-              targetTransitionRaw
-            targetTerm := Term.codataUnfold targetStateTerm
-              targetTransitionTerm
-            typeStrengthens := by
-              change
-                Option.mapTwo
-                  (stateType.partialStrengthen? strengthening.back)
-                  (outputType.partialStrengthen? strengthening.back)
-                  Ty.codata =
-                    some (Ty.codata targetStateType targetOutputType)
-              rw [stateTypeStrengthens, outputTypeStrengthens]
-              rfl
-            rawStrengthens := by
-              change
-                Option.mapTwo
-                  (stateRaw.partialStrengthen? strengthening.back)
-                  (transitionRaw.partialStrengthen? strengthening.back)
-                  RawTerm.codataUnfold =
-                    some (RawTerm.codataUnfold targetStateRaw
-                      targetTransitionRaw)
-              rw [stateRawStrengthens, transitionRawStrengthens]
-              rfl
-            typeRenames :=
-              Ty.partialStrengthen?_imp_rename
-                (Ty.codata stateType outputType)
-                strengthening.forward strengthening.back
-                strengthening.injectsBack
-                (Ty.codata targetStateType targetOutputType)
-                (by
-                  change
-                    Option.mapTwo
-                      (stateType.partialStrengthen? strengthening.back)
-                      (outputType.partialStrengthen? strengthening.back)
-                      Ty.codata =
-                        some (Ty.codata targetStateType targetOutputType)
-                  rw [stateTypeStrengthens, outputTypeStrengthens]
-                  rfl)
-            rawRenames := by
-              cases stateRawRenames
-              cases transitionRawRenames
-              rfl
-          }
+          exact partialStrengthenTypedCodataUnfoldOfSuccess
+            targetStateTerm targetTransitionTerm stateTypeStrengthens
+            outputTypeStrengthens stateRawStrengthens transitionRawStrengthens
+            stateRawRenames transitionRawRenames
+
+/-- Success branch for codata-destruction strengthening.
+
+Takes the pre-decomposed state and output type strengthenings plus the
+strengthened codata-valued term as explicit witnesses, splitting the
+term-mode body so the soundness layer can prove it without traversing
+`Option.casesOn` on the state and output pivots. -/
+def partialStrengthenTypedCodataDestOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetStateType targetOutputType : Ty level targetScope}
+    {codataRaw : RawTerm sourceScope}
+    {targetCodataRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {codataValue : Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (targetCodataTerm :
+      Term targetCtx (Ty.codata targetStateType targetOutputType)
+        targetCodataRaw)
+    (_stateSuccess :
+      stateType.partialStrengthen? strengthening.back = some targetStateType)
+    (outputSuccess :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType)
+    (codataRawStrengthens :
+      codataRaw.partialStrengthen? strengthening.back =
+        some targetCodataRaw)
+    (codataRawRenames :
+      codataRaw = targetCodataRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening (Term.codataDest codataValue) := {
+  targetType := targetOutputType
+  targetRaw := RawTerm.codataDest targetCodataRaw
+  targetTerm := Term.codataDest targetCodataTerm
+  typeStrengthens := outputSuccess
+  rawStrengthens := by
+    change
+      (match codataRaw.partialStrengthen? strengthening.back with
+        | some strengthenedCodata =>
+            some (RawTerm.codataDest strengthenedCodata)
+        | none => none) =
+        some (RawTerm.codataDest targetCodataRaw)
+    rw [codataRawStrengthens]
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename outputType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetOutputType outputSuccess
+  rawRenames := by
+    cases codataRawRenames
+    rfl
+}
 
 /-- Codata destruction strengthens by strengthening the codata payload
 and projecting the strengthened output type from the codata carrier. -/
@@ -3007,26 +3097,9 @@ def partialStrengthenTypedCodataDest {mode : Mode} {level : Nat}
           | some targetOutputType =>
               rw [stateSuccess, outputSuccess] at codataTypeStrengthens
               cases codataTypeStrengthens
-              exact {
-                targetType := targetOutputType
-                targetRaw := RawTerm.codataDest targetCodataRaw
-                targetTerm := Term.codataDest targetCodataTerm
-                typeStrengthens := outputSuccess
-                rawStrengthens := by
-                  change
-                    (match codataRaw.partialStrengthen?
-                        strengthening.back with
-                    | some strengthenedCodata =>
-                        some (RawTerm.codataDest strengthenedCodata)
-                    | none => none) =
-                      some (RawTerm.codataDest targetCodataRaw)
-                  rw [codataRawStrengthens]
-                typeRenames :=
-                  Ty.partialStrengthen?_imp_rename outputType
-                    strengthening.forward strengthening.back
-                    strengthening.injectsBack targetOutputType outputSuccess
-                rawRenames := congrArg RawTerm.codataDest codataRawRenames
-              }
+              exact partialStrengthenTypedCodataDestOfSuccess
+                targetCodataTerm stateSuccess outputSuccess
+                codataRawStrengthens codataRawRenames
 
 /-- Session send strengthens by strengthening the protocol raw, channel,
 and payload while preserving the session carrier shape. -/

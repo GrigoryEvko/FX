@@ -128,4 +128,16 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedRecordProjOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedRecordProjOfSuccess_sound
 
+-- Phase 14: codata producers soundness.
+-- Both CodataUnfold and CodataDest need OfSuccess refactor.  CodataUnfold's
+-- wrapper does App-style `rw + cases` on the arrow-decomposed transition
+-- type strengthening; CodataDest's wrapper cases on the state-type and
+-- output-type partial-strengthen pivots (Option.casesOn discriminator wall).
+-- The OfSuccess variants take pre-decomposed witnesses so soundness `dsimp`
+-- reduces past the body without re-encountering the wall.
+#print axioms LeanFX2.Term.partialStrengthenTypedCodataUnfoldOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedCodataUnfoldOfSuccess_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedCodataDestOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedCodataDestOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion

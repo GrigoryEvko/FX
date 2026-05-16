@@ -2326,6 +2326,123 @@ theorem partialStrengthenTypedRecordProjOfSuccess_sound {mode : Mode}
       targetFieldType fieldSuccess
   exact Term.recordProj_HEq_congr fieldRenames recordRawRenames recordSound
 
+/-- Soundness for the success branch of codata-unfold strengthening.
+Mirrors `partialStrengthenTypedAppOfSuccess_sound`: takes pre-decomposed
+state/output strengthenings and rename equations, applies the codata-
+unfold HEq congruence lemma after deriving the state/output type
+renames from the strengthening's injectivity. -/
+theorem partialStrengthenTypedCodataUnfoldOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetStateType targetOutputType : Ty level targetScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {targetStateRaw targetTransitionRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    {targetStateTerm : Term targetCtx targetStateType targetStateRaw}
+    {targetTransitionTerm :
+      Term targetCtx (Ty.arrow targetStateType targetOutputType)
+        targetTransitionRaw}
+    {stateTypeStrengthens :
+      stateType.partialStrengthen? strengthening.back = some targetStateType}
+    {outputTypeStrengthens :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType}
+    {stateRawStrengthens :
+      stateRaw.partialStrengthen? strengthening.back =
+        some targetStateRaw}
+    {transitionRawStrengthens :
+      transitionRaw.partialStrengthen? strengthening.back =
+        some targetTransitionRaw}
+    {stateRawRenames :
+      stateRaw = targetStateRaw.rename strengthening.forward}
+    {transitionRawRenames :
+      transitionRaw = targetTransitionRaw.rename strengthening.forward}
+    (stateSound :
+      HEq initialState
+        (Term.rename strengthening.toTermRenaming targetStateTerm))
+    (transitionSound :
+      HEq transition
+        (Term.rename strengthening.toTermRenaming targetTransitionTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedCodataUnfoldOfSuccess
+        (initialState := initialState) (transition := transition)
+        targetStateTerm targetTransitionTerm stateTypeStrengthens
+        outputTypeStrengthens stateRawStrengthens transitionRawStrengthens
+        stateRawRenames transitionRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedCodataUnfoldOfSuccess]
+  have stateRenames :
+      stateType = targetStateType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename stateType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetStateType stateTypeStrengthens
+  have outputRenames :
+      outputType = targetOutputType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename outputType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetOutputType outputTypeStrengthens
+  exact Term.codataUnfold_HEq_congr stateRenames outputRenames
+    stateRawRenames transitionRawRenames stateSound transitionSound
+
+/-- Soundness for the success branch of codata-destruction strengthening.
+Mirrors `partialStrengthenTypedRefineElimOfSuccess_sound`: the OfSuccess
+body's record construction is what `dsimp` unfolds.  The state-type
+strengthening witness is unused by the produced output type but stays
+in the signature for symmetry with the wrapper's case cascade. -/
+theorem partialStrengthenTypedCodataDestOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetStateType targetOutputType : Ty level targetScope}
+    {codataRaw : RawTerm sourceScope}
+    {targetCodataRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {codataValue :
+      Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    {targetCodataTerm :
+      Term targetCtx (Ty.codata targetStateType targetOutputType)
+        targetCodataRaw}
+    {stateSuccess :
+      stateType.partialStrengthen? strengthening.back = some targetStateType}
+    {outputSuccess :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType}
+    {codataRawStrengthens :
+      codataRaw.partialStrengthen? strengthening.back =
+        some targetCodataRaw}
+    {codataRawRenames :
+      codataRaw = targetCodataRaw.rename strengthening.forward}
+    (codataSound :
+      HEq codataValue
+        (Term.rename strengthening.toTermRenaming targetCodataTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedCodataDestOfSuccess
+        (codataValue := codataValue)
+        targetCodataTerm stateSuccess outputSuccess codataRawStrengthens
+        codataRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedCodataDestOfSuccess]
+  have stateRenames :
+      stateType = targetStateType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename stateType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetStateType stateSuccess
+  have outputRenames :
+      outputType = targetOutputType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename outputType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetOutputType outputSuccess
+  exact Term.codataDest_HEq_congr stateRenames outputRenames
+    codataRawRenames codataSound
+
 end Term
 
 end LeanFX2
