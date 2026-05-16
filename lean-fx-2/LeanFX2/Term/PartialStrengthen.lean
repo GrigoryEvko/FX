@@ -2047,6 +2047,61 @@ def partialStrengthenTypedRefineIntro {mode : Mode} {level : Nat}
               rfl)
       }
 
+/-- Success branch for refinement-elimination strengthening.
+
+Takes pre-decomposed witnesses for the base type, predicate, and the
+strengthened refined-value term.  Splits out the term-mode body so the
+strengthening-image soundness layer can prove the soundness theorem
+without traversing `Option.casesOn` on the `partialStrengthen?` pivots
+inside the wrapper's tactic-mode `cases` chain. -/
+def partialStrengthenTypedRefineElimOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    {targetBaseType : Ty level targetScope}
+    {targetPredicate : RawTerm (targetScope + 1)}
+    {targetRefinedRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (targetRefinedTerm :
+      Term targetCtx (Ty.refine targetBaseType targetPredicate)
+        targetRefinedRaw)
+    (baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (_predicateSuccess :
+      predicate.partialStrengthen? strengthening.back.lift =
+        some targetPredicate)
+    (refinedRawStrengthens :
+      refinedRaw.partialStrengthen? strengthening.back =
+        some targetRefinedRaw)
+    (refinedRawRenames :
+      refinedRaw = targetRefinedRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening (Term.refineElim refinedValue) := {
+  targetType := targetBaseType
+  targetRaw := RawTerm.refineElim targetRefinedRaw
+  targetTerm := Term.refineElim targetRefinedTerm
+  typeStrengthens := baseSuccess
+  rawStrengthens := by
+    change
+      (match refinedRaw.partialStrengthen? strengthening.back with
+        | some strengthenedRefined =>
+            some (RawTerm.refineElim strengthenedRefined)
+        | none => none) =
+        some (RawTerm.refineElim targetRefinedRaw)
+    rw [refinedRawStrengthens]
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename baseType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetBaseType baseSuccess
+  rawRenames := by
+    cases refinedRawRenames
+    rfl
+}
+
 /-- Refinement elimination strengthens by strengthening its refined
 payload and projecting the strengthened base type out of the refined
 type index. -/
@@ -2084,26 +2139,9 @@ def partialStrengthenTypedRefineElim {mode : Mode} {level : Nat}
           | some targetPredicate =>
               rw [baseSuccess, predicateSuccess] at typeStrengthens
               cases typeStrengthens
-              exact {
-                targetType := targetBaseType
-                targetRaw := RawTerm.refineElim targetRaw
-                targetTerm := Term.refineElim targetTerm
-                typeStrengthens := baseSuccess
-                rawStrengthens := by
-                  change
-                    (match refinedRaw.partialStrengthen?
-                        strengthening.back with
-                    | some strengthenedRefined =>
-                        some (RawTerm.refineElim strengthenedRefined)
-                    | none => none) =
-                      some (RawTerm.refineElim targetRaw)
-                  rw [rawStrengthens]
-                typeRenames :=
-                  Ty.partialStrengthen?_imp_rename baseType
-                    strengthening.forward strengthening.back
-                    strengthening.injectsBack targetBaseType baseSuccess
-                rawRenames := congrArg RawTerm.refineElim rawRenames
-              }
+              exact partialStrengthenTypedRefineElimOfSuccess
+                targetTerm baseSuccess predicateSuccess rawStrengthens
+                rawRenames
 
 /-- HoTT reflexivity strengthens by strengthening the carrier type and
 the raw witness endpoint. -/

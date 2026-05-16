@@ -110,4 +110,13 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherMatchOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherMatchOfSuccess_sound
 
+-- Phase 12: refinement producers soundness.
+-- RefineIntro is direct (no internal type-pivot; predicateStrengthens is
+-- supplied explicitly).  RefineElim follows the OfSuccess refactor pattern
+-- since the wrapper internally cases on `baseType.partialStrengthen?` and
+-- `predicate.partialStrengthen?` (the `Option.casesOn` discriminator wall).
+#print axioms LeanFX2.Term.partialStrengthenTypedRefineIntro_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedRefineElimOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedRefineElimOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion

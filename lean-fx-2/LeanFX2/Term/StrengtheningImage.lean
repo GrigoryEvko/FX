@@ -2162,6 +2162,105 @@ theorem partialStrengthenTypedEitherMatchOfSuccess_sound {mode : Mode}
     scrutineeRawRenames leftRawRenames rightRawRenames scrutineeSound
     leftSound rightSound
 
+/-- Soundness for refinement-introduction strengthening.  The proof
+component lives at `Ty.unit`, which strengthens definitionally; the
+predicate carrier and base value contribute the load-bearing renames. -/
+theorem partialStrengthenTypedRefineIntro_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {targetPredicate : RawTerm (targetScope + 1)}
+    {valueRaw proofRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (predicateStrengthens :
+      predicate.partialStrengthen? strengthening.back.lift =
+        some targetPredicate)
+    {baseResult : StrengtheningResult strengthening baseValue}
+    {proofResult : StrengtheningResult strengthening predicateProof}
+    (baseSound : StrengtheningSoundness baseResult)
+    (proofSound : StrengtheningSoundness proofResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedRefineIntro predicateStrengthens baseResult
+        proofResult) := by
+  cases proofResult with
+  | mk targetProofType targetProofRaw targetProofTerm proofTypeStrengthens
+      proofRawStrengthens proofTypeRenames proofRawRenames =>
+      cases proofTypeStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedRefineIntro,
+          StrengtheningResult.renamedTarget] at proofSound ⊢
+      have predicateRenames :
+          predicate = targetPredicate.rename strengthening.forward.lift :=
+        RawTerm.partialStrengthen?_imp_rename predicate
+          strengthening.forward.lift strengthening.back.lift
+          (PartialRawRenaming.lift_renamingInjectsBack
+            strengthening.injectsBack)
+          targetPredicate predicateStrengthens
+      exact Term.refineIntro_HEq_congr baseResult.typeRenames predicateRenames
+        baseResult.rawRenames proofRawRenames
+        baseSound.termRenames proofSound.termRenames
+
+/-- Soundness for the success branch of refinement-elimination
+strengthening.  Mirrors `partialStrengthenTypedListElimOfSuccess_sound`:
+the term-mode OfSuccess body's record construction is what `dsimp`
+unfolds, while the tactic-mode wrapper traversing `Option.casesOn` on
+the base/predicate pivots is left unsounded by design. -/
+theorem partialStrengthenTypedRefineElimOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    {targetBaseType : Ty level targetScope}
+    {targetPredicate : RawTerm (targetScope + 1)}
+    {targetRefinedRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    {targetRefinedTerm :
+      Term targetCtx (Ty.refine targetBaseType targetPredicate)
+        targetRefinedRaw}
+    {baseSuccess :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType}
+    {predicateSuccess :
+      predicate.partialStrengthen? strengthening.back.lift =
+        some targetPredicate}
+    {refinedRawStrengthens :
+      refinedRaw.partialStrengthen? strengthening.back =
+        some targetRefinedRaw}
+    {refinedRawRenames :
+      refinedRaw = targetRefinedRaw.rename strengthening.forward}
+    (refinedSound :
+      HEq refinedValue
+        (Term.rename strengthening.toTermRenaming targetRefinedTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedRefineElimOfSuccess
+        (refinedValue := refinedValue)
+        targetRefinedTerm baseSuccess predicateSuccess refinedRawStrengthens
+        refinedRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedRefineElimOfSuccess]
+  have baseRenames :
+      baseType = targetBaseType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename baseType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetBaseType baseSuccess
+  have predicateRenames :
+      predicate = targetPredicate.rename strengthening.forward.lift :=
+    RawTerm.partialStrengthen?_imp_rename predicate
+      strengthening.forward.lift strengthening.back.lift
+      (PartialRawRenaming.lift_renamingInjectsBack
+        strengthening.injectsBack)
+      targetPredicate predicateSuccess
+  exact Term.refineElim_HEq_congr baseRenames predicateRenames
+    refinedRawRenames refinedSound
+
 end Term
 
 end LeanFX2
