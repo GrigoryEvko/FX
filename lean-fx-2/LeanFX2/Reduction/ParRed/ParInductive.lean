@@ -735,6 +735,33 @@ inductive Step.par :
       Step.par capSource capTarget →
       Step.par (Term.hcomp modeIsUnivalent sidesSource capSource)
                (Term.hcomp modeIsUnivalent sidesTarget capTarget)
+  /-- Path-shaped homogeneous composition congruence.
+
+  `Term.hcompPath` shares raw projection with `Term.hcomp`, but its
+  sides slot is typed as a path.  This typed-only congruence keeps
+  the path-shaped representation reachable by parallel reduction; raw
+  projection still maps to the existing `RawStep.par.hcompCong`. -/
+  | hcompPathCong {mode level scope} {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {carrierType : Ty level scope}
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {sidesPathRawSource sidesPathRawTarget capRawSource capRawTarget :
+        RawTerm scope}
+      {sidesPathSource :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          sidesPathRawSource}
+      {sidesPathTarget :
+        Term context (Ty.path carrierType leftEndpoint rightEndpoint)
+          sidesPathRawTarget}
+      {capSource : Term context carrierType capRawSource}
+      {capTarget : Term context carrierType capRawTarget} :
+      Step.par sidesPathSource sidesPathTarget →
+      Step.par capSource capTarget →
+      Step.par
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPathSource capSource)
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPathTarget capTarget)
   /-- Raw-name parity: single-field record intro reduces in its field. -/
   | recordIntroCong {mode level scope} {context : Ctx mode level scope}
       {singleFieldType : Ty level scope}

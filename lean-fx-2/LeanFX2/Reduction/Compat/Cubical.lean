@@ -396,6 +396,88 @@ theorem subst_compatible
 
 end hcompCong
 
+/-! ### `hcompPathCong` (binary, mode-univalent gated, path-shaped sides).
+
+Typed-only sibling of `hcompCong`: raw projection still uses
+`RawTerm.hcomp`, but the sides argument is typed as a path. -/
+namespace hcompPathCong
+
+theorem rename_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {rho : RawRenaming sourceScope targetScope}
+    (termRenaming : TermRenaming sourceCtx targetCtx rho)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRawSource sidesPathRawTarget capRawSource capRawTarget :
+      RawTerm sourceScope}
+    {sidesPathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRawSource}
+    {sidesPathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRawTarget}
+    {capSource : Term sourceCtx carrierType capRawSource}
+    {capTarget : Term sourceCtx carrierType capRawTarget}
+    (renamedSidesStep :
+      Step.par (Term.rename termRenaming sidesPathSource)
+               (Term.rename termRenaming sidesPathTarget))
+    (renamedCapStep :
+      Step.par (Term.rename termRenaming capSource)
+               (Term.rename termRenaming capTarget)) :
+    Step.par
+      (Term.rename termRenaming
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPathSource capSource))
+      (Term.rename termRenaming
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPathTarget capTarget)) :=
+  Step.par.hcompPathCong modeIsUnivalent
+    (leftEndpoint.rename rho) (rightEndpoint.rename rho)
+    renamedSidesStep renamedCapStep
+
+theorem subst_compatible
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {sigma : Subst level sourceScope targetScope}
+    (termSubst : TermSubst sourceCtx targetCtx sigma)
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRawSource sidesPathRawTarget capRawSource capRawTarget :
+      RawTerm sourceScope}
+    {sidesPathSource :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRawSource}
+    {sidesPathTarget :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRawTarget}
+    {capSource : Term sourceCtx carrierType capRawSource}
+    {capTarget : Term sourceCtx carrierType capRawTarget}
+    (substitutedSidesStep :
+      Step.par (Term.subst termSubst sidesPathSource)
+               (Term.subst termSubst sidesPathTarget))
+    (substitutedCapStep :
+      Step.par (Term.subst termSubst capSource)
+               (Term.subst termSubst capTarget)) :
+    Step.par
+      (Term.subst termSubst
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPathSource capSource))
+      (Term.subst termSubst
+        (Term.hcompPath modeIsUnivalent leftEndpoint rightEndpoint
+          sidesPathTarget capTarget)) :=
+  Step.par.hcompPathCong modeIsUnivalent
+    (leftEndpoint.subst sigma.forRaw) (rightEndpoint.subst sigma.forRaw)
+    substitutedSidesStep substitutedCapStep
+
+end hcompPathCong
+
 /-! ### `glueIntroCong` (binary, mode-univalent gated, both at base).
 
 Binary exemplar: two inner Step.par premises (base + partial),

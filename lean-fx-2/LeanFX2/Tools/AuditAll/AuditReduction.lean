@@ -238,6 +238,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.glueElimCong
 #assert_no_axioms LeanFX2.Step.par.transpCong
 #assert_no_axioms LeanFX2.Step.par.hcompCong
+#assert_no_axioms LeanFX2.Step.par.hcompPathCong
 #assert_no_axioms LeanFX2.Step.par.betaGlueElimIntro
 #assert_no_axioms LeanFX2.Step.par.betaGlueElimIntroDeep
 #assert_no_axioms LeanFX2.Step.par.transp
@@ -350,6 +351,8 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.codataUnfoldCong.subst_compatible
 #assert_no_axioms LeanFX2.Step.par.hcompCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.hcompCong.subst_compatible
+#assert_no_axioms LeanFX2.Step.par.hcompPathCong.rename_compatible
+#assert_no_axioms LeanFX2.Step.par.hcompPathCong.subst_compatible
 #assert_no_axioms LeanFX2.Step.par.glueIntroCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.glueIntroCong.subst_compatible
 #assert_no_axioms LeanFX2.Step.par.oeqJCong.rename_compatible

@@ -103,8 +103,9 @@ namespace LeanFX2.Tools
 -- ratchet: any future Term ctor without a cong rule fails the build.
 -- Revived after `ParRed.CongAliases` exposed legacy congruence ctors under
 -- exact dashboard names, lowering debt from 36 to 13 without changing
--- reduction behavior.
-#assert_step_par_cong_coverage_budget LeanFX2.Term 13
+-- reduction behavior.  `hcompPathCong` then closed the path-shaped
+-- hcomp gap, lowering debt to 12.
+#assert_step_par_cong_coverage_budget LeanFX2.Term 12
 
 -- Conv cong-rule coverage matrix.  For every Term ctor, either
 -- `LeanFX2.Conv.<name>Cong` or `LeanFX2.Conv.<name>_cong` should exist

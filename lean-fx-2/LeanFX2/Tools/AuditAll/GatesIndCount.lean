@@ -26,7 +26,7 @@ namespace LeanFX2.Tools
 #assert_inductive_ctor_count_ratchet LeanFX2.Term 78
 #assert_inductive_ctor_count_ratchet LeanFX2.Ty 25
 #assert_inductive_ctor_count_ratchet LeanFX2.Step 111
-#assert_inductive_ctor_count_ratchet LeanFX2.Step.par 128
+#assert_inductive_ctor_count_ratchet LeanFX2.Step.par 129
 #assert_inductive_ctor_count_ratchet LeanFX2.RawTerm 74
 
 -- Coe / CoeSort / CoeFun typeclass dependent census.  These silently

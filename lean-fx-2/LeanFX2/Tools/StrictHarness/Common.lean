@@ -2001,7 +2001,7 @@ def isDocumentedTypedOnlyParity (typedCtorName : Name) : Bool :=
   -- transp short-form aliases (the raw layer uses a single suffix for
   -- the umbrella; typed splits the same op across multiple ctors).
   suffix == "glueIntro" || suffix == "glueElim" ||
-  suffix == "hcomp" || suffix == "transp" ||
+  suffix == "hcomp" || suffix == "hcompPathCong" || suffix == "transp" ||
   suffix == "pathApp" || suffix == "pathLam"
 
 /-- Build-failing reverse parity gate (STRICT-9).  For every

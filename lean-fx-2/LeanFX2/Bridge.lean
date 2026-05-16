@@ -164,6 +164,8 @@ theorem Step.par.toRawBridge
       exact RawStep.par.transpCong ihPath ihSource
   | hcompCong _ _ _ ihSides ihCap =>
       exact RawStep.par.hcompCong ihSides ihCap
+  | hcompPathCong _ _ _ _ _ ihSides ihCap =>
+      exact RawStep.par.hcompCong ihSides ihCap
   -- β shallow (5)
   | betaApp _ _ ihBody ihArgument =>
       exact RawStep.par.betaApp ihBody ihArgument
