@@ -1249,6 +1249,95 @@ def partialStrengthenTypedListCons {mode : Mode} {level : Nat}
               rfl
           }
 
+/-- List eliminator strengthens by strengthening the scrutinee, nil
+branch, and cons branch, then aligning the element and motive indices
+through the scrutinee and nil branch. -/
+def partialStrengthenTypedListElim {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw nilRaw consRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee :
+      Term sourceCtx (Ty.listType elementType) scrutineeRaw}
+    {nilBranch : Term sourceCtx motiveType nilRaw}
+    {consBranch :
+      Term sourceCtx
+        (Ty.arrow elementType
+          (Ty.arrow (Ty.listType elementType) motiveType))
+        consRaw}
+    (scrutineeResult : StrengtheningResult strengthening scrutinee)
+    (nilResult : StrengtheningResult strengthening nilBranch)
+    (consResult : StrengtheningResult strengthening consBranch) :
+    StrengtheningResult strengthening
+      (Term.listElim scrutinee nilBranch consBranch) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      change
+        (match elementType.partialStrengthen? strengthening.back with
+        | some strengthenedElement => some (Ty.listType strengthenedElement)
+        | none => none) = some targetScrutineeType at scrutineeTypeStrengthens
+      cases elementSuccess : elementType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [elementSuccess] at scrutineeTypeStrengthens
+          cases scrutineeTypeStrengthens
+      | some targetElementType =>
+          rw [elementSuccess] at scrutineeTypeStrengthens
+          cases scrutineeTypeStrengthens
+          cases nilResult with
+          | mk targetMotiveType targetNilRaw targetNilTerm
+              nilTypeStrengthens nilRawStrengthens nilTypeRenames
+              nilRawRenames =>
+              cases consResult with
+              | mk targetConsType targetConsRaw targetConsTerm
+                  consTypeStrengthens consRawStrengthens consTypeRenames
+                  consRawRenames =>
+                  change
+                    Option.mapTwo
+                      (elementType.partialStrengthen? strengthening.back)
+                      (Option.mapTwo
+                        (match elementType.partialStrengthen?
+                            strengthening.back with
+                        | some strengthenedElement =>
+                            some (Ty.listType strengthenedElement)
+                        | none => none)
+                        (motiveType.partialStrengthen? strengthening.back)
+                        Ty.arrow)
+                      Ty.arrow = some targetConsType at consTypeStrengthens
+                  rw [elementSuccess, nilTypeStrengthens] at consTypeStrengthens
+                  cases consTypeStrengthens
+                  exact {
+                    targetType := targetMotiveType
+                    targetRaw := RawTerm.listElim targetScrutineeRaw
+                      targetNilRaw targetConsRaw
+                    targetTerm := Term.listElim targetScrutineeTerm
+                      targetNilTerm targetConsTerm
+                    typeStrengthens := nilTypeStrengthens
+                    rawStrengthens := by
+                      change
+                        Option.mapThree
+                          (scrutineeRaw.partialStrengthen?
+                            strengthening.back)
+                          (nilRaw.partialStrengthen? strengthening.back)
+                          (consRaw.partialStrengthen? strengthening.back)
+                          RawTerm.listElim =
+                            some (RawTerm.listElim targetScrutineeRaw
+                              targetNilRaw targetConsRaw)
+                      rw [scrutineeRawStrengthens, nilRawStrengthens,
+                        consRawStrengthens]
+                      rfl
+                    typeRenames := nilTypeRenames
+                    rawRenames := by
+                      cases scrutineeRawRenames
+                      cases nilRawRenames
+                      cases consRawRenames
+                      rfl
+                  }
+
 /-- Either-left injection strengthens by strengthening the payload and
 the unused right type index. -/
 def partialStrengthenTypedEitherInlOfRightType {mode : Mode} {level : Nat}
@@ -1354,6 +1443,195 @@ def partialStrengthenTypedEitherInrOfLeftType {mode : Mode} {level : Nat}
         rw [leftTypeStrengthens, valueResult.typeStrengthens]
         rfl)
   rawRenames := congrArg RawTerm.eitherInr valueResult.rawRenames
+
+/-- Option match strengthens by strengthening the scrutinee, none
+branch, and some branch, then aligning the element and motive indices
+through the scrutinee and none branch. -/
+def partialStrengthenTypedOptionMatch {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType motiveType : Ty level sourceScope}
+    {scrutineeRaw noneRaw someRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee :
+      Term sourceCtx (Ty.optionType elementType) scrutineeRaw}
+    {noneBranch : Term sourceCtx motiveType noneRaw}
+    {someBranch : Term sourceCtx (Ty.arrow elementType motiveType) someRaw}
+    (scrutineeResult : StrengtheningResult strengthening scrutinee)
+    (noneResult : StrengtheningResult strengthening noneBranch)
+    (someResult : StrengtheningResult strengthening someBranch) :
+    StrengtheningResult strengthening
+      (Term.optionMatch scrutinee noneBranch someBranch) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      change
+        (match elementType.partialStrengthen? strengthening.back with
+        | some strengthenedElement =>
+            some (Ty.optionType strengthenedElement)
+        | none => none) = some targetScrutineeType at scrutineeTypeStrengthens
+      cases elementSuccess : elementType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [elementSuccess] at scrutineeTypeStrengthens
+          cases scrutineeTypeStrengthens
+      | some targetElementType =>
+          rw [elementSuccess] at scrutineeTypeStrengthens
+          cases scrutineeTypeStrengthens
+          cases noneResult with
+          | mk targetMotiveType targetNoneRaw targetNoneTerm
+              noneTypeStrengthens noneRawStrengthens noneTypeRenames
+              noneRawRenames =>
+              cases someResult with
+              | mk targetSomeType targetSomeRaw targetSomeTerm
+                  someTypeStrengthens someRawStrengthens someTypeRenames
+                  someRawRenames =>
+                  change
+                    Option.mapTwo
+                      (elementType.partialStrengthen? strengthening.back)
+                      (motiveType.partialStrengthen? strengthening.back)
+                      Ty.arrow = some targetSomeType at someTypeStrengthens
+                  rw [elementSuccess, noneTypeStrengthens] at someTypeStrengthens
+                  cases someTypeStrengthens
+                  exact {
+                    targetType := targetMotiveType
+                    targetRaw := RawTerm.optionMatch targetScrutineeRaw
+                      targetNoneRaw targetSomeRaw
+                    targetTerm := Term.optionMatch targetScrutineeTerm
+                      targetNoneTerm targetSomeTerm
+                    typeStrengthens := noneTypeStrengthens
+                    rawStrengthens := by
+                      change
+                        Option.mapThree
+                          (scrutineeRaw.partialStrengthen?
+                            strengthening.back)
+                          (noneRaw.partialStrengthen? strengthening.back)
+                          (someRaw.partialStrengthen? strengthening.back)
+                          RawTerm.optionMatch =
+                            some (RawTerm.optionMatch targetScrutineeRaw
+                              targetNoneRaw targetSomeRaw)
+                      rw [scrutineeRawStrengthens, noneRawStrengthens,
+                        someRawStrengthens]
+                      rfl
+                    typeRenames := noneTypeRenames
+                    rawRenames := by
+                      cases scrutineeRawRenames
+                      cases noneRawRenames
+                      cases someRawRenames
+                      rfl
+                  }
+
+/-- Either match strengthens by strengthening the scrutinee and both
+branches, then aligning the left, right, and motive indices through the
+scrutinee and branch result types. -/
+def partialStrengthenTypedEitherMatch {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType motiveType : Ty level sourceScope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee :
+      Term sourceCtx (Ty.eitherType leftType rightType) scrutineeRaw}
+    {leftBranch : Term sourceCtx (Ty.arrow leftType motiveType) leftRaw}
+    {rightBranch : Term sourceCtx (Ty.arrow rightType motiveType) rightRaw}
+    (scrutineeResult : StrengtheningResult strengthening scrutinee)
+    (leftResult : StrengtheningResult strengthening leftBranch)
+    (rightResult : StrengtheningResult strengthening rightBranch) :
+    StrengtheningResult strengthening
+      (Term.eitherMatch scrutinee leftBranch rightBranch) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      change
+        Option.mapTwo
+          (leftType.partialStrengthen? strengthening.back)
+          (rightType.partialStrengthen? strengthening.back)
+          Ty.eitherType = some targetScrutineeType at scrutineeTypeStrengthens
+      cases leftSuccess : leftType.partialStrengthen? strengthening.back with
+      | none =>
+          rw [leftSuccess] at scrutineeTypeStrengthens
+          cases scrutineeTypeStrengthens
+      | some targetLeftType =>
+          cases rightSuccess : rightType.partialStrengthen?
+              strengthening.back with
+          | none =>
+              rw [leftSuccess, rightSuccess] at scrutineeTypeStrengthens
+              cases scrutineeTypeStrengthens
+          | some targetRightType =>
+              rw [leftSuccess, rightSuccess] at scrutineeTypeStrengthens
+              cases scrutineeTypeStrengthens
+              cases leftResult with
+              | mk targetLeftBranchType targetLeftRaw targetLeftTerm
+                  leftTypeStrengthens leftRawStrengthens leftTypeRenames
+                  leftRawRenames =>
+                  change
+                    Option.mapTwo
+                      (leftType.partialStrengthen? strengthening.back)
+                      (motiveType.partialStrengthen? strengthening.back)
+                      Ty.arrow = some targetLeftBranchType at leftTypeStrengthens
+                  rw [leftSuccess] at leftTypeStrengthens
+                  cases motiveSuccess : motiveType.partialStrengthen?
+                      strengthening.back with
+                  | none =>
+                      rw [motiveSuccess] at leftTypeStrengthens
+                      cases leftTypeStrengthens
+                  | some targetMotiveType =>
+                      rw [motiveSuccess] at leftTypeStrengthens
+                      cases leftTypeStrengthens
+                      cases rightResult with
+                      | mk targetRightBranchType targetRightRaw
+                          targetRightTerm rightTypeStrengthens
+                          rightRawStrengthens rightTypeRenames
+                          rightRawRenames =>
+                          change
+                            Option.mapTwo
+                              (rightType.partialStrengthen?
+                                strengthening.back)
+                              (motiveType.partialStrengthen?
+                                strengthening.back)
+                              Ty.arrow = some targetRightBranchType at rightTypeStrengthens
+                          rw [rightSuccess, motiveSuccess] at rightTypeStrengthens
+                          cases rightTypeStrengthens
+                          exact {
+                            targetType := targetMotiveType
+                            targetRaw := RawTerm.eitherMatch
+                              targetScrutineeRaw targetLeftRaw
+                              targetRightRaw
+                            targetTerm := Term.eitherMatch
+                              targetScrutineeTerm targetLeftTerm
+                              targetRightTerm
+                            typeStrengthens := motiveSuccess
+                            rawStrengthens := by
+                              change
+                                Option.mapThree
+                                  (scrutineeRaw.partialStrengthen?
+                                    strengthening.back)
+                                  (leftRaw.partialStrengthen?
+                                    strengthening.back)
+                                  (rightRaw.partialStrengthen?
+                                    strengthening.back)
+                                  RawTerm.eitherMatch =
+                                    some (RawTerm.eitherMatch
+                                      targetScrutineeRaw targetLeftRaw
+                                      targetRightRaw)
+                              rw [scrutineeRawStrengthens,
+                                leftRawStrengthens, rightRawStrengthens]
+                              rfl
+                            typeRenames :=
+                              Ty.partialStrengthen?_imp_rename motiveType
+                                strengthening.forward strengthening.back
+                                strengthening.injectsBack targetMotiveType
+                                motiveSuccess
+                            rawRenames := by
+                              cases scrutineeRawRenames
+                              cases leftRawRenames
+                              cases rightRawRenames
+                              rfl
+                          }
 
 /-- Refinement introduction strengthens by strengthening its base value,
 unit proof, and binder-indexed predicate raw. -/
