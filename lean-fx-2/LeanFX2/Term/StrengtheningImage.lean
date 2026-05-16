@@ -3505,6 +3505,93 @@ theorem partialStrengthenTypedLamPi_sound {mode : Mode} {level : Nat}
       exact Term.lamPi_HEq_congr rfl codomainTypeRenames
         bodyRawRenames bodyHEq
 
+/-- Soundness for non-dependent lambda strengthening.
+
+Extends the LamPi `subst-early` recipe with the `.weaken` cast bridge.
+Body has type `Term (sourceCtx.cons domainType) codomainType.weaken
+bodyRaw`.  `Term.rename` of `Term.lam` (Rename.lean:262-264) introduces
+a `Ty.weaken_rename_commute rho codomainType ▸` cast to align the body's
+type from `codomainType.weaken.rename rho.lift` to `(codomainType.rename
+rho).weaken`.  After `subst domainRenames` + `subst codomainRenames`,
+both sides agree on domain and codomain, and the body HEq is bridged
+to the casted form via `Term.type_eq_cast_heq`. -/
+theorem partialStrengthenTypedLam_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {targetDomainType targetCodomainType : Ty level targetScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {body : Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (domainTypeStrengthens :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType)
+    (codomainTypeStrengthens :
+      codomainType.partialStrengthen? strengthening.back =
+        some targetCodomainType)
+    {bodyResult :
+      StrengtheningResult
+        (strengthening.lift domainType targetDomainType
+          domainTypeStrengthens) body}
+    (bodySound : StrengtheningSoundness bodyResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedLam domainTypeStrengthens
+        codomainTypeStrengthens bodyResult) := by
+  have domainRenames :
+      domainType = targetDomainType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename domainType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetDomainType domainTypeStrengthens
+  have codomainRenames :
+      codomainType = targetCodomainType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename codomainType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCodomainType codomainTypeStrengthens
+  subst domainRenames
+  subst codomainRenames
+  cases bodyResult with
+  | mk targetBodyType targetBodyRaw targetBodyTerm bodyTypeStrengthens
+      bodyRawStrengthens bodyTypeRenames bodyRawRenames =>
+      have bodyTypeStrengthensAtLift :
+          Ty.partialStrengthen?
+              (Ty.weaken (targetCodomainType.rename strengthening.forward))
+              strengthening.back.lift =
+            some targetBodyType := by
+        simpa only [ContextStrengthening.lift] using bodyTypeStrengthens
+      have expectedBodyTypeStrengthens :
+          Ty.partialStrengthen?
+              (Ty.weaken (targetCodomainType.rename strengthening.forward))
+              strengthening.back.lift =
+            some targetCodomainType.weaken := by
+        rw [Ty.partialStrengthen?_weaken_lift
+          (targetCodomainType.rename strengthening.forward)
+          strengthening.back, codomainTypeStrengthens]
+        rfl
+      rw [expectedBodyTypeStrengthens] at bodyTypeStrengthensAtLift
+      cases bodyTypeStrengthensAtLift
+      refine ⟨?_⟩
+      have bodyHEq := bodySound.termRenames
+      simp only [StrengtheningResult.renamedTarget] at bodyHEq
+      simp only [partialStrengthenTypedLam, StrengtheningResult.renamedTarget]
+      have castedHEq : HEq body
+          (Ty.weaken_rename_commute strengthening.forward
+              targetCodomainType ▸
+            Term.rename
+              ((strengthening.lift (targetDomainType.rename
+                  strengthening.forward) targetDomainType
+                domainTypeStrengthens).toTermRenaming) targetBodyTerm) :=
+        HEq.trans bodyHEq
+          (Term.type_eq_cast_heq
+            (Ty.weaken_rename_commute strengthening.forward
+              targetCodomainType)
+            (Term.rename
+              ((strengthening.lift (targetDomainType.rename
+                  strengthening.forward) targetDomainType
+                domainTypeStrengthens).toTermRenaming)
+              targetBodyTerm)).symm
+      exact Term.lam_HEq_congr rfl rfl bodyRawRenames castedHEq
+
 /-- Soundness for cubical Glue-elimination strengthening.  Mirrors the
 RefineElim/CodataDest OfSuccess pattern: the wrapper's dual
 `Option.casesOn` on `Ty.glue`'s base + boundary pivots is replaced by

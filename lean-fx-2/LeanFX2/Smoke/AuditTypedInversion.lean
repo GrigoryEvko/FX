@@ -265,4 +265,18 @@ namespace LeanFX2.SmokeTypedInversion
 -- is equal-by-strengthening to a renamed target type.
 #print axioms LeanFX2.Term.partialStrengthenTypedLamPi_sound
 
+-- Phase 26: non-dependent Lam soundness — extends LamPi's subst-early
+-- recipe with the `.weaken` cast bridge.  Body has type `Term ...
+-- codomainType.weaken bodyRaw`; `Term.rename` of `Term.lam` introduces
+-- a `Ty.weaken_rename_commute rho codomainType ▸` cast to align the
+-- body's type from `codomainType.weaken.rename rho.lift` to
+-- `(codomainType.rename rho).weaken`.  After `subst domainRenames` +
+-- `subst codomainRenames` (both via partialStrengthen?_imp_rename), the
+-- wrapper's `bodyTypeStrengthens` dance unifies `targetBodyType` with
+-- `targetCodomainType.weaken`, then `Term.type_eq_cast_heq` bridges the
+-- body HEq to its casted form so `lam_HEq_congr rfl rfl bodyRawRenames
+-- castedHEq` closes the goal.  Pattern reusable for any non-dependent
+-- binder producer that uses `Ty.weaken` in the body's type.
+#print axioms LeanFX2.Term.partialStrengthenTypedLam_sound
+
 end LeanFX2.SmokeTypedInversion
