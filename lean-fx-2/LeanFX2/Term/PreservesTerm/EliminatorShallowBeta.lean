@@ -185,6 +185,65 @@ theorem RawStep.par.lift_app_cong
   obtain ⟨argumentTarget, argumentStepTyped⟩ := argumentLift argumentStep
   exact ⟨Term.app functionTarget argumentTarget,
          Step.par.app functionStepTyped argumentStepTyped⟩
+
+/-- **Tier 3 — Term.fst lift, cong arm only.**  The β arm of
+`RawStep.par.fst_inv` requires the pair to develop to `RawTerm.pair
+firstTargetRaw secondTargetRaw`, which `lift_full_fst` handles via
+`Term.pairDestruct`.  This cong-only variant uses the simpler
+single-Ty existential at fixed `firstType` and covers the case where
+`RawStep.par pairRaw pairTargetRaw` does NOT reach a `RawTerm.pair`
+form.
+
+The pair's source-type index `Ty.sigmaTy firstType secondType` is
+invariant under the cong rule — `Step.par.fst` produces a target at
+the same source-type — so the single-Ty existential admits the
+function-style direct adaptation. -/
+theorem RawStep.par.lift_fst_cong
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pairRaw targetRawIH →
+      ∃ pairTarget :
+          Term context (Ty.sigmaTy firstType secondType) targetRawIH,
+        Step.par pairTerm pairTarget)
+    {pairTargetRaw : RawTerm scope}
+    (pairStep : RawStep.par pairRaw pairTargetRaw) :
+    ∃ targetTerm : Term context firstType (RawTerm.fst pairTargetRaw),
+      Step.par (Term.fst (secondType := secondType) pairTerm) targetTerm := by
+  obtain ⟨pairTarget, pairStepTyped⟩ := pairLift pairStep
+  exact ⟨Term.fst (secondType := secondType) pairTarget,
+         Step.par.fst pairStepTyped⟩
+
+/-- **Tier 3 — Term.snd lift, cong arm only.**  The β arm of
+`RawStep.par.snd_inv` requires the pair to develop to `RawTerm.pair`,
+handled by `lift_full_snd` via `Term.pairDestruct`.  This cong-only
+variant covers the case where `RawStep.par pairRaw pairTargetRaw`
+does NOT reach a `RawTerm.pair` form.
+
+The cong rule for `snd` produces a target at type
+`secondType.subst0 firstType (RawTerm.fst pairTargetRaw)` —
+the same shape as the source's type modulo the pair-raw update,
+absorbed by the existential's target-raw parameter. -/
+theorem RawStep.par.lift_snd_cong
+    {firstType : Ty level scope} {secondType : Ty level (scope + 1)}
+    {pairRaw : RawTerm scope}
+    (pairTerm : Term context (Ty.sigmaTy firstType secondType) pairRaw)
+    (pairLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par pairRaw targetRawIH →
+      ∃ pairTarget :
+          Term context (Ty.sigmaTy firstType secondType) targetRawIH,
+        Step.par pairTerm pairTarget)
+    {pairTargetRaw : RawTerm scope}
+    (pairStep : RawStep.par pairRaw pairTargetRaw) :
+    ∃ targetTerm :
+        Term context (secondType.subst0 firstType (RawTerm.fst pairTargetRaw))
+                     (RawTerm.snd pairTargetRaw),
+      Step.par (Term.snd (secondType := secondType) pairTerm) targetTerm := by
+  obtain ⟨pairTarget, pairStepTyped⟩ := pairLift pairStep
+  exact ⟨Term.snd (secondType := secondType) pairTarget,
+         Step.par.snd pairStepTyped⟩
+
 theorem RawStep.par.lift_modElim
     {innerType : Ty level scope}
     {innerRaw : RawTerm scope}
