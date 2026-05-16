@@ -62,6 +62,8 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedNatSucc_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedOptionSome_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedBoolElim_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedAppOfSuccess_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedApp_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedNatElim_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedNatRec_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedModIntro_sound
