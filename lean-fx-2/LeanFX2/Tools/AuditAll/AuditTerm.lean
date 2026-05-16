@@ -394,6 +394,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedCodataDest
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedSessionSend
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedSessionRecv
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedCumulUp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUniverseCode
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedArrowCode
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedPiTyCode

@@ -2865,6 +2865,46 @@ def partialStrengthenTypedSessionRecv {mode : Mode} {level : Nat}
         rawRenames := congrArg RawTerm.sessionRecv channelRawRenames
       }
 
+/-- Cumulativity promotion strengthens by strengthening its inner
+type-code payload and rebuilding the promotion at the target context. -/
+def partialStrengthenTypedCumulUp {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {typeCode :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw}
+    (codeResult : StrengtheningResult strengthening typeCode) :
+    StrengtheningResult strengthening
+      (Term.cumulUp lowerLevel higherLevel cumulMonotone levelLeLow
+        levelLeHigh typeCode) := by
+  cases codeResult with
+  | mk targetCodeType targetCodeRaw targetCodeTerm codeTypeStrengthens
+      codeRawStrengthens codeTypeRenames codeRawRenames =>
+      cases codeTypeStrengthens
+      exact {
+        targetType := Ty.universe higherLevel levelLeHigh
+        targetRaw := RawTerm.cumulUpMarker targetCodeRaw
+        targetTerm := Term.cumulUp lowerLevel higherLevel cumulMonotone
+          levelLeLow levelLeHigh targetCodeTerm
+        typeStrengthens := rfl
+        rawStrengthens := by
+          change
+            (match codeRaw.partialStrengthen? strengthening.back with
+            | some strengthenedCode =>
+                some (RawTerm.cumulUpMarker strengthenedCode)
+            | none => none) =
+              some (RawTerm.cumulUpMarker targetCodeRaw)
+          rw [codeRawStrengthens]
+        typeRenames := rfl
+        rawRenames := congrArg RawTerm.cumulUpMarker codeRawRenames
+      }
+
 /-- Universe-code terms strengthen through every context strengthening.
 
 The raw universe code carries only the encoded inner universe level, so

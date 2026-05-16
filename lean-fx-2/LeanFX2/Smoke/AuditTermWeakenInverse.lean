@@ -130,6 +130,7 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedCodataDest
 #print axioms LeanFX2.Term.partialStrengthenTypedSessionSend
 #print axioms LeanFX2.Term.partialStrengthenTypedSessionRecv
+#print axioms LeanFX2.Term.partialStrengthenTypedCumulUp
 #print axioms LeanFX2.Term.partialStrengthenTypedUniverseCode
 #print axioms LeanFX2.Term.partialStrengthenTypedArrowCode
 #print axioms LeanFX2.Term.partialStrengthenTypedPiTyCode
