@@ -861,6 +861,142 @@ def partialStrengthenTypedEitherInrOfLeftType {mode : Mode} {level : Nat}
         rfl)
   rawRenames := congrArg RawTerm.eitherInr valueResult.rawRenames
 
+/-- Refinement introduction strengthens by strengthening its base value,
+unit proof, and binder-indexed predicate raw. -/
+def partialStrengthenTypedRefineIntro {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {targetPredicate : RawTerm (targetScope + 1)}
+    {valueRaw proofRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseValue : Term sourceCtx baseType valueRaw}
+    {predicateProof : Term sourceCtx Ty.unit proofRaw}
+    (predicateStrengthens :
+      predicate.partialStrengthen? strengthening.back.lift =
+        some targetPredicate)
+    (baseResult : StrengtheningResult strengthening baseValue)
+    (proofResult : StrengtheningResult strengthening predicateProof) :
+    StrengtheningResult strengthening
+      (Term.refineIntro predicate baseValue predicateProof) := by
+  cases proofResult with
+  | mk targetProofType targetProofRaw targetProofTerm proofTypeStrengthens
+      proofRawStrengthens proofTypeRenames proofRawRenames =>
+      cases proofTypeStrengthens
+      exact {
+        targetType := Ty.refine baseResult.targetType targetPredicate
+        targetRaw := RawTerm.refineIntro baseResult.targetRaw targetProofRaw
+        targetTerm := Term.refineIntro targetPredicate baseResult.targetTerm
+          targetProofTerm
+        typeStrengthens := by
+          change
+            Option.mapTwo
+              (baseType.partialStrengthen? strengthening.back)
+              (predicate.partialStrengthen? strengthening.back.lift)
+              Ty.refine =
+              some (Ty.refine baseResult.targetType targetPredicate)
+          rw [baseResult.typeStrengthens, predicateStrengthens]
+          rfl
+        rawStrengthens := by
+          change
+            Option.mapTwo
+              (valueRaw.partialStrengthen? strengthening.back)
+              (proofRaw.partialStrengthen? strengthening.back)
+              RawTerm.refineIntro =
+              some (RawTerm.refineIntro baseResult.targetRaw targetProofRaw)
+          rw [baseResult.rawStrengthens, proofRawStrengthens]
+          rfl
+        typeRenames :=
+          Ty.partialStrengthen?_imp_rename
+            (Ty.refine baseType predicate)
+            strengthening.forward strengthening.back strengthening.injectsBack
+            (Ty.refine baseResult.targetType targetPredicate)
+            (by
+              change
+                Option.mapTwo
+                  (baseType.partialStrengthen? strengthening.back)
+                  (predicate.partialStrengthen? strengthening.back.lift)
+                  Ty.refine =
+                  some (Ty.refine baseResult.targetType targetPredicate)
+              rw [baseResult.typeStrengthens, predicateStrengthens]
+              rfl)
+        rawRenames := by
+          exact RawTerm.partialStrengthen?_imp_rename
+            (RawTerm.refineIntro valueRaw proofRaw)
+            strengthening.forward strengthening.back strengthening.injectsBack
+            (RawTerm.refineIntro baseResult.targetRaw targetProofRaw)
+            (by
+              change
+                Option.mapTwo
+                  (valueRaw.partialStrengthen? strengthening.back)
+                  (proofRaw.partialStrengthen? strengthening.back)
+                  RawTerm.refineIntro =
+                  some (RawTerm.refineIntro baseResult.targetRaw
+                    targetProofRaw)
+              rw [baseResult.rawStrengthens, proofRawStrengthens]
+              rfl)
+      }
+
+/-- Refinement elimination strengthens by strengthening its refined
+payload and projecting the strengthened base type out of the refined
+type index. -/
+def partialStrengthenTypedRefineElim {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {baseType : Ty level sourceScope}
+    {predicate : RawTerm (sourceScope + 1)}
+    {refinedRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {refinedValue :
+      Term sourceCtx (Ty.refine baseType predicate) refinedRaw}
+    (refinedResult : StrengtheningResult strengthening refinedValue) :
+    StrengtheningResult strengthening (Term.refineElim refinedValue) := by
+  cases refinedResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      change
+        Option.mapTwo
+          (baseType.partialStrengthen? strengthening.back)
+          (predicate.partialStrengthen? strengthening.back.lift)
+          Ty.refine = some targetType at typeStrengthens
+      cases baseSuccess : baseType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [baseSuccess] at typeStrengthens
+          cases typeStrengthens
+      | some targetBaseType =>
+          cases predicateSuccess : predicate.partialStrengthen?
+              strengthening.back.lift with
+          | none =>
+              rw [baseSuccess, predicateSuccess] at typeStrengthens
+              cases typeStrengthens
+          | some targetPredicate =>
+              rw [baseSuccess, predicateSuccess] at typeStrengthens
+              cases typeStrengthens
+              exact {
+                targetType := targetBaseType
+                targetRaw := RawTerm.refineElim targetRaw
+                targetTerm := Term.refineElim targetTerm
+                typeStrengthens := baseSuccess
+                rawStrengthens := by
+                  change
+                    (match refinedRaw.partialStrengthen?
+                        strengthening.back with
+                    | some strengthenedRefined =>
+                        some (RawTerm.refineElim strengthenedRefined)
+                    | none => none) =
+                      some (RawTerm.refineElim targetRaw)
+                  rw [rawStrengthens]
+                typeRenames :=
+                  Ty.partialStrengthen?_imp_rename baseType
+                    strengthening.forward strengthening.back
+                    strengthening.injectsBack targetBaseType baseSuccess
+                rawRenames := congrArg RawTerm.refineElim rawRenames
+              }
+
 /-- Sigma pair strengthens by strengthening both components and the
 binder-indexed second component type. -/
 def partialStrengthenTypedPair {mode : Mode} {level : Nat}
