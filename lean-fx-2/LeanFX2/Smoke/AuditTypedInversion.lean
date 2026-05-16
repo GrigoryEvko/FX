@@ -214,4 +214,14 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedIdJOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedIdJOfSuccess_sound
 
+-- Phase 21: HoTT-J observational-equality + strict-identity-recursor
+-- soundness — OfSuccess refactors mirror IdJ exactly.  Ty.oeq and
+-- Ty.idStrict are Ty constructors, so Ty.rename distributes
+-- definitionally — direct application of the HEq congruence per
+-- Phase 20.  3 of 3 HoTT-J eliminators now zero-axiom.
+#print axioms LeanFX2.Term.partialStrengthenTypedOeqJOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedOeqJOfSuccess_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRecOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRecOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion

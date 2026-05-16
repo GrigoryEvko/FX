@@ -3172,6 +3172,167 @@ theorem partialStrengthenTypedIdJOfSuccess_sound {mode : Mode} {level : Nat}
   exact Term.idJ_HEq_congr carrierRenames leftRenames rightRenames
     baseTypeRenames baseRawRenames witnessRawRenames baseSound witnessSound
 
+/-- Soundness for the success branch of observational-equality
+elimination strengthening.  Mirrors `partialStrengthenTypedIdJOfSuccess_sound`
+with `Ty.oeq` in place of `Ty.id`. -/
+theorem partialStrengthenTypedOeqJOfSuccess_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {targetMotiveType : Ty level targetScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {targetBaseRaw targetWitnessRaw : RawTerm targetScope}
+    {targetCarrier : Ty level targetScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    {targetBaseTerm : Term targetCtx targetMotiveType targetBaseRaw}
+    {targetWitnessTerm :
+      Term targetCtx
+        (Ty.oeq targetCarrier targetLeftEndpoint targetRightEndpoint)
+        targetWitnessRaw}
+    (baseTypeStrengthens :
+      motiveType.partialStrengthen? strengthening.back =
+        some targetMotiveType)
+    (carrierSuccess :
+      carrier.partialStrengthen? strengthening.back = some targetCarrier)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    (baseRawStrengthens :
+      baseRaw.partialStrengthen? strengthening.back = some targetBaseRaw)
+    (witnessRawStrengthens :
+      witnessRaw.partialStrengthen? strengthening.back =
+        some targetWitnessRaw)
+    (baseTypeRenames :
+      motiveType = targetMotiveType.rename strengthening.forward)
+    (baseRawRenames : baseRaw = targetBaseRaw.rename strengthening.forward)
+    (witnessRawRenames :
+      witnessRaw = targetWitnessRaw.rename strengthening.forward)
+    (baseSound :
+      HEq baseCase
+        (Term.rename strengthening.toTermRenaming targetBaseTerm))
+    (witnessSound :
+      HEq witness
+        (Term.rename strengthening.toTermRenaming targetWitnessTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedOeqJOfSuccess
+        (baseCase := baseCase) (witness := witness)
+        targetBaseTerm targetWitnessTerm baseTypeStrengthens
+        carrierSuccess leftSuccess rightSuccess baseRawStrengthens
+        witnessRawStrengthens baseTypeRenames baseRawRenames
+        witnessRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedOeqJOfSuccess]
+  have carrierRenames :
+      carrier = targetCarrier.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrier
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrier carrierSuccess
+  have leftRenames :
+      leftEndpoint = targetLeftEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename leftEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetLeftEndpoint leftSuccess
+  have rightRenames :
+      rightEndpoint = targetRightEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename rightEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetRightEndpoint rightSuccess
+  exact Term.oeqJ_HEq_congr carrierRenames leftRenames rightRenames
+    baseTypeRenames baseRawRenames witnessRawRenames baseSound witnessSound
+
+/-- Soundness for the success branch of strict-identity-recursor
+strengthening.  Mirrors `partialStrengthenTypedIdJOfSuccess_sound`
+with `Ty.idStrict` and the `modeIsStrict` evidence. -/
+theorem partialStrengthenTypedIdStrictRecOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {targetMotiveType : Ty level targetScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {targetBaseRaw targetWitnessRaw : RawTerm targetScope}
+    {targetCarrier : Ty level targetScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx
+        (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    {targetBaseTerm : Term targetCtx targetMotiveType targetBaseRaw}
+    {targetWitnessTerm :
+      Term targetCtx
+        (Ty.idStrict targetCarrier targetLeftEndpoint targetRightEndpoint)
+        targetWitnessRaw}
+    (baseTypeStrengthens :
+      motiveType.partialStrengthen? strengthening.back =
+        some targetMotiveType)
+    (carrierSuccess :
+      carrier.partialStrengthen? strengthening.back = some targetCarrier)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    (baseRawStrengthens :
+      baseRaw.partialStrengthen? strengthening.back = some targetBaseRaw)
+    (witnessRawStrengthens :
+      witnessRaw.partialStrengthen? strengthening.back =
+        some targetWitnessRaw)
+    (baseTypeRenames :
+      motiveType = targetMotiveType.rename strengthening.forward)
+    (baseRawRenames : baseRaw = targetBaseRaw.rename strengthening.forward)
+    (witnessRawRenames :
+      witnessRaw = targetWitnessRaw.rename strengthening.forward)
+    (baseSound :
+      HEq baseCase
+        (Term.rename strengthening.toTermRenaming targetBaseTerm))
+    (witnessSound :
+      HEq witness
+        (Term.rename strengthening.toTermRenaming targetWitnessTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedIdStrictRecOfSuccess modeIsStrict
+        (baseCase := baseCase) (witness := witness)
+        targetBaseTerm targetWitnessTerm baseTypeStrengthens
+        carrierSuccess leftSuccess rightSuccess baseRawStrengthens
+        witnessRawStrengthens baseTypeRenames baseRawRenames
+        witnessRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedIdStrictRecOfSuccess]
+  have carrierRenames :
+      carrier = targetCarrier.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrier
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrier carrierSuccess
+  have leftRenames :
+      leftEndpoint = targetLeftEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename leftEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetLeftEndpoint leftSuccess
+  have rightRenames :
+      rightEndpoint = targetRightEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename rightEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetRightEndpoint rightSuccess
+  exact Term.idStrictRec_HEq_congr modeIsStrict carrierRenames leftRenames
+    rightRenames baseTypeRenames baseRawRenames witnessRawRenames
+    baseSound witnessSound
+
 end Term
 
 end LeanFX2
