@@ -3,6 +3,7 @@ import LeanFX2.Term.PreservesTerm.TierTwoBinary
 import LeanFX2.Term.PreservesTerm.EliminatorConstantMotive
 import LeanFX2.Term.PreservesTerm.EliminatorIdentityFamily
 import LeanFX2.Term.PreservesTerm.EliminatorModalFamily
+import LeanFX2.Term.PreservesTerm.EliminatorCubicalFamily
 import LeanFX2.Term.PreservesTerm.InlineDestructors
 import LeanFX2.Term.PreservesTerm.EliminatorShallowBeta
 import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
@@ -27,6 +28,7 @@ Carved into 11 sub-modules along the per-tier / per-ctor-family axis:
 | `TierZeroAndUnary` | Tier 0 atoms (unit/bool/nat/list/option/interval/var/universeCode); Tier 1 unary cong + binders (cumulUp/natSucc/optionSome/.../lam/lamPi/pathLam) |
 | `TierTwoBinary` | Tier 2 binary cong + sessionRecv (intervalMeet/Join/glueIntro/hcomp/codataUnfold/sessionSend/listCons/equivApp/sessionRecv/refineIntro) |
 | `EliminatorConstantMotive` | Tier 3 eliminators with fixed result type (natElim/natRec/listElim/optionMatch/eitherMatch/effectPerform) |
+| `EliminatorCubicalFamily` | Cubical cong (hcompPath; pathLam/intervalOpp/pathApp/transp/glueElim/intervalMeet/intervalJoin/glueIntro/hcomp live in TierZeroAndUnary, EliminatorShallowBeta, TierTwoBinary) |
 | `InlineDestructors` | Destructors for canonical Term values (modIntro/recordIntro/refineIntro/glueIntro/lam/codataUnfold) |
 | `EliminatorShallowBeta` | Tier 3 single-child β-firing eliminators (transp/pathApp/appPi/app cong-only; modElim/recordProj/refineElim/glueElim/codataDest full) |
 | `BetaCastWallDemolition` | Full lifts via two-Ty existential (app/pathApp) plus pathLamDestruct/reflDestruct/idReflDestruct |
