@@ -6359,6 +6359,29 @@ def strengthenTyped? {mode : Mode} {level scope : Nat}
   partialStrengthenTyped? sourceTerm
     (ContextStrengthening.dropNewest context newType)
 
+/-- Successful single-newest-slot typed strengthening gives the
+canonical weakening equations for the source term's type and raw
+indices.
+
+This is the typed counterpart of
+`Term.strengthen?_imp_indices_weaken`; it exposes the equations carried
+by `StrengtheningResult` without making consumers destruct the result
+record by hand.
+-/
+theorem strengthenTyped?_imp_indices_weaken
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm (scope + 1)}
+    (sourceTerm : Term (context.cons newType) sourceType sourceRaw)
+    (result : StrengtheningResult
+      (ContextStrengthening.dropNewest context newType) sourceTerm)
+    (_success : strengthenTyped? sourceTerm = some result) :
+    sourceType = result.targetType.weaken ∧
+      sourceRaw = result.targetRaw.weaken := by
+  exact ⟨result.typeRenames, result.rawRenames⟩
+
 /-- Typed newest-slot use predicate.
 
 The predicate is deliberately defined by the typed strengthening

@@ -22,14 +22,12 @@ namespace LeanFX2.Tools
 
 -- Inductive ctor-count regression gates.  Pin current ctor count for
 -- each load-bearing inductive.  Fails on shrinkage (catches accidental
--- deletion); logs informationally on growth (codex adding new ctors).
-#assert_inductive_ctor_count_ratchet LeanFX2.Term 75
+-- deletion); logs informationally on growth (new constructors).
+#assert_inductive_ctor_count_ratchet LeanFX2.Term 78
 #assert_inductive_ctor_count_ratchet LeanFX2.Ty 25
-#assert_inductive_ctor_count_ratchet LeanFX2.Step 105
-#assert_inductive_ctor_count_ratchet LeanFX2.Step.par 109
--- D3.6-P1 bumped RawTerm 67 → 68 by adding `RawTerm.uaToEquiv`.
--- D3.6-P2 bumps RawTerm 68 → 69 by adding `RawTerm.equivApply`.
-#assert_inductive_ctor_count_ratchet LeanFX2.RawTerm 69
+#assert_inductive_ctor_count_ratchet LeanFX2.Step 111
+#assert_inductive_ctor_count_ratchet LeanFX2.Step.par 128
+#assert_inductive_ctor_count_ratchet LeanFX2.RawTerm 74
 
 -- Coe / CoeSort / CoeFun typeclass dependent census.  These silently
 -- inject elements between types; a bad Coe makes the type system

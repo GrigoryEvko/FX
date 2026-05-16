@@ -161,6 +161,7 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet
 #print axioms LeanFX2.Term.partialStrengthenTyped?
 #print axioms LeanFX2.Term.strengthenTyped?
+#print axioms LeanFX2.Term.strengthenTyped?_imp_indices_weaken
 #print axioms LeanFX2.Term.usesNewestSlotTyped?
 #print axioms LeanFX2.Term.unweaken?
 #print axioms LeanFX2.Term.not_usesNewestSlotTyped?_imp_strengthenTyped?_some

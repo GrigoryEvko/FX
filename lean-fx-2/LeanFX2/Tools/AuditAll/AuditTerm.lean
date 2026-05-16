@@ -18,7 +18,7 @@ import LeanFX2.FX1Bridge
 
 namespace LeanFX2.Tools
 
-/-! ## AuditTerm — 53 `#assert_no_axioms` checks. -/
+/-! ## AuditTerm — 348 `#assert_no_axioms` checks. -/
 
 #assert_no_axioms LeanFX2.Term.subst
 #assert_no_axioms LeanFX2.Term.rename
@@ -425,6 +425,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet
 #assert_no_axioms LeanFX2.Term.partialStrengthenTyped?
 #assert_no_axioms LeanFX2.Term.strengthenTyped?
+#assert_no_axioms LeanFX2.Term.strengthenTyped?_imp_indices_weaken
 #assert_no_axioms LeanFX2.Term.usesNewestSlotTyped?
 #assert_no_axioms LeanFX2.Term.unweaken?
 #assert_no_axioms LeanFX2.Term.not_usesNewestSlotTyped?_imp_strengthenTyped?_some

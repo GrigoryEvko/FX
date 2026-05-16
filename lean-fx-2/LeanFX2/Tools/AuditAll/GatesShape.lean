@@ -25,10 +25,10 @@ namespace LeanFX2.Tools
 -- / cohesiveFlat / cohesiveSharp).  This gate fails on ANY mismatch.
 -- Codex currently ships extras (legacy modes); this gate documents the
 -- spec-compliance gap until the legacy modes are stripped.
--- DOCUMENTED-DEFER: Mode actually has more ctors today (legacy modes
+-- DOCUMENTED-DEFER: Mode has more ctors today (legacy modes
 -- await cleanup).  Use the regression-only ratchet instead until
 -- spec-compliance is achieved.
-#assert_inductive_ctor_count_ratchet LeanFX2.Mode 5
+#assert_inductive_ctor_count_ratchet LeanFX2.Mode 10
 
 -- Bridge round-trip parity.  For every encodeTermSound_<X>, expect a
 -- companion encodeTermSound_<X>_roundTrip proving a `BridgeRoundTrip`
@@ -42,32 +42,12 @@ namespace LeanFX2.Tools
 -- discharge.  Tight ratchet at zero — currently clean.
 #assert_false_in_result_type_budget LeanFX2 0
 
--- Term/RawTerm ctor delta.  Term has 75 ctors, RawTerm has 69 — the 6
--- delta means manufactured-witness Term ctors share raw projections
--- with each other.  Architectural choice for refl-fragment Univalence/
--- funext support.  Pinning the delta catches new manufactured-witness
--- ctors arriving without RawTerm parity.  D3.6-P1 added
--- `RawTerm.uaToEquiv` (a raw-only ctor; typed mirror lands in P3),
--- shrinking the delta from 8 to 7.  D3.6-P2 adds `RawTerm.equivApply`
--- (also raw-only; typed mirror lands in P4), shrinking it to 6.
--- D3.6-P3 ships the typed mirror `Term.uaToEquiv` (Term grows by 1
--- to 76; RawTerm unchanged at 69), so the delta grows back to 7.
--- D3.6-P4 ships the typed mirror `Term.equivApply` (Term grows by 1
--- to 77; RawTerm unchanged at 69), so the delta grows to 8.
--- D3.6-S3 ships `RawTerm.pathCompose` (RawTerm grows by 1 to 70; Term
--- unchanged at 77 since typed `Term.pathCompose` is the v1.1 D3.10
--- follow-up), so the delta SHRINKS by 1 from 8 to 7.
--- D3.6-S4 ships `RawTerm.idToEquiv` (RawTerm grows by 1 to 71; Term
--- unchanged at 77 since typed `Term.idToEquiv` is the v1.1 follow-up),
--- so the delta SHRINKS by 1 from 7 to 6.
--- D3.6-S5 ships `RawTerm.oeqTrans` + `RawTerm.equivCompose` (RawTerm
--- grows by 2 to 73; Term unchanged at 77 since typed mirrors are v1.1
--- follow-ups), so the delta SHRINKS by 2 from 6 to 4.
--- #1528 Option B Phase A ships `Term.hcompPath` (Term grows by 1 to
--- 78; RawTerm unchanged at 73 since `hcompPath` projects to the same
--- `RawTerm.hcomp` head as the existing `Term.hcomp` — no RawTerm parity
--- ctor is needed), so the delta GROWS by 1 from 4 to 5.
-#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 5
+-- Term/RawTerm ctor delta.  Term currently has 78 ctors and RawTerm has
+-- 74.  The delta tracks manufactured typed constructors sharing raw
+-- projections with existing raw heads.  Pinning this catches new
+-- manufactured-witness Term ctors arriving without an intentional RawTerm
+-- parity decision.
+#assert_term_raw_ctor_delta LeanFX2.Term LeanFX2.RawTerm 4
 
 -- Sigma / PSigma / Sum / PSum / PProd dependent census.  Heterogeneous
 -- packaging types; heavy use signals existential reasoning.  1255 today
