@@ -538,6 +538,90 @@ inductive DispatchAtom :
       DispatchAtom (Term.codataDest (context := context) codataValue
                     : Term context outputType
                                    (RawTerm.codataDest codataRaw))
+  /-- Universe-level cumulativity raise.  Source at
+  `Ty.universe lowerLevel levelLeLow`; target at
+  `Ty.universe higherLevel levelLeHigh`.  Both ends are unconditionally
+  closed (`IsClosedTy.universe`) — no IsClosedTy hypothesis needed. -/
+  | cumulUp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (lowerLevel higherLevel : UniverseLevel)
+      (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+      (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+      (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+      {codeRaw : RawTerm scope}
+      (typeCode : Term context (Ty.universe lowerLevel levelLeLow) codeRaw)
+      (codeDispatch : DispatchAtom typeCode) :
+      DispatchAtom (Term.cumulUp (context := context)
+                                  lowerLevel higherLevel cumulMonotone
+                                  levelLeLow levelLeHigh typeCode
+                    : Term context (Ty.universe higherLevel levelLeHigh)
+                                   (RawTerm.cumulUpMarker codeRaw))
+  /-- Glue introduction (univalent mode).  Two children share
+  `baseType`; closed-base witness propagates to both SR bridges. -/
+  | glueIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      {baseType : Ty level scope}
+      (baseClosed : IsClosedTy baseType)
+      (boundaryWitness : RawTerm scope)
+      {baseRaw partialRaw : RawTerm scope}
+      (baseValue : Term context baseType baseRaw)
+      (partialValue : Term context baseType partialRaw)
+      (baseDispatch : DispatchAtom baseValue)
+      (partialDispatch : DispatchAtom partialValue) :
+      DispatchAtom (Term.glueIntro (context := context) modeIsUnivalent
+                                    baseType boundaryWitness baseValue
+                                    partialValue
+                    : Term context (Ty.glue baseType boundaryWitness)
+                                   (RawTerm.glueIntro baseRaw partialRaw))
+  /-- Codata unfold.  State child at `stateType`; transition child at
+  `Ty.arrow stateType outputType`.  Both state and output closed. -/
+  | codataUnfold {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {stateType outputType : Ty level scope}
+      (stateClosed : IsClosedTy stateType)
+      (outputClosed : IsClosedTy outputType)
+      {stateRaw transitionRaw : RawTerm scope}
+      (initialState : Term context stateType stateRaw)
+      (transition : Term context (Ty.arrow stateType outputType) transitionRaw)
+      (stateDispatch : DispatchAtom initialState)
+      (transitionDispatch : DispatchAtom transition) :
+      DispatchAtom (Term.codataUnfold (context := context)
+                                       initialState transition
+                    : Term context (Ty.codata stateType outputType)
+                                   (RawTerm.codataUnfold stateRaw transitionRaw))
+  /-- Equiv application.  Equiv child at `Ty.equiv carrierA carrierB`;
+  argument child at `carrierA`.  Both carriers closed. -/
+  | equivApp {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {carrierA carrierB : Ty level scope}
+      (carrierAClosed : IsClosedTy carrierA)
+      (carrierBClosed : IsClosedTy carrierB)
+      {equivRaw argumentRaw : RawTerm scope}
+      (equivTerm : Term context (Ty.equiv carrierA carrierB) equivRaw)
+      (argumentTerm : Term context carrierA argumentRaw)
+      (equivDispatch : DispatchAtom equivTerm)
+      (argumentDispatch : DispatchAtom argumentTerm) :
+      DispatchAtom (Term.equivApp (context := context) equivTerm
+                                   argumentTerm
+                    : Term context carrierB
+                                   (RawTerm.equivApp equivRaw argumentRaw))
+  /-- Refinement introduction.  Value child at `baseType`; proof child at
+  `Ty.unit`.  Only base type needs to be closed. -/
+  | refineIntro {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {baseType : Ty level scope}
+      (baseClosed : IsClosedTy baseType)
+      (predicate : RawTerm (scope + 1))
+      {valueRaw proofRaw : RawTerm scope}
+      (baseValue : Term context baseType valueRaw)
+      (predicateProof : Term context Ty.unit proofRaw)
+      (valueDispatch : DispatchAtom baseValue)
+      (proofDispatch : DispatchAtom predicateProof) :
+      DispatchAtom (Term.refineIntro (context := context) predicate
+                                      baseValue predicateProof
+                    : Term context (Ty.refine baseType predicate)
+                                   (RawTerm.refineIntro valueRaw proofRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -909,5 +993,85 @@ theorem RawStep.par.lift_full_term
         (IsClosedTy.codata stateClosed outputClosed) codataStep rfl
     subst codataEq
     exact ⟨codataTarget, codataStep⟩
+  | cumulUp lowerLevel higherLevel cumulMonotone levelLeLow levelLeHigh
+            typeCode _ ihCode =>
+    refine RawStep.par.lift_full_cumulUp lowerLevel higherLevel cumulMonotone
+                                          levelLeLow levelLeHigh typeCode ?_
+                                          rawStep
+    intro _ codeRawStep
+    obtain ⟨codeTargetType, codeTarget, codeStep⟩ := ihCode codeRawStep
+    have universeEq : codeTargetType = _ :=
+      Step.par.preserves_isClosedTy (IsClosedTy.universe lowerLevel levelLeLow)
+                                     codeStep rfl
+    subst universeEq
+    exact ⟨codeTarget, codeStep⟩
+  | glueIntro modeIsUnivalent baseClosed boundaryWitness baseValue partialValue
+              _ _ ihBase ihPartial =>
+    refine RawStep.par.lift_full_glueIntro modeIsUnivalent _ boundaryWitness
+                                            baseValue partialValue ?_ ?_ rawStep
+    · intro _ baseRawStep
+      obtain ⟨baseTargetType, baseTarget, baseStep⟩ := ihBase baseRawStep
+      have baseEq : baseTargetType = _ :=
+        Step.par.preserves_isClosedTy baseClosed baseStep rfl
+      subst baseEq
+      exact ⟨baseTarget, baseStep⟩
+    · intro _ partialRawStep
+      obtain ⟨partialTargetType, partialTarget, partialStep⟩ :=
+        ihPartial partialRawStep
+      have partialEq : partialTargetType = _ :=
+        Step.par.preserves_isClosedTy baseClosed partialStep rfl
+      subst partialEq
+      exact ⟨partialTarget, partialStep⟩
+  | codataUnfold stateClosed outputClosed initialState transition
+                 _ _ ihState ihTransition =>
+    refine RawStep.par.lift_full_codataUnfold initialState transition
+                                               ?_ ?_ rawStep
+    · intro _ stateRawStep
+      obtain ⟨stateTargetType, stateTarget, stateStep⟩ := ihState stateRawStep
+      have stateEq : stateTargetType = _ :=
+        Step.par.preserves_isClosedTy stateClosed stateStep rfl
+      subst stateEq
+      exact ⟨stateTarget, stateStep⟩
+    · intro _ transitionRawStep
+      obtain ⟨transitionTargetType, transitionTarget, transitionStep⟩ :=
+        ihTransition transitionRawStep
+      have arrowEq : transitionTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow stateClosed outputClosed) transitionStep rfl
+      subst arrowEq
+      exact ⟨transitionTarget, transitionStep⟩
+  | equivApp carrierAClosed carrierBClosed equivTerm argumentTerm
+             _ _ ihEquiv ihArgument =>
+    refine RawStep.par.lift_full_equivApp equivTerm argumentTerm ?_ ?_ rawStep
+    · intro _ equivRawStep
+      obtain ⟨equivTargetType, equivTarget, equivStep⟩ := ihEquiv equivRawStep
+      have equivEq : equivTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.equiv carrierAClosed carrierBClosed) equivStep rfl
+      subst equivEq
+      exact ⟨equivTarget, equivStep⟩
+    · intro _ argumentRawStep
+      obtain ⟨argumentTargetType, argumentTarget, argumentStep⟩ :=
+        ihArgument argumentRawStep
+      have argumentEq : argumentTargetType = _ :=
+        Step.par.preserves_isClosedTy carrierAClosed argumentStep rfl
+      subst argumentEq
+      exact ⟨argumentTarget, argumentStep⟩
+  | refineIntro baseClosed predicate baseValue predicateProof
+                _ _ ihValue ihProof =>
+    refine RawStep.par.lift_full_refineIntro predicate baseValue
+                                              predicateProof ?_ ?_ rawStep
+    · intro _ valueRawStep
+      obtain ⟨valueTargetType, valueTarget, valueStep⟩ := ihValue valueRawStep
+      have valueEq : valueTargetType = _ :=
+        Step.par.preserves_isClosedTy baseClosed valueStep rfl
+      subst valueEq
+      exact ⟨valueTarget, valueStep⟩
+    · intro _ proofRawStep
+      obtain ⟨proofTargetType, proofTarget, proofStep⟩ := ihProof proofRawStep
+      have unitEq : proofTargetType = Ty.unit :=
+        Step.par.preserves_isClosedTy IsClosedTy.unit proofStep rfl
+      subst unitEq
+      exact ⟨proofTarget, proofStep⟩
 
 end LeanFX2
