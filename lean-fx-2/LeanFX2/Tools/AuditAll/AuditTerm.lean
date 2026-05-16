@@ -529,5 +529,7 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedSessionRecv_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedCumulUp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextIntroHet_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedUaIntroHet_sound
 
 end LeanFX2.Tools

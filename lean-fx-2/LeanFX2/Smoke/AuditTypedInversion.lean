@@ -160,4 +160,19 @@ namespace LeanFX2.SmokeTypedInversion
 -- chain so the HEq congruence applies with one rfl-on-the-record discharge.
 #print axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv_sound
 
+-- Phase 17: heterogeneous funext + univalence introduction soundness.
+-- FunextIntroHet is the cleanest sound theorem in the cascade: the
+-- producer has NO Term children — the strengthened result is built
+-- purely from 4 strengthening witnesses on the type/raw pivots, so
+-- soundness just derives 4 renames via partialStrengthen?_imp_rename
+-- (lifted for the binder-scoped applies) and applies the HEq congruence.
+-- UaIntroHet mirrors UaToEquiv with 6 pre-witnesses (carriers + raws +
+-- forward/backward proof endpoints) and an equivWitness child.
+-- OeqFunext is deferred this phase: dsimp does not reduce through the
+-- oeqFunextPointwiseType reducible-def layer at the renamedTarget
+-- projection site under the synthesized pointwiseExpectedStrengthens
+-- cases chain — needs an explicit `show` or a different approach.
+#print axioms LeanFX2.Term.partialStrengthenTypedFunextIntroHet_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedUaIntroHet_sound
+
 end LeanFX2.SmokeTypedInversion
