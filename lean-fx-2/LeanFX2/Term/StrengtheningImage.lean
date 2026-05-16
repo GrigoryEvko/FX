@@ -915,6 +915,88 @@ theorem partialStrengthenTypedEitherInrOfLeftType_sound {mode : Mode}
       exact Term.eitherInr_HEq_congr leftTypeRenames valueTypeRenames
         valueRawRenames valueSound.termRenames
 
+/-- Soundness for Sigma-pair strengthening. -/
+theorem partialStrengthenTypedPair_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {firstType : Ty level sourceScope}
+    {secondType : Ty level (sourceScope + 1)}
+    {targetSecondType : Ty level (targetScope + 1)}
+    {firstRaw secondRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {firstValue : Term sourceCtx firstType firstRaw}
+    {secondValue :
+      Term sourceCtx (secondType.subst0 firstType firstRaw) secondRaw}
+    (secondTypeStrengthens :
+      secondType.partialStrengthen? strengthening.back.lift =
+        some targetSecondType)
+    {firstResult : StrengtheningResult strengthening firstValue}
+    {secondResult : StrengtheningResult strengthening secondValue}
+    (firstSound : StrengtheningSoundness firstResult)
+    (secondSound : StrengtheningSoundness secondResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedPair secondTypeStrengthens firstResult
+        secondResult) := by
+  cases firstResult with
+  | mk targetFirstType targetFirstRaw targetFirstTerm firstTypeStrengthens
+      firstRawStrengthens firstTypeRenames firstRawRenames =>
+      cases secondResult with
+      | mk targetSecondValueType targetSecondRaw targetSecondTerm
+          secondValueTypeStrengthens secondRawStrengthens
+          secondValueTypeRenames secondRawRenames =>
+          have expectedSecondValueStrengthens :
+              (secondType.subst0 firstType firstRaw).partialStrengthen?
+                  strengthening.back =
+                some (targetSecondType.subst0 targetFirstType
+                  targetFirstRaw) :=
+            Ty.partialStrengthen?_subst0_of_success secondType
+              targetSecondType firstType targetFirstType firstRaw
+              targetFirstRaw strengthening.forward strengthening.back
+              strengthening.injectsBack strengthening.back_forward
+              secondTypeStrengthens firstTypeStrengthens
+              firstRawStrengthens
+          rw [expectedSecondValueStrengthens] at secondValueTypeStrengthens
+          cases secondValueTypeStrengthens
+          refine ⟨?_⟩
+          dsimp [partialStrengthenTypedPair,
+            StrengtheningResult.renamedTarget] at firstSound secondSound ⊢
+          have secondTypeRenames :
+              secondType =
+                targetSecondType.rename strengthening.forward.lift :=
+            Ty.partialStrengthen?_imp_rename secondType
+              strengthening.forward.lift strengthening.back.lift
+              (PartialRawRenaming.lift_renamingInjectsBack
+                strengthening.injectsBack)
+              targetSecondType secondTypeStrengthens
+          have secondCastSound :
+              HEq secondValue
+                (Ty.subst0_rename_commute targetSecondType
+                  targetFirstType targetFirstRaw strengthening.forward ▸
+                  Term.rename strengthening.toTermRenaming
+                    targetSecondTerm) :=
+            have castSound :
+                HEq
+                  (Term.rename strengthening.toTermRenaming
+                    targetSecondTerm)
+                  (Ty.subst0_rename_commute targetSecondType
+                    targetFirstType targetFirstRaw
+                    strengthening.forward ▸
+                    Term.rename strengthening.toTermRenaming
+                      targetSecondTerm) := by
+              exact heq_cast_left
+                (motive := fun resultType =>
+                  Term sourceCtx resultType
+                    (targetSecondRaw.rename strengthening.forward))
+                (Ty.subst0_rename_commute targetSecondType
+                  targetFirstType targetFirstRaw strengthening.forward)
+                (Term.rename strengthening.toTermRenaming
+                  targetSecondTerm)
+            HEq.trans secondSound.termRenames castSound
+          exact Term.pair_HEq_congr firstTypeRenames secondTypeRenames
+            firstRawRenames secondRawRenames firstSound.termRenames
+            secondCastSound
+
 /-- Soundness for interval-negation strengthening. -/
 theorem partialStrengthenTypedIntervalOpp_sound {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}

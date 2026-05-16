@@ -74,6 +74,7 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedListCons_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherInlOfRightType_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherInrOfLeftType_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedPair_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin_sound
