@@ -831,4 +831,34 @@ theorem Term.equivApply_HEq_congr
   cases argumentHEq
   rfl
 
+/-- HEq congruence for `Term.pathLam`.  Mirrors `lam_HEq_congr`: the
+body's expected type involves `carrierType.weaken`, which automatically
+aligns when `carrierType` is substituted via `carrierEq`. -/
+theorem Term.pathLam_HEq_congr
+    {mode : Mode} {level scope : Nat} {context : Ctx mode level scope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType1 carrierType2 : Ty level scope}
+    {leftEndpoint1 leftEndpoint2 rightEndpoint1 rightEndpoint2 :
+      RawTerm scope}
+    {bodyRaw1 bodyRaw2 : RawTerm (scope + 1)}
+    (carrierEq : carrierType1 = carrierType2)
+    (leftEndpointEq : leftEndpoint1 = leftEndpoint2)
+    (rightEndpointEq : rightEndpoint1 = rightEndpoint2)
+    (bodyRawEq : bodyRaw1 = bodyRaw2)
+    {body1 :
+      Term (context.cons Ty.interval) carrierType1.weaken bodyRaw1}
+    {body2 :
+      Term (context.cons Ty.interval) carrierType2.weaken bodyRaw2}
+    (bodyHEq : HEq body1 body2) :
+    HEq (Term.pathLam modeIsUnivalent carrierType1 leftEndpoint1
+          rightEndpoint1 body1)
+        (Term.pathLam modeIsUnivalent carrierType2 leftEndpoint2
+          rightEndpoint2 body2) := by
+  subst carrierEq
+  subst leftEndpointEq
+  subst rightEndpointEq
+  subst bodyRawEq
+  cases bodyHEq
+  rfl
+
 end LeanFX2

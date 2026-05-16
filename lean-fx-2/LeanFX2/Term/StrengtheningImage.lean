@@ -3592,6 +3592,112 @@ theorem partialStrengthenTypedLam_sound {mode : Mode} {level : Nat}
               targetBodyTerm)).symm
       exact Term.lam_HEq_congr rfl rfl bodyRawRenames castedHEq
 
+/-- Soundness for cubical Path-lambda strengthening.
+
+Mirrors `partialStrengthenTypedLam_sound`: pathLam binds `Ty.interval`
+(closed, no strengthening dance) and the body's expected type uses
+`carrierType.weaken`.  `Term.rename` of `Term.pathLam` introduces the
+same `Ty.weaken_rename_commute rho carrierType ▸` cast as Term.lam.
+
+Compared to Lam: only the carrier type is renamed (interval is closed
+so no domainRenames step is needed), and three additional explicit
+fields — `leftEndpoint`, `rightEndpoint`, the mode-univalent witness —
+flow through unchanged because `Ty.path`'s renaming distributes over
+them.  `subst carrierRenames` alone replaces `carrierType` with the
+renamed target, then the body dance + cast bridge proceeds exactly as
+Lam. -/
+theorem partialStrengthenTypedPathLam_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {body :
+      Term (sourceCtx.cons Ty.interval) carrierType.weaken bodyRaw}
+    (carrierStrengthens :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftEndpointStrengthens :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightEndpointStrengthens :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    {bodyResult :
+      StrengtheningResult
+        (strengthening.lift Ty.interval Ty.interval rfl) body}
+    (bodySound : StrengtheningSoundness bodyResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedPathLam modeIsUnivalent
+        carrierStrengthens leftEndpointStrengthens
+        rightEndpointStrengthens bodyResult) := by
+  have carrierRenames :
+      carrierType = targetCarrierType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierType carrierStrengthens
+  have leftEndpointRenames :
+      leftEndpoint =
+        targetLeftEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename leftEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetLeftEndpoint leftEndpointStrengthens
+  have rightEndpointRenames :
+      rightEndpoint =
+        targetRightEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename rightEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetRightEndpoint rightEndpointStrengthens
+  subst carrierRenames
+  subst leftEndpointRenames
+  subst rightEndpointRenames
+  cases bodyResult with
+  | mk targetBodyType targetBodyRaw targetBodyTerm bodyTypeStrengthens
+      bodyRawStrengthens bodyTypeRenames bodyRawRenames =>
+      have bodyTypeStrengthensAtLift :
+          Ty.partialStrengthen?
+              (Ty.weaken (targetCarrierType.rename strengthening.forward))
+              strengthening.back.lift =
+            some targetBodyType := by
+        simpa only [ContextStrengthening.lift] using bodyTypeStrengthens
+      have expectedBodyTypeStrengthens :
+          Ty.partialStrengthen?
+              (Ty.weaken (targetCarrierType.rename strengthening.forward))
+              strengthening.back.lift =
+            some targetCarrierType.weaken := by
+        rw [Ty.partialStrengthen?_weaken_lift
+          (targetCarrierType.rename strengthening.forward)
+          strengthening.back, carrierStrengthens]
+        rfl
+      rw [expectedBodyTypeStrengthens] at bodyTypeStrengthensAtLift
+      cases bodyTypeStrengthensAtLift
+      refine ⟨?_⟩
+      have bodyHEq := bodySound.termRenames
+      simp only [StrengtheningResult.renamedTarget] at bodyHEq
+      simp only [partialStrengthenTypedPathLam,
+        StrengtheningResult.renamedTarget]
+      have castedHEq : HEq body
+          (Ty.weaken_rename_commute strengthening.forward
+              targetCarrierType ▸
+            Term.rename
+              ((strengthening.lift Ty.interval Ty.interval
+                rfl).toTermRenaming) targetBodyTerm) :=
+        HEq.trans bodyHEq
+          (Term.type_eq_cast_heq
+            (Ty.weaken_rename_commute strengthening.forward
+              targetCarrierType)
+            (Term.rename
+              ((strengthening.lift Ty.interval Ty.interval
+                rfl).toTermRenaming)
+              targetBodyTerm)).symm
+      exact Term.pathLam_HEq_congr modeIsUnivalent rfl rfl rfl
+        bodyRawRenames castedHEq
+
 /-- Soundness for cubical Glue-elimination strengthening.  Mirrors the
 RefineElim/CodataDest OfSuccess pattern: the wrapper's dual
 `Option.casesOn` on `Ty.glue`'s base + boundary pivots is replaced by

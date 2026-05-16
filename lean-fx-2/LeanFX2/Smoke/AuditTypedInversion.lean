@@ -279,4 +279,14 @@ namespace LeanFX2.SmokeTypedInversion
 -- binder producer that uses `Ty.weaken` in the body's type.
 #print axioms LeanFX2.Term.partialStrengthenTypedLam_sound
 
+-- Phase 27: cubical Path-lambda soundness — same `Ty.weaken` cast
+-- bridge as Lam, but with a closed `Ty.interval` binder (no domain
+-- strengthening needed) and three extra explicit fields
+-- (leftEndpoint, rightEndpoint, mode-univalent witness).  Validates
+-- the Lam recipe's reach into the cubical fragment.  New helper
+-- `Term.pathLam_HEq_congr` mirrors `Term.lam_HEq_congr` (HEq congruence
+-- under codomain `.weaken`).
+#print axioms LeanFX2.Term.partialStrengthenTypedPathLam_sound
+#print axioms LeanFX2.Term.pathLam_HEq_congr
+
 end LeanFX2.SmokeTypedInversion
