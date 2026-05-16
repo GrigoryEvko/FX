@@ -99,4 +99,15 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedFunextRefl_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId_sound
 
+-- Phase 11: 3 eliminator OfSuccess soundness theorems via refactor.
+-- Wrappers `partialStrengthenTypedListElim`/`OptionMatch`/`EitherMatch`
+-- now delegate to term-mode OfSuccess variants whose soundness lifts
+-- without traversing `Option.casesOn` discriminator inside the wrapper.
+#print axioms LeanFX2.Term.partialStrengthenTypedListElimOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedListElimOfSuccess_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionMatchOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionMatchOfSuccess_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEitherMatchOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedEitherMatchOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion

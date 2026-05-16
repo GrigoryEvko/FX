@@ -386,10 +386,13 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedPathApp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedListCons
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedListElim
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListElimOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherInlOfRightType
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherInrOfLeftType
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionMatch
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionMatchOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherMatch
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherMatchOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRefineIntro
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRefineElim
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRefl
@@ -509,5 +512,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivReflIdAtId_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextRefl_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListElimOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionMatchOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherMatchOfSuccess_sound
 
 end LeanFX2.Tools
