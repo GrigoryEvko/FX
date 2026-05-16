@@ -4068,6 +4068,127 @@ theorem partialStrengthenTypedHcompPathOfSuccess_sound {mode : Mode}
     leftEndpointRenames rightEndpointRenames sidesPathRawRenames
     capRawRenames sidesPathSound capSound
 
+/-- Soundness of `partialStrengthenTypedEquivIntroHetOfSuccess`: the
+result's renamed target term is heterogeneously equal to the original
+typed heterogeneous-equivalence introduction.  Note: the leftInv and
+rightInv raw rename equations are taken as direct inputs since the
+typed proof children carry independent raw forms not derivable from
+`forwardRaw` / `backwardRaw` alone. -/
+theorem partialStrengthenTypedEquivIntroHetOfSuccess_sound
+    {mode : Mode} {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    {targetForwardRaw targetBackwardRaw : RawTerm targetScope}
+    {targetLeftInvRaw targetRightInvRaw : RawTerm targetScope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    {targetForward :
+      Term targetCtx (Ty.arrow targetCarrierA targetCarrierB)
+        targetForwardRaw}
+    {targetBackward :
+      Term targetCtx (Ty.arrow targetCarrierB targetCarrierA)
+        targetBackwardRaw}
+    {targetLeftInv :
+      Term targetCtx
+        (equivIntroHetLeftInverseType targetCarrierA targetForwardRaw
+          targetBackwardRaw)
+        targetLeftInvRaw}
+    {targetRightInv :
+      Term targetCtx
+        (equivIntroHetRightInverseType targetCarrierB targetForwardRaw
+          targetBackwardRaw)
+        targetRightInvRaw}
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back =
+        some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back =
+        some targetCarrierB)
+    (forwardRawStrengthens :
+      forwardRaw.partialStrengthen? strengthening.back =
+        some targetForwardRaw)
+    (backwardRawStrengthens :
+      backwardRaw.partialStrengthen? strengthening.back =
+        some targetBackwardRaw)
+    (forwardRawRenames :
+      forwardRaw = targetForwardRaw.rename strengthening.forward)
+    (backwardRawRenames :
+      backwardRaw = targetBackwardRaw.rename strengthening.forward)
+    (leftInvRawRenames :
+      leftInvRaw = targetLeftInvRaw.rename strengthening.forward)
+    (rightInvRawRenames :
+      rightInvRaw = targetRightInvRaw.rename strengthening.forward)
+    (forwardSound :
+      HEq forward
+        (Term.rename strengthening.toTermRenaming targetForward))
+    (backwardSound :
+      HEq backward
+        (Term.rename strengthening.toTermRenaming targetBackward))
+    (leftInvSound :
+      HEq leftInv
+        (Term.rename strengthening.toTermRenaming targetLeftInv))
+    (rightInvSound :
+      HEq rightInv
+        (Term.rename strengthening.toTermRenaming targetRightInv)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEquivIntroHetOfSuccess
+        (forward := forward) (backward := backward)
+        (leftInv := leftInv) (rightInv := rightInv)
+        targetForward targetBackward targetLeftInv targetRightInv
+        carrierASuccess carrierBSuccess forwardRawStrengthens
+        backwardRawStrengthens forwardRawRenames backwardRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedEquivIntroHetOfSuccess]
+  have carrierARenames :
+      carrierA = targetCarrierA.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierA
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierA carrierASuccess
+  have carrierBRenames :
+      carrierB = targetCarrierB.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierB
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierB carrierBSuccess
+  have castedLeftInvSound :
+      HEq leftInv
+        (equivIntroHetLeftInverseType_rename strengthening.forward
+            targetCarrierA targetForwardRaw targetBackwardRaw ▸
+          Term.rename strengthening.toTermRenaming targetLeftInv) :=
+    HEq.trans leftInvSound
+      (Term.type_eq_cast_heq
+        (equivIntroHetLeftInverseType_rename strengthening.forward
+          targetCarrierA targetForwardRaw targetBackwardRaw)
+        (Term.rename strengthening.toTermRenaming targetLeftInv)).symm
+  have castedRightInvSound :
+      HEq rightInv
+        (equivIntroHetRightInverseType_rename strengthening.forward
+            targetCarrierB targetForwardRaw targetBackwardRaw ▸
+          Term.rename strengthening.toTermRenaming targetRightInv) :=
+    HEq.trans rightInvSound
+      (Term.type_eq_cast_heq
+        (equivIntroHetRightInverseType_rename strengthening.forward
+          targetCarrierB targetForwardRaw targetBackwardRaw)
+        (Term.rename strengthening.toTermRenaming targetRightInv)).symm
+  exact Term.equivIntroHet_HEq_congr carrierARenames carrierBRenames
+    forwardRawRenames backwardRawRenames leftInvRawRenames
+    rightInvRawRenames forwardSound backwardSound castedLeftInvSound
+    castedRightInvSound
+
 end Term
 
 end LeanFX2

@@ -5924,6 +5924,113 @@ def partialStrengthenTypedEffectPerform {mode : Mode} {level : Nat}
               rfl
           }
 
+/-- Pre-witnessed heterogeneous equivalence introduction
+strengthening.  Replaces the wrapper's deep `Option.casesOn` cascade
+over `Ty.arrow`'s two pivots plus the four nested
+`equivIntroHet*InverseType` derivations with explicit strengthening
+witnesses for both carriers and both raw operand terms.  The four
+typed children (forward / backward / leftInv / rightInv) and their
+target counterparts are passed directly; `targetLeftInvRaw` /
+`targetRightInvRaw` are implicit since `RawTerm.equivIntro`'s
+schematic raw form only references `forwardRaw` / `backwardRaw`. -/
+def partialStrengthenTypedEquivIntroHetOfSuccess
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
+    {forwardRaw backwardRaw leftInvRaw rightInvRaw : RawTerm sourceScope}
+    {targetForwardRaw targetBackwardRaw : RawTerm targetScope}
+    {targetLeftInvRaw targetRightInvRaw : RawTerm targetScope}
+    {forward :
+      Term sourceCtx (Ty.arrow carrierA carrierB) forwardRaw}
+    {backward :
+      Term sourceCtx (Ty.arrow carrierB carrierA) backwardRaw}
+    {leftInv :
+      Term sourceCtx
+        (equivIntroHetLeftInverseType carrierA forwardRaw backwardRaw)
+        leftInvRaw}
+    {rightInv :
+      Term sourceCtx
+        (equivIntroHetRightInverseType carrierB forwardRaw backwardRaw)
+        rightInvRaw}
+    (targetForward :
+      Term targetCtx (Ty.arrow targetCarrierA targetCarrierB)
+        targetForwardRaw)
+    (targetBackward :
+      Term targetCtx (Ty.arrow targetCarrierB targetCarrierA)
+        targetBackwardRaw)
+    (targetLeftInv :
+      Term targetCtx
+        (equivIntroHetLeftInverseType targetCarrierA targetForwardRaw
+          targetBackwardRaw)
+        targetLeftInvRaw)
+    (targetRightInv :
+      Term targetCtx
+        (equivIntroHetRightInverseType targetCarrierB targetForwardRaw
+          targetBackwardRaw)
+        targetRightInvRaw)
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back =
+        some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back =
+        some targetCarrierB)
+    (forwardRawStrengthens :
+      forwardRaw.partialStrengthen? strengthening.back =
+        some targetForwardRaw)
+    (backwardRawStrengthens :
+      backwardRaw.partialStrengthen? strengthening.back =
+        some targetBackwardRaw)
+    (forwardRawRenames :
+      forwardRaw = targetForwardRaw.rename strengthening.forward)
+    (backwardRawRenames :
+      backwardRaw = targetBackwardRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.equivIntroHet forward backward leftInv rightInv) where
+  targetType := Ty.equiv targetCarrierA targetCarrierB
+  targetRaw := RawTerm.equivIntro targetForwardRaw targetBackwardRaw
+  targetTerm :=
+    Term.equivIntroHet targetForward targetBackward targetLeftInv
+      targetRightInv
+  typeStrengthens := by
+    change
+      Option.mapTwo
+        (carrierA.partialStrengthen? strengthening.back)
+        (carrierB.partialStrengthen? strengthening.back)
+        Ty.equiv =
+          some (Ty.equiv targetCarrierA targetCarrierB)
+    rw [carrierASuccess, carrierBSuccess]
+    rfl
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (forwardRaw.partialStrengthen? strengthening.back)
+        (backwardRaw.partialStrengthen? strengthening.back)
+        RawTerm.equivIntro =
+          some (RawTerm.equivIntro targetForwardRaw targetBackwardRaw)
+    rw [forwardRawStrengthens, backwardRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename (Ty.equiv carrierA carrierB)
+      strengthening.forward strengthening.back strengthening.injectsBack
+      (Ty.equiv targetCarrierA targetCarrierB)
+      (by
+        change
+          Option.mapTwo
+            (carrierA.partialStrengthen? strengthening.back)
+            (carrierB.partialStrengthen? strengthening.back)
+            Ty.equiv =
+              some (Ty.equiv targetCarrierA targetCarrierB)
+        rw [carrierASuccess, carrierBSuccess]
+        rfl)
+  rawRenames := by
+    cases forwardRawRenames
+    cases backwardRawRenames
+    rfl
+
 /-- Heterogeneous equivalence introduction strengthens the forward and
 backward functions plus their inverse-law proof functions.  The proof
 children are aligned by structurally strengthening the named inverse-law

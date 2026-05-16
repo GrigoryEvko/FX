@@ -331,4 +331,22 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompPathOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompPathOfSuccess_sound
 
+-- Phase 32: heterogeneous-equivalence introduction via OfSuccess.
+-- EquivIntroHet's wrapper does a 250-line cascade aligning the four
+-- typed children plus four derived `equivIntroHet*InverseType`
+-- structural strengthenings.  The OfSuccess form skips all that:
+-- four typed targets + 4 strengthening witnesses (2 carriers,
+-- forwardRaw, backwardRaw) + 2 rename equations.  The `targetRaw`
+-- shape is `RawTerm.equivIntro targetForwardRaw targetBackwardRaw`
+-- only — leftInvRaw and rightInvRaw are typed-only "ghost" proof
+-- raws that don't appear in the schematic raw form.  Soundness
+-- composes via `equivIntroHet_HEq_congr` (Atomic.lean:774) with
+-- two Ty rename equalities plus four raw rename equations (the
+-- last two leftInvRawRenames/rightInvRawRenames taken as direct
+-- inputs), and casts the leftInv/rightInv soundness HEqs through
+-- the `equivIntroHet*InverseType_rename` casts that Term.rename
+-- inserts when pushing through equivIntroHet.
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHetOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHetOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
