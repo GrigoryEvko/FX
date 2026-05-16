@@ -667,6 +667,51 @@ inductive DispatchAtom :
                     : Term context (Ty.path carrierType leftEndpoint
                                             rightEndpoint)
                                    (RawTerm.pathLam bodyRaw))
+  /-- Non-dependent function application.  Function child at
+  `Ty.arrow domainType codomainType`; argument child at `domainType`.
+  Both ends require `IsClosedTy` so the SR bridge fixes both child
+  target types.  `lift_full_app` absorbs both the cong arm and the
+  β-deep arm internally (target type for β is
+  `codomainType.weaken.subst0 ... ≡ codomainType` propositionally;
+  the two-Ty existential headline absorbs the cast). -/
+  | app {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType codomainType : Ty level scope}
+      (domainClosed : IsClosedTy domainType)
+      (codomainClosed : IsClosedTy codomainType)
+      {functionRaw argumentRaw : RawTerm scope}
+      (functionTerm : Term context (Ty.arrow domainType codomainType)
+                                    functionRaw)
+      (argumentTerm : Term context domainType argumentRaw)
+      (functionDispatch : DispatchAtom functionTerm)
+      (argumentDispatch : DispatchAtom argumentTerm) :
+      DispatchAtom (Term.app (context := context) functionTerm argumentTerm
+                    : Term context codomainType
+                                   (RawTerm.app functionRaw argumentRaw))
+  /-- Heterogeneous-carrier univalence introduction.  Single typed
+  child `equivWitness : Term ctx (Ty.equiv carrierA carrierB)
+  (RawTerm.equivIntro forwardRaw backwardRaw)` whose raw matches the
+  parent's raw (`RawTerm.equivIntro forwardRaw backwardRaw`).  Requires
+  `IsClosedTy` on both carriers so the SR bridge fixes the child
+  target type at `Ty.equiv carrierA carrierB`. -/
+  | uaIntroHet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (innerLevel : UniverseLevel)
+      (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+      {carrierA carrierB : Ty level scope}
+      (carrierAClosed : IsClosedTy carrierA)
+      (carrierBClosed : IsClosedTy carrierB)
+      (carrierARaw carrierBRaw : RawTerm scope)
+      {forwardRaw backwardRaw : RawTerm scope}
+      (equivWitness : Term context (Ty.equiv carrierA carrierB)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw))
+      (equivWitnessDispatch : DispatchAtom equivWitness) :
+      DispatchAtom (Term.uaIntroHet (context := context) innerLevel
+                                     innerLevelLt carrierARaw carrierBRaw
+                                     equivWitness
+                    : Term context (Ty.id (Ty.universe innerLevel innerLevelLt)
+                                          carrierARaw carrierBRaw)
+                                   (RawTerm.equivIntro forwardRaw backwardRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -1147,5 +1192,38 @@ theorem RawStep.par.lift_full_term
                                      bodyStep rfl
     subst weakenedEq
     exact ⟨bodyTarget, bodyStep⟩
+  | app domainClosed codomainClosed functionTerm argumentTerm
+        _ _ ihFunction ihArgument =>
+    refine RawStep.par.lift_full_app functionTerm argumentTerm ?_ ?_ rawStep
+    · intro _ functionRawStep
+      obtain ⟨functionTargetType, functionTarget, functionStep⟩ :=
+        ihFunction functionRawStep
+      have arrowEq : functionTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow domainClosed codomainClosed)
+          functionStep rfl
+      subst arrowEq
+      exact ⟨functionTarget, functionStep⟩
+    · intro _ argumentRawStep
+      obtain ⟨argumentTargetType, argumentTarget, argumentStep⟩ :=
+        ihArgument argumentRawStep
+      have domainEq : argumentTargetType = _ :=
+        Step.par.preserves_isClosedTy domainClosed argumentStep rfl
+      subst domainEq
+      exact ⟨argumentTarget, argumentStep⟩
+  | uaIntroHet innerLevel innerLevelLt carrierAClosed carrierBClosed
+               carrierARaw carrierBRaw equivWitness _ ihEquivWitness =>
+    refine RawStep.par.lift_full_uaIntroHet innerLevel innerLevelLt
+                                             carrierARaw carrierBRaw
+                                             equivWitness ?_ rawStep
+    intro _ equivWitnessRawStep
+    obtain ⟨equivWitnessTargetType, equivWitnessTarget, equivWitnessStep⟩ :=
+      ihEquivWitness equivWitnessRawStep
+    have equivEq : equivWitnessTargetType = _ :=
+      Step.par.preserves_isClosedTy
+        (IsClosedTy.equiv carrierAClosed carrierBClosed)
+        equivWitnessStep rfl
+    subst equivEq
+    exact ⟨equivWitnessTarget, equivWitnessStep⟩
 
 end LeanFX2
