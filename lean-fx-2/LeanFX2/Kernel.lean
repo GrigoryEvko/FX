@@ -52,6 +52,7 @@ import LeanFX2.Term.ContextStrengthening
 import LeanFX2.Term.PartialStrengthen
 import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.StrengtheningImage
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyRename

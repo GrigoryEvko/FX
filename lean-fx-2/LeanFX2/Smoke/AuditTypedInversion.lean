@@ -1,4 +1,4 @@
-import LeanFX2.Term.TypedInversion
+import LeanFX2.Term.StrengtheningImage
 
 /-! # AuditTypedInversion — typed `Term.app_inv` family axiom audit.
 
@@ -44,5 +44,28 @@ namespace LeanFX2.SmokeTypedInversion
 -- inversion cascade prerequisites.
 #print axioms LeanFX2.Ty.weaken_inj
 #print axioms LeanFX2.Term.weakenInverse_atVarZero
+
+-- Typed strengthening image soundness scaffold.
+#print axioms LeanFX2.Term.StrengtheningSoundness
+#print axioms LeanFX2.Term.heq_cast_right
+#print axioms LeanFX2.Term.rename_var_heq
+#print axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedUnit_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedBoolTrue_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedBoolFalse_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedNatZero_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedInterval0_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedInterval1_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedListNilOfType_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionNoneOfType_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedNatSucc_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionSome_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedModIntro_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedModElim_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedSubsume_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedListCons_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin_sound
 
 end LeanFX2.SmokeTypedInversion

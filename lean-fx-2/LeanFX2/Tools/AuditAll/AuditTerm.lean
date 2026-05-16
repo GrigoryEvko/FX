@@ -449,4 +449,34 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.strengthen?_imp_indices_weaken
 #assert_no_axioms LeanFX2.Term.not_usesNewestSlot?_imp_indices_weaken
 
+/-! ## Typed strengthening image soundness scaffold.
+
+These declarations start the term-level soundness layer above
+`StrengtheningResult`: successful typed strengthening results re-rename to
+their source term.  Recursive producer coverage is intentionally
+constructor-granular so the full image theorem can land without changing the
+existing computational dispatcher. -/
+
+#assert_no_axioms LeanFX2.Term.StrengtheningSoundness
+#assert_no_axioms LeanFX2.Term.heq_cast_right
+#assert_no_axioms LeanFX2.Term.rename_var_heq
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedUnit_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedBoolTrue_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedBoolFalse_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatZero_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedInterval0_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedInterval1_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListNilOfType_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionNoneOfType_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedNatSucc_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionSome_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedModIntro_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedModElim_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSubsume_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListCons_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin_sound
+
 end LeanFX2.Tools
