@@ -2814,6 +2814,55 @@ def partialStrengthenTypedRecordIntro {mode : Mode} {level : Nat}
   typeRenames := congrArg Ty.record fieldResult.typeRenames
   rawRenames := congrArg RawTerm.recordIntro fieldResult.rawRenames
 
+/-- Success branch for record-projection strengthening.
+
+Takes the pre-decomposed strengthened field type and the strengthened
+record-valued term as explicit witnesses, splitting out the term-mode
+body so the strengthening-image soundness layer can prove it without
+traversing `Option.casesOn` on the `singleFieldType.partialStrengthen?`
+pivot in the wrapper's tactic-mode `cases` chain. -/
+def partialStrengthenTypedRecordProjOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    {targetFieldType : Ty level targetScope}
+    {targetRecordRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (targetRecordTerm :
+      Term targetCtx (Ty.record targetFieldType) targetRecordRaw)
+    (fieldSuccess :
+      singleFieldType.partialStrengthen? strengthening.back =
+        some targetFieldType)
+    (recordRawStrengthens :
+      recordRaw.partialStrengthen? strengthening.back =
+        some targetRecordRaw)
+    (recordRawRenames :
+      recordRaw = targetRecordRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening (Term.recordProj recordValue) := {
+  targetType := targetFieldType
+  targetRaw := RawTerm.recordProj targetRecordRaw
+  targetTerm := Term.recordProj targetRecordTerm
+  typeStrengthens := fieldSuccess
+  rawStrengthens := by
+    change
+      (match recordRaw.partialStrengthen? strengthening.back with
+        | some strengthenedRecord =>
+            some (RawTerm.recordProj strengthenedRecord)
+        | none => none) =
+        some (RawTerm.recordProj targetRecordRaw)
+    rw [recordRawStrengthens]
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename singleFieldType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetFieldType fieldSuccess
+  rawRenames := by
+    cases recordRawRenames
+    rfl
+}
+
 /-- Record projection strengthens by strengthening its record payload. -/
 def partialStrengthenTypedRecordProj {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
@@ -2840,23 +2889,8 @@ def partialStrengthenTypedRecordProj {mode : Mode} {level : Nat}
       | some targetFieldType =>
           rw [fieldSuccess] at typeStrengthens
           cases typeStrengthens
-          exact {
-            targetType := targetFieldType
-            targetRaw := RawTerm.recordProj targetRaw
-            targetTerm := Term.recordProj targetTerm
-            typeStrengthens := fieldSuccess
-            rawStrengthens := by
-              change
-                (match recordRaw.partialStrengthen? strengthening.back with
-                | some strengthenedRecord =>
-                    some (RawTerm.recordProj strengthenedRecord)
-                | none => none) =
-                  some (RawTerm.recordProj targetRaw)
-              rw [rawStrengthens]
-            typeRenames := by
-              injection typeRenames
-            rawRenames := congrArg RawTerm.recordProj rawRenames
-          }
+          exact partialStrengthenTypedRecordProjOfSuccess
+            targetTerm fieldSuccess rawStrengthens rawRenames
 
 /-- Codata unfold strengthens by strengthening the initial state, the
 transition function, and the output type index used by the codata

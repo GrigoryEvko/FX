@@ -2261,6 +2261,71 @@ theorem partialStrengthenTypedRefineElimOfSuccess_sound {mode : Mode}
   exact Term.refineElim_HEq_congr baseRenames predicateRenames
     refinedRawRenames refinedSound
 
+/-- Soundness for record-introduction strengthening.  The producer
+threads `fieldResult`'s field projections through without destructuring,
+so the soundness proof can apply the HEq congruence lemma directly using
+the field projections of the result. -/
+theorem partialStrengthenTypedRecordIntro_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    {fieldResult : StrengtheningResult strengthening firstField}
+    (fieldSound : StrengtheningSoundness fieldResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedRecordIntro fieldResult) := by
+  refine ⟨?_⟩
+  dsimp [partialStrengthenTypedRecordIntro,
+      StrengtheningResult.renamedTarget] at fieldSound ⊢
+  exact Term.recordIntro_HEq_congr fieldResult.typeRenames
+    fieldResult.rawRenames fieldSound.termRenames
+
+/-- Soundness for the success branch of record-projection strengthening.
+Mirrors `partialStrengthenTypedRefineElimOfSuccess_sound`: the term-mode
+OfSuccess body is what `dsimp` unfolds, while the tactic-mode wrapper
+traversing `Option.casesOn` on the field-type pivot is left unsounded
+by design. -/
+theorem partialStrengthenTypedRecordProjOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    {targetFieldType : Ty level targetScope}
+    {targetRecordRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    {targetRecordTerm :
+      Term targetCtx (Ty.record targetFieldType) targetRecordRaw}
+    {fieldSuccess :
+      singleFieldType.partialStrengthen? strengthening.back =
+        some targetFieldType}
+    {recordRawStrengthens :
+      recordRaw.partialStrengthen? strengthening.back =
+        some targetRecordRaw}
+    {recordRawRenames :
+      recordRaw = targetRecordRaw.rename strengthening.forward}
+    (recordSound :
+      HEq recordValue
+        (Term.rename strengthening.toTermRenaming targetRecordTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedRecordProjOfSuccess
+        (recordValue := recordValue)
+        targetRecordTerm fieldSuccess recordRawStrengthens
+        recordRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedRecordProjOfSuccess]
+  have fieldRenames :
+      singleFieldType = targetFieldType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename singleFieldType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetFieldType fieldSuccess
+  exact Term.recordProj_HEq_congr fieldRenames recordRawRenames recordSound
+
 end Term
 
 end LeanFX2

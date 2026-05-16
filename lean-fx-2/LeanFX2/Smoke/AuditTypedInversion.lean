@@ -119,4 +119,13 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedRefineElimOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedRefineElimOfSuccess_sound
 
+-- Phase 13: record producers soundness.
+-- RecordIntro is direct: producer threads `fieldResult` through field
+-- projections without destructuring.  RecordProj follows the OfSuccess
+-- refactor since its wrapper internally cases on
+-- `singleFieldType.partialStrengthen?` (Option.casesOn discriminator wall).
+#print axioms LeanFX2.Term.partialStrengthenTypedRecordIntro_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedRecordProjOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedRecordProjOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
