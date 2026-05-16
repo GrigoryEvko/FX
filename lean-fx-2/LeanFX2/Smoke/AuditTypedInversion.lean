@@ -152,4 +152,12 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedSessionRecv_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedCumulUp_sound
 
+-- Phase 16: HoTT-J univalence-β extraction soundness.
+-- UaToEquiv is direct: all four type/raw pivots are pre-witnessed
+-- (leftTy, rightTy, leftTyRaw, rightTyRaw), and the proof's typeStrengthens
+-- unifies via a synthesized `expectedProofTypeStrengthens` rewrite on the
+-- closed `Ty.id (Ty.universe ...)` shape.  Mirrors the producer's case
+-- chain so the HEq congruence applies with one rfl-on-the-record discharge.
+#print axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv_sound
+
 end LeanFX2.SmokeTypedInversion

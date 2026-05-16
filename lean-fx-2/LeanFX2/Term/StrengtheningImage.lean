@@ -2568,6 +2568,92 @@ theorem partialStrengthenTypedCumulUp_sound {mode : Mode} {level : Nat}
           StrengtheningResult.renamedTarget] at codeSound ⊢
       exact Term.cumulUp_HEq_congr codeRawRenames codeSound.termRenames
 
+/-- Soundness for univalence-β extraction.  The producer is direct: all
+four type/raw pivots (`leftTy`, `rightTy`, `leftTyRaw`, `rightTyRaw`) are
+pre-witnessed by hypotheses, and the proof's typeStrengthens is unified
+via a synthesized `expectedProofTypeStrengthens` rewrite to discharge
+the `Ty.id (Ty.universe ...)` shape.  Mirrors the producer's case chain
+so the HEq congruence applies directly. -/
+theorem partialStrengthenTypedUaToEquiv_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (leftTy rightTy : Ty level sourceScope)
+    (targetLeftTy targetRightTy : Ty level targetScope)
+    (leftTyRaw rightTyRaw : RawTerm sourceScope)
+    (targetLeftTyRaw targetRightTyRaw : RawTerm targetScope)
+    {proofRaw : RawTerm sourceScope}
+    {proof :
+      Term sourceCtx
+        (Ty.id (Ty.universe innerLevel innerLevelLt) leftTyRaw rightTyRaw)
+        proofRaw}
+    (leftTyStrengthens :
+      leftTy.partialStrengthen? strengthening.back = some targetLeftTy)
+    (rightTyStrengthens :
+      rightTy.partialStrengthen? strengthening.back = some targetRightTy)
+    (leftRawStrengthens :
+      leftTyRaw.partialStrengthen? strengthening.back = some targetLeftTyRaw)
+    (rightRawStrengthens :
+      rightTyRaw.partialStrengthen? strengthening.back = some targetRightTyRaw)
+    {proofResult : StrengtheningResult strengthening proof}
+    (proofSound : StrengtheningSoundness proofResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedUaToEquiv innerLevel innerLevelLt leftTy
+        rightTy targetLeftTy targetRightTy leftTyRaw rightTyRaw
+        targetLeftTyRaw targetRightTyRaw leftTyStrengthens rightTyStrengthens
+        leftRawStrengthens rightRawStrengthens proofResult) := by
+  cases proofResult with
+  | mk targetProofType targetProofRaw targetProofTerm
+      proofTypeStrengthens proofRawStrengthens proofTypeRenames
+      proofRawRenames =>
+      have expectedProofTypeStrengthens :
+          (Ty.id (Ty.universe innerLevel innerLevelLt)
+              leftTyRaw rightTyRaw).partialStrengthen? strengthening.back =
+            some (Ty.id (Ty.universe innerLevel innerLevelLt)
+              targetLeftTyRaw targetRightTyRaw) := by
+        change
+          Option.mapThree
+            ((Ty.universe innerLevel innerLevelLt).partialStrengthen?
+              strengthening.back)
+            (leftTyRaw.partialStrengthen? strengthening.back)
+            (rightTyRaw.partialStrengthen? strengthening.back)
+            Ty.id =
+              some (Ty.id (Ty.universe innerLevel innerLevelLt)
+                targetLeftTyRaw targetRightTyRaw)
+        rw [leftRawStrengthens, rightRawStrengthens]
+        rfl
+      rw [expectedProofTypeStrengthens] at proofTypeStrengthens
+      cases proofTypeStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedUaToEquiv,
+          StrengtheningResult.renamedTarget] at proofSound ⊢
+      have leftTyRenames :
+          leftTy = targetLeftTy.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename leftTy
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetLeftTy leftTyStrengthens
+      have rightTyRenames :
+          rightTy = targetRightTy.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename rightTy
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetRightTy rightTyStrengthens
+      have leftRawRenames :
+          leftTyRaw = targetLeftTyRaw.rename strengthening.forward :=
+        RawTerm.partialStrengthen?_imp_rename leftTyRaw
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetLeftTyRaw leftRawStrengthens
+      have rightRawRenames :
+          rightTyRaw = targetRightTyRaw.rename strengthening.forward :=
+        RawTerm.partialStrengthen?_imp_rename rightTyRaw
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetRightTyRaw rightRawStrengthens
+      exact Term.uaToEquiv_HEq_congr leftTyRenames rightTyRenames
+        leftRawRenames rightRawRenames proofRawRenames
+        proofSound.termRenames
+
 end Term
 
 end LeanFX2
