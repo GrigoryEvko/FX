@@ -1,6 +1,7 @@
 import LeanFX2.Term.PreservesTerm.TierZeroAndUnary
 import LeanFX2.Term.PreservesTerm.TierTwoBinary
 import LeanFX2.Term.PreservesTerm.EliminatorConstantMotive
+import LeanFX2.Term.PreservesTerm.EliminatorIdentityFamily
 import LeanFX2.Term.PreservesTerm.InlineDestructors
 import LeanFX2.Term.PreservesTerm.EliminatorShallowBeta
 import LeanFX2.Term.PreservesTerm.BetaCastWallDemolition
