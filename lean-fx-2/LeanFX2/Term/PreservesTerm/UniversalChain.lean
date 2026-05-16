@@ -360,6 +360,113 @@ inductive DispatchAtom :
                                     (leftType := leftType) valueTerm
                     : Term context (Ty.eitherType leftType rightType)
                                    (RawTerm.eitherInr valueRaw))
+  /-- Non-dependent-motive natural eliminator (current kernel pre-K07.1).
+  Branches at `motiveType` and `Ty.arrow Ty.nat motiveType`; both close
+  via `IsClosedTy.arrow IsClosedTy.nat motiveClosed`. -/
+  | natElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      (motiveClosed : IsClosedTy motiveType)
+      {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+      (scrutinee : Term context Ty.nat scrutineeRaw)
+      (zeroBranch : Term context motiveType zeroRaw)
+      (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw)
+      (scrutDispatch : DispatchAtom scrutinee)
+      (zeroDispatch : DispatchAtom zeroBranch)
+      (succDispatch : DispatchAtom succBranch) :
+      DispatchAtom (Term.natElim (context := context) scrutinee
+                                  zeroBranch succBranch
+                    : Term context motiveType
+                                   (RawTerm.natElim scrutineeRaw zeroRaw
+                                                    succRaw))
+  /-- Non-dependent-motive natural recursor.  Branches at `motiveType` and
+  `Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)`. -/
+  | natRec {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {motiveType : Ty level scope}
+      (motiveClosed : IsClosedTy motiveType)
+      {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+      (scrutinee : Term context Ty.nat scrutineeRaw)
+      (zeroBranch : Term context motiveType zeroRaw)
+      (succBranch :
+        Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+      (scrutDispatch : DispatchAtom scrutinee)
+      (zeroDispatch : DispatchAtom zeroBranch)
+      (succDispatch : DispatchAtom succBranch) :
+      DispatchAtom (Term.natRec (context := context) scrutinee
+                                 zeroBranch succBranch
+                    : Term context motiveType
+                                   (RawTerm.natRec scrutineeRaw zeroRaw
+                                                   succRaw))
+  /-- Non-dependent-motive list eliminator.  Scrutinee at
+  `Ty.listType elementType`; cons branch at
+  `Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType)`. -/
+  | listElim {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      (elementClosed : IsClosedTy elementType)
+      (motiveClosed : IsClosedTy motiveType)
+      {scrutineeRaw nilRaw consRaw : RawTerm scope}
+      (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+      (nilBranch : Term context motiveType nilRaw)
+      (consBranch :
+        Term context
+          (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+          consRaw)
+      (scrutDispatch : DispatchAtom scrutinee)
+      (nilDispatch : DispatchAtom nilBranch)
+      (consDispatch : DispatchAtom consBranch) :
+      DispatchAtom (Term.listElim (context := context) scrutinee
+                                   nilBranch consBranch
+                    : Term context motiveType
+                                   (RawTerm.listElim scrutineeRaw nilRaw
+                                                     consRaw))
+  /-- Non-dependent-motive option matcher.  Scrutinee at
+  `Ty.optionType elementType`; some branch at
+  `Ty.arrow elementType motiveType`. -/
+  | optionMatch {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType motiveType : Ty level scope}
+      (elementClosed : IsClosedTy elementType)
+      (motiveClosed : IsClosedTy motiveType)
+      {scrutineeRaw noneRaw someRaw : RawTerm scope}
+      (scrutinee : Term context (Ty.optionType elementType) scrutineeRaw)
+      (noneBranch : Term context motiveType noneRaw)
+      (someBranch : Term context (Ty.arrow elementType motiveType) someRaw)
+      (scrutDispatch : DispatchAtom scrutinee)
+      (noneDispatch : DispatchAtom noneBranch)
+      (someDispatch : DispatchAtom someBranch) :
+      DispatchAtom (Term.optionMatch (context := context) scrutinee
+                                      noneBranch someBranch
+                    : Term context motiveType
+                                   (RawTerm.optionMatch scrutineeRaw noneRaw
+                                                        someRaw))
+  /-- Non-dependent-motive either matcher.  Scrutinee at
+  `Ty.eitherType leftType rightType`; left branch at
+  `Ty.arrow leftType motiveType`; right branch at
+  `Ty.arrow rightType motiveType`. -/
+  | eitherMatch {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftType rightType motiveType : Ty level scope}
+      (leftClosed : IsClosedTy leftType)
+      (rightClosed : IsClosedTy rightType)
+      (motiveClosed : IsClosedTy motiveType)
+      {scrutineeRaw leftBranchRaw rightBranchRaw : RawTerm scope}
+      (scrutinee :
+        Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+      (leftBranch :
+        Term context (Ty.arrow leftType motiveType) leftBranchRaw)
+      (rightBranch :
+        Term context (Ty.arrow rightType motiveType) rightBranchRaw)
+      (scrutDispatch : DispatchAtom scrutinee)
+      (leftDispatch : DispatchAtom leftBranch)
+      (rightDispatch : DispatchAtom rightBranch) :
+      DispatchAtom (Term.eitherMatch (context := context) scrutinee
+                                      leftBranch rightBranch
+                    : Term context motiveType
+                                   (RawTerm.eitherMatch scrutineeRaw
+                                                         leftBranchRaw
+                                                         rightBranchRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -556,5 +663,128 @@ theorem RawStep.par.lift_full_term
       Step.par.preserves_isClosedTy rightClosed valueStep rfl
     subst rightEq
     exact ⟨valueTarget, valueStep⟩
+  | natElim motiveClosed scrutinee zeroBranch succBranch _ _ _
+            ihScrut ihZero ihSucc =>
+    refine RawStep.par.lift_full_natElim scrutinee zeroBranch succBranch
+                                          ?_ ?_ ?_ rawStep
+    · intro _ scrutRawStep
+      obtain ⟨scrutTargetType, scrutTarget, scrutStep⟩ := ihScrut scrutRawStep
+      have natEq : scrutTargetType = Ty.nat :=
+        Step.par.preserves_isClosedTy IsClosedTy.nat scrutStep rfl
+      subst natEq
+      exact ⟨scrutTarget, scrutStep⟩
+    · intro _ zeroRawStep
+      obtain ⟨zeroTargetType, zeroTarget, zeroStep⟩ := ihZero zeroRawStep
+      have motiveEq : zeroTargetType = _ :=
+        Step.par.preserves_isClosedTy motiveClosed zeroStep rfl
+      subst motiveEq
+      exact ⟨zeroTarget, zeroStep⟩
+    · intro _ succRawStep
+      obtain ⟨succTargetType, succTarget, succStep⟩ := ihSucc succRawStep
+      have arrowEq : succTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow IsClosedTy.nat motiveClosed) succStep rfl
+      subst arrowEq
+      exact ⟨succTarget, succStep⟩
+  | natRec motiveClosed scrutinee zeroBranch succBranch _ _ _
+           ihScrut ihZero ihSucc =>
+    refine RawStep.par.lift_full_natRec scrutinee zeroBranch succBranch
+                                         ?_ ?_ ?_ rawStep
+    · intro _ scrutRawStep
+      obtain ⟨scrutTargetType, scrutTarget, scrutStep⟩ := ihScrut scrutRawStep
+      have natEq : scrutTargetType = Ty.nat :=
+        Step.par.preserves_isClosedTy IsClosedTy.nat scrutStep rfl
+      subst natEq
+      exact ⟨scrutTarget, scrutStep⟩
+    · intro _ zeroRawStep
+      obtain ⟨zeroTargetType, zeroTarget, zeroStep⟩ := ihZero zeroRawStep
+      have motiveEq : zeroTargetType = _ :=
+        Step.par.preserves_isClosedTy motiveClosed zeroStep rfl
+      subst motiveEq
+      exact ⟨zeroTarget, zeroStep⟩
+    · intro _ succRawStep
+      obtain ⟨succTargetType, succTarget, succStep⟩ := ihSucc succRawStep
+      have nestedArrowEq : succTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow IsClosedTy.nat
+            (IsClosedTy.arrow motiveClosed motiveClosed))
+          succStep rfl
+      subst nestedArrowEq
+      exact ⟨succTarget, succStep⟩
+  | listElim elementClosed motiveClosed scrutinee nilBranch consBranch
+             _ _ _ ihScrut ihNil ihCons =>
+    refine RawStep.par.lift_full_listElim scrutinee nilBranch consBranch
+                                           ?_ ?_ ?_ rawStep
+    · intro _ scrutRawStep
+      obtain ⟨scrutTargetType, scrutTarget, scrutStep⟩ := ihScrut scrutRawStep
+      have listEq : scrutTargetType = _ :=
+        Step.par.preserves_isClosedTy (IsClosedTy.listType elementClosed)
+                                       scrutStep rfl
+      subst listEq
+      exact ⟨scrutTarget, scrutStep⟩
+    · intro _ nilRawStep
+      obtain ⟨nilTargetType, nilTarget, nilStep⟩ := ihNil nilRawStep
+      have motiveEq : nilTargetType = _ :=
+        Step.par.preserves_isClosedTy motiveClosed nilStep rfl
+      subst motiveEq
+      exact ⟨nilTarget, nilStep⟩
+    · intro _ consRawStep
+      obtain ⟨consTargetType, consTarget, consStep⟩ := ihCons consRawStep
+      have nestedArrowEq : consTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow elementClosed
+            (IsClosedTy.arrow (IsClosedTy.listType elementClosed) motiveClosed))
+          consStep rfl
+      subst nestedArrowEq
+      exact ⟨consTarget, consStep⟩
+  | optionMatch elementClosed motiveClosed scrutinee noneBranch someBranch
+                _ _ _ ihScrut ihNone ihSome =>
+    refine RawStep.par.lift_full_optionMatch scrutinee noneBranch someBranch
+                                              ?_ ?_ ?_ rawStep
+    · intro _ scrutRawStep
+      obtain ⟨scrutTargetType, scrutTarget, scrutStep⟩ := ihScrut scrutRawStep
+      have optionEq : scrutTargetType = _ :=
+        Step.par.preserves_isClosedTy (IsClosedTy.optionType elementClosed)
+                                       scrutStep rfl
+      subst optionEq
+      exact ⟨scrutTarget, scrutStep⟩
+    · intro _ noneRawStep
+      obtain ⟨noneTargetType, noneTarget, noneStep⟩ := ihNone noneRawStep
+      have motiveEq : noneTargetType = _ :=
+        Step.par.preserves_isClosedTy motiveClosed noneStep rfl
+      subst motiveEq
+      exact ⟨noneTarget, noneStep⟩
+    · intro _ someRawStep
+      obtain ⟨someTargetType, someTarget, someStep⟩ := ihSome someRawStep
+      have arrowEq : someTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow elementClosed motiveClosed) someStep rfl
+      subst arrowEq
+      exact ⟨someTarget, someStep⟩
+  | eitherMatch leftClosed rightClosed motiveClosed scrutinee
+                leftBranch rightBranch _ _ _ ihScrut ihLeft ihRight =>
+    refine RawStep.par.lift_full_eitherMatch scrutinee leftBranch rightBranch
+                                              ?_ ?_ ?_ rawStep
+    · intro _ scrutRawStep
+      obtain ⟨scrutTargetType, scrutTarget, scrutStep⟩ := ihScrut scrutRawStep
+      have eitherEq : scrutTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.eitherType leftClosed rightClosed) scrutStep rfl
+      subst eitherEq
+      exact ⟨scrutTarget, scrutStep⟩
+    · intro _ leftRawStep
+      obtain ⟨leftTargetType, leftTarget, leftStep⟩ := ihLeft leftRawStep
+      have arrowEq : leftTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow leftClosed motiveClosed) leftStep rfl
+      subst arrowEq
+      exact ⟨leftTarget, leftStep⟩
+    · intro _ rightRawStep
+      obtain ⟨rightTargetType, rightTarget, rightStep⟩ := ihRight rightRawStep
+      have arrowEq : rightTargetType = _ :=
+        Step.par.preserves_isClosedTy
+          (IsClosedTy.arrow rightClosed motiveClosed) rightStep rfl
+      subst arrowEq
+      exact ⟨rightTarget, rightStep⟩
 
 end LeanFX2
