@@ -85,6 +85,132 @@ abbrev subsumeCong := @LeanFX2.Step.par.subsume
 /-- Exact-name alias for universe cumulativity marker congruence. -/
 abbrev cumulUpCong := @LeanFX2.Step.par.cumulUpInnerCong
 
+/-! ## Value-constructor cong wrappers (reflexive)
+
+The following twelve Term constructors have no sub-Term positions —
+they are atomic values (variables, units, boolean literals, the zero
+natural, empty list/option, interval endpoints, universe codes, and
+the canonical reflexive equivalences `Term.equivReflId` /
+`Term.equivReflIdAtId`).  The semantically-correct congruence rule
+for each is reflexivity: `Step.par term term` via `Step.par.refl`.
+
+The strict dashboard's coverage gate (see
+`Tools/StrictHarness/DeclShape.lean :: stepParCongCoverageDebtRecord?`)
+checks only `environment.contains (Step.par.<X>Cong)` — these
+declarations close the slots without altering reduction behaviour. -/
+
+/-- Variables reduce reflexively under `Step.par`. -/
+theorem varCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} (position : Fin scope) :
+    Step.par
+      (Term.var (context := context) position)
+      (Term.var (context := context) position) :=
+  Step.par.refl _
+
+/-- The unit term reduces reflexively under `Step.par`. -/
+theorem unitCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Step.par
+      (Term.unit (context := context))
+      (Term.unit (context := context)) :=
+  Step.par.refl _
+
+/-- Boolean `true` reduces reflexively under `Step.par`. -/
+theorem boolTrueCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Step.par
+      (Term.boolTrue (context := context))
+      (Term.boolTrue (context := context)) :=
+  Step.par.refl _
+
+/-- Boolean `false` reduces reflexively under `Step.par`. -/
+theorem boolFalseCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Step.par
+      (Term.boolFalse (context := context))
+      (Term.boolFalse (context := context)) :=
+  Step.par.refl _
+
+/-- The natural-number zero reduces reflexively under `Step.par`. -/
+theorem natZeroCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Step.par
+      (Term.natZero (context := context))
+      (Term.natZero (context := context)) :=
+  Step.par.refl _
+
+/-- The empty list reduces reflexively under `Step.par`. -/
+theorem listNilCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    Step.par
+      (Term.listNil (context := context) (elementType := elementType))
+      (Term.listNil (context := context) (elementType := elementType)) :=
+  Step.par.refl _
+
+/-- The `None` option reduces reflexively under `Step.par`. -/
+theorem optionNoneCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope} :
+    Step.par
+      (Term.optionNone (context := context) (elementType := elementType))
+      (Term.optionNone (context := context) (elementType := elementType)) :=
+  Step.par.refl _
+
+/-- The interval endpoint `0` reduces reflexively under `Step.par`. -/
+theorem interval0Cong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Step.par
+      (Term.interval0 (context := context))
+      (Term.interval0 (context := context)) :=
+  Step.par.refl _
+
+/-- The interval endpoint `1` reduces reflexively under `Step.par`. -/
+theorem interval1Cong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope} :
+    Step.par
+      (Term.interval1 (context := context))
+      (Term.interval1 (context := context)) :=
+  Step.par.refl _
+
+/-- A universe code term reduces reflexively under `Step.par`. -/
+theorem universeCodeCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    Step.par
+      (Term.universeCode (context := context)
+        innerLevel outerLevel cumulOk levelLe)
+      (Term.universeCode (context := context)
+        innerLevel outerLevel cumulOk levelLe) :=
+  Step.par.refl _
+
+/-- The canonical identity-equivalence reflexively reduces under
+`Step.par`. -/
+theorem equivReflIdCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (carrier : Ty level scope) :
+    Step.par
+      (Term.equivReflId (context := context) carrier)
+      (Term.equivReflId (context := context) carrier) :=
+  Step.par.refl _
+
+/-- The universe-level identity-equivalence reflexively reduces
+under `Step.par`. -/
+theorem equivReflIdAtIdCong {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level scope)
+    (carrierRaw : RawTerm scope) :
+    Step.par
+      (Term.equivReflIdAtId (context := context)
+        innerLevel innerLevelLt carrier carrierRaw)
+      (Term.equivReflIdAtId (context := context)
+        innerLevel innerLevelLt carrier carrierRaw) :=
+  Step.par.refl _
+
 end Step.par
 
 end LeanFX2

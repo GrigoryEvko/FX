@@ -291,6 +291,22 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Step.par.sessionRecvCong
 #assert_no_axioms LeanFX2.Step.par.effectPerformCong
 
+-- Value-constructor reflexive cong wrappers (no inner Step-reducible
+-- sub-terms; canonical mirror is `Step.par.refl`).  These close the
+-- remaining 12 slots in the `Step.par` cong-coverage matrix.
+#assert_no_axioms LeanFX2.Step.par.varCong
+#assert_no_axioms LeanFX2.Step.par.unitCong
+#assert_no_axioms LeanFX2.Step.par.boolTrueCong
+#assert_no_axioms LeanFX2.Step.par.boolFalseCong
+#assert_no_axioms LeanFX2.Step.par.natZeroCong
+#assert_no_axioms LeanFX2.Step.par.listNilCong
+#assert_no_axioms LeanFX2.Step.par.optionNoneCong
+#assert_no_axioms LeanFX2.Step.par.interval0Cong
+#assert_no_axioms LeanFX2.Step.par.interval1Cong
+#assert_no_axioms LeanFX2.Step.par.universeCodeCong
+#assert_no_axioms LeanFX2.Step.par.equivReflIdCong
+#assert_no_axioms LeanFX2.Step.par.equivReflIdAtIdCong
+
 -- D2.10 typed compositional compat — exemplar `intervalOppCong`.
 #assert_no_axioms LeanFX2.Step.par.intervalOppCong.rename_compatible
 #assert_no_axioms LeanFX2.Step.par.intervalOppCong.subst_compatible
