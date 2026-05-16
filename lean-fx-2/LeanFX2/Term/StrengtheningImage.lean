@@ -2830,6 +2830,70 @@ theorem partialStrengthenTypedUaIntroHet_sound {mode : Mode} {level : Nat}
         carrierARenames carrierBRenames carrierARawRenames carrierBRawRenames
         forwardRawRenames backwardRawRenames equivSound.termRenames
 
+/-- Soundness for cubical Glue introduction.  Direct producer: both
+sub-Term children share the same `baseType` (pre-witnessed by
+`baseTypeStrengthens`).  Mirrors the producer's two-cases chain
+(`cases baseResult; rw + cases; cases partialResult; rw + cases`) and
+applies `glueIntro_HEq_congr` with the two pre-witnessed renames plus
+the sub-Terms' soundness HEqs. -/
+theorem partialStrengthenTypedGlueIntro_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (targetBaseType : Ty level targetScope)
+    (boundaryWitness : RawTerm sourceScope)
+    (targetBoundaryWitness : RawTerm targetScope)
+    {baseRaw partialRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseTypeStrengthens :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (boundaryStrengthens :
+      boundaryWitness.partialStrengthen? strengthening.back =
+        some targetBoundaryWitness)
+    {baseResult : StrengtheningResult strengthening baseValue}
+    {partialResult : StrengtheningResult strengthening partialValue}
+    (baseSound : StrengtheningSoundness baseResult)
+    (partialSound : StrengtheningSoundness partialResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedGlueIntro modeIsUnivalent baseType
+        targetBaseType boundaryWitness targetBoundaryWitness
+        baseTypeStrengthens boundaryStrengthens baseResult partialResult) := by
+  cases baseResult with
+  | mk targetBaseValueType targetBaseRaw targetBaseValue
+      baseValueTypeStrengthens baseRawStrengthens baseValueTypeRenames
+      baseRawRenames =>
+      rw [baseTypeStrengthens] at baseValueTypeStrengthens
+      cases baseValueTypeStrengthens
+      cases partialResult with
+      | mk targetPartialValueType targetPartialRaw targetPartialValue
+          partialValueTypeStrengthens partialRawStrengthens
+          partialValueTypeRenames partialRawRenames =>
+          rw [baseTypeStrengthens] at partialValueTypeStrengthens
+          cases partialValueTypeStrengthens
+          refine ⟨?_⟩
+          dsimp [partialStrengthenTypedGlueIntro,
+              StrengtheningResult.renamedTarget]
+            at baseSound partialSound ⊢
+          have baseRenames :
+              baseType = targetBaseType.rename strengthening.forward :=
+            Ty.partialStrengthen?_imp_rename baseType
+              strengthening.forward strengthening.back
+              strengthening.injectsBack targetBaseType baseTypeStrengthens
+          have boundaryRenames :
+              boundaryWitness =
+                targetBoundaryWitness.rename strengthening.forward :=
+            RawTerm.partialStrengthen?_imp_rename boundaryWitness
+              strengthening.forward strengthening.back
+              strengthening.injectsBack targetBoundaryWitness
+              boundaryStrengthens
+          exact Term.glueIntro_HEq_congr modeIsUnivalent baseRenames
+            boundaryRenames baseRawRenames partialRawRenames
+            baseSound.termRenames partialSound.termRenames
+
 end Term
 
 end LeanFX2

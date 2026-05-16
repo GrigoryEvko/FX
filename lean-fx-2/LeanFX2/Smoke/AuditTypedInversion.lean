@@ -175,4 +175,16 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedFunextIntroHet_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedUaIntroHet_sound
 
+-- Phase 18: cubical Glue introduction soundness.
+-- GlueIntro is a direct producer with two Term children (baseValue and
+-- partialValue) sharing a single `baseType` pre-witnessed by
+-- `baseTypeStrengthens`.  Mirrors the producer's two-cases chain
+-- (cases baseResult; rw + cases; cases partialResult; rw + cases) and
+-- applies glueIntro_HEq_congr with the two pre-witnessed renames plus
+-- the two sub-Terms' soundness HEqs.
+-- GlueElim is deferred this phase: the wrapper does Option.casesOn on
+-- both base and boundary pivots (the full discriminator wall), needing
+-- the OfSuccess refactor pattern.  Tracked for Phase 19.
+#print axioms LeanFX2.Term.partialStrengthenTypedGlueIntro_sound
+
 end LeanFX2.SmokeTypedInversion
