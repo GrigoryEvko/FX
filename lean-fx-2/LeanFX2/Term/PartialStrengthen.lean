@@ -700,6 +700,175 @@ def partialStrengthenTypedAppPi {mode : Mode} {level : Nat}
                       rfl
                   }
 
+/-- Non-dependent lambda strengthens by strengthening its domain and
+codomain types, then strengthening the body under the lifted context
+strengthening. -/
+def partialStrengthenTypedLam {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {targetDomainType targetCodomainType : Ty level targetScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {body :
+      Term (sourceCtx.cons domainType) codomainType.weaken bodyRaw}
+    (domainTypeStrengthens :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType)
+    (codomainTypeStrengthens :
+      codomainType.partialStrengthen? strengthening.back =
+        some targetCodomainType)
+    (bodyResult : StrengtheningResult
+      (strengthening.lift domainType targetDomainType
+        domainTypeStrengthens) body) :
+    StrengtheningResult strengthening (Term.lam body) := by
+  cases bodyResult with
+  | mk targetBodyType targetBodyRaw targetBodyTerm bodyTypeStrengthens
+      bodyRawStrengthens bodyTypeRenames bodyRawRenames =>
+      have bodyTypeStrengthensAtLift :
+          codomainType.weaken.partialStrengthen? strengthening.back.lift =
+            some targetBodyType := by
+        simpa only [ContextStrengthening.lift] using bodyTypeStrengthens
+      have bodyRawStrengthensAtLift :
+          bodyRaw.partialStrengthen? strengthening.back.lift =
+            some targetBodyRaw := by
+        simpa only [ContextStrengthening.lift] using bodyRawStrengthens
+      have expectedBodyTypeStrengthens :
+          codomainType.weaken.partialStrengthen? strengthening.back.lift =
+            some targetCodomainType.weaken := by
+        rw [Ty.partialStrengthen?_weaken_lift codomainType
+          strengthening.back, codomainTypeStrengthens]
+        rfl
+      rw [expectedBodyTypeStrengthens] at bodyTypeStrengthensAtLift
+      cases bodyTypeStrengthensAtLift
+      exact {
+        targetType := Ty.arrow targetDomainType targetCodomainType
+        targetRaw := RawTerm.lam targetBodyRaw
+        targetTerm := Term.lam targetBodyTerm
+        typeStrengthens := by
+          change
+            Option.mapTwo
+              (domainType.partialStrengthen? strengthening.back)
+              (codomainType.partialStrengthen? strengthening.back)
+              Ty.arrow =
+              some (Ty.arrow targetDomainType targetCodomainType)
+          rw [domainTypeStrengthens, codomainTypeStrengthens]
+          rfl
+        rawStrengthens := by
+          change
+            (match bodyRaw.partialStrengthen? strengthening.back.lift with
+            | some strengthenedBody => some (RawTerm.lam strengthenedBody)
+            | none => none) =
+              some (RawTerm.lam targetBodyRaw)
+          rw [bodyRawStrengthensAtLift]
+        typeRenames :=
+          Ty.partialStrengthen?_imp_rename
+            (Ty.arrow domainType codomainType)
+            strengthening.forward strengthening.back strengthening.injectsBack
+            (Ty.arrow targetDomainType targetCodomainType)
+            (by
+              change
+                Option.mapTwo
+                  (domainType.partialStrengthen? strengthening.back)
+                  (codomainType.partialStrengthen? strengthening.back)
+                  Ty.arrow =
+                  some (Ty.arrow targetDomainType targetCodomainType)
+              rw [domainTypeStrengthens, codomainTypeStrengthens]
+              rfl)
+        rawRenames :=
+          RawTerm.partialStrengthen?_imp_rename
+            (RawTerm.lam bodyRaw) strengthening.forward strengthening.back
+            strengthening.injectsBack (RawTerm.lam targetBodyRaw)
+            (by
+              change
+                (match bodyRaw.partialStrengthen?
+                    strengthening.back.lift with
+                | some strengthenedBody => some (RawTerm.lam strengthenedBody)
+                | none => none) =
+                  some (RawTerm.lam targetBodyRaw)
+              rw [bodyRawStrengthensAtLift])
+      }
+
+/-- Dependent lambda strengthens by strengthening its domain type and
+body under the lifted context strengthening. -/
+def partialStrengthenTypedLamPi {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {targetDomainType : Ty level targetScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {body : Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (domainTypeStrengthens :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType)
+    (bodyResult : StrengtheningResult
+      (strengthening.lift domainType targetDomainType
+        domainTypeStrengthens) body) :
+    StrengtheningResult strengthening (Term.lamPi body) := by
+  cases bodyResult with
+  | mk targetCodomainType targetBodyRaw targetBodyTerm
+      codomainTypeStrengthens bodyRawStrengthens codomainTypeRenames
+      bodyRawRenames =>
+      have codomainTypeStrengthensAtLift :
+          codomainType.partialStrengthen? strengthening.back.lift =
+            some targetCodomainType := by
+        simpa only [ContextStrengthening.lift] using codomainTypeStrengthens
+      have bodyRawStrengthensAtLift :
+          bodyRaw.partialStrengthen? strengthening.back.lift =
+            some targetBodyRaw := by
+        simpa only [ContextStrengthening.lift] using bodyRawStrengthens
+      exact {
+        targetType := Ty.piTy targetDomainType targetCodomainType
+        targetRaw := RawTerm.lam targetBodyRaw
+        targetTerm := Term.lamPi targetBodyTerm
+        typeStrengthens := by
+          change
+            Option.mapTwo
+              (domainType.partialStrengthen? strengthening.back)
+              (codomainType.partialStrengthen? strengthening.back.lift)
+              Ty.piTy =
+              some (Ty.piTy targetDomainType targetCodomainType)
+          rw [domainTypeStrengthens, codomainTypeStrengthensAtLift]
+          rfl
+        rawStrengthens := by
+          change
+            (match bodyRaw.partialStrengthen? strengthening.back.lift with
+            | some strengthenedBody => some (RawTerm.lam strengthenedBody)
+            | none => none) =
+              some (RawTerm.lam targetBodyRaw)
+          rw [bodyRawStrengthensAtLift]
+        typeRenames :=
+          Ty.partialStrengthen?_imp_rename
+            (Ty.piTy domainType codomainType)
+            strengthening.forward strengthening.back strengthening.injectsBack
+            (Ty.piTy targetDomainType targetCodomainType)
+            (by
+              change
+                Option.mapTwo
+                  (domainType.partialStrengthen? strengthening.back)
+                  (codomainType.partialStrengthen? strengthening.back.lift)
+                  Ty.piTy =
+                  some (Ty.piTy targetDomainType targetCodomainType)
+              rw [domainTypeStrengthens, codomainTypeStrengthensAtLift]
+              rfl)
+        rawRenames :=
+          RawTerm.partialStrengthen?_imp_rename
+            (RawTerm.lam bodyRaw) strengthening.forward strengthening.back
+            strengthening.injectsBack (RawTerm.lam targetBodyRaw)
+            (by
+              change
+                (match bodyRaw.partialStrengthen?
+                    strengthening.back.lift with
+                | some strengthenedBody => some (RawTerm.lam strengthenedBody)
+                | none => none) =
+                  some (RawTerm.lam targetBodyRaw)
+              rw [bodyRawStrengthensAtLift])
+      }
+
 /-- List cons strengthens by strengthening the head and tail, then
 aligning the shared element type through the tail's list type. -/
 def partialStrengthenTypedListCons {mode : Mode} {level : Nat}
