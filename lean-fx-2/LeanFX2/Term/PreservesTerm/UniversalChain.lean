@@ -282,6 +282,34 @@ inductive DispatchAtom :
       DispatchAtom (Term.intervalOpp (context := context) innerValue
                     : Term context Ty.interval
                                    (RawTerm.intervalOpp innerRaw))
+  | intervalJoin {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftRaw rightRaw : RawTerm scope}
+      (leftValue : Term context Ty.interval leftRaw)
+      (rightValue : Term context Ty.interval rightRaw)
+      (leftDispatch : DispatchAtom leftValue)
+      (rightDispatch : DispatchAtom rightValue) :
+      DispatchAtom (Term.intervalJoin (context := context) leftValue rightValue
+                    : Term context Ty.interval
+                                   (RawTerm.intervalJoin leftRaw rightRaw))
+  | intervalMeet {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftRaw rightRaw : RawTerm scope}
+      (leftValue : Term context Ty.interval leftRaw)
+      (rightValue : Term context Ty.interval rightRaw)
+      (leftDispatch : DispatchAtom leftValue)
+      (rightDispatch : DispatchAtom rightValue) :
+      DispatchAtom (Term.intervalMeet (context := context) leftValue rightValue
+                    : Term context Ty.interval
+                                   (RawTerm.intervalMeet leftRaw rightRaw))
+  | natSucc {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {predRaw : RawTerm scope}
+      (predecessor : Term context Ty.nat predRaw)
+      (predDispatch : DispatchAtom predecessor) :
+      DispatchAtom (Term.natSucc (context := context) predecessor
+                    : Term context Ty.nat
+                                   (RawTerm.natSucc predRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -397,11 +425,47 @@ theorem RawStep.par.lift_full_term
     --      Step.par innerValue innerTarget
     -- Bridge two-Ty → fixed-Ty via Step.par.preserves_isClosedTy IsClosedTy.interval.
     refine RawStep.par.lift_full_intervalOpp innerValue ?_ rawStep
-    intro targetRawIH innerRawStep
+    intro _ innerRawStep
     obtain ⟨innerTargetType, innerTarget, innerStep⟩ := ihInner innerRawStep
     have intervalEq : innerTargetType = Ty.interval :=
       Step.par.preserves_isClosedTy IsClosedTy.interval innerStep rfl
     subst intervalEq
     exact ⟨innerTarget, innerStep⟩
+  | intervalJoin leftValue rightValue _ _ ihLeft ihRight =>
+    refine RawStep.par.lift_full_intervalJoin leftValue rightValue ?_ ?_ rawStep
+    · intro _ leftRawStep
+      obtain ⟨leftTargetType, leftTarget, leftStep⟩ := ihLeft leftRawStep
+      have intervalEq : leftTargetType = Ty.interval :=
+        Step.par.preserves_isClosedTy IsClosedTy.interval leftStep rfl
+      subst intervalEq
+      exact ⟨leftTarget, leftStep⟩
+    · intro _ rightRawStep
+      obtain ⟨rightTargetType, rightTarget, rightStep⟩ := ihRight rightRawStep
+      have intervalEq : rightTargetType = Ty.interval :=
+        Step.par.preserves_isClosedTy IsClosedTy.interval rightStep rfl
+      subst intervalEq
+      exact ⟨rightTarget, rightStep⟩
+  | intervalMeet leftValue rightValue _ _ ihLeft ihRight =>
+    refine RawStep.par.lift_full_intervalMeet leftValue rightValue ?_ ?_ rawStep
+    · intro _ leftRawStep
+      obtain ⟨leftTargetType, leftTarget, leftStep⟩ := ihLeft leftRawStep
+      have intervalEq : leftTargetType = Ty.interval :=
+        Step.par.preserves_isClosedTy IsClosedTy.interval leftStep rfl
+      subst intervalEq
+      exact ⟨leftTarget, leftStep⟩
+    · intro _ rightRawStep
+      obtain ⟨rightTargetType, rightTarget, rightStep⟩ := ihRight rightRawStep
+      have intervalEq : rightTargetType = Ty.interval :=
+        Step.par.preserves_isClosedTy IsClosedTy.interval rightStep rfl
+      subst intervalEq
+      exact ⟨rightTarget, rightStep⟩
+  | natSucc predecessor _predDispatch ihPred =>
+    refine RawStep.par.lift_full_natSucc predecessor ?_ rawStep
+    intro _ predRawStep
+    obtain ⟨predTargetType, predTarget, predStep⟩ := ihPred predRawStep
+    have natEq : predTargetType = Ty.nat :=
+      Step.par.preserves_isClosedTy IsClosedTy.nat predStep rfl
+    subst natEq
+    exact ⟨predTarget, predStep⟩
 
 end LeanFX2
