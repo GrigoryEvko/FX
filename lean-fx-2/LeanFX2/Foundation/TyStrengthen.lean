@@ -131,6 +131,169 @@ def Ty.usesNewestSlot? {level scope : Nat}
     (someType : Ty level (scope + 1)) : Bool :=
   (someType.strengthen?).isNone
 
+/-- Renaming a type along a total renaming and then partially
+strengthening along a partial inverse recovers the original type.
+
+This is the type-level companion to
+`RawTerm.partialStrengthen?_rename_some` and is the forward direction used
+by context strengthening. -/
+theorem Ty.partialStrengthen?_rename_some {level : Nat} :
+    ∀ {sourceScope middleScope targetScope : Nat}
+      (someType : Ty level sourceScope)
+      (sourceRenaming : RawRenaming sourceScope middleScope)
+      (targetRenaming : RawRenaming sourceScope targetScope)
+      (back : PartialRawRenaming middleScope targetScope),
+      (∀ position, back (sourceRenaming position) =
+        some (targetRenaming position)) →
+      (someType.rename sourceRenaming).partialStrengthen? back =
+        some (someType.rename targetRenaming) := by
+  intro sourceScope middleScope targetScope someType
+  induction someType generalizing middleScope targetScope with
+  | unit =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      rfl
+  | bool =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      rfl
+  | nat =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      rfl
+  | arrow domainType codomainType domainIH codomainIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [domainIH sourceRenaming targetRenaming back renamingSurvives,
+        codomainIH sourceRenaming targetRenaming back renamingSurvives]
+  | piTy domainType codomainType domainIH codomainIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [domainIH sourceRenaming targetRenaming back renamingSurvives,
+        codomainIH sourceRenaming.lift targetRenaming.lift back.lift
+          (PartialRawRenaming.lift_rename_some renamingSurvives)]
+  | sigmaTy firstType secondType firstIH secondIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [firstIH sourceRenaming targetRenaming back renamingSurvives,
+        secondIH sourceRenaming.lift targetRenaming.lift back.lift
+          (PartialRawRenaming.lift_rename_some renamingSurvives)]
+  | tyVar position =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [renamingSurvives position]
+  | id carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      rw [carrierIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some leftEndpoint sourceRenaming
+          targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some rightEndpoint sourceRenaming
+          targetRenaming back
+          renamingSurvives]
+  | listType elementType elementIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [elementIH sourceRenaming targetRenaming back renamingSurvives]
+  | optionType elementType elementIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [elementIH sourceRenaming targetRenaming back renamingSurvives]
+  | eitherType leftType rightType leftIH rightIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [leftIH sourceRenaming targetRenaming back renamingSurvives,
+        rightIH sourceRenaming targetRenaming back renamingSurvives]
+  | «universe» universeLevel levelLe =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      rfl
+  | empty =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      rfl
+  | interval =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      rfl
+  | path carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      rw [carrierIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some leftEndpoint sourceRenaming
+          targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some rightEndpoint sourceRenaming
+          targetRenaming back
+          renamingSurvives]
+  | glue baseType boundaryWitness baseIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [baseIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some boundaryWitness sourceRenaming
+          targetRenaming back
+          renamingSurvives]
+  | oeq carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      rw [carrierIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some leftEndpoint sourceRenaming
+          targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some rightEndpoint sourceRenaming
+          targetRenaming back
+          renamingSurvives]
+  | idStrict carrier leftEndpoint rightEndpoint carrierIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapThree]
+      rw [carrierIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some leftEndpoint sourceRenaming
+          targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some rightEndpoint sourceRenaming
+          targetRenaming back
+          renamingSurvives]
+  | equiv domainType codomainType domainIH codomainIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [domainIH sourceRenaming targetRenaming back renamingSurvives,
+        codomainIH sourceRenaming targetRenaming back renamingSurvives]
+  | refine baseType predicate baseIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [baseIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some predicate sourceRenaming.lift
+          targetRenaming.lift back.lift
+          (PartialRawRenaming.lift_rename_some renamingSurvives)]
+  | record singleFieldType singleFieldIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [singleFieldIH sourceRenaming targetRenaming back renamingSurvives]
+  | codata stateType outputType stateIH outputIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [stateIH sourceRenaming targetRenaming back renamingSurvives,
+        outputIH sourceRenaming targetRenaming back renamingSurvives]
+  | session protocolStep =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [RawTerm.partialStrengthen?_rename_some protocolStep sourceRenaming
+        targetRenaming back
+        renamingSurvives]
+  | effect carrierType effectTag carrierIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?, Option.mapTwo]
+      rw [carrierIH sourceRenaming targetRenaming back renamingSurvives,
+        RawTerm.partialStrengthen?_rename_some effectTag sourceRenaming
+          targetRenaming back
+          renamingSurvives]
+  | modal modalityTag carrierType carrierIH =>
+      intro sourceRenaming targetRenaming back renamingSurvives
+      simp only [Ty.rename, Ty.partialStrengthen?]
+      rw [carrierIH sourceRenaming targetRenaming back renamingSurvives]
+
+/-- Strengthening after weakening recovers the original type. -/
+theorem Ty.strengthen?_weaken {level scope : Nat}
+    (someType : Ty level scope) :
+    someType.weaken.strengthen? = some someType := by
+  unfold Ty.strengthen?
+  unfold Ty.weaken
+  rw [Ty.partialStrengthen?_rename_some someType RawRenaming.weaken
+      RawRenaming.identity PartialRawRenaming.dropNewest
+      PartialRawRenaming.dropNewest_weaken,
+    Ty.rename_identity]
+
 set_option linter.unusedVariables false in
 /-- Successful type partial strengthening reconstructs the original type
 by renaming the strengthened type forward. -/

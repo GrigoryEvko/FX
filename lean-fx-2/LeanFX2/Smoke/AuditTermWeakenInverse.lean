@@ -1,4 +1,5 @@
 import LeanFX2.Term.WeakenInverse
+import LeanFX2.Term.ContextStrengthening
 
 /-! # AuditTermWeakenInverse — typed strengthening foundation primitives.
 
@@ -55,6 +56,7 @@ namespace LeanFX2.SmokeTermWeakenInverse
 -- Semantic / partial strengthening certificates
 #print axioms LeanFX2.RawTerm.partialStrengthen?
 #print axioms LeanFX2.RawTerm.partialStrengthen?_imp_rename
+#print axioms LeanFX2.RawTerm.partialStrengthen?_rename_some
 #print axioms LeanFX2.RawTerm.strengthen?
 #print axioms LeanFX2.RawTerm.usesNewestSlot?
 #print axioms LeanFX2.RawTerm.not_usesNewestSlot?_imp_weaken
@@ -62,9 +64,14 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Ty.partialStrengthen?
 #print axioms LeanFX2.Ty.strengthen?
 #print axioms LeanFX2.Ty.usesNewestSlot?
+#print axioms LeanFX2.Ty.partialStrengthen?_rename_some
 #print axioms LeanFX2.Ty.partialStrengthen?_imp_rename
+#print axioms LeanFX2.Ty.strengthen?_weaken
 #print axioms LeanFX2.Ty.strengthen?_imp_weaken
 #print axioms LeanFX2.Ty.not_usesNewestSlot?_imp_weaken
+#print axioms LeanFX2.ContextStrengthening.toTermRenaming
+#print axioms LeanFX2.ContextStrengthening.dropNewest
+#print axioms LeanFX2.ContextStrengthening.dropNewest_toTermRenaming
 #print axioms LeanFX2.Term.partialStrengthen?
 #print axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #print axioms LeanFX2.Term.strengthen?

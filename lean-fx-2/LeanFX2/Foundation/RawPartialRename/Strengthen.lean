@@ -58,6 +58,23 @@ theorem RawTerm.partialStrengthen?_imp_rename
   RawTerm.partialRename?_imp_rename body forwardRenaming back
     renamingInjectsBack extracted success
 
+/-- If a partial strengthening accepts every variable produced by a
+total source renaming, it accepts the whole source-renamed raw term and
+produces the corresponding target-renamed raw term. -/
+theorem RawTerm.partialStrengthen?_rename_some
+    {sourceScope middleScope targetScope : Nat}
+    (term : RawTerm sourceScope)
+    (sourceRenaming : RawRenaming sourceScope middleScope)
+    (targetRenaming : RawRenaming sourceScope targetScope)
+    (back : PartialRawRenaming middleScope targetScope)
+    (renamingSurvives :
+      ∀ position, back (sourceRenaming position) =
+        some (targetRenaming position)) :
+    RawTerm.partialStrengthen? (term.rename sourceRenaming) back =
+      some (term.rename targetRenaming) :=
+  RawTerm.partialRename?_rename_some term sourceRenaming targetRenaming
+    back renamingSurvives
+
 /-- Single-newest-slot raw strengthening.  This is the semantic twin of
 `RawTerm.unweaken?`, with a name that matches typed strengthening
 call-sites. -/

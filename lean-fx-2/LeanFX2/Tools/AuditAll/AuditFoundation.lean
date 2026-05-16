@@ -50,6 +50,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawTerm.partialStrengthen?
 #assert_no_axioms LeanFX2.RawTerm.partialStrengthen?_eq_partialRename?
 #assert_no_axioms LeanFX2.RawTerm.partialStrengthen?_imp_rename
+#assert_no_axioms LeanFX2.RawTerm.partialStrengthen?_rename_some
 #assert_no_axioms LeanFX2.RawTerm.strengthen?
 #assert_no_axioms LeanFX2.RawTerm.usesNewestSlot?
 #assert_no_axioms LeanFX2.RawTerm.strengthen?_weaken
@@ -59,7 +60,9 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?
 #assert_no_axioms LeanFX2.Ty.strengthen?
 #assert_no_axioms LeanFX2.Ty.usesNewestSlot?
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_rename_some
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_imp_rename
+#assert_no_axioms LeanFX2.Ty.strengthen?_weaken
 #assert_no_axioms LeanFX2.Ty.strengthen?_imp_weaken
 #assert_no_axioms LeanFX2.Ty.not_usesNewestSlot?_imp_weaken
 #assert_no_axioms LeanFX2.RawTerm.unweaken?_newest_var_none
