@@ -700,6 +700,167 @@ def partialStrengthenTypedAppPi {mode : Mode} {level : Nat}
                       rfl
                   }
 
+/-- List cons strengthens by strengthening the head and tail, then
+aligning the shared element type through the tail's list type. -/
+def partialStrengthenTypedListCons {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType : Ty level sourceScope}
+    {headRaw tailRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {headTerm : Term sourceCtx elementType headRaw}
+    {tailTerm : Term sourceCtx (Ty.listType elementType) tailRaw}
+    (headResult : StrengtheningResult strengthening headTerm)
+    (tailResult : StrengtheningResult strengthening tailTerm) :
+    StrengtheningResult strengthening
+      (Term.listCons headTerm tailTerm) := by
+  cases headResult with
+  | mk targetElementType targetHeadRaw targetHeadTerm headTypeStrengthens
+      headRawStrengthens headTypeRenames headRawRenames =>
+      cases tailResult with
+      | mk targetTailType targetTailRaw targetTailTerm tailTypeStrengthens
+          tailRawStrengthens tailTypeRenames tailRawRenames =>
+          change
+            (match elementType.partialStrengthen? strengthening.back with
+            | some strengthenedElement => some (Ty.listType strengthenedElement)
+            | none => none) = some targetTailType at tailTypeStrengthens
+          rw [headTypeStrengthens] at tailTypeStrengthens
+          cases tailTypeStrengthens
+          exact {
+            targetType := Ty.listType targetElementType
+            targetRaw := RawTerm.listCons targetHeadRaw targetTailRaw
+            targetTerm := Term.listCons targetHeadTerm targetTailTerm
+            typeStrengthens := by
+              change
+                (match elementType.partialStrengthen? strengthening.back with
+                | some strengthenedElement =>
+                    some (Ty.listType strengthenedElement)
+                | none => none) =
+                  some (Ty.listType targetElementType)
+              rw [headTypeStrengthens]
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (headRaw.partialStrengthen? strengthening.back)
+                  (tailRaw.partialStrengthen? strengthening.back)
+                  RawTerm.listCons =
+                  some (RawTerm.listCons targetHeadRaw targetTailRaw)
+              rw [headRawStrengthens, tailRawStrengthens]
+              rfl
+            typeRenames := congrArg Ty.listType headTypeRenames
+            rawRenames := by
+              cases headRawRenames
+              cases tailRawRenames
+              rfl
+          }
+
+/-- Either-left injection strengthens by strengthening the payload and
+the unused right type index. -/
+def partialStrengthenTypedEitherInlOfRightType {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    {targetRightType : Ty level targetScope}
+    {valueRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {valueTerm : Term sourceCtx leftType valueRaw}
+    (rightTypeStrengthens :
+      rightType.partialStrengthen? strengthening.back =
+        some targetRightType)
+    (valueResult : StrengtheningResult strengthening valueTerm) :
+    StrengtheningResult strengthening (Term.eitherInl
+      (rightType := rightType) valueTerm) where
+  targetType := Ty.eitherType valueResult.targetType targetRightType
+  targetRaw := RawTerm.eitherInl valueResult.targetRaw
+  targetTerm := Term.eitherInl (rightType := targetRightType)
+    valueResult.targetTerm
+  typeStrengthens := by
+    change
+      Option.mapTwo
+        (leftType.partialStrengthen? strengthening.back)
+        (rightType.partialStrengthen? strengthening.back)
+        Ty.eitherType =
+        some (Ty.eitherType valueResult.targetType targetRightType)
+    rw [valueResult.typeStrengthens, rightTypeStrengthens]
+    rfl
+  rawStrengthens := by
+    change
+      (match valueRaw.partialStrengthen? strengthening.back with
+      | some strengthenedValue => some (RawTerm.eitherInl strengthenedValue)
+      | none => none) =
+        some (RawTerm.eitherInl valueResult.targetRaw)
+    rw [valueResult.rawStrengthens]
+  typeRenames := by
+    exact Ty.partialStrengthen?_imp_rename
+      (Ty.eitherType leftType rightType)
+      strengthening.forward strengthening.back strengthening.injectsBack
+      (Ty.eitherType valueResult.targetType targetRightType)
+      (by
+        change
+          Option.mapTwo
+            (leftType.partialStrengthen? strengthening.back)
+            (rightType.partialStrengthen? strengthening.back)
+            Ty.eitherType =
+            some (Ty.eitherType valueResult.targetType targetRightType)
+        rw [valueResult.typeStrengthens, rightTypeStrengthens]
+        rfl)
+  rawRenames := congrArg RawTerm.eitherInl valueResult.rawRenames
+
+/-- Either-right injection strengthens by strengthening the payload and
+the unused left type index. -/
+def partialStrengthenTypedEitherInrOfLeftType {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftType rightType : Ty level sourceScope}
+    {targetLeftType : Ty level targetScope}
+    {valueRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {valueTerm : Term sourceCtx rightType valueRaw}
+    (leftTypeStrengthens :
+      leftType.partialStrengthen? strengthening.back =
+        some targetLeftType)
+    (valueResult : StrengtheningResult strengthening valueTerm) :
+    StrengtheningResult strengthening (Term.eitherInr
+      (leftType := leftType) valueTerm) where
+  targetType := Ty.eitherType targetLeftType valueResult.targetType
+  targetRaw := RawTerm.eitherInr valueResult.targetRaw
+  targetTerm := Term.eitherInr (leftType := targetLeftType)
+    valueResult.targetTerm
+  typeStrengthens := by
+    change
+      Option.mapTwo
+        (leftType.partialStrengthen? strengthening.back)
+        (rightType.partialStrengthen? strengthening.back)
+        Ty.eitherType =
+        some (Ty.eitherType targetLeftType valueResult.targetType)
+    rw [leftTypeStrengthens, valueResult.typeStrengthens]
+    rfl
+  rawStrengthens := by
+    change
+      (match valueRaw.partialStrengthen? strengthening.back with
+      | some strengthenedValue => some (RawTerm.eitherInr strengthenedValue)
+      | none => none) =
+        some (RawTerm.eitherInr valueResult.targetRaw)
+    rw [valueResult.rawStrengthens]
+  typeRenames := by
+    exact Ty.partialStrengthen?_imp_rename
+      (Ty.eitherType leftType rightType)
+      strengthening.forward strengthening.back strengthening.injectsBack
+      (Ty.eitherType targetLeftType valueResult.targetType)
+      (by
+        change
+          Option.mapTwo
+            (leftType.partialStrengthen? strengthening.back)
+            (rightType.partialStrengthen? strengthening.back)
+            Ty.eitherType =
+            some (Ty.eitherType targetLeftType valueResult.targetType)
+        rw [leftTypeStrengthens, valueResult.typeStrengthens]
+        rfl)
+  rawRenames := congrArg RawTerm.eitherInr valueResult.rawRenames
+
 /-- Sigma pair strengthens by strengthening both components and the
 binder-indexed second component type. -/
 def partialStrengthenTypedPair {mode : Mode} {level : Nat}
