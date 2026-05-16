@@ -5345,6 +5345,1095 @@ def partialStrengthenTypedEquivIntroHet {mode : Mode} {level : Nat}
                               rfl
                           }
 
+/-- Universal typed partial strengthening dispatcher.
+
+This is the public computational layer above the constructor-specific
+certificates in this file.  It traverses a typed term once, recursively
+strengthens the typed subterms, computes any schematic type/raw side
+successes needed by value-shaped constructors, and delegates every
+reconstruction step to the corresponding certificate.
+-/
+def partialStrengthenTyped? {mode : Mode} {level sourceScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {sourceType : Ty level sourceScope}
+    {sourceRaw : RawTerm sourceScope}
+    (sourceTerm : Term sourceCtx sourceType sourceRaw)
+    {targetScope : Nat}
+    {targetCtx : Ctx mode level targetScope}
+    (strengthening : ContextStrengthening sourceCtx targetCtx) :
+    Option (StrengtheningResult strengthening sourceTerm) :=
+  match sourceTerm with
+  | @Term.var _ _ _ _ position => by
+      cases survives : strengthening.back position with
+      | none => exact none
+      | some targetPosition =>
+          exact some
+            (partialStrengthenTypedVarOfSurvives strengthening position
+              targetPosition survives)
+  | @Term.unit _ _ _ _ => by
+      exact some (partialStrengthenTypedUnit strengthening)
+  | @Term.lam _ _ _ _ domainType codomainType _ body => by
+      cases domainSuccess :
+          domainType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainType =>
+          cases codomainSuccess :
+              codomainType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCodomainType =>
+              cases partialStrengthenTyped? body
+                  (strengthening :=
+                    strengthening.lift domainType targetDomainType
+                      domainSuccess) with
+              | none => exact none
+              | some bodyResult =>
+                  exact some
+                    (partialStrengthenTypedLam domainSuccess
+                      codomainSuccess bodyResult)
+  | @Term.app _ _ _ _ _ _ _ _ functionTerm argumentTerm => by
+      cases partialStrengthenTyped? functionTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some functionResult =>
+          cases partialStrengthenTyped? argumentTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some argumentResult =>
+              exact some
+                (partialStrengthenTypedApp functionResult argumentResult)
+  | @Term.lamPi _ _ _ _ domainType _ _ body => by
+      cases domainSuccess :
+          domainType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainType =>
+          cases partialStrengthenTyped? body
+              (strengthening :=
+                strengthening.lift domainType targetDomainType
+                  domainSuccess) with
+          | none => exact none
+          | some bodyResult =>
+              exact some
+                (partialStrengthenTypedLamPi domainSuccess bodyResult)
+  | @Term.appPi _ _ _ _ _ _ _ _ functionTerm argumentTerm => by
+      cases partialStrengthenTyped? functionTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some functionResult =>
+          cases partialStrengthenTyped? argumentTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some argumentResult =>
+              exact some
+                (partialStrengthenTypedAppPi functionResult argumentResult)
+  | @Term.pair _ _ _ _ _ secondType _ _ firstValue secondValue => by
+      cases secondTypeSuccess :
+          secondType.partialStrengthen? strengthening.back.lift with
+      | none => exact none
+      | some targetSecondType =>
+          cases partialStrengthenTyped? firstValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some firstResult =>
+              cases partialStrengthenTyped? secondValue
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some secondResult =>
+                  exact some
+                    (partialStrengthenTypedPair secondTypeSuccess
+                      firstResult secondResult)
+  | @Term.fst _ _ _ _ _ _ _ pairTerm => by
+      cases partialStrengthenTyped? pairTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some pairResult =>
+          exact some (partialStrengthenTypedFst pairResult)
+  | @Term.snd _ _ _ _ _ _ _ pairTerm => by
+      cases partialStrengthenTyped? pairTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some pairResult =>
+          exact some (partialStrengthenTypedSnd pairResult)
+  | @Term.boolTrue _ _ _ _ => by
+      exact some (partialStrengthenTypedBoolTrue strengthening)
+  | @Term.boolFalse _ _ _ _ => by
+      exact some (partialStrengthenTypedBoolFalse strengthening)
+  | @Term.boolElim _ _ _ _ motiveType _ _ _ scrutinee thenBranch
+      elseBranch => by
+      cases motiveSuccess :
+          motiveType.partialStrengthen? strengthening.back.lift with
+      | none => exact none
+      | some targetMotiveType =>
+          cases partialStrengthenTyped? scrutinee
+              (strengthening := strengthening) with
+          | none => exact none
+          | some scrutineeResult =>
+              cases partialStrengthenTyped? thenBranch
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some thenResult =>
+                  cases partialStrengthenTyped? elseBranch
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some elseResult =>
+                      exact some
+                        (partialStrengthenTypedBoolElim motiveSuccess
+                          scrutineeResult thenResult elseResult)
+  | @Term.natZero _ _ _ _ => by
+      exact some (partialStrengthenTypedNatZero strengthening)
+  | @Term.natSucc _ _ _ _ _ predecessor => by
+      cases partialStrengthenTyped? predecessor
+          (strengthening := strengthening) with
+      | none => exact none
+      | some predecessorResult =>
+          exact some
+            (partialStrengthenTypedNatSucc predecessorResult)
+  | @Term.natElim _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch => by
+      cases partialStrengthenTyped? scrutinee
+          (strengthening := strengthening) with
+      | none => exact none
+      | some scrutineeResult =>
+          cases partialStrengthenTyped? zeroBranch
+              (strengthening := strengthening) with
+          | none => exact none
+          | some zeroResult =>
+              cases partialStrengthenTyped? succBranch
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some succResult =>
+                  exact some
+                    (partialStrengthenTypedNatElim scrutineeResult
+                      zeroResult succResult)
+  | @Term.natRec _ _ _ _ _ _ _ _ scrutinee zeroBranch succBranch => by
+      cases partialStrengthenTyped? scrutinee
+          (strengthening := strengthening) with
+      | none => exact none
+      | some scrutineeResult =>
+          cases partialStrengthenTyped? zeroBranch
+              (strengthening := strengthening) with
+          | none => exact none
+          | some zeroResult =>
+              cases partialStrengthenTyped? succBranch
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some succResult =>
+                  exact some
+                    (partialStrengthenTypedNatRec scrutineeResult
+                      zeroResult succResult)
+  | @Term.listNil _ _ _ _ elementType => by
+      cases elementSuccess :
+          elementType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetElementType =>
+          exact some
+            (partialStrengthenTypedListNilOfType strengthening
+              elementType targetElementType elementSuccess)
+  | @Term.listCons _ _ _ _ _ _ _ headTerm tailTerm => by
+      cases partialStrengthenTyped? headTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some headResult =>
+          cases partialStrengthenTyped? tailTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some tailResult =>
+              exact some
+                (partialStrengthenTypedListCons headResult tailResult)
+  | @Term.listElim _ _ _ _ _ _ _ _ _ scrutinee nilBranch consBranch => by
+      cases partialStrengthenTyped? scrutinee
+          (strengthening := strengthening) with
+      | none => exact none
+      | some scrutineeResult =>
+          cases partialStrengthenTyped? nilBranch
+              (strengthening := strengthening) with
+          | none => exact none
+          | some nilResult =>
+              cases partialStrengthenTyped? consBranch
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some consResult =>
+                  exact some
+                    (partialStrengthenTypedListElim scrutineeResult
+                      nilResult consResult)
+  | @Term.optionNone _ _ _ _ elementType => by
+      cases elementSuccess :
+          elementType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetElementType =>
+          exact some
+            (partialStrengthenTypedOptionNoneOfType strengthening
+              elementType targetElementType elementSuccess)
+  | @Term.optionSome _ _ _ _ _ _ valueTerm => by
+      cases partialStrengthenTyped? valueTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some valueResult =>
+          exact some (partialStrengthenTypedOptionSome valueResult)
+  | @Term.optionMatch _ _ _ _ _ _ _ _ _ scrutinee noneBranch someBranch => by
+      cases partialStrengthenTyped? scrutinee
+          (strengthening := strengthening) with
+      | none => exact none
+      | some scrutineeResult =>
+          cases partialStrengthenTyped? noneBranch
+              (strengthening := strengthening) with
+          | none => exact none
+          | some noneResult =>
+              cases partialStrengthenTyped? someBranch
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some someResult =>
+                  exact some
+                    (partialStrengthenTypedOptionMatch scrutineeResult
+                      noneResult someResult)
+  | @Term.eitherInl _ _ _ _ _ rightType _ valueTerm => by
+      cases rightSuccess :
+          rightType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetRightType =>
+          cases partialStrengthenTyped? valueTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some valueResult =>
+              exact some
+                (partialStrengthenTypedEitherInlOfRightType
+                  rightSuccess valueResult)
+  | @Term.eitherInr _ _ _ _ leftType _ _ valueTerm => by
+      cases leftSuccess :
+          leftType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetLeftType =>
+          cases partialStrengthenTyped? valueTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some valueResult =>
+              exact some
+                (partialStrengthenTypedEitherInrOfLeftType
+                  leftSuccess valueResult)
+  | @Term.eitherMatch _ _ _ _ _ _ _ _ _ _ scrutinee leftBranch rightBranch => by
+      cases partialStrengthenTyped? scrutinee
+          (strengthening := strengthening) with
+      | none => exact none
+      | some scrutineeResult =>
+          cases partialStrengthenTyped? leftBranch
+              (strengthening := strengthening) with
+          | none => exact none
+          | some leftResult =>
+              cases partialStrengthenTyped? rightBranch
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some rightResult =>
+                  exact some
+                    (partialStrengthenTypedEitherMatch scrutineeResult
+                      leftResult rightResult)
+  | @Term.refl _ _ _ _ carrier rawWitness => by
+      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrier =>
+          cases witnessSuccess :
+              rawWitness.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetWitness =>
+              exact some
+                (partialStrengthenTypedRefl carrierSuccess witnessSuccess)
+  | @Term.idJ _ _ _ _ _ _ _ _ _ _ baseCase witness => by
+      cases partialStrengthenTyped? baseCase
+          (strengthening := strengthening) with
+      | none => exact none
+      | some baseResult =>
+          cases partialStrengthenTyped? witness
+              (strengthening := strengthening) with
+          | none => exact none
+          | some witnessResult =>
+              exact some
+                (partialStrengthenTypedIdJ baseResult witnessResult)
+  | @Term.oeqRefl _ _ _ _ carrier rawWitness => by
+      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrier =>
+          cases witnessSuccess :
+              rawWitness.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetWitness =>
+              exact some
+                (partialStrengthenTypedOeqRefl carrierSuccess witnessSuccess)
+  | @Term.oeqJ _ _ _ _ _ _ _ _ _ _ baseCase witness => by
+      cases partialStrengthenTyped? baseCase
+          (strengthening := strengthening) with
+      | none => exact none
+      | some baseResult =>
+          cases partialStrengthenTyped? witness
+              (strengthening := strengthening) with
+          | none => exact none
+          | some witnessResult =>
+              exact some
+                (partialStrengthenTypedOeqJ baseResult witnessResult)
+  | @Term.oeqFunext _ _ _ _ domainType codomainType leftFunctionRaw
+      rightFunctionRaw _ pointwiseProof => by
+      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainType =>
+          cases codomainSuccess :
+              codomainType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCodomainType =>
+              cases leftSuccess :
+                  leftFunctionRaw.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some targetLeftFunctionRaw =>
+                  cases rightSuccess :
+                      rightFunctionRaw.partialStrengthen? strengthening.back with
+                  | none => exact none
+                  | some targetRightFunctionRaw =>
+                      cases partialStrengthenTyped? pointwiseProof
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some pointwiseResult =>
+                          exact some
+                            (partialStrengthenTypedOeqFunext domainType
+                              codomainType targetDomainType
+                              targetCodomainType leftFunctionRaw
+                              rightFunctionRaw targetLeftFunctionRaw
+                              targetRightFunctionRaw domainSuccess
+                              codomainSuccess leftSuccess rightSuccess
+                              pointwiseResult)
+  | @Term.idStrictRefl _ _ _ _ modeIsStrict carrier rawWitness => by
+      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrier =>
+          cases witnessSuccess :
+              rawWitness.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetWitness =>
+              exact some
+                (partialStrengthenTypedIdStrictRefl modeIsStrict
+                  carrierSuccess witnessSuccess)
+  | @Term.idStrictRec _ _ _ _ modeIsStrict _ _ _ _ _ _ baseCase witness => by
+      cases partialStrengthenTyped? baseCase
+          (strengthening := strengthening) with
+      | none => exact none
+      | some baseResult =>
+          cases partialStrengthenTyped? witness
+              (strengthening := strengthening) with
+          | none => exact none
+          | some witnessResult =>
+              exact some
+                (partialStrengthenTypedIdStrictRec modeIsStrict
+                  baseResult witnessResult)
+  | @Term.modIntro _ _ _ _ _ _ innerTerm => by
+      cases partialStrengthenTyped? innerTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some innerResult =>
+          exact some (partialStrengthenTypedModIntro innerResult)
+  | @Term.modElim _ _ _ _ _ _ innerTerm => by
+      cases partialStrengthenTyped? innerTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some innerResult =>
+          exact some (partialStrengthenTypedModElim innerResult)
+  | @Term.subsume _ _ _ _ _ _ innerTerm => by
+      cases partialStrengthenTyped? innerTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some innerResult =>
+          exact some (partialStrengthenTypedSubsume innerResult)
+  | @Term.interval0 _ _ _ _ => by
+      exact some (partialStrengthenTypedInterval0 strengthening)
+  | @Term.interval1 _ _ _ _ => by
+      exact some (partialStrengthenTypedInterval1 strengthening)
+  | @Term.intervalOpp _ _ _ _ _ innerValue => by
+      cases partialStrengthenTyped? innerValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some innerResult =>
+          exact some (partialStrengthenTypedIntervalOpp innerResult)
+  | @Term.intervalMeet _ _ _ _ _ _ leftValue rightValue => by
+      cases partialStrengthenTyped? leftValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some leftResult =>
+          cases partialStrengthenTyped? rightValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some rightResult =>
+              exact some
+                (partialStrengthenTypedIntervalMeet leftResult rightResult)
+  | @Term.intervalJoin _ _ _ _ _ _ leftValue rightValue => by
+      cases partialStrengthenTyped? leftValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some leftResult =>
+          cases partialStrengthenTyped? rightValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some rightResult =>
+              exact some
+                (partialStrengthenTypedIntervalJoin leftResult rightResult)
+  | @Term.pathLam _ _ _ _ modeIsUnivalent carrierType leftEndpoint
+      rightEndpoint _ body => by
+      cases carrierSuccess :
+          carrierType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrierType =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetLeftEndpoint =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some targetRightEndpoint =>
+                  cases partialStrengthenTyped? body
+                      (strengthening :=
+                        strengthening.lift Ty.interval Ty.interval rfl) with
+                  | none => exact none
+                  | some bodyResult =>
+                      exact some
+                        (partialStrengthenTypedPathLam modeIsUnivalent
+                          carrierSuccess leftSuccess rightSuccess bodyResult)
+  | @Term.pathApp _ _ _ _ modeIsUnivalent _ _ _ _ _ pathTerm intervalTerm => by
+      cases partialStrengthenTyped? pathTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some pathResult =>
+          cases partialStrengthenTyped? intervalTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some intervalResult =>
+              exact some
+                (partialStrengthenTypedPathApp modeIsUnivalent
+                  pathResult intervalResult)
+  | @Term.glueIntro _ _ _ _ modeIsUnivalent baseType boundaryWitness _ _
+      baseValue partialValue => by
+      cases baseTypeSuccess : baseType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetBaseType =>
+          cases boundarySuccess :
+              boundaryWitness.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetBoundaryWitness =>
+              cases partialStrengthenTyped? baseValue
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some baseResult =>
+                  cases partialStrengthenTyped? partialValue
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some partialResult =>
+                      exact some
+                        (partialStrengthenTypedGlueIntro modeIsUnivalent
+                          baseType targetBaseType boundaryWitness
+                          targetBoundaryWitness baseTypeSuccess
+                          boundarySuccess baseResult partialResult)
+  | @Term.glueElim _ _ _ _ modeIsUnivalent _ _ _ gluedValue => by
+      cases partialStrengthenTyped? gluedValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some gluedResult =>
+          exact some
+            (partialStrengthenTypedGlueElim modeIsUnivalent gluedResult)
+  | @Term.transp _ _ _ _ modeIsUnivalent universeLevel universeLevelLt
+      sourceType targetType sourceTypeRaw targetTypeRaw _ _ typePath
+      sourceValue => by
+      cases sourceTypeSuccess :
+          sourceType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetSourceType =>
+          cases targetTypeSuccess :
+              targetType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetTargetType =>
+              cases sourceTypeRawSuccess :
+                  sourceTypeRaw.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some targetSourceTypeRaw =>
+                  cases targetTypeRawSuccess :
+                      targetTypeRaw.partialStrengthen? strengthening.back with
+                  | none => exact none
+                  | some targetTargetTypeRaw =>
+                      cases partialStrengthenTyped? typePath
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some pathResult =>
+                          cases partialStrengthenTyped? sourceValue
+                              (strengthening := strengthening) with
+                          | none => exact none
+                          | some sourceResult =>
+                              exact some
+                                (partialStrengthenTypedTransp
+                                  modeIsUnivalent universeLevel
+                                  universeLevelLt sourceType targetType
+                                  targetSourceType targetTargetType
+                                  sourceTypeRaw targetTypeRaw
+                                  targetSourceTypeRaw targetTargetTypeRaw
+                                  sourceTypeSuccess targetTypeSuccess
+                                  sourceTypeRawSuccess targetTypeRawSuccess
+                                  pathResult sourceResult)
+  | @Term.hcomp _ _ _ _ modeIsUnivalent _ _ _ sidesValue capValue => by
+      cases partialStrengthenTyped? sidesValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some sidesResult =>
+          cases partialStrengthenTyped? capValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some capResult =>
+              exact some
+                (partialStrengthenTypedHcomp modeIsUnivalent sidesResult
+                  capResult)
+  | @Term.hcompPath _ _ _ _ modeIsUnivalent _ leftEndpoint rightEndpoint
+      _ _ sidesPath capValue => by
+      cases partialStrengthenTyped? sidesPath
+          (strengthening := strengthening) with
+      | none => exact none
+      | some sidesResult =>
+          cases partialStrengthenTyped? capValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some capResult =>
+              exact some
+                (partialStrengthenTypedHcompPath modeIsUnivalent
+                  leftEndpoint rightEndpoint sidesResult capResult)
+  | @Term.recordIntro _ _ _ _ _ _ firstField => by
+      cases partialStrengthenTyped? firstField
+          (strengthening := strengthening) with
+      | none => exact none
+      | some fieldResult =>
+          exact some (partialStrengthenTypedRecordIntro fieldResult)
+  | @Term.recordProj _ _ _ _ _ _ recordValue => by
+      cases partialStrengthenTyped? recordValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some recordResult =>
+          exact some (partialStrengthenTypedRecordProj recordResult)
+  | @Term.refineIntro _ _ _ _ _ predicate _ _ baseValue predicateProof => by
+      cases predicateSuccess :
+          predicate.partialStrengthen? strengthening.back.lift with
+      | none => exact none
+      | some targetPredicate =>
+          cases partialStrengthenTyped? baseValue
+              (strengthening := strengthening) with
+          | none => exact none
+          | some baseResult =>
+              cases partialStrengthenTyped? predicateProof
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some proofResult =>
+                  exact some
+                    (partialStrengthenTypedRefineIntro predicateSuccess
+                      baseResult proofResult)
+  | @Term.refineElim _ _ _ _ _ _ _ refinedValue => by
+      cases partialStrengthenTyped? refinedValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some refinedResult =>
+          exact some
+            (partialStrengthenTypedRefineElim refinedResult)
+  | @Term.codataUnfold _ _ _ _ _ outputType _ _ initialState transition => by
+      cases outputSuccess :
+          outputType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetOutputType =>
+          cases partialStrengthenTyped? initialState
+              (strengthening := strengthening) with
+          | none => exact none
+          | some stateResult =>
+              cases partialStrengthenTyped? transition
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some transitionResult =>
+                  exact some
+                    (partialStrengthenTypedCodataUnfold outputSuccess
+                      stateResult transitionResult)
+  | @Term.codataDest _ _ _ _ _ _ _ codataValue => by
+      cases partialStrengthenTyped? codataValue
+          (strengthening := strengthening) with
+      | none => exact none
+      | some codataResult =>
+          exact some (partialStrengthenTypedCodataDest codataResult)
+  | @Term.sessionSend _ _ _ _ protocolStep _ _ _ channel payload => by
+      cases protocolSuccess :
+          protocolStep.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetProtocolStep =>
+          cases partialStrengthenTyped? channel
+              (strengthening := strengthening) with
+          | none => exact none
+          | some channelResult =>
+              cases partialStrengthenTyped? payload
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some payloadResult =>
+                  exact some
+                    (partialStrengthenTypedSessionSend protocolSuccess
+                      channelResult payloadResult)
+  | @Term.sessionRecv _ _ _ _ protocolStep _ channel => by
+      cases protocolSuccess :
+          protocolStep.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetProtocolStep =>
+          cases partialStrengthenTyped? channel
+              (strengthening := strengthening) with
+          | none => exact none
+          | some channelResult =>
+              exact some
+                (partialStrengthenTypedSessionRecv protocolSuccess
+                  channelResult)
+  | @Term.effectPerform _ _ _ _ effectTag effectRow operationSignature
+      canPerformOperation _ _ operationTag arguments => by
+      cases effectTagSuccess :
+          effectTag.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetEffectTag =>
+          cases argumentCarrierSuccess :
+              operationSignature.argumentCarrier.partialStrengthen?
+                strengthening.back with
+          | none => exact none
+          | some targetArgumentCarrier =>
+              cases resultCarrierSuccess :
+                  operationSignature.resultCarrier.partialStrengthen?
+                    strengthening.back with
+              | none => exact none
+              | some targetResultCarrier =>
+                  cases partialStrengthenTyped? operationTag
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some operationResult =>
+                      cases partialStrengthenTyped? arguments
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some argumentsResult =>
+                          exact some
+                            (partialStrengthenTypedEffectPerform effectTag
+                              targetEffectTag effectRow operationSignature
+                              targetArgumentCarrier targetResultCarrier
+                              canPerformOperation effectTagSuccess
+                              argumentCarrierSuccess resultCarrierSuccess
+                              operationResult argumentsResult)
+  | @Term.universeCode _ _ _ _ innerLevel outerLevel cumulOk levelLe => by
+      exact some
+        (partialStrengthenTypedUniverseCode strengthening innerLevel
+          outerLevel cumulOk levelLe)
+  | @Term.cumulUp _ _ _ _ lowerLevel higherLevel cumulMonotone levelLeLow
+      levelLeHigh _ typeCode => by
+      cases partialStrengthenTyped? typeCode
+          (strengthening := strengthening) with
+      | none => exact none
+      | some codeResult =>
+          exact some
+            (partialStrengthenTypedCumulUp lowerLevel higherLevel
+              cumulMonotone levelLeLow levelLeHigh codeResult)
+  | @Term.equivReflId _ _ _ _ carrier => by
+      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrier =>
+          exact some
+            (partialStrengthenTypedEquivReflId carrier targetCarrier
+              carrierSuccess)
+  | @Term.funextRefl _ _ _ _ domainType codomainType applyRaw => by
+      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainType =>
+          cases codomainSuccess :
+              codomainType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCodomainType =>
+              cases applySuccess :
+                  applyRaw.partialStrengthen? strengthening.back.lift with
+              | none => exact none
+              | some targetApplyRaw =>
+                  exact some
+                    (partialStrengthenTypedFunextRefl domainType
+                      codomainType targetDomainType targetCodomainType
+                      applyRaw targetApplyRaw domainSuccess
+                      codomainSuccess applySuccess)
+  | @Term.equivReflIdAtId _ _ _ _ innerLevel innerLevelLt carrier
+      carrierRaw => by
+      cases carrierSuccess : carrier.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrier =>
+          cases carrierRawSuccess :
+              carrierRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCarrierRaw =>
+              exact some
+                (partialStrengthenTypedEquivReflIdAtId innerLevel
+                  innerLevelLt carrier targetCarrier carrierRaw
+                  targetCarrierRaw carrierSuccess carrierRawSuccess)
+  | @Term.funextReflAtId _ _ _ _ domainType codomainType applyRaw => by
+      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainType =>
+          cases codomainSuccess :
+              codomainType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCodomainType =>
+              cases applySuccess :
+                  applyRaw.partialStrengthen? strengthening.back.lift with
+              | none => exact none
+              | some targetApplyRaw =>
+                  exact some
+                    (partialStrengthenTypedFunextReflAtId domainType
+                      codomainType targetDomainType targetCodomainType
+                      applyRaw targetApplyRaw domainSuccess
+                      codomainSuccess applySuccess)
+  | @Term.equivIntroHet _ _ _ _ _ _ _ _ _ _ forward backward leftInv
+      rightInv => by
+      cases partialStrengthenTyped? forward
+          (strengthening := strengthening) with
+      | none => exact none
+      | some forwardResult =>
+          cases partialStrengthenTyped? backward
+              (strengthening := strengthening) with
+          | none => exact none
+          | some backwardResult =>
+              cases partialStrengthenTyped? leftInv
+                  (strengthening := strengthening) with
+              | none => exact none
+              | some leftInvResult =>
+                  cases partialStrengthenTyped? rightInv
+                      (strengthening := strengthening) with
+                  | none => exact none
+                  | some rightInvResult =>
+                      exact some
+                        (partialStrengthenTypedEquivIntroHet forwardResult
+                          backwardResult leftInvResult rightInvResult)
+  | @Term.equivApp _ _ _ _ _ _ _ _ equivTerm argumentTerm => by
+      cases partialStrengthenTyped? equivTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some equivResult =>
+          cases partialStrengthenTyped? argumentTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some argumentResult =>
+              exact some
+                (partialStrengthenTypedEquivApp equivResult argumentResult)
+  | @Term.uaIntroHet _ _ _ _ innerLevel innerLevelLt carrierA carrierB
+      carrierARaw carrierBRaw forwardRaw backwardRaw equivWitness => by
+      cases carrierASuccess : carrierA.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetCarrierA =>
+          cases carrierBSuccess :
+              carrierB.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCarrierB =>
+              cases carrierARawSuccess :
+                  carrierARaw.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some targetCarrierARaw =>
+                  cases carrierBRawSuccess :
+                      carrierBRaw.partialStrengthen? strengthening.back with
+                  | none => exact none
+                  | some targetCarrierBRaw =>
+                      cases forwardRawSuccess :
+                          forwardRaw.partialStrengthen?
+                            strengthening.back with
+                      | none => exact none
+                      | some targetForwardRaw =>
+                          cases backwardRawSuccess :
+                              backwardRaw.partialStrengthen?
+                                strengthening.back with
+                          | none => exact none
+                          | some targetBackwardRaw =>
+                              cases partialStrengthenTyped? equivWitness
+                                  (strengthening := strengthening) with
+                              | none => exact none
+                              | some equivResult =>
+                                  exact some
+                                    (partialStrengthenTypedUaIntroHet
+                                      innerLevel innerLevelLt targetCarrierA
+                                      targetCarrierB carrierARaw carrierBRaw
+                                      targetCarrierARaw targetCarrierBRaw
+                                      targetForwardRaw targetBackwardRaw
+                                      carrierASuccess carrierBSuccess
+                                      carrierARawSuccess carrierBRawSuccess
+                                      forwardRawSuccess backwardRawSuccess
+                                      equivResult)
+  | @Term.funextIntroHet _ _ _ _ domainType codomainType applyARaw
+      applyBRaw => by
+      cases domainSuccess : domainType.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainType =>
+          cases codomainSuccess :
+              codomainType.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCodomainType =>
+              cases applyASuccess :
+                  applyARaw.partialStrengthen? strengthening.back.lift with
+              | none => exact none
+              | some targetApplyARaw =>
+                  cases applyBSuccess :
+                      applyBRaw.partialStrengthen? strengthening.back.lift with
+                  | none => exact none
+                  | some targetApplyBRaw =>
+                      exact some
+                        (partialStrengthenTypedFunextIntroHet domainType
+                          codomainType targetDomainType targetCodomainType
+                          applyARaw applyBRaw targetApplyARaw
+                          targetApplyBRaw domainSuccess codomainSuccess
+                          applyASuccess applyBSuccess)
+  | @Term.arrowCode _ _ _ _ outerLevel levelLe domainCodeRaw
+      codomainCodeRaw => by
+      cases domainSuccess :
+          domainCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainCodeRaw =>
+          cases codomainSuccess :
+              codomainCodeRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetCodomainCodeRaw =>
+              exact some
+                (partialStrengthenTypedArrowCode outerLevel levelLe
+                  domainCodeRaw codomainCodeRaw targetDomainCodeRaw
+                  targetCodomainCodeRaw domainSuccess codomainSuccess)
+  | @Term.piTyCode _ _ _ _ outerLevel levelLe domainCodeRaw
+      codomainCodeRaw => by
+      cases domainSuccess :
+          domainCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainCodeRaw =>
+          cases codomainSuccess :
+              codomainCodeRaw.partialStrengthen? strengthening.back.lift with
+          | none => exact none
+          | some targetCodomainCodeRaw =>
+              exact some
+                (partialStrengthenTypedPiTyCode outerLevel levelLe
+                  domainCodeRaw codomainCodeRaw targetDomainCodeRaw
+                  targetCodomainCodeRaw domainSuccess codomainSuccess)
+  | @Term.sigmaTyCode _ _ _ _ outerLevel levelLe domainCodeRaw
+      codomainCodeRaw => by
+      cases domainSuccess :
+          domainCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetDomainCodeRaw =>
+          cases codomainSuccess :
+              codomainCodeRaw.partialStrengthen? strengthening.back.lift with
+          | none => exact none
+          | some targetCodomainCodeRaw =>
+              exact some
+                (partialStrengthenTypedSigmaTyCode outerLevel levelLe
+                  domainCodeRaw codomainCodeRaw targetDomainCodeRaw
+                  targetCodomainCodeRaw domainSuccess codomainSuccess)
+  | @Term.productCode _ _ _ _ outerLevel levelLe firstCodeRaw
+      secondCodeRaw => by
+      cases firstSuccess :
+          firstCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetFirstCodeRaw =>
+          cases secondSuccess :
+              secondCodeRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetSecondCodeRaw =>
+              exact some
+                (partialStrengthenTypedProductCode outerLevel levelLe
+                  firstCodeRaw secondCodeRaw targetFirstCodeRaw
+                  targetSecondCodeRaw firstSuccess secondSuccess)
+  | @Term.sumCode _ _ _ _ outerLevel levelLe leftCodeRaw rightCodeRaw => by
+      cases leftSuccess :
+          leftCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetLeftCodeRaw =>
+          cases rightSuccess :
+              rightCodeRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetRightCodeRaw =>
+              exact some
+                (partialStrengthenTypedSumCode outerLevel levelLe
+                  leftCodeRaw rightCodeRaw targetLeftCodeRaw
+                  targetRightCodeRaw leftSuccess rightSuccess)
+  | @Term.listCode _ _ _ _ outerLevel levelLe elementCodeRaw => by
+      cases elementSuccess :
+          elementCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetElementCodeRaw =>
+          exact some
+            (partialStrengthenTypedListCode outerLevel levelLe
+              elementCodeRaw targetElementCodeRaw elementSuccess)
+  | @Term.optionCode _ _ _ _ outerLevel levelLe elementCodeRaw => by
+      cases elementSuccess :
+          elementCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetElementCodeRaw =>
+          exact some
+            (partialStrengthenTypedOptionCode outerLevel levelLe
+              elementCodeRaw targetElementCodeRaw elementSuccess)
+  | @Term.eitherCode _ _ _ _ outerLevel levelLe leftCodeRaw rightCodeRaw => by
+      cases leftSuccess :
+          leftCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetLeftCodeRaw =>
+          cases rightSuccess :
+              rightCodeRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetRightCodeRaw =>
+              exact some
+                (partialStrengthenTypedEitherCode outerLevel levelLe
+                  leftCodeRaw rightCodeRaw targetLeftCodeRaw
+                  targetRightCodeRaw leftSuccess rightSuccess)
+  | @Term.idCode _ _ _ _ outerLevel levelLe typeCodeRaw leftRaw rightRaw => by
+      cases typeSuccess :
+          typeCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetTypeCodeRaw =>
+          cases leftSuccess : leftRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetLeftRaw =>
+              cases rightSuccess :
+                  rightRaw.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some targetRightRaw =>
+                  exact some
+                    (partialStrengthenTypedIdCode outerLevel levelLe
+                      typeCodeRaw leftRaw rightRaw targetTypeCodeRaw
+                      targetLeftRaw targetRightRaw typeSuccess leftSuccess
+                      rightSuccess)
+  | @Term.equivCode _ _ _ _ outerLevel levelLe leftTypeCodeRaw
+      rightTypeCodeRaw => by
+      cases leftSuccess :
+          leftTypeCodeRaw.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetLeftTypeCodeRaw =>
+          cases rightSuccess :
+              rightTypeCodeRaw.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetRightTypeCodeRaw =>
+              exact some
+                (partialStrengthenTypedEquivCode outerLevel levelLe
+                  leftTypeCodeRaw rightTypeCodeRaw targetLeftTypeCodeRaw
+                  targetRightTypeCodeRaw leftSuccess rightSuccess)
+  | @Term.uaToEquiv _ _ _ _ innerLevel innerLevelLt leftTy rightTy
+      leftTyRaw rightTyRaw _ proof => by
+      cases leftTySuccess : leftTy.partialStrengthen? strengthening.back with
+      | none => exact none
+      | some targetLeftTy =>
+          cases rightTySuccess :
+              rightTy.partialStrengthen? strengthening.back with
+          | none => exact none
+          | some targetRightTy =>
+              cases leftRawSuccess :
+                  leftTyRaw.partialStrengthen? strengthening.back with
+              | none => exact none
+              | some targetLeftTyRaw =>
+                  cases rightRawSuccess :
+                      rightTyRaw.partialStrengthen? strengthening.back with
+                  | none => exact none
+                  | some targetRightTyRaw =>
+                      cases partialStrengthenTyped? proof
+                          (strengthening := strengthening) with
+                      | none => exact none
+                      | some proofResult =>
+                          exact some
+                            (partialStrengthenTypedUaToEquiv innerLevel
+                              innerLevelLt leftTy rightTy targetLeftTy
+                              targetRightTy leftTyRaw rightTyRaw
+                              targetLeftTyRaw targetRightTyRaw
+                              leftTySuccess rightTySuccess leftRawSuccess
+                              rightRawSuccess proofResult)
+  | @Term.equivApply _ _ _ _ _ _ _ _ equivTerm argumentTerm => by
+      cases partialStrengthenTyped? equivTerm
+          (strengthening := strengthening) with
+      | none => exact none
+      | some equivResult =>
+          cases partialStrengthenTyped? argumentTerm
+              (strengthening := strengthening) with
+          | none => exact none
+          | some argumentResult =>
+              exact some
+                (partialStrengthenTypedEquivApply equivResult argumentResult)
+
+/-- Single-newest-slot typed strengthening.
+
+This is the semantic strengthening variant for a term in
+`context.cons newType`: it returns a fully typed predecessor exactly when
+the type index, raw index, and every typed subterm survive
+`PartialRawRenaming.dropNewest`.
+-/
+def strengthenTyped? {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm (scope + 1)}
+    (sourceTerm : Term (context.cons newType) sourceType sourceRaw) :
+    Option (StrengtheningResult
+      (ContextStrengthening.dropNewest context newType) sourceTerm) :=
+  partialStrengthenTyped? sourceTerm
+    (ContextStrengthening.dropNewest context newType)
+
+/-- Typed newest-slot use predicate.
+
+The predicate is deliberately defined by the typed strengthening
+dispatcher, not only by raw syntax: `false` means a typed predecessor was
+actually reconstructed through the context morphism.
+-/
+def usesNewestSlotTyped? {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm (scope + 1)}
+    (sourceTerm : Term (context.cons newType) sourceType sourceRaw) :
+    Bool :=
+  (strengthenTyped? sourceTerm).isNone
+
+/-- Structural typed unweakening.
+
+When both indices are syntactically known weakenings, typed
+strengthening reconstructs an exact predecessor at the original type and
+raw indices.  The casts are justified by the existing all-constructors
+type/raw facts `Ty.strengthen?_weaken` and `RawTerm.strengthen?_weaken`.
+-/
+def unweaken? {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType sourceType : Ty level scope}
+    {sourceRaw : RawTerm scope}
+    (weakenedTerm :
+      Term (context.cons newType) sourceType.weaken sourceRaw.weaken) :
+    Option (Term context sourceType sourceRaw) :=
+  match strengthenTyped? weakenedTerm with
+  | none => none
+  | some result =>
+      match result with
+      | StrengtheningResult.mk targetType targetRaw targetTerm
+          typeStrengthens rawStrengthens _ _ =>
+          have targetTypeEq : targetType = sourceType := by
+            change sourceType.weaken.strengthen? = some targetType at typeStrengthens
+            rw [Ty.strengthen?_weaken sourceType] at typeStrengthens
+            cases typeStrengthens
+            rfl
+          have targetRawEq : targetRaw = sourceRaw := by
+            change sourceRaw.weaken.strengthen? = some targetRaw at rawStrengthens
+            rw [RawTerm.strengthen?_weaken sourceRaw] at rawStrengthens
+            cases rawStrengthens
+            rfl
+          by
+            cases targetTypeEq
+            cases targetRawEq
+            exact some targetTerm
+
+/-- Semantic typed strengthening witness from the boolean predicate.
+
+This is the typed counterpart of `not_usesNewestSlot?_imp_indices_weaken`:
+the witness is a full `StrengtheningResult`, not just strengthened
+indices.
+-/
+theorem not_usesNewestSlotTyped?_imp_strengthenTyped?_some
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {newType : Ty level scope}
+    {sourceType : Ty level (scope + 1)}
+    {sourceRaw : RawTerm (scope + 1)}
+    (sourceTerm : Term (context.cons newType) sourceType sourceRaw)
+    (slotIsUnused : usesNewestSlotTyped? sourceTerm = false) :
+    ∃ result : StrengtheningResult
+        (ContextStrengthening.dropNewest context newType) sourceTerm,
+      strengthenTyped? sourceTerm = some result := by
+  unfold usesNewestSlotTyped? at slotIsUnused
+  cases success : strengthenTyped? sourceTerm with
+  | none =>
+      rw [success] at slotIsUnused
+      cases slotIsUnused
+  | some result =>
+      exact ⟨result, rfl⟩
+
 end Term
 
 end LeanFX2

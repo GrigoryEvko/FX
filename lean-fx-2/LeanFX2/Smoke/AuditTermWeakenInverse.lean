@@ -159,6 +159,11 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompPath
 #print axioms LeanFX2.Term.partialStrengthenTypedEffectPerform
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivIntroHet
+#print axioms LeanFX2.Term.partialStrengthenTyped?
+#print axioms LeanFX2.Term.strengthenTyped?
+#print axioms LeanFX2.Term.usesNewestSlotTyped?
+#print axioms LeanFX2.Term.unweaken?
+#print axioms LeanFX2.Term.not_usesNewestSlotTyped?_imp_strengthenTyped?_some
 #print axioms LeanFX2.Term.partialStrengthen?
 #print axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #print axioms LeanFX2.Term.strengthen?
