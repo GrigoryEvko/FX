@@ -142,6 +142,13 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherCode
 #print axioms LeanFX2.Term.partialStrengthenTypedIdCode
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivCode
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivReflId
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivReflIdAtId
+#print axioms LeanFX2.Term.partialStrengthenTypedFunextRefl
+#print axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivApp
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivApply
+#print axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv
 #print axioms LeanFX2.Term.partialStrengthen?
 #print axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #print axioms LeanFX2.Term.strengthen?
