@@ -4491,6 +4491,386 @@ def partialStrengthenTypedUaIntroHet {mode : Mode} {level : Nat}
           rfl
       }
 
+/-- Glue introduction strengthens by strengthening both payload values
+at the same strengthened base type and strengthening the schematic
+boundary witness. -/
+def partialStrengthenTypedGlueIntro {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (baseType : Ty level sourceScope)
+    (targetBaseType : Ty level targetScope)
+    (boundaryWitness : RawTerm sourceScope)
+    (targetBoundaryWitness : RawTerm targetScope)
+    {baseRaw partialRaw : RawTerm sourceScope}
+    {baseValue : Term sourceCtx baseType baseRaw}
+    {partialValue : Term sourceCtx baseType partialRaw}
+    (baseTypeStrengthens :
+      baseType.partialStrengthen? strengthening.back = some targetBaseType)
+    (boundaryStrengthens :
+      boundaryWitness.partialStrengthen? strengthening.back =
+        some targetBoundaryWitness)
+    (baseResult : StrengtheningResult strengthening baseValue)
+    (partialResult : StrengtheningResult strengthening partialValue) :
+    StrengtheningResult strengthening
+      (Term.glueIntro (context := sourceCtx) modeIsUnivalent baseType
+        boundaryWitness baseValue partialValue) := by
+  cases baseResult with
+  | mk targetBaseValueType targetBaseRaw targetBaseValue
+      baseValueTypeStrengthens baseRawStrengthens baseValueTypeRenames
+      baseRawRenames =>
+      rw [baseTypeStrengthens] at baseValueTypeStrengthens
+      cases baseValueTypeStrengthens
+      cases partialResult with
+      | mk targetPartialValueType targetPartialRaw targetPartialValue
+          partialValueTypeStrengthens partialRawStrengthens
+          partialValueTypeRenames partialRawRenames =>
+          rw [baseTypeStrengthens] at partialValueTypeStrengthens
+          cases partialValueTypeStrengthens
+          exact {
+            targetType := Ty.glue targetBaseType targetBoundaryWitness
+            targetRaw := RawTerm.glueIntro targetBaseRaw targetPartialRaw
+            targetTerm :=
+              Term.glueIntro (context := targetCtx) modeIsUnivalent
+                targetBaseType targetBoundaryWitness targetBaseValue
+                targetPartialValue
+            typeStrengthens := by
+              change
+                Option.mapTwo
+                  (baseType.partialStrengthen? strengthening.back)
+                  (boundaryWitness.partialStrengthen? strengthening.back)
+                  Ty.glue =
+                    some (Ty.glue targetBaseType targetBoundaryWitness)
+              rw [baseTypeStrengthens, boundaryStrengthens]
+              rfl
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (baseRaw.partialStrengthen? strengthening.back)
+                  (partialRaw.partialStrengthen? strengthening.back)
+                  RawTerm.glueIntro =
+                    some (RawTerm.glueIntro targetBaseRaw targetPartialRaw)
+              rw [baseRawStrengthens, partialRawStrengthens]
+              rfl
+            typeRenames := by
+              exact
+                Ty.partialStrengthen?_imp_rename
+                  (Ty.glue baseType boundaryWitness)
+                  strengthening.forward strengthening.back
+                  strengthening.injectsBack
+                  (Ty.glue targetBaseType targetBoundaryWitness)
+                  (by
+                    change
+                      Option.mapTwo
+                        (baseType.partialStrengthen? strengthening.back)
+                        (boundaryWitness.partialStrengthen?
+                          strengthening.back)
+                        Ty.glue =
+                          some (Ty.glue targetBaseType
+                            targetBoundaryWitness)
+                    rw [baseTypeStrengthens, boundaryStrengthens]
+                    rfl)
+            rawRenames := by
+              cases baseRawRenames
+              cases partialRawRenames
+              rfl
+          }
+
+/-- Glue elimination strengthens by decomposing the strengthened glue
+carrier of the eliminated value. -/
+def partialStrengthenTypedGlueElim {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {baseType : Ty level sourceScope}
+    {boundaryWitness gluedRaw : RawTerm sourceScope}
+    {gluedValue : Term sourceCtx (Ty.glue baseType boundaryWitness) gluedRaw}
+    (gluedResult : StrengtheningResult strengthening gluedValue) :
+    StrengtheningResult strengthening
+      (Term.glueElim (context := sourceCtx) modeIsUnivalent gluedValue) := by
+  cases gluedResult with
+  | mk targetGluedType targetGluedRaw targetGluedValue
+      gluedTypeStrengthens gluedRawStrengthens gluedTypeRenames
+      gluedRawRenames =>
+      change
+        Option.mapTwo
+          (baseType.partialStrengthen? strengthening.back)
+          (boundaryWitness.partialStrengthen? strengthening.back)
+          Ty.glue = some targetGluedType at gluedTypeStrengthens
+      cases baseSuccess : baseType.partialStrengthen? strengthening.back with
+      | none =>
+          rw [baseSuccess] at gluedTypeStrengthens
+          cases gluedTypeStrengthens
+      | some targetBaseType =>
+          cases boundarySuccess :
+              boundaryWitness.partialStrengthen? strengthening.back with
+          | none =>
+              rw [baseSuccess, boundarySuccess] at gluedTypeStrengthens
+              cases gluedTypeStrengthens
+          | some targetBoundaryWitness =>
+              rw [baseSuccess, boundarySuccess] at gluedTypeStrengthens
+              cases gluedTypeStrengthens
+              exact {
+                targetType := targetBaseType
+                targetRaw := RawTerm.glueElim targetGluedRaw
+                targetTerm :=
+                  Term.glueElim (context := targetCtx) modeIsUnivalent
+                    targetGluedValue
+                typeStrengthens := baseSuccess
+                rawStrengthens := by
+                  change
+                    (match gluedRaw.partialStrengthen? strengthening.back with
+                    | some strengthenedGlued =>
+                        some (RawTerm.glueElim strengthenedGlued)
+                    | none => none) =
+                      some (RawTerm.glueElim targetGluedRaw)
+                  rw [gluedRawStrengthens]
+                typeRenames :=
+                  Ty.partialStrengthen?_imp_rename baseType
+                    strengthening.forward strengthening.back
+                    strengthening.injectsBack targetBaseType baseSuccess
+                rawRenames := by
+                  cases gluedRawRenames
+                  rfl
+              }
+
+/-- Cubical transport strengthens by strengthening the path proof, the
+source value, and the schematic source/target carrier data. -/
+def partialStrengthenTypedTransp {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    (universeLevel : UniverseLevel)
+    (universeLevelLt : universeLevel.toNat + 1 ≤ level)
+    (sourceType targetType : Ty level sourceScope)
+    (targetSourceType targetTargetType : Ty level targetScope)
+    (sourceTypeRaw targetTypeRaw : RawTerm sourceScope)
+    (targetSourceTypeRaw targetTargetTypeRaw : RawTerm targetScope)
+    {pathRaw sourceRaw : RawTerm sourceScope}
+    {typePath :
+      Term sourceCtx
+        (Ty.path (Ty.universe universeLevel universeLevelLt)
+          sourceTypeRaw targetTypeRaw)
+        pathRaw}
+    {sourceValue : Term sourceCtx sourceType sourceRaw}
+    (sourceTypeStrengthens :
+      sourceType.partialStrengthen? strengthening.back =
+        some targetSourceType)
+    (targetTypeStrengthens :
+      targetType.partialStrengthen? strengthening.back =
+        some targetTargetType)
+    (sourceTypeRawStrengthens :
+      sourceTypeRaw.partialStrengthen? strengthening.back =
+        some targetSourceTypeRaw)
+    (targetTypeRawStrengthens :
+      targetTypeRaw.partialStrengthen? strengthening.back =
+        some targetTargetTypeRaw)
+    (pathResult : StrengtheningResult strengthening typePath)
+    (sourceResult : StrengtheningResult strengthening sourceValue) :
+    StrengtheningResult strengthening
+      (Term.transp (context := sourceCtx) modeIsUnivalent universeLevel
+        universeLevelLt sourceType targetType sourceTypeRaw targetTypeRaw
+        typePath sourceValue) := by
+  cases pathResult with
+  | mk targetPathType targetPathRaw targetPath
+      pathTypeStrengthens pathRawStrengthens pathTypeRenames pathRawRenames =>
+      have expectedPathTypeStrengthens :
+          (Ty.path (Ty.universe universeLevel universeLevelLt)
+              sourceTypeRaw targetTypeRaw).partialStrengthen?
+              strengthening.back =
+            some (Ty.path (Ty.universe universeLevel universeLevelLt)
+              targetSourceTypeRaw targetTargetTypeRaw) := by
+        change
+          Option.mapThree
+            ((Ty.universe universeLevel universeLevelLt).partialStrengthen?
+              strengthening.back)
+            (sourceTypeRaw.partialStrengthen? strengthening.back)
+            (targetTypeRaw.partialStrengthen? strengthening.back)
+            Ty.path =
+              some (Ty.path (Ty.universe universeLevel universeLevelLt)
+                targetSourceTypeRaw targetTargetTypeRaw)
+        rw [sourceTypeRawStrengthens, targetTypeRawStrengthens]
+        rfl
+      rw [expectedPathTypeStrengthens] at pathTypeStrengthens
+      cases pathTypeStrengthens
+      cases sourceResult with
+      | mk targetSourceValueType targetSourceRaw targetSourceValue
+          sourceValueTypeStrengthens sourceRawStrengthens
+          sourceValueTypeRenames sourceRawRenames =>
+          rw [sourceTypeStrengthens] at sourceValueTypeStrengthens
+          cases sourceValueTypeStrengthens
+          exact {
+            targetType := targetTargetType
+            targetRaw := RawTerm.transp targetPathRaw targetSourceRaw
+            targetTerm :=
+              Term.transp (context := targetCtx) modeIsUnivalent
+                universeLevel universeLevelLt targetSourceType
+                targetTargetType targetSourceTypeRaw targetTargetTypeRaw
+                targetPath targetSourceValue
+            typeStrengthens := targetTypeStrengthens
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (pathRaw.partialStrengthen? strengthening.back)
+                  (sourceRaw.partialStrengthen? strengthening.back)
+                  RawTerm.transp =
+                    some (RawTerm.transp targetPathRaw targetSourceRaw)
+              rw [pathRawStrengthens, sourceRawStrengthens]
+              rfl
+            typeRenames :=
+              Ty.partialStrengthen?_imp_rename targetType
+                strengthening.forward strengthening.back
+                strengthening.injectsBack targetTargetType
+                targetTypeStrengthens
+            rawRenames := by
+              cases pathRawRenames
+              cases sourceRawRenames
+              rfl
+          }
+
+/-- Homogeneous composition strengthens by strengthening both carrier
+payloads at the same strengthened carrier type. -/
+def partialStrengthenTypedHcomp {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {sidesRaw capRaw : RawTerm sourceScope}
+    {sidesValue : Term sourceCtx carrierType sidesRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (sidesResult : StrengtheningResult strengthening sidesValue)
+    (capResult : StrengtheningResult strengthening capValue) :
+    StrengtheningResult strengthening
+      (Term.hcomp (context := sourceCtx) modeIsUnivalent sidesValue
+        capValue) := by
+  cases sidesResult with
+  | mk targetCarrierType targetSidesRaw targetSidesValue
+      carrierStrengthens sidesRawStrengthens carrierRenames
+      sidesRawRenames =>
+      cases capResult with
+      | mk targetCapType targetCapRaw targetCapValue capTypeStrengthens
+          capRawStrengthens capTypeRenames capRawRenames =>
+          rw [carrierStrengthens] at capTypeStrengthens
+          cases capTypeStrengthens
+          exact {
+            targetType := targetCarrierType
+            targetRaw := RawTerm.hcomp targetSidesRaw targetCapRaw
+            targetTerm :=
+              Term.hcomp (context := targetCtx) modeIsUnivalent
+                targetSidesValue targetCapValue
+            typeStrengthens := carrierStrengthens
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (sidesRaw.partialStrengthen? strengthening.back)
+                  (capRaw.partialStrengthen? strengthening.back)
+                  RawTerm.hcomp =
+                    some (RawTerm.hcomp targetSidesRaw targetCapRaw)
+              rw [sidesRawStrengthens, capRawStrengthens]
+              rfl
+            typeRenames := carrierRenames
+            rawRenames := by
+              cases sidesRawRenames
+              cases capRawRenames
+              rfl
+          }
+
+/-- Path-shaped homogeneous composition strengthens by decomposing the
+strengthened path carrier for the sides and aligning the cap carrier. -/
+def partialStrengthenTypedHcompPath {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    {sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (sidesPathResult : StrengtheningResult strengthening sidesPath)
+    (capResult : StrengtheningResult strengthening capValue) :
+    StrengtheningResult strengthening
+      (Term.hcompPath (context := sourceCtx) modeIsUnivalent
+        leftEndpoint rightEndpoint sidesPath capValue) := by
+  cases sidesPathResult with
+  | mk targetSidesPathType targetSidesPathRaw targetSidesPath
+      sidesPathTypeStrengthens sidesPathRawStrengthens
+      sidesPathTypeRenames sidesPathRawRenames =>
+      change
+        Option.mapThree
+          (carrierType.partialStrengthen? strengthening.back)
+          (leftEndpoint.partialStrengthen? strengthening.back)
+          (rightEndpoint.partialStrengthen? strengthening.back)
+          Ty.path = some targetSidesPathType at sidesPathTypeStrengthens
+      cases carrierSuccess : carrierType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [carrierSuccess] at sidesPathTypeStrengthens
+          cases sidesPathTypeStrengthens
+      | some targetCarrierType =>
+          cases leftSuccess :
+              leftEndpoint.partialStrengthen? strengthening.back with
+          | none =>
+              rw [carrierSuccess, leftSuccess] at sidesPathTypeStrengthens
+              cases sidesPathTypeStrengthens
+          | some targetLeftEndpoint =>
+              cases rightSuccess :
+                  rightEndpoint.partialStrengthen? strengthening.back with
+              | none =>
+                  rw [carrierSuccess, leftSuccess, rightSuccess] at sidesPathTypeStrengthens
+                  cases sidesPathTypeStrengthens
+              | some targetRightEndpoint =>
+                  rw [carrierSuccess, leftSuccess, rightSuccess] at sidesPathTypeStrengthens
+                  cases sidesPathTypeStrengthens
+                  cases capResult with
+                  | mk targetCapType targetCapRaw targetCapValue
+                      capTypeStrengthens capRawStrengthens capTypeRenames
+                      capRawRenames =>
+                      rw [carrierSuccess] at capTypeStrengthens
+                      cases capTypeStrengthens
+                      exact {
+                        targetType := targetCarrierType
+                        targetRaw :=
+                          RawTerm.hcomp targetSidesPathRaw targetCapRaw
+                        targetTerm :=
+                          Term.hcompPath (context := targetCtx)
+                            modeIsUnivalent targetLeftEndpoint
+                            targetRightEndpoint targetSidesPath
+                            targetCapValue
+                        typeStrengthens := carrierSuccess
+                        rawStrengthens := by
+                          change
+                            Option.mapTwo
+                              (sidesPathRaw.partialStrengthen?
+                                strengthening.back)
+                              (capRaw.partialStrengthen? strengthening.back)
+                              RawTerm.hcomp =
+                                some (RawTerm.hcomp targetSidesPathRaw
+                                  targetCapRaw)
+                          rw [sidesPathRawStrengthens, capRawStrengthens]
+                          rfl
+                        typeRenames :=
+                          Ty.partialStrengthen?_imp_rename carrierType
+                            strengthening.forward strengthening.back
+                            strengthening.injectsBack targetCarrierType
+                            carrierSuccess
+                        rawRenames := by
+                          cases sidesPathRawRenames
+                          cases capRawRenames
+                          rfl
+                      }
+
 end Term
 
 end LeanFX2
