@@ -568,6 +568,50 @@ def partialStrengthenTypedRecordIntro {mode : Mode} {level : Nat}
   typeRenames := congrArg Ty.record fieldResult.typeRenames
   rawRenames := congrArg RawTerm.recordIntro fieldResult.rawRenames
 
+/-- Record projection strengthens by strengthening its record payload. -/
+def partialStrengthenTypedRecordProj {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {recordRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {recordValue : Term sourceCtx (Ty.record singleFieldType) recordRaw}
+    (recordResult : StrengtheningResult strengthening recordValue) :
+    StrengtheningResult strengthening (Term.recordProj recordValue) := by
+  cases recordResult with
+  | mk targetType targetRaw targetTerm typeStrengthens rawStrengthens
+      typeRenames rawRenames =>
+      change
+        (match singleFieldType.partialStrengthen? strengthening.back with
+        | some strengthenedField => some (Ty.record strengthenedField)
+        | none => none) = some targetType at typeStrengthens
+      cases fieldSuccess : singleFieldType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [fieldSuccess] at typeStrengthens
+          cases typeStrengthens
+      | some targetFieldType =>
+          rw [fieldSuccess] at typeStrengthens
+          cases typeStrengthens
+          exact {
+            targetType := targetFieldType
+            targetRaw := RawTerm.recordProj targetRaw
+            targetTerm := Term.recordProj targetTerm
+            typeStrengthens := fieldSuccess
+            rawStrengthens := by
+              change
+                (match recordRaw.partialStrengthen? strengthening.back with
+                | some strengthenedRecord =>
+                    some (RawTerm.recordProj strengthenedRecord)
+                | none => none) =
+                  some (RawTerm.recordProj targetRaw)
+              rw [rawStrengthens]
+            typeRenames := by
+              injection typeRenames
+            rawRenames := congrArg RawTerm.recordProj rawRenames
+          }
+
 end Term
 
 end LeanFX2
