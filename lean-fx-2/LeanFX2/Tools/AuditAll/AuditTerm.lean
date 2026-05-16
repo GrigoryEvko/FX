@@ -347,6 +347,9 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 -- LeanFX2.Term.TypedInversion section "weaken_inv_arrow" for the
 -- gap analysis on the universal existence form.
 #assert_no_axioms LeanFX2.Term.weaken_inv_arrow_option
+-- Supporting infrastructure for the typed weaken inversion cascade.
+#assert_no_axioms LeanFX2.Ty.weaken_inj
+#assert_no_axioms LeanFX2.Term.weakenInverse_atVarZero
 -- Semantic / partial strengthening raw-index certificates.
 #assert_no_axioms LeanFX2.ContextStrengthening
 #assert_no_axioms LeanFX2.ContextStrengthening.toTermRenaming

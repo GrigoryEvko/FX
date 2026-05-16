@@ -57,6 +57,25 @@ HEq field).  Estimated ~5500-7000 LoC.  The Option form is the
 immediately-shippable infrastructure that downstream consumers can
 chain through their own structural information.
 
+### `Ty.weaken_inj` + `Term.weakenInverse_atVarZero` — cascade prereqs
+
+Two pieces of supporting infrastructure that the universal
+existence-form `weaken_inv_arrow` would itself rely on, plus
+the per-shape inversion needed by the typed-eta lift_lam
+consumer:
+
+* `Ty.weaken_inj` — `Ty.weaken` is injective.  Proved via the
+  round-trip identity `Ty.strengthen?_weaken`.  Foundational for
+  recovering the inner type from a weakening-shape type equation
+  (e.g. inside the `Term.lam` arm of a `weaken_inv_arrow`-style
+  cascade where `(Ty.arrow A B).weaken = (Ty.arrow A' B').weaken`
+  needs to be inverted to `A = A'` and `B = B'`).
+* `Term.weakenInverse_atVarZero` — Layer 2 typed inversion at the
+  `RawTerm.var ⟨0, _⟩` raw shape (companion to
+  `Term.weakenInverse_atVar` for `RawTerm.var (Fin.succ pos')`).
+  The eta-shape consumer recovers the argTerm of `Term.app fnTerm
+  (Term.var 0)` via this helper.
+
 ## Root status
 
 Foundation; zero axioms throughout.  Verified via `lake build
@@ -236,5 +255,93 @@ def Term.weaken_inv_arrow_option
     Option (Term context (Ty.arrow domainType codomainType) fnRaw) :=
   LeanFX2.Term.unweaken? (sourceType := Ty.arrow domainType codomainType)
                          (sourceRaw := fnRaw) weakenedFn
+
+/-! ## Supporting infrastructure for the typed weaken inversion cascade.
+
+The full existence-form `Term.weaken_inv_arrow` is a 78-case
+structural induction over `Term` whose recursive cases require
+unweaken-recovery on subterms (opaque-Ty ctors like `Term.app`,
+`Term.boolElim`, `Term.modIntro` all carry a polymorphic motive
+type that could itself be an arrow).  Shipping the universal
+existence form is genuinely ~5500-7000 LoC of structural cascade
+work, equivalent to extending `StrengtheningResult` with a
+`termRenames` HEq field (Path A in
+`project_typed_inversion_status.md`).
+
+What this section ships is the **load-bearing infrastructure** the
+universal existence form would itself rely on plus the additional
+per-shape inversion needed by the typed-eta lift_lam consumer:
+
+* `Ty.weaken_inj` — `Ty.weaken` is injective.  Foundational; used
+  by every step of the cascade that inverts `(Ty.arrow A B).weaken
+  = X.weaken` to `Ty.arrow A B = X`.
+* `Term.weakenInverse_atVarZero` — Layer 2 typed inversion at the
+  `RawTerm.var ⟨0, _⟩` raw shape (companion to the existing
+  `Term.weakenInverse_atVar` for `Fin.succ pos'`).  The eta-shape
+  consumer recovers the argTerm of `Term.app fnTerm (Term.var 0)`
+  via this helper.
+
+These two pieces together close the gap on the eta-arm consumer
+side: combined with `Term.app_inv` (already shipped) and
+`Term.weaken_inv_arrow_option` (already shipped), they let the
+consumer reach a concrete typed function source without the full
+existence-form universal weaken inverse. -/
+
+/-- **`Ty.weaken` is injective.**  Proved via the round-trip identity
+`Ty.strengthen?_weaken : T.weaken.strengthen? = some T`: if two types
+have equal weakenings, applying `strengthen?` to both sides yields
+`some leftTy = some rightTy`, and `Option.some` injectivity finishes
+the proof.
+
+Foundational utility used wherever a weaken-shape type equation needs
+to be inverted (e.g. recovering the inner domain of an arrow whose
+weakening matches another arrow's weakening). -/
+theorem Ty.weaken_inj {level scope : Nat}
+    {leftTy rightTy : Ty level scope}
+    (weakenEq : leftTy.weaken = rightTy.weaken) :
+    leftTy = rightTy := by
+  have leftStrengthen : leftTy.weaken.strengthen? = some leftTy :=
+    Ty.strengthen?_weaken leftTy
+  have rightStrengthen : rightTy.weaken.strengthen? = some rightTy :=
+    Ty.strengthen?_weaken rightTy
+  rw [weakenEq] at leftStrengthen
+  rw [rightStrengthen] at leftStrengthen
+  injection leftStrengthen with strengthenSomeEq
+  exact strengthenSomeEq.symm
+
+/-- **Typed weaken inversion at the `RawTerm.var ⟨0, _⟩` raw shape.**
+
+In a context `context.cons newType`, the only Term ctor producing
+`RawTerm.var ⟨0, _⟩` raw is `Term.var ⟨0, _⟩` itself.  Its type is
+`varType (context.cons newType) ⟨0, _⟩ = newType.weaken` by the first
+arm of `varType`.
+
+This is the companion to `Term.weakenInverse_atVar` (which handles
+`RawTerm.var (Fin.succ pos')`).  Together the two cover both arms
+of `varType`'s definition.
+
+Consumed by the typed-eta lift_lam η-arm to identify the `Term.var
+⟨0, _⟩` argument inside `Term.app fnTerm (Term.var ⟨0, _⟩)`. -/
+def Term.weakenInverse_atVarZero
+    {newType : Ty level scope}
+    {weakenedTy : Ty level (scope + 1)}
+    (weakenedTerm : Term (context.cons newType) weakenedTy
+                          (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)) :
+    Σ' (_ : weakenedTy = newType.weaken),
+      HEq weakenedTerm
+          (Term.var (context := context.cons newType)
+                    ⟨0, Nat.zero_lt_succ scope⟩) := by
+  suffices key :
+      ∀ {genericTy : Ty level (scope + 1)}
+        (genericTerm : Term (context.cons newType) genericTy
+                              (RawTerm.var ⟨0, Nat.zero_lt_succ scope⟩)),
+        Σ' (_ : genericTy = newType.weaken),
+          HEq genericTerm
+              (Term.var (context := context.cons newType)
+                        ⟨0, Nat.zero_lt_succ scope⟩) by
+    exact key weakenedTerm
+  intro genericTy genericTerm
+  cases genericTerm
+  exact ⟨rfl, HEq.rfl⟩
 
 end LeanFX2

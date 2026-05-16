@@ -40,4 +40,9 @@ namespace LeanFX2.SmokeTypedInversion
 -- `StrengtheningResult` with a `termRenames` field.
 #print axioms LeanFX2.Term.weaken_inv_arrow_option
 
+-- Supporting infrastructure shipped alongside the typed weaken
+-- inversion cascade prerequisites.
+#print axioms LeanFX2.Ty.weaken_inj
+#print axioms LeanFX2.Term.weakenInverse_atVarZero
+
 end LeanFX2.SmokeTypedInversion
