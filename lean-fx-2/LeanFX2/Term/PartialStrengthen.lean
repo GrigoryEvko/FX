@@ -278,6 +278,119 @@ def partialStrengthenTypedOptionNoneOfType {mode : Mode} {level : Nat}
         rw [elementTypeStrengthens])
   rawRenames := rfl
 
+/-- Option-some strengthens by strengthening its payload. -/
+def partialStrengthenTypedOptionSome {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {elementType : Ty level sourceScope}
+    {valueRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {valueTerm : Term sourceCtx elementType valueRaw}
+    (valueResult : StrengtheningResult strengthening valueTerm) :
+    StrengtheningResult strengthening (Term.optionSome valueTerm) where
+  targetType := Ty.optionType valueResult.targetType
+  targetRaw := RawTerm.optionSome valueResult.targetRaw
+  targetTerm := Term.optionSome valueResult.targetTerm
+  typeStrengthens := by
+    change
+      (match elementType.partialStrengthen? strengthening.back with
+      | some strengthenedElement =>
+          some (Ty.optionType strengthenedElement)
+      | none => none) =
+        some (Ty.optionType valueResult.targetType)
+    rw [valueResult.typeStrengthens]
+  rawStrengthens := by
+    change
+      (match valueRaw.partialStrengthen? strengthening.back with
+      | some strengthenedValue => some (RawTerm.optionSome strengthenedValue)
+      | none => none) =
+        some (RawTerm.optionSome valueResult.targetRaw)
+    rw [valueResult.rawStrengthens]
+  typeRenames := by
+    simp only [Ty.rename]
+    exact congrArg Ty.optionType valueResult.typeRenames
+  rawRenames := by
+    exact congrArg RawTerm.optionSome valueResult.rawRenames
+
+/-- Modal introduction strengthens by strengthening its payload. -/
+def partialStrengthenTypedModIntro {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerResult : StrengtheningResult strengthening innerTerm) :
+    StrengtheningResult strengthening (Term.modIntro innerTerm) where
+  targetType := innerResult.targetType
+  targetRaw := RawTerm.modIntro innerResult.targetRaw
+  targetTerm := Term.modIntro innerResult.targetTerm
+  typeStrengthens := innerResult.typeStrengthens
+  rawStrengthens := by
+    change
+      (match innerRaw.partialStrengthen? strengthening.back with
+      | some strengthenedInner => some (RawTerm.modIntro strengthenedInner)
+      | none => none) =
+        some (RawTerm.modIntro innerResult.targetRaw)
+    rw [innerResult.rawStrengthens]
+  typeRenames := innerResult.typeRenames
+  rawRenames := by
+    exact congrArg RawTerm.modIntro innerResult.rawRenames
+
+/-- Modal elimination strengthens by strengthening its payload. -/
+def partialStrengthenTypedModElim {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerResult : StrengtheningResult strengthening innerTerm) :
+    StrengtheningResult strengthening (Term.modElim innerTerm) where
+  targetType := innerResult.targetType
+  targetRaw := RawTerm.modElim innerResult.targetRaw
+  targetTerm := Term.modElim innerResult.targetTerm
+  typeStrengthens := innerResult.typeStrengthens
+  rawStrengthens := by
+    change
+      (match innerRaw.partialStrengthen? strengthening.back with
+      | some strengthenedInner => some (RawTerm.modElim strengthenedInner)
+      | none => none) =
+        some (RawTerm.modElim innerResult.targetRaw)
+    rw [innerResult.rawStrengthens]
+  typeRenames := innerResult.typeRenames
+  rawRenames := by
+    exact congrArg RawTerm.modElim innerResult.rawRenames
+
+/-- Modal subsumption strengthens by strengthening its payload. -/
+def partialStrengthenTypedSubsume {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {innerType : Ty level sourceScope}
+    {innerRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {innerTerm : Term sourceCtx innerType innerRaw}
+    (innerResult : StrengtheningResult strengthening innerTerm) :
+    StrengtheningResult strengthening (Term.subsume innerTerm) where
+  targetType := innerResult.targetType
+  targetRaw := RawTerm.subsume innerResult.targetRaw
+  targetTerm := Term.subsume innerResult.targetTerm
+  typeStrengthens := innerResult.typeStrengthens
+  rawStrengthens := by
+    change
+      (match innerRaw.partialStrengthen? strengthening.back with
+      | some strengthenedInner => some (RawTerm.subsume strengthenedInner)
+      | none => none) =
+        some (RawTerm.subsume innerResult.targetRaw)
+    rw [innerResult.rawStrengthens]
+  typeRenames := innerResult.typeRenames
+  rawRenames := by
+    exact congrArg RawTerm.subsume innerResult.rawRenames
+
 end Term
 
 end LeanFX2

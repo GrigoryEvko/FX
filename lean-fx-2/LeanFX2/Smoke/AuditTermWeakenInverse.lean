@@ -89,6 +89,10 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedInterval1
 #print axioms LeanFX2.Term.partialStrengthenTypedListNilOfType
 #print axioms LeanFX2.Term.partialStrengthenTypedOptionNoneOfType
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionSome
+#print axioms LeanFX2.Term.partialStrengthenTypedModIntro
+#print axioms LeanFX2.Term.partialStrengthenTypedModElim
+#print axioms LeanFX2.Term.partialStrengthenTypedSubsume
 #print axioms LeanFX2.Term.partialStrengthen?
 #print axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #print axioms LeanFX2.Term.strengthen?
