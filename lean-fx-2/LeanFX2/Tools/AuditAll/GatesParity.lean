@@ -104,8 +104,13 @@ namespace LeanFX2.Tools
 -- Revived after `ParRed.CongAliases` exposed legacy congruence ctors under
 -- exact dashboard names, lowering debt from 36 to 13 without changing
 -- reduction behavior.  `hcompPathCong` then closed the path-shaped
--- hcomp gap, lowering debt to 12.
-#assert_step_par_cong_coverage_budget LeanFX2.Term 12
+-- hcomp gap, lowering debt to 12.  Value-constructor reflexive cong
+-- wrappers (`varCong`, `unitCong`, `boolTrueCong`, `boolFalseCong`,
+-- `natZeroCong`, `listNilCong`, `optionNoneCong`, `interval0Cong`,
+-- `interval1Cong`, `universeCodeCong`, `equivReflIdCong`,
+-- `equivReflIdAtIdCong`) — each definitionally `Step.par.refl _` —
+-- then closed the remaining 12 slots, bringing debt to zero.
+#assert_step_par_cong_coverage_budget LeanFX2.Term 0
 
 -- Conv cong-rule coverage matrix.  For every Term ctor, either
 -- `LeanFX2.Conv.<name>Cong` or `LeanFX2.Conv.<name>_cong` should exist
