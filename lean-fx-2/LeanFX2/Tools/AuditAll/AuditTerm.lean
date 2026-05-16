@@ -413,6 +413,8 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApply
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOeqFunext
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextIntroHet
 #assert_no_axioms LeanFX2.Term.partialStrengthen?
 #assert_no_axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #assert_no_axioms LeanFX2.Term.strengthen?
