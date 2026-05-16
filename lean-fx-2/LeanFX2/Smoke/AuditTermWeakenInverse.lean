@@ -94,6 +94,7 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedOptionSome
 #print axioms LeanFX2.Term.partialStrengthenTypedNatElim
 #print axioms LeanFX2.Term.partialStrengthenTypedNatRec
+#print axioms LeanFX2.Term.partialStrengthenTypedBoolElim
 #print axioms LeanFX2.Term.partialStrengthenTypedModIntro
 #print axioms LeanFX2.Term.partialStrengthenTypedModElim
 #print axioms LeanFX2.Term.partialStrengthenTypedSubsume

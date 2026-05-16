@@ -480,6 +480,111 @@ def partialStrengthenTypedNatRec {mode : Mode} {level : Nat}
                   rfl
               }
 
+/-- Boolean eliminator strengthens by strengthening the scrutinee and
+both branches, then rebuilding each motive substitution through the
+single-binder strengthening/substitution bridge. -/
+def partialStrengthenTypedBoolElim {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {motiveType : Ty level (sourceScope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm sourceScope}
+    {targetMotiveType : Ty level (targetScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {scrutinee : Term sourceCtx Ty.bool scrutineeRaw}
+    {thenBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw}
+    {elseBranch :
+      Term sourceCtx (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw}
+    (motiveStrengthens :
+      motiveType.partialStrengthen? strengthening.back.lift =
+        some targetMotiveType)
+    (scrutineeResult : StrengtheningResult strengthening scrutinee)
+    (thenResult : StrengtheningResult strengthening thenBranch)
+    (elseResult : StrengtheningResult strengthening elseBranch) :
+    StrengtheningResult strengthening
+      (Term.boolElim scrutinee thenBranch elseBranch) := by
+  cases scrutineeResult with
+  | mk targetScrutineeType targetScrutineeRaw targetScrutineeTerm
+      scrutineeTypeStrengthens scrutineeRawStrengthens
+      scrutineeTypeRenames scrutineeRawRenames =>
+      cases scrutineeTypeStrengthens
+      cases thenResult with
+      | mk targetThenType targetThenRaw targetThenTerm thenTypeStrengthens
+          thenRawStrengthens thenTypeRenames thenRawRenames =>
+          have thenTypeExpected :
+              (motiveType.subst0 Ty.bool
+                  RawTerm.boolTrue).partialStrengthen?
+                strengthening.back =
+                some (targetMotiveType.subst0 Ty.bool
+                  RawTerm.boolTrue) :=
+            Ty.partialStrengthen?_subst0_of_success motiveType
+              targetMotiveType Ty.bool Ty.bool RawTerm.boolTrue
+              RawTerm.boolTrue strengthening.forward strengthening.back
+              strengthening.injectsBack strengthening.back_forward
+              motiveStrengthens rfl rfl
+          rw [thenTypeExpected] at thenTypeStrengthens
+          cases thenTypeStrengthens
+          cases elseResult with
+          | mk targetElseType targetElseRaw targetElseTerm elseTypeStrengthens
+              elseRawStrengthens elseTypeRenames elseRawRenames =>
+              have elseTypeExpected :
+                  (motiveType.subst0 Ty.bool
+                      RawTerm.boolFalse).partialStrengthen?
+                    strengthening.back =
+                    some (targetMotiveType.subst0 Ty.bool
+                      RawTerm.boolFalse) :=
+                Ty.partialStrengthen?_subst0_of_success motiveType
+                  targetMotiveType Ty.bool Ty.bool RawTerm.boolFalse
+                  RawTerm.boolFalse strengthening.forward strengthening.back
+                  strengthening.injectsBack strengthening.back_forward
+                  motiveStrengthens rfl rfl
+              rw [elseTypeExpected] at elseTypeStrengthens
+              cases elseTypeStrengthens
+              have resultTypeStrengthens :
+                  (motiveType.subst0 Ty.bool scrutineeRaw).partialStrengthen?
+                    strengthening.back =
+                    some (targetMotiveType.subst0 Ty.bool
+                      targetScrutineeRaw) :=
+                Ty.partialStrengthen?_subst0_of_success motiveType
+                  targetMotiveType Ty.bool Ty.bool scrutineeRaw
+                  targetScrutineeRaw strengthening.forward strengthening.back
+                  strengthening.injectsBack strengthening.back_forward
+                  motiveStrengthens rfl scrutineeRawStrengthens
+              exact {
+                targetType := targetMotiveType.subst0 Ty.bool
+                  targetScrutineeRaw
+                targetRaw := RawTerm.boolElim targetScrutineeRaw
+                  targetThenRaw targetElseRaw
+                targetTerm := Term.boolElim targetScrutineeTerm
+                  targetThenTerm targetElseTerm
+                typeStrengthens := resultTypeStrengthens
+                rawStrengthens := by
+                  change
+                    Option.mapThree
+                      (scrutineeRaw.partialStrengthen? strengthening.back)
+                      (thenRaw.partialStrengthen? strengthening.back)
+                      (elseRaw.partialStrengthen? strengthening.back)
+                      RawTerm.boolElim =
+                        some (RawTerm.boolElim targetScrutineeRaw
+                          targetThenRaw targetElseRaw)
+                  rw [scrutineeRawStrengthens, thenRawStrengthens,
+                    elseRawStrengthens]
+                  rfl
+                typeRenames :=
+                  Ty.partialStrengthen?_imp_rename
+                    (motiveType.subst0 Ty.bool scrutineeRaw)
+                    strengthening.forward strengthening.back
+                    strengthening.injectsBack
+                    (targetMotiveType.subst0 Ty.bool targetScrutineeRaw)
+                    resultTypeStrengthens
+                rawRenames := by
+                  cases scrutineeRawRenames
+                  cases thenRawRenames
+                  cases elseRawRenames
+                  rfl
+              }
+
 /-- Modal introduction strengthens by strengthening its payload. -/
 def partialStrengthenTypedModIntro {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
