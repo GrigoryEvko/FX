@@ -170,6 +170,49 @@ Acceptance: ✅ binary session protocol grammar + duality + protocol-step
 relation + global projection all ship at zero axioms; AuditSessions.lean
 ratchet 30 #assert_no_axioms gates.  Linear-typing claim deferred.
 
+## Day 8 / FX1.Core — minimal lambda-Pi trust anchor ✅ B0 milestone
+
+The minimal lambda-Pi kernel that anchors trust for the FX1/LeanKernel
+extension (Day 8 proper).  Ships zero-axiom under
+`FX1.check_sound : ∀ env ctx expr ty, Expr.check? env ctx expr ty = true →
+HasType env ctx expr ty` at `FX1/Core/Soundness.lean:28-37`.  Coverage:
+de Bruijn variables, universes (Sort), Π, lambda, application, constants
+(via proved executable environment lookup), bounded weak-head common-reduct
+conversion over β + δ.
+
+Sub-items:
+
+* [x] K17.2 `FX1.Name` — hierarchical name inductive (anonymous / str / num)
+* [x] K17.3 `FX1.Level` — 5-ctor universe level (zero/succ/max/imax/param)
+* [x] K17.4 `FX1.Expr` — 6-ctor minimal expression syntax (bvar/sort/const/pi/lam/app)
+* [x] K17.5 `FX1.Declaration` — axiom/def/theorem with release-policy gate
+* [x] K17.6 `FX1.Environment` — checked declarations + lookup + well-formedness
+* [x] K17.7 `FX1.Context` — de Bruijn-indexed local context
+* [x] K17.8 FX1 scope checking — every bvar within context length
+* [x] K17.9 FX1 weakening — shift past a cutoff
+* [x] K17.10 FX1 renaming — shift / lift / parallel composition correctness
+* [x] K17.11 FX1 substitution — `Expr.instantiate` β substitution
+* [x] K17.12 FX1 subst identity lemma — `subst id = id`
+* [x] K17.13 FX1 subst composition lemma — `(e.subst s1).subst s2 = e.subst (s1 ∘ s2)`
+* [x] K17.14 FX1 rename/subst interaction commute
+* [x] K17.15 FX1 β substitution lemma — instantiate respects type via context lookup
+* [x] K17.16 `FX1.Step` — β + δ reduction relations
+* [x] K17.17 `FX1.HasType` — ~12 typing rules for 6-ctor Expr
+* [x] K17.18 FX1 environment well-formedness — every declaration typechecks
+* [x] K17.19 FX1 context well-formedness — every binding type is a Sort
+* [x] K17.20 FX1 β + δ preservation — typing preserved under reduction
+* [x] K17.21 `FX1.WHNF` — weak head normal form via β + δ
+* [x] K17.22 `FX1.Conv` — definitional equality via β + δ + structural recursion
+* [x] K17.23 `FX1.check` — executable proof-carrying type checker
+* [x] K17.24 `FX1.check_sound` — HEADLINE soundness theorem zero-axiom
+* [x] K17.25 FX1/Core close-out (this section) — B0 bootstrap milestone declared
+
+Acceptance: ✅ `lake build LeanFX2.FX1.Core` green (21 jobs); per-decl
+strict harness gates pass under `AuditFX1Core.lean`; `FX1.check_sound` +
+`FX1.checkCore_sound` both ship zero-axiom (per `FX1/Core/Soundness.lean`).
+B0 trust anchor operational — the FX1/LeanKernel extension (Day 8 proper
+below) builds on this foundation.
+
 ## Day 8 — Lean kernel modeling (FX1.LeanKernel) ✅ Outcome B (partial scope, zero axioms)
 
 * [x] D8.1 base HasType arms — sort, bvar, const, forallE, lam (#1318
