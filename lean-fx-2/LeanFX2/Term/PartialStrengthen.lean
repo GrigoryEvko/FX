@@ -453,6 +453,90 @@ def partialStrengthenTypedIntervalOpp {mode : Mode} {level : Nat}
         rawRenames := congrArg RawTerm.intervalOpp rawRenames
       }
 
+/-- Interval meet strengthens by strengthening both operands. -/
+def partialStrengthenTypedIntervalMeet {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftResult : StrengtheningResult strengthening leftValue)
+    (rightResult : StrengtheningResult strengthening rightValue) :
+    StrengtheningResult strengthening
+      (Term.intervalMeet leftValue rightValue) := by
+  cases leftResult with
+  | mk leftTargetType leftTargetRaw leftTargetTerm leftTypeStrengthens
+      leftRawStrengthens leftTypeRenames leftRawRenames =>
+      cases rightResult with
+      | mk rightTargetType rightTargetRaw rightTargetTerm rightTypeStrengthens
+          rightRawStrengthens rightTypeRenames rightRawRenames =>
+          cases leftTypeStrengthens
+          cases rightTypeStrengthens
+          exact {
+            targetType := Ty.interval
+            targetRaw := RawTerm.intervalMeet leftTargetRaw rightTargetRaw
+            targetTerm := Term.intervalMeet leftTargetTerm rightTargetTerm
+            typeStrengthens := rfl
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (leftRaw.partialStrengthen? strengthening.back)
+                  (rightRaw.partialStrengthen? strengthening.back)
+                  RawTerm.intervalMeet =
+                  some (RawTerm.intervalMeet leftTargetRaw rightTargetRaw)
+              rw [leftRawStrengthens, rightRawStrengthens]
+              rfl
+            typeRenames := rfl
+            rawRenames := by
+              cases leftRawRenames
+              cases rightRawRenames
+              rfl
+          }
+
+/-- Interval join strengthens by strengthening both operands. -/
+def partialStrengthenTypedIntervalJoin {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {leftRaw rightRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {leftValue : Term sourceCtx Ty.interval leftRaw}
+    {rightValue : Term sourceCtx Ty.interval rightRaw}
+    (leftResult : StrengtheningResult strengthening leftValue)
+    (rightResult : StrengtheningResult strengthening rightValue) :
+    StrengtheningResult strengthening
+      (Term.intervalJoin leftValue rightValue) := by
+  cases leftResult with
+  | mk leftTargetType leftTargetRaw leftTargetTerm leftTypeStrengthens
+      leftRawStrengthens leftTypeRenames leftRawRenames =>
+      cases rightResult with
+      | mk rightTargetType rightTargetRaw rightTargetTerm rightTypeStrengthens
+          rightRawStrengthens rightTypeRenames rightRawRenames =>
+          cases leftTypeStrengthens
+          cases rightTypeStrengthens
+          exact {
+            targetType := Ty.interval
+            targetRaw := RawTerm.intervalJoin leftTargetRaw rightTargetRaw
+            targetTerm := Term.intervalJoin leftTargetTerm rightTargetTerm
+            typeStrengthens := rfl
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (leftRaw.partialStrengthen? strengthening.back)
+                  (rightRaw.partialStrengthen? strengthening.back)
+                  RawTerm.intervalJoin =
+                  some (RawTerm.intervalJoin leftTargetRaw rightTargetRaw)
+              rw [leftRawStrengthens, rightRawStrengthens]
+              rfl
+            typeRenames := rfl
+            rawRenames := by
+              cases leftRawRenames
+              cases rightRawRenames
+              rfl
+          }
+
 /-- Record introduction strengthens by strengthening its field. -/
 def partialStrengthenTypedRecordIntro {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
