@@ -491,5 +491,16 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedUniverseCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedArrowCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedPiTyCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSigmaTyCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedProductCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSumCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivCode_sound
 
 end LeanFX2.Tools

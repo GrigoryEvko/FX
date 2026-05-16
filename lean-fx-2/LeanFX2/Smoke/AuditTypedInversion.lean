@@ -80,5 +80,16 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedUniverseCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedArrowCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedPiTyCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedSigmaTyCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedProductCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedSumCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedListCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOptionCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEitherCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIdCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivCode_sound
 
 end LeanFX2.SmokeTypedInversion
