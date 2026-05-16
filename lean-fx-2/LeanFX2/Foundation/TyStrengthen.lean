@@ -1,4 +1,5 @@
 import LeanFX2.Foundation.Ty
+import LeanFX2.Foundation.Subst
 import LeanFX2.Foundation.RawPartialRename.Strengthen
 import LeanFX2.Foundation.RawPartialRenameCommute
 import LeanFX2.Foundation.RawPartialRename.Inversion.OptionPatterns
@@ -812,6 +813,62 @@ theorem Ty.partialStrengthen?_imp_rename {level : Nat} :
           simp only [Ty.rename]
           rw [carrierIH forwardRenaming back renamingInjectsBack
             carrierExtracted hCarrier]
+
+/-- Partial strengthening commutes with single-binder type substitution
+when each substituted component strengthens through the same partial
+renaming.
+
+This is the Σ/Π reconstruction bridge used by typed strengthening:
+dependent component types such as `secondType.subst0 firstType firstRaw`
+can be strengthened by strengthening the binder body under `back.lift`
+and the substituted argument/type under `back`. -/
+theorem Ty.partialStrengthen?_subst0_of_success {level : Nat}
+    {sourceScope targetScope : Nat}
+    (codomainType : Ty level (sourceScope + 1))
+    (targetCodomainType : Ty level (targetScope + 1))
+    (argType : Ty level sourceScope)
+    (targetArgType : Ty level targetScope)
+    (argRaw : RawTerm sourceScope)
+    (targetArgRaw : RawTerm targetScope)
+    (forwardRenaming : RawRenaming targetScope sourceScope)
+    (back : PartialRawRenaming sourceScope targetScope)
+    (renamingInjectsBack :
+      ∀ (sourcePosition : Fin sourceScope)
+        (targetPosition : Fin targetScope),
+        back sourcePosition = some targetPosition →
+        sourcePosition = forwardRenaming targetPosition)
+    (backForward :
+      ∀ targetPosition, back (forwardRenaming targetPosition) =
+        some targetPosition)
+    (codomainStrengthens :
+      codomainType.partialStrengthen? back.lift =
+        some targetCodomainType)
+    (argTypeStrengthens :
+      argType.partialStrengthen? back = some targetArgType)
+    (argRawStrengthens :
+      argRaw.partialStrengthen? back = some targetArgRaw) :
+    (codomainType.subst0 argType argRaw).partialStrengthen? back =
+      some (targetCodomainType.subst0 targetArgType targetArgRaw) := by
+  have codomainRenames :
+      codomainType = targetCodomainType.rename forwardRenaming.lift :=
+    Ty.partialStrengthen?_imp_rename codomainType forwardRenaming.lift
+      back.lift (PartialRawRenaming.lift_renamingInjectsBack
+        renamingInjectsBack) targetCodomainType codomainStrengthens
+  have argTypeRenames :
+      argType = targetArgType.rename forwardRenaming :=
+    Ty.partialStrengthen?_imp_rename argType forwardRenaming back
+      renamingInjectsBack targetArgType argTypeStrengthens
+  have argRawRenames :
+      argRaw = targetArgRaw.rename forwardRenaming :=
+    RawTerm.partialStrengthen?_imp_rename argRaw forwardRenaming back
+      renamingInjectsBack targetArgRaw argRawStrengthens
+  rw [codomainRenames, argTypeRenames, argRawRenames]
+  rw [← Ty.subst0_rename_commute targetCodomainType targetArgType
+    targetArgRaw forwardRenaming]
+  rw [Ty.partialStrengthen?_rename_some
+    (targetCodomainType.subst0 targetArgType targetArgRaw)
+    forwardRenaming RawRenaming.identity back backForward,
+    Ty.rename_identity]
 
 /-- Successful single-slot type strengthening gives the canonical
 weakening equation. -/

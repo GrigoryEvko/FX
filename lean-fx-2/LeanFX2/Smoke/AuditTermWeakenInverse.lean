@@ -71,6 +71,7 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Ty.partialStrengthen?_rename_compat
 #print axioms LeanFX2.Ty.partialStrengthen?_weaken_lift
 #print axioms LeanFX2.Ty.partialStrengthen?_imp_rename
+#print axioms LeanFX2.Ty.partialStrengthen?_subst0_of_success
 #print axioms LeanFX2.Ty.strengthen?_weaken
 #print axioms LeanFX2.Ty.strengthen?_imp_weaken
 #print axioms LeanFX2.Ty.not_usesNewestSlot?_imp_weaken
@@ -97,7 +98,9 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin
+#print axioms LeanFX2.Term.partialStrengthenTypedPair
 #print axioms LeanFX2.Term.partialStrengthenTypedFst
+#print axioms LeanFX2.Term.partialStrengthenTypedSnd
 #print axioms LeanFX2.Term.partialStrengthenTypedRecordIntro
 #print axioms LeanFX2.Term.partialStrengthenTypedRecordProj
 #print axioms LeanFX2.Term.partialStrengthen?

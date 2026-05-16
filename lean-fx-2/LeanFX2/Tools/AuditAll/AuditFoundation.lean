@@ -66,6 +66,7 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_rename_compat
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_weaken_lift
 #assert_no_axioms LeanFX2.Ty.partialStrengthen?_imp_rename
+#assert_no_axioms LeanFX2.Ty.partialStrengthen?_subst0_of_success
 #assert_no_axioms LeanFX2.Ty.strengthen?_weaken
 #assert_no_axioms LeanFX2.Ty.strengthen?_imp_weaken
 #assert_no_axioms LeanFX2.Ty.not_usesNewestSlot?_imp_weaken
