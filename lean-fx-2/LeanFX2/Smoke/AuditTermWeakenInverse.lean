@@ -1,0 +1,55 @@
+import LeanFX2.Term.WeakenInverse
+
+/-! # AuditTermWeakenInverse — typed strengthening foundation primitives.
+
+Smoke audit for the Phase 1 typed-strengthening foundation shipped
+in `LeanFX2.Term.WeakenInverse`.
+
+## Coverage
+
+* **Layer 1 — Raw inversion helpers** (3 shipped):
+  - `RawTerm.weakenInverse_var` — invert `RawTerm.var pos = rawOrig.weaken`
+  - `RawTerm.weakenInverse_lam` — invert `RawTerm.lam body = rawOrig.weaken`
+  - `RawTerm.weakenInverse_app` — invert `RawTerm.app f a = rawOrig.weaken`
+
+* **Layer 2 — Typed weaken inversion at raw shape** (1 shipped):
+  - `Term.weakenInverse_atVar` — typed inversion at `RawTerm.var` shape
+
+* **Layer 3 — Cascade construction helpers** (3 shipped):
+  - `Term.eta_shape_construct` — the canonical D2.5.5 eta-redex builder
+  - `Term.weaken_var_unfolds` — `Term.weaken` of `Term.var` unfolds rfl
+  - `Term.weaken_app_toRaw` — `Term.weaken` of `Term.app` distributes rfl
+
+## Cascade unblocks
+
+* **D2.5.5 transpPi β cascade** — load-bearing for the eta cascade
+  (`lift_lam` Or.inr / typed `Step.par.arrowEta` / typed `Step.par.piEta`).
+* **K12.20.U2 Reducible.cr3 typed** — same strengthening pattern.
+* **CONVTRANS-B.* families** — `Step.par.invertRawAt` building block.
+* **Future D2.5.6 transpSigma cascade** — pair-eta uses the same template.
+* **Future K18.7 LeanKernel η reduction** — same pattern at FX1 layer.
+
+Every shipped declaration must report "does not depend on any axioms".
+The `LeanFX2Audit` target enforces this via `#assert_no_axioms` in
+`Tools/AuditAll/AuditTerm.lean`. -/
+
+namespace LeanFX2.SmokeTermWeakenInverse
+
+-- Layer 1: raw inversion helpers
+#print axioms LeanFX2.RawTerm.weakenInverse_var
+#print axioms LeanFX2.RawTerm.weakenInverse_lam
+#print axioms LeanFX2.RawTerm.weakenInverse_app
+
+-- Layer 2: typed inversion at fixed raw shape
+#print axioms LeanFX2.Term.weakenInverse_atUnit
+#print axioms LeanFX2.Term.weakenInverse_atBoolTrue
+#print axioms LeanFX2.Term.weakenInverse_atBoolFalse
+#print axioms LeanFX2.Term.weakenInverse_atNatZero
+#print axioms LeanFX2.Term.weakenInverse_atVar
+
+-- Layer 3: cascade construction helpers
+#print axioms LeanFX2.Term.eta_shape_construct
+#print axioms LeanFX2.Term.weaken_var_unfolds
+#print axioms LeanFX2.Term.weaken_app_toRaw
+
+end LeanFX2.SmokeTermWeakenInverse

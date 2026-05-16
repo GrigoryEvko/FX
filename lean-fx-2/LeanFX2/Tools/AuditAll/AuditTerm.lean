@@ -322,4 +322,20 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.uaIntroHet_HEq_congr
 #assert_no_axioms LeanFX2.Term.funextIntroHet_HEq_congr
 
+-- Term/WeakenInverse foundation — typed strengthening primitives.
+-- Layer 1: raw inversion helpers for the most common ctor shapes.
+#assert_no_axioms LeanFX2.RawTerm.weakenInverse_var
+#assert_no_axioms LeanFX2.RawTerm.weakenInverse_lam
+#assert_no_axioms LeanFX2.RawTerm.weakenInverse_app
+-- Layer 2: typed weaken inversions at canonical-form raw shapes.
+#assert_no_axioms LeanFX2.Term.weakenInverse_atUnit
+#assert_no_axioms LeanFX2.Term.weakenInverse_atBoolTrue
+#assert_no_axioms LeanFX2.Term.weakenInverse_atBoolFalse
+#assert_no_axioms LeanFX2.Term.weakenInverse_atNatZero
+#assert_no_axioms LeanFX2.Term.weakenInverse_atVar
+-- Layer 3: cascade construction + projection helpers.
+#assert_no_axioms LeanFX2.Term.eta_shape_construct
+#assert_no_axioms LeanFX2.Term.weaken_var_unfolds
+#assert_no_axioms LeanFX2.Term.weaken_app_toRaw
+
 end LeanFX2.Tools

@@ -46,6 +46,7 @@ import LeanFX2.Term.HEqCongr
 import LeanFX2.Term.Bridge
 import LeanFX2.Term.ProofIrrel
 import LeanFX2.Term.Inversion
+import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.PolyToTerm
 import LeanFX2.Term.ToPoly
 import LeanFX2.Term.PolyRename
