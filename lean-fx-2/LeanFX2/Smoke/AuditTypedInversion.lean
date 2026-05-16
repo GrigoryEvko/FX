@@ -202,4 +202,16 @@ namespace LeanFX2.SmokeTypedInversion
 -- boundary pivots (full discriminator wall), needs OfSuccess refactor.
 #print axioms LeanFX2.Term.partialStrengthenTypedOeqFunext_sound
 
+-- Phase 20: HoTT-J identity-elimination soundness — OfSuccess refactor.
+-- IdJ's wrapper does triple Option.casesOn on the witness's Ty.id
+-- carrier/leftEndpoint/rightEndpoint pivots (the discriminator-wall
+-- pattern from Refine/Record/Codata).  OfSuccess takes pre-decomposed
+-- witnesses + the three Option-equations and ships zero-axiom direct.
+-- Ty.id is a Ty constructor so Ty.rename distributes definitionally —
+-- no cast bridge needed (unlike OeqFunext's reducible-def case).
+-- OeqJ + IdStrictRec follow the same recipe (Ty.oeq, Ty.idStrict are
+-- also constructors).  Tracked for Phase 21.
+#print axioms LeanFX2.Term.partialStrengthenTypedIdJOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedIdJOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
