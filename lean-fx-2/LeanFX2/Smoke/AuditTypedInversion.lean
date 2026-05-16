@@ -321,4 +321,14 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedHcompOfSuccess_sound
 
+-- Phase 31: path-shaped homogeneous composition via OfSuccess pattern.
+-- HcompPath's wrapper combines Hcomp's two-child structure with
+-- PathApp's triple-pivot path-type strengthening (carrier + two
+-- endpoints).  The OfSuccess form pre-witnesses all three Ty.path
+-- pivots plus both child raw strengthenings + rename equations.
+-- Composes via `hcompPath_HEq_congr` with three Ty/raw rename
+-- equalities from `partialStrengthen?_imp_rename`.
+#print axioms LeanFX2.Term.partialStrengthenTypedHcompPathOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedHcompPathOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion

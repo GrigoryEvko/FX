@@ -5628,6 +5628,84 @@ def partialStrengthenTypedHcomp {mode : Mode} {level : Nat}
               rfl
           }
 
+/-- Pre-witnessed path-shaped homogeneous composition strengthening.
+
+Replaces the wrapper's nested `Option.casesOn` on `Ty.path`'s
+carrier + leftEndpoint + rightEndpoint pivots with explicit
+strengthening witnesses for each.  The unused
+`_leftSuccess`/`_rightSuccess` are kept in the signature so the
+OfSuccess-sound theorem can recover the endpoint renaming
+equalities used by `hcompPath_HEq_congr`. -/
+def partialStrengthenTypedHcompPathOfSuccess
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    {targetSidesPathRaw targetCapRaw : RawTerm targetScope}
+    {sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    (targetSidesPath :
+      Term targetCtx
+        (Ty.path targetCarrierType targetLeftEndpoint targetRightEndpoint)
+        targetSidesPathRaw)
+    (targetCapValue :
+      Term targetCtx targetCarrierType targetCapRaw)
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (_leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (_rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    (sidesPathRawStrengthens :
+      sidesPathRaw.partialStrengthen? strengthening.back =
+        some targetSidesPathRaw)
+    (capRawStrengthens :
+      capRaw.partialStrengthen? strengthening.back =
+        some targetCapRaw)
+    (sidesPathRawRenames :
+      sidesPathRaw = targetSidesPathRaw.rename strengthening.forward)
+    (capRawRenames :
+      capRaw = targetCapRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.hcompPath (context := sourceCtx) modeIsUnivalent
+        leftEndpoint rightEndpoint sidesPath capValue) where
+  targetType := targetCarrierType
+  targetRaw := RawTerm.hcomp targetSidesPathRaw targetCapRaw
+  targetTerm :=
+    Term.hcompPath (context := targetCtx) modeIsUnivalent
+      targetLeftEndpoint targetRightEndpoint targetSidesPath
+      targetCapValue
+  typeStrengthens := carrierSuccess
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (sidesPathRaw.partialStrengthen? strengthening.back)
+        (capRaw.partialStrengthen? strengthening.back)
+        RawTerm.hcomp =
+          some (RawTerm.hcomp targetSidesPathRaw targetCapRaw)
+    rw [sidesPathRawStrengthens, capRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename carrierType
+      strengthening.forward strengthening.back
+      strengthening.injectsBack targetCarrierType carrierSuccess
+  rawRenames := by
+    cases sidesPathRawRenames
+    cases capRawRenames
+    rfl
+
 /-- Path-shaped homogeneous composition strengthens by decomposing the
 strengthened path carrier for the sides and aligning the cap carrier. -/
 def partialStrengthenTypedHcompPath {mode : Mode} {level : Nat}

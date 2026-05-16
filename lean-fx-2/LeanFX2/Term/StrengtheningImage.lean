@@ -3988,6 +3988,86 @@ theorem partialStrengthenTypedHcompOfSuccess_sound {mode : Mode}
   exact Term.hcomp_HEq_congr modeIsUnivalent carrierRenames
     sidesRawRenames capRawRenames sidesSound capSound
 
+/-- Soundness of `partialStrengthenTypedHcompPathOfSuccess`: the
+result's renamed target term is heterogeneously equal to the original
+typed path-shaped homogeneous composition. -/
+theorem partialStrengthenTypedHcompPathOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    (leftEndpoint rightEndpoint : RawTerm sourceScope)
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {sidesPathRaw capRaw : RawTerm sourceScope}
+    {targetSidesPathRaw targetCapRaw : RawTerm targetScope}
+    {sidesPath :
+      Term sourceCtx (Ty.path carrierType leftEndpoint rightEndpoint)
+        sidesPathRaw}
+    {capValue : Term sourceCtx carrierType capRaw}
+    {targetSidesPath :
+      Term targetCtx
+        (Ty.path targetCarrierType targetLeftEndpoint targetRightEndpoint)
+        targetSidesPathRaw}
+    {targetCapValue :
+      Term targetCtx targetCarrierType targetCapRaw}
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    (sidesPathRawStrengthens :
+      sidesPathRaw.partialStrengthen? strengthening.back =
+        some targetSidesPathRaw)
+    (capRawStrengthens :
+      capRaw.partialStrengthen? strengthening.back =
+        some targetCapRaw)
+    (sidesPathRawRenames :
+      sidesPathRaw = targetSidesPathRaw.rename strengthening.forward)
+    (capRawRenames :
+      capRaw = targetCapRaw.rename strengthening.forward)
+    (sidesPathSound :
+      HEq sidesPath
+        (Term.rename strengthening.toTermRenaming targetSidesPath))
+    (capSound :
+      HEq capValue
+        (Term.rename strengthening.toTermRenaming targetCapValue)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedHcompPathOfSuccess modeIsUnivalent
+        leftEndpoint rightEndpoint
+        (sidesPath := sidesPath) (capValue := capValue)
+        targetSidesPath targetCapValue carrierSuccess leftSuccess
+        rightSuccess sidesPathRawStrengthens capRawStrengthens
+        sidesPathRawRenames capRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedHcompPathOfSuccess]
+  have carrierRenames :
+      carrierType = targetCarrierType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierType carrierSuccess
+  have leftEndpointRenames :
+      leftEndpoint = targetLeftEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename leftEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetLeftEndpoint leftSuccess
+  have rightEndpointRenames :
+      rightEndpoint =
+        targetRightEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename rightEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetRightEndpoint rightSuccess
+  exact Term.hcompPath_HEq_congr modeIsUnivalent carrierRenames
+    leftEndpointRenames rightEndpointRenames sidesPathRawRenames
+    capRawRenames sidesPathSound capSound
+
 end Term
 
 end LeanFX2
