@@ -337,6 +337,12 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.eta_shape_construct
 #assert_no_axioms LeanFX2.Term.weaken_var_unfolds
 #assert_no_axioms LeanFX2.Term.weaken_app_toRaw
+-- Term/TypedInversion — typed app-shape structural inversions.
+-- Universal + arrow/Π specializations.  Prerequisite for typed-eta
+-- redesign per feedback_typed_eta_lam_inv_cascade_blocker_2026_05_16.md.
+#assert_no_axioms LeanFX2.Term.app_inv
+#assert_no_axioms LeanFX2.Term.app_inv_arrow
+#assert_no_axioms LeanFX2.Term.app_inv_pi
 -- Semantic / partial strengthening raw-index certificates.
 #assert_no_axioms LeanFX2.ContextStrengthening
 #assert_no_axioms LeanFX2.ContextStrengthening.toTermRenaming
