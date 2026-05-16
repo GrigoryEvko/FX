@@ -381,6 +381,17 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedSnd
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRecordIntro
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRecordProj
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedUniverseCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedArrowCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedPiTyCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSigmaTyCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedProductCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSumCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedListCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOptionCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdCode
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivCode
 #assert_no_axioms LeanFX2.Term.partialStrengthen?
 #assert_no_axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #assert_no_axioms LeanFX2.Term.strengthen?
