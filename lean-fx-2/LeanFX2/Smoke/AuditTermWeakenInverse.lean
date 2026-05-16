@@ -105,6 +105,9 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherInrOfLeftType
 #print axioms LeanFX2.Term.partialStrengthenTypedRefineIntro
 #print axioms LeanFX2.Term.partialStrengthenTypedRefineElim
+#print axioms LeanFX2.Term.partialStrengthenTypedRefl
+#print axioms LeanFX2.Term.partialStrengthenTypedOeqRefl
+#print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRefl
 #print axioms LeanFX2.Term.partialStrengthenTypedPair
 #print axioms LeanFX2.Term.partialStrengthenTypedFst
 #print axioms LeanFX2.Term.partialStrengthenTypedSnd
