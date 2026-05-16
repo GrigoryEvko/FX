@@ -4374,6 +4374,123 @@ def partialStrengthenTypedFunextIntroHet {mode : Mode} {level : Nat}
           simp only [RawTerm.partialRename?]
           rw [applyAStrengthens])
 
+/-- Heterogeneous univalence introduction strengthens by strengthening
+the packaged equivalence witness and the schematic universe endpoints. -/
+def partialStrengthenTypedUaIntroHet {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    {carrierA carrierB : Ty level sourceScope}
+    (targetCarrierA targetCarrierB : Ty level targetScope)
+    (carrierARaw carrierBRaw : RawTerm sourceScope)
+    (targetCarrierARaw targetCarrierBRaw : RawTerm targetScope)
+    {forwardRaw backwardRaw : RawTerm sourceScope}
+    (targetForwardRaw targetBackwardRaw : RawTerm targetScope)
+    {equivWitness :
+      Term sourceCtx (Ty.equiv carrierA carrierB)
+        (RawTerm.equivIntro forwardRaw backwardRaw)}
+    (carrierAStrengthens :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBStrengthens :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
+    (carrierARawStrengthens :
+      carrierARaw.partialStrengthen? strengthening.back =
+        some targetCarrierARaw)
+    (carrierBRawStrengthens :
+      carrierBRaw.partialStrengthen? strengthening.back =
+        some targetCarrierBRaw)
+    (forwardRawStrengthens :
+      forwardRaw.partialStrengthen? strengthening.back =
+        some targetForwardRaw)
+    (backwardRawStrengthens :
+      backwardRaw.partialStrengthen? strengthening.back =
+        some targetBackwardRaw)
+    (equivResult : StrengtheningResult strengthening equivWitness) :
+    StrengtheningResult strengthening
+      (Term.uaIntroHet (context := sourceCtx) innerLevel innerLevelLt
+        carrierARaw carrierBRaw equivWitness) := by
+  cases equivResult with
+  | mk targetEquivType targetEquivRaw targetEquivWitness
+      equivTypeStrengthens equivRawStrengthens equivTypeRenames
+      equivRawRenames =>
+      have expectedEquivTypeStrengthens :
+          (Ty.equiv carrierA carrierB).partialStrengthen?
+              strengthening.back =
+            some (Ty.equiv targetCarrierA targetCarrierB) := by
+        change
+          Option.mapTwo
+            (carrierA.partialStrengthen? strengthening.back)
+            (carrierB.partialStrengthen? strengthening.back)
+            Ty.equiv =
+              some (Ty.equiv targetCarrierA targetCarrierB)
+        rw [carrierAStrengthens, carrierBStrengthens]
+        rfl
+      have expectedEquivRawStrengthens :
+          (RawTerm.equivIntro forwardRaw backwardRaw).partialStrengthen?
+              strengthening.back =
+            some (RawTerm.equivIntro targetForwardRaw targetBackwardRaw) := by
+        change
+          Option.mapTwo
+            (forwardRaw.partialStrengthen? strengthening.back)
+            (backwardRaw.partialStrengthen? strengthening.back)
+            RawTerm.equivIntro =
+              some (RawTerm.equivIntro targetForwardRaw targetBackwardRaw)
+        rw [forwardRawStrengthens, backwardRawStrengthens]
+        rfl
+      rw [expectedEquivTypeStrengthens] at equivTypeStrengthens
+      rw [expectedEquivRawStrengthens] at equivRawStrengthens
+      cases equivTypeStrengthens
+      cases equivRawStrengthens
+      exact {
+        targetType :=
+          Ty.id (Ty.universe innerLevel innerLevelLt)
+            targetCarrierARaw targetCarrierBRaw
+        targetRaw := RawTerm.equivIntro targetForwardRaw targetBackwardRaw
+        targetTerm :=
+          Term.uaIntroHet (context := targetCtx) innerLevel innerLevelLt
+            targetCarrierARaw targetCarrierBRaw targetEquivWitness
+        typeStrengthens := by
+          change
+            Option.mapThree
+              ((Ty.universe innerLevel innerLevelLt).partialStrengthen?
+                strengthening.back)
+              (carrierARaw.partialStrengthen? strengthening.back)
+              (carrierBRaw.partialStrengthen? strengthening.back)
+              Ty.id =
+                some (Ty.id (Ty.universe innerLevel innerLevelLt)
+                  targetCarrierARaw targetCarrierBRaw)
+          rw [carrierARawStrengthens, carrierBRawStrengthens]
+          rfl
+        rawStrengthens := expectedEquivRawStrengthens
+        typeRenames := by
+          exact
+            Ty.partialStrengthen?_imp_rename
+              (Ty.id (Ty.universe innerLevel innerLevelLt)
+                carrierARaw carrierBRaw)
+              strengthening.forward strengthening.back
+              strengthening.injectsBack
+              (Ty.id (Ty.universe innerLevel innerLevelLt)
+                targetCarrierARaw targetCarrierBRaw)
+              (by
+                change
+                  Option.mapThree
+                    ((Ty.universe innerLevel innerLevelLt).partialStrengthen?
+                      strengthening.back)
+                    (carrierARaw.partialStrengthen? strengthening.back)
+                    (carrierBRaw.partialStrengthen? strengthening.back)
+                    Ty.id =
+                      some (Ty.id (Ty.universe innerLevel innerLevelLt)
+                        targetCarrierARaw targetCarrierBRaw)
+                rw [carrierARawStrengthens, carrierBRawStrengthens]
+                rfl)
+        rawRenames := by
+          cases equivRawRenames
+          rfl
+      }
+
 end Term
 
 end LeanFX2
