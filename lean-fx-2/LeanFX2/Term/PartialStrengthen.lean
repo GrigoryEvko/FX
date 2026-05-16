@@ -4371,9 +4371,71 @@ def partialStrengthenTypedEquivApp {mode : Mode} {level : Nat}
                       rfl
                   }
 
+/-- Success branch for equiv-application strengthening.  Takes
+pre-decomposed witnesses for the equiv carrier-pair pivots plus the
+strengthened equiv-term + argument-term values.  Splits out the
+term-mode body so the strengthening-image soundness layer can prove
+the soundness theorem without traversing `Option.casesOn` on the
+`carrierA.partialStrengthen?` / `carrierB.partialStrengthen?` pivots
+inside the wrapper's tactic-mode `cases` chain. -/
+def partialStrengthenTypedEquivApplyOfSuccess {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {targetEquivRaw targetArgumentRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    (targetEquivTerm :
+      Term targetCtx (Ty.equiv targetCarrierA targetCarrierB) targetEquivRaw)
+    (targetArgumentTerm :
+      Term targetCtx targetCarrierA targetArgumentRaw)
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
+    (equivRawStrengthens :
+      equivRaw.partialStrengthen? strengthening.back = some targetEquivRaw)
+    (argumentRawStrengthens :
+      argumentRaw.partialStrengthen? strengthening.back =
+        some targetArgumentRaw)
+    (equivRawRenames :
+      equivRaw = targetEquivRaw.rename strengthening.forward)
+    (argumentRawRenames :
+      argumentRaw = targetArgumentRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.equivApply equivTerm argumentTerm) where
+  targetType := targetCarrierB
+  targetRaw := RawTerm.equivApply targetEquivRaw targetArgumentRaw
+  targetTerm := Term.equivApply targetEquivTerm targetArgumentTerm
+  typeStrengthens := carrierBSuccess
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (equivRaw.partialStrengthen? strengthening.back)
+        (argumentRaw.partialStrengthen? strengthening.back)
+        RawTerm.equivApply =
+          some (RawTerm.equivApply targetEquivRaw targetArgumentRaw)
+    rw [equivRawStrengthens, argumentRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename carrierB
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierB carrierBSuccess
+  rawRenames := by
+    cases equivRawRenames
+    cases argumentRawRenames
+    rfl
+
 /-- Univalence-beta equivalence application strengthens with the same
 binary proof shape as `partialStrengthenTypedEquivApp`; only the raw
-constructor differs. -/
+constructor differs.  Wrapper delegates the success path to
+`partialStrengthenTypedEquivApplyOfSuccess` so the strengthening-image
+soundness layer can skip the wrapper's dual `Option.casesOn`
+discriminator wall over `Ty.equiv`'s carrier-pair pivots. -/
 def partialStrengthenTypedEquivApply {mode : Mode} {level : Nat}
     {sourceScope targetScope : Nat}
     {sourceCtx : Ctx mode level sourceScope}
@@ -4416,33 +4478,10 @@ def partialStrengthenTypedEquivApply {mode : Mode} {level : Nat}
                   argumentTypeRenames argumentRawRenames =>
                   rw [carrierASuccess] at argumentTypeStrengthens
                   cases argumentTypeStrengthens
-                  exact {
-                    targetType := targetCarrierB
-                    targetRaw :=
-                      RawTerm.equivApply targetEquivRaw targetArgumentRaw
-                    targetTerm :=
-                      Term.equivApply targetEquivTerm targetArgumentTerm
-                    typeStrengthens := carrierBSuccess
-                    rawStrengthens := by
-                      change
-                        Option.mapTwo
-                          (equivRaw.partialStrengthen? strengthening.back)
-                          (argumentRaw.partialStrengthen? strengthening.back)
-                          RawTerm.equivApply =
-                          some (RawTerm.equivApply targetEquivRaw
-                            targetArgumentRaw)
-                      rw [equivRawStrengthens, argumentRawStrengthens]
-                      rfl
-                    typeRenames :=
-                      Ty.partialStrengthen?_imp_rename carrierB
-                        strengthening.forward strengthening.back
-                        strengthening.injectsBack targetCarrierB
-                        carrierBSuccess
-                    rawRenames := by
-                      cases equivRawRenames
-                      cases argumentRawRenames
-                      rfl
-                  }
+                  exact partialStrengthenTypedEquivApplyOfSuccess
+                    targetEquivTerm targetArgumentTerm carrierASuccess
+                    carrierBSuccess equivRawStrengthens argumentRawStrengthens
+                    equivRawRenames argumentRawRenames
 
 /-- `uaToEquiv` strengthens by strengthening its universe-path proof and
 the schematic left/right carrier types and raw endpoints. -/

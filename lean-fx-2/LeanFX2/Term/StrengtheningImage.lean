@@ -3333,6 +3333,66 @@ theorem partialStrengthenTypedIdStrictRecOfSuccess_sound {mode : Mode}
     rightRenames baseTypeRenames baseRawRenames witnessRawRenames
     baseSound witnessSound
 
+/-- Soundness for the success branch of equiv-application strengthening.
+Direct mirror of `partialStrengthenTypedIdJOfSuccess_sound` with dual
+carrier pivots; no cast bridge needed since `Ty.equiv` is a Ty
+constructor and `Ty.rename` distributes definitionally. -/
+theorem partialStrengthenTypedEquivApplyOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrierA carrierB : Ty level sourceScope}
+    {targetCarrierA targetCarrierB : Ty level targetScope}
+    {equivRaw argumentRaw : RawTerm sourceScope}
+    {targetEquivRaw targetArgumentRaw : RawTerm targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {equivTerm : Term sourceCtx (Ty.equiv carrierA carrierB) equivRaw}
+    {argumentTerm : Term sourceCtx carrierA argumentRaw}
+    {targetEquivTerm :
+      Term targetCtx (Ty.equiv targetCarrierA targetCarrierB) targetEquivRaw}
+    {targetArgumentTerm :
+      Term targetCtx targetCarrierA targetArgumentRaw}
+    (carrierASuccess :
+      carrierA.partialStrengthen? strengthening.back = some targetCarrierA)
+    (carrierBSuccess :
+      carrierB.partialStrengthen? strengthening.back = some targetCarrierB)
+    (equivRawStrengthens :
+      equivRaw.partialStrengthen? strengthening.back = some targetEquivRaw)
+    (argumentRawStrengthens :
+      argumentRaw.partialStrengthen? strengthening.back =
+        some targetArgumentRaw)
+    (equivRawRenames :
+      equivRaw = targetEquivRaw.rename strengthening.forward)
+    (argumentRawRenames :
+      argumentRaw = targetArgumentRaw.rename strengthening.forward)
+    (equivSound :
+      HEq equivTerm
+        (Term.rename strengthening.toTermRenaming targetEquivTerm))
+    (argumentSound :
+      HEq argumentTerm
+        (Term.rename strengthening.toTermRenaming targetArgumentTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedEquivApplyOfSuccess
+        (equivTerm := equivTerm) (argumentTerm := argumentTerm)
+        targetEquivTerm targetArgumentTerm carrierASuccess carrierBSuccess
+        equivRawStrengthens argumentRawStrengthens equivRawRenames
+        argumentRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedEquivApplyOfSuccess]
+  have carrierARenames :
+      carrierA = targetCarrierA.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierA
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierA carrierASuccess
+  have carrierBRenames :
+      carrierB = targetCarrierB.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierB
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierB carrierBSuccess
+  exact Term.equivApply_HEq_congr carrierARenames carrierBRenames
+    equivRawRenames argumentRawRenames equivSound argumentSound
+
 end Term
 
 end LeanFX2

@@ -435,6 +435,7 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApply
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedUaToEquiv
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedOeqFunext
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextIntroHet
@@ -539,5 +540,6 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdJOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedOeqJOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdStrictRecOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess_sound
 
 end LeanFX2.Tools

@@ -224,4 +224,13 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRecOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRecOfSuccess_sound
 
+-- Phase 22: equiv-application soundness — Equiv-family OfSuccess.
+-- EquivApply has dual Option.casesOn on the witness's Ty.equiv
+-- carrier-pair (carrierA + carrierB).  OfSuccess takes both
+-- carrierSuccess witnesses pre-decomposed.  Ty.equiv is a Ty
+-- constructor so Ty.rename distributes definitionally — direct
+-- application of equivApply_HEq_congr.
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivApplyOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
