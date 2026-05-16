@@ -102,6 +102,8 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedAppPi
 #print axioms LeanFX2.Term.partialStrengthenTypedLam
 #print axioms LeanFX2.Term.partialStrengthenTypedLamPi
+#print axioms LeanFX2.Term.partialStrengthenTypedPathLam
+#print axioms LeanFX2.Term.partialStrengthenTypedPathApp
 #print axioms LeanFX2.Term.partialStrengthenTypedListCons
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherInlOfRightType
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherInrOfLeftType

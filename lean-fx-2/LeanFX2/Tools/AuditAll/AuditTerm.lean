@@ -366,6 +366,8 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedAppPi
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedLam
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedLamPi
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedPathLam
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedPathApp
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedListCons
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherInlOfRightType
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherInrOfLeftType
