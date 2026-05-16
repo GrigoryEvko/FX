@@ -2076,6 +2076,240 @@ def partialStrengthenTypedIdStrictRefl {mode : Mode} {level : Nat}
             some (RawTerm.idStrictRefl targetWitness)
         rw [witnessStrengthens])
 
+/-- Identity eliminator strengthens by strengthening its base case and
+witness, then decomposing the strengthened identity type carried by the
+witness. -/
+def partialStrengthenTypedIdJ {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.id carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseResult : StrengtheningResult strengthening baseCase)
+    (witnessResult : StrengtheningResult strengthening witness) :
+    StrengtheningResult strengthening (Term.idJ baseCase witness) := by
+  cases baseResult with
+  | mk targetMotiveType targetBaseRaw targetBaseTerm baseTypeStrengthens
+      baseRawStrengthens baseTypeRenames baseRawRenames =>
+      cases witnessResult with
+      | mk targetWitnessType targetWitnessRaw targetWitnessTerm
+          witnessTypeStrengthens witnessRawStrengthens witnessTypeRenames
+          witnessRawRenames =>
+          change
+            Option.mapThree
+              (carrier.partialStrengthen? strengthening.back)
+              (leftEndpoint.partialStrengthen? strengthening.back)
+              (rightEndpoint.partialStrengthen? strengthening.back)
+              Ty.id = some targetWitnessType at witnessTypeStrengthens
+          cases carrierSuccess : carrier.partialStrengthen?
+              strengthening.back with
+          | none =>
+              rw [carrierSuccess] at witnessTypeStrengthens
+              cases witnessTypeStrengthens
+          | some targetCarrier =>
+              cases leftSuccess : leftEndpoint.partialStrengthen?
+                  strengthening.back with
+              | none =>
+                  rw [carrierSuccess, leftSuccess] at witnessTypeStrengthens
+                  cases witnessTypeStrengthens
+              | some targetLeftEndpoint =>
+                  cases rightSuccess : rightEndpoint.partialStrengthen?
+                      strengthening.back with
+                  | none =>
+                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
+                      cases witnessTypeStrengthens
+                  | some targetRightEndpoint =>
+                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
+                      cases witnessTypeStrengthens
+                      exact {
+                        targetType := targetMotiveType
+                        targetRaw := RawTerm.idJ targetBaseRaw
+                          targetWitnessRaw
+                        targetTerm := Term.idJ targetBaseTerm
+                          targetWitnessTerm
+                        typeStrengthens := baseTypeStrengthens
+                        rawStrengthens := by
+                          change
+                            Option.mapTwo
+                              (baseRaw.partialStrengthen?
+                                strengthening.back)
+                              (witnessRaw.partialStrengthen?
+                                strengthening.back)
+                              RawTerm.idJ =
+                                some (RawTerm.idJ targetBaseRaw
+                                  targetWitnessRaw)
+                          rw [baseRawStrengthens, witnessRawStrengthens]
+                          rfl
+                        typeRenames := baseTypeRenames
+                        rawRenames := by
+                          cases baseRawRenames
+                          cases witnessRawRenames
+                          rfl
+                      }
+
+/-- Observational-equality eliminator strengthens by strengthening its
+base case and witness, then decomposing the strengthened observational
+equality type carried by the witness. -/
+def partialStrengthenTypedOeqJ {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx (Ty.oeq carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseResult : StrengtheningResult strengthening baseCase)
+    (witnessResult : StrengtheningResult strengthening witness) :
+    StrengtheningResult strengthening (Term.oeqJ baseCase witness) := by
+  cases baseResult with
+  | mk targetMotiveType targetBaseRaw targetBaseTerm baseTypeStrengthens
+      baseRawStrengthens baseTypeRenames baseRawRenames =>
+      cases witnessResult with
+      | mk targetWitnessType targetWitnessRaw targetWitnessTerm
+          witnessTypeStrengthens witnessRawStrengthens witnessTypeRenames
+          witnessRawRenames =>
+          change
+            Option.mapThree
+              (carrier.partialStrengthen? strengthening.back)
+              (leftEndpoint.partialStrengthen? strengthening.back)
+              (rightEndpoint.partialStrengthen? strengthening.back)
+              Ty.oeq = some targetWitnessType at witnessTypeStrengthens
+          cases carrierSuccess : carrier.partialStrengthen?
+              strengthening.back with
+          | none =>
+              rw [carrierSuccess] at witnessTypeStrengthens
+              cases witnessTypeStrengthens
+          | some targetCarrier =>
+              cases leftSuccess : leftEndpoint.partialStrengthen?
+                  strengthening.back with
+              | none =>
+                  rw [carrierSuccess, leftSuccess] at witnessTypeStrengthens
+                  cases witnessTypeStrengthens
+              | some targetLeftEndpoint =>
+                  cases rightSuccess : rightEndpoint.partialStrengthen?
+                      strengthening.back with
+                  | none =>
+                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
+                      cases witnessTypeStrengthens
+                  | some targetRightEndpoint =>
+                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
+                      cases witnessTypeStrengthens
+                      exact {
+                        targetType := targetMotiveType
+                        targetRaw := RawTerm.oeqJ targetBaseRaw
+                          targetWitnessRaw
+                        targetTerm := Term.oeqJ targetBaseTerm
+                          targetWitnessTerm
+                        typeStrengthens := baseTypeStrengthens
+                        rawStrengthens := by
+                          change
+                            Option.mapTwo
+                              (baseRaw.partialStrengthen?
+                                strengthening.back)
+                              (witnessRaw.partialStrengthen?
+                                strengthening.back)
+                              RawTerm.oeqJ =
+                                some (RawTerm.oeqJ targetBaseRaw
+                                  targetWitnessRaw)
+                          rw [baseRawStrengthens, witnessRawStrengthens]
+                          rfl
+                        typeRenames := baseTypeRenames
+                        rawRenames := by
+                          cases baseRawRenames
+                          cases witnessRawRenames
+                          rfl
+                      }
+
+/-- Strict-identity recursor strengthens by strengthening its base case
+and witness, then decomposing the strengthened strict identity type
+carried by the witness. -/
+def partialStrengthenTypedIdStrictRec {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (modeIsStrict : mode = Mode.strict)
+    {carrier : Ty level sourceScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {motiveType : Ty level sourceScope}
+    {baseRaw witnessRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {baseCase : Term sourceCtx motiveType baseRaw}
+    {witness :
+      Term sourceCtx
+        (Ty.idStrict carrier leftEndpoint rightEndpoint) witnessRaw}
+    (baseResult : StrengtheningResult strengthening baseCase)
+    (witnessResult : StrengtheningResult strengthening witness) :
+    StrengtheningResult strengthening
+      (Term.idStrictRec modeIsStrict baseCase witness) := by
+  cases baseResult with
+  | mk targetMotiveType targetBaseRaw targetBaseTerm baseTypeStrengthens
+      baseRawStrengthens baseTypeRenames baseRawRenames =>
+      cases witnessResult with
+      | mk targetWitnessType targetWitnessRaw targetWitnessTerm
+          witnessTypeStrengthens witnessRawStrengthens witnessTypeRenames
+          witnessRawRenames =>
+          change
+            Option.mapThree
+              (carrier.partialStrengthen? strengthening.back)
+              (leftEndpoint.partialStrengthen? strengthening.back)
+              (rightEndpoint.partialStrengthen? strengthening.back)
+              Ty.idStrict = some targetWitnessType at witnessTypeStrengthens
+          cases carrierSuccess : carrier.partialStrengthen?
+              strengthening.back with
+          | none =>
+              rw [carrierSuccess] at witnessTypeStrengthens
+              cases witnessTypeStrengthens
+          | some targetCarrier =>
+              cases leftSuccess : leftEndpoint.partialStrengthen?
+                  strengthening.back with
+              | none =>
+                  rw [carrierSuccess, leftSuccess] at witnessTypeStrengthens
+                  cases witnessTypeStrengthens
+              | some targetLeftEndpoint =>
+                  cases rightSuccess : rightEndpoint.partialStrengthen?
+                      strengthening.back with
+                  | none =>
+                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
+                      cases witnessTypeStrengthens
+                  | some targetRightEndpoint =>
+                      rw [carrierSuccess, leftSuccess, rightSuccess] at witnessTypeStrengthens
+                      cases witnessTypeStrengthens
+                      exact {
+                        targetType := targetMotiveType
+                        targetRaw := RawTerm.idStrictRec targetBaseRaw
+                          targetWitnessRaw
+                        targetTerm := Term.idStrictRec modeIsStrict
+                          targetBaseTerm targetWitnessTerm
+                        typeStrengthens := baseTypeStrengthens
+                        rawStrengthens := by
+                          change
+                            Option.mapTwo
+                              (baseRaw.partialStrengthen?
+                                strengthening.back)
+                              (witnessRaw.partialStrengthen?
+                                strengthening.back)
+                              RawTerm.idStrictRec =
+                                some (RawTerm.idStrictRec targetBaseRaw
+                                  targetWitnessRaw)
+                          rw [baseRawStrengthens, witnessRawStrengthens]
+                          rfl
+                        typeRenames := baseTypeRenames
+                        rawRenames := by
+                          cases baseRawRenames
+                          cases witnessRawRenames
+                          rfl
+                      }
+
 /-- Sigma pair strengthens by strengthening both components and the
 binder-indexed second component type. -/
 def partialStrengthenTypedPair {mode : Mode} {level : Nat}
