@@ -1,4 +1,5 @@
 import LeanFX2.Reduction.ParRed.ParInductive
+import LeanFX2.Reduction.ParRed.CongAliases
 import LeanFX2.Reduction.ParRed.ParStepLift
 import LeanFX2.Reduction.ParRed.ParCasts
 
@@ -31,6 +32,7 @@ theorem, and a family of propositional-transport helpers.
 | Sub-module | Content |
 | --- | --- |
 | `ParRed.ParInductive` | The `Step.par` inductive (atomic — cannot be split) |
+| `ParRed.CongAliases` | Exact-name aliases for legacy cong constructor names |
 | `ParRed.ParStepLift` | `Step.toPar` single-step ⇒ parallel lift |
 | `ParRed.ParCasts` | Six propositional-transport cast helpers |
 

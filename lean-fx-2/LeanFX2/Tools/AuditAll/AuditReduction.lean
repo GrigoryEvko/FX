@@ -50,6 +50,32 @@ namespace LeanFX2.Tools
 #assert_no_axioms LeanFX2.RawStep.par.transpReflBetaDeep
 #assert_no_axioms LeanFX2.Step.transpReflBeta
 #assert_no_axioms LeanFX2.Step.par.transpReflBeta
+-- Step.par exact-name congruence aliases.  These do not add reduction
+-- behavior; they expose legacy congruence constructors under the
+-- `Step.par.<TermCtor>Cong` names used by the strict dashboard.
+#assert_no_axioms LeanFX2.Step.par.appCong
+#assert_no_axioms LeanFX2.Step.par.lamCong
+#assert_no_axioms LeanFX2.Step.par.lamPiCong
+#assert_no_axioms LeanFX2.Step.par.appPiCong
+#assert_no_axioms LeanFX2.Step.par.pairCong
+#assert_no_axioms LeanFX2.Step.par.fstCong
+#assert_no_axioms LeanFX2.Step.par.sndCong
+#assert_no_axioms LeanFX2.Step.par.boolElimCong
+#assert_no_axioms LeanFX2.Step.par.natSuccCong
+#assert_no_axioms LeanFX2.Step.par.natElimCong
+#assert_no_axioms LeanFX2.Step.par.natRecCong
+#assert_no_axioms LeanFX2.Step.par.listConsCong
+#assert_no_axioms LeanFX2.Step.par.listElimCong
+#assert_no_axioms LeanFX2.Step.par.optionSomeCong
+#assert_no_axioms LeanFX2.Step.par.optionMatchCong
+#assert_no_axioms LeanFX2.Step.par.eitherInlCong
+#assert_no_axioms LeanFX2.Step.par.eitherInrCong
+#assert_no_axioms LeanFX2.Step.par.eitherMatchCong
+#assert_no_axioms LeanFX2.Step.par.idJCong
+#assert_no_axioms LeanFX2.Step.par.modIntroCong
+#assert_no_axioms LeanFX2.Step.par.modElimCong
+#assert_no_axioms LeanFX2.Step.par.subsumeCong
+#assert_no_axioms LeanFX2.Step.par.cumulUpCong
 -- D2.5.2 hcompBeta cascade.  Cubical-β rule "hcomp at constant-path
 -- sides = cap" — homogeneous composition with constant-path sides
 -- reduces to the cap (the boundary box is trivially filled).

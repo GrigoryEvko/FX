@@ -101,8 +101,10 @@ namespace LeanFX2.Tools
 -- ctor.  Value ctors (no sub-Term positions) naturally lack a cong
 -- rule; the budget accommodates that as architectural fact.  Tight
 -- ratchet: any future Term ctor without a cong rule fails the build.
--- RATCHET MUTED (2026-05-11): cong-rule coverage grows with new ctors.
--- #assert_step_par_cong_coverage_budget LeanFX2.Term 49
+-- Revived after `ParRed.CongAliases` exposed legacy congruence ctors under
+-- exact dashboard names, lowering debt from 36 to 13 without changing
+-- reduction behavior.
+#assert_step_par_cong_coverage_budget LeanFX2.Term 13
 
 -- Conv cong-rule coverage matrix.  For every Term ctor, either
 -- `LeanFX2.Conv.<name>Cong` or `LeanFX2.Conv.<name>_cong` should exist
