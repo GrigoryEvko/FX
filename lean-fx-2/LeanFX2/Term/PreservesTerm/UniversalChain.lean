@@ -622,6 +622,51 @@ inductive DispatchAtom :
                                       baseValue predicateProof
                     : Term context (Ty.refine baseType predicate)
                                    (RawTerm.refineIntro valueRaw proofRaw))
+  /-- Non-dependent lambda (`Term.lam`).  Body sits at
+  `codomainType.weaken` under one extended binder; SR bridge consumes
+  `IsClosedTy.weaken codomainClosed` to fix the body's target type. -/
+  | lam {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType codomainType : Ty level scope}
+      (codomainClosed : IsClosedTy codomainType)
+      {bodyRaw : RawTerm (scope + 1)}
+      (body : Term (Ctx.cons context domainType) codomainType.weaken bodyRaw)
+      (bodyDispatch : DispatchAtom body) :
+      DispatchAtom (Term.lam (context := context)
+                              (domainType := domainType) body
+                    : Term context (Ty.arrow domainType codomainType)
+                                   (RawTerm.lam bodyRaw))
+  /-- Dependent Π-lambda (`Term.lamPi`).  Body sits at
+  `codomainType : Ty level (scope + 1)` directly; user must supply
+  `IsClosedTy codomainType` at the extended scope. -/
+  | lamPi {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {domainType : Ty level scope}
+      {codomainType : Ty level (scope + 1)}
+      (codomainClosed : IsClosedTy codomainType)
+      {bodyRaw : RawTerm (scope + 1)}
+      (body : Term (Ctx.cons context domainType) codomainType bodyRaw)
+      (bodyDispatch : DispatchAtom body) :
+      DispatchAtom (Term.lamPi (context := context)
+                                (domainType := domainType) body
+                    : Term context (Ty.piTy domainType codomainType)
+                                   (RawTerm.lam bodyRaw))
+  /-- Path lambda (univalent-mode binder).  Body at `carrierType.weaken`
+  under one interval binder; SR bridge uses `IsClosedTy.weaken`. -/
+  | pathLam {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      (modeIsUnivalent : mode = Mode.univalent)
+      (carrierType : Ty level scope)
+      (carrierClosed : IsClosedTy carrierType)
+      (leftEndpoint rightEndpoint : RawTerm scope)
+      {bodyRaw : RawTerm (scope + 1)}
+      (body : Term (Ctx.cons context Ty.interval) carrierType.weaken bodyRaw)
+      (bodyDispatch : DispatchAtom body) :
+      DispatchAtom (Term.pathLam (context := context) modeIsUnivalent
+                                  carrierType leftEndpoint rightEndpoint body
+                    : Term context (Ty.path carrierType leftEndpoint
+                                            rightEndpoint)
+                                   (RawTerm.pathLam bodyRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -639,7 +684,7 @@ theorem RawStep.par.lift_full_term
     {targetRaw : RawTerm scope}
     (rawStep : RawStep.par sourceRaw targetRaw) :
     StepParExists sourceTerm targetRaw := by
-  induction dispatch generalizing targetRaw with
+  induction dispatch with
   | unit =>
     exact RawStep.par.lift_full_unit Term.unit rawStep
   | boolTrue =>
@@ -1073,5 +1118,34 @@ theorem RawStep.par.lift_full_term
         Step.par.preserves_isClosedTy IsClosedTy.unit proofStep rfl
       subst unitEq
       exact ⟨proofTarget, proofStep⟩
+  | lam codomainClosed body _ ihBody =>
+    refine RawStep.par.lift_full_lam body ?_ rawStep
+    intro _ bodyRawStep
+    obtain ⟨bodyTargetType, bodyTarget, bodyStep⟩ := ihBody bodyRawStep
+    have weakenedEq : bodyTargetType = _ :=
+      Step.par.preserves_isClosedTy (IsClosedTy.weaken codomainClosed)
+                                     bodyStep rfl
+    subst weakenedEq
+    exact ⟨bodyTarget, bodyStep⟩
+  | lamPi codomainClosed body _ ihBody =>
+    refine RawStep.par.lift_full_lamPi body ?_ rawStep
+    intro _ bodyRawStep
+    obtain ⟨bodyTargetType, bodyTarget, bodyStep⟩ := ihBody bodyRawStep
+    have codomainEq : bodyTargetType = _ :=
+      Step.par.preserves_isClosedTy codomainClosed bodyStep rfl
+    subst codomainEq
+    exact ⟨bodyTarget, bodyStep⟩
+  | pathLam modeIsUnivalent carrierType carrierClosed leftEndpoint
+            rightEndpoint body _ ihBody =>
+    refine RawStep.par.lift_full_pathLam modeIsUnivalent carrierType
+                                          leftEndpoint rightEndpoint body
+                                          ?_ rawStep
+    intro _ bodyRawStep
+    obtain ⟨bodyTargetType, bodyTarget, bodyStep⟩ := ihBody bodyRawStep
+    have weakenedEq : bodyTargetType = _ :=
+      Step.par.preserves_isClosedTy (IsClosedTy.weaken carrierClosed)
+                                     bodyStep rfl
+    subst weakenedEq
+    exact ⟨bodyTarget, bodyStep⟩
 
 end LeanFX2

@@ -209,6 +209,40 @@ instance IsClosedTy.decidable {level scope : Nat} (someType : Ty level scope) :
     Decidable (IsClosedTy someType) :=
   IsClosedTy.decide someType
 
+/-! ## Weakening invariance
+
+A closed type contains no `tyVar` references and no scope-dependent raw
+payloads, so renaming under `Ty.weaken := Ty.rename RawRenaming.weaken`
+yields the same constructor at scope + 1.
+
+This lemma unblocks the SR bridge for binder-introducing Term ctors
+(`lam`, `pathLam`) in the CONVTRANS-C universal chain dispatcher:
+their typed body sits at `codomainType.weaken` / `carrierType.weaken`,
+and the dispatch arm uses `Step.par.preserves_isClosedTy` against this
+weakened closure witness. -/
+
+/-- Closed types stay closed under `Ty.weaken`.  Structural induction on
+the IsClosedTy proof — every ctor case rebuilds the matching ctor with
+the inductively-weakened component witnesses. -/
+theorem IsClosedTy.weaken {level scope : Nat} {someType : Ty level scope}
+    (closedSomeType : IsClosedTy someType) :
+    IsClosedTy someType.weaken := by
+  induction closedSomeType with
+  | unit => exact .unit
+  | bool => exact .bool
+  | nat => exact .nat
+  | arrow _ _ ihDomain ihCodomain => exact .arrow ihDomain ihCodomain
+  | listType _ ihElement => exact .listType ihElement
+  | optionType _ ihElement => exact .optionType ihElement
+  | eitherType _ _ ihLeft ihRight => exact .eitherType ihLeft ihRight
+  | «universe» universeLevel levelLe => exact .universe universeLevel levelLe
+  | empty => exact .empty
+  | interval => exact .interval
+  | equiv _ _ ihDomain ihCodomain => exact .equiv ihDomain ihCodomain
+  | record _ ihField => exact .record ihField
+  | codata _ _ ihState ihOutput => exact .codata ihState ihOutput
+  | modal _ ihCarrier => exact .modal ihCarrier
+
 /-! ## Smoke samples
 
 Verify the predicate computes correctly on a handful of representative
