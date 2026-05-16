@@ -182,24 +182,24 @@ namespace LeanFX2.SmokeTypedInversion
 -- (cases baseResult; rw + cases; cases partialResult; rw + cases) and
 -- applies glueIntro_HEq_congr with the two pre-witnessed renames plus
 -- the two sub-Terms' soundness HEqs.
---
--- DEFERRED (Phase 17 + Phase 18 both attempted, structurally blocked):
--- * OeqFunext: the HEq congruence expects `pointwiseProof2 : Term context
---   (oeqFunextPointwiseType (renamed X) (renamed Y) (renamed A)
---   (renamed B)) (renamed raw)` but `Term.rename ... targetPointwiseProof`
---   has type `Term sourceCtx ((oeqFunextPointwiseType X Y A B).rename
---   forward) ...`.  These differ propositionally via
---   `oeqFunextPointwiseType_rename` (Term/Rename.lean:208), driven by
---   the rename-weaken commutation `Ty.weaken_rename_commute`
---   (Foundation/Ty.lean:417), which is NOT definitional.  Lean inserts
---   a `⋯ ▸` cast in the expected `pointwiseProofHEq` type that
---   `pointwiseSound.termRenames` cannot satisfy.  Resolution needs ~30
---   LoC of HEq cast bridging using `oeqFunextPointwiseType_rename` to
---   transport `pointwiseSound.termRenames` to the cast shape (via
---   `HEq.trans` + explicit `▸` rewrite, or by constructing pointwiseHEq
---   with an explicit Eq.mpr coercion).
--- * GlueElim: wrapper does Option.casesOn on both base and boundary
---   pivots (full discriminator wall), needs OfSuccess refactor.
 #print axioms LeanFX2.Term.partialStrengthenTypedGlueIntro_sound
+
+-- Phase 19: observational funext soundness — the cast-bridge unblock.
+-- OeqFunext was deferred in Phase 17 + Phase 18 with a precise structural
+-- blocker.  Phase 19 lands it by bridging the rename-distribution cast
+-- on `oeqFunextPointwiseType` via the published commutation lemma
+-- `oeqFunextPointwiseType_rename` (Term/Rename.lean:208).  Term.rename
+-- itself uses that lemma with an explicit `▸` cast in the oeqFunext arm
+-- (Term/Rename.lean:354-360), so soundness uses `Term.type_eq_cast_heq`
+-- (Term/Pointwise/PointwiseAndCompositionInfrastructure.lean:416) +
+-- `HEq.trans` + `HEq.symm` to transport `pointwiseSound.termRenames` to
+-- the cast shape that `pointwiseProofHEq` expects.  Key insight: the
+-- `▸` cast in Term.rename's oeqFunext arm matches the `▸` cast in the
+-- HEq congruence's expected type, so the bridge is a single 4-line
+-- `have castedHEq := HEq.symm (Term.type_eq_cast_heq typeEq _)`.
+-- Adds one import: `LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure`.
+-- GlueElim still deferred: wrapper does Option.casesOn on both base and
+-- boundary pivots (full discriminator wall), needs OfSuccess refactor.
+#print axioms LeanFX2.Term.partialStrengthenTypedOeqFunext_sound
 
 end LeanFX2.SmokeTypedInversion

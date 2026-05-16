@@ -1,5 +1,6 @@
 import LeanFX2.Term.TypedInversion
 import LeanFX2.Term.HEqCongr
+import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure
 
 /-! # Term/StrengtheningImage — soundness of typed strengthening.
 
@@ -2893,6 +2894,201 @@ theorem partialStrengthenTypedGlueIntro_sound {mode : Mode} {level : Nat}
           exact Term.glueIntro_HEq_congr modeIsUnivalent baseRenames
             boundaryRenames baseRawRenames partialRawRenames
             baseSound.termRenames partialSound.termRenames
+
+/-- Soundness for observational funext.  Bridges the rename-distribution
+cast on `oeqFunextPointwiseType` via the published commutation lemma
+`oeqFunextPointwiseType_rename`, which `Term.rename` itself uses with an
+explicit `▸` cast in the `oeqFunext` arm.  The HEq congruence's
+expected `pointwiseProof2` parameter therefore arrives in the cast
+shape `typeEq ▸ Term.rename ... targetPointwiseProof`, and we bridge
+`pointwiseSound.termRenames` to that shape via
+`Term.type_eq_cast_heq` + `HEq.trans` + `HEq.symm`. -/
+theorem partialStrengthenTypedOeqFunext_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (domainType codomainType : Ty level sourceScope)
+    (targetDomainType targetCodomainType : Ty level targetScope)
+    (leftFunctionRaw rightFunctionRaw : RawTerm sourceScope)
+    (targetLeftFunctionRaw targetRightFunctionRaw : RawTerm targetScope)
+    {pointwiseRaw : RawTerm sourceScope}
+    {pointwiseProof :
+      Term sourceCtx
+        (oeqFunextPointwiseType domainType codomainType
+          leftFunctionRaw rightFunctionRaw)
+        pointwiseRaw}
+    (domainStrengthens :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType)
+    (codomainStrengthens :
+      codomainType.partialStrengthen? strengthening.back =
+        some targetCodomainType)
+    (leftFunctionStrengthens :
+      leftFunctionRaw.partialStrengthen? strengthening.back =
+        some targetLeftFunctionRaw)
+    (rightFunctionStrengthens :
+      rightFunctionRaw.partialStrengthen? strengthening.back =
+        some targetRightFunctionRaw)
+    {pointwiseResult : StrengtheningResult strengthening pointwiseProof}
+    (pointwiseSound : StrengtheningSoundness pointwiseResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedOeqFunext domainType codomainType
+        targetDomainType targetCodomainType leftFunctionRaw rightFunctionRaw
+        targetLeftFunctionRaw targetRightFunctionRaw domainStrengthens
+        codomainStrengthens leftFunctionStrengthens rightFunctionStrengthens
+        pointwiseResult) := by
+  cases pointwiseResult with
+  | mk targetPointwiseType targetPointwiseRaw targetPointwiseProof
+      pointwiseTypeStrengthens pointwiseRawStrengthens
+      pointwiseTypeRenames pointwiseRawRenames =>
+      have codomainWeakenStrengthens :
+          codomainType.weaken.partialStrengthen? strengthening.back.lift =
+            some targetCodomainType.weaken := by
+        rw [Ty.partialStrengthen?_weaken_lift codomainType
+          strengthening.back, codomainStrengthens]
+        rfl
+      have leftWeakenStrengthens :
+          leftFunctionRaw.weaken.partialStrengthen?
+              strengthening.back.lift =
+            some targetLeftFunctionRaw.weaken := by
+        rw [RawTerm.partialStrengthen?_weaken_lift leftFunctionRaw
+          strengthening.back, leftFunctionStrengthens]
+        rfl
+      have rightWeakenStrengthens :
+          rightFunctionRaw.weaken.partialStrengthen?
+              strengthening.back.lift =
+            some targetRightFunctionRaw.weaken := by
+        rw [RawTerm.partialStrengthen?_weaken_lift rightFunctionRaw
+          strengthening.back, rightFunctionStrengthens]
+        rfl
+      have pointwiseExpectedStrengthens :
+          (oeqFunextPointwiseType domainType codomainType
+              leftFunctionRaw rightFunctionRaw).partialStrengthen?
+              strengthening.back =
+            some (oeqFunextPointwiseType targetDomainType targetCodomainType
+              targetLeftFunctionRaw targetRightFunctionRaw) := by
+        have codomainBodyStrengthens :
+            (oeqFunextPointwiseCodomain codomainType
+                leftFunctionRaw rightFunctionRaw).partialStrengthen?
+                strengthening.back.lift =
+              some (oeqFunextPointwiseCodomain targetCodomainType
+                targetLeftFunctionRaw targetRightFunctionRaw) := by
+          have leftAppStrengthens :
+              (RawTerm.app leftFunctionRaw.weaken
+                (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+                ).partialStrengthen? strengthening.back.lift =
+                some (RawTerm.app targetLeftFunctionRaw.weaken
+                  (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩)) := by
+            change
+              Option.mapTwo
+                (leftFunctionRaw.weaken.partialStrengthen?
+                  strengthening.back.lift)
+                (some (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩))
+                RawTerm.app =
+                  some (RawTerm.app targetLeftFunctionRaw.weaken
+                    (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩))
+            rw [leftWeakenStrengthens]
+            rfl
+          have rightAppStrengthens :
+              (RawTerm.app rightFunctionRaw.weaken
+                (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+                ).partialStrengthen? strengthening.back.lift =
+                some (RawTerm.app targetRightFunctionRaw.weaken
+                  (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩)) := by
+            change
+              Option.mapTwo
+                (rightFunctionRaw.weaken.partialStrengthen?
+                  strengthening.back.lift)
+                (some (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩))
+                RawTerm.app =
+                  some (RawTerm.app targetRightFunctionRaw.weaken
+                    (RawTerm.var ⟨0, Nat.zero_lt_succ targetScope⟩))
+            rw [rightWeakenStrengthens]
+            rfl
+          change
+            Option.mapThree
+              (codomainType.weaken.partialStrengthen?
+                strengthening.back.lift)
+              ((RawTerm.app leftFunctionRaw.weaken
+                (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+                ).partialStrengthen? strengthening.back.lift)
+              ((RawTerm.app rightFunctionRaw.weaken
+                (RawTerm.var ⟨0, Nat.zero_lt_succ sourceScope⟩)
+                ).partialStrengthen? strengthening.back.lift)
+              Ty.oeq =
+                some (oeqFunextPointwiseCodomain targetCodomainType
+                  targetLeftFunctionRaw targetRightFunctionRaw)
+          rw [codomainWeakenStrengthens, leftAppStrengthens,
+            rightAppStrengthens]
+          rfl
+        change
+          Option.mapTwo
+            (domainType.partialStrengthen? strengthening.back)
+            ((oeqFunextPointwiseCodomain codomainType
+                leftFunctionRaw rightFunctionRaw).partialStrengthen?
+                strengthening.back.lift)
+            Ty.piTy =
+              some (oeqFunextPointwiseType targetDomainType
+                targetCodomainType targetLeftFunctionRaw
+                targetRightFunctionRaw)
+        rw [domainStrengthens, codomainBodyStrengthens]
+        rfl
+      rw [pointwiseExpectedStrengthens] at pointwiseTypeStrengthens
+      cases pointwiseTypeStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedOeqFunext,
+          StrengtheningResult.renamedTarget] at pointwiseSound ⊢
+      have domainRenames :
+          domainType = targetDomainType.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename domainType
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetDomainType domainStrengthens
+      have codomainRenames :
+          codomainType = targetCodomainType.rename strengthening.forward :=
+        Ty.partialStrengthen?_imp_rename codomainType
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetCodomainType codomainStrengthens
+      have leftFunctionRenames :
+          leftFunctionRaw =
+            targetLeftFunctionRaw.rename strengthening.forward :=
+        RawTerm.partialStrengthen?_imp_rename leftFunctionRaw
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetLeftFunctionRaw leftFunctionStrengthens
+      have rightFunctionRenames :
+          rightFunctionRaw =
+            targetRightFunctionRaw.rename strengthening.forward :=
+        RawTerm.partialStrengthen?_imp_rename rightFunctionRaw
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetRightFunctionRaw rightFunctionStrengthens
+      have typeEq :
+          (oeqFunextPointwiseType targetDomainType targetCodomainType
+              targetLeftFunctionRaw targetRightFunctionRaw).rename
+              strengthening.forward =
+            oeqFunextPointwiseType
+              (targetDomainType.rename strengthening.forward)
+              (targetCodomainType.rename strengthening.forward)
+              (targetLeftFunctionRaw.rename strengthening.forward)
+              (targetRightFunctionRaw.rename strengthening.forward) :=
+        oeqFunextPointwiseType_rename strengthening.forward
+          targetDomainType targetCodomainType targetLeftFunctionRaw
+          targetRightFunctionRaw
+      have castedHEq :
+          HEq
+            (Term.rename strengthening.toTermRenaming targetPointwiseProof)
+            (typeEq ▸
+              Term.rename strengthening.toTermRenaming targetPointwiseProof) :=
+        HEq.symm
+          (Term.type_eq_cast_heq typeEq
+            (Term.rename strengthening.toTermRenaming targetPointwiseProof))
+      have pointwiseHEq :
+          HEq pointwiseProof
+            (typeEq ▸
+              Term.rename strengthening.toTermRenaming targetPointwiseProof) :=
+        HEq.trans pointwiseSound.termRenames castedHEq
+      exact Term.oeqFunext_HEq_congr domainRenames codomainRenames
+        leftFunctionRenames rightFunctionRenames pointwiseRawRenames
+        pointwiseHEq
 
 end Term
 
