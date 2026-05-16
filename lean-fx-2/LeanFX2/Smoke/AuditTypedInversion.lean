@@ -249,4 +249,20 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedGlueElimOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedGlueElimOfSuccess_sound
 
+-- Phase 25: dependent-binder LamPi soundness — first binder-producer
+-- with a sound counterpart.  The blocker was that the two TermRenaming
+-- proofs in `bodySound.termRenames` and the renamedTarget's `Term.rename`
+-- have DIFFERENT TYPES (different second context arg: `sourceCtx.cons
+-- domainType` vs `sourceCtx.cons (targetDomainType.rename forward)`).
+-- Lean rejects them as different types since `TermRenaming` is a
+-- dependent type and the contexts are propositionally but not
+-- definitionally equal.  Fix: `subst domainRenames` early to unify the
+-- contexts, then Lean's definitional proof irrelevance on
+-- `TermRenaming : Prop` discharges the remaining proof equality.  No
+-- `Ty.weaken_rename_commute` cast bridge needed for Π (the codomain is
+-- just `codomainType`, not `codomainType.weaken`).  Pattern reusable
+-- for any binder producer where the body's source-context binding type
+-- is equal-by-strengthening to a renamed target type.
+#print axioms LeanFX2.Term.partialStrengthenTypedLamPi_sound
+
 end LeanFX2.SmokeTypedInversion

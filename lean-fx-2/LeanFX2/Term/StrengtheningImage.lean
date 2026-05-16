@@ -3453,6 +3453,58 @@ theorem partialStrengthenTypedEquivAppOfSuccess_sound {mode : Mode}
   exact Term.equivApp_HEq_congr carrierARenames carrierBRenames
     equivRawRenames argumentRawRenames equivSound argumentSound
 
+/-- Soundness for dependent lambda strengthening.
+
+The wrapper takes `body : Term (sourceCtx.cons domainType) codomainType
+bodyRaw` and produces `Term.lamPi body`.  The renamedTarget is
+`Term.lamPi (Term.rename (strengthening.toTermRenaming.lift _)
+targetBodyTerm)` whose body's renaming proof has source context
+`sourceCtx.cons (targetDomainType.rename strengthening.forward)`,
+whereas `bodySound.termRenames` carries the proof at source context
+`sourceCtx.cons domainType`.  These are propositionally equal via
+`domainRenames : domainType = targetDomainType.rename strengthening.forward`
+but Lean's dependent typing rejects them as different types.  Fix:
+`subst domainRenames` early to unify the two contexts, then Lean's
+definitional proof irrelevance on `TermRenaming : Prop` discharges the
+remaining equality. -/
+theorem partialStrengthenTypedLamPi_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {targetDomainType : Ty level targetScope}
+    {bodyRaw : RawTerm (sourceScope + 1)}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {body : Term (sourceCtx.cons domainType) codomainType bodyRaw}
+    (domainTypeStrengthens :
+      domainType.partialStrengthen? strengthening.back =
+        some targetDomainType)
+    {bodyResult :
+      StrengtheningResult
+        (strengthening.lift domainType targetDomainType
+          domainTypeStrengthens) body}
+    (bodySound : StrengtheningSoundness bodyResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedLamPi domainTypeStrengthens bodyResult) := by
+  have domainRenames :
+      domainType = targetDomainType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename domainType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetDomainType domainTypeStrengthens
+  subst domainRenames
+  cases bodyResult with
+  | mk targetCodomainType targetBodyRaw targetBodyTerm
+      codomainTypeStrengthens bodyRawStrengthens codomainTypeRenames
+      bodyRawRenames =>
+      refine ⟨?_⟩
+      have bodyHEq := bodySound.termRenames
+      simp only [StrengtheningResult.renamedTarget] at bodyHEq
+      simp only [partialStrengthenTypedLamPi, StrengtheningResult.renamedTarget,
+        Term.rename]
+      exact Term.lamPi_HEq_congr rfl codomainTypeRenames
+        bodyRawRenames bodyHEq
+
 /-- Soundness for cubical Glue-elimination strengthening.  Mirrors the
 RefineElim/CodataDest OfSuccess pattern: the wrapper's dual
 `Option.casesOn` on `Ty.glue`'s base + boundary pivots is replaced by
