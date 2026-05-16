@@ -3749,6 +3749,93 @@ theorem partialStrengthenTypedGlueElimOfSuccess_sound {mode : Mode}
   exact Term.glueElim_HEq_congr modeIsUnivalent baseRenames boundaryRenames
     gluedRawRenames gluedSound
 
+/-- Soundness for cubical path-application strengthening (OfSuccess
+form).
+
+Mirrors the GlueElim/RefineElim recipe: takes pre-witnessed
+strengthening of the path's carrier + left + right endpoints + raw
+forms, plus HEq witnesses for the path/interval sub-terms.  Recovers
+the syntactic equalities via `partialStrengthen?_imp_rename` and
+applies `pathApp_HEq_congr`.
+
+The wrapper `partialStrengthenTypedPathApp` does a dual `Option.casesOn`
+on the three Ty.path pivots; the OfSuccess pre-witnesses them, sparing
+the soundness proof from re-doing that dance. -/
+theorem partialStrengthenTypedPathAppOfSuccess_sound {mode : Mode}
+    {level : Nat} {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    {targetPathRaw targetIntervalRaw : RawTerm targetScope}
+    {pathTerm :
+      Term sourceCtx
+        (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    {targetPathTerm :
+      Term targetCtx
+        (Ty.path targetCarrierType targetLeftEndpoint targetRightEndpoint)
+        targetPathRaw}
+    {targetIntervalTerm :
+      Term targetCtx Ty.interval targetIntervalRaw}
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    (pathRawStrengthens :
+      pathRaw.partialStrengthen? strengthening.back = some targetPathRaw)
+    (intervalRawStrengthens :
+      intervalRaw.partialStrengthen? strengthening.back =
+        some targetIntervalRaw)
+    (pathRawRenames :
+      pathRaw = targetPathRaw.rename strengthening.forward)
+    (intervalRawRenames :
+      intervalRaw = targetIntervalRaw.rename strengthening.forward)
+    (pathSound :
+      HEq pathTerm
+        (Term.rename strengthening.toTermRenaming targetPathTerm))
+    (intervalSound :
+      HEq intervalTerm
+        (Term.rename strengthening.toTermRenaming targetIntervalTerm)) :
+    StrengtheningSoundness
+      (partialStrengthenTypedPathAppOfSuccess modeIsUnivalent
+        (pathTerm := pathTerm) (intervalTerm := intervalTerm)
+        targetPathTerm targetIntervalTerm carrierSuccess leftSuccess
+        rightSuccess pathRawStrengthens intervalRawStrengthens
+        pathRawRenames intervalRawRenames) := by
+  refine ⟨?_⟩
+  unfold StrengtheningResult.renamedTarget
+  dsimp [partialStrengthenTypedPathAppOfSuccess]
+  have carrierRenames :
+      carrierType = targetCarrierType.rename strengthening.forward :=
+    Ty.partialStrengthen?_imp_rename carrierType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierType carrierSuccess
+  have leftEndpointRenames :
+      leftEndpoint = targetLeftEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename leftEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetLeftEndpoint leftSuccess
+  have rightEndpointRenames :
+      rightEndpoint =
+        targetRightEndpoint.rename strengthening.forward :=
+    RawTerm.partialStrengthen?_imp_rename rightEndpoint
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetRightEndpoint rightSuccess
+  exact Term.pathApp_HEq_congr modeIsUnivalent carrierRenames
+    leftEndpointRenames rightEndpointRenames pathRawRenames
+    intervalRawRenames pathSound intervalSound
+
 end Term
 
 end LeanFX2

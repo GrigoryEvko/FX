@@ -1289,6 +1289,81 @@ def partialStrengthenTypedPathLam {mode : Mode} {level : Nat}
               rw [bodyRawStrengthensAtLift])
       }
 
+/-- Pre-witnessed cubical path-application strengthening.
+
+Replaces the wrapper's dual `Option.casesOn` on
+`Ty.path`'s carrier + leftEndpoint + rightEndpoint pivots with
+explicit `carrierSuccess`/`leftSuccess`/`rightSuccess` witnesses.
+
+The unused `leftSuccess`/`rightSuccess` are kept in the signature
+(prefixed `_`) so the OfSuccess-sound theorem can recover the
+endpoint renaming equalities used by `pathApp_HEq_congr`. -/
+def partialStrengthenTypedPathAppOfSuccess
+    {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    (modeIsUnivalent : mode = Mode.univalent)
+    {carrierType : Ty level sourceScope}
+    {targetCarrierType : Ty level targetScope}
+    {leftEndpoint rightEndpoint : RawTerm sourceScope}
+    {targetLeftEndpoint targetRightEndpoint : RawTerm targetScope}
+    {pathRaw intervalRaw : RawTerm sourceScope}
+    {targetPathRaw targetIntervalRaw : RawTerm targetScope}
+    {pathTerm :
+      Term sourceCtx
+        (Ty.path carrierType leftEndpoint rightEndpoint) pathRaw}
+    {intervalTerm : Term sourceCtx Ty.interval intervalRaw}
+    (targetPathTerm :
+      Term targetCtx
+        (Ty.path targetCarrierType targetLeftEndpoint targetRightEndpoint)
+        targetPathRaw)
+    (targetIntervalTerm :
+      Term targetCtx Ty.interval targetIntervalRaw)
+    (carrierSuccess :
+      carrierType.partialStrengthen? strengthening.back =
+        some targetCarrierType)
+    (_leftSuccess :
+      leftEndpoint.partialStrengthen? strengthening.back =
+        some targetLeftEndpoint)
+    (_rightSuccess :
+      rightEndpoint.partialStrengthen? strengthening.back =
+        some targetRightEndpoint)
+    (pathRawStrengthens :
+      pathRaw.partialStrengthen? strengthening.back = some targetPathRaw)
+    (intervalRawStrengthens :
+      intervalRaw.partialStrengthen? strengthening.back =
+        some targetIntervalRaw)
+    (pathRawRenames :
+      pathRaw = targetPathRaw.rename strengthening.forward)
+    (intervalRawRenames :
+      intervalRaw = targetIntervalRaw.rename strengthening.forward) :
+    StrengtheningResult strengthening
+      (Term.pathApp modeIsUnivalent pathTerm intervalTerm) where
+  targetType := targetCarrierType
+  targetRaw := RawTerm.pathApp targetPathRaw targetIntervalRaw
+  targetTerm :=
+    Term.pathApp modeIsUnivalent targetPathTerm targetIntervalTerm
+  typeStrengthens := carrierSuccess
+  rawStrengthens := by
+    change
+      Option.mapTwo
+        (pathRaw.partialStrengthen? strengthening.back)
+        (intervalRaw.partialStrengthen? strengthening.back)
+        RawTerm.pathApp =
+        some (RawTerm.pathApp targetPathRaw targetIntervalRaw)
+    rw [pathRawStrengthens, intervalRawStrengthens]
+    rfl
+  typeRenames :=
+    Ty.partialStrengthen?_imp_rename carrierType
+      strengthening.forward strengthening.back strengthening.injectsBack
+      targetCarrierType carrierSuccess
+  rawRenames := by
+    cases pathRawRenames
+    cases intervalRawRenames
+    rfl
+
 /-- Cubical path application strengthens by strengthening the path and
 interval argument. -/
 def partialStrengthenTypedPathApp {mode : Mode} {level : Nat}

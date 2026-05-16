@@ -289,4 +289,16 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedPathLam_sound
 #print axioms LeanFX2.Term.pathLam_HEq_congr
 
+-- Phase 28: cubical Path-application via OfSuccess pattern.
+-- PathApp's wrapper does a dual `Option.casesOn` on three Ty.path
+-- pivots (carrier / leftEndpoint / rightEndpoint); the OfSuccess
+-- form takes those as pre-witnessed strengthening parameters,
+-- mirroring GlueElim/RefineElim/CodataDest.  Soundness composes via
+-- `pathApp_HEq_congr` with renaming equalities recovered via
+-- `partialStrengthen?_imp_rename`.  Pattern reusable for any
+-- non-binder producer whose typed source carries a Ty constructor
+-- with multiple type-level pivots (e.g. Transp, Hcomp).
+#print axioms LeanFX2.Term.partialStrengthenTypedPathAppOfSuccess
+#print axioms LeanFX2.Term.partialStrengthenTypedPathAppOfSuccess_sound
+
 end LeanFX2.SmokeTypedInversion
