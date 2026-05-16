@@ -413,4 +413,258 @@ theorem RawStep.par.lift_effectPerform
                             canPerformOperation operationTarget argumentsTarget,
          Step.par.effectPerformCong operationStepTyped argumentsStepTyped⟩
 
+/-! ## CONVTRANS-B.2b — closed-type cong-only eliminator lifts
+
+Cong-only lift variants for the six closed-type eliminators (boolElim,
+natElim, natRec, listElim, optionMatch, eitherMatch).  Each takes raw
+parallel-reduction steps on the scrutinee + branches plus per-subterm
+typed-lift callbacks, and assembles the typed `Step.par.<elim>` cong
+witness directly — bypassing the three-arm raw inversion that the
+full lifts above need to dispatch the ι-canonical arms.
+
+Five of the six (natElim, natRec, listElim, optionMatch, eitherMatch)
+have a constant motive at `Ty level scope` — output type is
+`motiveType` independent of the scrutinee raw.  The boolElim cong
+lift's output type is `motiveType.subst0 Ty.bool scrutineeTargetRaw`
+because boolElim's motive lives at `scope + 1`; the dependent
+substitution rides along on the scrutinee target raw produced by the
+cong arm.
+
+These are the structural building block for CONVTRANS-B.2b (#1723)
+and feed CONVTRANS-C/D headlines that chain raw-typed lifts through
+`RawStep.parStar` and ultimately `Conv.trans`. -/
+
+/-- **CONVTRANS-B.2b — Term.boolElim lift, cong arm only.**  Motive
+lives at `scope + 1`; output type rides on `scrutineeTargetRaw` via
+`motiveType.subst0 Ty.bool _`.  The β-arms (iotaBoolElimTrueDeep /
+iotaBoolElimFalseDeep) live in the full `lift_boolElim` variant. -/
+theorem RawStep.par.lift_boolElim_cong
+    {motiveType : Ty level (scope + 1)}
+    {scrutineeRaw thenRaw elseRaw : RawTerm scope}
+    (scrutinee : Term context Ty.bool scrutineeRaw)
+    (thenBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) thenRaw)
+    (elseBranch :
+      Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) elseRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context Ty.bool targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (thenLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par thenRaw targetRawIH →
+      ∃ thenTarget :
+          Term context (motiveType.subst0 Ty.bool RawTerm.boolTrue) targetRawIH,
+        Step.par thenBranch thenTarget)
+    (elseLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par elseRaw targetRawIH →
+      ∃ elseTarget :
+          Term context (motiveType.subst0 Ty.bool RawTerm.boolFalse) targetRawIH,
+        Step.par elseBranch elseTarget)
+    {scrutTargetRaw thenTargetRaw elseTargetRaw : RawTerm scope}
+    (scrutStep : RawStep.par scrutineeRaw scrutTargetRaw)
+    (thenStep : RawStep.par thenRaw thenTargetRaw)
+    (elseStep : RawStep.par elseRaw elseTargetRaw) :
+    ∃ targetTerm :
+        Term context (motiveType.subst0 Ty.bool scrutTargetRaw)
+                     (RawTerm.boolElim scrutTargetRaw thenTargetRaw elseTargetRaw),
+      Step.par (Term.boolElim (motiveType := motiveType) scrutinee thenBranch elseBranch)
+               targetTerm := by
+  obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+  obtain ⟨thenTarget, thenStepTyped⟩ := thenLift thenStep
+  obtain ⟨elseTarget, elseStepTyped⟩ := elseLift elseStep
+  exact ⟨Term.boolElim (motiveType := motiveType) scrutTarget thenTarget elseTarget,
+         Step.par.boolElim scrutStepTyped thenStepTyped elseStepTyped⟩
+
+/-- **CONVTRANS-B.2b — Term.natElim lift, cong arm only.**  Constant
+motive at `Ty level scope`; output type fixed at `motiveType`.  The
+ι-arms (iotaNatElimZeroDeep / iotaNatElimSuccDeep) live in the full
+`lift_natElim` variant above. -/
+theorem RawStep.par.lift_natElim_cong
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch : Term context (Ty.arrow Ty.nat motiveType) succRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context Ty.nat targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (zeroLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par zeroRaw targetRawIH →
+      ∃ zeroTarget : Term context motiveType targetRawIH,
+        Step.par zeroBranch zeroTarget)
+    (succLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par succRaw targetRawIH →
+      ∃ succTarget : Term context (Ty.arrow Ty.nat motiveType) targetRawIH,
+        Step.par succBranch succTarget)
+    {scrutTargetRaw zeroTargetRaw succTargetRaw : RawTerm scope}
+    (scrutStep : RawStep.par scrutineeRaw scrutTargetRaw)
+    (zeroStep : RawStep.par zeroRaw zeroTargetRaw)
+    (succStep : RawStep.par succRaw succTargetRaw) :
+    ∃ targetTerm :
+        Term context motiveType
+                     (RawTerm.natElim scrutTargetRaw zeroTargetRaw succTargetRaw),
+      Step.par (Term.natElim scrutinee zeroBranch succBranch) targetTerm := by
+  obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+  obtain ⟨zeroTarget, zeroStepTyped⟩ := zeroLift zeroStep
+  obtain ⟨succTarget, succStepTyped⟩ := succLift succStep
+  exact ⟨Term.natElim scrutTarget zeroTarget succTarget,
+         Step.par.natElim scrutStepTyped zeroStepTyped succStepTyped⟩
+
+/-- **CONVTRANS-B.2b — Term.natRec lift, cong arm only.**  Same
+constant-motive shape as natElim_cong; succ branch type uses the
+recursive arrow `Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)`. -/
+theorem RawStep.par.lift_natRec_cong
+    {motiveType : Ty level scope}
+    {scrutineeRaw zeroRaw succRaw : RawTerm scope}
+    (scrutinee : Term context Ty.nat scrutineeRaw)
+    (zeroBranch : Term context motiveType zeroRaw)
+    (succBranch :
+      Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType)) succRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context Ty.nat targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (zeroLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par zeroRaw targetRawIH →
+      ∃ zeroTarget : Term context motiveType targetRawIH,
+        Step.par zeroBranch zeroTarget)
+    (succLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par succRaw targetRawIH →
+      ∃ succTarget :
+          Term context (Ty.arrow Ty.nat (Ty.arrow motiveType motiveType))
+                       targetRawIH,
+        Step.par succBranch succTarget)
+    {scrutTargetRaw zeroTargetRaw succTargetRaw : RawTerm scope}
+    (scrutStep : RawStep.par scrutineeRaw scrutTargetRaw)
+    (zeroStep : RawStep.par zeroRaw zeroTargetRaw)
+    (succStep : RawStep.par succRaw succTargetRaw) :
+    ∃ targetTerm :
+        Term context motiveType
+                     (RawTerm.natRec scrutTargetRaw zeroTargetRaw succTargetRaw),
+      Step.par (Term.natRec scrutinee zeroBranch succBranch) targetTerm := by
+  obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+  obtain ⟨zeroTarget, zeroStepTyped⟩ := zeroLift zeroStep
+  obtain ⟨succTarget, succStepTyped⟩ := succLift succStep
+  exact ⟨Term.natRec scrutTarget zeroTarget succTarget,
+         Step.par.natRec scrutStepTyped zeroStepTyped succStepTyped⟩
+
+/-- **CONVTRANS-B.2b — Term.listElim lift, cong arm only.**  Constant
+motive; scrutinee at `Ty.listType elementType`; cons branch type uses
+the binary arrow `Ty.arrow elementType (Ty.arrow (Ty.listType elementType)
+motiveType)`. -/
+theorem RawStep.par.lift_listElim_cong
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw nilRaw consRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.listType elementType) scrutineeRaw)
+    (nilBranch : Term context motiveType nilRaw)
+    (consBranch :
+      Term context
+        (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+        consRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context (Ty.listType elementType) targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (nilLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par nilRaw targetRawIH →
+      ∃ nilTarget : Term context motiveType targetRawIH,
+        Step.par nilBranch nilTarget)
+    (consLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par consRaw targetRawIH →
+      ∃ consTarget :
+          Term context
+            (Ty.arrow elementType (Ty.arrow (Ty.listType elementType) motiveType))
+            targetRawIH,
+        Step.par consBranch consTarget)
+    {scrutTargetRaw nilTargetRaw consTargetRaw : RawTerm scope}
+    (scrutStep : RawStep.par scrutineeRaw scrutTargetRaw)
+    (nilStep : RawStep.par nilRaw nilTargetRaw)
+    (consStep : RawStep.par consRaw consTargetRaw) :
+    ∃ targetTerm :
+        Term context motiveType
+                     (RawTerm.listElim scrutTargetRaw nilTargetRaw consTargetRaw),
+      Step.par (Term.listElim scrutinee nilBranch consBranch) targetTerm := by
+  obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+  obtain ⟨nilTarget, nilStepTyped⟩ := nilLift nilStep
+  obtain ⟨consTarget, consStepTyped⟩ := consLift consStep
+  exact ⟨Term.listElim scrutTarget nilTarget consTarget,
+         Step.par.listElim scrutStepTyped nilStepTyped consStepTyped⟩
+
+/-- **CONVTRANS-B.2b — Term.optionMatch lift, cong arm only.**
+Constant motive; scrutinee at `Ty.optionType elementType`; some branch
+type `Ty.arrow elementType motiveType`. -/
+theorem RawStep.par.lift_optionMatch_cong
+    {elementType motiveType : Ty level scope}
+    {scrutineeRaw noneRaw someRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.optionType elementType) scrutineeRaw)
+    (noneBranch : Term context motiveType noneRaw)
+    (someBranch : Term context (Ty.arrow elementType motiveType) someRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget : Term context (Ty.optionType elementType) targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (noneLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par noneRaw targetRawIH →
+      ∃ noneTarget : Term context motiveType targetRawIH,
+        Step.par noneBranch noneTarget)
+    (someLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par someRaw targetRawIH →
+      ∃ someTarget :
+          Term context (Ty.arrow elementType motiveType) targetRawIH,
+        Step.par someBranch someTarget)
+    {scrutTargetRaw noneTargetRaw someTargetRaw : RawTerm scope}
+    (scrutStep : RawStep.par scrutineeRaw scrutTargetRaw)
+    (noneStep : RawStep.par noneRaw noneTargetRaw)
+    (someStep : RawStep.par someRaw someTargetRaw) :
+    ∃ targetTerm :
+        Term context motiveType
+                     (RawTerm.optionMatch scrutTargetRaw noneTargetRaw
+                                          someTargetRaw),
+      Step.par (Term.optionMatch scrutinee noneBranch someBranch) targetTerm := by
+  obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+  obtain ⟨noneTarget, noneStepTyped⟩ := noneLift noneStep
+  obtain ⟨someTarget, someStepTyped⟩ := someLift someStep
+  exact ⟨Term.optionMatch scrutTarget noneTarget someTarget,
+         Step.par.optionMatch scrutStepTyped noneStepTyped someStepTyped⟩
+
+/-- **CONVTRANS-B.2b — Term.eitherMatch lift, cong arm only.**
+Constant motive; scrutinee at `Ty.eitherType leftType rightType`;
+both branches at `Ty.arrow <side>Type motiveType`. -/
+theorem RawStep.par.lift_eitherMatch_cong
+    {leftType rightType motiveType : Ty level scope}
+    {scrutineeRaw leftRaw rightRaw : RawTerm scope}
+    (scrutinee : Term context (Ty.eitherType leftType rightType) scrutineeRaw)
+    (leftBranch : Term context (Ty.arrow leftType motiveType) leftRaw)
+    (rightBranch : Term context (Ty.arrow rightType motiveType) rightRaw)
+    (scrutLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par scrutineeRaw targetRawIH →
+      ∃ scrutTarget :
+          Term context (Ty.eitherType leftType rightType) targetRawIH,
+        Step.par scrutinee scrutTarget)
+    (leftLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par leftRaw targetRawIH →
+      ∃ leftTarget :
+          Term context (Ty.arrow leftType motiveType) targetRawIH,
+        Step.par leftBranch leftTarget)
+    (rightLift : ∀ {targetRawIH : RawTerm scope},
+      RawStep.par rightRaw targetRawIH →
+      ∃ rightTarget :
+          Term context (Ty.arrow rightType motiveType) targetRawIH,
+        Step.par rightBranch rightTarget)
+    {scrutTargetRaw leftTargetRaw rightTargetRaw : RawTerm scope}
+    (scrutStep : RawStep.par scrutineeRaw scrutTargetRaw)
+    (leftStep : RawStep.par leftRaw leftTargetRaw)
+    (rightStep : RawStep.par rightRaw rightTargetRaw) :
+    ∃ targetTerm :
+        Term context motiveType
+                     (RawTerm.eitherMatch scrutTargetRaw leftTargetRaw
+                                          rightTargetRaw),
+      Step.par (Term.eitherMatch scrutinee leftBranch rightBranch) targetTerm := by
+  obtain ⟨scrutTarget, scrutStepTyped⟩ := scrutLift scrutStep
+  obtain ⟨leftTarget, leftStepTyped⟩ := leftLift leftStep
+  obtain ⟨rightTarget, rightStepTyped⟩ := rightLift rightStep
+  exact ⟨Term.eitherMatch scrutTarget leftTarget rightTarget,
+         Step.par.eitherMatch scrutStepTyped leftStepTyped rightStepTyped⟩
+
 end LeanFX2
