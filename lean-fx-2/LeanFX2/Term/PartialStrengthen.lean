@@ -453,6 +453,37 @@ def partialStrengthenTypedIntervalOpp {mode : Mode} {level : Nat}
         rawRenames := congrArg RawTerm.intervalOpp rawRenames
       }
 
+/-- Record introduction strengthens by strengthening its field. -/
+def partialStrengthenTypedRecordIntro {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {singleFieldType : Ty level sourceScope}
+    {firstRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {firstField : Term sourceCtx singleFieldType firstRaw}
+    (fieldResult : StrengtheningResult strengthening firstField) :
+    StrengtheningResult strengthening (Term.recordIntro firstField) where
+  targetType := Ty.record fieldResult.targetType
+  targetRaw := RawTerm.recordIntro fieldResult.targetRaw
+  targetTerm := Term.recordIntro fieldResult.targetTerm
+  typeStrengthens := by
+    change
+      (match singleFieldType.partialStrengthen? strengthening.back with
+      | some strengthenedField => some (Ty.record strengthenedField)
+      | none => none) =
+        some (Ty.record fieldResult.targetType)
+    rw [fieldResult.typeStrengthens]
+  rawStrengthens := by
+    change
+      (match firstRaw.partialStrengthen? strengthening.back with
+      | some strengthenedField => some (RawTerm.recordIntro strengthenedField)
+      | none => none) =
+        some (RawTerm.recordIntro fieldResult.targetRaw)
+    rw [fieldResult.rawStrengthens]
+  typeRenames := congrArg Ty.record fieldResult.typeRenames
+  rawRenames := congrArg RawTerm.recordIntro fieldResult.rawRenames
+
 end Term
 
 end LeanFX2
