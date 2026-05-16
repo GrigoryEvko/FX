@@ -1274,6 +1274,27 @@ inductive Step :
     `feedback_d255_d256_blocker_2026_05_15.md` for the concrete
     eta-trap derivation.
 
+    2026-05-16 update: re-attempt revealed the eta cascade requires
+    a TYPED `Step.par.eta` extension too, not just raw.  Reason:
+    `RawStep.par.lift_lam` / `lift_lamPi` (typed Term.lam preservation
+    in `Term/PreservesTerm/TierZeroAndUnary.lean:362-398`) become
+    unprovable in the `Or.inr` (eta) case of the updated `lam_inv`
+    — the goal `∃ targetTerm : Term ctx (Ty.arrow ...) targetRaw,
+    Step.par (Term.lam body) targetTerm` cannot be discharged because
+    typed kernel has no Step.par rule that produces non-lam output
+    from `Term.lam` input.  Full D2.5.5 cascade scope therefore
+    extends to ~1500+ LoC across raw + typed layers.  See memory
+    `feedback_d255_eta_typed_cascade_2026_05_16.md`.  Partial Phase A
+    work (eta + etaDeep raw ctors, rename + subst compat arms,
+    lam_inv disjunction) preserved in stash
+    `wt-eta-cascade-phase-A-partial+compat-arm-WIP-2026-05-16` (and
+    a deeper revision in `wt-eta-cascade-with-typed-ParInductive-
+    2026-05-16` that adds typed `Step.par.eta` + `Step.par.etaDeep`
+    ctors but still blocks at `TierZeroAndUnary`'s `lift_lam` Or.inr
+    discharge — needs typed Term.app + Term.weaken inversion ~150 LoC
+    + `HeadlineRenameInjInv:787` Or.inr structural rename inversion
+    ~250 LoC).
+
   D2.5.6 (transpSigma — transp through dependent pair):
     BLOCKED on the same `cd_lemma` dispatch ambiguity (Barrier D)
     PLUS three Σ-specific barriers: (A) no `Term.transpFill`
