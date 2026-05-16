@@ -91,5 +91,12 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedEitherCode_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedIdCode_sound
 #print axioms LeanFX2.Term.partialStrengthenTypedEquivCode_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedRefl_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedOeqRefl_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedIdStrictRefl_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivReflId_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedEquivReflIdAtId_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedFunextRefl_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId_sound
 
 end LeanFX2.SmokeTypedInversion

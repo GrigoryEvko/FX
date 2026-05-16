@@ -502,5 +502,12 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEitherCode_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdCode_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivCode_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedRefl_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedOeqRefl_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedIdStrictRefl_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivReflId_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedEquivReflIdAtId_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextRefl_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedFunextReflAtId_sound
 
 end LeanFX2.Tools
