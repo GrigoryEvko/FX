@@ -1,5 +1,7 @@
 import LeanFX2.Term.Rename
 import LeanFX2.Foundation.RawPartialRename.UnweakenInversion
+import LeanFX2.Foundation.RawPartialRename.Strengthen
+import LeanFX2.Foundation.TyStrengthen
 
 /-! # Term/WeakenInverse — typed strengthening foundation lemmas.
 
@@ -583,5 +585,111 @@ theorem Term.weaken_var_unfolds
     {pos' : Fin scope} :
     Term.weaken (newType := newType) (Term.var (context := context) pos')
       = Term.var (context := context.cons newType) (Fin.succ pos') := rfl
+
+/-! ## Semantic and partial strengthening certificates.
+
+These term-facing variants strengthen the type and raw indices together.
+They deliberately stop at index certificates: constructing the full
+typed predecessor still requires a constructor transport layer over
+`Term`, but consumers no longer need to rediscover type/raw index
+strengthening locally. -/
+
+/-- General term-facing partial strengthening recognizer for the type
+and raw indices of a typed term. -/
+def Term.partialStrengthen? {mode : Mode} {level sourceScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {someType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (term : Term context someType raw)
+    {targetScope : Nat}
+    (back : PartialRawRenaming sourceScope targetScope) :
+    Option (Ty level targetScope × RawTerm targetScope) :=
+  Option.mapTwo
+    (someType.partialStrengthen? back)
+    (RawTerm.partialStrengthen? term.toRaw back)
+    Prod.mk
+
+/-- Successful term-facing partial strengthening reconstructs the typed
+term's type and raw indices by renaming the strengthened witnesses
+forward. -/
+theorem Term.partialStrengthen?_imp_indices_rename
+    {mode : Mode} {level sourceScope targetScope : Nat}
+    {context : Ctx mode level sourceScope}
+    {someType : Ty level sourceScope}
+    {raw : RawTerm sourceScope}
+    (term : Term context someType raw)
+    (forwardRenaming : RawRenaming targetScope sourceScope)
+    (back : PartialRawRenaming sourceScope targetScope)
+    (renamingInjectsBack :
+      ∀ (intermediatePos : Fin sourceScope)
+        (sourcePos : Fin targetScope),
+        back intermediatePos = some sourcePos →
+        intermediatePos = forwardRenaming sourcePos)
+    (extracted : Ty level targetScope × RawTerm targetScope)
+    (success : Term.partialStrengthen? term back = some extracted) :
+    someType = extracted.fst.rename forwardRenaming ∧
+      term.toRaw = extracted.snd.rename forwardRenaming := by
+  obtain ⟨typeExtracted, rawExtracted,
+    typeSuccess, rawSuccess, extractedEq⟩ := Option.mapTwo_eq_some success
+  rw [extractedEq]
+  exact
+    ⟨Ty.partialStrengthen?_imp_rename someType forwardRenaming back
+        renamingInjectsBack typeExtracted typeSuccess,
+      RawTerm.partialStrengthen?_imp_rename term.toRaw forwardRenaming back
+        renamingInjectsBack rawExtracted rawSuccess⟩
+
+/-- Single-newest-slot term-facing strengthening recognizer. -/
+def Term.strengthen? {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {someType : Ty level (scope + 1)}
+    {raw : RawTerm (scope + 1)}
+    (term : Term context someType raw) :
+    Option (Ty level scope × RawTerm scope) :=
+  Term.partialStrengthen? term PartialRawRenaming.dropNewest
+
+/-- Semantic newest-slot use predicate for a typed term, computed from
+its raw index. -/
+def Term.usesNewestSlot? {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {someType : Ty level (scope + 1)}
+    {raw : RawTerm (scope + 1)}
+(term : Term context someType raw) : Bool :=
+  (Term.strengthen? term).isNone
+
+/-- Successful single-slot term strengthening gives the canonical
+weakening equations for the typed term's type and raw indices. -/
+theorem Term.strengthen?_imp_indices_weaken
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {someType : Ty level (scope + 1)}
+    {raw : RawTerm (scope + 1)}
+    (term : Term context someType raw)
+    (extracted : Ty level scope × RawTerm scope)
+    (success : Term.strengthen? term = some extracted) :
+    someType = extracted.fst.weaken ∧ term.toRaw = extracted.snd.weaken :=
+  Term.partialStrengthen?_imp_indices_rename term RawRenaming.weaken
+    PartialRawRenaming.dropNewest
+    PartialRawRenaming.dropNewest_renamingInjectsBack extracted success
+
+/-- If a typed term semantically avoids the newest slot, then its type
+and raw indices are both syntactic weakenings. -/
+theorem Term.not_usesNewestSlot?_imp_indices_weaken
+    {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level (scope + 1)}
+    {someType : Ty level (scope + 1)}
+    {raw : RawTerm (scope + 1)}
+    (term : Term context someType raw)
+    (slotIsUnused : Term.usesNewestSlot? term = false) :
+    ∃ extracted : Ty level scope × RawTerm scope,
+      someType = extracted.fst.weaken ∧ term.toRaw = extracted.snd.weaken := by
+  unfold Term.usesNewestSlot? at slotIsUnused
+  unfold Term.strengthen? at slotIsUnused
+  cases success :
+      Term.partialStrengthen? term PartialRawRenaming.dropNewest with
+  | none =>
+      rw [success] at slotIsUnused
+      cases slotIsUnused
+  | some extracted =>
+      exact ⟨extracted, Term.strengthen?_imp_indices_weaken term extracted success⟩
 
 end LeanFX2

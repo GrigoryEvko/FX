@@ -337,5 +337,12 @@ pattern as commits f3df931 (RawStep.par inversions) and d2e9d4a
 #assert_no_axioms LeanFX2.Term.eta_shape_construct
 #assert_no_axioms LeanFX2.Term.weaken_var_unfolds
 #assert_no_axioms LeanFX2.Term.weaken_app_toRaw
+-- Semantic / partial strengthening raw-index certificates.
+#assert_no_axioms LeanFX2.Term.partialStrengthen?
+#assert_no_axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
+#assert_no_axioms LeanFX2.Term.strengthen?
+#assert_no_axioms LeanFX2.Term.usesNewestSlot?
+#assert_no_axioms LeanFX2.Term.strengthen?_imp_indices_weaken
+#assert_no_axioms LeanFX2.Term.not_usesNewestSlot?_imp_indices_weaken
 
 end LeanFX2.Tools

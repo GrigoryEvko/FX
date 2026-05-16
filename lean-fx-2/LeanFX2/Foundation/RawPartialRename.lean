@@ -3,6 +3,7 @@ import LeanFX2.Foundation.RawPartialRename.Function
 import LeanFX2.Foundation.RawPartialRename.VarLemmas
 import LeanFX2.Foundation.RawPartialRename.Inversion
 import LeanFX2.Foundation.RawPartialRename.UnweakenInversion
+import LeanFX2.Foundation.RawPartialRename.Strengthen
 
 /-! # LeanFX2.Foundation.RawPartialRename — partial renaming (shim)
 
@@ -24,6 +25,7 @@ corollary`:
 | `VarLemmas` | Variable, binder, and `pathLam` guardrail lemmas plus `partialRename?_rename_some` and `unweaken?_weaken` |
 | `Inversion` | `Option.mapN_eq_some` decomposers, `lift_renamingInjectsBack`, and the giant per-constructor `partialRename?_imp_rename` induction |
 | `UnweakenInversion` | `dropNewest_renamingInjectsBack` + `unweaken?_imp_weaken` headline corollary |
+| `Strengthen` | semantic names for `partialStrengthen?`, `strengthen?`, and newest-slot use |
 
 ## Root status
 

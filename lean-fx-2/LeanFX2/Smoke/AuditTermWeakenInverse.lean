@@ -52,4 +52,24 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.weaken_var_unfolds
 #print axioms LeanFX2.Term.weaken_app_toRaw
 
+-- Semantic / partial strengthening certificates
+#print axioms LeanFX2.RawTerm.partialStrengthen?
+#print axioms LeanFX2.RawTerm.partialStrengthen?_imp_rename
+#print axioms LeanFX2.RawTerm.strengthen?
+#print axioms LeanFX2.RawTerm.usesNewestSlot?
+#print axioms LeanFX2.RawTerm.not_usesNewestSlot?_imp_weaken
+#print axioms LeanFX2.RawTerm.weaken_not_usesNewestSlot?
+#print axioms LeanFX2.Ty.partialStrengthen?
+#print axioms LeanFX2.Ty.strengthen?
+#print axioms LeanFX2.Ty.usesNewestSlot?
+#print axioms LeanFX2.Ty.partialStrengthen?_imp_rename
+#print axioms LeanFX2.Ty.strengthen?_imp_weaken
+#print axioms LeanFX2.Ty.not_usesNewestSlot?_imp_weaken
+#print axioms LeanFX2.Term.partialStrengthen?
+#print axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
+#print axioms LeanFX2.Term.strengthen?
+#print axioms LeanFX2.Term.usesNewestSlot?
+#print axioms LeanFX2.Term.strengthen?_imp_indices_weaken
+#print axioms LeanFX2.Term.not_usesNewestSlot?_imp_indices_weaken
+
 end LeanFX2.SmokeTermWeakenInverse
