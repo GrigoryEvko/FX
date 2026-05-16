@@ -1,5 +1,6 @@
 import LeanFX2.Term.WeakenInverse
 import LeanFX2.Term.ContextStrengthening
+import LeanFX2.Term.PartialStrengthen
 
 /-! # AuditTermWeakenInverse — typed strengthening foundation primitives.
 
@@ -72,6 +73,13 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.ContextStrengthening.toTermRenaming
 #print axioms LeanFX2.ContextStrengthening.dropNewest
 #print axioms LeanFX2.ContextStrengthening.dropNewest_toTermRenaming
+#print axioms LeanFX2.Term.StrengtheningResult
+#print axioms LeanFX2.Term.StrengtheningResult.renamedTarget
+#print axioms LeanFX2.Term.partialStrengthenTypedVarOfSurvives
+#print axioms LeanFX2.Term.partialStrengthenTypedUnit
+#print axioms LeanFX2.Term.partialStrengthenTypedBoolTrue
+#print axioms LeanFX2.Term.partialStrengthenTypedBoolFalse
+#print axioms LeanFX2.Term.partialStrengthenTypedNatZero
 #print axioms LeanFX2.Term.partialStrengthen?
 #print axioms LeanFX2.Term.partialStrengthen?_imp_indices_rename
 #print axioms LeanFX2.Term.strengthen?
