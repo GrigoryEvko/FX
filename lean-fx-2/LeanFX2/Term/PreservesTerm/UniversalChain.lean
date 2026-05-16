@@ -310,6 +310,56 @@ inductive DispatchAtom :
       DispatchAtom (Term.natSucc (context := context) predecessor
                     : Term context Ty.nat
                                    (RawTerm.natSucc predRaw))
+  /-- Parametric closed-type ctor.  Requires `IsClosedTy elementType` so
+  the SR bridge for both head (at `elementType`) and tail (at
+  `Ty.listType elementType` via `IsClosedTy.listType`) discharges. -/
+  | listCons {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType : Ty level scope}
+      (elementClosed : IsClosedTy elementType)
+      {headRaw tailRaw : RawTerm scope}
+      (headTerm : Term context elementType headRaw)
+      (tailTerm : Term context (Ty.listType elementType) tailRaw)
+      (headDispatch : DispatchAtom headTerm)
+      (tailDispatch : DispatchAtom tailTerm) :
+      DispatchAtom (Term.listCons (context := context) headTerm tailTerm
+                    : Term context (Ty.listType elementType)
+                                   (RawTerm.listCons headRaw tailRaw))
+  /-- Parametric closed-type option ctor. -/
+  | optionSome {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {elementType : Ty level scope}
+      (elementClosed : IsClosedTy elementType)
+      {valueRaw : RawTerm scope}
+      (valueTerm : Term context elementType valueRaw)
+      (valueDispatch : DispatchAtom valueTerm) :
+      DispatchAtom (Term.optionSome (context := context) valueTerm
+                    : Term context (Ty.optionType elementType)
+                                   (RawTerm.optionSome valueRaw))
+  /-- Parametric closed-type either-left ctor. -/
+  | eitherInl {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftType rightType : Ty level scope}
+      (leftClosed : IsClosedTy leftType)
+      {valueRaw : RawTerm scope}
+      (valueTerm : Term context leftType valueRaw)
+      (valueDispatch : DispatchAtom valueTerm) :
+      DispatchAtom (Term.eitherInl (context := context)
+                                    (rightType := rightType) valueTerm
+                    : Term context (Ty.eitherType leftType rightType)
+                                   (RawTerm.eitherInl valueRaw))
+  /-- Parametric closed-type either-right ctor. -/
+  | eitherInr {mode : Mode} {level scope : Nat}
+      {context : Ctx mode level scope}
+      {leftType rightType : Ty level scope}
+      (rightClosed : IsClosedTy rightType)
+      {valueRaw : RawTerm scope}
+      (valueTerm : Term context rightType valueRaw)
+      (valueDispatch : DispatchAtom valueTerm) :
+      DispatchAtom (Term.eitherInr (context := context)
+                                    (leftType := leftType) valueTerm
+                    : Term context (Ty.eitherType leftType rightType)
+                                   (RawTerm.eitherInr valueRaw))
 
 /-- **CONVTRANS-C Phase A1 headline** — universal per-step dispatcher
 restricted to dispatchable ctors.
@@ -467,5 +517,44 @@ theorem RawStep.par.lift_full_term
       Step.par.preserves_isClosedTy IsClosedTy.nat predStep rfl
     subst natEq
     exact ⟨predTarget, predStep⟩
+  | listCons elementClosed headTerm tailTerm _ _ ihHead ihTail =>
+    refine RawStep.par.lift_full_listCons headTerm tailTerm ?_ ?_ rawStep
+    · intro _ headRawStep
+      obtain ⟨headTargetType, headTarget, headStep⟩ := ihHead headRawStep
+      have elemEq : headTargetType = _ :=
+        Step.par.preserves_isClosedTy elementClosed headStep rfl
+      subst elemEq
+      exact ⟨headTarget, headStep⟩
+    · intro _ tailRawStep
+      obtain ⟨tailTargetType, tailTarget, tailStep⟩ := ihTail tailRawStep
+      have listEq : tailTargetType = _ :=
+        Step.par.preserves_isClosedTy (IsClosedTy.listType elementClosed)
+                                      tailStep rfl
+      subst listEq
+      exact ⟨tailTarget, tailStep⟩
+  | optionSome elementClosed valueTerm _ ihValue =>
+    refine RawStep.par.lift_full_optionSome valueTerm ?_ rawStep
+    intro _ valueRawStep
+    obtain ⟨valueTargetType, valueTarget, valueStep⟩ := ihValue valueRawStep
+    have elemEq : valueTargetType = _ :=
+      Step.par.preserves_isClosedTy elementClosed valueStep rfl
+    subst elemEq
+    exact ⟨valueTarget, valueStep⟩
+  | eitherInl leftClosed valueTerm _ ihValue =>
+    refine RawStep.par.lift_full_eitherInl valueTerm ?_ rawStep
+    intro _ valueRawStep
+    obtain ⟨valueTargetType, valueTarget, valueStep⟩ := ihValue valueRawStep
+    have leftEq : valueTargetType = _ :=
+      Step.par.preserves_isClosedTy leftClosed valueStep rfl
+    subst leftEq
+    exact ⟨valueTarget, valueStep⟩
+  | eitherInr rightClosed valueTerm _ ihValue =>
+    refine RawStep.par.lift_full_eitherInr valueTerm ?_ rawStep
+    intro _ valueRawStep
+    obtain ⟨valueTargetType, valueTarget, valueStep⟩ := ihValue valueRawStep
+    have rightEq : valueTargetType = _ :=
+      Step.par.preserves_isClosedTy rightClosed valueStep rfl
+    subst rightEq
+    exact ⟨valueTarget, valueStep⟩
 
 end LeanFX2
