@@ -525,5 +525,8 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedRecordProjOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedCodataUnfoldOfSuccess_sound
 #assert_no_axioms LeanFX2.Term.partialStrengthenTypedCodataDestOfSuccess_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSessionSend_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedSessionRecv_sound
+#assert_no_axioms LeanFX2.Term.partialStrengthenTypedCumulUp_sound
 
 end LeanFX2.Tools

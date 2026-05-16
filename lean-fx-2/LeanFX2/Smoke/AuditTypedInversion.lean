@@ -140,4 +140,16 @@ namespace LeanFX2.SmokeTypedInversion
 #print axioms LeanFX2.Term.partialStrengthenTypedCodataDestOfSuccess
 #print axioms LeanFX2.Term.partialStrengthenTypedCodataDestOfSuccess_sound
 
+-- Phase 15: session + cumulUp producers soundness.
+-- All three are "direct" producers (no Option.casesOn discriminator
+-- wall): the session protocol pivot is pre-witnessed by the
+-- `protocolStrengthens` hypothesis, and cumulUp's source type is the
+-- closed `Ty.universe lvl` whose partial-strengthen reduces
+-- definitionally.  Soundness mirrors the producer's `change / rw /
+-- cases` chain for session pairs, and a plain `cases codeTypeStrengthens`
+-- for the cumulUp closed-universe case.
+#print axioms LeanFX2.Term.partialStrengthenTypedSessionSend_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedSessionRecv_sound
+#print axioms LeanFX2.Term.partialStrengthenTypedCumulUp_sound
+
 end LeanFX2.SmokeTypedInversion

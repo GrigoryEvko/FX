@@ -2443,6 +2443,131 @@ theorem partialStrengthenTypedCodataDestOfSuccess_sound {mode : Mode}
   exact Term.codataDest_HEq_congr stateRenames outputRenames
     codataRawRenames codataSound
 
+/-- Soundness for session-send strengthening.  The producer is direct
+(no Option.casesOn discriminator wall — protocol pivot is pre-witnessed
+by the `protocolStrengthens` hypothesis), so soundness mirrors the
+producer's case structure with the same `change / rw / cases` chain
+to unify the channel's session type with the target's protocol step. -/
+theorem partialStrengthenTypedSessionSend_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {targetProtocolStep : RawTerm targetScope}
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (protocolStrengthens :
+      protocolStep.partialStrengthen? strengthening.back =
+        some targetProtocolStep)
+    {channelResult : StrengtheningResult strengthening channel}
+    {payloadResult : StrengtheningResult strengthening payload}
+    (channelSound : StrengtheningSoundness channelResult)
+    (payloadSound : StrengtheningSoundness payloadResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedSessionSend protocolStrengthens channelResult
+        payloadResult) := by
+  cases channelResult with
+  | mk targetChannelType targetChannelRaw targetChannelTerm
+      channelTypeStrengthens channelRawStrengthens channelTypeRenames
+      channelRawRenames =>
+      change
+        (match protocolStep.partialStrengthen? strengthening.back with
+        | some strengthenedProtocol => some (Ty.session strengthenedProtocol)
+        | none => none) = some targetChannelType at channelTypeStrengthens
+      rw [protocolStrengthens] at channelTypeStrengthens
+      cases channelTypeStrengthens
+      cases payloadResult with
+      | mk targetPayloadType targetPayloadRaw targetPayloadTerm
+          payloadTypeStrengthens payloadRawStrengthens payloadTypeRenames
+          payloadRawRenames =>
+          refine ⟨?_⟩
+          dsimp [partialStrengthenTypedSessionSend,
+              StrengtheningResult.renamedTarget] at channelSound payloadSound ⊢
+          have protocolRenames :
+              protocolStep = targetProtocolStep.rename strengthening.forward :=
+            RawTerm.partialStrengthen?_imp_rename protocolStep
+              strengthening.forward strengthening.back strengthening.injectsBack
+              targetProtocolStep protocolStrengthens
+          exact Term.sessionSend_HEq_congr protocolRenames
+            payloadTypeRenames channelRawRenames payloadRawRenames
+            channelSound.termRenames payloadSound.termRenames
+
+/-- Soundness for session-receive strengthening.  Mirrors the session-send
+soundness pattern with one fewer payload component: the producer cases the
+channel result and unifies the session type via `change / rw / cases` on
+the channel's typeStrengthens witness. -/
+theorem partialStrengthenTypedSessionRecv_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {targetProtocolStep : RawTerm targetScope}
+    {channelRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (protocolStrengthens :
+      protocolStep.partialStrengthen? strengthening.back =
+        some targetProtocolStep)
+    {channelResult : StrengtheningResult strengthening channel}
+    (channelSound : StrengtheningSoundness channelResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedSessionRecv protocolStrengthens
+        channelResult) := by
+  cases channelResult with
+  | mk targetChannelType targetChannelRaw targetChannelTerm
+      channelTypeStrengthens channelRawStrengthens channelTypeRenames
+      channelRawRenames =>
+      change
+        (match protocolStep.partialStrengthen? strengthening.back with
+        | some strengthenedProtocol => some (Ty.session strengthenedProtocol)
+        | none => none) = some targetChannelType at channelTypeStrengthens
+      rw [protocolStrengthens] at channelTypeStrengthens
+      cases channelTypeStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedSessionRecv,
+          StrengtheningResult.renamedTarget] at channelSound ⊢
+      have protocolRenames :
+          protocolStep = targetProtocolStep.rename strengthening.forward :=
+        RawTerm.partialStrengthen?_imp_rename protocolStep
+          strengthening.forward strengthening.back strengthening.injectsBack
+          targetProtocolStep protocolStrengthens
+      exact Term.sessionRecv_HEq_congr protocolRenames channelRawRenames
+        channelSound.termRenames
+
+/-- Soundness for cumulativity-promotion strengthening.  The producer is
+direct: the type-code's source type is `Ty.universe lowerLevel levelLeLow`
+(closed in scope), so its partial-strengthen reduces definitionally to
+`some (Ty.universe lowerLevel levelLeLow)` and `cases` unifies cleanly.
+Only the code's raw rename equation is load-bearing. -/
+theorem partialStrengthenTypedCumulUp_sound {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    (lowerLevel higherLevel : UniverseLevel)
+    (cumulMonotone : lowerLevel.toNat ≤ higherLevel.toNat)
+    (levelLeLow : lowerLevel.toNat + 1 ≤ level)
+    (levelLeHigh : higherLevel.toNat + 1 ≤ level)
+    {codeRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {typeCode :
+      Term sourceCtx (Ty.universe lowerLevel levelLeLow) codeRaw}
+    {codeResult : StrengtheningResult strengthening typeCode}
+    (codeSound : StrengtheningSoundness codeResult) :
+    StrengtheningSoundness
+      (partialStrengthenTypedCumulUp lowerLevel higherLevel cumulMonotone
+        levelLeLow levelLeHigh codeResult) := by
+  cases codeResult with
+  | mk targetCodeType targetCodeRaw targetCodeTerm codeTypeStrengthens
+      codeRawStrengthens codeTypeRenames codeRawRenames =>
+      cases codeTypeStrengthens
+      refine ⟨?_⟩
+      dsimp [partialStrengthenTypedCumulUp,
+          StrengtheningResult.renamedTarget] at codeSound ⊢
+      exact Term.cumulUp_HEq_congr codeRawRenames codeSound.termRenames
+
 end Term
 
 end LeanFX2
