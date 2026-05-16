@@ -2597,6 +2597,274 @@ def partialStrengthenTypedRecordProj {mode : Mode} {level : Nat}
             rawRenames := congrArg RawTerm.recordProj rawRenames
           }
 
+/-- Codata unfold strengthens by strengthening the initial state, the
+transition function, and the output type index used by the codata
+carrier. -/
+def partialStrengthenTypedCodataUnfold {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {targetOutputType : Ty level targetScope}
+    {stateRaw transitionRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {initialState : Term sourceCtx stateType stateRaw}
+    {transition :
+      Term sourceCtx (Ty.arrow stateType outputType) transitionRaw}
+    (outputTypeStrengthens :
+      outputType.partialStrengthen? strengthening.back =
+        some targetOutputType)
+    (stateResult : StrengtheningResult strengthening initialState)
+    (transitionResult : StrengtheningResult strengthening transition) :
+    StrengtheningResult strengthening
+      (Term.codataUnfold initialState transition) := by
+  cases stateResult with
+  | mk targetStateType targetStateRaw targetStateTerm stateTypeStrengthens
+      stateRawStrengthens stateTypeRenames stateRawRenames =>
+      cases transitionResult with
+      | mk targetTransitionType targetTransitionRaw targetTransitionTerm
+          transitionTypeStrengthens transitionRawStrengthens
+          transitionTypeRenames transitionRawRenames =>
+          change
+            Option.mapTwo
+              (stateType.partialStrengthen? strengthening.back)
+              (outputType.partialStrengthen? strengthening.back)
+              Ty.arrow = some targetTransitionType at transitionTypeStrengthens
+          rw [stateTypeStrengthens, outputTypeStrengthens] at transitionTypeStrengthens
+          cases transitionTypeStrengthens
+          exact {
+            targetType := Ty.codata targetStateType targetOutputType
+            targetRaw := RawTerm.codataUnfold targetStateRaw
+              targetTransitionRaw
+            targetTerm := Term.codataUnfold targetStateTerm
+              targetTransitionTerm
+            typeStrengthens := by
+              change
+                Option.mapTwo
+                  (stateType.partialStrengthen? strengthening.back)
+                  (outputType.partialStrengthen? strengthening.back)
+                  Ty.codata =
+                    some (Ty.codata targetStateType targetOutputType)
+              rw [stateTypeStrengthens, outputTypeStrengthens]
+              rfl
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (stateRaw.partialStrengthen? strengthening.back)
+                  (transitionRaw.partialStrengthen? strengthening.back)
+                  RawTerm.codataUnfold =
+                    some (RawTerm.codataUnfold targetStateRaw
+                      targetTransitionRaw)
+              rw [stateRawStrengthens, transitionRawStrengthens]
+              rfl
+            typeRenames :=
+              Ty.partialStrengthen?_imp_rename
+                (Ty.codata stateType outputType)
+                strengthening.forward strengthening.back
+                strengthening.injectsBack
+                (Ty.codata targetStateType targetOutputType)
+                (by
+                  change
+                    Option.mapTwo
+                      (stateType.partialStrengthen? strengthening.back)
+                      (outputType.partialStrengthen? strengthening.back)
+                      Ty.codata =
+                        some (Ty.codata targetStateType targetOutputType)
+                  rw [stateTypeStrengthens, outputTypeStrengthens]
+                  rfl)
+            rawRenames := by
+              cases stateRawRenames
+              cases transitionRawRenames
+              rfl
+          }
+
+/-- Codata destruction strengthens by strengthening the codata payload
+and projecting the strengthened output type from the codata carrier. -/
+def partialStrengthenTypedCodataDest {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {stateType outputType : Ty level sourceScope}
+    {codataRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {codataValue : Term sourceCtx (Ty.codata stateType outputType) codataRaw}
+    (codataResult : StrengtheningResult strengthening codataValue) :
+    StrengtheningResult strengthening (Term.codataDest codataValue) := by
+  cases codataResult with
+  | mk targetCodataType targetCodataRaw targetCodataTerm
+      codataTypeStrengthens codataRawStrengthens codataTypeRenames
+      codataRawRenames =>
+      change
+        Option.mapTwo
+          (stateType.partialStrengthen? strengthening.back)
+          (outputType.partialStrengthen? strengthening.back)
+          Ty.codata = some targetCodataType at codataTypeStrengthens
+      cases stateSuccess : stateType.partialStrengthen? strengthening.back with
+      | none =>
+          rw [stateSuccess] at codataTypeStrengthens
+          cases codataTypeStrengthens
+      | some targetStateType =>
+          cases outputSuccess : outputType.partialStrengthen?
+              strengthening.back with
+          | none =>
+              rw [stateSuccess, outputSuccess] at codataTypeStrengthens
+              cases codataTypeStrengthens
+          | some targetOutputType =>
+              rw [stateSuccess, outputSuccess] at codataTypeStrengthens
+              cases codataTypeStrengthens
+              exact {
+                targetType := targetOutputType
+                targetRaw := RawTerm.codataDest targetCodataRaw
+                targetTerm := Term.codataDest targetCodataTerm
+                typeStrengthens := outputSuccess
+                rawStrengthens := by
+                  change
+                    (match codataRaw.partialStrengthen?
+                        strengthening.back with
+                    | some strengthenedCodata =>
+                        some (RawTerm.codataDest strengthenedCodata)
+                    | none => none) =
+                      some (RawTerm.codataDest targetCodataRaw)
+                  rw [codataRawStrengthens]
+                typeRenames :=
+                  Ty.partialStrengthen?_imp_rename outputType
+                    strengthening.forward strengthening.back
+                    strengthening.injectsBack targetOutputType outputSuccess
+                rawRenames := congrArg RawTerm.codataDest codataRawRenames
+              }
+
+/-- Session send strengthens by strengthening the protocol raw, channel,
+and payload while preserving the session carrier shape. -/
+def partialStrengthenTypedSessionSend {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {targetProtocolStep : RawTerm targetScope}
+    {payloadType : Ty level sourceScope}
+    {channelRaw payloadRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    {payload : Term sourceCtx payloadType payloadRaw}
+    (protocolStrengthens :
+      protocolStep.partialStrengthen? strengthening.back =
+        some targetProtocolStep)
+    (channelResult : StrengtheningResult strengthening channel)
+    (payloadResult : StrengtheningResult strengthening payload) :
+    StrengtheningResult strengthening
+      (Term.sessionSend protocolStep channel payload) := by
+  cases channelResult with
+  | mk targetChannelType targetChannelRaw targetChannelTerm
+      channelTypeStrengthens channelRawStrengthens channelTypeRenames
+      channelRawRenames =>
+      change
+        (match protocolStep.partialStrengthen? strengthening.back with
+        | some strengthenedProtocol => some (Ty.session strengthenedProtocol)
+        | none => none) = some targetChannelType at channelTypeStrengthens
+      rw [protocolStrengthens] at channelTypeStrengthens
+      cases channelTypeStrengthens
+      cases payloadResult with
+      | mk targetPayloadType targetPayloadRaw targetPayloadTerm
+          payloadTypeStrengthens payloadRawStrengthens payloadTypeRenames
+          payloadRawRenames =>
+          exact {
+            targetType := Ty.session targetProtocolStep
+            targetRaw := RawTerm.sessionSend targetChannelRaw targetPayloadRaw
+            targetTerm := Term.sessionSend targetProtocolStep
+              targetChannelTerm targetPayloadTerm
+            typeStrengthens := by
+              change
+                (match protocolStep.partialStrengthen? strengthening.back with
+                | some strengthenedProtocol =>
+                    some (Ty.session strengthenedProtocol)
+                | none => none) = some (Ty.session targetProtocolStep)
+              rw [protocolStrengthens]
+            rawStrengthens := by
+              change
+                Option.mapTwo
+                  (channelRaw.partialStrengthen? strengthening.back)
+                  (payloadRaw.partialStrengthen? strengthening.back)
+                  RawTerm.sessionSend =
+                    some (RawTerm.sessionSend targetChannelRaw
+                      targetPayloadRaw)
+              rw [channelRawStrengthens, payloadRawStrengthens]
+              rfl
+            typeRenames :=
+              Ty.partialStrengthen?_imp_rename (Ty.session protocolStep)
+                strengthening.forward strengthening.back
+                strengthening.injectsBack (Ty.session targetProtocolStep)
+                (by
+                  change
+                    (match protocolStep.partialStrengthen?
+                        strengthening.back with
+                    | some strengthenedProtocol =>
+                        some (Ty.session strengthenedProtocol)
+                    | none => none) = some (Ty.session targetProtocolStep)
+                  rw [protocolStrengthens])
+            rawRenames := by
+              cases channelRawRenames
+              cases payloadRawRenames
+              rfl
+          }
+
+/-- Session receive strengthens by strengthening the channel and
+protocol raw while preserving the session carrier shape. -/
+def partialStrengthenTypedSessionRecv {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {protocolStep : RawTerm sourceScope}
+    {targetProtocolStep : RawTerm targetScope}
+    {channelRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {channel : Term sourceCtx (Ty.session protocolStep) channelRaw}
+    (protocolStrengthens :
+      protocolStep.partialStrengthen? strengthening.back =
+        some targetProtocolStep)
+    (channelResult : StrengtheningResult strengthening channel) :
+    StrengtheningResult strengthening (Term.sessionRecv channel) := by
+  cases channelResult with
+  | mk targetChannelType targetChannelRaw targetChannelTerm
+      channelTypeStrengthens channelRawStrengthens channelTypeRenames
+      channelRawRenames =>
+      change
+        (match protocolStep.partialStrengthen? strengthening.back with
+        | some strengthenedProtocol => some (Ty.session strengthenedProtocol)
+        | none => none) = some targetChannelType at channelTypeStrengthens
+      rw [protocolStrengthens] at channelTypeStrengthens
+      cases channelTypeStrengthens
+      exact {
+        targetType := Ty.session targetProtocolStep
+        targetRaw := RawTerm.sessionRecv targetChannelRaw
+        targetTerm := Term.sessionRecv targetChannelTerm
+        typeStrengthens := by
+          change
+            (match protocolStep.partialStrengthen? strengthening.back with
+            | some strengthenedProtocol =>
+                some (Ty.session strengthenedProtocol)
+            | none => none) = some (Ty.session targetProtocolStep)
+          rw [protocolStrengthens]
+        rawStrengthens := by
+          change
+            (match channelRaw.partialStrengthen? strengthening.back with
+            | some strengthenedChannel =>
+                some (RawTerm.sessionRecv strengthenedChannel)
+            | none => none) = some (RawTerm.sessionRecv targetChannelRaw)
+          rw [channelRawStrengthens]
+        typeRenames :=
+          Ty.partialStrengthen?_imp_rename (Ty.session protocolStep)
+            strengthening.forward strengthening.back
+            strengthening.injectsBack (Ty.session targetProtocolStep)
+            (by
+              change
+                (match protocolStep.partialStrengthen? strengthening.back with
+                | some strengthenedProtocol =>
+                    some (Ty.session strengthenedProtocol)
+                | none => none) = some (Ty.session targetProtocolStep)
+              rw [protocolStrengthens])
+        rawRenames := congrArg RawTerm.sessionRecv channelRawRenames
+      }
+
 /-- Universe-code terms strengthen through every context strengthening.
 
 The raw universe code carries only the encoded inner universe level, so
