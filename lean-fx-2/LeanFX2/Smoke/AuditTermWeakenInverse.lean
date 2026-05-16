@@ -98,6 +98,8 @@ namespace LeanFX2.SmokeTermWeakenInverse
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalOpp
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalMeet
 #print axioms LeanFX2.Term.partialStrengthenTypedIntervalJoin
+#print axioms LeanFX2.Term.partialStrengthenTypedApp
+#print axioms LeanFX2.Term.partialStrengthenTypedAppPi
 #print axioms LeanFX2.Term.partialStrengthenTypedPair
 #print axioms LeanFX2.Term.partialStrengthenTypedFst
 #print axioms LeanFX2.Term.partialStrengthenTypedSnd

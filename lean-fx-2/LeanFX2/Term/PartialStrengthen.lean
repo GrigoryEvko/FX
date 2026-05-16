@@ -537,6 +537,169 @@ def partialStrengthenTypedIntervalJoin {mode : Mode} {level : Nat}
               rfl
           }
 
+/-- Non-dependent function application strengthens by strengthening the
+function and argument, then decomposing the strengthened arrow type. -/
+def partialStrengthenTypedApp {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType codomainType : Ty level sourceScope}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {functionTerm :
+      Term sourceCtx (Ty.arrow domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionResult : StrengtheningResult strengthening functionTerm)
+    (argumentResult : StrengtheningResult strengthening argumentTerm) :
+    StrengtheningResult strengthening
+      (Term.app functionTerm argumentTerm) := by
+  cases functionResult with
+  | mk targetFunctionType targetFunctionRaw targetFunctionTerm
+      functionTypeStrengthens functionRawStrengthens functionTypeRenames
+      functionRawRenames =>
+      change
+        Option.mapTwo
+          (domainType.partialStrengthen? strengthening.back)
+          (codomainType.partialStrengthen? strengthening.back)
+          Ty.arrow = some targetFunctionType at functionTypeStrengthens
+      cases domainSuccess : domainType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [domainSuccess] at functionTypeStrengthens
+          cases functionTypeStrengthens
+      | some targetDomainType =>
+          cases codomainSuccess : codomainType.partialStrengthen?
+              strengthening.back with
+          | none =>
+              rw [domainSuccess, codomainSuccess] at functionTypeStrengthens
+              cases functionTypeStrengthens
+          | some targetCodomainType =>
+              rw [domainSuccess, codomainSuccess] at functionTypeStrengthens
+              cases functionTypeStrengthens
+              cases argumentResult with
+              | mk targetArgumentType targetArgumentRaw targetArgumentTerm
+                  argumentTypeStrengthens argumentRawStrengthens
+                  argumentTypeRenames argumentRawRenames =>
+                  rw [domainSuccess] at argumentTypeStrengthens
+                  cases argumentTypeStrengthens
+                  exact {
+                    targetType := targetCodomainType
+                    targetRaw := RawTerm.app targetFunctionRaw targetArgumentRaw
+                    targetTerm :=
+                      Term.app targetFunctionTerm targetArgumentTerm
+                    typeStrengthens := codomainSuccess
+                    rawStrengthens := by
+                      change
+                        Option.mapTwo
+                          (functionRaw.partialStrengthen? strengthening.back)
+                          (argumentRaw.partialStrengthen? strengthening.back)
+                          RawTerm.app =
+                          some (RawTerm.app targetFunctionRaw
+                            targetArgumentRaw)
+                      rw [functionRawStrengthens, argumentRawStrengthens]
+                      rfl
+                    typeRenames :=
+                      Ty.partialStrengthen?_imp_rename codomainType
+                        strengthening.forward strengthening.back
+                        strengthening.injectsBack targetCodomainType
+                        codomainSuccess
+                    rawRenames := by
+                      cases functionRawRenames
+                      cases argumentRawRenames
+                      rfl
+                  }
+
+/-- Dependent function application strengthens by strengthening the
+function, the argument, and the codomain under the lifted strengthening. -/
+def partialStrengthenTypedAppPi {mode : Mode} {level : Nat}
+    {sourceScope targetScope : Nat}
+    {sourceCtx : Ctx mode level sourceScope}
+    {targetCtx : Ctx mode level targetScope}
+    {domainType : Ty level sourceScope}
+    {codomainType : Ty level (sourceScope + 1)}
+    {functionRaw argumentRaw : RawTerm sourceScope}
+    {strengthening : ContextStrengthening sourceCtx targetCtx}
+    {functionTerm :
+      Term sourceCtx (Ty.piTy domainType codomainType) functionRaw}
+    {argumentTerm : Term sourceCtx domainType argumentRaw}
+    (functionResult : StrengtheningResult strengthening functionTerm)
+    (argumentResult : StrengtheningResult strengthening argumentTerm) :
+    StrengtheningResult strengthening
+      (Term.appPi functionTerm argumentTerm) := by
+  cases functionResult with
+  | mk targetFunctionType targetFunctionRaw targetFunctionTerm
+      functionTypeStrengthens functionRawStrengthens functionTypeRenames
+      functionRawRenames =>
+      change
+        Option.mapTwo
+          (domainType.partialStrengthen? strengthening.back)
+          (codomainType.partialStrengthen? strengthening.back.lift)
+          Ty.piTy = some targetFunctionType at functionTypeStrengthens
+      cases domainSuccess : domainType.partialStrengthen?
+          strengthening.back with
+      | none =>
+          rw [domainSuccess] at functionTypeStrengthens
+          cases functionTypeStrengthens
+      | some targetDomainType =>
+          cases codomainSuccess : codomainType.partialStrengthen?
+              strengthening.back.lift with
+          | none =>
+              rw [domainSuccess, codomainSuccess] at functionTypeStrengthens
+              cases functionTypeStrengthens
+          | some targetCodomainType =>
+              rw [domainSuccess, codomainSuccess] at functionTypeStrengthens
+              cases functionTypeStrengthens
+              cases argumentResult with
+              | mk targetArgumentType targetArgumentRaw targetArgumentTerm
+                  argumentTypeStrengthens argumentRawStrengthens
+                  argumentTypeRenames argumentRawRenames =>
+                  rw [domainSuccess] at argumentTypeStrengthens
+                  cases argumentTypeStrengthens
+                  have resultTypeStrengthens :
+                      (codomainType.subst0 domainType
+                          argumentRaw).partialStrengthen?
+                        strengthening.back =
+                        some (targetCodomainType.subst0 targetDomainType
+                          targetArgumentRaw) :=
+                    Ty.partialStrengthen?_subst0_of_success codomainType
+                      targetCodomainType domainType targetDomainType
+                      argumentRaw targetArgumentRaw strengthening.forward
+                      strengthening.back strengthening.injectsBack
+                      strengthening.back_forward codomainSuccess
+                      domainSuccess argumentRawStrengthens
+                  exact {
+                    targetType :=
+                      targetCodomainType.subst0 targetDomainType
+                        targetArgumentRaw
+                    targetRaw :=
+                      RawTerm.app targetFunctionRaw targetArgumentRaw
+                    targetTerm :=
+                      Term.appPi targetFunctionTerm targetArgumentTerm
+                    typeStrengthens := resultTypeStrengthens
+                    rawStrengthens := by
+                      change
+                        Option.mapTwo
+                          (functionRaw.partialStrengthen? strengthening.back)
+                          (argumentRaw.partialStrengthen? strengthening.back)
+                          RawTerm.app =
+                          some (RawTerm.app targetFunctionRaw
+                            targetArgumentRaw)
+                      rw [functionRawStrengthens, argumentRawStrengthens]
+                      rfl
+                    typeRenames :=
+                      Ty.partialStrengthen?_imp_rename
+                        (codomainType.subst0 domainType argumentRaw)
+                        strengthening.forward strengthening.back
+                        strengthening.injectsBack
+                        (targetCodomainType.subst0 targetDomainType
+                          targetArgumentRaw)
+                        resultTypeStrengthens
+                    rawRenames := by
+                      cases functionRawRenames
+                      cases argumentRawRenames
+                      rfl
+                  }
+
 /-- Sigma pair strengthens by strengthening both components and the
 binder-indexed second component type. -/
 def partialStrengthenTypedPair {mode : Mode} {level : Nat}
