@@ -8960,12 +8960,20 @@ term, if `partialStrengthenTyped?` succeeds, the result satisfies
 induction on `Term`, with each case applying the corresponding leaf.
 
 Per-ctor IH plumbing varies (0–4 IHs depending on ctor arity and
-binder structure), so the full aggregator lands in multiple phases.
+binder structure), so the per-arm wrappers landed in multiple
+phases (Phases 80–90); the universal headline composing all 78
+arms via structural induction on `Term` is the next milestone, and
+unblocks the long-term image-theorem closure
+(`weaken_inv_of_strengthenTyped?_some` →
+`strengthenTyped?_some_of_weaken` →
+`weaken_image_iff_strengthenTyped?_some`).
 
-This file ships the entry point: a single uniform soundness
-property `IsAggregatorSound`, plus a base-case dispatcher for the
-`var` arm.  Subsequent ctors land as further dispatchers extending
-the same predicate. -/
+This file ships the uniform soundness property `IsAggregatorSound`
+plus all 78 per-arm dispatcher wrappers
+`isAggregatorSound_<ctor>` covering every Term constructor.  The
+headline universal aggregator (`∀ sourceTerm, IsAggregatorSound
+sourceTerm`) lands in a follow-up phase as a single structural
+induction composing the 78 wrappers. -/
 
 /-- The aggregator-soundness property for a typed source term.
 
@@ -9003,8 +9011,9 @@ The proof is a single-line delegation: `intros _ _ str res suc`
 introduces the universally-quantified strengthening / result /
 success arguments, then `exact` calls the per-arm leaf.
 
-This is the FIRST shipped dispatcher arm of the headline
-aggregator; remaining 77 arms land in subsequent phases. -/
+First of 78 per-arm wrappers; remaining 77 ship across Phases
+81–90.  After all 78 wrappers, the universal headline aggregator
+composes them via structural induction. -/
 theorem isAggregatorSound_var {mode : Mode} {level : Nat}
     {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
     (sourcePosition : Fin sourceScope) :
