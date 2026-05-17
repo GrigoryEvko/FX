@@ -9142,6 +9142,219 @@ theorem isAggregatorSound_equivReflId {mode : Mode} {level : Nat}
   exact partialStrengthenTyped?_atEquivReflId_imp_sound strengthening
     result success
 
+/-- Headline aggregator soundness at the `Term.arrowCode` arm.
+Universe-level forwarding + two flat-scope raw witnesses. -/
+theorem isAggregatorSound_arrowCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw codomainCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.arrowCode (context := sourceCtx) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atArrowCode_imp_sound outerLevel levelLe
+    domainCodeRaw codomainCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.piTyCode` arm.
+One flat-scope raw + one lifted raw (codomain at `scope + 1`). -/
+theorem isAggregatorSound_piTyCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorSound
+      (Term.piTyCode (context := sourceCtx) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atPiTyCode_imp_sound outerLevel levelLe
+    domainCodeRaw codomainCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.sigmaTyCode` arm.
+Structurally identical to `piTyCode`. -/
+theorem isAggregatorSound_sigmaTyCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (domainCodeRaw : RawTerm sourceScope)
+    (codomainCodeRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorSound
+      (Term.sigmaTyCode (context := sourceCtx) outerLevel levelLe
+        domainCodeRaw codomainCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atSigmaTyCode_imp_sound outerLevel
+    levelLe domainCodeRaw codomainCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.productCode` arm.
+Two flat-scope raw witnesses (first + second components). -/
+theorem isAggregatorSound_productCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (firstCodeRaw secondCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.productCode (context := sourceCtx) outerLevel levelLe
+        firstCodeRaw secondCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atProductCode_imp_sound outerLevel
+    levelLe firstCodeRaw secondCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.sumCode` arm.
+Binary sum: left + right summand codes. -/
+theorem isAggregatorSound_sumCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.sumCode (context := sourceCtx) outerLevel levelLe
+        leftCodeRaw rightCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atSumCode_imp_sound outerLevel levelLe
+    leftCodeRaw rightCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.listCode` arm.
+Single flat-scope element-code raw. -/
+theorem isAggregatorSound_listCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.listCode (context := sourceCtx) outerLevel levelLe
+        elementCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atListCode_imp_sound outerLevel levelLe
+    elementCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.optionCode` arm.
+Structurally identical to `listCode`. -/
+theorem isAggregatorSound_optionCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (elementCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.optionCode (context := sourceCtx) outerLevel levelLe
+        elementCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atOptionCode_imp_sound outerLevel
+    levelLe elementCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.eitherCode` arm.
+Two flat-scope summand-code raws. -/
+theorem isAggregatorSound_eitherCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftCodeRaw rightCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.eitherCode (context := sourceCtx) outerLevel levelLe
+        leftCodeRaw rightCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEitherCode_imp_sound outerLevel
+    levelLe leftCodeRaw rightCodeRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.idCode` arm.
+Three flat-scope raws: type-code + left + right endpoints. -/
+theorem isAggregatorSound_idCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (typeCodeRaw leftRaw rightRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.idCode (context := sourceCtx) outerLevel levelLe
+        typeCodeRaw leftRaw rightRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atIdCode_imp_sound outerLevel levelLe
+    typeCodeRaw leftRaw rightRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.equivCode` arm.
+Structurally identical to `eitherCode`. -/
+theorem isAggregatorSound_equivCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (outerLevel : UniverseLevel)
+    (levelLe : outerLevel.toNat + 1 ≤ level)
+    (leftTypeCodeRaw rightTypeCodeRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.equivCode (context := sourceCtx) outerLevel levelLe
+        leftTypeCodeRaw rightTypeCodeRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEquivCode_imp_sound outerLevel
+    levelLe leftTypeCodeRaw rightTypeCodeRaw strengthening result
+    success
+
+/-- Headline aggregator soundness at the `Term.universeCode` arm.
+Bare universe-of-codes carrying inner/outer level + cumulativity
+proof + outer-bound proof; no raw payload. -/
+theorem isAggregatorSound_universeCode {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel outerLevel : UniverseLevel)
+    (cumulOk : innerLevel.toNat ≤ outerLevel.toNat)
+    (levelLe : outerLevel.toNat + 1 ≤ level) :
+    IsAggregatorSound
+      (Term.universeCode (context := sourceCtx) innerLevel outerLevel
+        cumulOk levelLe) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atUniverseCode_imp_sound innerLevel
+    outerLevel cumulOk levelLe strengthening result success
+
+/-- Headline aggregator soundness at the `Term.funextRefl` arm.  Two
+flat type witnesses + one lifted raw witness at `scope + 1`. -/
+theorem isAggregatorSound_funextRefl {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorSound
+      (Term.funextRefl (context := sourceCtx) domainType codomainType
+        applyRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atFunextRefl_imp_sound domainType
+    codomainType applyRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.equivReflIdAtId` arm.
+Inner-universe-level pair + carrier type + flat raw witness. -/
+theorem isAggregatorSound_equivReflIdAtId {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (innerLevel : UniverseLevel)
+    (innerLevelLt : innerLevel.toNat + 1 ≤ level)
+    (carrier : Ty level sourceScope)
+    (carrierRaw : RawTerm sourceScope) :
+    IsAggregatorSound
+      (Term.equivReflIdAtId (context := sourceCtx) innerLevel
+        innerLevelLt carrier carrierRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atEquivReflIdAtId_imp_sound innerLevel
+    innerLevelLt carrier carrierRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.funextReflAtId` arm.
+Structurally identical to `funextRefl`; differs only in resulting
+wrapper type (Id-typed vs canonical funext form). -/
+theorem isAggregatorSound_funextReflAtId {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorSound
+      (Term.funextReflAtId (context := sourceCtx) domainType
+        codomainType applyRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atFunextReflAtId_imp_sound domainType
+    codomainType applyRaw strengthening result success
+
+/-- Headline aggregator soundness at the `Term.funextIntroHet` arm.
+Two flat type witnesses + two lifted raw witnesses at `scope + 1`. -/
+theorem isAggregatorSound_funextIntroHet {mode : Mode} {level : Nat}
+    {sourceScope : Nat} {sourceCtx : Ctx mode level sourceScope}
+    (domainType codomainType : Ty level sourceScope)
+    (applyARaw applyBRaw : RawTerm (sourceScope + 1)) :
+    IsAggregatorSound
+      (Term.funextIntroHet (context := sourceCtx) domainType
+        codomainType applyARaw applyBRaw) := by
+  intros _ _ strengthening result success
+  exact partialStrengthenTyped?_atFunextIntroHet_imp_sound domainType
+    codomainType applyARaw applyBRaw strengthening result success
+
 end Term
 
 end LeanFX2
