@@ -836,6 +836,15 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_oeqJ
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_idStrictRec
 
+-- Wave D: cubical / HoTT non-binder ctors.
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_equivReflId
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_equivReflIdAtId
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_glueElim
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_hcomp
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_glueIntro
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_transp
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_uaToEquiv
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.
