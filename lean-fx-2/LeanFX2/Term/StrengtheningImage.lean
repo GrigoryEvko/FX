@@ -11367,6 +11367,282 @@ theorem isTotalOnWeaken_codataDest {mode : Mode} {level scope : Nat}
           cases this
       · rfl
 
+/-! ## Wave C: 2-IH and 3-IH non-binder totality. -/
+
+/-- 2-IH non-binder totality: `Term.listCons`.  Pure 2-IH ctor — no
+extra Ty/RawTerm payloads. -/
+theorem isTotalOnWeaken_listCons {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {elementType : Ty level scope}
+    {headRaw tailRaw : RawTerm scope}
+    {headTerm : Term context elementType headRaw}
+    {tailTerm : Term context (Ty.listType elementType) tailRaw}
+    (headIH : IsTotalOnWeaken headTerm)
+    (tailIH : IsTotalOnWeaken tailTerm) :
+    IsTotalOnWeaken (Term.listCons headTerm tailTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.listCons (Term.weaken newType headTerm)
+      (Term.weaken newType tailTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next headRecurse =>
+      exfalso
+      have totHyp := headIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType headTerm))) = true :=
+        headRecurse ▸ totHyp
+      cases this
+  · split
+    · next tailRecurse =>
+        exfalso
+        have totHyp := tailIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType tailTerm))) = true :=
+          tailRecurse ▸ totHyp
+        cases this
+    · rfl
+
+/-- 2-IH non-binder totality: `Term.intervalMeet`.  Pure 2-IH cubical
+interval meet operator. -/
+theorem isTotalOnWeaken_intervalMeet {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term context Ty.interval leftRaw}
+    {rightValue : Term context Ty.interval rightRaw}
+    (leftIH : IsTotalOnWeaken leftValue)
+    (rightIH : IsTotalOnWeaken rightValue) :
+    IsTotalOnWeaken (Term.intervalMeet leftValue rightValue) := by
+  intro newType
+  show (strengthenTyped? (Term.intervalMeet
+      (Term.weaken newType leftValue)
+      (Term.weaken newType rightValue))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next leftRecurse =>
+      exfalso
+      have totHyp := leftIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType leftValue))) = true :=
+        leftRecurse ▸ totHyp
+      cases this
+  · split
+    · next rightRecurse =>
+        exfalso
+        have totHyp := rightIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType rightValue))) = true :=
+          rightRecurse ▸ totHyp
+        cases this
+    · rfl
+
+/-- 2-IH non-binder totality: `Term.intervalJoin`.  Pure 2-IH cubical
+interval join operator. -/
+theorem isTotalOnWeaken_intervalJoin {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {leftRaw rightRaw : RawTerm scope}
+    {leftValue : Term context Ty.interval leftRaw}
+    {rightValue : Term context Ty.interval rightRaw}
+    (leftIH : IsTotalOnWeaken leftValue)
+    (rightIH : IsTotalOnWeaken rightValue) :
+    IsTotalOnWeaken (Term.intervalJoin leftValue rightValue) := by
+  intro newType
+  show (strengthenTyped? (Term.intervalJoin
+      (Term.weaken newType leftValue)
+      (Term.weaken newType rightValue))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next leftRecurse =>
+      exfalso
+      have totHyp := leftIH newType
+      unfold strengthenTyped? at totHyp
+      have : Option.isSome (none (α := StrengtheningResult
+          (ContextStrengthening.dropNewest context newType)
+          (Term.weaken newType leftValue))) = true :=
+        leftRecurse ▸ totHyp
+      cases this
+  · split
+    · next rightRecurse =>
+        exfalso
+        have totHyp := rightIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType rightValue))) = true :=
+          rightRecurse ▸ totHyp
+        cases this
+    · rfl
+
+/-- 2-IH non-binder totality: `Term.app`.  Carries two Ty payloads
+(domainType, codomainType) + two Term IH (function, argument). -/
+theorem isTotalOnWeaken_app {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {domainType codomainType : Ty level scope}
+    {functionRaw argumentRaw : RawTerm scope}
+    {functionTerm : Term context (Ty.arrow domainType codomainType)
+      functionRaw}
+    {argumentTerm : Term context domainType argumentRaw}
+    (functionIH : IsTotalOnWeaken functionTerm)
+    (argumentIH : IsTotalOnWeaken argumentTerm) :
+    IsTotalOnWeaken (Term.app functionTerm argumentTerm) := by
+  intro newType
+  show (strengthenTyped? (Term.app (Term.weaken newType functionTerm)
+      (Term.weaken newType argumentTerm))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next domainFails =>
+      exfalso
+      have domainSuccess :
+          domainType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some domainType :=
+        Ty.strengthen?_weaken domainType
+      rw [domainSuccess] at domainFails
+      cases domainFails
+  · split
+    · next codomainFails =>
+        exfalso
+        have codomainSuccess :
+            codomainType.weaken.partialStrengthen?
+                (ContextStrengthening.dropNewest context newType).back =
+              some codomainType :=
+          Ty.strengthen?_weaken codomainType
+        rw [codomainSuccess] at codomainFails
+        cases codomainFails
+    · split
+      · next functionRecurse =>
+          exfalso
+          have totHyp := functionIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType functionTerm))) = true :=
+            functionRecurse ▸ totHyp
+          cases this
+      · split
+        · next argumentRecurse =>
+            exfalso
+            have totHyp := argumentIH newType
+            unfold strengthenTyped? at totHyp
+            have : Option.isSome (none (α := StrengtheningResult
+                (ContextStrengthening.dropNewest context newType)
+                (Term.weaken newType argumentTerm))) = true :=
+              argumentRecurse ▸ totHyp
+            cases this
+        · rfl
+
+/-- 2-IH non-binder totality: `Term.codataUnfold`.  One Ty (outputType)
++ two Term IH (initialState, transition).  Note: the dispatcher
+strengthens only outputType (stateType is inferred from the IH). -/
+theorem isTotalOnWeaken_codataUnfold {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    {stateType outputType : Ty level scope}
+    {stateRaw transitionRaw : RawTerm scope}
+    {initialState : Term context stateType stateRaw}
+    {transition : Term context (Ty.arrow stateType outputType)
+      transitionRaw}
+    (stateIH : IsTotalOnWeaken initialState)
+    (transitionIH : IsTotalOnWeaken transition) :
+    IsTotalOnWeaken (Term.codataUnfold initialState transition) := by
+  intro newType
+  show (strengthenTyped? (Term.codataUnfold
+      (Term.weaken newType initialState)
+      (Term.weaken newType transition))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next outputFails =>
+      exfalso
+      have outputSuccess :
+          outputType.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some outputType :=
+        Ty.strengthen?_weaken outputType
+      rw [outputSuccess] at outputFails
+      cases outputFails
+  · split
+    · next stateRecurse =>
+        exfalso
+        have totHyp := stateIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType initialState))) = true :=
+          stateRecurse ▸ totHyp
+        cases this
+    · split
+      · next transitionRecurse =>
+          exfalso
+          have totHyp := transitionIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType transition))) = true :=
+            transitionRecurse ▸ totHyp
+          cases this
+      · rfl
+
+/-- 2-IH non-binder totality: `Term.sessionSend`.  One RawTerm
+(protocolStep) + one Ty (payloadType) + two Term IH. -/
+theorem isTotalOnWeaken_sessionSend {mode : Mode} {level scope : Nat}
+    {context : Ctx mode level scope}
+    (protocolStep : RawTerm scope)
+    {payloadType : Ty level scope}
+    {channelRaw payloadRaw : RawTerm scope}
+    {channel : Term context (Ty.session protocolStep) channelRaw}
+    {payload : Term context payloadType payloadRaw}
+    (channelIH : IsTotalOnWeaken channel)
+    (payloadIH : IsTotalOnWeaken payload) :
+    IsTotalOnWeaken (Term.sessionSend protocolStep channel payload) := by
+  intro newType
+  show (strengthenTyped? (Term.sessionSend protocolStep.weaken
+      (Term.weaken newType channel)
+      (Term.weaken newType payload))).isSome
+  unfold strengthenTyped?
+  unfold partialStrengthenTyped?
+  split
+  · next protocolFails =>
+      exfalso
+      have protocolSuccess :
+          protocolStep.weaken.partialStrengthen?
+              (ContextStrengthening.dropNewest context newType).back =
+            some protocolStep :=
+        RawTerm.strengthen?_weaken protocolStep
+      rw [protocolSuccess] at protocolFails
+      cases protocolFails
+  · split
+    · next channelRecurse =>
+        exfalso
+        have totHyp := channelIH newType
+        unfold strengthenTyped? at totHyp
+        have : Option.isSome (none (α := StrengtheningResult
+            (ContextStrengthening.dropNewest context newType)
+            (Term.weaken newType channel))) = true :=
+          channelRecurse ▸ totHyp
+        cases this
+    · split
+      · next payloadRecurse =>
+          exfalso
+          have totHyp := payloadIH newType
+          unfold strengthenTyped? at totHyp
+          have : Option.isSome (none (α := StrengtheningResult
+              (ContextStrengthening.dropNewest context newType)
+              (Term.weaken newType payload))) = true :=
+            payloadRecurse ▸ totHyp
+          cases this
+      · rfl
+
 /-- 0-IH parametric atomic totality: `Term.arrowCode` (universe-code
 for `Ty.arrow`).  Two RawTerm sub-payloads at the outer scope. -/
 theorem isTotalOnWeaken_arrowCode {mode : Mode} {level scope : Nat}

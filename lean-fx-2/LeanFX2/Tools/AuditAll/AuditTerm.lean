@@ -819,6 +819,14 @@ existing computational dispatcher. -/
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_sessionRecv
 #assert_no_axioms LeanFX2.Term.isTotalOnWeaken_codataDest
 
+-- Wave C.1: 2-IH non-binder ctors.
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_listCons
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_intervalMeet
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_intervalJoin
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_app
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_codataUnfold
+#assert_no_axioms LeanFX2.Term.isTotalOnWeaken_sessionSend
+
 -- User-facing unweaken?_weaken_<ctor> headline theorems.  Each is a
 -- direct `rfl` witness — concrete totality for the closed atomic
 -- ctors, consumable by Step.eta-cascade SR proofs.
