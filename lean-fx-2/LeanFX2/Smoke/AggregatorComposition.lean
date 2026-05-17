@@ -1877,6 +1877,79 @@ theorem aggregator_optionSome_listCons_pair_closed {mode : Mode}
       (isAggregatorSound_listNil
         (elementType := Ty.sigmaTy Ty.nat Ty.nat)))
 
+/-- Depth-14 nat chain: `succ^14 zero` at carrier `nat`.
+Extends the `natOne..natThirteen` 1-IH chain progression by one
+more step, demonstrating that the natSucc wrapper composes at
+fourteen-fold depth without any structural difference from
+shorter chains. -/
+theorem aggregator_natFourteen_closed {mode : Mode} {level : Nat}
+    {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.natSucc (context := sourceCtx)
+        (Term.natSucc
+          (Term.natSucc
+            (Term.natSucc
+              (Term.natSucc
+                (Term.natSucc
+                  (Term.natSucc
+                    (Term.natSucc
+                      (Term.natSucc
+                        (Term.natSucc
+                          (Term.natSucc
+                            (Term.natSucc
+                              (Term.natSucc
+                                (Term.natSucc Term.natZero)))))))))))))) :=
+  isAggregatorSound_natSucc
+    (isAggregatorSound_natSucc
+      (isAggregatorSound_natSucc
+        (isAggregatorSound_natSucc
+          (isAggregatorSound_natSucc
+            (isAggregatorSound_natSucc
+              (isAggregatorSound_natSucc
+                (isAggregatorSound_natSucc
+                  (isAggregatorSound_natSucc
+                    (isAggregatorSound_natSucc
+                      (isAggregatorSound_natSucc
+                        (isAggregatorSound_natSucc
+                          (isAggregatorSound_natSucc
+                            (isAggregatorSound_natSucc
+                              isAggregatorSound_natZero)))))))))))))
+
+/-- Mirror to the already-shipped `eitherInr_optionNone_closed`:
+`eitherInl (None : option nat)` at carrier
+`Either (option nat) bool`.  Tests the LEFT injection with the
+0-IH parametric optionNone payload, completing the empty-option-
+in-either matrix across both injection sides. -/
+theorem aggregator_eitherInl_optionNone_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.eitherInl (context := sourceCtx)
+        (rightType := Ty.bool)
+        (valueTerm := Term.optionNone (elementType := Ty.nat))) :=
+  isAggregatorSound_eitherInl (rightType := Ty.bool)
+    (isAggregatorSound_optionNone (elementType := Ty.nat))
+
+/-- Heterogeneous pair combining 1-IH listCons on LEFT with 0-IH
+parametric optionNone on RIGHT: `pair [natZero] (None : option
+bool)` at carrier `list nat × option bool`.  Demonstrates that
+both Sigma slots accept structurally different aggregator
+shapes (1-IH list + 0-IH parametric option) at non-uniform
+element types. -/
+theorem aggregator_pair_listCons_optionNone_closed {mode : Mode}
+    {level : Nat} {sourceCtx : Ctx mode level 0} :
+    IsAggregatorSound
+      (Term.pair (context := sourceCtx)
+        (secondType := Ty.optionType Ty.bool)
+        (firstValue :=
+          Term.listCons
+            (headTerm := Term.natZero)
+            (tailTerm := Term.listNil (elementType := Ty.nat)))
+        (secondValue := Term.optionNone (elementType := Ty.bool))) :=
+  isAggregatorSound_pair
+    (isAggregatorSound_listCons isAggregatorSound_natZero
+      (isAggregatorSound_listNil (elementType := Ty.nat)))
+    (isAggregatorSound_optionNone (elementType := Ty.bool))
+
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_unit_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natOne_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natTwo_closed
@@ -1975,5 +2048,8 @@ theorem aggregator_optionSome_listCons_pair_closed {mode : Mode}
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natThirteen_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_listCons_eitherInl_pair_closed
 #print axioms LeanFX2.SmokeAggregatorComposition.aggregator_optionSome_listCons_pair_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_natFourteen_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_eitherInl_optionNone_closed
+#print axioms LeanFX2.SmokeAggregatorComposition.aggregator_pair_listCons_optionNone_closed
 
 end LeanFX2.SmokeAggregatorComposition
